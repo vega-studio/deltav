@@ -1,0 +1,16 @@
+# -----[ Application ]---------------------------------------------
+node_modules
+# The actual build files
+build
+# We're going to use yarn
+package-lock.json
+
+# -----[ Metadata ]---------------------------------------------
+# macOS
+.DS_Store
+# JetBrains (IDE)
+.idea
+# VS Code (IDE)
+.vscode
+npm*log-*
+*.log

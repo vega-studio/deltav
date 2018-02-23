@@ -1,0 +1,65 @@
+{
+  "author": {
+    "name": "VoidRay Corporation",
+    "email": "support@voidray.co",
+    "url": "http://www.voidray.co"
+  },
+  "name": "@voidrayco/voidgl",
+  "version": "0.7.15",
+  "main": "dist/index.js",
+  "types": "dist/src/index.d.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "node scripts/dev",
+    "release": "node scripts/release",
+    "start": "node scripts/dev",
+    "build": "tslint src && webpack"
+  },
+  "dependencies": {
+    "@types/d3-color": "1.0.x",
+    "@types/d3-scale": "1.0.x",
+    "@types/ramda": "~0.25.4",
+    "@types/three": "0.84.x",
+    "bowser": "1.7.x",
+    "d3-color": "1.0.x",
+    "d3-scale": "1.0.x",
+    "ramda": "0.25.x",
+    "three": "mrdoob/three.js"
+  },
+  "devDependencies": {
+    "@types/node": "8.0.x",
+    "@types/react": "15.0.x",
+    "@types/react-dom": "16.0.x",
+    "css-loader": "0.28.x",
+    "dts-bundle": "0.7.x",
+    "eslint-config-tarwich": "github:tarwich/eslint-config-tarwich#1.5.1",
+    "file-loader": "1.1.x",
+    "find-imports": "0.5.x",
+    "fork-ts-checker-webpack-plugin": "0.2.x",
+    "fs-extra": "4.0.x",
+    "less": "2.7.x",
+    "less-loader": "4.0.x",
+    "mobx": "3.4.1",
+    "random": "github:tarwich/node-random#1.0.0",
+    "raw-loader": "0.5.x",
+    "react": "15.5.x",
+    "react-dom": "15.5.x",
+    "style-loader": "0.19.x",
+    "ts-loader": "3.0.x",
+    "tslib": "1.7.x",
+    "tslint": "5.8.x",
+    "tslint-loader": "3.5.x",
+    "typescript": "2.5.x",
+    "uglify-js": "3.1.x",
+    "webpack": "3.0.x",
+    "webpack-dev-server": "2.9.x"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "@types/react",
+      "@types/react-dom",
+      "react",
+      "react-dom"
+    ]
+  }
+}

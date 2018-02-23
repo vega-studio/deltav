@@ -1,0 +1,37 @@
+# -----[ Application ]---------------------------------------------
+node_modules
+# The actual build files
+build
+
+# -----[ Metadata ]------------------------------------------------
+# macOS
+.DS_Store
+# JetBrains (IDE)
+.idea
+# VS Code (IDE)
+.vscode
+npm*log-*
+*.log
+
+# -----[ Distribution ] -------------------------------------------
+# scripts
+scripts
+# The non-obfuscated Distribution
+dist/index.js.map
+# Remove any development Code
+src
+# Ensure distribution sources are included
+!dist/src
+# Remove any tests
+test
+# Clear out any uneeded config files of any sort
+tsconfig.json
+tslint.json
+webpack.config.js
+wercker.yml
+yarn.lock
+dts-bundle.tmp.voidgl.d.ts
+.editorconfig
+.eslintrc.js
+.nvmrc
+package-lock.json

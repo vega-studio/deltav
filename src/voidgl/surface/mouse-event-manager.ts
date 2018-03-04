@@ -127,7 +127,7 @@ export class MouseEventManager {
       element.onmousewheel = (event: MouseWheelEvent) => {
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
-        const wheel = this.makeWheelMetrics(event);
+        const wheel = this.makeWheel(event);
 
         this.controllers.forEach(controller => {
           controller.handleWheel(interaction, wheel);
@@ -148,8 +148,6 @@ export class MouseEventManager {
       this.controllers.forEach(controller => {
         controller.handleMouseMove(interaction);
       });
-
-      event.stopPropagation();
     };
 
     element.onmousedown = (event: MouseEvent) => {
@@ -194,14 +192,12 @@ export class MouseEventManager {
 
         // If we move after a mouse down, it's no longer a click
         canClick = false;
-        event.stopPropagation();
       };
 
       document.onmouseup = (event: MouseEvent) => {
         document.onmousemove = null;
         document.onmouseup = null;
         document.onmouseover = null;
-        event.stopPropagation();
       };
 
       document.onmouseover = (event: MouseEvent) => {
@@ -229,8 +225,6 @@ export class MouseEventManager {
             controller.handleClick(interaction, event.button);
           });
         }
-
-        event.stopPropagation();
       };
 
       // Text will not be selected when it is being dragged

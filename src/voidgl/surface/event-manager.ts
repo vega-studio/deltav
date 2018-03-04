@@ -1,4 +1,4 @@
-import { IDragMetrics, IMouseInteraction } from './mouse-event-manager';
+import { IDragMetrics, IMouseInteraction, IWheelMetrics } from './mouse-event-manager';
 
 /**
  * Classes can extend this and override the methods to respond to events.
@@ -33,6 +33,6 @@ export class EventManager {
   }
 
   handleWheel(e: IMouseInteraction, wheel: IWheelMetrics) {
-
+    // HOOK: This is for a subclass
   }
 }

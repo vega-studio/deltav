@@ -78,6 +78,7 @@ export class Main extends React.Component<any, IMainState> {
         eventManagers: [
           new BasicCameraController({
             camera: mainCamera,
+            startView: 'test-view2',
           }),
         ],
         scenes: [

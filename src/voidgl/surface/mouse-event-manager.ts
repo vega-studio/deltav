@@ -177,7 +177,7 @@ export class MouseEventManager {
 
       document.onmousemove = (event: MouseEvent) => {
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(mouse);
+        const interaction = this.makeInteraction(mouse, startPosition, startView);
         const delta = {
           x: mouse.x - currentPosition.x,
           y: mouse.y - currentPosition.y,

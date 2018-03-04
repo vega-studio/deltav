@@ -7,7 +7,7 @@ export interface IBasicCameraControllerOptions {
   camera: ChartCamera;
   /**
    * This is the view that MUST be the start view from the events.
-   * If not provided then dragging anywhere will adjust the camera
+   * If not provided, then dragging anywhere will adjust the camera
    */
   startView?: string;
 }
@@ -25,7 +25,10 @@ export class BasicCameraController extends EventManager {
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    this.camera.offset[0] += drag.screen.delta.x;
-    this.camera.offset[1] += drag.screen.delta.y;
+    console.log(e.start);
+    if (!this.startView || (this.startView && e.start.view.id === this.startView)) {
+      this.camera.offset[0] += drag.screen.delta.x;
+      this.camera.offset[1] += drag.screen.delta.y;
+    }
   }
 }

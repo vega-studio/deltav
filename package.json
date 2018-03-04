@@ -24,7 +24,7 @@
     "d3-color": "1.0.x",
     "d3-scale": "1.0.x",
     "ramda": "0.25.x",
-    "three": "mrdoob/three.js"
+    "three": "0.87.x"
   },
   "devDependencies": {
     "@types/node": "8.0.x",
@@ -45,6 +45,7 @@
     "react": "15.5.x",
     "react-dom": "15.5.x",
     "style-loader": "0.19.x",
+    "three.js": "0.77.1",
     "ts-loader": "3.0.x",
     "tslib": "1.7.x",
     "tslint": "5.8.x",

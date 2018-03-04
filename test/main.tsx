@@ -70,6 +70,7 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     const mainCamera = new ChartCamera();
+    const panelCamera = new ChartCamera();
 
     if (generate) {
       this.surface = new LayerSurface({
@@ -78,16 +79,29 @@ export class Main extends React.Component<any, IMainState> {
         eventManagers: [
           new BasicCameraController({
             camera: mainCamera,
+            startView: 'default-view',
+          }),
+          new BasicCameraController({
+            camera: panelCamera,
             startView: 'test-view2',
           }),
         ],
         scenes: [
           {
+            key: 'default',
+            views: [
+              {
+                camera: mainCamera,
+                key: 'default-view',
+              },
+            ],
+          },
+          {
             key: 'small-panel',
             views: [
               {
                 background: [1.0, 1.0, 1.0, 1.0],
-                camera: mainCamera,
+                camera: panelCamera,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 key: 'test-view',
                 viewport: {
@@ -105,7 +119,7 @@ export class Main extends React.Component<any, IMainState> {
               {
                 background: [1.0, 1.0, 1.0, 1.0],
                 camera: new ReferenceCamera({
-                  base: mainCamera,
+                  base: panelCamera,
                   offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
                 }),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
@@ -156,16 +170,23 @@ export class Main extends React.Component<any, IMainState> {
     if (this.surface) {
       const data = new DataProvider<CircleInstance>([]);
       const data2 = new DataProvider<CircleInstance>([]);
+      const data3 = new DataProvider<CircleInstance>([]);
 
       this.surface.render([
         createLayer(CircleLayer, {
           data,
           depth: 0,
+          key: 'circle-layer-0',
+          scene: 'default',
+        }),
+        createLayer(CircleLayer, {
+          data: data2,
+          depth: 0,
           key: 'circle-layer',
           scene: 'small-panel',
         }),
         createLayer(CircleLayer, {
-          data: data2,
+          data: data3,
           depth: 1,
           key: 'circle-layer-2',
           scene: 'small-panel-2',
@@ -196,8 +217,25 @@ export class Main extends React.Component<any, IMainState> {
             });
 
             data2.instances.push(circle);
+
+            circle = new CircleInstance({
+              color: [1.0, 0.0, 0.0, 1.0],
+              depth: 0,
+              id: `circle${i * 20 + k}`,
+              radius: 5,
+              x: i * 10,
+              y: k * 10,
+            });
+
+            data3.instances.push(circle);
           }
         }
+
+        setInterval(() => {
+          for (let i = 0; i < data.instances.length; i += 2) {
+            data.instances[Math.floor(Math.random() * data.instances.length)].x += Math.random();
+          }
+        }, 1000 / 60);
       });
     }
 

@@ -25,7 +25,6 @@ export class BasicCameraController extends EventManager {
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    console.log(e.start);
     if (!this.startView || (this.startView && e.start.view.id === this.startView)) {
       this.camera.offset[0] += drag.screen.delta.x;
       this.camera.offset[1] += drag.screen.delta.y;

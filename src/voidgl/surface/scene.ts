@@ -63,7 +63,8 @@ export class Scene extends IdentifyByKey {
   }
 
   /**
-   * Removes a layer from the scene
+   * Removes a layer from the scene. No resort is needed as remove operations
+   * do not adjust the sorting order.
    */
   removeLayer(layer: Layer<any, any, any>) {
     if (this.layers) {

@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { EventManager } from './surface/event-manager';
 import { View } from './surface/view';
 import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from './types';
 import { DataProvider, DiffType } from './util/data-provider';

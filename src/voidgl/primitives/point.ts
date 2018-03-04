@@ -126,15 +126,15 @@ export class Point {
    * @static
    * This will calculate a direction vector between two points that points toward p2
    *
-   * @param {IPoint} p1 The start of the direction
-   * @param {IPoint} p2 The direction to point the vector towards
+   * @param {IPoint} amount The start of the direction
+   * @param {IPoint} from The direction to point the vector towards
    * @param {boolean} normalize If true, this will make the vector have a magnitude of 1
    *
    * @returns {number}
    */
-  static getDirection(p1: IPoint, p2: IPoint, normalize: boolean = false): IPoint {
-    let dx = p2.x - p1.x;
-    let dy = p2.y - p1.y;
+  static subtract(amount: IPoint, from: IPoint, normalize: boolean = false): IPoint {
+    let dx = from.x - amount.x;
+    let dy = from.y - amount.y;
 
     if (normalize) {
       const magnitude = Math.sqrt(dx * dx + dy * dy);
@@ -176,7 +176,7 @@ export class Point {
    * @returns {IPoint} The point between the two provided points
    */
   static getMidpoint(p1: IPoint, p2: IPoint) {
-    const direction = Point.getDirection(p1, p2);
+    const direction = Point.subtract(p1, p2);
 
     return {
       x: direction.x / 2 + p1.x,

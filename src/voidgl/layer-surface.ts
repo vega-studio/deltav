@@ -1,14 +1,18 @@
 import * as Three from 'three';
 import { ILayerProps, Layer } from './layer';
+import { Bounds } from './primitives/bounds';
 import { Box } from './primitives/box';
 import { injectFragments } from './shaders/util/attribute-generation';
+import { EventManager } from './surface/event-manager';
 import { generateDefaultScene, IDefaultSceneElements } from './surface/generate-default-scene';
 import { generateLayerGeometry } from './surface/generate-layer-geometry';
 import { generateLayerMaterial } from './surface/generate-layer-material';
 import { generateLayerModel } from './surface/generate-layer-model';
 import { injectShaderIO } from './surface/inject-shader-io';
+import { MouseEventManager, SceneView } from './surface/mouse-event-manager';
 import { ISceneOptions, Scene } from './surface/scene';
-import { View } from './surface/view';
+import { ClearFlags, View } from './surface/view';
+import { DataBounds } from './util/data-bounds';
 import { Instance } from './util/instance';
 import { InstanceUniformManager } from './util/instance-uniform-manager';
 
@@ -22,6 +26,10 @@ export interface ILayerSurfaceOptions {
    * it will search for the canvas context by id.
    */
   context?: WebGLRenderingContext | HTMLCanvasElement | string;
+  /**
+   * This is the event managers to respond to the mouse events.
+   */
+  eventManagers?: EventManager[];
   /**
    * This sets up the available scenes the surface will have to work with. Layers then can
    * reference the scene by it's scene property. The order of the scenes here is the drawing
@@ -48,23 +56,13 @@ export interface ILayerConstructable<T extends Instance> {
   new (props: ILayerProps<T>): Layer<any, any, any>;
 }
 
+export type LayerInitializer<T extends Instance> = [ILayerConstructable<T> & {defaultProps: any}, ILayerProps<any>];
+
 /**
  * Used for reactive layer generation and updates.
  */
-export function createLayer<T extends Instance>(surface: LayerSurface, layerClass: ILayerConstructable<T> & {defaultProps: any}, props: ILayerProps<any>) {
-  const existingLayer = surface.layers.get(props.key);
-
-  if (existingLayer) {
-    existingLayer.willUpdateProps(props);
-    Object.assign(existingLayer.props, props);
-    existingLayer.didUpdateProps();
-
-    return;
-  }
-
-  else {
-    surface.addLayer(new layerClass(Object.assign(props, layerClass.defaultProps)));
-  }
+export function createLayer<T extends Instance>(layerClass: ILayerConstructable<T> & {defaultProps: any}, props: ILayerProps<any>): LayerInitializer<T> {
+  return [layerClass, props];
 }
 
 /**
@@ -74,7 +72,7 @@ export function createLayer<T extends Instance>(surface: LayerSurface, layerClas
  */
 export class LayerSurface {
   /** This is the gl context this surface is rendering to */
-  context: WebGLRenderingContext;
+  private context: WebGLRenderingContext;
   /** This is the current viewport the renderer state is in */
   currentViewport: Box;
   /**
@@ -82,6 +80,8 @@ export class LayerSurface {
    * This scene by default only has a single default view.
    */
   defaultSceneElements: IDefaultSceneElements;
+  /** This manages the mouse events for the current canvas context */
+  private mouseManager: MouseEventManager;
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<any, any, any>>();
   /** This is the THREE render system we use to render scenes with views */
@@ -92,15 +92,25 @@ export class LayerSurface {
    */
   scenes = new Map<string, Scene>();
   /**
+   * This is all of the views currently generated for this surface paired with the scene they render.
+   */
+  sceneViews: SceneView[] = [];
+  /**
    * This flags all layers by id for disposal at the end of every render. A Layer must be recreated
    * after each render in order to clear it's disposal flag. This is the trick to making this a
    * reactive system.
    */
   willDisposeLayer = new Map<string, boolean>();
 
+  /** Read only getter for the gl context */
+  get gl() {
+    return this.context;
+  }
+
   constructor(options: ILayerSurfaceOptions) {
     this.setContext(options.context);
     this.initGL(options);
+    this.initMouseManager(options);
   }
 
   /**
@@ -128,6 +138,7 @@ export class LayerSurface {
 
   destroy() {
     // TODO: Must have proper destroy methods
+    this.mouseManager.destroy();
   }
 
   /**
@@ -143,9 +154,21 @@ export class LayerSurface {
       const views = Array.from(scene.viewById.values());
       const layers = scene.layers;
 
+      // Make sure the layers are depth sorted
+      scene.sortLayers();
+
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
+
+        // We must perform any operations necessary to make the view camera fit the viewport
+        // Correctly
+        view.fitViewtoViewport(new Bounds({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0,
+        }));
 
         // Let the layers update their uniforms before the draw
         for (let j = 0, endj = layers.length; j < endj; ++j) {
@@ -153,22 +176,25 @@ export class LayerSurface {
           const layer = layers[j];
           // Update the layer with the view it is about to be rendered with
           layer.view = view;
-
-          // If this is a default camera, we will want to fit and align it to the viewport
-          if (view.viewCamera === this.defaultSceneElements.viewCamera) {
-            view.viewCamera.position.set(-view.viewport.width / 2.0, view.viewport.height / 2.0, view.viewCamera.position.z);
-            view.viewCamera.updateMatrix();
-            view.viewCamera.updateMatrixWorld(true);
-          }
-
+          // Make sure the layer is given the opportunity to update all of it's uniforms
+          // To match the view state and update any unresolved diffs internally
           layer.draw();
         }
 
-        if (layers.length > 0) {
-          // Now perform the rendering
-          this.drawSceneView(scene.container, view);
-        }
+        // Now perform the rendering
+        this.drawSceneView(scene.container, view);
       }
+    }
+
+    // After we have drawn our views of our scenes, we can now ensure all of the bounds
+    // Are updated in the interactions and flag our interactions ready for mouse input
+    if (this.mouseManager.waitingForRender) {
+      this.sceneViews.forEach(sceneView => {
+        sceneView.bounds = new DataBounds(sceneView.view.viewBounds);
+        sceneView.bounds.data = sceneView;
+      });
+
+      this.mouseManager.waitingForRender = false;
     }
   }
 
@@ -176,28 +202,34 @@ export class LayerSurface {
    * This finalizes everything and sets up viewports and clears colors and
    */
   drawSceneView(scene: Three.Scene, view: View) {
-    const offset = {x: view.viewport.left, y: view.viewport.top};
-    const size = view.viewport;
+    const offset = {x: view.viewBounds.left, y: view.viewBounds.top};
+    const size = view.viewBounds;
     const rendererSize = this.renderer.getSize();
     const background = view.background;
+
+    // Set the scissor rectangle.
+    this.context.enable(this.context.SCISSOR_TEST);
+    this.context.scissor(offset.x, rendererSize.height - offset.y - size.height, size.width, size.height);
 
     // If a background is established, we should clear the background color
     // Specified for this context
     if (view.background) {
-      // Get the current clear color in use
-      const clearColor = this.context.getParameter(this.context.COLOR_CLEAR_VALUE);
-      // Turn on the scissor test to keep the rendering clipped within the
-      // Render region of the context
-      this.context.enable(this.context.SCISSOR_TEST);
-      // Set the scissor rectangle.
-      this.context.scissor(offset.x, rendererSize.height - offset.y - size.height, size.width, size.height);
       // Clear the rect of color and depth so the region is totally it's own
       this.context.clearColor(background[0], background[1], background[2], background[3]);
+    }
+
+    // Get the view's clearing preferences
+    if (view.clearFlags) {
+      this.context.clear(
+        (view.clearFlags.indexOf(ClearFlags.COLOR) > -1 ? this.context.COLOR_BUFFER_BIT : 0x0) |
+        (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1 ? this.context.DEPTH_BUFFER_BIT : 0x0) |
+        (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1 ? this.context.STENCIL_BUFFER_BIT : 0x0),
+      );
+    }
+
+    // Default clearing is depth and color
+    else {
       this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
-      // Turn off the scissor test so you can render like normal again.
-      this.context.disable(this.context.SCISSOR_TEST);
-      // Reset the clear color
-      this.context.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     }
 
     // Only if the viewport is different from last viewport should we attempt a viewport state
@@ -214,10 +246,7 @@ export class LayerSurface {
       };
     }
 
-    // TODO: Clearing for a layer should be a very controlled action based on the layer
-    (view.viewCamera as Three.OrthographicCamera).updateProjectionMatrix();
-    this.renderer.setFaceCulling(Three.CullFaceNone);
-    this.renderer.clear(true, true, true);
+    // Render the scene with the provided view metrics
     this.renderer.render(scene, view.viewCamera);
   }
 
@@ -225,6 +254,11 @@ export class LayerSurface {
    * This initializes the Canvas GL contexts needed for rendering.
    */
   private initGL(options: ILayerSurfaceOptions) {
+    if (!this.context) {
+      console.error('Can not initialize Layer Surface as a valid GL context was not established.');
+      return;
+    }
+
     // Get the canvas of our context to set up our Three settings
     const canvas = this.context.canvas;
     // Get the starting width and height so adjustments don't affect it
@@ -242,11 +276,13 @@ export class LayerSurface {
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: true,
     });
 
     // We want clearing to be controlled via the layer
     this.renderer.autoClear = false;
+    // Charts don't really have face culling. Just 2D shapes
+    this.renderer.setFaceCulling(Three.CullFaceNone);
 
     // This sets the pixel ratio to handle differing pixel densities in screens
     // This.renderer.setPixelRatio(window.devicePixelRatio);
@@ -272,8 +308,22 @@ export class LayerSurface {
 
     // Once we have made our renderer we now make us a default scene to which we can add objects
     this.defaultSceneElements = generateDefaultScene(this.context);
+    this.defaultSceneElements.view.background = options.background;
     // Set the default scene
     this.scenes.set(this.defaultSceneElements.scene.id, this.defaultSceneElements.scene);
+    // Make a scene view depth tracker so we can track the order each scene view combo is drawn
+    let sceneViewDepth = 0;
+
+    // Make a SceneView for the default scene and view for mouse interactions
+    this.sceneViews.push({
+      depth: ++sceneViewDepth,
+      scene: this.defaultSceneElements.scene,
+      view: this.defaultSceneElements.view,
+    });
+
+    // Turn on the scissor test to keep the rendering clipped within the
+    // Render region of the context
+    this.context.enable(this.context.SCISSOR_TEST);
 
     // Add the requested scenes to the surface and apply the necessary defaults
     if (options.scenes) {
@@ -281,7 +331,16 @@ export class LayerSurface {
         // Make us a new scene based on the requested options
         const newScene = new Scene(sceneOptions);
         // Make sure the default view is available for each scene
-        newScene.addView(this.defaultSceneElements.view);
+        // IFF no view is provided for the scene
+        if (sceneOptions.views.length === 0) {
+          newScene.addView(this.defaultSceneElements.view);
+
+          this.sceneViews.push({
+            depth: ++sceneViewDepth,
+            scene: newScene,
+            view: this.defaultSceneElements.view,
+          });
+        }
 
         // Generate the views requested for the scene
         sceneOptions.views.forEach(viewOptions => {
@@ -290,6 +349,12 @@ export class LayerSurface {
           newView.viewCamera = newView.viewCamera || this.defaultSceneElements.viewCamera;
           newView.viewport = newView.viewport || this.defaultSceneElements.viewport;
           newScene.addView(newView);
+
+          this.sceneViews.push({
+            depth: ++sceneViewDepth,
+            scene: newScene,
+            view: newView,
+          });
         });
 
         this.scenes.set(sceneOptions.key, newScene);
@@ -339,6 +404,13 @@ export class LayerSurface {
   }
 
   /**
+   * Initializes elements for handling mouse interactions with the canvas.
+   */
+  private initMouseManager(options: ILayerSurfaceOptions) {
+    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, options.eventManagers || []);
+  }
+
+  /**
    * This finds the scene and view the layer belongs to based on the layer's props. For invalid or not provided
    * props, the layer gets added to default scenes and views.
    */
@@ -384,11 +456,29 @@ export class LayerSurface {
   /**
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
-  render() {
-    // TODO: Kind of a clunky interface of sorts
-    //       This will resolve all layer difference after all calls to createLayer have happened
-    //       We should figure out how to make the createLayer calls as parameters to the render method
-    //       Somehow.
+  render<T extends Instance>(layerInitializers: LayerInitializer<T>[]) {
+    // Loop through all of the initializers and properly add and remove layers as needed
+    if (layerInitializers && layerInitializers.length > 0) {
+      layerInitializers.forEach(init => {
+        const layerClass = init[0];
+        const props = init[1];
+        const existingLayer = this.layers.get(props.key);
+
+        if (existingLayer) {
+          existingLayer.willUpdateProps(props);
+          Object.assign(existingLayer.props, props);
+          existingLayer.didUpdateProps();
+
+          return;
+        }
+
+        else {
+          this.addLayer(new layerClass(Object.assign(props, layerClass.defaultProps)));
+        }
+      });
+    }
+
+    // Take any layer that retained it's disposal flag and trash it
     this.willDisposeLayer.forEach((dispose, layerId) => {
       if (dispose) {
         this.removeLayer(this.layers.get(layerId));

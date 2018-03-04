@@ -1,9 +1,13 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
+import { BasicCameraController, LogController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/layer-surface';
+import { ClearFlags } from '../src/voidgl/surface/view';
+import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { DataProvider } from '../src/voidgl/util/data-provider';
+import { ReferenceCamera } from '../src/voidgl/util/reference-camera';
 
 /**
  * The state of the application
@@ -56,7 +60,7 @@ export class Main extends React.Component<any, IMainState> {
     let generate = false;
     this.context = canvas;
 
-    if (this.surface && this.context !== this.surface.context.canvas) {
+    if (this.surface && this.context !== this.surface.gl.canvas) {
       this.surface.destroy();
       generate = true;
     }
@@ -65,11 +69,56 @@ export class Main extends React.Component<any, IMainState> {
       generate = true;
     }
 
+    const mainCamera = new ChartCamera();
+
     if (generate) {
       this.surface = new LayerSurface({
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,
-        scenes: [],
+        eventManagers: [
+          new BasicCameraController({
+            camera: mainCamera,
+          }),
+        ],
+        scenes: [
+          {
+            key: 'small-panel',
+            views: [
+              {
+                background: [1.0, 1.0, 1.0, 1.0],
+                camera: mainCamera,
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+                key: 'test-view',
+                viewport: {
+                  bottom: 0,
+                  right: 0,
+                  top: 0,
+                  width: 200,
+                },
+              },
+            ],
+          },
+          {
+            key: 'small-panel-2',
+            views: [
+              {
+                background: [1.0, 1.0, 1.0, 1.0],
+                camera: new ReferenceCamera({
+                  base: mainCamera,
+                  offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
+                }),
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+                key: 'test-view2',
+                viewport: {
+                  bottom: 0,
+                  left: 0,
+                  top: '50%',
+                  width: '50%',
+                },
+              },
+            ],
+          },
+        ],
       });
 
       this.willAnimate = 10;
@@ -105,35 +154,49 @@ export class Main extends React.Component<any, IMainState> {
 
     if (this.surface) {
       const data = new DataProvider<CircleInstance>([]);
-      createLayer(this.surface, CircleLayer, {
-        data,
-        depth: 0,
-        key: 'circle-layer',
-      });
+      const data2 = new DataProvider<CircleInstance>([]);
 
-      this.surface.render();
+      this.surface.render([
+        createLayer(CircleLayer, {
+          data,
+          depth: 0,
+          key: 'circle-layer',
+          scene: 'small-panel',
+        }),
+        createLayer(CircleLayer, {
+          data: data2,
+          depth: 1,
+          key: 'circle-layer-2',
+          scene: 'small-panel-2',
+        }),
+      ]);
 
       setTimeout(() => {
-        for (let i = 0; i < 500; ++i) {
-          for (let k = 0; k < 200; ++k) {
-            const circle = new CircleInstance({
+        for (let i = 0; i < 100; ++i) {
+          for (let k = 0; k < 100; ++k) {
+            let circle = new CircleInstance({
               color: [1.0, 0.0, 0.0, 1.0],
               depth: 0,
               id: `circle${i * 20 + k}`,
               radius: 5,
-              x: i * 5,
-              y: k * 5,
+              x: i * 10,
+              y: k * 10,
             });
 
             data.instances.push(circle);
+
+            circle = new CircleInstance({
+              color: [1.0, 0.0, 0.0, 1.0],
+              depth: 0,
+              id: `circle${i * 20 + k}`,
+              radius: 5,
+              x: i * 10,
+              y: k * 10,
+            });
+
+            data2.instances.push(circle);
           }
         }
-
-        setInterval(() => {
-          for (let i = 0; i < 50000; ++i) {
-            data.instances[Math.floor(data.instances.length * Math.random())].x += 2;
-          }
-        }, 1000 / 60);
       });
     }
 

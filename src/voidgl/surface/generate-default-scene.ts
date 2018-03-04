@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { Bounds } from '../primitives/bounds';
+import { AbsolutePosition } from '../primitives/absolute-position';
 import { ChartCamera } from '../util/chart-camera';
 import { Scene } from './scene';
 import { View } from './view';
@@ -17,7 +17,7 @@ export interface IDefaultSceneElements {
    */
   viewCamera: Three.Camera;
   /** The default viewport that encompasses the entire canvas */
-  viewport: Bounds;
+  viewport: AbsolutePosition;
 }
 
 /**
@@ -69,12 +69,12 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
   const defaultChartCamera: ChartCamera = new ChartCamera();
 
   // This is a viewport that covers the entire context
-  const defaultViewport = new Bounds({
-    bottom: context.canvas.height,
+  const defaultViewport = {
+    bottom: 0,
     left: 0,
-    right: context.canvas.width,
+    right: 0,
     top: 0,
-  });
+  };
 
   // Make a view using our defaults
   const defaultView = new View({

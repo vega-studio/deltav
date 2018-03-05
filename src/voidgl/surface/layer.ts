@@ -157,7 +157,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     // After associating the layer with the view it is a part of.
     super(props);
     // Keep our props within the layer
-    this.props = Object.assign({}, props as U, Layer.defaultProps || {});
+    this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
   }
 
   private update(instance: T, uniformCluster: IUniformInstanceCluster) {
@@ -183,6 +183,10 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    */
   destroy() {
     /** TODO: no-op for now */
+  }
+
+  didUpdateProps() {
+    /** LIFECYCLE */
   }
 
   /**
@@ -251,8 +255,13 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     };
   }
 
-  didUpdateProps() {
-    /** LIFECYCLE */
+  requestTextureResource() {
+
+  }
+
+  willUpdateInstances(changes: [T, DiffType]) {
+    // HOOK: Simple hook so a class can review all of it's changed instances before
+    //       Getting applied to the Shader IO
   }
 
   willUpdateProps(newProps: ILayerProps<T>) {

@@ -13,7 +13,7 @@ export interface IBasicCameraControllerOptions {
    * This is the view that MUST be the start view from the events.
    * If not provided, then dragging anywhere will adjust the camera
    */
-  startView?: string;
+  startView?: string | string[];
 }
 
 export class BasicCameraController extends EventManager {
@@ -22,24 +22,24 @@ export class BasicCameraController extends EventManager {
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
-  startView: string;
+  startViews: string[];
 
   constructor(options: IBasicCameraControllerOptions) {
     super();
     this.camera = options.camera;
     this.scaleFactor = options.scaleFactor || 1000.0;
-    this.startView = options.startView;
+    this.startViews = Array.isArray(options.startView) ? options.startView : [options.startView];
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    if (!this.startView || (this.startView && e.start.view.id === this.startView)) {
+    if (this.canStart(e.start.view.id)) {
       this.camera.offset[0] += drag.screen.delta.x / this.camera.scale[0];
       this.camera.offset[1] += drag.screen.delta.y / this.camera.scale[1];
     }
   }
 
   handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
-    if (!this.startView || (this.startView && e.target.view.id === this.startView)) {
+    if (this.canStart(e.target.view.id)) {
       const beforeZoom = e.target.view.screenToWorld(e.screen.mouse);
 
       const currentZoomX = this.camera.scale[0] || 1.0;
@@ -53,5 +53,13 @@ export class BasicCameraController extends EventManager {
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
       this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
     }
+  }
+
+  canStart(viewId: string) {
+    return (
+      !this.startViews ||
+      this.startViews.length === 0 ||
+      (this.startViews && this.startViews.indexOf(viewId) > -1)
+    );
   }
 }

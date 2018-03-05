@@ -83,7 +83,7 @@ export class Main extends React.Component<any, IMainState> {
           }),
           new BasicCameraController({
             camera: panelCamera,
-            startView: 'test-view2',
+            startView: ['test-view', 'test-view2'],
           }),
         ],
         handlesWheelEvents: true,

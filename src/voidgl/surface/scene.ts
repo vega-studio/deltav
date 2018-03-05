@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { Layer } from '../layer';
+import { Layer } from '../surface/layer';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { IViewOptions, View } from './view';
 

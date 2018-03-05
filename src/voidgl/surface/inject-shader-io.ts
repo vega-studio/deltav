@@ -1,4 +1,4 @@
-import { IShaderInitialization, Layer } from '../layer';
+import { IShaderInitialization, Layer } from '../surface/layer';
 import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize, VertexAttributeSize } from '../types';
 import { Instance } from '../util/instance';
 
@@ -59,13 +59,13 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
     {
       name: 'projection',
       size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.projectionMatrix.elements,
+      update: () => layer.view.viewCamera.baseCamera.projectionMatrix.elements,
     },
     // This injects the model view matrix from the view camera
     {
       name: 'modelView',
       size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.matrix.elements,
+      update: () => layer.view.viewCamera.baseCamera.matrix.elements,
     },
     // This injects the camera offset uniforms that need to be present for projecting in a more
     // Chart centric style

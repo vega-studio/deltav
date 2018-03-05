@@ -6,6 +6,7 @@ import { Color } from '../types';
 import { ChartCamera } from '../util/chart-camera';
 import { DataBounds } from '../util/data-bounds';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
+import { ViewCamera, ViewCameraType } from '../util/view-camera';
 
 export enum ClearFlags {
   COLOR = 0b0001,
@@ -44,7 +45,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If this is NOT provided, the camera will be a special orthographic camera for 2d spaces
    * with a y-axis of +y points down with (0, 0) at the top left of the viewport.
    */
-  viewCamera?: Three.Camera;
+  viewCamera?: ViewCamera;
   /**
    * This specifies the bounds on the canvas this camera will render to. This let's you render
    * say a little square in the bottom right showing a minimap.
@@ -76,7 +77,7 @@ export class View extends IdentifyByKey {
    */
   depth: number = 0;
   /** Camera that defines the view projection matrix */
-  viewCamera: Three.Camera;
+  viewCamera: ViewCamera;
   /** The size positioning of the view */
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
@@ -106,19 +107,63 @@ export class View extends IdentifyByKey {
   }
 
   screenToWorld(point: IPoint, out?: IPoint) {
+    const view = this.screenToView(point);
+    const world = out || {x: 0, y: 0};
+    world.x = (view.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
+    world.y = (view.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
 
+    // If this is a custom camera, we must actually project our world point to the screen
+    if (this.viewCamera.type === ViewCameraType.CUSTOM) {
+      console.warn('Custom View Camera projections not supported yet');
+    }
+
+    return world;
   }
 
   worldToScreen(point: IPoint, out?: IPoint) {
+    let screen = out || {x: 0, y: 0};
 
+    // Calculate from the camera to view space
+    screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
+    screen.y = (point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1]);
+
+    // If this is a custom camera, we must actually project our world point to the screen
+    if (this.viewCamera.type === ViewCameraType.CUSTOM) {
+      console.warn('Custom View Camera projections not supported yet');
+    }
+
+    // Convert from view to screen space
+    screen = this.viewToScreen(screen);
+
+    return screen;
   }
 
   viewToWorld(point: IPoint, out?: IPoint) {
+    const world = out || {x: 0, y: 0};
+    world.x = (point.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
+    world.y = (point.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
 
+    // If this is a custom camera, we must actually project our world point to the screen
+    if (this.viewCamera.type === ViewCameraType.CUSTOM) {
+      console.warn('Custom View Camera projections not supported yet');
+    }
+
+    return world;
   }
 
   worldToView(point: IPoint, out?: IPoint) {
+    const screen = out || {x: 0, y: 0};
 
+    // Calculate from the camera to view space
+    screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
+    screen.y = (point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1]);
+
+    // If this is a custom camera, we must actually project our world point to the screen
+    if (this.viewCamera.type === ViewCameraType.CUSTOM) {
+      console.warn('Custom View Camera projections not supported yet');
+    }
+
+    return screen;
   }
 
   /**
@@ -127,7 +172,7 @@ export class View extends IdentifyByKey {
    * top left as 0,0 with +y axis pointing down.
    */
   fitViewtoViewport(surfaceDimensions: Bounds) {
-    if (isOrthographic(this.viewCamera)) {
+    if (this.viewCamera.type === ViewCameraType.CONTROLLED && isOrthographic(this.viewCamera.baseCamera)) {
       const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions);
       const width = viewBounds.width;
       const height = viewBounds.height;
@@ -143,18 +188,19 @@ export class View extends IdentifyByKey {
 
       const scaleX = surfaceDimensions.width / viewBounds.width;
       const scaleY = surfaceDimensions.height / viewBounds.height;
+      const camera = this.viewCamera.baseCamera;
 
       Object.assign(this.viewCamera, viewport);
-      this.viewCamera.position.set(-viewBounds.width / 2.0 * scaleX, viewBounds.height / 2.0 * scaleY, this.viewCamera.position.z);
-      this.viewCamera.scale.set(scaleX, -scaleY, 1.0);
-      this.viewCamera.updateMatrix();
-      this.viewCamera.updateMatrixWorld(true);
+      camera.position.set(-viewBounds.width / 2.0 * scaleX, viewBounds.height / 2.0 * scaleY, camera.position.z);
+      camera.scale.set(scaleX, -scaleY, 1.0);
+      camera.updateMatrix();
+      camera.updateMatrixWorld(true);
 
       this.viewBounds = viewBounds;
       this.viewBounds.data = this;
     }
 
-    else {
+    else if (!isOrthographic(this.viewCamera.baseCamera)) {
       console.warn('Fit to viewport does not support non-orthographic cameras as a default behavior.');
     }
   }

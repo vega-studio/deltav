@@ -1,6 +1,6 @@
 import { IPoint } from '../primitives/point';
 import { DataBounds } from '../util/data-bounds';
-import { eventElementPosition } from '../util/mouse';
+import { eventElementPosition, normalizeWheel } from '../util/mouse';
 import { QuadTree } from '../util/quad-tree';
 import { EventManager } from './event-manager';
 import { Scene } from './scene';
@@ -65,7 +65,7 @@ export interface IDragMetrics {
 }
 
 export interface IWheelMetrics {
-
+  wheel: [number, number];
 }
 
 function sortByDepth(a: DataBounds<SceneView>, b: DataBounds<SceneView>) {
@@ -288,7 +288,11 @@ export class MouseEventManager {
   }
 
   makeWheel(event: MouseWheelEvent): IWheelMetrics {
-    return;
+    const wheel = normalizeWheel(event);
+
+    return {
+      wheel: [wheel.x, wheel.y],
+    };
   }
 
   /**

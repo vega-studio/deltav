@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
-import { BasicCameraController, LogController } from '../src/voidgl/base-event-managers';
+import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
-import { createLayer, LayerSurface } from '../src/voidgl/layer-surface';
+import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { DataProvider } from '../src/voidgl/util/data-provider';
@@ -86,6 +86,7 @@ export class Main extends React.Component<any, IMainState> {
             startView: 'test-view2',
           }),
         ],
+        handlesWheelEvents: true,
         scenes: [
           {
             key: 'default',
@@ -102,7 +103,7 @@ export class Main extends React.Component<any, IMainState> {
               {
                 background: [1.0, 1.0, 1.0, 1.0],
                 camera: panelCamera,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+                clearFlags: [ClearFlags.DEPTH],
                 key: 'test-view',
                 viewport: {
                   bottom: 0,
@@ -121,6 +122,7 @@ export class Main extends React.Component<any, IMainState> {
                 camera: new ReferenceCamera({
                   base: panelCamera,
                   offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
+                  scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
                 }),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 key: 'test-view2',

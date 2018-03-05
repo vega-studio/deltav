@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../layer';
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { CircleInstance } from './circle-instance';
 

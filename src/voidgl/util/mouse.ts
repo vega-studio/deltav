@@ -27,8 +27,8 @@ const LOW_PASS_U1 = 0.2;
 const LOW_PASS_U2 = 0.2;
 const LOW_PASS_U3 = 0.5;
 
-function normalizeFirefoxWheel(e: React.WheelEvent<HTMLDivElement>) {
-  const wheel: WheelEvent = e.nativeEvent as WheelEvent;
+function normalizeFirefoxWheel(e: MouseWheelEvent) {
+  const wheel: WheelEvent = e;
   let deltaX = 0;
   let deltaY = 0;
 
@@ -49,14 +49,14 @@ function normalizeFirefoxWheel(e: React.WheelEvent<HTMLDivElement>) {
   return new Vector2(-deltaX, -deltaY);
 }
 
-function normalizeChromeWheel(e: React.WheelEvent<HTMLDivElement>) {
-  const wheel: WheelEvent = e.nativeEvent as WheelEvent;
+function normalizeChromeWheel(e: MouseWheelEvent) {
+  const wheel: WheelEvent = e;
 
   return new Vector2(wheel.deltaX, -wheel.deltaY);
 }
 
-function normalizeIE11Wheel(e: React.WheelEvent<HTMLDivElement>) {
-  const wheel: WheelEvent = e.nativeEvent as WheelEvent;
+function normalizeIE11Wheel(e: MouseWheelEvent) {
+  const wheel: WheelEvent = e;
   let deltaX = wheel.deltaX;
 
   if (deltaX === undefined) {
@@ -78,8 +78,8 @@ function normalizeIE11Wheel(e: React.WheelEvent<HTMLDivElement>) {
   return new Vector2(-deltaX, -deltaY);
 }
 
-function normalizeIE12Wheel(e: React.WheelEvent<HTMLDivElement>) {
-  const wheel: WheelEvent = e.nativeEvent as WheelEvent;
+function normalizeIE12Wheel(e: MouseWheelEvent) {
+  const wheel: WheelEvent = e;
   let {deltaX, deltaY} = wheel;
 
   if (deltaX === undefined) {
@@ -103,7 +103,7 @@ function normalizeIE12Wheel(e: React.WheelEvent<HTMLDivElement>) {
 }
 
 // Determine this browsers version of wheel normalization and apply it
-let normalizeWheel: (e: React.WheelEvent<HTMLDivElement>) => Vector2;
+let normalizeWheel: (e: MouseWheelEvent) => Vector2;
 
 if (browser.firefox) {
   debug('Using mouse wheel for firefox');

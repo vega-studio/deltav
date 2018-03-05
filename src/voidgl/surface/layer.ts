@@ -1,11 +1,11 @@
 import * as Three from 'three';
-import { EventManager } from './surface/event-manager';
-import { View } from './surface/view';
-import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from './types';
-import { DataProvider, DiffType } from './util/data-provider';
-import { IdentifyByKey, IdentifyByKeyOptions } from './util/identify-by-key';
-import { Instance } from './util/instance';
-import { InstanceUniformManager, IUniformInstanceCluster } from './util/instance-uniform-manager';
+import { EventManager } from '../surface/event-manager';
+import { View } from '../surface/view';
+import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from '../types';
+import { DataProvider, DiffType } from '../util/data-provider';
+import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
+import { Instance } from '../util/instance';
+import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 
 export interface IShaderInputs<T> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */

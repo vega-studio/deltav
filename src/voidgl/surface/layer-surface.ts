@@ -1,20 +1,20 @@
 import * as Three from 'three';
+import { Bounds } from '../primitives/bounds';
+import { Box } from '../primitives/box';
+import { injectFragments } from '../shaders/util/attribute-generation';
+import { EventManager } from '../surface/event-manager';
+import { generateDefaultScene, IDefaultSceneElements } from '../surface/generate-default-scene';
+import { generateLayerGeometry } from '../surface/generate-layer-geometry';
+import { generateLayerMaterial } from '../surface/generate-layer-material';
+import { generateLayerModel } from '../surface/generate-layer-model';
+import { injectShaderIO } from '../surface/inject-shader-io';
+import { MouseEventManager, SceneView } from '../surface/mouse-event-manager';
+import { ISceneOptions, Scene } from '../surface/scene';
+import { ClearFlags, View } from '../surface/view';
+import { DataBounds } from '../util/data-bounds';
+import { Instance } from '../util/instance';
+import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { ILayerProps, Layer } from './layer';
-import { Bounds } from './primitives/bounds';
-import { Box } from './primitives/box';
-import { injectFragments } from './shaders/util/attribute-generation';
-import { EventManager } from './surface/event-manager';
-import { generateDefaultScene, IDefaultSceneElements } from './surface/generate-default-scene';
-import { generateLayerGeometry } from './surface/generate-layer-geometry';
-import { generateLayerMaterial } from './surface/generate-layer-material';
-import { generateLayerModel } from './surface/generate-layer-model';
-import { injectShaderIO } from './surface/inject-shader-io';
-import { MouseEventManager, SceneView } from './surface/mouse-event-manager';
-import { ISceneOptions, Scene } from './surface/scene';
-import { ClearFlags, View } from './surface/view';
-import { DataBounds } from './util/data-bounds';
-import { Instance } from './util/instance';
-import { InstanceUniformManager } from './util/instance-uniform-manager';
 
 export interface ILayerSurfaceOptions {
   /**
@@ -30,6 +30,10 @@ export interface ILayerSurfaceOptions {
    * This is the event managers to respond to the mouse events.
    */
   eventManagers?: EventManager[];
+  /**
+   * Set to true to allow this surface to absorb and handle wheel events from the mouse.
+   */
+  handlesWheelEvents?: boolean;
   /**
    * This sets up the available scenes the surface will have to work with. Layers then can
    * reference the scene by it's scene property. The order of the scenes here is the drawing
@@ -137,7 +141,6 @@ export class LayerSurface {
   }
 
   destroy() {
-    // TODO: Must have proper destroy methods
     this.mouseManager.destroy();
   }
 
@@ -247,7 +250,7 @@ export class LayerSurface {
     }
 
     // Render the scene with the provided view metrics
-    this.renderer.render(scene, view.viewCamera);
+    this.renderer.render(scene, view.viewCamera.baseCamera);
   }
 
   /**
@@ -407,7 +410,7 @@ export class LayerSurface {
    * Initializes elements for handling mouse interactions with the canvas.
    */
   private initMouseManager(options: ILayerSurfaceOptions) {
-    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, options.eventManagers || []);
+    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, options.eventManagers || [], options.handlesWheelEvents);
   }
 
   /**

@@ -58,6 +58,11 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
           size: UniformSize.ONE,
           update: (u: IUniform) => [1],
         },
+        {
+          name: 'atlas',
+          size: UniformSize.ONE,
+          update: (u: IUniform) => [1],
+        },
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.

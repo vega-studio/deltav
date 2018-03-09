@@ -86,6 +86,7 @@ export class WebGLStat {
   static MAX_FRAGMENT_UNIFORMS = 0;
   static MAX_ATTRIBUTES = 0;
   static WEBGL_SUPPORTED: boolean = false;
+  static MAX_TEXTURE_SIZE = 0;
 }
 
 function initStats() {
@@ -112,6 +113,7 @@ function initStats() {
     WebGLStat.MAX_VERTEX_UNIFORMS = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     WebGLStat.MAX_FRAGMENT_UNIFORMS = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
     WebGLStat.MAX_ATTRIBUTES = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+    WebGLStat.MAX_TEXTURE_SIZE = gl.getParameter(gl.MAX_TEXTURE_SIZE);
   }
 }
 

@@ -49,7 +49,7 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
     );
   }
 
-  const bounds = Bounds.emptyBounds();
+  const bounds = DataBounds.emptyBounds<T>();
   let width;
   let height;
 

@@ -6,6 +6,7 @@ import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
+import { AtlasResource } from './texture';
 
 export interface IShaderInputs<T> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -255,7 +256,11 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     };
   }
 
-  requestTextureResource() {
+  /**
+   * This performs a request for a resource that gets loaded to an atlas. When this happens, the instances
+   * requesting the resource will be put in an inactive state until the resource is available.
+   */
+  requestTextureResource(request: AtlasResource, forInstances: T[]) {
 
   }
 

@@ -6,8 +6,8 @@ import { SubTexture } from './sub-texture';
  * texture it represents
  */
 export interface ImageDimensions {
-  first: SubTexture
-  second: Bounds<never>
+  first: SubTexture;
+  second: Bounds;
 }
 
 /**

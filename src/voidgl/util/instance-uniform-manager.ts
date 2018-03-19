@@ -1,7 +1,8 @@
 import * as Three from 'three';
-import { Layer } from '../layer';
 import { generateLayerModel } from '../surface/generate-layer-model';
+import { Layer } from '../surface/layer';
 import { Scene } from '../surface/scene';
+import { IInstanceAttribute } from '../types';
 import { Instance } from './instance';
 import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
 
@@ -71,7 +72,7 @@ export class InstanceUniformManager<T extends Instance> {
     this.layer = layer;
 
     let maxUniformBlock: number = 0;
-    layer.instanceAttributes.forEach(attributes => {
+    layer.instanceAttributes.forEach((attributes: IInstanceAttribute<T>) => {
       maxUniformBlock = Math.max(attributes.block, maxUniformBlock);
     });
 

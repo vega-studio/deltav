@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { ILayerProps, Layer } from './layer';
+import { ILayerProps, Layer } from './surface/layer';
 import { Instance } from './util/instance';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];

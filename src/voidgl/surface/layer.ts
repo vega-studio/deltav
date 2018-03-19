@@ -1,12 +1,10 @@
 import * as Three from 'three';
-import { EventManager } from '../surface/event-manager';
 import { View } from '../surface/view';
 import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from '../types';
 import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
-import { AtlasResource } from './texture';
 
 export interface IShaderInputs<T> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -34,8 +32,6 @@ export interface IModelType {
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
   data: DataProvider<T>;
-  /** This helps dictate the order of the layer */
-  depth: number;
   /**
    * This identifies the scene we want the layer to be a part of.
    * Layer's with the same identifiers will render their buffers in the same scene.
@@ -247,21 +243,13 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    */
   initShader(): IShaderInitialization<T> {
     return {
-      fs: require('./shaders/base/no-op.fs'),
+      fs: require('../shaders/base/no-op.fs'),
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: require('./shaders/base/no-op.vs'),
+      vs: require('../shaders/base/no-op.vs'),
     };
-  }
-
-  /**
-   * This performs a request for a resource that gets loaded to an atlas. When this happens, the instances
-   * requesting the resource will be put in an inactive state until the resource is available.
-   */
-  requestTextureResource(request: AtlasResource, forInstances: T[]) {
-
   }
 
   willUpdateInstances(changes: [T, DiffType]) {

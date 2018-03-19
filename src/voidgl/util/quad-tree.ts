@@ -21,6 +21,7 @@ export interface IQuadItem {
 
   containsPoint(point: IPoint): boolean;
   encapsulate(item: IQuadItem): boolean;
+  fits(item: IQuadItem): 0 | 1 | 2;
   hitBounds(item: IQuadItem): boolean;
   isInside(item: IQuadItem): boolean;
 }
@@ -247,7 +248,7 @@ export class Node<T extends IQuadItem> {
    *
    * @memberOf Node
    */
-  cover(bounds: Bounds) {
+  cover(bounds: IQuadItem) {
     // If we are already covering the area: abort
     if (bounds.isInside(this.bounds)) {
       return;

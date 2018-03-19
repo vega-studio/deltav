@@ -7,12 +7,8 @@ import { IPoint } from '../../primitives/point';
 export class SubTexture {
   /** Stores the aspect ratio of the image for quick reference */
   aspectRatio: number = 1.0;
-  /** Width in pixels of the image on the atlas */
-  pixelWidth: number;
-  /** Height in pixels of the image on the atlas */
-  pixelHeight: number;
   /** The id of the atlas this texture is located on */
-  atlasReferenceID: [string, number];
+  atlasReferenceID: string;
   /** This is the actual texture of the atlas this resource is located on */
   atlasTexture: Three.Texture;
   /** This is the top left UV coordinate of the sub texture on the atlas */
@@ -23,4 +19,10 @@ export class SubTexture {
   atlasBL: IPoint;
   /** This is the bottom right UV coordinate of the sub texture on the atlas */
   atlasBR: IPoint;
+  /** This flag is set to false when the underlying texture is no longer valid */
+  isValid: boolean;
+  /** Width in pixels of the image on the atlas */
+  pixelWidth: number;
+  /** Height in pixels of the image on the atlas */
+  pixelHeight: number;
 }

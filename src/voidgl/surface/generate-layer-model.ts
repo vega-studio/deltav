@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { IModelConstructable, Layer } from '../layer';
+import { IModelConstructable, Layer } from './layer';
 
 function isMesh(val: any): val is Three.Mesh {
   return Boolean(val.isMesh);

@@ -15,10 +15,17 @@ import { DataBounds } from '../util/data-bounds';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { ILayerProps, Layer } from './layer';
+import { AtlasManager } from './texture';
+import { IAtlasOptions } from './texture/atlas';
 
 export interface ILayerSurfaceOptions {
   /**
-   * This is the color of the
+   * These are the atlas resources we want available that our layers can be provided to utilize
+   * for their internal processes.
+   */
+  atlasResources?: IAtlasOptions[];
+  /**
+   * This is the color the canvas will be set to.
    */
   background: [number, number, number, number];
   /**
@@ -75,6 +82,8 @@ export function createLayer<T extends Instance>(layerClass: ILayerConstructable<
  * surface will provide some basic camera controls by default.
  */
 export class LayerSurface {
+  /** This is the atlas manager that will help with modifying and tracking atlas' generated for the layers */
+  private atlasManager: AtlasManager = new AtlasManager();
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
   /** This is the current viewport the renderer state is in */
@@ -112,9 +121,14 @@ export class LayerSurface {
   }
 
   constructor(options: ILayerSurfaceOptions) {
+    // Make sure we have a gl context to work with
     this.setContext(options.context);
+    // Initialize our GL needs that set the basis for rendering
     this.initGL(options);
+    // Initialize our event manager that handles mouse interactions/gestures with the canvas
     this.initMouseManager(options);
+    // Initialize any resources requested or needed, such as textures or rendering surfaces
+    this.initResources(options);
   }
 
   /**
@@ -411,6 +425,17 @@ export class LayerSurface {
    */
   private initMouseManager(options: ILayerSurfaceOptions) {
     this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, options.eventManagers || [], options.handlesWheelEvents);
+  }
+
+  /**
+   * This initializes resources needed or requested such as textures or render surfaces.
+   */
+  private async initResources(options: ILayerSurfaceOptions) {
+    if (options.atlasResources) {
+      for (const resource of options.atlasResources) {
+        await this.atlasManager.createAtlas(resource);
+      }
+    }
   }
 
   /**

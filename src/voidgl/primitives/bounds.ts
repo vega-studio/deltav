@@ -90,10 +90,20 @@ export class Bounds {
     this.width = options.width || (this.bottom - this.y) || 0;
   }
 
+  /**
+   * Checks to see if a point is within this bounds object.
+   *
+   * @param point
+   */
   containsPoint(point: IPoint) {
     return !(point.x < this.x || point.y < this.y || point.x > this.right || point.y > this.bottom);
   }
 
+  /**
+   * Grows this bounds object to cover the space of the provided bounds object
+   *
+   * @param bounds
+   */
   encapsulate(bounds: Bounds) {
     this.x = Math.min(this.x, bounds.x);
     this.y = Math.min(this.y, bounds.y);
@@ -109,14 +119,51 @@ export class Bounds {
     return true;
   }
 
+  /**
+   * Checks to see if the provided bounds object could fit within the dimensions of this bounds object
+   * This ignores position and just checks width and height.
+   *
+   * @param bounds
+   *
+   * @return {number} 0 if it doesn't fit. 1 if it fits perfectly. 2 if it just fits.
+   */
+  fits(bounds: Bounds): 0 | 1 | 2 {
+    // If the same, the bounds fits exactly into this bounds
+    if (this.width === bounds.width && this.height === bounds.height) {
+      return 1;
+    }
+
+    // The bounds can fit within this, then it just fits
+    if (this.width > bounds.width && this.height > bounds.height) {
+      return 2;
+    }
+
+    // Otherwise, the bounds does not fit within this bounds
+    return 0;
+  }
+
+  /**
+   * Checks if a bounds object intersects another bounds object.
+   *
+   * @param bounds
+   */
   hitBounds(bounds: Bounds) {
     return !(this.right < bounds.x || this.x > bounds.right || this.bottom < bounds.y || this.y > bounds.height);
   }
 
+  /**
+   * Sees if the provided bounds is completely within this bounds object. Unlike fits() this takes
+   * position into account.
+   *
+   * @param bounds
+   */
   isInside(bounds: Bounds): boolean {
     return this.x >= bounds.x && this.right <= bounds.right && this.y >= bounds.y && this.bottom <= bounds.bottom;
   }
 
+  /**
+   * Easy readout of this Bounds object.
+   */
   toString() {
     return `{x: ${this.x} y:${this.y} w:${this.width} h:${this.height}}`;
   }

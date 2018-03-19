@@ -4,6 +4,7 @@ import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
+import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { DataProvider } from '../src/voidgl/util/data-provider';
@@ -74,6 +75,13 @@ export class Main extends React.Component<any, IMainState> {
 
     if (generate) {
       this.surface = new LayerSurface({
+        atlasResources: [
+          {
+            height: AtlasSize._2048,
+            key: 'all-resources',
+            width: AtlasSize._1024,
+          },
+        ],
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,
         eventManagers: [
@@ -177,19 +185,16 @@ export class Main extends React.Component<any, IMainState> {
       this.surface.render([
         createLayer(CircleLayer, {
           data,
-          depth: 0,
           key: 'circle-layer-0',
           scene: 'default',
         }),
         createLayer(CircleLayer, {
           data: data2,
-          depth: 0,
           key: 'circle-layer',
           scene: 'small-panel',
         }),
         createLayer(CircleLayer, {
           data: data3,
-          depth: 1,
           key: 'circle-layer-2',
           scene: 'small-panel-2',
         }),

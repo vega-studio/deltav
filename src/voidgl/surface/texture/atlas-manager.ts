@@ -17,9 +17,11 @@ const ZERO_IMAGE: SubTexture = {
   atlasTexture: null,
   atlasTL: {x: 0, y: 0},
   atlasTR: {x: 0, y: 0},
+  heightOnAtlas: 0,
   isValid: false,
   pixelHeight: 0,
   pixelWidth: 0,
+  widthOnAtlas: 0,
 };
 
 export type AtlasResource = ColorAtlasResource | LabelAtlasResource | ImageAtlasResource;
@@ -166,6 +168,8 @@ export class AtlasManager {
         texture.atlasBR = {x: atlasDimensions.x + atlasDimensions.width - onePixelX, y: atlasDimensions.y - atlasDimensions.height};
         texture.atlasTL = {x: atlasDimensions.x, y: atlasDimensions.y };
         texture.atlasTR = {x: atlasDimensions.x + atlasDimensions.width - onePixelX, y: atlasDimensions.y};
+        texture.widthOnAtlas = Math.abs(texture.atlasTR.x - texture.atlasTL.x);
+        texture.heightOnAtlas = Math.abs(texture.atlasTR.y - texture.atlasBR.y);
 
         // Now draw the image to the indicated canvas
         canvas.drawImage(loadedImage, insertedNode.nodeDimensions.x, insertedNode.nodeDimensions.y);

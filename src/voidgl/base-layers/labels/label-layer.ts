@@ -1,26 +1,27 @@
 import * as Three from 'three';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { CircleInstance } from './circle-instance';
+import { LabelInstance } from './label-instance';
 
-export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
+export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
+  atlas?: string;
 }
 
-export interface ICircleLayerState {
+export interface ILabelLayerState {
 
 }
 
 /**
- * This layer displays circles and provides as many controls as possible for displaying
+ * This layer displays Labels and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
+export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLayerState> {
   /**
    * Define our shader and it's inputs
    */
-  initShader(): IShaderInitialization<CircleInstance> {
+  initShader(): IShaderInitialization<LabelInstance> {
     return {
-      fs: require('./circle-layer.fs'),
+      fs: require('./label-layer.fs'),
       instanceAttributes: [
         {
           block: 0,
@@ -50,6 +51,13 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
           size: InstanceAttributeSize.FOUR,
           update: (o) => o.color,
         },
+        {
+          block: 2,
+          blockIndex: InstanceBlockIndex.ONE,
+          name: 'label',
+          size: InstanceAttributeSize.ATLAS,
+          update: (o) => undefined,
+        },
       ],
       uniforms: [
         {
@@ -66,17 +74,23 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
           defaults: [0],
           name: 'position',
           size: VertexAttributeSize.THREE,
-          update: (vertex: number) => [0, 0, 0],
+          update: (vertex: number) => [
+            // Normal
+            (vertex % 2 === 0) ? 1 : -1,
+            0,
+            0,
+          ],
         },
       ],
       vertexCount: 1,
-      vs: require('./circle-layer.vs'),
+      vs: require('./label-layer.vs'),
     };
   }
 
   getModelType(): IModelType {
     return {
-      modelType: Three.Points,
+      drawMode: Three.TriangleStripDrawMode,
+      modelType: Three.Mesh,
     };
   }
 

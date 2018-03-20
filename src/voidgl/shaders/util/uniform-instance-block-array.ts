@@ -17,6 +17,8 @@ const sizeToType: {[key: number]: string} = {
   4: 'vec4',
   9: 'mat3',
   16: 'mat4',
+  /** This is the special case for instance attributes that want an atlas resource */
+  99: 'vec4',
 };
 
 export function makeUniformArrayDeclaration(totalBlocks: number) {
@@ -60,7 +62,12 @@ export function makeInstanceDestructuringArray(instanceAttributes: IInstanceAttr
 
   instanceAttributes.forEach(attribute => {
     const block = attribute.block;
+
     if (attribute.size === InstanceAttributeSize.FOUR) {
+      out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block};\n`;
+    }
+
+    else if (attribute.size === InstanceAttributeSize.ATLAS) {
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block};\n`;
     }
 

@@ -5,6 +5,8 @@ import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import { SubTexture } from './texture/sub-texture';
 
 export interface IShaderInputs<T> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -84,6 +86,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   maxInstancesPerBuffer: number;
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
+  /** This is the system provided resource manager that lets a layer request Atlas resources */
+  resource: AtlasResourceManager;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
@@ -99,44 +103,44 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   /**
    * This processes add operations from changes in the instancing data
    */
-  private add = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private addInstance = (instance: T, uniformCluster: IUniformInstanceCluster) => {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
-      this.change(instance, uniformCluster);
+      this.changeInstance(instance, uniformCluster);
     }
 
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
       const uniforms = this.uniformManager.add(instance);
       instance.active = true;
-      this.update(instance, uniforms);
+      this.updateInstance(instance, uniforms);
     }
   }
 
   /**
    * This processes change operations from changes in the instancing data
    */
-  private change = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private changeInstance = (instance: T, uniformCluster: IUniformInstanceCluster) => {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
-      this.update(instance, uniformCluster);
+      this.updateInstance(instance, uniformCluster);
     }
 
     // If we don't have existing uniforms, then we must remove the instance
     else {
-      this.add(instance, uniformCluster);
+      this.addInstance(instance, uniformCluster);
     }
   }
 
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private remove = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private removeInstance = (instance: T, uniformCluster: IUniformInstanceCluster) => {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
       // We do one last update on the instance to update to it's deactivated state
-      this.update(instance, uniformCluster);
+      this.updateInstance(instance, uniformCluster);
       // Unlink the instance from the uniform cluster
       this.uniformManager.remove(instance);
     }
@@ -144,9 +148,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
 
   /** This takes a diff and applies the proper method of change for the diff */
   diffProcessor: {[key: number]: (instance: T, uniformCluster: IUniformInstanceCluster) => void} = {
-    [DiffType.CHANGE]: this.change,
-    [DiffType.INSERT]: this.add,
-    [DiffType.REMOVE]: this.remove,
+    [DiffType.CHANGE]: this.changeInstance,
+    [DiffType.INSERT]: this.addInstance,
+    [DiffType.REMOVE]: this.removeInstance,
   };
 
   constructor(props: ILayerProps<T>) {
@@ -157,7 +161,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
   }
 
-  private update(instance: T, uniformCluster: IUniformInstanceCluster) {
+  private updateInstance(instance: T, uniformCluster: IUniformInstanceCluster) {
     const uniforms: Three.IUniform = uniformCluster.uniform;
     const uniformRangeStart = uniformCluster.uniformRange[0];
     const instanceData: Three.Vector4[] = uniforms.value;
@@ -169,6 +173,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       instanceUniform = this.instanceAttributes[i];
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + instanceUniform.block];
+      this.resource.setTargetAtlas(instanceUniform.atlas);
       fillVector(block, instanceUniform.blockIndex, value);
     }
 

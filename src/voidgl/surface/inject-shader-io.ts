@@ -54,6 +54,11 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
 }
 
 export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
+  // Let us examine the IO specified by the layer and see if there is any special needs that can generate
+  // Extra IO to help facilitate those needs, such as a Layer requesting an Atlas resource.
+  const usesAtlasResource = Boolean(shaderIO.instanceAttributes.find(attribute => attribute.size === InstanceAttributeSize.ATLAS));
+
+  // These are the uniforms that should be present in the shader for basic operation
   const addedUniforms: IUniform[] = [
     // This injects the projection matrix from the view camera
     {
@@ -81,10 +86,10 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       size: UniformSize.THREE,
       update: () => layer.view.camera.scale,
     },
-  ];
+  ].filter(Boolean);
 
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
-  // With the _canDraw attribute.
+  // With the _active attribute.
   const fillBlock = findEmptyBlock(shaderIO.instanceAttributes);
   const addedInstanceAttributes: IInstanceAttribute<T>[] = [
     // This is injected so the system can control when an instance should not be rendered.

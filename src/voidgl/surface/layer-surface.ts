@@ -493,6 +493,7 @@ export class LayerSurface {
         const existingLayer = this.layers.get(props.key);
 
         if (existingLayer) {
+          this.willDisposeLayer.set(props.key, false);
           existingLayer.willUpdateProps(props);
           Object.assign(existingLayer.props, props);
           existingLayer.didUpdateProps();

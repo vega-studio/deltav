@@ -200,6 +200,28 @@ export class Main extends React.Component<any, IMainState> {
         }),
       ]);
 
+      // To reproduce WEBGL-19-surface.render-blanks-layer bug,
+      // Call surface.render after 2 seconds.
+      setTimeout(() => {
+        this.surface.render([
+          createLayer(CircleLayer, {
+            data,
+            key: 'circle-layer-0',
+            scene: 'default',
+          }),
+          createLayer(CircleLayer, {
+            data: data2,
+            key: 'circle-layer',
+            scene: 'small-panel',
+          }),
+          createLayer(CircleLayer, {
+            data: data3,
+            key: 'circle-layer-2',
+            scene: 'small-panel-2',
+          }),
+        ]);
+      }, 2000);
+
       setTimeout(() => {
         for (let i = 0; i < 100; ++i) {
           for (let k = 0; k < 100; ++k) {

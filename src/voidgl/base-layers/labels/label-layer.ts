@@ -1,6 +1,6 @@
 import * as Three from 'three';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../../types';
 import { LabelInstance } from './label-instance';
 
 export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
@@ -20,43 +20,63 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<LabelInstance> {
+    const vertexToNormal: {[key: number]: number} = {
+      0: 1,
+      1: 1,
+      2: -1,
+      3: 1,
+      4: -1,
+      5: -1,
+    };
+
+    const vertexToSide: {[key: number]: number} = {
+      0: 0,
+      1: 0,
+      2: 0,
+      3: 1,
+      4: 1,
+      5: 1,
+    };
+
     return {
       fs: require('./label-layer.fs'),
       instanceAttributes: [
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'center',
+          name: 'location',
           size: InstanceAttributeSize.TWO,
           update: (o) => [o.x, o.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'radius',
-          size: InstanceAttributeSize.ONE,
-          update: (o) => [o.radius],
-        },
-        {
-          block: 0,
-          blockIndex: InstanceBlockIndex.FOUR,
-          name: 'depth',
-          size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          name: 'anchor',
+          size: InstanceAttributeSize.TWO,
+          update: (o) => [o.anchor.x, o.anchor.y],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          name: 'size',
+          size: InstanceAttributeSize.TWO,
+          update: (o) => [o.width, o.height],
+        },
+        {
+          atlas: {
+            key: this.props.atlas,
+            name: 'labelAtlas',
+          },
+          block: 2,
+          name: 'texture',
+          update: (o) => this.resource.request(o.resource, o),
+        },
+        {
+          block: 3,
+          blockIndex: InstanceBlockIndex.ONE,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
           update: (o) => o.color,
-        },
-        {
-          block: 2,
-          blockIndex: InstanceBlockIndex.ONE,
-          name: 'label',
-          size: InstanceAttributeSize.ATLAS,
-          update: (o) => undefined,
         },
       ],
       uniforms: [
@@ -76,13 +96,14 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
-            (vertex % 2 === 0) ? 1 : -1,
-            0,
+            vertexToNormal[vertex],
+            // The side of the quad
+            vertexToSide[vertex],
             0,
           ],
         },
       ],
-      vertexCount: 1,
+      vertexCount: 4,
       vs: require('./label-layer.vs'),
     };
   }

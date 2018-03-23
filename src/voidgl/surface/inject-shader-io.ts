@@ -1,5 +1,5 @@
 import { IShaderInitialization, Layer } from '../surface/layer';
-import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize, VertexAttributeSize } from '../types';
+import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
 import { Instance } from '../util/instance';
 
 function toVertexAttributeInternal(attribute: IVertexAttribute): IVertexAttributeInternal {
@@ -54,12 +54,61 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
 }
 
 export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
-  // Let us examine the IO specified by the layer and see if there is any special needs that can generate
-  // Extra IO to help facilitate those needs, such as a Layer requesting an Atlas resource.
-  const usesAtlasResource = Boolean(shaderIO.instanceAttributes.find(attribute => attribute.size === InstanceAttributeSize.ATLAS));
+  // Retrieve all of the instance attributes that are atlas references
+  const atlasInstanceAttributes: IInstanceAttribute<T>[] = [];
+  // Key: The atlas uniform name requested
+  const requestedAtlasInjections = new Map<string, [boolean, boolean]>();
+
+  // Get the atlas requests that have unique names. We only need one uniform
+  // For a single unique provided name. We also must merge the requests for
+  // Vertex and fragment injections
+  shaderIO.instanceAttributes.forEach(attribute => {
+    if (attribute.atlas) {
+      const injection: number = attribute.atlas.shaderInjection || ShaderInjectionTarget.FRAGMENT;
+      const injections = requestedAtlasInjections.get(attribute.atlas.name);
+
+      if (injections) {
+        requestedAtlasInjections.set(attribute.atlas.name, [
+          injections[0] ||
+          injection === ShaderInjectionTarget.VERTEX ||
+          injection === ShaderInjectionTarget.ALL,
+          injections[1] ||
+          injection === ShaderInjectionTarget.FRAGMENT ||
+          injection === ShaderInjectionTarget.ALL,
+        ]);
+      }
+
+      else {
+        atlasInstanceAttributes.push(attribute);
+        requestedAtlasInjections.set(attribute.atlas.name, [
+          injection === ShaderInjectionTarget.VERTEX ||
+          injection === ShaderInjectionTarget.ALL,
+          injection === ShaderInjectionTarget.FRAGMENT ||
+          injection === ShaderInjectionTarget.ALL,
+        ]);
+      }
+    }
+  });
+
+  // Make uniforms for all of the unique atlas requests
+  const atlasUniforms: IUniform[] = atlasInstanceAttributes.map(instanceAttribute => {
+    const injections = requestedAtlasInjections.get(instanceAttribute.atlas.name);
+    const injection =
+      (injections[0] && injections[1] && ShaderInjectionTarget.ALL) ||
+      (injections[0] && !injections[1] && ShaderInjectionTarget.VERTEX) ||
+      (!injections[0] && injections[1] && ShaderInjectionTarget.FRAGMENT)
+    ;
+
+    return {
+      name: instanceAttribute.atlas.name,
+      shaderInjection: injection,
+      size: UniformSize.ATLAS,
+      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.name),
+    };
+  });
 
   // These are the uniforms that should be present in the shader for basic operation
-  const addedUniforms: IUniform[] = [
+  const addedUniforms: IUniform[] = atlasUniforms.concat([
     // This injects the projection matrix from the view camera
     {
       name: 'projection',
@@ -86,7 +135,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       size: UniformSize.THREE,
       update: () => layer.view.camera.scale,
     },
-  ].filter(Boolean);
+  ]);
 
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
   // With the _active attribute.

@@ -16,7 +16,8 @@ import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { ILayerProps, Layer } from './layer';
 import { AtlasManager } from './texture';
-import { IAtlasOptions } from './texture/atlas';
+import { Atlas, IAtlasOptions } from './texture/atlas';
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
 
 export interface ILayerSurfaceOptions {
   /**
@@ -99,6 +100,8 @@ export class LayerSurface {
   layers = new Map<string, Layer<any, any, any>>();
   /** This is the THREE render system we use to render scenes with views */
   renderer: Three.WebGLRenderer;
+  /** This is the resource manager that handles resource requests for instances */
+  resourceManager: AtlasResourceManager;
   /**
    * This is all of the available scenes and their views for this surface. Layers reference the IDs
    * of the scenes and the views to be a part of their rendering state.
@@ -385,6 +388,8 @@ export class LayerSurface {
    * shader.
    */
   private initLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+    // Set the resource manager this surface utilizes to the layer
+    layer.resource = this.resourceManager;
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
@@ -431,11 +436,17 @@ export class LayerSurface {
    * This initializes resources needed or requested such as textures or render surfaces.
    */
   private async initResources(options: ILayerSurfaceOptions) {
+    // Tell our manager to generate all of the atlas' requested for surface
     if (options.atlasResources) {
       for (const resource of options.atlasResources) {
         await this.atlasManager.createAtlas(resource);
       }
     }
+
+    // Initialize our resource manager with the atlas manager
+    this.resourceManager = new AtlasResourceManager({
+      atlasManager: this.atlasManager,
+    });
   }
 
   /**

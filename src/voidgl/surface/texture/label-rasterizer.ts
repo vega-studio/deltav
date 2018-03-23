@@ -17,9 +17,20 @@ export class LabelRasterizer {
   static async awaitContext() {
     // Iterate till the browser provides a valid canvas to render elements into
     while (!canvas) {
-      canvas = document.createElement('canvas').getContext('2d');
+      this.getContext();
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
+  }
+
+  /**
+   * Attempts to populate the 'canvas' context for rendering labels offscreen.
+   */
+  static getContext() {
+    if (!canvas) {
+      canvas = document.createElement('canvas').getContext('2d');
+    }
+
+    return canvas;
   }
 
   /**
@@ -170,6 +181,31 @@ export class LabelRasterizer {
   static async render(resource: LabelAtlasResource): Promise<LabelAtlasResource> {
     // Make sure our canvas object is ready for rendering
     await this.awaitContext();
+
+    // Validate the label's input
+    if (resource.label.fontSize > MAX_FONT_SIZE) {
+      console.warn('Labels only support font sizes up to 50');
+      return resource;
+    }
+
+    // Calculate all of the label metrics and generate a canvas on the label that can
+    // Be rendered to the canvas.
+    this.calculateLabelSize(resource);
+
+    return resource;
+  }
+
+  /**
+   * Performs the rendering of the label
+   */
+  static renderSync(resource: LabelAtlasResource): LabelAtlasResource {
+    // Ensure our offscreen canvas is prepped
+    this.getContext();
+
+    if (!canvas) {
+      console.warn('Can not render a label synchronously without the canvas context being ready.');
+      return;
+    }
 
     // Validate the label's input
     if (resource.label.fontSize > MAX_FONT_SIZE) {

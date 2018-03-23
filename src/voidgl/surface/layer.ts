@@ -173,7 +173,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       instanceUniform = this.instanceAttributes[i];
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + instanceUniform.block];
-      this.resource.setTargetAtlas(instanceUniform.atlas);
+      instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
       fillVector(block, instanceUniform.blockIndex, value);
     }
 

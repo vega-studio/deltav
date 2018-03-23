@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
+import { LabelLayer, RingInstance, SectionLayer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -70,8 +71,8 @@ export class Main extends React.Component<any, IMainState> {
       generate = true;
     }
 
-    const mainCamera = new ChartCamera();
-    const panelCamera = new ChartCamera();
+    const ringCamera = new ChartCamera();
+    const circleCamera = new ChartCamera();
 
     if (generate) {
       this.surface = new LayerSurface({
@@ -86,60 +87,34 @@ export class Main extends React.Component<any, IMainState> {
         context: this.context,
         eventManagers: [
           new BasicCameraController({
-            camera: mainCamera,
-            startView: 'default-view',
+            camera: ringCamera,
+            ignoreCoverViews: true,
+            startView: 'ring-view',
           }),
           new BasicCameraController({
-            camera: panelCamera,
-            startView: ['test-view', 'test-view2'],
+            camera: circleCamera,
+            ignoreCoverViews: true,
+            startView: 'circle-view',
           }),
         ],
         handlesWheelEvents: true,
         scenes: [
           {
-            key: 'default',
+            key: 'rings',
             views: [
               {
-                camera: mainCamera,
-                key: 'default-view',
+                camera: ringCamera,
+                key: 'ring-view',
               },
             ],
           },
           {
-            key: 'small-panel',
+            key: 'circles',
             views: [
               {
-                background: [1.0, 1.0, 1.0, 1.0],
-                camera: panelCamera,
+                camera: circleCamera,
                 clearFlags: [ClearFlags.DEPTH],
-                key: 'test-view',
-                viewport: {
-                  bottom: 0,
-                  right: 0,
-                  top: 0,
-                  width: 200,
-                },
-              },
-            ],
-          },
-          {
-            key: 'small-panel-2',
-            views: [
-              {
-                background: [1.0, 1.0, 1.0, 1.0],
-                camera: new ReferenceCamera({
-                  base: panelCamera,
-                  offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
-                  scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
-                }),
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-                key: 'test-view2',
-                viewport: {
-                  bottom: 0,
-                  left: 0,
-                  top: '50%',
-                  width: '50%',
-                },
+                key: 'circle-view',
               },
             ],
           },
@@ -178,72 +153,46 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     if (this.surface) {
-      const data = new DataProvider<CircleInstance>([]);
-      const data2 = new DataProvider<CircleInstance>([]);
-      const data3 = new DataProvider<CircleInstance>([]);
+      const circleProvider = new DataProvider<CircleInstance>([]);
+      const ringProvider = new DataProvider<RingInstance>([]);
 
       this.surface.render([
+        createLayer(SectionLayer, {
+          data: ringProvider,
+          key: 'ring-layer-0',
+          scene: 'rings',
+        }),
         createLayer(CircleLayer, {
-          data,
+          data: circleProvider,
           key: 'circle-layer-0',
-          scene: 'default',
-        }),
-        createLayer(CircleLayer, {
-          data: data2,
-          key: 'circle-layer',
-          scene: 'small-panel',
-        }),
-        createLayer(CircleLayer, {
-          data: data3,
-          key: 'circle-layer-2',
-          scene: 'small-panel-2',
+          scene: 'circles',
         }),
       ]);
 
-      setTimeout(() => {
-        for (let i = 0; i < 100; ++i) {
-          for (let k = 0; k < 100; ++k) {
-            let circle = new CircleInstance({
-              color: [1.0, 0.0, 0.0, 1.0],
-              depth: 0,
-              id: `circle${i * 20 + k}`,
-              radius: 5,
-              x: i * 10,
-              y: k * 10,
-            });
+      for (let i = 0; i < 100; ++i) {
+        for (let k = 0; k < 100; ++k) {
+          const circle = new CircleInstance({
+            color: [1.0, 0.0, 0.0, 1.0],
+            id: `circle${i * 100 + k}`,
+            radius: 5,
+            x: i * 10,
+            y: k * 10,
+          });
 
-            data.instances.push(circle);
-
-            circle = new CircleInstance({
-              color: [1.0, 0.0, 0.0, 1.0],
-              depth: 0,
-              id: `circle${i * 20 + k}`,
-              radius: 5,
-              x: i * 10,
-              y: k * 10,
-            });
-
-            data2.instances.push(circle);
-
-            circle = new CircleInstance({
-              color: [1.0, 0.0, 0.0, 1.0],
-              depth: 0,
-              id: `circle${i * 20 + k}`,
-              radius: 5,
-              x: i * 10,
-              y: k * 10,
-            });
-
-            data3.instances.push(circle);
-          }
+          circleProvider.instances.push(circle);
         }
+      }
 
-        setInterval(() => {
-          for (let i = 0; i < data.instances.length; i += 2) {
-            data.instances[Math.floor(Math.random() * data.instances.length)].x += Math.random();
-          }
-        }, 1000 / 60);
-      });
+      for (let i = 0; i < 250; ++i) {
+        ringProvider.instances.push(new RingInstance({
+          color: [Math.random(), Math.random(), Math.random(), 1.0],
+          id: `ring_${i}`,
+          radius: Math.random() * 100 + 10,
+          thickness: Math.random() * 20 + 1,
+          x: Math.random() * 1600,
+          y: Math.random() * 800,
+        }));
+      }
     }
 
     return (

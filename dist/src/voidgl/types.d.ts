@@ -24,6 +24,8 @@ export declare enum InstanceAttributeSize {
     TWO = 2,
     THREE = 3,
     FOUR = 4,
+    /** Special case for making instance attributes that can target Atlas resources */
+    ATLAS = 99,
 }
 export declare enum UniformSize {
     ONE = 1,
@@ -123,10 +125,16 @@ export interface IInstanceAttribute<T> {
      */
     qualifier?: string;
     /**
+     * If this is specified, this attribute becomes a size of 4 and will have a block index of
+     * 0. This makes this attribute and layer become compatible with reading atlas resources.
+     * The value provided for this property should be the name of the atlas that is created.
+     */
+    atlas?: string;
+    /**
      * This is how many floats the instance attribute takes up. Due to how instancing is
      * implemented, we can only take up to 4 floats per variable right now.
      */
-    size: InstanceAttributeSize;
+    size?: InstanceAttributeSize;
     /**
      * This is the accessor that executes when the instance needs updating. Simply return the
      * value that should be populated for this attribute.

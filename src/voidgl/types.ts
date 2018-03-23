@@ -7,6 +7,7 @@ export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in 
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
 export type ShaderIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number] | Three.Vector4[] | Float32Array;
 export type InstanceIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number];
+export type UniformIOValue = InstanceIOValue | Float32Array | Three.Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,
@@ -31,6 +32,7 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
+  ATLAS = 99,
 }
 
 export enum VertexAttributeSize {
@@ -133,7 +135,17 @@ export interface IInstanceAttribute<T> {
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
-  atlas?: string,
+  atlas?: {
+    /** Specify which generated atlas to target for the resource */
+    key: string,
+    /** Specify the name that will be injected that will be the sampler2D in the shader */
+    name: string,
+    /**
+     * This specifies which of the shaders the sampler2D will be injected into.
+     * Defaults to the Fragment shader only.
+     */
+    shaderInjection?: ShaderInjectionTarget,
+  },
   /**
    * This is how many floats the instance attribute takes up. Due to how instancing is
    * implemented, we can only take up to 4 floats per variable right now.
@@ -149,11 +161,38 @@ export interface IInstanceAttribute<T> {
 // For now internal instance attributes are the same
 export type IInstanceAttributeInternal<T> = IInstanceAttribute<T>;
 
+/** These are flags for indicating which shaders receive certain injection elements */
+export enum ShaderInjectionTarget {
+  /** ONLY the vertex shader will receive the injection */
+  VERTEX,
+  /** ONLY the fragment shader will receive the injection */
+  FRAGMENT,
+  /** Both the fragment and vertex shader will receive the injection */
+  ALL,
+}
+
 export interface IUniform {
+  /**
+   * This lets you specify which of the shaders will receive this uniform as available.
+   * This defaults to only injecting into the vertex shader.
+   */
+  shaderInjection?: ShaderInjectionTarget;
+  /** Name of the uniform as will be available in the shaders */
   name: string;
+  /** How many floats the uniform shall encompass */
   size: UniformSize;
+  /**
+   * When generating this uniform in the shader this will be the prefix to the uniform:
+   * For instance, if you specify 'highp' as the modifier, then the uniform that appears
+   * in the shader will be:
+   * uniform highp vec3 position;
+   */
   qualifier?: string;
-  update(uniform: IUniform): ShaderIOValue;
+  /**
+   * This is the accessor that executes every frame before this layer is drawn. It gives
+   * opportunity to update the uniform's value before every draw.
+   */
+  update(uniform: IUniform): UniformIOValue;
 }
 
 export interface IUniformInternal extends IUniform {

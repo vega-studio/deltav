@@ -1,6 +1,6 @@
 export declare type Label = {
     /** The color the label should render as */
-    color: string;
+    color: [number, number, number, number];
     /** The font of the label */
     fontFamily: string;
     /** The font size of the label in px */

@@ -1,6 +1,6 @@
 import * as Three from 'three';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../../types';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { LabelInstance } from './label-instance';
 
 export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
@@ -63,13 +63,27 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           update: (o) => [o.width, o.height],
         },
         {
+          block: 1,
+          blockIndex: InstanceBlockIndex.THREE,
+          name: 'depth',
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.depth],
+        },
+        {
+          block: 1,
+          blockIndex: InstanceBlockIndex.FOUR,
+          name: 'scaling',
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.scaling],
+        },
+        {
           atlas: {
             key: this.props.atlas,
             name: 'labelAtlas',
           },
           block: 2,
           name: 'texture',
-          update: (o) => this.resource.request(o.resource, o),
+          update: (o) => this.resource.request(this, o, o.resource),
         },
         {
           block: 3,
@@ -91,7 +105,6 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          defaults: [0],
           name: 'position',
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
@@ -103,7 +116,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           ],
         },
       ],
-      vertexCount: 4,
+      vertexCount: 6,
       vs: require('./label-layer.vs'),
     };
   }

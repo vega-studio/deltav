@@ -42,7 +42,7 @@ export class LabelRasterizer {
    *                                 should be within world space.
    * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
    */
-  static calculateLabelSize(resource: LabelAtlasResource, sampleScale?: number) {
+  static calculateLabelSize(resource: LabelAtlasResource, sampleScale?: number, calculateTexture?: boolean) {
     /** Get the label properties for rasterizing */
     const label = resource.label;
     // Get the scaling of the sample base
@@ -110,7 +110,7 @@ export class LabelRasterizer {
     };
 
     // When a forced sampling is present, it calculates that as the world space
-    if (sampleScaling) {
+    if (!calculateTexture) {
       // Update the calculated texture size.
       resource.rasterization.world = {
         height: maxY - minY,
@@ -127,7 +127,7 @@ export class LabelRasterizer {
       };
 
       resource.rasterization.canvas = this.createCroppedCanvas(resource, minY, minX);
-      this.calculateLabelSize(resource, 1.0);
+      this.calculateLabelSize(resource, 1.0, false);
     }
   }
 
@@ -190,7 +190,7 @@ export class LabelRasterizer {
 
     // Calculate all of the label metrics and generate a canvas on the label that can
     // Be rendered to the canvas.
-    this.calculateLabelSize(resource);
+    this.calculateLabelSize(resource, resource.sampleScale, true);
 
     return resource;
   }
@@ -204,7 +204,7 @@ export class LabelRasterizer {
 
     if (!canvas) {
       console.warn('Can not render a label synchronously without the canvas context being ready.');
-      return;
+      return resource;
     }
 
     // Validate the label's input
@@ -215,7 +215,7 @@ export class LabelRasterizer {
 
     // Calculate all of the label metrics and generate a canvas on the label that can
     // Be rendered to the canvas.
-    this.calculateLabelSize(resource);
+    this.calculateLabelSize(resource, resource.sampleScale, true);
 
     return resource;
   }

@@ -1,6 +1,6 @@
 import { ImageAtlasResource, LabelAtlasResource } from '.';
 import { Bounds } from '../../primitives/bounds';
-import { Atlas, IAtlasOptions } from './atlas';
+import { Atlas, AtlasSize, IAtlasOptions } from './atlas';
 import { ColorAtlasResource } from './color-atlas-resource';
 import { ColorRasterizer } from './color-rasterizer';
 import { LabelRasterizer } from './label-rasterizer';
@@ -125,9 +125,10 @@ export class AtlasManager {
     // Only a non-null image means the image loaded correctly
     if (loadedImage && isValidImage(resource.texture)) {
       // Get the sub texture that is going to be applied to the atlas
+      const rasterization = resource.rasterization;
       const texture = resource.texture;
       // Now we create a Rectangle to store the image dimensions
-      const rect: Bounds = new Bounds({left: 0, right: texture.pixelWidth, top: texture.pixelHeight, bottom: 0});
+      const rect: Bounds = new Bounds({left: 0, right: rasterization.texture.width, top: 0, bottom: rasterization.texture.height});
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: ImageDimensions = {
         first: texture,
@@ -157,22 +158,29 @@ export class AtlasManager {
         const onePixelX = 1 / atlas.width;
 
         const atlasDimensions: Bounds = new Bounds({
-          bottom: 1.0 - (uy + uh),
+          bottom: 1.0 - uy,
           left: ux,
           right: ux + uw,
-          top: 1.0 - uy,
+          top: 1.0 - (uy + uh),
         });
 
+        const bottom = atlasDimensions.bottom;
+        const top = atlasDimensions.y;
+        const left = atlasDimensions.x;
+        const right = atlasDimensions.x + atlasDimensions.width - onePixelX;
+
         texture.atlasReferenceID = atlasName;
-        texture.atlasBL = {x: atlasDimensions.x, y: atlasDimensions.y - atlasDimensions.height};
-        texture.atlasBR = {x: atlasDimensions.x + atlasDimensions.width - onePixelX, y: atlasDimensions.y - atlasDimensions.height};
-        texture.atlasTL = {x: atlasDimensions.x, y: atlasDimensions.y };
-        texture.atlasTR = {x: atlasDimensions.x + atlasDimensions.width - onePixelX, y: atlasDimensions.y};
+        texture.atlasTL = {x: left, y: top };
+        texture.atlasBR = {x: right, y: bottom };
+        texture.atlasBL = {x: left, y: bottom };
+        texture.atlasTR = {x: right, y: top };
         texture.widthOnAtlas = Math.abs(texture.atlasTR.x - texture.atlasTL.x);
         texture.heightOnAtlas = Math.abs(texture.atlasTR.y - texture.atlasBR.y);
+        texture.pixelWidth = rasterization.texture.width;
+        texture.pixelHeight = rasterization.texture.height;
 
         // Now draw the image to the indicated canvas
-        canvas.drawImage(loadedImage, insertedNode.nodeDimensions.x, insertedNode.nodeDimensions.y);
+        canvas.getContext('2d').drawImage(loadedImage, insertedNode.nodeDimensions.x, insertedNode.nodeDimensions.y);
 
         // We have finished inserting
         return true;
@@ -211,21 +219,32 @@ export class AtlasManager {
    * @return {Promise<HTMLImageElement>} A promise to resolve to the loaded image
    *                                     or null if there was an error
    */
-  private loadImage(resource: AtlasResource): Promise<HTMLImageElement | null> {
+  private async loadImage(resource: AtlasResource): Promise<HTMLImageElement | null> {
     let imageSrc: string;
 
-    const subTexture = new SubTexture();
+    const subTexture = resource.texture || new SubTexture();
     resource.texture = subTexture;
 
     if (resource instanceof ImageAtlasResource) {
-      // If the texture was provided an image then we just return the image
+      // If the texture was provided an image then we ensure the image is loaded
+      // Then hand it back
       if (resource.image.element) {
-        const image = resource.image.element;
-        subTexture.pixelWidth = image.width;
-        subTexture.pixelHeight = image.height;
-        subTexture.aspectRatio = image.width / image.height;
+        const image = await new Promise<HTMLImageElement | null>((resolve, reject) => {
+          const image: HTMLImageElement = resource.image.element;
 
-        return Promise.resolve(resource.image.element);
+          image.onload = function() {
+            subTexture.pixelWidth = image.width;
+            subTexture.pixelHeight = image.height;
+            subTexture.aspectRatio = image.width / image.height;
+            resolve(image);
+          };
+
+          image.onerror = function() {
+            resolve(null);
+          };
+        });
+
+        return image;
       }
 
       // If a string was returned, we must load the image then return the image
@@ -235,45 +254,41 @@ export class AtlasManager {
     }
 
     else if (resource instanceof LabelAtlasResource) {
-      return new Promise(async(resolve, reject) => {
-        // Ensure the label has been rasterized to a canvas element
-        if (!resource.rasterization.canvas) {
-          await LabelRasterizer.render(resource);
-        }
+      // Ensure the label has been rasterized to a canvas element
+      if (!resource.rasterization.canvas) {
+        await LabelRasterizer.render(resource);
+      }
 
-        // Make sure the rasterization properly executed
-        if (resource.rasterization.canvas) {
-          debug('Rasterized label %o', resource.rasterization);
-          imageSrc = resource.rasterization.canvas.toDataURL('image/png');
-        }
+      // Make sure the rasterization properly executed
+      if (resource.rasterization.canvas) {
+        debug('Rasterized label %o', resource.rasterization);
+        imageSrc = resource.rasterization.canvas.toDataURL('image/png');
+      }
 
-        else {
-          console.warn('The label was not able to be rasterized');
-        }
-      });
+      else {
+        console.warn('The label was not able to be rasterized');
+      }
     }
 
     else if (resource instanceof ColorAtlasResource) {
-      return new Promise(async(resolve, reject) => {
-        // Ensure the color has been rasterized to a canvas element
-        if (!resource.rasterization.canvas) {
-          await ColorRasterizer.render(resource);
-        }
+      // Ensure the color has been rasterized to a canvas element
+      if (!resource.rasterization.canvas) {
+        await ColorRasterizer.render(resource);
+      }
 
-        // Make sure the rasterization properly executed
-        if (resource.rasterization.canvas) {
-          debug('Rasterized color %o', resource.rasterization);
-          imageSrc = resource.rasterization.canvas.toDataURL('image/png');
-        }
+      // Make sure the rasterization properly executed
+      if (resource.rasterization.canvas) {
+        debug('Rasterized color %o', resource.rasterization);
+        imageSrc = resource.rasterization.canvas.toDataURL('image/png');
+      }
 
-        else {
-          console.warn('The label was not able to be rasterized');
-        }
-      });
+      else {
+        console.warn('The color was not able to be rasterized');
+      }
     }
 
     if (imageSrc) {
-      return new Promise((resolve, reject) => {
+      const image = await new Promise<HTMLImageElement | null>((resolve, reject) => {
         const image: HTMLImageElement = new Image();
 
         image.onload = function() {
@@ -289,9 +304,11 @@ export class AtlasManager {
 
         image.src = imageSrc;
       });
+
+      return image;
     }
 
-    return Promise.resolve(null);
+    return null;
   }
 
   /**
@@ -308,8 +325,8 @@ export class AtlasManager {
         await this.draw(atlas, resource);
       }
 
-      // TODO: After updating the canvas with all of the needed info, we need to do something to make the texture
-      // Actually reflect the changes
+      // Perform the best method for updating the underlying texture of the atlas to the laresr changes
+      atlas.updateTexture();
     }
 
     else {

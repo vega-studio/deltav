@@ -1,6 +1,6 @@
 import { computed, observable } from 'mobx';
 import { Label } from '../../primitives/label';
-import { AtlasResource, LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
+import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
 import { IInstanceOptions, Instance } from '../../util/instance';
 
 export enum AnchorType {
@@ -27,7 +27,16 @@ export type Anchor = {
   y?: number,
 };
 
-export interface ILabelInstanceOptions extends IInstanceOptions, Label {
+export enum ScaleType {
+  /** The size of the label will be tied to world space */
+  ALWAYS = 1,
+  /** The label will scale to it's font size then stop growing */
+  BOUND_MAX = 2,
+  /** The label will alwyas retain it's font size on screen */
+  NEVER = 3,
+}
+
+export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
   /**
    * The point on the label which will be placed in world space via the x, y coords. This is also the point
    * which the label will be scaled around.
@@ -35,14 +44,26 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Label {
   anchor?: Anchor;
   /** The color the label should render as */
   color: [number, number, number, number];
+  /** Depth sorting of the label (or the z value of the lable) */
+  depth?: number;
   /** The font of the label */
-  fontFamily: string;
+  fontFamily?: string;
   /** The font size of the label in px */
-  fontSize: number;
+  fontSize?: number;
   /** Stylization of the font */
-  fontStyle: Label['fontStyle'];
+  fontStyle?: Label['fontStyle'];
   /** The weight of the font */
-  fontWeight: Label['fontWeight'];
+  fontWeight?: Label['fontWeight'];
+  /** This allows for control over rasterization to the atlas */
+  rasterization?: {
+    /**
+     * This is the scale of the rasterization on the atlas. Higher numbers increase atlas useage, but can provide
+     * higher quality render outputs to the surface.
+     */
+    scale: number;
+  };
+  /** Sets the way the label scales with the world */
+  scaling?: ScaleType;
   /** This will be the text that should render with  */
   text: string;
   /** The x coordinate where the label will be anchored to in world space */
@@ -80,7 +101,7 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) =
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopMiddle]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = (label.width + anchor.padding * 2.0) / 2.0;
+    anchor.x = label.width / 2.0;
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopRight]: (anchor: Anchor, label: LabelInstance) => {
@@ -89,22 +110,22 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) =
   },
   [AnchorType.MiddleLeft]: (anchor: Anchor, label: LabelInstance) => {
     anchor.x = -anchor.padding;
-    anchor.y = (label.height + anchor.padding * 2.0) / 2;
+    anchor.y = label.height / 2;
   },
   [AnchorType.Middle]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = (label.width + anchor.padding * 2.0) / 2.0;
-    anchor.y = (label.height + anchor.padding * 2.0) / 2.0;
+    anchor.x = label.width / 2.0;
+    anchor.y = label.height / 2.0;
   },
   [AnchorType.MiddleRight]: (anchor: Anchor, label: LabelInstance) => {
     anchor.x = label.width + anchor.padding;
-    anchor.y = (label.height + anchor.padding * 2.0) / 2.0;
+    anchor.y = label.height / 2.0;
   },
   [AnchorType.BottomLeft]: (anchor: Anchor, label: LabelInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = label.height + anchor.padding;
   },
   [AnchorType.BottomMiddle]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = (label.width + anchor.padding * 2.0) / 2.0;
+    anchor.x = label.width / 2.0;
     anchor.y = label.height + anchor.padding;
   },
   [AnchorType.BottomRight]: (anchor: Anchor, label: LabelInstance) => {
@@ -135,10 +156,14 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) =
 export class LabelInstance extends Instance implements Label {
   /** This is the rendered color of the label */
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
+  /** Depth sorting of the label (or the z value of the lable) */
+  @observable depth: number = 0;
+  /** Sets the way the label scales with the world */
+  @observable scaling: ScaleType = ScaleType.BOUND_MAX;
   /** The x coordinate where the label will be anchored to in world space */
-  @observable x?: number;
+  @observable x: number = 0;
   /** The y coordinate where the label will be anchored to in world space */
-  @observable y?: number;
+  @observable y: number = 0;
 
   // The following properties are properties that are locked in after creating this label
   // As the properties are completely locked into how the label was rasterized and can not
@@ -211,12 +236,17 @@ export class LabelInstance extends Instance implements Label {
   constructor(options: ILabelInstanceOptions) {
     super(options);
 
-    this.color = options.color;
-    this._fontFamily = options.fontFamily;
-    this._fontSize = options.fontSize;
-    this._fontStyle = options.fontStyle;
-    this._fontWeight = options.fontWeight;
-    this._text = options.text;
+    this.depth = options.depth || this.depth;
+    this.color = options.color || this.color;
+    this.scaling = options.scaling || this.scaling;
+    this.x = options.x || this.x;
+    this.y = options.y || this.y;
+
+    this._fontFamily = options.fontFamily || this._fontFamily;
+    this._fontSize = options.fontSize || this._fontSize;
+    this._fontStyle = options.fontStyle || this._fontStyle;
+    this._fontWeight = options.fontWeight || this._fontWeight;
+    this._text = options.text || this._text;
 
     // We get the CSS font string for this label so we can uniquely identify the rasterization
     // Easily.
@@ -241,6 +271,14 @@ export class LabelInstance extends Instance implements Label {
         references: 1,
         resource: new LabelAtlasResource(this),
       };
+
+      // Look to see if any rasterization options were specified
+      if (options.rasterization) {
+        rasterization.resource.sampleScale = options.rasterization.scale || 1.0;
+      }
+
+      // Ensure the sample scale is set. Defaults to 1.0
+      rasterization.resource.sampleScale = rasterization.resource.sampleScale || 1.0;
 
       // Rasterize the resource generated for this label. We need it immediately rasterized so
       // That we can utilize the dimensions for calculations.

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
-import { LabelLayer, RingInstance, SectionLayer } from '../src';
+import { AnchorType, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -9,7 +9,6 @@ import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { DataProvider } from '../src/voidgl/util/data-provider';
-import { ReferenceCamera } from '../src/voidgl/util/reference-camera';
 
 /**
  * The state of the application
@@ -58,7 +57,7 @@ export class Main extends React.Component<any, IMainState> {
     setTimeout(() => this.sizeContext(), 100);
   }
 
-  setContext = (canvas: HTMLCanvasElement) => {
+  setContext = async(canvas: HTMLCanvasElement) => {
     let generate = false;
     this.context = canvas;
 
@@ -75,12 +74,12 @@ export class Main extends React.Component<any, IMainState> {
     const circleCamera = new ChartCamera();
 
     if (generate) {
-      this.surface = new LayerSurface({
+      this.surface = await new LayerSurface().init({
         atlasResources: [
           {
             height: AtlasSize._2048,
             key: 'all-resources',
-            width: AtlasSize._1024,
+            width: AtlasSize._2048,
           },
         ],
         background: [0.1, 0.2, 0.3, 1.0],
@@ -115,6 +114,16 @@ export class Main extends React.Component<any, IMainState> {
                 camera: circleCamera,
                 clearFlags: [ClearFlags.DEPTH],
                 key: 'circle-view',
+              },
+            ],
+          },
+          {
+            key: 'labels',
+            views: [
+              {
+                camera: circleCamera,
+                clearFlags: [ClearFlags.DEPTH],
+                key: 'label-view',
               },
             ],
           },
@@ -155,6 +164,7 @@ export class Main extends React.Component<any, IMainState> {
     if (this.surface) {
       const circleProvider = new DataProvider<CircleInstance>([]);
       const ringProvider = new DataProvider<RingInstance>([]);
+      const labelProvider = new DataProvider<LabelInstance>([]);
 
       this.surface.render([
         createLayer(SectionLayer, {
@@ -166,6 +176,12 @@ export class Main extends React.Component<any, IMainState> {
           data: circleProvider,
           key: 'circle-layer-0',
           scene: 'circles',
+        }),
+        createLayer(LabelLayer, {
+          atlas: 'all-resources',
+          data: labelProvider,
+          key: 'label-layer-0',
+          scene: 'labels',
         }),
       ]);
 
@@ -193,6 +209,66 @@ export class Main extends React.Component<any, IMainState> {
           y: Math.random() * 800,
         }));
       }
+
+      labelProvider.instances.push(new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.Middle,
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 14,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: 'label-test',
+        rasterization: {
+          scale: 1.1,
+        },
+        scaling: ScaleType.ALWAYS,
+        text: 'Hello World!',
+        x: 50,
+        y: 50,
+      }));
+
+      labelProvider.instances.push(new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.Middle,
+        },
+        color: [0.0, 1.0, 0.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 28,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: 'label-test-2',
+        rasterization: {
+          scale: 1.1,
+        },
+        scaling: ScaleType.BOUND_MAX,
+        text: 'Hello!',
+        x: 350,
+        y: 250,
+      }));
+
+      labelProvider.instances.push(new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.Middle,
+        },
+        color: [0.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 14,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: 'label-test-3',
+        rasterization: {
+          scale: 1.1,
+        },
+        scaling: ScaleType.NEVER,
+        text: 'Hello World!',
+        x: 750,
+        y: 450,
+      }));
     }
 
     return (

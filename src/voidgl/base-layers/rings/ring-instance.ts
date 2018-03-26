@@ -6,9 +6,6 @@ import {
   IInstanceOptions,
   Instance,
 } from '../../util';
-import {
-  ICircleInstanceOptions,
-} from '../circles';
 
 export interface IRingInstanceOptions extends IInstanceOptions, Circle {
   /** The color of this ring */

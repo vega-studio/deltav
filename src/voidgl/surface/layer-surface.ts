@@ -16,7 +16,7 @@ import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { ILayerProps, Layer } from './layer';
 import { AtlasManager } from './texture';
-import { Atlas, IAtlasOptions } from './texture/atlas';
+import { IAtlasOptions } from './texture/atlas';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 
 export interface ILayerSurfaceOptions {
@@ -68,12 +68,12 @@ export interface ILayerConstructable<T extends Instance> {
   new (props: ILayerProps<T>): Layer<any, any, any>;
 }
 
-export type LayerInitializer<T extends Instance> = [ILayerConstructable<T> & {defaultProps: any}, ILayerProps<any>];
+export type LayerInitializer<T extends Instance, U extends ILayerProps<any>> = [ILayerConstructable<T> & {defaultProps: any}, U];
 
 /**
  * Used for reactive layer generation and updates.
  */
-export function createLayer<T extends Instance>(layerClass: ILayerConstructable<T> & {defaultProps: any}, props: ILayerProps<any>): LayerInitializer<T> {
+export function createLayer<T extends Instance, U extends ILayerProps<any>>(layerClass: ILayerConstructable<T> & {defaultProps: any}, props: U): LayerInitializer<T, U> {
   return [layerClass, props];
 }
 
@@ -121,17 +121,6 @@ export class LayerSurface {
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
-  }
-
-  constructor(options: ILayerSurfaceOptions) {
-    // Make sure we have a gl context to work with
-    this.setContext(options.context);
-    // Initialize our GL needs that set the basis for rendering
-    this.initGL(options);
-    // Initialize our event manager that handles mouse interactions/gestures with the canvas
-    this.initMouseManager(options);
-    // Initialize any resources requested or needed, such as textures or rendering surfaces
-    this.initResources(options);
   }
 
   /**
@@ -216,6 +205,10 @@ export class LayerSurface {
 
       this.mouseManager.waitingForRender = false;
     }
+
+    // Now that all of our layers have performed updates to everything, we can now dequeue
+    // All resource requests and being their processing
+    this.resourceManager.dequeueRequests();
   }
 
   /**
@@ -268,6 +261,23 @@ export class LayerSurface {
 
     // Render the scene with the provided view metrics
     this.renderer.render(scene, view.viewCamera.baseCamera);
+  }
+
+  /**
+   * This is the beginning of the system. This should be called immediately after the surface is constructed.
+   * We make this mandatory outside of the constructor so we can make it follow an async pattern.
+   */
+  async init(options: ILayerSurfaceOptions) {
+    // Make sure we have a gl context to work with
+    this.setContext(options.context);
+    // Initialize our GL needs that set the basis for rendering
+    this.initGL(options);
+    // Initialize our event manager that handles mouse interactions/gestures with the canvas
+    this.initMouseManager(options);
+    // Initialize any resources requested or needed, such as textures or rendering surfaces
+    await this.initResources(options);
+
+    return this;
   }
 
   /**
@@ -495,7 +505,7 @@ export class LayerSurface {
   /**
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
-  render<T extends Instance>(layerInitializers: LayerInitializer<T>[]) {
+  render<T extends Instance, U extends ILayerProps<any>>(layerInitializers: LayerInitializer<T, U>[]) {
     // Loop through all of the initializers and properly add and remove layers as needed
     if (layerInitializers && layerInitializers.length > 0) {
       layerInitializers.forEach(init => {

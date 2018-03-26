@@ -1,12 +1,12 @@
 import * as Three from 'three';
 import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from '../types';
+import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal } from '../types';
+import { UniformIOValue } from '../types';
 import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
-import { SubTexture } from './texture/sub-texture';
 
 export interface IShaderInputs<T> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -162,22 +162,24 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   }
 
   private updateInstance(instance: T, uniformCluster: IUniformInstanceCluster) {
-    const uniforms: Three.IUniform = uniformCluster.uniform;
-    const uniformRangeStart = uniformCluster.uniformRange[0];
-    const instanceData: Three.Vector4[] = uniforms.value;
-    let instanceUniform, value, block;
+    if (instance.active) {
+      const uniforms: Three.IUniform = uniformCluster.uniform;
+      const uniformRangeStart = uniformCluster.uniformRange[0];
+      const instanceData: Three.Vector4[] = uniforms.value;
+      let instanceUniform, value, block;
 
-    // Loop through the instance attributes and update the uniform cluster with the valaues
-    // Calculated for the instance
-    for (let i = 0, end = this.instanceAttributes.length; i < end; ++i) {
-      instanceUniform = this.instanceAttributes[i];
-      value = instanceUniform.update(instance);
-      block = instanceData[uniformRangeStart + instanceUniform.block];
-      instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
-      fillVector(block, instanceUniform.blockIndex, value);
+      // Loop through the instance attributes and update the uniform cluster with the valaues
+      // Calculated for the instance
+      for (let i = 0, end = this.instanceAttributes.length; i < end; ++i) {
+        instanceUniform = this.instanceAttributes[i];
+        value = instanceUniform.update(instance);
+        block = instanceData[uniformRangeStart + instanceUniform.block];
+        instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
+        fillVector(block, instanceUniform.blockIndex, value);
+      }
+
+      uniforms.value = instanceData;
     }
-
-    uniforms.value = instanceData;
   }
 
   /**
@@ -195,16 +197,19 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * This is where global uniforms should update their values. Executes every frame.
    */
   draw() {
-    let uniform, value: ShaderIOValue;
+    let uniform: IUniformInternal;
+    let value: UniformIOValue;
 
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
+    // Make some holder variables to prevent declaration within the loop
+    let change, instance, diffType, uniforms;
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
-      const change = changeList[i];
-      const instance = change[0];
-      const diffType = change[1];
-      const uniforms = this.uniformManager.getUniforms(instance);
+      change = changeList[i];
+      instance = change[0];
+      diffType = change[1];
+      uniforms = this.uniformManager.getUniforms(instance);
       this.diffProcessor[diffType](instance, uniforms);
     }
 
@@ -264,5 +269,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
 
   willUpdateProps(newProps: ILayerProps<T>) {
     /** LIFECYCLE */
+  }
+
+  didUpdate() {
+    this.props.data.resolve();
   }
 }

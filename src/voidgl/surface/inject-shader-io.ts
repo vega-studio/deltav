@@ -1,3 +1,10 @@
+/**
+ * This file is dedicted to the all important step of processing desired inputs from the layer
+ * and coming up with automated generated uniforms and attributes that the shader's will need
+ * in order to operate with the conveniences the library offers. This includes things such as
+ * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
+ */
+
 import { IShaderInitialization, Layer } from '../surface/layer';
 import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
 import { Instance } from '../util/instance';
@@ -53,6 +60,11 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
   return found;
 }
 
+function sortByResourceAttributes<T>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
+  if (a.atlas && !b.atlas) return -1;
+  return 1;
+}
+
 export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
   // Retrieve all of the instance attributes that are atlas references
   const atlasInstanceAttributes: IInstanceAttribute<T>[] = [];
@@ -64,7 +76,14 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
   // Vertex and fragment injections
   shaderIO.instanceAttributes.forEach(attribute => {
     if (attribute.atlas) {
+      // Auto set the size of the attribute. Attribute's that are a resource automatically
+      // Consume a size of four
+      attribute.size = InstanceAttributeSize.FOUR;
+      attribute.blockIndex = InstanceBlockIndex.ONE;
+      // Get the atlas resource uniform (sampler2D) injection targets. We default to only the
+      // Fragment shader as it's the most commonly used location for sampler2Ds
       const injection: number = attribute.atlas.shaderInjection || ShaderInjectionTarget.FRAGMENT;
+      // See if we already have an injection for the given injected uniform name for an atlas resource.
       const injections = requestedAtlasInjections.get(attribute.atlas.name);
 
       if (injections) {
@@ -90,7 +109,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
     }
   });
 
-  // Make uniforms for all of the unique atlas requests
+  // Make uniforms for all of the unique atlas requests.
   const atlasUniforms: IUniform[] = atlasInstanceAttributes.map(instanceAttribute => {
     const injections = requestedAtlasInjections.get(instanceAttribute.atlas.name);
     const injection =
@@ -103,7 +122,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       name: instanceAttribute.atlas.name,
       shaderInjection: injection,
       size: UniformSize.ATLAS,
-      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.name),
+      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.key),
     };
   });
 
@@ -134,6 +153,13 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       name: 'cameraScale',
       size: UniformSize.THREE,
       update: () => layer.view.camera.scale,
+    },
+    // This injects the camera scaling uniforms that need to be present for projecting in a more
+    // Chart centric style
+    {
+      name: 'viewSize',
+      size: UniformSize.TWO,
+      update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height],
     },
   ]);
 
@@ -179,6 +205,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
   const instanceAttributes =
     addedInstanceAttributes
     .concat(shaderIO.instanceAttributes)
+    .sort(sortByResourceAttributes)
   ;
 
   return {

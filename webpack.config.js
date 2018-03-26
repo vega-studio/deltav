@@ -32,6 +32,7 @@ if (IS_PRODUCTION) {
     'react',
     'three',
     'bowser',
+    'mobx',
   ];
 
   // We are bundling a library so set the output targets correctly

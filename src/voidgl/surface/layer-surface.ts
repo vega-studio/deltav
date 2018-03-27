@@ -517,13 +517,10 @@ export class LayerSurface {
           existingLayer.willUpdateProps(props);
           Object.assign(existingLayer.props, props);
           existingLayer.didUpdateProps();
-
-          return;
-        }
-
-        else {
+        } else {
           this.addLayer(new layerClass(Object.assign(props, layerClass.defaultProps)));
         }
+        this.willDisposeLayer.set(props.key, false);
       });
     }
 

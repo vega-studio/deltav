@@ -8,4 +8,5 @@ export * from './layer-surface';
 export * from './layer';
 export * from './mouse-event-manager';
 export * from './scene';
+export * from './texture';
 export * from './view';

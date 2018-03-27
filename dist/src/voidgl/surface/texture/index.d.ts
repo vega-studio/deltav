@@ -1,3 +1,4 @@
+export * from './atlas';
 export * from './atlas-manager';
 export * from './color-atlas-resource';
 export * from './color-rasterizer';

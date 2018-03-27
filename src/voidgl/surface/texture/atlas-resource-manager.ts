@@ -37,7 +37,9 @@ export class AtlasResourceManager {
   /** This is the atlas currently targetted by requests */
   targetAtlas: string = '';
   /** This stores all of the requests awaiting queue */
-  requestQueue: [Layer<any, any, any>, Instance, AtlasResource][] = [];
+  requestQueue: AtlasResource[] = [];
+  /** This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource */
+  requestLookup = new Map<AtlasResource, [Layer<any, any, any>, Instance][]>();
 
   constructor(options: IAtlasResourceManagerOptions) {
     this.atlasManager = options.atlasManager;
@@ -56,19 +58,21 @@ export class AtlasResourceManager {
       this.requestQueue = [];
 
       // Tell the atlas manager to update with all of the requested resources
-      await this.atlasManager.updateAtlas(this.targetAtlas, requests.map(request => request[2]));
+      await this.atlasManager.updateAtlas(this.targetAtlas, requests);
 
       // Once the manager has been updated, we can now flag all of the instances waiting for the resources
       // As active, which should thus trigger an update to the layers to perform a diff for each instance
-      requests.forEach(request => {
-        const layer = request[0];
-        const instance = request[1];
+      requests.forEach(resource => {
+        this.requestLookup.get(resource).forEach(waiting => {
+          const layer = waiting[0];
+          const instance = waiting[1];
 
-        // If the instance is still associated with a cluster, then the instance can be activated. Having
-        // A cluster is indicative the instance has not been deleted.
-        if (layer.uniformManager.getUniforms(instance)) {
-          request[1].active = true;
-        }
+          // If the instance is still associated with a cluster, then the instance can be activated. Having
+          // A cluster is indicative the instance has not been deleted.
+          if (layer.uniformManager.getUniforms(instance)) {
+            instance.active = true;
+          }
+        });
       });
     }
   }
@@ -88,13 +92,25 @@ export class AtlasResourceManager {
   }
 
   /**
-   * This is a request for resources
+   * This is a request for atlas texture resources. It will produce either the coordinates needed to
+   * make valid texture lookups, or it will trigger a loading of resources to an atlas and cause an
+   * automated deactivation and reactivation of the instance.
    */
   request(layer: Layer<any, any, any>, instance: Instance, resource: AtlasResource): InstanceIOValue {
     const texture: SubTexture = resource.texture;
 
-    // If the texture is ready and available, then we return the needed IO values
+    // If the texture is ready and available, then we simply return the IO values
     if (texture) {
+      return toInstanceIOValue(texture);
+    }
+
+    // If a request is already made, then we must save the instance making the request for deactivation and
+    // Reactivation but without any additional atlas loading
+    const existingRequests = this.requestLookup.get(resource);
+    if (existingRequests) {
+      existingRequests.push([layer, instance]);
+      instance.active = false;
+
       return toInstanceIOValue(texture);
     }
 
@@ -102,8 +118,10 @@ export class AtlasResourceManager {
     // And wait for the resource to become available. Once the resource is available, the system
     // Must activate the instance to render the resource.
     instance.active = false;
-    this.requestQueue.push([layer, instance, resource]);
+    this.requestQueue.push(resource);
+    this.requestLookup.set(resource, [[layer, instance]]);
 
+    // This returns essentially returns blank values for the resource lookup
     return toInstanceIOValue(texture);
   }
 

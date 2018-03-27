@@ -43,11 +43,8 @@ export class ColorRasterizer {
 
       // Draw the color to the fill space
       context.fillRect(0, 0, COLOR_RASTERIZATION_SIZE, COLOR_RASTERIZATION_SIZE);
-
       // Update the resource with the rasterization
       resource.rasterization.canvas = canvas;
-      resource.rasterization.width = COLOR_RASTERIZATION_SIZE;
-      resource.rasterization.height = COLOR_RASTERIZATION_SIZE;
     }
 
     else {

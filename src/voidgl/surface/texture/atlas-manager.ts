@@ -1,6 +1,6 @@
 import { ImageAtlasResource, LabelAtlasResource } from '.';
 import { Bounds } from '../../primitives/bounds';
-import { Atlas, AtlasSize, IAtlasOptions } from './atlas';
+import { Atlas, IAtlasOptions } from './atlas';
 import { ColorAtlasResource } from './color-atlas-resource';
 import { ColorRasterizer } from './color-rasterizer';
 import { LabelRasterizer } from './label-rasterizer';

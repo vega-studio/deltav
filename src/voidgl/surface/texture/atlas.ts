@@ -48,19 +48,19 @@ export class Atlas extends IdentifyByKey {
   /** Stores the size of the atlas texture */
   height: AtlasSize;
   /** This is the parent manager of the atlas */
-  private manager: AtlasManager;
+  manager: AtlasManager;
   /** This is the packing of the  */
   packing: PackNode;
+  /** This is the actual texture object that represents the atlas on the GPU */
+  texture: Three.Texture;
+  /** These are the applied settings to our texture */
+  textureSettings?: Partial<Three.Texture>;
   /**
    * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
    * the atlas at any given moment.
    */
   validResources = new Map<AtlasResource, boolean>();
-  /** This is the actual texture object that represents the atlas on the GPU */
-  texture: Three.Texture;
-  /** These are the applied settings to our texture */
-  textureSettings?: Partial<Three.Texture>;
   /** Stores the size of the atlas texture */
   width: AtlasSize;
 
@@ -176,15 +176,6 @@ export class Atlas extends IdentifyByKey {
     if (this.texture) {
       const redoneCanvas: HTMLCanvasElement = this.texture.image;
       this.texture.dispose();
-      const context = redoneCanvas.getContext('2d');
-      // context.fillStyle = 'green';
-      // context.fillRect(0, 0, redoneCanvas.width / 2, redoneCanvas.height / 2);
-      // context.fillStyle = 'red';
-      // context.fillRect(redoneCanvas.width / 2, 0, redoneCanvas.width / 2, redoneCanvas.height / 2);
-      // context.fillStyle = 'blue';
-      // context.fillRect(0, redoneCanvas.height / 2, redoneCanvas.width / 2, redoneCanvas.height / 2);
-      // context.fillStyle = 'yellow';
-      // context.fillRect(redoneCanvas.width / 2, redoneCanvas.height / 2, redoneCanvas.width / 2, redoneCanvas.height / 2);
       this.texture = new Three.Texture(redoneCanvas);
     }
 

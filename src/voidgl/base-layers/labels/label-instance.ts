@@ -2,39 +2,7 @@ import { computed, observable } from 'mobx';
 import { Label } from '../../primitives/label';
 import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
 import { IInstanceOptions, Instance } from '../../util/instance';
-
-export enum AnchorType {
-  BottomLeft,
-  BottomMiddle,
-  BottomRight,
-  Custom,
-  Middle,
-  MiddleLeft,
-  MiddleRight,
-  TopLeft,
-  TopMiddle,
-  TopRight,
-}
-
-export type Anchor = {
-  /** When the anchor gets calculated on the label, this allows the anchor to go beyond the borders of the label by this amount */
-  padding: number;
-  /** This is the location of the anchor. If a custom anchor is specified, then the x and y are not automatically populated */
-  type: AnchorType,
-  /** This is populated with the anchor's location relative to the label's surface */
-  x?: number,
-  /** This is populated with the anchor's location relative to the label's surface */
-  y?: number,
-};
-
-export enum ScaleType {
-  /** The size of the label will be tied to world space */
-  ALWAYS = 1,
-  /** The label will scale to it's font size then stop growing */
-  BOUND_MAX = 2,
-  /** The label will alwyas retain it's font size on screen */
-  NEVER = 3,
-}
+import { Anchor, AnchorType, ScaleType } from '../types';
 
 export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
   /**
@@ -252,7 +220,7 @@ export class LabelInstance extends Instance implements Label {
     // Easily.
     this._cssFont = LabelRasterizer.makeCSSFont(this, 1);
     // Look for other same texts that have been rasterized
-    const rasterizations = rasterizationLookUp.get(this._text);
+    let rasterizations = rasterizationLookUp.get(this._text);
     let rasterization: RasterizationReference;
 
     if (rasterizations) {
@@ -263,6 +231,10 @@ export class LabelInstance extends Instance implements Label {
       if (rasterization) {
         rasterization.references++;
       }
+    }
+
+    else {
+      rasterizations = new Map<CSSFont, RasterizationReference>();
     }
 
     // If we have not found an existing rasterization
@@ -279,10 +251,13 @@ export class LabelInstance extends Instance implements Label {
 
       // Ensure the sample scale is set. Defaults to 1.0
       rasterization.resource.sampleScale = rasterization.resource.sampleScale || 1.0;
-
       // Rasterize the resource generated for this label. We need it immediately rasterized so
       // That we can utilize the dimensions for calculations.
       LabelRasterizer.renderSync(rasterization.resource);
+      // Now that we have an official rasterization for this text / label combo, we shall store it
+      // For others to look up
+      rasterizationLookUp.set(this._text, rasterizations);
+      rasterizations.set(this._cssFont, rasterization);
     }
 
     this._rasterization = rasterization;

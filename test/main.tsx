@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
-import { AnchorType, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
+import { Anchor, AnchorType, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -210,25 +210,27 @@ export class Main extends React.Component<any, IMainState> {
         }));
       }
 
-      labelProvider.instances.push(new LabelInstance({
-        anchor: {
-          padding: 0,
-          type: AnchorType.Middle,
-        },
-        color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: 'Arial',
-        fontSize: 14,
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        id: 'label-test',
-        rasterization: {
-          scale: 1.1,
-        },
-        scaling: ScaleType.ALWAYS,
-        text: 'Hello World!',
-        x: 50,
-        y: 50,
-      }));
+      for (let i = 0; i < 5000; ++i) {
+        labelProvider.instances.push(new LabelInstance({
+          anchor: {
+            padding: 0,
+            type: AnchorType.Middle,
+          },
+          color: [Math.random(), Math.random(), Math.random(), 1.0],
+          fontFamily: 'Arial',
+          fontSize: 20,
+          fontStyle: 'normal',
+          fontWeight: 'normal',
+          id: `label-test-${i}`,
+          rasterization: {
+            scale: 1.0,
+          },
+          scaling: [ScaleType.NEVER, ScaleType.ALWAYS, ScaleType.BOUND_MAX][Math.floor(Math.random() * 3.0)],
+          text: 'Hello World!',
+          x: Math.random() * 1500,
+          y: Math.random() * 1500,
+        }));
+      }
 
       labelProvider.instances.push(new LabelInstance({
         anchor: {
@@ -242,7 +244,7 @@ export class Main extends React.Component<any, IMainState> {
         fontWeight: 'normal',
         id: 'label-test-2',
         rasterization: {
-          scale: 1.1,
+          scale: 1.0,
         },
         scaling: ScaleType.BOUND_MAX,
         text: 'Hello!',
@@ -250,25 +252,27 @@ export class Main extends React.Component<any, IMainState> {
         y: 250,
       }));
 
-      labelProvider.instances.push(new LabelInstance({
-        anchor: {
-          padding: 0,
-          type: AnchorType.Middle,
-        },
-        color: [0.0, 1.0, 1.0, 1.0],
-        fontFamily: 'Arial',
-        fontSize: 14,
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        id: 'label-test-3',
-        rasterization: {
-          scale: 1.1,
-        },
-        scaling: ScaleType.NEVER,
-        text: 'Hello World!',
-        x: 750,
-        y: 450,
-      }));
+      setInterval(() => {
+        for (let i = 0; i < 1000; ++i) {
+          const label = labelProvider.instances[Math.floor(Math.random() * labelProvider.instances.length)];
+          const anchor: Anchor = {
+            padding: 0,
+            type: [
+              AnchorType.TopLeft,
+              AnchorType.TopMiddle,
+              AnchorType.TopRight,
+              AnchorType.MiddleLeft,
+              AnchorType.Middle,
+              AnchorType.MiddleRight,
+              AnchorType.BottomLeft,
+              AnchorType.BottomMiddle,
+              AnchorType.BottomRight,
+            ][Math.floor(Math.random() * 9)],
+          };
+          label.setAnchor(anchor);
+        }
+
+      }, 100);
     }
 
     return (

@@ -126,4 +126,5 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     initShader(): IShaderInitialization<T>;
     willUpdateInstances(changes: [T, DiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
+    didUpdate(): void;
 }

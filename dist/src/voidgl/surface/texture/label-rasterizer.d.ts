@@ -11,6 +11,10 @@ export declare class LabelRasterizer {
      */
     static awaitContext(): Promise<void>;
     /**
+     * Attempts to populate the 'canvas' context for rendering labels offscreen.
+     */
+    static getContext(): CanvasRenderingContext2D;
+    /**
      * This renders our label to a sizeable canvas where we loop over the pixel data to determine
      * the bounds of the label.
      *
@@ -19,7 +23,7 @@ export declare class LabelRasterizer {
      *                                 should be within world space.
      * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
      */
-    static calculateLabelSize(resource: LabelAtlasResource, sampleScale?: number): void;
+    static calculateLabelSize(resource: LabelAtlasResource, sampleScale?: number, calculateTexture?: boolean): void;
     /**
      * This generates a canvas that has the cropped version of the label where the label
      * fits neatly in the canvas object.
@@ -38,4 +42,8 @@ export declare class LabelRasterizer {
      * Performs the rendering of the label
      */
     static render(resource: LabelAtlasResource): Promise<LabelAtlasResource>;
+    /**
+     * Performs the rendering of the label
+     */
+    static renderSync(resource: LabelAtlasResource): LabelAtlasResource;
 }

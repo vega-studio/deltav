@@ -8,6 +8,7 @@ import { View } from '../surface/view';
 import { Instance } from '../util/instance';
 import { ILayerProps, Layer } from './layer';
 import { IAtlasOptions } from './texture/atlas';
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
 export interface ILayerSurfaceOptions {
     /**
      * These are the atlas resources we want available that our layers can be provided to utilize
@@ -41,15 +42,15 @@ export interface ILayerSurfaceOptions {
 export interface ILayerConstructable<T extends Instance> {
     new (props: ILayerProps<T>): Layer<any, any, any>;
 }
-export declare type LayerInitializer<T extends Instance> = [ILayerConstructable<T> & {
+export declare type LayerInitializer<T extends Instance, U extends ILayerProps<any>> = [ILayerConstructable<T> & {
     defaultProps: any;
-}, ILayerProps<any>];
+}, U];
 /**
  * Used for reactive layer generation and updates.
  */
-export declare function createLayer<T extends Instance>(layerClass: ILayerConstructable<T> & {
+export declare function createLayer<T extends Instance, U extends ILayerProps<any>>(layerClass: ILayerConstructable<T> & {
     defaultProps: any;
-}, props: ILayerProps<any>): LayerInitializer<T>;
+}, props: U): LayerInitializer<T, U>;
 /**
  * This is a manager for layers. It will use voidgl layers to intelligently render resources
  * as efficiently as possible. Layers will be rendered in the order they are provided and this
@@ -73,6 +74,8 @@ export declare class LayerSurface {
     layers: Map<string, Layer<any, any, any>>;
     /** This is the THREE render system we use to render scenes with views */
     renderer: Three.WebGLRenderer;
+    /** This is the resource manager that handles resource requests for instances */
+    resourceManager: AtlasResourceManager;
     /**
      * This is all of the available scenes and their views for this surface. Layers reference the IDs
      * of the scenes and the views to be a part of their rendering state.
@@ -90,7 +93,6 @@ export declare class LayerSurface {
     willDisposeLayer: Map<string, boolean>;
     /** Read only getter for the gl context */
     readonly gl: WebGLRenderingContext;
-    constructor(options: ILayerSurfaceOptions);
     /**
      * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
      * as well as additional helper injections to aid in instancing and shader i/o.
@@ -105,6 +107,11 @@ export declare class LayerSurface {
      * This finalizes everything and sets up viewports and clears colors and
      */
     drawSceneView(scene: Three.Scene, view: View): void;
+    /**
+     * This is the beginning of the system. This should be called immediately after the surface is constructed.
+     * We make this mandatory outside of the constructor so we can make it follow an async pattern.
+     */
+    init(options: ILayerSurfaceOptions): Promise<this>;
     /**
      * This initializes the Canvas GL contexts needed for rendering.
      */
@@ -137,7 +144,7 @@ export declare class LayerSurface {
     /**
      * Used for reactive rendering and diffs out the layers for changed layers.
      */
-    render<T extends Instance>(layerInitializers: LayerInitializer<T>[]): void;
+    render<T extends Instance, U extends ILayerProps<any>>(layerInitializers: LayerInitializer<T, U>[]): void;
     /**
      * This establishes the rendering canvas context for the surface.
      */

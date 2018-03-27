@@ -26,7 +26,7 @@ export declare class Main extends React.Component<any, IMainState> {
     componentWillUnmount(): void;
     draw(): void;
     setContainer: (element: HTMLDivElement) => void;
-    setContext: (canvas: HTMLCanvasElement) => void;
+    setContext: (canvas: HTMLCanvasElement) => Promise<void>;
     sizeContext(): void;
     /**
      * @override

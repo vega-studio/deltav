@@ -44,17 +44,19 @@ export declare class Atlas extends IdentifyByKey {
     /** Stores the size of the atlas texture */
     height: AtlasSize;
     /** This is the parent manager of the atlas */
-    private manager;
+    manager: AtlasManager;
     /** This is the packing of the  */
     packing: PackNode;
+    /** This is the actual texture object that represents the atlas on the GPU */
+    texture: Three.Texture;
+    /** These are the applied settings to our texture */
+    textureSettings?: Partial<Three.Texture>;
     /**
      * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
      * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
      * the atlas at any given moment.
      */
     validResources: Map<AtlasResource, boolean>;
-    /** This is the actual texture object that represents the atlas on the GPU */
-    texture: Three.Texture;
     /** Stores the size of the atlas texture */
     width: AtlasSize;
     constructor(options: IAtlasOptions);
@@ -81,6 +83,15 @@ export declare class Atlas extends IdentifyByKey {
      * to actually reflect the resource not existing on the atlas.
      */
     removeResource(resource: AtlasResource): void;
+    /**
+     * TODO:
+     * This performs the currently best known way to update a texture.
+     *
+     * This is the current best attempt at updating the atlas which is junk as it destroys the old texture
+     * And makes a new one. We REALLY should be just subTexture2D updating the texture, but Three makes that really
+     * Difficult
+     */
+    updateTexture(canvas?: HTMLCanvasElement): void;
     /**
      * This frees up all the resources down to the GPU related to this atlas. It also
      * loops through every resource and invalidates the texturing information within

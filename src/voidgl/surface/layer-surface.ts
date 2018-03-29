@@ -68,12 +68,15 @@ export interface ILayerConstructable<T extends Instance> {
   new (props: ILayerProps<T>): Layer<any, any, any>;
 }
 
-export type LayerInitializer<T extends Instance, U extends ILayerProps<any>> = [ILayerConstructable<T> & {defaultProps: any}, U];
+/**
+ * This is a pair of a Class Type and the props to be applied to that class type.
+ */
+export type LayerInitializer = [ILayerConstructable<Instance> & {defaultProps: ILayerProps<Instance>}, ILayerProps<Instance>];
 
 /**
  * Used for reactive layer generation and updates.
  */
-export function createLayer<T extends Instance, U extends ILayerProps<any>>(layerClass: ILayerConstructable<T> & {defaultProps: any}, props: U): LayerInitializer<T, U> {
+export function createLayer<T extends Instance, U extends ILayerProps<T>>(layerClass: ILayerConstructable<T> & {defaultProps: U}, props: U): LayerInitializer {
   return [layerClass, props];
 }
 
@@ -505,7 +508,7 @@ export class LayerSurface {
   /**
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
-  render<T extends Instance, U extends ILayerProps<any>>(layerInitializers: LayerInitializer<T, U>[]) {
+  render(layerInitializers: LayerInitializer[]) {
     // Loop through all of the initializers and properly add and remove layers as needed
     if (layerInitializers && layerInitializers.length > 0) {
       layerInitializers.forEach(init => {

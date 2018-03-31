@@ -21,7 +21,7 @@ export interface IRingLayerState {}
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class SectionLayer extends Layer<
+export class RingLayer extends Layer<
   RingInstance,
   IRingLayerProps,
   IRingLayerState

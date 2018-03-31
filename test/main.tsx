@@ -1,14 +1,16 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
-import { Anchor, AnchorType, ISceneOptions, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
+import { ISceneOptions, LayerInitializer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
-import { CircleLayer } from '../src/voidgl/base-layers/circles';
-import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
+import { LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
-import { DataProvider } from '../src/voidgl/util/data-provider';
+import { BaseExample } from './examples/base-example';
+import { BoxOfCircles } from './examples/box-of-circles';
+import { BoxOfRings } from './examples/box-of-rings';
+import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
+import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 
 /**
  * The state of the application
@@ -157,7 +159,6 @@ export class Main extends React.Component<any, IMainState> {
         context: this.context,
         eventManagers: scenes.map(init => init.control),
         handlesWheelEvents: true,
-        pixelRatio: 2,
         scenes: scenes.map(init => init.scene),
       });
 
@@ -193,118 +194,22 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     if (this.surface) {
-      const circleProvider = new DataProvider<CircleInstance>([]);
-      const ringProvider = new DataProvider<RingInstance>([]);
-      const labelProvider = new DataProvider<LabelInstance>([]);
+      const tests: BaseExample[] = [
+        new BoxOfRings(),
+        new BoxOfCircles(),
+        new ChangingAnchorLabels(),
+        new LabelAnchorsAndScales(),
+      ];
 
-      this.surface.render([
-        createLayer(SectionLayer, {
-          data: ringProvider,
-          key: 'ring-layer-0',
-          scene: this.allScenes[0].name,
-        }),
-        createLayer(CircleLayer, {
-          data: circleProvider,
-          key: 'circle-layer-0',
-          scene: this.allScenes[1].name,
-        }),
-        createLayer(LabelLayer, {
-          atlas: 'all-resources',
-          data: labelProvider,
-          key: 'label-layer-0',
-          scene: this.allScenes[2].name,
-        }),
-      ]);
+      const layers: LayerInitializer[] = [];
 
-      for (let i = 0; i < 100; ++i) {
-        for (let k = 0; k < 100; ++k) {
-          const circle = new CircleInstance({
-            color: [1.0, 0.0, 0.0, 1.0],
-            id: `circle${i * 100 + k}`,
-            radius: 5,
-            x: i * 10,
-            y: k * 10,
-          });
+      tests.forEach((test, i) => {
+        const provider = test.makeProvider();
+        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
+        layers.push(layer);
+      });
 
-          circleProvider.instances.push(circle);
-        }
-      }
-
-      for (let i = 0; i < 250; ++i) {
-        for (let k = 0; k < 250; ++k) {
-          ringProvider.instances.push(new RingInstance({
-            color: [Math.random(), Math.random(), Math.random(), 1.0],
-            id: `ring_${i}_${k}`,
-            radius: 10,
-            thickness: 3,
-            x: i * 20,
-            y: k * 20,
-          }));
-        }
-      }
-
-      for (let i = 0; i < 5000; ++i) {
-        labelProvider.instances.push(new LabelInstance({
-          anchor: {
-            padding: 0,
-            type: AnchorType.Middle,
-          },
-          color: [Math.random(), Math.random(), Math.random(), 1.0],
-          fontFamily: 'Arial',
-          fontSize: 20,
-          fontStyle: 'normal',
-          fontWeight: 'normal',
-          id: `label-test-${i}`,
-          rasterization: {
-            scale: 1.0,
-          },
-          scaling: [ScaleType.NEVER, ScaleType.ALWAYS, ScaleType.BOUND_MAX][Math.floor(Math.random() * 3.0)],
-          text: 'Hello World!',
-          x: Math.random() * 1500,
-          y: Math.random() * 1500,
-        }));
-      }
-
-      labelProvider.instances.push(new LabelInstance({
-        anchor: {
-          padding: 0,
-          type: AnchorType.Middle,
-        },
-        color: [0.0, 1.0, 0.0, 1.0],
-        fontFamily: 'Arial',
-        fontSize: 28,
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        id: 'label-test-2',
-        rasterization: {
-          scale: 1.0,
-        },
-        scaling: ScaleType.BOUND_MAX,
-        text: 'Hello!',
-        x: 350,
-        y: 250,
-      }));
-
-      setInterval(() => {
-        for (let i = 0; i < 1000; ++i) {
-          const label = labelProvider.instances[Math.floor(Math.random() * labelProvider.instances.length)];
-          const anchor: Anchor = {
-            padding: 0,
-            type: [
-              AnchorType.TopLeft,
-              AnchorType.TopMiddle,
-              AnchorType.TopRight,
-              AnchorType.MiddleLeft,
-              AnchorType.Middle,
-              AnchorType.MiddleRight,
-              AnchorType.BottomLeft,
-              AnchorType.BottomMiddle,
-              AnchorType.BottomRight,
-            ][Math.floor(Math.random() * 9)],
-          };
-          label.setAnchor(anchor);
-        }
-      }, 100);
+      this.surface.render(layers);
     }
 
     return (

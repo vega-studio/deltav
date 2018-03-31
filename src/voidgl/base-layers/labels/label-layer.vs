@@ -6,9 +6,9 @@ varying vec2 texCoord;
 void main() {
   ${attributes}
 
+  // Destructure threejs's bug with the position requirement
   float normal = position.x;
   float side = position.y;
-
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;
   // Get the position of the current vertex

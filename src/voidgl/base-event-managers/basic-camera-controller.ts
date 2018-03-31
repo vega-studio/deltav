@@ -50,7 +50,10 @@ export class BasicCameraController extends EventManager {
   findCoveredStartView(e: IMouseInteraction) {
     const found = e.viewsUnderMouse.find(under => this.startViews.indexOf(under.view.id) > -1);
     this.startViewDidStart = Boolean(found);
-    this.coveredStartView = found.view;
+
+    if (found) {
+      this.coveredStartView = found.view;
+    }
   }
 
   getTargetView(e: IMouseInteraction) {
@@ -98,8 +101,8 @@ export class BasicCameraController extends EventManager {
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
 
-      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
-      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
+      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;
+      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y) / targetView.pixelRatio;
     }
   }
 

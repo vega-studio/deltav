@@ -43,6 +43,12 @@ export interface ILayerSurfaceOptions {
    */
   handlesWheelEvents?: boolean;
   /**
+   * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
+   * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
+   * have better performance if needed.
+   */
+  pixelRatio?: number;
+  /**
    * This sets up the available scenes the surface will have to work with. Layers then can
    * reference the scene by it's scene property. The order of the scenes here is the drawing
    * order of the scenes.
@@ -101,6 +107,8 @@ export class LayerSurface {
   private mouseManager: MouseEventManager;
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<any, any, any>>();
+  /** This is the density the rendering renders for the surface */
+  pixelRatio: number = window.devicePixelRatio;
   /** This is the THREE render system we use to render scenes with views */
   renderer: Three.WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
@@ -175,12 +183,14 @@ export class LayerSurface {
 
         // We must perform any operations necessary to make the view camera fit the viewport
         // Correctly
-        view.fitViewtoViewport(new Bounds({
-          height: this.context.canvas.height,
-          width: this.context.canvas.width,
-          x: 0,
-          y: 0,
-        }));
+        view.fitViewtoViewport(
+          new Bounds({
+            height: this.context.canvas.height,
+            width: this.context.canvas.width,
+            x: 0,
+            y: 0,
+          }),
+        );
 
         // Let the layers update their uniforms before the draw
         for (let j = 0, endj = layers.length; j < endj; ++j) {
@@ -202,7 +212,7 @@ export class LayerSurface {
     // Are updated in the interactions and flag our interactions ready for mouse input
     if (this.mouseManager.waitingForRender) {
       this.sceneViews.forEach(sceneView => {
-        sceneView.bounds = new DataBounds(sceneView.view.viewBounds);
+        sceneView.bounds = new DataBounds(sceneView.view.screenBounds);
         sceneView.bounds.data = sceneView;
       });
 
@@ -221,6 +231,8 @@ export class LayerSurface {
     const offset = {x: view.viewBounds.left, y: view.viewBounds.top};
     const size = view.viewBounds;
     const rendererSize = this.renderer.getSize();
+    rendererSize.width *= this.renderer.getPixelRatio();
+    rendererSize.height *= this.renderer.getPixelRatio();
     const background = view.background;
 
     // Set the scissor rectangle.
@@ -253,7 +265,7 @@ export class LayerSurface {
     const box = this.currentViewport;
 
     if (!box || box.x !== offset.x || box.y !== offset.y || box.width !== size.width || box.height !== size.height) {
-      this.renderer.setViewport(offset.x, offset.y, size.width, size.height);
+      this.renderer.setViewport(offset.x / this.pixelRatio, offset.y / this.pixelRatio, size.width, size.height);
       this.currentViewport = {
         height: size.height,
         width: size.width,
@@ -271,6 +283,8 @@ export class LayerSurface {
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */
   async init(options: ILayerSurfaceOptions) {
+    // Make sure our desired pixel ratio is set up
+    this.pixelRatio = options.pixelRatio || this.pixelRatio;
     // Make sure we have a gl context to work with
     this.setContext(options.context);
     // Initialize our GL needs that set the basis for rendering
@@ -318,8 +332,9 @@ export class LayerSurface {
     this.renderer.setFaceCulling(Three.CullFaceNone);
 
     // This sets the pixel ratio to handle differing pixel densities in screens
-    // This.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(width, height);
+    // Set the pixel ratio to match the pixel density of the monitor in use
+    this.renderer.setPixelRatio(this.pixelRatio);
 
     // Applies the background color and establishes whether or not the context supports
     // Alpha or not
@@ -363,6 +378,7 @@ export class LayerSurface {
       options.scenes.forEach(sceneOptions => {
         // Make us a new scene based on the requested options
         const newScene = new Scene(sceneOptions);
+
         // Make sure the default view is available for each scene
         // IFF no view is provided for the scene
         if (sceneOptions.views.length === 0) {
@@ -381,6 +397,7 @@ export class LayerSurface {
           newView.camera = newView.camera || this.defaultSceneElements.camera;
           newView.viewCamera = newView.viewCamera || this.defaultSceneElements.viewCamera;
           newView.viewport = newView.viewport || this.defaultSceneElements.viewport;
+          newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
           this.sceneViews.push({
@@ -542,6 +559,40 @@ export class LayerSurface {
     this.layers.forEach((layer, id) => {
       this.willDisposeLayer.set(id, true);
     });
+  }
+
+  /**
+   * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
+   * dimensions for handling all of our rendered elements.
+   */
+  fitContainer() {
+    const container = this.context.canvas.parentElement;
+
+    if (container) {
+      const canvas = this.context.canvas;
+      canvas.className = '';
+      canvas.setAttribute('style', '');
+      container.style.position = 'relative';
+      canvas.style.position = 'absolute';
+      canvas.style.left = '0xp';
+      canvas.style.top = '0xp';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.setAttribute('width', '');
+      canvas.setAttribute('height', '');
+      const containerBox = container.getBoundingClientRect();
+      const box = canvas.getBoundingClientRect();
+
+      this.resize(box.width || 100, containerBox.height || 100);
+    }
+  }
+
+  resize(width: number, height: number, pixelRatio?: number) {
+    this.pixelRatio = pixelRatio || this.pixelRatio;
+    this.sceneViews.forEach(sceneView => sceneView.view.pixelRatio = this.pixelRatio);
+    this.renderer.setSize(width || 100, height || 100);
+    this.renderer.setPixelRatio(this.pixelRatio);
+    this.mouseManager.resize();
   }
 
   /**

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { CircleInstance } from 'voidgl/base-layers/circles/circle-instance';
-import { Anchor, AnchorType, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
+import { Anchor, AnchorType, ISceneOptions, LabelInstance, LabelLayer, RingInstance, ScaleType, SectionLayer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { CircleLayer } from '../src/voidgl/base-layers/circles';
 import { createLayer, LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -17,6 +17,64 @@ export interface IMainState {
   size: { width: number, height: number };
 }
 
+export type SceneInitializer = {
+  name: string,
+  camera: ChartCamera,
+  control: BasicCameraController,
+  scene: ISceneOptions;
+};
+
+function makeSceneBlock(sceneBlockSize: number) {
+  const scenes: SceneInitializer[] = [];
+  const viewSize = 100 / sceneBlockSize;
+
+  const backgrounds: [number, number, number, number][] = [
+    [0.1, 0.0, 0.0, 1.0],
+    [0.0, 0.1, 0.0, 1.0],
+    [0.0, 0.0, 0.1, 1.0],
+    [0.1, 0.1, 0.0, 1.0],
+    [0.1, 0.0, 0.1, 1.0],
+    [0.1, 0.1, 0.1, 1.0],
+    [0.0, 0.1, 0.1, 1.0],
+  ];
+
+  for (let i = 0; i < sceneBlockSize; ++i) {
+    for (let k = 0; k < sceneBlockSize; ++k) {
+      const camera = new ChartCamera();
+      const name = `${i}_${k}`;
+      const init: SceneInitializer = {
+        camera,
+        control: new BasicCameraController({
+          camera,
+          startView: name,
+        }),
+        name,
+        scene: {
+          key: name,
+          views: [
+            {
+              background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
+              camera,
+              clearFlags: [ClearFlags.COLOR],
+              key: name,
+              viewport: {
+                height: `${viewSize}%`,
+                left: `${viewSize * k}%`,
+                top: `${viewSize * i}%`,
+                width: `${viewSize}%`,
+              },
+            },
+          ],
+        },
+      };
+
+      scenes.push(init);
+    }
+  }
+
+  return scenes;
+}
+
 /**
  * Entry class for the Application
  */
@@ -29,6 +87,8 @@ export class Main extends React.Component<any, IMainState> {
   willAnimate: number = 10;
   /** The layer manager that draws our GL elements */
   surface: LayerSurface;
+  /** This is all of the scenes that were initialized */
+  allScenes: SceneInitializer[] = [];
 
   state: IMainState = {
     size: {
@@ -37,7 +97,12 @@ export class Main extends React.Component<any, IMainState> {
     },
   };
 
+  componentWillMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
   componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
     this.surface && this.surface.destroy();
     this.willAnimate = 0;
   }
@@ -49,6 +114,12 @@ export class Main extends React.Component<any, IMainState> {
 
     if (this.surface) {
       this.surface.draw();
+    }
+  }
+
+  handleResize = () => {
+    if (this.surface) {
+      this.surface.fitContainer();
     }
   }
 
@@ -70,10 +141,10 @@ export class Main extends React.Component<any, IMainState> {
       generate = true;
     }
 
-    const ringCamera = new ChartCamera();
-    const circleCamera = new ChartCamera();
-
     if (generate) {
+      const scenes = makeSceneBlock(3);
+      this.allScenes = scenes;
+
       this.surface = await new LayerSurface().init({
         atlasResources: [
           {
@@ -84,50 +155,10 @@ export class Main extends React.Component<any, IMainState> {
         ],
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,
-        eventManagers: [
-          new BasicCameraController({
-            camera: ringCamera,
-            ignoreCoverViews: true,
-            startView: 'ring-view',
-          }),
-          new BasicCameraController({
-            camera: circleCamera,
-            ignoreCoverViews: true,
-            startView: 'circle-view',
-          }),
-        ],
+        eventManagers: scenes.map(init => init.control),
         handlesWheelEvents: true,
-        scenes: [
-          {
-            key: 'rings',
-            views: [
-              {
-                camera: ringCamera,
-                key: 'ring-view',
-              },
-            ],
-          },
-          {
-            key: 'circles',
-            views: [
-              {
-                camera: circleCamera,
-                clearFlags: [ClearFlags.DEPTH],
-                key: 'circle-view',
-              },
-            ],
-          },
-          {
-            key: 'labels',
-            views: [
-              {
-                camera: circleCamera,
-                clearFlags: [ClearFlags.DEPTH],
-                key: 'label-view',
-              },
-            ],
-          },
-        ],
+        pixelRatio: 2,
+        scenes: scenes.map(init => init.scene),
       });
 
       this.willAnimate = 10;
@@ -170,18 +201,18 @@ export class Main extends React.Component<any, IMainState> {
         createLayer(SectionLayer, {
           data: ringProvider,
           key: 'ring-layer-0',
-          scene: 'rings',
+          scene: this.allScenes[0].name,
         }),
         createLayer(CircleLayer, {
           data: circleProvider,
           key: 'circle-layer-0',
-          scene: 'circles',
+          scene: this.allScenes[1].name,
         }),
         createLayer(LabelLayer, {
           atlas: 'all-resources',
           data: labelProvider,
           key: 'label-layer-0',
-          scene: 'labels',
+          scene: this.allScenes[2].name,
         }),
       ]);
 
@@ -200,14 +231,16 @@ export class Main extends React.Component<any, IMainState> {
       }
 
       for (let i = 0; i < 250; ++i) {
-        ringProvider.instances.push(new RingInstance({
-          color: [Math.random(), Math.random(), Math.random(), 1.0],
-          id: `ring_${i}`,
-          radius: Math.random() * 100 + 10,
-          thickness: Math.random() * 20 + 1,
-          x: Math.random() * 1600,
-          y: Math.random() * 800,
-        }));
+        for (let k = 0; k < 250; ++k) {
+          ringProvider.instances.push(new RingInstance({
+            color: [Math.random(), Math.random(), Math.random(), 1.0],
+            id: `ring_${i}_${k}`,
+            radius: 10,
+            thickness: 3,
+            x: i * 20,
+            y: k * 20,
+          }));
+        }
       }
 
       for (let i = 0; i < 5000; ++i) {
@@ -271,7 +304,6 @@ export class Main extends React.Component<any, IMainState> {
           };
           label.setAnchor(anchor);
         }
-
       }, 100);
     }
 

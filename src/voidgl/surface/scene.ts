@@ -42,6 +42,7 @@ export class Scene extends IdentifyByKey {
   constructor(options: ISceneOptions) {
     super(options);
     this.container.frustumCulled = false;
+    this.container.autoUpdate = false;
   }
 
   /**

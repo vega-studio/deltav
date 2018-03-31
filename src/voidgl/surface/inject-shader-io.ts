@@ -161,6 +161,13 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       size: UniformSize.TWO,
       update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height],
     },
+    // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
+    // Things like gl_PointSize will need this metric if not working in clip space
+    {
+      name: 'pixelRatio',
+      size: UniformSize.ONE,
+      update: () => [layer.view.pixelRatio],
+    },
   ]);
 
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially

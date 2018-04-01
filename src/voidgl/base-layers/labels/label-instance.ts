@@ -265,7 +265,7 @@ export class LabelInstance extends Instance implements Label {
     this._height = rasterization.resource.rasterization.world.height;
 
     // Make sure the anchor is set to the appropriate location
-    this.setAnchor(options.anchor);
+    options.anchor && this.setAnchor(options.anchor);
   }
 
   /**

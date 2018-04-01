@@ -10,20 +10,14 @@ export interface IImageInstanceOptions extends IInstanceOptions {
    * which the image will be scaled around.
    */
   anchor?: Anchor;
-  /** The color the image should render as */
-  color: [number, number, number, number];
   /** Depth sorting of the image (or the z value of the lable) */
   depth?: number;
-  /** This allows for control over rasterization to the atlas */
-  rasterization?: {
-    /**
-     * This is the scale of the rasterization on the atlas. Higher numbers increase atlas useage, but can provide
-     * higher quality render outputs to the surface.
-     */
-    scale: number;
-  };
+  /**  */
+  element?: HTMLImageElement;
   /** Sets the way the image scales with the world */
   scaling?: ScaleType;
+  /** The color the image should render as */
+  tint: [number, number, number, number];
   /** The x coordinate where the image will be anchored to in world space */
   x?: number;
   /** The y coordinate where the image will be anchored to in world space */
@@ -109,7 +103,7 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, image: ImageInstance) =
  */
 export class ImageInstance extends Instance implements Image {
   /** This is the rendered color of the image */
-  @observable color: [number, number, number, number] = [0, 0, 0, 1];
+  @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the lable) */
   @observable depth: number = 0;
   /** Sets the way the image scales with the world */
@@ -173,11 +167,13 @@ export class ImageInstance extends Instance implements Image {
     console.warn('Images layer is not developed yet. Do not use this feature yet.');
 
     this.depth = options.depth || this.depth;
-    this.color = options.color || this.color;
+    this.tint = options.tint || this.tint;
     this.scaling = options.scaling || this.scaling;
     this.x = options.x || this.x;
     this.y = options.y || this.y;
 
+    // This is the image that is to be rendered
+    this._element = options.element;
     // Look for other same texts that have been rasterized
     let rasterization: RasterizationReference = rasterizationLookUp.get(this._path || this._element);
 
@@ -192,11 +188,6 @@ export class ImageInstance extends Instance implements Image {
         references: 1,
         resource: new ImageAtlasResource(this),
       };
-
-      // Look to see if any rasterization options were specified
-      if (options.rasterization) {
-        rasterization.resource.sampleScale = options.rasterization.scale || 1.0;
-      }
 
       // Ensure the sample scale is set. Defaults to 1.0
       rasterization.resource.sampleScale = rasterization.resource.sampleScale || 1.0;
@@ -213,7 +204,7 @@ export class ImageInstance extends Instance implements Image {
     this._height = rasterization.resource.rasterization.world.height;
 
     // Make sure the anchor is set to the appropriate location
-    this.setAnchor(options.anchor);
+    options.anchor && this.setAnchor(options.anchor);
   }
 
   /**

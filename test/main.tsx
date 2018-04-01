@@ -10,6 +10,7 @@ import { BaseExample } from './examples/base-example';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
+// Import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 
 /**
@@ -26,56 +27,18 @@ export type SceneInitializer = {
   scene: ISceneOptions;
 };
 
-function makeSceneBlock(sceneBlockSize: number) {
-  const scenes: SceneInitializer[] = [];
-  const viewSize = 100 / sceneBlockSize;
+/** These are all of the tests to be rendered */
+const tests: BaseExample[] = [
+  new BoxOfRings(),
+  new BoxOfCircles(),
+  new ChangingAnchorLabels(),
+  new LabelAnchorsAndScales(),
+  // TODO: Images are still a WIP
+  // New Images(),
+];
 
-  const backgrounds: [number, number, number, number][] = [
-    [0.1, 0.0, 0.0, 1.0],
-    [0.0, 0.1, 0.0, 1.0],
-    [0.0, 0.0, 0.1, 1.0],
-    [0.1, 0.1, 0.0, 1.0],
-    [0.1, 0.0, 0.1, 1.0],
-    [0.1, 0.1, 0.1, 1.0],
-    [0.0, 0.1, 0.1, 1.0],
-  ];
-
-  for (let i = 0; i < sceneBlockSize; ++i) {
-    for (let k = 0; k < sceneBlockSize; ++k) {
-      const camera = new ChartCamera();
-      const name = `${i}_${k}`;
-      const init: SceneInitializer = {
-        camera,
-        control: new BasicCameraController({
-          camera,
-          startView: name,
-        }),
-        name,
-        scene: {
-          key: name,
-          views: [
-            {
-              background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-              camera,
-              clearFlags: [ClearFlags.COLOR],
-              key: name,
-              viewport: {
-                height: `${viewSize}%`,
-                left: `${viewSize * k}%`,
-                top: `${viewSize * i}%`,
-                width: `${viewSize}%`,
-              },
-            },
-          ],
-        },
-      };
-
-      scenes.push(init);
-    }
-  }
-
-  return scenes;
-}
+/** These are the layers for the tests that are generated */
+const layers: LayerInitializer[] = [];
 
 /**
  * Entry class for the Application
@@ -125,6 +88,69 @@ export class Main extends React.Component<any, IMainState> {
     }
   }
 
+  handleToggleMonitorDensity = () => {
+    if (this.surface.pixelRatio !== 1.0) {
+      this.surface.resize(this.context.width / window.devicePixelRatio, this.context.height / window.devicePixelRatio, 1.0);
+    }
+
+    else {
+      this.surface.resize(this.context.width * window.devicePixelRatio, this.context.height * window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    this.forceUpdate();
+  }
+
+  makeSceneBlock(sceneBlockSize: number) {
+    const scenes: SceneInitializer[] = [];
+    const viewSize = 100 / sceneBlockSize;
+
+    const backgrounds: [number, number, number, number][] = [
+      [0.1, 0.0, 0.0, 1.0],
+      [0.0, 0.1, 0.0, 1.0],
+      [0.0, 0.0, 0.1, 1.0],
+      [0.1, 0.1, 0.0, 1.0],
+      [0.1, 0.0, 0.1, 1.0],
+      [0.1, 0.1, 0.1, 1.0],
+      [0.0, 0.1, 0.1, 1.0],
+    ];
+
+    for (let i = 0; i < sceneBlockSize; ++i) {
+      for (let k = 0; k < sceneBlockSize; ++k) {
+        const camera = new ChartCamera();
+        const name = `${i}_${k}`;
+        const init: SceneInitializer = {
+          camera,
+          control: new BasicCameraController({
+            camera,
+            startView: name,
+          }),
+          name,
+          scene: {
+            key: name,
+            views: [
+              {
+                background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
+                camera,
+                clearFlags: [ClearFlags.COLOR],
+                key: name,
+                viewport: {
+                  height: `${viewSize}%`,
+                  left: `${viewSize * k}%`,
+                  top: `${viewSize * i}%`,
+                  width: `${viewSize}%`,
+                },
+              },
+            ],
+          },
+        };
+
+        scenes.push(init);
+      }
+    }
+
+    return scenes;
+  }
+
   setContainer = (element: HTMLDivElement) => {
     this.container = element;
     setTimeout(() => this.sizeContext(), 100);
@@ -144,9 +170,10 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     if (generate) {
-      const scenes = makeSceneBlock(3);
+      const scenes = this.makeSceneBlock(3);
       this.allScenes = scenes;
 
+      // Establish the surface and scenes needed
       this.surface = await new LayerSurface().init({
         atlasResources: [
           {
@@ -162,6 +189,14 @@ export class Main extends React.Component<any, IMainState> {
         scenes: scenes.map(init => init.scene),
       });
 
+      // Generate the Layers for the tests now that the scenes are established
+      tests.forEach((test, i) => {
+        const provider = test.makeProvider();
+        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
+        layers.push(layer);
+      });
+
+      // Begin the draw loop
       this.willAnimate = 10;
       requestAnimationFrame(() => this.draw());
 
@@ -194,28 +229,20 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     if (this.surface) {
-      const tests: BaseExample[] = [
-        new BoxOfRings(),
-        new BoxOfCircles(),
-        new ChangingAnchorLabels(),
-        new LabelAnchorsAndScales(),
-      ];
-
-      const layers: LayerInitializer[] = [];
-
-      tests.forEach((test, i) => {
-        const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
-        layers.push(layer);
-      });
-
       this.surface.render(layers);
     }
 
     return (
       <div className="voidray-layer-surface" ref={this.setContainer}>
         <canvas ref={this.setContext} width={size.width} height={size.height} />
-      </div>
+          {window.devicePixelRatio === 1.0 ? null :
+            <div className={'test-button'} onClick={this.handleToggleMonitorDensity}>{
+              (this.surface && this.surface.pixelRatio === window.devicePixelRatio) ?
+              'Disable Monitor Density' :
+              'Enable Monitor Density'
+            }</div>
+          }
+      </div >
     );
   }
 }

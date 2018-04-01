@@ -14,7 +14,7 @@ export class LabelAnchorsAndScales extends BaseExample {
   makeProvider(): DataProvider<LabelInstance> {
     const provider = new DataProvider<LabelInstance>([]);
 
-    let count = 0;
+    let count = 1;
 
     provider.instances.push(new LabelInstance({
       anchor: {

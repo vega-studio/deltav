@@ -90,9 +90,9 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'color',
+          name: 'tint',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: (o) => o.tint,
         },
       ],
       uniforms: [

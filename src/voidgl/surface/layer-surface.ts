@@ -565,7 +565,7 @@ export class LayerSurface {
    * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
    * dimensions for handling all of our rendered elements.
    */
-  fitContainer() {
+  fitContainer(pixelRatio?: number) {
     const container = this.context.canvas.parentElement;
 
     if (container) {

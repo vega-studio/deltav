@@ -40,7 +40,7 @@ export class ImageRasterizer {
    *                                 should be within world space.
    * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
    */
-  static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number, calculateTexture?: boolean) {
+  static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number) {
     /** Get the image properties for rasterizing */
     const image = resource.image.element;
 
@@ -62,54 +62,18 @@ export class ImageRasterizer {
       world: { height: 0, width: 0},
     };
 
-    // When a forced sampling is present, it calculates that as the world space
-    if (!calculateTexture) {
-      // Update the calculated texture size.
-      resource.rasterization.world = {
-        height: image.height,
-        width: image.width,
-      };
-    }
+    // Update the calculated texture size.
+    resource.rasterization.texture = {
+      height: image.height * resource.sampleScale,
+      width: image.width * resource.sampleScale,
+    };
 
-    // Otherwise we first calculate the texture rasterization for the image
-    else {
-      // Update the calculated texture size.
-      resource.rasterization.texture = {
-        height: image.height * resource.sampleScale,
-        width: image.width * resource.sampleScale,
-      };
+    resource.rasterization.world = {
+      height: image.height,
+      width: image.width,
+    };
 
-      resource.rasterization.image = image;
-    }
-  }
-
-  /**
-   * This generates a canvas that has the cropped version of the image where the image
-   * fits neatly in the canvas object.
-   */
-  static createCroppedCanvas(resource: ImageAtlasResource, top: number, left: number) {
-    const cropped = document.createElement('canvas');
-    const context = cropped.getContext('2d');
-
-    if (context) {
-      const texture = resource.rasterization.texture;
-      cropped.width = texture.width;
-      cropped.height = texture.height;
-      context.imageSmoothingEnabled = false;
-
-      // Draw just the region the image appears into the canvas
-      context.drawImage(
-        canvas.canvas,
-        left, top, texture.width, texture.height,
-        0, 0, texture.width, texture.height,
-      );
-    }
-
-    else {
-      console.warn('Could not create a canvas 2d context to generate a image\'s cropped image.');
-    }
-
-    return cropped;
+    resource.rasterization.image = image;
   }
 
   /**
@@ -120,7 +84,7 @@ export class ImageRasterizer {
     await this.awaitContext();
 
     // Calculate all of the image metrics and ensure the image can be drawn
-    this.calculateImageSize(resource, resource.sampleScale, true);
+    this.calculateImageSize(resource, resource.sampleScale);
 
     return resource;
   }
@@ -139,7 +103,7 @@ export class ImageRasterizer {
 
     // Calculate all of the image metrics and generate a canvas on the image that can
     // Be rendered to the canvas.
-    this.calculateImageSize(resource, resource.sampleScale, true);
+    this.calculateImageSize(resource, resource.sampleScale);
 
     return resource;
   }

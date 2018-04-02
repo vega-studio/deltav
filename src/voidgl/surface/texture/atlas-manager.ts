@@ -228,7 +228,16 @@ export class AtlasManager {
     if (resource instanceof ImageAtlasResource) {
       // If the texture was provided an image then we ensure the image is loaded
       // Then hand it back
-      if (resource.image) {
+      if (resource.image.element) {
+        if (resource.image.element.width !== 0 && resource.image.element.height !== 0) {
+          const image = resource.image.element;
+          subTexture.pixelWidth = image.width;
+          subTexture.pixelHeight = image.height;
+          subTexture.aspectRatio = image.width / image.height;
+
+          return image;
+        }
+
         const image = await new Promise<HTMLImageElement | null>((resolve, reject) => {
           const image: HTMLImageElement = resource.image.element;
 

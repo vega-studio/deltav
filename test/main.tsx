@@ -10,7 +10,7 @@ import { BaseExample } from './examples/base-example';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
-// Import { Images } from './examples/images';
+import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 
 /**
@@ -34,7 +34,7 @@ const tests: BaseExample[] = [
   new ChangingAnchorLabels(),
   new LabelAnchorsAndScales(),
   // TODO: Images are still a WIP
-  // New Images(),
+  new Images(),
 ];
 
 /** These are the layers for the tests that are generated */

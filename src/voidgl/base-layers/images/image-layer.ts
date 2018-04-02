@@ -20,8 +20,6 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<ImageInstance> {
-    console.warn('Images layer is not developed yet. Do not use this feature yet.');
-
     const vertexToNormal: {[key: number]: number} = {
       0: 1,
       1: 1,

@@ -1,7 +1,7 @@
-import { createLayer, DataProvider, ImageInstance, ImageLayer, LayerInitializer } from '../../src';
+import { createLayer, DataProvider, ImageInstance, ImageLayer, LayerInitializer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
-const iconData = require('./images/icon-close-x-white.png');
+const iconData = require('./images/leaf.png');
 const icon = new Image();
 icon.src = iconData;
 
@@ -23,10 +23,15 @@ export class Images extends BaseExample {
         const image = new ImageInstance({
           element: icon,
           id: `image${i * 100 + k}`,
-          tint: [1.0, 0.0, 0.0, 1.0],
-          x: i * 10,
-          y: k * 10,
+          scaling: ScaleType.ALWAYS,
+          tint: [1.0, 1.0, 1.0, 1.0],
         });
+
+        const aspect = image.width / image.height;
+        image.width = 25 * aspect;
+        image.height = 25;
+        image.x = i * image.width;
+        image.y = k * image.height;
 
         imageProvider.instances.push(image);
       }

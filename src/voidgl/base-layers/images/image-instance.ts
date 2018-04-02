@@ -14,10 +14,14 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   depth?: number;
   /**  */
   element?: HTMLImageElement;
+  /** The height of the image as it is to be rendered in world space */
+  height?: number;
   /** Sets the way the image scales with the world */
   scaling?: ScaleType;
   /** The color the image should render as */
   tint: [number, number, number, number];
+  /** The width of the image as it is to be rendered in world space */
+  width?: number;
   /** The x coordinate where the image will be anchored to in world space */
   x?: number;
   /** The y coordinate where the image will be anchored to in world space */
@@ -106,8 +110,12 @@ export class ImageInstance extends Instance implements Image {
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the lable) */
   @observable depth: number = 0;
+  /** The height of the image as it is to be rendered in world space */
+  @observable height: number = 1;
   /** Sets the way the image scales with the world */
   @observable scaling: ScaleType = ScaleType.BOUND_MAX;
+  /** The width of the image as it is to be rendered in world space */
+  @observable width: number = 1;
   /** The x coordinate where the image will be anchored to in world space */
   @observable x: number = 0;
   /** The y coordinate where the image will be anchored to in world space */
@@ -117,8 +125,8 @@ export class ImageInstance extends Instance implements Image {
   // As the properties are completely locked into how the image was rasterized and can not
   // Nor should not be easily adjusted for performance concerns
 
-  private _width: number = 0;
-  private _height: number = 0;
+  private _sourceWidth: number = 0;
+  private _sourceHeight: number = 0;
   private _isDestroyed: boolean = false;
   private _rasterization: RasterizationReference;
   private _path: string;
@@ -140,16 +148,16 @@ export class ImageInstance extends Instance implements Image {
    * This is the width in world space of the image. If there is no camera distortion,
    * this would be the width of the image in pixels on the screen.
    */
-  get width() {
-    return this._width;
+  get sourceWidth() {
+    return this._sourceWidth;
   }
 
   /**
    * This is the height in world space of the image. If there is no camera distortion,
    * this would be the height of the image in pixels on the screen.
    */
-  get height() {
-    return this._height;
+  get sourceHeight() {
+    return this._sourceHeight;
   }
 
   // These are properties that can be altered, but have side effects from being changed
@@ -164,7 +172,6 @@ export class ImageInstance extends Instance implements Image {
 
   constructor(options: IImageInstanceOptions) {
     super(options);
-    console.warn('Images layer is not developed yet. Do not use this feature yet.');
 
     this.depth = options.depth || this.depth;
     this.tint = options.tint || this.tint;
@@ -200,8 +207,11 @@ export class ImageInstance extends Instance implements Image {
     }
 
     this._rasterization = rasterization;
-    this._width = rasterization.resource.rasterization.world.width;
-    this._height = rasterization.resource.rasterization.world.height;
+    this._sourceWidth = rasterization.resource.rasterization.world.width;
+    this._sourceHeight = rasterization.resource.rasterization.world.height;
+
+    this.width = options.width || this._sourceWidth || 1;
+    this.height = options.height || this._sourceHeight || 1;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);

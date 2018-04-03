@@ -22,12 +22,7 @@ export declare class ImageRasterizer {
      *                                 should be within world space.
      * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
      */
-    static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number, calculateTexture?: boolean): void;
-    /**
-     * This generates a canvas that has the cropped version of the image where the image
-     * fits neatly in the canvas object.
-     */
-    static createCroppedCanvas(resource: ImageAtlasResource, top: number, left: number): HTMLCanvasElement;
+    static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number): void;
     /**
      * Performs the rendering of the image
      */

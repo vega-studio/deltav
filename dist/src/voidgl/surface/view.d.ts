@@ -67,6 +67,10 @@ export declare class View extends IdentifyByKey {
      * Zero always represents the default view.
      */
     depth: number;
+    /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
+    pixelRatio: number;
+    /** This is the rendering bounds within screen space */
+    screenBounds: Bounds;
     /** Camera that defines the view projection matrix */
     viewCamera: ViewCamera;
     /** The size positioning of the view */
@@ -74,6 +78,8 @@ export declare class View extends IdentifyByKey {
     /** The bounds of the render space on the canvas this view will render on */
     viewBounds: DataBounds<View>;
     constructor(options: IViewOptions);
+    screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
+    pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
     screenToView(point: IPoint, out?: IPoint): IPoint;
     viewToScreen(point: IPoint, out?: IPoint): IPoint;
     screenToWorld(point: IPoint, out?: IPoint): IPoint;

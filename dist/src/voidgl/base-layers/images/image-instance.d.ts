@@ -8,20 +8,18 @@ export interface IImageInstanceOptions extends IInstanceOptions {
      * which the image will be scaled around.
      */
     anchor?: Anchor;
-    /** The color the image should render as */
-    color: [number, number, number, number];
     /** Depth sorting of the image (or the z value of the lable) */
     depth?: number;
-    /** This allows for control over rasterization to the atlas */
-    rasterization?: {
-        /**
-         * This is the scale of the rasterization on the atlas. Higher numbers increase atlas useage, but can provide
-         * higher quality render outputs to the surface.
-         */
-        scale: number;
-    };
+    /**  */
+    element?: HTMLImageElement;
+    /** The height of the image as it is to be rendered in world space */
+    height?: number;
     /** Sets the way the image scales with the world */
     scaling?: ScaleType;
+    /** The color the image should render as */
+    tint: [number, number, number, number];
+    /** The width of the image as it is to be rendered in world space */
+    width?: number;
     /** The x coordinate where the image will be anchored to in world space */
     x?: number;
     /** The y coordinate where the image will be anchored to in world space */
@@ -44,17 +42,21 @@ export interface IImageInstanceOptions extends IInstanceOptions {
  */
 export declare class ImageInstance extends Instance implements Image {
     /** This is the rendered color of the image */
-    color: [number, number, number, number];
+    tint: [number, number, number, number];
     /** Depth sorting of the image (or the z value of the lable) */
     depth: number;
+    /** The height of the image as it is to be rendered in world space */
+    height: number;
     /** Sets the way the image scales with the world */
     scaling: ScaleType;
+    /** The width of the image as it is to be rendered in world space */
+    width: number;
     /** The x coordinate where the image will be anchored to in world space */
     x: number;
     /** The y coordinate where the image will be anchored to in world space */
     y: number;
-    private _width;
-    private _height;
+    private _sourceWidth;
+    private _sourceHeight;
     private _isDestroyed;
     private _rasterization;
     private _path;
@@ -71,12 +73,12 @@ export declare class ImageInstance extends Instance implements Image {
      * This is the width in world space of the image. If there is no camera distortion,
      * this would be the width of the image in pixels on the screen.
      */
-    readonly width: number;
+    readonly sourceWidth: number;
     /**
      * This is the height in world space of the image. If there is no camera distortion,
      * this would be the height of the image in pixels on the screen.
      */
-    readonly height: number;
+    readonly sourceHeight: number;
     /** This is the anchor location on the  */
     private _anchor;
     constructor(options: IImageInstanceOptions);

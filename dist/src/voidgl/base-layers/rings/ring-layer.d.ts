@@ -8,7 +8,7 @@ export interface IRingLayerState {
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export declare class SectionLayer extends Layer<RingInstance, IRingLayerProps, IRingLayerState> {
+export declare class RingLayer extends Layer<RingInstance, IRingLayerProps, IRingLayerState> {
     /**
      * Define our shader and it's inputs
      */

@@ -50,6 +50,8 @@ export interface IModelConstructable {
  */
 export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
     static defaultProps: any;
+    /** This is the attribute that specifies the _active flag for an instance */
+    activeAttribute: IInstanceAttribute<T>;
     /** This determines the drawing order of the layer within it's scene */
     depth: number;
     /** This is the threejs geometry filled with the vertex information */

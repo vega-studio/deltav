@@ -70,6 +70,8 @@ function fillVector(vec: Three.Vector4, start: number, values: number[]) {
 export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
   static defaultProps: any = {};
 
+  /** This is the attribute that specifies the _active flag for an instance */
+  activeAttribute: IInstanceAttribute<T>;
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This is the threejs geometry filled with the vertex information */
@@ -177,6 +179,23 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
         instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
         fillVector(block, instanceUniform.blockIndex, value);
       }
+
+      uniforms.value = instanceData;
+    }
+
+    else {
+      const uniforms: Three.IUniform = uniformCluster.uniform;
+      const uniformRangeStart = uniformCluster.uniformRange[0];
+      const instanceData: Three.Vector4[] = uniforms.value;
+      let instanceUniform, value, block;
+
+      // Only update the _active attribute to ensure it is false. When it is false, there is no
+      // Point to updating any other uniform
+      instanceUniform = this.activeAttribute;
+      value = instanceUniform.update(instance);
+      block = instanceData[uniformRangeStart + instanceUniform.block];
+      instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
+      fillVector(block, instanceUniform.blockIndex, value);
 
       uniforms.value = instanceData;
     }

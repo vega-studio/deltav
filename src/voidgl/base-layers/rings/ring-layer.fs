@@ -13,6 +13,10 @@ varying float edgeSharpness;
  * relative to the PointSize
  */
 varying float borderSize;
+/**
+ * This is the ([0 - 1], [0 - 1])
+ */
+varying vec2 pointCoord;
 
 float circle(vec2 coord, float radius){
   vec2 dist = coord - vec2(0.5);

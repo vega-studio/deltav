@@ -26,6 +26,12 @@ export class BoxOfRings extends BaseExample {
       }
     }
 
+    setInterval(() => {
+      if (ringProvider.instances.length) {
+        ringProvider.instances.pop();
+      }
+    }, 100);
+
     return ringProvider;
   }
 }

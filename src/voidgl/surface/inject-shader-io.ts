@@ -185,6 +185,9 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
     },
   ];
 
+  // Set the active attribute to the layer for quick reference
+  layer.activeAttribute = addedInstanceAttributes[0];
+
   const addedVertexAttributes: IVertexAttribute[] = [
     // We add an inherent instance attribute to our vertices so they can determine the instancing
     // Data to retrieve.

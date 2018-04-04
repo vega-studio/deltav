@@ -101,7 +101,7 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
     /** This is the actual attribute generated internally for the ThreeJS interfacing */
     materialAttribute: Three.BufferAttribute;
 }
-export interface IInstanceAttribute<T> {
+export interface IInstanceAttribute<T extends Instance> {
     /**
      * This is a block index helping describe the instancing process. It can be any number as
      * the system will sort and organize them for you. This only helps the system detect when
@@ -153,7 +153,7 @@ export interface IInstanceAttribute<T> {
      */
     update(instance: T): InstanceIOValue;
 }
-export declare type IInstanceAttributeInternal<T> = IInstanceAttribute<T>;
+export declare type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 /** These are flags for indicating which shaders receive certain injection elements */
 export declare enum ShaderInjectionTarget {
     /** ONLY the vertex shader will receive the injection */

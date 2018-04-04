@@ -13,6 +13,7 @@ import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
+import { Lines } from './examples/lines';
 
 /**
  * The state of the application
@@ -36,6 +37,7 @@ const tests: BaseExample[] = [
   new LabelAnchorsAndScales(),
   new Images(),
   new BendyEdge(),
+  new Lines(),
 ];
 
 /** These are the layers for the tests that are generated */

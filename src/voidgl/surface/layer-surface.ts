@@ -425,6 +425,10 @@ export class LayerSurface {
     const scene = this.addLayerToScene(layer);
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
+    // Clean out nulls provided as a convenience to the layer
+    shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
+    shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
+    shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
     // Get the injected shader IO attributes and uniforms
     const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
@@ -538,7 +542,7 @@ export class LayerSurface {
           Object.assign(existingLayer.props, props);
           existingLayer.didUpdateProps();
         } else {
-          this.addLayer(new layerClass(Object.assign(props, layerClass.defaultProps)));
+          this.addLayer(new layerClass(Object.assign({}, layerClass.defaultProps, props)));
         }
         this.willDisposeLayer.set(props.key, false);
       });

@@ -104,7 +104,7 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
   materialAttribute: Three.BufferAttribute;
 }
 
-export interface IInstanceAttribute<T> {
+export interface IInstanceAttribute<T extends Instance> {
   /**
    * This is a block index helping describe the instancing process. It can be any number as
    * the system will sort and organize them for you. This only helps the system detect when
@@ -158,7 +158,7 @@ export interface IInstanceAttribute<T> {
 }
 
 // For now internal instance attributes are the same
-export type IInstanceAttributeInternal<T> = IInstanceAttribute<T>;
+export type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 
 /** These are flags for indicating which shaders receive certain injection elements */
 export enum ShaderInjectionTarget {

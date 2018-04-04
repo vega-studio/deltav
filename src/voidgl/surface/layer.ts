@@ -8,18 +8,18 @@ import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 
-export interface IShaderInputs<T> {
+export interface IShaderInputs<T extends Instance> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
-  instanceAttributes?: IInstanceAttribute<T>[];
+  instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
-  vertexAttributes?: IVertexAttribute[];
+  vertexAttributes?: (IVertexAttribute | null)[];
   /** Specify how many vertices there are per instance */
   vertexCount: number;
   /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
-  uniforms?: IUniform[];
+  uniforms?: (IUniform | null)[];
 }
 
-export type IShaderInitialization<T> = IShaderInputs<T> & IShaders;
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
 
 export interface IModelType {
   /** This is the draw type of the model to be used */

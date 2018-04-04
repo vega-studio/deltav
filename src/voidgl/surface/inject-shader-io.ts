@@ -60,7 +60,7 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
   return found;
 }
 
-function sortByResourceAttributes<T>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
+function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
   if (a.atlas && !b.atlas) return -1;
   return 1;
 }

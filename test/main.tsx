@@ -7,6 +7,7 @@ import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { BaseExample } from './examples/base-example';
+import { BendyEdge } from './examples/bendy-edge';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
@@ -33,8 +34,8 @@ const tests: BaseExample[] = [
   new BoxOfCircles(),
   new ChangingAnchorLabels(),
   new LabelAnchorsAndScales(),
-  // TODO: Images are still a WIP
   new Images(),
+  new BendyEdge(),
 ];
 
 /** These are the layers for the tests that are generated */

@@ -8,10 +8,12 @@ export interface IChartCameraOptions {
 }
 
 /**
- *
+ * Quick method for applying a source array to a target array. This
+ * ensures the arrays both are valid and applies the values without just making
+ * a copy of the source.
  */
 function applyArray(target?: number[], source?: number[]) {
-  target && source && source.forEach((val, i) => target[i] = source[i]);
+  target && source && target.splice(0, source.length, ...source);
 }
 
 export class ChartCamera {

@@ -5,17 +5,18 @@ import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
-export interface IShaderInputs<T> {
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
+export interface IShaderInputs<T extends Instance> {
     /** These are very frequently changing attributes and are uniform across all vertices in the model */
-    instanceAttributes?: IInstanceAttribute<T>[];
+    instanceAttributes?: (IInstanceAttribute<T> | null)[];
     /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
-    vertexAttributes?: IVertexAttribute[];
+    vertexAttributes?: (IVertexAttribute | null)[];
     /** Specify how many vertices there are per instance */
     vertexCount: number;
     /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
-    uniforms?: IUniform[];
+    uniforms?: (IUniform | null)[];
 }
-export declare type IShaderInitialization<T> = IShaderInputs<T> & IShaders;
+export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
 export interface IModelType {
     /** This is the draw type of the model to be used */
     drawMode?: Three.TrianglesDrawModes;
@@ -49,6 +50,8 @@ export interface IModelConstructable {
  */
 export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
     static defaultProps: any;
+    /** This is the attribute that specifies the _active flag for an instance */
+    activeAttribute: IInstanceAttribute<T>;
     /** This determines the drawing order of the layer within it's scene */
     depth: number;
     /** This is the threejs geometry filled with the vertex information */
@@ -65,6 +68,8 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     maxInstancesPerBuffer: number;
     /** This is the mesh for the Threejs setup */
     model: Three.Object3D;
+    /** This is the system provided resource manager that lets a layer request Atlas resources */
+    resource: AtlasResourceManager;
     /** This is all of the uniforms generated for the layer */
     uniforms: IUniformInternal[];
     /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
@@ -78,21 +83,21 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     /**
      * This processes add operations from changes in the instancing data
      */
-    private add;
+    private addInstance;
     /**
      * This processes change operations from changes in the instancing data
      */
-    private change;
+    private changeInstance;
     /**
      * This processes remove operations from changes in the instancing data
      */
-    private remove;
+    private removeInstance;
     /** This takes a diff and applies the proper method of change for the diff */
     diffProcessor: {
         [key: number]: (instance: T, uniformCluster: IUniformInstanceCluster) => void;
     };
     constructor(props: ILayerProps<T>);
-    private update(instance, uniformCluster);
+    private updateInstance(instance, uniformCluster);
     /**
      * Invalidate and free all resources assocated with this layer.
      */
@@ -123,4 +128,5 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     initShader(): IShaderInitialization<T>;
     willUpdateInstances(changes: [T, DiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
+    didUpdate(): void;
 }

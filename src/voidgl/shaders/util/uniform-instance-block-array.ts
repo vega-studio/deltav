@@ -17,6 +17,8 @@ const sizeToType: {[key: number]: string} = {
   4: 'vec4',
   9: 'mat3',
   16: 'mat4',
+  /** This is the special case for instance attributes that want an atlas resource */
+  99: 'vec4',
 };
 
 export function makeUniformArrayDeclaration(totalBlocks: number) {
@@ -60,10 +62,18 @@ export function makeInstanceDestructuringArray(instanceAttributes: IInstanceAttr
 
   instanceAttributes.forEach(attribute => {
     const block = attribute.block;
+
+    // If we have a size the size of a block, then don't swizzle the vector
     if (attribute.size === InstanceAttributeSize.FOUR) {
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block};\n`;
     }
 
+    // If the attribute is an atlas, then we use the special ATLAS size and don't swizzle the vector
+    else if (attribute.atlas) {
+      out += `  ${sizeToType[InstanceAttributeSize.ATLAS]} ${attribute.name} = block${block};\n`;
+    }
+
+    // Do normal destructuring with any other size and type
     else {
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block}.${makeVectorSwizzle(attribute.blockIndex, attribute.size)};\n`;
     }

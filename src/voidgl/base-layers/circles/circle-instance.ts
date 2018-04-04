@@ -19,11 +19,11 @@ export class CircleInstance extends Instance implements Circle {
   constructor(options: ICircleInstanceOptions) {
     super(options);
 
-    this.color = options.color;
-    this.radius = options.radius;
-    this.x = options.x;
-    this.y = options.y;
-    this.depth = options.depth;
+    this.color = options.color || this.color;
+    this.radius = options.radius || this.radius;
+    this.x = options.x || this.x;
+    this.y = options.y || this.y;
+    this.depth = options.depth || this.depth;
   }
 
   @computed

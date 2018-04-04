@@ -13,6 +13,7 @@ export declare type Omit<T, K extends keyof T> = {
 };
 export declare type ShaderIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number] | Three.Vector4[] | Float32Array;
 export declare type InstanceIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number];
+export declare type UniformIOValue = InstanceIOValue | Float32Array | Three.Texture;
 export declare enum InstanceBlockIndex {
     ONE = 1,
     TWO = 2,
@@ -24,6 +25,8 @@ export declare enum InstanceAttributeSize {
     TWO = 2,
     THREE = 3,
     FOUR = 4,
+    /** Special case for making instance attributes that can target Atlas resources */
+    ATLAS = 99,
 }
 export declare enum UniformSize {
     ONE = 1,
@@ -32,6 +35,7 @@ export declare enum UniformSize {
     FOUR = 4,
     MATRIX3 = 9,
     MATRIX4 = 16,
+    ATLAS = 99,
 }
 export declare enum VertexAttributeSize {
     ONE = 1,
@@ -97,7 +101,7 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
     /** This is the actual attribute generated internally for the ThreeJS interfacing */
     materialAttribute: Three.BufferAttribute;
 }
-export interface IInstanceAttribute<T> {
+export interface IInstanceAttribute<T extends Instance> {
     /**
      * This is a block index helping describe the instancing process. It can be any number as
      * the system will sort and organize them for you. This only helps the system detect when
@@ -123,22 +127,64 @@ export interface IInstanceAttribute<T> {
      */
     qualifier?: string;
     /**
+     * If this is specified, this attribute becomes a size of 4 and will have a block index of
+     * 0. This makes this attribute and layer become compatible with reading atlas resources.
+     * The value provided for this property should be the name of the atlas that is created.
+     */
+    atlas?: {
+        /** Specify which generated atlas to target for the resource */
+        key: string;
+        /** Specify the name that will be injected that will be the sampler2D in the shader */
+        name: string;
+        /**
+         * This specifies which of the shaders the sampler2D will be injected into.
+         * Defaults to the Fragment shader only.
+         */
+        shaderInjection?: ShaderInjectionTarget;
+    };
+    /**
      * This is how many floats the instance attribute takes up. Due to how instancing is
      * implemented, we can only take up to 4 floats per variable right now.
      */
-    size: InstanceAttributeSize;
+    size?: InstanceAttributeSize;
     /**
      * This is the accessor that executes when the instance needs updating. Simply return the
      * value that should be populated for this attribute.
      */
     update(instance: T): InstanceIOValue;
 }
-export declare type IInstanceAttributeInternal<T> = IInstanceAttribute<T>;
+export declare type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
+/** These are flags for indicating which shaders receive certain injection elements */
+export declare enum ShaderInjectionTarget {
+    /** ONLY the vertex shader will receive the injection */
+    VERTEX = 0,
+    /** ONLY the fragment shader will receive the injection */
+    FRAGMENT = 1,
+    /** Both the fragment and vertex shader will receive the injection */
+    ALL = 2,
+}
 export interface IUniform {
+    /**
+     * This lets you specify which of the shaders will receive this uniform as available.
+     * This defaults to only injecting into the vertex shader.
+     */
+    shaderInjection?: ShaderInjectionTarget;
+    /** Name of the uniform as will be available in the shaders */
     name: string;
+    /** How many floats the uniform shall encompass */
     size: UniformSize;
+    /**
+     * When generating this uniform in the shader this will be the prefix to the uniform:
+     * For instance, if you specify 'highp' as the modifier, then the uniform that appears
+     * in the shader will be:
+     * uniform highp vec3 position;
+     */
     qualifier?: string;
-    update(uniform: IUniform): ShaderIOValue;
+    /**
+     * This is the accessor that executes every frame before this layer is drawn. It gives
+     * opportunity to update the uniform's value before every draw.
+     */
+    update(uniform: IUniform): UniformIOValue;
 }
 export interface IUniformInternal extends IUniform {
     /**

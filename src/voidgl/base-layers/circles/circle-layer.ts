@@ -4,7 +4,6 @@ import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, 
 import { CircleInstance } from './circle-instance';
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
-
 }
 
 export interface ICircleLayerState {
@@ -55,11 +54,6 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
       uniforms: [
         {
           name: 'scaleFactor',
-          size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
-        },
-        {
-          name: 'atlas',
           size: UniformSize.ONE,
           update: (u: IUniform) => [1],
         },

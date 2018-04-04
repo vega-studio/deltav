@@ -18,6 +18,10 @@ export declare class SubTexture {
     atlasBL: IPoint;
     /** This is the bottom right UV coordinate of the sub texture on the atlas */
     atlasBR: IPoint;
+    /** This is the normalized width of the sub texture on the atlas */
+    widthOnAtlas: number;
+    /** This is the normalized height of the sub texture on the atlas */
+    heightOnAtlas: number;
     /** This flag is set to false when the underlying texture is no longer valid */
     isValid: boolean;
     /** Width in pixels of the image on the atlas */

@@ -238,7 +238,7 @@ export class MouseEventManager {
    * Retrieves the views underneath the mouse with the top most view as
    * the first view in the list.
    */
-  getViewsUnderMouse(mouse: IPoint) {
+  getViewsUnderMouse = (mouse: IPoint) => {
     // Find the views the mouse has interacted with
     const hitViews = this.quadTree.query(mouse);
     // Sort them by depth
@@ -293,6 +293,13 @@ export class MouseEventManager {
     return {
       wheel: [wheel.x, wheel.y],
     };
+  }
+
+  /**
+   * When the renderer is resized, we must reform our quad tree
+   */
+  resize = () => {
+    this._waitingForRender = true;
   }
 
   /**

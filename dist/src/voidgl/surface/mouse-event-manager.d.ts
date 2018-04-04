@@ -89,7 +89,7 @@ export declare class MouseEventManager {
      * Retrieves the views underneath the mouse with the top most view as
      * the first view in the list.
      */
-    getViewsUnderMouse(mouse: IPoint): DataBounds<SceneView>[];
+    getViewsUnderMouse: (mouse: IPoint) => DataBounds<SceneView>[];
     /**
      * This generates the metrics for a drag gesture.
      */
@@ -99,6 +99,10 @@ export declare class MouseEventManager {
      */
     makeInteraction(mouse: IPoint, start?: IPoint, startView?: SceneView): IMouseInteraction;
     makeWheel(event: MouseWheelEvent): IWheelMetrics;
+    /**
+     * When the renderer is resized, we must reform our quad tree
+     */
+    resize: () => void;
     /**
      * Sets the controllers to receive events from this manager.
      */

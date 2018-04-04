@@ -65,6 +65,7 @@ module.exports = {
       {test: /\.tsx?/, use: {loader: 'ts-loader', options: {transpileOnly: IS_DEVELOPMENT}}},
       {test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader']},
       {test: /index.html$/, use: {loader: 'file-loader', options: {name: 'index.html'}}},
+      {test: /\.png$/, use: {loader: 'base64-image-loader'}},
       {test: /\.[fv]s$/, use: ['raw-loader']}, // Currently used to load shaders into javascript files
     ],
   },

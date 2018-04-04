@@ -1,5 +1,12 @@
+/**
+ * This file is dedicted to the all important step of processing desired inputs from the layer
+ * and coming up with automated generated uniforms and attributes that the shader's will need
+ * in order to operate with the conveniences the library offers. This includes things such as
+ * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
+ */
+
 import { IShaderInitialization, Layer } from '../surface/layer';
-import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize, VertexAttributeSize } from '../types';
+import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
 import { Instance } from '../util/instance';
 
 function toVertexAttributeInternal(attribute: IVertexAttribute): IVertexAttributeInternal {
@@ -53,8 +60,74 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
   return found;
 }
 
+function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
+  if (a.atlas && !b.atlas) return -1;
+  return 1;
+}
+
 export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
-  const addedUniforms: IUniform[] = [
+  // Retrieve all of the instance attributes that are atlas references
+  const atlasInstanceAttributes: IInstanceAttribute<T>[] = [];
+  // Key: The atlas uniform name requested
+  const requestedAtlasInjections = new Map<string, [boolean, boolean]>();
+
+  // Get the atlas requests that have unique names. We only need one uniform
+  // For a single unique provided name. We also must merge the requests for
+  // Vertex and fragment injections
+  shaderIO.instanceAttributes.forEach(attribute => {
+    if (attribute.atlas) {
+      // Auto set the size of the attribute. Attribute's that are a resource automatically
+      // Consume a size of four
+      attribute.size = InstanceAttributeSize.FOUR;
+      attribute.blockIndex = InstanceBlockIndex.ONE;
+      // Get the atlas resource uniform (sampler2D) injection targets. We default to only the
+      // Fragment shader as it's the most commonly used location for sampler2Ds
+      const injection: number = attribute.atlas.shaderInjection || ShaderInjectionTarget.FRAGMENT;
+      // See if we already have an injection for the given injected uniform name for an atlas resource.
+      const injections = requestedAtlasInjections.get(attribute.atlas.name);
+
+      if (injections) {
+        requestedAtlasInjections.set(attribute.atlas.name, [
+          injections[0] ||
+          injection === ShaderInjectionTarget.VERTEX ||
+          injection === ShaderInjectionTarget.ALL,
+          injections[1] ||
+          injection === ShaderInjectionTarget.FRAGMENT ||
+          injection === ShaderInjectionTarget.ALL,
+        ]);
+      }
+
+      else {
+        atlasInstanceAttributes.push(attribute);
+        requestedAtlasInjections.set(attribute.atlas.name, [
+          injection === ShaderInjectionTarget.VERTEX ||
+          injection === ShaderInjectionTarget.ALL,
+          injection === ShaderInjectionTarget.FRAGMENT ||
+          injection === ShaderInjectionTarget.ALL,
+        ]);
+      }
+    }
+  });
+
+  // Make uniforms for all of the unique atlas requests.
+  const atlasUniforms: IUniform[] = atlasInstanceAttributes.map(instanceAttribute => {
+    const injections = requestedAtlasInjections.get(instanceAttribute.atlas.name);
+    const injection =
+      (injections[0] && injections[1] && ShaderInjectionTarget.ALL) ||
+      (injections[0] && !injections[1] && ShaderInjectionTarget.VERTEX) ||
+      (!injections[0] && injections[1] && ShaderInjectionTarget.FRAGMENT)
+    ;
+
+    return {
+      name: instanceAttribute.atlas.name,
+      shaderInjection: injection,
+      size: UniformSize.ATLAS,
+      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.key),
+    };
+  });
+
+  // These are the uniforms that should be present in the shader for basic operation
+  const addedUniforms: IUniform[] = atlasUniforms.concat([
     // This injects the projection matrix from the view camera
     {
       name: 'projection',
@@ -81,10 +154,24 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       size: UniformSize.THREE,
       update: () => layer.view.camera.scale,
     },
-  ];
+    // This injects the camera scaling uniforms that need to be present for projecting in a more
+    // Chart centric style
+    {
+      name: 'viewSize',
+      size: UniformSize.TWO,
+      update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height],
+    },
+    // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
+    // Things like gl_PointSize will need this metric if not working in clip space
+    {
+      name: 'pixelRatio',
+      size: UniformSize.ONE,
+      update: () => [layer.view.pixelRatio],
+    },
+  ]);
 
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
-  // With the _canDraw attribute.
+  // With the _active attribute.
   const fillBlock = findEmptyBlock(shaderIO.instanceAttributes);
   const addedInstanceAttributes: IInstanceAttribute<T>[] = [
     // This is injected so the system can control when an instance should not be rendered.
@@ -97,6 +184,9 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
       update: (o) => [o.active ? 1 : 0],
     },
   ];
+
+  // Set the active attribute to the layer for quick reference
+  layer.activeAttribute = addedInstanceAttributes[0];
 
   const addedVertexAttributes: IVertexAttribute[] = [
     // We add an inherent instance attribute to our vertices so they can determine the instancing
@@ -125,6 +215,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
   const instanceAttributes =
     addedInstanceAttributes
     .concat(shaderIO.instanceAttributes)
+    .sort(sortByResourceAttributes)
   ;
 
   return {

@@ -2,6 +2,7 @@ import * as Three from 'three';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../../util/identify-by-key';
 import { AtlasManager, AtlasResource } from './atlas-manager';
 import { PackNode } from './pack-node';
+import { SubTexture } from './sub-texture';
 
 /**
  * These are valid atlas sizes available. We force a power of 2 to be utilized.
@@ -47,33 +48,33 @@ export class Atlas extends IdentifyByKey {
   /** Stores the size of the atlas texture */
   height: AtlasSize;
   /** This is the parent manager of the atlas */
-  private manager: AtlasManager;
+  manager: AtlasManager;
   /** This is the packing of the  */
   packing: PackNode;
+  /** This is the actual texture object that represents the atlas on the GPU */
+  texture: Three.Texture;
+  /** These are the applied settings to our texture */
+  textureSettings?: Partial<Three.Texture>;
   /**
    * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
    * the atlas at any given moment.
    */
   validResources = new Map<AtlasResource, boolean>();
-  /** This is the actual texture object that represents the atlas on the GPU */
-  texture: Three.Texture;
   /** Stores the size of the atlas texture */
   width: AtlasSize;
 
   constructor(options: IAtlasOptions) {
     super(options);
     const canvas = document.createElement('canvas');
-    canvas.width = options.width;
-    canvas.height = options.height;
-    this.texture = new Three.Texture(canvas);
-    this.texture.generateMipmaps = false;
-    this.texture.premultiplyAlpha = true;
+    this.width = canvas.width = options.width;
+    this.height = canvas.height = options.height;
+    this.textureSettings = options.textureSettings;
 
     // Set up the packing for this atlas
     this.packing = new PackNode(0, 0, options.width, options.height);
-    // Apply any relevant options to the texture desired to be set
-    options.textureSettings && Object.assign(this.texture, options.textureSettings);
+    // Make sure the texture is started and updated
+    this.updateTexture(canvas);
   }
 
   /**
@@ -106,7 +107,11 @@ export class Atlas extends IdentifyByKey {
    */
   registerResource(resource: AtlasResource) {
     if (this.validResources.get(resource) === undefined) {
-      if (!resource.texture.isValid) {
+      if (!resource.texture || !resource.texture.isValid) {
+        if (!resource.texture) {
+          resource.texture = new SubTexture();
+        }
+
         resource.texture.isValid = true;
         this.validResources.set(resource, true);
 
@@ -157,6 +162,32 @@ export class Atlas extends IdentifyByKey {
         'Resource:', resource,
       );
     }
+  }
+
+  /**
+   * TODO:
+   * This performs the currently best known way to update a texture.
+   *
+   * This is the current best attempt at updating the atlas which is junk as it destroys the old texture
+   * And makes a new one. We REALLY should be just subTexture2D updating the texture, but Three makes that really
+   * Difficult
+   */
+  updateTexture(canvas?: HTMLCanvasElement) {
+    if (this.texture) {
+      const redoneCanvas: HTMLCanvasElement = this.texture.image;
+      this.texture.dispose();
+      this.texture = new Three.Texture(redoneCanvas);
+    }
+
+    else {
+      this.texture = new Three.Texture(canvas);
+    }
+
+    // Apply any relevant options to the texture desired to be set
+    this.texture.generateMipmaps = true;
+    this.texture.premultiplyAlpha = true;
+    this.textureSettings && Object.assign(this.texture, this.textureSettings);
+    this.texture.needsUpdate = true;
   }
 
   /**

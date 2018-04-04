@@ -8,6 +8,7 @@ import { View } from '../surface/view';
 import { Instance } from '../util/instance';
 import { ILayerProps, Layer } from './layer';
 import { IAtlasOptions } from './texture/atlas';
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
 export interface ILayerSurfaceOptions {
     /**
      * These are the atlas resources we want available that our layers can be provided to utilize
@@ -32,6 +33,12 @@ export interface ILayerSurfaceOptions {
      */
     handlesWheelEvents?: boolean;
     /**
+     * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
+     * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
+     * have better performance if needed.
+     */
+    pixelRatio?: number;
+    /**
      * This sets up the available scenes the surface will have to work with. Layers then can
      * reference the scene by it's scene property. The order of the scenes here is the drawing
      * order of the scenes.
@@ -41,15 +48,18 @@ export interface ILayerSurfaceOptions {
 export interface ILayerConstructable<T extends Instance> {
     new (props: ILayerProps<T>): Layer<any, any, any>;
 }
-export declare type LayerInitializer<T extends Instance> = [ILayerConstructable<T> & {
-    defaultProps: any;
-}, ILayerProps<any>];
+/**
+ * This is a pair of a Class Type and the props to be applied to that class type.
+ */
+export declare type LayerInitializer = [ILayerConstructable<Instance> & {
+    defaultProps: ILayerProps<Instance>;
+}, ILayerProps<Instance>];
 /**
  * Used for reactive layer generation and updates.
  */
-export declare function createLayer<T extends Instance>(layerClass: ILayerConstructable<T> & {
-    defaultProps: any;
-}, props: ILayerProps<any>): LayerInitializer<T>;
+export declare function createLayer<T extends Instance, U extends ILayerProps<T>>(layerClass: ILayerConstructable<T> & {
+    defaultProps: U;
+}, props: U): LayerInitializer;
 /**
  * This is a manager for layers. It will use voidgl layers to intelligently render resources
  * as efficiently as possible. Layers will be rendered in the order they are provided and this
@@ -71,8 +81,12 @@ export declare class LayerSurface {
     private mouseManager;
     /** This is all of the layers in this manager by their id */
     layers: Map<string, Layer<any, any, any>>;
+    /** This is the density the rendering renders for the surface */
+    pixelRatio: number;
     /** This is the THREE render system we use to render scenes with views */
     renderer: Three.WebGLRenderer;
+    /** This is the resource manager that handles resource requests for instances */
+    resourceManager: AtlasResourceManager;
     /**
      * This is all of the available scenes and their views for this surface. Layers reference the IDs
      * of the scenes and the views to be a part of their rendering state.
@@ -90,7 +104,6 @@ export declare class LayerSurface {
     willDisposeLayer: Map<string, boolean>;
     /** Read only getter for the gl context */
     readonly gl: WebGLRenderingContext;
-    constructor(options: ILayerSurfaceOptions);
     /**
      * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
      * as well as additional helper injections to aid in instancing and shader i/o.
@@ -105,6 +118,11 @@ export declare class LayerSurface {
      * This finalizes everything and sets up viewports and clears colors and
      */
     drawSceneView(scene: Three.Scene, view: View): void;
+    /**
+     * This is the beginning of the system. This should be called immediately after the surface is constructed.
+     * We make this mandatory outside of the constructor so we can make it follow an async pattern.
+     */
+    init(options: ILayerSurfaceOptions): Promise<this>;
     /**
      * This initializes the Canvas GL contexts needed for rendering.
      */
@@ -137,7 +155,13 @@ export declare class LayerSurface {
     /**
      * Used for reactive rendering and diffs out the layers for changed layers.
      */
-    render<T extends Instance>(layerInitializers: LayerInitializer<T>[]): void;
+    render(layerInitializers: LayerInitializer[]): void;
+    /**
+     * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
+     * dimensions for handling all of our rendered elements.
+     */
+    fitContainer(pixelRatio?: number): void;
+    resize(width: number, height: number, pixelRatio?: number): void;
     /**
      * This establishes the rendering canvas context for the surface.
      */

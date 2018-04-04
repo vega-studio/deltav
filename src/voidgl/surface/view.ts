@@ -76,6 +76,10 @@ export class View extends IdentifyByKey {
    * Zero always represents the default view.
    */
   depth: number = 0;
+  /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
+  pixelRatio: number = window.devicePixelRatio;
+  /** This is the rendering bounds within screen space */
+  screenBounds: Bounds;
   /** Camera that defines the view projection matrix */
   viewCamera: ViewCamera;
   /** The size positioning of the view */
@@ -88,26 +92,45 @@ export class View extends IdentifyByKey {
     Object.assign(this, options);
   }
 
-  screenToView(point: IPoint, out?: IPoint) {
+  screenToPixelSpace(point: IPoint, out?: IPoint) {
     const p = out || {x: 0, y: 0};
 
-    p.x = point.x - this.viewBounds.x;
-    p.y = point.y - this.viewBounds.y;
+    p.x = point.x * this.pixelRatio;
+    p.y = point.y * this.pixelRatio;
+
+    return p;
+  }
+
+  pixelSpaceToScreen(point: IPoint, out?: IPoint) {
+    const p = out || {x: 0, y: 0};
+
+    p.x = point.x / this.pixelRatio;
+    p.y = point.y / this.pixelRatio;
+
+    return p;
+  }
+
+  screenToView(point: IPoint, out?: IPoint) {
+    const p = this.screenToPixelSpace(point, out);
+
+    p.x = p.x - this.viewBounds.x;
+    p.y = p.y - this.viewBounds.y;
 
     return p;
   }
 
   viewToScreen(point: IPoint, out?: IPoint) {
-    const p = out || {x: 0, y: 0};
+    const p = {x: 0, y: 0};
 
     p.x = point.x + this.viewBounds.x;
     p.y = point.y + this.viewBounds.y;
 
-    return p;
+    return this.pixelSpaceToScreen(p, out);
   }
 
   screenToWorld(point: IPoint, out?: IPoint) {
     const view = this.screenToView(point);
+
     const world = out || {x: 0, y: 0};
     world.x = (view.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
     world.y = (view.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
@@ -121,7 +144,7 @@ export class View extends IdentifyByKey {
   }
 
   worldToScreen(point: IPoint, out?: IPoint) {
-    let screen = out || {x: 0, y: 0};
+    const screen = {x: 0, y: 0};
 
     // Calculate from the camera to view space
     screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
@@ -133,9 +156,7 @@ export class View extends IdentifyByKey {
     }
 
     // Convert from view to screen space
-    screen = this.viewToScreen(screen);
-
-    return screen;
+    return this.viewToScreen(screen, out);
   }
 
   viewToWorld(point: IPoint, out?: IPoint) {
@@ -186,18 +207,25 @@ export class View extends IdentifyByKey {
         top: height / 2,
       };
 
-      const scaleX = surfaceDimensions.width / viewBounds.width;
-      const scaleY = surfaceDimensions.height / viewBounds.height;
+      const scaleX = 1;
+      const scaleY = 1;
       const camera = this.viewCamera.baseCamera;
 
-      Object.assign(this.viewCamera, viewport);
+      Object.assign(camera, viewport);
       camera.position.set(-viewBounds.width / 2.0 * scaleX, viewBounds.height / 2.0 * scaleY, camera.position.z);
       camera.scale.set(scaleX, -scaleY, 1.0);
       camera.updateMatrix();
       camera.updateMatrixWorld(true);
+      camera.updateProjectionMatrix();
 
       this.viewBounds = viewBounds;
       this.viewBounds.data = this;
+      this.screenBounds = new Bounds({
+        height: this.viewBounds.height / this.pixelRatio,
+        width: this.viewBounds.width / this.pixelRatio,
+        x: this.viewBounds.x / this.pixelRatio,
+        y: this.viewBounds.y / this.pixelRatio,
+      });
     }
 
     else if (!isOrthographic(this.viewCamera.baseCamera)) {

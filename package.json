@@ -1,10 +1,10 @@
 {
   "author": {
-    "name": "VoidRay Corporation",
-    "email": "support@voidray.co",
-    "url": "http://www.voidray.co"
+    "name": "A Maker of Things",
+    "email": "diniden@outlook.com",
+    "url": "http://diniden.com"
   },
-  "name": "@voidrayco/voidgl",
+  "name": "shaderio",
   "version": "0.7.15",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",

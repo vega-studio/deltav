@@ -2,14 +2,17 @@ import { IArrayWillChange, IArrayWillSplice, intercept, IObjectWillChange, IObse
 import { Instance } from './instance';
 
 export enum DiffType {
-  CHANGE,
-  INSERT,
-  REMOVE,
+  CHANGE = 0,
+  INSERT = 1,
+  REMOVE = 2,
 }
 
 function isObservableArray<T>(val: any): val is IObservableArray<T> {
   return Boolean(val.observe);
 }
+
+const UPDATE_FLAG = 'update';
+const SPLICE_FLAG = 'splice';
 
 /**
  * This is a generic DataProvider that provides instance data to a layer. It monitors
@@ -87,7 +90,7 @@ export class DataProvider<T extends Instance> {
    */
   private monitorItem = (changes: Map<T, DiffType>) => (change: IObjectWillChange) => {
     if (this.active) {
-      if (change.type === 'update') {
+      if (change.type === UPDATE_FLAG) {
         changes.set(change.object, DiffType.CHANGE);
         this.isChanged = true;
       }
@@ -112,7 +115,7 @@ export class DataProvider<T extends Instance> {
     return (change: IArrayWillChange<T> | IArrayWillSplice<T>) => {
       if (this.active) {
         // We only handle splice types for changes, these indicate elements have been added or removed
-        if (change.type === 'splice') {
+        if (change.type === SPLICE_FLAG) {
           // Record the removals and clear out any interceptors
           for (let i = change.index, end = change.index + change.removedCount; i < end; ++i) {
             const item = change.object[i];

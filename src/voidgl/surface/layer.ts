@@ -1,6 +1,7 @@
 import * as Three from 'three';
+import { ShaderInjectionTarget } from '..';
 import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal } from '../types';
+import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize } from '../types';
 import { UniformIOValue } from '../types';
 import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
@@ -289,6 +290,46 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       vertexAttributes: [],
       vertexCount: 0,
       vs: require('../shaders/base/no-op.vs'),
+    };
+  }
+
+  /**
+   * Helper method for making an instance attribute. Depending on set up, this makes creating elements
+   * have better documentation when typing out the elements.
+   */
+  makeInstanceAttribute(
+    block: number,
+    blockIndex: InstanceBlockIndex,
+    name: string,
+    size: InstanceAttributeSize,
+    update: (o: T) => InstanceIOValue,
+    atlas?: {
+      key: string;
+      name: string;
+      shaderInjection?: ShaderInjectionTarget;
+    },
+  ): IInstanceAttribute<T> {
+    return {
+      atlas,
+      block,
+      blockIndex,
+      name,
+      size,
+      update,
+    };
+  }
+
+  /**
+   * Helper method for making a uniform type. Depending on set up, this makes creating elements
+   * have better documentation when typing out the elements.
+   */
+  makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform {
+    return {
+      name,
+      qualifier,
+      shaderInjection,
+      size,
+      update,
     };
   }
 

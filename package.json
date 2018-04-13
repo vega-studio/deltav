@@ -4,7 +4,7 @@
     "email": "diniden@outlook.com",
     "url": "http://diniden.com"
   },
-  "name": "shaderio",
+  "name": "@voidrayco/voidgl",
   "version": "0.7.15",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",

@@ -1,4 +1,4 @@
-import anime from 'animejs';
+import * as anime from 'animejs';
 import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, LayerInitializer } from '../../src';
 import { BaseExample } from './base-example';
 
@@ -7,14 +7,14 @@ export class MouseInteraction extends BaseExample {
     console.log('OVER');
     anime({
       radius: 20,
-      target: info.instances,
+      targets: info.instances,
     });
   }
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,
-      key: 'box-of-circles',
+      key: 'mouse-interaction',
       onMouseOver: this.handleCircleOver,
       scene: scene,
     });
@@ -26,7 +26,7 @@ export class MouseInteraction extends BaseExample {
     for (let i = 0; i < 25; ++i) {
       for (let k = 0; k < 25; ++k) {
         const circle = new CircleInstance({
-          color: [1.0, 0.0, 0.0, 1.0],
+          color: [1.0, Math.random(), Math.random(), 1.0],
           id: `circle${i * 100 + k}`,
           radius: 5,
           x: i * 10,

@@ -67,6 +67,6 @@ void main() {
       scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
     )
   );
-  
+
   gl_Position = clipSpace(vec3(vertex, depth));
 }

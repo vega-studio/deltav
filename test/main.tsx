@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ReferenceCamera } from 'voidgl';
 import { ISceneOptions, LayerInitializer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -134,14 +133,7 @@ export class Main extends React.Component<any, IMainState> {
             views: [
               {
                 background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                camera: new ReferenceCamera({
-                  base: camera,
-                  scaleFilter: (scale: [number, number, number]) => [
-                    1,
-                    scale[1],
-                    1,
-                  ],
-                }),
+                camera,
                 clearFlags: [ClearFlags.COLOR],
                 key: name,
                 viewport: {
@@ -150,7 +142,6 @@ export class Main extends React.Component<any, IMainState> {
                   top: `${viewSize * i}%`,
                   width: `${viewSize}%`,
                 },
-
               },
             ],
           },

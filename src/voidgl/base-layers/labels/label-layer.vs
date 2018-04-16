@@ -51,7 +51,7 @@ void main() {
   // If our screen rendering is larger than the size the label is supposed to be, then we automagically
   // scale down our label to stay the correct size, centered on the anchor point
   vec2 anchorToVertex = vertex - location;
-  
+
   // We now choose between keeping the same image size or keeping it in world space
   vertex = mix(
     // This option keeps the image size in world space
@@ -66,8 +66,6 @@ void main() {
       scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
     )
   );
-//    vec2(((anchorToVertex.x / labelScreenScale.x) + location.y),
-//        ((anchorToVertex.y / labelScreenScale.y) + location.x)),
 
   gl_Position = clipSpace(vec3(vertex, depth));
 }

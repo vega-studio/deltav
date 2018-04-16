@@ -10,30 +10,18 @@ void main() {
   vec3 screenSize = cameraSpaceSize(vec3(size, 1.0));
   // Do the test for when the label is larger on the screen than the font size
   bool largerOnScreen = screenSize.y > size.y;
-  float scaleLogic = float(
-      (
-        scaling == 3.0 ||                  // NEVER mode - keep the label the same size always
-        (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
-      ) &&
-      scaling != 1.0                       // ALWAYS mode - the label stays completely in world space allowing it to scale freely
-    );
 
   // Destructure threejs's bug with the position requirement
   float normal = position.x;
   float side = position.y;
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;
-  // Get the position of the current vertex
 
+  // Correct aspect ratio.  Will need to be tied to a uniform
+  // to allow for disabling when both axis' are scaling. 
   size = (size * cameraScale.yx);
 
-/*  size = mix(
-    // This option keeps the image size in world space
-    (size * cameraScale.yx),
-    // This option counters the scaling of the image on the screen keeping it a static size
-    size,
-    scaleLogic);
-*/
+  // Get the position of the current vertex
   vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - anchor;
   // Get the tex coord from our inject texture info
   texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
@@ -54,7 +42,13 @@ void main() {
     // This option counters the scaling of the label on the screen keeping it a static size
     (anchorToVertex / labelScreenScale) + location,
     // Logic choice of which method for scaling to use
-    scaleLogic
+    float(
+      (
+        scaling == 3.0 ||                  // NEVER mode - keep the label the same size always
+        (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
+      ) &&
+      scaling != 1.0                       // ALWAYS mode - the label stays completely in world space allowing it to scale freely
+    );
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));

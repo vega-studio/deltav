@@ -48,7 +48,7 @@ void main() {
         (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
       ) &&
       scaling != 1.0                       // ALWAYS mode - the label stays completely in world space allowing it to scale freely
-    );
+    )
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));

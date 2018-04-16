@@ -21,23 +21,18 @@ void main() {
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;
 
-  // Correct aspect ratio.  May need to be tied to a uniform
-  // to allow for disabling when both axis' are scaling. 
-
+  // Correct aspect ratio.
   size = mix(
-    // This option keeps the label size in world space
     size,
     (size * cameraScale.yx),
-    // This option counters the scaling of the label on the screen keeping it a static size
     float(unequalZooms)
-    );
+  );
+
   vec2 adjustedAnchor = mix(
-    // This option keeps the label size in world space
     anchor,
     (anchor * cameraScale.yx),
-    // This option counters the scaling of the label on the screen keeping it a static size
     float(unequalZooms)
-    );
+  );
 
   // Get the position of the current vertex
   vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
@@ -47,9 +42,7 @@ void main() {
   vertexColor = color;
 
   // See how scaled the size on screen will be from the actual height of the label
-  float labelScreenScale;
-
-  labelScreenScale = mix(
+  float labelScreenScale = mix(
     screenSize.y / size.y,
     screenSize.x / size.x,
     float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
@@ -58,8 +51,7 @@ void main() {
   // If our screen rendering is larger than the size the label is supposed to be, then we automagically
   // scale down our label to stay the correct size, centered on the anchor point
   vec2 anchorToVertex = vertex - location;
-
-
+  
   // We now choose between keeping the same image size or keeping it in world space
   vertex = mix(
     // This option keeps the image size in world space

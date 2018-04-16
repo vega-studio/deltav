@@ -137,8 +137,8 @@ export class Main extends React.Component<any, IMainState> {
                 camera: new ReferenceCamera({
                   base: camera,
                   scaleFilter: (scale: [number, number, number]) => [
-                    scale[0],
                     1,
+                    scale[1],
                     1,
                   ],
                 }),

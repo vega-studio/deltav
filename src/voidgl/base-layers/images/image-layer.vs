@@ -21,27 +21,33 @@ void main() {
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;
 
-  // Correct aspect ratio.  May need to be tied to a uniform
-  // to allow for disabling when both axis' are scaling. 
-
   // Get the position of the current vertex
   texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
   // Apply the image's tint as a tint to the image
   vertexColor = tint;
 
+  // Correct aspect ratio.
   size = mix(
-    // This option keeps the image size in world space
     size,
-    // This option counters the scaling of the image on the screen keeping it a static size
     (size * cameraScale.yx),
     float(unequalZooms)
   );
 
-  vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - (anchor * cameraScale.yx);
+  vec2 adjustedAnchor = mix(
+    anchor,
+    (anchor * cameraScale.yx),
+    float(unequalZooms)
+  );
+
+  vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
   // Get the tex coord from our inject texture info
 
   // See how scaled the size on screen will be from the actual height of the image
-  float imageScreenScale = screenSize.y / size.y;
+  float imageScreenScale = mix(
+    screenSize.y / size.y,
+    screenSize.x / size.x,
+    float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
+  );
 
   // If our screen rendering is larger than the size the image is supposed to be, then we automagically
   // scale down our image to stay the correct size, centered on the anchor point

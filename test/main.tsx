@@ -14,6 +14,7 @@ import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
+import { MouseInteraction } from './examples/mouse-interaction';
 
 /**
  * The state of the application
@@ -38,6 +39,7 @@ const tests: BaseExample[] = [
   new Images(),
   new BendyEdge(),
   new Lines(),
+  new MouseInteraction(),
 ];
 
 /** These are the layers for the tests that are generated */

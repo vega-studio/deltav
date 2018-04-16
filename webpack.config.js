@@ -1,6 +1,7 @@
 const { resolve } = require('path');
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const webpack = require('webpack');
 
 const tslintLoader = {loader: 'tslint-loader', options: {
@@ -8,9 +9,11 @@ const tslintLoader = {loader: 'tslint-loader', options: {
   emitErrors: true,
 }};
 
-const IS_RELEASE = process.env.NODE_ENV === 'release';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const { NODE_ENV } = process.env;
+
+const IS_RELEASE = NODE_ENV === 'release';
+const IS_PRODUCTION = NODE_ENV === 'production' || IS_RELEASE;
+const IS_DEVELOPMENT = !NODE_ENV || (NODE_ENV === 'development');
 
 const plugins = [];
 
@@ -18,8 +21,16 @@ let externals = [];
 let library;
 let libraryTarget;
 
-if (IS_DEVELOPMENT)
+if (IS_DEVELOPMENT) {
   plugins.push(new ForkTsCheckerWebpackPlugin());
+
+  plugins.push(
+    new CircularDependencyPlugin({
+      exclude: /\bnode_modules\b/,
+      failOnError: true,
+    }),
+  );
+}
 
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do
@@ -58,6 +69,7 @@ if (IS_PRODUCTION) {
 module.exports = {
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
+  mode: NODE_ENV || 'development',
 
   module: {
     rules: [

@@ -32,20 +32,22 @@ export interface IMouseInteraction {
   /** Metrics of the interaction in screen space */
   screen: {
     mouse: IPoint;
-  }
+  };
   /** The View the mouse was 'down' on */
   start?: {
     mouse: IPoint;
     view: View;
-  }
+  };
   /** The View Immediately underneath the mouse */
   target: {
     mouse: IPoint;
     view: View;
-  }
+  };
   /** This is populated with ALL of the views underneath the mouse */
   viewsUnderMouse: {
+    /** The mouse's location in the views coordinate space */
     mouse: IPoint,
+    /** The view that is interacted with */
     view: View,
   }[];
 }

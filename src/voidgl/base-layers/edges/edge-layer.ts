@@ -1,7 +1,7 @@
 import * as Three from 'three';
-import { shaderTemplate } from '../..';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, VertexAttributeSize } from '../../types';
+import { shaderTemplate } from '../../util';
 import { EdgeInstance } from './edge-instance';
 
 export enum EdgeType {

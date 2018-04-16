@@ -1,6 +1,7 @@
 import * as Three from 'three';
-import { ILayerProps, Layer } from './surface/layer';
+import { IPoint } from './primitives/point';
 import { Instance } from './util/instance';
+import { TrackedQuadTree } from './util/tracked-quad-tree';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
@@ -55,14 +56,15 @@ export interface Identifiable {
 }
 
 /**
- * Information provided in mouse events interacting with objects and
+ * Information provided in mouse events interacting with instances and
  * layers.
  */
-export interface IPickInfo<T extends Instance, U extends ILayerProps<T>, V> {
-  layer: Layer<T, U, V>;
-  object: T;
-  objectIndex: T;
-  mouse: [number, number];
+export interface IPickInfo<T extends Instance> {
+  /** This is the parent layer id of the instances interacted with */
+  layer: string;
+  /** This is the list of instances that were detected in the interaction */
+  instances: T[];
+  /** This is the world coordinates of the mouse point that interacted with the instances */
   world: [number, number];
 }
 
@@ -222,4 +224,80 @@ export interface IShaders {
   vs: string;
 }
 
+/**
+ * Represents an element that has a full list of projection methods
+ */
+export interface IProjection {
+  /** Converts from the pixel density layer to the screen space */
+  pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from the screen coordinates to the pixel density layer */
+  screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from screen space to the view's relative coordinates */
+  screenToView(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from screen space to the world space of a scene */
+  screenToWorld(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from a view's space to the screen */
+  viewToScreen(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from a views space to the world coordinates */
+  viewToWorld(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from world coordinate space of a scene to the screen */
+  worldToScreen(point: IPoint, out?: IPoint): IPoint;
+  /** Converts from world coordinate space of a scene to the view's space */
+  worldToView(point: IPoint, out?: IPoint): IPoint;
+}
+
 export type IMaterialOptions = Partial<Omit<Omit<Omit<Three.ShaderMaterialParameters, 'uniforms'>, 'vertexShader'>, 'fragmentShader'>>;
+
+/** This is the method signature for determining whether or not a point hits an instance */
+export type InstanceHitTest<T> = (o: T, p: IPoint) => boolean;
+
+/**
+ * This is the type of picking assigned to a layer. Each mode has performance and functionality
+ * tradeoffs.
+ */
+export enum PickType {
+  /** Disable any picking methodology */
+  NONE,
+  /** Pick all instances found underneath the mouse. The Layer must explicitly support this feature. */
+  ALL,
+  /**
+   * NOTE: NOT IMPLEMENTED YET
+   *
+   * Uses highly efficient color rendering method to detect an instance on a pixel by pixel check. Since it is
+   * based on rendering, it will only select the 'visually' top most rendered instance. This means instances can be occluded
+   * by other instances is an instance renders behind another.
+   *
+   * This is vastly more efficient and accurate than ALL. This also will be more readily supported than ALL.
+   */
+  SINGLE,
+}
+
+/**
+ * This represents the settings and objects used to facilitate picking in a layer.
+ */
+export interface IPickingMetrics {
+  /** This is the picking style to be used */
+  type: PickType;
+}
+
+/**
+ * This is the picking settings and objects to facilitate PickType.ALL so we can get
+ * all instances underneath the mouse.
+ */
+export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMetrics {
+  /** This handles the ALL type only */
+  type: PickType.ALL;
+  /** This stores all of our instances in a quad tree to spatially track our instances */
+  quadTree: TrackedQuadTree<T>;
+  /** This is the method for performing a hit test with the provided instance */
+  hitTest: InstanceHitTest<T>;
+}
+
+/**
+ * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
+ * a single instance underneath the mouse.
+ */
+export interface ISinglePickingMetrics extends IPickingMetrics {
+  // TODO
+  type: PickType.SINGLE;
+}

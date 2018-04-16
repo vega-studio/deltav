@@ -30,7 +30,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       rasterization: {
         scale: 1.0,
       },
-      scaling: ScaleType.NEVER,
+      scaling: ScaleType.BOUND_MAX,
       text: 'Anchored MiddleLeft:',
       x: 20,
       y: count++ * 20,

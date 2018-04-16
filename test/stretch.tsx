@@ -134,14 +134,6 @@ export class Main extends React.Component<any, IMainState> {
             views: [
               {
                 background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                camera: new ReferenceCamera({
-                  base: camera,
-                  scaleFilter: (scale: [number, number, number]) => [
-                    1,
-                    scale[1],
-                    1,
-                  ],
-                }),
                 clearFlags: [ClearFlags.COLOR],
                 key: name,
                 viewport: {
@@ -150,6 +142,19 @@ export class Main extends React.Component<any, IMainState> {
                   top: `${viewSize * i}%`,
                   width: `${viewSize}%`,
                 },
+                camera: new ReferenceCamera({
+                  base: camera,
+                  offsetFilter: (offset: [number, number, number]) => [
+                    0,
+                    offset[1],
+                    0,
+                  ],
+                  scaleFilter: (scale: [number, number, number]) => [
+                    1,
+                    scale[1],
+                    1,
+                  ],
+                }),
 
               },
             ],

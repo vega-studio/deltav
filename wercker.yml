@@ -1,0 +1,18 @@
+box: tarwich/node-8-chrome
+build:
+  steps:
+    - script:
+      name: Check package.json
+      code: node scripts/wercker/check-package
+    - script:
+      name: Check index imports
+      code: node scripts/wercker/scan-for-import-index
+    - script:
+      name: NPM Install
+      code: npm install
+    - script:
+      name: Check js files
+      code: npm run eslint -- . --ignore-pattern node_modules --ignore-pattern dist
+    - script:
+      name: Autorelease
+      code: node scripts/autorelease/autorelease

@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+/** @jsx h */
+import { Component, h, render } from 'preact';
 import { ISceneOptions, LayerInitializer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -46,7 +46,7 @@ const layers: LayerInitializer[] = [];
 /**
  * Entry class for the Application
  */
-export class Main extends React.Component<any, IMainState> {
+export class Main extends Component<any, IMainState> {
   /** The containing element of this component */
   container: HTMLElement;
   /** The rendering context we will draw into */
@@ -222,7 +222,7 @@ export class Main extends React.Component<any, IMainState> {
    * @override
    * The React defined render method
    */
-  render() {
+  render(): JSX.Element {
     const { size } = this.state;
 
     if (size.width === 0 || size.height === 0) {
@@ -250,4 +250,4 @@ export class Main extends React.Component<any, IMainState> {
   }
 }
 
-ReactDOM.render(<Main/>, document.getElementById('main'));
+render(<Main />, document.getElementById('main'));

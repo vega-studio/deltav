@@ -32,7 +32,7 @@ const github = options => {
   .catch(error => console.error('ERROR:', error) || { error });
 };
 
-(async () => {
+(async() => {
   // Ensure this is a PR
   console.log('Checking for a PR...');
   const pullRequests = await github({

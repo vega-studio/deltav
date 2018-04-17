@@ -3,12 +3,13 @@ const { resolve } = require('path');
 const { dependencies, devDependencies } = require(resolve('./package.json'));
 
 let failed = false;
+const RE_IS_RELATIVE = /(?:^\^|^~|x$)/;
 
 for (const name of Object.keys(dependencies)) {
   const version = dependencies[name];
 
-  if (version[0] !== '^') {
-    console.error(`dependency "${name}" should start with a carat, but is (${version}) instead`);
+  if (!RE_IS_RELATIVE.test(version)) {
+    console.error(`dependency "${name}" should be relative, but is (${version}) instead`);
     failed = true;
   }
 }
@@ -16,8 +17,8 @@ for (const name of Object.keys(dependencies)) {
 for (const name of Object.keys(devDependencies)) {
   const version = devDependencies[name];
 
-  if (version[0] === '^') {
-    console.error(`devDependency ${name} should be ${version.substr(1)} as opposed to ${version}`);
+  if (RE_IS_RELATIVE.test(version)) {
+    console.error(`devDependency ${name} should be absolute as opposed to ${version}`);
     failed = true;
   }
 }

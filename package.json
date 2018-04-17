@@ -10,10 +10,11 @@
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
+    "build": "tslint src && webpack",
     "dev": "node scripts/dev",
+    "eslint": "eslint",
     "release": "node scripts/release",
-    "start": "node scripts/dev",
-    "build": "tslint src && webpack"
+    "start": "node scripts/dev"
   },
   "dependencies": {
     "@types/d3-color": "1.0.x",
@@ -27,44 +28,35 @@
     "three": "0.87.x"
   },
   "devDependencies": {
-    "@types/node": "8.0.x",
-    "@types/react": "15.0.x",
-    "@types/react-dom": "16.0.x",
+    "@types/node": "8.0.58",
     "auto": "github:tarwich/auto",
     "base64-image-loader": "1.2.1",
-    "css-loader": "0.28.x",
+    "css-loader": "0.28.11",
     "debug": "3.1.0",
-    "dts-bundle": "0.7.x",
-    "eslint-config-tarwich": "github:tarwich/eslint-config-tarwich#1.5.1",
-    "file-loader": "1.1.x",
-    "find-imports": "0.5.x",
+    "dts-bundle": "0.7.3",
+    "eslint": "4.19.1",
+    "eslint-config-voidray": "github:voidrayco/eslint-config-voidray",
+    "file-loader": "1.1.11",
     "fork-ts-checker-webpack-plugin": "0.2.10",
     "fs-extra": "4.0.3",
-    "less": "2.7.x",
-    "less-loader": "4.0.x",
+    "less": "2.7.3",
+    "less-loader": "4.0.6",
     "mkdirp": "0.5.1",
     "mobx": "3.4.1",
+    "preact": "8.2.7",
     "random": "github:tarwich/node-random#1.0.0",
-    "raw-loader": "0.5.x",
-    "react": "15.5.x",
-    "react-dom": "15.5.x",
-    "style-loader": "0.19.x",
+    "raw-loader": "0.5.1",
+    "style-loader": "0.19.1",
     "three.js": "0.77.1",
-    "ts-loader": "3.0.x",
-    "tslib": "1.7.x",
-    "tslint": "5.8.x",
-    "tslint-loader": "3.5.x",
-    "typescript": "2.5.3",
-    "uglify-js": "3.1.x",
+    "ts-loader": "3.0.5",
+    "tslint": "5.8.0",
+    "tslint-loader": "3.5.3",
+    "typescript": "2.8.1",
+    "uglify-js": "3.1.10",
     "webpack": "3.0.0",
-    "webpack-dev-server": "2.9.x"
+    "webpack-dev-server": "2.9.7"
   },
   "greenkeeper": {
-    "ignore": [
-      "@types/react",
-      "@types/react-dom",
-      "react",
-      "react-dom"
-    ]
+    "ignore": []
   }
 }

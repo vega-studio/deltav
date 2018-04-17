@@ -1,5 +1,5 @@
-/// <reference types="react" />
-import * as React from 'react';
+/** @jsx h */
+import { Component } from 'preact';
 import { ISceneOptions } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -22,7 +22,7 @@ export declare type SceneInitializer = {
 /**
  * Entry class for the Application
  */
-export declare class Main extends React.Component<any, IMainState> {
+export declare class Main extends Component<any, IMainState> {
     /** The containing element of this component */
     container: HTMLElement;
     /** The rendering context we will draw into */
@@ -36,6 +36,8 @@ export declare class Main extends React.Component<any, IMainState> {
     state: IMainState;
     componentWillMount(): void;
     componentWillUnmount(): void;
+    componentDidUpdate(): void;
+    createSurface(): Promise<void>;
     draw(): void;
     handleResize: () => void;
     handleToggleMonitorDensity: () => void;

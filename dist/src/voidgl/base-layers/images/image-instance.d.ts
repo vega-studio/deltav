@@ -10,8 +10,8 @@ export interface IImageInstanceOptions extends IInstanceOptions {
     anchor?: Anchor;
     /** Depth sorting of the image (or the z value of the lable) */
     depth?: number;
-    /**  */
-    element?: HTMLImageElement;
+    /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
+    element: HTMLImageElement;
     /** The height of the image as it is to be rendered in world space */
     height?: number;
     /** Sets the way the image scales with the world */

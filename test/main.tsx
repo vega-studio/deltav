@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+/** @jsx h */
+import { Component, h, render } from 'preact';
 import { ISceneOptions, LayerInitializer } from '../src';
 import { BasicCameraController } from '../src/voidgl/base-event-managers';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
@@ -46,7 +46,7 @@ const layers: LayerInitializer[] = [];
 /**
  * Entry class for the Application
  */
-export class Main extends React.Component<any, IMainState> {
+export class Main extends Component<any, IMainState> {
   /** The containing element of this component */
   container: HTMLElement;
   /** The rendering context we will draw into */
@@ -73,6 +73,60 @@ export class Main extends React.Component<any, IMainState> {
     window.removeEventListener('resize', this.handleResize);
     this.surface && this.surface.destroy();
     this.willAnimate = 0;
+  }
+
+  componentDidUpdate() {
+    this.createSurface();
+  }
+
+  async createSurface() {
+    if (this.surface) return;
+
+    let generate = false;
+    this.context.removeAttribute('style');
+
+    if (this.surface && this.context !== this.surface.gl.canvas) {
+      this.surface.destroy();
+      generate = true;
+    }
+
+    else if (!this.surface) {
+      generate = true;
+    }
+
+    if (generate) {
+      const scenes = this.makeSceneBlock(3);
+      this.allScenes = scenes;
+
+      // Establish the surface and scenes needed
+      this.surface = await new LayerSurface().init({
+        atlasResources: [
+          {
+            height: AtlasSize._2048,
+            key: 'all-resources',
+            width: AtlasSize._2048,
+          },
+        ],
+        background: [0.1, 0.2, 0.3, 1.0],
+        context: this.context,
+        eventManagers: scenes.map(init => init.control),
+        handlesWheelEvents: true,
+        scenes: scenes.map(init => init.scene),
+      });
+
+      // Generate the Layers for the tests now that the scenes are established
+      tests.forEach((test, i) => {
+        const provider = test.makeProvider();
+        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
+        layers.push(layer);
+      });
+
+      // Begin the draw loop
+      this.willAnimate = 10;
+      requestAnimationFrame(() => this.draw());
+
+      this.forceUpdate();
+    }
   }
 
   draw() {
@@ -160,51 +214,7 @@ export class Main extends React.Component<any, IMainState> {
   }
 
   setContext = async(canvas: HTMLCanvasElement) => {
-    let generate = false;
     this.context = canvas;
-
-    if (this.surface && this.context !== this.surface.gl.canvas) {
-      this.surface.destroy();
-      generate = true;
-    }
-
-    else if (!this.surface) {
-      generate = true;
-    }
-
-    if (generate) {
-      const scenes = this.makeSceneBlock(3);
-      this.allScenes = scenes;
-
-      // Establish the surface and scenes needed
-      this.surface = await new LayerSurface().init({
-        atlasResources: [
-          {
-            height: AtlasSize._2048,
-            key: 'all-resources',
-            width: AtlasSize._2048,
-          },
-        ],
-        background: [0.1, 0.2, 0.3, 1.0],
-        context: this.context,
-        eventManagers: scenes.map(init => init.control),
-        handlesWheelEvents: true,
-        scenes: scenes.map(init => init.scene),
-      });
-
-      // Generate the Layers for the tests now that the scenes are established
-      tests.forEach((test, i) => {
-        const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
-        layers.push(layer);
-      });
-
-      // Begin the draw loop
-      this.willAnimate = 10;
-      requestAnimationFrame(() => this.draw());
-
-      this.forceUpdate();
-    }
   }
 
   sizeContext() {
@@ -222,7 +232,7 @@ export class Main extends React.Component<any, IMainState> {
    * @override
    * The React defined render method
    */
-  render() {
+  render(): JSX.Element {
     const { size } = this.state;
 
     if (size.width === 0 || size.height === 0) {
@@ -237,7 +247,7 @@ export class Main extends React.Component<any, IMainState> {
 
     return (
       <div className="voidray-layer-surface" ref={this.setContainer}>
-        <canvas ref={this.setContext} width={size.width} height={size.height} />
+        <canvas ref={this.setContext} width={size.width} height={size.height}/>
           {window.devicePixelRatio === 1.0 ? null :
             <div className={'test-button'} onClick={this.handleToggleMonitorDensity}>{
               (this.surface && this.surface.pixelRatio === window.devicePixelRatio) ?
@@ -250,4 +260,4 @@ export class Main extends React.Component<any, IMainState> {
   }
 }
 
-ReactDOM.render(<Main/>, document.getElementById('main'));
+render(<Main />, document.getElementById('main'));

@@ -94,7 +94,6 @@ async function preRelease() {
   // Get the release number from RELEASE_NOTES.md
   const releaseNotes = await readFileP('RELEASE_NOTES.md', { encoding: 'utf-8' });
   const NEXT_VERSION = (releaseNotes.match(/## *([\d\.]+)/) || [])[1];
-  console.log(`NEXT_VERSION: ${NEXT_VERSION}.`);
 
   // See what kind of release we're doing
   const devJson = JSON.parse(await exec('git', ['show', 'origin/dev:package.json']));
@@ -102,6 +101,8 @@ async function preRelease() {
     NEXT_VERSION || '0.0.0',
     devJson.version || '0.0.0'
   ) || '').toUpperCase();
+
+  console.log(`CURRENT VERSION: ${devJson.version} NEXT_VERSION: ${NEXT_VERSION}.`);
 
   //
   // Set the version number in package.json
@@ -223,6 +224,8 @@ async function release() {
   // See what kind of release we're doing
   const devJson = JSON.parse(await exec('git', ['show', 'HEAD^1:package.json']));
   const RELEASE_TYPE = (diff(NEXT_VERSION, devJson.version) || '').toUpperCase();
+
+  console.log(`Current version ${devJson.version} -> Next version ${NEXT_VERSION}`);
 
   if (!RELEASE_TYPE) {
     console.error('There is no change to the release. Not making release notes');

@@ -14,7 +14,7 @@ import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
-import { VerticalLabelScaling } from './examples/vertical-label-scaling';
+import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
 /**
  * The state of the application
@@ -39,7 +39,8 @@ const tests: BaseExample[] = [
   new BendyEdge(),
   new Lines(),
   new MouseInteraction(),
-  new VerticalLabelScaling(),
+  new SingleAxisLabelScaling(true),
+  new SingleAxisLabelScaling(false),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -121,36 +122,39 @@ export class Main extends React.Component<any, IMainState> {
 
     let testIndex = -1;
 
-    for (let i = 0; i < sceneBlockSize; ++i) {
-      for (let k = 0; k < sceneBlockSize; ++k) {
+    for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
+      for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
         const camera = new ChartCamera();
         const test = tests[++testIndex];
-        const testCamera = test.makeCamera(camera);
 
-        const init: SceneInitializer = {
-          control: test.makeController(camera, testCamera, name),
-          name,
-          scene: {
-            key: name,
-            views: [
-              {
-                background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                camera: testCamera,
-                clearFlags: [ClearFlags.COLOR],
-                key: name,
-                viewport: {
-                  height: `${viewSize}%`,
-                  left: `${viewSize * k}%`,
-                  top: `${viewSize * i}%`,
-                  width: `${viewSize}%`,
+        if (test) {
+          const testCamera = test.makeCamera(camera);
+
+          const init: SceneInitializer = {
+            control: test.makeController(camera, testCamera, name),
+            name,
+            scene: {
+              key: name,
+              views: [
+                {
+                  background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
+                  camera: testCamera,
+                  clearFlags: [ClearFlags.COLOR],
+                  key: name,
+                  viewport: {
+                    height: `${viewSize}%`,
+                    left: `${viewSize * k}%`,
+                    top: `${viewSize * i}%`,
+                    width: `${viewSize}%`,
+                  },
                 },
-              },
-            ],
-          },
-        };
+              ],
+            },
+          };
 
-        scenes.push(init);
+          scenes.push(init);
+        }
       }
     }
 
@@ -176,7 +180,7 @@ export class Main extends React.Component<any, IMainState> {
     }
 
     if (generate) {
-      const scenes = this.makeSceneBlock(3);
+      const scenes = this.makeSceneBlock(4);
       this.allScenes = scenes;
 
       // Establish the surface and scenes needed

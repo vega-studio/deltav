@@ -274,11 +274,12 @@ export class MouseEventManager {
     const element = this.context;
 
     element.ontouchstart = (event) => {
-      for (let i = 0, end = event.changedTouches.length; i < end; ++i) {
+      // TODO: This is the start work for the touch events. And this retains sentimental value.
+      // For (let i = 0, end = event.changedTouches.length; i < end; ++i) {
         // TODO
         // Const touch = event.changedTouches.item(i);
         // CurrentTouches.set(touch.identifier, to);
-      }
+      // }
     };
 
     element.ontouchend = (event) => {

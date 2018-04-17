@@ -56,7 +56,6 @@ export class InstanceDiffManager<T extends Instance> {
   getDiffProcessor(): DiffLookup<T> {
     if (this.layer.picking) {
       if (this.layer.picking.type === PickType.ALL) {
-        console.log('GET DIFF PROCESSOR', this.layer.picking);
         this.quadPicking = this.layer.picking;
 
         return [

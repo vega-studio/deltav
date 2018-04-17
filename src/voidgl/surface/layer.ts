@@ -81,6 +81,8 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   onMouseOver?(info: IPickInfo<T>): void;
   /** Executes when the mouse button is release when over instances and a picking type is set */
   onMouseUp?(info: IPickInfo<T>): void;
+  /** Executes when the mouse click gesture is executed over instances and a picking type is set */
+  onMouseClick?(info: IPickInfo<T>): void;
 }
 
 export interface IModelConstructable {

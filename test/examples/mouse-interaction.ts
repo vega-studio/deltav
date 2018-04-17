@@ -3,17 +3,57 @@ import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, Laye
 import { BaseExample } from './base-example';
 
 export class MouseInteraction extends BaseExample {
-  isOver = new Map<CircleInstance, boolean>();
+  isOver = new Map<CircleInstance, anime.AnimeInstance>();
+  hasLeft = new Map<CircleInstance, anime.AnimeInstance>();
+
+  handleCircleClick = (info: IPickInfo<CircleInstance>) => {
+    for (const circle of info.instances) {
+      // Anime doesn't seem to do internal array interpolation, so we target the color itself
+      // And then apply the color property to the circle in the update ticks to register the deltas
+      anime({
+        0: 0,
+        1: 1,
+        2: 0,
+        3: 1,
+        targets: circle.color,
+        update: () => {
+          circle.color = circle.color;
+        },
+      });
+    }
+  }
 
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
       if (!this.isOver.get(circle)) {
-        this.isOver.set(circle, true);
-
-        anime({
+        const animation = anime({
           radius: 20,
           targets: circle,
         });
+
+        this.isOver.set(circle, animation);
+      }
+    }
+  }
+
+  handleCircleOut = async(info: IPickInfo<CircleInstance>) => {
+    for (const circle of info.instances) {
+      const animation = this.isOver.get(circle);
+
+      if (animation) {
+        this.isOver.delete(circle);
+
+        const leave = anime({
+          radius: 5,
+          targets: circle,
+        });
+
+        leave.pause();
+        this.hasLeft.set(circle, leave);
+
+        await animation.finished;
+
+        leave.play();
       }
     }
   }
@@ -22,6 +62,8 @@ export class MouseInteraction extends BaseExample {
     return createLayer(CircleLayer, {
       data: provider,
       key: 'mouse-interaction',
+      onMouseClick: this.handleCircleClick,
+      onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.ALL,
       scene: scene,

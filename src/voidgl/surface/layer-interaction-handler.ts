@@ -4,8 +4,10 @@ import { Instance } from '../util';
 import { ILayerProps, Layer } from './layer';
 
 /**
- * This manages mouse events broadcast to the layer and handles appropriate actions such as determining
+ * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
  * how to make the interaction translate to picking events for the layer's instances.
+ *
+ * This class, in summary, takes in the gestures to the view and converts them to gestures to the instances.
  */
 export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>, V> {
   /** This tracks the elements that have the mouse currently over them */
@@ -19,29 +21,17 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
     this.layer = layer;
   }
 
+  /**
+   * Handles mouse down gestures for a layer within a view
+   */
   handleMouseOver(view: IProjection, mouse: IPoint) {
-    // This handles interactions for PickType ALL layers
-    if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
-      const { onMouseOver } = this.layer.props;
-
-      // If we have a listener for either event we should continue to process the event in more detail
-      if (onMouseOver) {
-        const world = view.viewToWorld(mouse);
-        const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.queryPoint(world, []);
-        instances = instances.filter(o => hitTest(o, world, view));
-
-        const info: IPickInfo<T> = {
-          instances,
-          layer: this.layer.id,
-          world: [world.x, world.y],
-        };
-
-        onMouseOver(info);
-      }
-    }
+    // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
+    // With the instances
   }
 
+  /**
+   * Handles mouse down gestures for a layer within a view
+   */
   handleMouseDown(view: IProjection, mouse: IPoint) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
@@ -69,6 +59,37 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
     }
   }
 
+  /**
+   * Handles mouse out events for a layer within the view
+   */
+  handleMouseOut(view: IProjection, mouse: IPoint) {
+    // This will fire an instance mouse out for any over instances in the queue since we left the view
+    // Thus no instances shall be considered 'over'
+    if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
+      const { onMouseOut } = this.layer.props;
+
+      if (onMouseOut) {
+        const world = view.viewToWorld(mouse);
+        const info: IPickInfo<T> = {
+          instances: Array.from(this.isMouseOver.keys()),
+          layer: this.layer.id,
+          world: [world.x, world.y],
+        };
+
+        onMouseOut(info);
+      }
+    }
+
+    // We clear as no instances are over anymore
+    this.isMouseOver.clear();
+    // We also clear all down elements as the mouse is no longer in proper context for the instances
+    // But since the mouse was never actually released, we do not fire an up
+    this.isMouseDown.clear();
+  }
+
+  /**
+   * Handles mouse up gestures for the layer within the provided view
+   */
   handleMouseUp(view: IProjection, mouse: IPoint) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
@@ -155,13 +176,16 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
     }
   }
 
+  /**
+   * Handles click gestures on the layer within a view
+   */
   handleMouseClick(view: IProjection, mouse: IPoint) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
-      const { onMouseDown } = this.layer.props;
+      const { onMouseClick } = this.layer.props;
 
       // If we have a listener for either event we should continue to process the event in more detail
-      if (onMouseDown) {
+      if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
         let instances = this.layer.picking.quadTree.queryPoint(world, []);
@@ -173,8 +197,16 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           world: [world.x, world.y],
         };
 
-        onMouseDown(info);
+        onMouseClick(info);
       }
     }
+  }
+
+  /**
+   * Handles drag gestures for the layer within the view
+   */
+  handleMouseDrag(view: IProjection, mouse: IPoint) {
+    // We probably should not broadcast drag events for the sake of instances. Instance dragging should be handled on
+    // An instance by instance basis rather than coming from the view's gestures
   }
 }

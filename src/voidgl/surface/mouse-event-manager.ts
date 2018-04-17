@@ -173,6 +173,18 @@ export class MouseEventManager {
       };
     }
 
+    element.onmouseleave = (event) => {
+      // No interactions while waiting for the render to update
+      if (this.waitingForRender) return;
+
+      const mouse = eventElementPosition(event, element);
+      const interaction = this.makeInteraction(mouse, startPosition, startView);
+
+      this.controllers.forEach(controller => {
+        controller.handleMouseOut(interaction);
+      });
+    };
+
     element.onmousemove = (event) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;

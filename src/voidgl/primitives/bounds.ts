@@ -86,8 +86,8 @@ export class Bounds {
   constructor(options: IBoundsOptions) {
     this.x = options.x || options.left || 0;
     this.y = options.y || options.top || 0;
-    this.height = options.height || (this.right - this.x) || 0;
-    this.width = options.width || (this.bottom - this.y) || 0;
+    this.height = options.height || (options.bottom - this.y) || 0;
+    this.width = options.width || (options.right - this.x) || 0;
   }
 
   /**
@@ -134,7 +134,7 @@ export class Bounds {
     }
 
     // The bounds can fit within this, then it just fits
-    if (this.width > bounds.width && this.height > bounds.height) {
+    if (this.width >= bounds.width && this.height >= bounds.height) {
       return 2;
     }
 

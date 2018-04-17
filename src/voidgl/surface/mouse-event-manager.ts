@@ -68,6 +68,39 @@ export interface IWheelMetrics {
   wheel: [number, number];
 }
 
+/**
+ * This is metrics measured between two touches
+ */
+export interface ITouchRelation {
+  /** The direction to the other touch */
+  direction: IPoint;
+  /** The current distance to the other touch */
+  distance: number;
+  /** The id of the other touch */
+  id: number;
+}
+
+/**
+ * This is the information of a touch for a given frame.
+ */
+export interface ITouchFrame {
+  /** This is the location or delta location of the touch for this frame */
+  location: IPoint;
+  /** This is the direction from the start touch frame */
+  direction: IPoint;
+  /** This is the metrics or delta metrics of the touch relative to the other touches for the frame */
+  relations: Map<number, ITouchRelation>;
+}
+
+export interface ITouchMetrics {
+  /** The starting metrics of the touch */
+  start: ITouchFrame;
+  /** The delta changes from previous event to the current event */
+  delta: ITouchFrame;
+  /** The current metrics of the touch event */
+  current: ITouchFrame;
+}
+
 function sortByDepth(a: DataBounds<SceneView>, b: DataBounds<SceneView>) {
   return b.data.depth - a.data.depth;
 }
@@ -232,13 +265,41 @@ export class MouseEventManager {
         return false;
       };
     };
+
+    // Enable touch support
+    this.addTouchContextListeners();
+  }
+
+  addTouchContextListeners() {
+    const element = this.context;
+
+    element.ontouchstart = (event) => {
+      // TODO: This is the start work for the touch events. And this retains sentimental value.
+      // For (let i = 0, end = event.changedTouches.length; i < end; ++i) {
+        // TODO
+        // Const touch = event.changedTouches.item(i);
+        // CurrentTouches.set(touch.identifier, to);
+      // }
+    };
+
+    element.ontouchend = (event) => {
+      // TODO
+    };
+
+    element.ontouchmove = (event) => {
+      // TODO
+    };
+
+    element.ontouchcancel = (event) => {
+      // TODO
+    };
   }
 
   /**
    * Retrieves the views underneath the mouse with the top most view as
    * the first view in the list.
    */
-  getViewsUnderMouse(mouse: IPoint) {
+  getViewsUnderMouse = (mouse: IPoint) => {
     // Find the views the mouse has interacted with
     const hitViews = this.quadTree.query(mouse);
     // Sort them by depth
@@ -293,6 +354,13 @@ export class MouseEventManager {
     return {
       wheel: [wheel.x, wheel.y],
     };
+  }
+
+  /**
+   * When the renderer is resized, we must reform our quad tree
+   */
+  resize = () => {
+    this._waitingForRender = true;
   }
 
   /**

@@ -1,23 +1,26 @@
 import * as Three from 'three';
+import { ShaderInjectionTarget } from '..';
 import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from '../types';
+import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize } from '../types';
+import { UniformIOValue } from '../types';
 import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
+import { AtlasResourceManager } from './texture/atlas-resource-manager';
 
-export interface IShaderInputs<T> {
+export interface IShaderInputs<T extends Instance> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
-  instanceAttributes?: IInstanceAttribute<T>[];
+  instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
-  vertexAttributes?: IVertexAttribute[];
+  vertexAttributes?: (IVertexAttribute | null)[];
   /** Specify how many vertices there are per instance */
   vertexCount: number;
   /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
-  uniforms?: IUniform[];
+  uniforms?: (IUniform | null)[];
 }
 
-export type IShaderInitialization<T> = IShaderInputs<T> & IShaders;
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
@@ -54,11 +57,13 @@ export interface IModelConstructable {
 
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
 
-function fillVector(vec: Three.Vector4, start: number, values: number[]) {
-  let index = start - 1;
+// We declare any fill vector properties needed out here to maximize optimization
+// @ts-ignore: variable-name
+let _I_, _END_;
 
-  for (let i = 0, end = values.length; i < end; ++i) {
-    vec[VECTOR_ACCESSORS[(++index)]] = values[i];
+function fillVector(vec: Three.Vector4, start: number, values: number[]) {
+  for (_I_ = start, _END_ = values.length + start; _I_ < _END_; ++_I_) {
+    vec[VECTOR_ACCESSORS[_I_]] = values[_I_ - start];
   }
 }
 
@@ -68,6 +73,8 @@ function fillVector(vec: Three.Vector4, start: number, values: number[]) {
 export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
   static defaultProps: any = {};
 
+  /** This is the attribute that specifies the _active flag for an instance */
+  activeAttribute: IInstanceAttribute<T>;
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This is the threejs geometry filled with the vertex information */
@@ -84,6 +91,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   maxInstancesPerBuffer: number;
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
+  /** This is the system provided resource manager that lets a layer request Atlas resources */
+  resource: AtlasResourceManager;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
@@ -99,55 +108,55 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   /**
    * This processes add operations from changes in the instancing data
    */
-  private add = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private addInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
-      this.change(instance, uniformCluster);
+      layer.changeInstance(layer, instance, uniformCluster);
     }
 
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
-      const uniforms = this.uniformManager.add(instance);
+      const uniforms = layer.uniformManager.add(instance);
       instance.active = true;
-      this.update(instance, uniforms);
+      layer.updateInstance(instance, uniforms);
     }
   }
 
   /**
    * This processes change operations from changes in the instancing data
    */
-  private change = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private changeInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
-      this.update(instance, uniformCluster);
+      layer.updateInstance(instance, uniformCluster);
     }
 
     // If we don't have existing uniforms, then we must remove the instance
     else {
-      this.add(instance, uniformCluster);
+      layer.addInstance(layer, instance, uniformCluster);
     }
   }
 
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private remove = (instance: T, uniformCluster: IUniformInstanceCluster) => {
+  private removeInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
       // We do one last update on the instance to update to it's deactivated state
-      this.update(instance, uniformCluster);
+      layer.updateInstance(instance, uniformCluster);
       // Unlink the instance from the uniform cluster
-      this.uniformManager.remove(instance);
+      layer.uniformManager.remove(instance);
     }
   }
 
   /** This takes a diff and applies the proper method of change for the diff */
-  diffProcessor: {[key: number]: (instance: T, uniformCluster: IUniformInstanceCluster) => void} = {
-    [DiffType.CHANGE]: this.change,
-    [DiffType.INSERT]: this.add,
-    [DiffType.REMOVE]: this.remove,
-  };
+  diffProcessor = [
+    this.changeInstance,
+    this.addInstance,
+    this.removeInstance,
+  ];
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -157,22 +166,49 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
   }
 
-  private update(instance: T, uniformCluster: IUniformInstanceCluster) {
-    const uniforms: Three.IUniform = uniformCluster.uniform;
-    const uniformRangeStart = uniformCluster.uniformRange[0];
-    const instanceData: Three.Vector4[] = uniforms.value;
-    let instanceUniform, value, block;
+  private updateInstance(instance: T, uniformCluster: IUniformInstanceCluster) {
+    if (instance.active) {
+      const uniforms = uniformCluster.uniform;
+      const uniformRangeStart = uniformCluster.uniformRange[0];
+      const instanceData: Three.Vector4[] = uniforms.value;
+      let instanceUniform, value, block, start;
+      let k, endk;
 
-    // Loop through the instance attributes and update the uniform cluster with the valaues
-    // Calculated for the instance
-    for (let i = 0, end = this.instanceAttributes.length; i < end; ++i) {
-      instanceUniform = this.instanceAttributes[i];
-      value = instanceUniform.update(instance);
-      block = instanceData[uniformRangeStart + instanceUniform.block];
-      fillVector(block, instanceUniform.blockIndex, value);
+      // Loop through the instance attributes and update the uniform cluster with the valaues
+      // Calculated for the instance
+      for (let i = 0, end = this.instanceAttributes.length; i < end; ++i) {
+        instanceUniform = this.instanceAttributes[i];
+        value = instanceUniform.update(instance);
+        block = instanceData[uniformRangeStart + instanceUniform.block];
+        instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
+        start = instanceUniform.blockIndex;
+
+        // Hyper optimized vector filling routine. It uses properties that are globally scoped
+        // To greatly reduce overhead
+        for (k = start, endk = value.length + start; k < endk; ++k) {
+          block[VECTOR_ACCESSORS[k]] = value[k - start];
+        }
+      }
+
+      uniforms.value = instanceData;
     }
 
-    uniforms.value = instanceData;
+    else {
+      const uniforms: Three.IUniform = uniformCluster.uniform;
+      const uniformRangeStart = uniformCluster.uniformRange[0];
+      const instanceData: Three.Vector4[] = uniforms.value;
+      let instanceUniform, value, block;
+
+      // Only update the _active attribute to ensure it is false. When it is false, there is no
+      // Point to updating any other uniform
+      instanceUniform = this.activeAttribute;
+      value = instanceUniform.update(instance);
+      block = instanceData[uniformRangeStart + instanceUniform.block];
+      instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
+      fillVector(block, instanceUniform.blockIndex, value);
+
+      uniforms.value = instanceData;
+    }
   }
 
   /**
@@ -190,17 +226,22 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * This is where global uniforms should update their values. Executes every frame.
    */
   draw() {
-    let uniform, value: ShaderIOValue;
+    let uniform: IUniformInternal;
+    let value: UniformIOValue;
 
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
+    // Make some holder variables to prevent declaration within the loop
+    let change, instance, uniforms;
+    // Fast ref to the processor
+    const diffProcessor = this.diffProcessor;
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
-      const change = changeList[i];
-      const instance = change[0];
-      const diffType = change[1];
-      const uniforms = this.uniformManager.getUniforms(instance);
-      this.diffProcessor[diffType](instance, uniforms);
+      change = changeList[i];
+      instance = change[0];
+      uniforms = this.uniformManager.getUniforms(instance);
+      // The diff type is change[1] which we use to find the diff processing method to use
+      diffProcessor[change[1]](this, instance, uniforms);
     }
 
     // Indicate the diffs are consumed
@@ -252,6 +293,46 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     };
   }
 
+  /**
+   * Helper method for making an instance attribute. Depending on set up, this makes creating elements
+   * have better documentation when typing out the elements.
+   */
+  makeInstanceAttribute(
+    block: number,
+    blockIndex: InstanceBlockIndex,
+    name: string,
+    size: InstanceAttributeSize,
+    update: (o: T) => InstanceIOValue,
+    atlas?: {
+      key: string;
+      name: string;
+      shaderInjection?: ShaderInjectionTarget;
+    },
+  ): IInstanceAttribute<T> {
+    return {
+      atlas,
+      block,
+      blockIndex,
+      name,
+      size,
+      update,
+    };
+  }
+
+  /**
+   * Helper method for making a uniform type. Depending on set up, this makes creating elements
+   * have better documentation when typing out the elements.
+   */
+  makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform {
+    return {
+      name,
+      qualifier,
+      shaderInjection,
+      size,
+      update,
+    };
+  }
+
   willUpdateInstances(changes: [T, DiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
@@ -259,5 +340,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
 
   willUpdateProps(newProps: ILayerProps<T>) {
     /** LIFECYCLE */
+  }
+
+  didUpdate() {
+    this.props.data.resolve();
   }
 }

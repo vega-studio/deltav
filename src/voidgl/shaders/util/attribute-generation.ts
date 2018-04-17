@@ -3,7 +3,7 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
-import { IInstanceAttribute, IInstancingUniform, IShaders, IUniform, IVertexAttribute } from '../../types';
+import { IInstanceAttribute, IInstancingUniform, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
 import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
 import { WebGLStat } from '../../util/webgl-stat';
 import { templateVars } from '../fragments/template-vars';
@@ -42,6 +42,7 @@ const sizeToType: {[key: number]: string} = {
   4: 'vec4',
   9: 'mat3',
   16: 'mat4',
+  99: 'sampler2D',
 };
 
 function calculateUniformBlockUseage(uniforms: IUniform[]) {
@@ -95,12 +96,14 @@ export function injectFragments(shaders: IShaders, vertexAttributes: IVertexAttr
   const vertexShaderResults = shaderTemplate(vertexShaderComposition, templateOptions, required);
 
   templateOptions = {
+    [templateVars.layerUniforms]: generateUniforms(uniforms, ShaderInjectionTarget.FRAGMENT),
     [templateVars.shader]: generateFragmentShader(shaders),
   };
 
   required = {
     name: 'fragment shader composition',
     values: [
+      templateVars.layerUniforms,
       templateVars.shader,
     ],
   };
@@ -138,7 +141,7 @@ function generateShaderInputs(vertexAttributes: IVertexAttribute[], instanceAttr
   const instancingInfo = generateInstanceDataLookupOptions(templateOptions, instanceAttributes, uniforms);
 
   const additionalOptions: {[key: string]: string} = {
-    [templateVars.layerUniforms]: generateUniforms(uniforms),
+    [templateVars.layerUniforms]: generateUniforms(uniforms, ShaderInjectionTarget.VERTEX),
     [templateVars.vertexAttributes]: generateVertexAttributes(vertexAttributes),
   };
 
@@ -167,11 +170,16 @@ function generateShaderInputs(vertexAttributes: IVertexAttribute[], instanceAttr
  *
  * @param uniforms
  */
-function generateUniforms(uniforms: IUniform[]) {
+function generateUniforms(uniforms: IUniform[], injectionType: ShaderInjectionTarget) {
   let out = '';
+  const injection = injectionType || ShaderInjectionTarget.VERTEX;
 
   uniforms.forEach(uniform => {
-    out += `uniform ${uniform.qualifier || ''}${uniform.qualifier ? ' ' : ''}${sizeToType[uniform.size]} ${uniform.name};\n`;
+    uniform.shaderInjection = uniform.shaderInjection || ShaderInjectionTarget.VERTEX;
+
+    if (uniform.shaderInjection === injection || uniform.shaderInjection === ShaderInjectionTarget.ALL) {
+      out += `uniform ${uniform.qualifier || ''}${uniform.qualifier ? ' ' : ''}${sizeToType[uniform.size]} ${uniform.name};\n`;
+    }
   });
 
   return out;
@@ -182,8 +190,10 @@ function generateUniforms(uniforms: IUniform[]) {
  * shader.
  */
 function generateVertexShader(shaders: IShaders, instanceAttributes: IInstanceAttribute<any>[], maxInstancesPerBuffer: number, blocksPerInstance: number) {
-  const templateOptions: {[key: string]: string} = {};
-  templateOptions[templateVars.attributes] = makeInstanceAttributeReferences(instanceAttributes, blocksPerInstance);
+  const templateOptions: {[key: string]: string} = {
+    [templateVars.attributes]: makeInstanceAttributeReferences(instanceAttributes, blocksPerInstance),
+  };
+
   const required = {
     name: 'layer vertex shader',
     values: [
@@ -198,6 +208,7 @@ function generateVertexShader(shaders: IShaders, instanceAttributes: IInstanceAt
 
 function generateFragmentShader(shaders: IShaders) {
   const templateOptions: {[key: string]: string} = {};
+
   const required: IShaderTemplateRequirements = {
     name: 'layer fragment shader',
     values: [],
@@ -243,11 +254,7 @@ function generateVertexAttributes(vertexAttributes: IVertexAttribute[]) {
   let out = '';
 
   vertexAttributes.forEach(attribute => {
-    // TODO: Someday....SOMEDAY threejs will actually publish their fix for this heinous bug
-    // Special case where we ONLY will not output position SOLEY for the sake of a ThreeJS bug that currently exists
-    if (attribute.name !== 'position') {
-      out += `attribute ${sizeToType[attribute.size]} ${attribute.qualifier || ''}${(attribute.qualifier && ' ') || ''}${attribute.name};\n`;
-    }
+    out += `attribute ${sizeToType[attribute.size]} ${attribute.qualifier || ''}${(attribute.qualifier && ' ') || ''}${attribute.name};\n`;
   });
 
   return out;
@@ -264,16 +271,16 @@ function generateInstanceDataLookupOptions(templateOptions: {[key: string]: stri
 
   // Go through the attributes provided and calculate the number of blocks requested
   // Also sort the attributes by block and pack the block useage down.
-  instanceAttributes.sort((a, b) => a.block - b.block);
+  const sortedInstanceAttributes = instanceAttributes.slice(0).sort((a, b) => a.block - b.block);
 
-  let currentBlock = instanceAttributes[0].block;
+  let currentBlock = sortedInstanceAttributes[0].block;
   let trueBlockIndex = 0;
 
   // This tracks how much a block is used
   const blockUseage = new Map<number, number>();
   const innerBlockUseage = new Map<number, Map<number, boolean>>();
 
-  instanceAttributes.forEach(attribute => {
+  sortedInstanceAttributes.forEach(attribute => {
     if (attribute.block !== currentBlock) {
       currentBlock = attribute.block;
       trueBlockIndex++;
@@ -350,7 +357,7 @@ function generateInstanceDataLookupOptions(templateOptions: {[key: string]: stri
   const maxInstancesPerBuffer = Math.floor(instanceUniformBlockCount / blocksPerInstance);
 
   // Generate the decision tree and uniform declarations
-  const instancingMetrics = makeUniformInstanceDataOptions(templateOptions, maxInstancesPerBuffer, branchesPerLevel, blocksPerInstance, instanceAttributes);
+  const instancingMetrics = makeUniformInstanceDataOptions(templateOptions, maxInstancesPerBuffer, branchesPerLevel, blocksPerInstance, sortedInstanceAttributes);
 
   return {
     materialUniforms: instancingMetrics.materialUniforms,

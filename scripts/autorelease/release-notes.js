@@ -1,5 +1,5 @@
 const { exec } = require('auto');
-const { inc } = require('semver');
+const { inc, lt, valid } = require('semver');
 const { readFile, writeFile } = require('fs');
 const { resolve } = require('path');
 const { promisify } = require('util');
@@ -44,7 +44,11 @@ const RENAMERS = {
 
 /** Main entry point for the script */
 async function main() {
-  const CURRENT_VERSION = require(resolve('package.json')).version;
+  const CURRENT_VERSION = (await exec('git', ['tag', '-l']))
+  .split('\n')
+  .filter(valid)
+  .sort(lt)[0];
+
   console.log(`Current version: ${CURRENT_VERSION}`);
 
   const changes = (await exec(

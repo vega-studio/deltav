@@ -1,5 +1,6 @@
 import * as Three from 'three';
 import { IPoint } from './primitives/point';
+import { ChartCamera } from './util';
 import { Instance } from './util/instance';
 import { TrackedQuadTree } from './util/tracked-quad-tree';
 
@@ -228,6 +229,8 @@ export interface IShaders {
  * Represents an element that has a full list of projection methods
  */
 export interface IProjection {
+  /** This is the chart camera utilized in the projection of elements */
+  camera: ChartCamera;
   /** Converts from the pixel density layer to the screen space */
   pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
   /** Converts from the screen coordinates to the pixel density layer */
@@ -249,7 +252,7 @@ export interface IProjection {
 export type IMaterialOptions = Partial<Omit<Omit<Omit<Three.ShaderMaterialParameters, 'uniforms'>, 'vertexShader'>, 'fragmentShader'>>;
 
 /** This is the method signature for determining whether or not a point hits an instance */
-export type InstanceHitTest<T> = (o: T, p: IPoint) => boolean;
+export type InstanceHitTest<T> = (o: T, p: IPoint, v: IProjection) => boolean;
 
 /**
  * This is the type of picking assigned to a layer. Each mode has performance and functionality

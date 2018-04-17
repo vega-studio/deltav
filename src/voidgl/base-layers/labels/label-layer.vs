@@ -18,7 +18,7 @@ void main() {
   vec2 worldAnchor = location + anchor;
 
   // Correct aspect ratio.  Will need to be tied to a uniform
-  // to allow for disabling when both axis' are scaling. 
+  // to allow for disabling when both axis' are scaling.
   size = (size * cameraScale.yx);
 
   // Get the position of the current vertex
@@ -48,7 +48,7 @@ void main() {
         (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
       ) &&
       scaling != 1.0                       // ALWAYS mode - the label stays completely in world space allowing it to scale freely
-    );
+    )
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));

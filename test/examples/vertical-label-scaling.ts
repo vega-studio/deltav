@@ -1,12 +1,20 @@
-import { AnchorType, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import { AnchorType, ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
-export class LabelAnchorsAndScales extends BaseExample {
+export class VerticalLabelScaling extends BaseExample {
+  makeCamera(defaultCamera: ChartCamera): ChartCamera {
+    return new ReferenceCamera({
+      base: defaultCamera,
+      offsetFilter: (offset: [number, number, number]) => [0, offset[1], 0],
+      scaleFilter: (scale: [number, number, number]) => [1, scale[1], 1],
+    });
+  }
+
   makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
-      key: 'label-anchors-and-scales',
+      key: 'vertical-label-scaling',
       scene,
     });
   }

@@ -1,7 +1,9 @@
 import * as Three from 'three';
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { CircleInstance } from './circle-instance';
+const { max } = Math;
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
 }
@@ -15,6 +17,33 @@ export interface ICircleLayerState {
  * them in interesting ways.
  */
 export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
+  /**
+   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+   * of elements
+   */
+  getInstancePickingMethods() {
+    return {
+      // Provide the calculated AABB world bounds for a given circle
+      boundsAccessor: (o: CircleInstance) => new Bounds({
+        height: o.radius * 2,
+        width: o.radius * 2,
+        x: o.x - o.radius,
+        y: o.y - o.radius,
+      }),
+
+      // Provide a precise hit test for the circle
+      hitTest: (o: CircleInstance, p: IPoint, view: IProjection) => {
+        const r = o.radius / max(...view.camera.scale);
+        const delta = [
+          p.x - o.x,
+          p.y - o.y,
+        ];
+
+        return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
+      },
+    };
+  }
+
   /**
    * Define our shader and it's inputs
    */

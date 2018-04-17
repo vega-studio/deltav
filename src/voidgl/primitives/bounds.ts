@@ -1,4 +1,3 @@
-import { computed, observable } from 'mobx';
 import { IPoint } from './point';
 
 export interface IBoundsOptions {
@@ -28,27 +27,23 @@ export interface IBoundsOptions {
  *             via the property 'd'
  */
 export class Bounds {
-  @observable x: number = 0;
-  @observable y: number = 0;
-  @observable width: number = 0;
-  @observable height: number = 0;
+  x: number = 0;
+  y: number = 0;
+  width: number = 0;
+  height: number = 0;
 
-  @computed
   get area() {
     return this.width * this.height;
   }
 
-  @computed
   get bottom() {
     return this.y + this.height;
   }
 
-  @computed
   get left() {
     return this.x;
   }
 
-  @computed
   get mid() {
     return {
       x: this.x + this.width / 2.0,
@@ -56,12 +51,10 @@ export class Bounds {
     };
   }
 
-  @computed
   get right() {
     return this.x + this.width;
   }
 
-  @computed
   get top() {
     return this.y;
   }

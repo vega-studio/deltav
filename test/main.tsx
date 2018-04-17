@@ -1,8 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ReferenceCamera } from 'voidgl';
-import { ISceneOptions, LayerInitializer } from '../src';
-import { BasicCameraController } from '../src/voidgl/base-event-managers';
+import { EventManager, ISceneOptions, LayerInitializer } from '../src';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
@@ -16,6 +14,7 @@ import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
+import { VerticalLabelScaling } from './examples/vertical-label-scaling';
 
 /**
  * The state of the application
@@ -26,8 +25,7 @@ export interface IMainState {
 
 export type SceneInitializer = {
   name: string,
-  camera: ChartCamera,
-  control: BasicCameraController,
+  control: EventManager,
   scene: ISceneOptions;
 };
 
@@ -41,6 +39,7 @@ const tests: BaseExample[] = [
   new BendyEdge(),
   new Lines(),
   new MouseInteraction(),
+  new VerticalLabelScaling(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -120,30 +119,24 @@ export class Main extends React.Component<any, IMainState> {
       [0.0, 0.1, 0.1, 1.0],
     ];
 
+    let testIndex = -1;
+
     for (let i = 0; i < sceneBlockSize; ++i) {
       for (let k = 0; k < sceneBlockSize; ++k) {
-        const camera = new ChartCamera();
         const name = `${i}_${k}`;
+        const camera = new ChartCamera();
+        const test = tests[++testIndex];
+        const testCamera = test.makeCamera(camera);
+
         const init: SceneInitializer = {
-          camera,
-          control: new BasicCameraController({
-            camera,
-            startView: name,
-          }),
+          control: test.makeController(camera, testCamera, name),
           name,
           scene: {
             key: name,
             views: [
               {
                 background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                camera: new ReferenceCamera({
-                  base: camera,
-                  scaleFilter: (scale: [number, number, number]) => [
-                    1,
-                    scale[1],
-                    1,
-                  ],
-                }),
+                camera: testCamera,
                 clearFlags: [ClearFlags.COLOR],
                 key: name,
                 viewport: {
@@ -152,7 +145,6 @@ export class Main extends React.Component<any, IMainState> {
                   top: `${viewSize * i}%`,
                   width: `${viewSize}%`,
                 },
-
               },
             ],
           },

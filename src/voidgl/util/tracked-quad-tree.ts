@@ -159,6 +159,7 @@ export class Node<T extends Instance> {
     // Across all nodes.
     if (this.depth === 0) {
       this.childToNode = new Map<T, Node<T>>();
+      this.childToBounds = new Map<T, Bounds>();
     }
   }
 
@@ -255,9 +256,9 @@ export class Node<T extends Instance> {
     // Make our bounds cover the new area
     this.bounds.encapsulate(bounds);
     this.bounds.x -= 1;
-    this.bounds.y += 1;
+    this.bounds.y -= 1;
     this.bounds.width += 2;
-    this.bounds.height += 4;
+    this.bounds.height += 2;
     // Get all of the children underneath this node
     const allChildren = this.gatherChildren([]);
     this.children = [];

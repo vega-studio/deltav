@@ -1,10 +1,10 @@
 import * as Three from 'three';
-import { IPoint } from '../primitives/point';
 import {
   IInstanceAttribute,
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
   IQuadTreePickingMetrics,
@@ -71,8 +71,16 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   scene?: string;
 
   // ---- EVENTS ----
-  /** Set this to respond to pick events on the instances rendered */
+  /** Executes when the mouse is down on instances and a picking type is set */
+  onMouseDown?(info: IPickInfo<T>): void;
+  /** Executes when the mouse moves on instances and a picking type is set */
+  onMouseMove?(info: IPickInfo<T>): void;
+  /** Executes when the mouse no longer over instances and a picking type is set */
+  onMouseOut?(info: IPickInfo<T>): void;
+  /** Executes when the mouse is newly over instances and a picking type is set */
   onMouseOver?(info: IPickInfo<T>): void;
+  /** Executes when the mouse button is release when over instances and a picking type is set */
+  onMouseUp?(info: IPickInfo<T>): void;
 }
 
 export interface IModelConstructable {
@@ -148,6 +156,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
 
     this.diffManager = new InstanceDiffManager<T>(this);
     this.diffProcessor = this.diffManager.getDiffProcessor();
+    this.interactions = new LayerInteractionHandler(this);
   }
 
   /**

@@ -1,6 +1,6 @@
 import { IPoint } from '../../primitives/point';
+import { PickType } from '../../types';
 import { EventManager } from '../event-manager';
-import { PickType } from '../layer';
 import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manager';
 
 /**
@@ -40,6 +40,10 @@ export class LayerMouseEvents extends EventManager {
     return viewMouseByViewId;
   }
 
+  handleInteraction(e: IMouseInteraction) {
+    // TODO
+  }
+
   handleMouseDown(e: IMouseInteraction, button: number) {
     // Get all of the scenes under the mouse
     const sceneViews = this.getSceneViewsUnderMouse(e);
@@ -72,7 +76,22 @@ export class LayerMouseEvents extends EventManager {
   }
 
   handleMouseMove(e: IMouseInteraction) {
-    console.warn('MOUSE MOVE', e);
+    // Get all of the scenes under the mouse
+    const sceneViews = this.getSceneViewsUnderMouse(e);
+    // Get a lookup of a view id to the mouse position in the view
+    const viewMouseByViewId = this.getMouseByViewId(e);
+
+    // For every view of every scene, we must tell it's layers it's world space is receiving mouse interactions
+    for (const sceneView of sceneViews) {
+      const view = sceneView.view;
+      const mouse = viewMouseByViewId.get(view.id);
+
+      for (const layer of sceneView.scene.layers) {
+        if (layer.picking && layer.picking.type === PickType.ALL) {
+          layer.interactions.handleMouseMove(view, mouse);
+        }
+      }
+    }
   }
 
   handleClick(e: IMouseInteraction, button: number) {

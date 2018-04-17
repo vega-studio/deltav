@@ -56,6 +56,7 @@ export class InstanceDiffManager<T extends Instance> {
   getDiffProcessor(): DiffLookup<T> {
     if (this.layer.picking) {
       if (this.layer.picking.type === PickType.ALL) {
+        console.log('GET DIFF PROCESSOR', this.layer.picking);
         this.quadPicking = this.layer.picking;
 
         return [
@@ -107,8 +108,8 @@ export class InstanceDiffManager<T extends Instance> {
       manager.updateInstance(instance, uniforms);
 
       // Ensure the instance has an updated injection in the quad tree
-      this.quadPicking.quadTree.remove(instance);
-      this.quadPicking.quadTree.add(instance);
+      manager.quadPicking.quadTree.remove(instance);
+      manager.quadPicking.quadTree.add(instance);
     }
   }
 
@@ -136,8 +137,8 @@ export class InstanceDiffManager<T extends Instance> {
       manager.updateInstance(instance, uniformCluster);
 
       // Ensure the instance has an updated injection in the quad tree
-      this.quadPicking.quadTree.remove(instance);
-      this.quadPicking.quadTree.add(instance);
+      manager.quadPicking.quadTree.remove(instance);
+      manager.quadPicking.quadTree.add(instance);
     }
 
     // If we don't have existing uniforms, then we must remove the instance
@@ -172,7 +173,7 @@ export class InstanceDiffManager<T extends Instance> {
       // Unlink the instance from the uniform cluster
       manager.layer.uniformManager.remove(instance);
       // Remove the instance from our quad tree
-      this.quadPicking.quadTree.remove(instance);
+      manager.quadPicking.quadTree.remove(instance);
     }
   }
 

@@ -77,8 +77,4 @@ module.exports = {
     modules: ['./node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js'],
   },
-
-  serve: {
-    port: process.env.PORT || 8080,
-  },
 };

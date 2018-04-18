@@ -33,6 +33,7 @@ if (IS_PRODUCTION) {
 }
 
 module.exports = {
+  devtool: IS_PRODUCTION ? 'source-map' : undefined,
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
   mode: IS_DEVELOPMENT ? 'development' : 'production',

@@ -70,9 +70,7 @@ async function main() {
   if (NO_BUILD) console.log('Not building, because NO_BUILD is set');
   else {
     debug('Running webpack...');
-    const webpackConfig = require(resolve('webpack.config.js'));
-    webpackConfig.devtool = 'srcmap';
-    const webpackResults = await webpackP(webpackConfig);
+    const webpackResults = await webpackP(require(resolve('webpack.config.js')));
     const jsonResults = webpackResults.toJson();
     console.log(webpackResults.toString({ colors: true }));
     if (jsonResults.errors.length) {

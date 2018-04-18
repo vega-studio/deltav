@@ -1,13 +1,13 @@
 import * as Three from 'three';
-import { ShaderInjectionTarget } from '..';
-import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize } from '../types';
-import { UniformIOValue } from '../types';
-import { DataProvider, DiffType } from '../util/data-provider';
+import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
+import { BoundsAccessor, DataProvider, DiffType } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
-import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
+import { InstanceUniformManager } from '../util/instance-uniform-manager';
+import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
+import { LayerInteractionHandler } from './layer-interaction-handler';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import { View } from './view';
 export interface IShaderInputs<T extends Instance> {
     /** These are very frequently changing attributes and are uniform across all vertices in the model */
     instanceAttributes?: (IInstanceAttribute<T> | null)[];
@@ -32,6 +32,11 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     /** This is the data provider where the instancing data is injected and modified. */
     data: DataProvider<T>;
     /**
+     * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
+     * the value is not NONE.
+     */
+    picking?: PickType;
+    /**
      * This identifies the scene we want the layer to be a part of.
      * Layer's with the same identifiers will render their buffers in the same scene.
      * This only applies to the layer when the layer is initialized in a layer surface. You shouldn't
@@ -41,8 +46,18 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
      * is added to.
      */
     scene?: string;
-    /** Set this to respond to pick events on the instances rendered */
-    onMouseOver?(info: IPickInfo<T, any, any>): void;
+    /** Executes when the mouse is down on instances and a picking type is set */
+    onMouseDown?(info: IPickInfo<T>): void;
+    /** Executes when the mouse moves on instances and a picking type is set */
+    onMouseMove?(info: IPickInfo<T>): void;
+    /** Executes when the mouse no longer over instances and a picking type is set */
+    onMouseOut?(info: IPickInfo<T>): void;
+    /** Executes when the mouse is newly over instances and a picking type is set */
+    onMouseOver?(info: IPickInfo<T>): void;
+    /** Executes when the mouse button is release when over instances and a picking type is set */
+    onMouseUp?(info: IPickInfo<T>): void;
+    /** Executes when the mouse click gesture is executed over instances and a picking type is set */
+    onMouseClick?(info: IPickInfo<T>): void;
 }
 export interface IModelConstructable {
     new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material[]): any;
@@ -64,12 +79,16 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     instanceById: Map<string, T>;
     /** Provides the number of vertices a single instance spans */
     instanceVertexCount: number;
+    /** This is the handler that manages interactions for the layer */
+    interactions: LayerInteractionHandler<T, U, V>;
     /** The official shader material generated for the layer */
     material: Three.RawShaderMaterial;
     /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
     maxInstancesPerBuffer: number;
     /** This is the mesh for the Threejs setup */
     model: Three.Object3D;
+    /** This is all of the picking metrics kept for handling picking scenarios */
+    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
     /** This is the system provided resource manager that lets a layer request Atlas resources */
     resource: AtlasResourceManager;
     /** This is all of the uniforms generated for the layer */
@@ -82,22 +101,11 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     view: View;
     props: U;
     state: V;
-    /**
-     * This processes add operations from changes in the instancing data
-     */
-    private addInstance(layer, instance, uniformCluster);
-    /**
-     * This processes change operations from changes in the instancing data
-     */
-    private changeInstance(layer, instance, uniformCluster);
-    /**
-     * This processes remove operations from changes in the instancing data
-     */
-    private removeInstance(layer, instance, uniformCluster);
-    /** This takes a diff and applies the proper method of change for the diff */
-    diffProcessor: ((layer: this, instance: T, uniformCluster: IUniformInstanceCluster) => void)[];
+    /** This contains the methods and controls for handling diffs for the layer */
+    diffManager: InstanceDiffManager<T>;
+    /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
+    diffProcessor: DiffLookup<T>;
     constructor(props: ILayerProps<T>);
-    private updateInstance(instance, uniformCluster);
     /**
      * Invalidate and free all resources assocated with this layer.
      */
@@ -107,6 +115,14 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
      * This is where global uniforms should update their values. Executes every frame.
      */
     draw(): void;
+    /**
+     * This method is for layers to implement to specify how the bounds for an instance are retrieved or
+     * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
+     */
+    getInstancePickingMethods(): {
+        hitTest: InstanceHitTest<T>;
+        boundsAccessor: BoundsAccessor<T>;
+    };
     /**
      * The type of Three model as well as the preferred draw mode associated with it.
      */

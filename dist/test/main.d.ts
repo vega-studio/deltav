@@ -1,9 +1,7 @@
 /** @jsx h */
 import { Component } from 'preact';
-import { ISceneOptions } from '../src';
-import { BasicCameraController } from '../src/voidgl/base-event-managers';
+import { EventManager, ISceneOptions } from '../src';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
-import { ChartCamera } from '../src/voidgl/util/chart-camera';
 /**
  * The state of the application
  */
@@ -15,8 +13,7 @@ export interface IMainState {
 }
 export declare type SceneInitializer = {
     name: string;
-    camera: ChartCamera;
-    control: BasicCameraController;
+    control: EventManager;
     scene: ISceneOptions;
 };
 /**

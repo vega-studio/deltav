@@ -4,17 +4,8 @@ import { Instance } from '../util';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 
+// This is a mapping of the vector properties as they relate to an array order
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
-
-// We declare any fill vector properties needed out here to maximize optimization
-// @ts-ignore: variable-name
-let _I_, _END_;
-
-function fillVector(vec: Three.Vector4, start: number, values: number[]) {
-  for (_I_ = start, _END_ = values.length + start; _I_ < _END_; ++_I_) {
-    vec[VECTOR_ACCESSORS[_I_]] = values[_I_ - start];
-  }
-}
 
 /** Signature of a method that handles a diff */
 export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster: IUniformInstanceCluster) => void;
@@ -207,7 +198,7 @@ export class InstanceDiffManager<T extends Instance> {
       const uniforms: Three.IUniform = uniformCluster.uniform;
       const uniformRangeStart = uniformCluster.uniformRange[0];
       const instanceData: Three.Vector4[] = uniforms.value;
-      let instanceUniform, value, block;
+      let instanceUniform, value, block, start;
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
       // Point to updating any other uniform
@@ -215,7 +206,13 @@ export class InstanceDiffManager<T extends Instance> {
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + instanceUniform.block];
       instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
-      fillVector(block, instanceUniform.blockIndex, value);
+      start = instanceUniform.blockIndex;
+
+      // Hyper optimized vector filling routine. It uses properties that are globally scoped
+      // To greatly reduce overhead
+      for (let k = start, endk = value.length + start; k < endk; ++k) {
+        block[VECTOR_ACCESSORS[k]] = value[k - start];
+      }
 
       uniforms.value = instanceData;
     }

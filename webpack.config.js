@@ -46,18 +46,6 @@ if (IS_PRODUCTION) {
 
   // We should minify and mangle our distribution for npm
   console.log('Minification enabled');
-
-  // Add in uglify to handle minification
-  plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: true
-        },
-      },
-      sourceMap: true,
-    })
-  );
 }
 
 module.exports = {

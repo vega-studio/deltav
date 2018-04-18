@@ -14,6 +14,7 @@ import { ClearFlags, View } from '../surface/view';
 import { DataBounds } from '../util/data-bounds';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
+import { LayerMouseEvents } from './event-managers/layer-mouse-events';
 import { ILayerProps, Layer } from './layer';
 import { AtlasManager } from './texture';
 import { IAtlasOptions } from './texture/atlas';
@@ -103,10 +104,10 @@ export class LayerSurface {
    * This scene by default only has a single default view.
    */
   defaultSceneElements: IDefaultSceneElements;
-  /** This manages the mouse events for the current canvas context */
-  private mouseManager: MouseEventManager;
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<any, any, any>>();
+  /** This manages the mouse events for the current canvas context */
+  private mouseManager: MouseEventManager;
   /** This is the density the rendering renders for the surface */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the THREE render system we use to render scenes with views */
@@ -400,6 +401,12 @@ export class LayerSurface {
           newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
+          for (const sceneView of this.sceneViews) {
+            if (sceneView.view.id === newView.id) {
+              console.warn('You can NOT have two views with the same id. Please use unique identifiers for every view generated.');
+            }
+          }
+
           this.sceneViews.push({
             depth: ++sceneViewDepth,
             scene: newScene,
@@ -463,7 +470,13 @@ export class LayerSurface {
    * Initializes elements for handling mouse interactions with the canvas.
    */
   private initMouseManager(options: ILayerSurfaceOptions) {
-    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, options.eventManagers || [], options.handlesWheelEvents);
+    // We must inject an event manager to broadcast events through the layers themselves
+    const eventManagers: EventManager[] = (options.eventManagers || []).concat([
+      new LayerMouseEvents(this.sceneViews),
+    ]);
+
+    // Generate the mouse manager for the layer
+    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, eventManagers, options.handlesWheelEvents);
   }
 
   /**

@@ -39,7 +39,9 @@ export interface IMouseInteraction {
     };
     /** This is populated with ALL of the views underneath the mouse */
     viewsUnderMouse: {
+        /** The mouse's location in the views coordinate space */
         mouse: IPoint;
+        /** The view that is interacted with */
         view: View;
     }[];
 }

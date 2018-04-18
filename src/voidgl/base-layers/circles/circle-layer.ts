@@ -1,7 +1,9 @@
 import * as Three from 'three';
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { CircleInstance } from './circle-instance';
+const { max } = Math;
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
 }
@@ -16,6 +18,33 @@ export interface ICircleLayerState {
  */
 export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
   /**
+   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+   * of elements
+   */
+  getInstancePickingMethods() {
+    return {
+      // Provide the calculated AABB world bounds for a given circle
+      boundsAccessor: (circle: CircleInstance) => new Bounds({
+        height: circle.radius * 2,
+        width: circle.radius * 2,
+        x: circle.x - circle.radius,
+        y: circle.y - circle.radius,
+      }),
+
+      // Provide a precise hit test for the circle
+      hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
+        const r = circle.radius / max(...view.camera.scale);
+        const delta = [
+          point.x - circle.x,
+          point.y - circle.y,
+        ];
+
+        return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
+      },
+    };
+  }
+
+  /**
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<CircleInstance> {
@@ -27,35 +56,35 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
           blockIndex: InstanceBlockIndex.ONE,
           name: 'center',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: (circle) => [circle.x, circle.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'radius',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.radius],
+          update: (circle) => [circle.radius],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: (circle) => [circle.depth],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: (circle) => circle.color,
         },
       ],
       uniforms: [
         {
           name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
+          update: (uniform: IUniform) => [1],
         },
       ],
       vertexAttributes: [

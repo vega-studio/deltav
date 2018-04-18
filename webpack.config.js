@@ -1,15 +1,16 @@
 const { resolve } = require('path');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const webpack = require('webpack');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const tslintLoader = { loader: 'tslint-loader', options: {
   fix: true,
   emitErrors: true,
 } };
 
-const IS_RELEASE = process.env.NODE_ENV === 'release';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const { NODE_ENV } = process.env;
+
+const IS_RELEASE = NODE_ENV === 'release';
+const IS_PRODUCTION = NODE_ENV === 'production' || IS_RELEASE;
+const IS_DEVELOPMENT = !NODE_ENV || (NODE_ENV === 'development');
 
 const plugins = [];
 
@@ -17,8 +18,14 @@ let externals = [];
 let library;
 let libraryTarget;
 
-if (IS_DEVELOPMENT)
-  plugins.push(new ForkTsCheckerWebpackPlugin());
+if (IS_DEVELOPMENT) {
+  plugins.push(
+    new CircularDependencyPlugin({
+      exclude: /\bnode_modules\b/,
+      failOnError: true,
+    }),
+  );
+}
 
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do
@@ -35,31 +42,18 @@ if (IS_PRODUCTION) {
   // We are bundling a library so set the output targets correctly
   library = 'voidgl';
   libraryTarget = 'umd';
-
-  // We should minify and mangle our distribution for npm
-  console.log('Minification enabled');
-
-  // Add in uglify to handle minification
-  plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: true
-        },
-      },
-      sourceMap: true,
-    })
-  );
 }
 
 module.exports = {
+  devtool: IS_PRODUCTION ? 'source-map' : undefined,
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
+  mode: IS_DEVELOPMENT ? 'development' : 'production',
 
   module: {
     rules: [
       { test: /\.tsx?/, use: tslintLoader, enforce: 'pre' },
-      { test: /\.tsx?/, use: { loader: 'ts-loader', options: { transpileOnly: IS_DEVELOPMENT } } },
+      { test: /\.tsx?/, use: { loader: 'ts-loader' } },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /index.html$/, use: { loader: 'file-loader', options: { name: 'index.html' } } },
       { test: /\.png$/, use: { loader: 'base64-image-loader' } },

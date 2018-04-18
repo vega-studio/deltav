@@ -77,10 +77,10 @@ export declare class LayerSurface {
      * This scene by default only has a single default view.
      */
     defaultSceneElements: IDefaultSceneElements;
-    /** This manages the mouse events for the current canvas context */
-    private mouseManager;
     /** This is all of the layers in this manager by their id */
     layers: Map<string, Layer<any, any, any>>;
+    /** This manages the mouse events for the current canvas context */
+    private mouseManager;
     /** This is the density the rendering renders for the surface */
     pixelRatio: number;
     /** This is the THREE render system we use to render scenes with views */

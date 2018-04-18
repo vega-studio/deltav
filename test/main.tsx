@@ -1,7 +1,6 @@
 /** @jsx h */
 import { Component, h, render } from 'preact';
-import { ISceneOptions, LayerInitializer } from '../src';
-import { BasicCameraController } from '../src/voidgl/base-event-managers';
+import { EventManager, ISceneOptions, LayerInitializer } from '../src';
 import { LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
@@ -14,6 +13,8 @@ import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
+import { MouseInteraction } from './examples/mouse-interaction';
+import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
 /**
  * The state of the application
@@ -24,8 +25,7 @@ export interface IMainState {
 
 export type SceneInitializer = {
   name: string,
-  camera: ChartCamera,
-  control: BasicCameraController,
+  control: EventManager,
   scene: ISceneOptions;
 };
 
@@ -38,6 +38,9 @@ const tests: BaseExample[] = [
   new Images(),
   new BendyEdge(),
   new Lines(),
+  new MouseInteraction(),
+  new SingleAxisLabelScaling(true),
+  new SingleAxisLabelScaling(false),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -95,7 +98,7 @@ export class Main extends Component<any, IMainState> {
     }
 
     if (generate) {
-      const scenes = this.makeSceneBlock(3);
+      const scenes = this.makeSceneBlock(4);
       this.allScenes = scenes;
 
       // Establish the surface and scenes needed
@@ -171,37 +174,41 @@ export class Main extends Component<any, IMainState> {
       [0.0, 0.1, 0.1, 1.0],
     ];
 
-    for (let i = 0; i < sceneBlockSize; ++i) {
-      for (let k = 0; k < sceneBlockSize; ++k) {
-        const camera = new ChartCamera();
-        const name = `${i}_${k}`;
-        const init: SceneInitializer = {
-          camera,
-          control: new BasicCameraController({
-            camera,
-            startView: name,
-          }),
-          name,
-          scene: {
-            key: name,
-            views: [
-              {
-                background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                camera,
-                clearFlags: [ClearFlags.COLOR],
-                key: name,
-                viewport: {
-                  height: `${viewSize}%`,
-                  left: `${viewSize * k}%`,
-                  top: `${viewSize * i}%`,
-                  width: `${viewSize}%`,
-                },
-              },
-            ],
-          },
-        };
+    let testIndex = -1;
 
-        scenes.push(init);
+    for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
+      for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
+        const name = `${i}_${k}`;
+        const camera = new ChartCamera();
+        const test = tests[++testIndex];
+
+        if (test) {
+          const testCamera = test.makeCamera(camera);
+
+          const init: SceneInitializer = {
+            control: test.makeController(camera, testCamera, name),
+            name,
+            scene: {
+              key: name,
+              views: [
+                {
+                  background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
+                  camera: testCamera,
+                  clearFlags: [ClearFlags.COLOR],
+                  key: name,
+                  viewport: {
+                    height: `${viewSize}%`,
+                    left: `${viewSize * k}%`,
+                    top: `${viewSize * i}%`,
+                    width: `${viewSize}%`,
+                  },
+                },
+              ],
+            },
+          };
+
+          scenes.push(init);
+        }
       }
     }
 

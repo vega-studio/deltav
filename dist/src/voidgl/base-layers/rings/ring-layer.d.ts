@@ -1,4 +1,5 @@
-import { ILayerProps, IMaterialOptions, IModelType, IShaderInitialization, Layer } from '../../index';
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
+import { IMaterialOptions } from '../../types';
 import { RingInstance } from './ring-instance';
 export interface IRingLayerProps extends ILayerProps<RingInstance> {
 }

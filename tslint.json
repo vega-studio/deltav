@@ -19,7 +19,6 @@
     "no-unsafe-finally": true,
     "no-var-keyword": true,
     "triple-equals": [true],
-    "typeof-compare": true,
     "use-isnan": true,
     "eofline": true,
     "indent": [true, "spaces", 2],

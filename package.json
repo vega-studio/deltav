@@ -48,6 +48,7 @@
     "preact": "8.2.7",
     "random": "github:tarwich/node-random#1.0.0",
     "raw-loader": "0.5.1",
+    "rimraf": "2.6.2",
     "style-loader": "0.20.3",
     "three.js": "0.77.1",
     "ts-loader": "4.2.0",

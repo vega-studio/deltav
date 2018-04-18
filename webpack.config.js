@@ -42,12 +42,10 @@ if (IS_PRODUCTION) {
   // We are bundling a library so set the output targets correctly
   library = 'voidgl';
   libraryTarget = 'umd';
-
-  // We should minify and mangle our distribution for npm
-  console.log('Minification enabled');
 }
 
 module.exports = {
+  devtool: IS_PRODUCTION ? 'source-map' : undefined,
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
   mode: IS_DEVELOPMENT ? 'development' : 'production',
@@ -55,7 +53,7 @@ module.exports = {
   module: {
     rules: [
       { test: /\.tsx?/, use: tslintLoader, enforce: 'pre' },
-      { test: /\.tsx?/, use: { loader: 'ts-loader', options: { transpileOnly: IS_DEVELOPMENT } } },
+      { test: /\.tsx?/, use: { loader: 'ts-loader' } },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /index.html$/, use: { loader: 'file-loader', options: { name: 'index.html' } } },
       { test: /\.png$/, use: { loader: 'base64-image-loader' } },

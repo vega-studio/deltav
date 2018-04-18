@@ -1,6 +1,5 @@
 const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const webpack = require('webpack');
 
 const tslintLoader = { loader: 'tslint-loader', options: {
   fix: true,

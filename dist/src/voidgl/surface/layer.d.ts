@@ -1,6 +1,8 @@
 import * as Three from 'three';
+import { ShaderInjectionTarget } from '..';
 import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal } from '../types';
+import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize } from '../types';
+import { UniformIOValue } from '../types';
 import { DataProvider, DiffType } from '../util/data-provider';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
@@ -83,19 +85,17 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     /**
      * This processes add operations from changes in the instancing data
      */
-    private addInstance;
+    private addInstance(layer, instance, uniformCluster);
     /**
      * This processes change operations from changes in the instancing data
      */
-    private changeInstance;
+    private changeInstance(layer, instance, uniformCluster);
     /**
      * This processes remove operations from changes in the instancing data
      */
-    private removeInstance;
+    private removeInstance(layer, instance, uniformCluster);
     /** This takes a diff and applies the proper method of change for the diff */
-    diffProcessor: {
-        [key: number]: (instance: T, uniformCluster: IUniformInstanceCluster) => void;
-    };
+    diffProcessor: ((layer: this, instance: T, uniformCluster: IUniformInstanceCluster) => void)[];
     constructor(props: ILayerProps<T>);
     private updateInstance(instance, uniformCluster);
     /**
@@ -126,6 +126,20 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
      *           across the fragment and vertex shaders and can be modified with little consequence.
      */
     initShader(): IShaderInitialization<T>;
+    /**
+     * Helper method for making an instance attribute. Depending on set up, this makes creating elements
+     * have better documentation when typing out the elements.
+     */
+    makeInstanceAttribute(block: number, blockIndex: InstanceBlockIndex, name: string, size: InstanceAttributeSize, update: (o: T) => InstanceIOValue, atlas?: {
+        key: string;
+        name: string;
+        shaderInjection?: ShaderInjectionTarget;
+    }): IInstanceAttribute<T>;
+    /**
+     * Helper method for making a uniform type. Depending on set up, this makes creating elements
+     * have better documentation when typing out the elements.
+     */
+    makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
     willUpdateInstances(changes: [T, DiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
     didUpdate(): void;

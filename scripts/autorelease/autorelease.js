@@ -40,9 +40,9 @@ process.env.GH_OWNER = process.env.WERCKER_GIT_OWNER;
 process.env.GH_REPO = process.env.WERCKER_GIT_REPOSITORY;
 process.env.GH_TOKEN = process.env.AUTORELEASE_TOKEN;
 
-const { commit, config: gitConfig, exec, github, pullRequest, push, setupGitSsh } = require('auto');
+const { commit, config: gitConfig, exec, github, pullRequest, setupGitSsh } = require('auto');
 const { diff } = require('semver');
-const { promisify } = require('util');
+const { inspect, promisify } = require('util');
 const { readFile, writeFile } = require('fs');
 const { resolve } = require('path');
 
@@ -64,10 +64,19 @@ const {
  * async
  */
 async function preRelease() {
-  if (WERCKER_GIT_BRANCH !== 'release') {
-    console.error('This is not the pre-release branch, so not creating a pre-release');
-    return;
-  }
+  console.log('\n------RUNNING PRE-RELEASE-------');
+
+  // Configure git
+  await setupGitSsh();
+  await gitConfig({
+    'user.email': 'samuel+voidbot@voidray.co',
+    'user.name': 'Autorelease Script',
+
+    'remote.origin.fetch': '+refs/heads/*:refs/remotes/origin/*',
+    'remote.origin.url': `git@autorelease:${WERCKER_GIT_OWNER}/${WERCKER_GIT_REPOSITORY}`,
+  });
+  await exec('git', ['fetch']);
+  await exec('git', ['checkout', WERCKER_GIT_BRANCH]);
 
   // Don't run if the commit was from this script
   const author = await exec('git', ['log', '-n', '1', '--pretty=format:%an']);
@@ -77,60 +86,80 @@ async function preRelease() {
     process.exit(0);
   }
 
+  else console.log('Valid author for autorelease:', author);
+
+  // Update the release notes
+  console.log(await exec('node', [resolve(__dirname, './release-notes')]));
+
   // Get the release number from RELEASE_NOTES.md
   const releaseNotes = await readFileP('RELEASE_NOTES.md', { encoding: 'utf-8' });
   const NEXT_VERSION = (releaseNotes.match(/## *([\d\.]+)/) || [])[1];
 
   // See what kind of release we're doing
-  const devJson = JSON.parse(await exec('git', ['show', 'dev:package.json']));
-  const RELEASE_TYPE = (diff(NEXT_VERSION, devJson.version) || '').toUpperCase();
+  const devJson = JSON.parse(await exec('git', ['show', 'origin/dev:package.json']));
+  const RELEASE_TYPE = (diff(
+    NEXT_VERSION || '0.0.0',
+    devJson.version || '0.0.0'
+  ) || '').toUpperCase();
+
+  console.log(`CURRENT VERSION: ${devJson.version} NEXT_VERSION: ${NEXT_VERSION}.`);
+
+  //
+  // Set the version number in package.json
+  //
+  const packageJson = require(resolve('package.json'));
+
+  if (RELEASE_TYPE) {
+    console.log(`Preparing ${RELEASE_TYPE} release from ${devJson.version} to ${NEXT_VERSION}`);
+
+    // Update package.json
+    packageJson.version = NEXT_VERSION;
+    await writeFileP(
+      resolve('package.json'),
+      JSON.stringify(packageJson, null, '  ') + '\n'
+    );
+  }
+
+  //
+  // Run the release script
+  //
+  if (packageJson.scripts && packageJson.scripts.release) {
+    console.log('Running release...');
+    console.log(await exec('npm', ['run', 'release']));
+  }
+  else if (packageJson.scripts)
+    console.log('No release in package.json', inspect(packageJson.scripts, { colors: true }));
+  else
+    console.log('No release script in package.json');
+
+  // Don't actually make a release if we're not on the release branch
+  if (WERCKER_GIT_BRANCH !== 'release') {
+    console.error('This is not the pre-release branch, so not creating a pre-release');
+    return;
+  }
 
   // If the version number is unchanged since the last release, then don't
   // release
-  if (!RELEASE_TYPE) return false;
-
-  console.log(`Preparing ${RELEASE_TYPE} release from ${devJson.version} to ${NEXT_VERSION}`);
-
-  // Checkout the branch
-  await exec('git', ['remote', 'set-url', 'origin',
-    `git@autorelease:${WERCKER_GIT_OWNER}/${WERCKER_GIT_REPOSITORY}`]
-  );
-  await exec('git', ['checkout', `${WERCKER_GIT_BRANCH}`]);
-
-  // Update package.json
-  const packageJson = require(resolve('package.json'));
-  packageJson.version = NEXT_VERSION;
-  await writeFileP(
-    resolve('package.json'),
-    JSON.stringify(packageJson, null, '  ') + '\n'
-  );
-
-  // Run the release script
-  if (packageJson.scripts && packageJson.scripts.release) {
-    console.log('Running release...');
-    await exec('npm', ['run', 'release']);
+  if (!RELEASE_TYPE) {
+    console.log('No change in release version. Not creating a release');
+    return false;
   }
 
-  await setupGitSsh();
-
-  // Tell git who I am
-  gitConfig({
-    'user.name': 'Autorelease Script',
-    'user.email': 'samuel+voidbot@voidray.co'
-  });
+  console.log(await exec('git', ['status']));
 
   // Create the git commit
-  commit(['.'], {
-    author: 'Autorelease Script',
+  const commitResult = await commit(['.'], {
     message: `Release ${NEXT_VERSION}`,
   })
   .catch(error => {
     // Swallow this error message
     if (!/nothing to commit/i.test(error.message)) throw error;
   });
+  console.log(commitResult);
 
   console.log(`Pushing back to ${WERCKER_GIT_BRANCH}`);
-  await push();
+  await exec('git', ['push', '--verbose', 'origin', WERCKER_GIT_BRANCH]);
+  await exec('git', ['push', '--force', 'origin', 'HEAD:pre-release']);
 
   // Check if the request exists already
   console.log('Checking for a pre-existing pull request');
@@ -181,6 +210,8 @@ async function preRelease() {
  * completed
  */
 async function release() {
+  console.log('\n------RELEASE-------');
+
   if (WERCKER_GIT_BRANCH !== 'master') {
     console.error('This is not the master branch, so not creating a release');
     return;
@@ -193,6 +224,8 @@ async function release() {
   // See what kind of release we're doing
   const devJson = JSON.parse(await exec('git', ['show', 'HEAD^1:package.json']));
   const RELEASE_TYPE = (diff(NEXT_VERSION, devJson.version) || '').toUpperCase();
+
+  console.log(`Current version ${devJson.version} -> Next version ${NEXT_VERSION}`);
 
   if (!RELEASE_TYPE) {
     console.error('There is no change to the release. Not making release notes');
@@ -226,7 +259,7 @@ process.on('unhandledRejection', error => {
 preRelease()
 .then(release)
 .catch(error => {
-  console.error('ERROR:', error);
+  console.error('ERROR:', error.stack || error);
   process.exit(1);
 });
 

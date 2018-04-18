@@ -1,13 +1,12 @@
 const { resolve } = require('path');
-const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const webpack = require('webpack');
 
-const tslintLoader = {loader: 'tslint-loader', options: {
+const tslintLoader = { loader: 'tslint-loader', options: {
   fix: true,
   emitErrors: true,
-}};
+} };
 
 const { NODE_ENV } = process.env;
 
@@ -39,8 +38,6 @@ if (IS_PRODUCTION) {
     'd3-color',
     'd3-scale',
     'ramda',
-    'react-dom',
-    'react',
     'three',
     'bowser',
     'mobx',
@@ -73,12 +70,12 @@ module.exports = {
 
   module: {
     rules: [
-      {test: /\.tsx?/, use: tslintLoader, enforce: 'pre'},
-      {test: /\.tsx?/, use: {loader: 'ts-loader', options: {transpileOnly: IS_DEVELOPMENT}}},
-      {test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader']},
-      {test: /index.html$/, use: {loader: 'file-loader', options: {name: 'index.html'}}},
-      {test: /\.png$/, use: {loader: 'base64-image-loader'}},
-      {test: /\.[fv]s$/, use: ['raw-loader']}, // Currently used to load shaders into javascript files
+      { test: /\.tsx?/, use: tslintLoader, enforce: 'pre' },
+      { test: /\.tsx?/, use: { loader: 'ts-loader', options: { transpileOnly: IS_DEVELOPMENT } } },
+      { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
+      { test: /index.html$/, use: { loader: 'file-loader', options: { name: 'index.html' } } },
+      { test: /\.png$/, use: { loader: 'base64-image-loader' } },
+      { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
     ],
   },
 

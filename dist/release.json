@@ -1,11 +1,11 @@
 {
   "author": {
-    "name": "VoidRay Corporation",
-    "email": "support@voidray.co",
-    "url": "http://www.voidray.co"
+    "name": "A Maker of Things",
+    "email": "diniden@outlook.com",
+    "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "0.7.15",
+  "version": "1.0.1",
   "main": "index.js",
   "types": "src/index.d.ts",
   "license": "Apache-2.0",

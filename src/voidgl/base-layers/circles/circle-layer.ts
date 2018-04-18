@@ -24,19 +24,19 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
   getInstancePickingMethods() {
     return {
       // Provide the calculated AABB world bounds for a given circle
-      boundsAccessor: (o: CircleInstance) => new Bounds({
-        height: o.radius * 2,
-        width: o.radius * 2,
-        x: o.x - o.radius,
-        y: o.y - o.radius,
+      boundsAccessor: (circle: CircleInstance) => new Bounds({
+        height: circle.radius * 2,
+        width: circle.radius * 2,
+        x: circle.x - circle.radius,
+        y: circle.y - circle.radius,
       }),
 
       // Provide a precise hit test for the circle
-      hitTest: (o: CircleInstance, p: IPoint, view: IProjection) => {
-        const r = o.radius / max(...view.camera.scale);
+      hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
+        const r = circle.radius / max(...view.camera.scale);
         const delta = [
-          p.x - o.x,
-          p.y - o.y,
+          point.x - circle.x,
+          point.y - circle.y,
         ];
 
         return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
@@ -56,35 +56,35 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
           blockIndex: InstanceBlockIndex.ONE,
           name: 'center',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: (circle) => [circle.x, circle.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'radius',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.radius],
+          update: (circle) => [circle.radius],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: (circle) => [circle.depth],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: (circle) => circle.color,
         },
       ],
       uniforms: [
         {
           name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
+          update: (uniform: IUniform) => [1],
         },
       ],
       vertexAttributes: [

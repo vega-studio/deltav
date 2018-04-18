@@ -1,5 +1,4 @@
 const { resolve } = require('path');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const webpack = require('webpack');
 
 const tslintLoader = { loader: 'tslint-loader', options: {
@@ -16,9 +15,6 @@ const plugins = [];
 let externals = [];
 let library;
 let libraryTarget;
-
-if (IS_DEVELOPMENT)
-  plugins.push(new ForkTsCheckerWebpackPlugin());
 
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do
@@ -55,6 +51,7 @@ if (IS_PRODUCTION) {
 module.exports = {
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
+  mode: IS_DEVELOPMENT ? 'development' : 'production',
 
   module: {
     rules: [
@@ -80,5 +77,9 @@ module.exports = {
   resolve: {
     modules: ['./node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js'],
+  },
+
+  serve: {
+    port: process.env.PORT || 8080,
   },
 };

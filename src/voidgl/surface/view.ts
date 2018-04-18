@@ -161,8 +161,10 @@ export class View extends IdentifyByKey {
 
   viewToWorld(point: IPoint, out?: IPoint) {
     const world = out || {x: 0, y: 0};
-    world.x = (point.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
-    world.y = (point.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
+
+    const screen = this.pixelSpaceToScreen(point);
+    world.x = (screen.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
+    world.y = (screen.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {

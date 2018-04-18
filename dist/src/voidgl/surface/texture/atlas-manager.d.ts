@@ -1,6 +1,7 @@
-import { ImageAtlasResource, LabelAtlasResource } from '.';
 import { Atlas, IAtlasOptions } from './atlas';
 import { ColorAtlasResource } from './color-atlas-resource';
+import { ImageAtlasResource } from './image-atlas-resource';
+import { LabelAtlasResource } from './label-atlas-resource';
 export declare type AtlasResource = ColorAtlasResource | LabelAtlasResource | ImageAtlasResource;
 /**
  * Defines a manager of atlas', which includes generating the atlas and producing

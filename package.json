@@ -28,9 +28,12 @@
     "three": "0.87.x"
   },
   "devDependencies": {
+    "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",
+    "animejs": "2.2.0",
     "auto": "github:tarwich/auto",
     "base64-image-loader": "1.2.1",
+    "circular-dependency-plugin": "5.0.2",
     "css-loader": "0.28.11",
     "debug": "3.1.0",
     "dts-bundle": "0.7.3",
@@ -52,7 +55,6 @@
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
     "typescript": "2.8.1",
-    "uglify-js": "3.1.10",
     "webpack": "4.6.0",
     "webpack-serve": "0.3.1"
   },

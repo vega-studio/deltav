@@ -1,8 +1,9 @@
-import { ImageAtlasResource, LabelAtlasResource } from '.';
 import { Bounds } from '../../primitives/bounds';
 import { Atlas, IAtlasOptions } from './atlas';
 import { ColorAtlasResource } from './color-atlas-resource';
 import { ColorRasterizer } from './color-rasterizer';
+import { ImageAtlasResource } from './image-atlas-resource';
+import { LabelAtlasResource } from './label-atlas-resource';
 import { LabelRasterizer } from './label-rasterizer';
 import { ImageDimensions, PackNode } from './pack-node';
 import { SubTexture } from './sub-texture';

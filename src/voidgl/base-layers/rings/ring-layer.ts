@@ -1,16 +1,13 @@
 import * as Three from 'three';
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import {
-  ILayerProps,
   IMaterialOptions,
-  IModelType,
   InstanceAttributeSize,
   InstanceBlockIndex,
-  IShaderInitialization,
   IUniform,
-  Layer,
   UniformSize,
   VertexAttributeSize,
-} from '../../index';
+} from '../../types';
 import { RingInstance } from './ring-instance';
 
 export interface IRingLayerProps extends ILayerProps<RingInstance> {}

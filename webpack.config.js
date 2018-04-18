@@ -1,19 +1,31 @@
 const { resolve } = require('path');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 const tslintLoader = { loader: 'tslint-loader', options: {
   fix: true,
   emitErrors: true,
 } };
 
-const IS_RELEASE = process.env.NODE_ENV === 'release';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const { NODE_ENV } = process.env;
+
+const IS_RELEASE = NODE_ENV === 'release';
+const IS_PRODUCTION = NODE_ENV === 'production' || IS_RELEASE;
+const IS_DEVELOPMENT = !NODE_ENV || (NODE_ENV === 'development');
 
 const plugins = [];
 
 let externals = [];
 let library;
 let libraryTarget;
+
+if (IS_DEVELOPMENT) {
+  plugins.push(
+    new CircularDependencyPlugin({
+      exclude: /\bnode_modules\b/,
+      failOnError: true,
+    }),
+  );
+}
 
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do

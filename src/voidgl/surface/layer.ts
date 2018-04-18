@@ -1,13 +1,32 @@
 import * as Three from 'three';
-import { ShaderInjectionTarget } from '..';
-import { View } from '../surface/view';
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IPickInfo, IShaders, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, UniformSize } from '../types';
-import { UniformIOValue } from '../types';
-import { DataProvider, DiffType } from '../util/data-provider';
+import {
+  IInstanceAttribute,
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  InstanceHitTest,
+  InstanceIOValue,
+  IPickInfo,
+  IQuadTreePickingMetrics,
+  IShaders,
+  ISinglePickingMetrics,
+  IUniform,
+  IUniformInternal,
+  IVertexAttribute,
+  IVertexAttributeInternal,
+  PickType,
+  ShaderInjectionTarget,
+  UniformIOValue,
+  UniformSize,
+} from '../types';
+import { BoundsAccessor, DataProvider, DiffType, TrackedQuadTree } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
-import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
+import { InstanceUniformManager } from '../util/instance-uniform-manager';
+import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
+import { LayerInteractionHandler } from './layer-interaction-handler';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import { View } from './view';
 
 export interface IShaderInputs<T extends Instance> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -36,6 +55,11 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
   data: DataProvider<T>;
   /**
+   * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
+   * the value is not NONE.
+   */
+  picking?: PickType;
+  /**
    * This identifies the scene we want the layer to be a part of.
    * Layer's with the same identifiers will render their buffers in the same scene.
    * This only applies to the layer when the layer is initialized in a layer surface. You shouldn't
@@ -47,24 +71,22 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   scene?: string;
 
   // ---- EVENTS ----
-  /** Set this to respond to pick events on the instances rendered */
-  onMouseOver?(info: IPickInfo<T, any, any>): void;
+  /** Executes when the mouse is down on instances and a picking type is set */
+  onMouseDown?(info: IPickInfo<T>): void;
+  /** Executes when the mouse moves on instances and a picking type is set */
+  onMouseMove?(info: IPickInfo<T>): void;
+  /** Executes when the mouse no longer over instances and a picking type is set */
+  onMouseOut?(info: IPickInfo<T>): void;
+  /** Executes when the mouse is newly over instances and a picking type is set */
+  onMouseOver?(info: IPickInfo<T>): void;
+  /** Executes when the mouse button is release when over instances and a picking type is set */
+  onMouseUp?(info: IPickInfo<T>): void;
+  /** Executes when the mouse click gesture is executed over instances and a picking type is set */
+  onMouseClick?(info: IPickInfo<T>): void;
 }
 
 export interface IModelConstructable {
   new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material []): any;
-}
-
-const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
-
-// We declare any fill vector properties needed out here to maximize optimization
-// @ts-ignore: variable-name
-let _I_, _END_;
-
-function fillVector(vec: Three.Vector4, start: number, values: number[]) {
-  for (_I_ = start, _END_ = values.length + start; _I_ < _END_; ++_I_) {
-    vec[VECTOR_ACCESSORS[_I_]] = values[_I_ - start];
-  }
 }
 
 /**
@@ -85,12 +107,16 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   instanceById = new Map<string, T>();
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
+  /** This is the handler that manages interactions for the layer */
+  interactions: LayerInteractionHandler<T, U, V>;
   /** The official shader material generated for the layer */
   material: Three.RawShaderMaterial;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
+  /** This is all of the picking metrics kept for handling picking scenarios */
+  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: AtlasResourceManager;
   /** This is all of the uniforms generated for the layer */
@@ -105,58 +131,10 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   props: U;
   state: V;
 
-  /**
-   * This processes add operations from changes in the instancing data
-   */
-  private addInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
-    // If the uniform cluster already exists, then we swap over to a change update
-    if (uniformCluster) {
-      layer.changeInstance(layer, instance, uniformCluster);
-    }
-
-    // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
-    else {
-      const uniforms = layer.uniformManager.add(instance);
-      instance.active = true;
-      layer.updateInstance(instance, uniforms);
-    }
-  }
-
-  /**
-   * This processes change operations from changes in the instancing data
-   */
-  private changeInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
-    // If there is an existing uniform cluster for this instance, then we can update the uniforms
-    if (uniformCluster) {
-      layer.updateInstance(instance, uniformCluster);
-    }
-
-    // If we don't have existing uniforms, then we must remove the instance
-    else {
-      layer.addInstance(layer, instance, uniformCluster);
-    }
-  }
-
-  /**
-   * This processes remove operations from changes in the instancing data
-   */
-  private removeInstance(layer: this, instance: T, uniformCluster: IUniformInstanceCluster) {
-    if (uniformCluster) {
-      // We deactivate the instance so it does not render anymore
-      instance.active = false;
-      // We do one last update on the instance to update to it's deactivated state
-      layer.updateInstance(instance, uniformCluster);
-      // Unlink the instance from the uniform cluster
-      layer.uniformManager.remove(instance);
-    }
-  }
-
-  /** This takes a diff and applies the proper method of change for the diff */
-  diffProcessor = [
-    this.changeInstance,
-    this.addInstance,
-    this.removeInstance,
-  ];
+  /** This contains the methods and controls for handling diffs for the layer */
+  diffManager: InstanceDiffManager<T>;
+  /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
+  diffProcessor: DiffLookup<T>;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -164,51 +142,23 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     super(props);
     // Keep our props within the layer
     this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
-  }
+    // Set up the pick type for the layer
+    const { picking = PickType.NONE } = this.props;
 
-  private updateInstance(instance: T, uniformCluster: IUniformInstanceCluster) {
-    if (instance.active) {
-      const uniforms = uniformCluster.uniform;
-      const uniformRangeStart = uniformCluster.uniformRange[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
-      let instanceUniform, value, block, start;
-      let k, endk;
+    // If ALL is specified we set up QUAD tree picking for our instances
+    if (picking === PickType.ALL) {
+      const pickingMethods = this.getInstancePickingMethods();
 
-      // Loop through the instance attributes and update the uniform cluster with the valaues
-      // Calculated for the instance
-      for (let i = 0, end = this.instanceAttributes.length; i < end; ++i) {
-        instanceUniform = this.instanceAttributes[i];
-        value = instanceUniform.update(instance);
-        block = instanceData[uniformRangeStart + instanceUniform.block];
-        instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
-        start = instanceUniform.blockIndex;
-
-        // Hyper optimized vector filling routine. It uses properties that are globally scoped
-        // To greatly reduce overhead
-        for (k = start, endk = value.length + start; k < endk; ++k) {
-          block[VECTOR_ACCESSORS[k]] = value[k - start];
-        }
-      }
-
-      uniforms.value = instanceData;
+      this.picking = {
+        hitTest: pickingMethods.hitTest,
+        quadTree: new TrackedQuadTree<T>(0, 1, 0, 1, pickingMethods.boundsAccessor),
+        type: PickType.ALL,
+      };
     }
 
-    else {
-      const uniforms: Three.IUniform = uniformCluster.uniform;
-      const uniformRangeStart = uniformCluster.uniformRange[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
-      let instanceUniform, value, block;
-
-      // Only update the _active attribute to ensure it is false. When it is false, there is no
-      // Point to updating any other uniform
-      instanceUniform = this.activeAttribute;
-      value = instanceUniform.update(instance);
-      block = instanceData[uniformRangeStart + instanceUniform.block];
-      instanceUniform.atlas && this.resource.setTargetAtlas(instanceUniform.atlas.key);
-      fillVector(block, instanceUniform.blockIndex, value);
-
-      uniforms.value = instanceData;
-    }
+    this.diffManager = new InstanceDiffManager<T>(this);
+    this.diffProcessor = this.diffManager.getDiffProcessor();
+    this.interactions = new LayerInteractionHandler(this);
   }
 
   /**
@@ -233,15 +183,16 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     const changeList = this.props.data.changeList;
     // Make some holder variables to prevent declaration within the loop
     let change, instance, uniforms;
-    // Fast ref to the processor
+    // Fast ref to the processor and manager
     const diffProcessor = this.diffProcessor;
+    const diffManager = this.diffManager;
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
       instance = change[0];
       uniforms = this.uniformManager.getUniforms(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
-      diffProcessor[change[1]](this, instance, uniforms);
+      diffProcessor[change[1]](diffManager, instance, uniforms);
     }
 
     // Indicate the diffs are consumed
@@ -253,6 +204,14 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(materialUniform => materialUniform.value = value);
     }
+  }
+
+  /**
+   * This method is for layers to implement to specify how the bounds for an instance are retrieved or
+   * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
+   */
+  getInstancePickingMethods(): { hitTest: InstanceHitTest<T>, boundsAccessor: BoundsAccessor<T> } {
+    throw new Error('When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.');
   }
 
   /**

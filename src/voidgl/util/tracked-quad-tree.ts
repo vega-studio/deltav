@@ -29,8 +29,6 @@ export interface IVisitFunction<T extends Instance> {
 /**
  * This is a class used specifically by the quad tree nodes to indicate split space
  * within the quad tree.
- *
- * @class Quadrants
  */
 export class Quadrants<T extends Instance> {
   TL: Node<T>;
@@ -41,8 +39,6 @@ export class Quadrants<T extends Instance> {
   /**
    * Ensures all memory is released for all nodes and all references are removed
    * to potentially high memory consumption items
-   *
-   * @memberOf Quadrants
    */
   destroy() {
     this.TL.destroy();
@@ -60,8 +56,6 @@ export class Quadrants<T extends Instance> {
    *
    * @param bounds The bounds this will create quandrants for
    * @param depth  The child depth of this element
-   *
-   * @memberOf Quadrants
    */
   constructor(
     bounds: Bounds,
@@ -90,9 +84,6 @@ export class Quadrants<T extends Instance> {
  * The quad tree node. This Node will take in a certain population before dividing itself into
  * 4 quadrants which it will attempt to inject it's population into. If a member of the population
  * does not completely get injected into one of the quadrants it remains as a member of this node.
- *
- * @export
- * @class Node
  */
 export class Node<T extends Instance> {
   bounds: Bounds;
@@ -110,8 +101,6 @@ export class Node<T extends Instance> {
 
   /**
    * Destroys this node and ensures all child nodes are destroyed as well.
-   *
-   * @memberOf Node
    */
   destroy() {
     delete this.children;
@@ -125,14 +114,6 @@ export class Node<T extends Instance> {
 
   /**
    * Creates an instance of Node.
-   *
-   * @param l     The bounding left wall of the space this node covers
-   * @param r     The bounding right wall of the space this node covers
-   * @param t     The bounding top wall of the space this node covers
-   * @param b     The bounding bottom wall of the space this node covers
-   * @param depth The depth within the quad tree this node resides
-   *
-   * @memberOf Node
    */
   constructor(
     left: number,
@@ -173,8 +154,6 @@ export class Node<T extends Instance> {
    * @param props Properties that can be retrieved with the child object if applicable
    *
    * @returns True if the insertion was successful
-   *
-   * @memberOf Node
    */
   add(child: T): boolean {
     let bounds = this.childToBounds.get(child);
@@ -203,8 +182,6 @@ export class Node<T extends Instance> {
    * bounds necessary to cover the area the children cover.
    *
    * @param children      List of Bounds objects to inject
-   *
-   * @memberOf Node
    */
   addAll(children: T[]) {
     // Make sure we cover the entire area of all the children.
@@ -244,8 +221,6 @@ export class Node<T extends Instance> {
    * This will cause all children to be re-injected into the tree.
    *
    * @param bounds The bounds to include in the tree's coverage
-   *
-   * @memberOf Node
    */
   cover(bounds: Bounds) {
     // If we are already covering the area: abort
@@ -284,8 +259,6 @@ export class Node<T extends Instance> {
    * @param props The props to remain associated with the child
    *
    * @returns True if the injection was successful
-   *
-   * @memberOf Node
    */
   private doAdd(child: T, bounds: Bounds, fromSplit?: boolean): boolean {
     // If nodes are present, then we have already exceeded the population of this node

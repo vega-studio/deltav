@@ -16,8 +16,8 @@ export declare class CircleLayer extends Layer<CircleInstance, ICircleLayerProps
      * of elements
      */
     getInstancePickingMethods(): {
-        boundsAccessor: (o: CircleInstance) => Bounds;
-        hitTest: (o: CircleInstance, p: IPoint, view: IProjection) => boolean;
+        boundsAccessor: (circle: CircleInstance) => Bounds;
+        hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => boolean;
     };
     /**
      * Define our shader and it's inputs

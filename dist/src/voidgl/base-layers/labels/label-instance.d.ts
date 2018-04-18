@@ -89,9 +89,9 @@ export declare class LabelInstance extends Instance implements Label {
      */
     readonly fontSize: number;
     /** This is the style of the font (italic, oblique, etc) */
-    readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
+    readonly fontStyle: "normal" | "inherit" | "initial" | "italic" | "oblique";
     /** This is the font weight specified for the label (bold, normal, etc). */
-    readonly fontWeight: 100 | 300 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
+    readonly fontWeight: 100 | 300 | "normal" | "bold" | "bolder" | "lighter" | "inherit" | "initial" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
     /** This gets the atlas resource that is uniquely idenfied for this label */
     readonly resource: LabelAtlasResource;
     /** This is the label's text. */

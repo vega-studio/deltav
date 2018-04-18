@@ -1,5 +1,4 @@
 const { resolve } = require('path');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const webpack = require('webpack');
 
@@ -21,8 +20,6 @@ let library;
 let libraryTarget;
 
 if (IS_DEVELOPMENT) {
-  plugins.push(new ForkTsCheckerWebpackPlugin());
-
   plugins.push(
     new CircularDependencyPlugin({
       exclude: /\bnode_modules\b/,
@@ -66,7 +63,7 @@ if (IS_PRODUCTION) {
 module.exports = {
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
-  mode: NODE_ENV || 'development',
+  mode: IS_DEVELOPMENT ? 'development' : 'production',
 
   module: {
     rules: [
@@ -92,5 +89,9 @@ module.exports = {
   resolve: {
     modules: ['./node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js'],
+  },
+
+  serve: {
+    port: process.env.PORT || 8080,
   },
 };

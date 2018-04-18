@@ -31,7 +31,6 @@
     "arrow-return-shorthand": [true, "multiline"],
     "class-name": true,
     "comment-format": [true, "check-space", "check-uppercase"],
-    "completed-docs": [true],
     "encoding": true,
     "interface-name": [true, "always-prefix"],
     "jsdoc-format": true,

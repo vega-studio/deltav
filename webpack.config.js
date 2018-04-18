@@ -1,5 +1,4 @@
 const { resolve } = require('path');
-const webpack = require('webpack');
 
 const tslintLoader = { loader: 'tslint-loader', options: {
   fix: true,
@@ -31,21 +30,6 @@ if (IS_PRODUCTION) {
   // We are bundling a library so set the output targets correctly
   library = 'voidgl';
   libraryTarget = 'umd';
-
-  // We should minify and mangle our distribution for npm
-  console.log('Minification enabled');
-
-  // Add in uglify to handle minification
-  plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: true
-        },
-      },
-      sourceMap: true,
-    })
-  );
 }
 
 module.exports = {
@@ -56,7 +40,7 @@ module.exports = {
   module: {
     rules: [
       { test: /\.tsx?/, use: tslintLoader, enforce: 'pre' },
-      { test: /\.tsx?/, use: { loader: 'ts-loader', options: { transpileOnly: IS_DEVELOPMENT } } },
+      { test: /\.tsx?/, use: { loader: 'ts-loader' } },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /index.html$/, use: { loader: 'file-loader', options: { name: 'index.html' } } },
       { test: /\.png$/, use: { loader: 'base64-image-loader' } },
@@ -77,9 +61,5 @@ module.exports = {
   resolve: {
     modules: ['./node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js'],
-  },
-
-  serve: {
-    port: process.env.PORT || 8080,
   },
 };

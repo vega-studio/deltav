@@ -14,8 +14,4 @@
     "strictNullChecks": false,
     "target": "es5"
   },
-  "files": [
-    "src/index.ts",
-    "test/index.ts"
-  ]
 }

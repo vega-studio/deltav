@@ -14,6 +14,7 @@ import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
+import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
 import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
 /**
@@ -41,6 +42,7 @@ const tests: BaseExample[] = [
   new MouseInteraction(),
   new SingleAxisLabelScaling(true),
   new SingleAxisLabelScaling(false),
+  new MouseInteractionLabels(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -262,7 +264,7 @@ export class Main extends Component<any, IMainState> {
               'Enable Monitor Density'
             }</div>
           }
-      </div >
+      </div>
     );
   }
 }

@@ -14,6 +14,7 @@ import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
+import { MouseInteractionImages } from './examples/mouse-interaction-images';
 import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
 import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
@@ -43,6 +44,7 @@ const tests: BaseExample[] = [
   new SingleAxisLabelScaling(true),
   new SingleAxisLabelScaling(false),
   new MouseInteractionLabels(),
+  new MouseInteractionImages(),
 ];
 
 /** These are the layers for the tests that are generated */

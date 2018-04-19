@@ -26,7 +26,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
    */
   getInstancePickingMethods() {
     return {
-      // Provide the calculated AABB world bounds for a given circle
+      // Provide the calculated AABB world bounds for a given label
       boundsAccessor: (label: LabelInstance) => {
         // A NEVER scale type will have a dynamic bounding range as it can grow outside of it's
         // Initial bounds. Right now the system just handles a 'null' bounds which will always pass

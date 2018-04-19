@@ -1,7 +1,11 @@
 import * as Three from 'three';
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { ScaleType } from '../types';
 import { ImageInstance } from './image-instance';
+
+const { min, max } = Math;
 
 export interface IImageLayerProps extends ILayerProps<ImageInstance> {
   atlas?: string;
@@ -16,6 +20,115 @@ export interface IImageLayerState {
  * them in interesting ways.
  */
 export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLayerState> {
+  /**
+   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+   * of elements
+   */
+  getInstancePickingMethods() {
+    return {
+      // Provide the calculated AABB world bounds for a given image
+      boundsAccessor: (image: ImageInstance) => {
+        // A NEVER scale type will have a dynamic bounding range as it can grow outside of it's
+        // Initial bounds. Right now the system just handles a 'null' bounds which will always pass
+        // The broadphase. Bad for performance, but ensures the hit test works
+        if (image.scaling === ScaleType.NEVER) {
+          return null;
+        }
+
+        const topLeft = [
+          image.x - image.anchor.x,
+          image.y - image.anchor.y,
+        ];
+
+        return new Bounds({
+          height: image.height,
+          width: image.width,
+          x: topLeft[0],
+          y: topLeft[1],
+        });
+      },
+
+      // Provide a precise hit test for the circle
+      hitTest: (image: ImageInstance, point: IPoint, view: IProjection) => {
+        // The bounds of the image is in world space, but it does not account for the scale mode of the image.
+        // Here, we will apply the scale mode testing to the image
+        const maxScale = max(...view.camera.scale);
+        const minScale = min(...view.camera.scale);
+
+        // If we scale always then the image stays within it's initial world bounds at all times
+        if (image.scaling === ScaleType.ALWAYS) {
+          return true;
+        }
+
+        // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
+        // Image the same size. If the camera zooms out then the bounds === the world bounds.
+        else if (image.scaling === ScaleType.BOUND_MAX) {
+          // We are zooming out. the bounds will stay within the world bounds
+          if (minScale <= 1 && maxScale <= 1) {
+            return true;
+          }
+
+          // We are zooming in. The bounds will shrink to keep the image at max font size
+          else {
+            // The location is within the world, but we reverse project the anchor spread
+            const topLeft = [
+              image.x - (image.anchor.x / maxScale),
+              image.y - (image.anchor.y / maxScale),
+            ];
+
+            // Reverse project the size and we should be within the distorted world coordinates
+            return new Bounds({
+              height: image.height / maxScale,
+              width: image.width / maxScale,
+              x: topLeft[0],
+              y: topLeft[1],
+            }).containsPoint(point);
+          }
+        }
+
+        // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
+        // Of the camera zoom
+        else if (image.scaling === ScaleType.NEVER) {
+          // We are zooming out. The bounds will grow to keep the image the max font size
+          if (minScale <= 1 && maxScale <= 1) {
+            // The location is within the world, but we reverse project the anchor spread
+            const topLeft = [
+              image.x - (image.anchor.x / minScale),
+              image.y - (image.anchor.y / minScale),
+            ];
+
+            // Reverse project the size and we should be within the distorted world coordinates
+            return new Bounds({
+              height: image.height / minScale,
+              width: image.width / minScale,
+              x: topLeft[0],
+              y: topLeft[1],
+            }).containsPoint(point);
+          }
+
+          // We are zooming in. The bounds will shrink to keep the image at max font size
+          else {
+            // The location is within the world, but we reverse project the anchor spread
+            const topLeft = [
+              image.x - (image.anchor.x / maxScale),
+              image.y - (image.anchor.y / maxScale),
+            ];
+
+            // Reverse project the size and we should be within the distorted world coordinates
+            return new Bounds({
+              height: image.height / maxScale,
+              width: image.width / maxScale,
+              x: topLeft[0],
+              y: topLeft[1],
+            }).containsPoint(point);
+          }
+        }
+
+        return true;
+      },
+    };
+  }
+
   /**
    * Define our shader and it's inputs
    */

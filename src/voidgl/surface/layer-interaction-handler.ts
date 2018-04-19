@@ -41,7 +41,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.queryPoint(world, []);
+        let instances = this.layer.picking.quadTree.query(world);
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
@@ -99,7 +99,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.queryPoint(world, []);
+        let instances = this.layer.picking.quadTree.query(world);
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
@@ -125,7 +125,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseOver || onMouseMove || onMouseOut) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.queryPoint(world, []);
+        let instances = this.layer.picking.quadTree.query(world);
         instances = instances.filter(o => hitTest(o, world, view));
 
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
@@ -188,7 +188,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.queryPoint(world, []);
+        let instances = this.layer.picking.quadTree.query(world);
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {

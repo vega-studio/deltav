@@ -92,6 +92,13 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           size: InstanceAttributeSize.FOUR,
           update: (o) => o.color,
         },
+        {
+          block: 4,
+          blockIndex: InstanceBlockIndex.ONE,
+          name: 'scale',
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.scale],
+        },
       ],
       uniforms: [
         {

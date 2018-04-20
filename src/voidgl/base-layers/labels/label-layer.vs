@@ -28,6 +28,9 @@ void main() {
     float(unequalZooms)
   );
 
+  // apply scaling
+  size *= scale;
+
   vec2 adjustedAnchor = mix(
     anchor,
     (anchor * cameraScale.yx),

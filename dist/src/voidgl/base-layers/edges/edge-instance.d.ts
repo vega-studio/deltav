@@ -29,13 +29,13 @@ export declare class EdgeInstance extends Instance {
     widthEnd: number;
     readonly length: number;
     /**
-     * Calculates a perpendicular direction vector to the edge
-     */
-    readonly perpendicular: number;
-    /**
      * Calculates the midpoint of the edge
      */
     readonly midpoint: number;
+    /**
+     * Calculates a perpendicular direction vector to the edge
+     */
+    readonly perpendicular: [number, number];
     /**
      * Applies the edge width to the start and end
      */

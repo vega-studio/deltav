@@ -1,14 +1,17 @@
 import * as Three from 'three';
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  IProjection,
   IUniform,
   UniformSize,
   VertexAttributeSize,
 } from '../../types';
 import { RingInstance } from './ring-instance';
+const { max } = Math;
 
 export interface IRingLayerProps extends ILayerProps<RingInstance> {}
 
@@ -23,6 +26,33 @@ export class RingLayer extends Layer<
   IRingLayerProps,
   IRingLayerState
 > {
+  /**
+   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+   * of elements
+   */
+  getInstancePickingMethods() {
+    return {
+      // Provide the calculated AABB world bounds for a given circle
+      boundsAccessor: (ring: RingInstance) => new Bounds({
+        height: ring.radius * 2,
+        width: ring.radius * 2,
+        x: ring.x - ring.radius,
+        y: ring.y - ring.radius,
+      }),
+
+      // Provide a precise hit test for the ring
+      hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => {
+        const r = ring.radius / max(...view.camera.scale);
+        const delta = [
+          point.x - ring.x,
+          point.y - ring.y,
+        ];
+
+        return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
+      },
+    };
+  }
+
   /**
    * Define our shader and it's inputs
    */

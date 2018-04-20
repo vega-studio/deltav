@@ -56,9 +56,9 @@ export declare class Bounds {
     /**
      * Grows this bounds object to cover the space of the provided bounds object
      *
-     * @param bounds
+     * @param item
      */
-    encapsulate(bounds: Bounds): boolean;
+    encapsulate(item: Bounds | IPoint): boolean;
     /**
      * Checks to see if the provided bounds object could fit within the dimensions of this bounds object
      * This ignores position and just checks width and height.

@@ -1,6 +1,6 @@
 import { BasicCameraController, ChartCamera, createLayer, DataProvider, EventManager, Instance, LayerInitializer, RingLayer } from '../../src';
 
-export class BaseExample {
+export abstract class BaseExample {
   makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
     return  new BasicCameraController({
       camera: defaultCamera,
@@ -21,8 +21,5 @@ export class BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<Instance> {
-    // IMPLEMENTED BY SUB CLASS
-    return null;
-  }
+  abstract makeProvider(): DataProvider<Instance>;
 }

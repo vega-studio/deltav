@@ -137,7 +137,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             world: [world.x, world.y],
           };
 
-          onMouseOver(info);
+          if (notOverInstances.length > 0) onMouseOver(info);
         }
 
         // Broadcast the the picking info for all instances that the mouse moved on
@@ -167,7 +167,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             world: [world.x, world.y],
           };
 
-          onMouseOut(info);
+          if (noLongerOver.length > 0) onMouseOut(info);
         }
 
         // We store the current hovered over items as our over item list for next interaction

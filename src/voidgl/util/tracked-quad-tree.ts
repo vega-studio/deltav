@@ -62,7 +62,7 @@ export class Quadrants<T extends Instance> {
     depth: number,
     getBounds: BoundsAccessor<T>,
     childToNode: Map<T, Node<T>>,
-    childToBounds: Map<T, Bounds>,
+    childToBounds: Map<T, Bounds | null>,
   ) {
     const mid = bounds.mid;
     this.TL = new Node<T>(bounds.x, mid.x, bounds.y, mid.y, getBounds, depth);
@@ -236,7 +236,7 @@ export class Node<T extends Instance> {
     }
 
     // Add all of the children into the tree.
-    children.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child), true));
+    children.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null, true));
   }
 
   /**
@@ -271,7 +271,7 @@ export class Node<T extends Instance> {
     // Clear out the child to node relations
     this.childToNode.clear();
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child)));
+    allChildren.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null));
   }
 
   /**
@@ -290,6 +290,12 @@ export class Node<T extends Instance> {
       this.childToNode.set(child, this);
 
       return true;
+    }
+
+    // If no bounds is available at this point, something went terribly wrong
+    if (!bounds) {
+      console.warn('A null bounds was added to a Quad Tree node below the top node, which is invalid.');
+      return false;
     }
 
     // If bounds are null, then just immediately add
@@ -434,7 +440,9 @@ export class Node<T extends Instance> {
    */
   queryBounds(b: Bounds, list: T[], visit?: IVisitFunction<T>): T[] {
     this.children.forEach((c) => {
-      if (this.childToBounds.get(c).hitBounds(b)) {
+      const bounds = this.childToBounds.get(c);
+
+      if (bounds && bounds.hitBounds(b)) {
         list.push(c);
       }
     });
@@ -476,7 +484,9 @@ export class Node<T extends Instance> {
    */
   queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
     this.children.forEach((c) => {
-      if (this.childToBounds.get(c).containsPoint(p)) {
+      const bounds = this.childToBounds.get(c);
+
+      if (bounds && bounds.containsPoint(p)) {
         list.push(c);
       }
     });
@@ -553,7 +563,7 @@ export class Node<T extends Instance> {
 
     for (let i = 0, end = allChildren.length; i < end; ++i) {
       const child = allChildren[i];
-      this.doAdd(child, this.childToBounds.get(child), true);
+      this.doAdd(child, this.childToBounds.get(child) || null, true);
     }
   }
 

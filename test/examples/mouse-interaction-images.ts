@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { AnchorType, CircleInstance, createLayer, DataProvider, ImageInstance, ImageLayer, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
+import { CircleInstance, createLayer, DataProvider, ImageInstance, ImageLayer, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 const iconData = require('./images/leaf.png');
@@ -77,7 +77,6 @@ export class MouseInteractionImages extends BaseExample {
 
   makeProvider(): DataProvider<ImageInstance> {
     const provider = new DataProvider<ImageInstance>([]);
-    const count = 2;
 
     const image = new ImageInstance({
       element: icon,

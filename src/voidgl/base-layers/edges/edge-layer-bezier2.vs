@@ -9,6 +9,6 @@
  * @returns {vec2} A point interpolated between the two provided points
  */
 vec2 interpolation(float t, vec2 p1, vec2 p2, vec2 c1, vec2 c2) {
-  float t1 = 1 - t;
-  return pow(t1, 3) * p1 + 3 * t * pow(t1, 2) * c1 + 3 * pow(t, 2) * t1 * c2 + pow(t, 3) * p2;
+  float t1 = 1.0 - t;
+  return pow(t1, 3.0) * p1 + 3.0 * t * pow(t1, 2.0) * c1 + 3.0 * pow(t, 2.0) * t1 * c2 + pow(t, 3.0) * p2;
 }

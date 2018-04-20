@@ -34,15 +34,12 @@ export class EdgeInstance extends Instance {
 
   @computed
   get length() {
-    return 0;
-  }
+    const delta = [
+      this.end[0] - this.start[0],
+      this.end[1] - this.start[1],
+    ];
 
-  /**
-   * Calculates a perpendicular direction vector to the edge
-   */
-  @computed
-  get perpendicular() {
-    return 0;
+    return Math.sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
   }
 
   /**
@@ -51,6 +48,19 @@ export class EdgeInstance extends Instance {
   @computed
   get midpoint() {
     return 0;
+  }
+
+  /**
+   * Calculates a perpendicular direction vector to the edge
+   */
+  @computed
+  get perpendicular(): [number, number] {
+    const length = this.length;
+
+    return [
+      (this.end[1] - this.start[1]) / length,
+      -(this.end[0] - this.start[0]) / length,
+    ];
   }
 
   /**

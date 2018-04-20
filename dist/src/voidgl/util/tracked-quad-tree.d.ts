@@ -1,7 +1,7 @@
 import { Bounds } from '../primitives/bounds';
 import { IPoint } from '../primitives/point';
 import { Instance } from './instance';
-export declare type BoundsAccessor<T extends Instance> = (o: T) => Bounds;
+export declare type BoundsAccessor<T extends Instance> = (o: T) => Bounds | null;
 /**
  * Allows typing of a callback argument
  */
@@ -37,7 +37,7 @@ export declare class Quadrants<T extends Instance> {
      * @param bounds The bounds this will create quandrants for
      * @param depth  The child depth of this element
      */
-    constructor(bounds: Bounds, depth: number, getBounds: BoundsAccessor<T>, childToNode: Map<T, Node<T>>, childToBounds: Map<T, Bounds>);
+    constructor(bounds: Bounds, depth: number, getBounds: BoundsAccessor<T>, childToNode: Map<T, Node<T>>, childToBounds: Map<T, Bounds | null>);
 }
 /**
  * The quad tree node. This Node will take in a certain population before dividing itself into
@@ -45,18 +45,28 @@ export declare class Quadrants<T extends Instance> {
  * does not completely get injected into one of the quadrants it remains as a member of this node.
  */
 export declare class Node<T extends Instance> {
+    /** This is the amount of space this node covers */
     bounds: Bounds;
+    /** These are the child Instances of the node. */
     children: T[];
-    depth: number;
-    getBounds: BoundsAccessor<T>;
-    nodes: Quadrants<T> | null;
     /**
      * This tracks a quick lookup of a child to it's parent node. This is used so the child can
      * be removed with ease and not require a traversal of the tree.
      */
     childToNode: Map<T, Node<T>>;
     /** This tracks the bounds calcuated for the given instance */
-    childToBounds: Map<T, Bounds>;
+    childToBounds: Map<T, Bounds | null>;
+    /** This is how deep the node is within the tree */
+    depth: number;
+    /** This is the accessor method that retrieves the bounds for an injected instance */
+    getBounds: BoundsAccessor<T>;
+    /** These are the child nodes of this quad node when this node is split. It is null if the node is not split yet */
+    nodes: Quadrants<T> | null;
+    /**
+     * These are children with null bounds that do not affect the splitting and ALWAYS get checked every query.
+     * They should only reside on the top node.
+     */
+    nullBounded: T[];
     /**
      * Destroys this node and ensures all child nodes are destroyed as well.
      */
@@ -64,7 +74,7 @@ export declare class Node<T extends Instance> {
     /**
      * Creates an instance of Node.
      */
-    constructor(left: number, right: number, top: number, bottom: number, getBounds: (o: T) => Bounds, depth?: number);
+    constructor(left: number, right: number, top: number, bottom: number, getBounds: BoundsAccessor<T>, depth?: number);
     /**
      * Adds an object that extends Bounds (or is Bounds) and properly injects it into this node
      * or into a sub quadrant if this node is split already. If the child is outside the boundaries

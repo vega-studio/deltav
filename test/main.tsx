@@ -12,6 +12,7 @@ import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
+import { LabelAnimatedScale } from './examples/label-animated-scale';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
 import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
@@ -47,6 +48,7 @@ const tests: BaseExample[] = [
   new MouseInteractionLabels(),
   new MouseInteractionImages(),
   new MouseInteractionEdges(),
+  new LabelAnimatedScale(),
 ];
 
 /** These are the layers for the tests that are generated */

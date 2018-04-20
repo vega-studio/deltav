@@ -12,7 +12,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
   anchor?: Anchor;
   /** The color the label should render as */
   color: [number, number, number, number];
-  /** Depth sorting of the label (or the z value of the lable) */
+  /** Depth sorting of the label (or the z value of the label) */
   depth?: number;
   /** The font of the label */
   fontFamily?: string;
@@ -25,13 +25,15 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
   /** This allows for control over rasterization to the atlas */
   rasterization?: {
     /**
-     * This is the scale of the rasterization on the atlas. Higher numbers increase atlas useage, but can provide
+     * This is the scale of the rasterization on the atlas. Higher numbers increase atlas usage, but can provide
      * higher quality render outputs to the surface.
      */
     scale: number;
   };
   /** Sets the way the label scales with the world */
   scaling?: ScaleType;
+  /** Scales the label uniformly */
+  scale?: number;
   /** This will be the text that should render with  */
   text: string;
   /** The x coordinate where the label will be anchored to in world space */
@@ -124,10 +126,12 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) =
 export class LabelInstance extends Instance implements Label {
   /** This is the rendered color of the label */
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
-  /** Depth sorting of the label (or the z value of the lable) */
+  /** Depth sorting of the label (or the z value of the label) */
   @observable depth: number = 0;
   /** Sets the way the label scales with the world */
   @observable scaling: ScaleType = ScaleType.BOUND_MAX;
+  /** Scales the label uniformly */
+  @observable scale: number = 1.0;
   /** The x coordinate where the label will be anchored to in world space */
   @observable x: number = 0;
   /** The y coordinate where the label will be anchored to in world space */
@@ -170,7 +174,7 @@ export class LabelInstance extends Instance implements Label {
   get fontStyle() { return this._fontStyle; }
   /** This is the font weight specified for the label (bold, normal, etc). */
   get fontWeight() { return this._fontWeight; }
-  /** This gets the atlas resource that is uniquely idenfied for this label */
+  /** This gets the atlas resource that is uniquely identified for this label */
   get resource() { return this._rasterization.resource; }
   /** This is the label's text. */
   get text() { return this._text; }
@@ -207,6 +211,8 @@ export class LabelInstance extends Instance implements Label {
     this.depth = options.depth || this.depth;
     this.color = options.color || this.color;
     this.scaling = options.scaling || this.scaling;
+    this.scale = options.scale || this.scale;
+
     this.x = options.x || this.x;
     this.y = options.y || this.y;
 

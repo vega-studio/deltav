@@ -33,7 +33,7 @@ export class LabelAnimatedScale extends BaseExample {
         scale: 1.0,
       },
       scale: 1.0,
-      scaling: ScaleType.ALWAYS,
+      scaling: ScaleType.BOUND_MAX,
       text: 'Scaling text...:',
       x: 20,
       y: 100,

@@ -67,10 +67,10 @@ export interface IVisitFunction<T extends IQuadItem> {
  * @class Quadrants
  */
 export class Quadrants<T extends IQuadItem> {
-  TL: Node<T> = null;
-  TR: Node<T> = null;
-  BL: Node<T> = null;
-  BR: Node<T> = null;
+  TL: Node<T>;
+  TR: Node<T>;
+  BL: Node<T>;
+  BR: Node<T>;
 
   /**
    * Ensures all memory is released for all nodes and all references are removed
@@ -83,10 +83,10 @@ export class Quadrants<T extends IQuadItem> {
     this.TR.destroy();
     this.BL.destroy();
     this.BR.destroy();
-    this.TL = null;
-    this.TR = null;
-    this.BL = null;
-    this.BR = null;
+    delete this.TL;
+    delete this.TR;
+    delete this.BL;
+    delete this.BR;
   }
 
   /**
@@ -115,10 +115,10 @@ export class Quadrants<T extends IQuadItem> {
  * @class Node
  */
 export class Node<T extends IQuadItem> {
-  bounds: Bounds = null;
+  bounds: Bounds;
   children: T[] = [];
   depth: number = 0;
-  nodes: Quadrants<T> = null;
+  nodes: Quadrants<T>;
 
   /**
    * Destroys this node and ensures all child nodes are destroyed as well.
@@ -126,12 +126,12 @@ export class Node<T extends IQuadItem> {
    * @memberOf Node
    */
   destroy() {
-    this.children = null;
-    this.bounds   = null;
+    delete this.children;
+    delete this.bounds;
 
     if (this.nodes) {
       this.nodes.destroy();
-      this.nodes = null;
+      delete this.nodes;
     }
   }
 
@@ -267,7 +267,7 @@ export class Node<T extends IQuadItem> {
     if (this.nodes) {
       // Completely...destroy...
       this.nodes.destroy();
-      this.nodes = null;
+      delete this.nodes;
     }
 
     // Reinsert all children with the new dimensions in place
@@ -484,7 +484,8 @@ export class Node<T extends IQuadItem> {
     this.children = [];
 
     while (allChildren.length > 0) {
-      this.doAdd(allChildren.pop());
+      const child = allChildren.pop();
+      if (child) this.doAdd(child);
     }
   }
 

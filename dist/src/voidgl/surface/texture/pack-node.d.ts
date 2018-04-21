@@ -14,10 +14,10 @@ export interface ImageDimensions {
  * not violated and provide proper feedback for where to draw a given image
  */
 export declare class PackNode {
-    child: [PackNode, PackNode];
+    child: [PackNode | null, PackNode | null];
     isLeaf: boolean;
     nodeDimensions: Bounds;
-    nodeImage: SubTexture;
+    nodeImage: SubTexture | null;
     constructor(x: number, y: number, width: number, height: number);
     /**
      * Deletes all of the sub nodes in this Mapping, thus clearing up memory usage
@@ -30,7 +30,7 @@ export declare class PackNode {
     /**
      * Inserts images into our mapping, fitting them appropriately
      */
-    insert(image: ImageDimensions): PackNode;
+    insert(image: ImageDimensions): PackNode | null;
     /**
      * Removes the image from the mapping and tries to open up as much space as possible.
      *

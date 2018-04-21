@@ -1,5 +1,6 @@
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions } from '../../types';
+import { IMaterialOptions, IProjection } from '../../types';
 import { RingInstance } from './ring-instance';
 export interface IRingLayerProps extends ILayerProps<RingInstance> {
 }
@@ -10,6 +11,14 @@ export interface IRingLayerState {
  * them in interesting ways.
  */
 export declare class RingLayer extends Layer<RingInstance, IRingLayerProps, IRingLayerState> {
+    /**
+     * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+     * of elements
+     */
+    getInstancePickingMethods(): {
+        boundsAccessor: (ring: RingInstance) => Bounds;
+        hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => boolean;
+    };
     /**
      * Define our shader and it's inputs
      */

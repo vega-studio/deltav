@@ -95,21 +95,45 @@ export class Bounds {
   /**
    * Grows this bounds object to cover the space of the provided bounds object
    *
-   * @param bounds
+   * @param item
    */
-  encapsulate(bounds: Bounds) {
-    this.x = Math.min(this.x, bounds.x);
-    this.y = Math.min(this.y, bounds.y);
+  encapsulate(item: Bounds | IPoint) {
+    if (item instanceof Bounds) {
+      this.x = Math.min(this.x, item.x);
+      this.y = Math.min(this.y, item.y);
 
-    if (this.right < bounds.right) {
-      this.width += bounds.right - this.right;
+      if (this.right < item.right) {
+        this.width += item.right - this.right;
+      }
+
+      if (this.bottom < item.bottom) {
+        this.height += item.bottom - this.bottom;
+      }
+
+      return true;
     }
 
-    if (this.bottom < bounds.bottom) {
-      this.height += bounds.bottom - this.bottom;
-    }
+    else {
+      if (item.x < this.x) {
+        this.width += this.x - item.x;
+        this.x = item.x;
+      }
 
-    return true;
+      if (item.x > this.right) {
+        this.width += item.x - this.x;
+      }
+
+      if (item.y < this.y) {
+        this.height += this.y - item.y;
+        this.y = item.y;
+      }
+
+      if (item.y > this.bottom) {
+        this.height += item.y - this.y;
+      }
+
+      return true;
+    }
   }
 
   /**

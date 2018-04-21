@@ -10,7 +10,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
     anchor?: Anchor;
     /** The color the label should render as */
     color: [number, number, number, number];
-    /** Depth sorting of the label (or the z value of the lable) */
+    /** Depth sorting of the label (or the z value of the label) */
     depth?: number;
     /** The font of the label */
     fontFamily?: string;
@@ -23,13 +23,15 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
     /** This allows for control over rasterization to the atlas */
     rasterization?: {
         /**
-         * This is the scale of the rasterization on the atlas. Higher numbers increase atlas useage, but can provide
+         * This is the scale of the rasterization on the atlas. Higher numbers increase atlas usage, but can provide
          * higher quality render outputs to the surface.
          */
         scale: number;
     };
     /** Sets the way the label scales with the world */
     scaling?: ScaleType;
+    /** Scales the label uniformly */
+    scale?: number;
     /** This will be the text that should render with  */
     text: string;
     /** The x coordinate where the label will be anchored to in world space */
@@ -55,10 +57,12 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
 export declare class LabelInstance extends Instance implements Label {
     /** This is the rendered color of the label */
     color: [number, number, number, number];
-    /** Depth sorting of the label (or the z value of the lable) */
+    /** Depth sorting of the label (or the z value of the label) */
     depth: number;
     /** Sets the way the label scales with the world */
     scaling: ScaleType;
+    /** Scales the label uniformly */
+    scale: number;
     /** The x coordinate where the label will be anchored to in world space */
     x: number;
     /** The y coordinate where the label will be anchored to in world space */
@@ -92,7 +96,7 @@ export declare class LabelInstance extends Instance implements Label {
     readonly fontStyle: "normal" | "inherit" | "initial" | "italic" | "oblique";
     /** This is the font weight specified for the label (bold, normal, etc). */
     readonly fontWeight: 100 | 300 | "normal" | "bold" | "bolder" | "lighter" | "inherit" | "initial" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
-    /** This gets the atlas resource that is uniquely idenfied for this label */
+    /** This gets the atlas resource that is uniquely identified for this label */
     readonly resource: LabelAtlasResource;
     /** This is the label's text. */
     readonly text: string;

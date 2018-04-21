@@ -8,7 +8,7 @@ import { Instance } from './instance';
 const maxPopulation: number = 5;
 const maxDepth: number = 10;
 
-export type BoundsAccessor<T extends Instance> = (o: T) => Bounds;
+export type BoundsAccessor<T extends Instance> = (o: T) => Bounds | null;
 
 /**
  * Allows typing of a callback argument
@@ -62,7 +62,7 @@ export class Quadrants<T extends Instance> {
     depth: number,
     getBounds: BoundsAccessor<T>,
     childToNode: Map<T, Node<T>>,
-    childToBounds: Map<T, Bounds>,
+    childToBounds: Map<T, Bounds | null>,
   ) {
     const mid = bounds.mid;
     this.TL = new Node<T>(bounds.x, mid.x, bounds.y, mid.y, getBounds, depth);
@@ -86,18 +86,28 @@ export class Quadrants<T extends Instance> {
  * does not completely get injected into one of the quadrants it remains as a member of this node.
  */
 export class Node<T extends Instance> {
+  /** This is the amount of space this node covers */
   bounds: Bounds;
+  /** These are the child Instances of the node. */
   children: T[] = [];
-  depth: number = 0;
-  getBounds: BoundsAccessor<T>;
-  nodes: Quadrants<T> | null = null;
   /**
    * This tracks a quick lookup of a child to it's parent node. This is used so the child can
    * be removed with ease and not require a traversal of the tree.
    */
   childToNode: Map<T, Node<T>>;
   /** This tracks the bounds calcuated for the given instance */
-  childToBounds: Map<T, Bounds>;
+  childToBounds: Map<T, Bounds | null>;
+  /** This is how deep the node is within the tree */
+  depth: number = 0;
+  /** This is the accessor method that retrieves the bounds for an injected instance */
+  getBounds: BoundsAccessor<T>;
+  /** These are the child nodes of this quad node when this node is split. It is null if the node is not split yet */
+  nodes: Quadrants<T> | null = null;
+  /**
+   * These are children with null bounds that do not affect the splitting and ALWAYS get checked every query.
+   * They should only reside on the top node.
+   */
+  nullBounded: T[];
 
   /**
    * Destroys this node and ensures all child nodes are destroyed as well.
@@ -120,8 +130,8 @@ export class Node<T extends Instance> {
     right: number,
     top: number,
     bottom: number,
-    getBounds: (o: T) => Bounds,
-    depth?: number,
+    getBounds: BoundsAccessor<T>,
+    depth: number = 0,
   ) {
     // If params insertted
     if (arguments.length >= 4) {
@@ -132,13 +142,14 @@ export class Node<T extends Instance> {
     }
 
     // Ensure the depth is set
-    this.depth = depth || 0;
+    this.depth = depth;
     // Apply the bounds accessor method for instances
     this.getBounds = getBounds;
 
     // If this is the top level node, we need to instantiate the lookup that will be used
     // Across all nodes.
     if (this.depth === 0) {
+      this.nullBounded = [];
       this.childToNode = new Map<T, Node<T>>();
       this.childToBounds = new Map<T, Bounds>();
     }
@@ -167,7 +178,7 @@ export class Node<T extends Instance> {
     // This is the entry function for adding children, so we must first expand our top node
     // To cover the area that the child is located.
     // If we're in bounds, then let's just add the child
-    if (bounds.isInside(this.bounds)) {
+    if (!bounds || bounds.isInside(this.bounds)) {
       return this.doAdd(child, bounds);
     } else {
       // Otherwise, we need to expand first
@@ -195,6 +206,7 @@ export class Node<T extends Instance> {
     children.forEach(child => {
       const bounds = this.getBounds(child);
       this.childToBounds.set(child, bounds);
+      if (!bounds) return;
 
       if (bounds.x < minX) {
         minX = bounds.x;
@@ -210,10 +222,21 @@ export class Node<T extends Instance> {
       }
     });
 
-    // Make sure our bounds includes the specified bounds
-    this.cover(new Bounds({left: minX, right: maxX, bottom: maxY, top: minY}));
-    // Add all of the children into the tree
-    children.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child), true));
+    // Ensure a valid cover dimension was established. If no valid dimension is established
+    // Then we don't cover, but we can still add the children as that have null Bounds which
+    // Means injecting at the top level.
+    if (
+      minX !== Number.MAX_VALUE &&
+      minY !== Number.MAX_VALUE &&
+      maxX !== -Number.MAX_VALUE &&
+      maxY !== -Number.MAX_VALUE
+    ) {
+      // Make sure our bounds includes the specified bounds
+      this.cover(new Bounds({left: minX, right: maxX, bottom: maxY, top: minY}));
+    }
+
+    // Add all of the children into the tree.
+    children.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null, true));
   }
 
   /**
@@ -248,7 +271,7 @@ export class Node<T extends Instance> {
     // Clear out the child to node relations
     this.childToNode.clear();
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child)));
+    allChildren.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null));
   }
 
   /**
@@ -260,7 +283,22 @@ export class Node<T extends Instance> {
    *
    * @returns True if the injection was successful
    */
-  private doAdd(child: T, bounds: Bounds, fromSplit?: boolean): boolean {
+  private doAdd(child: T, bounds: Bounds | null, fromSplit?: boolean): boolean {
+    // If this is the top level node and the bounds are null, then we add to the null list
+    if (!bounds && this.depth === 0) {
+      this.nullBounded.push(child);
+      this.childToNode.set(child, this);
+
+      return true;
+    }
+
+    // If no bounds is available at this point, something went terribly wrong
+    if (!bounds) {
+      console.warn('A null bounds was added to a Quad Tree node below the top node, which is invalid.');
+      return false;
+    }
+
+    // If bounds are null, then just immediately add
     // If nodes are present, then we have already exceeded the population of this node
     if (this.nodes) {
       if (bounds.isInside(this.nodes.TL.bounds)) {
@@ -366,23 +404,28 @@ export class Node<T extends Instance> {
    * @return An array of children that intersects with the query
    */
   query(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[] {
+    // This stores all of the found Instances when querying by bounds or point
+    let found: T[] = [];
+
+    // If this is the top level node then add in the null bunded items as the start
+    if (this.depth === 0) {
+      found = this.nullBounded.slice(0);
+    }
+
     // Query a rectangle
     if (bounds instanceof Bounds) {
       if (bounds.hitBounds(this.bounds)) {
-        return this.queryBounds(bounds, [], visit);
+        return this.queryBounds(bounds, found, visit);
       }
-
-      // Return an empty array when nothing is collided with
-      return [];
     }
 
     // Query a point
     if (this.bounds.containsPoint(bounds)) {
-      return this.queryPoint(bounds, [], visit);
+      return this.queryPoint(bounds, found, visit);
     }
 
     // Return an empty array when nothing is collided with
-    return [];
+    return found;
   }
 
   /**
@@ -396,8 +439,10 @@ export class Node<T extends Instance> {
    * @return     Returns the exact same list that was input as the list param
    */
   queryBounds(b: Bounds, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
-      if (this.childToBounds.get(c).hitBounds(b)) {
+    this.children.forEach((c) => {
+      const bounds = this.childToBounds.get(c);
+
+      if (bounds && bounds.hitBounds(b)) {
         list.push(c);
       }
     });
@@ -438,8 +483,10 @@ export class Node<T extends Instance> {
    * @return      Returns the exact same list that was input as the list param
    */
   queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
-      if (this.childToBounds.get(c).containsPoint(p)) {
+    this.children.forEach((c) => {
+      const bounds = this.childToBounds.get(c);
+
+      if (bounds && bounds.containsPoint(p)) {
         list.push(c);
       }
     });
@@ -476,6 +523,21 @@ export class Node<T extends Instance> {
     if (this.childToNode) {
       const node = this.childToNode.get(child);
 
+      // If the node is getting removed from the top level node, then it MAY be a null bounded item
+      // Which gets removed from the list
+      if (node && node.depth === 0) {
+        const index = node.nullBounded.indexOf(child);
+
+        if (index > -1) {
+          node.nullBounded.splice(index);
+          this.childToNode.delete(child);
+          this.childToBounds.delete(child);
+
+          return;
+        }
+      }
+
+      // Otherwise, just remove the node normally
       if (node) {
         node.doRemove(child);
       }
@@ -501,7 +563,7 @@ export class Node<T extends Instance> {
 
     for (let i = 0, end = allChildren.length; i < end; ++i) {
       const child = allChildren[i];
-      this.doAdd(child, this.childToBounds.get(child), true);
+      this.doAdd(child, this.childToBounds.get(child) || null, true);
     }
   }
 

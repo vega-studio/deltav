@@ -1,5 +1,6 @@
+import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions } from '../../types';
+import { IMaterialOptions, IProjection } from '../../types';
 import { EdgeInstance } from './edge-instance';
 export declare enum EdgeType {
     /** Makes a straight edge with no curve */
@@ -21,6 +22,14 @@ export interface IEdgeLayerState {
  */
 export declare class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps, IEdgeLayerState> {
     static defaultProps: IEdgeLayerProps;
+    /**
+     * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
+     * of elements
+     */
+    getInstancePickingMethods(): {
+        boundsAccessor: (edge: EdgeInstance) => Bounds;
+        hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => boolean;
+    };
     /**
      * Define our shader and it's inputs
      */

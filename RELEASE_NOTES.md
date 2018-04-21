@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.2.0
+
+* `(ADDED)` Mouse interactions for EdgeLayer, RingLayer, LabelLayer, ImageLayer
+
 ## 1.1.0
 
 * `(ADDED)` A base layer property 'picking' is now available for setting PickType.ALL, PickType.SINGLE and PickType.NONE

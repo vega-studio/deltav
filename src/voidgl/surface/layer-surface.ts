@@ -280,6 +280,20 @@ export class LayerSurface {
   }
 
   /**
+   * This allows for querying a view's screen bounds. Null is returned if the view id
+   * specified does not exist.
+   */
+  getViewSize(viewId: string): Bounds | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        return sceneView.view.screenBounds;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * This is the beginning of the system. This should be called immediately after the surface is constructed.
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */

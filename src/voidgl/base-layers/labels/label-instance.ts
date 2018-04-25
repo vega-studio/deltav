@@ -183,7 +183,10 @@ export class LabelInstance extends Instance implements Label {
   get resource() { return this._rasterization.resource; }
   /** This is the label's text. */
   get text() { return this._text; }
-  /** If a maxWidth is specified, there is a chance the text will be truncated. This provides what the truncated value is. */
+  /**
+   * If a maxWidth is specified, there is a chance the text will be truncated.
+   * This provides the calculated truncated text.
+   */
   get truncatedText() { return this._rasterization.resource.truncatedText || this.text; }
 
   /**

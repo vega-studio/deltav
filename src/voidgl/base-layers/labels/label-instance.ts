@@ -22,6 +22,8 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
   fontStyle?: Label['fontStyle'];
   /** The weight of the font */
   fontWeight?: Label['fontWeight'];
+  /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
+  maxWidth?: number;
   /** This allows for control over rasterization to the atlas */
   rasterization?: {
     /**
@@ -146,6 +148,7 @@ export class LabelInstance extends Instance implements Label {
   private _fontSize: number = 12;
   private _fontStyle: Label['fontStyle'] = 'normal';
   private _fontWeight: Label['fontWeight'] = 400;
+  private _maxWidth: number = 0;
   private _text: string = '';
   private _width: number = 0;
   private _height: number = 0;
@@ -174,10 +177,14 @@ export class LabelInstance extends Instance implements Label {
   get fontStyle() { return this._fontStyle; }
   /** This is the font weight specified for the label (bold, normal, etc). */
   get fontWeight() { return this._fontWeight; }
+  /** This is the max width in pixels this label can fill */
+  get maxWidth() { return this._maxWidth; }
   /** This gets the atlas resource that is uniquely identified for this label */
   get resource() { return this._rasterization.resource; }
   /** This is the label's text. */
   get text() { return this._text; }
+  /** If a maxWidth is specified, there is a chance the text will be truncated. This provides what the truncated value is. */
+  get truncatedText() { return this._rasterization.resource.truncatedText || this.text; }
 
   /**
    * This is the width in world space of the label. If there is no camera distortion,
@@ -220,18 +227,22 @@ export class LabelInstance extends Instance implements Label {
     this._fontSize = options.fontSize || this._fontSize;
     this._fontStyle = options.fontStyle || this._fontStyle;
     this._fontWeight = options.fontWeight || this._fontWeight;
+    this._maxWidth = options.maxWidth || 0;
     this._text = options.text || this._text;
 
     // We get the CSS font string for this label so we can uniquely identify the rasterization
     // Easily.
     this._cssFont = LabelRasterizer.makeCSSFont(this, 1);
+    // This is css font used to look up rasterizations. This lookup includes the max width of the label
+    // Which the css font does not account for
+    const cssFontLookup = `${this._cssFont}_${this._maxWidth}`;
     // Look for other same texts that have been rasterized
     let rasterizations = rasterizationLookUp.get(this._text);
     let rasterization: RasterizationReference;
 
     if (rasterizations) {
       // Look for those texts that have been rasterized in the same fashion that this label is requesting
-      rasterization = rasterizations.get(this._cssFont);
+      rasterization = rasterizations.get(cssFontLookup);
 
       // If a rasterization exists, we must increment the use reference
       if (rasterization) {
@@ -263,7 +274,7 @@ export class LabelInstance extends Instance implements Label {
       // Now that we have an official rasterization for this text / label combo, we shall store it
       // For others to look up
       rasterizationLookUp.set(this._text, rasterizations);
-      rasterizations.set(this._cssFont, rasterization);
+      rasterizations.set(cssFontLookup, rasterization);
     }
 
     this._rasterization = rasterization;

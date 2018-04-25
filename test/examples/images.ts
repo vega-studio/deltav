@@ -24,7 +24,7 @@ export class Images extends BaseExample {
           element: icon,
           id: `image${i * 100 + k}`,
           scaling: ScaleType.ALWAYS,
-          tint: [1.0, 1.0, 1.0, 1.0],
+          tint: [1.0, 1.0, 1.0, Math.random() * 0.8 + 0.2],
         });
 
         const aspect = image.width / image.height;

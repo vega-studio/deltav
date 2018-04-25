@@ -20,7 +20,7 @@ export class ChangingAnchorLabels extends BaseExample {
           padding: 0,
           type: AnchorType.Middle,
         },
-        color: [Math.random(), Math.random(), Math.random(), 1.0],
+        color: [Math.random(), Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
         fontFamily: 'Arial',
         fontSize: 20,
         fontStyle: 'normal',

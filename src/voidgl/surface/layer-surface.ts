@@ -296,7 +296,7 @@ export class LayerSurface {
   /**
    * This queries a view's window into a world's space.
    */
-  getViewWorld(viewId: string): Bounds | null {
+  getViewWorldBounds(viewId: string): Bounds | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         const view = sceneView.view;

@@ -80,8 +80,8 @@ export class BasicCameraController extends EventManager {
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (this.canStart(e.start.view.id)) {
-      this.camera.offset[0] += drag.screen.delta.x / this.camera.scale[0];
-      this.camera.offset[1] += drag.screen.delta.y / this.camera.scale[1];
+      this.camera.offset[0] += drag.screen.delta.x / this.camera.scale[0] * e.start.view.panDelta[0];
+      this.camera.offset[1] += drag.screen.delta.y / this.camera.scale[1] * e.start.view.panDelta[1];
     }
   }
 
@@ -94,10 +94,10 @@ export class BasicCameraController extends EventManager {
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
 
       const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX;
+      this.camera.scale[0] = currentZoomX + (wheelMetrics.wheel[1] * targetView.scaleDelta[0]) / this.scaleFactor * currentZoomX;
 
       const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY;
+      this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * targetView.scaleDelta[1]) / this.scaleFactor * currentZoomY;
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
 

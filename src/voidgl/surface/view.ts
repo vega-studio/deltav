@@ -38,6 +38,9 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
   clearFlags?: ClearFlags[];
+  panDelta?: [number, number, number];
+  scaleDelta?: [number, number, number];
+
   /**
    * If this is provided, the layer can be rendered with a traditional camera that utilizes
    * matrix transforms to provide orientation/projection for the view.
@@ -71,6 +74,8 @@ export class View extends IdentifyByKey {
   camera: ChartCamera;
   /** These are the clear flags set for this view */
   clearFlags: ClearFlags[];
+  panDelta: [number, number, number];
+  scaleDelta: [number, number, number];
   /**
    * This is the depth of the view. The higher the depth represents which layer is on top.
    * Zero always represents the default view.
@@ -90,6 +95,8 @@ export class View extends IdentifyByKey {
   constructor(options: IViewOptions) {
     super(options);
     Object.assign(this, options);
+    this.panDelta = this.panDelta || [1.0, 1.0, 1.0];
+    this.scaleDelta = this.scaleDelta || [1.0, 1.0, 1.0];
   }
 
   screenToPixelSpace(point: IPoint, out?: IPoint) {

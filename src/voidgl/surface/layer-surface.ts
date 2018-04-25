@@ -294,6 +294,35 @@ export class LayerSurface {
   }
 
   /**
+   * This queries a view's window into a world's space.
+   */
+  getViewWorldBounds(viewId: string): Bounds | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        const view = sceneView.view;
+
+        if (view.screenBounds) {
+          const topLeft = view.viewToWorld({x: 0, y: 0});
+          const bottomRight = view.screenToWorld({ x: view.screenBounds.right, y: view.screenBounds.bottom });
+
+          return new Bounds({
+            bottom: bottomRight.y,
+            left: topLeft.x,
+            right: bottomRight.x,
+            top: topLeft.y,
+          });
+        }
+
+        else {
+          return null;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * This is the beginning of the system. This should be called immediately after the surface is constructed.
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */

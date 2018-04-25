@@ -19,7 +19,7 @@ export type AbsolutePosition = {
   width?: number | string;
 };
 
-function value(val: number | string, ref: number) {
+function value(val: number | string, ref: number, scaleRatio: number) {
   const parse = `${val}`;
   const num = parseFloat(parse);
 
@@ -32,13 +32,16 @@ function value(val: number | string, ref: number) {
     return (num / 100.0) * ref;
   }
 
-  return num;
+  return num * scaleRatio;
 }
 
 /**
  * This evaluates an absolute position with a reference to produce meaningful bounds.
+ *
+ * The scaleRatio provided should be available in or for percents to have the same weighting
+ * as whole number values.
  */
-export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds): DataBounds<T> {
+export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds, scaleRatio: number): DataBounds<T> {
   if (reference.width === 0 || reference.height === 0) {
     console.warn(
       'An AbsolutePosition evaluated to invalid dimensions.',
@@ -55,20 +58,20 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
 
   // Calculate the horizontal values
   if (item.width) {
-    bounds.width = value(item.width, reference.width);
+    bounds.width = value(item.width, reference.width, scaleRatio);
 
     if ('left' in item) {
-      bounds.x = value(item.left, reference.width);
+      bounds.x = value(item.left, reference.width, scaleRatio);
     }
 
     else if ('right' in item) {
-      bounds.x = reference.width - value(item.right, reference.width) - bounds.width;
+      bounds.x = reference.width - value(item.right, reference.width, scaleRatio) - bounds.width;
     }
   }
 
   else {
-    const left = value(item.left, reference.width);
-    const right = reference.width - value(item.right, reference.width);
+    const left = value(item.left, reference.width, scaleRatio);
+    const right = reference.width - value(item.right, reference.width, scaleRatio);
     width = right - left;
 
     if (width < 0) {
@@ -87,20 +90,20 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
 
   // Calculate the vertical values
   if (item.height) {
-    bounds.height = value(item.height, reference.height);
+    bounds.height = value(item.height, reference.height, scaleRatio);
 
     if ('top' in item) {
-      bounds.y = value(item.top, reference.height);
+      bounds.y = value(item.top, reference.height, scaleRatio);
     }
 
     else if ('bottom' in item) {
-      bounds.y = reference.height - value(item.bottom, reference.height) - bounds.height;
+      bounds.y = reference.height - value(item.bottom, reference.height, scaleRatio) - bounds.height;
     }
   }
 
   else {
-    const top = value(item.top, reference.height);
-    const bottom = reference.height - value(item.bottom, reference.height);
+    const top = value(item.top, reference.height, scaleRatio);
+    const bottom = reference.height - value(item.bottom, reference.height, scaleRatio);
     height = bottom - top;
 
     if (width < 0) {

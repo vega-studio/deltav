@@ -93,9 +93,9 @@ export class BasicCameraController extends EventManager {
 
     if (index !== -1 && this.scaleFilters[index]) {
       return [
-        this.scaleFilters[index][0] === 1.0 ? scaleDelta[0] : this.scaleFilters[index][0] || 1.0,
-        this.scaleFilters[index][1] === 1.0 ? scaleDelta[1] : this.scaleFilters[index][1] || 1.0,
-        this.scaleFilters[index][2] === 1.0 ? scaleDelta[2] : this.scaleFilters[index][2] || 1.0,
+        this.scaleFilters[index][0] === 1.0 ? scaleDelta[0] : 0,
+        this.scaleFilters[index][1] === 1.0 ? scaleDelta[1] : 0,
+        this.scaleFilters[index][2] === 1.0 ? scaleDelta[2] : 0
       ];
     }
     else {
@@ -151,17 +151,17 @@ export class BasicCameraController extends EventManager {
     if (this.canStart(e.target.view.id)) {
       const targetView = this.getTargetView(e);
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-
+      let filter = [1.0, 1.0, 1.0]
       if (this.filterScale) {
-        this.camera.scale = this.filterScale(targetView.id, this.camera.scale);
+        filter = this.filterScale(targetView.id, this.camera.scale);
       }
 
       const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX;
+      this.camera.scale[0] = currentZoomX + (wheelMetrics.wheel[1] * filter[0]) / this.scaleFactor * currentZoomX;
 //    P  this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] * filterScale[0] / this.scaleFactor * currentZoomX;
 
       const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY;
+      this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * filter[1] / this.scaleFactor * currentZoomY;
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
 

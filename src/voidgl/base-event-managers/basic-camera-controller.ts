@@ -145,6 +145,10 @@ export class BasicCameraController extends EventManager {
       const targetView = this.getTargetView(e);
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
 
+      if (this.filterScale) {
+        this.camera.scale = this.filterScale(targetView.id, this.camera.scale);
+      }
+
       const currentZoomX = this.camera.scale[0] || 1.0;
       this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX;
 //    P  this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] * filterScale[0] / this.scaleFactor * currentZoomX;
@@ -157,9 +161,6 @@ export class BasicCameraController extends EventManager {
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;
       this.camera.offset[1] -= (beforeZoom.y - afterZoom.y) / targetView.pixelRatio;
 
-      if (this.filterScale) {
-        this.camera.scale = this.filterScale(targetView.id, this.camera.scale);
-      }
     }
   }
 

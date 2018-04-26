@@ -38,6 +38,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
   clearFlags?: ClearFlags[];
+  depth?: number,
   panDeltaFactor?: [number, number, number];
   scaleDeltaFactor?: [number, number, number];
 

@@ -63,16 +63,20 @@ export class AtlasResourceManager {
       // Once the manager has been updated, we can now flag all of the instances waiting for the resources
       // As active, which should thus trigger an update to the layers to perform a diff for each instance
       requests.forEach(resource => {
-        this.requestLookup.get(resource).forEach(waiting => {
-          const layer = waiting[0];
-          const instance = waiting[1];
+        const request = this.requestLookup.get(resource);
 
-          // If the instance is still associated with a cluster, then the instance can be activated. Having
-          // A cluster is indicative the instance has not been deleted.
-          if (layer.uniformManager.getUniforms(instance)) {
-            instance.active = true;
-          }
-        });
+        if (request) {
+          request.forEach(waiting => {
+            const layer = waiting[0];
+            const instance = waiting[1];
+
+            // If the instance is still associated with a cluster, then the instance can be activated. Having
+            // A cluster is indicative the instance has not been deleted.
+            if (layer.uniformManager.getUniforms(instance)) {
+              instance.active = true;
+            }
+          });
+        }
       });
     }
   }
@@ -81,7 +85,7 @@ export class AtlasResourceManager {
    * This retrieves the actual atlas texture that should be applied to a uniform's
    * value.
    */
-  getAtlasTexture(key: string): Three.Texture {
+  getAtlasTexture(key: string): Three.Texture | null {
     const atlas = this.atlasManager.getAtlasTexture(key);
 
     if (atlas) {

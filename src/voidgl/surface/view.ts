@@ -203,7 +203,7 @@ export class View extends IdentifyByKey {
    */
   fitViewtoViewport(surfaceDimensions: Bounds) {
     if (this.viewCamera.type === ViewCameraType.CONTROLLED && isOrthographic(this.viewCamera.baseCamera)) {
-      const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions);
+      const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions, this.pixelRatio);
       const width = viewBounds.width;
       const height = viewBounds.height;
 

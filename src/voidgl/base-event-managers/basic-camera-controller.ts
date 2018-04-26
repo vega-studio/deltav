@@ -58,6 +58,13 @@ export class BasicCameraController extends EventManager {
       this.scaleFilters = Array.isArray(options.scaleFilter) ? options.scaleFilter : [options.scaleFilter];
     }
   }
+  get pan() {
+    return this.camera.offset;
+  }
+
+  get scale() {
+    return this.camera.scale;
+  }
 
   filterPan(startView: string, panDelta: [number, number, number]) : [number, number, number] {
     let index: number;
@@ -86,9 +93,9 @@ export class BasicCameraController extends EventManager {
 
     if (index !== -1 && this.scaleFilters[index]) {
       return [
-        this.scaleFilters[index][0] === 1.0 ? scaleDelta[0] : this.scaleFilters[index][0] || 0,
-        this.scaleFilters[index][1] === 1.0 ? scaleDelta[1] : this.scaleFilters[index][1] || 0,
-        this.scaleFilters[index][2] === 1.0 ? scaleDelta[2] : this.scaleFilters[index][2] || 0,
+        this.scaleFilters[index][0] === 1.0 ? scaleDelta[0] : this.scaleFilters[index][0] || 1.0,
+        this.scaleFilters[index][1] === 1.0 ? scaleDelta[1] : this.scaleFilters[index][1] || 1.0,
+        this.scaleFilters[index][2] === 1.0 ? scaleDelta[2] : this.scaleFilters[index][2] || 1.0,
       ];
     }
     else {

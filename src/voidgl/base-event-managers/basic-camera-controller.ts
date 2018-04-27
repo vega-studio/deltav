@@ -50,13 +50,8 @@ export class BasicCameraController extends EventManager {
       this.startViews = Array.isArray(options.startView) ? options.startView : [options.startView];
     }
 
-    if (options.panFilter) {
-    this.panFilter = options.panFilter;
-    }
-
-    if (options.scaleFilter) {
-      this.scaleFilter = options.scaleFilter;
-    }
+    this.panFilter = options.panFilter || this.panFilter;
+    this.scaleFilter = options.scaleFilter || this.scaleFilter;
   }
   get pan() {
     return this.camera.offset;
@@ -106,9 +101,9 @@ export class BasicCameraController extends EventManager {
       if (this.panFilter) {
         pan = this.panFilter(pan, e.start.view, this.startViews);
       }
+
       this.camera.offset[0] += pan[0];
       this.camera.offset[1] += pan[1];
-
     }
   }
 
@@ -132,7 +127,6 @@ export class BasicCameraController extends EventManager {
       this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * scale[1]) / this.scaleFactor * currentZoomY;
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
-
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;
       this.camera.offset[1] -= (beforeZoom.y - afterZoom.y) / targetView.pixelRatio;
 

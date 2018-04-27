@@ -39,7 +39,7 @@ export class LogController extends EventManager {
       const view = e.target.view;
 
       if (view) {
-        console.clear();
+        // Display projections from the mouse to the view's spaces
         console.warn(
           `
           View: ${view.id}
@@ -58,7 +58,7 @@ export class LogController extends EventManager {
       const view = e.target.view;
 
       if (view) {
-        console.clear();
+        // Display projections from the mouse to the view's spaces
         console.warn(
           `
           View: ${view.id}

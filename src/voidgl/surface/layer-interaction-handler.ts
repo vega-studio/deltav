@@ -49,6 +49,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: this.layer.picking.quadTree.query,
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -77,6 +78,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           instances: Array.from(this.isMouseOver.keys()),
           layer: this.layer.id,
           projection: view,
+          querySpace: this.layer.picking.quadTree.query,
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -112,6 +114,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: this.layer.picking.quadTree.query,
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -157,6 +160,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             instances,
             layer: this.layer.id,
             projection: view,
+            querySpace: this.layer.picking.quadTree.query,
             screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
@@ -177,6 +181,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             instances: noLongerOver,
             layer: this.layer.id,
             projection: view,
+            querySpace: this.layer.picking.quadTree.query,
             screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
@@ -210,6 +215,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: this.layer.picking.quadTree.query,
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };

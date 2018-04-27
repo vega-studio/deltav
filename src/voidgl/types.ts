@@ -1,8 +1,9 @@
 import * as Three from 'three';
+import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
 import { ChartCamera } from './util';
 import { Instance } from './util/instance';
-import { TrackedQuadTree } from './util/tracked-quad-tree';
+import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
@@ -67,6 +68,8 @@ export interface IPickInfo<T extends Instance> {
   layer: string;
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
+  /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
+  querySpace?(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
   /** This is the screen coordinates of the mouse point that interacted with the instances */
   screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */

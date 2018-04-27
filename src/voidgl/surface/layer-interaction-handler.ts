@@ -32,7 +32,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseDown(view: IProjection, mouse: IPoint) {
+  handleMouseDown(view: IProjection, mouse: IPoint, button: number) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
       const { onMouseDown } = this.layer.props;
@@ -45,6 +45,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
+          button,
           instances,
           layer: this.layer.id,
           projection: view,
@@ -94,7 +95,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
   /**
    * Handles mouse up gestures for the layer within the provided view
    */
-  handleMouseUp(view: IProjection, mouse: IPoint) {
+  handleMouseUp(view: IProjection, mouse: IPoint, button: number) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
       const { onMouseUp } = this.layer.props;
@@ -107,6 +108,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
+          button,
           instances,
           layer: this.layer.id,
           projection: view,
@@ -191,7 +193,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
   /**
    * Handles click gestures on the layer within a view
    */
-  handleMouseClick(view: IProjection, mouse: IPoint) {
+  handleMouseClick(view: IProjection, mouse: IPoint, button: number) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type === PickType.ALL) {
       const { onMouseClick } = this.layer.props;
@@ -204,6 +206,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         instances = instances.filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
+          button,
           instances,
           layer: this.layer.id,
           projection: view,

@@ -8,7 +8,7 @@ export class EventManager {
     // HOOK: This is for a subclass
   }
 
-  handleMouseUp(e: IMouseInteraction) {
+  handleMouseUp(e: IMouseInteraction, button: number) {
     // HOOK: This is for a subclass
   }
 

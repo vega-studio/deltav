@@ -152,4 +152,8 @@ export class LayerMouseEvents extends EventManager {
       }
     }
   }
+
+  handleWheel(e: IMouseInteraction) {
+    // TODO: This may need to be implemented. As of right now, there is no particular benefit
+  }
 }

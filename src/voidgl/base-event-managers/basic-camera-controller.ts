@@ -47,6 +47,15 @@ export class BasicCameraController extends EventManager {
     }
   }
 
+  canStart(viewId: string) {
+    return (
+      !this.startViews ||
+      this.startViews.length === 0 ||
+      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
+      this.startViewDidStart && this.ignoreCoverViews
+    );
+  }
+
   findCoveredStartView(e: IMouseInteraction) {
     const found = e.viewsUnderMouse.find(under => this.startViews.indexOf(under.view.id) > -1);
     this.startViewDidStart = Boolean(found);
@@ -106,12 +115,9 @@ export class BasicCameraController extends EventManager {
     }
   }
 
-  canStart(viewId: string) {
-    return (
-      !this.startViews ||
-      this.startViews.length === 0 ||
-      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
-      this.startViewDidStart && this.ignoreCoverViews
-    );
-  }
+  // These are the currently Unused responses for this controller
+  handleMouseOut(e: IMouseInteraction) { /*no-op*/ }
+  handleClick(e: IMouseInteraction) { /*no-op*/ }
+  handleMouseMove(e: IMouseInteraction) { /*no-op*/ }
+  handleMouseOver(e: IMouseInteraction) { /*no-op*/ }
 }

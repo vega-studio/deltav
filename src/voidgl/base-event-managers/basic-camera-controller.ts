@@ -17,8 +17,8 @@ export interface IBasicCameraControllerOptions {
    * If not provided, then dragging anywhere will adjust the camera
    */
   startView?: string | string[];
-  scaleFilter?: [number, number, number][];
-  panFilter?: [number, number, number][];
+  panFilter?(offset: [number, number, number]): [number, number, number];
+  scaleFilter?(scale: [number, number, number]): [number, number, number];
 }
 
 export class BasicCameraController extends EventManager {
@@ -26,12 +26,12 @@ export class BasicCameraController extends EventManager {
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
+  private panFilter = (offset: [number, number, number], view: View, allViews: string[]) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
+  private scaleFilter = (scale: [number, number, number], view: View, allViews: string[]) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] | undefined;
-  panFilters: [number, number, number][] | undefined;
-  scaleFilters: [number, number, number][] | undefined;
 
   /**
    * This flag is set to true when a start view is targetted on mouse down even if it is not
@@ -51,11 +51,11 @@ export class BasicCameraController extends EventManager {
     }
 
     if (options.panFilter) {
-      this.panFilters = Array.isArray(options.panFilter) ? options.panFilter : [options.panFilter];
+    this.panFilter = options.panFilter;
     }
 
     if (options.scaleFilter) {
-      this.scaleFilters = Array.isArray(options.scaleFilter) ? options.scaleFilter : [options.scaleFilter];
+      this.scaleFilter = options.scaleFilter;
     }
   }
   get pan() {
@@ -64,43 +64,6 @@ export class BasicCameraController extends EventManager {
 
   get scale() {
     return this.camera.scale;
-  }
-
-  filterPan(startView: string, panDelta: [number, number, number]) : [number, number, number] {
-    let index: number;
-    if (this.startViews) {
-      index = this.startViews.indexOf(startView);
-    }
-
-    if (index !== -1 && this.panFilters[index]) {
-      return [
-        this.panFilters[index][0] === 1.0 ? panDelta[0] : this.panFilters[index][0] || 0,
-        this.panFilters[index][1] === 1.0 ? panDelta[1] : this.panFilters[index][1] || 0,
-        this.panFilters[index][2] === 1.0 ? panDelta[2] : this.panFilters[index][2] || 0,
-      ];
-    }
-    else {
-      return panDelta;
-    }
-  }
-
-  filterScale(startView: string, scaleDelta: [number, number, number]) : [number, number, number] {
-    let index: number;
-
-    if (this.startViews) {
-      index = this.startViews.indexOf(startView);
-    }
-
-    if (index !== -1 && this.scaleFilters[index]) {
-      return [
-        this.scaleFilters[index][0] === 1.0 ? scaleDelta[0] : 0,
-        this.scaleFilters[index][1] === 1.0 ? scaleDelta[1] : 0,
-        this.scaleFilters[index][2] === 1.0 ? scaleDelta[2] : 0,
-      ];
-    }
-    else {
-      return scaleDelta;
-    }
   }
 
   findCoveredStartView(e: IMouseInteraction) {
@@ -136,11 +99,16 @@ export class BasicCameraController extends EventManager {
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (this.canStart(e.start.view.id)) {
-      this.camera.offset[0] += (drag.screen.delta.x / this.camera.scale[0]);
-      this.camera.offset[1] += (drag.screen.delta.y / this.camera.scale[1]);
-    }
-    if (this.filterPan) {
-      this.camera.offset = this.filterPan(e.start.view.id, this.camera.offset);
+      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
+        (drag.screen.delta.y / this.camera.scale[1]),
+        0];
+
+      if (this.panFilter) {
+        pan = this.panFilter(pan, e.start.view, this.startViews);
+      }
+      this.camera.offset[0] += pan[0];
+      this.camera.offset[1] += pan[1];
+
     }
   }
 
@@ -151,17 +119,17 @@ export class BasicCameraController extends EventManager {
     if (this.canStart(e.target.view.id)) {
       const targetView = this.getTargetView(e);
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-      let filter = [1.0, 1.0, 1.0];
-      if (this.filterScale) {
-        filter = this.filterScale(targetView.id, this.camera.scale);
+      let scale : [number, number, number] = [1.0, 1.0, 1.0];
+
+      if (this.scaleFilter) {
+        scale = this.scaleFilter(scale, targetView, this.startViews);
       }
 
       const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + (wheelMetrics.wheel[1] * filter[0]) / this.scaleFactor * currentZoomX;
-//    P  this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] * filterScale[0] / this.scaleFactor * currentZoomX;
+      this.camera.scale[0] = currentZoomX + (wheelMetrics.wheel[1] * scale[0]) / this.scaleFactor * currentZoomX;
 
       const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * filter[1]) / this.scaleFactor * currentZoomY;
+      this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * scale[1]) / this.scaleFactor * currentZoomY;
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
 

@@ -101,8 +101,8 @@ export class BasicCameraController extends EventManager {
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
 
-      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;
-      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y) / targetView.pixelRatio;
+      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
+      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
     }
   }
 

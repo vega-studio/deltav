@@ -65,8 +65,12 @@ export interface IPickInfo<T extends Instance> {
   layer: string;
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
+  /** This is the screen coordinates of the mouse point that interacted with the instances */
+  screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */
   world: [number, number];
+  /** Projection methods to easily go between coordinate spaces */
+  projection: IProjection;
 }
 
 export interface IVertexAttribute {

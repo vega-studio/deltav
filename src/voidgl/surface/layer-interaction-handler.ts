@@ -47,6 +47,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         const info: IPickInfo<T> = {
           instances,
           layer: this.layer.id,
+          projection: view,
+          screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
 
@@ -73,6 +75,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         const info: IPickInfo<T> = {
           instances: Array.from(this.isMouseOver.keys()),
           layer: this.layer.id,
+          projection: view,
+          screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
 
@@ -105,6 +109,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         const info: IPickInfo<T> = {
           instances,
           layer: this.layer.id,
+          projection: view,
+          screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
 
@@ -134,6 +140,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           const info: IPickInfo<T> = {
             instances: notOverInstances,
             layer: this.layer.id,
+            projection: view,
+            screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
 
@@ -146,6 +154,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           const info: IPickInfo<T> = {
             instances,
             layer: this.layer.id,
+            projection: view,
+            screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
 
@@ -164,6 +174,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           const info: IPickInfo<T> = {
             instances: noLongerOver,
             layer: this.layer.id,
+            projection: view,
+            screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
 
@@ -194,6 +206,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         const info: IPickInfo<T> = {
           instances,
           layer: this.layer.id,
+          projection: view,
+          screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
 

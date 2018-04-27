@@ -61,12 +61,18 @@ export interface Identifiable {
  * layers.
  */
 export interface IPickInfo<T extends Instance> {
+  /** If a mouse button is involved in the pick, this will be populated */
+  button?: number;
   /** This is the parent layer id of the instances interacted with */
   layer: string;
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
+  /** This is the screen coordinates of the mouse point that interacted with the instances */
+  screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */
   world: [number, number];
+  /** Projection methods to easily go between coordinate spaces */
+  projection: IProjection;
 }
 
 export interface IVertexAttribute {

@@ -47,7 +47,7 @@ export class LayerMouseEvents extends EventManager {
   }
 
   handleClick(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseClick(view, mouse));
+    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseClick(view, mouse, button));
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
@@ -69,11 +69,11 @@ export class LayerMouseEvents extends EventManager {
   }
 
   handleMouseDown(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseDown(view, mouse));
+    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseDown(view, mouse, button));
   }
 
-  handleMouseUp(e: IMouseInteraction) {
-    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseUp(view, mouse));
+  handleMouseUp(e: IMouseInteraction, button: number) {
+    this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseUp(view, mouse, button));
   }
 
   handleMouseOver(e: IMouseInteraction) {
@@ -151,5 +151,9 @@ export class LayerMouseEvents extends EventManager {
         callback(layer, view, mouse);
       }
     }
+  }
+
+  handleWheel(e: IMouseInteraction) {
+    // TODO: This may need to be implemented. As of right now, there is no particular benefit
   }
 }

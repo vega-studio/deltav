@@ -129,7 +129,7 @@ export class View extends IdentifyByKey {
   }
 
   screenToWorld(point: IPoint, out?: IPoint) {
-    const view = this.screenToView(point);
+    const view = this.pixelSpaceToScreen(this.screenToView(point));
 
     const world = out || {x: 0, y: 0};
     world.x = (view.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];

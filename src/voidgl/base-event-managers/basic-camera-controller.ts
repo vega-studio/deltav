@@ -9,16 +9,24 @@ export interface IBasicCameraControllerOptions {
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
   /**
+   * This provides a control to filter panning that will be applied to the camera. The input and
+   * output of this will be the delta value to be applied.
+   */
+  panFilter?(offset: [number, number, number], view: View, allViews: View[]): [number, number, number];
+  /**
    * This adjusts how fast scaling is applied from the mouse wheel
    */
   scaleFactor?: number;
+  /**
+   * This provides a control to filter scaling that will be applied to the camera. The input and
+   * output of this will be the delta value to be applied.
+   */
+  scaleFilter?(scale: [number, number, number], view: View, allViews: View[]): [number, number, number];
   /**
    * This is the view that MUST be the start view from the events.
    * If not provided, then dragging anywhere will adjust the camera
    */
   startView?: string | string[];
-  panFilter?(offset: [number, number, number]): [number, number, number];
-  scaleFilter?(scale: [number, number, number]): [number, number, number];
 }
 
 export class BasicCameraController extends EventManager {
@@ -26,10 +34,12 @@ export class BasicCameraController extends EventManager {
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
-  private panFilter = (offset: [number, number, number], view: View, allViews: string[]) => offset;
+  /** This is the filter applied to panning operations */
+  private panFilter = (offset: [number, number, number], view: View, allViews: View[]) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
-  private scaleFilter = (scale: [number, number, number], view: View, allViews: string[]) => scale;
+  /** THis is the filter applied to tscaling operations */
+  private scaleFilter = (scale: [number, number, number], view: View, allViews: View[]) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] | undefined;
 
@@ -38,6 +48,9 @@ export class BasicCameraController extends EventManager {
    * the top most view.
    */
   private startViewDidStart: boolean = false;
+  /**
+   * If an unconvered start view is not available, this is the next available covered view, if present
+   */
   private coveredStartView: View;
 
   constructor(options: IBasicCameraControllerOptions) {
@@ -108,7 +121,7 @@ export class BasicCameraController extends EventManager {
         0];
 
       if (this.panFilter) {
-        pan = this.panFilter(pan, e.start.view, this.startViews);
+        pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
       }
 
       this.camera.offset[0] += pan[0];
@@ -131,7 +144,7 @@ export class BasicCameraController extends EventManager {
       wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
 
       if (this.scaleFilter) {
-        scale = this.scaleFilter(scale, targetView, this.startViews);
+        scale = this.scaleFilter(scale, targetView, e.viewsUnderMouse.map(v => v.view));
       }
 
       this.camera.scale[0] = currentZoomX + scale[0];

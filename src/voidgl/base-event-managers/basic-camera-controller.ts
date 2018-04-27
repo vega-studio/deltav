@@ -114,17 +114,19 @@ export class BasicCameraController extends EventManager {
     if (this.canStart(e.target.view.id)) {
       const targetView = this.getTargetView(e);
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-      let scale : [number, number, number] = [1.0, 1.0, 1.0];
+
+      const currentZoomX = this.camera.scale[0] || 1.0;
+      const currentZoomY = this.camera.scale[1] || 1.0;
+
+      let scale: [number, number, number] = [wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
+      wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
 
       if (this.scaleFilter) {
         scale = this.scaleFilter(scale, targetView, this.startViews);
       }
 
-      const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + (wheelMetrics.wheel[1] * scale[0]) / this.scaleFactor * currentZoomX;
-
-      const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + (wheelMetrics.wheel[1] * scale[1]) / this.scaleFactor * currentZoomY;
+      this.camera.scale[0] = currentZoomX + scale[0];
+      this.camera.scale[1] = currentZoomY + scale[1];
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;

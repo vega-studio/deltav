@@ -17,6 +17,8 @@ export interface IBasicCameraControllerOptions {
    * If not provided, then dragging anywhere will adjust the camera
    */
   startView?: string | string[];
+  panFilter?(offset: [number, number, number]): [number, number, number];
+  scaleFilter?(scale: [number, number, number]): [number, number, number];
 }
 
 export class BasicCameraController extends EventManager {
@@ -24,8 +26,10 @@ export class BasicCameraController extends EventManager {
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
+  private panFilter = (offset: [number, number, number], view: View, allViews: string[]) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
+  private scaleFilter = (scale: [number, number, number], view: View, allViews: string[]) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] | undefined;
 
@@ -45,6 +49,16 @@ export class BasicCameraController extends EventManager {
     if (options.startView) {
       this.startViews = Array.isArray(options.startView) ? options.startView : [options.startView];
     }
+
+    this.panFilter = options.panFilter || this.panFilter;
+    this.scaleFilter = options.scaleFilter || this.scaleFilter;
+  }
+  get pan() {
+    return this.camera.offset;
+  }
+
+  get scale() {
+    return this.camera.scale;
   }
 
   canStart(viewId: string) {
@@ -89,8 +103,16 @@ export class BasicCameraController extends EventManager {
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (this.canStart(e.start.view.id)) {
-      this.camera.offset[0] += drag.screen.delta.x / this.camera.scale[0];
-      this.camera.offset[1] += drag.screen.delta.y / this.camera.scale[1];
+      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
+        (drag.screen.delta.y / this.camera.scale[1]),
+        0];
+
+      if (this.panFilter) {
+        pan = this.panFilter(pan, e.start.view, this.startViews);
+      }
+
+      this.camera.offset[0] += pan[0];
+      this.camera.offset[1] += pan[1];
     }
   }
 
@@ -103,13 +125,19 @@ export class BasicCameraController extends EventManager {
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
 
       const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX;
-
       const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY;
+
+      let scale: [number, number, number] = [wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
+      wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
+
+      if (this.scaleFilter) {
+        scale = this.scaleFilter(scale, targetView, this.startViews);
+      }
+
+      this.camera.scale[0] = currentZoomX + scale[0];
+      this.camera.scale[1] = currentZoomY + scale[1];
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
-
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
       this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
     }

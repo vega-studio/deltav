@@ -9,7 +9,7 @@ export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in 
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
 export type ShaderIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number] | Three.Vector4[] | Float32Array;
 export type InstanceIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number];
-export type UniformIOValue = InstanceIOValue | Float32Array | Three.Texture;
+export type UniformIOValue = number | InstanceIOValue | Float32Array | Three.Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,

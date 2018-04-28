@@ -1,7 +1,6 @@
 precision highp float;
 
 varying vec4 vertexColor;
-varying vec2 texCoord;
 
 // Interpolation type injection
 ${interpolation}

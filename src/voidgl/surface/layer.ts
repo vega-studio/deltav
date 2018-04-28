@@ -199,7 +199,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     this.props.data.resolve();
 
     // Loop through the uniforms that are across all instances
-    for (let i = 0, end = this.uniforms.length - 1; i < end; ++i) {
+    for (let i = 0, end = this.uniforms.length; i < end; ++i) {
       uniform = this.uniforms[i];
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(materialUniform => materialUniform.value = value);

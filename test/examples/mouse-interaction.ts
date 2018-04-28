@@ -66,6 +66,7 @@ export class MouseInteraction extends BaseExample {
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.ALL,
+      scaleFactor: () => 2,
       scene: scene,
     });
   }

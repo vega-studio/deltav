@@ -38,6 +38,7 @@ export type SceneInitializer = {
 const tests: BaseExample[] = [
   new BoxOfRings(),
   new BoxOfCircles(),
+  new ScreenSpaceEdges(),
   new ChangingAnchorLabels(),
   new LabelAnchorsAndScales(),
   new Images(),
@@ -50,7 +51,6 @@ const tests: BaseExample[] = [
   new MouseInteractionImages(),
   new MouseInteractionEdges(),
   new LabelAnimatedScale(),
-  new ScreenSpaceEdges(),
 ];
 
 /** These are the layers for the tests that are generated */

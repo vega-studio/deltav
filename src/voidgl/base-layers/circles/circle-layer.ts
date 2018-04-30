@@ -36,7 +36,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
         const circleScreenCenter = view.worldToScreen(circle);
         const mouseScreen = view.worldToScreen(point);
-        const r = (circle.radius / 2) * this.props.scaleFactor();
+        const r = circle.radius * this.props.scaleFactor();
 
         const delta = [
           mouseScreen.x - circleScreenCenter.x,

@@ -1,3 +1,4 @@
+import { Bounds } from '../primitives';
 import { IPoint } from '../primitives/point';
 import { IPickInfo, IProjection, PickType } from '../types';
 import { Instance } from '../util';
@@ -41,14 +42,15 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.query(world);
-        instances = instances.filter(o => hitTest(o, world, view));
+        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
           button,
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -73,10 +75,14 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
 
       if (onMouseOut) {
         const world = view.viewToWorld(mouse);
+        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const hitTest = this.layer.picking.hitTest;
+
         const info: IPickInfo<T> = {
           instances: Array.from(this.isMouseOver.keys()),
           layer: this.layer.id,
           projection: view,
+          querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -104,14 +110,15 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.query(world);
-        instances = instances.filter(o => hitTest(o, world, view));
+        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
           button,
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };
@@ -133,8 +140,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseOver || onMouseMove || onMouseOut) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.query(world);
-        instances = instances.filter(o => hitTest(o, world, view));
+        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const instances = query(world).filter(o => hitTest(o, world, view));
 
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
         if (onMouseOver) {
@@ -143,6 +150,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             instances: notOverInstances,
             layer: this.layer.id,
             projection: view,
+            querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
             screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
@@ -157,6 +165,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             instances,
             layer: this.layer.id,
             projection: view,
+            querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
             screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
@@ -177,6 +186,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             instances: noLongerOver,
             layer: this.layer.id,
             projection: view,
+            querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
             screen: [mouse.x, mouse.y],
             world: [world.x, world.y],
           };
@@ -202,14 +212,15 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        let instances = this.layer.picking.quadTree.query(world);
-        instances = instances.filter(o => hitTest(o, world, view));
+        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
           button,
           instances,
           layer: this.layer.id,
           projection: view,
+          querySpace: (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view)),
           screen: [mouse.x, mouse.y],
           world: [world.x, world.y],
         };

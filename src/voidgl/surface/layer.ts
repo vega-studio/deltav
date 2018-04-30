@@ -89,6 +89,13 @@ export interface IModelConstructable {
   new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material []): any;
 }
 
+export interface IPickingMethods<T extends Instance> {
+  /** This provides a way to calculate bounds of an Instance */
+  boundsAccessor: BoundsAccessor<T>,
+  /** This is the way the system tests hitting an intsance */
+  hitTest: InstanceHitTest<T>,
+}
+
 /**
  * A base class for generating drawable content
  */
@@ -199,7 +206,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     this.props.data.resolve();
 
     // Loop through the uniforms that are across all instances
-    for (let i = 0, end = this.uniforms.length - 1; i < end; ++i) {
+    for (let i = 0, end = this.uniforms.length; i < end; ++i) {
       uniform = this.uniforms[i];
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(materialUniform => materialUniform.value = value);
@@ -210,7 +217,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * This method is for layers to implement to specify how the bounds for an instance are retrieved or
    * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
    */
-  getInstancePickingMethods(): { hitTest: InstanceHitTest<T>, boundsAccessor: BoundsAccessor<T> } {
+  getInstancePickingMethods(): IPickingMethods<T> {
     throw new Error('When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.');
   }
 

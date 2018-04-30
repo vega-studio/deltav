@@ -1,7 +1,10 @@
 precision highp float;
 
+/**
+  This vertex shader calculates edges whose curve and width is in screen space where the curve is
+  bezier curves with 0, 1, and 2 control points.
+**/
 varying vec4 vertexColor;
-varying vec2 texCoord;
 
 // Interpolation type injection
 ${interpolation}

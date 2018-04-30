@@ -148,8 +148,8 @@ export class View extends IdentifyByKey {
     const screen = {x: 0, y: 0};
 
     // Calculate from the camera to view space
-    screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
-    screen.y = (point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1]);
+    screen.x = ((point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0])) * this.pixelRatio;
+    screen.y = ((point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1])) * this.pixelRatio;
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {

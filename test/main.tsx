@@ -18,6 +18,7 @@ import { MouseInteraction } from './examples/mouse-interaction';
 import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
 import { MouseInteractionImages } from './examples/mouse-interaction-images';
 import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
+import { ScreenSpaceEdges } from './examples/screen-space-edges';
 import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
 /**
@@ -49,6 +50,7 @@ const tests: BaseExample[] = [
   new MouseInteractionImages(),
   new MouseInteractionEdges(),
   new LabelAnimatedScale(),
+  new ScreenSpaceEdges(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -82,6 +84,8 @@ export class Main extends Component<any, IMainState> {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+    this.container.removeEventListener('onkeypress', this.handleKeyDown);
+    this.container.removeEventListener('onkeyup', this.handleKeyUp);
     this.surface && this.surface.destroy();
     this.willAnimate = 0;
   }
@@ -148,6 +152,14 @@ export class Main extends Component<any, IMainState> {
     if (this.surface) {
       this.surface.draw();
     }
+  }
+
+  handleKeyDown = (e: KeyboardEvent) => {
+    tests.forEach(test => test.keyEvent(e, true));
+  }
+
+  handleKeyUp = (e: KeyboardEvent) => {
+    tests.forEach(test => test.keyEvent(e, false));
   }
 
   handleResize = () => {
@@ -230,6 +242,8 @@ export class Main extends Component<any, IMainState> {
 
   setContext = async(canvas: HTMLCanvasElement) => {
     this.context = canvas;
+    document.onkeydown = this.handleKeyDown;
+    document.onkeyup = this.handleKeyUp;
   }
 
   sizeContext() {

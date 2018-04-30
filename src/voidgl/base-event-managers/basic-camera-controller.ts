@@ -29,11 +29,17 @@ export interface IBasicCameraControllerOptions {
   startView?: string | string[];
 }
 
+/**
+ * This provides some very basic common needs for a camera control system. This is not a total solution
+ * very every scenario. This should just often handle most basic needs.
+ */
 export class BasicCameraController extends EventManager {
   /** This is the camera that this controller will manipulate */
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
+  /** Informative property indicating the controller is panning the chart or not */
+  isPanning: boolean = false;
   /** This is the filter applied to panning operations */
   private panFilter = (offset: [number, number, number], view: View, allViews: View[]) => offset;
   /** The rate scale is adjusted with the mouse wheel */
@@ -108,10 +114,13 @@ export class BasicCameraController extends EventManager {
   handleMouseDown(e: IMouseInteraction, button: number) {
     // We look for valid covered views on mouse down so dragging will work
     this.findCoveredStartView(e);
+    // If this is a valid start view, then we enter a panning state with the mouse down
+    this.isPanning = this.canStart(e.start.view.id);
   }
 
   handleMouseUp(e: IMouseInteraction) {
     this.startViewDidStart = false;
+    this.isPanning = false;
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {

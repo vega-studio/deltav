@@ -138,6 +138,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
 
       // If we have a listener for either event we should continue to process the event in more detail
       if (onMouseOver || onMouseMove || onMouseOut) {
+        let info: IPickInfo<T>;
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
         const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
@@ -146,7 +147,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
         if (onMouseOver) {
           const notOverInstances = instances.filter(o => !this.isMouseOver.get(o));
-          const info: IPickInfo<T> = {
+          info = {
             instances: notOverInstances,
             layer: this.layer.id,
             projection: view,
@@ -161,7 +162,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         // Broadcast the the picking info for all instances that the mouse moved on
         if (onMouseMove) {
           // This is the pick info object we will broadcast from the layer
-          const info: IPickInfo<T> = {
+          info = {
             instances,
             layer: this.layer.id,
             projection: view,
@@ -182,7 +183,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           const noLongerOver = Array.from(this.isMouseOver.keys()).filter(o => !isCurrentlyOver.get(o));
 
           // This is the pick info object we will broadcast from the layer
-          const info: IPickInfo<T> = {
+          info = {
             instances: noLongerOver,
             layer: this.layer.id,
             projection: view,

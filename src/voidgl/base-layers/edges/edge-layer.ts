@@ -4,11 +4,13 @@ import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIO
 import { shaderTemplate } from '../../util';
 import { EdgeInstance } from './edge-instance';
 import { edgePicking } from './edge-picking';
-import { EdgeBroadPhase, EdgeScaleType, EdgeType } from './types';
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
 
 export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
   /** Allows adjustments for broadphase interactions for an edge */
-  broadphase?: EdgeBroadPhase;
+  broadphase?: EdgeBroadphase;
+  /** Any distance to the mouse from an edge that is less than this distance will be picked */
+  minPickDistance?: number;
   /** This sets a scaling factor for the edge's line width and curve  */
   scaleFactor?(): number;
   /**
@@ -55,7 +57,7 @@ export class EdgeLayer extends Layer<
 > {
   // Set default props for the layer
   static defaultProps: IEdgeLayerProps = {
-    broadphase: EdgeBroadPhase.ALL,
+    broadphase: EdgeBroadphase.ALL,
     data: null,
     key: 'none',
     scaleType: EdgeScaleType.NONE,

@@ -23,7 +23,7 @@ export enum EdgeType {
  * is NONE, you don't need to utilize this. If you use screen space and have camera distortions along an axis, this
  * can help greatly.
  */
-export enum EdgeBroadPhase {
+export enum EdgeBroadphase {
   /** Use this if the broad phase detection should use both width and height of the edge's bounds */
   ALL,
   /** Use this to ensure a test against the edge is performed if the mouse aligns with it on the x-axis */

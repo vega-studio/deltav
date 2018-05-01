@@ -62,6 +62,12 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
 export interface IModelConstructable {
     new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material[]): any;
 }
+export interface IPickingMethods<T extends Instance> {
+    /** This provides a way to calculate bounds of an Instance */
+    boundsAccessor: BoundsAccessor<T>;
+    /** This is the way the system tests hitting an intsance */
+    hitTest: InstanceHitTest<T>;
+}
 /**
  * A base class for generating drawable content
  */
@@ -119,10 +125,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
      * This method is for layers to implement to specify how the bounds for an instance are retrieved or
      * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
      */
-    getInstancePickingMethods(): {
-        hitTest: InstanceHitTest<T>;
-        boundsAccessor: BoundsAccessor<T>;
-    };
+    getInstancePickingMethods(): IPickingMethods<T>;
     /**
      * The type of Three model as well as the preferred draw mode associated with it.
      */

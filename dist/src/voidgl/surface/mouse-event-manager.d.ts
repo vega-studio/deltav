@@ -23,6 +23,8 @@ export declare type SceneView = {
  * interacts with the views below it.
  */
 export interface IMouseInteraction {
+    /** When present indicates any relevant button codes used during a click event */
+    button?: number;
     /** Metrics of the interaction in screen space */
     screen: {
         mouse: IPoint;

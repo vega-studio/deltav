@@ -23,7 +23,7 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
     /**
      * Handles mouse down gestures for a layer within a view
      */
-    handleMouseDown(view: IProjection, mouse: IPoint): void;
+    handleMouseDown(view: IProjection, mouse: IPoint, button: number): void;
     /**
      * Handles mouse out events for a layer within the view
      */
@@ -31,7 +31,7 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
     /**
      * Handles mouse up gestures for the layer within the provided view
      */
-    handleMouseUp(view: IProjection, mouse: IPoint): void;
+    handleMouseUp(view: IProjection, mouse: IPoint, button: number): void;
     /**
      * Mouse move events on the layer will detect when instances have their item newly over or just moved on
      */
@@ -39,7 +39,7 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
     /**
      * Handles click gestures on the layer within a view
      */
-    handleMouseClick(view: IProjection, mouse: IPoint): void;
+    handleMouseClick(view: IProjection, mouse: IPoint, button: number): void;
     /**
      * Handles drag gestures for the layer within the view
      */

@@ -2,13 +2,13 @@ import { IDragMetrics, IMouseInteraction, IWheelMetrics } from './mouse-event-ma
 /**
  * Classes can extend this and override the methods to respond to events.
  */
-export declare class EventManager {
-    handleMouseDown(e: IMouseInteraction, button: number): void;
-    handleMouseUp(e: IMouseInteraction): void;
-    handleMouseOver(e: IMouseInteraction): void;
-    handleMouseOut(e: IMouseInteraction): void;
-    handleMouseMove(e: IMouseInteraction): void;
-    handleClick(e: IMouseInteraction, button: number): void;
-    handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
-    handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
+export declare abstract class EventManager {
+    abstract handleMouseDown(e: IMouseInteraction, button: number): void;
+    abstract handleMouseUp(e: IMouseInteraction, button: number): void;
+    abstract handleMouseOver(e: IMouseInteraction): void;
+    abstract handleMouseOut(e: IMouseInteraction): void;
+    abstract handleMouseMove(e: IMouseInteraction): void;
+    abstract handleClick(e: IMouseInteraction, button: number): void;
+    abstract handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
+    abstract handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
 }

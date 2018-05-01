@@ -9,7 +9,7 @@ import { IProjection } from '../../types';
 import { add2, dot2, length2, scale2, subtract2, Vec2 } from '../../util/vector';
 import { EdgeInstance } from './edge-instance';
 import { IEdgeLayerProps } from './edge-layer';
-import { EdgeBroadPhase, EdgeScaleType, EdgeType } from './types';
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
 const { pow } = Math;
 
 type InterpolationMethod = (t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2) => Vec2;
@@ -72,6 +72,9 @@ function distanceTo(start: Vec2, end: Vec2, p: Vec2) {
   return distance;
 }
 
+// This sets the number of iterations along a curve we sample to test collisions with
+const TEST_RESOLUTION = 50;
+
 /**
  * This generates the picking methods needed for managing PickType.ALL for the edge layer.
  */
@@ -119,12 +122,12 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
       });
     }
 
-    if (broadphase === EdgeBroadPhase.PASS_X) {
+    if (broadphase === EdgeBroadphase.PASS_X) {
       bounds.x = Number.MIN_SAFE_INTEGER / 2;
       bounds.width = Number.MAX_SAFE_INTEGER;
     }
 
-    if (broadphase === EdgeBroadPhase.PASS_Y) {
+    if (broadphase === EdgeBroadphase.PASS_Y) {
       bounds.y = Number.MIN_SAFE_INTEGER / 2;
       bounds.height = Number.MAX_SAFE_INTEGER;
     }
@@ -140,8 +143,6 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
       // Provide a precise hit test for the edge. This method performs all of the rendering
       // And hit tests within screen space as opposed to world space.
       hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => {
-        // Let's specify a resolution level for testing
-        const TEST_RESOLUTION = 50;
         point = view.worldToScreen(point);
         const mouse: Vec2 = [point.x, point.y];
         let closestIndex = 0;

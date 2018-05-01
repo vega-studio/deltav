@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { ChartCamera, createLayer, DataProvider, EdgeBroadPhase, EdgeInstance, EdgeLayer, EdgeScaleType, EdgeType, IPickInfo, LayerInitializer, PickType, ReferenceCamera } from '../../src';
+import { ChartCamera, createLayer, DataProvider, EdgeBroadphase, EdgeInstance, EdgeLayer, EdgeScaleType, EdgeType, IPickInfo, LayerInitializer, PickType, ReferenceCamera } from '../../src';
 import { BaseExample } from './base-example';
 
 /**
@@ -68,7 +68,7 @@ export class ScreenSpaceEdges extends BaseExample {
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<EdgeInstance>): LayerInitializer {
     return createLayer(EdgeLayer, {
-      broadphase: EdgeBroadPhase.PASS_X,
+      broadphase: EdgeBroadphase.PASS_X,
       data: provider,
       key: 'screen-space-edges',
       onMouseMove: this.handleMouseMove,

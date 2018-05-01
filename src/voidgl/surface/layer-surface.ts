@@ -130,6 +130,12 @@ export class LayerSurface {
    */
   willDisposeLayer = new Map<string, boolean>();
 
+  /**
+   * This is used to help resolve concurrent draws. There are some very async operations that should
+   * not overlap in draw calls.
+   */
+  private isBufferingAtlas = false;
+
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
@@ -165,7 +171,7 @@ export class LayerSurface {
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    */
-  draw() {
+  async draw() {
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
 
@@ -222,7 +228,16 @@ export class LayerSurface {
 
     // Now that all of our layers have performed updates to everything, we can now dequeue
     // All resource requests and being their processing
-    this.resourceManager.dequeueRequests();
+    // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
+    if (!this.isBufferingAtlas) {
+      this.isBufferingAtlas = true;
+      const didBuffer = await this.resourceManager.dequeueRequests();
+      this.isBufferingAtlas = false;
+
+      // If buffering did occur and completed, then we should be performing a draw to ensure all of the
+      // Changes are committed and pushed out.
+      if (didBuffer) this.draw();
+    }
   }
 
   /**

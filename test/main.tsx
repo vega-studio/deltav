@@ -121,6 +121,11 @@ export class Main extends Component<any, IMainState> {
             key: 'all-resources',
             width: AtlasSize._2048,
           },
+          {
+            height: AtlasSize._2048,
+            key: 'all-resources-2',
+            width: AtlasSize._2048,
+          },
         ],
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,
@@ -132,7 +137,7 @@ export class Main extends Component<any, IMainState> {
       // Generate the Layers for the tests now that the scenes are established
       tests.forEach((test, i) => {
         const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
+        const layer = test.makeLayer(this.allScenes[i].name, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
         layers.push(layer);
       });
 

@@ -6,21 +6,21 @@ import { IPoint } from '../../primitives';
 import { Bounds } from '../../primitives/bounds';
 import { IPickingMethods } from '../../surface/layer';
 import { IProjection } from '../../types';
-import { add2, length2, scale2, subtract2, Vec2 } from '../../util/vector';
+import { add2, dot2, length2, scale2, subtract2, Vec2 } from '../../util/vector';
 import { EdgeInstance } from './edge-instance';
 import { IEdgeLayerProps } from './edge-layer';
 import { EdgeBroadPhase, EdgeScaleType, EdgeType } from './types';
 const { pow } = Math;
 
-type InterpolationMethod = (t: number, p1: [number, number], p2: [number, number], c1: [number, number], c2: [number, number]) => Vec2;
+type InterpolationMethod = (t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2) => Vec2;
 
 /** This is an interpolation across a line */
-function linear(t: number, p1: [number, number], p2: [number, number], c1: [number, number], c2: [number, number]): Vec2 {
+function linear(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
   return add2(scale2(subtract2(p2, p1), t), p1);
 }
 
 /** This is an interpolation across a bezier curve, single control */
-function bezier(t: number, p1: [number, number], p2: [number, number], c1: [number, number], c2: [number, number]): Vec2 {
+function bezier(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
   return [
     (1.0 - t) * (1.0 - t) * p1[0] + 2.0 * t * (1.0 - t) * c1[0] + t * t * p2[0],
     (1.0 - t) * (1.0 - t) * p1[0] + 2.0 * t * (1.0 - t) * c1[0] + t * t * p2[0],
@@ -28,7 +28,7 @@ function bezier(t: number, p1: [number, number], p2: [number, number], c1: [numb
 }
 
 /** This is an interpolation across a bezier curve, double control */
-function bezier2(t: number, p1: [number, number], p2: [number, number], c1: [number, number], c2: [number, number]): Vec2 {
+function bezier2(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
   const t1 = 1.0 - t;
 
   return [
@@ -45,7 +45,7 @@ const interpolation: {[key: number]: InterpolationMethod } = {
 };
 
 /** Converts a point array to a point object */
-function toPointObject(point: [number, number]): IPoint {
+function toPointObject(point: Vec2): IPoint {
   return {
     x: point[0],
     y: point[1],
@@ -53,35 +53,49 @@ function toPointObject(point: [number, number]): IPoint {
 }
 
 /** Converts a point object to a point array */
-function toPointArray(point: IPoint): [number, number] {
+function toPointArray(point: IPoint): Vec2 {
   return [
     point.x,
     point.y,
   ];
 }
 
+/** Taes two points that forms a line then calculates the nearest distance from that line to the third point */
+function distanceTo(start: Vec2, end: Vec2, p: Vec2) {
+  // Make a vector from a line point to the indicated point
+  const vector: Vec2 = subtract2(start, p);
+  const lineDirection: Vec2 = subtract2(end, start);
+  const lineNormal: Vec2 = [lineDirection[1], -lineDirection[0]];
+  const distance: number = Math.abs(dot2(vector, lineNormal)) / length2(lineDirection);
+
+  // The distance is d = |v . r| where v is a unit perpendicular vector to the Line
+  return distance;
+}
+
 /**
  * This generates the picking methods needed for managing PickType.ALL for the edge layer.
  */
 export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstance> {
-  const { broadphase, scaleType, type } = props;
+  const { broadphase, minPickDistance = 0, scaleType, type } = props;
   const interpolate = interpolation[props.type];
 
   const boundsAccessor = (edge: EdgeInstance) => {
+    const edgeWidthStart = edge.widthStart / 2 + minPickDistance;
+    const edgeWidthEnd = edge.widthEnd / 2 + minPickDistance;
     // Encapsulate the endpoints as they are guaranteed to be included in the shape
     // Each endpoint will be a box that includes the endpoint thickness
     const bounds = new Bounds({
       height: edge.widthStart,
       width: edge.widthStart,
-      x: edge.start[0] - edge.widthStart / 2,
-      y: edge.start[1] - edge.widthStart / 2,
+      x: edge.start[0] - edgeWidthStart,
+      y: edge.start[1] - edgeWidthStart,
     });
 
     bounds.encapsulate(new Bounds({
       height: edge.widthEnd,
       width: edge.widthEnd,
-      x: edge.end[0] - edge.widthEnd / 2,
-      y: edge.end[1] - edge.widthEnd / 2,
+      x: edge.end[0] - edgeWidthEnd,
+      y: edge.end[1] - edgeWidthEnd,
     }));
 
     // Encapsulating the bezier control points is enough of a broadphase for beziers
@@ -129,13 +143,15 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
         // Let's specify a resolution level for testing
         const TEST_RESOLUTION = 50;
         point = view.worldToScreen(point);
-        const mouse: [number, number] = [point.x, point.y];
+        const mouse: Vec2 = [point.x, point.y];
         let closestIndex = 0;
         let closestDistance = Number.MAX_VALUE;
+        let secondClosestIndex = 0;
+        let secondClosestDistance = Number.MAX_VALUE;
 
         const start = view.worldToScreen(toPointObject(edge.start));
         const end = view.worldToScreen(toPointObject(edge.end));
-        let control1, control2;
+        let control1: Vec2, control2: Vec2;
 
         if (type === EdgeType.BEZIER) {
           control1 = add2(toPointArray(start), edge.control[0]);
@@ -149,19 +165,29 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
         const startPoint = toPointArray(start);
         const endPoint = toPointArray(end);
 
+        control1 = edge.control.length > 0 ? control1 : [0, 0];
+        control2 = edge.control.length > 1 ? control2 : [0, 0];
+
         // Loop through sample points on the line and find one that is closest to the mouse point as possible
         for (let i = 0; i < TEST_RESOLUTION; ++i) {
           const linePoint = interpolate(
             i / TEST_RESOLUTION,
             startPoint,
             endPoint,
-            edge.control.length > 0 ? control1 : [0, 0],
-            edge.control.length > 1 ? control2 : [0, 0],
+            control1,
+            control2,
           );
           const distance = length2(subtract2(mouse, linePoint));
 
           if (distance < closestDistance) {
+            secondClosestIndex = closestIndex;
+            secondClosestDistance = closestDistance;
             closestIndex = i;
+            closestDistance = distance;
+          }
+
+          else if (distance < secondClosestDistance) {
+            secondClosestIndex = i;
             closestDistance = distance;
           }
         }
@@ -169,7 +195,31 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
         const t = closestIndex / TEST_RESOLUTION;
         const lineWidth = (edge.widthEnd - edge.widthStart) * t + edge.widthStart;
 
-        return closestDistance < (lineWidth / 2.0);
+        if (closestIndex === secondClosestIndex) {
+          return false;
+        }
+
+        const startSegment = interpolate(
+          closestIndex / TEST_RESOLUTION,
+          startPoint,
+          endPoint,
+          control1,
+          control2,
+        );
+
+        const endSegment = interpolate(
+          secondClosestIndex / TEST_RESOLUTION,
+          startPoint,
+          endPoint,
+          control1,
+          control2,
+        );
+
+        // See how close the mouse is to the line between the two closest points for a more accurate
+        // Test
+        closestDistance = distanceTo(startSegment, endSegment, mouse);
+
+        return closestDistance < ((lineWidth / 2.0) + minPickDistance);
       },
     };
   }

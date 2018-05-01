@@ -116,6 +116,22 @@ export class ScreenSpaceEdges extends BaseExample {
 
     edgeProvider.instances.push(edge);
 
+    edge = new EdgeInstance({
+      colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
+      colorStart: [Math.random(), 1.0, Math.random(), 1.0],
+      control: [
+        [20, 20],
+        [-20, -20],
+      ],
+      end: [200, 200],
+      id: `edge-interaction-2`,
+      start: [20, 20],
+      widthEnd: 10,
+      widthStart: 10,
+    });
+
+    edgeProvider.instances.push(edge);
+
     return edgeProvider;
   }
 }

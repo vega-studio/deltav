@@ -9,6 +9,8 @@ import { EdgeBroadPhase, EdgeScaleType, EdgeType } from './types';
 export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadPhase;
+  /** Any distance to the mouse from an edge that is less than this distance will be picked */
+  minPickDistance?: number;
   /** This sets a scaling factor for the edge's line width and curve  */
   scaleFactor?(): number;
   /**

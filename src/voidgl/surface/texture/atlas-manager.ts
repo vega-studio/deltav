@@ -335,7 +335,7 @@ export class AtlasManager {
         await this.draw(atlas, resource);
       }
 
-      // Perform the best method for updating the underlying texture of the atlas to the laresr changes
+      // Perform the best method for updating the underlying texture of the atlas to the latest changes
       atlas.updateTexture();
     }
 

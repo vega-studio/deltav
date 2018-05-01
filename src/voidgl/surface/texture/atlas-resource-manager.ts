@@ -36,10 +36,12 @@ export class AtlasResourceManager {
   atlasManager: AtlasManager;
   /** This is the atlas currently targetted by requests */
   targetAtlas: string = '';
-  /** This stores all of the requests awaiting queue */
-  requestQueue: AtlasResource[] = [];
-  /** This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource */
-  requestLookup = new Map<AtlasResource, [Layer<any, any, any>, Instance][]>();
+  /** This stores all of the requests awaiting dequeueing */
+  private requestQueue = new Map<string, AtlasResource[]>();
+  /**
+   * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
+   */
+  private requestLookup = new Map<string, Map<AtlasResource, [Layer<any, any, any>, Instance][]>>();
 
   constructor(options: IAtlasResourceManagerOptions) {
     this.atlasManager = options.atlasManager;
@@ -50,35 +52,48 @@ export class AtlasResourceManager {
    * inevitably make the instance active
    */
   async dequeueRequests() {
-    if (this.requestQueue.length) {
-      // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
-      // New requests while this dequeue is being processed
-      const requests = this.requestQueue.slice(0);
-      // Empty the queue to begin taking in new requests as needed
-      this.requestQueue = [];
+    // This flag will be modified to reflect if a dequeue operation has occurred
+    let didDequeue = false;
 
-      // Tell the atlas manager to update with all of the requested resources
-      await this.atlasManager.updateAtlas(this.targetAtlas, requests);
+    for (const [targetAtlas, resources] of Array.from(this.requestQueue.entries())) {
+      if (resources.length > 0) {
+        // We did dequeue
+        didDequeue = true;
+        // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
+        // New requests while this dequeue is being processed
+        const requests = resources.slice(0);
+        // Empty the queue to begin taking in new requests as needed
+        resources.length = 0;
 
-      // Once the manager has been updated, we can now flag all of the instances waiting for the resources
-      // As active, which should thus trigger an update to the layers to perform a diff for each instance
-      requests.forEach(resource => {
-        const request = this.requestLookup.get(resource);
+        // Tell the atlas manager to update with all of the requested resources
+        await this.atlasManager.updateAtlas(targetAtlas, requests);
+        // Get the requests for the given atlas
+        const atlasRequests = this.requestLookup.get(targetAtlas);
 
-        if (request) {
-          request.forEach(waiting => {
-            const layer = waiting[0];
-            const instance = waiting[1];
+        if (atlasRequests) {
+          // Once the manager has been updated, we can now flag all of the instances waiting for the resources
+          // As active, which should thus trigger an update to the layers to perform a diff for each instance
+          requests.forEach(resource => {
+            const request = atlasRequests.get(resource);
 
-            // If the instance is still associated with a cluster, then the instance can be activated. Having
-            // A cluster is indicative the instance has not been deleted.
-            if (layer.uniformManager.getUniforms(instance)) {
-              instance.active = true;
+            if (request) {
+              request.forEach(waiting => {
+                const layer = waiting[0];
+                const instance = waiting[1];
+
+                // If the instance is still associated with a cluster, then the instance can be activated. Having
+                // A cluster is indicative the instance has not been deleted.
+                if (layer.uniformManager.getUniforms(instance)) {
+                  instance.active = true;
+                }
+              });
             }
           });
         }
-      });
+      }
     }
+
+    return didDequeue;
   }
 
   /**
@@ -110,20 +125,37 @@ export class AtlasResourceManager {
 
     // If a request is already made, then we must save the instance making the request for deactivation and
     // Reactivation but without any additional atlas loading
-    const existingRequests = this.requestLookup.get(resource);
-    if (existingRequests) {
-      existingRequests.push([layer, instance]);
-      instance.active = false;
+    let atlasRequests = this.requestLookup.get(this.targetAtlas);
 
-      return toInstanceIOValue(texture);
+    if (atlasRequests) {
+      const existingRequests = atlasRequests.get(resource);
+
+      if (existingRequests) {
+        existingRequests.push([layer, instance]);
+        instance.active = false;
+
+        return toInstanceIOValue(texture);
+      }
+    }
+
+    else {
+      atlasRequests = new Map();
+      this.requestLookup.set(this.targetAtlas, atlasRequests);
     }
 
     // If the texture is not available, then we must load the resource, deactivate the instance
     // And wait for the resource to become available. Once the resource is available, the system
     // Must activate the instance to render the resource.
     instance.active = false;
-    this.requestQueue.push(resource);
-    this.requestLookup.set(resource, [[layer, instance]]);
+    let requests = this.requestQueue.get(this.targetAtlas);
+
+    if (!requests) {
+      requests = [];
+      this.requestQueue.set(this.targetAtlas, requests);
+    }
+
+    requests.push(resource);
+    atlasRequests.set(resource, [[layer, instance]]);
 
     // This returns essentially returns blank values for the resource lookup
     return toInstanceIOValue(texture);

@@ -18,21 +18,23 @@ export declare class AtlasResourceManager {
     atlasManager: AtlasManager;
     /** This is the atlas currently targetted by requests */
     targetAtlas: string;
-    /** This stores all of the requests awaiting queue */
-    requestQueue: AtlasResource[];
-    /** This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource */
-    requestLookup: Map<AtlasResource, [Layer<any, any, any>, Instance][]>;
+    /** This stores all of the requests awaiting dequeueing */
+    private requestQueue;
+    /**
+     * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
+     */
+    private requestLookup;
     constructor(options: IAtlasResourceManagerOptions);
     /**
      * This dequeues all instance requests for a resource and processes the request which will
      * inevitably make the instance active
      */
-    dequeueRequests(): Promise<void>;
+    dequeueRequests(): Promise<boolean>;
     /**
      * This retrieves the actual atlas texture that should be applied to a uniform's
      * value.
      */
-    getAtlasTexture(key: string): Three.Texture;
+    getAtlasTexture(key: string): Three.Texture | null;
     /**
      * This is a request for atlas texture resources. It will produce either the coordinates needed to
      * make valid texture lookups, or it will trigger a loading of resources to an atlas and cause an

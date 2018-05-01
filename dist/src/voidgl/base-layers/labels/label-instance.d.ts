@@ -20,6 +20,8 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
     fontStyle?: Label['fontStyle'];
     /** The weight of the font */
     fontWeight?: Label['fontWeight'];
+    /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
+    maxWidth?: number;
     /** This allows for control over rasterization to the atlas */
     rasterization?: {
         /**
@@ -72,6 +74,7 @@ export declare class LabelInstance extends Instance implements Label {
     private _fontSize;
     private _fontStyle;
     private _fontWeight;
+    private _maxWidth;
     private _text;
     private _width;
     private _height;
@@ -96,10 +99,17 @@ export declare class LabelInstance extends Instance implements Label {
     readonly fontStyle: "normal" | "inherit" | "initial" | "italic" | "oblique";
     /** This is the font weight specified for the label (bold, normal, etc). */
     readonly fontWeight: 100 | 300 | "normal" | "bold" | "bolder" | "lighter" | "inherit" | "initial" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
+    /** This is the max width in pixels this label can fill */
+    readonly maxWidth: number;
     /** This gets the atlas resource that is uniquely identified for this label */
     readonly resource: LabelAtlasResource;
     /** This is the label's text. */
     readonly text: string;
+    /**
+     * If a maxWidth is specified, there is a chance the text will be truncated.
+     * This provides the calculated truncated text.
+     */
+    readonly truncatedText: string;
     /**
      * This is the width in world space of the label. If there is no camera distortion,
      * this would be the width of the label in pixels on the screen.

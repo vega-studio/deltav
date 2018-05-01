@@ -88,7 +88,7 @@ export class InstanceDiffManager<T extends Instance> {
   private addInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
-      manager.changeInstance(manager, instance, uniformCluster);
+      manager.changeInstanceQuad(manager, instance, uniformCluster);
     }
 
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
@@ -133,7 +133,7 @@ export class InstanceDiffManager<T extends Instance> {
 
     // If we don't have existing uniforms, then we must remove the instance
     else {
-      manager.addInstance(manager, instance, uniformCluster);
+      manager.addInstanceQuad(manager, instance, uniformCluster);
     }
   }
 

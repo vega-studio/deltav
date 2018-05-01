@@ -194,6 +194,31 @@ export class LabelAnchorsAndScales extends BaseExample {
     label.x += label.width;
     provider.instances.push(label);
 
+    // Test MAX WIDTH
+    label = new LabelInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.MiddleRight,
+      },
+      color: [1.0, 1.0, 1.0, 1.0],
+      fontFamily: 'Arial',
+      fontSize: 20,
+      fontStyle: 'normal',
+      fontWeight: 'normal',
+      id: `label-vertical-4`,
+      maxWidth: 209,
+      rasterization: {
+        scale: 1.0,
+      },
+      scaling: ScaleType.NEVER,
+      text: 'Max Width Should be working on this label!!!',
+      x: 20,
+      y: count++ * 20,
+    });
+
+    label.x += label.width;
+    provider.instances.push(label);
+
     return provider;
   }
 }

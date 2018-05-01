@@ -18,6 +18,7 @@ import { MouseInteraction } from './examples/mouse-interaction';
 import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
 import { MouseInteractionImages } from './examples/mouse-interaction-images';
 import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
+import { ScreenSpaceEdges } from './examples/screen-space-edges';
 import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
 
 /**
@@ -37,6 +38,7 @@ export type SceneInitializer = {
 const tests: BaseExample[] = [
   new BoxOfRings(),
   new BoxOfCircles(),
+  new ScreenSpaceEdges(),
   new ChangingAnchorLabels(),
   new LabelAnchorsAndScales(),
   new Images(),
@@ -82,6 +84,8 @@ export class Main extends Component<any, IMainState> {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+    this.container.removeEventListener('onkeypress', this.handleKeyDown);
+    this.container.removeEventListener('onkeyup', this.handleKeyUp);
     this.surface && this.surface.destroy();
     this.willAnimate = 0;
   }
@@ -117,6 +121,11 @@ export class Main extends Component<any, IMainState> {
             key: 'all-resources',
             width: AtlasSize._2048,
           },
+          {
+            height: AtlasSize._2048,
+            key: 'all-resources-2',
+            width: AtlasSize._2048,
+          },
         ],
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,
@@ -128,7 +137,7 @@ export class Main extends Component<any, IMainState> {
       // Generate the Layers for the tests now that the scenes are established
       tests.forEach((test, i) => {
         const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, 'all-resources', provider);
+        const layer = test.makeLayer(this.allScenes[i].name, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
         layers.push(layer);
       });
 
@@ -148,6 +157,14 @@ export class Main extends Component<any, IMainState> {
     if (this.surface) {
       this.surface.draw();
     }
+  }
+
+  handleKeyDown = (e: KeyboardEvent) => {
+    tests.forEach(test => test.keyEvent(e, true));
+  }
+
+  handleKeyUp = (e: KeyboardEvent) => {
+    tests.forEach(test => test.keyEvent(e, false));
   }
 
   handleResize = () => {
@@ -230,6 +247,8 @@ export class Main extends Component<any, IMainState> {
 
   setContext = async(canvas: HTMLCanvasElement) => {
     this.context = canvas;
+    document.onkeydown = this.handleKeyDown;
+    document.onkeyup = this.handleKeyUp;
   }
 
   sizeContext() {

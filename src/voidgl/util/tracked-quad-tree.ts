@@ -351,7 +351,12 @@ export class Node<T extends Instance> {
         bounds,
       );
     } else {
-      console.error('Child did not get insertted');
+      console.error(
+        'Child did not get insertted.',
+        'Parent:', this.bounds.toString(),
+        'Child:', bounds.toString(),
+        'Inside Checks:', bounds.x >= this.bounds.x, bounds.right <= this.bounds.right, bounds.y >= this.bounds.y, bounds.bottom <= this.bounds.bottom,
+      );
     }
 
     // Don't insert the child and continue

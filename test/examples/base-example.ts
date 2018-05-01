@@ -1,6 +1,10 @@
 import { BasicCameraController, ChartCamera, createLayer, DataProvider, EventManager, Instance, LayerInitializer, RingLayer } from '../../src';
 
 export abstract class BaseExample {
+  keyEvent(e: KeyboardEvent, isDown: boolean) {
+    // Not required key event handler
+  }
+
   makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
     return  new BasicCameraController({
       camera: defaultCamera,

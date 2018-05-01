@@ -38,6 +38,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
   clearFlags?: ClearFlags[];
+
   /**
    * If this is provided, the layer can be rendered with a traditional camera that utilizes
    * matrix transforms to provide orientation/projection for the view.
@@ -129,7 +130,7 @@ export class View extends IdentifyByKey {
   }
 
   screenToWorld(point: IPoint, out?: IPoint) {
-    const view = this.screenToView(point);
+    const view = this.pixelSpaceToScreen(this.screenToView(point));
 
     const world = out || {x: 0, y: 0};
     world.x = (view.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
@@ -147,8 +148,8 @@ export class View extends IdentifyByKey {
     const screen = {x: 0, y: 0};
 
     // Calculate from the camera to view space
-    screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
-    screen.y = (point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1]);
+    screen.x = ((point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0])) * this.pixelRatio;
+    screen.y = ((point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1])) * this.pixelRatio;
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
@@ -196,7 +197,7 @@ export class View extends IdentifyByKey {
    */
   fitViewtoViewport(surfaceDimensions: Bounds) {
     if (this.viewCamera.type === ViewCameraType.CONTROLLED && isOrthographic(this.viewCamera.baseCamera)) {
-      const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions);
+      const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions, this.pixelRatio);
       const width = viewBounds.width;
       const height = viewBounds.height;
 

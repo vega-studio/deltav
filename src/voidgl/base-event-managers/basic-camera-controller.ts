@@ -9,9 +9,19 @@ export interface IBasicCameraControllerOptions {
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
   /**
+   * This provides a control to filter panning that will be applied to the camera. The input and
+   * output of this will be the delta value to be applied.
+   */
+  panFilter?(offset: [number, number, number], view: View, allViews: View[]): [number, number, number];
+  /**
    * This adjusts how fast scaling is applied from the mouse wheel
    */
   scaleFactor?: number;
+  /**
+   * This provides a control to filter scaling that will be applied to the camera. The input and
+   * output of this will be the delta value to be applied.
+   */
+  scaleFilter?(scale: [number, number, number], view: View, allViews: View[]): [number, number, number];
   /**
    * This is the view that MUST be the start view from the events.
    * If not provided, then dragging anywhere will adjust the camera
@@ -19,13 +29,23 @@ export interface IBasicCameraControllerOptions {
   startView?: string | string[];
 }
 
+/**
+ * This provides some very basic common needs for a camera control system. This is not a total solution
+ * very every scenario. This should just often handle most basic needs.
+ */
 export class BasicCameraController extends EventManager {
   /** This is the camera that this controller will manipulate */
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
+  /** Informative property indicating the controller is panning the chart or not */
+  isPanning: boolean = false;
+  /** This is the filter applied to panning operations */
+  private panFilter = (offset: [number, number, number], view: View, allViews: View[]) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
+  /** THis is the filter applied to tscaling operations */
+  private scaleFilter = (scale: [number, number, number], view: View, allViews: View[]) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] | undefined;
 
@@ -34,6 +54,9 @@ export class BasicCameraController extends EventManager {
    * the top most view.
    */
   private startViewDidStart: boolean = false;
+  /**
+   * If an unconvered start view is not available, this is the next available covered view, if present
+   */
   private coveredStartView: View;
 
   constructor(options: IBasicCameraControllerOptions) {
@@ -45,6 +68,25 @@ export class BasicCameraController extends EventManager {
     if (options.startView) {
       this.startViews = Array.isArray(options.startView) ? options.startView : [options.startView];
     }
+
+    this.panFilter = options.panFilter || this.panFilter;
+    this.scaleFilter = options.scaleFilter || this.scaleFilter;
+  }
+  get pan() {
+    return this.camera.offset;
+  }
+
+  get scale() {
+    return this.camera.scale;
+  }
+
+  canStart(viewId: string) {
+    return (
+      !this.startViews ||
+      this.startViews.length === 0 ||
+      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
+      this.startViewDidStart && this.ignoreCoverViews
+    );
   }
 
   findCoveredStartView(e: IMouseInteraction) {
@@ -72,16 +114,27 @@ export class BasicCameraController extends EventManager {
   handleMouseDown(e: IMouseInteraction, button: number) {
     // We look for valid covered views on mouse down so dragging will work
     this.findCoveredStartView(e);
+    // If this is a valid start view, then we enter a panning state with the mouse down
+    this.isPanning = this.canStart(e.start.view.id);
   }
 
   handleMouseUp(e: IMouseInteraction) {
     this.startViewDidStart = false;
+    this.isPanning = false;
   }
 
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (this.canStart(e.start.view.id)) {
-      this.camera.offset[0] += drag.screen.delta.x / this.camera.scale[0];
-      this.camera.offset[1] += drag.screen.delta.y / this.camera.scale[1];
+      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
+        (drag.screen.delta.y / this.camera.scale[1]),
+        0];
+
+      if (this.panFilter) {
+        pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
+      }
+
+      this.camera.offset[0] += pan[0];
+      this.camera.offset[1] += pan[1];
     }
   }
 
@@ -94,24 +147,27 @@ export class BasicCameraController extends EventManager {
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
 
       const currentZoomX = this.camera.scale[0] || 1.0;
-      this.camera.scale[0] = currentZoomX + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX;
-
       const currentZoomY = this.camera.scale[1] || 1.0;
-      this.camera.scale[1] = currentZoomY + wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY;
+
+      let scale: [number, number, number] = [wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
+      wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
+
+      if (this.scaleFilter) {
+        scale = this.scaleFilter(scale, targetView, e.viewsUnderMouse.map(v => v.view));
+      }
+
+      this.camera.scale[0] = currentZoomX + scale[0];
+      this.camera.scale[1] = currentZoomY + scale[1];
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
-
-      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x) / targetView.pixelRatio;
-      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y) / targetView.pixelRatio;
+      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
+      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
     }
   }
 
-  canStart(viewId: string) {
-    return (
-      !this.startViews ||
-      this.startViews.length === 0 ||
-      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
-      this.startViewDidStart && this.ignoreCoverViews
-    );
-  }
+  // These are the currently Unused responses for this controller
+  handleMouseOut(e: IMouseInteraction) { /*no-op*/ }
+  handleClick(e: IMouseInteraction) { /*no-op*/ }
+  handleMouseMove(e: IMouseInteraction) { /*no-op*/ }
+  handleMouseOver(e: IMouseInteraction) { /*no-op*/ }
 }

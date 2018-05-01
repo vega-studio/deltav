@@ -130,6 +130,12 @@ export class LayerSurface {
    */
   willDisposeLayer = new Map<string, boolean>();
 
+  /**
+   * This is used to help resolve concurrent draws. There are some very async operations that should
+   * not overlap in draw calls.
+   */
+  private isBufferingAtlas = false;
+
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
@@ -165,7 +171,7 @@ export class LayerSurface {
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    */
-  draw() {
+  async draw() {
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
 
@@ -222,7 +228,16 @@ export class LayerSurface {
 
     // Now that all of our layers have performed updates to everything, we can now dequeue
     // All resource requests and being their processing
-    this.resourceManager.dequeueRequests();
+    // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
+    if (!this.isBufferingAtlas) {
+      this.isBufferingAtlas = true;
+      const didBuffer = await this.resourceManager.dequeueRequests();
+      this.isBufferingAtlas = false;
+
+      // If buffering did occur and completed, then we should be performing a draw to ensure all of the
+      // Changes are committed and pushed out.
+      if (didBuffer) this.draw();
+    }
   }
 
   /**
@@ -277,6 +292,49 @@ export class LayerSurface {
 
     // Render the scene with the provided view metrics
     this.renderer.render(scene, view.viewCamera.baseCamera);
+  }
+
+  /**
+   * This allows for querying a view's screen bounds. Null is returned if the view id
+   * specified does not exist.
+   */
+  getViewSize(viewId: string): Bounds | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        return sceneView.view.screenBounds;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * This queries a view's window into a world's space.
+   */
+  getViewWorldBounds(viewId: string): Bounds | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        const view = sceneView.view;
+
+        if (view.screenBounds) {
+          const topLeft = view.viewToWorld({x: 0, y: 0});
+          const bottomRight = view.screenToWorld({ x: view.screenBounds.right, y: view.screenBounds.bottom });
+
+          return new Bounds({
+            bottom: bottomRight.y,
+            left: topLeft.x,
+            right: bottomRight.x,
+            top: topLeft.y,
+          });
+        }
+
+        else {
+          return null;
+        }
+      }
+    }
+
+    return null;
   }
 
   /**

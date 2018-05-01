@@ -1,14 +1,15 @@
 import * as Three from 'three';
+import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
 import { ChartCamera } from './util';
 import { Instance } from './util/instance';
-import { TrackedQuadTree } from './util/tracked-quad-tree';
+import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
 export type ShaderIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number] | Three.Vector4[] | Float32Array;
 export type InstanceIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number];
-export type UniformIOValue = InstanceIOValue | Float32Array | Three.Texture;
+export type UniformIOValue = number | InstanceIOValue | Float32Array | Three.Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,
@@ -61,12 +62,20 @@ export interface Identifiable {
  * layers.
  */
 export interface IPickInfo<T extends Instance> {
+  /** If a mouse button is involved in the pick, this will be populated */
+  button?: number;
   /** This is the parent layer id of the instances interacted with */
   layer: string;
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
+  /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
+  querySpace?(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
+  /** This is the screen coordinates of the mouse point that interacted with the instances */
+  screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */
   world: [number, number];
+  /** Projection methods to easily go between coordinate spaces */
+  projection: IProjection;
 }
 
 export interface IVertexAttribute {

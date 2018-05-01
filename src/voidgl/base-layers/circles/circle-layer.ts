@@ -3,9 +3,10 @@ import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { CircleInstance } from './circle-instance';
-const { max } = Math;
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
+  /** This sets a scaling factor for the circle's radius */
+  scaleFactor?(): number;
 }
 
 export interface ICircleLayerState {
@@ -33,10 +34,13 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
 
       // Provide a precise hit test for the circle
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
-        const r = circle.radius / max(...view.camera.scale);
+        const circleScreenCenter = view.worldToScreen(circle);
+        const mouseScreen = view.worldToScreen(point);
+        const r = circle.radius * this.props.scaleFactor();
+
         const delta = [
-          point.x - circle.x,
-          point.y - circle.y,
+          mouseScreen.x - circleScreenCenter.x,
+          mouseScreen.y - circleScreenCenter.y,
         ];
 
         return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
@@ -48,6 +52,8 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<CircleInstance> {
+    const scaleFactor = this.props.scaleFactor || (() => 1);
+
     return {
       fs: require('./circle-layer.fs'),
       instanceAttributes: [
@@ -84,7 +90,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
         {
           name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (uniform: IUniform) => [1],
+          update: (uniform: IUniform) => [scaleFactor()],
         },
       ],
       vertexAttributes: [

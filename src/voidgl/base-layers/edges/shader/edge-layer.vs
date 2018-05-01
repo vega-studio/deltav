@@ -1,7 +1,10 @@
 precision highp float;
 
+/**
+  This vertex shader calculates edges whose curve and width is in screen space where the curve is
+  bezier curves with 0, 1, and 2 control points.
+**/
 varying vec4 vertexColor;
-varying vec2 texCoord;
 
 // Interpolation type injection
 ${interpolation}
@@ -42,6 +45,7 @@ void main() {
   vec2 vertex = currentPosition + currentNormal * (normal * lineThickness);
   // Get the color based on where we are on the line
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
+  vertexColor *= vertexColor.a;
 
   gl_Position = clipSpace(vec3(vertex, depth));
   gl_PointSize = 5.0;

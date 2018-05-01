@@ -9,7 +9,7 @@ export declare class SubTexture {
     /** The id of the atlas this texture is located on */
     atlasReferenceID: string;
     /** This is the actual texture of the atlas this resource is located on */
-    atlasTexture: Three.Texture;
+    atlasTexture: Three.Texture | null;
     /** This is the top left UV coordinate of the sub texture on the atlas */
     atlasTL: IPoint;
     /** This is the top right UV coordinate of the sub texture on the atlas */

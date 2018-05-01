@@ -66,6 +66,7 @@ export class MouseInteraction extends BaseExample {
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.ALL,
+      scaleFactor: () => 1,
       scene: scene,
     });
   }
@@ -76,7 +77,7 @@ export class MouseInteraction extends BaseExample {
     for (let i = 0; i < 40; ++i) {
       for (let k = 0; k < 30; ++k) {
         const circle = new CircleInstance({
-          color: [1.0, Math.random(), Math.random(), 1.0],
+          color: [1.0, Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
           id: `circle${i * 100 + k}`,
           radius: 5,
           x: i * 10,

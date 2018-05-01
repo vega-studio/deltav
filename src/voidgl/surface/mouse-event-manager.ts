@@ -29,6 +29,8 @@ export type SceneView = {
  * interacts with the views below it.
  */
 export interface IMouseInteraction {
+  /** When present indicates any relevant button codes used during a click event */
+  button?: number;
   /** Metrics of the interaction in screen space */
   screen: {
     mouse: IPoint;
@@ -263,7 +265,7 @@ export class MouseEventManager {
         const interaction = this.makeInteraction(mouse, startPosition, startView);
 
         this.controllers.forEach(controller => {
-          controller.handleMouseUp(interaction);
+          controller.handleMouseUp(interaction, event.button);
         });
 
         // If we release the mouse before the valid click delay

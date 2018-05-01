@@ -99,8 +99,15 @@ export class Bounds {
    */
   encapsulate(item: Bounds | IPoint) {
     if (item instanceof Bounds) {
-      this.x = Math.min(this.x, item.x);
-      this.y = Math.min(this.y, item.y);
+      if (item.x < this.x) {
+        this.width += Math.abs(item.x - this.x);
+        this.x = item.x;
+      }
+
+      if (item.y < this.y) {
+        this.height += Math.abs(item.y - this.y);
+        this.y = item.y;
+      }
 
       if (this.right < item.right) {
         this.width += item.right - this.right;

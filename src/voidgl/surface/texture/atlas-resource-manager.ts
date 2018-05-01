@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { LabelAtlasResource } from '.';
 import { InstanceIOValue } from '../../types';
 import { Instance } from '../../util/instance';
 import { Layer } from '../layer';
@@ -75,6 +76,7 @@ export class AtlasResourceManager {
           // As active, which should thus trigger an update to the layers to perform a diff for each instance
           requests.forEach(resource => {
             const request = atlasRequests.get(resource);
+            atlasRequests.delete(resource);
 
             if (request) {
               request.forEach(waiting => {
@@ -121,6 +123,12 @@ export class AtlasResourceManager {
     // If the texture is ready and available, then we simply return the IO values
     if (texture) {
       return toInstanceIOValue(texture);
+    }
+
+    if (resource instanceof LabelAtlasResource) {
+      if (!resource.label.text) {
+        return toInstanceIOValue(texture);
+      }
     }
 
     // If a request is already made, then we must save the instance making the request for deactivation and

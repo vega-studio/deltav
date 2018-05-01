@@ -312,6 +312,19 @@ export class MouseEventManager {
   }
 
   /**
+   * Retrieves the view for the provided id
+   */
+  getView(viewId: string): View | null {
+    for (const view of this.views) {
+      if (view.view.id === viewId) {
+        return view.view;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Retrieves the views underneath the mouse with the top most view as
    * the first view in the list.
    */
@@ -384,6 +397,10 @@ export class MouseEventManager {
    */
   setControllers(controllers: EventManager[]) {
     this.controllers = controllers;
+
+    for (const controller of this.controllers) {
+      controller.setMouseManager(this);
+    }
   }
 
   /**

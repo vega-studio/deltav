@@ -1,3 +1,4 @@
+import { Bounds } from '../primitives/bounds';
 import { EventManager } from '../surface/event-manager';
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from '../surface/mouse-event-manager';
 import { View } from '../surface/view';
@@ -170,4 +171,56 @@ export class BasicCameraController extends EventManager {
   handleClick(e: IMouseInteraction) { /*no-op*/ }
   handleMouseMove(e: IMouseInteraction) { /*no-op*/ }
   handleMouseOver(e: IMouseInteraction) { /*no-op*/ }
+
+  /**
+   * Evaluates the world bounds the specified view is observing
+   */
+  getRange(view: string): Bounds {
+    /** Get the projections for the provided view */
+    const projection = this.getProjection(view);
+    /** Get the bounds on the screen for the indicated view */
+    const screenBounds = this.getViewScreenBounds(view);
+
+    // Make sure we have a valid projection and screen bounds to make the adjustment
+    if (projection && screenBounds) {
+      /** Get the current viewed world bounds of the view */
+      const topLeft = projection.screenToWorld(screenBounds);
+      const bottomRight = projection.screenToWorld({ x: screenBounds.right, y: screenBounds.bottom });
+
+      return new Bounds({
+        height: bottomRight.y - topLeft.y,
+        width: bottomRight.x - topLeft.x,
+        x: topLeft.x,
+        y: topLeft.y,
+      });
+    }
+
+    return new Bounds({ x: 0, y: 0, width: 1, height: 1 });
+  }
+
+  /**
+   * This lets you set the visible range of a view based on the view's camera. This will probably not work
+   * as expected if the view indicated and this controller do not share the same camera.
+   */
+  setRange(newWorld: Bounds, view: string) {
+    /** Get the projections for the provided view */
+    const projection = this.getProjection(view);
+    /** Get the bounds on the screen for the indicated view */
+    const screenBounds = this.getViewScreenBounds(view);
+
+    // Make sure we have a valid projection and screen bounds to make the adjustment
+    if (projection && screenBounds) {
+      this.camera.scale = [
+        screenBounds.width / newWorld.width,
+        screenBounds.height / newWorld.height,
+        1,
+      ];
+
+      this.camera.offset = [
+        -newWorld.x,
+        -newWorld.y,
+        0,
+      ];
+    }
+  }
 }

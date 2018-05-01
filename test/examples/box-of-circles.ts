@@ -1,7 +1,37 @@
-import { CircleInstance, CircleLayer, createLayer, DataProvider, LayerInitializer } from '../../src';
+import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BoxOfCircles extends BaseExample {
+  view: string;
+  manager: BasicCameraController;
+  originalRange: Bounds;
+
+  keyEvent(e: KeyboardEvent, isDown: boolean) {
+    if (!this.originalRange) {
+      this.originalRange = this.manager.getRange(this.view);
+    }
+
+    if (e.shiftKey) {
+      this.manager.setRange(new Bounds({ x: 20, y: 20, width: 20, height: 20 }), this.view);
+    }
+
+    else {
+      this.manager.setRange(this.originalRange, this.view);
+      delete this.originalRange;
+    }
+  }
+
+  makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
+    this.view = viewName;
+
+    this.manager = new BasicCameraController({
+      camera: defaultCamera,
+      startView: viewName,
+    });
+
+    return this.manager;
+  }
+
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,

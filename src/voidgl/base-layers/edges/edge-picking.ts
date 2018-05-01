@@ -60,7 +60,7 @@ function toPointArray(point: IPoint): Vec2 {
   ];
 }
 
-/** Taes two points that forms a line then calculates the nearest distance from that line to the third point */
+/** Takes two points that forms a line then calculates the nearest distance from that line to the third point */
 function distanceTo(start: Vec2, end: Vec2, p: Vec2) {
   // Make a vector from a line point to the indicated point
   const vector: Vec2 = subtract2(start, p);

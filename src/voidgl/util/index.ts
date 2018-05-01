@@ -7,3 +7,4 @@ export * from './tracked-quad-tree';
 export * from './vector';
 export * from './view-camera';
 export * from './webgl-stat';
+export * from './mouse';

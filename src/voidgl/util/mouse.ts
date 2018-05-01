@@ -133,7 +133,7 @@ function eventElementPosition(e: any, relative?: HTMLElement): {x: number, y: nu
       mouseY: number = 0,
       eventX: number = 0,
       eventY: number = 0,
-      object: any = relative || e.nativeEvent.target;
+      object: any = relative || (e.nativeEvent && e.nativeEvent.target) || e.target;
 
   // Get mouse position on document crossbrowser
   if (!e) {

@@ -79,16 +79,13 @@ export class AtlasResourceManager {
             atlasRequests.delete(resource);
 
             if (request) {
-              request.forEach(waiting => {
-                const layer = waiting[0];
-                const instance = waiting[1];
-
+              for (const [layer, instance] of request) {
                 // If the instance is still associated with a cluster, then the instance can be activated. Having
                 // A cluster is indicative the instance has not been deleted.
                 if (layer.uniformManager.getUniforms(instance)) {
                   instance.active = true;
                 }
-              });
+              }
             }
           });
         }

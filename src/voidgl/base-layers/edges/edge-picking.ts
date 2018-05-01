@@ -220,6 +220,11 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
         // Test
         closestDistance = distanceTo(startSegment, endSegment, mouse);
 
+        // This helps determine if the mouse is beyond the end point
+        if (dot2(subtract2(endSegment, startSegment), subtract2(mouse, startSegment)) < 0) {
+          return false;
+        }
+
         return closestDistance < ((lineWidth / 2.0) + minPickDistance);
       },
     };

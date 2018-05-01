@@ -231,8 +231,6 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
 
     // Provide a precise hit test for the edge
     hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => {
-      // Let's specify a resolution level for testing
-      const TEST_RESOLUTION = 50;
       const mouse: [number, number] = [point.x, point.y];
       let closestIndex = 0;
       let closestDistance = Number.MAX_VALUE;

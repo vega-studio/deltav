@@ -1,16 +1,19 @@
-import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, IProjection } from '../../types';
+import { ILayerProps, IModelType, IPickingMethods, IShaderInitialization, Layer } from '../../surface/layer';
+import { IMaterialOptions } from '../../types';
 import { EdgeInstance } from './edge-instance';
-export declare enum EdgeType {
-    /** Makes a straight edge with no curve */
-    LINE = 0,
-    /** Makes a single control point Bezier curve */
-    BEZIER = 1,
-    /** Makes a two control point bezier curve */
-    BEZIER2 = 2,
-}
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
 export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
+    /** Allows adjustments for broadphase interactions for an edge */
+    broadphase?: EdgeBroadphase;
+    /** Any distance to the mouse from an edge that is less than this distance will be picked */
+    minPickDistance?: number;
+    /** This sets a scaling factor for the edge's line width and curve  */
+    scaleFactor?(): number;
+    /**
+     * If this is set, then the thickness of the line and the curvature of the line exists in screen space
+     * rather than world space.
+     */
+    scaleType?: EdgeScaleType;
     /** Specifies how the edge is formed */
     type: EdgeType;
 }
@@ -26,10 +29,7 @@ export declare class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps, IEdg
      * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
      * of elements
      */
-    getInstancePickingMethods(): {
-        boundsAccessor: (edge: EdgeInstance) => Bounds;
-        hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => boolean;
-    };
+    getInstancePickingMethods(): IPickingMethods<EdgeInstance>;
     /**
      * Define our shader and it's inputs
      */

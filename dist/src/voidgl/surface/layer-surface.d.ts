@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
 import { EventManager } from '../surface/event-manager';
 import { IDefaultSceneElements } from '../surface/generate-default-scene';
@@ -102,6 +103,11 @@ export declare class LayerSurface {
      * reactive system.
      */
     willDisposeLayer: Map<string, boolean>;
+    /**
+     * This is used to help resolve concurrent draws. There are some very async operations that should
+     * not overlap in draw calls.
+     */
+    private isBufferingAtlas;
     /** Read only getter for the gl context */
     readonly gl: WebGLRenderingContext;
     /**
@@ -113,11 +119,20 @@ export declare class LayerSurface {
     /**
      * This is the draw loop that must be called per frame for updates to take effect and display.
      */
-    draw(): void;
+    draw(): Promise<void>;
     /**
      * This finalizes everything and sets up viewports and clears colors and
      */
     drawSceneView(scene: Three.Scene, view: View): void;
+    /**
+     * This allows for querying a view's screen bounds. Null is returned if the view id
+     * specified does not exist.
+     */
+    getViewSize(viewId: string): Bounds | null;
+    /**
+     * This queries a view's window into a world's space.
+     */
+    getViewWorldBounds(viewId: string): Bounds | null;
     /**
      * This is the beginning of the system. This should be called immediately after the surface is constructed.
      * We make this mandatory outside of the constructor so we can make it follow an async pattern.

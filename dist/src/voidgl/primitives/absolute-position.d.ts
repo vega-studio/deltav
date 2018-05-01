@@ -19,5 +19,8 @@ export declare type AbsolutePosition = {
 };
 /**
  * This evaluates an absolute position with a reference to produce meaningful bounds.
+ *
+ * The scaleRatio provided should be available in or for percents to have the same weighting
+ * as whole number values.
  */
-export declare function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds): DataBounds<T>;
+export declare function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds, scaleRatio: number): DataBounds<T>;

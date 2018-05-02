@@ -49,11 +49,11 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
       },
 
       // Provide a precise hit test for the circle
-      hitTest: (rectangle: RectangleInstance, point: IPoint, view: IProjection) => {
+      hitTest: (rectangle: RectangleInstance, point: IPoint, projection: IProjection) => {
         // The bounds of the rectangle is in world space, but it does not account for the scale mode of the rectangle.
         // Here, we will apply the scale mode testing to the rectangle
-        const maxScale = max(...view.camera.scale);
-        const minScale = min(...view.camera.scale);
+        const maxScale = max(...projection.camera.scale);
+        const minScale = min(...projection.camera.scale);
 
         // If we scale always then the rectangle stays within it's initial world bounds at all times
         if (rectangle.scaling === ScaleType.ALWAYS) {

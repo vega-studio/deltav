@@ -1,4 +1,3 @@
-import { Bounds } from '../primitives/bounds';
 import { EventManager } from '../surface/event-manager';
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from '../surface/mouse-event-manager';
 import { View } from '../surface/view';
@@ -70,13 +69,4 @@ export declare class BasicCameraController extends EventManager {
     handleClick(e: IMouseInteraction): void;
     handleMouseMove(e: IMouseInteraction): void;
     handleMouseOver(e: IMouseInteraction): void;
-    /**
-     * Evaluates the world bounds the specified view is observing
-     */
-    getRange(view: string): Bounds;
-    /**
-     * This lets you set the visible range of a view based on the view's camera. This will probably not work
-     * as expected if the view indicated and this controller do not share the same camera.
-     */
-    setRange(newWorld: Bounds, view: string): void;
 }

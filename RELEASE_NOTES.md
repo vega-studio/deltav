@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.4.0
+
+* `(ADDED)` Control and get the view range of a camera for a given view
+* `(ADDED)` Anchor-able rectangles
+
 ## 1.3.0
 
 * `(ADDED)` Included a way to add a selection padding to edges to make them easier to pick.

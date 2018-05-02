@@ -121,6 +121,10 @@ export declare class MouseEventManager {
     addContextListeners(handlesWheelEvents?: boolean): void;
     addTouchContextListeners(): void;
     /**
+     * Retrieves the view for the provided id
+     */
+    getView(viewId: string): View | null;
+    /**
      * Retrieves the views underneath the mouse with the top most view as
      * the first view in the list.
      */

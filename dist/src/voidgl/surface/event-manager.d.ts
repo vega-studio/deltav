@@ -1,8 +1,11 @@
-import { IDragMetrics, IMouseInteraction, IWheelMetrics } from './mouse-event-manager';
+import { Bounds } from '../primitives';
+import { IProjection } from '../types';
+import { IDragMetrics, IMouseInteraction, IWheelMetrics, MouseEventManager } from './mouse-event-manager';
 /**
  * Classes can extend this and override the methods to respond to events.
  */
 export declare abstract class EventManager {
+    private mouseManager;
     abstract handleMouseDown(e: IMouseInteraction, button: number): void;
     abstract handleMouseUp(e: IMouseInteraction, button: number): void;
     abstract handleMouseOver(e: IMouseInteraction): void;
@@ -11,4 +14,7 @@ export declare abstract class EventManager {
     abstract handleClick(e: IMouseInteraction, button: number): void;
     abstract handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
     abstract handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
+    getProjection(viewId: string): IProjection | null;
+    getViewScreenBounds(viewId: string): Bounds | null;
+    setMouseManager(mouseManager: MouseEventManager): void;
 }

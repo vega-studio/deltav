@@ -174,12 +174,14 @@ export class BasicCameraController extends EventManager {
 
   /**
    * Evaluates the world bounds the specified view is observing
+   *
+   * @param viewId The id of the view when the view was generated when the surface was made
    */
-  getRange(view: string): Bounds {
+  getRange(viewId: string): Bounds {
     /** Get the projections for the provided view */
-    const projection = this.getProjection(view);
+    const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
-    const screenBounds = this.getViewScreenBounds(view);
+    const screenBounds = this.getViewScreenBounds(viewId);
 
     // Make sure we have a valid projection and screen bounds to make the adjustment
     if (projection && screenBounds) {
@@ -201,12 +203,14 @@ export class BasicCameraController extends EventManager {
   /**
    * This lets you set the visible range of a view based on the view's camera. This will probably not work
    * as expected if the view indicated and this controller do not share the same camera.
+   *
+   * @param viewId The id of the view when the view was generated when the surface was made
    */
-  setRange(newWorld: Bounds, view: string) {
+  setRange(newWorld: Bounds, viewId: string) {
     /** Get the projections for the provided view */
-    const projection = this.getProjection(view);
+    const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
-    const screenBounds = this.getViewScreenBounds(view);
+    const screenBounds = this.getViewScreenBounds(viewId);
 
     // Make sure we have a valid projection and screen bounds to make the adjustment
     if (projection && screenBounds) {

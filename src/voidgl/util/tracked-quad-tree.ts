@@ -370,12 +370,6 @@ export class Node<T extends Instance> {
       this.children.splice(index, 1);
       this.childToNode.delete(child);
       this.childToBounds.delete(child);
-    } else {
-      console.warn(
-        'Error: An invalid operation happened in the QuadTree.',
-        'A child was supposed to be a part of the tree, but no child was found.',
-        'The node\'s children is out of sync with childToNode',
-      );
     }
   }
 

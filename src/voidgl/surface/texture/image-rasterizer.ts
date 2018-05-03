@@ -1,4 +1,4 @@
-import { ImageAtlasResource } from '.';
+import { ImageAtlasResource } from './image-atlas-resource';
 
 let canvas: CanvasRenderingContext2D;
 

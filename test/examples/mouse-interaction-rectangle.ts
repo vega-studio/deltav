@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { AnchorType, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType, RectangleInstance, RectangleLayer, ScaleType } from '../../src';
+import { AnchorType, ChartCamera, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType, RectangleInstance, RectangleLayer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class MouseInteractionRectangle extends BaseExample {
@@ -60,6 +60,14 @@ export class MouseInteractionRectangle extends BaseExample {
     }
   }
 
+  makeCamera(defaultCamera: ChartCamera): ChartCamera {
+    return new ReferenceCamera({
+      base: defaultCamera,
+      offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
+      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
+    });
+  }
+
   makeLayer(scene: string, atlas: string, provider: DataProvider<RectangleInstance>): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
@@ -86,7 +94,7 @@ export class MouseInteractionRectangle extends BaseExample {
           color: [Math.random(), Math.random(), 1.0, Math.random() * 0.8 + 0.2],
           height: 10,
           id: `rectangle${i * 100 + k}`,
-          scaling: ScaleType.NEVER,
+          scaling: ScaleType.ALWAYS,
           width: 10,
           x: i * 10,
           y: k * 10,

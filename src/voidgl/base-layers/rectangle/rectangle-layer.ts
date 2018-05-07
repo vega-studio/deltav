@@ -28,13 +28,6 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
     return {
       // Provide the calculated AABB world bounds for a given rectangle
       boundsAccessor: (rectangle: RectangleInstance) => {
-        // A NEVER scale type will have a dynamic bounding range as it can grow outside of it's
-        // Initial bounds. Right now the system just handles a 'null' bounds which will always pass
-        // The broadphase. Bad for performance, but ensures the hit test works
-        if (rectangle.scaling === ScaleType.NEVER) {
-          return null;
-        }
-
         const topLeft = [
           rectangle.x - rectangle.anchor.x,
           rectangle.y - rectangle.anchor.y,
@@ -89,39 +82,21 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
         // If we never allow the rectangle to scale, then the bounds will grow and shrink to counter the effects
         // Of the camera zoom
         else if (rectangle.scaling === ScaleType.NEVER) {
-          // We are zooming out. The bounds will grow to keep the rectangle the max font size
-          if (minScale <= 1 && maxScale <= 1) {
-            // The location is within the world, but we reverse project the anchor spread
-            const topLeft = [
-              rectangle.x - (rectangle.anchor.x / minScale),
-              rectangle.y - (rectangle.anchor.y / minScale),
-            ];
+          // The location is within the world, but we reverse project the anchor spread
+          const topLeft = projection.worldToScreen({
+            x: rectangle.x - (rectangle.anchor.x / projection.camera.scale[0]),
+            y: rectangle.y - (rectangle.anchor.y / projection.camera.scale[1]),
+          });
 
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: rectangle.height / minScale,
-              width: rectangle.width / minScale,
-              x: topLeft[0],
-              y: topLeft[1],
-            }).containsPoint(point);
-          }
+          const screenPoint = projection.worldToScreen(point);
 
-          // We are zooming in. The bounds will shrink to keep the rectangle at max font size
-          else {
-            // The location is within the world, but we reverse project the anchor spread
-            const topLeft = [
-              rectangle.x - (rectangle.anchor.x / maxScale),
-              rectangle.y - (rectangle.anchor.y / maxScale),
-            ];
-
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: rectangle.height / maxScale,
-              width: rectangle.width / maxScale,
-              x: topLeft[0],
-              y: topLeft[1],
-            }).containsPoint(point);
-          }
+          // Reverse project the size and we should be within the distorted world coordinates
+          return new Bounds({
+            height: rectangle.height,
+            width: rectangle.width,
+            x: topLeft.x,
+            y: topLeft.y,
+          }).containsPoint(screenPoint);
         }
 
         return true;

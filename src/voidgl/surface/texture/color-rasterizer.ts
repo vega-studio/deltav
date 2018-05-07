@@ -1,5 +1,5 @@
-import { ColorAtlasResource } from '.';
 import { Color } from '../../primitives/color';
+import { ColorAtlasResource } from './color-atlas-resource';
 
 // When ratserized to the image, this determines the size of the square rendered to the atlas.
 const COLOR_RASTERIZATION_SIZE = 2;

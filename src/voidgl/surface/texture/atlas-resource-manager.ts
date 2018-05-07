@@ -1,9 +1,9 @@
 import * as Three from 'three';
-import { LabelAtlasResource } from '.';
 import { InstanceIOValue } from '../../types';
 import { Instance } from '../../util/instance';
 import { Layer } from '../layer';
 import { AtlasManager, AtlasResource } from './atlas-manager';
+import { LabelAtlasResource } from './label-atlas-resource';
 import { SubTexture } from './sub-texture';
 
 export interface IAtlasResourceManagerOptions {

@@ -2,6 +2,7 @@ import { Bounds } from '../primitives/bounds';
 import { EventManager } from '../surface/event-manager';
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from '../surface/mouse-event-manager';
 import { View } from '../surface/view';
+import { add3, subtract3 } from '../util';
 import { ChartCamera } from '../util/chart-camera';
 
 export interface IBasicCameraControllerOptions {
@@ -28,6 +29,12 @@ export interface IBasicCameraControllerOptions {
    * If not provided, then dragging anywhere will adjust the camera
    */
   startView?: string | string[];
+
+  /**
+   * This is a handler for when the camera has applied changes to the visible range of what is seen.
+   * Which most likely means offset or scale has been altered.
+   */
+  onRangeChanged?(camera: ChartCamera, targetView: View): void;
 }
 
 /**
@@ -59,6 +66,10 @@ export class BasicCameraController extends EventManager {
    * If an unconvered start view is not available, this is the next available covered view, if present
    */
   private coveredStartView: View;
+  /**
+   * Callback for when the range has changed for the camera in a view
+   */
+  private onRangeChanged = (camera: ChartCamera, targetView: View) => {/* no-op */};
 
   constructor(options: IBasicCameraControllerOptions) {
     super();
@@ -72,6 +83,7 @@ export class BasicCameraController extends EventManager {
 
     this.panFilter = options.panFilter || this.panFilter;
     this.scaleFilter = options.scaleFilter || this.scaleFilter;
+    this.onRangeChanged = options.onRangeChanged || this.onRangeChanged;
   }
   get pan() {
     return this.camera.offset;
@@ -136,6 +148,9 @@ export class BasicCameraController extends EventManager {
 
       this.camera.offset[0] += pan[0];
       this.camera.offset[1] += pan[1];
+
+      // Broadcast the change occurred
+      this.onRangeChanged(this.camera, e.start.view);
     }
   }
 
@@ -163,6 +178,9 @@ export class BasicCameraController extends EventManager {
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
       this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
+
+      // Broadcast the change occurred
+      this.onRangeChanged(this.camera, targetView);
     }
   }
 
@@ -211,20 +229,41 @@ export class BasicCameraController extends EventManager {
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
     const screenBounds = this.getViewScreenBounds(viewId);
+    /** Get the view the range is being applied towards */
+    const view = this.getView(viewId);
 
     // Make sure we have a valid projection and screen bounds to make the adjustment
-    if (projection && screenBounds) {
-      this.camera.scale = [
-        screenBounds.width / newWorld.width,
-        screenBounds.height / newWorld.height,
-        1,
-      ];
+    if (projection && screenBounds && view) {
+      const deltaScale = subtract3(
+        [
+          screenBounds.width / newWorld.width,
+          screenBounds.height / newWorld.height,
+          1,
+        ],
+        this.camera.scale,
+      );
 
-      this.camera.offset = [
-        -newWorld.x,
-        -newWorld.y,
-        0,
-      ];
+      this.camera.scale = add3(
+        this.camera.scale,
+        this.scaleFilter(deltaScale, view, [view]),
+      );
+
+      const deltaPan = subtract3(
+        [
+          -newWorld.x,
+          -newWorld.y,
+          0,
+        ],
+        this.camera.offset,
+      );
+
+      this.camera.offset = add3(
+        this.camera.offset,
+        this.scaleFilter(deltaPan, view, [view]),
+      );
+
+      // Broadcast the change occurred
+      this.onRangeChanged(this.camera, view);
     }
   }
 }

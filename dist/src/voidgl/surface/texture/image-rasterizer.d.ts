@@ -1,4 +1,4 @@
-import { ImageAtlasResource } from '.';
+import { ImageAtlasResource } from './image-atlas-resource';
 export interface IImageRasterizedMetrics {
     canvas: HTMLCanvasElement;
     height: number;

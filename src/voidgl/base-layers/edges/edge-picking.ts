@@ -23,7 +23,7 @@ function linear(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
 function bezier(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
   return [
     (1.0 - t) * (1.0 - t) * p1[0] + 2.0 * t * (1.0 - t) * c1[0] + t * t * p2[0],
-    (1.0 - t) * (1.0 - t) * p1[0] + 2.0 * t * (1.0 - t) * c1[0] + t * t * p2[0],
+    (1.0 - t) * (1.0 - t) * p1[1] + 2.0 * t * (1.0 - t) * c1[1] + t * t * p2[1],
   ];
 }
 

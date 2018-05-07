@@ -28,13 +28,6 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
     return {
       // Provide the calculated AABB world bounds for a given image
       boundsAccessor: (image: ImageInstance) => {
-        // A NEVER scale type will have a dynamic bounding range as it can grow outside of it's
-        // Initial bounds. Right now the system just handles a 'null' bounds which will always pass
-        // The broadphase. Bad for performance, but ensures the hit test works
-        if (image.scaling === ScaleType.NEVER) {
-          return null;
-        }
-
         const topLeft = [
           image.x - image.anchor.x,
           image.y - image.anchor.y,
@@ -71,57 +64,41 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
           // We are zooming in. The bounds will shrink to keep the image at max font size
           else {
             // The location is within the world, but we reverse project the anchor spread
-            const topLeft = [
-              image.x - (image.anchor.x / maxScale),
-              image.y - (image.anchor.y / maxScale),
-            ];
+            const topLeft = view.worldToScreen({
+              x: image.x - (image.anchor.x / view.camera.scale[0]),
+              y: image.y - (image.anchor.y / view.camera.scale[1]),
+            });
+
+            const screenPoint = view.worldToScreen(point);
 
             // Reverse project the size and we should be within the distorted world coordinates
             return new Bounds({
-              height: image.height / maxScale,
-              width: image.width / maxScale,
-              x: topLeft[0],
-              y: topLeft[1],
-            }).containsPoint(point);
+              height: image.height,
+              width: image.width,
+              x: topLeft.x,
+              y: topLeft.y,
+            }).containsPoint(screenPoint);
           }
         }
 
         // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
         // Of the camera zoom
         else if (image.scaling === ScaleType.NEVER) {
-          // We are zooming out. The bounds will grow to keep the image the max font size
-          if (minScale <= 1 && maxScale <= 1) {
-            // The location is within the world, but we reverse project the anchor spread
-            const topLeft = [
-              image.x - (image.anchor.x / minScale),
-              image.y - (image.anchor.y / minScale),
-            ];
+          // The location is within the world, but we reverse project the anchor spread
+          const topLeft = view.worldToScreen({
+            x: image.x - (image.anchor.x / view.camera.scale[0]),
+            y: image.y - (image.anchor.y / view.camera.scale[1]),
+          });
 
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: image.height / minScale,
-              width: image.width / minScale,
-              x: topLeft[0],
-              y: topLeft[1],
-            }).containsPoint(point);
-          }
+          const screenPoint = view.worldToScreen(point);
 
-          // We are zooming in. The bounds will shrink to keep the image at max font size
-          else {
-            // The location is within the world, but we reverse project the anchor spread
-            const topLeft = [
-              image.x - (image.anchor.x / maxScale),
-              image.y - (image.anchor.y / maxScale),
-            ];
-
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: image.height / maxScale,
-              width: image.width / maxScale,
-              x: topLeft[0],
-              y: topLeft[1],
-            }).containsPoint(point);
-          }
+          // Reverse project the size and we should be within the distorted world coordinates
+          return new Bounds({
+            height: image.height,
+            width: image.width,
+            x: topLeft.x,
+            y: topLeft.y,
+          }).containsPoint(screenPoint);
         }
 
         return true;

@@ -11,8 +11,16 @@ void main() {
   // Do the test for when the image is larger on the screen than the font size
   bool largerOnScreen = screenSize.y > size.y;
 
+  // Determines if a scale mode should be used or not for the vertex
+  float useScaleMode = float(
+    (
+      scaling == 3.0 ||                  // NEVER mode - keep the image the same size always
+      (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
+    ) &&
+    scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
+  );
   // If zooms are unequal, assume one is filtered to be 1.0
-  bool unequalZooms = cameraScale.x > cameraScale.y || cameraScale.y > cameraScale.x;
+  float unequalZooms = float(cameraScale.x != cameraScale.y);
 
   // Destructure threejs's bug with the position requirement
   float normal = position.x;
@@ -21,7 +29,7 @@ void main() {
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;
 
-  // Get the position of the current vertex
+  // Get the tex coord from our inject texture info
   texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
   // Apply the image's tint as a tint to the image
   vertexColor = tint;
@@ -30,17 +38,16 @@ void main() {
   size = mix(
     size,
     (size * cameraScale.yx),
-    float(unequalZooms)
+    unequalZooms
   );
 
   vec2 adjustedAnchor = mix(
     anchor,
     (anchor * cameraScale.yx),
-    float(unequalZooms)
+    unequalZooms
   );
 
   vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
-  // Get the tex coord from our inject texture info
 
   // See how scaled the size on screen will be from the actual height of the image
   float imageScreenScale = mix(
@@ -59,13 +66,8 @@ void main() {
     vertex,
     // This option counters the scaling of the image on the screen keeping it a static size
     (anchorToVertex / imageScreenScale) + location,
-    float(
-      (
-        scaling == 3.0 ||                  // NEVER mode - keep the image the same size always
-        (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
-      ) &&
-      scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
-    )
+    // This is the flag determining if a scale mode should be applied to the vertex
+    useScaleMode
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));

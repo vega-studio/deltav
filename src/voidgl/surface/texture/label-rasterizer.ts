@@ -1,5 +1,5 @@
-import { LabelAtlasResource } from '.';
 import { Label } from '../../primitives/label';
+import { LabelAtlasResource } from './label-atlas-resource';
 
 let canvas: CanvasRenderingContext2D;
 const MAX_FONT_SIZE = 50;

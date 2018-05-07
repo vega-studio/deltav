@@ -1,5 +1,5 @@
-import { ColorAtlasResource } from '.';
 import { Color } from '../../primitives/color';
+import { ColorAtlasResource } from './color-atlas-resource';
 /**
  * Static class for rasterizing a color to a canvas object
  */

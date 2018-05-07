@@ -27,6 +27,11 @@ export interface IBasicCameraControllerOptions {
      * If not provided, then dragging anywhere will adjust the camera
      */
     startView?: string | string[];
+    /**
+     * This is a handler for when the camera has applied changes to the visible range of what is seen.
+     * Which most likely means offset or scale has been altered.
+     */
+    onRangeChanged?(camera: ChartCamera, targetView: View): void;
 }
 /**
  * This provides some very basic common needs for a camera control system. This is not a total solution
@@ -56,6 +61,10 @@ export declare class BasicCameraController extends EventManager {
      * If an unconvered start view is not available, this is the next available covered view, if present
      */
     private coveredStartView;
+    /**
+     * Callback for when the range has changed for the camera in a view
+     */
+    private onRangeChanged;
     constructor(options: IBasicCameraControllerOptions);
     readonly pan: [number, number, number];
     readonly scale: [number, number, number];

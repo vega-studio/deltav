@@ -1,5 +1,5 @@
-import { LabelAtlasResource } from '.';
 import { Label } from '../../primitives/label';
+import { LabelAtlasResource } from './label-atlas-resource';
 export interface ILabelRasterizedMetrics {
     canvas: HTMLCanvasElement;
     height: number;

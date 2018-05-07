@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.5.0
+
+* `(ADDED)` Improved controls over changes to camera positioning when using BasicCameraController
+* `(FIXED)` Labels and other anchorable elements had issues with rendering and hit tests
+* `(FIXED)` Bad imports
+* `(FIXED)` Fixed edge picking math on single control bezier curves
+
 ## 1.4.0
 
 * `(ADDED)` Control and get the view range of a camera for a given view

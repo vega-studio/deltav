@@ -9,10 +9,18 @@ void main() {
   // Figure out the size of the label as it'd show on the screen
   vec3 screenSize = cameraSpaceSize(vec3(size, 1.0));
   // Do the test for when the label is larger on the screen than the font size
-  bool largerOnScreen = screenSize.y > size.y;
+  bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;
 
+  // Determines if a scale mode should be used or not for the vertex
+  float useScaleMode = float(
+    (
+      scaling == 3.0 ||                  // NEVER mode - keep the image the same size always
+      (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
+    ) &&
+    scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
+  );
   // If zooms are unequal, assume one is filtered to be 1.0
-  bool unequalZooms = cameraScale.x > cameraScale.y || cameraScale.y > cameraScale.x;
+  float unequalZooms = float(cameraScale.x != cameraScale.y);
 
   // Destructure threejs's bug with the position requirement
   float normal = position.x;
@@ -25,7 +33,7 @@ void main() {
   size = mix(
     size,
     (size * cameraScale.yx),
-    float(unequalZooms)
+    unequalZooms
   );
 
   // apply scaling
@@ -34,7 +42,7 @@ void main() {
   vec2 adjustedAnchor = mix(
     anchor,
     (anchor * cameraScale.yx),
-    float(unequalZooms)
+    unequalZooms
   );
 
   // Get the position of the current vertex
@@ -61,13 +69,8 @@ void main() {
     vertex,
     // This option counters the scaling of the image on the screen keeping it a static size
     (anchorToVertex / labelScreenScale) + location,
-    float(
-      (
-        scaling == 3.0 ||                  // NEVER mode - keep the image the same size always
-        (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
-      ) &&
-      scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
-    )
+    // This is the flag determining if a scale mode should be applied to the vertex
+    useScaleMode
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));

@@ -16,6 +16,8 @@ export enum CameraBoundsAnchor {
   BOTTOM_RIGHT,
 }
 
+const { max, min } = Math;
+
 /**
  * This represents how the camera should be bounded in the world space. This gives enough information
  * to handle all cases of bounding, including screen padding and anchoring for cases where the viewed space
@@ -24,6 +26,10 @@ export enum CameraBoundsAnchor {
 export interface ICameraBoundsOptions {
   /** How the bounded world space should anchor itself within the view when the projected world space to the screen is smaller than the view */
   anchor: CameraBoundsAnchor;
+  /** Minimum settings the camera can scale to */
+  scaleMin?: Vec3;
+  /** Maximum settings the camera can scale to */
+  scaleMax?: Vec3;
   /** The actual screen pixels the bounds can exceed when the camera's view has reached the bounds of the world */
   screenPadding: {left: number, right: number, top: number, bottom: number};
   /** This is the view for which the bounds applies towards */
@@ -75,7 +81,7 @@ export class BasicCameraController extends EventManager {
    * If total bounds of worldbounds + screenpadding is smaller
    * than width or height of view, anchor dictates placement.
    */
-  bounds: ICameraBoundsOptions;
+  bounds?: ICameraBoundsOptions;
   /** This is the camera that this controller will manipulate */
   camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
@@ -125,12 +131,35 @@ export class BasicCameraController extends EventManager {
    * Corrects camera offset to respect current bounds and anchor.
    */
   applyBounds = () => {
-    if (this.bounds) {
+    if (this.bounds && this.camera) {
       const targetView = this.getView(this.bounds.view);
+      this.applyScaleBounds();
 
+      // Next bound the positioning
       if (targetView) {
         this.camera.offset[0] = this.boundsHorizontalOffset(targetView);
         this.camera.offset[1] = this.boundsVerticalOffset(targetView);
+      }
+    }
+  }
+
+  applyScaleBounds = () => {
+    if (this.camera && this.bounds) {
+      // First bound the scaling
+      if (this.bounds.scaleMin) {
+        this.camera.scale = [
+          max(this.camera.scale[0], this.bounds.scaleMin[0]),
+          max(this.camera.scale[1], this.bounds.scaleMin[1]),
+          max(this.camera.scale[2], this.bounds.scaleMin[2]),
+        ];
+      }
+
+      if (this.bounds.scaleMax) {
+        this.camera.scale = [
+          min(this.camera.scale[0], this.bounds.scaleMax[0]),
+          min(this.camera.scale[1], this.bounds.scaleMax[1]),
+          min(this.camera.scale[2], this.bounds.scaleMax[2]),
+        ];
       }
     }
   }
@@ -341,6 +370,9 @@ export class BasicCameraController extends EventManager {
 
       this.camera.scale[0] = currentZoomX + scale[0];
       this.camera.scale[1] = currentZoomY + scale[1];
+
+      // Ensure the new scale values are within bounds before attempting to correct offsets
+      this.applyScaleBounds();
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
       this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);

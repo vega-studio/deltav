@@ -7,6 +7,9 @@ import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { BaseExample } from './examples/base-example';
 import { BendyEdge } from './examples/bendy-edge';
+import { BoundedView } from './examples/bounded-view';
+import { BoundedView2 } from './examples/bounded-view2';
+import { BoundedView3 } from './examples/bounded-view3';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
@@ -53,6 +56,9 @@ const tests: BaseExample[] = [
   new MouseInteractionEdges(),
   new LabelAnimatedScale(),
   new MouseInteractionRectangle(),
+  new BoundedView(),
+  new BoundedView2(),
+  new BoundedView3(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -112,7 +118,7 @@ export class Main extends Component<any, IMainState> {
     }
 
     if (generate) {
-      const scenes = this.makeSceneBlock(4);
+      const scenes = this.makeSceneBlock(5);
       this.allScenes = scenes;
 
       // Establish the surface and scenes needed

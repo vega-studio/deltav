@@ -9,7 +9,6 @@ export class BoxOfRings extends BaseExample {
       scene: scene,
     });
   }
-
   makeProvider(): DataProvider<RingInstance> {
     const ringProvider = new DataProvider<RingInstance>([]);
 

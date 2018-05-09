@@ -3,7 +3,31 @@ import { EventManager } from '../surface/event-manager';
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from '../surface/mouse-event-manager';
 import { View } from '../surface/view';
 import { ChartCamera } from '../util/chart-camera';
+export declare enum CameraBoundsAnchor {
+    TOP_LEFT = 0,
+    TOP_MIDDLE = 1,
+    TOP_RIGHT = 2,
+    MIDDLE_LEFT = 3,
+    MIDDLE = 4,
+    MIDDLE_RIGHT = 5,
+    BOTTOM_LEFT = 6,
+    BOTTOM_MIDDLE = 7,
+    BOTTOM_RIGHT = 8,
+}
+export interface ICameraBoundsOptions {
+    worldBounds: Bounds;
+    screenPadding: {
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+    };
+    anchor: CameraBoundsAnchor;
+    view: String;
+}
 export interface IBasicCameraControllerOptions {
+    /** Takes in the options to be used for creating a new ViewBounds object on this controller. */
+    bounds?: ICameraBoundsOptions;
     /** This is the camera this controller will manipulate */
     camera: ChartCamera;
     /** When this is set to true, the start view can be targetted even when behind other views */
@@ -38,6 +62,11 @@ export interface IBasicCameraControllerOptions {
  * very every scenario. This should just often handle most basic needs.
  */
 export declare class BasicCameraController extends EventManager {
+    /**
+     * If total bounds of worldbounds + screenpadding is smaller
+     * than width or height of view, anchor dictates placement.
+     */
+    bounds: ICameraBoundsOptions;
     /** This is the camera that this controller will manipulate */
     camera: ChartCamera;
     /** When this is set to true, the start view can be targetted even when behind other views */
@@ -66,6 +95,11 @@ export declare class BasicCameraController extends EventManager {
      */
     private onRangeChanged;
     constructor(options: IBasicCameraControllerOptions);
+    /**
+     * Sets bounds applicable to the supplied view.
+     * If no view is supplied, it uses the first in the startViews array
+     */
+    setBounds(bounds: ICameraBoundsOptions, targetView?: View): void;
     readonly pan: [number, number, number];
     readonly scale: [number, number, number];
     canStart(viewId: string): boolean;
@@ -75,6 +109,26 @@ export declare class BasicCameraController extends EventManager {
     handleMouseUp(e: IMouseInteraction): void;
     handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
     handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics): void;
+    /**
+     * Corrects camera offset to respect current bounds and anchor.
+     */
+    applyBounds(targetView: View): void;
+    /**
+     * Returns offset on x-axis due to current bounds and anchor.
+     */
+    boundsHorizontalOffset(targetView: View): number;
+    /**
+     * Returns offset on y-axis due to current bounds and anchor.
+     */
+    boundsVerticalOffset(targetView: View): number;
+    /**
+     * Calculation for adhering to an anchor - x-axis offset only.
+     */
+    anchoredByBoundsHorizontal(targetView: View): number;
+    /**
+     * Calculation for adhering to an anchor - y-axis offset only.
+     */
+    anchoredByBoundsVertical(targetView: View): number;
     handleMouseOut(e: IMouseInteraction): void;
     handleClick(e: IMouseInteraction): void;
     handleMouseMove(e: IMouseInteraction): void;

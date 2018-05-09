@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.6.0
+
+* `(ADDED)` View bounds available for the BasicCameraController
+
 ## 1.5.0
 
 * `(ADDED)` Improved controls over changes to camera positioning when using BasicCameraController

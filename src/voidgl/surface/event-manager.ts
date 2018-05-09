@@ -29,7 +29,7 @@ export abstract class EventManager {
    * This retrieves the actual view for the view specified by the provided viewId.
    */
   getView(viewId: string): View | null {
-    return this.mouseManager.getView(viewId) || null;
+    return (this.mouseManager && this.mouseManager.getView(viewId)) || null;
   }
 
   /**

@@ -2,7 +2,7 @@ import { Bounds } from '../primitives/bounds';
 import { EventManager } from '../surface/event-manager';
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from '../surface/mouse-event-manager';
 import { View } from '../surface/view';
-import { add3, subtract3 } from '../util';
+import { add3, subtract3, Vec3 } from '../util';
 import { ChartCamera } from '../util/chart-camera';
 export enum CameraBoundsAnchor {
   TOP_LEFT,
@@ -16,12 +16,22 @@ export enum CameraBoundsAnchor {
   BOTTOM_RIGHT,
 }
 
+/**
+ * This represents how the camera should be bounded in the world space. This gives enough information
+ * to handle all cases of bounding, including screen padding and anchoring for cases where the viewed space
+ * is smaller than the view.
+ */
 export interface ICameraBoundsOptions {
-  worldBounds: Bounds;
-  screenPadding: {left: number, right: number, top: number, bottom: number};
+  /** How the bounded world space should anchor itself within the view when the projected world space to the screen is smaller than the view */
   anchor: CameraBoundsAnchor;
-  view: String
+  /** The actual screen pixels the bounds can exceed when the camera's view has reached the bounds of the world */
+  screenPadding: {left: number, right: number, top: number, bottom: number};
+  /** This is the view for which the bounds applies towards */
+  view: string;
+  /** The area the camera is bound inside */
+  worldBounds: Bounds;
 }
+
 export interface IBasicCameraControllerOptions {
   /** Takes in the options to be used for creating a new ViewBounds object on this controller. */
   bounds?: ICameraBoundsOptions;
@@ -82,11 +92,6 @@ export class BasicCameraController extends EventManager {
   startViews: string[] | undefined;
 
   /**
-   * This flag is set to true when a start view is targetted on mouse down even if it is not
-   * the top most view.
-   */
-  private startViewDidStart: boolean = false;
-  /**
    * If an unconvered start view is not available, this is the next available covered view, if present
    */
   private coveredStartView: View;
@@ -94,6 +99,11 @@ export class BasicCameraController extends EventManager {
    * Callback for when the range has changed for the camera in a view
    */
   private onRangeChanged = (camera: ChartCamera, targetView: View) => {/* no-op */};
+  /**
+   * This flag is set to true when a start view is targetted on mouse down even if it is not
+   * the top most view.
+   */
+  private startViewDidStart: boolean = false;
 
   constructor(options: IBasicCameraControllerOptions) {
     super();
@@ -112,135 +122,66 @@ export class BasicCameraController extends EventManager {
   }
 
   /**
-   * Sets bounds applicable to the supplied view.
-   * If no view is supplied, it uses the first in the startViews array
+   * Corrects camera offset to respect current bounds and anchor.
    */
-  setBounds(bounds: ICameraBoundsOptions, targetView?: View) {
-    this.bounds = bounds;
-    if (targetView) {
-      this.applyBounds(targetView);
-    }
-    else if (this.startViews && this.startViews.length >= 1) {
-      const targetView = this.getView(this.startViews[0]);
-      this.applyBounds(targetView);
-    }
-  }
+  applyBounds = () => {
+    if (this.bounds) {
+      const targetView = this.getView(this.bounds.view);
 
-  get pan() {
-    return this.camera.offset;
-  }
-
-  get scale() {
-    return this.camera.scale;
-  }
-
-  canStart(viewId: string) {
-    return (
-      !this.startViews ||
-      this.startViews.length === 0 ||
-      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
-      this.startViewDidStart && this.ignoreCoverViews
-    );
-  }
-
-  findCoveredStartView(e: IMouseInteraction) {
-    const found = e.viewsUnderMouse.find(under => this.startViews.indexOf(under.view.id) > -1);
-    this.startViewDidStart = Boolean(found);
-
-    if (found) {
-      this.coveredStartView = found.view;
-    }
-  }
-
-  getTargetView(e: IMouseInteraction) {
-    // If we have a start view and we do not ignore covering views,
-    // Then our target view is the view we started with
-    if (this.startViews && !this.ignoreCoverViews) {
-      return e.target.view;
-    }
-
-    // Otherwise, we use the covered start view
-    else {
-      return this.coveredStartView;
-    }
-  }
-
-  handleMouseDown(e: IMouseInteraction, button: number) {
-    // We look for valid covered views on mouse down so dragging will work
-    this.findCoveredStartView(e);
-    // If this is a valid start view, then we enter a panning state with the mouse down
-    this.isPanning = this.canStart(e.start.view.id);
-  }
-
-  handleMouseUp(e: IMouseInteraction) {
-    this.startViewDidStart = false;
-    this.isPanning = false;
-  }
-
-  handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    if (this.canStart(e.start.view.id)) {
-      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
-        (drag.screen.delta.y / this.camera.scale[1]),
-        0];
-
-      if (this.panFilter) {
-        pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
+      if (targetView) {
+        this.camera.offset[0] = this.boundsHorizontalOffset(targetView);
+        this.camera.offset[1] = this.boundsVerticalOffset(targetView);
       }
-
-      this.camera.offset[0] += pan[0];
-      this.camera.offset[1] += pan[1];
-
-      // Add additional correction for bounds
-      if (this.bounds && e.start.view.id === this.bounds.view) {
-        this.applyBounds(e.start.view);
-      }
-
-      // Broadcast the change occurred
-      this.onRangeChanged(this.camera, e.start.view);
-    }
-  }
-
-  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
-    // Every mouse wheel event must look to see if it's over a valid covered start view
-    this.findCoveredStartView(e);
-
-    if (this.canStart(e.target.view.id)) {
-      const targetView = this.getTargetView(e);
-      const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-
-      const currentZoomX = this.camera.scale[0] || 1.0;
-      const currentZoomY = this.camera.scale[1] || 1.0;
-
-      let scale: [number, number, number] = [wheelMetrics.wheel[1] / this.scaleFactor *
-        currentZoomX, wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
-
-      if (this.scaleFilter) {
-        scale = this.scaleFilter(scale, targetView, e.viewsUnderMouse.map(v => v.view));
-      }
-
-      this.camera.scale[0] = currentZoomX + scale[0];
-      this.camera.scale[1] = currentZoomY + scale[1];
-
-      const afterZoom = targetView.screenToWorld(e.screen.mouse);
-      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
-      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
-
-      // Add additional correction for bounds
-      if (this.bounds && (targetView.id === this.bounds.view)) {
-        this.applyBounds(targetView);
-      }
-
-      // Broadcast the change occurred
-      this.onRangeChanged(this.camera, targetView);
     }
   }
 
   /**
-   * Corrects camera offset to respect current bounds and anchor.
+   * Calculation for adhering to an anchor - x-axis offset only.
    */
-  applyBounds(targetView: View) {
-    this.camera.offset[0] = this.boundsHorizontalOffset(targetView);
-    this.camera.offset[1] = this.boundsVerticalOffset(targetView);
+  anchoredByBoundsHorizontal(targetView: View) {
+    switch (this.bounds.anchor) {
+      case CameraBoundsAnchor.TOP_LEFT:
+      case CameraBoundsAnchor.MIDDLE_LEFT:
+      case CameraBoundsAnchor.BOTTOM_LEFT:
+        return -(this.bounds.worldBounds.left -
+          this.bounds.screenPadding.left / this.camera.scale[0]);
+
+      case CameraBoundsAnchor.TOP_MIDDLE:
+      case CameraBoundsAnchor.MIDDLE:
+      case CameraBoundsAnchor.BOTTOM_MIDDLE:
+        return -(this.bounds.worldBounds.right - (this.bounds.worldBounds.width / 2) -
+          (0.5 * ((targetView.screenBounds.width + this.bounds.screenPadding.right) / this.camera.scale[0])));
+
+      case CameraBoundsAnchor.TOP_RIGHT:
+      case CameraBoundsAnchor.MIDDLE_RIGHT:
+      case CameraBoundsAnchor.BOTTOM_RIGHT:
+        return -(this.bounds.worldBounds.right - ((targetView.screenBounds.width - this.bounds.screenPadding.right) / this.camera.scale[0] ));
+    }
+  }
+
+  /**
+   * Calculation for adhering to an anchor - y-axis offset only.
+   */
+  anchoredByBoundsVertical(targetView: View) {
+    switch (this.bounds.anchor) {
+      case CameraBoundsAnchor.TOP_LEFT:
+      case CameraBoundsAnchor.TOP_MIDDLE:
+      case CameraBoundsAnchor.TOP_RIGHT:
+        return -(this.bounds.worldBounds.top) -
+          (-this.bounds.screenPadding.top  / this.scale[1]);
+
+      case CameraBoundsAnchor.MIDDLE_LEFT:
+      case CameraBoundsAnchor.MIDDLE:
+      case CameraBoundsAnchor.MIDDLE_RIGHT:
+        return -(this.bounds.worldBounds.bottom - (this.bounds.worldBounds.height / 2)) +
+          ((0.5 * (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]));
+
+      case CameraBoundsAnchor.BOTTOM_LEFT:
+      case CameraBoundsAnchor.BOTTOM_MIDDLE:
+      case CameraBoundsAnchor.BOTTOM_RIGHT:
+        return -(this.bounds.worldBounds.bottom -
+          (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]);
+    }
   }
 
   /**
@@ -303,52 +244,114 @@ export class BasicCameraController extends EventManager {
     return this.camera.offset[1];
   }
 
-  /**
-   * Calculation for adhering to an anchor - x-axis offset only.
-   */
-  anchoredByBoundsHorizontal(targetView: View) {
-    switch (this.bounds.anchor) {
-      case CameraBoundsAnchor.TOP_LEFT:
-      case CameraBoundsAnchor.MIDDLE_LEFT:
-      case CameraBoundsAnchor.BOTTOM_LEFT:
-        return -(this.bounds.worldBounds.left -
-          this.bounds.screenPadding.left / this.camera.scale[0]);
+  private canStart(viewId: string) {
+    return (
+      !this.startViews ||
+      this.startViews.length === 0 ||
+      (this.startViews && this.startViews.indexOf(viewId) > -1) ||
+      this.startViewDidStart && this.ignoreCoverViews
+    );
+  }
 
-      case CameraBoundsAnchor.TOP_MIDDLE:
-      case CameraBoundsAnchor.MIDDLE:
-      case CameraBoundsAnchor.BOTTOM_MIDDLE:
-        return -(this.bounds.worldBounds.right - (this.bounds.worldBounds.width / 2) -
-          (0.5 * ((targetView.screenBounds.width + this.bounds.screenPadding.right) / this.camera.scale[0])));
+  private findCoveredStartView(e: IMouseInteraction) {
+    const found = e.viewsUnderMouse.find(under => this.startViews.indexOf(under.view.id) > -1);
+    this.startViewDidStart = Boolean(found);
 
-      case CameraBoundsAnchor.TOP_RIGHT:
-      case CameraBoundsAnchor.MIDDLE_RIGHT:
-      case CameraBoundsAnchor.BOTTOM_RIGHT:
-        return -(this.bounds.worldBounds.right - ((targetView.screenBounds.width - this.bounds.screenPadding.right) / this.camera.scale[0] ));
+    if (found) {
+      this.coveredStartView = found.view;
+    }
+  }
+
+  private getTargetView(e: IMouseInteraction) {
+    // If we have a start view and we do not ignore covering views,
+    // Then our target view is the view we started with
+    if (this.startViews && !this.ignoreCoverViews) {
+      return e.target.view;
+    }
+
+    // Otherwise, we use the covered start view
+    else {
+      return this.coveredStartView;
     }
   }
 
   /**
-   * Calculation for adhering to an anchor - y-axis offset only.
+   * Used to aid in handling the pan effect and determine the contextual view targetted.
    */
-  anchoredByBoundsVertical(targetView: View) {
-    switch (this.bounds.anchor) {
-      case CameraBoundsAnchor.TOP_LEFT:
-      case CameraBoundsAnchor.TOP_MIDDLE:
-      case CameraBoundsAnchor.TOP_RIGHT:
-        return -(this.bounds.worldBounds.top) -
-          (-this.bounds.screenPadding.top  / this.scale[1]);
+  handleMouseDown(e: IMouseInteraction, button: number) {
+    // We look for valid covered views on mouse down so dragging will work
+    this.findCoveredStartView(e);
+    // If this is a valid start view, then we enter a panning state with the mouse down
+    this.isPanning = this.canStart(e.start.view.id);
+  }
 
-      case CameraBoundsAnchor.MIDDLE_LEFT:
-      case CameraBoundsAnchor.MIDDLE:
-      case CameraBoundsAnchor.MIDDLE_RIGHT:
-        return -(this.bounds.worldBounds.bottom - (this.bounds.worldBounds.height / 2)) +
-          ((0.5 * (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]));
+  /**
+   * Used to aid in handling the pan effect
+   */
+  handleMouseUp(e: IMouseInteraction) {
+    this.startViewDidStart = false;
+    this.isPanning = false;
+  }
 
-      case CameraBoundsAnchor.BOTTOM_LEFT:
-      case CameraBoundsAnchor.BOTTOM_MIDDLE:
-      case CameraBoundsAnchor.BOTTOM_RIGHT:
-        return -(this.bounds.worldBounds.bottom -
-          (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]);
+  /**
+   * Applies a panning effect by adjusting the camera's offset.
+   */
+  handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
+    if (this.canStart(e.start.view.id)) {
+      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
+        (drag.screen.delta.y / this.camera.scale[1]),
+        0];
+
+      if (this.panFilter) {
+        pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
+      }
+
+      this.camera.offset[0] += pan[0];
+      this.camera.offset[1] += pan[1];
+
+      // Add additional correction for bounds
+      this.applyBounds();
+      // Broadcast the change occurred
+      this.onRangeChanged(this.camera, e.start.view);
+      // Add additional correction for bounds
+      this.applyBounds();
+    }
+  }
+
+  /**
+   * Applies a scaling effect to the camera for mouse wheel events
+   */
+  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
+    // Every mouse wheel event must look to see if it's over a valid covered start view
+    this.findCoveredStartView(e);
+
+    if (this.canStart(e.target.view.id)) {
+      const targetView = this.getTargetView(e);
+      const beforeZoom = targetView.screenToWorld(e.screen.mouse);
+
+      const currentZoomX = this.camera.scale[0] || 1.0;
+      const currentZoomY = this.camera.scale[1] || 1.0;
+
+      let scale: [number, number, number] = [wheelMetrics.wheel[1] / this.scaleFactor *
+        currentZoomX, wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY, 1];
+
+      if (this.scaleFilter) {
+        scale = this.scaleFilter(scale, targetView, e.viewsUnderMouse.map(v => v.view));
+      }
+
+      this.camera.scale[0] = currentZoomX + scale[0];
+      this.camera.scale[1] = currentZoomY + scale[1];
+
+      const afterZoom = targetView.screenToWorld(e.screen.mouse);
+      this.camera.offset[0] -= (beforeZoom.x - afterZoom.x);
+      this.camera.offset[1] -= (beforeZoom.y - afterZoom.y);
+
+      // Add additional correction for bounds
+      this.applyBounds();
+      // Broadcast the change occurred
+      this.onRangeChanged(this.camera, targetView);
+      // Add additional correction for bounds
+      this.applyBounds();
     }
   }
 
@@ -384,6 +387,29 @@ export class BasicCameraController extends EventManager {
     }
 
     return new Bounds({ x: 0, y: 0, width: 1, height: 1 });
+  }
+
+  /**
+   * Retrieves the current pan of the controlled camera
+   */
+  get pan(): Vec3 {
+    return this.camera.offset;
+  }
+
+  /**
+   * Sets bounds applicable to the supplied view.
+   * If no view is supplied, it uses the first in the startViews array
+   */
+  setBounds(bounds: ICameraBoundsOptions) {
+    this.bounds = bounds;
+    this.applyBounds();
+  }
+
+  /**
+   * Retrieves the current scale of the camera
+   */
+  get scale(): Vec3 {
+    return this.camera.scale;
   }
 
   /**
@@ -431,10 +457,11 @@ export class BasicCameraController extends EventManager {
       );
 
       // Bound the camera to the specified bounding range
-      this.applyBounds(view);
-
+      this.applyBounds();
       // Broadcast the change occurred
       this.onRangeChanged(this.camera, view);
+      // Bound the camera to the specified bounding range
+      this.applyBounds();
     }
   }
 }

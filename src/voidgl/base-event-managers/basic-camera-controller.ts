@@ -111,10 +111,10 @@ export class BasicCameraController extends EventManager {
     this.onRangeChanged = options.onRangeChanged || this.onRangeChanged;
   }
 
-  /*
-  * Sets bounds applicable to the supplied view.
-  * If no view is supplied, it uses the first in the startViews array
-  */
+  /**
+   * Sets bounds applicable to the supplied view.
+   * If no view is supplied, it uses the first in the startViews array
+   */
   setBounds(bounds: ICameraBoundsOptions, targetView?: View) {
     this.bounds = bounds;
     if (targetView) {
@@ -235,9 +235,9 @@ export class BasicCameraController extends EventManager {
     }
   }
 
-  /*
-  * Corrects camera offset to respect current bounds and anchor.
-  */
+  /**
+   * Corrects camera offset to respect current bounds and anchor.
+   */
   applyBounds(targetView: View) {
     this.camera.offset[0] = this.boundsHorizontalOffset(targetView);
     this.camera.offset[1] = this.boundsVerticalOffset(targetView);
@@ -256,9 +256,8 @@ export class BasicCameraController extends EventManager {
       this.bounds.screenPadding.right -
       targetView.screenBounds.width;
 
-    /* if the worldBounds are smaller than the screenBounds,
-     we offset according to the anchoring */
-
+    // If the worldBounds are smaller than the screenBounds,
+    // We offset according to the anchoring
     if (widthDifference < 0) {
       return this.anchoredByBoundsHorizontal(targetView);
     }
@@ -287,8 +286,8 @@ export class BasicCameraController extends EventManager {
       this.bounds.screenPadding.bottom -
       targetView.screenBounds.height;
 
-    /* if the viewBounds are larger than the screenBounds,
-     we offset according to the anchoring */
+    // If the viewBounds are larger than the screenBounds,
+    // We offset according to the anchoring
     if (heightDifference < 0) {
       return this.anchoredByBoundsVertical(targetView);
     }
@@ -304,9 +303,9 @@ export class BasicCameraController extends EventManager {
     return this.camera.offset[1];
   }
 
-  /*
-  * Calculation for adhering to an anchor - x-axis offset only.
-  */
+  /**
+   * Calculation for adhering to an anchor - x-axis offset only.
+   */
   anchoredByBoundsHorizontal(targetView: View) {
     switch (this.bounds.anchor) {
       case CameraBoundsAnchor.TOP_LEFT:
@@ -328,9 +327,9 @@ export class BasicCameraController extends EventManager {
     }
   }
 
-  /*
-  * Calculation for adhering to an anchor - y-axis offset only.
-  */
+  /**
+   * Calculation for adhering to an anchor - y-axis offset only.
+   */
   anchoredByBoundsVertical(targetView: View) {
     switch (this.bounds.anchor) {
       case CameraBoundsAnchor.TOP_LEFT:

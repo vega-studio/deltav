@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.7.0
+
+* `(ADDED)` Camera Bounds now supports bounding scale ranges
+* `(FIXED)` Camera Bounds was not honoring the view id injected into the bounds settings.
+
 ## 1.6.0
 
 * `(ADDED)` View bounds available for the BasicCameraController

@@ -1,4 +1,6 @@
 import * as Three from 'three';
+import { ImageInstance } from '../base-layers/images';
+import { LabelInstance } from '../base-layers/labels';
 import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
 import { injectFragments } from '../shaders/util/attribute-generation';
@@ -173,6 +175,10 @@ export class LayerSurface {
     this.mouseManager.destroy();
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
+
+    // TODO: Instances should be implementing destroy for these clean ups.
+    LabelInstance.destroy();
+    ImageInstance.destroy();
   }
 
   /**

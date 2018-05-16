@@ -164,8 +164,15 @@ export class LayerSurface {
     return layer;
   }
 
+  /**
+   * Free all resources consumed by this surface that gets applied to the GPU.
+   */
   destroy() {
+    this.layers.forEach(layer => layer.destroy());
+    this.resourceManager.destroy();
     this.mouseManager.destroy();
+    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
+    this.renderer.dispose();
   }
 
   /**

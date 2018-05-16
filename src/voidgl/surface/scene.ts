@@ -64,6 +64,13 @@ export class Scene extends IdentifyByKey {
   }
 
   /**
+   * Release any resources this may be hanging onto
+   */
+  destroy() {
+    this.container = null;
+  }
+
+  /**
    * Removes a layer from the scene. No resort is needed as remove operations
    * do not adjust the sorting order.
    */

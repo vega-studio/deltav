@@ -104,6 +104,16 @@ export class InstanceUniformManager<T extends Instance> {
   }
 
   /**
+   * Free all resources this manager may be holding onto
+   */
+  destroy() {
+    this.buffers.forEach(buffer => {
+      buffer.geometry.dispose();
+      buffer.material.dispose();
+    });
+  }
+
+  /**
    * This retireves the uniforms associated with an instance, or returns nothing
    * if the instance has not been associated yet.
    */

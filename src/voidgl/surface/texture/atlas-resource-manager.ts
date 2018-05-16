@@ -96,6 +96,13 @@ export class AtlasResourceManager {
   }
 
   /**
+   * Free ALL resources managed under this resource manager
+   */
+  destroy() {
+    this.atlasManager.destroy();
+  }
+
+  /**
    * This retrieves the actual atlas texture that should be applied to a uniform's
    * value.
    */

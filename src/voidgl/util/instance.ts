@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable } from '../instance-provider';
 import { Identifiable } from '../types';
 
 export interface IInstanceOptions {

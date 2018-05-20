@@ -1,4 +1,4 @@
-import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer } from '../../src';
+import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, EventManager, IInstanceProvider, InstanceProvider, LayerInitializer } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BoxOfCircles extends BaseExample {
@@ -32,7 +32,7 @@ export class BoxOfCircles extends BaseExample {
     return this.manager;
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,
       key: 'box-of-circles',
@@ -40,8 +40,8 @@ export class BoxOfCircles extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): IInstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
 
     for (let i = 0; i < 25; ++i) {
       for (let k = 0; k < 25; ++k) {
@@ -53,7 +53,7 @@ export class BoxOfCircles extends BaseExample {
           y: k * 10,
         });
 
-        circleProvider.instances.push(circle);
+        circleProvider.add(circle);
       }
     }
 

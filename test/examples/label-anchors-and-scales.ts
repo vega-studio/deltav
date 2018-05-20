@@ -1,8 +1,8 @@
-import { AnchorType, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import { AnchorType, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelAnchorsAndScales extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -11,12 +11,12 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
 
     let count = 1;
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleLeft,
@@ -57,9 +57,9 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     // Left Middle left
-    provider.instances.push(label);
+    provider.add(label);
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleLeft,
@@ -79,7 +79,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       y: count++ * 20,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleLeft,
@@ -123,7 +123,7 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -146,7 +146,7 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -169,7 +169,7 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -192,7 +192,7 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     // Test MAX WIDTH
     label = new LabelInstance({
@@ -217,7 +217,7 @@ export class LabelAnchorsAndScales extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     return provider;
   }

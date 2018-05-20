@@ -1,4 +1,4 @@
-import { createLayer, DataProvider, ImageInstance, ImageLayer, LayerInitializer, ScaleType } from '../../src';
+import { createLayer, ImageInstance, ImageLayer, InstanceProvider, LayerInitializer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 const iconData = require('./images/leaf.png');
@@ -6,7 +6,7 @@ const icon = new Image();
 icon.src = iconData;
 
 export class Images extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<ImageInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<ImageInstance>): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas,
       data: provider,
@@ -15,8 +15,8 @@ export class Images extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<ImageInstance> {
-    const imageProvider = new DataProvider<ImageInstance>([]);
+  makeProvider(): InstanceProvider<ImageInstance> {
+    const imageProvider = new InstanceProvider<ImageInstance>();
 
     for (let i = 0; i < 25; ++i) {
       for (let k = 0; k < 25; ++k) {
@@ -33,7 +33,7 @@ export class Images extends BaseExample {
         image.x = i * image.width;
         image.y = k * image.height;
 
-        imageProvider.instances.push(image);
+        imageProvider.add(image);
       }
     }
 

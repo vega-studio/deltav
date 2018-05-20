@@ -1,4 +1,4 @@
-import { computed, observable } from 'mobx';
+import { observable } from '../../instance-provider';
 import {
   Circle,
 } from '../../primitives';
@@ -35,17 +35,14 @@ export class RingInstance extends Instance implements Circle {
     this.y = options.y;
   }
 
-  @computed
   get width() {
     return this.radius * 2;
   }
 
-  @computed
   get height() {
     return this.radius * 2;
   }
 
-  @computed
   get innerRadius() {
     return this.radius - this.thickness;
   }

@@ -1,4 +1,4 @@
-import { computed, observable } from 'mobx';
+import { observable } from '../../instance-provider';
 import { Label } from '../../primitives/label';
 import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
 import { IInstanceOptions, Instance } from '../../util/instance';
@@ -312,7 +312,6 @@ export class LabelInstance extends Instance implements Label {
     }
   }
 
-  @computed
   get anchor() {
     return this._anchor;
   }

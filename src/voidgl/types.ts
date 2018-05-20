@@ -313,3 +313,13 @@ export interface ISinglePickingMetrics extends IPickingMetrics {
   // TODO
   type: PickType.SINGLE;
 }
+
+/**
+ * Diff types that an instance can go through. Used to help the system consume the diff
+ * and apply it to the GL framework.
+ */
+export enum InstanceDiffType {
+  CHANGE = 0,
+  INSERT = 1,
+  REMOVE = 2,
+}

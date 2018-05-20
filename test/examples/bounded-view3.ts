@@ -1,4 +1,4 @@
-import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, DataProvider, EventManager, ICameraBoundsOptions, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from '../../src';
+import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BoundedView3 extends BaseExample {
@@ -20,7 +20,7 @@ export class BoundedView3 extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
       key: 'bounded-view3',
@@ -29,8 +29,8 @@ export class BoundedView3 extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<RectangleInstance> {
-    const rectangleProvider = new DataProvider<RectangleInstance>([]);
+  makeProvider(): InstanceProvider<RectangleInstance> {
+    const rectangleProvider = new InstanceProvider<RectangleInstance>();
 
     const x = [0, 100, 200, 100, 0, 100, 200, 100];
     const y = [100, 0, 100, 200, 100, 0, 100, 200];
@@ -64,7 +64,7 @@ export class BoundedView3 extends BaseExample {
         y: y[i],
       });
 
-      rectangleProvider.instances.push(rectangle);
+      rectangleProvider.add(rectangle);
     }
     return rectangleProvider;
   }

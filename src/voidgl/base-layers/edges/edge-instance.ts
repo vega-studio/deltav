@@ -1,4 +1,4 @@
-import { computed, observable } from 'mobx';
+import { observable } from '../../instance-provider';
 import { IInstanceOptions, Instance } from '../../util/instance';
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
@@ -32,7 +32,6 @@ export class EdgeInstance extends Instance {
   @observable widthStart: number = 1.0;
   @observable widthEnd: number = 1.0;
 
-  @computed
   get length() {
     const delta = [
       this.end[0] - this.start[0],
@@ -45,7 +44,6 @@ export class EdgeInstance extends Instance {
   /**
    * Calculates the midpoint of the edge
    */
-  @computed
   get midpoint() {
     return 0;
   }
@@ -53,7 +51,6 @@ export class EdgeInstance extends Instance {
   /**
    * Calculates a perpendicular direction vector to the edge
    */
-  @computed
   get perpendicular(): [number, number] {
     const length = this.length;
 

@@ -1,4 +1,4 @@
-import { computed, observable } from 'mobx';
+import { observable } from '../../instance-provider';
 import { Image } from '../../primitives/image';
 import { ImageAtlasResource, ImageRasterizer } from '../../surface/texture';
 import { IInstanceOptions, Instance } from '../../util/instance';
@@ -242,7 +242,6 @@ export class ImageInstance extends Instance implements Image {
     }
   }
 
-  @computed
   get anchor() {
     return this._anchor;
   }

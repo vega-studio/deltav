@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import { CircleInstance, CircleLayer, createLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class MouseInteraction extends BaseExample {
@@ -58,7 +58,7 @@ export class MouseInteraction extends BaseExample {
     }
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,
       key: 'mouse-interaction',
@@ -71,8 +71,8 @@ export class MouseInteraction extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): InstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
 
     for (let i = 0; i < 40; ++i) {
       for (let k = 0; k < 30; ++k) {
@@ -84,7 +84,7 @@ export class MouseInteraction extends BaseExample {
           y: k * 10,
         });
 
-        circleProvider.instances.push(circle);
+        circleProvider.add(circle);
       }
     }
 

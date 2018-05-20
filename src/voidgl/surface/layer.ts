@@ -4,6 +4,7 @@ import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  InstanceDiffType,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
@@ -19,7 +20,7 @@ import {
   UniformIOValue,
   UniformSize,
 } from '../types';
-import { BoundsAccessor, DataProvider, DiffType, TrackedQuadTree } from '../util';
+import { BoundsAccessor, TrackedQuadTree } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
@@ -49,11 +50,21 @@ export interface IModelType {
 }
 
 /**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+  /** A list of changes to instances */
+  changeList: [T, InstanceDiffType][];
+  /** Resolves the changes as consumed */
+  resolve(): void;
+}
+
+/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
-  data: DataProvider<T>;
+  data: IInstanceProvider<T>;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -299,7 +310,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     };
   }
 
-  willUpdateInstances(changes: [T, DiffType]) {
+  willUpdateInstances(changes: [T, InstanceDiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }

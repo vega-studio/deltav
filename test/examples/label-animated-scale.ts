@@ -1,4 +1,4 @@
-import { AnchorType, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import { AnchorType, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelAnimatedScale extends BaseExample {
@@ -6,7 +6,7 @@ export class LabelAnimatedScale extends BaseExample {
   maxScale: number = 2;
   scaleStep: number = 0.05;
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -15,10 +15,9 @@ export class LabelAnimatedScale extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
-
-    provider.instances.push(new LabelInstance({
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
+    const label = provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.TopLeft,
@@ -40,13 +39,13 @@ export class LabelAnimatedScale extends BaseExample {
     }));
 
     setInterval(() => {
-      const newScale = provider.instances[0].scale + this.scaleStep;
+      const newScale = label.scale + this.scaleStep;
       if (newScale > this.maxScale) {
         this.scaleStep *= -1;
       } else if (newScale < this.minScale) {
         this.scaleStep *= -1;
       }
-      provider.instances[0].scale = newScale;
+      label.scale = newScale;
     }, 50);
 
     return provider;

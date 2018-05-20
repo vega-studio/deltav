@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { AnchorType, ChartCamera, createLayer, DataProvider, IPickInfo, LabelInstance, LabelLayer, LayerInitializer, PickType, ReferenceCamera, ScaleType } from '../../src';
+import { AnchorType, ChartCamera, createLayer, InstanceProvider, IPickInfo, LabelInstance, LabelLayer, LayerInitializer, PickType, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class MouseInteractionLabels extends BaseExample {
@@ -68,7 +68,7 @@ export class MouseInteractionLabels extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -81,8 +81,8 @@ export class MouseInteractionLabels extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
 
     const label = new LabelInstance({
       anchor: {
@@ -94,7 +94,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -105,9 +105,9 @@ export class MouseInteractionLabels extends BaseExample {
     });
 
     // Left Middle left
-    provider.instances.push(label);
+    provider.add(label);
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.TopMiddle,
@@ -117,7 +117,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -127,7 +127,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 20,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.TopRight,
@@ -137,7 +137,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -147,7 +147,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 20,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleLeft,
@@ -157,7 +157,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -167,7 +167,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 100,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.Middle,
@@ -177,7 +177,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -187,7 +187,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 100,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleRight,
@@ -197,7 +197,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -207,7 +207,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 100,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.BottomLeft,
@@ -217,7 +217,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -227,7 +227,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 180,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.BottomMiddle,
@@ -237,7 +237,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },
@@ -247,7 +247,7 @@ export class MouseInteractionLabels extends BaseExample {
       y: 180,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.BottomRight,
@@ -257,7 +257,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: 'normal',
       fontWeight: 'normal',
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0,
       },

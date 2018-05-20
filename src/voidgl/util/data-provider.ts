@@ -27,7 +27,7 @@ export class DataProvider<T extends Instance> {
   private instanceDisposers = new Map<T, Lambda>();
   private _instances: T[] | IObservableArray<T>;
 
-  private instanceChanges = new Map<T, InstanceDiffType>();
+  instanceChanges = new Map<T, InstanceDiffType>();
   private instanceById = new Map<string, T>();
 
   private isChanged = false;

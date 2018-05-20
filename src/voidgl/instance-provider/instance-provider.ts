@@ -7,7 +7,9 @@ import { ObservableManager, ObservableManagerMode } from './observable-manager';
  * to deliver updates to the framework.
  */
 export class InstanceProvider<T extends Instance> {
+  /** Stores the disposers that are called when the instance is no longer listened to */
   private cleanObservation = new Map<T, Function[]>();
+  /** This stores the changes to the instances themselves */
   private instanceChanges = new Map<T, InstanceDiffType>();
 
   get changeList(): [T, InstanceDiffType][] {
@@ -19,6 +21,11 @@ export class InstanceProvider<T extends Instance> {
    * the framework.
    */
   add(instance: T) {
+    // No need to duplicate the addition
+    if (this.cleanObservation.get(instance)) {
+      return instance;
+    }
+
     // Set the observable manager mode to gather observables
     ObservableManager.mode = ObservableManagerMode.GATHER_OBSERVABLES;
     // Set this as the current observer so registrations are made
@@ -56,6 +63,18 @@ export class InstanceProvider<T extends Instance> {
     for (const instance of Array.from(this.cleanObservation.keys())) {
       this.remove(instance);
     }
+  }
+
+  /**
+   * Clear all resources held by this provider. It IS valid to lose reference to all instances
+   * and to this object, which would effectively cause this object to get GC'ed. But if you
+   * desire to hang onto the instance objects, then this should be called.
+   */
+  destroy() {
+    const toRemove = Array.from(this.cleanObservation.keys());
+    toRemove.forEach(instance => this.remove(instance));
+    this.cleanObservation.clear();
+    this.instanceChanges.clear();
   }
 
   /**

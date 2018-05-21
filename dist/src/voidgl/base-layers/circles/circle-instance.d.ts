@@ -8,10 +8,10 @@ export interface ICircleInstanceOptions extends IInstanceOptions, Circle {
 }
 export declare class CircleInstance extends Instance implements Circle {
     color: [number, number, number, number];
+    depth: number;
     radius: number;
     x: number;
     y: number;
-    depth: number;
     constructor(options: ICircleInstanceOptions);
     readonly width: number;
     readonly height: number;

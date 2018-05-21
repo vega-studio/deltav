@@ -1,10 +1,6 @@
 import { IObservableArray } from 'mobx';
+import { InstanceDiffType } from '../types';
 import { Instance } from './instance';
-export declare enum DiffType {
-    CHANGE = 0,
-    INSERT = 1,
-    REMOVE = 2,
-}
 /**
  * This is a generic DataProvider that provides instance data to a layer. It monitors
  * changes to a list of instance items and records those changes for consumption by
@@ -17,12 +13,12 @@ export declare class DataProvider<T extends Instance> {
     private listDisposer;
     private instanceDisposers;
     private _instances;
-    private instanceChanges;
+    instanceChanges: Map<T, InstanceDiffType>;
     private instanceById;
     private isChanged;
     private _changeList;
     readonly instances: IObservableArray<T> | T[];
-    readonly changeList: [T, DiffType][];
+    readonly changeList: [T, InstanceDiffType][];
     constructor(data: T[]);
     /**
      * Clears out all disposers and items in the dataset

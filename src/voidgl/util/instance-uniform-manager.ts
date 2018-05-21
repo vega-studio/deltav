@@ -64,7 +64,7 @@ export class InstanceUniformManager<T extends Instance> {
   private availableClusters: IUniformInstanceCluster[] = [];
 
   /** A lookup of an instance to a cluster of uniforms associated with it */
-  private instanceToCluster = new Map<T, IUniformInstanceCluster>();
+  private instanceToCluster = new Map<number, IUniformInstanceCluster>();
   /** A map of a cluster of uniforms to the buffer it comes from */
   private clusterToBuffer = new Map<IUniformInstanceCluster, InstanceUniformBuffer>();
 
@@ -90,10 +90,10 @@ export class InstanceUniformManager<T extends Instance> {
       this.makeNewBuffer();
     }
 
-    const cluster = this.availableClusters.shift();
+    const cluster = this.availableClusters.pop();
 
     if (cluster) {
-      this.instanceToCluster.set(instance, cluster);
+      this.instanceToCluster.set(instance.uid, cluster);
     }
 
     else {
@@ -118,7 +118,7 @@ export class InstanceUniformManager<T extends Instance> {
    * if the instance has not been associated yet.
    */
   getUniforms(instance: T) {
-    return this.instanceToCluster.get(instance);
+    return this.instanceToCluster.get(instance.uid);
   }
 
   /**
@@ -126,13 +126,13 @@ export class InstanceUniformManager<T extends Instance> {
    * in the buffer no longer drawable.
    */
   remove(instance: T) {
-    const cluster = this.instanceToCluster.get(instance);
+    const cluster = this.instanceToCluster.get(instance.uid);
 
     // If the instance is associated with a cluster, we can add the cluster back to being available
     // For another instance.
     if (cluster) {
-      this.instanceToCluster.delete(instance);
-      this.availableClusters.unshift(cluster);
+      this.instanceToCluster.delete(instance.uid);
+      this.availableClusters.push(cluster);
     }
 
     return cluster;

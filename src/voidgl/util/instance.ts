@@ -1,14 +1,18 @@
 import { observable } from '../instance-provider';
 import { Identifiable } from '../types';
 
+let instanceUID = 0;
+
 export interface IInstanceOptions {
   /** The instance can be declared with an initial active state */
   active?: boolean;
   /** An instance must be declared with an identifier */
-  id: string;
+  id?: string;
 }
 
 export class Instance implements Identifiable {
+  /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
+  private _uid = instanceUID++;
   /** Internal, non-changeable id */
   private _id: string;
   /** This indicates when the instance is active / rendering */
@@ -24,6 +28,10 @@ export class Instance implements Identifiable {
 
   get id() {
     return this._id;
+  }
+
+  get uid() {
+    return this._uid;
   }
 
   constructor(options: IInstanceOptions) {

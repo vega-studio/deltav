@@ -1,6 +1,9 @@
-import { BasicCameraController, ChartCamera, createLayer, EventManager, IInstanceProvider, Instance, LayerInitializer, RingLayer } from '../../src';
+import { BasicCameraController, ChartCamera, createLayer, EventManager, IInstanceProvider, Instance, LayerInitializer, LayerSurface, RingLayer } from '../../src';
 
 export abstract class BaseExample {
+  surface: LayerSurface;
+  view: string;
+
   keyEvent(e: KeyboardEvent, isDown: boolean) {
     // Not required key event handler
   }

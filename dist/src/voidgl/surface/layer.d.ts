@@ -1,6 +1,6 @@
 import * as Three from 'three';
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
-import { BoundsAccessor, DataProvider, DiffType } from '../util';
+import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
+import { BoundsAccessor } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
@@ -26,11 +26,20 @@ export interface IModelType {
     modelType: IModelConstructable;
 }
 /**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+    /** A list of changes to instances */
+    changeList: [T, InstanceDiffType][];
+    /** Resolves the changes as consumed */
+    resolve(): void;
+}
+/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     /** This is the data provider where the instancing data is injected and modified. */
-    data: DataProvider<T>;
+    data: IInstanceProvider<T>;
     /**
      * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
      * the value is not NONE.
@@ -159,7 +168,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
      * have better documentation when typing out the elements.
      */
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
-    willUpdateInstances(changes: [T, DiffType]): void;
+    willUpdateInstances(changes: [T, InstanceDiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
     didUpdate(): void;
 }

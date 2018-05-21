@@ -295,3 +295,12 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
 export interface ISinglePickingMetrics extends IPickingMetrics {
     type: PickType.SINGLE;
 }
+/**
+ * Diff types that an instance can go through. Used to help the system consume the diff
+ * and apply it to the GL framework.
+ */
+export declare enum InstanceDiffType {
+    CHANGE = 0,
+    INSERT = 1,
+    REMOVE = 2,
+}

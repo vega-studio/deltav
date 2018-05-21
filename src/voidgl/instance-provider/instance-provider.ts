@@ -2,17 +2,24 @@ import { InstanceDiffType } from '../types';
 import { Instance } from '../util/instance';
 import { ObservableManager, ObservableManagerMode } from './observable-manager';
 
+function isObservable(val: any): val is { $$register: null } {
+  return val.$$register;
+}
+
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.
  */
 export class InstanceProvider<T extends Instance> {
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation = new Map<T, Function[]>();
+  private cleanObservation = new Map<T, Function>();
   /** This stores the changes to the instances themselves */
   private instanceChanges = new Map<T, InstanceDiffType>();
+  /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
+  private allowChanges = true;
 
   get changeList(): [T, InstanceDiffType][] {
+    this.allowChanges = false;
     return Array.from(this.instanceChanges.entries());
   }
 
@@ -26,32 +33,25 @@ export class InstanceProvider<T extends Instance> {
       return instance;
     }
 
-    // Set the observable manager mode to gather observables
-    ObservableManager.mode = ObservableManagerMode.GATHER_OBSERVABLES;
-    // Set this as the current observer so registrations are made
-    ObservableManager.observer = this;
+    if (this.allowChanges) {
+      // Set the observable manager mode to gather observables
+      ObservableManager.mode = ObservableManagerMode.GATHER_OBSERVABLES;
+      // Set this as the current observer so registrations are made
+      ObservableManager.observer = this;
+      // This is the disposer
+      let disposer: Function;
 
-    const disposers: Function[] = [];
-
-    // Activate getters in the properties of the instance until the observable disposer
-    // Is populated
-    for (const key in instance) {
-      // Trigger getter of the property
-      instance[key];
-
-      // See if triggering the getter populates the disposer in the manager
-      if (ObservableManager.observableDisposer) {
-        disposers.push(ObservableManager.observableDisposer);
-        delete ObservableManager.observableDisposer;
+      if (isObservable(instance)) {
+        disposer = instance.$$register;
       }
-    }
 
-    // Store the disposers so we can clean up the observable properties
-    this.cleanObservation.set(instance, disposers);
-    // Indicate we have a new instance
-    this.instanceChanges.set(instance, InstanceDiffType.INSERT);
-    // Change the mode back to broadcasting so we don't keep trying to record observables
-    ObservableManager.mode = ObservableManagerMode.BROADCAST;
+      // Store the disposers so we can clean up the observable properties
+      this.cleanObservation.set(instance, disposer);
+      // Indicate we have a new instance
+      this.instanceChanges.set(instance, InstanceDiffType.INSERT);
+      // Change the mode back to broadcasting so we don't keep trying to record observables
+      ObservableManager.mode = ObservableManagerMode.BROADCAST;
+    }
 
     return instance;
   }
@@ -81,8 +81,10 @@ export class InstanceProvider<T extends Instance> {
    * THis is called from observables to indicate it's parent has been updated
    */
   instanceUpdated(instance: T) {
-    // Flag the instance as having a property changed
-    this.instanceChanges.set(instance, InstanceDiffType.CHANGE);
+    if (this.allowChanges) {
+      // Flag the instance as having a property changed
+      this.instanceChanges.set(instance, InstanceDiffType.CHANGE);
+    }
   }
 
   /**
@@ -90,15 +92,10 @@ export class InstanceProvider<T extends Instance> {
    * for the instance.
    */
   remove(instance: T) {
-    const disposers = this.cleanObservation.get(instance);
-    this.cleanObservation.delete(instance);
-
-    if (disposers) {
-      for (let i = 0, end = disposers.length; i < end; ++i) {
-        if (disposers[i](this)) {
-          this.instanceChanges.set(instance, InstanceDiffType.REMOVE);
-        }
-      }
+    if (this.allowChanges) {
+      (instance as any).$$dispose;
+      this.cleanObservation.delete(instance);
+      this.instanceChanges.set(instance, InstanceDiffType.REMOVE);
     }
 
     return false;
@@ -108,6 +105,7 @@ export class InstanceProvider<T extends Instance> {
    * Flagged all changes were dealt with
    */
   resolve() {
+    this.allowChanges = true;
     this.instanceChanges.clear();
   }
 }

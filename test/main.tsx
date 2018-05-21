@@ -5,6 +5,7 @@ import { LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
+import { AnimateDeleteAdd } from './examples/animate-delete-add';
 import { BaseExample } from './examples/base-example';
 import { BendyEdge } from './examples/bendy-edge';
 import { BoundedView } from './examples/bounded-view';
@@ -59,6 +60,7 @@ const tests: BaseExample[] = [
   new BoundedView(),
   new BoundedView2(),
   new BoundedView3(),
+  new AnimateDeleteAdd(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -148,8 +150,11 @@ export class Main extends Component<any, IMainState> {
 
       // Generate the Layers for the tests now that the scenes are established
       tests.forEach((test, i) => {
+        const sceneName = this.allScenes[i].name;
+        test.surface = this.surface;
+        test.view = sceneName;
         const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
+        const layer = test.makeLayer(sceneName, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
         layers.push(layer);
       });
 

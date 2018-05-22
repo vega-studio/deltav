@@ -7,6 +7,8 @@ import { CircleInstance } from './circle-instance';
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
+  /** Flags this layer to draw  */
+  disableDepthTest?: boolean;
 }
 
 export interface ICircleLayerState {
@@ -119,6 +121,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
     return {
       blending: Three.CustomBlending,
       blendSrc: Three.OneFactor,
+      depthTest: !this.props.disableDepthTest,
       premultipliedAlpha: true,
       transparent: true,
     };

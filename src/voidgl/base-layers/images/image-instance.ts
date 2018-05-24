@@ -106,6 +106,14 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, image: ImageInstance) =
  * with the modifications. This has to deal with performance regarding rasterizing the image
  */
 export class ImageInstance extends Instance implements Image {
+  /**
+   * TODO: We should be implementing the destroy on ImageInstances to clean this up
+   * Frees up module scoped data.
+   */
+  static destroy() {
+    rasterizationLookUp.clear();
+  }
+
   /** This is the rendered color of the image */
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the lable) */

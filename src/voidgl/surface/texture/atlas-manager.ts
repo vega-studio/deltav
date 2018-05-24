@@ -81,6 +81,13 @@ export class AtlasManager {
   }
 
   /**
+   * Free ALL resources under this manager
+   */
+  destroy() {
+    this.allAtlas.forEach(value => value.destroy());
+  }
+
+  /**
    * Disposes of the resources the atlas held and makes the atlas invalid for use
    *
    * @param atlasName

@@ -66,6 +66,10 @@ export declare class InstanceUniformManager<T extends Instance> {
      */
     add(instance: T): IUniformInstanceCluster;
     /**
+     * Free all resources this manager may be holding onto
+     */
+    destroy(): void;
+    /**
      * This retireves the uniforms associated with an instance, or returns nothing
      * if the instance has not been associated yet.
      */

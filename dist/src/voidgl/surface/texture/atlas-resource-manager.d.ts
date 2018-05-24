@@ -31,6 +31,10 @@ export declare class AtlasResourceManager {
      */
     dequeueRequests(): Promise<boolean>;
     /**
+     * Free ALL resources managed under this resource manager
+     */
+    destroy(): void;
+    /**
      * This retrieves the actual atlas texture that should be applied to a uniform's
      * value.
      */

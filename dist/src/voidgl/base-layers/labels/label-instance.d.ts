@@ -57,6 +57,11 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
  * with the modifications. This has to deal with performance regarding rasterizing the label
  */
 export declare class LabelInstance extends Instance implements Label {
+    /**
+     * TODO: We should be implementing the destroy on LabelInstances to clean this up
+     * Frees up module scoped data.
+     */
+    static destroy(): void;
     /** This is the rendered color of the label */
     color: [number, number, number, number];
     /** Depth sorting of the label (or the z value of the label) */

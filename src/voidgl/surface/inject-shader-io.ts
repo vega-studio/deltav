@@ -6,7 +6,19 @@
  */
 
 import { IShaderInitialization, Layer } from '../surface/layer';
-import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
+import {
+  IInstanceAttribute,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IUniform,
+  IUniformInternal,
+  IVertexAttribute,
+  IVertexAttributeInternal,
+  PickType,
+  ShaderInjectionTarget,
+  UniformSize,
+  VertexAttributeSize,
+} from '../types';
 import { Instance } from '../util/instance';
 
 function toVertexAttributeInternal(attribute: IVertexAttribute): IVertexAttributeInternal {
@@ -55,6 +67,25 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
   // A new block after it
   if (!found) {
     found = [maxBlock + 1, 0];
+  }
+
+  return found;
+}
+
+/**
+ * This finds a uniform block that is completely empty
+ */
+function findEmpty4Block(attributes: IInstanceAttribute<any>[]): number {
+  const usedBlocks = new Map<number, boolean>();
+
+  attributes.forEach(instanceAttribute => {
+    usedBlocks.set(instanceAttribute.block, true);
+  });
+
+  let found = 0;
+
+  while (usedBlocks.get(found)) {
+    found++;
   }
 
   return found;
@@ -173,21 +204,57 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
   // With the _active attribute.
   const fillBlock = findEmptyBlock(shaderIO.instanceAttributes);
-  const addedInstanceAttributes: IInstanceAttribute<T>[] = [
-    // This is injected so the system can control when an instance should not be rendered.
-    // This allows for holes to be in the buffer without having to correct them immediately
-    {
-      block: fillBlock[0],
-      blockIndex: fillBlock[1],
-      name: '_active',
-      size: InstanceAttributeSize.ONE,
-      update: (o) => [o.active ? 1 : 0],
-    },
-  ];
+  // This is injected so the system can control when an instance should not be rendered.
+  // This allows for holes to be in the buffer without having to correct them immediately
+  const addedInstanceAttributes: IInstanceAttribute<T>[] = [{
+    block: fillBlock[0],
+    blockIndex: fillBlock[1],
+    name: '_active',
+    size: InstanceAttributeSize.ONE,
+    update: (o) => [o.active ? 1 : 0],
+  }];
+
+  // If the layer is designed for single picking, then we add a Uniform that controls
+  // When picking is enabled. We also add in an instance attribute that defines the color used for
+  // Representing an instance
+  if (layer.picking.type === PickType.SINGLE) {
+    addedUniforms.push({
+      name: 'pickingActive',
+      shaderInjection: ShaderInjectionTarget.ALL,
+      size: UniformSize.ONE,
+      update: () => [layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0],
+    });
+
+    // Find a compltely empty block within all instance attributes provided and injected
+    const emptyFillBlock = findEmpty4Block(
+      shaderIO.instanceAttributes
+      .concat(addedInstanceAttributes),
+    );
+    addedInstanceAttributes.push({
+      block: emptyFillBlock,
+      blockIndex: InstanceBlockIndex.ONE,
+      name: '_pickingColor',
+      size: InstanceAttributeSize.FOUR,
+      update: (o) => {
+        // We start from white and move down so the colors are more visible
+        // For debugging
+        const color = 0xFFFFFF - o.uid;
+
+        // Do bit maths do get float components out of the int color
+        return [
+          (color >> 16) / 255.0,
+          ((color & 0x00FF00) >> 8) / 255.0,
+          (color & 0x0000FF) / 255.0,
+          1,
+        ];
+      },
+    });
+  }
 
   // Set the active attribute to the layer for quick reference
   layer.activeAttribute = addedInstanceAttributes[0];
 
+  // These are the additional Vertex Attributes injected into the shader IO stream
   const addedVertexAttributes: IVertexAttribute[] = [
     // We add an inherent instance attribute to our vertices so they can determine the instancing
     // Data to retrieve.

@@ -2,6 +2,7 @@ import * as Three from 'three';
 import {
   IInstanceAttribute,
   IMaterialOptions,
+  INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
   InstanceDiffType,
@@ -134,7 +135,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: AtlasResourceManager;
   /** This is all of the uniforms generated for the layer */
@@ -168,9 +169,25 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       const pickingMethods = this.getInstancePickingMethods();
 
       this.picking = {
+        currentPickMode: PickType.NONE,
         hitTest: pickingMethods.hitTest,
         quadTree: new TrackedQuadTree<T>(0, 1, 0, 1, pickingMethods.boundsAccessor),
         type: PickType.ALL,
+      };
+    }
+
+    else if (picking === PickType.SINGLE) {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.SINGLE,
+        uidToInstance: new Map<number, T>(),
+      };
+    }
+
+    else {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.NONE,
       };
     }
 

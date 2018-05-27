@@ -2,7 +2,7 @@ import * as Three from 'three';
 import { generateLayerModel } from '../surface/generate-layer-model';
 import { Layer } from '../surface/layer';
 import { Scene } from '../surface/scene';
-import { IInstanceAttribute } from '../types';
+import { IInstanceAttribute, PickType } from '../types';
 import { Instance } from './instance';
 import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
 
@@ -30,6 +30,8 @@ export interface InstanceUniformBuffer {
   material: Three.ShaderMaterial;
   /** The unique model generated for the buffer: Used to allow the buffer to be rendered by adding to a scene */
   model: Three.Object3D;
+  /** Threejs can not have duplicate objects across Scenes */
+  pickModel?: Three.Object3D;
 }
 
 /**
@@ -144,6 +146,7 @@ export class InstanceUniformManager<T extends Instance> {
   removeFromScene() {
     this.buffers.forEach((buffer, index) => {
       this.scene.container.remove(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.remove(buffer.pickModel);
     });
 
     this.scene = null;
@@ -155,6 +158,7 @@ export class InstanceUniformManager<T extends Instance> {
   setScene(scene: Scene) {
     this.buffers.forEach((buffer, index) => {
       this.scene.container.add(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     });
 
     this.scene = scene;
@@ -194,6 +198,7 @@ export class InstanceUniformManager<T extends Instance> {
       lastInstance: 0,
       material: newMaterial,
       model: newModel,
+      pickModel: this.layer.picking.type === PickType.SINGLE && newModel.clone(),
     };
 
     this.buffers.push(buffer);
@@ -234,6 +239,7 @@ export class InstanceUniformManager<T extends Instance> {
     // Each new buffer equates to one draw call.
     if (this.scene) {
       this.scene.container.add(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     }
   }
 }

@@ -49,7 +49,7 @@ export class MouseInteractionEdges extends BaseExample {
       key: 'mouse-interaction-lines',
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scene: scene,
       type: EdgeType.BEZIER2,
     });

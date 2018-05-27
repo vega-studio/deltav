@@ -2,6 +2,7 @@ import { IPoint } from '../../primitives/point';
 import { IProjection, PickType } from '../../types';
 import { EventManager } from '../event-manager';
 import { Layer } from '../layer';
+import { LayerSurface } from '../layer-surface';
 import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manager';
 
 /**
@@ -13,14 +14,20 @@ import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manag
  * the views so that the layers can translate the events to gestures.
  */
 export class LayerMouseEvents extends EventManager {
-  /** This is the surface this manager is aiding with broadcasting events to layers */
-  sceneViews: SceneView[];
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
   isOver = new Map<SceneView, boolean>();
+  /** This is the surface this manager is aiding with broadcasting events to layers */
+  sceneViews: SceneView[];
+  /**
+   * This is the surface this LayerMouseEvent Controller is operating on behalf of. We use this to trigger,
+   * pre-layer processing items, such as color pick narrowing prior to the Layers receiving the event.
+   */
+  surface: LayerSurface;
 
-  constructor(sceneViews: SceneView[]) {
+  constructor(surface: LayerSurface) {
     super();
-    this.sceneViews = sceneViews;
+    this.surface = surface;
+    this.sceneViews = surface.sceneViews;
   }
 
   getSceneViewsUnderMouse(e: IMouseInteraction) {
@@ -102,6 +109,13 @@ export class LayerMouseEvents extends EventManager {
   }
 
   handleMouseMove(e: IMouseInteraction) {
+    if (this.surface) {
+      this.surface.updateColorPickRange(
+        [e.screen.mouse.x, e.screen.mouse.y],
+        e.viewsUnderMouse.map(v => v.view),
+      );
+    }
+
     // Get all of the scenes we have interacted with, and broadcast a move event for each
     const allSceneViews = this.handleInteraction(e, (layer, view, mouse) => layer.interactions.handleMouseMove(view, mouse));
     // Get a lookup of a view id to the mouse position in the view
@@ -147,7 +161,7 @@ export class LayerMouseEvents extends EventManager {
     const mouse = viewMouseByViewId.get(view.id);
 
     for (const layer of sceneView.scene.layers) {
-      if (layer.picking && layer.picking.type === PickType.ALL) {
+      if (layer.picking && layer.picking.type !== PickType.NONE) {
         callback(layer, view, mouse);
       }
     }

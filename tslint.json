@@ -29,7 +29,7 @@
     "array-type": [true, "array"],
     "arrow-return-shorthand": [true, "multiline"],
     "class-name": true,
-    "comment-format": [true, "check-space", "check-uppercase"],
+    "comment-format": [true, "check-space"],
     "encoding": true,
     "interface-name": [true, "always-prefix"],
     "jsdoc-format": true,

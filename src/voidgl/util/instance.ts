@@ -11,8 +11,10 @@ export interface IInstanceOptions {
 }
 
 export class Instance implements Identifiable {
+  static get newUID() { return (instanceUID = (++instanceUID) % 0xFFFFFF); }
+
   /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
-  private _uid = instanceUID++;
+  private _uid = Instance.newUID;
   /** Internal, non-changeable id */
   private _id: string;
   /** This indicates when the instance is active / rendering */

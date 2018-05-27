@@ -19,7 +19,7 @@ export abstract class BaseExample {
     return defaultCamera;
   }
 
-  makeLayer(scene: string, atlas: string, provider: IInstanceProvider<Instance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: IInstanceProvider<Instance>): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS
     return createLayer(RingLayer, {
       data: provider,

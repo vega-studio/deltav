@@ -2,6 +2,7 @@ import { IPoint } from '../primitives/point';
 import { DataBounds } from '../util/data-bounds';
 import { eventElementPosition, normalizeWheel } from '../util/mouse';
 import { QuadTree } from '../util/quad-tree';
+import { Vec2 } from '../util/vector';
 import { EventManager } from './event-manager';
 import { Scene } from './scene';
 import { View } from './view';
@@ -122,6 +123,8 @@ export class MouseEventManager {
   quadTree: QuadTree<DataBounds<SceneView>>;
   /** This is the current list of views being managed */
   views: SceneView[];
+  /** This stores the last mouse position recorded by this manager */
+  mouse: Vec2;
 
   /**
    * This flag is set when the system is waiting to render the elements to establish bounds.

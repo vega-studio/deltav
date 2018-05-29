@@ -25,6 +25,8 @@ export declare class Scene extends IdentifyByKey {
     static DEFAULT_SCENE_ID: string;
     /** This is the three scene which actually sets up the rendering objects */
     container: Three.Scene;
+    /** We make a picking container specifically for the cases where objects must be rendered for picking */
+    pickingContainer: Three.Scene;
     /** This is all of the layers tracked to the scene */
     layers: Layer<any, any, any>[];
     /** This indicates the sort is dirty for a set of layers */

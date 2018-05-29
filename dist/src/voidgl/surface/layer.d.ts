@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
+import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
 import { BoundsAccessor } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
@@ -103,7 +103,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> exte
     /** This is the mesh for the Threejs setup */
     model: Three.Object3D;
     /** This is all of the picking metrics kept for handling picking scenarios */
-    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     /** This is the system provided resource manager that lets a layer request Atlas resources */
     resource: AtlasResourceManager;
     /** This is all of the uniforms generated for the layer */

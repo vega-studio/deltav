@@ -6,6 +6,7 @@ export interface IInstanceOptions {
     id?: string;
 }
 export declare class Instance implements Identifiable {
+    static readonly newUID: number;
     /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
     private _uid;
     /** Internal, non-changeable id */

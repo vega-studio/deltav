@@ -296,7 +296,6 @@ export class LayerSurface {
             // Make our metrics for how much of the image we wish to analyze
             const pickWidth = 5;
             const pickHeight = 5;
-            const truePickHeight = pickHeight + pickHeight / 2;
             const numBytesPerColor = 4;
             const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 

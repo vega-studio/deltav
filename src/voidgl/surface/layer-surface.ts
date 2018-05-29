@@ -261,9 +261,12 @@ export class LayerSurface {
 
           // Only if the view is interacted with should we both with rendering
           if (view.id !== this.defaultSceneElements.view.id && views.indexOf(view) > -1) {
-
             // Picking uses a pixel ratio of 1
             view.pixelRatio = 1.0;
+            // Get the current flags for the view
+            const flags = view.clearFlags.slice(0);
+            // Set color rendering flasg
+            view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
 
             // We must perform any operations necessary to make the view camera fit the viewport
             // Correctly with the possibly adjusted pixel ratio
@@ -291,8 +294,9 @@ export class LayerSurface {
             this.drawSceneView(scene.pickingContainer, view, this.pickingRenderer, this.pickingTarget);
 
             // Make our metrics for how much of the image we wish to analyze
-            const pickWidth = 4;
-            const pickHeight = 4;
+            const pickWidth = 5;
+            const pickHeight = 5;
+            const truePickHeight = pickHeight + pickHeight / 2;
             const numBytesPerColor = 4;
             const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
@@ -300,7 +304,7 @@ export class LayerSurface {
             this.pickingRenderer.readRenderTargetPixels(
               this.pickingTarget,
               mouse[0] - view.screenBounds.x - pickWidth / 2,
-              view.screenBounds.height - (mouse[1] - view.screenBounds.y - pickHeight / 2),
+              view.screenBounds.height - (mouse[1] - view.screenBounds.y) - pickHeight / 2,
               pickWidth,
               pickHeight,
               out,
@@ -320,6 +324,8 @@ export class LayerSurface {
 
             // Return the pixel ratio back to the rendered ratio
             view.pixelRatio = this.pixelRatio;
+            // Return the view's clear flags
+            view.clearFlags = flags;
 
             // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
             // will work properly
@@ -378,16 +384,20 @@ export class LayerSurface {
     rendererSize.width *= pixelRatio;
     rendererSize.height *= pixelRatio;
     const background = view.background;
+    const context = renderer.getContext();
 
-    // Set the scissor rectangle.
-    this.context.enable(this.context.SCISSOR_TEST);
-    this.context.scissor(offset.x, rendererSize.height - offset.y - size.height, size.width, size.height);
-
-    // If a background is established, we should clear the background color
-    // Specified for this context
-    if (view.background) {
-      // Clear the rect of color and depth so the region is totally it's own
-      this.context.clearColor(background[0], background[1], background[2], background[3]);
+    // Something is up with threejs that does not allow us to set viewport x and y values. So for targets
+    // We simply size the target to the view size and render. Thus scissoring is not required
+    if (!target) {
+      // Set the scissor rectangle.
+      context.enable(context.SCISSOR_TEST);
+      context.scissor(offset.x, rendererSize.height - offset.y - size.height, size.width, size.height);
+      // If a background is established, we should clear the background color
+      // Specified for this context
+      if (view.background) {
+        // Clear the rect of color and depth so the region is totally it's own
+        context.clearColor(background[0], background[1], background[2], background[3]);
+      }
     }
 
     // Get the view's clearing preferences
@@ -408,16 +418,28 @@ export class LayerSurface {
 
       else {
         renderer.getContext().clear(
-          (view.clearFlags.indexOf(ClearFlags.COLOR) > -1 ? this.context.COLOR_BUFFER_BIT : 0x0) |
-          (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1 ? this.context.DEPTH_BUFFER_BIT : 0x0) |
-          (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1 ? this.context.STENCIL_BUFFER_BIT : 0x0),
+          (view.clearFlags.indexOf(ClearFlags.COLOR) > -1 ? context.COLOR_BUFFER_BIT : 0x0) |
+          (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1 ? context.DEPTH_BUFFER_BIT : 0x0) |
+          (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1 ? context.STENCIL_BUFFER_BIT : 0x0),
         );
       }
     }
 
     // Default clearing is depth and color
     else {
-      this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
+      // For targets, we must also perform clear operations
+      if (target) {
+        // TODO: This is frustrating. Right now we can't specify and set the viewport for a render target
+        // Possibly with Threejs going away we can actually be more explcit for the render area to a render target
+        // and not cause this overhead of resizing the render target for every picking pass
+        target.setSize(size.width, size.height);
+        renderer.setRenderTarget(target);
+        renderer.clear(true, true);
+      }
+
+      else {
+        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
+      }
     }
 
     // Make sure the viewport is set properly for the next render
@@ -527,6 +549,11 @@ export class LayerSurface {
       // Do not need this for picking
       preserveDrawingBuffer: true,
     });
+
+    // NOTE: Uncomment this plus remove this.pickingTarget from the drawSceneView of the color picking pass
+    // to view the colors rendered to the color picking buffer. This disables the interactions but helps
+    // debug what's going on with shaders etc
+    // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
 
     // We want clearing to be controlled via the layer
     this.renderer.autoClear = false;

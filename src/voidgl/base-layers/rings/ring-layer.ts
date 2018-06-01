@@ -132,9 +132,6 @@ export class RingLayer extends Layer<
 
   getMaterialOptions(): IMaterialOptions {
     return {
-      blending: Three.CustomBlending,
-      blendSrc: Three.OneFactor,
-      premultipliedAlpha: true,
       transparent: true,
     };
   }

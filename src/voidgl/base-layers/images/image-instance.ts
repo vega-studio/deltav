@@ -272,8 +272,4 @@ export class ImageInstance extends Instance implements Image {
     // Apply the anchor
     this._anchor = newAnchor;
   }
-
-  setSize(size: number) {
-
-  }
 }

@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { CircleInstance, createLayer, DataProvider, ImageInstance, ImageLayer, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
+import { createLayer, DataProvider, ImageInstance, ImageLayer, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 const iconData = require('./images/leaf.png');
@@ -7,10 +7,10 @@ const icon = new Image();
 icon.src = iconData;
 
 export class MouseInteractionImages extends BaseExample {
-  isOver = new Map<CircleInstance, anime.AnimeInstance>();
-  hasLeft = new Map<CircleInstance, anime.AnimeInstance>();
+  isOver = new Map<ImageInstance, anime.AnimeInstance>();
+  hasLeft = new Map<ImageInstance, anime.AnimeInstance>();
 
-  handleImageClick = (info: IPickInfo<CircleInstance>) => {
+  handleImageClick = (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
       // Anime doesn't seem to do internal array interpolation, so we target the color itself
       // And then apply the color property to the circle in the update ticks to register the deltas
@@ -18,21 +18,21 @@ export class MouseInteractionImages extends BaseExample {
         0: 0,
         1: 1,
         2: 0,
-        3: 1,
-        targets: image.color,
+        3: 0.1,
+        targets: image.tint,
         update: () => {
-          image.color = image.color;
+          image.tint = image.tint;
         },
       });
     }
   }
 
-  handleImageOver = (info: IPickInfo<CircleInstance>) => {
+  handleImageOver = (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
       if (!this.isOver.get(image)) {
         const animation = anime({
+          size: 50,
           targets: image,
-          x: 50,
         });
 
         this.isOver.set(image, animation);
@@ -40,7 +40,7 @@ export class MouseInteractionImages extends BaseExample {
     }
   }
 
-  handleImageOut = async(info: IPickInfo<CircleInstance>) => {
+  handleImageOut = async(info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
       const animation = this.isOver.get(image);
 
@@ -48,8 +48,8 @@ export class MouseInteractionImages extends BaseExample {
         this.isOver.delete(image);
 
         const leave = anime({
+          size: 25,
           targets: image,
-          x: 20,
         });
 
         leave.pause();
@@ -109,9 +109,7 @@ export class MouseInteractionImages extends BaseExample {
     }));
 
     provider.instances.forEach(image => {
-      const aspect = image.width / image.height;
-      image.width = 25 * aspect;
-      image.height = 25;
+      image.size = 25;
     });
 
     return provider;

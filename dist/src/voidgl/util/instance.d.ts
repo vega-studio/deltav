@@ -10,6 +10,11 @@ export declare class Instance implements Identifiable {
     private _id;
     /** This indicates when the instance is active / rendering */
     active: boolean;
+    /**
+     * The system will call this on the instance when it believes the instance may be
+     * harboring resources that are not released.
+     */
+    destroy(): void;
     readonly id: string;
     constructor(options: IInstanceOptions);
 }

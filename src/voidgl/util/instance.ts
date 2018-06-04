@@ -14,6 +14,14 @@ export class Instance implements Identifiable {
   /** This indicates when the instance is active / rendering */
   @observable active: boolean;
 
+  /**
+   * The system will call this on the instance when it believes the instance may be
+   * harboring resources that are not released.
+   */
+  destroy() {
+    // Generally a No-op
+  }
+
   get id() {
     return this._id;
   }

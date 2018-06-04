@@ -172,7 +172,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {
-    /** TODO: no-op for now */
+    this.uniformManager.destroy();
   }
 
   didUpdateProps() {

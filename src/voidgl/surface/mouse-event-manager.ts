@@ -414,5 +414,7 @@ export class MouseEventManager {
     this.quadTree = null;
     this.context.onmousedown = null;
     this.context.onmousemove = null;
+    this.context.onmouseleave = null;
+    this.context.onmousewheel = null;
   }
 }

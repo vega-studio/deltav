@@ -78,6 +78,8 @@ export class Main extends Component<any, IMainState> {
   surface: LayerSurface;
   /** This is all of the scenes that were initialized */
   allScenes: SceneInitializer[] = [];
+  /** Flagged to true when the surface shouldn't be auto generated */
+  preventAutoCreateSurface: boolean = false;
 
   state: IMainState = {
     size: {
@@ -99,7 +101,9 @@ export class Main extends Component<any, IMainState> {
   }
 
   componentDidUpdate() {
-    this.createSurface();
+    if (!this.preventAutoCreateSurface) {
+      this.createSurface();
+    }
   }
 
   async createSurface() {
@@ -191,6 +195,24 @@ export class Main extends Component<any, IMainState> {
     }
 
     this.forceUpdate();
+  }
+
+  handleToggleSurface = async() => {
+    if (this.surface) {
+      this.surface.destroy();
+      this.surface = null;
+      this.context.style.width = '';
+      this.context.style.height = '';
+      this.context.removeAttribute('width');
+      this.context.removeAttribute('height');
+      this.preventAutoCreateSurface = true;
+      this.sizeContext();
+    }
+
+    else {
+      await this.createSurface();
+      this.sizeContext();
+    }
   }
 
   makeSceneBlock(sceneBlockSize: number) {
@@ -285,6 +307,7 @@ export class Main extends Component<any, IMainState> {
 
     if (this.surface) {
       this.surface.render(layers);
+      this.surface.resize(size.width, size.height);
     }
 
     return (
@@ -297,6 +320,11 @@ export class Main extends Component<any, IMainState> {
               'Enable Monitor Density'
             }</div>
           }
+          <div className={'remove-button'} onClick={this.handleToggleSurface}>{
+            this.surface ?
+            'Destroy Surface' :
+            'Regen Surface'
+          }</div>
       </div>
     );
   }

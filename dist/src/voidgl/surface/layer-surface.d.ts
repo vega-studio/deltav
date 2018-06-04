@@ -115,6 +115,9 @@ export declare class LayerSurface {
      * as well as additional helper injections to aid in instancing and shader i/o.
      */
     addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V>;
+    /**
+     * Free all resources consumed by this surface that gets applied to the GPU.
+     */
     destroy(): void;
     /**
      * This is the draw loop that must be called per frame for updates to take effect and display.

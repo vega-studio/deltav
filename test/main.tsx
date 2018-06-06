@@ -8,14 +8,13 @@ import { ChartCamera } from '../src/voidgl/util/chart-camera';
 import { BaseExample } from './examples/base-example';
 import { BendyEdge } from './examples/bendy-edge';
 import { BoundedView } from './examples/bounded-view';
-import { BoundedView2 } from './examples/bounded-view2';
-import { BoundedView3 } from './examples/bounded-view3';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { LabelAnimatedScale } from './examples/label-animated-scale';
+import { LabelSizingCorrected } from './examples/label-sizing-corrected';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
 import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
@@ -55,10 +54,9 @@ const tests: BaseExample[] = [
   new MouseInteractionImages(),
   new MouseInteractionEdges(),
   new LabelAnimatedScale(),
+  new LabelSizingCorrected(),
   new MouseInteractionRectangle(),
   new BoundedView(),
-  new BoundedView2(),
-  new BoundedView3(),
 ];
 
 /** These are the layers for the tests that are generated */

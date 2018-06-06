@@ -9,7 +9,7 @@ void main() {
 
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
-  edgeSharpness = mix(0.8, 0.01, min((size * 8.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
+  edgeSharpness = mix(0.8, 0.01, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
 
   // Center within clip space

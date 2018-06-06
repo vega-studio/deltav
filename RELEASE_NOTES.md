@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.8.2
+
+* `(FIXED)` Rings were not honoring scaleFactor
+
 ## 1.8.1
 
 * `(FIXED)` Labels now can have a scale and honor their scale mode properly now

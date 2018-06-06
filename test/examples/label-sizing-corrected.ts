@@ -1,4 +1,4 @@
-import { ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
+import { AnchorType, ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelSizingCorrected extends BaseExample {
@@ -14,7 +14,6 @@ export class LabelSizingCorrected extends BaseExample {
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
     return new ReferenceCamera({
       base: defaultCamera,
-      offsetFilter: (offset: [number, number, number]) => [0, 0, 0],
       scaleFilter: (scale: [number, number, number]) => [scale[0], scale[1], 1],
     });
   }
@@ -23,6 +22,10 @@ export class LabelSizingCorrected extends BaseExample {
     const provider = new DataProvider<LabelInstance>([]);
 
     provider.instances.push(new LabelInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.Middle,
+      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
       fontSize: 18,
@@ -40,6 +43,10 @@ export class LabelSizingCorrected extends BaseExample {
     }));
 
     provider.instances.push(new LabelInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.Middle,
+      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
       fontSize: 18,
@@ -57,6 +64,10 @@ export class LabelSizingCorrected extends BaseExample {
     }));
 
     provider.instances.push(new LabelInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.Middle,
+      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
       fontSize: 18,

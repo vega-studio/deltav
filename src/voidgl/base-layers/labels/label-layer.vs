@@ -23,7 +23,7 @@ void main() {
 
   // Correct aspect ratio.  Sufficient fix for most applications.
   // Will need another solution in the case of:
-  //  (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1) 
+  //  (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
 
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
@@ -38,12 +38,14 @@ void main() {
   float normal = position.x;
   float side = position.y;
 
+  vec2 scaledAnchor = anchor * scale;
+
   // Get the location of the anchor in world space
-  vec2 worldAnchor = location + anchor;
+  vec2 worldAnchor = location + scaledAnchor;
 
   vec2 adjustedAnchor = mix(
-    anchor,
-    (anchor * cameraScale.yx),
+    scaledAnchor,
+    (scaledAnchor * cameraScale.yx),
     unequalZooms
   );
 /*

@@ -1,4 +1,4 @@
-import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, DataProvider, EventManager, ICameraBoundsOptions, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
+import { ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelSizingCorrected extends BaseExample {

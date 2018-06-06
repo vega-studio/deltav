@@ -50,20 +50,20 @@ void main() {
   // Apply scaling to size if   // We now choose between keeping the same image size or keeping it in world space
   size = mix(
     // This option keeps the image size in world space
-    size * scale,
-    // This option counters the scaling of the image on the screen keeping it a static size
     size,
+    // This option counters the scaling of the image on the screen keeping it a static size
+    size * scale,
     // This is the flag determining if a scale mode should be applied to the vertex
     useScaleMode
   );
-*/
+  */
   // Get the position of the current vertex
-  vec2 vertex = vec2(side, float(normal == 1.0)) * size * scale + location - adjustedAnchor;
+  vec2 vertex = vec2(side, float(normal == 1.0)) * scale * size + location - adjustedAnchor;
 
   // See how scaled the size on screen will be from the actual height of the label
   float labelScreenScale = mix(
-    screenSize.y / (size.y * scale),
-    screenSize.x / (size.x * scale),
+    screenSize.y / size.y,
+    screenSize.x / size.x,
     float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
   );
 
@@ -74,9 +74,9 @@ void main() {
   // We now choose between keeping the same image size or keeping it in world space
   vertex = mix(
     // This option keeps the image size in world space
-    vertex * scale,
+    vertex,
     // This option counters the scaling of the image on the screen keeping it a static size
-    (anchorToVertex / labelScreenScale) + location / size,
+    (anchorToVertex / labelScreenScale) + location,
     // This is the flag determining if a scale mode should be applied to the vertex
     useScaleMode
   );

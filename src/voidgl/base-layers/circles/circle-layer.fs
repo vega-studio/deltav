@@ -2,6 +2,7 @@ precision highp float;
 
 varying vec4 vertexColor;
 varying float edgeSharpness;
+varying vec2 pointCoord;
 
 float circle(vec2 coord, float radius){
   vec2 dist = coord - vec2(0.5);
@@ -14,7 +15,7 @@ float circle(vec2 coord, float radius){
 }
 
 void main() {
-  float step_factor = circle(gl_PointCoord.xy, 1.0);
+  float step_factor = circle(pointCoord, 1.0);
   gl_FragColor = mix(
     vec4(0.0, 0.0, 0.0, 0.0),
     vertexColor,

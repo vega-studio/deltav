@@ -1,4 +1,4 @@
-import { AnchorType, ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
+import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, DataProvider, EventManager, ICameraBoundsOptions, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelSizingCorrected extends BaseExample {
@@ -23,62 +23,53 @@ export class LabelSizingCorrected extends BaseExample {
     const provider = new DataProvider<LabelInstance>([]);
 
     provider.instances.push(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.BottomMiddle,
-      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
-      fontSize: 20,
+      fontSize: 18,
       fontStyle: 'normal',
       fontWeight: 'normal',
       id: `label-compare-0`,
       rasterization: {
-        scale: 0.5,
+        scale: 1.0,
       },
+      scale: 0.5,
       scaling: ScaleType.BOUND_MAX,
-      text: 'AOBC',
-      x: 70,
+      text: '0',
+      x: 20,
       y: 40,
     }));
 
     provider.instances.push(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.BottomMiddle,
-      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
-      fontSize: 20,
+      fontSize: 18,
       fontStyle: 'normal',
       fontWeight: 'normal',
       id: `label-compare-1`,
       rasterization: {
         scale: 1.0,
       },
+      scale: 1.0,
       scaling: ScaleType.BOUND_MAX,
-      text: 'AO',
-      x: 100,
+      text: '1',
+      x: 20,
       y: 40,
     }));
 
     provider.instances.push(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.BottomMiddle,
-      },
       color: [1.0, 1.0, 1.0, 1.0],
       fontFamily: 'Arial',
-      fontSize: 20,
+      fontSize: 18,
       fontStyle: 'normal',
       fontWeight: 'normal',
       id: `label-compare-2`,
       rasterization: {
-        scale: 2.0,
+        scale: 1.0,
       },
+      scale: 2.0,
       scaling: ScaleType.BOUND_MAX,
-      text: 'AO',
-      x: 130,
+      text: '2',
+      x: 20,
       y: 40,
     }));
 

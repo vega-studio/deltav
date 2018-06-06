@@ -3,6 +3,8 @@ import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../sur
 import { IMaterialOptions, IProjection } from '../../types';
 import { RingInstance } from './ring-instance';
 export interface IRingLayerProps extends ILayerProps<RingInstance> {
+    /** This sets a scaling factor for the circle's radius */
+    scaleFactor?(): number;
 }
 export interface IRingLayerState {
 }

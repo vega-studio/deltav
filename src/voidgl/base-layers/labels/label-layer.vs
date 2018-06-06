@@ -48,17 +48,7 @@ void main() {
     (scaledAnchor * cameraScale.yx),
     unequalZooms
   );
-/*
-  // Apply scaling to size if   // We now choose between keeping the same image size or keeping it in world space
-  size = mix(
-    // This option keeps the image size in world space
-    size,
-    // This option counters the scaling of the image on the screen keeping it a static size
-    size * scale,
-    // This is the flag determining if a scale mode should be applied to the vertex
-    useScaleMode
-  );
-  */
+
   // Get the position of the current vertex
   vec2 vertex = vec2(side, float(normal == 1.0)) * scale * size + location - adjustedAnchor;
 

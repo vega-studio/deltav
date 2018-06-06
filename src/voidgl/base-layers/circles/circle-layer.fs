@@ -2,6 +2,7 @@ precision highp float;
 
 varying vec4 vertexColor;
 varying float edgeSharpness;
+varying float edgeSharpnessBase;
 varying vec2 pointCoord;
 
 float circle(vec2 coord, float radius){
@@ -9,7 +10,7 @@ float circle(vec2 coord, float radius){
 
   return 1.0 - smoothstep(
     radius - (radius * edgeSharpness),
-    radius + (radius * 0.01),
+    radius + (radius * edgeSharpnessBase),
     dot(dist, dist) * 4.0
   );
 }

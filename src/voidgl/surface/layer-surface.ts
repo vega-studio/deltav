@@ -185,6 +185,8 @@ export class LayerSurface {
    * This is the draw loop that must be called per frame for updates to take effect and display.
    */
   async draw() {
+    if (!this.gl) return;
+
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
 
@@ -359,12 +361,15 @@ export class LayerSurface {
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
     // Make sure we have a gl context to work with
     this.setContext(options.context);
-    // Initialize our GL needs that set the basis for rendering
-    this.initGL(options);
-    // Initialize our event manager that handles mouse interactions/gestures with the canvas
-    this.initMouseManager(options);
-    // Initialize any resources requested or needed, such as textures or rendering surfaces
-    await this.initResources(options);
+
+    if (this.gl) {
+      // Initialize our GL needs that set the basis for rendering
+      this.initGL(options);
+      // Initialize our event manager that handles mouse interactions/gestures with the canvas
+      this.initMouseManager(options);
+      // Initialize any resources requested or needed, such as textures or rendering surfaces
+      await this.initResources(options);
+    }
 
     return this;
   }
@@ -614,6 +619,8 @@ export class LayerSurface {
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
   render(layerInitializers: LayerInitializer[]) {
+    if (!this.gl) return;
+
     // Loop through all of the initializers and properly add and remove layers as needed
     if (layerInitializers && layerInitializers.length > 0) {
       layerInitializers.forEach(init => {
@@ -697,6 +704,10 @@ export class LayerSurface {
 
     else if (isCanvas(context)) {
       this.context = context.getContext('webgl') || context.getContext('experimental-webgl');
+
+      if (!this.context) {
+        console.warn('A valid GL context was not found for the context provided to the surface. This surface will not be able to operate.');
+      }
     }
 
     else if (isString(context)) {

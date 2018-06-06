@@ -2,6 +2,7 @@ import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer
 import { BaseExample } from './base-example';
 
 export class BoxOfCircles extends BaseExample {
+  camera: ChartCamera;
   view: string;
   manager: BasicCameraController;
   originalRange: Bounds;
@@ -21,6 +22,11 @@ export class BoxOfCircles extends BaseExample {
     }
   }
 
+  makeCamera(defaultCamera: ChartCamera) {
+    this.camera = defaultCamera;
+    return defaultCamera;
+  }
+
   makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
     this.view = viewName;
 
@@ -36,6 +42,7 @@ export class BoxOfCircles extends BaseExample {
     return createLayer(CircleLayer, {
       data: provider,
       key: 'box-of-circles',
+      scaleFactor: () => this.camera.scale[0],
       scene: scene,
     });
   }
@@ -49,8 +56,8 @@ export class BoxOfCircles extends BaseExample {
           color: [1.0, 0.0, 0.0, 1.0],
           id: `circle${i * 100 + k}`,
           radius: 5,
-          x: i * 10,
-          y: k * 10,
+          x: i * 11,
+          y: k * 11,
         });
 
         circleProvider.instances.push(circle);

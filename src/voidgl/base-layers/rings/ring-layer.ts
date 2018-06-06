@@ -13,7 +13,10 @@ import {
 import { RingInstance } from './ring-instance';
 const { max } = Math;
 
-export interface IRingLayerProps extends ILayerProps<RingInstance> {}
+export interface IRingLayerProps extends ILayerProps<RingInstance> {
+  /** This sets a scaling factor for the circle's radius */
+  scaleFactor?(): number;
+}
 
 export interface IRingLayerState {}
 
@@ -57,6 +60,8 @@ export class RingLayer extends Layer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<RingInstance> {
+    const scaleFactor = this.props.scaleFactor || (() => 1);
+
     const vertexToNormal: {[key: number]: number} = {
       0: 1,
       1: 1,
@@ -118,7 +123,7 @@ export class RingLayer extends Layer<
         {
           name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (_: IUniform) => [1],
+          update: (_: IUniform) => [scaleFactor()],
         },
       ],
       vertexAttributes: [

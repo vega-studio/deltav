@@ -4,6 +4,8 @@ import { ImageAtlasResource, ImageRasterizer } from '../../surface/texture';
 import { IInstanceOptions, Instance } from '../../util/instance';
 import { Anchor, AnchorType, ScaleType } from '../types';
 
+const { max } = Math;
+
 export interface IImageInstanceOptions extends IInstanceOptions {
   /**
    * The point on the image which will be placed in world space via the x, y coords. This is also the point
@@ -128,6 +130,13 @@ export class ImageInstance extends Instance implements Image {
   @observable x: number = 0;
   /** The y coordinate where the image will be anchored to in world space */
   @observable y: number = 0;
+
+  get size() { return max(this.width, this.height); }
+  set size(value: number) {
+    const aspect = this.width / this.height;
+    this.width = value * aspect;
+    this.height = value;
+  }
 
   // The following properties are properties that are locked in after creating this image
   // As the properties are completely locked into how the image was rasterized and can not

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.8.0
+
+* `(ADDED)` High level destroying of utilized resources. Ensures all resources utilized by the surface is freed up.
+* `(FIXED)` blending issues with some base layers
+
 ## 1.7.0
 
 * `(ADDED)` Camera Bounds now supports bounding scale ranges

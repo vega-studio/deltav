@@ -43,6 +43,10 @@ export declare class Scene extends IdentifyByKey {
      */
     addView(view: View): void;
     /**
+     * Release any resources this may be hanging onto
+     */
+    destroy(): void;
+    /**
      * Removes a layer from the scene. No resort is needed as remove operations
      * do not adjust the sorting order.
      */

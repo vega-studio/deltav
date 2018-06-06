@@ -14,7 +14,7 @@ export class MouseInteractionLabels extends BaseExample {
         0: 0,
         1: 1,
         2: 0,
-        3: 1,
+        3: 0.2,
         targets: label.color,
         update: () => {
           label.color = label.color;

@@ -24,7 +24,7 @@ export class BoxOfRings extends BaseExample {
               color: [Math.random(), Math.random(), Math.random(), 1.0],
               id: `ring_${i}_${k}`,
               radius: 10,
-              thickness: 3,
+              thickness: 1,
               x: i * 20,
               y: k * 20,
             }));

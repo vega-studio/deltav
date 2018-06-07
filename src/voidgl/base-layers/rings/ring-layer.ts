@@ -156,6 +156,7 @@ export class RingLayer extends Layer<
 
   getMaterialOptions(): IMaterialOptions {
     return {
+      premultipliedAlpha: true,
       transparent: true,
     };
   }

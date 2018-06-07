@@ -16,7 +16,8 @@ varying float edgeSharpness;
  */
 varying float borderSize;
 /**
- * This is the ([0 - 1], [0 - 1])
+ * Since this is now a quad instead of a point sprite, this provides what gl_PointCoord
+ * used to provide.
  */
 varying vec2 pointCoord;
 
@@ -31,8 +32,8 @@ float circle(vec2 coord, float radius){
 }
 
 void main() {
-  float outer_step_factor = circle(gl_PointCoord.xy, 1.0);
-  float inner_step_factor = circle(gl_PointCoord.xy, 1.0 - borderSize);
+  float outer_step_factor = circle(pointCoord, 1.0);
+  float inner_step_factor = circle(pointCoord, 1.0 - borderSize);
 
   setColor(mix(
     mix(                        // Select the outer color outside of the inner radius

@@ -6,9 +6,10 @@ varying vec2 texCoord;
 void main() {
   ${attributes}
 
-  // Figure out the size of the label as it'd show on the screen
-  vec3 screenSize = cameraSpaceSize(vec3(size, 1.0));
-  // Do the test for when the label is larger on the screen than the font size
+  // Determine final screen size of label
+  vec3 screenSize = cameraSpaceSize(vec3(size * scale, 1.0));
+
+  // Test whether the label is larger on the screen than the font size
   bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;
 
   // Determines if a scale mode should be used or not for the vertex
@@ -19,38 +20,37 @@ void main() {
     ) &&
     scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
   );
+
+  // Correct aspect ratio.  Sufficient fix for most applications.
+  // Will need another solution in the case of:
+  //  (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
+
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
 
-  // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float side = position.y;
-
-  // Get the location of the anchor in world space
-  vec2 worldAnchor = location + anchor;
-
-  // Correct aspect ratio.
   size = mix(
     size,
     (size * cameraScale.yx),
     unequalZooms
   );
 
-  // apply scaling
-  size *= scale;
+  // Destructure threejs's bug with the position requirement
+  float normal = position.x;
+  float side = position.y;
+
+  vec2 scaledAnchor = anchor * scale;
+
+  // Get the location of the anchor in world space
+  vec2 worldAnchor = location + scaledAnchor;
 
   vec2 adjustedAnchor = mix(
-    anchor,
-    (anchor * cameraScale.yx),
+    scaledAnchor,
+    (scaledAnchor * cameraScale.yx),
     unequalZooms
   );
 
   // Get the position of the current vertex
-  vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
-  // Get the tex coord from our inject texture info
-  texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
-  // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
-  vertexColor = color;
+  vec2 vertex = vec2(side, float(normal == 1.0)) * scale * size + location - adjustedAnchor;
 
   // See how scaled the size on screen will be from the actual height of the label
   float labelScreenScale = mix(
@@ -72,6 +72,12 @@ void main() {
     // This is the flag determining if a scale mode should be applied to the vertex
     useScaleMode
   );
+
+  // --Texture and Color
+  // Get the tex coord from our inject texture info
+  texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
+  // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
+  vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
 }

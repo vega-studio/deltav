@@ -1,5 +1,19 @@
 # Release Notes
 
+## 1.8.2
+
+* `(FIXED)` Rings were not honoring scaleFactor
+
+## 1.8.1
+
+* `(FIXED)` Labels now can have a scale and honor their scale mode properly now
+* `(FIXED)` Circles and rings are no longer point sprites, thus eliminating gl_PointSize max limitations
+
+## 1.8.0
+
+* `(ADDED)` High level destroying of utilized resources. Ensures all resources utilized by the surface is freed up.
+* `(FIXED)` blending issues with some base layers
+
 ## 1.7.0
 
 * `(ADDED)` Camera Bounds now supports bounding scale ranges

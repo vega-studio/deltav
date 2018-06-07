@@ -16,6 +16,7 @@ import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
 import { Images } from './examples/images';
 import { LabelAnchorsAndScales } from './examples/label-anchors-and-scales';
 import { LabelAnimatedScale } from './examples/label-animated-scale';
+import { LabelSizingCorrected } from './examples/label-sizing-corrected';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
 import { MouseInteractionColorPicking } from './examples/mouse-interaction-color-picking';
@@ -56,6 +57,7 @@ const tests: BaseExample[] = [
   new MouseInteractionImages(),
   new MouseInteractionEdges(),
   new LabelAnimatedScale(),
+  new LabelSizingCorrected(),
   new MouseInteractionRectangle(),
   new BoundedView(),
   new BoundedView3(),

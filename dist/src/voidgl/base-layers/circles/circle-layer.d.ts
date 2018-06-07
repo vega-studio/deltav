@@ -3,6 +3,8 @@ import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../sur
 import { IMaterialOptions, IProjection } from '../../types';
 import { CircleInstance } from './circle-instance';
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
+    /** This sets the  */
+    fadeOutOversized?: number;
     /** This sets a scaling factor for the circle's radius */
     scaleFactor?(): number;
     /** Flags this layer to draw  */
@@ -15,6 +17,7 @@ export interface ICircleLayerState {
  * them in interesting ways.
  */
 export declare class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
+    static defaultProps: ICircleLayerProps;
     /**
      * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
      * of elements

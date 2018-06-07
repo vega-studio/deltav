@@ -13,7 +13,10 @@ import {
 import { RingInstance } from './ring-instance';
 const { max } = Math;
 
-export interface IRingLayerProps extends ILayerProps<RingInstance> {}
+export interface IRingLayerProps extends ILayerProps<RingInstance> {
+  /** This sets a scaling factor for the circle's radius */
+  scaleFactor?(): number;
+}
 
 export interface IRingLayerState {}
 
@@ -57,6 +60,26 @@ export class RingLayer extends Layer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<RingInstance> {
+    const scaleFactor = this.props.scaleFactor || (() => 1);
+
+    const vertexToNormal: {[key: number]: number} = {
+      0: 1,
+      1: 1,
+      2: -1,
+      3: 1,
+      4: -1,
+      5: -1,
+    };
+
+    const vertexToSide: {[key: number]: number} = {
+      0: -1,
+      1: -1,
+      2: -1,
+      3: 1,
+      4: 1,
+      5: 1,
+    };
+
     return {
       fs: require('./ring-layer.fs'),
       instanceAttributes: [
@@ -100,12 +123,7 @@ export class RingLayer extends Layer<
         {
           name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (_: IUniform) => [1],
-        },
-        {
-          name: 'atlas',
-          size: UniformSize.ONE,
-          update: (_: IUniform) => [1],
+          update: (_: IUniform) => [scaleFactor()],
         },
       ],
       vertexAttributes: [
@@ -113,20 +131,26 @@ export class RingLayer extends Layer<
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          defaults: [0],
           name: 'position',
           size: VertexAttributeSize.THREE,
-          update: (_: number) => [0, 0, 0],
+          update: (vertex: number) => [
+            // Normal
+            vertexToNormal[vertex],
+            // The side of the quad
+            vertexToSide[vertex],
+            0,
+          ],
         },
       ],
-      vertexCount: 1,
+      vertexCount: 6,
       vs: require('./ring-layer.vs'),
     };
   }
 
   getModelType(): IModelType {
     return {
-      modelType: Three.Points,
+      drawMode: Three.TriangleStripDrawMode,
+      modelType: Three.Mesh,
     };
   }
 

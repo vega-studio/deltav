@@ -126,6 +126,8 @@ export class MouseEventManager {
   /** This stores the last mouse position recorded by this manager */
   mouse: Vec2;
 
+  eventCleanup: [string, EventListenerOrEventListenerObject][] = [];
+
   /**
    * This flag is set when the system is waiting to render the elements to establish bounds.
    * No Mouse interations will happen while this is set to true.
@@ -164,7 +166,7 @@ export class MouseEventManager {
     let startPosition: IPoint | null = null;
 
     if (handlesWheelEvents) {
-      element.onmousewheel = (event: MouseWheelEvent) => {
+      const wheelHandler = (event: MouseWheelEvent) => {
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
         const wheel = this.makeWheel(event);
@@ -176,6 +178,15 @@ export class MouseEventManager {
         event.stopPropagation();
         event.preventDefault();
       };
+
+      if ('onwheel' in element) {
+        element.onwheel = wheelHandler;
+      }
+
+      if ('addEventListener' in element) {
+        element.addEventListener('DOMMouseScroll', wheelHandler);
+        this.eventCleanup.push(['DOMMouseScroll', wheelHandler]);
+      }
     }
 
     element.onmouseleave = (event) => {
@@ -419,5 +430,9 @@ export class MouseEventManager {
     this.context.onmousemove = null;
     this.context.onmouseleave = null;
     this.context.onmousewheel = null;
+
+    this.eventCleanup.forEach(event => {
+      this.context.removeEventListener(event[0], event[1]);
+    });
   }
 }

@@ -5,6 +5,8 @@ import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjectio
 import { CircleInstance } from './circle-instance';
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
+  /** This sets the  */
+  fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
   /** Flags this layer to draw  */
@@ -20,6 +22,13 @@ export interface ICircleLayerState {
  * them in interesting ways.
  */
 export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
+  static defaultProps: ICircleLayerProps = {
+    data: null,
+    fadeOutOversized: -1,
+    key: '',
+    scaleFactor: () => 1,
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -55,6 +64,24 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
    */
   initShader(): IShaderInitialization<CircleInstance> {
     const scaleFactor = this.props.scaleFactor || (() => 1);
+
+    const vertexToNormal: {[key: number]: number} = {
+      0: 1,
+      1: 1,
+      2: -1,
+      3: 1,
+      4: -1,
+      5: -1,
+    };
+
+    const vertexToSide: {[key: number]: number} = {
+      0: -1,
+      1: -1,
+      2: -1,
+      3: 1,
+      4: 1,
+      5: 1,
+    };
 
     return {
       fs: require('./circle-layer.fs'),
@@ -100,20 +127,26 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          defaults: [0],
           name: 'position',
           size: VertexAttributeSize.THREE,
-          update: (vertex: number) => [0, 0, 0],
+          update: (vertex: number) => [
+            // Normal
+            vertexToNormal[vertex],
+            // The side of the quad
+            vertexToSide[vertex],
+            0,
+          ],
         },
       ],
-      vertexCount: 1,
+      vertexCount: 6,
       vs: require('./circle-layer.vs'),
     };
   }
 
   getModelType(): IModelType {
     return {
-      modelType: Three.Points,
+      drawMode: Three.TriangleStripDrawMode,
+      modelType: Three.Mesh,
     };
   }
 

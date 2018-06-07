@@ -60,6 +60,7 @@ export declare class ImageInstance extends Instance implements Image {
     x: number;
     /** The y coordinate where the image will be anchored to in world space */
     y: number;
+    size: number;
     private _sourceWidth;
     private _sourceHeight;
     private _isDestroyed;

@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { CircleInstance, createLayer, ImageInstance, ImageLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
+import { createLayer, ImageInstance, ImageLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 const iconData = require('./images/leaf.png');

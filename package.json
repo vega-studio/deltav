@@ -45,7 +45,6 @@
     "less": "2.7.3",
     "less-loader": "4.1.0",
     "mkdirp": "0.5.1",
-    "mobx": "3.4.1",
     "preact": "8.2.7",
     "random": "github:tarwich/node-random#1.0.0",
     "raw-loader": "0.5.1",

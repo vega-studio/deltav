@@ -1,8 +1,8 @@
-import { AnchorType, ChartCamera, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
+import { AnchorType, ChartCamera, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ReferenceCamera, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelSizingCorrected extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -18,10 +18,10 @@ export class LabelSizingCorrected extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.Middle,
@@ -42,7 +42,7 @@ export class LabelSizingCorrected extends BaseExample {
       y: 40,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.Middle,
@@ -63,7 +63,7 @@ export class LabelSizingCorrected extends BaseExample {
       y: 40,
     }));
 
-    provider.instances.push(new LabelInstance({
+    provider.add(new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.Middle,

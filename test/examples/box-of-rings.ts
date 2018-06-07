@@ -1,4 +1,4 @@
-import { ChartCamera, createLayer, DataProvider, InstanceProvider, LayerInitializer, RingInstance, RingLayer } from '../../src';
+import { ChartCamera, createLayer, InstanceProvider, LayerInitializer, RingInstance, RingLayer } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BoxOfRings extends BaseExample {
@@ -9,7 +9,7 @@ export class BoxOfRings extends BaseExample {
     return defaultCamera;
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<RingInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<RingInstance>): LayerInitializer {
     return createLayer(RingLayer, {
       data: provider,
       key: 'box-of-rings',

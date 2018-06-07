@@ -106,6 +106,7 @@ export declare class MouseEventManager {
     quadTree: QuadTree<DataBounds<SceneView>>;
     /** This is the current list of views being managed */
     views: SceneView[];
+    eventCleanup: [string, EventListenerOrEventListenerObject][];
     /**
      * This flag is set when the system is waiting to render the elements to establish bounds.
      * No Mouse interations will happen while this is set to true.

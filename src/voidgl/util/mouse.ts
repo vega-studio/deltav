@@ -22,10 +22,10 @@ const lowPassY: number[] = [0, 0, 0, 0];
 // How it affects the rate requires an understanding of FIR filters, so unless this is already
 // Known knowledge, it would be faster to just tweak the coefficients until a desired effect is
 // Attained.
-const LOW_PASS_U0 = 0.1;
-const LOW_PASS_U1 = 0.2;
-const LOW_PASS_U2 = 0.2;
-const LOW_PASS_U3 = 0.5;
+const LOW_PASS_U0 = 0.02;
+const LOW_PASS_U1 = 0.1;
+const LOW_PASS_U2 = 0.18;
+const LOW_PASS_U3 = 0.7;
 
 function normalizeFirefoxWheel(e: MouseWheelEvent) {
   const wheel: WheelEvent = e;

@@ -109,6 +109,7 @@ export declare class MouseEventManager {
     views: SceneView[];
     /** This stores the last mouse position recorded by this manager */
     mouse: Vec2;
+    eventCleanup: [string, EventListenerOrEventListenerObject][];
     /**
      * This flag is set when the system is waiting to render the elements to establish bounds.
      * No Mouse interations will happen while this is set to true.

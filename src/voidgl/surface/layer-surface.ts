@@ -291,19 +291,7 @@ export class LayerSurface {
       this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
     }
 
-    // Only if the viewport is different from last viewport should we attempt a viewport state
-    // Change.
-    const box = this.currentViewport;
-
-    if (!box || box.x !== offset.x || box.y !== offset.y || box.width !== size.width || box.height !== size.height) {
-      this.renderer.setViewport(offset.x / this.pixelRatio, offset.y / this.pixelRatio, size.width, size.height);
-      this.currentViewport = {
-        height: size.height,
-        width: size.width,
-        x: offset.x,
-        y: offset.y,
-      };
-    }
+    this.renderer.setViewport(offset.x / this.pixelRatio, offset.y / this.pixelRatio, size.width, size.height);
 
     // Render the scene with the provided view metrics
     this.renderer.render(scene, view.viewCamera.baseCamera);

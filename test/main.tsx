@@ -169,6 +169,14 @@ export class Main extends Component<any, IMainState> {
     }
   }
 
+  handleForceResize = () => {
+    const box = this.container.getBoundingClientRect();
+    this.surface.resize(box.width, box.height, 1.0);
+    setTimeout(() => {
+      this.surface.resize(box.width, box.height, window.devicePixelRatio);
+    }, 1);
+  }
+
   handleKeyDown = (e: KeyboardEvent) => {
     tests.forEach(test => test.keyEvent(e, true));
   }
@@ -323,6 +331,7 @@ export class Main extends Component<any, IMainState> {
             'Destroy Surface' :
             'Regen Surface'
           }</div>
+          <div className={'remove-button'} onClick={this.handleForceResize}>Force Resize</div>
       </div>
     );
   }

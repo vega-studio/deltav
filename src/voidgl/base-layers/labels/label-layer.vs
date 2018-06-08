@@ -7,7 +7,7 @@ void main() {
   ${attributes}
 
   // Determine final screen size of label
-  vec3 screenSize = cameraSpaceSize(vec3(size * scale, 1.0));
+  vec3 screenSize = cameraSpaceSize(vec3(size * scale / maxScale, 1.0));
 
   // Test whether the label is larger on the screen than the font size
   bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;
@@ -56,8 +56,10 @@ void main() {
   float labelScreenScale = mix(
     screenSize.y / size.y,
     screenSize.x / size.x,
-    float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
+    float((cameraScale.x != 1.0))
   );
+
+  float currentScale = labelScreenScale * scale;
 
   // If our screen rendering is larger than the size the label is supposed to be, then we automagically
   // scale down our label to stay the correct size, centered on the anchor point

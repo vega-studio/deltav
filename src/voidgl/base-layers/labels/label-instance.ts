@@ -24,6 +24,8 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
   fontWeight?: Label['fontWeight'];
   /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
   maxWidth?: number;
+  /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
+  maxScale?: number;
   /** This allows for control over rasterization to the atlas */
   rasterization?: {
     /**
@@ -138,6 +140,8 @@ export class LabelInstance extends Instance implements Label {
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the label (or the z value of the label) */
   @observable depth: number = 0;
+  /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
+  @observable maxScale: number = 1;
   /** Sets the way the label scales with the world */
   @observable scaling: ScaleType = ScaleType.BOUND_MAX;
   /** Scales the label uniformly */
@@ -228,6 +232,7 @@ export class LabelInstance extends Instance implements Label {
 
     this.depth = options.depth || this.depth;
     this.color = options.color || this.color;
+    this.maxScale = options.maxScale || this.maxScale;
     this.scaling = options.scaling || this.scaling;
     this.scale = options.scale || this.scale;
 

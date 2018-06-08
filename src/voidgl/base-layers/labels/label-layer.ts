@@ -189,6 +189,13 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           size: InstanceAttributeSize.ONE,
           update: (o) => [o.scale],
         },
+        {
+          block: 4,
+          blockIndex: InstanceBlockIndex.TWO,
+          name: 'maxScale',
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.maxScale],
+        },
       ],
       uniforms: [
         {

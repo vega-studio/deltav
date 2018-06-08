@@ -22,6 +22,8 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
     fontWeight?: Label['fontWeight'];
     /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
     maxWidth?: number;
+    /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
+    maxScale?: number;
     /** This allows for control over rasterization to the atlas */
     rasterization?: {
         /**
@@ -66,6 +68,8 @@ export declare class LabelInstance extends Instance implements Label {
     color: [number, number, number, number];
     /** Depth sorting of the label (or the z value of the label) */
     depth: number;
+    /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
+    maxScale: number;
     /** Sets the way the label scales with the world */
     scaling: ScaleType;
     /** Scales the label uniformly */
@@ -101,9 +105,9 @@ export declare class LabelInstance extends Instance implements Label {
      */
     readonly fontSize: number;
     /** This is the style of the font (italic, oblique, etc) */
-    readonly fontStyle: "normal" | "inherit" | "initial" | "italic" | "oblique";
+    readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
     /** This is the font weight specified for the label (bold, normal, etc). */
-    readonly fontWeight: 100 | 300 | "normal" | "bold" | "bolder" | "lighter" | "inherit" | "initial" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
+    readonly fontWeight: 100 | 300 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 500 | 600 | 700 | 800 | 900;
     /** This is the max width in pixels this label can fill */
     readonly maxWidth: number;
     /** This gets the atlas resource that is uniquely identified for this label */

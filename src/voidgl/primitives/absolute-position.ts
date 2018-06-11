@@ -60,21 +60,31 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
   if (item.width) {
     bounds.width = value(item.width, reference.width, scaleRatio);
 
-    if ('left' in item) {
+    if ('left' in item && item.left) {
       bounds.x = value(item.left, reference.width, scaleRatio);
     }
 
-    else if ('right' in item) {
+    else if ('right' in item && item.right) {
       bounds.x = reference.width - value(item.right, reference.width, scaleRatio) - bounds.width;
     }
   }
 
   else {
-    const left = value(item.left, reference.width, scaleRatio);
-    const right = reference.width - value(item.right, reference.width, scaleRatio);
-    width = right - left;
+    let left;
+    let right;
+    if (item.left) {
+      left = value(item.left, reference.width, scaleRatio);
+    }
 
-    if (width < 0) {
+    if (item.right) {
+      right = reference.width - value(item.right, reference.width, scaleRatio);
+    }
+
+    if (left && right) {
+      width = right - left;
+    }
+
+    if (!width || width < 0) {
       console.warn(
         'An AbsolutePosition evaluated to invalid dimensions.',
         'Please ensure that the object provided and the reference has valid dimensions',
@@ -83,30 +93,45 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
         'reference:', reference.toString(),
       );
     }
+    else {
+      bounds.width = width;
+    }
 
-    bounds.x = left;
-    bounds.width = width;
+    if (left) {
+      bounds.x = left;
+    }
+
   }
 
   // Calculate the vertical values
   if (item.height) {
     bounds.height = value(item.height, reference.height, scaleRatio);
 
-    if ('top' in item) {
+    if ('top' in item && item.top !== undefined) {
       bounds.y = value(item.top, reference.height, scaleRatio);
     }
 
-    else if ('bottom' in item) {
+    else if ('bottom' in item && item.bottom !== undefined) {
       bounds.y = reference.height - value(item.bottom, reference.height, scaleRatio) - bounds.height;
     }
   }
 
   else {
-    const top = value(item.top, reference.height, scaleRatio);
-    const bottom = reference.height - value(item.bottom, reference.height, scaleRatio);
-    height = bottom - top;
+    let top;
+    let bottom;
+    if (item.top !== undefined) {
+      top = value(item.top, reference.height, scaleRatio);
+    }
 
-    if (width < 0) {
+    if (item.bottom !== undefined) {
+      bottom = reference.height - value(item.bottom, reference.height, scaleRatio);
+    }
+
+    if (bottom && top) {
+      height = bottom - top;
+    }
+
+    if (height === undefined || height < 0) {
       console.warn(
         'An AbsolutePosition evaluated to invalid dimensions.',
         'Please ensure that the object provided and the reference has valid dimensions',
@@ -115,9 +140,13 @@ export function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: 
         'reference:', reference.toString(),
       );
     }
+    else {
+      bounds.height = height;
+    }
 
-    bounds.y = top;
-    bounds.height = height;
+    if (top) {
+      bounds.y = top;
+    }
   }
 
   if (bounds.width === 0 || bounds.height === 0 || isNaN(bounds.x + bounds.y + bounds.width + bounds.height)) {

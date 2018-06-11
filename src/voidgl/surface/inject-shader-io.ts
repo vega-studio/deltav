@@ -23,13 +23,18 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
  */
 function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number] {
   const blocks = new Map<number, Map<number, boolean>>();
-  let found: [number, number] = null;
+  let found: [number, number] | null = null;
   let maxBlock = 0;
 
   attributes.forEach(instanceAttribute => {
     const block = instanceAttribute.block;
     const index = instanceAttribute.blockIndex;
     const size = instanceAttribute.size;
+
+    if (index === undefined) {
+      return;
+    }
+
     let usedBlocks = blocks.get(block);
 
     maxBlock = Math.max(block, maxBlock);

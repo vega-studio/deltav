@@ -28,9 +28,15 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
     return {
       // Provide the calculated AABB world bounds for a given rectangle
       boundsAccessor: (rectangle: RectangleInstance) => {
+        const anchorEffect = [0, 0];
+
+        if (rectangle.anchor) {
+          anchorEffect[0] = rectangle.anchor.x || 0;
+          anchorEffect[1] = rectangle.anchor.y || 0;
+        }
         const topLeft = [
-          rectangle.x - rectangle.anchor.x,
-          rectangle.y - rectangle.anchor.y,
+          rectangle.x - anchorEffect[0],
+          rectangle.y - anchorEffect[1],
         ];
 
         return new Bounds({
@@ -64,9 +70,16 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
           // We are zooming in. The bounds will shrink to keep the rectangle at max font size
           else {
             // The location is within the world, but we reverse project the anchor spread
+            const anchorEffect = [0, 0];
+
+            if (rectangle.anchor) {
+              anchorEffect[0] = rectangle.anchor.x || 0;
+              anchorEffect[1] = rectangle.anchor.y || 0;
+            }
+
             const topLeft = [
-              rectangle.x - (rectangle.anchor.x / maxScale),
-              rectangle.y - (rectangle.anchor.y / maxScale),
+              rectangle.x - (anchorEffect[0] / maxScale),
+              rectangle.y - (anchorEffect[1] / maxScale),
             ];
 
             // Reverse project the size and we should be within the distorted world coordinates
@@ -83,9 +96,16 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
         // Of the camera zoom
         else if (rectangle.scaling === ScaleType.NEVER) {
           // The location is within the world, but we reverse project the anchor spread
+          const anchorEffect = [0, 0];
+
+          if (rectangle.anchor) {
+            anchorEffect[0] = rectangle.anchor.x || 0;
+            anchorEffect[1] = rectangle.anchor.y || 0;
+          }
+
           const topLeft = projection.worldToScreen({
-            x: rectangle.x - (rectangle.anchor.x / projection.camera.scale[0]),
-            y: rectangle.y - (rectangle.anchor.y / projection.camera.scale[1]),
+            x: rectangle.x - (anchorEffect[0] / projection.camera.scale[0]),
+            y: rectangle.y - (anchorEffect[1] / projection.camera.scale[1]),
           });
 
           const screenPoint = projection.worldToScreen(point);

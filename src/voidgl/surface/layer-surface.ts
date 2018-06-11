@@ -152,6 +152,10 @@ export class LayerSurface {
       console.warn('All layers must have an id');
       return layer;
     }
+    if (!layer.initShader) {
+      console.warn('All layers must have an initShader method.');
+      return layer;
+    }
 
     if (this.layers.get(layer.id)) {
       console.warn('All layer\'s ids must be unique per layer manager');
@@ -348,8 +352,10 @@ export class LayerSurface {
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
     // Make sure we have a gl context to work with
-    this.setContext(options.context);
-
+    // Note: may need an error message here if context has not been provided.
+    if (options.context) {
+      this.setContext(options.context);
+    }
     if (this.gl) {
       // Initialize our GL needs that set the basis for rendering
       this.initGL(options);
@@ -497,9 +503,29 @@ export class LayerSurface {
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
-    shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
-    shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
-    shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
+    if (!shaderIO) {
+      return layer;
+    }
+    if (shaderIO.instanceAttributes) {
+      shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
+    }
+    else {
+      shaderIO.instanceAttributes = [];
+    }
+
+    if (shaderIO.vertexAttributes) {
+      shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
+    }
+    else {
+      shaderIO.vertexAttributes = [];
+    }
+
+    if (shaderIO.uniforms) {
+      shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
+    }
+      else {
+        shaderIO.uniforms = [];
+      }
     // Get the injected shader IO attributes and uniforms
     const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
@@ -566,7 +592,10 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Scene {
     // Get the scene the layer will add itself to
-    let scene = this.scenes.get(layer.props.scene);
+    let scene = null;
+    if (layer && layer.props.scene) {
+      scene = this.scenes.get(layer.props.scene);
+    }
 
     if (!scene) {
       // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
@@ -589,8 +618,11 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V> | null): Layer<T, U, V> | null {
     // Make sure we are removing a layer that exists in the system
+    if (!layer) {
+      return null;
+    }
     if (!this.layers.get(layer && layer.id)) {
       console.warn('Tried to remove a layer that is not in the manager.', layer);
       return layer;
@@ -630,7 +662,13 @@ export class LayerSurface {
     // Take any layer that retained it's disposal flag and trash it
     this.willDisposeLayer.forEach((dispose, layerId) => {
       if (dispose) {
-        this.removeLayer(this.layers.get(layerId));
+        const layer = this.layers.get(layerId);
+        if (layer) {
+          this.removeLayer(layer);
+        }
+        else {
+          console.warn('this.willDisposeLayer called on non-gettable layer.');
+        }
       }
     });
 
@@ -691,10 +729,13 @@ export class LayerSurface {
     }
 
     else if (isCanvas(context)) {
-      this.context = context.getContext('webgl') || context.getContext('experimental-webgl');
+      const confirmedValidContext = context.getContext('webgl') || context.getContext('experimental-webgl');
 
-      if (!this.context) {
+      if (!confirmedValidContext) {
         console.warn('A valid GL context was not found for the context provided to the surface. This surface will not be able to operate.');
+      }
+      else {
+        this.context = confirmedValidContext;
       }
     }
 

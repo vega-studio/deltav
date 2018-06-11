@@ -254,7 +254,7 @@ export class LabelInstance extends Instance implements Label {
     const cssFontLookup = `${this._cssFont}_${this._maxWidth}`;
     // Look for other same texts that have been rasterized
     let rasterizations = rasterizationLookUp.get(this._text);
-    let rasterization: RasterizationReference;
+    let rasterization: RasterizationReference | null | undefined;
 
     if (rasterizations) {
       // Look for those texts that have been rasterized in the same fashion that this label is requesting

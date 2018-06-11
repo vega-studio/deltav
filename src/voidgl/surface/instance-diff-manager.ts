@@ -184,6 +184,10 @@ export class InstanceDiffManager<T extends Instance> {
         instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
         start = instanceUniform.blockIndex;
 
+        if (start === undefined) {
+          continue;
+        }
+
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
         for (k = start, endk = value.length + start; k < endk; ++k) {
@@ -208,10 +212,12 @@ export class InstanceDiffManager<T extends Instance> {
       instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
       start = instanceUniform.blockIndex;
 
+      if (start !== undefined) {
       // Hyper optimized vector filling routine. It uses properties that are globally scoped
       // To greatly reduce overhead
-      for (let k = start, endk = value.length + start; k < endk; ++k) {
-        block[VECTOR_ACCESSORS[k]] = value[k - start];
+        for (let k = start, endk = value.length + start; k < endk; ++k) {
+          block[VECTOR_ACCESSORS[k]] = value[k - start];
+        }
       }
 
       uniforms.value = instanceData;

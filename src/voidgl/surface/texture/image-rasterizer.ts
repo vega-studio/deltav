@@ -1,6 +1,6 @@
 import { ImageAtlasResource } from './image-atlas-resource';
 
-let canvas: CanvasRenderingContext2D;
+let canvas: CanvasRenderingContext2D | null;
 
 export interface IImageRasterizedMetrics {
   canvas: HTMLCanvasElement;
@@ -43,6 +43,16 @@ export class ImageRasterizer {
   static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number) {
     /** Get the image properties for rasterizing */
     const image = resource.image.element;
+
+    if (!image) {
+      console.warn('Image does not exist! Please ensure the image is loaded first.');
+      return;
+    }
+
+    if (!canvas) {
+      console.warn('Canvas does not exist! Please ensure there a canvas element is provided to render to.');
+      return;
+    }
 
     if (image.width === 0 || image.height === 0) {
       console.warn('Images provided shoud have valid dimensions! Please ensure the image is loaded first.');

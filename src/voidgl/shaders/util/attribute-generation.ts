@@ -314,7 +314,7 @@ function generateInstanceDataLookupOptions(templateOptions: {[key: string]: stri
       console.error(
         `An instance attribute was specified that would fill indices greater than the block allows.`,
         `\nMax index per block ${MAX_USE_PER_BLOCK}`,
-        `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 0)}`,
+        `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 1)}`,
       );
 
       return;
@@ -325,7 +325,7 @@ function generateInstanceDataLookupOptions(templateOptions: {[key: string]: stri
         console.error(
           `An instance attribute was specified who's block index overaps another attributes useage`,
           `\nMax index per block ${MAX_USE_PER_BLOCK}`,
-          `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 0)}`,
+          `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 1)}`,
         );
 
         return;

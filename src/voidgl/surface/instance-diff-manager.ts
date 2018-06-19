@@ -8,7 +8,7 @@ import { AtlasResourceManager } from './texture/atlas-resource-manager';
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster: IUniformInstanceCluster) => void;
+export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster?: IUniformInstanceCluster) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 
@@ -67,7 +67,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes add operations from changes in the instancing data
    */
-  private addInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private addInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, uniformCluster);
@@ -88,7 +88,7 @@ export class InstanceDiffManager<T extends Instance> {
    * This processes add operations from changes in the instancing data and manages the layer's quad tree
    * with the instance as well.
    */
-  private addInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private addInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstanceQuad(manager, instance, uniformCluster);
@@ -112,7 +112,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private changeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -127,7 +127,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private changeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -146,7 +146,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private removeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -160,7 +160,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private removeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;

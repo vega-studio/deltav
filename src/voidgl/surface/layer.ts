@@ -198,11 +198,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       change = changeList[i];
       instance = change[0];
       uniforms = this.uniformManager.getUniforms(instance);
-
-      if (uniforms) {
-        // The diff type is change[1] which we use to find the diff processing method to use
-        diffProcessor[change[1]](diffManager, instance, uniforms);
-      }
+      // The diff type is change[1] which we use to find the diff processing method to use
+      diffProcessor[change[1]](diffManager, instance, uniforms);
     }
 
     // Indicate the diffs are consumed

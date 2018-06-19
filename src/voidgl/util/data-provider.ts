@@ -77,9 +77,9 @@ export class DataProvider<T extends Instance> {
   destroy() {
     this.listDisposer();
     this.instanceDisposers.forEach((disposer) => disposer());
-    this._instances = null;
+    delete this._instances;
     this.instanceChanges.clear();
-    this._changeList = null;
+    delete this._changeList;
   }
 
   /**

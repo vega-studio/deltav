@@ -67,7 +67,7 @@ export class Scene extends IdentifyByKey {
    * Release any resources this may be hanging onto
    */
   destroy() {
-    this.container = null;
+    delete this.container;
   }
 
   /**

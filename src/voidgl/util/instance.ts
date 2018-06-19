@@ -28,6 +28,6 @@ export class Instance implements Identifiable {
 
   constructor(options: IInstanceOptions) {
     this._id = options.id;
-    this.active = options.active;
+    this.active = options.active || this.active;
   }
 }

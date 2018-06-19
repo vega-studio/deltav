@@ -8,7 +8,7 @@ import { AtlasResourceManager } from './texture/atlas-resource-manager';
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster: IUniformInstanceCluster) => void;
+export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster?: IUniformInstanceCluster) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 
@@ -67,7 +67,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes add operations from changes in the instancing data
    */
-  private addInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private addInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, uniformCluster);
@@ -76,8 +76,11 @@ export class InstanceDiffManager<T extends Instance> {
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
       const uniforms = manager.layer.uniformManager.add(instance);
-      instance.active = true;
-      manager.updateInstance(instance, uniforms);
+
+      if (uniforms) {
+        instance.active = true;
+        manager.updateInstance(instance, uniforms);
+      }
     }
   }
 
@@ -85,7 +88,7 @@ export class InstanceDiffManager<T extends Instance> {
    * This processes add operations from changes in the instancing data and manages the layer's quad tree
    * with the instance as well.
    */
-  private addInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private addInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstanceQuad(manager, instance, uniformCluster);
@@ -94,19 +97,22 @@ export class InstanceDiffManager<T extends Instance> {
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
       const uniforms = manager.layer.uniformManager.add(instance);
-      instance.active = true;
-      manager.updateInstance(instance, uniforms);
 
-      // Ensure the instance has an updated injection in the quad tree
-      manager.quadPicking.quadTree.remove(instance);
-      manager.quadPicking.quadTree.add(instance);
+      if (uniforms) {
+        instance.active = true;
+        manager.updateInstance(instance, uniforms);
+
+        // Ensure the instance has an updated injection in the quad tree
+        manager.quadPicking.quadTree.remove(instance);
+        manager.quadPicking.quadTree.add(instance);
+      }
     }
   }
 
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private changeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -121,7 +127,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private changeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -140,7 +146,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstance(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private removeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -154,7 +160,7 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstanceQuad(manager: this, instance: T, uniformCluster: IUniformInstanceCluster) {
+  private removeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -184,6 +190,10 @@ export class InstanceDiffManager<T extends Instance> {
         instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
         start = instanceUniform.blockIndex;
 
+        if (start === undefined) {
+          continue;
+        }
+
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
         for (k = start, endk = value.length + start; k < endk; ++k) {
@@ -208,10 +218,12 @@ export class InstanceDiffManager<T extends Instance> {
       instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
       start = instanceUniform.blockIndex;
 
+      if (start !== undefined) {
       // Hyper optimized vector filling routine. It uses properties that are globally scoped
       // To greatly reduce overhead
-      for (let k = start, endk = value.length + start; k < endk; ++k) {
-        block[VECTOR_ACCESSORS[k]] = value[k - start];
+        for (let k = start, endk = value.length + start; k < endk; ++k) {
+          block[VECTOR_ACCESSORS[k]] = value[k - start];
+        }
       }
 
       uniforms.value = instanceData;

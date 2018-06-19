@@ -146,7 +146,7 @@ export class InstanceUniformManager<T extends Instance> {
       this.scene.container.remove(buffer.model);
     });
 
-    this.scene = null;
+    delete this.scene;
   }
 
   /**
@@ -169,7 +169,9 @@ export class InstanceUniformManager<T extends Instance> {
     // Performance
     const newGeometry = new Three.BufferGeometry();
     this.layer.vertexAttributes.forEach(attribute => {
-      newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
+      if (attribute.materialAttribute) {
+        newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
+      }
     });
 
     // Ensure the draw range covers every instance in the geometry.

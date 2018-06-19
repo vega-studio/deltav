@@ -152,7 +152,8 @@ export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstanc
 
         const start = view.worldToScreen(toPointObject(edge.start));
         const end = view.worldToScreen(toPointObject(edge.end));
-        let control1: Vec2, control2: Vec2;
+        let control1: Vec2 = [0, 0];
+        let control2: Vec2 = [0, 0];
 
         if (type === EdgeType.BEZIER) {
           control1 = add2(toPointArray(start), edge.control[0]);

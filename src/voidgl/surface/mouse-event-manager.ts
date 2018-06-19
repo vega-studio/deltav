@@ -109,6 +109,10 @@ function sortByDepth(a: DataBounds<SceneView>, b: DataBounds<SceneView>) {
   return b.data.depth - a.data.depth;
 }
 
+function isDefined<T>(val: T | undefined | null): val is T {
+  return Boolean(val);
+}
+
 /**
  * This manages mouse events on the provided canvas and provides some higher level
  * interactions with the surface.
@@ -141,7 +145,7 @@ export class MouseEventManager {
     // When we're no longer waiting for render to occur we update all of our views in the quad tree
     if (!val) {
       this.quadTree = new QuadTree(0, 0, 0, 0);
-      this.quadTree.addAll(this.views.map(v => v.bounds).filter(Boolean));
+      this.quadTree.addAll(this.views.map(v => v.bounds).filter(isDefined));
     }
   }
 
@@ -160,10 +164,11 @@ export class MouseEventManager {
   addContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
     let startView: SceneView | null = null;
-    let startPosition: IPoint | null = null;
+    let startPosition: IPoint = {x: 0, y: 0};
 
     if (handlesWheelEvents) {
       const wheelHandler = (event: MouseWheelEvent) => {
+        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
         const wheel = this.makeWheel(event);
@@ -189,6 +194,7 @@ export class MouseEventManager {
     element.onmouseleave = (event) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
+      if (!startView) return;
 
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
@@ -201,6 +207,7 @@ export class MouseEventManager {
     element.onmousemove = (event) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
+      if (!startView) return;
 
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
@@ -226,6 +233,8 @@ export class MouseEventManager {
       }
 
       startView = downViews[0].data;
+      if (!startView) return;
+
       const interaction = this.makeInteraction(startPosition, startPosition, startView);
       let currentPosition = startPosition;
 
@@ -236,6 +245,7 @@ export class MouseEventManager {
       event.stopPropagation();
 
       document.onmousemove = (event: MouseEvent) => {
+        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
         const delta = {
@@ -261,6 +271,7 @@ export class MouseEventManager {
       };
 
       document.onmouseover = (event: MouseEvent) => {
+        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
 
@@ -272,6 +283,7 @@ export class MouseEventManager {
       };
 
       element.onmouseup = (event: MouseEvent) => {
+        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(mouse, startPosition, startView);
 
@@ -422,7 +434,7 @@ export class MouseEventManager {
   }
 
   destroy() {
-    this.quadTree = null;
+    delete this.quadTree;
     this.context.onmousedown = null;
     this.context.onmousemove = null;
     this.context.onmouseleave = null;

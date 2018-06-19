@@ -79,8 +79,8 @@ export class Bounds {
   constructor(options: IBoundsOptions) {
     this.x = options.x || options.left || 0;
     this.y = options.y || options.top || 0;
-    this.height = options.height || (options.bottom - this.y) || 0;
-    this.width = options.width || (options.right - this.x) || 0;
+    this.height = options.height || ((options.bottom || 0) - this.y) || 0;
+    this.width = options.width || ((options.right || 0) - this.x) || 0;
   }
 
   /**

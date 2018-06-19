@@ -1,7 +1,7 @@
 import { Bounds } from '../primitives';
 import { IPoint } from '../primitives/point';
 import { IPickInfo, IProjection, PickType } from '../types';
-import { Instance } from '../util';
+import { Instance, TrackedQuadTree } from '../util';
 import { ILayerProps, Layer } from './layer';
 
 /**
@@ -42,7 +42,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const query: TrackedQuadTree<T>['query'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
         const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
@@ -75,7 +75,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
 
       if (onMouseOut) {
         const world = view.viewToWorld(mouse);
-        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const query: TrackedQuadTree<T>['query'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
         const hitTest = this.layer.picking.hitTest;
 
         const info: IPickInfo<T> = {
@@ -110,7 +110,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const query: TrackedQuadTree<T>['query'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
         const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {
@@ -141,7 +141,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         let info: IPickInfo<T>;
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const query: TrackedQuadTree<T>['query'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
         const instances = query(world).filter(o => hitTest(o, world, view));
 
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
@@ -213,7 +213,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         const hitTest = this.layer.picking.hitTest;
-        const query: IPickInfo<T>['querySpace'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
+        const query: TrackedQuadTree<T>['query'] = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
         const instances = query(world).filter(o => hitTest(o, world, view));
 
         const info: IPickInfo<T> = {

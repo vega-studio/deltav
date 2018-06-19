@@ -4,10 +4,28 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-
+import * as Three from 'three';
 import { IShaderInitialization, Layer } from '../surface/layer';
-import { IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
+import { IAtlasInstanceAttribute, IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IValueInstanceAttribute, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
 import { Instance } from '../util/instance';
+
+const emptyTexture = new Three.Texture();
+
+function isAtlasAttribute<T extends Instance>(attr: any): attr is IAtlasInstanceAttribute<T> {
+  return Boolean(attr) && attr.atlas;
+}
+
+function isInstanceAttribute<T extends Instance>(attr: any): attr is IInstanceAttribute<T> {
+  return Boolean(attr);
+}
+
+function isVertexAttribute(attr: any): attr is IVertexAttribute {
+  return Boolean(attr);
+}
+
+function isUniform(attr: any): attr is IUniform {
+  return Boolean(attr);
+}
 
 function toVertexAttributeInternal(attribute: IVertexAttribute): IVertexAttributeInternal {
   return Object.assign({}, attribute, { materialAttribute: null });
@@ -29,7 +47,7 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number]
   attributes.forEach(instanceAttribute => {
     const block = instanceAttribute.block;
     const index = instanceAttribute.blockIndex;
-    const size = instanceAttribute.size;
+    const size = instanceAttribute.size || 1;
 
     if (index === undefined) {
       return;
@@ -72,15 +90,21 @@ function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, 
 
 export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
   // Retrieve all of the instance attributes that are atlas references
-  const atlasInstanceAttributes: IInstanceAttribute<T>[] = [];
+  const atlasInstanceAttributes: IAtlasInstanceAttribute<T>[] = [];
   // Key: The atlas uniform name requested
   const requestedAtlasInjections = new Map<string, [boolean, boolean]>();
+  // All of the instance attributes with nulls filtered out
+  const instanceAttributes = (shaderIO.instanceAttributes || []).filter(isInstanceAttribute);
+  // All of the vertex attributes with nulls filtered out
+  const vertexAttributes = (shaderIO.vertexAttributes || []).filter(isVertexAttribute);
+  // All of the uniforms with nulls filtered out
+  const uniforms = (shaderIO.uniforms || []).filter(isUniform);
 
   // Get the atlas requests that have unique names. We only need one uniform
   // For a single unique provided name. We also must merge the requests for
   // Vertex and fragment injections
-  shaderIO.instanceAttributes.forEach(attribute => {
-    if (attribute.atlas) {
+  instanceAttributes.forEach((attribute: IValueInstanceAttribute<T> | IAtlasInstanceAttribute<T>) => {
+    if (isAtlasAttribute(attribute)) {
       // Auto set the size of the attribute. Attribute's that are a resource automatically
       // Consume a size of four
       attribute.size = InstanceAttributeSize.FOUR;
@@ -116,18 +140,26 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
 
   // Make uniforms for all of the unique atlas requests.
   const atlasUniforms: IUniform[] = atlasInstanceAttributes.map(instanceAttribute => {
-    const injections = requestedAtlasInjections.get(instanceAttribute.atlas.name);
-    const injection =
-      (injections[0] && injections[1] && ShaderInjectionTarget.ALL) ||
-      (injections[0] && !injections[1] && ShaderInjectionTarget.VERTEX) ||
-      (!injections[0] && injections[1] && ShaderInjectionTarget.FRAGMENT)
-    ;
+    let injection: ShaderInjectionTarget = ShaderInjectionTarget.FRAGMENT;
+
+    if (instanceAttribute.atlas) {
+      const injections = requestedAtlasInjections.get(instanceAttribute.atlas.name);
+
+      if (injections) {
+        injection =
+          (injections[0] && injections[1] && ShaderInjectionTarget.ALL) ||
+          (injections[0] && !injections[1] && ShaderInjectionTarget.VERTEX) ||
+          (!injections[0] && injections[1] && ShaderInjectionTarget.FRAGMENT) ||
+          injection
+        ;
+      }
+    }
 
     return {
       name: instanceAttribute.atlas.name,
       shaderInjection: injection,
       size: UniformSize.ATLAS,
-      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.key),
+      update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.key) || emptyTexture,
     };
   });
 
@@ -177,7 +209,7 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
 
   // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
   // With the _active attribute.
-  const fillBlock = findEmptyBlock(shaderIO.instanceAttributes);
+  const fillBlock = findEmptyBlock(instanceAttributes);
   const addedInstanceAttributes: IInstanceAttribute<T>[] = [
     // This is injected so the system can control when an instance should not be rendered.
     // This allows for holes to be in the buffer without having to correct them immediately
@@ -205,27 +237,27 @@ export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, sh
   ];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
-  const vertexAttributes: IVertexAttributeInternal[] =
+  const allVertexAttributes: IVertexAttributeInternal[] =
     addedVertexAttributes
-    .concat(shaderIO.vertexAttributes)
+    .concat(vertexAttributes || [])
     .map(toVertexAttributeInternal)
   ;
 
-  const uniforms =
+  const allUniforms =
     addedUniforms
-    .concat(shaderIO.uniforms)
+    .concat(uniforms)
     .map(toUniformInternal)
   ;
 
-  const instanceAttributes =
+  const allInstanceAttributes =
     addedInstanceAttributes
-    .concat(shaderIO.instanceAttributes)
+    .concat(instanceAttributes)
     .sort(sortByResourceAttributes)
   ;
 
   return {
-    instanceAttributes,
-    uniforms,
-    vertexAttributes,
+    instanceAttributes: allInstanceAttributes,
+    uniforms: allUniforms,
+    vertexAttributes: allVertexAttributes,
   };
 }

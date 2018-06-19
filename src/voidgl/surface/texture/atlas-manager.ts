@@ -128,7 +128,7 @@ export class AtlasManager {
     // First we must load the image
     // Make a buffer to hold our new image
     // Load the image into memory, default to keeping the alpha channel
-    const loadedImage: HTMLImageElement = await this.loadImage(resource);
+    const loadedImage: HTMLImageElement | null = await this.loadImage(resource);
 
     // Only a non-null image means the image loaded correctly
     if (loadedImage && isValidImage(resource.texture)) {
@@ -149,7 +149,7 @@ export class AtlasManager {
       // Get the atlas map node
       const packing: PackNode = atlas.packing;
       // Store the node resulting from the insert operation
-      const insertedNode: PackNode = packing.insert(dimensions);
+      const insertedNode: PackNode | null = packing.insert(dimensions);
 
       // If the result was NULL we did not successfully insert the image into any map
       if (insertedNode) {
@@ -228,7 +228,7 @@ export class AtlasManager {
    *                                     or null if there was an error
    */
   private async loadImage(resource: AtlasResource): Promise<HTMLImageElement | null> {
-    let imageSrc: string;
+    let imageSrc: string = '';
 
     const subTexture = resource.texture || new SubTexture();
     resource.texture = subTexture;
@@ -247,18 +247,24 @@ export class AtlasManager {
         }
 
         const image = await new Promise<HTMLImageElement | null>((resolve, reject) => {
-          const image: HTMLImageElement = resource.image.element;
+          const image: HTMLImageElement | undefined = resource.image.element;
 
-          image.onload = function() {
-            subTexture.pixelWidth = image.width;
-            subTexture.pixelHeight = image.height;
-            subTexture.aspectRatio = image.width / image.height;
-            resolve(image);
-          };
+          if (image) {
+            image.onload = function() {
+              subTexture.pixelWidth = image.width;
+              subTexture.pixelHeight = image.height;
+              subTexture.aspectRatio = image.width / image.height;
+              resolve(image);
+            };
 
-          image.onerror = function() {
+            image.onerror = function() {
+              resolve(null);
+            };
+          }
+
+          else {
             resolve(null);
-          };
+          }
         });
 
         return image;

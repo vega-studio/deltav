@@ -210,9 +210,12 @@ export class LabelRasterizer {
   static getContext() {
     if (!canvas) {
       const potentialCanvas = document.createElement('canvas').getContext('2d');
+
       if (potentialCanvas) {
         canvas = potentialCanvas;
       }
+
+      return potentialCanvas;
     }
 
     return canvas;

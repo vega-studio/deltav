@@ -105,10 +105,7 @@ export class Main extends Component<any, IMainState> {
   }
 
   async createSurface() {
-    if (this.surface) return;
-
     let generate = false;
-    this.context.removeAttribute('style');
 
     if (this.surface && this.context !== this.surface.gl.canvas) {
       this.surface.destroy();
@@ -120,6 +117,7 @@ export class Main extends Component<any, IMainState> {
     }
 
     if (generate) {
+      this.context.removeAttribute('style');
       const scenes = this.makeSceneBlock(5);
       this.allScenes = scenes;
 
@@ -206,7 +204,7 @@ export class Main extends Component<any, IMainState> {
   handleToggleSurface = async() => {
     if (this.surface) {
       this.surface.destroy();
-      this.surface = null;
+      delete this.surface;
       this.context.style.width = '';
       this.context.style.height = '';
       this.context.removeAttribute('width');

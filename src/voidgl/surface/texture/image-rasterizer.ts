@@ -45,12 +45,12 @@ export class ImageRasterizer {
     const image = resource.image.element;
 
     if (!image) {
-      console.warn('Image does not exist! Please ensure the image is loaded first.');
+      console.warn('Image does not exist! Please ensure the resource contains a valid image.');
       return;
     }
 
     if (!canvas) {
-      console.warn('Canvas does not exist! Please ensure there a canvas element is provided to render to.');
+      console.warn('The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first.');
       return;
     }
 

@@ -10,7 +10,7 @@ export function generateLayerModel(layer: Layer<any, any, any>, geometry: Three.
   const model = new modelInfo.modelType(geometry, material);
 
   if (isMesh(model)) {
-    model.drawMode = modelInfo.drawMode;
+    model.drawMode = modelInfo.drawMode || Three.TriangleStripDrawMode;
   }
 
   return model;

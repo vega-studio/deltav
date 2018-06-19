@@ -4,6 +4,10 @@ import { EventManager } from '../event-manager';
 import { Layer } from '../layer';
 import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manager';
 
+function isDefined<T>(val: T | null | undefined): val is T {
+  return Boolean(val);
+}
+
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions
  * and broadcasts them to the layers that have picking enabled, thus allowing the layers to respond to
@@ -32,7 +36,7 @@ export class LayerMouseEvents extends EventManager {
     }
 
     // Now retrieve and convert each view under the mouse to the scene view it coincides with
-    return e.viewsUnderMouse.map(viewItem => sceneViewByViewId.get(viewItem.view.id));
+    return e.viewsUnderMouse.map(viewItem => sceneViewByViewId.get(viewItem.view.id)).filter(isDefined);
   }
 
   getMouseByViewId(e: IMouseInteraction) {
@@ -146,9 +150,11 @@ export class LayerMouseEvents extends EventManager {
     const view = sceneView.view;
     const mouse = viewMouseByViewId.get(view.id);
 
-    for (const layer of sceneView.scene.layers) {
-      if (layer.picking && layer.picking.type === PickType.ALL) {
-        callback(layer, view, mouse);
+    if (mouse) {
+      for (const layer of sceneView.scene.layers) {
+        if (layer.picking && layer.picking.type === PickType.ALL) {
+          callback(layer, view, mouse);
+        }
       }
     }
   }

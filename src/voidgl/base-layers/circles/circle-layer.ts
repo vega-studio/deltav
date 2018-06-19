@@ -2,6 +2,7 @@ import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { DataProvider } from '../../util';
 import { CircleInstance } from './circle-instance';
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
@@ -21,7 +22,7 @@ export interface ICircleLayerState {
  */
 export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
   static defaultProps: ICircleLayerProps = {
-    data: null,
+    data: new DataProvider<CircleInstance>([]),
     fadeOutOversized: -1,
     key: '',
     scaleFactor: () => 1,
@@ -32,6 +33,8 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
    * of elements
    */
   getInstancePickingMethods() {
+    const noScaleFactor = () => 1;
+
     return {
       // Provide the calculated AABB world bounds for a given circle
       boundsAccessor: (circle: CircleInstance) => new Bounds({
@@ -45,7 +48,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircl
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
         const circleScreenCenter = view.worldToScreen(circle);
         const mouseScreen = view.worldToScreen(point);
-        const r = circle.radius * this.props.scaleFactor();
+        const r = circle.radius * (this.props.scaleFactor || noScaleFactor)();
 
         const delta = [
           mouseScreen.x - circleScreenCenter.x,

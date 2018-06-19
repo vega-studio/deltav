@@ -199,7 +199,7 @@ export class ImageInstance extends Instance implements Image {
     // This is the image that is to be rendered
     this._element = options.element;
     // Look for other same texts that have been rasterized
-    let rasterization: RasterizationReference = rasterizationLookUp.get(this._path || this._element);
+    let rasterization = rasterizationLookUp.get(this._path || this._element);
 
     // If a rasterization exists, we must increment the use reference
     if (rasterization) {

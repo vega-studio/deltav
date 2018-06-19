@@ -73,7 +73,7 @@ export class Point {
    */
   static getClosest(testPoint: IPoint, points: IPoint[]): IPoint {
     let closestDistance = Number.MAX_VALUE;
-    let closestPoint: IPoint = null;
+    let closestPoint: IPoint = testPoint;
     let distance: number;
 
     const findClosest = function(point: IPoint) {

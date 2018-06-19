@@ -413,9 +413,7 @@ function makeInstanceUniformDeclaration(instanceUniformBlockCount: number, attri
     if (attribute.qualifier) {
       qualifiers.set(attribute.qualifier, true);
     }
-    else {
-      console.warn('Attribute.qualifier undefined on block.');
-    }
+
     // Get the max block in use
     maxBlock = Math.max(maxBlock, attribute.block);
   });

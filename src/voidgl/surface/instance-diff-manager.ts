@@ -76,8 +76,11 @@ export class InstanceDiffManager<T extends Instance> {
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
       const uniforms = manager.layer.uniformManager.add(instance);
-      instance.active = true;
-      manager.updateInstance(instance, uniforms);
+
+      if (uniforms) {
+        instance.active = true;
+        manager.updateInstance(instance, uniforms);
+      }
     }
   }
 
@@ -94,12 +97,15 @@ export class InstanceDiffManager<T extends Instance> {
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
     else {
       const uniforms = manager.layer.uniformManager.add(instance);
-      instance.active = true;
-      manager.updateInstance(instance, uniforms);
 
-      // Ensure the instance has an updated injection in the quad tree
-      manager.quadPicking.quadTree.remove(instance);
-      manager.quadPicking.quadTree.add(instance);
+      if (uniforms) {
+        instance.active = true;
+        manager.updateInstance(instance, uniforms);
+
+        // Ensure the instance has an updated injection in the quad tree
+        manager.quadPicking.quadTree.remove(instance);
+        manager.quadPicking.quadTree.add(instance);
+      }
     }
   }
 

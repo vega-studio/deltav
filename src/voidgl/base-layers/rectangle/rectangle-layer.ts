@@ -161,7 +161,7 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x, o.anchor.y],
+          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,

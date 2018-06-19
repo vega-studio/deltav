@@ -164,7 +164,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x, o.anchor.y],
+          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
@@ -189,7 +189,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
         },
         {
           atlas: {
-            key: this.props.atlas,
+            key: this.props.atlas || '',
             name: 'imageAtlas',
           },
           block: 2,

@@ -152,10 +152,6 @@ export class LayerSurface {
       console.warn('All layers must have an id');
       return layer;
     }
-    if (!layer.initShader) {
-      console.warn('All layers must have an initShader method.');
-      return layer;
-    }
 
     if (this.layers.get(layer.id)) {
       console.warn('All layer\'s ids must be unique per layer manager');
@@ -352,10 +348,8 @@ export class LayerSurface {
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
     // Make sure we have a gl context to work with
-    // Note: may need an error message here if context has not been provided.
-    if (options.context) {
-      this.setContext(options.context);
-    }
+    this.setContext(options.context);
+
     if (this.gl) {
       // Initialize our GL needs that set the basis for rendering
       this.initGL(options);
@@ -363,6 +357,10 @@ export class LayerSurface {
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
       await this.initResources(options);
+    }
+
+    else {
+      console.warn('Could not establish a GL context. Layer Surface will be unable to render');
     }
 
     return this;
@@ -503,29 +501,9 @@ export class LayerSurface {
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
-    if (!shaderIO) {
-      return layer;
-    }
-    if (shaderIO.instanceAttributes) {
-      shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
-    }
-    else {
-      shaderIO.instanceAttributes = [];
-    }
-
-    if (shaderIO.vertexAttributes) {
-      shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
-    }
-    else {
-      shaderIO.vertexAttributes = [];
-    }
-
-    if (shaderIO.uniforms) {
-      shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
-    }
-      else {
-        shaderIO.uniforms = [];
-      }
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(Boolean);
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(Boolean);
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
     // Get the injected shader IO attributes and uniforms
     const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
@@ -592,10 +570,7 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Scene {
     // Get the scene the layer will add itself to
-    let scene = null;
-    if (layer && layer.props.scene) {
-      scene = this.scenes.get(layer.props.scene);
-    }
+    let scene = this.scenes.get(layer.props.scene || '');
 
     if (!scene) {
       // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
@@ -719,7 +694,7 @@ export class LayerSurface {
   /**
    * This establishes the rendering canvas context for the surface.
    */
-  setContext(context: WebGLRenderingContext | HTMLCanvasElement | string) {
+  setContext(context?: WebGLRenderingContext | HTMLCanvasElement | string) {
     if (!context) {
       return;
     }
@@ -729,13 +704,13 @@ export class LayerSurface {
     }
 
     else if (isCanvas(context)) {
-      const confirmedValidContext = context.getContext('webgl') || context.getContext('experimental-webgl');
+      const canvasContext = context.getContext('webgl') || context.getContext('experimental-webgl');
 
-      if (!confirmedValidContext) {
+      if (!canvasContext) {
         console.warn('A valid GL context was not found for the context provided to the surface. This surface will not be able to operate.');
       }
       else {
-        this.context = confirmedValidContext;
+        this.context = canvasContext;
       }
     }
 

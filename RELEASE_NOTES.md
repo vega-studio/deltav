@@ -1,5 +1,13 @@
 # Release Notes
 
+## 1.9.0
+
+* `(ADDED)` maxScale for labels to allow for higher scales in BOUND_MAX scale mode
+
+## 1.8.3
+
+* `(FIXED)` Mouse wheel for FF is working now
+
 ## 1.8.2
 
 * `(FIXED)` Rings were not honoring scaleFactor

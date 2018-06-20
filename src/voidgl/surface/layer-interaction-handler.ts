@@ -1,7 +1,7 @@
 import { Bounds } from '../primitives';
 import { IPoint } from '../primitives/point';
 import { IColorPickingData, InstanceHitTest, IPickInfo, IProjection, PickType } from '../types';
-import { Instance } from '../util';
+import { Instance, TrackedQuadTree } from '../util';
 import { ILayerProps, Layer } from './layer';
 
 /**
@@ -55,7 +55,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: IPickInfo<T>['querySpace'];
+        let query: TrackedQuadTree<T>['query'];
         let querySpace;
         let instances: T[] = [];
 
@@ -106,7 +106,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseOut) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: IPickInfo<T>['querySpace'];
+        let query: TrackedQuadTree<T>['query'];
         let querySpace;
 
         if (this.layer.picking.type === PickType.ALL) {
@@ -147,7 +147,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: IPickInfo<T>['querySpace'];
+        let query: TrackedQuadTree<T>['query'];
         let querySpace;
         let instances: T[] = [];
 
@@ -195,7 +195,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         let info: IPickInfo<T>;
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: IPickInfo<T>['querySpace'];
+        let query: TrackedQuadTree<T>['query'];
         let querySpace;
         let instances: T[] = [];
 
@@ -284,7 +284,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: IPickInfo<T>['querySpace'];
+        let query: TrackedQuadTree<T>['query'];
         let querySpace;
         let instances: T[] = [];
 

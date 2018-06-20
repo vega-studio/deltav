@@ -20,7 +20,7 @@ export function generateLayerGeometry(maxInstancesPerBuffer: number, vertexAttri
   let buffer: Float32Array;
   let attribute: IVertexAttribute;
   let value: ShaderIOValue;
-  let formatError: boolean;
+  let formatError: boolean = false;
 
   for (let i = 0, end = vertexCount; i < end; ++i) {
     for (let k = 0; k < endk; ++k) {

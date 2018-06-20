@@ -342,7 +342,7 @@ function generateInstanceDataLookupOptions(layer: Layer<any, any, any>, template
       trueBlockIndex++;
     }
 
-    const attributeSize = attribute.size;
+    const attributeSize = attribute.size || 1;
     const oldUseage = blockUseage.get(trueBlockIndex) || 0;
     const newUseage = oldUseage + attributeSize;
 
@@ -371,7 +371,7 @@ function generateInstanceDataLookupOptions(layer: Layer<any, any, any>, template
       console.error(
         `An instance attribute was specified that would fill indices greater than the block allows.`,
         `\nMax index per block ${MAX_USE_PER_BLOCK}`,
-        `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + attribute.size}`,
+        `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 1)}`,
       );
 
       return;
@@ -382,7 +382,7 @@ function generateInstanceDataLookupOptions(layer: Layer<any, any, any>, template
         console.error(
           `An instance attribute was specified who's block index overaps another attributes useage`,
           `\nMax index per block ${MAX_USE_PER_BLOCK}`,
-          `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + attribute.size}`,
+          `\nAttribute: ${attribute.name} Block Index: ${attribute.blockIndex} Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex + (attribute.size || 1)}`,
         );
 
         return;
@@ -448,8 +448,11 @@ function makeInstanceUniformDeclaration(instanceUniformBlockCount: number, attri
   // Dedup the attributes specified for the
   attributes.forEach(attribute => {
     const qualifiers = blockQualifierDedup.get(attribute.block) || new Map<string, boolean>();
-    // Make sure the qualifier is added for the block
-    qualifiers.set(attribute.qualifier, true);
+    // Make sure the qualifier is added for the block!
+    if (attribute.qualifier) {
+      qualifiers.set(attribute.qualifier, true);
+    }
+
     // Get the max block in use
     maxBlock = Math.max(maxBlock, attribute.block);
   });

@@ -107,8 +107,6 @@ export declare class MouseEventManager {
     quadTree: QuadTree<DataBounds<SceneView>>;
     /** This is the current list of views being managed */
     views: SceneView[];
-    /** This stores the last mouse position recorded by this manager */
-    mouse: Vec2;
     eventCleanup: [string, EventListenerOrEventListenerObject][];
     /**
      * This flag is set when the system is waiting to render the elements to establish bounds.

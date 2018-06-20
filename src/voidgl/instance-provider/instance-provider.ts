@@ -2,7 +2,9 @@ import { InstanceDiffType } from '../types';
 import { Instance } from '../util/instance';
 import { ObservableManager, ObservableManagerMode } from './observable-manager';
 
-function isObservable(val: any): val is { $$register: null } {
+const noop = () => { /* no-op */ };
+
+function isObservable(val: any): val is { $$register(): void } {
   return val.$$register;
 }
 
@@ -39,7 +41,7 @@ export class InstanceProvider<T extends Instance> {
       // Set this as the current observer so registrations are made
       ObservableManager.observer = this;
       // This is the disposer
-      let disposer: Function;
+      let disposer: Function = noop;
 
       if (isObservable(instance)) {
         disposer = instance.$$register;

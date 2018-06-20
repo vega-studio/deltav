@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { InstanceProvider } from '../../instance-provider';
 import { ILayerProps, IModelType, IPickingMethods, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { shaderTemplate } from '../../util';
@@ -58,7 +59,7 @@ export class EdgeLayer extends Layer<
   // Set default props for the layer
   static defaultProps: IEdgeLayerProps = {
     broadphase: EdgeBroadphase.ALL,
-    data: null,
+    data: new InstanceProvider<EdgeInstance>(),
     key: 'none',
     scaleType: EdgeScaleType.NONE,
     type: EdgeType.LINE,

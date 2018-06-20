@@ -2,6 +2,7 @@ import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { Vec2 } from '../../util';
 import { ScaleType } from '../types';
 import { LabelInstance } from './label-instance';
 
@@ -28,9 +29,11 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
     return {
       // Provide the calculated AABB world bounds for a given label
       boundsAccessor: (label: LabelInstance) => {
+        const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
         const topLeft = [
-          label.x - label.anchor.x,
-          label.y - label.anchor.y,
+          label.x - anchor[0],
+          label.y - anchor[1],
         ];
 
         return new Bounds({
@@ -63,10 +66,12 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
 
           // We are zooming in. The bounds will shrink to keep the label at max font size
           else {
+            const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
             // The location is within the world, but we reverse project the anchor spread
             const topLeft = view.worldToScreen({
-              x: label.x - (label.anchor.x / view.camera.scale[0]),
-              y: label.y - (label.anchor.y / view.camera.scale[1]),
+              x: label.x - (anchor[0] / view.camera.scale[0]),
+              y: label.y - (anchor[1] / view.camera.scale[1]),
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -84,10 +89,12 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
         // If we never allow the label to scale, then the bounds will grow and shrink to counter the effects
         // Of the camera zoom
         else if (label.scaling === ScaleType.NEVER) {
+          const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
           // The location is within the world, but we reverse project the anchor spread
           const topLeft = view.worldToScreen({
-            x: label.x - (label.anchor.x / view.camera.scale[0]),
-            y: label.y - (label.anchor.y / view.camera.scale[1]),
+            x: label.x - (anchor[0] / view.camera.scale[0]),
+            y: label.y - (anchor[1] / view.camera.scale[1]),
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -143,7 +150,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x, o.anchor.y],
+          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
@@ -168,7 +175,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
         },
         {
           atlas: {
-            key: this.props.atlas,
+            key: this.props.atlas || '',
             name: 'labelAtlas',
           },
           block: 2,
@@ -188,6 +195,13 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
           name: 'scale',
           size: InstanceAttributeSize.ONE,
           update: (o) => [o.scale],
+        },
+        {
+          block: 4,
+          blockIndex: InstanceBlockIndex.TWO,
+          name: 'maxScale',
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.maxScale],
         },
       ],
       uniforms: [

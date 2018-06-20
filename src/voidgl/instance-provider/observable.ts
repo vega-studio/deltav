@@ -1,6 +1,7 @@
 import { Instance } from '../util/instance';
 import { ObservableManager, ObservableManagerMode } from './observable-manager';
 
+const noop = () => { /* no-op */ };
 const observerKey = '$$';
 
 export function observable(target: Instance, key: string) {
@@ -27,7 +28,7 @@ export function observable(target: Instance, key: string) {
       return () => (this[observerKey] = null);
     }
 
-    return null;
+    return noop;
   }
 
   function dispose(): void {

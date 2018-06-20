@@ -75,7 +75,7 @@ export function makeInstanceDestructuringArray(instanceAttributes: IInstanceAttr
 
     // Do normal destructuring with any other size and type
     else {
-      out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block}.${makeVectorSwizzle(attribute.blockIndex, attribute.size)};\n`;
+      out += `  ${sizeToType[attribute.size || 1]} ${attribute.name} = block${block}.${makeVectorSwizzle(attribute.blockIndex || 0, attribute.size || 1)};\n`;
     }
   });
 

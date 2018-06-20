@@ -149,7 +149,7 @@ export class InstanceUniformManager<T extends Instance> {
       buffer.pickModel && this.scene.pickingContainer.remove(buffer.pickModel);
     });
 
-    this.scene = null;
+    delete this.scene;
   }
 
   /**
@@ -173,7 +173,9 @@ export class InstanceUniformManager<T extends Instance> {
     // Performance
     const newGeometry = new Three.BufferGeometry();
     this.layer.vertexAttributes.forEach(attribute => {
-      newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
+      if (attribute.materialAttribute) {
+        newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
+      }
     });
 
     // Ensure the draw range covers every instance in the geometry.
@@ -198,7 +200,7 @@ export class InstanceUniformManager<T extends Instance> {
       lastInstance: 0,
       material: newMaterial,
       model: newModel,
-      pickModel: this.layer.picking.type === PickType.SINGLE && newModel.clone(),
+      pickModel: this.layer.picking.type === PickType.SINGLE ? newModel.clone() : undefined,
     };
 
     this.buffers.push(buffer);

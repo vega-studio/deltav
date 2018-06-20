@@ -28,10 +28,17 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
     return {
       // Provide the calculated AABB world bounds for a given image
       boundsAccessor: (image: ImageInstance) => {
+        const anchorEffect = [0, 0];
+
+        if (image.anchor) {
+          anchorEffect[0] = image.anchor.x || 0;
+          anchorEffect[1] = image.anchor.y || 0;
+        }
+
         const topLeft = [
-          image.x - image.anchor.x,
-          image.y - image.anchor.y,
-        ];
+            image.x - anchorEffect[0],
+            image.y - anchorEffect[1],
+          ];
 
         return new Bounds({
           height: image.height,
@@ -64,9 +71,16 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
           // We are zooming in. The bounds will shrink to keep the image at max font size
           else {
             // The location is within the world, but we reverse project the anchor spread
+            const anchorEffect = [0, 0];
+
+            if (image.anchor) {
+              anchorEffect[0] = image.anchor.x || 0;
+              anchorEffect[1] = image.anchor.y || 0;
+            }
+
             const topLeft = view.worldToScreen({
-              x: image.x - (image.anchor.x / view.camera.scale[0]),
-              y: image.y - (image.anchor.y / view.camera.scale[1]),
+              x: image.x - (anchorEffect[0] / view.camera.scale[0]),
+              y: image.y - (anchorEffect[1] / view.camera.scale[1]),
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -85,9 +99,16 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
         // Of the camera zoom
         else if (image.scaling === ScaleType.NEVER) {
           // The location is within the world, but we reverse project the anchor spread
+          const anchorEffect = [0, 0];
+
+          if (image.anchor) {
+            anchorEffect[0] = image.anchor.x || 0;
+            anchorEffect[1] = image.anchor.y || 0;
+          }
+
           const topLeft = view.worldToScreen({
-            x: image.x - (image.anchor.x / view.camera.scale[0]),
-            y: image.y - (image.anchor.y / view.camera.scale[1]),
+            x: image.x - (anchorEffect[0] / view.camera.scale[0]),
+            y: image.y - (anchorEffect[1] / view.camera.scale[1]),
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -143,7 +164,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x, o.anchor.y],
+          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
@@ -168,7 +189,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLay
         },
         {
           atlas: {
-            key: this.props.atlas,
+            key: this.props.atlas || '',
             name: 'imageAtlas',
           },
           block: 2,

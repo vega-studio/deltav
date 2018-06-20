@@ -302,6 +302,8 @@ export class LayerSurface {
             const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
             // Read the pixels out
+            // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
+            // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
             this.pickingRenderer.readRenderTargetPixels(
               this.pickingTarget,
               mouse[0] - view.screenBounds.x - pickWidth / 2,
@@ -511,6 +513,10 @@ export class LayerSurface {
       await this.initResources(options);
     }
 
+    else {
+      console.warn('Could not establish a GL context. Layer Surface will be unable to render');
+    }
+
     return this;
   }
 
@@ -674,9 +680,9 @@ export class LayerSurface {
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
-    shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
-    shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
-    shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(Boolean);
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(Boolean);
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
     // Get the injected shader IO attributes and uniforms
     const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
@@ -743,7 +749,7 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Scene {
     // Get the scene the layer will add itself to
-    let scene = this.scenes.get(layer.props.scene);
+    let scene = this.scenes.get(layer.props.scene || '');
 
     if (!scene) {
       // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
@@ -766,8 +772,11 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V> | null): Layer<T, U, V> | null {
     // Make sure we are removing a layer that exists in the system
+    if (!layer) {
+      return null;
+    }
     if (!this.layers.get(layer && layer.id)) {
       console.warn('Tried to remove a layer that is not in the manager.', layer);
       return layer;
@@ -807,7 +816,13 @@ export class LayerSurface {
     // Take any layer that retained it's disposal flag and trash it
     this.willDisposeLayer.forEach((dispose, layerId) => {
       if (dispose) {
-        this.removeLayer(this.layers.get(layerId));
+        const layer = this.layers.get(layerId);
+        if (layer) {
+          this.removeLayer(layer);
+        }
+        else {
+          console.warn('this.willDisposeLayer called on non-gettable layer.');
+        }
       }
     });
 
@@ -862,7 +877,7 @@ export class LayerSurface {
   /**
    * This establishes the rendering canvas context for the surface.
    */
-  setContext(context: WebGLRenderingContext | HTMLCanvasElement | string) {
+  setContext(context?: WebGLRenderingContext | HTMLCanvasElement | string) {
     if (!context) {
       return;
     }
@@ -872,10 +887,13 @@ export class LayerSurface {
     }
 
     else if (isCanvas(context)) {
-      this.context = context.getContext('webgl') || context.getContext('experimental-webgl');
+      const canvasContext = context.getContext('webgl') || context.getContext('experimental-webgl');
 
-      if (!this.context) {
+      if (!canvasContext) {
         console.warn('A valid GL context was not found for the context provided to the surface. This surface will not be able to operate.');
+      }
+      else {
+        this.context = canvasContext;
       }
     }
 

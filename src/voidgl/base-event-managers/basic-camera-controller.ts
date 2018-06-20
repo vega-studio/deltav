@@ -95,7 +95,7 @@ export class BasicCameraController extends EventManager {
   /** THis is the filter applied to tscaling operations */
   private scaleFilter = (scale: [number, number, number], view: View, allViews: View[]) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
-  startViews: string[] | undefined;
+  startViews: string[] = [];
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -113,7 +113,9 @@ export class BasicCameraController extends EventManager {
 
   constructor(options: IBasicCameraControllerOptions) {
     super();
-    this.setBounds(options.bounds);
+    if (options.bounds) {
+      this.setBounds(options.bounds);
+    }
     this.camera = options.camera;
     this.scaleFactor = options.scaleFactor || 1000.0;
     this.ignoreCoverViews = options.ignoreCoverViews || false;
@@ -137,8 +139,8 @@ export class BasicCameraController extends EventManager {
 
       // Next bound the positioning
       if (targetView) {
-        this.camera.offset[0] = this.boundsHorizontalOffset(targetView);
-        this.camera.offset[1] = this.boundsVerticalOffset(targetView);
+        this.camera.offset[0] = this.boundsHorizontalOffset(targetView, this.bounds);
+        this.camera.offset[1] = this.boundsVerticalOffset(targetView, this.bounds);
       }
     }
   }
@@ -167,77 +169,77 @@ export class BasicCameraController extends EventManager {
   /**
    * Calculation for adhering to an anchor - x-axis offset only.
    */
-  anchoredByBoundsHorizontal(targetView: View) {
-    switch (this.bounds.anchor) {
+  anchoredByBoundsHorizontal(targetView: View, bounds: ICameraBoundsOptions) {
+    switch (bounds.anchor) {
       case CameraBoundsAnchor.TOP_LEFT:
       case CameraBoundsAnchor.MIDDLE_LEFT:
       case CameraBoundsAnchor.BOTTOM_LEFT:
-        return -(this.bounds.worldBounds.left -
-          this.bounds.screenPadding.left / this.camera.scale[0]);
+        return -(bounds.worldBounds.left -
+          bounds.screenPadding.left / this.camera.scale[0]);
 
       case CameraBoundsAnchor.TOP_MIDDLE:
       case CameraBoundsAnchor.MIDDLE:
       case CameraBoundsAnchor.BOTTOM_MIDDLE:
-        return -(this.bounds.worldBounds.right - (this.bounds.worldBounds.width / 2) -
-          (0.5 * ((targetView.screenBounds.width + this.bounds.screenPadding.right) / this.camera.scale[0])));
+        return -(bounds.worldBounds.right - (bounds.worldBounds.width / 2) -
+          (0.5 * ((targetView.screenBounds.width + bounds.screenPadding.right) / this.camera.scale[0])));
 
       case CameraBoundsAnchor.TOP_RIGHT:
       case CameraBoundsAnchor.MIDDLE_RIGHT:
       case CameraBoundsAnchor.BOTTOM_RIGHT:
-        return -(this.bounds.worldBounds.right - ((targetView.screenBounds.width - this.bounds.screenPadding.right) / this.camera.scale[0] ));
+        return -(bounds.worldBounds.right - ((targetView.screenBounds.width - bounds.screenPadding.right) / this.camera.scale[0] ));
     }
   }
 
   /**
    * Calculation for adhering to an anchor - y-axis offset only.
    */
-  anchoredByBoundsVertical(targetView: View) {
-    switch (this.bounds.anchor) {
+  anchoredByBoundsVertical(targetView: View, bounds: ICameraBoundsOptions) {
+    switch (bounds.anchor) {
       case CameraBoundsAnchor.TOP_LEFT:
       case CameraBoundsAnchor.TOP_MIDDLE:
       case CameraBoundsAnchor.TOP_RIGHT:
-        return -(this.bounds.worldBounds.top) -
-          (-this.bounds.screenPadding.top  / this.scale[1]);
+        return -(bounds.worldBounds.top) -
+          (-bounds.screenPadding.top  / this.scale[1]);
 
       case CameraBoundsAnchor.MIDDLE_LEFT:
       case CameraBoundsAnchor.MIDDLE:
       case CameraBoundsAnchor.MIDDLE_RIGHT:
-        return -(this.bounds.worldBounds.bottom - (this.bounds.worldBounds.height / 2)) +
-          ((0.5 * (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]));
+        return -(bounds.worldBounds.bottom - (bounds.worldBounds.height / 2)) +
+          ((0.5 * (targetView.screenBounds.height - bounds.screenPadding.bottom)  / this.scale[1]));
 
       case CameraBoundsAnchor.BOTTOM_LEFT:
       case CameraBoundsAnchor.BOTTOM_MIDDLE:
       case CameraBoundsAnchor.BOTTOM_RIGHT:
-        return -(this.bounds.worldBounds.bottom -
-          (targetView.screenBounds.height - this.bounds.screenPadding.bottom)  / this.scale[1]);
+        return -(bounds.worldBounds.bottom -
+          (targetView.screenBounds.height - bounds.screenPadding.bottom)  / this.scale[1]);
     }
   }
 
   /**
    * Returns offset on x-axis due to current bounds and anchor.
    */
-  boundsHorizontalOffset(targetView: View) {
-    const worldTLinScreenSpace =  targetView.worldToScreen({x: this.bounds.worldBounds.left, y: this.bounds.worldBounds.top});
-    const worldBRinScreenSpace =  targetView.worldToScreen({x: this.bounds.worldBounds.right, y: this.bounds.worldBounds.bottom});
+  boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions) {
+    const worldTLinScreenSpace =  targetView.worldToScreen({x: bounds.worldBounds.left, y: bounds.worldBounds.top});
+    const worldBRinScreenSpace =  targetView.worldToScreen({x: bounds.worldBounds.right, y: bounds.worldBounds.bottom});
 
     const widthDifference =
       (worldBRinScreenSpace.x - worldTLinScreenSpace.x) +
-      this.bounds.screenPadding.left +
-      this.bounds.screenPadding.right -
+      bounds.screenPadding.left +
+      bounds.screenPadding.right -
       targetView.screenBounds.width;
 
     // If the worldBounds are smaller than the screenBounds,
     // We offset according to the anchoring
     if (widthDifference < 0) {
-      return this.anchoredByBoundsHorizontal(targetView);
+      return this.anchoredByBoundsHorizontal(targetView, bounds);
     }
 
-    if (worldBRinScreenSpace.x < (targetView.screenBounds.right - this.bounds.screenPadding.right)) {
-      return (-this.bounds.worldBounds.right + (targetView.screenBounds.width - this.bounds.screenPadding.right) / this.camera.scale[0]);
+    if (worldBRinScreenSpace.x < (targetView.screenBounds.right - bounds.screenPadding.right)) {
+      return (-bounds.worldBounds.right + (targetView.screenBounds.width - bounds.screenPadding.right) / this.camera.scale[0]);
     }
 
-    if (worldTLinScreenSpace.x > (targetView.screenBounds.left + this.bounds.screenPadding.left)) {
-      return (-this.bounds.worldBounds.left + (this.bounds.screenPadding.left / this.camera.scale[0]));
+    if (worldTLinScreenSpace.x > (targetView.screenBounds.left + bounds.screenPadding.left)) {
+      return (-bounds.worldBounds.left + (bounds.screenPadding.left / this.camera.scale[0]));
     }
 
     return this.camera.offset[0];
@@ -246,28 +248,28 @@ export class BasicCameraController extends EventManager {
   /**
    * Returns offset on y-axis due to current bounds and anchor.
    */
-  boundsVerticalOffset(targetView: View) {
-    const worldTLinScreenSpace =  targetView.worldToScreen({x: this.bounds.worldBounds.left, y: this.bounds.worldBounds.top});
-    const worldBRinScreenSpace =  targetView.worldToScreen({x: this.bounds.worldBounds.right, y: this.bounds.worldBounds.bottom});
+  boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions) {
+    const worldTLinScreenSpace =  targetView.worldToScreen({x: bounds.worldBounds.left, y: bounds.worldBounds.top});
+    const worldBRinScreenSpace =  targetView.worldToScreen({x: bounds.worldBounds.right, y: bounds.worldBounds.bottom});
 
     const heightDifference =
       (worldBRinScreenSpace.y - worldTLinScreenSpace.y) +
-      this.bounds.screenPadding.top +
-      this.bounds.screenPadding.bottom -
+      bounds.screenPadding.top +
+      bounds.screenPadding.bottom -
       targetView.screenBounds.height;
 
     // If the viewBounds are larger than the screenBounds,
     // We offset according to the anchoring
     if (heightDifference < 0) {
-      return this.anchoredByBoundsVertical(targetView);
+      return this.anchoredByBoundsVertical(targetView, bounds);
     }
 
-    if (worldTLinScreenSpace.y > targetView.screenBounds.top - this.bounds.screenPadding.top) {
-      return (-(this.bounds.worldBounds.top - (this.bounds.screenPadding.top / this.camera.scale[1])));
+    if (worldTLinScreenSpace.y > targetView.screenBounds.top - bounds.screenPadding.top) {
+      return (-(bounds.worldBounds.top - (bounds.screenPadding.top / this.camera.scale[1])));
     }
 
-    if (worldBRinScreenSpace.y < targetView.screenBounds.bottom + this.bounds.screenPadding.bottom) {
-      return (-(this.bounds.worldBounds.bottom + ((-targetView.screenBounds.height + this.bounds.screenPadding.bottom) / this.camera.scale[1])));
+    if (worldBRinScreenSpace.y < targetView.screenBounds.bottom + bounds.screenPadding.bottom) {
+      return (-(bounds.worldBounds.bottom + ((-targetView.screenBounds.height + bounds.screenPadding.bottom) / this.camera.scale[1])));
     }
 
     return this.camera.offset[1];
@@ -275,7 +277,6 @@ export class BasicCameraController extends EventManager {
 
   private canStart(viewId: string) {
     return (
-      !this.startViews ||
       this.startViews.length === 0 ||
       (this.startViews && this.startViews.indexOf(viewId) > -1) ||
       this.startViewDidStart && this.ignoreCoverViews
@@ -308,10 +309,14 @@ export class BasicCameraController extends EventManager {
    * Used to aid in handling the pan effect and determine the contextual view targetted.
    */
   handleMouseDown(e: IMouseInteraction, button: number) {
-    // We look for valid covered views on mouse down so dragging will work
-    this.findCoveredStartView(e);
+    if (this.startViews) {
+      // We look for valid covered views on mouse down so dragging will work
+      this.findCoveredStartView(e);
     // If this is a valid start view, then we enter a panning state with the mouse down
-    this.isPanning = this.canStart(e.start.view.id);
+      if (e.start) {
+        this.isPanning = (this.canStart(e.start.view.id) || this.isPanning);
+      }
+    }
   }
 
   /**
@@ -326,24 +331,26 @@ export class BasicCameraController extends EventManager {
    * Applies a panning effect by adjusting the camera's offset.
    */
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    if (this.canStart(e.start.view.id)) {
-      let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
-        (drag.screen.delta.y / this.camera.scale[1]),
-        0];
+    if (e.start) {
+      if (this.canStart(e.start.view.id)) {
+        let pan : [number, number, number] = [(drag.screen.delta.x / this.camera.scale[0]),
+          (drag.screen.delta.y / this.camera.scale[1]),
+          0];
 
-      if (this.panFilter) {
-        pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
+        if (this.panFilter) {
+          pan = this.panFilter(pan, e.start.view, e.viewsUnderMouse.map(v => v.view));
+        }
+
+        this.camera.offset[0] += pan[0];
+        this.camera.offset[1] += pan[1];
+
+        // Add additional correction for bounds
+        this.applyBounds();
+        // Broadcast the change occurred
+        this.onRangeChanged(this.camera, e.start.view);
+        // Add additional correction for bounds
+        this.applyBounds();
       }
-
-      this.camera.offset[0] += pan[0];
-      this.camera.offset[1] += pan[1];
-
-      // Add additional correction for bounds
-      this.applyBounds();
-      // Broadcast the change occurred
-      this.onRangeChanged(this.camera, e.start.view);
-      // Add additional correction for bounds
-      this.applyBounds();
     }
   }
 

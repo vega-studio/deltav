@@ -84,6 +84,28 @@ export class LabelSizingCorrected extends BaseExample {
       y: 40,
     }));
 
+    provider.add(new LabelInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.Middle,
+      },
+      color: [1.0, 1.0, 1.0, 1.0],
+      fontFamily: 'Arial',
+      fontSize: 18,
+      fontStyle: 'normal',
+      fontWeight: 'normal',
+      id: `label-compare-2`,
+      maxScale: 2.0,
+      rasterization: {
+        scale: 1.0,
+      },
+      scale: 0.5,
+      scaling: ScaleType.BOUND_MAX,
+      text: '0.5 max 2.0',
+      x: 20,
+      y: 80,
+    }));
+
     return provider;
   }
 }

@@ -58,8 +58,8 @@ export class PackNode {
    * Inserts images into our mapping, fitting them appropriately
    */
   insert(image: ImageDimensions): PackNode | null {
-    const child0 = this.child[0];
-    const child1 = this.child[1];
+    let child0 = this.child[0];
+    let child1 = this.child[1];
 
     if (!this.isLeaf && child0 && child1) {
       // Try inserting into first child
@@ -89,16 +89,16 @@ export class PackNode {
       const dHeight: number = this.nodeDimensions.height - image.second.height;
 
       if (dWidth > dHeight) {
-        this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y, imgWidth, this.nodeDimensions.height);
-        this.child[1] = new PackNode(this.nodeDimensions.x + imgWidth, this.nodeDimensions.y, dWidth, this.nodeDimensions.height);
+        child0 = this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y, imgWidth, this.nodeDimensions.height);
+        child1 = this.child[1] = new PackNode(this.nodeDimensions.x + imgWidth, this.nodeDimensions.y, dWidth, this.nodeDimensions.height);
       } else {
-        this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y  , this.nodeDimensions.width, imgHeight);
-        this.child[1] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y + imgHeight, this.nodeDimensions.width, dHeight);
+        child0 = this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y  , this.nodeDimensions.width, imgHeight);
+        child1 = this.child[1] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y + imgHeight, this.nodeDimensions.width, dHeight);
       }
     }
 
     // Insert into first child we created
-    return this.child[0].insert(image);
+    return child0.insert(image);
   }
 
   /**
@@ -107,15 +107,18 @@ export class PackNode {
    * @param {AtlasTexture} image The image to insert into the
    */
   remove(image: SubTexture): boolean {
-    if (!this.isLeaf) {
+    const child0 = this.child[0];
+    const child1 = this.child[1];
+
+    if (child1 && child0 && !this.isLeaf) {
       // Try removing from first child
-      let removed: boolean = this.child[0].remove(image);
+      let removed: boolean = child0.remove(image);
       if (removed) { return true; }
       // Try remove from second
-      removed = this.child[1].remove(image);
+      removed = child1.remove(image);
 
-      if (!this.child[0].hasChild()) {
-        if (!this.child[1].hasChild()) {
+      if (!child0.hasChild()) {
+        if (!child1.hasChild()) {
           this.child[0] = null;
           this.child[1] = null;
         }
@@ -127,7 +130,7 @@ export class PackNode {
     else {
       if (this.nodeImage === image) {
         this.nodeImage = null;
-        image.atlasReferenceID = null;
+        delete image.atlasReferenceID;
         image.pixelWidth = 0;
         return true;
       }

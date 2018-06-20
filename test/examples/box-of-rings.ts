@@ -24,7 +24,11 @@ export class BoxOfRings extends BaseExample {
 
     setInterval(() => {
       if (rings.length) {
-        ringProvider.remove(rings.pop());
+        const ring = rings.pop();
+
+        if (ring) {
+          ringProvider.remove(ring);
+        }
       }
 
       else {

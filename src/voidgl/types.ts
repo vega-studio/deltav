@@ -113,7 +113,7 @@ export interface IVertexAttribute {
 
 export interface IVertexAttributeInternal extends IVertexAttribute {
   /** This is the actual attribute generated internally for the ThreeJS interfacing */
-  materialAttribute: Three.BufferAttribute;
+  materialAttribute: Three.BufferAttribute | null;
 }
 
 export interface IInstanceAttribute<T extends Instance> {
@@ -125,8 +125,7 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   block: number,
   /**
-   * This is the index within the block this attribute will be available. This is automatically
-   * populated by the system.
+   * This is the index within the block this attribute will be available.
    */
   blockIndex?: InstanceBlockIndex,
   /**
@@ -169,17 +168,51 @@ export interface IInstanceAttribute<T extends Instance> {
   update(instance: T): InstanceIOValue;
 }
 
+/**
+ * This is an attribute where the atlas is definitely declared.
+ */
+export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+  /**
+   * If this is specified, this attribute becomes a size of 4 and will have a block index of
+   * 0. This makes this attribute and layer become compatible with reading atlas resources.
+   * The value provided for this property should be the name of the atlas that is created.
+   */
+  atlas: {
+    /** Specify which generated atlas to target for the resource */
+    key: string,
+    /** Specify the name that will be injected that will be the sampler2D in the shader */
+    name: string,
+    /**
+     * This specifies which of the shaders the sampler2D will be injected into.
+     * Defaults to the Fragment shader only.
+     */
+    shaderInjection?: ShaderInjectionTarget,
+  },
+}
+
+/**
+ * This is an attribute that is simply a value
+ */
+export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+  /**
+   * If this is specified, this attribute becomes a size of 4 and will have a block index of
+   * 0. This makes this attribute and layer become compatible with reading atlas resources.
+   * The value provided for this property should be the name of the atlas that is created.
+   */
+  atlas: undefined,
+}
+
 // For now internal instance attributes are the same
 export type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 
 /** These are flags for indicating which shaders receive certain injection elements */
 export enum ShaderInjectionTarget {
   /** ONLY the vertex shader will receive the injection */
-  VERTEX,
+  VERTEX = 1,
   /** ONLY the fragment shader will receive the injection */
-  FRAGMENT,
+  FRAGMENT = 2,
   /** Both the fragment and vertex shader will receive the injection */
-  ALL,
+  ALL = 3,
 }
 
 export interface IUniform {

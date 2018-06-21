@@ -39,7 +39,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
    * Handles mouse down gestures for a layer within a view
    */
   handleMouseOver(view: IProjection, mouse: IPoint) {
-    // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
+    // This is the mouse over for the view itself. We should probably just let the mouse move events handle the interactions
     // With the instances
   }
 

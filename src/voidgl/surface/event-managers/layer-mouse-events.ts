@@ -166,7 +166,7 @@ export class LayerMouseEvents extends EventManager {
 
     if (mouse) {
       for (const layer of sceneView.scene.layers) {
-        if (layer.picking && layer.picking.type === PickType.ALL) {
+        if (layer.picking && layer.picking.type !== PickType.NONE) {
           callback(layer, view, mouse);
         }
       }

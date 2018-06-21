@@ -1,4 +1,4 @@
-import { IColorPickingData } from '..';
+import { IColorPickingData } from '../types';
 import { Vec2 } from './vector';
 
 /**

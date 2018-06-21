@@ -1,7 +1,7 @@
 import * as Three from 'three';
 import { InstanceIOValue } from '../../types';
 import { Instance } from '../../util/instance';
-import { Layer } from '../layer';
+import { ILayerProps, Layer } from '../layer';
 import { AtlasManager, AtlasResource } from './atlas-manager';
 import { LabelAtlasResource } from './label-atlas-resource';
 import { SubTexture } from './sub-texture';
@@ -42,7 +42,7 @@ export class AtlasResourceManager {
   /**
    * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
    */
-  private requestLookup = new Map<string, Map<AtlasResource, [Layer<any, any, any>, Instance][]>>();
+  private requestLookup = new Map<string, Map<AtlasResource, [Layer<any, any>, Instance][]>>();
 
   constructor(options: IAtlasResourceManagerOptions) {
     this.atlasManager = options.atlasManager;
@@ -121,7 +121,7 @@ export class AtlasResourceManager {
    * make valid texture lookups, or it will trigger a loading of resources to an atlas and cause an
    * automated deactivation and reactivation of the instance.
    */
-  request(layer: Layer<any, any, any>, instance: Instance, resource: AtlasResource): InstanceIOValue {
+  request<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instance: Instance, resource: AtlasResource): InstanceIOValue {
     const texture: SubTexture = resource.texture;
 
     // If the texture is ready and available, then we simply return the IO values

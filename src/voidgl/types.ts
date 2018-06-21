@@ -1,7 +1,8 @@
 import * as Three from 'three';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
-import { ChartCamera } from './util';
+import { ChartCamera, Vec } from './util';
+import { IAutoEasingMethod } from './util/auto-easing-method';
 import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
@@ -128,6 +129,12 @@ export interface IInstanceAttribute<T extends Instance> {
    * This is the index within the block this attribute will be available.
    */
   blockIndex?: InstanceBlockIndex,
+  /**
+   * When this is set, the system will automatically inject necessary Shader IO to facilitate
+   * performing the easing on the GPU, which saves enormous amounts of CPU processing time
+   * trying to calcuate animations and tweens for properties.
+   */
+  easing?: IAutoEasingMethod<Vec>,
   /**
    * This is the name that will be available in your shader for use. This will only be
    * available after the ${attributes} declaration.

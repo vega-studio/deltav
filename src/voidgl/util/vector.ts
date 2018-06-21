@@ -1,8 +1,86 @@
 const { sqrt } = Math;
 
+/** Explicit Vec1 */
+export interface IVec1 extends Array<number> {
+  0: number;
+  length: 1;
+}
+
+/** Explicit Vec2 */
+export interface IVec2 extends Array<number> {
+  0: number;
+  1: number;
+  length: 2;
+}
+
+/** Explicit Vec3 */
+export interface IVec3 extends Array<number> {
+  0: number;
+  1: number;
+  2: number;
+  length: 3;
+}
+
+/** Explicit Vec4 */
+export interface IVec4 extends Array<number> {
+  0: number;
+  1: number;
+  2: number;
+  3: number;
+  length: 4;
+}
+
+/** Vector of 1 components */
+export type Vec1 = [number];
+/** Vector of 2 components */
 export type Vec2 = [number, number];
+/** Vector of 3 components */
 export type Vec3 = [number, number, number];
+/** Vector of 4 components */
 export type Vec4 = [number, number, number, number];
+
+/** This type defines any possible explicit vector */
+export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
+/** This type defines any possible vector */
+export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
+
+export function add1(left: Vec1, right: Vec1): Vec1 {
+  return [
+    left[0] + right[0],
+  ];
+}
+
+export function scale1(left: Vec1, scale: number): Vec1 {
+  return [
+    left[0] * scale,
+  ];
+}
+
+export function subtract1(left: Vec1, right: Vec1): Vec1 {
+  return [
+    left[0] - right[0],
+  ];
+}
+
+export function multiply1(left: Vec1, right: Vec1): Vec1 {
+  return [
+    left[0] * right[0],
+  ];
+}
+
+export function dot1(left: Vec1, right: Vec1): number {
+  return (
+    left[0] * right[0]
+  );
+}
+
+export function linear1(start: Vec1, end: Vec1, t: number): Vec1 {
+  return scale1(add1(subtract1(end, start), start), t);
+}
+
+export function length1(start: Vec1): number {
+  return sqrt(dot1(start, start));
+}
 
 export function add2(left: Vec2, right: Vec2): Vec2 {
   return [
@@ -146,4 +224,58 @@ export function linear4(start: Vec4, end: Vec4, t: number): Vec4 {
 
 export function length4(start: Vec4): number {
   return sqrt(dot4(start, start));
+}
+
+export type VecMethods<T extends Vec> = {
+  add(left: T, right: T): T;
+  scale(vec: T, scale: number): T;
+  subtract(left: T, right: T): T;
+  multiply(left: T, right: T): T;
+  dot(left: T, right: T): number;
+  linear(start: T, end: T, t: number): T;
+  length(vec: T): number;
+};
+
+export function VecMath<T extends IVec>(vec: T): VecMethods<T> {
+  let methods: VecMethods<T>;
+
+  if (vec.length === 2) {
+    methods = {
+      add: add2,
+      dot: dot2,
+      length: length2,
+      linear: linear2,
+      multiply: multiply2,
+      scale: scale2,
+      subtract: subtract2,
+    } as VecMethods<T>;
+
+    return methods;
+  }
+
+  else if (vec.length === 3) {
+    methods = {
+      add: add3,
+      dot: dot3,
+      length: length3,
+      linear: linear3,
+      multiply: multiply3,
+      scale: scale3,
+      subtract: subtract3,
+    } as VecMethods<T>;
+
+    return methods;
+  }
+
+  methods = {
+    add: add4,
+    dot: dot4,
+    length: length4,
+    linear: linear4,
+    multiply: multiply4,
+    scale: scale4,
+    subtract: subtract4,
+  } as VecMethods<T>;
+
+  return methods;
 }

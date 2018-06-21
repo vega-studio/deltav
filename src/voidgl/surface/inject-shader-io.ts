@@ -5,8 +5,21 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from 'three';
-import { IShaderInitialization, Layer } from '../surface/layer';
-import { IAtlasInstanceAttribute, IInstanceAttribute, InstanceAttributeSize, InstanceBlockIndex, IUniform, IUniformInternal, IValueInstanceAttribute, IVertexAttribute, IVertexAttributeInternal, ShaderInjectionTarget, UniformSize, VertexAttributeSize } from '../types';
+import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
+import {
+  IAtlasInstanceAttribute,
+  IInstanceAttribute,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IUniform,
+  IUniformInternal,
+  IValueInstanceAttribute,
+  IVertexAttribute,
+  IVertexAttributeInternal,
+  ShaderInjectionTarget,
+  UniformSize,
+  VertexAttributeSize,
+} from '../types';
 import { Instance } from '../util/instance';
 
 const emptyTexture = new Three.Texture();
@@ -39,7 +52,7 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
  * This searches through attribute packing for the first empty slot it can find to fill.
  * If a slot is not available it will just start a new block.
  */
-function findEmptyBlock(attributes: IInstanceAttribute<any>[]): [number, number] {
+function findEmptyBlock<T extends Instance>(attributes: IInstanceAttribute<T>[]): [number, number] {
   const blocks = new Map<number, Map<number, boolean>>();
   let found: [number, number] | null = null;
   let maxBlock = 0;
@@ -88,7 +101,7 @@ function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, 
   return 1;
 }
 
-export function injectShaderIO<T extends Instance>(layer: Layer<T, any, any>, shaderIO: IShaderInitialization<T>) {
+export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, shaderIO: IShaderInitialization<T>) {
   // Retrieve all of the instance attributes that are atlas references
   const atlasInstanceAttributes: IAtlasInstanceAttribute<T>[] = [];
   // Key: The atlas uniform name requested

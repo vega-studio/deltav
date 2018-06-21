@@ -12,15 +12,11 @@ export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
   scaleFactor?(): number;
 }
 
-export interface ICircleLayerState {
-
-}
-
 /**
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps, ICircleLayerState> {
+export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
   static defaultProps: ICircleLayerProps = {
     data: new DataProvider<CircleInstance>([]),
     fadeOutOversized: -1,

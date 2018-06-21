@@ -10,17 +10,13 @@ export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
   atlas?: string;
 }
 
-export interface ILabelLayerState {
-
-}
-
 const { max, min } = Math;
 
 /**
  * This layer displays Labels and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLayerState> {
+export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

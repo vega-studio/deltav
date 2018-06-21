@@ -52,7 +52,7 @@ export interface InstanceUniformBuffer {
  */
 export class InstanceUniformManager<T extends Instance> {
   /** The layer this manager provides uniforms */
-  private layer: Layer<T, any, any>;
+  private layer: Layer<T, any>;
   /** The scene the layer should add elements to */
   private scene: Scene;
   /** The number of uniform blocks an instance requires */
@@ -68,7 +68,7 @@ export class InstanceUniformManager<T extends Instance> {
   /** A map of a cluster of uniforms to the buffer it comes from */
   private clusterToBuffer = new Map<IUniformInstanceCluster, InstanceUniformBuffer>();
 
-  constructor(layer: Layer<T, any, any>, scene: Scene) {
+  constructor(layer: Layer<T, any>, scene: Scene) {
     this.layer = layer;
 
     let maxUniformBlock: number = 0;

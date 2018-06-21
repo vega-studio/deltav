@@ -99,7 +99,7 @@ export interface IPickingMethods<T extends Instance> {
 /**
  * A base class for generating drawable content
  */
-export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
+export class Layer<T extends Instance, U extends ILayerProps<T>> extends IdentifyByKey {
   static defaultProps: any = {};
 
   /** This is the attribute that specifies the _active flag for an instance */
@@ -115,7 +115,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
-  interactions: LayerInteractionHandler<T, U, V>;
+  interactions: LayerInteractionHandler<T, U>;
   /** The official shader material generated for the layer */
   material: Three.RawShaderMaterial;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
@@ -124,6 +124,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  /** Properties handed to the Layer during a LayerSurface render */
+  props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: AtlasResourceManager;
   /** This is all of the uniforms generated for the layer */
@@ -134,9 +136,6 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
-
-  props: U;
-  state: V;
 
   /** This contains the methods and controls for handling diffs for the layer */
   diffManager: InstanceDiffManager<T>;

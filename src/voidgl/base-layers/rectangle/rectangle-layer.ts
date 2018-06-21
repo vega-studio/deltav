@@ -11,15 +11,11 @@ export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
   atlas?: string;
 }
 
-export interface IRectangleLayerState {
-
-}
-
 /**
  * This layer displays Rectangles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProps, IRectangleLayerState> {
+export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProps> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

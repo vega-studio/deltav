@@ -1,5 +1,6 @@
 import * as Three from 'three';
 import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize } from '../../types';
+import { Instance } from '../../util';
 import { makeInstanceUniformNameArray } from '../../util/make-instance-uniform-name';
 import { shaderTemplate } from '../../util/shader-templating';
 import { templateVars } from '../fragments/template-vars';
@@ -52,7 +53,7 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
   return results.shader;
 }
 
-export function makeInstanceDestructuringArray(instanceAttributes: IInstanceAttribute<any>[], blocksPerInstance: number) {
+export function makeInstanceDestructuringArray<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[], blocksPerInstance: number) {
   let out = '';
 
   // Generate the blocks

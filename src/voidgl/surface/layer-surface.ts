@@ -74,7 +74,7 @@ function isWebGLContext(val: any): val is WebGLRenderingContext {
 }
 
 export interface ILayerConstructable<T extends Instance> {
-  new (props: ILayerProps<T>): Layer<any, any, any>;
+  new (props: ILayerProps<T>): Layer<any, any>;
 }
 
 /**
@@ -107,7 +107,7 @@ export class LayerSurface {
    */
   defaultSceneElements: IDefaultSceneElements;
   /** This is all of the layers in this manager by their id */
-  layers = new Map<string, Layer<any, any, any>>();
+  layers = new Map<string, Layer<any, any>>();
   /** This manages the mouse events for the current canvas context */
   private mouseManager: MouseEventManager;
   /** This is the density the rendering renders for the surface */
@@ -147,7 +147,7 @@ export class LayerSurface {
    * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
    * as well as additional helper injections to aid in instancing and shader i/o.
    */
-  addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Layer<T, U> {
     if (!layer.id) {
       console.warn('All layers must have an id');
       return layer;
@@ -492,7 +492,7 @@ export class LayerSurface {
    * and injects special automated uniforms and attributes to make instancing work for the
    * shader.
    */
-  private initLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  private initLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Layer<T, U> {
     // Set the resource manager this surface utilizes to the layer
     layer.resource = this.resourceManager;
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
@@ -568,7 +568,7 @@ export class LayerSurface {
    * This finds the scene and view the layer belongs to based on the layer's props. For invalid or not provided
    * props, the layer gets added to default scenes and views.
    */
-  private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Scene {
+  private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Scene {
     // Get the scene the layer will add itself to
     let scene = this.scenes.get(layer.props.scene || '');
 
@@ -593,7 +593,7 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V> | null): Layer<T, U, V> | null {
+  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U> | null): Layer<T, U> | null {
     // Make sure we are removing a layer that exists in the system
     if (!layer) {
       return null;

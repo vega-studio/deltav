@@ -3,6 +3,7 @@ import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { DataProvider } from '../../util';
+import { AutoEasingMethod } from '../../util/auto-easing-method';
 import { CircleInstance } from './circle-instance';
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
@@ -93,6 +94,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
+          easing: AutoEasingMethod.linear(500),
           name: 'radius',
           size: InstanceAttributeSize.ONE,
           update: (circle) => [circle.radius],

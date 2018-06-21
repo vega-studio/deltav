@@ -25,6 +25,7 @@ import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
+import { LayerSurface } from './layer-surface';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 import { View } from './view';
 
@@ -128,6 +129,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: AtlasResourceManager;
+  /** This is the surface this layer is generated under */
+  surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */

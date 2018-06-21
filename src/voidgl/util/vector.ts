@@ -50,9 +50,9 @@ export function add1(left: Vec1, right: Vec1): Vec1 {
   ];
 }
 
-export function scale1(left: Vec1, scale: number): Vec1 {
+export function scale1(vec: Vec1, scale: number): Vec1 {
   return [
-    left[0] * scale,
+    vec[0] * scale,
   ];
 }
 
@@ -239,7 +239,21 @@ export type VecMethods<T extends Vec> = {
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {
   let methods: VecMethods<T>;
 
-  if (vec.length === 2) {
+  if (vec.length === 1) {
+    methods = {
+      add: add1,
+      dot: dot1,
+      length: length1,
+      linear: linear1,
+      multiply: multiply1,
+      scale: scale1,
+      subtract: subtract1,
+    } as VecMethods<T>;
+
+    return methods;
+  }
+
+  else if (vec.length === 2) {
     methods = {
       add: add2,
       dot: dot2,

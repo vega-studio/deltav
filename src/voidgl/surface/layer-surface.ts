@@ -13,6 +13,7 @@ import { injectShaderIO } from '../surface/inject-shader-io';
 import { MouseEventManager, SceneView } from '../surface/mouse-event-manager';
 import { ISceneOptions, Scene } from '../surface/scene';
 import { ClearFlags, View } from '../surface/view';
+import { FrameMetrics } from '../types';
 import { DataBounds } from '../util/data-bounds';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
@@ -106,6 +107,19 @@ export class LayerSurface {
    * This scene by default only has a single default view.
    */
   defaultSceneElements: IDefaultSceneElements;
+  /**
+   * This is the metrics of the current running frame
+   */
+  frameMetrics: FrameMetrics = {
+    currentFrame: 0,
+    currentTime: Date.now() | 0,
+    previousTime: Date.now() | 0,
+  };
+  /**
+   * This is used to help resolve concurrent draws. There are some very async operations that should
+   * not overlap in draw calls.
+   */
+  private isBufferingAtlas = false;
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<any, any>>();
   /** This manages the mouse events for the current canvas context */
@@ -132,12 +146,6 @@ export class LayerSurface {
    */
   willDisposeLayer = new Map<string, boolean>();
 
-  /**
-   * This is used to help resolve concurrent draws. There are some very async operations that should
-   * not overlap in draw calls.
-   */
-  private isBufferingAtlas = false;
-
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
@@ -147,7 +155,7 @@ export class LayerSurface {
    * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
    * as well as additional helper injections to aid in instancing and shader i/o.
    */
-  addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Layer<T, U> {
+  private addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Layer<T, U> {
     if (!layer.id) {
       console.warn('All layers must have an id');
       return layer;
@@ -183,9 +191,31 @@ export class LayerSurface {
 
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
+   *
+   * @param time This is an optional time flag so one can manually control the time flag for the frame.
+   *             This will affect animations and other automated gpu processes.
    */
-  async draw() {
+  async draw(time?: number) {
     if (!this.gl) return;
+
+    // We are rendering a new frame so increment our frame count
+    this.frameMetrics.currentFrame++;
+    this.frameMetrics.previousTime = this.frameMetrics.currentTime;
+
+    // If no manual time was provided, we shall use Date.now in 32 bit format
+    if (time === undefined) {
+      this.frameMetrics.currentTime = Date.now() | 0;
+    }
+
+    else {
+      // If this is our first frame and we have a manual time entry, then we first need to sync up
+      // The manual time as our previous timing.
+      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
+        this.frameMetrics.previousTime = time;
+      }
+
+      this.frameMetrics.currentTime = time;
+    }
 
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
@@ -258,7 +288,7 @@ export class LayerSurface {
   /**
    * This finalizes everything and sets up viewports and clears colors and
    */
-  drawSceneView(scene: Three.Scene, view: View) {
+  private drawSceneView(scene: Three.Scene, view: View) {
     const offset = {x: view.viewBounds.left, y: view.viewBounds.top};
     const size = view.viewBounds;
     const rendererSize = this.renderer.getSize();
@@ -493,6 +523,8 @@ export class LayerSurface {
    * shader.
    */
   private initLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U>): Layer<T, U> {
+    // Set the layer's parent surface here
+    layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
     layer.resource = this.resourceManager;
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
@@ -593,7 +625,7 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U> | null): Layer<T, U> | null {
+  private removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U> | null): Layer<T, U> | null {
     // Make sure we are removing a layer that exists in the system
     if (!layer) {
       return null;
@@ -694,7 +726,7 @@ export class LayerSurface {
   /**
    * This establishes the rendering canvas context for the surface.
    */
-  setContext(context?: WebGLRenderingContext | HTMLCanvasElement | string) {
+  private setContext(context?: WebGLRenderingContext | HTMLCanvasElement | string) {
     if (!context) {
       return;
     }

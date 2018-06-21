@@ -8,6 +8,7 @@ import * as Three from 'three';
 import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
 import {
   IAtlasInstanceAttribute,
+  IEasingInstanceAttribute,
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
@@ -20,12 +21,37 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from '../types';
+import { Vec } from '../util';
 import { Instance } from '../util/instance';
+
+/**
+ * This is a lookup for a test vector for the provided size
+ */
+const testStartVector: {[key: number]: Vec} = {
+  [InstanceAttributeSize.ONE]: [1],
+  [InstanceAttributeSize.TWO]: [1, 2],
+  [InstanceAttributeSize.THREE]: [1, 2, 3],
+  [InstanceAttributeSize.FOUR]: [1, 2, 3, 4],
+};
+
+/**
+ * This is a lookup for a test vector for the provided size
+ */
+const testEndVector: {[key: number]: Vec} = {
+  [InstanceAttributeSize.ONE]: [4],
+  [InstanceAttributeSize.TWO]: [4, 3],
+  [InstanceAttributeSize.THREE]: [4, 3, 2],
+  [InstanceAttributeSize.FOUR]: [4, 3, 2, 1],
+};
 
 const emptyTexture = new Three.Texture();
 
 function isAtlasAttribute<T extends Instance>(attr: any): attr is IAtlasInstanceAttribute<T> {
   return Boolean(attr) && attr.atlas;
+}
+
+function isEasingAttribute<T extends Instance>(attr: any): attr is IEasingInstanceAttribute<T> {
+  return Boolean(attr) && attr.easing && attr.size !== undefined;
 }
 
 function isInstanceAttribute<T extends Instance>(attr: any): attr is IInstanceAttribute<T> {
@@ -52,7 +78,7 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
  * This searches through attribute packing for the first empty slot it can find to fill.
  * If a slot is not available it will just start a new block.
  */
-function findEmptyBlock<T extends Instance>(attributes: IInstanceAttribute<T>[]): [number, number] {
+function findSingleEmptyBlock<T extends Instance>(attributes: IInstanceAttribute<T>[]): [number, number] {
   const blocks = new Map<number, Map<number, boolean>>();
   let found: [number, number] | null = null;
   let maxBlock = 0;
@@ -96,22 +122,69 @@ function findEmptyBlock<T extends Instance>(attributes: IInstanceAttribute<T>[])
   return found;
 }
 
+/**
+ * This finds a block and an index that can accomodate a provided size
+ * @param attributes
+ * @param seekingSize
+ */
+function findEmptyBlock(attributes: IInstanceAttribute<any>[], seekingSize?: InstanceAttributeSize): [number, InstanceBlockIndex] {
+  const usedBlocks : any [] = [];
+  let maxBlock = 0;
+  if (seekingSize === undefined) {
+    seekingSize = 1;
+  }
+
+  attributes.forEach(instanceAttribute => {
+    const block = instanceAttribute.block;
+    const index: number = instanceAttribute.blockIndex === undefined ? 0 : instanceAttribute.blockIndex;
+    const size: number = instanceAttribute.size === undefined ? 0 : instanceAttribute.size;
+
+    maxBlock = Math.max(block, maxBlock);
+
+    while (usedBlocks.length - 1 < block) {
+      usedBlocks.push([false, false, false, false]);
+    }
+
+    for (let i = index - 1, end = index - 1 + size; i < end; ++i) {
+      usedBlocks[block][i] = true;
+    }
+  });
+
+  for (let x = 0; x < usedBlocks.length; x++) {
+    for (let ind = 0; ind < 4; ind++) {
+      if (usedBlocks[x][ind]) {
+        continue;
+      }
+      else {
+        for (let breadth = ind; breadth < 4; breadth++) {
+          if (!usedBlocks[x][breadth]) {
+            if ((breadth - ind + 1) === seekingSize) {
+              return[x, ind + 1];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // If no block was ever found, then we take the max block detected and make
+  // A new block after it
+  return [maxBlock + 1, InstanceBlockIndex.ONE];
+}
+
 function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
   if (a.atlas && !b.atlas) return -1;
   return 1;
 }
 
-export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, shaderIO: IShaderInitialization<T>) {
+/**
+ * This generates any uniforms needed for when a layer is requesting
+ */
+function generateAtlasResourceUniforms<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]) {
   // Retrieve all of the instance attributes that are atlas references
   const atlasInstanceAttributes: IAtlasInstanceAttribute<T>[] = [];
   // Key: The atlas uniform name requested
   const requestedAtlasInjections = new Map<string, [boolean, boolean]>();
-  // All of the instance attributes with nulls filtered out
-  const instanceAttributes = (shaderIO.instanceAttributes || []).filter(isInstanceAttribute);
-  // All of the vertex attributes with nulls filtered out
-  const vertexAttributes = (shaderIO.vertexAttributes || []).filter(isVertexAttribute);
-  // All of the uniforms with nulls filtered out
-  const uniforms = (shaderIO.uniforms || []).filter(isUniform);
 
   // Get the atlas requests that have unique names. We only need one uniform
   // For a single unique provided name. We also must merge the requests for
@@ -152,7 +225,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   });
 
   // Make uniforms for all of the unique atlas requests.
-  const atlasUniforms: IUniform[] = atlasInstanceAttributes.map(instanceAttribute => {
+  return atlasInstanceAttributes.map(instanceAttribute => {
     let injection: ShaderInjectionTarget = ShaderInjectionTarget.FRAGMENT;
 
     if (instanceAttribute.atlas) {
@@ -175,9 +248,100 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
       update: () => layer.resource.getAtlasTexture(instanceAttribute.atlas.key) || emptyTexture,
     };
   });
+}
 
-  // These are the uniforms that should be present in the shader for basic operation
-  const addedUniforms: IUniform[] = atlasUniforms.concat([
+/**
+ * This modifies the instance attributes in a way that produces enough attributes to handle the easing equations
+ * being performed on the gpu.
+ */
+function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]) {
+  const easingAttributes: IEasingInstanceAttribute<T>[] = [];
+
+  // We gather all of the easing attributes first so we can modify the attribute array
+  // On next pass
+  for (const attribute of instanceAttributes) {
+    if (isEasingAttribute(attribute)) {
+      easingAttributes.push(attribute);
+    }
+  }
+
+  // Now loop through each easing attribute and generate attributes needed for the easing method
+  for (const attribute of easingAttributes) {
+    const easing = attribute.easing.cpu;
+    const duration = attribute.easing.duration;
+    const name = attribute.name;
+    const size = attribute.size;
+    const update = attribute.update;
+    const easingUID = uid();
+
+    let startTime: number;
+    let startValue: Vec;
+    let endValue: Vec;
+
+    // Hijack the update from the attribute to a new update method which will
+    // Be able to interact with the values for the easing methodology
+    attribute.update = o => {
+      // First get the value that is to be our new destination
+      const end = update(o);
+      const currentTime = layer.surface.frameMetrics.currentTime;
+
+      // Now get the value of where our instance currently is located this frame
+      if (startValue === undefined) {
+        startValue = end;
+      }
+
+      else {
+        startValue = easing(startValue, endValue, (currentTime - startTime) / duration);
+      }
+
+      startTime = currentTime;
+      endValue = end;
+
+      return end;
+    };
+
+    // Find a slot available for our new start value
+    let slot = findEmptyBlock(instanceAttributes, size);
+    const startAttr: IInstanceAttribute<T> = {
+      block: slot[0],
+      blockIndex: slot[1],
+      name: `_${name}_start`,
+      size,
+      update: o => startValue,
+    };
+
+    instanceAttributes.push(startAttr);
+
+    // Find a slot available for our new start time
+    slot = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
+    const startTimeAttr: IInstanceAttribute<T> = {
+      block: slot[0],
+      blockIndex: slot[1],
+      name: `_${name}_start_time`,
+      size: InstanceAttributeSize.ONE,
+      update: o => [startTime],
+    };
+
+    instanceAttributes.push(startTimeAttr);
+
+    // Find a slot available for our duration
+    slot = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
+    const durationAttr: IInstanceAttribute<T> = {
+      block: slot[0],
+      blockIndex: slot[1],
+      name: `_${name}_duration`,
+      size: InstanceAttributeSize.ONE,
+      update: o => [duration],
+    };
+
+    instanceAttributes.push(durationAttr);
+  }
+
+  console.log(instanceAttributes);
+}
+
+function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): IUniform[] {
+  return [
     // This injects the projection matrix from the view camera
     {
       name: 'projection',
@@ -218,12 +382,22 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
       size: UniformSize.ONE,
       update: () => [layer.view.pixelRatio],
     },
-  ]);
+    // This will be the current frame's current time which is updated in the layer's surface draw call
+    {
+      name: 'currentTime',
+      size: UniformSize.ONE,
+      update: () => [layer.surface.frameMetrics.currentTime],
+    },
+  ];
+}
 
-  // Seek an empty block within the layer provided uniforms so we can fill a hole potentially
-  // With the _active attribute.
-  const fillBlock = findEmptyBlock(instanceAttributes);
-  const addedInstanceAttributes: IInstanceAttribute<T>[] = [
+/**
+ * This creates the base instance attributes that are ALWAYS present
+ */
+function generateBaseInstanceAttributes<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
+  const fillBlock = findSingleEmptyBlock(instanceAttributes);
+
+  return [
     // This is injected so the system can control when an instance should not be rendered.
     // This allows for holes to be in the buffer without having to correct them immediately
     {
@@ -234,11 +408,13 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
       update: (o) => [o.active ? 1 : 0],
     },
   ];
+}
 
-  // Set the active attribute to the layer for quick reference
-  layer.activeAttribute = addedInstanceAttributes[0];
-
-  const addedVertexAttributes: IVertexAttribute[] = [
+/**
+ * This creates the base vertex attributes that are ALWAYS present
+ */
+function generateBaseVertexAttributes(): IVertexAttribute[] {
+  return [
     // We add an inherent instance attribute to our vertices so they can determine the instancing
     // Data to retrieve.
     {
@@ -248,6 +424,99 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
       update: () => [0],
     },
   ];
+}
+
+function compareVec(a: Vec, b: Vec) {
+  if (a.length !== b.length) return false;
+
+  for (let i = 0, end = a.length; i < end; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+
+  return true;
+}
+
+function validateInstanceAttributes<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]) {
+  instanceAttributes.forEach(attribute => {
+    if (attribute.easing && attribute.atlas) {
+      console.warn('An instance attribute can not have both easing and atlas properties. Undefined behavior will occur.');
+      console.warn(attribute);
+    }
+
+    if (!attribute.atlas) {
+      if (attribute.size === undefined) {
+        console.warn('An instance attribute requires the size to be defined.');
+        console.warn(attribute);
+      }
+    }
+
+    if (attribute.easing) {
+      if (attribute.size !== undefined) {
+        const testStart = testStartVector[attribute.size];
+        const testEnd = testEndVector[attribute.size];
+
+        let test = attribute.easing.cpu(testStart, testEnd, 0);
+        if (!compareVec(test, testStart)) {
+          console.warn('Auto Easing Validation Failed: using a time of 0 does not produce the start value');
+          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn(attribute);
+        }
+
+        test = attribute.easing.cpu(testStart, testEnd, 1);
+        if (!compareVec(test, testEnd)) {
+          console.warn('Auto Easing Validation Failed: using a time of 1 does not produce the end value');
+          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn(attribute);
+        }
+
+        test = attribute.easing.cpu(testStart, testEnd, -1);
+        if (!compareVec(test, testStart)) {
+          console.warn('Auto Easing Validation Failed: using a time of -1 does not produce the start value');
+          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn(attribute);
+        }
+
+        test = attribute.easing.cpu(testStart, testEnd, 2);
+        if (!compareVec(test, testEnd)) {
+          console.warn('Auto Easing Validation Failed: using a time of 2 does not produce the end value');
+          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn(attribute);
+        }
+      }
+
+      else {
+        console.warn('An Instance Attribute with easing MUST have a size declared');
+      }
+    }
+  });
+}
+
+/**
+ * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
+ * into the shader.
+ */
+export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, shaderIO: IShaderInitialization<T>) {
+  // All of the instance attributes with nulls filtered out
+  const instanceAttributes = (shaderIO.instanceAttributes || []).filter(isInstanceAttribute);
+  // All of the vertex attributes with nulls filtered out
+  const vertexAttributes = (shaderIO.vertexAttributes || []).filter(isVertexAttribute);
+  // All of the uniforms with nulls filtered out
+  const uniforms = (shaderIO.uniforms || []).filter(isUniform);
+  // Do a validation pass of the attributes injected so we can provide feedback as to why things behave odd
+  validateInstanceAttributes(instanceAttributes);
+  // Generates all of the attributes needed to make attributes automagically be eased when changed
+  generateEasingAttributes(layer, instanceAttributes);
+  // Get the uniforms needed to facilitate atlas resource requests if any exists
+  const atlasUniforms: IUniform[] = generateAtlasResourceUniforms(layer, instanceAttributes);
+  // These are the uniforms that should be present in the shader for basic operation
+  const addedUniforms: IUniform[] = atlasUniforms.concat(generateBaseUniforms(layer));
+  // Create the base instance attributes that must be present
+  const addedInstanceAttributes: IInstanceAttribute<T>[] = generateBaseInstanceAttributes(instanceAttributes);
+  // Create the base vertex attributes that must be present
+  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
+
+  // Set the active attribute to the layer for quick reference
+  layer.activeAttribute = addedInstanceAttributes[0];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
   const allVertexAttributes: IVertexAttributeInternal[] =

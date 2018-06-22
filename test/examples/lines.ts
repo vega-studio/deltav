@@ -27,6 +27,7 @@ export class Lines extends BaseExample {
           widthStart: 10,
         });
 
+        edge.end = [(Math.sin(Date.now() / 4E2 + (k * 20)) * 10) + (k * 20), edge.end[1]];
         edgeProvider.instances.push(edge);
       }
     }

@@ -1,24 +1,101 @@
-import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer } from '../../src';
-import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
+import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
+import { AutoEasingMethod, IAutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
+
+function getColorIndicesForCoord(x: number, y: number, width: number) {
+  const red = y * (width * 4) + x * 4;
+  return [red, red + 1, red + 2, red + 3];
+}
+
+function makeTextPositions(surface: LayerSurface, view: string) {
+  const viewBounds = surface.getViewSize(view);
+  if (!viewBounds) return [];
+  const canvas = document.createElement('canvas').getContext('2d');
+  if (!canvas) return [];
+
+  const { min, max } = Math;
+
+  let width = (canvas.canvas.width = viewBounds.width - 10);
+  let height = (canvas.canvas.height = 80);
+  canvas.fillStyle = 'white';
+  canvas.font = '40px Consolas';
+  canvas.fillText('Vega Animation', 0, 40, viewBounds.width - 10);
+
+  const pixels = canvas.getImageData(
+    0,
+    0,
+    width,
+    height,
+  );
+
+  const imageData = pixels.data;
+  width = pixels.width;
+  height = pixels.height;
+
+  let r, g, b, a;
+  let minY = Number.MAX_SAFE_INTEGER;
+  let minX = Number.MAX_SAFE_INTEGER;
+  let maxX = Number.MIN_SAFE_INTEGER;
+  let maxY = Number.MIN_SAFE_INTEGER;
+
+  const xyBucket: Vec2[] = [];
+
+  for (let x = 0; x < width; ++x) {
+    for (let y = 0; y < height; ++y) {
+      const indices = getColorIndicesForCoord(x, y, width);
+      r = imageData[indices[0]];
+      g = imageData[indices[1]];
+      b = imageData[indices[2]];
+      a = imageData[indices[3]];
+
+      if (r > 0 || g > 0 || b > 0 || a > 0) {
+        minY = min(minY, y);
+        minX = min(minX, x);
+        maxX = max(maxX, x);
+        maxY = max(maxY, y);
+        xyBucket.push([x, y]);
+      }
+    }
+  }
+
+  const textWidth = maxX - minX;
+  const textHeight = maxY - minY;
+  const left = (viewBounds.width - textWidth) / 2;
+  const top = (viewBounds.height - textHeight) / 2;
+
+  xyBucket.forEach((xy: Vec2) => {
+    xy[0] -= minX;
+    xy[1] -= minY;
+    xy[0] += left;
+    xy[1] += top;
+  });
+
+  return xyBucket;
+}
 
 export class BoxOfCircles extends BaseExample {
   camera: ChartCamera;
-  view: string;
+  scene: string;
   manager: BasicCameraController;
   originalRange: Bounds;
+  animationControl: {
+    center: IAutoEasingMethod<Vec>,
+    color: IAutoEasingMethod<Vec>,
+    radius: IAutoEasingMethod<Vec>,
+  };
+  textPositions: Vec2[];
 
   keyEvent(e: KeyboardEvent, isDown: boolean) {
     if (!this.originalRange) {
-      this.originalRange = this.manager.getRange(this.view);
+      this.originalRange = this.manager.getRange(this.scene);
     }
 
     if (e.shiftKey) {
-      this.manager.setRange(new Bounds({ x: 20, y: 20, width: 20, height: 20 }), this.view);
+      this.manager.setRange(new Bounds({ x: 20, y: 20, width: 20, height: 20 }), this.scene);
     }
 
     else {
-      this.manager.setRange(this.originalRange, this.view);
+      this.manager.setRange(this.originalRange, this.scene);
       delete this.originalRange;
     }
   }
@@ -29,7 +106,7 @@ export class BoxOfCircles extends BaseExample {
   }
 
   makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
-    this.view = viewName;
+    this.scene = viewName;
 
     this.manager = new BasicCameraController({
       camera: defaultCamera,
@@ -40,15 +117,38 @@ export class BoxOfCircles extends BaseExample {
   }
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
+    this.animationControl = {
+      center: AutoEasingMethod.easeOutElastic(1000, 500),
+      color: AutoEasingMethod.linear(500, 1500),
+      radius: AutoEasingMethod.linear(500, 1500),
+    };
+
     return createLayer(CircleLayer, {
-      animate: {
-        center: AutoEasingMethod.easeOutCubic(1000, 500),
-      },
+      animate: this.animationControl,
       data: provider,
       key: 'box-of-circles',
       scaleFactor: () => this.camera.scale[0],
       scene: scene,
     });
+  }
+
+  private async moveToText(circles: CircleInstance[]) {
+    const xy = this.textPositions || makeTextPositions(this.surface, this.view);
+    this.textPositions = xy;
+    const bucketLength = xy.length;
+    const toProcess = circles.slice(0);
+    let i = 0;
+
+    while (toProcess.length > 0) {
+      const circle = toProcess.splice(Math.floor(Math.random() * toProcess.length), 1)[0];
+
+      if (circle) {
+        const pos = xy[i % bucketLength];
+        circle.x = pos[0];
+        circle.y = pos[1];
+        ++i;
+      }
+    }
   }
 
   makeProvider(): DataProvider<CircleInstance> {
@@ -72,25 +172,37 @@ export class BoxOfCircles extends BaseExample {
     }
 
     let makeBox = true;
+    const { random } = Math;
 
     setInterval(() => {
       makeBox = !makeBox;
 
       if (makeBox) {
+        this.animationControl.center.delay = 1500;
+        this.animationControl.color.delay = 500;
+        this.animationControl.radius.delay = 1500;
+
         for (let i = 0; i < boxSide; ++i) {
           for (let k = 0; k < boxSide; ++k) {
             const circle = circles[i * boxSide + k];
             circle.x = i * 11;
             circle.y = k * 11;
+            circle.radius = 5;
+            circle.color = [1.0, 0.0, 0.0, 1.0];
           }
         }
       }
 
       else {
-        const size = boxSide * 11;
+        this.animationControl.center.delay = 500;
+        this.animationControl.color.delay = 1500;
+        this.animationControl.radius.delay = 500;
+
+        this.moveToText(circles);
+
         circles.forEach(c => {
-          c.x = Math.random() * size;
-          c.y = Math.random() * size;
+          c.radius = 1;
+          c.color = [random(), random(), 1.0, 1.0];
         });
       }
     }, 4000);

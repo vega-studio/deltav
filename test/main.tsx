@@ -144,6 +144,8 @@ export class Main extends Component<any, IMainState> {
 
       // Generate the Layers for the tests now that the scenes are established
       tests.forEach((test, i) => {
+        test.surface = this.surface;
+        test.view = this.allScenes[i].name;
         const provider = test.makeProvider();
         const layer = test.makeLayer(this.allScenes[i].name, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
         layers.push(layer);

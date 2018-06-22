@@ -1,6 +1,7 @@
 import * as Three from 'three';
 import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize } from '../../types';
 import { Instance } from '../../util';
+import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
 import { makeInstanceUniformNameArray } from '../../util/make-instance-uniform-name';
 import { shaderTemplate } from '../../util/shader-templating';
 import { templateVars } from '../fragments/template-vars';
@@ -87,7 +88,29 @@ export function makeInstanceDestructuringArray<T extends Instance>(instanceAttri
         out += `  ${sizeToType[attribute.size || 1]} _${attribute.name}_end = block${block}.${makeVectorSwizzle(attribute.blockIndex || 0, attribute.size || 1)};\n`;
       }
 
-      out += `  float _${attribute.name}_time = clamp((currentTime - _${attribute.name}_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
+      switch (attribute.easing.loop) {
+        // Repeat means going from 0 to 1 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REPEAT:
+        out += `  float _${attribute.name}_time = clamp(fract((currentTime - _${attribute.name}_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
+        break;
+
+        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REFLECT:
+        // Get the time passed in a linear fashion
+        out += `  float _${attribute.name}_timePassed = (currentTime - _${attribute.name}_start_time) / _${attribute.name}_duration;\n`;
+        // Make a triangle wave from the time passed to ping pong the value
+        out += `  float _${attribute.name}_pingPong = abs((fract(_${attribute.name}_timePassed / 2.0)) - 0.5) * 2.0;\n`;
+        // Ensure we're clamped to the right values
+        out += `  float _${attribute.name}_time = clamp(_${attribute.name}_pingPong, 0.0, 1.0);\n`;
+        break;
+
+        // No loop means just linear time
+        case AutoEasingLoopStyle.NONE:
+        default:
+        out += `  float _${attribute.name}_time = clamp((currentTime - _${attribute.name}_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
+        break;
+      }
+
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = ${attribute.easing.methodName}(_${attribute.name}_start, _${attribute.name}_end, _${attribute.name}_time);\n`;
     }
 

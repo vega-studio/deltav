@@ -23,7 +23,10 @@ import {
   VertexAttributeSize,
 } from '../types';
 import { uid, Vec } from '../util';
+import { AutoEasingLoopStyle } from '../util/auto-easing-method';
 import { Instance } from '../util/instance';
+
+const { abs } = Math;
 
 /**
  * This is a lookup for a test vector for the provided size
@@ -274,7 +277,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
 
   // Now loop through each easing attribute and generate attributes needed for the easing method
   for (const attribute of easingAttributes) {
-    const { cpu: easing, duration, delay } = attribute.easing;
+    const { cpu: easing, loop } = attribute.easing;
     const { name, size, update } = attribute;
     const easingUID = uid();
 
@@ -285,6 +288,8 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
     // Hijack the update from the attribute to a new update method which will
     // Be able to interact with the values for the easing methodology
     attribute.update = o => {
+      // We retrieve properties that we want to be dynamic from the easing equation
+      const { delay, duration } = attribute.easing;
       // First get the value that is to be our new destination
       const end = update(o);
       const currentTime = layer.surface.frameMetrics.currentTime;
@@ -297,8 +302,31 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
         startTime: currentTime,
       };
 
+      // Previous position time value
+      let timeValue = 1;
+
+      switch (loop) {
+        // Repeat means going from 0 to 1 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REPEAT:
+        timeValue = ((currentTime - easingValues.startTime) / duration) % 1;
+        break;
+
+        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REFLECT:
+        const timePassed = ((currentTime - easingValues.startTime) / duration);
+        // This is a triangle wave for an input
+        timeValue = abs(((timePassed / 2.0) % 1) - 0.5) * 2.0;
+        break;
+
+        // No loop means just linear time
+        case AutoEasingLoopStyle.NONE:
+        default:
+        timeValue = (currentTime - easingValues.startTime) / duration;
+        break;
+      }
+
       // Now get the value of where our instance currently is located this frame
-      easingValues.start = easing(easingValues.start, easingValues.end, (currentTime - easingValues.startTime) / duration);
+      easingValues.start = easing(easingValues.start, easingValues.end, timeValue);
       // Set the current time as the start time of our animation
       easingValues.startTime = currentTime + delay;
       // Set the provided value as our destination
@@ -437,7 +465,7 @@ function compareVec(a: Vec, b: Vec) {
   if (a.length !== b.length) return false;
 
   for (let i = 0, end = a.length; i < end; ++i) {
-    if (a[i] !== b[i]) return false;
+    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100) return false;
   }
 
   return true;

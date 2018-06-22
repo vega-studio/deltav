@@ -47,7 +47,7 @@ export class MouseInteraction extends BaseExample {
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
-        radius: AutoEasingMethod.easeInOutCubic(150, 0),
+        radius: AutoEasingMethod.easeOutElastic(500),
       },
       data: provider,
       key: 'mouse-interaction',

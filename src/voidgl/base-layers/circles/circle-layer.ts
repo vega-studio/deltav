@@ -2,8 +2,8 @@ import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
 import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { DataProvider } from '../../util';
-import { AutoEasingMethod } from '../../util/auto-easing-method';
+import { DataProvider, Vec } from '../../util';
+import { IAutoEasingMethod } from '../../util/auto-easing-method';
 import { CircleInstance } from './circle-instance';
 
 export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
@@ -11,6 +11,19 @@ export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
+
+  /**
+   * This is the properties that can toggle on animations.
+   *
+   * NOTE: The more properties declared as animated will reduce the performance of the layer.
+   * if animated properties are created, it can be beneficial to have other layers with no
+   * animations be available for the Instances to 'rest' in when not moving.
+   */
+  animate?: {
+    center?: IAutoEasingMethod<Vec>;
+    radius?: IAutoEasingMethod<Vec>;
+    color?: IAutoEasingMethod<Vec>;
+  };
 }
 
 /**
@@ -62,6 +75,12 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
    */
   initShader(): IShaderInitialization<CircleInstance> {
     const scaleFactor = this.props.scaleFactor || (() => 1);
+    const animations = this.props.animate || {};
+    const {
+      center: animateCenter,
+      radius: animateRadius,
+      color: animateColor,
+    } = animations;
 
     const vertexToNormal: {[key: number]: number} = {
       0: 1,
@@ -87,6 +106,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateCenter,
           name: 'center',
           size: InstanceAttributeSize.TWO,
           update: (circle) => [circle.x, circle.y],
@@ -94,7 +114,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          easing: AutoEasingMethod.linear(500),
+          easing: animateRadius,
           name: 'radius',
           size: InstanceAttributeSize.ONE,
           update: (circle) => [circle.radius],
@@ -109,6 +129,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColor,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
           update: (circle) => circle.color,

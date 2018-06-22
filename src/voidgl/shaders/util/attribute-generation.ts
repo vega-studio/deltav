@@ -3,7 +3,7 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
-import { IInstanceAttribute, IInstancingUniform, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
+import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
 import { Instance } from '../../util';
 import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
 import { WebGLStat } from '../../util/webgl-stat';
@@ -144,6 +144,7 @@ function generateShaderInputs<T extends Instance>(vertexAttributes: IVertexAttri
   const additionalOptions: {[key: string]: string} = {
     [templateVars.layerUniforms]: generateUniforms(uniforms, ShaderInjectionTarget.VERTEX),
     [templateVars.vertexAttributes]: generateVertexAttributes(vertexAttributes),
+    [templateVars.easingMethods]: generateEasingMethods(instanceAttributes),
   };
 
   Object.assign(templateOptions, additionalOptions);
@@ -155,6 +156,7 @@ function generateShaderInputs<T extends Instance>(vertexAttributes: IVertexAttri
       templateVars.instanceUniformDeclarations,
       templateVars.layerUniforms,
       templateVars.vertexAttributes,
+      templateVars.easingMethods,
     ],
   };
 
@@ -168,8 +170,54 @@ function generateShaderInputs<T extends Instance>(vertexAttributes: IVertexAttri
 }
 
 /**
- *
- * @param uniforms
+ * Generates the easing methods for the Shader specified by each attribute
+ */
+function generateEasingMethods<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]) {
+  const methods = new Map<string, Map<InstanceAttributeSize, string>>();
+  let out = '';
+
+  // First dedup the methods needed by their method name
+  instanceAttributes.forEach(attribute => {
+    if (attribute.easing && attribute.size) {
+      let methodSizes = methods.get(attribute.easing.methodName);
+
+      if (!methodSizes) {
+        methodSizes = new Map<InstanceAttributeSize, string>();
+        methods.set(attribute.easing.methodName, methodSizes);
+      }
+
+      methodSizes.set(attribute.size, attribute.easing.gpu);
+    }
+  });
+
+  const required: IShaderTemplateRequirements = {
+    name: 'Easing Method Generation',
+    values: [
+      templateVars.easingMethod,
+    ],
+  };
+
+  // Now generate the full blown method for each element. We create overloaded methods for
+  // Each method name for each vector size required
+  methods.forEach((methodSizes: Map<InstanceAttributeSize, string>, methodName: string) => {
+    methodSizes.forEach((method, size) => {
+      const sizeType = sizeToType[size];
+
+      const templateOptions: {[key: string]: string} = {
+        [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
+      };
+
+      const results = shaderTemplate(method, templateOptions, required);
+
+      out += `${results.shader}\n`;
+    });
+  });
+
+  return out;
+}
+
+/**
+ * Generates all of the uniforms that are provided by the shader IO.
  */
 function generateUniforms(uniforms: IUniform[], injectionType: ShaderInjectionTarget) {
   let out = '';

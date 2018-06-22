@@ -390,5 +390,5 @@ export interface IEasingProps {
   start: Vec;
   end: Vec;
   startTime: number;
-  endTime: number;
+  duration: number;
 }

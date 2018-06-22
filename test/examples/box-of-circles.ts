@@ -1,4 +1,5 @@
 import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer } from '../../src';
+import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
 
 export class BoxOfCircles extends BaseExample {
@@ -40,6 +41,9 @@ export class BoxOfCircles extends BaseExample {
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
+      animate: {
+        center: AutoEasingMethod.easeOutCubic(1000, 500),
+      },
       data: provider,
       key: 'box-of-circles',
       scaleFactor: () => this.camera.scale[0],
@@ -49,9 +53,11 @@ export class BoxOfCircles extends BaseExample {
 
   makeProvider(): DataProvider<CircleInstance> {
     const circleProvider = new DataProvider<CircleInstance>([]);
+    const circles: CircleInstance[] = [];
+    const boxSide = 100;
 
-    for (let i = 0; i < 25; ++i) {
-      for (let k = 0; k < 25; ++k) {
+    for (let i = 0; i < boxSide; ++i) {
+      for (let k = 0; k < boxSide; ++k) {
         const circle = new CircleInstance({
           color: [1.0, 0.0, 0.0, 1.0],
           id: `circle${i * 100 + k}`,
@@ -61,8 +67,33 @@ export class BoxOfCircles extends BaseExample {
         });
 
         circleProvider.instances.push(circle);
+        circles.push(circle);
       }
     }
+
+    let makeBox = true;
+
+    setInterval(() => {
+      makeBox = !makeBox;
+
+      if (makeBox) {
+        for (let i = 0; i < boxSide; ++i) {
+          for (let k = 0; k < boxSide; ++k) {
+            const circle = circles[i * boxSide + k];
+            circle.x = i * 11;
+            circle.y = k * 11;
+          }
+        }
+      }
+
+      else {
+        const size = boxSide * 11;
+        circles.forEach(c => {
+          c.x = Math.random() * size;
+          c.y = Math.random() * size;
+        });
+      }
+    }, 4000);
 
     return circleProvider;
   }

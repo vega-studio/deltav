@@ -151,19 +151,19 @@ export class Main extends Component<any, IMainState> {
 
       // Begin the draw loop
       this.willAnimate = 10;
-      requestAnimationFrame(() => this.draw());
+      requestAnimationFrame((t: number) => this.draw(t));
 
       this.forceUpdate();
     }
   }
 
-  draw() {
+  draw(time: number) {
     if (this.willAnimate) {
-      requestAnimationFrame(() => this.draw());
+      requestAnimationFrame((t: number) => this.draw(t));
     }
 
     if (this.surface) {
-      this.surface.draw();
+      this.surface.draw(time);
     }
   }
 

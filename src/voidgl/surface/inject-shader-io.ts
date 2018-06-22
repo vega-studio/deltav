@@ -9,6 +9,7 @@ import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
+  IEasingProps,
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
@@ -21,7 +22,7 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from '../types';
-import { Vec } from '../util';
+import { uid, Vec } from '../util';
 import { Instance } from '../util/instance';
 
 /**
@@ -172,8 +173,14 @@ function findEmptyBlock(attributes: IInstanceAttribute<any>[], seekingSize?: Ins
   return [maxBlock + 1, InstanceBlockIndex.ONE];
 }
 
-function sortByResourceAttributes<T extends Instance>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
+/**
+ * This sorts the attributes such that the attributes that MUST be updated first are put to the top.
+ * This is necessary for complex attributes like atlas and easing attributes who have other attributes
+ * that have dependent behaviors based on their source attribute.
+ */
+function sortNeedsUpdateFirstToTop<T extends Instance>(a: IInstanceAttribute<T>, b: IInstanceAttribute<T>) {
   if (a.atlas && !b.atlas) return -1;
+  if (a.easing && !b.easing) return -1;
   return 1;
 }
 
@@ -267,16 +274,13 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
 
   // Now loop through each easing attribute and generate attributes needed for the easing method
   for (const attribute of easingAttributes) {
-    const easing = attribute.easing.cpu;
-    const duration = attribute.easing.duration;
-    const name = attribute.name;
-    const size = attribute.size;
-    const update = attribute.update;
+    const { cpu: easing, duration, delay } = attribute.easing;
+    const { name, size, update } = attribute;
     const easingUID = uid();
 
-    let startTime: number;
-    let startValue: Vec;
-    let endValue: Vec;
+    // We keep this in a scope above the update as we utilize the fact that the attributes will update
+    // In order for a single instance to our advantage.
+    let easingValues: IEasingProps;
 
     // Hijack the update from the attribute to a new update method which will
     // Be able to interact with the values for the easing methodology
@@ -285,17 +289,22 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       const end = update(o);
       const currentTime = layer.surface.frameMetrics.currentTime;
 
+      // Get the easing values specific to an instance
+      easingValues = o.easing.get(easingUID) || {
+        duration,
+        end,
+        start: end,
+        startTime: currentTime,
+      };
+
       // Now get the value of where our instance currently is located this frame
-      if (startValue === undefined) {
-        startValue = end;
-      }
-
-      else {
-        startValue = easing(startValue, endValue, (currentTime - startTime) / duration);
-      }
-
-      startTime = currentTime;
-      endValue = end;
+      easingValues.start = easing(easingValues.start, easingValues.end, (currentTime - easingValues.startTime) / duration);
+      // Set the current time as the start time of our animation
+      easingValues.startTime = currentTime + delay;
+      // Set the provided value as our destination
+      easingValues.end = end;
+      // Make sure the instance contains the current easing values
+      o.easing.set(easingUID, easingValues);
 
       return end;
     };
@@ -307,7 +316,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start`,
       size,
-      update: o => startValue,
+      update: o => easingValues.start,
     };
 
     instanceAttributes.push(startAttr);
@@ -319,7 +328,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start_time`,
       size: InstanceAttributeSize.ONE,
-      update: o => [startTime],
+      update: o => [easingValues.startTime],
     };
 
     instanceAttributes.push(startTimeAttr);
@@ -331,13 +340,11 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_duration`,
       size: InstanceAttributeSize.ONE,
-      update: o => [duration],
+      update: o => [easingValues.duration],
     };
 
     instanceAttributes.push(durationAttr);
   }
-
-  console.log(instanceAttributes);
 }
 
 function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): IUniform[] {
@@ -534,7 +541,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   const allInstanceAttributes =
     addedInstanceAttributes
     .concat(instanceAttributes)
-    .sort(sortByResourceAttributes)
+    .sort(sortNeedsUpdateFirstToTop)
   ;
 
   return {

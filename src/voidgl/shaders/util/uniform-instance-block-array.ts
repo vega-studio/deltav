@@ -22,6 +22,16 @@ const sizeToType: {[key: number]: string} = {
   99: 'vec4',
 };
 
+/**
+ * This sorts attributes specific to how they need to be destructured. For example:
+ * easing attributes MUST appear AFTER all of the specially integrated attributes that were generated
+ * such as start times and durations.
+ */
+function orderByPriority(a: IInstanceAttribute<any>, b: IInstanceAttribute<any>) {
+  if (a.easing && !b.easing) return 1;
+  return -1;
+}
+
 export function makeUniformArrayDeclaration(totalBlocks: number) {
   return {
     fragment: `uniform vec4 ${makeInstanceUniformNameArray()}[${totalBlocks}];`,
@@ -56,16 +66,33 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
 export function makeInstanceDestructuringArray<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[], blocksPerInstance: number) {
   let out = '';
 
+  const orderedAttributes = instanceAttributes.slice(0).sort(orderByPriority);
+
   // Generate the blocks
   for (let i = 0; i < blocksPerInstance; ++i) {
     out += `  vec4 block${i} = getBlock(${i}, instanceIndex);\n`;
   }
 
-  instanceAttributes.forEach(attribute => {
+  orderedAttributes.forEach(attribute => {
     const block = attribute.block;
 
+    // If this is the source easing attribute, we must add it in as an eased method along with a calculation for the
+    // Easing interpolation time value based on the current time and the injected start time of the change.
+    if (attribute.easing && attribute.size) {
+      if (attribute.size === InstanceAttributeSize.FOUR) {
+        out += `  ${sizeToType[attribute.size]} _${attribute.name}_end = block${block};\n`;
+      }
+
+      else {
+        out += `  ${sizeToType[attribute.size || 1]} _${attribute.name}_end = block${block}.${makeVectorSwizzle(attribute.blockIndex || 0, attribute.size || 1)};\n`;
+      }
+
+      out += `  float _${attribute.name}_time = clamp((currentTime - _${attribute.name}_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
+      out += `  ${sizeToType[attribute.size]} ${attribute.name} = ${attribute.easing.methodName}(_${attribute.name}_start, _${attribute.name}_end, _${attribute.name}_time);\n`;
+    }
+
     // If we have a size the size of a block, then don't swizzle the vector
-    if (attribute.size === InstanceAttributeSize.FOUR) {
+    else if (attribute.size === InstanceAttributeSize.FOUR) {
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = block${block};\n`;
     }
 

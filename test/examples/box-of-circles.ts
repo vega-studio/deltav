@@ -138,15 +138,18 @@ export class BoxOfCircles extends BaseExample {
     const bucketLength = xy.length;
     const toProcess = circles.slice(0);
     let i = 0;
+    circles.sort((a, b) => b.x - a.x);
 
     while (toProcess.length > 0) {
       const circle = toProcess.splice(Math.floor(Math.random() * toProcess.length), 1)[0];
 
       if (circle) {
-        const pos = xy[i % bucketLength];
-        circle.x = pos[0];
-        circle.y = pos[1];
-        ++i;
+        setTimeout(() => {
+          const pos = xy[i % bucketLength];
+          circle.x = pos[0];
+          circle.y = pos[1];
+          ++i;
+        }, Math.floor(i / 10));
       }
     }
   }
@@ -161,9 +164,9 @@ export class BoxOfCircles extends BaseExample {
         const circle = new CircleInstance({
           color: [1.0, 0.0, 0.0, 1.0],
           id: `circle${i * 100 + k}`,
-          radius: 5,
-          x: i * 11,
-          y: k * 11,
+          radius: 2,
+          x: i * 4,
+          y: k * 4,
         });
 
         circleProvider.instances.push(circle);
@@ -185,9 +188,9 @@ export class BoxOfCircles extends BaseExample {
         for (let i = 0; i < boxSide; ++i) {
           for (let k = 0; k < boxSide; ++k) {
             const circle = circles[i * boxSide + k];
-            circle.x = i * 11;
-            circle.y = k * 11;
-            circle.radius = 5;
+            circle.x = i * 4;
+            circle.y = k * 4;
+            circle.radius = 2;
             circle.color = [1.0, 0.0, 0.0, 1.0];
           }
         }

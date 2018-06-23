@@ -12,7 +12,7 @@ export declare class ImageRasterizer {
     /**
      * Attempts to populate the 'canvas' context for rendering images offscreen.
      */
-    static getContext(): CanvasRenderingContext2D;
+    static getContext(): CanvasRenderingContext2D | null;
     /**
      * This renders our image to a sizeable canvas where we loop over the pixel data to determine
      * the bounds of the image.

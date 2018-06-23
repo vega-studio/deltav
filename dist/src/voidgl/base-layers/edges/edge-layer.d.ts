@@ -23,7 +23,7 @@ export interface IEdgeLayerState {
  * This layer displays edges and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export declare class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps, IEdgeLayerState> {
+export declare class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
     static defaultProps: IEdgeLayerProps;
     /**
      * We provide bounds and hit test information for the instances for this layer to allow for mouse picking

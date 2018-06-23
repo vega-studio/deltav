@@ -37,7 +37,7 @@ export declare class LabelRasterizer {
     /**
      * Attempts to populate the 'canvas' context for rendering labels offscreen.
      */
-    static getContext(): CanvasRenderingContext2D;
+    static getContext(): CanvasRenderingContext2D | null;
     /**
      * This retrieves the font size that will be used when rasterizing the label. This takes into
      * account whether the label is requesting super sampling be present for the rendering.

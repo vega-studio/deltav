@@ -5,13 +5,11 @@ import { LabelInstance } from './label-instance';
 export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
     atlas?: string;
 }
-export interface ILabelLayerState {
-}
 /**
  * This layer displays Labels and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export declare class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLayerState> {
+export declare class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
     /**
      * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
      * of elements

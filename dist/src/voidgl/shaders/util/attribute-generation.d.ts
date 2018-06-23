@@ -4,6 +4,7 @@
  * not worry about syncing attribute and uniform names between the JS
  */
 import { IInstanceAttribute, IInstancingUniform, IShaders, IUniform, IVertexAttribute } from '../../types';
+import { Instance } from '../../util';
 export interface IInjectionDetails {
     fs: string;
     materialUniforms: IInstancingUniform[];
@@ -18,4 +19,4 @@ export interface IInjectionDetails {
  * @param vertexAttributes
  * @param instanceAttributes
  */
-export declare function injectFragments(shaders: IShaders, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<any>[], uniforms: IUniform[]): IInjectionDetails;
+export declare function injectFragments<T extends Instance>(shaders: IShaders, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[], uniforms: IUniform[]): IInjectionDetails;

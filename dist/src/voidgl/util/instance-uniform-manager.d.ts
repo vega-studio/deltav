@@ -59,12 +59,12 @@ export declare class InstanceUniformManager<T extends Instance> {
     private instanceToCluster;
     /** A map of a cluster of uniforms to the buffer it comes from */
     private clusterToBuffer;
-    constructor(layer: Layer<T, any, any>, scene: Scene);
+    constructor(layer: Layer<T, any>, scene: Scene);
     /**
      * This adds an instance to the manager and gives the instance an associative
      * block of uniforms to work with.
      */
-    add(instance: T): IUniformInstanceCluster;
+    add(instance: T): IUniformInstanceCluster | undefined;
     /**
      * Free all resources this manager may be holding onto
      */
@@ -73,12 +73,12 @@ export declare class InstanceUniformManager<T extends Instance> {
      * This retireves the uniforms associated with an instance, or returns nothing
      * if the instance has not been associated yet.
      */
-    getUniforms(instance: T): IUniformInstanceCluster;
+    getUniforms(instance: T): IUniformInstanceCluster | undefined;
     /**
      * Disassociates an instance with it's group of uniforms and makes the instance
      * in the buffer no longer drawable.
      */
-    remove(instance: T): IUniformInstanceCluster;
+    remove(instance: T): IUniformInstanceCluster | undefined;
     /**
      * Clears all elements of this manager from the current scene it was in.
      */

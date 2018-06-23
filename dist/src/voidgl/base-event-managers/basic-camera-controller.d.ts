@@ -94,7 +94,7 @@ export declare class BasicCameraController extends EventManager {
     /** THis is the filter applied to tscaling operations */
     private scaleFilter;
     /** The view that must be the start or focus of the interactions in order for the interactions to occur */
-    startViews: string[] | undefined;
+    startViews: string[];
     /**
      * If an unconvered start view is not available, this is the next available covered view, if present
      */
@@ -117,19 +117,19 @@ export declare class BasicCameraController extends EventManager {
     /**
      * Calculation for adhering to an anchor - x-axis offset only.
      */
-    anchoredByBoundsHorizontal(targetView: View): number;
+    anchoredByBoundsHorizontal(targetView: View, bounds: ICameraBoundsOptions): number;
     /**
      * Calculation for adhering to an anchor - y-axis offset only.
      */
-    anchoredByBoundsVertical(targetView: View): number;
+    anchoredByBoundsVertical(targetView: View, bounds: ICameraBoundsOptions): number;
     /**
      * Returns offset on x-axis due to current bounds and anchor.
      */
-    boundsHorizontalOffset(targetView: View): number;
+    boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
     /**
      * Returns offset on y-axis due to current bounds and anchor.
      */
-    boundsVerticalOffset(targetView: View): number;
+    boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
     private canStart(viewId);
     private findCoveredStartView(e);
     private getTargetView(e);

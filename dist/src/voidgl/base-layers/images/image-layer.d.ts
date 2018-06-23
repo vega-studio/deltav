@@ -5,13 +5,11 @@ import { ImageInstance } from './image-instance';
 export interface IImageLayerProps extends ILayerProps<ImageInstance> {
     atlas?: string;
 }
-export interface IImageLayerState {
-}
 /**
  * This layer displays Images and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export declare class ImageLayer extends Layer<ImageInstance, IImageLayerProps, IImageLayerState> {
+export declare class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
     /**
      * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
      * of elements

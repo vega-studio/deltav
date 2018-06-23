@@ -1,5 +1,6 @@
 import * as Three from 'three';
-import { Layer } from '../surface/layer';
+import { ILayerProps, Layer } from '../surface/layer';
+import { Instance } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { IViewOptions, View } from './view';
 /**
@@ -26,7 +27,7 @@ export declare class Scene extends IdentifyByKey {
     /** This is the three scene which actually sets up the rendering objects */
     container: Three.Scene;
     /** This is all of the layers tracked to the scene */
-    layers: Layer<any, any, any>[];
+    layers: Layer<any, any>[];
     /** This indicates the sort is dirty for a set of layers */
     sortIsDirty: boolean;
     /** This is the view */
@@ -37,7 +38,7 @@ export declare class Scene extends IdentifyByKey {
      * The layer can not jump between views or scenes. You must destroy and reconstruct
      * the layer.
      */
-    addLayer(layer: Layer<any, any, any>): void;
+    addLayer<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): void;
     /**
      * This adds a view to this scene to be used by the scene
      */
@@ -50,6 +51,6 @@ export declare class Scene extends IdentifyByKey {
      * Removes a layer from the scene. No resort is needed as remove operations
      * do not adjust the sorting order.
      */
-    removeLayer(layer: Layer<any, any, any>): void;
+    removeLayer(layer: Layer<any, any>): void;
     sortLayers(): void;
 }

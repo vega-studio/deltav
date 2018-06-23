@@ -1,5 +1,4 @@
 export * from './chart-camera';
-export * from './data-provider';
 export * from './instance';
 export * from './mouse';
 export * from './reference-camera';

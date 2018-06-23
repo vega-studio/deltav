@@ -18,6 +18,7 @@ import {
   IValueInstanceAttribute,
   IVertexAttribute,
   IVertexAttributeInternal,
+  PickType,
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
@@ -375,6 +376,51 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
   }
 }
 
+function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): IUniform[] {
+  if (layer.picking.type === PickType.SINGLE) {
+    return [{
+      name: 'pickingActive',
+      shaderInjection: ShaderInjectionTarget.ALL,
+      size: UniformSize.ONE,
+      update: () => [layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0],
+    }];
+  }
+
+  return [];
+}
+
+function generatePickingAttributes<layer, T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
+  if (layer.picking.type === PickType.SINGLE) {
+    // Find a compltely empty block within all instance attributes provided and injected
+    const emptyFillBlock = findEmptyBlock(
+      instanceAttributes,
+      InstanceAttributeSize.FOUR,
+    );
+
+    return [{
+      block: emptyFillBlock[0],
+      blockIndex: emptyFillBlock[1],
+      name: '_pickingColor',
+      size: InstanceAttributeSize.FOUR,
+      update: (o) => {
+        // We start from white and move down so the colors are more visible
+        // For debugging
+        const color = 0xFFFFFF - o.uid;
+
+        // Do bit maths do get float components out of the int color
+        return [
+          (color >> 16) / 255.0,
+          ((color & 0x00FF00) >> 8) / 255.0,
+          (color & 0x0000FF) / 255.0,
+          1,
+        ];
+      },
+    }];
+  }
+
+  return [];
+}
+
 function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): IUniform[] {
   return [
     // This injects the projection matrix from the view camera
@@ -542,11 +588,17 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   // Generates all of the attributes needed to make attributes automagically be eased when changed
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
-  const atlasUniforms: IUniform[] = generateAtlasResourceUniforms(layer, instanceAttributes);
+  let addedUniforms: IUniform[] = uniforms.concat(generateAtlasResourceUniforms(layer, instanceAttributes));
   // These are the uniforms that should be present in the shader for basic operation
-  const addedUniforms: IUniform[] = atlasUniforms.concat(generateBaseUniforms(layer));
+  addedUniforms = addedUniforms.concat(generateBaseUniforms(layer));
+  // Add in uniforms for picking
+  addedUniforms = addedUniforms.concat(generatePickingUniforms(layer));
   // Create the base instance attributes that must be present
-  const addedInstanceAttributes: IInstanceAttribute<T>[] = generateBaseInstanceAttributes(instanceAttributes);
+  let addedInstanceAttributes: IInstanceAttribute<T>[] = instanceAttributes
+    .concat(generateBaseInstanceAttributes(instanceAttributes))
+  ;
+  // Add in attributes for picking
+  addedInstanceAttributes = addedInstanceAttributes.concat(generatePickingAttributes(layer, addedInstanceAttributes));
   // Create the base vertex attributes that must be present
   const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
 
@@ -562,13 +614,11 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
 
   const allUniforms =
     addedUniforms
-    .concat(uniforms)
     .map(toUniformInternal)
   ;
 
   const allInstanceAttributes =
     addedInstanceAttributes
-    .concat(instanceAttributes)
     .sort(sortNeedsUpdateFirstToTop)
   ;
 

@@ -25,6 +25,8 @@ export interface InstanceUniformBuffer {
     material: Three.ShaderMaterial;
     /** The unique model generated for the buffer: Used to allow the buffer to be rendered by adding to a scene */
     model: Three.Object3D;
+    /** Threejs can not have duplicate objects across Scenes */
+    pickModel?: Three.Object3D;
 }
 /**
  * This class does a whoooooole lot of making the magical instancing optimization controls possible.

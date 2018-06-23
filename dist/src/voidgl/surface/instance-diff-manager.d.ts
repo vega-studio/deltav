@@ -1,9 +1,9 @@
-import { IInstanceAttribute, IQuadTreePickingMetrics, ISinglePickingMetrics } from '../types';
+import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics } from '../types';
 import { Instance } from '../util';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 /** Signature of a method that handles a diff */
-export declare type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster?: IUniformInstanceCluster) => void;
+export declare type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster: IUniformInstanceCluster) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export declare type DiffLookup<T extends Instance> = DiffHandler<T>[];
 /**
@@ -16,7 +16,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
     /** This is all of the instance attributes applied to the target */
     instanceAttributes: IInstanceAttribute<T>[];
     /** This is the picking metrics for how Instances are picked with the mouse */
-    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
     resource: AtlasResourceManager;
     /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
@@ -29,6 +29,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
 export declare class InstanceDiffManager<T extends Instance> {
     layer: IInstanceDiffManagerTarget<T>;
     quadPicking: IQuadTreePickingMetrics<T>;
+    colorPicking: ISinglePickingMetrics<T>;
     constructor(layer: IInstanceDiffManagerTarget<T>);
     /**
      * This returns the proper diff processor for handling diffs
@@ -37,27 +38,40 @@ export declare class InstanceDiffManager<T extends Instance> {
     /**
      * This processes add operations from changes in the instancing data
      */
-    private addInstance(manager, instance, uniformCluster?);
+    private addInstance(manager, instance, uniformCluster);
     /**
      * This processes add operations from changes in the instancing data and manages the layer's quad tree
      * with the instance as well.
      */
-    private addInstanceQuad(manager, instance, uniformCluster?);
+    private addInstanceQuad(manager, instance, uniformCluster);
+    /**
+     * This processes add operations from changes in the instancing data and manages the layer's matching of
+     * color / UID to Instance
+     */
+    private addInstanceColorPick(manager, instance, uniformCluster);
     /**
      * This processes change operations from changes in the instancing data
      */
-    private changeInstance(manager, instance, uniformCluster?);
+    private changeInstance(manager, instance, uniformCluster);
     /**
      * This processes change operations from changes in the instancing data
      */
-    private changeInstanceQuad(manager, instance, uniformCluster?);
+    private changeInstanceQuad(manager, instance, uniformCluster);
+    /**
+     * This processes change operations from changes in the instancing data
+     */
+    private changeInstanceColorPick(manager, instance, uniformCluster);
     /**
      * This processes remove operations from changes in the instancing data
      */
-    private removeInstance(manager, instance, uniformCluster?);
+    private removeInstance(manager, instance, uniformCluster);
     /**
      * This processes remove operations from changes in the instancing data
      */
-    private removeInstanceQuad(manager, instance, uniformCluster?);
+    private removeInstanceQuad(manager, instance, uniformCluster);
+    /**
+     * This processes remove operations from changes in the instancing data
+     */
+    private removeInstanceColorPick(manager, instance, uniformCluster);
     private updateInstance(instance, uniformCluster);
 }

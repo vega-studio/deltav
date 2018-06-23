@@ -2,6 +2,7 @@ import { IPoint } from '../../primitives/point';
 import { IProjection } from '../../types';
 import { EventManager } from '../event-manager';
 import { Layer } from '../layer';
+import { LayerSurface } from '../layer-surface';
 import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manager';
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions
@@ -12,11 +13,16 @@ import { IDragMetrics, IMouseInteraction, SceneView } from '../mouse-event-manag
  * the views so that the layers can translate the events to gestures.
  */
 export declare class LayerMouseEvents extends EventManager {
-    /** This is the surface this manager is aiding with broadcasting events to layers */
-    sceneViews: SceneView[];
     /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
     isOver: Map<SceneView, boolean>;
-    constructor(sceneViews: SceneView[]);
+    /** This is the surface this manager is aiding with broadcasting events to layers */
+    sceneViews: SceneView[];
+    /**
+     * This is the surface this LayerMouseEvent Controller is operating on behalf of. We use this to trigger,
+     * pre-layer processing items, such as color pick narrowing prior to the Layers receiving the event.
+     */
+    surface: LayerSurface;
+    constructor(surface: LayerSurface);
     getSceneViewsUnderMouse(e: IMouseInteraction): SceneView[];
     getMouseByViewId(e: IMouseInteraction): Map<string, IPoint>;
     handleClick(e: IMouseInteraction, button: number): void;

@@ -1,12 +1,11 @@
 import * as Three from 'three';
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
-import { BoundsAccessor, DataProvider, DiffType } from '../util';
+import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
+import { BoundsAccessor } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
-import { LayerSurface } from './layer-surface';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 import { View } from './view';
 export interface IShaderInputs<T extends Instance> {
@@ -27,11 +26,20 @@ export interface IModelType {
     modelType: IModelConstructable;
 }
 /**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+    /** A list of changes to instances */
+    changeList: [T, InstanceDiffType][];
+    /** Resolves the changes as consumed */
+    resolve(): void;
+}
+/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     /** This is the data provider where the instancing data is injected and modified. */
-    data: DataProvider<T>;
+    data: IInstanceProvider<T>;
     /**
      * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
      * the value is not NONE.
@@ -72,7 +80,7 @@ export interface IPickingMethods<T extends Instance> {
 /**
  * A base class for generating drawable content
  */
-export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends IdentifyByKey {
+export declare class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
     static defaultProps: any;
     /** This is the attribute that specifies the _active flag for an instance */
     activeAttribute: IInstanceAttribute<T>;
@@ -87,7 +95,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     /** Provides the number of vertices a single instance spans */
     instanceVertexCount: number;
     /** This is the handler that manages interactions for the layer */
-    interactions: LayerInteractionHandler<T, U>;
+    interactions: LayerInteractionHandler<T, U, V>;
     /** The official shader material generated for the layer */
     material: Three.RawShaderMaterial;
     /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
@@ -95,13 +103,9 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     /** This is the mesh for the Threejs setup */
     model: Three.Object3D;
     /** This is all of the picking metrics kept for handling picking scenarios */
-    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
-    /** Properties handed to the Layer during a LayerSurface render */
-    props: U;
+    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     /** This is the system provided resource manager that lets a layer request Atlas resources */
     resource: AtlasResourceManager;
-    /** This is the surface this layer is generated under */
-    surface: LayerSurface;
     /** This is all of the uniforms generated for the layer */
     uniforms: IUniformInternal[];
     /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
@@ -110,6 +114,8 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     vertexAttributes: IVertexAttributeInternal[];
     /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
     view: View;
+    props: U;
+    state: V;
     /** This contains the methods and controls for handling diffs for the layer */
     diffManager: InstanceDiffManager<T>;
     /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
@@ -162,7 +168,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
      * have better documentation when typing out the elements.
      */
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
-    willUpdateInstances(changes: [T, DiffType]): void;
+    willUpdateInstances(changes: [T, InstanceDiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
     didUpdate(): void;
 }

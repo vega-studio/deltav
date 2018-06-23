@@ -1,7 +1,7 @@
 import * as Three from 'three';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
-import { ChartCamera, Vec } from './util';
+import { ChartCamera, Vec, Vec2 } from './util';
 import { IAutoEasingMethod } from './util/auto-easing-method';
 import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
@@ -345,6 +345,8 @@ export enum PickType {
  * This represents the settings and objects used to facilitate picking in a layer.
  */
 export interface IPickingMetrics {
+  /** This is the current pick mode that is active during the draw pass of the layer */
+  currentPickMode: PickType;
   /** This is the picking style to be used */
   type: PickType;
 }
@@ -366,9 +368,48 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
  * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
  * a single instance underneath the mouse.
  */
-export interface ISinglePickingMetrics extends IPickingMetrics {
-  // TODO
+export interface ISinglePickingMetrics<T extends Instance> extends IPickingMetrics {
+  /** Set the enum for the type */
   type: PickType.SINGLE;
+  /**
+   * This is a lookup of the instance by it's UID which is all that is needed to decode a color to an instance
+   * The color UINT8 components composited into a single UINT32 IS the UID of the instance
+   */
+  uidToInstance: Map<number, T>;
+}
+
+/**
+ * This is the picking settings and objects to facilitate PickType.NONE where no information
+ * is retrieved for mouse interactions.
+ */
+export interface INonePickingMetrics extends IPickingMetrics {
+  // Single Picking does not require any special helper information
+  type: PickType.NONE;
+}
+
+export interface IColorPickingData {
+  /** The mouse target position where the data is rendered */
+  mouse: Vec2;
+  /** The color data loaded for last picking rendering */
+  colorData: Uint8Array;
+  /** The height of the data array */
+  dataHeight: number;
+  /** The width of the data array */
+  dataWidth: number;
+  /** The nearest found color */
+  nearestColor: number;
+  /** All colors in the data */
+  allColors: number[];
+}
+
+/**
+ * Diff types that an instance can go through. Used to help the system consume the diff
+ * and apply it to the GL framework.
+ */
+export enum InstanceDiffType {
+  CHANGE = 0,
+  INSERT = 1,
+  REMOVE = 2,
 }
 
 /**

@@ -1,5 +1,5 @@
 import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import { CircleInstance, CircleLayer, createLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
 import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
 
@@ -44,7 +44,7 @@ export class MouseInteraction extends BaseExample {
     }
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
         radius: AutoEasingMethod.easeOutElastic(500),
@@ -54,14 +54,14 @@ export class MouseInteraction extends BaseExample {
       onMouseClick: this.handleCircleClick,
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scaleFactor: () => 1,
       scene: scene,
     });
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): InstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
 
     for (let i = 0; i < 40; ++i) {
       for (let k = 0; k < 30; ++k) {
@@ -73,7 +73,7 @@ export class MouseInteraction extends BaseExample {
           y: k * 11,
         });
 
-        circleProvider.instances.push(circle);
+        circleProvider.add(circle);
       }
     }
 

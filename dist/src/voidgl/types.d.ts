@@ -1,8 +1,7 @@
 import * as Three from 'three';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
-import { ChartCamera, Vec } from './util';
-import { IAutoEasingMethod } from './util/auto-easing-method';
+import { ChartCamera, Vec2 } from './util';
 import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 export declare type Diff<T extends string, U extends string> = ({
@@ -112,7 +111,7 @@ export interface IVertexAttribute {
 }
 export interface IVertexAttributeInternal extends IVertexAttribute {
     /** This is the actual attribute generated internally for the ThreeJS interfacing */
-    materialAttribute: Three.BufferAttribute | null;
+    materialAttribute: Three.BufferAttribute;
 }
 export interface IInstanceAttribute<T extends Instance> {
     /**
@@ -123,18 +122,10 @@ export interface IInstanceAttribute<T extends Instance> {
      */
     block: number;
     /**
-     * This is the index within the block this attribute will be available.
+     * This is the index within the block this attribute will be available. This is automatically
+     * populated by the system.
      */
     blockIndex?: InstanceBlockIndex;
-    /**
-     * When this is set, the system will automatically inject necessary Shader IO to facilitate
-     * performing the easing on the GPU, which saves enormous amounts of CPU processing time
-     * trying to calcuate animations and tweens for properties.
-     *
-     * NOTE: Setting this increases the amount of data per instance by: size * 2 + 2
-     * as it injects in a start value, start time, and duration
-     */
-    easing?: IAutoEasingMethod<Vec>;
     /**
      * This is the name that will be available in your shader for use. This will only be
      * available after the ${attributes} declaration.
@@ -174,60 +165,15 @@ export interface IInstanceAttribute<T extends Instance> {
      */
     update(instance: T): InstanceIOValue;
 }
-/**
- * This is an attribute where the atlas is definitely declared.
- */
-export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
-    /**
-     * If this is specified, this attribute becomes a size of 4 and will have a block index of
-     * 0. This makes this attribute and layer become compatible with reading atlas resources.
-     * The value provided for this property should be the name of the atlas that is created.
-     */
-    atlas: {
-        /** Specify which generated atlas to target for the resource */
-        key: string;
-        /** Specify the name that will be injected that will be the sampler2D in the shader */
-        name: string;
-        /**
-         * This specifies which of the shaders the sampler2D will be injected into.
-         * Defaults to the Fragment shader only.
-         */
-        shaderInjection?: ShaderInjectionTarget;
-    };
-}
-/**
- * This is an attribute that is simply a value
- */
-export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
-    /**
-     * This MUST be defined to be an Easing attribute
-     */
-    easing: IAutoEasingMethod<Vec>;
-    /**
-     * Easing attributes requires size to be present
-     */
-    size: InstanceAttributeSize;
-}
-/**
- * This is an attribute that is simply a value
- */
-export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
-    /**
-     * If this is specified, this attribute becomes a size of 4 and will have a block index of
-     * 0. This makes this attribute and layer become compatible with reading atlas resources.
-     * The value provided for this property should be the name of the atlas that is created.
-     */
-    atlas: undefined;
-}
 export declare type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 /** These are flags for indicating which shaders receive certain injection elements */
 export declare enum ShaderInjectionTarget {
     /** ONLY the vertex shader will receive the injection */
-    VERTEX = 1,
+    VERTEX = 0,
     /** ONLY the fragment shader will receive the injection */
-    FRAGMENT = 2,
+    FRAGMENT = 1,
     /** Both the fragment and vertex shader will receive the injection */
-    ALL = 3,
+    ALL = 2,
 }
 export interface IUniform {
     /**
@@ -327,6 +273,8 @@ export declare enum PickType {
  * This represents the settings and objects used to facilitate picking in a layer.
  */
 export interface IPickingMetrics {
+    /** This is the current pick mode that is active during the draw pass of the layer */
+    currentPickMode: PickType;
     /** This is the picking style to be used */
     type: PickType;
 }
@@ -346,26 +294,42 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
  * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
  * a single instance underneath the mouse.
  */
-export interface ISinglePickingMetrics extends IPickingMetrics {
+export interface ISinglePickingMetrics<T extends Instance> extends IPickingMetrics {
+    /** Set the enum for the type */
     type: PickType.SINGLE;
+    /**
+     * This is a lookup of the instance by it's UID which is all that is needed to decode a color to an instance
+     * The color UINT8 components composited into a single UINT32 IS the UID of the instance
+     */
+    uidToInstance: Map<number, T>;
 }
 /**
- * This is the metrics associated with a frame. Mostly dealing with timing values.
+ * This is the picking settings and objects to facilitate PickType.NONE where no information
+ * is retrieved for mouse interactions.
  */
-export declare type FrameMetrics = {
-    /** The frame number rendered. Increases by 1 every surface draw */
-    currentFrame: number;
-    /** The start time of the current frame */
-    currentTime: number;
-    /** The start time of the previous frame */
-    previousTime: number;
-};
+export interface INonePickingMetrics extends IPickingMetrics {
+    type: PickType.NONE;
+}
+export interface IColorPickingData {
+    /** The mouse target position where the data is rendered */
+    mouse: Vec2;
+    /** The color data loaded for last picking rendering */
+    colorData: Uint8Array;
+    /** The height of the data array */
+    dataHeight: number;
+    /** The width of the data array */
+    dataWidth: number;
+    /** The nearest found color */
+    nearestColor: number;
+    /** All colors in the data */
+    allColors: number[];
+}
 /**
- * This is the minimum properties required to make all easing functions operate.
+ * Diff types that an instance can go through. Used to help the system consume the diff
+ * and apply it to the GL framework.
  */
-export interface IEasingProps {
-    start: Vec;
-    end: Vec;
-    startTime: number;
-    duration: number;
+export declare enum InstanceDiffType {
+    CHANGE = 0,
+    INSERT = 1,
+    REMOVE = 2,
 }

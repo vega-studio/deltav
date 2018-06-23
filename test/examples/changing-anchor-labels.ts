@@ -1,8 +1,8 @@
-import { Anchor, AnchorType, createLayer, DataProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import { Anchor, AnchorType, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
 import { BaseExample } from './base-example';
 
 export class ChangingAnchorLabels extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<LabelInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -11,11 +11,12 @@ export class ChangingAnchorLabels extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const labelProvider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const labelProvider = new InstanceProvider<LabelInstance>();
+    const labels: LabelInstance[] = [];
 
     for (let i = 0; i < 625; ++i) {
-      labelProvider.instances.push(new LabelInstance({
+      const label = labelProvider.add(new LabelInstance({
         anchor: {
           padding: 0,
           type: AnchorType.Middle,
@@ -34,10 +35,12 @@ export class ChangingAnchorLabels extends BaseExample {
         x: Math.random() * 1500,
         y: Math.random() * 1500,
       }));
+
+      labels.push(label);
     }
 
     setInterval(() => {
-      for (const label of labelProvider.instances) {
+      for (const label of labels) {
         const anchor: Anchor = {
           padding: 0,
           type: [

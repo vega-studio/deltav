@@ -5,8 +5,9 @@ import { EventManager } from '../surface/event-manager';
 import { IDefaultSceneElements } from '../surface/generate-default-scene';
 import { SceneView } from '../surface/mouse-event-manager';
 import { ISceneOptions, Scene } from '../surface/scene';
-import { FrameMetrics } from '../types';
+import { View } from '../surface/view';
 import { Instance } from '../util/instance';
+import { Vec2 } from '../util/vector';
 import { ILayerProps, Layer } from './layer';
 import { IAtlasOptions } from './texture/atlas';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
@@ -47,7 +48,7 @@ export interface ILayerSurfaceOptions {
     scenes?: ISceneOptions[];
 }
 export interface ILayerConstructable<T extends Instance> {
-    new (props: ILayerProps<T>): Layer<any, any>;
+    new (props: ILayerProps<T>): Layer<any, any, any>;
 }
 /**
  * This is a pair of a Class Type and the props to be applied to that class type.
@@ -72,25 +73,23 @@ export declare class LayerSurface {
     /** This is the gl context this surface is rendering to */
     private context;
     /** This is the current viewport the renderer state is in */
-    currentViewport: Box;
+    currentViewport: Map<Three.WebGLRenderer, Box>;
     /**
      * This is the default scene that layers get added to if they do not specify a valid Scene.
      * This scene by default only has a single default view.
      */
     defaultSceneElements: IDefaultSceneElements;
-    /**
-     * This is the metrics of the current running frame
-     */
-    frameMetrics: FrameMetrics;
-    /**
-     * This is used to help resolve concurrent draws. There are some very async operations that should
-     * not overlap in draw calls.
-     */
-    private isBufferingAtlas;
     /** This is all of the layers in this manager by their id */
-    layers: Map<string, Layer<any, any>>;
+    layers: Map<string, Layer<any, any, any>>;
     /** This manages the mouse events for the current canvas context */
     private mouseManager;
+    /**
+     * This is the renderer that is meant for rendering the picking pass. We have a separate renderer so we can disable
+     * over complicated features like antialiasing which would ruin the picking pass.
+     */
+    pickingRenderer: Three.WebGLRenderer;
+    /** This is a target used to perform rendering our picking pass */
+    pickingTarget: Three.WebGLRenderTarget;
     /** This is the density the rendering renders for the surface */
     pixelRatio: number;
     /** This is the THREE render system we use to render scenes with views */
@@ -106,34 +105,41 @@ export declare class LayerSurface {
      * This is all of the views currently generated for this surface paired with the scene they render.
      */
     sceneViews: SceneView[];
+    /** When set to true, the next render will make sure color picking is updated for layer interactions */
+    updateColorPick?: {
+        mouse: Vec2;
+        views: View[];
+    };
     /**
      * This flags all layers by id for disposal at the end of every render. A Layer must be recreated
      * after each render in order to clear it's disposal flag. This is the trick to making this a
      * reactive system.
      */
     willDisposeLayer: Map<string, boolean>;
+    /**
+     * This is used to help resolve concurrent draws. There are some very async operations that should
+     * not overlap in draw calls.
+     */
+    private isBufferingAtlas;
     /** Read only getter for the gl context */
     readonly gl: WebGLRenderingContext;
     /**
      * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
      * as well as additional helper injections to aid in instancing and shader i/o.
      */
-    private addLayer<T, U, V>(layer);
+    addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V>;
     /**
      * Free all resources consumed by this surface that gets applied to the GPU.
      */
     destroy(): void;
     /**
      * This is the draw loop that must be called per frame for updates to take effect and display.
-     *
-     * @param time This is an optional time flag so one can manually control the time flag for the frame.
-     *             This will affect animations and other automated gpu processes.
      */
-    draw(time?: number): Promise<void>;
+    draw(): Promise<void>;
     /**
-     * This finalizes everything and sets up viewports and clears colors and
+     * This finalizes everything and sets up viewports and clears colors and performs the actual render step
      */
-    private drawSceneView(scene, view);
+    drawSceneView(scene: Three.Scene, view: View, renderer?: Three.WebGLRenderer, target?: Three.WebGLRenderTarget): void;
     /**
      * This allows for querying a view's screen bounds. Null is returned if the view id
      * specified does not exist.
@@ -176,7 +182,7 @@ export declare class LayerSurface {
      * the layer was using in association with the context. If the layer is re-insertted, it will
      * be revaluated as though it were a new layer.
      */
-    private removeLayer<T, U, V>(layer);
+    removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V>;
     /**
      * Used for reactive rendering and diffs out the layers for changed layers.
      */
@@ -186,9 +192,22 @@ export declare class LayerSurface {
      * dimensions for handling all of our rendered elements.
      */
     fitContainer(pixelRatio?: number): void;
+    /**
+     * This resizes the canvas and retains pixel ratios amongst all of the resources involved.
+     */
     resize(width: number, height: number, pixelRatio?: number): void;
     /**
      * This establishes the rendering canvas context for the surface.
      */
-    private setContext(context?);
+    setContext(context: WebGLRenderingContext | HTMLCanvasElement | string): void;
+    /**
+     * This applies a new size to the renderer and resizes any additional resources that requires being
+     * sized along with the renderer.
+     */
+    private setRendererSize(width, height);
+    /**
+     * This triggers an update to all of the layers that perform picking, the pixel data
+     * within the specified mouse range.
+     */
+    updateColorPickRange(mouse: Vec2, views: View[]): void;
 }

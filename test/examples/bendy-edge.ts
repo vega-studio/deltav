@@ -1,8 +1,8 @@
-import { createLayer, DataProvider, EdgeInstance, EdgeLayer, EdgeType, LayerInitializer } from '../../src';
+import { createLayer, EdgeInstance, EdgeLayer, EdgeType, InstanceProvider, LayerInitializer } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BendyEdge extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<EdgeInstance>): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
       key: 'bendy-edge',
@@ -11,8 +11,8 @@ export class BendyEdge extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<EdgeInstance> {
-    const edgeProvider = new DataProvider<EdgeInstance>([]);
+  makeProvider(): InstanceProvider<EdgeInstance> {
+    const edgeProvider = new InstanceProvider<EdgeInstance>();
 
     const edges: EdgeInstance[] = [];
     const TOTAL_EDGES = 10;
@@ -30,7 +30,7 @@ export class BendyEdge extends BaseExample {
       });
 
       edges.push(edge);
-      edgeProvider.instances.push(edge);
+      edgeProvider.add(edge);
     }
 
     setInterval(() => {

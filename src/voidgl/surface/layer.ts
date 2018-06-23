@@ -2,8 +2,10 @@ import * as Three from 'three';
 import {
   IInstanceAttribute,
   IMaterialOptions,
+  INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  InstanceDiffType,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
@@ -19,7 +21,7 @@ import {
   UniformIOValue,
   UniformSize,
 } from '../types';
-import { BoundsAccessor, DataProvider, DiffType, TrackedQuadTree } from '../util';
+import { BoundsAccessor, TrackedQuadTree } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
@@ -50,11 +52,21 @@ export interface IModelType {
 }
 
 /**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+  /** A list of changes to instances */
+  changeList: [T, InstanceDiffType][];
+  /** Resolves the changes as consumed */
+  resolve(): void;
+}
+
+/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
-  data: DataProvider<T>;
+  data: IInstanceProvider<T>;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -124,7 +136,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
   /** Properties handed to the Layer during a LayerSurface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
@@ -159,9 +171,25 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
       const pickingMethods = this.getInstancePickingMethods();
 
       this.picking = {
+        currentPickMode: PickType.NONE,
         hitTest: pickingMethods.hitTest,
         quadTree: new TrackedQuadTree<T>(0, 1, 0, 1, pickingMethods.boundsAccessor),
         type: PickType.ALL,
+      };
+    }
+
+    else if (picking === PickType.SINGLE) {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.SINGLE,
+        uidToInstance: new Map<number, T>(),
+      };
+    }
+
+    else {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.NONE,
       };
     }
 
@@ -301,7 +329,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
     };
   }
 
-  willUpdateInstances(changes: [T, DiffType]) {
+  willUpdateInstances(changes: [T, InstanceDiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }

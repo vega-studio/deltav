@@ -5,9 +5,11 @@ import { LayerSurface } from '../src/voidgl/surface/layer-surface';
 import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
 import { ClearFlags } from '../src/voidgl/surface/view';
 import { ChartCamera } from '../src/voidgl/util/chart-camera';
+import { AnimateDeleteAdd } from './examples/animate-delete-add';
 import { BaseExample } from './examples/base-example';
 import { BendyEdge } from './examples/bendy-edge';
 import { BoundedView } from './examples/bounded-view';
+import { BoundedView3 } from './examples/bounded-view3';
 import { BoxOfCircles } from './examples/box-of-circles';
 import { BoxOfRings } from './examples/box-of-rings';
 import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
@@ -17,6 +19,7 @@ import { LabelAnimatedScale } from './examples/label-animated-scale';
 import { LabelSizingCorrected } from './examples/label-sizing-corrected';
 import { Lines } from './examples/lines';
 import { MouseInteraction } from './examples/mouse-interaction';
+import { MouseInteractionColorPicking } from './examples/mouse-interaction-color-picking';
 import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
 import { MouseInteractionImages } from './examples/mouse-interaction-images';
 import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
@@ -57,10 +60,17 @@ const tests: BaseExample[] = [
   new LabelSizingCorrected(),
   new MouseInteractionRectangle(),
   new BoundedView(),
+  new BoundedView3(),
+  new AnimateDeleteAdd(),
+  new MouseInteractionColorPicking(),
 ];
 
 /** These are the layers for the tests that are generated */
 const layers: LayerInitializer[] = [];
+
+function isLayerInitializerList(val: any): val is LayerInitializer[] {
+  return Array.isArray(val) && Array.isArray(val[0]);
+}
 
 /**
  * Entry class for the Application
@@ -144,11 +154,19 @@ export class Main extends Component<any, IMainState> {
 
       // Generate the Layers for the tests now that the scenes are established
       tests.forEach((test, i) => {
+        const sceneName = this.allScenes[i].name;
         test.surface = this.surface;
-        test.view = this.allScenes[i].name;
+        test.view = sceneName;
         const provider = test.makeProvider();
-        const layer = test.makeLayer(this.allScenes[i].name, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
-        layers.push(layer);
+        const layer = test.makeLayer(sceneName, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
+
+        if (isLayerInitializerList(layer)) {
+          layer.forEach(l => layers.push(l));
+        }
+
+        else {
+          layers.push(layer);
+        }
       });
 
       // Begin the draw loop

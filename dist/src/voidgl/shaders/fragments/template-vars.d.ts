@@ -11,6 +11,7 @@ export declare const templateVars: {
     instanceFragments: string;
     instanceUniformDeclarations: string;
     layerUniforms: string;
+    picking: string;
     projectionMethods: string;
     shader: string;
     shaderInput: string;

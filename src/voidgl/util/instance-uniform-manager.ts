@@ -2,7 +2,7 @@ import * as Three from 'three';
 import { generateLayerModel } from '../surface/generate-layer-model';
 import { Layer } from '../surface/layer';
 import { Scene } from '../surface/scene';
-import { IInstanceAttribute } from '../types';
+import { IInstanceAttribute, PickType } from '../types';
 import { Instance } from './instance';
 import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
 
@@ -30,6 +30,8 @@ export interface InstanceUniformBuffer {
   material: Three.ShaderMaterial;
   /** The unique model generated for the buffer: Used to allow the buffer to be rendered by adding to a scene */
   model: Three.Object3D;
+  /** Threejs can not have duplicate objects across Scenes */
+  pickModel?: Three.Object3D;
 }
 
 /**
@@ -64,7 +66,7 @@ export class InstanceUniformManager<T extends Instance> {
   private availableClusters: IUniformInstanceCluster[] = [];
 
   /** A lookup of an instance to a cluster of uniforms associated with it */
-  private instanceToCluster = new Map<T, IUniformInstanceCluster>();
+  private instanceToCluster = new Map<number, IUniformInstanceCluster>();
   /** A map of a cluster of uniforms to the buffer it comes from */
   private clusterToBuffer = new Map<IUniformInstanceCluster, InstanceUniformBuffer>();
 
@@ -90,10 +92,10 @@ export class InstanceUniformManager<T extends Instance> {
       this.makeNewBuffer();
     }
 
-    const cluster = this.availableClusters.shift();
+    const cluster = this.availableClusters.pop();
 
     if (cluster) {
-      this.instanceToCluster.set(instance, cluster);
+      this.instanceToCluster.set(instance.uid, cluster);
     }
 
     else {
@@ -118,7 +120,7 @@ export class InstanceUniformManager<T extends Instance> {
    * if the instance has not been associated yet.
    */
   getUniforms(instance: T) {
-    return this.instanceToCluster.get(instance);
+    return this.instanceToCluster.get(instance.uid);
   }
 
   /**
@@ -126,13 +128,13 @@ export class InstanceUniformManager<T extends Instance> {
    * in the buffer no longer drawable.
    */
   remove(instance: T) {
-    const cluster = this.instanceToCluster.get(instance);
+    const cluster = this.instanceToCluster.get(instance.uid);
 
     // If the instance is associated with a cluster, we can add the cluster back to being available
     // For another instance.
     if (cluster) {
-      this.instanceToCluster.delete(instance);
-      this.availableClusters.unshift(cluster);
+      this.instanceToCluster.delete(instance.uid);
+      this.availableClusters.push(cluster);
     }
 
     return cluster;
@@ -144,6 +146,7 @@ export class InstanceUniformManager<T extends Instance> {
   removeFromScene() {
     this.buffers.forEach((buffer, index) => {
       this.scene.container.remove(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.remove(buffer.pickModel);
     });
 
     delete this.scene;
@@ -155,6 +158,7 @@ export class InstanceUniformManager<T extends Instance> {
   setScene(scene: Scene) {
     this.buffers.forEach((buffer, index) => {
       this.scene.container.add(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     });
 
     this.scene = scene;
@@ -196,6 +200,7 @@ export class InstanceUniformManager<T extends Instance> {
       lastInstance: 0,
       material: newMaterial,
       model: newModel,
+      pickModel: this.layer.picking.type === PickType.SINGLE ? newModel.clone() : undefined,
     };
 
     this.buffers.push(buffer);
@@ -236,6 +241,7 @@ export class InstanceUniformManager<T extends Instance> {
     // Each new buffer equates to one draw call.
     if (this.scene) {
       this.scene.container.add(buffer.model);
+      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     }
   }
 }

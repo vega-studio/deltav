@@ -1,4 +1,4 @@
-import { ChartCamera, createLayer, DataProvider, LayerInitializer, RingInstance, RingLayer } from '../../src';
+import { ChartCamera, createLayer, InstanceProvider, LayerInitializer, RingInstance, RingLayer } from '../../src';
 import { BaseExample } from './base-example';
 
 export class BoxOfRings extends BaseExample {
@@ -9,7 +9,7 @@ export class BoxOfRings extends BaseExample {
     return defaultCamera;
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<RingInstance>): LayerInitializer {
+  makeLayer(scene: string, atlas: string, provider: InstanceProvider<RingInstance>): LayerInitializer {
     return createLayer(RingLayer, {
       data: provider,
       key: 'box-of-rings',
@@ -18,18 +18,23 @@ export class BoxOfRings extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<RingInstance> {
-    const ringProvider = new DataProvider<RingInstance>([]);
+  makeProvider(): InstanceProvider<RingInstance> {
+    const ringProvider = new InstanceProvider<RingInstance>();
+    const rings: RingInstance[] = [];
 
     setInterval(() => {
-      if (ringProvider.instances.length) {
-        ringProvider.instances.pop();
+      if (rings.length) {
+        const ring = rings.pop();
+
+        if (ring) {
+          ringProvider.remove(ring);
+        }
       }
 
       else {
         for (let i = 0; i < 25; ++i) {
           for (let k = 0; k < 25; ++k) {
-            ringProvider.instances.push(new RingInstance({
+            const ring = ringProvider.add(new RingInstance({
               color: [Math.random(), Math.random(), Math.random(), 1.0],
               id: `ring_${i}_${k}`,
               radius: 10,
@@ -37,6 +42,8 @@ export class BoxOfRings extends BaseExample {
               x: i * 20,
               y: k * 20,
             }));
+
+            rings.push(ring);
           }
         }
       }

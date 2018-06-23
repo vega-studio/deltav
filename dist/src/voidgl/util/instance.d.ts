@@ -3,9 +3,12 @@ export interface IInstanceOptions {
     /** The instance can be declared with an initial active state */
     active?: boolean;
     /** An instance must be declared with an identifier */
-    id: string;
+    id?: string;
 }
 export declare class Instance implements Identifiable {
+    static readonly newUID: number;
+    /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
+    private _uid;
     /** Internal, non-changeable id */
     private _id;
     /** This indicates when the instance is active / rendering */
@@ -19,5 +22,6 @@ export declare class Instance implements Identifiable {
     destroy(): void;
     readonly easing: Map<number, IEasingProps>;
     readonly id: string;
+    readonly uid: number;
     constructor(options: IInstanceOptions);
 }

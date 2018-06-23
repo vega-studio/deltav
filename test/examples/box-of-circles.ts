@@ -1,4 +1,4 @@
-import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
+import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, EventManager, IInstanceProvider, InstanceProvider, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
 import { AutoEasingMethod, IAutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
 
@@ -116,7 +116,7 @@ export class BoxOfCircles extends BaseExample {
     return this.manager;
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
+makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer {
     this.animationControl = {
       center: AutoEasingMethod.easeOutElastic(1000, 500),
       color: AutoEasingMethod.linear(500, 1500),
@@ -154,8 +154,8 @@ export class BoxOfCircles extends BaseExample {
     }
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): IInstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
     const boxSide = 100;
 
@@ -169,8 +169,8 @@ export class BoxOfCircles extends BaseExample {
           y: k * 4,
         });
 
-        circleProvider.instances.push(circle);
         circles.push(circle);
+        circleProvider.add(circle);
       }
     }
 

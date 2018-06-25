@@ -176,7 +176,7 @@ function generateEasingMethods<T extends Instance>(instanceAttributes: IInstance
   const methods = new Map<string, Map<InstanceAttributeSize, string>>();
   let out = '';
 
-  // First dedup the methods needed by their method name
+  // First dedupe the methods needed by their method name
   instanceAttributes.forEach(attribute => {
     if (attribute.easing && attribute.size) {
       let methodSizes = methods.get(attribute.easing.methodName);

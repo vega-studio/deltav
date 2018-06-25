@@ -52,8 +52,7 @@ const edgeFS = require('./shader/edge-layer.fs');
  */
 export class EdgeLayer extends Layer<
   EdgeInstance,
-  IEdgeLayerProps,
-  IEdgeLayerState
+  IEdgeLayerProps
 > {
   // Set default props for the layer
   static defaultProps: IEdgeLayerProps = {

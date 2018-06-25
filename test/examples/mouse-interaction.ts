@@ -1,10 +1,11 @@
 import * as anime from 'animejs';
 import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
 
 export class MouseInteraction extends BaseExample {
-  isOver = new Map<CircleInstance, anime.AnimeInstance>();
-  hasLeft = new Map<CircleInstance, anime.AnimeInstance>();
+  isOver = new Map<CircleInstance, boolean>();
+  hasLeft = new Map<CircleInstance, boolean>();
 
   handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
@@ -26,12 +27,8 @@ export class MouseInteraction extends BaseExample {
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
       if (!this.isOver.get(circle)) {
-        const animation = anime({
-          radius: 20,
-          targets: circle,
-        });
-
-        this.isOver.set(circle, animation);
+        circle.radius = 20;
+        this.isOver.set(circle, true);
       }
     }
   }
@@ -42,24 +39,16 @@ export class MouseInteraction extends BaseExample {
 
       if (animation) {
         this.isOver.delete(circle);
-
-        const leave = anime({
-          radius: 5,
-          targets: circle,
-        });
-
-        leave.pause();
-        this.hasLeft.set(circle, leave);
-
-        await animation.finished;
-
-        leave.play();
+        circle.radius = 5;
       }
     }
   }
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     return createLayer(CircleLayer, {
+      animate: {
+        radius: AutoEasingMethod.easeOutElastic(500),
+      },
       data: provider,
       key: 'mouse-interaction',
       onMouseClick: this.handleCircleClick,

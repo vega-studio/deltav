@@ -2,6 +2,8 @@ export const templateVars = {
   attributeFragments: 'attributeFragments',
   attributes: 'attributes',
   blocksPerInstance: 'blocksPerInstance',
+  easingMethod: 'easingMethod',
+  easingMethods: 'easingMethods',
   instanceBlockCount: 'instanceBlockCount',
   instanceDataBinaryTree: 'instanceDataBinaryTree',
   instanceDataRetrieval: 'instanceDataRetrieval',

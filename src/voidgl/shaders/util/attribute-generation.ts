@@ -3,7 +3,8 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
-import { IInstanceAttribute, IInstancingUniform, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
+import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
+import { Instance } from '../../util';
 import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
 import { WebGLStat } from '../../util/webgl-stat';
 import { templateVars } from '../fragments/template-vars';
@@ -70,7 +71,7 @@ export interface IInjectionDetails {
  * @param vertexAttributes
  * @param instanceAttributes
  */
-export function injectFragments(shaders: IShaders, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<any>[], uniforms: IUniform[]): IInjectionDetails {
+export function injectFragments<T extends Instance>(shaders: IShaders, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[], uniforms: IUniform[]): IInjectionDetails {
   const shaderInputMetrics = generateShaderInputs(vertexAttributes, instanceAttributes, uniforms);
 
   let templateOptions: {[key: string]: string} = {
@@ -136,13 +137,14 @@ function generateProjectionMethods() {
 /**
  * Generates the fragments for shader IO such as vertex and instance attributes
  */
-function generateShaderInputs(vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<any>[], uniforms: IUniform[]) {
+function generateShaderInputs<T extends Instance>(vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[], uniforms: IUniform[]) {
   const templateOptions: {[key: string]: string} = {};
   const instancingInfo = generateInstanceDataLookupOptions(templateOptions, instanceAttributes, uniforms);
 
   const additionalOptions: {[key: string]: string} = {
     [templateVars.layerUniforms]: generateUniforms(uniforms, ShaderInjectionTarget.VERTEX),
     [templateVars.vertexAttributes]: generateVertexAttributes(vertexAttributes),
+    [templateVars.easingMethods]: generateEasingMethods(instanceAttributes),
   };
 
   Object.assign(templateOptions, additionalOptions);
@@ -154,6 +156,7 @@ function generateShaderInputs(vertexAttributes: IVertexAttribute[], instanceAttr
       templateVars.instanceUniformDeclarations,
       templateVars.layerUniforms,
       templateVars.vertexAttributes,
+      templateVars.easingMethods,
     ],
   };
 
@@ -167,8 +170,54 @@ function generateShaderInputs(vertexAttributes: IVertexAttribute[], instanceAttr
 }
 
 /**
- *
- * @param uniforms
+ * Generates the easing methods for the Shader specified by each attribute
+ */
+function generateEasingMethods<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]) {
+  const methods = new Map<string, Map<InstanceAttributeSize, string>>();
+  let out = '';
+
+  // First dedupe the methods needed by their method name
+  instanceAttributes.forEach(attribute => {
+    if (attribute.easing && attribute.size) {
+      let methodSizes = methods.get(attribute.easing.methodName);
+
+      if (!methodSizes) {
+        methodSizes = new Map<InstanceAttributeSize, string>();
+        methods.set(attribute.easing.methodName, methodSizes);
+      }
+
+      methodSizes.set(attribute.size, attribute.easing.gpu);
+    }
+  });
+
+  const required: IShaderTemplateRequirements = {
+    name: 'Easing Method Generation',
+    values: [
+      templateVars.easingMethod,
+    ],
+  };
+
+  // Now generate the full blown method for each element. We create overloaded methods for
+  // Each method name for each vector size required
+  methods.forEach((methodSizes: Map<InstanceAttributeSize, string>, methodName: string) => {
+    methodSizes.forEach((method, size) => {
+      const sizeType = sizeToType[size];
+
+      const templateOptions: {[key: string]: string} = {
+        [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
+      };
+
+      const results = shaderTemplate(method, templateOptions, required);
+
+      out += `${results.shader}\n`;
+    });
+  });
+
+  return out;
+}
+
+/**
+ * Generates all of the uniforms that are provided by the shader IO.
  */
 function generateUniforms(uniforms: IUniform[], injectionType: ShaderInjectionTarget) {
   let out = '';
@@ -189,7 +238,7 @@ function generateUniforms(uniforms: IUniform[], injectionType: ShaderInjectionTa
  * This takes in the layer's vertex shader and transforms any required templating within the
  * shader.
  */
-function generateVertexShader(shaders: IShaders, instanceAttributes: IInstanceAttribute<any>[], maxInstancesPerBuffer: number, blocksPerInstance: number) {
+function generateVertexShader<T extends Instance>(shaders: IShaders, instanceAttributes: IInstanceAttribute<T>[], maxInstancesPerBuffer: number, blocksPerInstance: number) {
   const templateOptions: {[key: string]: string} = {
     [templateVars.attributes]: makeInstanceAttributeReferences(instanceAttributes, blocksPerInstance),
   };
@@ -223,7 +272,7 @@ function generateFragmentShader(shaders: IShaders) {
  * This generates the inline attribute references needed to be able to reference instance attribute
  * vars.
  */
-function makeInstanceAttributeReferences(instanceAttributes: IInstanceAttribute<any>[], blocksPerInstance: number) {
+function makeInstanceAttributeReferences<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[], blocksPerInstance: number) {
   const templateOptions: {[key: string]: string} = {};
   templateOptions[templateVars.blocksPerInstance] = `${blocksPerInstance}`;
   templateOptions[templateVars.instanceDestructuring] = makeInstanceDestructuring(instanceAttributes, blocksPerInstance);
@@ -243,7 +292,7 @@ function makeInstanceAttributeReferences(instanceAttributes: IInstanceAttribute<
 /**
  * This generates an in method destructuring pattern to make instance attributes available within a method.
  */
-function makeInstanceDestructuring(instanceAttributes: IInstanceAttribute<any>[], blocksPerInstance: number) {
+function makeInstanceDestructuring<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[], blocksPerInstance: number) {
   return makeInstanceDestructuringArray(instanceAttributes, blocksPerInstance);
 }
 
@@ -263,7 +312,7 @@ function generateVertexAttributes(vertexAttributes: IVertexAttribute[]) {
 /**
  * This method generates the chunk of shader that is responsible for providing
  */
-function generateInstanceDataLookupOptions(templateOptions: {[key: string]: string}, instanceAttributes: IInstanceAttribute<any>[], uniforms: IUniform[]) {
+function generateInstanceDataLookupOptions<T extends Instance>(templateOptions: {[key: string]: string}, instanceAttributes: IInstanceAttribute<T>[], uniforms: IUniform[]) {
   // This is how many uniform blocks the current device can utilize in a shader
   const maxUniforms = WebGLStat.MAX_VERTEX_UNIFORMS;
   // This reflects how many uniform blocks are available for instancing
@@ -372,7 +421,7 @@ function generateInstanceDataLookupOptions(templateOptions: {[key: string]: stri
  * This generates all of the necessary templating information from uniform-instance-data
  * in order to provide an instance data getter for the application.
  */
-function makeUniformInstanceDataOptions(templateOptions: {[key: string]: string}, maxInstancesPerBuffer: number, branchesPerLevel: number, blocksPerInstance: number, instanceAttributes: IInstanceAttribute<any>[]) {
+function makeUniformInstanceDataOptions<T extends Instance>(templateOptions: {[key: string]: string}, maxInstancesPerBuffer: number, branchesPerLevel: number, blocksPerInstance: number, instanceAttributes: IInstanceAttribute<T>[]) {
   // Make a list containing all instance indicies that will be utilized and will be split
   // Out into the decision tree
   const instances = [];
@@ -401,7 +450,7 @@ function makeUniformInstanceDataOptions(templateOptions: {[key: string]: string}
 /**
  * This generates the declaration of all of the individual uniform registers for instancing.
  */
-function makeInstanceUniformDeclaration(instanceUniformBlockCount: number, attributes: IInstanceAttribute<any>[]) {
+function makeInstanceUniformDeclaration<T extends Instance>(instanceUniformBlockCount: number, attributes: IInstanceAttribute<T>[]) {
   let out = '';
   const blockQualifierDedup = new Map<number, Map<string, boolean>>();
   let maxBlock = 0;

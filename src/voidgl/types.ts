@@ -1,7 +1,8 @@
 import * as Three from 'three';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
-import { ChartCamera } from './util';
+import { ChartCamera, Vec } from './util';
+import { IAutoEasingMethod } from './util/auto-easing-method';
 import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
@@ -129,6 +130,15 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   blockIndex?: InstanceBlockIndex,
   /**
+   * When this is set, the system will automatically inject necessary Shader IO to facilitate
+   * performing the easing on the GPU, which saves enormous amounts of CPU processing time
+   * trying to calcuate animations and tweens for properties.
+   *
+   * NOTE: Setting this increases the amount of data per instance by: size * 2 + 2
+   * as it injects in a start value, start time, and duration
+   */
+  easing?: IAutoEasingMethod<Vec>,
+  /**
    * This is the name that will be available in your shader for use. This will only be
    * available after the ${attributes} declaration.
    */
@@ -188,6 +198,20 @@ export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAt
      */
     shaderInjection?: ShaderInjectionTarget,
   },
+}
+
+/**
+ * This is an attribute that is simply a value
+ */
+export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+  /**
+   * This MUST be defined to be an Easing attribute
+   */
+  easing: IAutoEasingMethod<Vec>;
+  /**
+   * Easing attributes requires size to be present
+   */
+  size: InstanceAttributeSize;
 }
 
 /**
@@ -345,4 +369,26 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
 export interface ISinglePickingMetrics extends IPickingMetrics {
   // TODO
   type: PickType.SINGLE;
+}
+
+/**
+ * This is the metrics associated with a frame. Mostly dealing with timing values.
+ */
+export type FrameMetrics = {
+  /** The frame number rendered. Increases by 1 every surface draw */
+  currentFrame: number;
+  /** The start time of the current frame */
+  currentTime: number;
+  /** The start time of the previous frame */
+  previousTime: number;
+};
+
+/**
+ * This is the minimum properties required to make all easing functions operate.
+ */
+export interface IEasingProps {
+  start: Vec;
+  end: Vec;
+  startTime: number;
+  duration: number;
 }

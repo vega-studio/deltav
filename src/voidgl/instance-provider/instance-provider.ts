@@ -1,11 +1,10 @@
 import { InstanceDiffType } from '../types';
 import { Instance } from '../util/instance';
-import { ObservableManager, ObservableManagerMode } from './observable-manager';
 
 const noop = () => { /* no-op */ };
 
-function isObservable(val: any): val is { $$register(): void } {
-  return val.$$register;
+function isObservable(val: any): val is { $$: any } {
+  return val.$$;
 }
 
 /**
@@ -14,7 +13,7 @@ function isObservable(val: any): val is { $$register(): void } {
  */
 export class InstanceProvider<T extends Instance> {
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation = new Map<T, Function>();
+  private cleanObservation = new Map<number, [T, Function]>();
   /** This stores the changes to the instances themselves */
   private instanceChanges = new Map<T, InstanceDiffType>();
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
@@ -31,28 +30,23 @@ export class InstanceProvider<T extends Instance> {
    */
   add(instance: T) {
     // No need to duplicate the addition
-    if (this.cleanObservation.get(instance)) {
+    if (this.cleanObservation.get(instance.uid)) {
       return instance;
     }
 
     if (this.allowChanges) {
-      // Set the observable manager mode to gather observables
-      ObservableManager.mode = ObservableManagerMode.GATHER_OBSERVABLES;
-      // Set this as the current observer so registrations are made
-      ObservableManager.observer = this;
       // This is the disposer
       let disposer: Function = noop;
 
       if (isObservable(instance)) {
-        disposer = instance.$$register;
+        instance.$$ = this;
+        disposer = instance.$$;
       }
 
       // Store the disposers so we can clean up the observable properties
-      this.cleanObservation.set(instance, disposer);
+      this.cleanObservation.set(instance.uid, [instance, disposer]);
       // Indicate we have a new instance
       this.instanceChanges.set(instance, InstanceDiffType.INSERT);
-      // Change the mode back to broadcasting so we don't keep trying to record observables
-      ObservableManager.mode = ObservableManagerMode.BROADCAST;
     }
 
     return instance;
@@ -62,8 +56,8 @@ export class InstanceProvider<T extends Instance> {
    * Removes all instances from this provider
    */
   clear() {
-    for (const instance of Array.from(this.cleanObservation.keys())) {
-      this.remove(instance);
+    for (const instance of Array.from(this.cleanObservation.values())) {
+      this.remove(instance[0]);
     }
   }
 
@@ -73,8 +67,8 @@ export class InstanceProvider<T extends Instance> {
    * desire to hang onto the instance objects, then this should be called.
    */
   destroy() {
-    const toRemove = Array.from(this.cleanObservation.keys());
-    toRemove.forEach(instance => this.remove(instance));
+    const toRemove = Array.from(this.cleanObservation.values());
+    toRemove.forEach(instance => instance[1]());
     this.cleanObservation.clear();
     this.instanceChanges.clear();
   }
@@ -95,9 +89,13 @@ export class InstanceProvider<T extends Instance> {
    */
   remove(instance: T) {
     if (this.allowChanges) {
-      (instance as any).$$dispose;
-      this.cleanObservation.delete(instance);
-      this.instanceChanges.set(instance, InstanceDiffType.REMOVE);
+      const disposer = this.cleanObservation.get(instance.uid);
+
+      if (disposer) {
+        disposer[1]();
+        this.cleanObservation.delete(instance.uid);
+        this.instanceChanges.set(instance, InstanceDiffType.REMOVE);
+      }
     }
 
     return false;

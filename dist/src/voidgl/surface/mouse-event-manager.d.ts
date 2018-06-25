@@ -1,7 +1,6 @@
 import { IPoint } from '../primitives/point';
 import { DataBounds } from '../util/data-bounds';
 import { QuadTree } from '../util/quad-tree';
-import { Vec2 } from '../util/vector';
 import { EventManager } from './event-manager';
 import { Scene } from './scene';
 import { View } from './view';

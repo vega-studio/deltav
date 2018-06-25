@@ -6,6 +6,7 @@ import { IDefaultSceneElements } from '../surface/generate-default-scene';
 import { SceneView } from '../surface/mouse-event-manager';
 import { ISceneOptions, Scene } from '../surface/scene';
 import { View } from '../surface/view';
+import { FrameMetrics } from '../types';
 import { Instance } from '../util/instance';
 import { Vec2 } from '../util/vector';
 import { ILayerProps, Layer } from './layer';
@@ -48,7 +49,7 @@ export interface ILayerSurfaceOptions {
     scenes?: ISceneOptions[];
 }
 export interface ILayerConstructable<T extends Instance> {
-    new (props: ILayerProps<T>): Layer<any, any, any>;
+    new (props: ILayerProps<T>): Layer<any, any>;
 }
 /**
  * This is a pair of a Class Type and the props to be applied to that class type.
@@ -79,8 +80,17 @@ export declare class LayerSurface {
      * This scene by default only has a single default view.
      */
     defaultSceneElements: IDefaultSceneElements;
+    /**
+     * This is the metrics of the current running frame
+     */
+    frameMetrics: FrameMetrics;
+    /**
+     * This is used to help resolve concurrent draws. There are some very async operations that should
+     * not overlap in draw calls.
+     */
+    private isBufferingAtlas;
     /** This is all of the layers in this manager by their id */
-    layers: Map<string, Layer<any, any, any>>;
+    layers: Map<string, Layer<any, any>>;
     /** This manages the mouse events for the current canvas context */
     private mouseManager;
     /**
@@ -116,30 +126,28 @@ export declare class LayerSurface {
      * reactive system.
      */
     willDisposeLayer: Map<string, boolean>;
-    /**
-     * This is used to help resolve concurrent draws. There are some very async operations that should
-     * not overlap in draw calls.
-     */
-    private isBufferingAtlas;
     /** Read only getter for the gl context */
     readonly gl: WebGLRenderingContext;
     /**
      * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
      * as well as additional helper injections to aid in instancing and shader i/o.
      */
-    addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V>;
+    private addLayer<T, U, V>(layer);
     /**
      * Free all resources consumed by this surface that gets applied to the GPU.
      */
     destroy(): void;
     /**
      * This is the draw loop that must be called per frame for updates to take effect and display.
+     *
+     * @param time This is an optional time flag so one can manually control the time flag for the frame.
+     *             This will affect animations and other automated gpu processes.
      */
-    draw(): Promise<void>;
+    draw(time?: number): Promise<void>;
     /**
      * This finalizes everything and sets up viewports and clears colors and performs the actual render step
      */
-    drawSceneView(scene: Three.Scene, view: View, renderer?: Three.WebGLRenderer, target?: Three.WebGLRenderTarget): void;
+    private drawSceneView(scene, view, renderer?, target?);
     /**
      * This allows for querying a view's screen bounds. Null is returned if the view id
      * specified does not exist.
@@ -182,7 +190,7 @@ export declare class LayerSurface {
      * the layer was using in association with the context. If the layer is re-insertted, it will
      * be revaluated as though it were a new layer.
      */
-    removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V>;
+    private removeLayer<T, U, V>(layer);
     /**
      * Used for reactive rendering and diffs out the layers for changed layers.
      */
@@ -199,7 +207,7 @@ export declare class LayerSurface {
     /**
      * This establishes the rendering canvas context for the surface.
      */
-    setContext(context: WebGLRenderingContext | HTMLCanvasElement | string): void;
+    private setContext(context?);
     /**
      * This applies a new size to the renderer and resizes any additional resources that requires being
      * sized along with the renderer.

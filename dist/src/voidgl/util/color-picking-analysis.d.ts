@@ -1,4 +1,4 @@
-import { IColorPickingData } from '..';
+import { IColorPickingData } from '../types';
 import { Vec2 } from './vector';
 /**
  * This analyzes the rendered data for color picking and outputs the metrics and data needed

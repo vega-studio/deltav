@@ -80,54 +80,6 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
 }
 
 /**
- * This searches through attribute packing for the first empty slot it can find to fill.
- * If a slot is not available it will just start a new block.
- */
-function findSingleEmptyBlock<T extends Instance>(attributes: IInstanceAttribute<T>[]): [number, number] {
-  const blocks = new Map<number, Map<number, boolean>>();
-  let found: [number, number] | null = null;
-  let maxBlock = 0;
-
-  attributes.forEach(instanceAttribute => {
-    const block = instanceAttribute.block;
-    const index = instanceAttribute.blockIndex;
-    const size = instanceAttribute.size || 1;
-
-    if (index === undefined) {
-      return;
-    }
-
-    let usedBlocks = blocks.get(block);
-
-    maxBlock = Math.max(block, maxBlock);
-
-    if (!usedBlocks) {
-      usedBlocks = new Map<number, boolean>();
-      blocks.set(block, usedBlocks);
-    }
-
-    for (let i = index, end = index + size; i < end; ++i) {
-      usedBlocks.set(i, true);
-    }
-  });
-
-  blocks.forEach((usedBlocks, block) => {
-    if (!usedBlocks.get(1)) found = [block, InstanceBlockIndex.ONE];
-    if (!usedBlocks.get(2)) found = [block, InstanceBlockIndex.TWO];
-    if (!usedBlocks.get(3)) found = [block, InstanceBlockIndex.THREE];
-    if (!usedBlocks.get(4)) found = [block, InstanceBlockIndex.FOUR];
-  });
-
-  // If no block was ever found, then we take the max block detected and make
-  // A new block after it
-  if (!found) {
-    found = [maxBlock + 1, 0];
-  }
-
-  return found;
-}
-
-/**
  * This finds a block and an index that can accomodate a provided size
  * @param attributes
  * @param seekingSize
@@ -476,7 +428,7 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(laye
  * This creates the base instance attributes that are ALWAYS present
  */
 function generateBaseInstanceAttributes<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
-  const fillBlock = findSingleEmptyBlock(instanceAttributes);
+  const fillBlock = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
 
   return [
     // This is injected so the system can control when an instance should not be rendered.

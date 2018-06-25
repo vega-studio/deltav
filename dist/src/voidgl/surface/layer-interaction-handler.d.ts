@@ -8,7 +8,7 @@ import { ILayerProps, Layer } from './layer';
  *
  * This class, in summary, takes in the gestures to the view and converts them to gestures to the instances.
  */
-export declare class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>, V> {
+export declare class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>> {
     /** This is the color picking information most recently rendered */
     colorPicking?: IColorPickingData;
     /** This tracks the elements that have the mouse currently over them */
@@ -16,12 +16,12 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
     /** This tracks the elements the mouse was down on */
     isMouseDown: Map<T, boolean>;
     /** This is the layer the interaction handler manages events for */
-    layer: Layer<T, U, V>;
-    constructor(layer: Layer<T, U, V>);
+    layer: Layer<T, U>;
+    constructor(layer: Layer<T, U>);
     /**
      * Retrieves the color picking instance determined for the procedure.
      */
-    getColorPickInstance(): T;
+    getColorPickInstance(): T | null | undefined;
     /**
      * Handles mouse down gestures for a layer within a view
      */

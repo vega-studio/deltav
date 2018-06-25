@@ -175,31 +175,21 @@ export class LayerSurface {
   }
 
   /**
-   * Free all resources consumed by this surface that gets applied to the GPU.
-   */
-  destroy() {
-    this.layers.forEach(layer => layer.destroy());
-    this.resourceManager.destroy();
-    this.mouseManager.destroy();
-    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
-    this.renderer.dispose();
-
-    // TODO: Instances should be implementing destroy for these clean ups.
-    LabelInstance.destroy();
-    ImageInstance.destroy();
-  }
-
-  /**
-   * This is the draw loop that must be called per frame for updates to take effect and display.
+   * The performs all of the needed updates that layers need to commit to the scene and buffers
+   * to be ready for a draw pass. This is callable outside of the draw loop to allow for specialized
+   * procedures or optimizations to take place, where incremental updates to the buffers would make
+   * the most sense.
    *
-   * @param time This is an optional time flag so one can manually control the time flag for the frame.
-   *             This will affect animations and other automated gpu processes.
+   * @param time The start time of the given frame
+   * @param frameIncrement When true, the frame count for the frame metrics will increment
+   * @param onViewReady Callback for when all of the layers of a scene view have been committed
+   *                    and are thus potentially ready to be rendered.
    */
-  async draw(time?: number) {
+  async commit(time?: number, frameIncrement?: boolean, onViewReady?: (scene: Scene, view: View) => void) {
     if (!this.gl) return;
 
     // We are rendering a new frame so increment our frame count
-    this.frameMetrics.currentFrame++;
+    if (frameIncrement) this.frameMetrics.currentFrame++;
     this.frameMetrics.previousTime = this.frameMetrics.currentTime;
 
     // If no manual time was provided, we shall use Date.now in 32 bit format
@@ -255,10 +245,40 @@ export class LayerSurface {
           layer.draw();
         }
 
-        // Now perform the rendering
-        this.drawSceneView(scene.container, view);
+        if (onViewReady) {
+          onViewReady(scene, view);
+        }
       }
     }
+  }
+
+  /**
+   * Free all resources consumed by this surface that gets applied to the GPU.
+   */
+  destroy() {
+    this.layers.forEach(layer => layer.destroy());
+    this.resourceManager.destroy();
+    this.mouseManager.destroy();
+    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
+    this.renderer.dispose();
+
+    // TODO: Instances should be implementing destroy for these clean ups.
+    LabelInstance.destroy();
+    ImageInstance.destroy();
+  }
+
+  /**
+   * This is the draw loop that must be called per frame for updates to take effect and display.
+   *
+   * @param time This is an optional time flag so one can manually control the time flag for the frame.
+   *             This will affect animations and other automated gpu processes.
+   */
+  async draw(time?: number) {
+    if (!this.gl) return;
+
+    // Make the layers commit their changes to the buffers then draw each scene view on
+    // Completion.
+    this.commit(time, true, (scene, view) => this.drawSceneView(scene.container, view));
 
     // After we have drawn our views of our scenes, we can now ensure all of the bounds
     // Are updated in the interactions and flag our interactions ready for mouse input

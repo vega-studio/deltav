@@ -1,6 +1,8 @@
-import { BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
+import { AnimationHelper, BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, DataProvider, EventManager, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
 import { AutoEasingMethod, IAutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
+
+const { min, max, random } = Math;
 
 function getColorIndicesForCoord(x: number, y: number, width: number) {
   const red = y * (width * 4) + x * 4;
@@ -12,8 +14,6 @@ function makeTextPositions(surface: LayerSurface, view: string) {
   if (!viewBounds) return [];
   const canvas = document.createElement('canvas').getContext('2d');
   if (!canvas) return [];
-
-  const { min, max } = Math;
 
   let width = (canvas.canvas.width = viewBounds.width - 10);
   let height = (canvas.canvas.height = 80);
@@ -60,8 +60,8 @@ function makeTextPositions(surface: LayerSurface, view: string) {
 
   const textWidth = maxX - minX;
   const textHeight = maxY - minY;
-  const left = (viewBounds.width - textWidth) / 2;
-  const top = (viewBounds.height - textHeight) / 2;
+  const left = Math.floor((viewBounds.width - textWidth) / 2);
+  const top = Math.floor((viewBounds.height - textHeight) / 2);
 
   xyBucket.forEach((xy: Vec2) => {
     xy[0] -= minX;
@@ -74,15 +74,16 @@ function makeTextPositions(surface: LayerSurface, view: string) {
 }
 
 export class BoxOfCircles extends BaseExample {
-  camera: ChartCamera;
-  scene: string;
-  manager: BasicCameraController;
-  originalRange: Bounds;
   animationControl: {
     center: IAutoEasingMethod<Vec>,
     color: IAutoEasingMethod<Vec>,
     radius: IAutoEasingMethod<Vec>,
   };
+  animationHelper: AnimationHelper;
+  camera: ChartCamera;
+  manager: BasicCameraController;
+  originalRange: Bounds;
+  scene: string;
   textPositions: Vec2[];
 
   keyEvent(e: KeyboardEvent, isDown: boolean) {
@@ -118,10 +119,12 @@ export class BoxOfCircles extends BaseExample {
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
     this.animationControl = {
-      center: AutoEasingMethod.easeOutElastic(1000, 500),
+      center: AutoEasingMethod.easeBackOut(1000, 500),
       color: AutoEasingMethod.linear(500, 1500),
       radius: AutoEasingMethod.linear(500, 1500),
     };
+
+    this.animationHelper = new AnimationHelper(this.surface);
 
     return createLayer(CircleLayer, {
       animate: this.animationControl,
@@ -135,23 +138,48 @@ export class BoxOfCircles extends BaseExample {
   private async moveToText(circles: CircleInstance[]) {
     const xy = this.textPositions || makeTextPositions(this.surface, this.view);
     this.textPositions = xy;
+
+    if (this.textPositions.length === 0) {
+      delete this.textPositions;
+      return;
+    }
+
+    xy.sort((a, b) => a[0] - b[0]);
+    const circleBuckets: CircleInstance[][] = [];
     const bucketLength = xy.length;
     const toProcess = circles.slice(0);
     let i = 0;
-    circles.sort((a, b) => b.x - a.x);
 
     while (toProcess.length > 0) {
       const circle = toProcess.splice(Math.floor(Math.random() * toProcess.length), 1)[0];
-
-      if (circle) {
-        setTimeout(() => {
-          const pos = xy[i % bucketLength];
-          circle.x = pos[0];
-          circle.y = pos[1];
-          ++i;
-        }, Math.floor(i / 10));
-      }
+      const index = i++ % bucketLength;
+      const bucket = circleBuckets[index] = circleBuckets[index] || [];
+      bucket.push(circle);
     }
+
+    this.animationHelper.groupAnimation(
+      this.animationControl.center,
+      xy.length,
+      500,
+      1,
+      (groupIndex: number) => {
+        const bucket = circleBuckets[groupIndex];
+        const pos = xy[groupIndex];
+
+        for (let i = 0, end = bucket.length; i < end; ++i) {
+          const circle = bucket[i];
+
+          if (circle && pos) {
+            circle.x = pos[0];
+            circle.y = pos[1];
+            circle.radius = 1;
+            circle.color = [random(), random(), 1.0, 1.0];
+          }
+        }
+      },
+    );
+
+    await this.surface.commit(this.surface.frameMetrics.currentTime);
   }
 
   makeProvider(): DataProvider<CircleInstance> {
@@ -175,7 +203,6 @@ export class BoxOfCircles extends BaseExample {
     }
 
     let makeBox = true;
-    const { random } = Math;
 
     setInterval(() => {
       makeBox = !makeBox;
@@ -202,13 +229,8 @@ export class BoxOfCircles extends BaseExample {
         this.animationControl.radius.delay = 500;
 
         this.moveToText(circles);
-
-        circles.forEach(c => {
-          c.radius = 1;
-          c.color = [random(), random(), 1.0, 1.0];
-        });
       }
-    }, 4000);
+    }, 8000);
 
     return circleProvider;
   }

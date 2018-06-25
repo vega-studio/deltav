@@ -191,33 +191,21 @@ export class LayerSurface {
   }
 
   /**
-   * Free all resources consumed by this surface that gets applied to the GPU.
-   */
-  destroy() {
-    this.layers.forEach(layer => layer.destroy());
-    this.resourceManager.destroy();
-    this.mouseManager.destroy();
-    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
-    this.renderer.dispose();
-    this.pickingRenderer.dispose();
-    this.currentViewport.clear();
-
-    // TODO: Instances should be implementing destroy for these clean ups.
-    LabelInstance.destroy();
-    ImageInstance.destroy();
-  }
-
-  /**
-   * This is the draw loop that must be called per frame for updates to take effect and display.
+   * The performs all of the needed updates that layers need to commit to the scene and buffers
+   * to be ready for a draw pass. This is callable outside of the draw loop to allow for specialized
+   * procedures or optimizations to take place, where incremental updates to the buffers would make
+   * the most sense.
    *
-   * @param time This is an optional time flag so one can manually control the time flag for the frame.
-   *             This will affect animations and other automated gpu processes.
+   * @param time The start time of the given frame
+   * @param frameIncrement When true, the frame count for the frame metrics will increment
+   * @param onViewReady Callback for when all of the layers of a scene view have been committed
+   *                    and are thus potentially ready to be rendered.
    */
-  async draw(time?: number) {
+  async commit(time?: number, frameIncrement?: boolean, onViewReady?: (scene: Scene, view: View, pickingPass: Layer<any, any>[]) => void) {
     if (!this.gl) return;
 
     // We are rendering a new frame so increment our frame count
-    this.frameMetrics.currentFrame++;
+    if (frameIncrement) this.frameMetrics.currentFrame++;
     this.frameMetrics.previousTime = this.frameMetrics.currentTime;
 
     // If no manual time was provided, we shall use Date.now in 32 bit format
@@ -281,99 +269,134 @@ export class LayerSurface {
           }
         }
 
-        // Now perform the rendering
-        this.drawSceneView(scene.container, view);
-
-        // If a layer needs a picking pass, then perform a picking draw pass only
-        // if a request for the color pick has been made, then we query the pixels rendered to our picking target
-        if (pickingPass.length > 0 && this.updateColorPick) {
-          // Get the requested metrics
-          const mouse = this.updateColorPick.mouse;
-          const views = this.updateColorPick.views;
-
-          // Only if the view is interacted with should we both with rendering
-          if (view.id !== this.defaultSceneElements.view.id && views.indexOf(view) > -1) {
-            // Picking uses a pixel ratio of 1
-            view.pixelRatio = 1.0;
-            // Get the current flags for the view
-            const flags = view.clearFlags.slice(0);
-            // Set color rendering flasg
-            view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
-
-            // We must perform any operations necessary to make the view camera fit the viewport
-            // Correctly with the possibly adjusted pixel ratio
-            view.fitViewtoViewport(
-              new Bounds({
-                height: this.context.canvas.height / this.pixelRatio,
-                width: this.context.canvas.width / this.pixelRatio,
-                x: 0,
-                y: 0,
-              }),
-            );
-
-            // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-            for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-              const layer = pickingPass[j];
-              layer.picking.currentPickMode = PickType.SINGLE;
-              layer.draw();
-              layer.picking.currentPickMode = PickType.NONE;
-            }
-
-            // Draw the picking container for the scene with our view long with our specialized picking renderer
-            // NOTE: Neat trick, just remove 'this.pickingTarget' from the argument and add
-            // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
-            // below where the picking Target is created and you will see what is being rendered to the color picking buffer
-            this.drawSceneView(scene.pickingContainer, view, this.pickingRenderer, this.pickingTarget);
-
-            // Make our metrics for how much of the image we wish to analyze
-            const pickWidth = 5;
-            const pickHeight = 5;
-            const numBytesPerColor = 4;
-            const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-            // Read the pixels out
-            // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-            // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-            this.pickingRenderer.readRenderTargetPixels(
-              this.pickingTarget,
-              mouse[0] - view.screenBounds.x - pickWidth / 2,
-              view.screenBounds.height - (mouse[1] - view.screenBounds.y) - pickHeight / 2,
-              pickWidth,
-              pickHeight,
-              out,
-            );
-
-            // Analyze the rendered color data for the picking routine
-            const pickingData = analyzeColorPickingRendering(mouse, out, pickWidth, pickHeight);
-
-            // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-            for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-              const layer = pickingPass[j];
-
-              if (layer.picking.type === PickType.SINGLE) {
-                layer.interactions.colorPicking = pickingData;
-              }
-            }
-
-            // Return the pixel ratio back to the rendered ratio
-            view.pixelRatio = this.pixelRatio;
-            // Return the view's clear flags
-            view.clearFlags = flags;
-
-            // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
-            // will work properly
-            view.fitViewtoViewport(
-              new Bounds({
-                height: this.context.canvas.height,
-                width: this.context.canvas.width,
-                x: 0,
-                y: 0,
-              }),
-            );
-          }
+        if (onViewReady) {
+          onViewReady(scene, view, pickingPass);
         }
       }
     }
+  }
+
+  /**
+   * Free all resources consumed by this surface that gets applied to the GPU.
+   */
+  destroy() {
+    this.layers.forEach(layer => layer.destroy());
+    this.resourceManager.destroy();
+    this.mouseManager.destroy();
+    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
+    this.renderer.dispose();
+    this.pickingRenderer.dispose();
+    this.currentViewport.clear();
+
+    // TODO: Instances should be implementing destroy for these clean ups.
+    LabelInstance.destroy();
+    ImageInstance.destroy();
+  }
+
+  /**
+   * This is the draw loop that must be called per frame for updates to take effect and display.
+   *
+   * @param time This is an optional time flag so one can manually control the time flag for the frame.
+   *             This will affect animations and other automated gpu processes.
+   */
+  async draw(time?: number) {
+    if (!this.gl) return;
+
+    // Make the layers commit their changes to the buffers then draw each scene view on
+    // Completion.
+    this.commit(time, true, (scene, view, pickingPass) => {
+      // Now perform the rendering
+      this.drawSceneView(scene.container, view);
+
+      // If a layer needs a picking pass, then perform a picking draw pass only
+      // if a request for the color pick has been made, then we query the pixels rendered to our picking target
+      if (pickingPass.length > 0 && this.updateColorPick) {
+        // Get the requested metrics
+        const mouse = this.updateColorPick.mouse;
+        const views = this.updateColorPick.views;
+
+        // Only if the view is interacted with should we both with rendering
+        if (view.id !== this.defaultSceneElements.view.id && views.indexOf(view) > -1) {
+          // Picking uses a pixel ratio of 1
+          view.pixelRatio = 1.0;
+          // Get the current flags for the view
+          const flags = view.clearFlags.slice(0);
+          // Set color rendering flasg
+          view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
+
+          // We must perform any operations necessary to make the view camera fit the viewport
+          // Correctly with the possibly adjusted pixel ratio
+          view.fitViewtoViewport(
+            new Bounds({
+              height: this.context.canvas.height / this.pixelRatio,
+              width: this.context.canvas.width / this.pixelRatio,
+              x: 0,
+              y: 0,
+            }),
+          );
+
+          // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+          for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+            const layer = pickingPass[j];
+            layer.picking.currentPickMode = PickType.SINGLE;
+            layer.draw();
+            layer.picking.currentPickMode = PickType.NONE;
+          }
+
+          // Draw the picking container for the scene with our view long with our specialized picking renderer
+          // NOTE: Neat trick, just remove 'this.pickingTarget' from the argument and add
+          // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
+          // below where the picking Target is created and you will see what is being rendered to the color picking buffer
+          this.drawSceneView(scene.pickingContainer, view, this.pickingRenderer, this.pickingTarget);
+
+          // Make our metrics for how much of the image we wish to analyze
+          const pickWidth = 5;
+          const pickHeight = 5;
+          const numBytesPerColor = 4;
+          const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+          // Read the pixels out
+          // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
+          // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
+          this.pickingRenderer.readRenderTargetPixels(
+            this.pickingTarget,
+            mouse[0] - view.screenBounds.x - pickWidth / 2,
+            view.screenBounds.height - (mouse[1] - view.screenBounds.y) - pickHeight / 2,
+            pickWidth,
+            pickHeight,
+            out,
+          );
+
+          // Analyze the rendered color data for the picking routine
+          const pickingData = analyzeColorPickingRendering(mouse, out, pickWidth, pickHeight);
+
+          // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+          for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+            const layer = pickingPass[j];
+
+            if (layer.picking.type === PickType.SINGLE) {
+              layer.interactions.colorPicking = pickingData;
+            }
+          }
+
+          // Return the pixel ratio back to the rendered ratio
+          view.pixelRatio = this.pixelRatio;
+          // Return the view's clear flags
+          view.clearFlags = flags;
+
+          // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
+          // will work properly
+          view.fitViewtoViewport(
+            new Bounds({
+              height: this.context.canvas.height,
+              width: this.context.canvas.width,
+              x: 0,
+              y: 0,
+            }),
+          );
+        }
+      }
+    });
 
     // After we have drawn our views of our scenes, we can now ensure all of the bounds
     // Are updated in the interactions and flag our interactions ready for mouse input

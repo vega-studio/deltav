@@ -134,6 +134,18 @@ export declare class LayerSurface {
      */
     private addLayer<T, U, V>(layer);
     /**
+     * The performs all of the needed updates that layers need to commit to the scene and buffers
+     * to be ready for a draw pass. This is callable outside of the draw loop to allow for specialized
+     * procedures or optimizations to take place, where incremental updates to the buffers would make
+     * the most sense.
+     *
+     * @param time The start time of the given frame
+     * @param frameIncrement When true, the frame count for the frame metrics will increment
+     * @param onViewReady Callback for when all of the layers of a scene view have been committed
+     *                    and are thus potentially ready to be rendered.
+     */
+    commit(time?: number, frameIncrement?: boolean, onViewReady?: (scene: Scene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;
+    /**
      * Free all resources consumed by this surface that gets applied to the GPU.
      */
     destroy(): void;

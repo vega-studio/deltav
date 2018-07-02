@@ -5,6 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
 import {
   IAtlasInstanceAttribute,
@@ -25,7 +26,6 @@ import {
 } from '../types';
 import { uid, Vec } from '../util';
 import { AutoEasingLoopStyle } from '../util/auto-easing-method';
-import { Instance } from '../util/instance';
 
 const { abs } = Math;
 
@@ -427,20 +427,23 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(laye
 /**
  * This creates the base instance attributes that are ALWAYS present
  */
-function generateBaseInstanceAttributes<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
+function generateBaseInstanceAttributes<T extends Instance>(layer: Layer<T, any>, instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
   const fillBlock = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
 
-  return [
-    // This is injected so the system can control when an instance should not be rendered.
-    // This allows for holes to be in the buffer without having to correct them immediately
-    {
-      block: fillBlock[0],
-      blockIndex: fillBlock[1],
-      name: '_active',
-      size: InstanceAttributeSize.ONE,
-      update: (o) => [o.active ? 1 : 0],
-    },
-  ];
+  // This is injected so the system can control when an instance should not be rendered.
+  // This allows for holes to be in the buffer without having to correct them immediately
+  const activeAttribute: IInstanceAttribute<T> = {
+    block: fillBlock[0],
+    blockIndex: fillBlock[1],
+    name: '_active',
+    size: InstanceAttributeSize.ONE,
+    update: (o) => [o.active ? 1 : 0],
+  };
+
+  // Set the active attribute to the layer for quick reference
+  layer.activeAttribute = activeAttribute;
+
+  return [activeAttribute];
 }
 
 /**
@@ -469,8 +472,20 @@ function compareVec(a: Vec, b: Vec) {
   return true;
 }
 
-function validateInstanceAttributes<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[]) {
+function validateInstanceAttributes<T extends Instance>(layer: Layer<T, any>, instanceAttributes: IInstanceAttribute<T>[], vertexAttributes: IVertexAttribute[]) {
   instanceAttributes.forEach(attribute => {
+    if (attribute.name === undefined) {
+      console.warn('All instance attributes MUST have a name on Layer:', layer.id);
+    }
+
+    if (instanceAttributes.find(attr => attr !== attribute && attr.name === attribute.name)) {
+      console.warn('An instance attribute can not have the same name used more than once:', attribute.name);
+    }
+
+    if (vertexAttributes.find(attr => attr.name === attribute.name)) {
+      console.warn('An instance attribute and a vertex attribute in a layer can not share the same name:', attribute.name);
+    }
+
     if (attribute.easing && attribute.atlas) {
       console.warn('An instance attribute can not have both easing and atlas properties. Undefined behavior will occur.');
       console.warn(attribute);
@@ -536,7 +551,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
   // Do a validation pass of the attributes injected so we can provide feedback as to why things behave odd
-  validateInstanceAttributes(instanceAttributes);
+  validateInstanceAttributes(layer, instanceAttributes, vertexAttributes);
   // Generates all of the attributes needed to make attributes automagically be eased when changed
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
@@ -547,15 +562,12 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   addedUniforms = addedUniforms.concat(generatePickingUniforms(layer));
   // Create the base instance attributes that must be present
   let addedInstanceAttributes: IInstanceAttribute<T>[] = instanceAttributes
-    .concat(generateBaseInstanceAttributes(instanceAttributes))
+    .concat(generateBaseInstanceAttributes(layer, instanceAttributes))
   ;
   // Add in attributes for picking
   addedInstanceAttributes = addedInstanceAttributes.concat(generatePickingAttributes(layer, addedInstanceAttributes));
   // Create the base vertex attributes that must be present
   const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
-
-  // Set the active attribute to the layer for quick reference
-  layer.activeAttribute = addedInstanceAttributes[0];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
   const allVertexAttributes: IVertexAttributeInternal[] =

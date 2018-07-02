@@ -2,7 +2,12 @@ import { Bounds } from '../primitives';
 import { IPoint } from '../primitives/point';
 import { IColorPickingData, InstanceHitTest, IPickInfo, IProjection, PickType } from '../types';
 import { Instance, TrackedQuadTree } from '../util';
+import { UniformColorDiffProcessor } from './buffer-management/diff-processors/uniform-color-diff-processor';
 import { ILayerProps, Layer } from './layer';
+
+function isColorProcessor<T extends Instance>(val: any): val is UniformColorDiffProcessor<T> {
+  return val && val.colorPicking;
+}
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
@@ -28,8 +33,8 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
    * Retrieves the color picking instance determined for the procedure.
    */
   getColorPickInstance() {
-    if (this.colorPicking) {
-      return this.layer.diffManager.colorPicking.uidToInstance.get(0xFFFFFF - this.colorPicking.nearestColor);
+    if (this.colorPicking && isColorProcessor<T>(this.layer.diffManager.processor)) {
+      return this.layer.diffManager.processor.colorPicking.uidToInstance.get(0xFFFFFF - this.colorPicking.nearestColor);
     }
 
     return null;

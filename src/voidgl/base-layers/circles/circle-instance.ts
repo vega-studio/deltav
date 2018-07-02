@@ -1,6 +1,5 @@
-import { observable } from '../../instance-provider';
+import { IInstanceOptions, Instance, observable } from '../../instance-provider';
 import { Circle } from '../../primitives/circle';
-import { IInstanceOptions, Instance } from '../../util/instance';
 
 export interface ICircleInstanceOptions extends IInstanceOptions, Circle {
   /** The color of this circle */

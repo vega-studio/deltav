@@ -1,9 +1,9 @@
 import * as Three from 'three';
+import { Instance } from './instance-provider/instance';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
 import { ChartCamera, Vec, Vec2 } from './util';
 import { IAutoEasingMethod } from './util/auto-easing-method';
-import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];
@@ -179,6 +179,15 @@ export interface IInstanceAttribute<T extends Instance> {
 }
 
 /**
+ * Internal Instance Attributes are ones that actually map to an attribute in the shader and use
+ * hardware instancing.
+ */
+export interface IInstanceAttributeInternal<T extends Instance> extends IInstanceAttribute<T> {
+  /** This is the actual attribute mapped to a buffer */
+  bufferAttribute: Three.InstancedBufferAttribute;
+}
+
+/**
  * This is an attribute where the atlas is definitely declared.
  */
 export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
@@ -225,9 +234,6 @@ export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAt
    */
   atlas: undefined,
 }
-
-// For now internal instance attributes are the same
-export type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 
 /** These are flags for indicating which shaders receive certain injection elements */
 export enum ShaderInjectionTarget {

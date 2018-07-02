@@ -1,6 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../../instance-provider/instance';
 import { InstanceIOValue } from '../../types';
-import { Instance } from '../../util/instance';
 import { ILayerProps, Layer } from '../layer';
 import { AtlasManager, AtlasResource } from './atlas-manager';
 import { LabelAtlasResource } from './label-atlas-resource';
@@ -82,7 +82,7 @@ export class AtlasResourceManager {
               for (const [layer, instance] of request) {
                 // If the instance is still associated with a cluster, then the instance can be activated. Having
                 // A cluster is indicative the instance has not been deleted.
-                if (layer.uniformManager.getUniforms(instance)) {
+                if (layer.bufferManager.getUniforms(instance)) {
                   instance.active = true;
                 }
               }

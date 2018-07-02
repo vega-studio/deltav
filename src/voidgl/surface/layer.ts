@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import {
   IInstanceAttribute,
   IMaterialOptions,
@@ -23,9 +24,8 @@ import {
 } from '../types';
 import { BoundsAccessor, TrackedQuadTree } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { Instance } from '../util/instance';
-import { InstanceUniformManager } from '../util/instance-uniform-manager';
-import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
+import { InstanceDiffManager } from './buffer-management/instance-diff-manager';
+import { UniformBufferManager } from './buffer-management/uniform-buffer-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
 import { LayerSurface } from './layer-surface';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
@@ -117,6 +117,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
 
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
+  /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
+  bufferManager: UniformBufferManager<T>;
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This is the threejs geometry filled with the vertex information */
@@ -145,8 +147,6 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
-  /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
-  uniformManager: InstanceUniformManager<T>;
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
@@ -154,8 +154,6 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
 
   /** This contains the methods and controls for handling diffs for the layer */
   diffManager: InstanceDiffManager<T>;
-  /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
-  diffProcessor: DiffLookup<T>;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -194,7 +192,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
     }
 
     this.diffManager = new InstanceDiffManager<T>(this);
-    this.diffProcessor = this.diffManager.getDiffProcessor();
+    this.diffManager.makeProcessor();
     this.interactions = new LayerInteractionHandler(this);
   }
 
@@ -202,7 +200,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {
-    this.uniformManager.destroy();
+    this.bufferManager.destroy();
   }
 
   didUpdateProps() {
@@ -221,15 +219,16 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
     // Make some holder variables to prevent declaration within the loop
     let change, instance, uniforms;
     // Fast ref to the processor and manager
-    const diffProcessor = this.diffProcessor;
     const diffManager = this.diffManager;
+    const processing = diffManager.processing;
+    const processor = diffManager.processor;
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
       instance = change[0];
-      uniforms = this.uniformManager.getUniforms(instance);
+      uniforms = this.bufferManager.getUniforms(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
-      diffProcessor[change[1]](diffManager, instance, uniforms);
+      processing[change[1]](processor, instance, uniforms);
     }
 
     // Indicate the diffs are consumed

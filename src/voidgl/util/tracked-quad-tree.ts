@@ -1,6 +1,6 @@
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { IPoint } from '../primitives/point';
-import { Instance } from './instance';
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and

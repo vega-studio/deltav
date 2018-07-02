@@ -2,6 +2,7 @@ import * as Three from 'three';
 import { WebGLRenderTarget } from 'three';
 import { ImageInstance } from '../base-layers/images';
 import { LabelInstance } from '../base-layers/labels';
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
 import { injectFragments } from '../shaders/util/attribute-generation';
@@ -18,9 +19,8 @@ import { FrameMetrics } from '../types';
 import { PickType } from '../types';
 import { analyzeColorPickingRendering } from '../util/color-picking-analysis';
 import { DataBounds } from '../util/data-bounds';
-import { Instance } from '../util/instance';
-import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { Vec2 } from '../util/vector';
+import { UniformBufferManager } from './buffer-management';
 import { LayerMouseEvents } from './event-managers/layer-mouse-events';
 import { ILayerProps, Layer } from './layer';
 import { AtlasManager } from './texture';
@@ -763,7 +763,7 @@ export class LayerSurface {
 
     // The layer now needs a specialized uniform manager to provide instances with an appropriate set of uniforms
     // To be able to render.
-    layer.uniformManager = new InstanceUniformManager(layer, scene);
+    layer.bufferManager = new UniformBufferManager(layer, scene);
 
     return layer;
   }
@@ -837,7 +837,7 @@ export class LayerSurface {
       return layer;
     }
 
-    layer.uniformManager.removeFromScene();
+    layer.bufferManager.removeFromScene();
     layer.destroy();
     this.layers.delete(layer.id);
 

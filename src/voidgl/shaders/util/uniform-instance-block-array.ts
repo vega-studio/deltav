@@ -2,9 +2,9 @@ import * as Three from 'three';
 import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize } from '../../types';
 import { Instance } from '../../util';
 import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
-import { makeInstanceUniformNameArray } from '../../util/make-instance-uniform-name';
 import { shaderTemplate } from '../../util/shader-templating';
 import { templateVars } from '../fragments/template-vars';
+import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
 
 const instanceRetrievalArrayFragment = require('../fragments/instance-retrieval-array.vs');
 

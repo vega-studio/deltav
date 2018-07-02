@@ -1,11 +1,5 @@
+import { Instance } from '../instance-provider/instance';
 import { InstanceDiffType } from '../types';
-import { Instance } from '../util/instance';
-
-const noop = () => { /* no-op */ };
-
-function isObservable(val: any): val is { $$: any } {
-  return val.$$;
-}
 
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
@@ -35,14 +29,8 @@ export class InstanceProvider<T extends Instance> {
     }
 
     if (this.allowChanges) {
-      // This is the disposer
-      let disposer: Function = noop;
-
-      if (isObservable(instance)) {
-        instance.$$ = this;
-        disposer = instance.$$;
-      }
-
+      instance.observer = this;
+      const disposer: Function = instance.observableDisposer;
       // Store the disposers so we can clean up the observable properties
       this.cleanObservation.set(instance.uid, [instance, disposer]);
       // Indicate we have a new instance
@@ -76,7 +64,7 @@ export class InstanceProvider<T extends Instance> {
   /**
    * THis is called from observables to indicate it's parent has been updated
    */
-  instanceUpdated(instance: T) {
+  instanceUpdated(instance: T, property: number) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
       this.instanceChanges.set(instance, InstanceDiffType.CHANGE);
@@ -102,7 +90,7 @@ export class InstanceProvider<T extends Instance> {
   }
 
   /**
-   * Flagged all changes were dealt with
+   * Flagged all changes as dealt with
    */
   resolve() {
     this.allowChanges = true;

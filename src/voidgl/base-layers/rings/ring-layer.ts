@@ -13,7 +13,7 @@ import {
 import { RingInstance } from './ring-instance';
 const { max } = Math;
 
-export interface IRingLayerProps extends ILayerProps<RingInstance> {
+export interface IRingLayerProps<T extends RingInstance> extends ILayerProps<T> {
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
 }
@@ -22,10 +22,7 @@ export interface IRingLayerProps extends ILayerProps<RingInstance> {
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RingLayer extends Layer<
-  RingInstance,
-  IRingLayerProps
-> {
+export class RingLayer<T extends RingInstance, U extends IRingLayerProps<T>> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

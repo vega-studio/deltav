@@ -7,7 +7,7 @@ import { ImageInstance } from './image-instance';
 
 const { min, max } = Math;
 
-export interface IImageLayerProps extends ILayerProps<ImageInstance> {
+export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -15,7 +15,7 @@ export interface IImageLayerProps extends ILayerProps<ImageInstance> {
  * This layer displays Images and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
+export class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

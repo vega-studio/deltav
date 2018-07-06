@@ -78,7 +78,7 @@ const TEST_RESOLUTION = 50;
 /**
  * This generates the picking methods needed for managing PickType.ALL for the edge layer.
  */
-export function edgePicking(props: IEdgeLayerProps): IPickingMethods<EdgeInstance> {
+export function edgePicking<T extends EdgeInstance>(props: IEdgeLayerProps<T>): IPickingMethods<EdgeInstance> {
   const { broadphase, minPickDistance = 0, scaleType, type } = props;
   const interpolate = interpolation[props.type];
 

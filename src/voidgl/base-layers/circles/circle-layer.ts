@@ -6,7 +6,7 @@ import { DataProvider, Vec } from '../../util';
 import { IAutoEasingMethod } from '../../util/auto-easing-method';
 import { CircleInstance } from './circle-instance';
 
-export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
+export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps<T> {
   /** This sets the  */
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
@@ -30,8 +30,8 @@ export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
-  static defaultProps: ICircleLayerProps = {
+export class CircleLayer<T extends CircleInstance, U extends ICircleLayerProps<T>> extends Layer<T, U> {
+  static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new DataProvider<CircleInstance>([]),
     fadeOutOversized: -1,
     key: '',

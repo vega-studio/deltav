@@ -6,7 +6,7 @@ import { Vec2 } from '../../util';
 import { ScaleType } from '../types';
 import { LabelInstance } from './label-instance';
 
-export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
+export interface ILabelLayerProps<T extends LabelInstance> extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -16,7 +16,7 @@ const { max, min } = Math;
  * This layer displays Labels and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
+export class LabelLayer<T extends LabelInstance, U extends ILabelLayerProps<T>> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

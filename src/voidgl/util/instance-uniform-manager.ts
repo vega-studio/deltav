@@ -1,10 +1,10 @@
-import * as Three from 'three';
-import { generateLayerModel } from '../surface/generate-layer-model';
-import { Layer } from '../surface/layer';
-import { Scene } from '../surface/scene';
-import { IInstanceAttribute } from '../types';
-import { Instance } from './instance';
-import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
+import * as Three from "three";
+import { generateLayerModel } from "../surface/generate-layer-model";
+import { Layer } from "../surface/layer";
+import { Scene } from "../surface/scene";
+import { IInstanceAttribute } from "../types";
+import { Instance } from "./instance";
+import { makeInstanceUniformNameArray } from "./make-instance-uniform-name";
 
 export interface IUniformInstanceCluster {
   /** This is the index of the instance as it appears in the buffer */
@@ -66,7 +66,10 @@ export class InstanceUniformManager<T extends Instance> {
   /** A lookup of an instance to a cluster of uniforms associated with it */
   private instanceToCluster = new Map<T, IUniformInstanceCluster>();
   /** A map of a cluster of uniforms to the buffer it comes from */
-  private clusterToBuffer = new Map<IUniformInstanceCluster, InstanceUniformBuffer>();
+  private clusterToBuffer = new Map<
+    IUniformInstanceCluster,
+    InstanceUniformBuffer
+  >();
 
   constructor(layer: Layer<T, any>, scene: Scene) {
     this.layer = layer;
@@ -94,10 +97,10 @@ export class InstanceUniformManager<T extends Instance> {
 
     if (cluster) {
       this.instanceToCluster.set(instance, cluster);
-    }
-
-    else {
-      console.warn('No valid cluster available for instance added to uniform manager.');
+    } else {
+      console.warn(
+        "No valid cluster available for instance added to uniform manager."
+      );
     }
 
     return cluster;
@@ -176,7 +179,8 @@ export class InstanceUniformManager<T extends Instance> {
 
     // Ensure the draw range covers every instance in the geometry.
     newGeometry.drawRange.start = 0;
-    newGeometry.drawRange.count = this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount;
+    newGeometry.drawRange.count =
+      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount;
 
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
@@ -195,7 +199,7 @@ export class InstanceUniformManager<T extends Instance> {
       geometry: newGeometry,
       lastInstance: 0,
       material: newMaterial,
-      model: newModel,
+      model: newModel
     };
 
     this.buffers.push(buffer);
@@ -208,13 +212,15 @@ export class InstanceUniformManager<T extends Instance> {
     const instanceData = newMaterial.uniforms[uniformName];
 
     // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
-    instanceData.value = instanceData.value.map(() => new Three.Vector4(0.0, 0.0, 0.0, 0.0));
+    instanceData.value = instanceData.value.map(
+      () => new Three.Vector4(0.0, 0.0, 0.0, 0.0)
+    );
 
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
       const cluster: IUniformInstanceCluster = {
         instanceIndex: i,
         uniform: instanceData,
-        uniformRange: [uniformIndex, 0],
+        uniformRange: [uniformIndex, 0]
       };
 
       uniformIndex += this.uniformBlocksPerInstance;

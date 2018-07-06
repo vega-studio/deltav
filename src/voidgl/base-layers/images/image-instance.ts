@@ -1,8 +1,8 @@
-import { computed, observable } from 'mobx';
-import { Image } from '../../primitives/image';
-import { ImageAtlasResource, ImageRasterizer } from '../../surface/texture';
-import { IInstanceOptions, Instance } from '../../util/instance';
-import { Anchor, AnchorType, ScaleType } from '../types';
+import { computed, observable } from "mobx";
+import { Image } from "../../primitives/image";
+import { ImageAtlasResource, ImageRasterizer } from "../../surface/texture";
+import { IInstanceOptions, Instance } from "../../util/instance";
+import { Anchor, AnchorType, ScaleType } from "../types";
 
 const { max } = Math;
 
@@ -43,13 +43,18 @@ type RasterizationReference = {
  * This is a lookup to find existing rasterizations for a particularly created image so that every
  * new image does not have to go through the rasterization process.
  */
-const rasterizationLookUp = new Map<string | HTMLImageElement, RasterizationReference>();
+const rasterizationLookUp = new Map<
+  string | HTMLImageElement,
+  RasterizationReference
+>();
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
  * position based on the anchor type.
  */
-const anchorCalculator: {[key: number]: (anchor: Anchor, image: ImageInstance) => void} = {
+const anchorCalculator: {
+  [key: number]: (anchor: Anchor, image: ImageInstance) => void;
+} = {
   [AnchorType.TopLeft]: (anchor: Anchor, image: ImageInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
@@ -89,7 +94,7 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, image: ImageInstance) =
   [AnchorType.Custom]: (anchor: Anchor, image: ImageInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -131,7 +136,9 @@ export class ImageInstance extends Instance implements Image {
   /** The y coordinate where the image will be anchored to in world space */
   @observable y: number = 0;
 
-  get size() { return max(this.width, this.height); }
+  get size() {
+    return max(this.width, this.height);
+  }
   set size(value: number) {
     const aspect = this.width / this.height;
     this.width = value * aspect;
@@ -153,13 +160,21 @@ export class ImageInstance extends Instance implements Image {
   // The properties but not set any of them.
 
   /** This is the provided element this image will be rendering */
-  get element() { return this._element; }
+  get element() {
+    return this._element;
+  }
   /** This flag indicates if this image is valid anymore */
-  get isDestroyed() { return this._isDestroyed; }
+  get isDestroyed() {
+    return this._isDestroyed;
+  }
   /** This is the path to the image's resource if it's available */
-  get path() { return this._path; }
+  get path() {
+    return this._path;
+  }
   /** This gets the atlas resource that is uniquely idenfied for this image */
-  get resource() { return this._rasterization.resource; }
+  get resource() {
+    return this._rasterization.resource;
+  }
 
   /**
    * This is the width in world space of the image. If there is no camera distortion,
@@ -180,11 +195,12 @@ export class ImageInstance extends Instance implements Image {
   // These are properties that can be altered, but have side effects from being changed
 
   /** This is the anchor location on the  */
-  @observable private _anchor: Anchor = {
+  @observable
+  private _anchor: Anchor = {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: IImageInstanceOptions) {
@@ -210,11 +226,12 @@ export class ImageInstance extends Instance implements Image {
     if (!rasterization) {
       rasterization = {
         references: 1,
-        resource: new ImageAtlasResource(this),
+        resource: new ImageAtlasResource(this)
       };
 
       // Ensure the sample scale is set. Defaults to 1.0
-      rasterization.resource.sampleScale = rasterization.resource.sampleScale || 1.0;
+      rasterization.resource.sampleScale =
+        rasterization.resource.sampleScale || 1.0;
       // Rasterize the resource generated for this image. We need it immediately rasterized so
       // That we can utilize the dimensions for calculations.
       ImageRasterizer.renderSync(rasterization.resource);
@@ -246,7 +263,7 @@ export class ImageInstance extends Instance implements Image {
       // If all references are cleared, then the rasterization needs to be eradicated
       if (this._rasterization.references === 0) {
         this._rasterization.resource;
-        console.warn('The destroy method still needs completion');
+        console.warn("The destroy method still needs completion");
       }
     }
   }
@@ -264,7 +281,7 @@ export class ImageInstance extends Instance implements Image {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

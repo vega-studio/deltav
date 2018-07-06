@@ -1,9 +1,9 @@
-import * as Three from 'three';
-import { AbsolutePosition } from '../primitives/absolute-position';
-import { ChartCamera } from '../util/chart-camera';
-import { ViewCamera } from '../util/view-camera';
-import { Scene } from './scene';
-import { View } from './view';
+import * as Three from "three";
+import { AbsolutePosition } from "../primitives/absolute-position";
+import { ChartCamera } from "../util/chart-camera";
+import { ViewCamera } from "../util/view-camera";
+import { Scene } from "./scene";
+import { View } from "./view";
 
 export interface IDefaultSceneElements {
   /** Default chartting camera */
@@ -31,7 +31,9 @@ export interface IDefaultSceneElements {
  * - y axis is +y downward
  * - entire canvas is the viewport.
  */
-export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSceneElements {
+export function generateDefaultScene(
+  context: WebGLRenderingContext
+): IDefaultSceneElements {
   // Generate a default view camera that is
   // - Orthographic
   // - (0, 0) is the top left of the canvas
@@ -48,7 +50,7 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
     near: -100,
     right: width / 2,
     top: height / 2,
-    viewSize: height,
+    viewSize: height
   };
 
   const defaultCamera: ViewCamera = new ViewCamera();
@@ -58,7 +60,7 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
     viewport.top,
     viewport.bottom,
     viewport.near,
-    viewport.far,
+    viewport.far
   );
 
   defaultCamera.baseCamera.scale.set(1.0, -1.0, 1.0);
@@ -78,7 +80,7 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
     bottom: 0,
     left: 0,
     right: 0,
-    top: 0,
+    top: 0
   };
 
   // Make a view using our defaults
@@ -86,13 +88,13 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
     camera: defaultChartCamera,
     key: View.DEFAULT_VIEW_ID,
     viewCamera: defaultCamera,
-    viewport: defaultViewport,
+    viewport: defaultViewport
   });
 
   // Make a scene with our defaults
   const defaultScene = new Scene({
     key: Scene.DEFAULT_SCENE_ID,
-    views: [],
+    views: []
   });
 
   // Make sure the default view is a part of the default scene
@@ -103,6 +105,6 @@ export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSc
     scene: defaultScene,
     view: defaultView,
     viewCamera: defaultCamera,
-    viewport: defaultViewport,
+    viewport: defaultViewport
   };
 }

@@ -1,6 +1,6 @@
-import { computed, observable } from 'mobx';
-import { IInstanceOptions, Instance } from '../../util/instance';
-import { Anchor, AnchorType, ScaleType } from '../types';
+import { computed, observable } from "mobx";
+import { IInstanceOptions, Instance } from "../../util/instance";
+import { Anchor, AnchorType, ScaleType } from "../types";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**
@@ -28,7 +28,9 @@ export interface IRectangleInstanceOptions extends IInstanceOptions {
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
  * position based on the anchor type.
  */
-const anchorCalculator: {[key: number]: (anchor: Anchor, rectangle: RectangleInstance) => void} = {
+const anchorCalculator: {
+  [key: number]: (anchor: Anchor, rectangle: RectangleInstance) => void;
+} = {
   [AnchorType.TopLeft]: (anchor: Anchor, rectangle: RectangleInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
@@ -68,7 +70,7 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, rectangle: RectangleIns
   [AnchorType.Custom]: (anchor: Anchor, rectangle: RectangleInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -105,11 +107,12 @@ export class RectangleInstance extends Instance {
   // These are properties that can be altered, but have side effects from being changed
 
   /** This is the anchor location on the  */
-  @observable private _anchor: Anchor = {
+  @observable
+  private _anchor: Anchor = {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: IRectangleInstanceOptions) {
@@ -140,7 +143,7 @@ export class RectangleInstance extends Instance {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

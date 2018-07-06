@@ -1,5 +1,5 @@
-import { Bounds } from '../primitives/bounds';
-import { IPoint } from '../primitives/point';
+import { Bounds } from "../primitives/bounds";
+import { IPoint } from "../primitives/point";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -32,7 +32,10 @@ export interface IQuadItem {
  * @export
  * @template T
  */
-export function filterQuery<T extends IQuadItem>(type: Function[], queryValues: IQuadItem[]): T[] {
+export function filterQuery<T extends IQuadItem>(
+  type: Function[],
+  queryValues: IQuadItem[]
+): T[] {
   const filtered: T[] = [];
 
   queryValues.forEach((obj: IQuadItem) => {
@@ -57,7 +60,7 @@ export interface IVisitFunction<T extends IQuadItem> {
    * @param node  The node to effect the function upon
    * @param child The child to add to the node
    */
-  (node : Node<T>, child? : IQuadItem) : void
+  (node: Node<T>, child?: IQuadItem): void;
 }
 
 /**
@@ -146,14 +149,20 @@ export class Node<T extends IQuadItem> {
    *
    * @memberOf Node
    */
-  constructor(left: number, right: number, top: number, bottom: number, depth?: number) {
+  constructor(
+    left: number,
+    right: number,
+    top: number,
+    bottom: number,
+    depth?: number
+  ) {
     // If params insertted
     if (arguments.length >= 4) {
       this.bounds = new Bounds({
         height: top - bottom,
         width: right - left,
         x: left,
-        y: top,
+        y: top
       });
     }
 
@@ -163,7 +172,7 @@ export class Node<T extends IQuadItem> {
         height: 1,
         width: 1,
         x: 0,
-        y: 0,
+        y: 0
       });
     }
 
@@ -222,19 +231,29 @@ export class Node<T extends IQuadItem> {
 
     // Get the dimensions of the new bounds
     children.forEach(child => {
-      if (child.x < minX) { minX = child.x; }
-      if (child.right > maxX)  { maxX = child.right; }
-      if (child.bottom > maxY) { maxY = child.bottom; }
-      if (child.y < minY) { minY = child.y; }
+      if (child.x < minX) {
+        minX = child.x;
+      }
+      if (child.right > maxX) {
+        maxX = child.right;
+      }
+      if (child.bottom > maxY) {
+        maxY = child.bottom;
+      }
+      if (child.y < minY) {
+        minY = child.y;
+      }
     });
 
     // Make sure our bounds includes the specified bounds
-    this.cover(new Bounds({
-      height: maxY - minY,
-      width: maxX - minX,
-      x: minX,
-      y: minY,
-    }));
+    this.cover(
+      new Bounds({
+        height: maxY - minY,
+        width: maxX - minX,
+        x: minX,
+        y: minY
+      })
+    );
 
     // Add all of the children into the tree
     children.forEach((child, index) => this.doAdd(child));
@@ -285,7 +304,7 @@ export class Node<T extends IQuadItem> {
    *
    * @memberOf Node
    */
-  doAdd(child : T) : boolean {
+  doAdd(child: T): boolean {
     // If nodes are present, then we have already exceeded the population of this node
     if (this.nodes) {
       if (child.isInside(this.nodes.TL.bounds)) {
@@ -326,11 +345,15 @@ export class Node<T extends IQuadItem> {
     // For the quad should have grown without issue, but in this case the bounds
     // Could not grow to accomodate the child.
     if (isNaN(child.width + child.height + child.x + child.y)) {
-      console.error('Child did not fit into bounds because a dimension is NaN', child);
-    }
-
-    else if (child.area === 0) {
-      console.error('Child did not fit into bounds because the area is zero', child);
+      console.error(
+        "Child did not fit into bounds because a dimension is NaN",
+        child
+      );
+    } else if (child.area === 0) {
+      console.error(
+        "Child did not fit into bounds because the area is zero",
+        child
+      );
     }
 
     // Don't insert the child and continue
@@ -377,7 +400,7 @@ export class Node<T extends IQuadItem> {
       return [];
     }
 
-   // Query a point
+    // Query a point
     if (this.bounds.containsPoint(bounds)) {
       return this.queryPoint(bounds, [], visit);
     }
@@ -396,7 +419,7 @@ export class Node<T extends IQuadItem> {
    *
    * @return     Returns the exact same list that was input as the list param
    */
-  queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>) : T[] {
+  queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[] {
     this.children.forEach((c, index) => {
       if (c.hitBounds(b)) {
         list.push(c);
@@ -423,7 +446,6 @@ export class Node<T extends IQuadItem> {
       if (b.hitBounds(this.nodes.BR.bounds)) {
         this.nodes.BR.queryBounds(b, list, visit);
       }
-
     }
 
     return list;
@@ -466,7 +488,6 @@ export class Node<T extends IQuadItem> {
       if (this.nodes.BR.bounds.containsPoint(p)) {
         this.nodes.BR.queryPoint(p, list, visit);
       }
-
     }
 
     return list;
@@ -494,7 +515,7 @@ export class Node<T extends IQuadItem> {
    *
    * @param cb A callback that has the parameter (node) which is a quadrant in the tree
    */
-  visit(cb: IVisitFunction<T>) : void {
+  visit(cb: IVisitFunction<T>): void {
     const finished = Boolean(cb(this));
 
     if (this.nodes && !finished) {

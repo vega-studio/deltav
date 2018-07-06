@@ -1,4 +1,4 @@
-import { Bounds } from '../primitives/bounds';
+import { Bounds } from "../primitives/bounds";
 
 export class DataBounds<T> extends Bounds {
   data: T;
@@ -8,7 +8,7 @@ export class DataBounds<T> extends Bounds {
       height: 0,
       width: 0,
       x: 0,
-      y: 0,
+      y: 0
     });
   }
 }

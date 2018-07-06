@@ -1,8 +1,10 @@
-import * as Three from 'three';
-import { ILayerProps, Layer } from '../surface/layer';
-import { Instance } from '../util';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { IViewOptions, View } from './view';
+import * as Three from "three";
+import { ILayerProps, Layer } from "../surface/layer";
+import { Instance } from "../util";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { IViewOptions, View } from "./view";
+
+const debug = require("debug")("scene");
 
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
@@ -29,7 +31,7 @@ function sortByDepth(a: Layer<any, any>, b: Layer<any, any>) {
  * is rendered with.
  */
 export class Scene extends IdentifyByKey {
-  static DEFAULT_SCENE_ID = '__default__';
+  static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
   container: Three.Scene = new Three.Scene();
@@ -42,6 +44,7 @@ export class Scene extends IdentifyByKey {
 
   constructor(options: ISceneOptions) {
     super(options);
+    debug("scene constructing~");
     this.container.frustumCulled = false;
     this.container.autoUpdate = false;
   }
@@ -85,7 +88,12 @@ export class Scene extends IdentifyByKey {
       }
     }
 
-    console.warn('Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:', this.id, 'Layer:', layer.id);
+    console.warn(
+      "Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:",
+      this.id,
+      "Layer:",
+      layer.id
+    );
   }
 
   sortLayers() {

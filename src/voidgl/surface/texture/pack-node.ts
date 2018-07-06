@@ -1,5 +1,5 @@
-import { Bounds } from "../../primitives/bounds";
-import { SubTexture } from "./sub-texture";
+import { Bounds } from '../../primitives/bounds';
+import { SubTexture } from './sub-texture';
 
 /**
  * Helps us track the bounds of the image being loaded in tied in with the
@@ -26,7 +26,7 @@ export class PackNode {
       height,
       width,
       x,
-      y
+      y,
     });
   }
 
@@ -107,26 +107,26 @@ export class PackNode {
           this.nodeDimensions.x,
           this.nodeDimensions.y,
           imgWidth,
-          this.nodeDimensions.height
+          this.nodeDimensions.height,
         );
         child1 = this.child[1] = new PackNode(
           this.nodeDimensions.x + imgWidth,
           this.nodeDimensions.y,
           dWidth,
-          this.nodeDimensions.height
+          this.nodeDimensions.height,
         );
       } else {
         child0 = this.child[0] = new PackNode(
           this.nodeDimensions.x,
           this.nodeDimensions.y,
           this.nodeDimensions.width,
-          imgHeight
+          imgHeight,
         );
         child1 = this.child[1] = new PackNode(
           this.nodeDimensions.x,
           this.nodeDimensions.y + imgHeight,
           this.nodeDimensions.width,
-          dHeight
+          dHeight,
         );
       }
     }

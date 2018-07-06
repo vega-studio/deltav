@@ -1,5 +1,5 @@
-import { Label } from "../../primitives/label";
-import { LabelAtlasResource } from "./label-atlas-resource";
+import { Label } from '../../primitives/label';
+import { LabelAtlasResource } from './label-atlas-resource';
 
 let canvas: CanvasRenderingContext2D;
 const MAX_FONT_SIZE = 50;
@@ -35,7 +35,7 @@ export class LabelRasterizer {
   static calculateLabelSize(
     resource: LabelAtlasResource,
     sampleScale?: number,
-    calculateTexture?: boolean
+    calculateTexture?: boolean,
   ) {
     // If a max width is specified, then we must render and determine the potentially truncated text of the
     // Label. We can do a binary search for the correct truncated label size.
@@ -55,7 +55,7 @@ export class LabelRasterizer {
     // Make sure the rasterization object is initialized
     resource.rasterization = resource.rasterization || {
       texture: { height: 0, width: 0 },
-      world: { height: 0, width: 0 }
+      world: { height: 0, width: 0 },
     };
 
     // When a forced sampling is present, it calculates that as the world space
@@ -63,7 +63,7 @@ export class LabelRasterizer {
       // Update the calculated texture size.
       resource.rasterization.world = {
         height: maxY - minY,
-        width: maxX - minX
+        width: maxX - minX,
       };
     }
 
@@ -72,13 +72,13 @@ export class LabelRasterizer {
       // Update the calculated texture size.
       resource.rasterization.texture = {
         height: maxY - minY,
-        width: maxX - minX
+        width: maxX - minX,
       };
 
       resource.rasterization.canvas = this.createCroppedCanvas(
         resource,
         minY,
-        minX
+        minX,
       );
       this.calculateLabelSize(resource, 1.0, false);
     }
@@ -148,7 +148,7 @@ export class LabelRasterizer {
 
     // If cursor is zero, nothing passed and our truncation is just ellipses
     if (cursor === 0) {
-      resource.truncatedText = "...";
+      resource.truncatedText = '...';
     }
 
     // Otherwise we get the string that passes and use that as our truncated text
@@ -164,10 +164,10 @@ export class LabelRasterizer {
   static createCroppedCanvas(
     resource: LabelAtlasResource,
     top: number,
-    left: number
+    left: number,
   ) {
-    const cropped = document.createElement("canvas");
-    const context = cropped.getContext("2d");
+    const cropped = document.createElement('canvas');
+    const context = cropped.getContext('2d');
 
     if (context) {
       const texture = resource.rasterization.texture;
@@ -185,11 +185,11 @@ export class LabelRasterizer {
         0,
         0,
         texture.width,
-        texture.height
+        texture.height,
       );
     } else {
       console.warn(
-        "Could not create a canvas 2d context to generate a label's cropped image."
+        'Could not create a canvas 2d context to generate a label\'s cropped image.',
       );
     }
 
@@ -203,12 +203,12 @@ export class LabelRasterizer {
     label: Label,
     text: string,
     canvas: CanvasRenderingContext2D,
-    sampleScaling: number
+    sampleScaling: number,
   ) {
     // Get the font size we will rasterize with
     const fontSize = this.getLabelRasterizationFontSize(label, sampleScaling);
     // Set the color of the label to white so we know what color to look for
-    canvas.fillStyle = "white";
+    canvas.fillStyle = 'white';
     // Set the font to the canvas
     canvas.font = this.makeCSSFont(label, sampleScaling);
     // We will use the canvas measuring tool to give us a baseline for how wide
@@ -220,7 +220,7 @@ export class LabelRasterizer {
     canvas.canvas.height = fontSize * 2.0;
     // After adjusting the canvas dimensions we must re-set the font metrics
     // Set the color of the label to white so we know what color to look for
-    canvas.fillStyle = "white";
+    canvas.fillStyle = 'white';
     // Set the font to the canvas
     canvas.font = this.makeCSSFont(label, sampleScaling);
     // Render the text into our canvas for calculating
@@ -232,7 +232,7 @@ export class LabelRasterizer {
    */
   static getContext() {
     if (!canvas) {
-      const potentialCanvas = document.createElement("canvas").getContext("2d");
+      const potentialCanvas = document.createElement('canvas').getContext('2d');
 
       if (potentialCanvas) {
         canvas = potentialCanvas;
@@ -258,7 +258,7 @@ export class LabelRasterizer {
   static makeCSSFont(label: Label, sampleScale: number) {
     return `${label.fontWeight} ${this.getLabelRasterizationFontSize(
       label,
-      sampleScale
+      sampleScale,
     )}px ${label.fontFamily}`;
   }
 
@@ -305,14 +305,14 @@ export class LabelRasterizer {
    * Performs the rendering of the label
    */
   static async render(
-    resource: LabelAtlasResource
+    resource: LabelAtlasResource,
   ): Promise<LabelAtlasResource> {
     // Make sure our canvas object is ready for rendering
     await this.awaitContext();
 
     // Validate the label's input
     if (resource.label.fontSize > MAX_FONT_SIZE) {
-      console.warn("Labels only support font sizes up to 50");
+      console.warn('Labels only support font sizes up to 50');
       return resource;
     }
 
@@ -332,14 +332,14 @@ export class LabelRasterizer {
 
     if (!canvas) {
       console.warn(
-        "Can not render a label synchronously without the canvas context being ready."
+        'Can not render a label synchronously without the canvas context being ready.',
       );
       return resource;
     }
 
     // Validate the label's input
     if (resource.label.fontSize > MAX_FONT_SIZE) {
-      console.warn("Labels only support font sizes up to 50");
+      console.warn('Labels only support font sizes up to 50');
       return resource;
     }
 

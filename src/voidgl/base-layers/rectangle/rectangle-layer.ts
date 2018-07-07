@@ -1,7 +1,7 @@
 import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { ILayerProps, IModelType, Layer } from '../../surface/layer';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IShaderInitialization, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { ScaleType } from '../types';
 import { RectangleInstance } from './rectangle-instance';
 

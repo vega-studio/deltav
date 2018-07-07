@@ -7,7 +7,7 @@ import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize, IShaders
 import { Instance } from '../../util';
 import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
 import { WebGLStat } from '../../util/webgl-stat';
-import { templateVars } from '../fragments/template-vars';
+import { templateVars } from '../template-vars';
 import { makeInstanceDestructuringArray, makeInstanceRetrievalArray, makeUniformArrayDeclaration } from './uniform-instance-block-array';
 
 // These are all of the necessary fragments that will comprise our shader that is generated
@@ -94,7 +94,11 @@ export function injectFragments<T extends Instance>(shaders: IShaders, vertexAtt
     ],
   };
 
-  const vertexShaderResults = shaderTemplate(vertexShaderComposition, templateOptions, required);
+  const vertexShaderResults = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: vertexShaderComposition,
+  });
 
   templateOptions = {
     [templateVars.layerUniforms]: generateUniforms(uniforms, ShaderInjectionTarget.FRAGMENT),
@@ -109,7 +113,11 @@ export function injectFragments<T extends Instance>(shaders: IShaders, vertexAtt
     ],
   };
 
-  const fragmentShaderResults = shaderTemplate(fragmentShaderComposition, templateOptions, required);
+  const fragmentShaderResults = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: fragmentShaderComposition,
+  });
 
   return {
     fs: fragmentShaderResults.shader,
@@ -129,7 +137,11 @@ function generateProjectionMethods() {
     values: [],
   };
 
-  const results = shaderTemplate(projectionMethods, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: projectionMethods,
+  });
 
   return results.shader;
 }
@@ -160,7 +172,11 @@ function generateShaderInputs<T extends Instance>(vertexAttributes: IVertexAttri
     ],
   };
 
-  const results = shaderTemplate(shaderInput, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaderInput,
+  });
 
   return {
     fragment: results.shader,
@@ -207,7 +223,11 @@ function generateEasingMethods<T extends Instance>(instanceAttributes: IInstance
         [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
       };
 
-      const results = shaderTemplate(method, templateOptions, required);
+      const results = shaderTemplate({
+        options: templateOptions,
+        required,
+        shader: method,
+      });
 
       out += `${results.shader}\n`;
     });
@@ -250,7 +270,11 @@ function generateVertexShader<T extends Instance>(shaders: IShaders, instanceAtt
     ],
   };
 
-  const results = shaderTemplate(shaders.vs, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaders.vs,
+  });
 
   return results.shader;
 }
@@ -263,7 +287,11 @@ function generateFragmentShader(shaders: IShaders) {
     values: [],
   };
 
-  const results = shaderTemplate(shaders.fs, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaders.fs,
+  });
 
   return results.shader;
 }
@@ -284,7 +312,11 @@ function makeInstanceAttributeReferences<T extends Instance>(instanceAttributes:
     ],
   };
 
-  const results = shaderTemplate(instanceDestructuringArray, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: instanceDestructuringArray,
+  });
 
   return results.shader;
 }

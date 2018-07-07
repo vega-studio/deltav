@@ -1,6 +1,6 @@
 import * as Three from 'three';
-import { ILayerProps, IModelType, IPickingMethods, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import { ILayerProps, IModelType, IPickingMethods, Layer } from '../../surface/layer';
+import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IShaderInitialization, IUniform, UniformSize, VertexAttributeSize } from '../../types';
 import { DataProvider, shaderTemplate } from '../../util';
 import { EdgeInstance } from './edge-instance';
 import { edgePicking } from './edge-picking';
@@ -94,21 +94,21 @@ export class EdgeLayer<T extends EdgeInstance, U extends IEdgeLayerProps<T>> ext
       sign *= -1;
     }
 
-    const vs = shaderTemplate(
-      scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
-      {
+    const vs = shaderTemplate({
+      options: {
         // Retain the attributes injection
         attributes: '${attributes}',
         // Inject the proper interpolation method
         interpolation: pickVS[type],
       },
-      {
+      required: {
         name: 'Edge Layer',
         values: [
           'interpolation',
         ],
       },
-    );
+      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
+    });
 
     return {
       fs: edgeFS,

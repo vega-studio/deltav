@@ -1,7 +1,8 @@
 import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import { CircleInstance, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
 import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
+import { ExtendedCircles } from './layers/extended-circles';
 
 export class MouseInteraction extends BaseExample {
   isOver = new Map<CircleInstance, boolean>();
@@ -45,11 +46,12 @@ export class MouseInteraction extends BaseExample {
   }
 
   makeLayer(scene: string, atlas: string, provider: DataProvider<CircleInstance>): LayerInitializer {
-    return createLayer(CircleLayer, {
+    return createLayer(ExtendedCircles, {
       animate: {
         radius: AutoEasingMethod.easeOutElastic(500),
       },
       data: provider,
+      dimming: 0.6,
       key: 'mouse-interaction',
       onMouseClick: this.handleCircleClick,
       onMouseOut: this.handleCircleOut,

@@ -2,6 +2,7 @@ precision highp float;
 
 varying vec4 vertexColor;
 varying vec2 texCoord;
+${extendHeader}
 
 void main() {
   ${attributes}
@@ -82,4 +83,5 @@ void main() {
   vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
+  ${extend}
 }

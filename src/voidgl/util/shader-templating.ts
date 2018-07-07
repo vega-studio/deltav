@@ -21,22 +21,41 @@ export interface IShaderTemplateRequirements {
   values: string[];
 }
 
-export function shaderTemplate(shader: string, options: {[key: string]: string}, required?: IShaderTemplateRequirements): IShaderTemplateResults {
+export interface IShaderTemplateOptions {
+  onError?(msg: string): void;
+  onToken?(token: string, replace: string): string;
+  options: {[key: string]: string};
+  required?: IShaderTemplateRequirements;
+  shader: string;
+}
+
+// TODO: need a callback for retaining
+
+export function shaderTemplate(templateOptions: IShaderTemplateOptions): IShaderTemplateResults {
+  const { shader, options, required, onError, onToken } = templateOptions;
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
   const notFound = new Map<string, number>();
   const shaderOptions = new Map<string, number>();
 
   const shaderResults = shader.replace(/\$\{(\w+)\}/g, (x: string, match: string) => {
+    let replace = '';
     shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
 
     if (match in options) {
       matched.set(match, (matched.get(match) || 0) + 1);
-      return options[match];
+      replace = options[match];
     }
 
-    noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
-    return '';
+    else {
+      noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
+    }
+
+    if (onToken) {
+      replace = onToken(match, replace);
+    }
+
+    return replace;
   });
 
   Object.keys(options).forEach(option => {
@@ -58,15 +77,21 @@ export function shaderTemplate(shader: string, options: {[key: string]: string},
     // This will ensure that BOTH the parameter input AND the shader provided the required options.
     required.values.forEach(require => {
       if (results.unresolvedProvidedOptions.get(require)) {
-        console.error(`${required.name}: Could not resolve all the required inputs. Input:`, require);
+        const msg = `${required.name}: Could not resolve all the required inputs. Input: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       }
 
       else if (results.unresolvedShaderOptions.get(require)) {
-        console.error(`${required.name}: A required option was not provided in the options parameter. Option:`, require);
+        const msg = `${required.name}: A required option was not provided in the options parameter. Option: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       }
 
       else if (!results.resolvedShaderOptions.get(require)) {
-        console.error(`${required.name}: A required option was not provided in the options parameter. Option:`, require);
+        const msg = `${required.name}: A required option was not provided in the options parameter. Option: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       }
     });
   }

@@ -5,7 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from 'three';
-import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
+import { ILayerProps, Layer } from '../surface/layer';
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
@@ -13,6 +13,7 @@ import {
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  IShaderInitialization,
   IUniform,
   IUniformInternal,
   IValueInstanceAttribute,

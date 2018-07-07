@@ -1,0 +1,1 @@
+vertexColor = dimColor(vertexColor);

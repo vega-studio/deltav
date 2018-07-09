@@ -22,15 +22,25 @@ export interface IShaderTemplateRequirements {
 }
 
 export interface IShaderTemplateOptions {
+  /** Callback for 'required' errors being emitted */
   onError?(msg: string): void;
+  /** Callback that allows overrides for token replacement. Provides the token found and the suggested replacement for it */
   onToken?(token: string, replace: string): string;
+  /** This is a key value pair the template uses to match tokens found to replacement values */
   options: {[key: string]: string};
+  /** This is used to indicate which tokens are required both within the shader AND within the 'options' */
   required?: IShaderTemplateRequirements;
+  /** THis is the shader written with templating information */
   shader: string;
 }
 
-// TODO: need a callback for retaining
-
+/**
+ * This is a method that aids in making shaders a bit more dynamic with simple string replacement based on tokens written
+ * into the shader. Tokens in the shader will appear as ${token} and will either be ignored by this method and thus removed
+ * or will be replaced with a provided value.
+ *
+ * This method will give feedback on the replacements taking place and simplify the process of detecting errors within the process.
+ */
 export function shaderTemplate(templateOptions: IShaderTemplateOptions): IShaderTemplateResults {
   const { shader, options, required, onError, onToken } = templateOptions;
   const matched = new Map<string, number>();

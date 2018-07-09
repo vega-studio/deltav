@@ -1,20 +1,20 @@
-import { Bounds } from '../../primitives/bounds';
-import { Atlas, IAtlasOptions } from './atlas';
-import { ColorAtlasResource } from './color-atlas-resource';
-import { ColorRasterizer } from './color-rasterizer';
-import { ImageAtlasResource } from './image-atlas-resource';
-import { LabelAtlasResource } from './label-atlas-resource';
-import { LabelRasterizer } from './label-rasterizer';
-import { ImageDimensions, PackNode } from './pack-node';
-import { SubTexture } from './sub-texture';
+import { Bounds } from "../../primitives/bounds";
+import { Atlas, IAtlasOptions } from "./atlas";
+import { ColorAtlasResource } from "./color-atlas-resource";
+import { ColorRasterizer } from "./color-rasterizer";
+import { ImageAtlasResource } from "./image-atlas-resource";
+import { LabelAtlasResource } from "./label-atlas-resource";
+import { LabelRasterizer } from "./label-rasterizer";
+import { ImageDimensions, PackNode } from "./pack-node";
+import { SubTexture } from "./sub-texture";
 
-const debug = require('debug')('webgl-surface:Atlas');
+const debug = require("debug")("webgl-surface:Atlas");
 
 const ZERO_IMAGE: SubTexture = {
   aspectRatio: 0,
   atlasBL: { x: 0, y: 0 },
   atlasBR: { x: 0, y: 0 },
-  atlasReferenceID: '',
+  atlasReferenceID: "",
   atlasTexture: null,
   atlasTL: { x: 0, y: 0 },
   atlasTR: { x: 0, y: 0 },
@@ -22,7 +22,7 @@ const ZERO_IMAGE: SubTexture = {
   isValid: false,
   pixelHeight: 0,
   pixelWidth: 0,
-  widthOnAtlas: 0,
+  widthOnAtlas: 0
 };
 
 export type AtlasResource =
@@ -78,7 +78,7 @@ export class AtlasManager {
       await this.updateAtlas(atlas.id, resources);
     }
 
-    debug('Atlas Created-> %o', atlas);
+    debug("Atlas Created-> %o", atlas);
 
     return atlas;
   }
@@ -125,9 +125,9 @@ export class AtlasManager {
     // Register the resource with the atlas
     if (!atlas.registerResource(resource)) {
       console.warn(
-        'Could not draw resource to the atlas as the resource was not properly registered to the atlas first',
+        "Could not draw resource to the atlas as the resource was not properly registered to the atlas first",
         atlas,
-        resource,
+        resource
       );
       return Promise.resolve(false);
     }
@@ -147,12 +147,12 @@ export class AtlasManager {
         bottom: rasterization.texture.height,
         left: 0,
         right: rasterization.texture.width,
-        top: 0,
+        top: 0
       });
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: ImageDimensions = {
         first: texture,
-        second: rect,
+        second: rect
       };
 
       // Auto add a buffer in
@@ -165,7 +165,7 @@ export class AtlasManager {
 
       // If the result was NULL we did not successfully insert the image into any map
       if (insertedNode) {
-        debug('Atlas location determined: %o', insertedNode);
+        debug("Atlas location determined: %o", insertedNode);
 
         // Apply the image to the node
         insertedNode.nodeImage = texture;
@@ -181,7 +181,7 @@ export class AtlasManager {
           bottom: 1.0 - uy,
           left: ux,
           right: ux + uw,
-          top: 1.0 - (uy + uh),
+          top: 1.0 - (uy + uh)
         });
 
         const bottom = atlasDimensions.bottom;
@@ -201,11 +201,11 @@ export class AtlasManager {
 
         // Now draw the image to the indicated canvas
         canvas
-          .getContext('2d')
+          .getContext("2d")
           .drawImage(
             loadedImage,
             insertedNode.nodeDimensions.x,
-            insertedNode.nodeDimensions.y,
+            insertedNode.nodeDimensions.y
           );
 
         // We have finished inserting
@@ -218,7 +218,7 @@ export class AtlasManager {
       }
     } else {
       if (!resource.texture.isValid) {
-        debug('Resource was invalidated during load:', resource);
+        debug("Resource was invalidated during load:", resource);
       } else {
         // Log an error and load a default sub texture
         console.error(`Could not load resource:`, resource);
@@ -247,9 +247,9 @@ export class AtlasManager {
    *                                     or null if there was an error
    */
   private async loadImage(
-    resource: AtlasResource,
+    resource: AtlasResource
   ): Promise<HTMLImageElement | null> {
-    let imageSrc: string = '';
+    let imageSrc: string = "";
 
     const subTexture = resource.texture || new SubTexture();
     resource.texture = subTexture;
@@ -290,7 +290,7 @@ export class AtlasManager {
             } else {
               resolve(null);
             }
-          },
+          }
         );
 
         return image;
@@ -308,10 +308,10 @@ export class AtlasManager {
 
       // Make sure the rasterization properly executed
       if (resource.rasterization.canvas) {
-        debug('Rasterized label %o', resource.rasterization);
-        imageSrc = resource.rasterization.canvas.toDataURL('image/png');
+        debug("Rasterized label %o", resource.rasterization);
+        imageSrc = resource.rasterization.canvas.toDataURL("image/png");
       } else {
-        console.warn('The label was not able to be rasterized');
+        console.warn("The label was not able to be rasterized");
       }
     } else if (resource instanceof ColorAtlasResource) {
       // Ensure the color has been rasterized to a canvas element
@@ -321,10 +321,10 @@ export class AtlasManager {
 
       // Make sure the rasterization properly executed
       if (resource.rasterization.canvas) {
-        debug('Rasterized color %o', resource.rasterization);
-        imageSrc = resource.rasterization.canvas.toDataURL('image/png');
+        debug("Rasterized color %o", resource.rasterization);
+        imageSrc = resource.rasterization.canvas.toDataURL("image/png");
       } else {
-        console.warn('The color was not able to be rasterized');
+        console.warn("The color was not able to be rasterized");
       }
     }
 
@@ -345,7 +345,7 @@ export class AtlasManager {
           };
 
           image.src = imageSrc;
-        },
+        }
       );
 
       return image;
@@ -372,10 +372,10 @@ export class AtlasManager {
       atlas.updateTexture();
     } else {
       console.warn(
-        'Can not update non-existing atlas:',
+        "Can not update non-existing atlas:",
         atlasName,
-        'These resources will not be loaded:',
-        resources,
+        "These resources will not be loaded:",
+        resources
       );
     }
   }

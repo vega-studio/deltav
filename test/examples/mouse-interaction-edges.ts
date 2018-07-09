@@ -1,6 +1,15 @@
-import * as anime from 'animejs';
-import { createLayer, DataProvider, EdgeInstance, EdgeLayer, EdgeType, IPickInfo, LayerInitializer, PickType } from '../../src';
-import { BaseExample } from './base-example';
+import * as anime from "animejs";
+import {
+  createLayer,
+  DataProvider,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  IPickInfo,
+  LayerInitializer,
+  PickType
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class MouseInteractionEdges extends BaseExample {
   side = 0;
@@ -12,9 +21,9 @@ export class MouseInteractionEdges extends BaseExample {
     anime({
       targets: info.instances,
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
-  }
+  };
 
   handleMouseMove = (info: IPickInfo<EdgeInstance>) => {
     if (info.instances.length <= 0) {
@@ -28,7 +37,7 @@ export class MouseInteractionEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 10,
-        widthStart: 20,
+        widthStart: 20
       });
     }
 
@@ -38,20 +47,24 @@ export class MouseInteractionEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 20,
-        widthStart: 10,
+        widthStart: 10
       });
     }
-  }
+  };
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: DataProvider<EdgeInstance>
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'mouse-interaction-lines',
+      key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.ALL,
       scene: scene,
-      type: EdgeType.BEZIER2,
+      type: EdgeType.BEZIER2
     });
   }
 
@@ -63,15 +76,12 @@ export class MouseInteractionEdges extends BaseExample {
       const edge = new EdgeInstance({
         colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
         colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-        control: [
-          [60, 20 * i - 40],
-          [160, 20 * i - 40],
-        ],
+        control: [[60, 20 * i - 40], [160, 20 * i - 40]],
         end: [200, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
         widthEnd: 10,
-        widthStart: 10,
+        widthStart: 10
       });
 
       edgeProvider.instances.push(edge);

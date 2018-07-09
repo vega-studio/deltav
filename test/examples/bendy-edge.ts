@@ -1,13 +1,24 @@
-import { createLayer, DataProvider, EdgeInstance, EdgeLayer, EdgeType, LayerInitializer } from '../../src';
-import { BaseExample } from './base-example';
+import {
+  createLayer,
+  DataProvider,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  LayerInitializer
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class BendyEdge extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: DataProvider<EdgeInstance>
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'bendy-edge',
+      key: "bendy-edge",
       scene: scene,
-      type: EdgeType.BEZIER,
+      type: EdgeType.BEZIER
     });
   }
 
@@ -26,7 +37,7 @@ export class BendyEdge extends BaseExample {
         id: `edge-bendy`,
         start: [200, 15],
         widthEnd: 10,
-        widthStart: 10,
+        widthStart: 10
       });
 
       edges.push(edge);
@@ -36,8 +47,16 @@ export class BendyEdge extends BaseExample {
     setInterval(() => {
       for (let i = 0; i < TOTAL_EDGES; ++i) {
         const edge = edges[i];
-        edge.start = [Math.sin(Date.now() / 4E2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 + 200, edge.start[1]];
-        edge.end = [Math.cos(Date.now() / 4E2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 + 200, edge.end[1]];
+        edge.start = [
+          Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
+            200,
+          edge.start[1]
+        ];
+        edge.end = [
+          Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
+            200,
+          edge.end[1]
+        ];
       }
     }, 1000 / 60);
 

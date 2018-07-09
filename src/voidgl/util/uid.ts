@@ -19,5 +19,5 @@ let CUID = 0;
  * other types of uid calls.
  */
 export function colorUID() {
-  return (++CUID) % 0xFFFFFF;
+  return ++CUID % 0xffffff;
 }

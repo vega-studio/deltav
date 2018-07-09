@@ -1,8 +1,17 @@
-import * as anime from 'animejs';
-import { createLayer, DataProvider, ImageInstance, ImageLayer, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
-import { BaseExample } from './base-example';
+import * as anime from "animejs";
+import {
+  createLayer,
+  DataProvider,
+  ImageInstance,
+  ImageLayer,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+  ScaleType
+} from "../../src";
+import { BaseExample } from "./base-example";
 
-const iconData = require('./images/leaf.png');
+const iconData = require("./images/leaf.png");
 const icon = new Image();
 icon.src = iconData;
 
@@ -22,25 +31,25 @@ export class MouseInteractionImages extends BaseExample {
         targets: image.tint,
         update: () => {
           image.tint = image.tint;
-        },
+        }
       });
     }
-  }
+  };
 
   handleImageOver = (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
       if (!this.isOver.get(image)) {
         const animation = anime({
           size: 50,
-          targets: image,
+          targets: image
         });
 
         this.isOver.set(image, animation);
       }
     }
-  }
+  };
 
-  handleImageOut = async(info: IPickInfo<ImageInstance>) => {
+  handleImageOut = async (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
       const animation = this.isOver.get(image);
 
@@ -49,7 +58,7 @@ export class MouseInteractionImages extends BaseExample {
 
         const leave = anime({
           size: 25,
-          targets: image,
+          targets: image
         });
 
         leave.pause();
@@ -60,18 +69,22 @@ export class MouseInteractionImages extends BaseExample {
         leave.play();
       }
     }
-  }
+  };
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<ImageInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: DataProvider<ImageInstance>
+  ): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas,
       data: provider,
-      key: 'mouse-interaction-images',
+      key: "mouse-interaction-images",
       onMouseClick: this.handleImageClick,
       onMouseOut: this.handleImageOut,
       onMouseOver: this.handleImageOver,
       picking: PickType.ALL,
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -84,29 +97,33 @@ export class MouseInteractionImages extends BaseExample {
       scaling: ScaleType.ALWAYS,
       tint: [1.0, 1.0, 1.0, 1.0],
       x: 20,
-      y: 20,
+      y: 20
     });
 
     // Left Middle left
     provider.instances.push(image);
 
-    provider.instances.push(new ImageInstance({
-      element: icon,
-      id: `image_1`,
-      scaling: ScaleType.BOUND_MAX,
-      tint: [1.0, 1.0, 1.0, 1.0],
-      x: 20,
-      y: 50,
-    }));
+    provider.instances.push(
+      new ImageInstance({
+        element: icon,
+        id: `image_1`,
+        scaling: ScaleType.BOUND_MAX,
+        tint: [1.0, 1.0, 1.0, 1.0],
+        x: 20,
+        y: 50
+      })
+    );
 
-    provider.instances.push(new ImageInstance({
-      element: icon,
-      id: `image_2`,
-      scaling: ScaleType.NEVER,
-      tint: [1.0, 1.0, 1.0, 1.0],
-      x: 20,
-      y: 80,
-    }));
+    provider.instances.push(
+      new ImageInstance({
+        element: icon,
+        id: `image_2`,
+        scaling: ScaleType.NEVER,
+        tint: [1.0, 1.0, 1.0, 1.0],
+        x: 20,
+        y: 80
+      })
+    );
 
     provider.instances.forEach(image => {
       image.size = 25;

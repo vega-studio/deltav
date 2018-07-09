@@ -1,18 +1,26 @@
-import { IArrayWillChange, IArrayWillSplice, intercept, IObjectWillChange, IObservableArray, Lambda, observable } from 'mobx';
-import { Instance } from './instance';
+import {
+  IArrayWillChange,
+  IArrayWillSplice,
+  intercept,
+  IObjectWillChange,
+  IObservableArray,
+  Lambda,
+  observable
+} from "mobx";
+import { Instance } from "./instance";
 
 export enum DiffType {
   CHANGE = 0,
   INSERT = 1,
-  REMOVE = 2,
+  REMOVE = 2
 }
 
 function isObservableArray<T>(val: any): val is IObservableArray<T> {
   return Boolean(val.observe);
 }
 
-const UPDATE_FLAG = 'update';
-const SPLICE_FLAG = 'splice';
+const UPDATE_FLAG = "update";
+const SPLICE_FLAG = "splice";
 
 /**
  * This is a generic DataProvider that provides instance data to a layer. It monitors
@@ -67,7 +75,15 @@ export class DataProvider<T extends Instance> {
     this._instances = observable(data || []);
 
     if (isObservableArray(this._instances)) {
-      this.listDisposer = intercept(this._instances, this.monitorList(this._instances, this.instanceChanges, this.instanceById, this.instanceDisposers));
+      this.listDisposer = intercept(
+        this._instances,
+        this.monitorList(
+          this._instances,
+          this.instanceChanges,
+          this.instanceById,
+          this.instanceDisposers
+        )
+      );
     }
   }
 
@@ -76,7 +92,7 @@ export class DataProvider<T extends Instance> {
    */
   destroy() {
     this.listDisposer();
-    this.instanceDisposers.forEach((disposer) => disposer());
+    this.instanceDisposers.forEach(disposer => disposer());
     delete this._instances;
     this.instanceChanges.clear();
     delete this._changeList;
@@ -88,20 +104,23 @@ export class DataProvider<T extends Instance> {
    *
    * @param changes This is the change list which records the changes to the items
    */
-  private monitorItem = (changes: Map<T, DiffType>) => (change: IObjectWillChange) => {
+  private monitorItem = (changes: Map<T, DiffType>) => (
+    change: IObjectWillChange
+  ) => {
     if (this.active) {
       if (change.type === UPDATE_FLAG) {
         changes.set(change.object, DiffType.CHANGE);
         this.isChanged = true;
-      }
-
-      else {
-        console.warn('Received an update type not supported by monitorItem:', change.type);
+      } else {
+        console.warn(
+          "Received an update type not supported by monitorItem:",
+          change.type
+        );
       }
     }
 
     return change;
-  }
+  };
 
   /**
    * This generates a method for an interceptor that will monitor and collect change information
@@ -111,13 +130,22 @@ export class DataProvider<T extends Instance> {
    * @param changes The changelist for the list of given item type
    * @param lookUp A lookup so items that have changed can get their source easily
    */
-  private monitorList(list: T[], changes: Map<T, DiffType>, lookUp: Map<string, T>, disposers: Map<T, Lambda>) {
+  private monitorList(
+    _list: T[],
+    changes: Map<T, DiffType>,
+    lookUp: Map<string, T>,
+    disposers: Map<T, Lambda>
+  ) {
     return (change: IArrayWillChange<T> | IArrayWillSplice<T>) => {
       if (this.active) {
         // We only handle splice types for changes, these indicate elements have been added or removed
         if (change.type === SPLICE_FLAG) {
           // Record the removals and clear out any interceptors
-          for (let i = change.index, end = change.index + change.removedCount; i < end; ++i) {
+          for (
+            let i = change.index, end = change.index + change.removedCount;
+            i < end;
+            ++i
+          ) {
             const item = change.object[i];
             changes.set(item, DiffType.REMOVE);
             this.isChanged = true;
@@ -130,16 +158,17 @@ export class DataProvider<T extends Instance> {
 
           // Record the additions and add intercepts for each item. Also generate a lookup for the item
           for (let i = 0, end = change.added.length; i < end; ++i) {
-            const item = change.added[i] = observable(change.added[i]);
+            const item = (change.added[i] = observable(change.added[i]));
             changes.set(item, DiffType.INSERT);
             this.isChanged = true;
             lookUp.set(item.id, item);
             disposers.set(item, intercept(item, this.monitorItem(changes)));
           }
-        }
-
-        else {
-          console.warn('Received an update type not supported by monitorList:', change.type);
+        } else {
+          console.warn(
+            "Received an update type not supported by monitorList:",
+            change.type
+          );
         }
       }
 

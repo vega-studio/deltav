@@ -179,7 +179,7 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
               blockIndex: InstanceBlockIndex.ONE,
               name: "control",
               size: InstanceAttributeSize.FOUR,
-              update: o => [0, 0, 0, 0]
+              update: _o => [0, 0, 0, 0]
             }
           : null,
         type === EdgeType.BEZIER
@@ -205,7 +205,7 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (uniform: IUniform) => [scaleFactor()]
+          update: (_uniform: IUniform) => [scaleFactor()]
         }
       ],
       vertexAttributes: [

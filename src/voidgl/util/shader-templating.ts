@@ -33,7 +33,7 @@ export function shaderTemplate(
 
   const shaderResults = shader.replace(
     /\$\{(\w+)\}/g,
-    (x: string, match: string) => {
+    (_x: string, match: string) => {
       shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
 
       if (match in options) {

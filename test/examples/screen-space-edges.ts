@@ -61,7 +61,7 @@ export class ScreenSpaceEdges extends BaseExample {
     }
   };
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(e: KeyboardEvent, _isDown: boolean) {
     this.shiftIsDown = e.shiftKey;
   }
 
@@ -81,7 +81,7 @@ export class ScreenSpaceEdges extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: DataProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {

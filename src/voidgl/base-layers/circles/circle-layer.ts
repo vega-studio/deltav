@@ -153,7 +153,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (uniform: IUniform) => [scaleFactor()]
+          update: (_uniform: IUniform) => [scaleFactor()]
         }
       ],
       vertexAttributes: [

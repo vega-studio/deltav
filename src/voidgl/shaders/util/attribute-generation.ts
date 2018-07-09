@@ -295,7 +295,7 @@ function generateUniforms(
 function generateVertexShader<T extends Instance>(
   shaders: IShaders,
   instanceAttributes: IInstanceAttribute<T>[],
-  maxInstancesPerBuffer: number,
+  _maxInstancesPerBuffer: number,
   blocksPerInstance: number
 ) {
   const templateOptions: { [key: string]: string } = {
@@ -521,7 +521,7 @@ function generateInstanceDataLookupOptions<T extends Instance>(
 function makeUniformInstanceDataOptions<T extends Instance>(
   templateOptions: { [key: string]: string },
   maxInstancesPerBuffer: number,
-  branchesPerLevel: number,
+  _branchesPerLevel: number,
   blocksPerInstance: number,
   instanceAttributes: IInstanceAttribute<T>[]
 ) {

@@ -131,7 +131,7 @@ export class DataProvider<T extends Instance> {
    * @param lookUp A lookup so items that have changed can get their source easily
    */
   private monitorList(
-    list: T[],
+    _list: T[],
     changes: Map<T, DiffType>,
     lookUp: Map<string, T>,
     disposers: Map<T, Lambda>

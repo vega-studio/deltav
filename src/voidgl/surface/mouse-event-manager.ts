@@ -286,7 +286,7 @@ export class MouseEventManager {
         canClick = false;
       };
 
-      document.onmouseup = (event: MouseEvent) => {
+      document.onmouseup = (_event: MouseEvent) => {
         document.onmousemove = null;
         document.onmouseup = null;
         document.onmouseover = null;
@@ -342,7 +342,7 @@ export class MouseEventManager {
   addTouchContextListeners() {
     const element = this.context;
 
-    element.ontouchstart = event => {
+    element.ontouchstart = _event => {
       // TODO: This is the start work for the touch events. And this retains sentimental value.
       // For (let i = 0, end = event.changedTouches.length; i < end; ++i) {
       // TODO
@@ -351,15 +351,15 @@ export class MouseEventManager {
       // }
     };
 
-    element.ontouchend = event => {
+    element.ontouchend = _event => {
       // TODO
     };
 
-    element.ontouchmove = event => {
+    element.ontouchmove = _event => {
       // TODO
     };
 
-    element.ontouchcancel = event => {
+    element.ontouchcancel = _event => {
       // TODO
     };
   }

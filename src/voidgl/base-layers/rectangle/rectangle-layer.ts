@@ -11,7 +11,6 @@ import {
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
-  IUniform,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -212,7 +211,7 @@ export class RectangleLayer extends Layer<
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1]
+          update: _u => [1]
         }
       ],
       vertexAttributes: [

@@ -4,8 +4,6 @@ import { Instance } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { IViewOptions, View } from "./view";
 
-const debug = require("debug")("scene");
-
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
  * views.
@@ -44,7 +42,6 @@ export class Scene extends IdentifyByKey {
 
   constructor(options: ISceneOptions) {
     super(options);
-    debug("scene constructing~");
     this.container.frustumCulled = false;
     this.container.autoUpdate = false;
   }

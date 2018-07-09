@@ -193,7 +193,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ) {
     return {
-      cpu: (start: T, end: T, t: number) => end,
+      cpu: (_start: T, end: T, _t: number) => end,
       delay,
       duration,
       gpu: immediateGPU,

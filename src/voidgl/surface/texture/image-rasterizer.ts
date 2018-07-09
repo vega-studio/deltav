@@ -42,7 +42,7 @@ export class ImageRasterizer {
    */
   static calculateImageSize(
     resource: ImageAtlasResource,
-    sampleScale?: number
+    _sampleScale?: number
   ) {
     /** Get the image properties for rasterizing */
     const image = resource.image.element;

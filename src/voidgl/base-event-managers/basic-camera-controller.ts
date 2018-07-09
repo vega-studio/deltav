@@ -103,16 +103,16 @@ export class BasicCameraController extends EventManager {
   /** This is the filter applied to panning operations */
   private panFilter = (
     offset: [number, number, number],
-    view: View,
-    allViews: View[]
+    _view: View,
+    _allViews: View[]
   ) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
   /** THis is the filter applied to tscaling operations */
   private scaleFilter = (
     scale: [number, number, number],
-    view: View,
-    allViews: View[]
+    _view: View,
+    _allViews: View[]
   ) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
@@ -124,7 +124,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Callback for when the range has changed for the camera in a view
    */
-  private onRangeChanged = (camera: ChartCamera, targetView: View) => {
+  private onRangeChanged = (_camera: ChartCamera, _targetView: View) => {
     /* no-op */
   };
   /**
@@ -399,7 +399,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Used to aid in handling the pan effect and determine the contextual view targetted.
    */
-  handleMouseDown(e: IMouseInteraction, button: number) {
+  handleMouseDown(e: IMouseInteraction, _button: number) {
     if (this.startViews) {
       // We look for valid covered views on mouse down so dragging will work
       this.findCoveredStartView(e);
@@ -413,7 +413,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Used to aid in handling the pan effect
    */
-  handleMouseUp(e: IMouseInteraction) {
+  handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;
     this.isPanning = false;
   }
@@ -499,16 +499,16 @@ export class BasicCameraController extends EventManager {
   }
 
   // These are the currently Unused responses for this controller
-  handleMouseOut(e: IMouseInteraction) {
+  handleMouseOut(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleClick(e: IMouseInteraction) {
+  handleClick(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleMouseMove(e: IMouseInteraction) {
+  handleMouseMove(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleMouseOver(e: IMouseInteraction) {
+  handleMouseOver(_e: IMouseInteraction) {
     /*no-op*/
   }
 

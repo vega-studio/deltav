@@ -82,7 +82,7 @@ export class MouseInteractionRectangle extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: DataProvider<RectangleInstance>
   ): LayerInitializer {
     return createLayer(RectangleLayer, {

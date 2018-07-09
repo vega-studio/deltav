@@ -31,7 +31,7 @@ export interface IRectangleInstanceOptions extends IInstanceOptions {
 const anchorCalculator: {
   [key: number]: (anchor: Anchor, rectangle: RectangleInstance) => void;
 } = {
-  [AnchorType.TopLeft]: (anchor: Anchor, rectangle: RectangleInstance) => {
+  [AnchorType.TopLeft]: (anchor: Anchor, _rectangle: RectangleInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -67,7 +67,7 @@ const anchorCalculator: {
     anchor.x = rectangle.width + anchor.padding;
     anchor.y = rectangle.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, rectangle: RectangleInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _rectangle: RectangleInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
   }

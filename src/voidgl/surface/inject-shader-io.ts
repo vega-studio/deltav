@@ -327,7 +327,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start`,
       size,
-      update: o => easingValues.start
+      update: _o => easingValues.start
     };
 
     instanceAttributes.push(startAttr);
@@ -339,7 +339,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start_time`,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.startTime]
+      update: _o => [easingValues.startTime]
     };
 
     instanceAttributes.push(startTimeAttr);
@@ -351,7 +351,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_duration`,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.duration]
+      update: _o => [easingValues.duration]
     };
 
     instanceAttributes.push(durationAttr);
@@ -455,8 +455,9 @@ function compareVec(a: Vec, b: Vec) {
   if (a.length !== b.length) return false;
 
   for (let i = 0, end = a.length; i < end; ++i) {
-    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100)
+    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100) {
       return false;
+    }
   }
 
   return true;

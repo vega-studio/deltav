@@ -144,10 +144,10 @@ export class AtlasManager {
       const texture = resource.texture;
       // Now we create a Rectangle to store the image dimensions
       const rect: Bounds = new Bounds({
-        bottom: rasterization.texture.height,
         left: 0,
         right: rasterization.texture.width,
-        top: 0
+        top: 0,
+        bottom: rasterization.texture.height
       });
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: ImageDimensions = {
@@ -272,26 +272,24 @@ export class AtlasManager {
           return image;
         }
 
-        const image = await new Promise<HTMLImageElement | null>(
-          (resolve, reject) => {
-            const image: HTMLImageElement | undefined = resource.image.element;
+        const image = await new Promise<HTMLImageElement | null>(resolve => {
+          const image: HTMLImageElement | undefined = resource.image.element;
 
-            if (image) {
-              image.onload = function() {
-                subTexture.pixelWidth = image.width;
-                subTexture.pixelHeight = image.height;
-                subTexture.aspectRatio = image.width / image.height;
-                resolve(image);
-              };
+          if (image) {
+            image.onload = function() {
+              subTexture.pixelWidth = image.width;
+              subTexture.pixelHeight = image.height;
+              subTexture.aspectRatio = image.width / image.height;
+              resolve(image);
+            };
 
-              image.onerror = function() {
-                resolve(null);
-              };
-            } else {
+            image.onerror = function() {
               resolve(null);
-            }
+            };
+          } else {
+            resolve(null);
           }
-        );
+        });
 
         return image;
       }
@@ -329,24 +327,22 @@ export class AtlasManager {
     }
 
     if (imageSrc) {
-      const image = await new Promise<HTMLImageElement | null>(
-        (resolve, reject) => {
-          const image: HTMLImageElement = new Image();
+      const image = await new Promise<HTMLImageElement | null>(resolve => {
+        const image: HTMLImageElement = new Image();
 
-          image.onload = function() {
-            subTexture.pixelWidth = image.width;
-            subTexture.pixelHeight = image.height;
-            subTexture.aspectRatio = image.width / image.height;
-            resolve(image);
-          };
+        image.onload = function() {
+          subTexture.pixelWidth = image.width;
+          subTexture.pixelHeight = image.height;
+          subTexture.aspectRatio = image.width / image.height;
+          resolve(image);
+        };
 
-          image.onerror = function() {
-            resolve(null);
-          };
+        image.onerror = function() {
+          resolve(null);
+        };
 
-          image.src = imageSrc;
-        }
-      );
+        image.src = imageSrc;
+      });
 
       return image;
     }

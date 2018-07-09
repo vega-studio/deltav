@@ -145,7 +145,7 @@ export class InstanceUniformManager<T extends Instance> {
    * Clears all elements of this manager from the current scene it was in.
    */
   removeFromScene() {
-    this.buffers.forEach((buffer, index) => {
+    this.buffers.forEach(buffer => {
       this.scene.container.remove(buffer.model);
     });
 
@@ -156,7 +156,7 @@ export class InstanceUniformManager<T extends Instance> {
    * Applies the buffers to the provided scene for rendering.
    */
   setScene(scene: Scene) {
-    this.buffers.forEach((buffer, index) => {
+    this.buffers.forEach(buffer => {
       this.scene.container.add(buffer.model);
     });
 

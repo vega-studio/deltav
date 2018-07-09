@@ -329,12 +329,12 @@ export class Layer<
     };
   }
 
-  willUpdateInstances(changes: [T, DiffType]) {
+  willUpdateInstances(_changes: [T, DiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }
 
-  willUpdateProps(newProps: ILayerProps<T>) {
+  willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
   }
 

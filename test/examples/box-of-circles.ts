@@ -98,7 +98,7 @@ export class BoxOfCircles extends BaseExample {
   scene: string;
   textPositions: Vec2[];
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(e: KeyboardEvent, _isDown: boolean) {
     if (!this.originalRange) {
       this.originalRange = this.manager.getRange(this.scene);
     }
@@ -121,7 +121,7 @@ export class BoxOfCircles extends BaseExample {
 
   makeController(
     defaultCamera: ChartCamera,
-    testCamera: ChartCamera,
+    _testCamera: ChartCamera,
     viewName: string
   ): EventManager {
     this.scene = viewName;
@@ -136,7 +136,7 @@ export class BoxOfCircles extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: DataProvider<CircleInstance>
   ): LayerInitializer {
     this.animationControl = {

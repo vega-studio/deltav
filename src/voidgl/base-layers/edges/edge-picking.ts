@@ -28,12 +28,12 @@ type InterpolationMethod = (
 ) => Vec2;
 
 /** This is an interpolation across a line */
-function linear(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
+function linear(t: number, p1: Vec2, p2: Vec2, _c1: Vec2, _c2: Vec2): Vec2 {
   return add2(scale2(subtract2(p2, p1), t), p1);
 }
 
 /** This is an interpolation across a bezier curve, single control */
-function bezier(t: number, p1: Vec2, p2: Vec2, c1: Vec2, c2: Vec2): Vec2 {
+function bezier(t: number, p1: Vec2, p2: Vec2, c1: Vec2, _c2: Vec2): Vec2 {
   return [
     (1.0 - t) * (1.0 - t) * p1[0] + 2.0 * t * (1.0 - t) * c1[0] + t * t * p2[0],
     (1.0 - t) * (1.0 - t) * p1[1] + 2.0 * t * (1.0 - t) * c1[1] + t * t * p2[1]
@@ -259,7 +259,7 @@ export function edgePicking(
     boundsAccessor,
 
     // Provide a precise hit test for the edge
-    hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => {
+    hitTest: (edge: EdgeInstance, point: IPoint, _view: IProjection) => {
       const mouse: [number, number] = [point.x, point.y];
       let closestIndex = 0;
       let closestDistance = Number.MAX_VALUE;

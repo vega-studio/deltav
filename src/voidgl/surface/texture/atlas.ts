@@ -199,7 +199,7 @@ export class Atlas extends IdentifyByKey {
    */
   destroy() {
     this.texture.dispose();
-    this.validResources.forEach((isValid, resource) => {
+    this.validResources.forEach((_isValid, resource) => {
       this.invalidateResource(resource);
     });
   }

@@ -256,7 +256,7 @@ export class Node<T extends IQuadItem> {
     );
 
     // Add all of the children into the tree
-    children.forEach((child, index) => this.doAdd(child));
+    children.forEach(child => this.doAdd(child));
   }
 
   /**
@@ -290,7 +290,7 @@ export class Node<T extends IQuadItem> {
     }
 
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, index) => this.doAdd(child));
+    allChildren.forEach(child => this.doAdd(child));
   }
 
   /**
@@ -420,7 +420,7 @@ export class Node<T extends IQuadItem> {
    * @return     Returns the exact same list that was input as the list param
    */
   queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
+    this.children.forEach(c => {
       if (c.hitBounds(b)) {
         list.push(c);
       }
@@ -462,7 +462,7 @@ export class Node<T extends IQuadItem> {
    * @return      Returns the exact same list that was input as the list param
    */
   queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
+    this.children.forEach(c => {
       if (c.containsPoint(p)) {
         list.push(c);
       }

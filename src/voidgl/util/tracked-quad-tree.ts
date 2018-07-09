@@ -296,7 +296,7 @@ export class Node<T extends Instance> {
     // Clear out the child to node relations
     this.childToNode.clear();
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, _index) =>
+    allChildren.forEach(child =>
       this.doAdd(child, this.childToBounds.get(child) || null)
     );
   }

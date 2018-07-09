@@ -217,8 +217,13 @@ export class AtlasManager {
         return false;
       }
     } else {
-      // Log an error and load a default sub texture
-      console.error(`Could not load resource:`, resource);
+      if (!resource.texture.isValid) {
+        debug("Resource was invalidated during load:", resource);
+      } else {
+        // Log an error and load a default sub texture
+        console.error(`Could not load resource:`, resource);
+      }
+
       resource.texture = this.setDefaultImage(resource.texture, atlasName);
       return false;
     }
@@ -248,6 +253,8 @@ export class AtlasManager {
 
     const subTexture = resource.texture || new SubTexture();
     resource.texture = subTexture;
+
+    if (resource.texture.isValid === false) return null;
 
     if (resource instanceof ImageAtlasResource) {
       // If the texture was provided an image then we ensure the image is loaded

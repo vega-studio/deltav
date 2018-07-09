@@ -11,7 +11,6 @@ import {
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
-  IUniform,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -214,7 +213,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (_u: IUniform) => [1]
+          update: _u => [1]
         }
       ],
       vertexAttributes: [

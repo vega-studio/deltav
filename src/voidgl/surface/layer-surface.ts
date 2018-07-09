@@ -382,7 +382,7 @@ export class LayerSurface {
     );
 
     // Render the scene with the provided view metrics
-    this.renderer.render(scene, view.viewCamera.baseCamera);
+    if (scene) this.renderer.render(scene, view.viewCamera.baseCamera);
   }
 
   /**

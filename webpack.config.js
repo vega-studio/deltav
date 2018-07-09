@@ -1,7 +1,5 @@
 const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const CopyWebPackPlugin = require('copy-webpack-plugin');
-const ReplaceInFileWebPackPlugin = require('replace-in-file-webpack-plugin');
 
 // This is an optional path that can be passed into the program. When set, the
 // project will use the source code from the webgl project specified instead of
@@ -72,32 +70,6 @@ if (IS_PRODUCTION) {
 
   // We should minify and mangle our distribution for npm
   console.log('Minification enabled');
-
-  console.log('Copying voidgl to dist');
-  plugins.push(new CopyWebPackPlugin(
-    [
-      {
-        from: '**/*.{ts,json}',
-        to: resolve('dist/voidgl'),
-      }
-    ], {
-      context: resolve('./node_modules/@voidrayco/voidgl/dist'),
-      debug: process.env.DEBUG ? 'debug' : undefined,
-    }
-  ));
-
-  plugins.push(new ReplaceInFileWebPackPlugin([
-    {
-      dir: 'dist',
-      test: /\.d\.ts$/,
-      rules: [
-        {
-          search: '@voidrayco/voidgl',
-          replace: '@voidrayco/network-bubble-chart/voidgl'
-        }
-      ]
-    }
-  ]));
 }
 
 module.exports = {

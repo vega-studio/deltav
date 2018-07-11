@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.9.2
+
+* `(FIXED)` Release process will now produce the correct release file name
+
 ## 1.9.1
 
 * `(FIXED)` autoUpdate of null error removed

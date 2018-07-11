@@ -95,7 +95,7 @@ module.exports = {
     library,
     libraryTarget,
     path: IS_PRODUCTION ? resolve(__dirname, 'dist') : resolve('build'),
-    filename: 'app.js',
+    filename: 'index.js',
     publicPath: '/',
   },
 

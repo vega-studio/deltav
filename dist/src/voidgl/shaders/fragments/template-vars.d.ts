@@ -2,6 +2,8 @@ export declare const templateVars: {
     attributeFragments: string;
     attributes: string;
     blocksPerInstance: string;
+    easingMethod: string;
+    easingMethods: string;
     instanceBlockCount: string;
     instanceDataBinaryTree: string;
     instanceDataRetrieval: string;

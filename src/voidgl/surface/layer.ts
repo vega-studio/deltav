@@ -1,4 +1,4 @@
-import * as Three from 'three';
+import * as Three from "three";
 import {
   IInstanceAttribute,
   IMaterialOptions,
@@ -17,16 +17,22 @@ import {
   PickType,
   ShaderInjectionTarget,
   UniformIOValue,
-  UniformSize,
-} from '../types';
-import { BoundsAccessor, DataProvider, DiffType, TrackedQuadTree } from '../util';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { Instance } from '../util/instance';
-import { InstanceUniformManager } from '../util/instance-uniform-manager';
-import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
-import { LayerInteractionHandler } from './layer-interaction-handler';
-import { AtlasResourceManager } from './texture/atlas-resource-manager';
-import { View } from './view';
+  UniformSize
+} from "../types";
+import {
+  BoundsAccessor,
+  DataProvider,
+  DiffType,
+  TrackedQuadTree
+} from "../util";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { Instance } from "../util/instance";
+import { InstanceUniformManager } from "../util/instance-uniform-manager";
+import { DiffLookup, InstanceDiffManager } from "./instance-diff-manager";
+import { LayerInteractionHandler } from "./layer-interaction-handler";
+import { LayerSurface } from "./layer-surface";
+import { AtlasResourceManager } from "./texture/atlas-resource-manager";
+import { View } from "./view";
 
 export interface IShaderInputs<T extends Instance> {
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
@@ -39,7 +45,8 @@ export interface IShaderInputs<T extends Instance> {
   uniforms?: (IUniform | null)[];
 }
 
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
@@ -86,20 +93,26 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
 }
 
 export interface IModelConstructable {
-  new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material []): any;
+  new (
+    geometry?: Three.Geometry | Three.BufferGeometry,
+    material?: Three.Material | Three.Material[]
+  ): any;
 }
 
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
-  boundsAccessor: BoundsAccessor<T>,
+  boundsAccessor: BoundsAccessor<T>;
   /** This is the way the system tests hitting an intsance */
-  hitTest: InstanceHitTest<T>,
+  hitTest: InstanceHitTest<T>;
 }
 
 /**
  * A base class for generating drawable content
  */
-export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends IdentifyByKey {
+export class Layer<
+  T extends Instance,
+  U extends ILayerProps<T>
+> extends IdentifyByKey {
   static defaultProps: any = {};
 
   /** This is the attribute that specifies the _active flag for an instance */
@@ -115,7 +128,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
-  interactions: LayerInteractionHandler<T, U, V>;
+  interactions: LayerInteractionHandler<T, U>;
   /** The official shader material generated for the layer */
   material: Three.RawShaderMaterial;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
@@ -124,8 +137,12 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  /** Properties handed to the Layer during a LayerSurface render */
+  props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: AtlasResourceManager;
+  /** This is the surface this layer is generated under */
+  surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
@@ -134,9 +151,6 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
-
-  props: U;
-  state: V;
 
   /** This contains the methods and controls for handling diffs for the layer */
   diffManager: InstanceDiffManager<T>;
@@ -158,8 +172,14 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
 
       this.picking = {
         hitTest: pickingMethods.hitTest,
-        quadTree: new TrackedQuadTree<T>(0, 1, 0, 1, pickingMethods.boundsAccessor),
-        type: PickType.ALL,
+        quadTree: new TrackedQuadTree<T>(
+          0,
+          1,
+          0,
+          1,
+          pickingMethods.boundsAccessor
+        ),
+        type: PickType.ALL
       };
     }
 
@@ -209,7 +229,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
     for (let i = 0, end = this.uniforms.length; i < end; ++i) {
       uniform = this.uniforms[i];
       value = uniform.update(uniform);
-      uniform.materialUniforms.forEach(materialUniform => materialUniform.value = value);
+      uniform.materialUniforms.forEach(
+        materialUniform => (materialUniform.value = value)
+      );
     }
   }
 
@@ -218,7 +240,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
    */
   getInstancePickingMethods(): IPickingMethods<T> {
-    throw new Error('When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.');
+    throw new Error(
+      "When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode."
+    );
   }
 
   /**
@@ -227,7 +251,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
   getModelType(): IModelType {
     return {
       drawMode: Three.TrianglesDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 
@@ -250,12 +274,12 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    */
   initShader(): IShaderInitialization<T> {
     return {
-      fs: require('../shaders/base/no-op.fs'),
+      fs: require("../shaders/base/no-op.fs"),
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: require('../shaders/base/no-op.vs'),
+      vs: require("../shaders/base/no-op.vs")
     };
   }
 
@@ -273,7 +297,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       key: string;
       name: string;
       shaderInjection?: ShaderInjectionTarget;
-    },
+    }
   ): IInstanceAttribute<T> {
     return {
       atlas,
@@ -281,7 +305,7 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
       blockIndex,
       name,
       size,
-      update,
+      update
     };
   }
 
@@ -289,22 +313,28 @@ export class Layer<T extends Instance, U extends ILayerProps<T>, V> extends Iden
    * Helper method for making a uniform type. Depending on set up, this makes creating elements
    * have better documentation when typing out the elements.
    */
-  makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform {
+  makeUniform(
+    name: string,
+    size: UniformSize,
+    update: (o: IUniform) => UniformIOValue,
+    shaderInjection?: ShaderInjectionTarget,
+    qualifier?: string
+  ): IUniform {
     return {
       name,
       qualifier,
       shaderInjection,
       size,
-      update,
+      update
     };
   }
 
-  willUpdateInstances(changes: [T, DiffType]) {
+  willUpdateInstances(_changes: [T, DiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }
 
-  willUpdateProps(newProps: ILayerProps<T>) {
+  willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
   }
 

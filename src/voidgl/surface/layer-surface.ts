@@ -1,26 +1,30 @@
-import * as Three from 'three';
-import { ImageInstance } from '../base-layers/images';
-import { LabelInstance } from '../base-layers/labels';
-import { Bounds } from '../primitives/bounds';
-import { Box } from '../primitives/box';
-import { injectFragments } from '../shaders/util/attribute-generation';
-import { EventManager } from '../surface/event-manager';
-import { generateDefaultScene, IDefaultSceneElements } from '../surface/generate-default-scene';
-import { generateLayerGeometry } from '../surface/generate-layer-geometry';
-import { generateLayerMaterial } from '../surface/generate-layer-material';
-import { generateLayerModel } from '../surface/generate-layer-model';
-import { injectShaderIO } from '../surface/inject-shader-io';
-import { MouseEventManager, SceneView } from '../surface/mouse-event-manager';
-import { ISceneOptions, Scene } from '../surface/scene';
-import { ClearFlags, View } from '../surface/view';
-import { DataBounds } from '../util/data-bounds';
-import { Instance } from '../util/instance';
-import { InstanceUniformManager } from '../util/instance-uniform-manager';
-import { LayerMouseEvents } from './event-managers/layer-mouse-events';
-import { ILayerProps, Layer } from './layer';
-import { AtlasManager } from './texture';
-import { IAtlasOptions } from './texture/atlas';
-import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import * as Three from "three";
+import { ImageInstance } from "../base-layers/images";
+import { LabelInstance } from "../base-layers/labels";
+import { Bounds } from "../primitives/bounds";
+import { Box } from "../primitives/box";
+import { injectFragments } from "../shaders/util/attribute-generation";
+import { EventManager } from "../surface/event-manager";
+import {
+  generateDefaultScene,
+  IDefaultSceneElements
+} from "../surface/generate-default-scene";
+import { generateLayerGeometry } from "../surface/generate-layer-geometry";
+import { generateLayerMaterial } from "../surface/generate-layer-material";
+import { generateLayerModel } from "../surface/generate-layer-model";
+import { injectShaderIO } from "../surface/inject-shader-io";
+import { MouseEventManager, SceneView } from "../surface/mouse-event-manager";
+import { ISceneOptions, Scene } from "../surface/scene";
+import { ClearFlags, View } from "../surface/view";
+import { FrameMetrics } from "../types";
+import { DataBounds } from "../util/data-bounds";
+import { Instance } from "../util/instance";
+import { InstanceUniformManager } from "../util/instance-uniform-manager";
+import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
+import { ILayerProps, Layer } from "./layer";
+import { AtlasManager } from "./texture";
+import { IAtlasOptions } from "./texture/atlas";
+import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 
 export interface ILayerSurfaceOptions {
   /**
@@ -65,7 +69,7 @@ function isCanvas(val: any): val is HTMLCanvasElement {
   return Boolean(val.getContext);
 }
 
-function isString(val: any): val is String {
+function isString(val: any): val is string {
   return Boolean(val.substr);
 }
 
@@ -74,18 +78,24 @@ function isWebGLContext(val: any): val is WebGLRenderingContext {
 }
 
 export interface ILayerConstructable<T extends Instance> {
-  new (props: ILayerProps<T>): Layer<any, any, any>;
+  new (props: ILayerProps<T>): Layer<any, any>;
 }
 
 /**
  * This is a pair of a Class Type and the props to be applied to that class type.
  */
-export type LayerInitializer = [ILayerConstructable<Instance> & {defaultProps: ILayerProps<Instance>}, ILayerProps<Instance>];
+export type LayerInitializer = [
+  ILayerConstructable<Instance> & { defaultProps: ILayerProps<Instance> },
+  ILayerProps<Instance>
+];
 
 /**
  * Used for reactive layer generation and updates.
  */
-export function createLayer<T extends Instance, U extends ILayerProps<T>>(layerClass: ILayerConstructable<T> & {defaultProps: U}, props: U): LayerInitializer {
+export function createLayer<T extends Instance, U extends ILayerProps<T>>(
+  layerClass: ILayerConstructable<T> & { defaultProps: U },
+  props: U
+): LayerInitializer {
   return [layerClass, props];
 }
 
@@ -106,8 +116,21 @@ export class LayerSurface {
    * This scene by default only has a single default view.
    */
   defaultSceneElements: IDefaultSceneElements;
+  /**
+   * This is the metrics of the current running frame
+   */
+  frameMetrics: FrameMetrics = {
+    currentFrame: 0,
+    currentTime: Date.now() | 0,
+    previousTime: Date.now() | 0
+  };
+  /**
+   * This is used to help resolve concurrent draws. There are some very async operations that should
+   * not overlap in draw calls.
+   */
+  private isBufferingAtlas = false;
   /** This is all of the layers in this manager by their id */
-  layers = new Map<string, Layer<any, any, any>>();
+  layers = new Map<string, Layer<any, any>>();
   /** This manages the mouse events for the current canvas context */
   private mouseManager: MouseEventManager;
   /** This is the density the rendering renders for the surface */
@@ -132,12 +155,6 @@ export class LayerSurface {
    */
   willDisposeLayer = new Map<string, boolean>();
 
-  /**
-   * This is used to help resolve concurrent draws. There are some very async operations that should
-   * not overlap in draw calls.
-   */
-  private isBufferingAtlas = false;
-
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
@@ -147,14 +164,16 @@ export class LayerSurface {
    * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
    * as well as additional helper injections to aid in instancing and shader i/o.
    */
-  addLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  private addLayer<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): Layer<T, U> {
     if (!layer.id) {
-      console.warn('All layers must have an id');
+      console.warn("All layers must have an id");
       return layer;
     }
 
     if (this.layers.get(layer.id)) {
-      console.warn('All layer\'s ids must be unique per layer manager');
+      console.warn("All layer's ids must be unique per layer manager");
       return layer;
     }
 
@@ -167,25 +186,39 @@ export class LayerSurface {
   }
 
   /**
-   * Free all resources consumed by this surface that gets applied to the GPU.
+   * The performs all of the needed updates that layers need to commit to the scene and buffers
+   * to be ready for a draw pass. This is callable outside of the draw loop to allow for specialized
+   * procedures or optimizations to take place, where incremental updates to the buffers would make
+   * the most sense.
+   *
+   * @param time The start time of the given frame
+   * @param frameIncrement When true, the frame count for the frame metrics will increment
+   * @param onViewReady Callback for when all of the layers of a scene view have been committed
+   *                    and are thus potentially ready to be rendered.
    */
-  destroy() {
-    this.layers.forEach(layer => layer.destroy());
-    this.resourceManager.destroy();
-    this.mouseManager.destroy();
-    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
-    this.renderer.dispose();
-
-    // TODO: Instances should be implementing destroy for these clean ups.
-    LabelInstance.destroy();
-    ImageInstance.destroy();
-  }
-
-  /**
-   * This is the draw loop that must be called per frame for updates to take effect and display.
-   */
-  async draw() {
+  async commit(
+    time?: number,
+    frameIncrement?: boolean,
+    onViewReady?: (scene: Scene, view: View) => void
+  ) {
     if (!this.gl) return;
+
+    // We are rendering a new frame so increment our frame count
+    if (frameIncrement) this.frameMetrics.currentFrame++;
+    this.frameMetrics.previousTime = this.frameMetrics.currentTime;
+
+    // If no manual time was provided, we shall use Date.now in 32 bit format
+    if (time === undefined) {
+      this.frameMetrics.currentTime = Date.now() | 0;
+    } else {
+      // If this is our first frame and we have a manual time entry, then we first need to sync up
+      // The manual time as our previous timing.
+      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
+        this.frameMetrics.previousTime = time;
+      }
+
+      this.frameMetrics.currentTime = time;
+    }
 
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
@@ -210,8 +243,8 @@ export class LayerSurface {
             height: this.context.canvas.height,
             width: this.context.canvas.width,
             x: 0,
-            y: 0,
-          }),
+            y: 0
+          })
         );
 
         // Let the layers update their uniforms before the draw
@@ -225,10 +258,42 @@ export class LayerSurface {
           layer.draw();
         }
 
-        // Now perform the rendering
-        this.drawSceneView(scene.container, view);
+        if (onViewReady) {
+          onViewReady(scene, view);
+        }
       }
     }
+  }
+
+  /**
+   * Free all resources consumed by this surface that gets applied to the GPU.
+   */
+  destroy() {
+    this.layers.forEach(layer => layer.destroy());
+    this.resourceManager.destroy();
+    this.mouseManager.destroy();
+    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
+    this.renderer.dispose();
+
+    // TODO: Instances should be implementing destroy for these clean ups.
+    LabelInstance.destroy();
+    ImageInstance.destroy();
+  }
+
+  /**
+   * This is the draw loop that must be called per frame for updates to take effect and display.
+   *
+   * @param time This is an optional time flag so one can manually control the time flag for the frame.
+   *             This will affect animations and other automated gpu processes.
+   */
+  async draw(time?: number) {
+    if (!this.gl) return;
+
+    // Make the layers commit their changes to the buffers then draw each scene view on
+    // Completion.
+    this.commit(time, true, (scene, view) =>
+      this.drawSceneView(scene.container, view)
+    );
 
     // After we have drawn our views of our scenes, we can now ensure all of the bounds
     // Are updated in the interactions and flag our interactions ready for mouse input
@@ -258,8 +323,8 @@ export class LayerSurface {
   /**
    * This finalizes everything and sets up viewports and clears colors and
    */
-  drawSceneView(scene: Three.Scene, view: View) {
-    const offset = {x: view.viewBounds.left, y: view.viewBounds.top};
+  private drawSceneView(scene: Three.Scene, view: View) {
+    const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
     const rendererSize = this.renderer.getSize();
     rendererSize.width *= this.renderer.getPixelRatio();
@@ -268,33 +333,56 @@ export class LayerSurface {
 
     // Set the scissor rectangle.
     this.context.enable(this.context.SCISSOR_TEST);
-    this.context.scissor(offset.x, rendererSize.height - offset.y - size.height, size.width, size.height);
+    this.context.scissor(
+      offset.x,
+      rendererSize.height - offset.y - size.height,
+      size.width,
+      size.height
+    );
 
     // If a background is established, we should clear the background color
     // Specified for this context
     if (view.background) {
       // Clear the rect of color and depth so the region is totally it's own
-      this.context.clearColor(background[0], background[1], background[2], background[3]);
+      this.context.clearColor(
+        background[0],
+        background[1],
+        background[2],
+        background[3]
+      );
     }
 
     // Get the view's clearing preferences
     if (view.clearFlags) {
       this.context.clear(
-        (view.clearFlags.indexOf(ClearFlags.COLOR) > -1 ? this.context.COLOR_BUFFER_BIT : 0x0) |
-        (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1 ? this.context.DEPTH_BUFFER_BIT : 0x0) |
-        (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1 ? this.context.STENCIL_BUFFER_BIT : 0x0),
+        (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
+          ? this.context.COLOR_BUFFER_BIT
+          : 0x0) |
+          (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
+            ? this.context.DEPTH_BUFFER_BIT
+            : 0x0) |
+          (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+            ? this.context.STENCIL_BUFFER_BIT
+            : 0x0)
       );
     }
 
     // Default clearing is depth and color
     else {
-      this.context.clear(this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT);
+      this.context.clear(
+        this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT
+      );
     }
 
-    this.renderer.setViewport(offset.x / this.pixelRatio, offset.y / this.pixelRatio, size.width, size.height);
+    this.renderer.setViewport(
+      offset.x / this.pixelRatio,
+      offset.y / this.pixelRatio,
+      size.width,
+      size.height
+    );
 
     // Render the scene with the provided view metrics
-    this.renderer.render(scene, view.viewCamera.baseCamera);
+    if (scene) this.renderer.render(scene, view.viewCamera.baseCamera);
   }
 
   /**
@@ -320,18 +408,19 @@ export class LayerSurface {
         const view = sceneView.view;
 
         if (view.screenBounds) {
-          const topLeft = view.viewToWorld({x: 0, y: 0});
-          const bottomRight = view.screenToWorld({ x: view.screenBounds.right, y: view.screenBounds.bottom });
+          const topLeft = view.viewToWorld({ x: 0, y: 0 });
+          const bottomRight = view.screenToWorld({
+            x: view.screenBounds.right,
+            y: view.screenBounds.bottom
+          });
 
           return new Bounds({
             bottom: bottomRight.y,
             left: topLeft.x,
             right: bottomRight.x,
-            top: topLeft.y,
+            top: topLeft.y
           });
-        }
-
-        else {
+        } else {
           return null;
         }
       }
@@ -357,6 +446,10 @@ export class LayerSurface {
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
       await this.initResources(options);
+    } else {
+      console.warn(
+        "Could not establish a GL context. Layer Surface will be unable to render"
+      );
     }
 
     return this;
@@ -367,7 +460,9 @@ export class LayerSurface {
    */
   private initGL(options: ILayerSurfaceOptions) {
     if (!this.context) {
-      console.error('Can not initialize Layer Surface as a valid GL context was not established.');
+      console.error(
+        "Can not initialize Layer Surface as a valid GL context was not established."
+      );
       return;
     }
 
@@ -381,14 +476,14 @@ export class LayerSurface {
     this.renderer = new Three.WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
-      alpha: options.background && (options.background[3] < 1.0),
+      alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
       antialias: true,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: true,
+      preserveDrawingBuffer: true
     });
 
     // We want clearing to be controlled via the layer
@@ -408,9 +503,9 @@ export class LayerSurface {
         new Three.Color(
           options.background[0],
           options.background[1],
-          options.background[2],
+          options.background[2]
         ),
-        options.background[3],
+        options.background[3]
       );
     }
 
@@ -423,7 +518,10 @@ export class LayerSurface {
     this.defaultSceneElements = generateDefaultScene(this.context);
     this.defaultSceneElements.view.background = options.background;
     // Set the default scene
-    this.scenes.set(this.defaultSceneElements.scene.id, this.defaultSceneElements.scene);
+    this.scenes.set(
+      this.defaultSceneElements.scene.id,
+      this.defaultSceneElements.scene
+    );
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
 
@@ -431,7 +529,7 @@ export class LayerSurface {
     this.sceneViews.push({
       depth: ++sceneViewDepth,
       scene: this.defaultSceneElements.scene,
-      view: this.defaultSceneElements.view,
+      view: this.defaultSceneElements.view
     });
 
     // Turn on the scissor test to keep the rendering clipped within the
@@ -452,7 +550,7 @@ export class LayerSurface {
           this.sceneViews.push({
             depth: ++sceneViewDepth,
             scene: newScene,
-            view: this.defaultSceneElements.view,
+            view: this.defaultSceneElements.view
           });
         }
 
@@ -460,21 +558,25 @@ export class LayerSurface {
         sceneOptions.views.forEach(viewOptions => {
           const newView = new View(viewOptions);
           newView.camera = newView.camera || this.defaultSceneElements.camera;
-          newView.viewCamera = newView.viewCamera || this.defaultSceneElements.viewCamera;
-          newView.viewport = newView.viewport || this.defaultSceneElements.viewport;
+          newView.viewCamera =
+            newView.viewCamera || this.defaultSceneElements.viewCamera;
+          newView.viewport =
+            newView.viewport || this.defaultSceneElements.viewport;
           newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
           for (const sceneView of this.sceneViews) {
             if (sceneView.view.id === newView.id) {
-              console.warn('You can NOT have two views with the same id. Please use unique identifiers for every view generated.');
+              console.warn(
+                "You can NOT have two views with the same id. Please use unique identifiers for every view generated."
+              );
             }
           }
 
           this.sceneViews.push({
             depth: ++sceneViewDepth,
             scene: newScene,
-            view: newView,
+            view: newView
           });
         });
 
@@ -488,7 +590,11 @@ export class LayerSurface {
    * and injects special automated uniforms and attributes to make instancing work for the
    * shader.
    */
-  private initLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  private initLayer<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): Layer<T, U> {
+    // Set the layer's parent surface here
+    layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
     layer.resource = this.resourceManager;
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
@@ -497,19 +603,41 @@ export class LayerSurface {
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
-    shaderIO.instanceAttributes = shaderIO.instanceAttributes.filter(Boolean);
-    shaderIO.vertexAttributes = shaderIO.vertexAttributes.filter(Boolean);
-    shaderIO.uniforms = shaderIO.uniforms.filter(Boolean);
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
     // Get the injected shader IO attributes and uniforms
-    const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
+    const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
+      layer,
+      shaderIO
+    );
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = injectFragments(shaderIO, vertexAttributes, instanceAttributes, uniforms);
+    const shaderMetrics = injectFragments(
+      shaderIO,
+      vertexAttributes,
+      instanceAttributes,
+      uniforms
+    );
     // Generate the geometry this layer will be utilizing
-    const geometry = generateLayerGeometry(shaderMetrics.maxInstancesPerBuffer, vertexAttributes, shaderIO.vertexCount);
+    const geometry = generateLayerGeometry(
+      shaderMetrics.maxInstancesPerBuffer,
+      vertexAttributes,
+      shaderIO.vertexCount
+    );
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
-    const material = generateLayerMaterial(layer, shaderMetrics.vs, shaderMetrics.fs, uniforms, shaderMetrics.materialUniforms);
+    const material = generateLayerMaterial(
+      layer,
+      shaderMetrics.vs,
+      shaderMetrics.fs,
+      uniforms,
+      shaderMetrics.materialUniforms
+    );
     // And now we can now generate the mesh that will be added to the scene
     const model = generateLayerModel(layer, geometry, material);
 
@@ -536,11 +664,16 @@ export class LayerSurface {
   private initMouseManager(options: ILayerSurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers themselves
     const eventManagers: EventManager[] = (options.eventManagers || []).concat([
-      new LayerMouseEvents(this.sceneViews),
+      new LayerMouseEvents(this.sceneViews)
     ]);
 
     // Generate the mouse manager for the layer
-    this.mouseManager = new MouseEventManager(this.context.canvas, this.sceneViews, eventManagers, options.handlesWheelEvents);
+    this.mouseManager = new MouseEventManager(
+      this.context.canvas,
+      this.sceneViews,
+      eventManagers,
+      options.handlesWheelEvents
+    );
   }
 
   /**
@@ -556,7 +689,7 @@ export class LayerSurface {
 
     // Initialize our resource manager with the atlas manager
     this.resourceManager = new AtlasResourceManager({
-      atlasManager: this.atlasManager,
+      atlasManager: this.atlasManager
     });
   }
 
@@ -564,9 +697,11 @@ export class LayerSurface {
    * This finds the scene and view the layer belongs to based on the layer's props. For invalid or not provided
    * props, the layer gets added to default scenes and views.
    */
-  private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Scene {
+  private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): Scene {
     // Get the scene the layer will add itself to
-    let scene = this.scenes.get(layer.props.scene);
+    let scene = this.scenes.get(layer.props.scene || "");
 
     if (!scene) {
       // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
@@ -574,7 +709,9 @@ export class LayerSurface {
       scene = this.defaultSceneElements.scene;
 
       if (layer.props.scene) {
-        console.warn('Layer specified a scene that is not within the layer surface manager. Layer will be added to the default scene.');
+        console.warn(
+          "Layer specified a scene that is not within the layer surface manager. Layer will be added to the default scene."
+        );
       }
     }
 
@@ -589,10 +726,18 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  removeLayer<T extends Instance, U extends ILayerProps<T>, V>(layer: Layer<T, U, V>): Layer<T, U, V> {
+  private removeLayer<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U> | null
+  ): Layer<T, U> | null {
     // Make sure we are removing a layer that exists in the system
+    if (!layer) {
+      return null;
+    }
     if (!this.layers.get(layer && layer.id)) {
-      console.warn('Tried to remove a layer that is not in the manager.', layer);
+      console.warn(
+        "Tried to remove a layer that is not in the manager.",
+        layer
+      );
       return layer;
     }
 
@@ -621,7 +766,9 @@ export class LayerSurface {
           Object.assign(existingLayer.props, props);
           existingLayer.didUpdateProps();
         } else {
-          this.addLayer(new layerClass(Object.assign({}, layerClass.defaultProps, props)));
+          this.addLayer(
+            new layerClass(Object.assign({}, layerClass.defaultProps, props))
+          );
         }
         this.willDisposeLayer.set(props.key, false);
       });
@@ -630,7 +777,12 @@ export class LayerSurface {
     // Take any layer that retained it's disposal flag and trash it
     this.willDisposeLayer.forEach((dispose, layerId) => {
       if (dispose) {
-        this.removeLayer(this.layers.get(layerId));
+        const layer = this.layers.get(layerId);
+        if (layer) {
+          this.removeLayer(layer);
+        } else {
+          console.warn("this.willDisposeLayer called on non-gettable layer.");
+        }
       }
     });
 
@@ -639,7 +791,7 @@ export class LayerSurface {
 
     // Reflag every layer for removal again so creation of layers will determine
     // Which layers remain for a reactive pattern
-    this.layers.forEach((layer, id) => {
+    this.layers.forEach((_layer, id) => {
       this.willDisposeLayer.set(id, true);
     });
   }
@@ -648,21 +800,21 @@ export class LayerSurface {
    * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
    * dimensions for handling all of our rendered elements.
    */
-  fitContainer(pixelRatio?: number) {
+  fitContainer(_pixelRatio?: number) {
     const container = this.context.canvas.parentElement;
 
     if (container) {
       const canvas = this.context.canvas;
-      canvas.className = '';
-      canvas.setAttribute('style', '');
-      container.style.position = 'relative';
-      canvas.style.position = 'absolute';
-      canvas.style.left = '0xp';
-      canvas.style.top = '0xp';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.setAttribute('width', '');
-      canvas.setAttribute('height', '');
+      canvas.className = "";
+      canvas.setAttribute("style", "");
+      container.style.position = "relative";
+      canvas.style.position = "absolute";
+      canvas.style.left = "0xp";
+      canvas.style.top = "0xp";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.setAttribute("width", "");
+      canvas.setAttribute("height", "");
       const containerBox = container.getBoundingClientRect();
       const box = canvas.getBoundingClientRect();
 
@@ -672,7 +824,9 @@ export class LayerSurface {
 
   resize(width: number, height: number, pixelRatio?: number) {
     this.pixelRatio = pixelRatio || this.pixelRatio;
-    this.sceneViews.forEach(sceneView => sceneView.view.pixelRatio = this.pixelRatio);
+    this.sceneViews.forEach(
+      sceneView => (sceneView.view.pixelRatio = this.pixelRatio)
+    );
     this.renderer.setSize(width || 100, height || 100);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
@@ -681,24 +835,27 @@ export class LayerSurface {
   /**
    * This establishes the rendering canvas context for the surface.
    */
-  setContext(context: WebGLRenderingContext | HTMLCanvasElement | string) {
+  private setContext(
+    context?: WebGLRenderingContext | HTMLCanvasElement | string
+  ) {
     if (!context) {
       return;
     }
 
     if (isWebGLContext(context)) {
       this.context = context;
-    }
+    } else if (isCanvas(context)) {
+      const canvasContext =
+        context.getContext("webgl") || context.getContext("experimental-webgl");
 
-    else if (isCanvas(context)) {
-      this.context = context.getContext('webgl') || context.getContext('experimental-webgl');
-
-      if (!this.context) {
-        console.warn('A valid GL context was not found for the context provided to the surface. This surface will not be able to operate.');
+      if (!canvasContext) {
+        console.warn(
+          "A valid GL context was not found for the context provided to the surface. This surface will not be able to operate."
+        );
+      } else {
+        this.context = canvasContext;
       }
-    }
-
-    else if (isString(context)) {
+    } else if (isString(context)) {
       const element = document.getElementById(context);
 
       if (isCanvas(element)) {

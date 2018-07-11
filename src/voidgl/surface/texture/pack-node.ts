@@ -1,5 +1,5 @@
-import { Bounds } from '../../primitives/bounds';
-import { SubTexture } from './sub-texture';
+import { Bounds } from "../../primitives/bounds";
+import { SubTexture } from "./sub-texture";
 
 /**
  * Helps us track the bounds of the image being loaded in tied in with the
@@ -26,7 +26,7 @@ export class PackNode {
       height,
       width,
       x,
-      y,
+      y
     });
   }
 
@@ -37,8 +37,12 @@ export class PackNode {
     const child0 = this.child[0];
     const child1 = this.child[1];
     this.nodeImage = null;
-    if (child0) { child0.destroy(); }
-    if (child1) { child1.destroy(); }
+    if (child0) {
+      child0.destroy();
+    }
+    if (child1) {
+      child1.destroy();
+    }
     this.child[0] = null;
     this.child[1] = null;
   }
@@ -49,8 +53,12 @@ export class PackNode {
   hasChild(): boolean {
     const child0 = this.child[0];
     const child1 = this.child[1];
-    if (child0 && !child0.nodeImage) { return !child0.isLeaf; }
-    if (child1 && !child1.nodeImage) { return !child1.isLeaf; }
+    if (child0 && !child0.nodeImage) {
+      return !child0.isLeaf;
+    }
+    if (child1 && !child1.nodeImage) {
+      return !child1.isLeaf;
+    }
     return false;
   }
 
@@ -58,26 +66,32 @@ export class PackNode {
    * Inserts images into our mapping, fitting them appropriately
    */
   insert(image: ImageDimensions): PackNode | null {
-    const child0 = this.child[0];
-    const child1 = this.child[1];
+    let child0 = this.child[0];
+    let child1 = this.child[1];
 
     if (!this.isLeaf && child0 && child1) {
       // Try inserting into first child
       const newNode: PackNode | null = child0.insert(image);
-      if (newNode !== null) { return newNode; }
+      if (newNode !== null) {
+        return newNode;
+      }
       // No room in first so insert into second
       return child1.insert(image);
-    }
-
-    else {
+    } else {
       // If there's already an image here, return
-      if (this.nodeImage) { return null; }
+      if (this.nodeImage) {
+        return null;
+      }
       // Check the fit status of the image in this nodes rectangle space
       const fitFlag: number = this.nodeDimensions.fits(image.second);
       // If we're too small, return null indicating can not fit
-      if (fitFlag === 0) { return null; }
+      if (fitFlag === 0) {
+        return null;
+      }
       // If we're just right, accept
-      if (fitFlag === 1) { return this; }
+      if (fitFlag === 1) {
+        return this;
+      }
 
       // Otherwise, gotta split this node and create some leaves
       this.isLeaf = false;
@@ -89,16 +103,36 @@ export class PackNode {
       const dHeight: number = this.nodeDimensions.height - image.second.height;
 
       if (dWidth > dHeight) {
-        this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y, imgWidth, this.nodeDimensions.height);
-        this.child[1] = new PackNode(this.nodeDimensions.x + imgWidth, this.nodeDimensions.y, dWidth, this.nodeDimensions.height);
+        child0 = this.child[0] = new PackNode(
+          this.nodeDimensions.x,
+          this.nodeDimensions.y,
+          imgWidth,
+          this.nodeDimensions.height
+        );
+        child1 = this.child[1] = new PackNode(
+          this.nodeDimensions.x + imgWidth,
+          this.nodeDimensions.y,
+          dWidth,
+          this.nodeDimensions.height
+        );
       } else {
-        this.child[0] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y  , this.nodeDimensions.width, imgHeight);
-        this.child[1] = new PackNode(this.nodeDimensions.x, this.nodeDimensions.y + imgHeight, this.nodeDimensions.width, dHeight);
+        child0 = this.child[0] = new PackNode(
+          this.nodeDimensions.x,
+          this.nodeDimensions.y,
+          this.nodeDimensions.width,
+          imgHeight
+        );
+        child1 = this.child[1] = new PackNode(
+          this.nodeDimensions.x,
+          this.nodeDimensions.y + imgHeight,
+          this.nodeDimensions.width,
+          dHeight
+        );
       }
     }
 
     // Insert into first child we created
-    return this.child[0].insert(image);
+    return child0.insert(image);
   }
 
   /**
@@ -107,32 +141,33 @@ export class PackNode {
    * @param {AtlasTexture} image The image to insert into the
    */
   remove(image: SubTexture): boolean {
-    if (!this.isLeaf) {
-      // Try removing from first child
-      let removed: boolean = this.child[0].remove(image);
-      if (removed) { return true; }
-      // Try remove from second
-      removed = this.child[1].remove(image);
+    const child0 = this.child[0];
+    const child1 = this.child[1];
 
-      if (!this.child[0].hasChild()) {
-        if (!this.child[1].hasChild()) {
+    if (child1 && child0 && !this.isLeaf) {
+      // Try removing from first child
+      let removed: boolean = child0.remove(image);
+      if (removed) {
+        return true;
+      }
+      // Try remove from second
+      removed = child1.remove(image);
+
+      if (!child0.hasChild()) {
+        if (!child1.hasChild()) {
           this.child[0] = null;
           this.child[1] = null;
         }
       }
 
       return removed;
-    }
-
-    else {
+    } else {
       if (this.nodeImage === image) {
         this.nodeImage = null;
-        image.atlasReferenceID = null;
+        delete image.atlasReferenceID;
         image.pixelWidth = 0;
         return true;
-      }
-
-      else {
+      } else {
         return false;
       }
     }

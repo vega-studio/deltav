@@ -1,8 +1,11 @@
-import * as Three from 'three';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../../util/identify-by-key';
-import { AtlasManager, AtlasResource } from './atlas-manager';
-import { PackNode } from './pack-node';
-import { SubTexture } from './sub-texture';
+import * as Three from "three";
+import {
+  IdentifyByKey,
+  IdentifyByKeyOptions
+} from "../../util/identify-by-key";
+import { AtlasManager, AtlasResource } from "./atlas-manager";
+import { PackNode } from "./pack-node";
+import { SubTexture } from "./sub-texture";
 
 /**
  * These are valid atlas sizes available. We force a power of 2 to be utilized.
@@ -21,9 +24,9 @@ export enum AtlasSize {
   _128 = 0x01 << 7,
   _256 = 0x01 << 8,
   _512 = 0x01 << 9,
-  _1024= 0x01 << 10,
+  _1024 = 0x01 << 10,
   _2048 = 0x01 << 11,
-  _4096 = 0x01 << 12,
+  _4096 = 0x01 << 12
 }
 
 export interface IAtlasOptions extends IdentifyByKeyOptions {
@@ -66,7 +69,7 @@ export class Atlas extends IdentifyByKey {
 
   constructor(options: IAtlasOptions) {
     super(options);
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     this.width = canvas.width = options.width;
     this.height = canvas.height = options.height;
     this.textureSettings = options.textureSettings;
@@ -87,7 +90,7 @@ export class Atlas extends IdentifyByKey {
     resource.texture.atlasBR = zero;
     resource.texture.atlasTL = zero;
     resource.texture.atlasTR = zero;
-    resource.texture.atlasReferenceID = '';
+    resource.texture.atlasReferenceID = "";
     resource.texture.pixelWidth = 0;
     resource.texture.pixelHeight = 0;
     resource.texture.isValid = false;
@@ -116,24 +119,24 @@ export class Atlas extends IdentifyByKey {
         this.validResources.set(resource, true);
 
         return true;
-      }
-
-      else {
+      } else {
         console.warn(
-          'Atlas Error:', this.id,
-          'Attempted to add a resource to an Atlas that is already a valid resource on another atlas.',
-          'Consider Creating a new resource to be loaded into this particular atlas.',
-          'Resource:', resource,
+          "Atlas Error:",
+          this.id,
+          "Attempted to add a resource to an Atlas that is already a valid resource on another atlas.",
+          "Consider Creating a new resource to be loaded into this particular atlas.",
+          "Resource:",
+          resource
         );
       }
-    }
-
-    else {
+    } else {
       console.warn(
-        'Atlas Error:', this.id,
-        'A resource was trying to be added to the atlas that has already been added before.',
-        'Consider creating a new resource to indicate what you want loaded to the atlas',
-        'Resource:', resource,
+        "Atlas Error:",
+        this.id,
+        "A resource was trying to be added to the atlas that has already been added before.",
+        "Consider creating a new resource to indicate what you want loaded to the atlas",
+        "Resource:",
+        resource
       );
     }
 
@@ -152,14 +155,14 @@ export class Atlas extends IdentifyByKey {
     if (this.validResources.get(resource)) {
       this.validResources.set(resource, false);
       this.invalidateResource(resource);
-    }
-
-    else {
+    } else {
       console.warn(
-        'Atlas Error:', this.id,
-        'Attempted to remove a resource that does not exist on this atlas.',
-        'or the resource was already considered invalidated on this atlas.',
-        'Resource:', resource,
+        "Atlas Error:",
+        this.id,
+        "Attempted to remove a resource that does not exist on this atlas.",
+        "or the resource was already considered invalidated on this atlas.",
+        "Resource:",
+        resource
       );
     }
   }
@@ -177,9 +180,7 @@ export class Atlas extends IdentifyByKey {
       const redoneCanvas: HTMLCanvasElement = this.texture.image;
       this.texture.dispose();
       this.texture = new Three.Texture(redoneCanvas);
-    }
-
-    else {
+    } else {
       this.texture = new Three.Texture(canvas);
     }
 
@@ -198,7 +199,7 @@ export class Atlas extends IdentifyByKey {
    */
   destroy() {
     this.texture.dispose();
-    this.validResources.forEach((isValid, resource) => {
+    this.validResources.forEach((_isValid, resource) => {
       this.invalidateResource(resource);
     });
   }

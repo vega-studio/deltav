@@ -10,3 +10,6 @@ ${vertexAttributes}
 
 // This is the methods and set up needed to retrieve a block of data for an instance
 ${instanceDataRetrieval}
+
+// This is the methods generated for the automated easing of attributes
+${easingMethods}

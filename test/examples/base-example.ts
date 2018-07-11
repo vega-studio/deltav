@@ -1,14 +1,31 @@
-import { BasicCameraController, ChartCamera, createLayer, DataProvider, EventManager, Instance, LayerInitializer, RingLayer } from '../../src';
+import {
+  BasicCameraController,
+  ChartCamera,
+  createLayer,
+  DataProvider,
+  EventManager,
+  Instance,
+  LayerInitializer,
+  LayerSurface,
+  RingLayer
+} from "../../src";
 
 export abstract class BaseExample {
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  surface: LayerSurface;
+  view: string;
+
+  keyEvent(_e: KeyboardEvent, _isDown: boolean) {
     // Not required key event handler
   }
 
-  makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
-    return  new BasicCameraController({
+  makeController(
+    defaultCamera: ChartCamera,
+    _testCamera: ChartCamera,
+    viewName: string
+  ): EventManager {
+    return new BasicCameraController({
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
   }
 
@@ -16,12 +33,16 @@ export abstract class BaseExample {
     return defaultCamera;
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<Instance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    _atlas: string,
+    provider: DataProvider<Instance>
+  ): LayerInitializer {
     // IMPLEMENTED BY SUB CLASS
     return createLayer(RingLayer, {
       data: provider,
-      key: 'ring-layer-0',
-      scene,
+      key: "ring-layer-0",
+      scene
     });
   }
 

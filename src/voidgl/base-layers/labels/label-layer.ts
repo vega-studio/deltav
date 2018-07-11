@@ -1,16 +1,25 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { ScaleType } from '../types';
-import { LabelInstance } from './label-instance';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer
+} from "../../surface/layer";
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  UniformSize,
+  VertexAttributeSize
+} from "../../types";
+import { Vec2 } from "../../util";
+import { ScaleType } from "../types";
+import { LabelInstance } from "./label-instance";
 
 export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
   atlas?: string;
-}
-
-export interface ILabelLayerState {
-
 }
 
 const { max, min } = Math;
@@ -19,7 +28,7 @@ const { max, min } = Math;
  * This layer displays Labels and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLayerState> {
+export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -28,16 +37,15 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
     return {
       // Provide the calculated AABB world bounds for a given label
       boundsAccessor: (label: LabelInstance) => {
-        const topLeft = [
-          label.x - label.anchor.x,
-          label.y - label.anchor.y,
-        ];
+        const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
+        const topLeft = [label.x - anchor[0], label.y - anchor[1]];
 
         return new Bounds({
           height: label.height,
           width: label.width,
           x: topLeft[0],
-          y: topLeft[1],
+          y: topLeft[1]
         });
       },
 
@@ -63,10 +71,12 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
 
           // We are zooming in. The bounds will shrink to keep the label at max font size
           else {
+            const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
             // The location is within the world, but we reverse project the anchor spread
             const topLeft = view.worldToScreen({
-              x: label.x - (label.anchor.x / view.camera.scale[0]),
-              y: label.y - (label.anchor.y / view.camera.scale[1]),
+              x: label.x - anchor[0] / view.camera.scale[0],
+              y: label.y - anchor[1] / view.camera.scale[1]
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -76,7 +86,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
               height: label.height,
               width: label.width,
               x: topLeft.x,
-              y: topLeft.y,
+              y: topLeft.y
             }).containsPoint(screenPoint);
           }
         }
@@ -84,10 +94,12 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
         // If we never allow the label to scale, then the bounds will grow and shrink to counter the effects
         // Of the camera zoom
         else if (label.scaling === ScaleType.NEVER) {
+          const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
+
           // The location is within the world, but we reverse project the anchor spread
           const topLeft = view.worldToScreen({
-            x: label.x - (label.anchor.x / view.camera.scale[0]),
-            y: label.y - (label.anchor.y / view.camera.scale[1]),
+            x: label.x - anchor[0] / view.camera.scale[0],
+            y: label.y - anchor[1] / view.camera.scale[1]
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -97,12 +109,12 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
             height: label.height,
             width: label.width,
             x: topLeft.x,
-            y: topLeft.y,
+            y: topLeft.y
           }).containsPoint(screenPoint);
         }
 
         return true;
-      },
+      }
     };
   }
 
@@ -110,125 +122,125 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<LabelInstance> {
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: 0,
       1: 0,
       2: 0,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     return {
-      fs: require('./label-layer.fs'),
+      fs: require("./label-layer.fs"),
       instanceAttributes: [
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'location',
+          name: "location",
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: o => [o.x, o.y]
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'anchor',
+          name: "anchor",
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x, o.anchor.y],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'size',
+          name: "size",
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.width, o.height],
+          update: o => [o.width, o.height]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'depth',
+          name: "depth",
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: o => [o.depth]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
-          name: 'scaling',
+          name: "scaling",
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scaling],
+          update: o => [o.scaling]
         },
         {
           atlas: {
-            key: this.props.atlas,
-            name: 'labelAtlas',
+            key: this.props.atlas || "",
+            name: "labelAtlas"
           },
           block: 2,
-          name: 'texture',
-          update: (o) => this.resource.request(this, o, o.resource),
+          name: "texture",
+          update: o => this.resource.request(this, o, o.resource)
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'color',
+          name: "color",
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: o => o.color
         },
         {
           block: 4,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'scale',
+          name: "scale",
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scale],
+          update: o => [o.scale]
         },
         {
           block: 4,
           blockIndex: InstanceBlockIndex.TWO,
-          name: 'maxScale',
+          name: "maxScale",
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.maxScale],
-        },
+          update: o => [o.maxScale]
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
-        },
+          update: _u => [1]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'position',
+          name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
             vertexToSide[vertex],
-            0,
-          ],
-        },
+            0
+          ]
+        }
       ],
       vertexCount: 6,
-      vs: require('./label-layer.vs'),
+      vs: require("./label-layer.vs")
     };
   }
 
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 
@@ -237,7 +249,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps, ILabelLay
       blending: Three.CustomBlending,
       blendSrc: Three.OneFactor,
       premultipliedAlpha: true,
-      transparent: true,
+      transparent: true
     };
   }
 }

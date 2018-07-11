@@ -1,16 +1,7 @@
-import { Color } from '../../primitives/color';
-import { ColorAtlasResource } from './color-atlas-resource';
-/**
- * Static class for rasterizing a color to a canvas object
- */
+import { Color } from "../../primitives/color";
+import { ColorAtlasResource } from "./color-atlas-resource";
 export declare class ColorRasterizer {
-    /**
-     * This loops until our canvas context is available
-     */
     static awaitContext(canvas: HTMLCanvasElement): Promise<void>;
-    /**
-     * Generates the CSS string version of the color
-     */
     static makeCSS(color: Color): string;
     static render(resource: ColorAtlasResource): Promise<ColorAtlasResource>;
 }

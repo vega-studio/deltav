@@ -2,8 +2,8 @@
  * Defines a 2d point within a coordinate plane
  */
 export interface IPoint {
-  x : number
-  y : number
+  x: number;
+  y: number;
 }
 
 /**
@@ -56,7 +56,7 @@ export class Point {
 
     return {
       x: p1.x + p2.x,
-      y: p1.y + p2.y,
+      y: p1.y + p2.y
     };
   }
 
@@ -73,7 +73,7 @@ export class Point {
    */
   static getClosest(testPoint: IPoint, points: IPoint[]): IPoint {
     let closestDistance = Number.MAX_VALUE;
-    let closestPoint: IPoint = null;
+    let closestPoint: IPoint = testPoint;
     let distance: number;
 
     const findClosest = function(point: IPoint) {
@@ -132,7 +132,11 @@ export class Point {
    *
    * @returns {number}
    */
-  static subtract(amount: IPoint, from: IPoint, normalize: boolean = false): IPoint {
+  static subtract(
+    amount: IPoint,
+    from: IPoint,
+    normalize: boolean = false
+  ): IPoint {
     let dx = from.x - amount.x;
     let dy = from.y - amount.y;
 
@@ -144,7 +148,7 @@ export class Point {
 
     return {
       x: dx,
-      y: dy,
+      y: dy
     };
   }
 
@@ -180,12 +184,12 @@ export class Point {
 
     return {
       x: direction.x / 2 + p1.x,
-      y: direction.y / 2 + p1.y,
+      y: direction.y / 2 + p1.y
     };
   }
 
   static make(x: number, y: number) {
-    return {x, y};
+    return { x, y };
   }
 
   /**
@@ -207,7 +211,7 @@ export class Point {
 
     return {
       x: p1.x * s,
-      y: p1.y * s,
+      y: p1.y * s
     };
   }
 
@@ -220,7 +224,7 @@ export class Point {
   static zero(): IPoint {
     return {
       x: 0,
-      y: 0,
+      y: 0
     };
   }
 }

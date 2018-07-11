@@ -1,7 +1,8 @@
-import * as Three from 'three';
-import { Layer } from '../surface/layer';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { IViewOptions, View } from './view';
+import * as Three from "three";
+import { ILayerProps, Layer } from "../surface/layer";
+import { Instance } from "../util";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { IViewOptions, View } from "./view";
 
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
@@ -19,7 +20,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
   views: IViewOptions[];
 }
 
-function sortByDepth(a: Layer<any, any, any>, b: Layer<any, any, any>) {
+function sortByDepth(a: Layer<any, any>, b: Layer<any, any>) {
   return a.depth - b.depth;
 }
 
@@ -28,12 +29,12 @@ function sortByDepth(a: Layer<any, any, any>, b: Layer<any, any, any>) {
  * is rendered with.
  */
 export class Scene extends IdentifyByKey {
-  static DEFAULT_SCENE_ID = '__default__';
+  static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
   container: Three.Scene = new Three.Scene();
   /** This is all of the layers tracked to the scene */
-  layers: Layer<any, any, any>[] = [];
+  layers: Layer<any, any>[] = [];
   /** This indicates the sort is dirty for a set of layers */
   sortIsDirty = false;
   /** This is the view */
@@ -50,7 +51,7 @@ export class Scene extends IdentifyByKey {
    * The layer can not jump between views or scenes. You must destroy and reconstruct
    * the layer.
    */
-  addLayer(layer: Layer<any, any, any>) {
+  addLayer<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>) {
     // Add the layer to the list of layers under the view
     this.layers.push(layer);
     this.sortIsDirty = true;
@@ -67,14 +68,14 @@ export class Scene extends IdentifyByKey {
    * Release any resources this may be hanging onto
    */
   destroy() {
-    this.container = null;
+    delete this.container;
   }
 
   /**
    * Removes a layer from the scene. No resort is needed as remove operations
    * do not adjust the sorting order.
    */
-  removeLayer(layer: Layer<any, any, any>) {
+  removeLayer(layer: Layer<any, any>) {
     if (this.layers) {
       const index = this.layers.indexOf(layer);
 
@@ -84,7 +85,12 @@ export class Scene extends IdentifyByKey {
       }
     }
 
-    console.warn('Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:', this.id, 'Layer:', layer.id);
+    console.warn(
+      "Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:",
+      this.id,
+      "Layer:",
+      layer.id
+    );
   }
 
   sortLayers() {

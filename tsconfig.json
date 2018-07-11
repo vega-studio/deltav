@@ -1,17 +1,20 @@
 {
   "compilerOptions": {
     "allowUnreachableCode": false,
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "declaration": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "lib": ["es2017", "dom", "dom.iterable", "scripthost"],
+    "jsxFactory": "h",
+    "lib": ["es2015", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "strictNullChecks": false,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "strictNullChecks": true,
     "target": "es5"
   },
   "include": [

@@ -1,5 +1,5 @@
-import { observable } from 'mobx';
-import { Identifiable } from '../types';
+import { observable } from "mobx";
+import { Identifiable, IEasingProps } from "../types";
 
 export interface IInstanceOptions {
   /** The instance can be declared with an initial active state */
@@ -13,6 +13,8 @@ export class Instance implements Identifiable {
   private _id: string;
   /** This indicates when the instance is active / rendering */
   @observable active: boolean;
+  /** This is an internal easing object to track properties for automated easing */
+  private _easing = new Map<number, IEasingProps>();
 
   /**
    * The system will call this on the instance when it believes the instance may be
@@ -22,12 +24,16 @@ export class Instance implements Identifiable {
     // Generally a No-op
   }
 
+  get easing() {
+    return this._easing;
+  }
+
   get id() {
     return this._id;
   }
 
   constructor(options: IInstanceOptions) {
     this._id = options.id;
-    this.active = options.active;
+    this.active = options.active || this.active;
   }
 }

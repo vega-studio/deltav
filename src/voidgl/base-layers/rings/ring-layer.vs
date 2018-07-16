@@ -5,8 +5,12 @@ varying float edgeSharpness;
 varying float borderSize;
 varying vec2 pointCoord;
 
+varying float scale;
+
 void main() {
   ${attributes}
+
+  scale = scaleFactor;
 
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
@@ -15,7 +19,8 @@ void main() {
     ((thickness * pixelRatio) / size),
     float(pixelRatio > 1.0)
   );
-  edgeSharpness = mix(0.8, 0.01, min((size * 3.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
+
+  edgeSharpness = 2.0 / size;
   pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
 
   // Center within clip space

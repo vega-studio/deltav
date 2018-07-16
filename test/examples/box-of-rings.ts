@@ -56,11 +56,11 @@ export class BoxOfRings extends BaseExample {
     for (let k = 0; k < 25; ++k) {
       ringProvider.instances.push(
         new RingInstance({
-          color: [Math.random(), Math.random(), Math.random(), 1.0],
+          color: [1, 1, 1, 1.0],
           id: `ring_${k}`,
-          radius: 50 * (k + 1),
-          thickness: 10,
-          x: k * 20,
+          radius: 80 * (k + 1),
+          thickness: 5 * (k + 1),
+          x: 400,
           y: 400
         })
       );

@@ -98,6 +98,8 @@ export class EdgeLayer extends Layer<
       sign *= -1;
     }
 
+    console.log('EDGE', vertexToNormal);
+
     const vs = shaderTemplate(
       scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
       {

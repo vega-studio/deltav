@@ -45,7 +45,7 @@ if (IS_PRODUCTION) {
 }
 
 module.exports = {
-  devtool: 'source-map',
+  devtool: IS_PRODUCTION ? 'source-map' : 'inline-source-map',
   entry: IS_PRODUCTION ? './src' : './test',
   externals,
   mode: IS_DEVELOPMENT ? 'development' : 'production',

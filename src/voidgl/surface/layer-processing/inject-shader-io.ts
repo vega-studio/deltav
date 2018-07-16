@@ -5,8 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from 'three';
-import { Instance } from '../instance-provider/instance';
-import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
+import { Instance } from '../../instance-provider/instance';
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
@@ -23,9 +22,11 @@ import {
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
-} from '../types';
-import { uid, Vec } from '../util';
-import { AutoEasingLoopStyle } from '../util/auto-easing-method';
+} from '../../types';
+import { uid, Vec } from '../../util';
+import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
+import { ILayerProps, IShaderInitialization, Layer } from '../layer';
+import { getLayerBufferType, LayerBufferType } from './layer-buffer-type';
 
 const { abs } = Math;
 
@@ -290,16 +291,21 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       return end;
     };
 
+    // The attribute is going to generate some child attributes
+    attribute.childAttributes = [];
+
     // Find a slot available for our new start value
     let slot = findEmptyBlock(instanceAttributes, size);
     const startAttr: IInstanceAttribute<T> = {
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_start`,
+      parentAttribute: attribute,
       size,
       update: o => easingValues.start,
     };
 
+    attribute.childAttributes.push(startAttr);
     instanceAttributes.push(startAttr);
 
     // Find a slot available for our new start time
@@ -308,10 +314,12 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_start_time`,
+      parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
       update: o => [easingValues.startTime],
     };
 
+    attribute.childAttributes.push(startTimeAttr);
     instanceAttributes.push(startTimeAttr);
 
     // Find a slot available for our duration
@@ -320,10 +328,12 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_duration`,
+      parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
       update: o => [easingValues.duration],
     };
 
+    attribute.childAttributes.push(durationAttr);
     instanceAttributes.push(durationAttr);
   }
 }
@@ -341,7 +351,7 @@ function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(l
   return [];
 }
 
-function generatePickingAttributes<layer, T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
+function generatePickingAttributes<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]): IInstanceAttribute<T>[] {
   if (layer.picking.type === PickType.SINGLE) {
     // Find a compltely empty block within all instance attributes provided and injected
     const emptyFillBlock = findEmptyBlock(
@@ -449,17 +459,22 @@ function generateBaseInstanceAttributes<T extends Instance>(layer: Layer<T, any>
 /**
  * This creates the base vertex attributes that are ALWAYS present
  */
-function generateBaseVertexAttributes(): IVertexAttribute[] {
-  return [
-    // We add an inherent instance attribute to our vertices so they can determine the instancing
-    // Data to retrieve.
-    {
-      name: 'instance',
-      size: VertexAttributeSize.ONE,
-      // We no op this as our geomtry generating routine will establish the values needed here
-      update: () => [0],
-    },
-  ];
+function generateBaseVertexAttributes<T extends Instance>(layer: Layer<T, any>): IVertexAttribute[] {
+  // Only the uniform buffering strategy requires instance information in it's vertex attributes
+  if (layer.bufferType === LayerBufferType.UNIFORM) {
+    return [
+      // We add an inherent instance attribute to our vertices so they can determine the instancing
+      // Data to retrieve.
+      {
+        name: 'instance',
+        size: VertexAttributeSize.ONE,
+        // We no op this as our geomtry generating routine will establish the values needed here
+        update: () => [0],
+      },
+    ];
+  }
+
+  return [];
 }
 
 function compareVec(a: Vec, b: Vec) {
@@ -543,7 +558,7 @@ function validateInstanceAttributes<T extends Instance>(layer: Layer<T, any>, in
  * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
  * into the shader.
  */
-export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, shaderIO: IShaderInitialization<T>) {
+export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(gl: WebGLRenderingContext, layer: Layer<T, U>, shaderIO: IShaderInitialization<T>) {
   // All of the instance attributes with nulls filtered out
   const instanceAttributes = (shaderIO.instanceAttributes || []).filter(isInstanceAttribute);
   // All of the vertex attributes with nulls filtered out
@@ -566,15 +581,6 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   ;
   // Add in attributes for picking
   addedInstanceAttributes = addedInstanceAttributes.concat(generatePickingAttributes(layer, addedInstanceAttributes));
-  // Create the base vertex attributes that must be present
-  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
-
-  // Aggregate all of the injected shaderIO with the layer's shaderIO
-  const allVertexAttributes: IVertexAttributeInternal[] =
-    addedVertexAttributes
-    .concat(vertexAttributes || [])
-    .map(toVertexAttributeInternal)
-  ;
 
   const allUniforms =
     addedUniforms
@@ -584,6 +590,19 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(lay
   const allInstanceAttributes =
     addedInstanceAttributes
     .sort(sortNeedsUpdateFirstToTop)
+  ;
+
+  // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
+  getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
+
+  // Create the base vertex attributes that must be present
+  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes(layer);
+
+  // Aggregate all of the injected shaderIO with the layer's shaderIO
+  const allVertexAttributes: IVertexAttributeInternal[] =
+    addedVertexAttributes
+    .concat(vertexAttributes || [])
+    .map(toVertexAttributeInternal)
   ;
 
   return {

@@ -35,7 +35,7 @@ void main() {
   vertexColor = tint;
 
   // Correct aspect ratio.
-  size = mix(
+  vec2 adjustedSize = mix(
     size,
     (size * cameraScale.yx),
     unequalZooms
@@ -47,12 +47,12 @@ void main() {
     unequalZooms
   );
 
-  vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
+  vec2 vertex = vec2(side, float(normal == 1.0)) * adjustedSize + location - adjustedAnchor;
 
   // See how scaled the size on screen will be from the actual height of the image
   float imageScreenScale = mix(
-    screenSize.y / size.y,
-    screenSize.x / size.x,
+    screenSize.y / adjustedSize.y,
+    screenSize.x / adjustedSize.x,
     float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
   );
 

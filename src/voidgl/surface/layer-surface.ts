@@ -6,26 +6,26 @@ import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
 import { injectFragments } from '../shaders/util/attribute-generation';
-import { EventManager } from '../surface/event-manager';
-import { generateDefaultScene, IDefaultSceneElements } from '../surface/generate-default-scene';
-import { generateLayerGeometry } from '../surface/generate-layer-geometry';
-import { generateLayerMaterial } from '../surface/generate-layer-material';
-import { generateLayerModel } from '../surface/generate-layer-model';
-import { injectShaderIO } from '../surface/inject-shader-io';
-import { MouseEventManager, SceneView } from '../surface/mouse-event-manager';
-import { ISceneOptions, Scene } from '../surface/scene';
-import { ClearFlags, View } from '../surface/view';
-import { FrameMetrics } from '../types';
 import { PickType } from '../types';
+import { FrameMetrics } from '../types';
 import { analyzeColorPickingRendering } from '../util/color-picking-analysis';
 import { DataBounds } from '../util/data-bounds';
 import { Vec2 } from '../util/vector';
-import { UniformBufferManager } from './buffer-management';
+import { EventManager } from './event-manager';
 import { LayerMouseEvents } from './event-managers/layer-mouse-events';
 import { ILayerProps, Layer } from './layer';
+import { generateDefaultScene, IDefaultSceneElements } from './layer-processing/generate-default-scene';
+import { generateLayerGeometry } from './layer-processing/generate-layer-geometry';
+import { generateLayerMaterial } from './layer-processing/generate-layer-material';
+import { generateLayerModel } from './layer-processing/generate-layer-model';
+import { injectShaderIO } from './layer-processing/inject-shader-io';
+import { getLayerBufferType, makeLayerBufferManager } from './layer-processing/layer-buffer-type';
+import { MouseEventManager, SceneView } from './mouse-event-manager';
+import { ISceneOptions, Scene } from './scene';
 import { AtlasManager } from './texture';
 import { IAtlasOptions } from './texture/atlas';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import { ClearFlags, View } from './view';
 
 export interface ILayerSurfaceOptions {
   /**
@@ -225,6 +225,8 @@ export class LayerSurface {
 
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
+    const validLayers: {[key: string]: Layer<any, any>} = {};
+    const erroredLayers: {[key: string]: [Layer<any, any>, Error]} = {};
 
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
@@ -260,7 +262,16 @@ export class LayerSurface {
           layer.view = view;
           // Make sure the layer is given the opportunity to update all of it's uniforms
           // To match the view state and update any unresolved diffs internally
-          layer.draw();
+          try {
+            layer.draw();
+            validLayers[layer.id] = layer;
+          }
+
+          catch (err) {
+            if (!erroredLayers[layer.id]) {
+              erroredLayers[layer.id] = [layer, err];
+            }
+          }
 
           // If this layer specifies a picking draw pass, then we shall store it in the current draw order
           // For that next step
@@ -273,6 +284,27 @@ export class LayerSurface {
           onViewReady(scene, view, pickingPass);
         }
       }
+    }
+
+    // get the layers with errors flagged for them
+    const errors = Object.values(erroredLayers);
+
+    if (errors.length > 0) {
+      const passed = Object.values(validLayers);
+
+      console.warn(
+        'Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:',
+        errors.map(err => err[0].id),
+      );
+
+      // Output each layer and why it errored
+      errors.forEach(err => {
+        console.warn(`Layer ${err[0].id} removed for the following error:`);
+        if (err[1]) console.error(err[1].stack || err[1].message);
+      });
+
+      // Re-render but only include non-errored layers
+      this.render(passed.map(layer => layer.initializer));
     }
   }
 
@@ -339,7 +371,13 @@ export class LayerSurface {
           for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
             const layer = pickingPass[j];
             layer.picking.currentPickMode = PickType.SINGLE;
-            layer.draw();
+            try {
+              layer.draw();
+            }
+
+            catch (err) {
+              /** No-op, the first draw should have output an error for bad draw calls */
+            }
             layer.picking.currentPickMode = PickType.NONE;
           }
 
@@ -620,8 +658,6 @@ export class LayerSurface {
 
     // We want clearing to be controlled via the layer
     this.renderer.autoClear = false;
-    // Charts don't really have face culling. Just 2D shapes
-    this.renderer.setFaceCulling(Three.CullFaceNone);
     // This sets the pixel ratio to handle differing pixel densities in screens
     this.setRendererSize(width, height);
     // Set the pixel ratio to match the pixel density of the monitor in use
@@ -647,8 +683,6 @@ export class LayerSurface {
 
     // We want clearing to be controlled via the layer
     this.pickingRenderer.autoClear = false;
-    // Charts don't really have face culling. Just 2D shapes
-    this.pickingRenderer.setFaceCulling(Three.CullFaceNone);
     // Picking does not need retina style precision
     this.pickingRenderer.setPixelRatio(1.0);
     // Applies the background color and establishes whether or not the context supports
@@ -739,12 +773,15 @@ export class LayerSurface {
     shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(Boolean);
     shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
     // Get the injected shader IO attributes and uniforms
-    const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(layer, shaderIO);
+    const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(this.gl, layer, shaderIO);
+    // After all of the shader IO is established, let's calculate the appropriate buffering strategy
+    // For the layer.
+    getLayerBufferType(this.gl, layer, vertexAttributes, instanceAttributes);
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
     const shaderMetrics = injectFragments(layer, shaderIO, vertexAttributes, instanceAttributes, uniforms);
     // Generate the geometry this layer will be utilizing
-    const geometry = generateLayerGeometry(shaderMetrics.maxInstancesPerBuffer, vertexAttributes, shaderIO.vertexCount);
+    const geometry = generateLayerGeometry(layer, shaderMetrics.maxInstancesPerBuffer, vertexAttributes, shaderIO.vertexCount);
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
     const material = generateLayerMaterial(layer, shaderMetrics.vs, shaderMetrics.fs, uniforms, shaderMetrics.materialUniforms);
@@ -761,9 +798,8 @@ export class LayerSurface {
     layer.uniforms = uniforms;
     layer.vertexAttributes = vertexAttributes;
 
-    // The layer now needs a specialized uniform manager to provide instances with an appropriate set of uniforms
-    // To be able to render.
-    layer.bufferManager = new UniformBufferManager(layer, scene);
+    // Generate the correct buffering strategy for the layer
+    makeLayerBufferManager(this.gl, layer, scene);
 
     return layer;
   }
@@ -837,7 +873,6 @@ export class LayerSurface {
       return layer;
     }
 
-    layer.bufferManager.removeFromScene();
     layer.destroy();
     this.layers.delete(layer.id);
 
@@ -860,10 +895,14 @@ export class LayerSurface {
         if (existingLayer) {
           existingLayer.willUpdateProps(props);
           Object.assign(existingLayer.props, props);
+          existingLayer.initializer[1] = existingLayer.props;
           existingLayer.didUpdateProps();
         } else {
-          this.addLayer(new layerClass(Object.assign({}, layerClass.defaultProps, props)));
+          const layer = new layerClass(Object.assign({}, layerClass.defaultProps, props));
+          layer.initializer = init;
+          this.addLayer(layer);
         }
+
         this.willDisposeLayer.set(props.key, false);
       });
     }
@@ -873,10 +912,11 @@ export class LayerSurface {
       if (dispose) {
         const layer = this.layers.get(layerId);
         if (layer) {
+          console.log('REMOVING LAYER', layer.id);
           this.removeLayer(layer);
         }
         else {
-          console.warn('this.willDisposeLayer called on non-gettable layer.');
+          console.warn('this.willDisposeLayer applied to a layer that does not exist in the existing layer check.');
         }
       }
     });

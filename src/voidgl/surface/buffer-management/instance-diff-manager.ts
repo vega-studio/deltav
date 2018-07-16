@@ -1,15 +1,17 @@
 import { Instance } from '../../instance-provider/instance';
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics, PickType } from '../../types';
-import { BufferManagerBase, IBufferLocation } from '../buffer-management';
-import { IUniformBufferLocation } from '../buffer-management/uniform-buffer-manager';
+import { LayerBufferType } from '../layer-processing/layer-buffer-type';
 import { AtlasResourceManager } from '../texture/atlas-resource-manager';
+import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
+import { IBufferLocationGroup } from './buffer-manager-base';
 import { BaseDiffProcessor } from './diff-processors/base-diff-processor';
+import { InstanceAttributeDiffProcessor } from './diff-processors/instance-attribute-diff-processor';
 import { UniformColorDiffProcessor } from './diff-processors/uniform-color-diff-processor';
 import { UniformDiffProcessor } from './diff-processors/uniform-diff-processor';
 import { UniformQuadDiffProcessor } from './diff-processors/uniform-quad-diff-processor';
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (manager: BaseDiffProcessor<T>, instance: T, uniformCluster?: IUniformBufferLocation) => void;
+export type DiffHandler<T extends Instance> = (manager: BaseDiffProcessor<T>, instance: T, propIds: number[], bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 
@@ -28,6 +30,8 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
   resource: AtlasResourceManager;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
   bufferManager: BufferManagerBase<T, IBufferLocation>;
+  /** This is the buffering strategy being used */
+  bufferType: LayerBufferType;
 }
 
 /**
@@ -35,15 +39,14 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
  * updates to the uniforms that control those instances.
  */
 export class InstanceDiffManager<T extends Instance> {
+  bufferManager: BufferManagerBase<T, IBufferLocation>;
   processor: BaseDiffProcessor<T>;
   processing: DiffLookup<T>;
-
   layer: IInstanceDiffManagerTarget<T>;
 
-  colorPicking: ISinglePickingMetrics<T>;
-
-  constructor(layer: IInstanceDiffManagerTarget<T>) {
+  constructor(layer: IInstanceDiffManagerTarget<T>, bufferManager: BufferManagerBase<T, IBufferLocation>) {
     this.layer = layer;
+    this.bufferManager = bufferManager;
   }
 
   /**
@@ -53,19 +56,25 @@ export class InstanceDiffManager<T extends Instance> {
     // If this manager has already figured out which processor to use. Just return that processor.
     if (this.processing) return this.processing;
 
-    // Now we look at the state of the layer to determine the best diff processor strategy
-    if (this.layer.picking) {
-      if (this.layer.picking.type === PickType.ALL) {
-        this.processor = new UniformQuadDiffProcessor(this.layer);
-      }
-
-      else if (this.layer.picking.type === PickType.SINGLE) {
-        this.processor = new UniformColorDiffProcessor(this.layer);
-      }
+    if (this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+      this.processor = new InstanceAttributeDiffProcessor(this.layer, this.bufferManager);
     }
 
-    if (!this.processor) {
-      this.processor = new UniformDiffProcessor(this.layer);
+    else {
+      // Now we look at the state of the layer to determine the best diff processor strategy
+      if (this.layer.picking) {
+        if (this.layer.picking.type === PickType.ALL) {
+          this.processor = new UniformQuadDiffProcessor(this.layer, this.bufferManager);
+        }
+
+        else if (this.layer.picking.type === PickType.SINGLE) {
+          this.processor = new UniformColorDiffProcessor(this.layer, this.bufferManager);
+        }
+      }
+
+      if (!this.processor) {
+        this.processor = new UniformDiffProcessor(this.layer, this.bufferManager);
+      }
     }
 
     this.processing = [

@@ -1,9 +1,11 @@
 import { Instance } from '../../../instance-provider';
 import { ISinglePickingMetrics, PickType } from '../../../types';
-import { isBufferLocation } from '../buffer-manager-base';
+import { BufferManagerBase, IBufferLocation, isBufferLocation } from '../buffer-manager-base';
 import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
 import { IUniformBufferLocation } from '../uniform-buffer-manager';
 import { UniformDiffProcessor } from './uniform-diff-processor';
+
+const EMPTY: number[] = [];
 
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
@@ -11,8 +13,8 @@ import { UniformDiffProcessor } from './uniform-diff-processor';
 export class UniformColorDiffProcessor<T extends Instance> extends UniformDiffProcessor<T> {
   colorPicking: ISinglePickingMetrics<T>;
 
-  constructor(layer: IInstanceDiffManagerTarget<T>) {
-    super(layer);
+  constructor(layer: IInstanceDiffManagerTarget<T>, bufferManager: BufferManagerBase<T, IBufferLocation>) {
+    super(layer, bufferManager);
 
     if (layer.picking.type === PickType.SINGLE) {
       this.colorPicking = layer.picking;
@@ -28,10 +30,10 @@ export class UniformColorDiffProcessor<T extends Instance> extends UniformDiffPr
    * This processes add operations from changes in the instancing data and manages the layer's matching of
    * color / UID to Instance
    */
-  addInstance(manager: this, instance: T, uniformCluster: IUniformBufferLocation) {
+  addInstance(manager: this, instance: T, _propIds: number[], uniformCluster: IUniformBufferLocation) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
-      manager.changeInstance(manager, instance, uniformCluster);
+      manager.changeInstance(manager, instance, EMPTY, uniformCluster);
     }
 
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
@@ -55,7 +57,7 @@ export class UniformColorDiffProcessor<T extends Instance> extends UniformDiffPr
   /**
    * This processes change operations from changes in the instancing data
    */
-  changeInstance(manager: this, instance: T, uniformCluster: IUniformBufferLocation) {
+  changeInstance(manager: this, instance: T, _propIds: number[], uniformCluster: IUniformBufferLocation) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(manager.layer, instance, uniformCluster);
@@ -63,14 +65,14 @@ export class UniformColorDiffProcessor<T extends Instance> extends UniformDiffPr
 
     // If we don't have existing uniforms, then we must remove the instance
     else {
-      manager.addInstance(manager, instance, uniformCluster);
+      manager.addInstance(manager, instance, EMPTY, uniformCluster);
     }
   }
 
   /**
    * This processes remove operations from changes in the instancing data
    */
-  removeInstance(manager: this, instance: T, uniformCluster: IUniformBufferLocation) {
+  removeInstance(manager: this, instance: T, _propIds: number[], uniformCluster: IUniformBufferLocation) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;

@@ -1,4 +1,5 @@
 import { Instance } from '../../instance-provider/instance';
+import { IInstanceAttributeInternal } from '../../types';
 import { Vec2 } from '../../util';
 import { Layer } from '../layer';
 import { Scene } from '../scene';
@@ -7,23 +8,34 @@ export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;
 }
 
+export function isBufferLocationGroup(val: any): val is IBufferLocationGroup<IBufferLocation> {
+  return val && val.propertyToBufferLocation;
+}
+
 /**
  * This defines a base information object that explains where in a buffer a value
  * is represented.
  */
 export interface IBufferLocation {
-  /**
-   * This is the instance index indicative of the instance positioning within the buffer.
-   * Keep in mind: This does NOT correlate to a lookup for an Instance object but rather for
-   * the instancing concept designed for GL Buffers.
-   */
-  instanceIndex: number;
+  /** This is the parent attribute of this location */
+  attribute: IInstanceAttributeInternal<Instance>;
   /**
    * This is the generic buffer object interface for accessing the actual buffer.
    */
   buffer: {
     value: Float32Array | Uint8Array;
   };
+  /**
+   * If the attribute has child attributes (attributes auto generated as a consequence of the attributes settings)
+   * then the children's buffer locations can be found here.
+   */
+  childLocations?: IBufferLocation[];
+  /**
+   * This is the instance index indicative of the instance positioning within the buffer.
+   * Keep in mind: This does NOT correlate to a lookup for an Instance object but rather for
+   * the instancing concept designed for GL Buffers.
+   */
+  instanceIndex: number;
   /**
    * This is the range within the buffer values should be injected for this location.
    */
@@ -36,8 +48,10 @@ export interface IBufferLocation {
  * the instance's property's UIDs.
  */
 export interface IBufferLocationGroup<T extends IBufferLocation> {
+  /** This is the instance index WITHIN THE BUFFERS. This does NOT have relevance to Instance type objects */
   instanceIndex: number;
-  propertyToBufferLocation: Map<number, T>;
+  /** This is a map of property UIDs to an associated buffer location */
+  propertyToBufferLocation: {[key: number]: T};
 }
 
 /**
@@ -70,11 +84,33 @@ export abstract class BufferManagerBase<T extends Instance, U extends IBufferLoc
   /**
    * This adds an instance to the manager and thus ties the instance to an IBuffer location
    */
-  add: (instance: T) => U | IBufferLocationGroup<U> | null;
+  add: (instance: T) => U | IBufferLocationGroup<U> | undefined;
+
+  /**
+   * Retrieves the buffer locations for the instance provided
+   */
+  abstract getBufferLocations(instance: T): U | IBufferLocationGroup<U> | undefined;
+
+  /**
+   * This retrieves the property ID for the active attribute. This is necessary to prevent
+   * the need for lookups to find the active attribute.
+   */
+  abstract getActiveAttributePropertyId(): number;
+
+  /**
+   * This should provide a minimum property id list that represents a set of properties that if triggered
+   * for update, would cause all of the attributes to be updated for the layer.
+   */
+  abstract getUpdateAllPropertyIdList(): number[];
 
   /**
    * Disassociates an instance with it's buffer location and makes the instance
    * in the buffer no longer drawable.
    */
   remove: (instance: T) => T;
+
+  /**
+   * Removes the manager from the scene it applied itself to.
+   */
+  abstract removeFromScene(): void;
 }

@@ -28,6 +28,14 @@ export enum InstanceAttributeSize {
   ATLAS = 99,
 }
 
+export const instanceAttributeSizeFloatCount: {[key: number]: number} = {
+  [InstanceAttributeSize.ONE]: 1,
+  [InstanceAttributeSize.TWO]: 2,
+  [InstanceAttributeSize.THREE]: 3,
+  [InstanceAttributeSize.FOUR]: 4,
+  [InstanceAttributeSize.ATLAS]: 4,
+};
+
 export enum UniformSize {
   ONE = 1,
   TWO = 2,
@@ -119,58 +127,68 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
 
 export interface IInstanceAttribute<T extends Instance> {
   /**
-   * This is a block index helping describe the instancing process. It can be any number as
-   * the system will sort and organize them for you. This only helps the system detect when
-   * you cram too much info into a single block. The tighter you pack your blocks the better
-   * your program will perform.
-   */
-  block: number,
-  /**
-   * This is the index within the block this attribute will be available.
-   */
-  blockIndex?: InstanceBlockIndex,
-  /**
-   * When this is set, the system will automatically inject necessary Shader IO to facilitate
-   * performing the easing on the GPU, which saves enormous amounts of CPU processing time
-   * trying to calcuate animations and tweens for properties.
-   *
-   * NOTE: Setting this increases the amount of data per instance by: size * 2 + 2
-   * as it injects in a start value, start time, and duration
-   */
-  easing?: IAutoEasingMethod<Vec>,
-  /**
-   * This is the name that will be available in your shader for use. This will only be
-   * available after the ${attributes} declaration.
-   */
-  name: string,
-  /**
-   * When generating this attribute in the shader this will be the prefix to the attribute:
-   * For instance, if you specify 'highp' as the modifier, then the attribute that appears
-   * in the shader will be:
-   * attribute highp vec3 position;
-   */
-  qualifier?: string,
-  /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
   atlas?: {
     /** Specify which generated atlas to target for the resource */
-    key: string,
+    key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
-    name: string,
+    name: string;
     /**
      * This specifies which of the shaders the sampler2D will be injected into.
      * Defaults to the Fragment shader only.
      */
-    shaderInjection?: ShaderInjectionTarget,
+    shaderInjection?: ShaderInjectionTarget;
   },
+  /**
+   * This is a block index helping describe the instancing process. It can be any number as
+   * the system will sort and organize them for you. This only helps the system detect when
+   * you cram too much info into a single block. The tighter you pack your blocks the better
+   * your program will perform.
+   */
+  block: number;
+  /**
+   * This is the index within the block this attribute will be available.
+   */
+  blockIndex?: InstanceBlockIndex;
+  /**
+   * If the settings on this attrubute spawns additional attributes, those attributes shall
+   * be populated here. Otherwise this remains undefined.
+   */
+  childAttributes?: IInstanceAttribute<T>[];
+  /**
+   * When this is set, the system will automatically inject necessary Shader IO to facilitate
+   * performing the easing on the GPU, which saves enormous amounts of CPU processing time
+   * trying to calcuate animations and tweens for properties.
+   *
+   * NOTE: Setting this increases the amount of data per instance by: size * 2 + ;
+   * as it injects in a start value, start time, and duration
+   */
+  easing?: IAutoEasingMethod<Vec>;
+  /**
+   * This is the name that will be available in your shader for use. This will only be
+   * available after the ${attributes} declaration.
+   */
+  name: string;
+  /**
+   * If this attribute is created automatically by the system based on the settings of another
+   * attribute, that parent attribute will be set here. Otherwise this remains undefined.
+   */
+  parentAttribute?: IInstanceAttribute<T>;
+  /**
+   * When generating this attribute in the shader this will be the prefix to the attribute:
+   * For instance, if you specify 'highp' as the modifier, then the attribute that appears
+   * in the shader will be:
+   * attribute highp vec3 position;
+   */
+  qualifier?: string;
   /**
    * This is how many floats the instance attribute takes up. Due to how instancing is
    * implemented, we can only take up to 4 floats per variable right now.
    */
-  size?: InstanceAttributeSize,
+  size?: InstanceAttributeSize;
   /**
    * This is the accessor that executes when the instance needs updating. Simply return the
    * value that should be populated for this attribute.
@@ -183,6 +201,8 @@ export interface IInstanceAttribute<T extends Instance> {
  * hardware instancing.
  */
 export interface IInstanceAttributeInternal<T extends Instance> extends IInstanceAttribute<T> {
+  /** We will keep an internal uid for the  */
+  uid: number;
   /** This is the actual attribute mapped to a buffer */
   bufferAttribute: Three.InstancedBufferAttribute;
 }

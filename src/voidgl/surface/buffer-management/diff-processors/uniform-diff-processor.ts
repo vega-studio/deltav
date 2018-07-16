@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { Instance } from '../../../instance-provider';
+import { Instance, InstanceDiff } from '../../../instance-provider';
 import { isBufferLocation } from '../buffer-manager-base';
 import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
 import { IUniformBufferLocation } from '../uniform-buffer-manager';
@@ -7,6 +7,7 @@ import { BaseDiffProcessor } from './base-diff-processor';
 
 // This is a mapping of the vector properties as they relate to an array order
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
+const EMPTY: number[] = [];
 
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
@@ -15,10 +16,10 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * This processes add operations from changes in the instancing data
    */
-  addInstance(manager: this, instance: T, uniformCluster?: IUniformBufferLocation) {
+  addInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
-      manager.changeInstance(manager, instance, uniformCluster);
+      manager.changeInstance(manager, instance, EMPTY, uniformCluster);
     }
 
     // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
@@ -35,7 +36,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * This processes change operations from changes in the instancing data
    */
-  changeInstance(manager: this, instance: T, uniformCluster?: IUniformBufferLocation) {
+  changeInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(manager.layer, instance, uniformCluster);
@@ -43,14 +44,14 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
     // If we don't have existing uniforms, then we must remove the instance
     else {
-      manager.addInstance(manager, instance, uniformCluster);
+      manager.addInstance(manager, instance, EMPTY, uniformCluster);
     }
   }
 
   /**
    * This processes remove operations from changes in the instancing data
    */
-  removeInstance(manager: this, instance: T, uniformCluster?: IUniformBufferLocation) {
+  removeInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -119,5 +120,19 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       uniforms.value = instanceData;
     }
+  }
+
+  /**
+   * Right now there is no operations for committing for the uniform manager.
+   */
+  commit() {
+    /** no-op */
+  }
+
+  /**
+   * There are no optimizations available for this processor yet.
+   */
+  incomingChangeList(_changes: InstanceDiff<T>[]) {
+    /** no-op */
   }
 }

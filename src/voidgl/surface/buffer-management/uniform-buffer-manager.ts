@@ -2,9 +2,9 @@ import * as Three from 'three';
 import { Instance } from '../../instance-provider';
 import { makeInstanceUniformNameArray } from '../../shaders/util/make-instance-uniform-name';
 import { IInstanceAttribute, PickType } from '../../types';
-import { Vec2 } from '../../util';
-import { generateLayerModel } from '../generate-layer-model';
+import { uid, Vec2 } from '../../util';
 import { Layer } from '../layer';
+import { generateLayerModel } from '../layer-processing/generate-layer-model';
 import { Scene } from '../scene';
 import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
 
@@ -69,7 +69,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   /** The uniform clusters that are free and can be used by an instance */
   private availableClusters: IUniformBufferLocation[] = [];
   /** A lookup of an instance to a cluster of uniforms associated with it */
-  private instanceToCluster = new Map<number, IUniformBufferLocation>();
+  private instanceToCluster: {[key: number]: IUniformBufferLocation} = {};
   /** A map of a cluster of uniforms to the buffer it comes from */
   private clusterToBuffer = new Map<IUniformBufferLocation, InstanceUniformBuffer>();
 
@@ -97,14 +97,14 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     const cluster = this.availableClusters.pop();
 
     if (cluster) {
-      this.instanceToCluster.set(instance.uid, cluster);
+      this.instanceToCluster[instance.uid] = cluster;
     }
 
     else {
       console.warn('No valid cluster available for instance added to uniform manager.');
     }
 
-    return cluster || null;
+    return cluster;
   };
 
   /**
@@ -121,8 +121,24 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * This retireves the uniforms associated with an instance, or returns nothing
    * if the instance has not been associated yet.
    */
-  getUniforms(instance: T) {
-    return this.instanceToCluster.get(instance.uid);
+  getBufferLocations(instance: T) {
+    return this.instanceToCluster[instance.uid];
+  }
+
+  /**
+   * TODO: The uniform buffer does not need to utilize this yet. it will be more necessary
+   * when this manager updates only changed properties.
+   */
+  getActiveAttributePropertyId() {
+    return -1;
+  }
+
+  /**
+   * TODO: The uniform buffer updates ALL attributes every change for any property so far.
+   * This should be fixed for performance improvements on the compatibility mode.
+   */
+  getUpdateAllPropertyIdList() {
+    return [];
   }
 
   /**
@@ -130,12 +146,12 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * in the buffer no longer drawable.
    */
   remove = function(instance: T) {
-    const cluster = this.instanceToCluster.get(instance.uid);
+    const cluster = this.instanceToCluster[instance.uid];
 
     // If the instance is associated with a cluster, we can add the cluster back to being available
     // For another instance.
     if (cluster) {
-      this.instanceToCluster.delete(instance.uid);
+      delete this.instanceToCluster[instance.uid];
       this.availableClusters.push(cluster);
     }
 
@@ -217,8 +233,14 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
     instanceData.value = instanceData.value.map(() => new Three.Vector4(0.0, 0.0, 0.0, 0.0));
 
+    // TODO: This will go away! To satisfy the changing buffer manager interfaces, we make a
+    // fake internal attribute for now
+    const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], { uid: uid(), bufferAttribute: new Three.InstancedBufferAttribute(new Float32Array(1), 1) });
+
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
       const cluster: IUniformBufferLocation = {
+        attribute: fakeAttribute, // TODO: This is not needed for the uniform method yet. When we break down
+                                                     // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
         range: [uniformIndex, 0],

@@ -1,26 +1,31 @@
-import { Instance } from '../instance-provider/instance';
 import { uid } from '../util/uid';
+import { Instance } from './instance';
 
-let gatherIds: boolean = false;
-let observableIds: number[] = [];
-const observableNamesToUID = new Map<string, number>();
+export class ObservableMonitoring {
+  static gatherIds: boolean = false;
+  static observableIds: number[] = [];
+  static observableNamesToUID = new Map<string, number>();
 
-/**
- * This activates all observables to gather their UIDs when they are retrieved via their getter.
- * All of the ID's gathered can be accessed via getObservableMonitorIds. It is REQUIRED that this
- * is disabled again to prevent a MASSIVE memory leak.
- */
-export function setObservableMonitor(enabled: boolean) {
-  gatherIds = enabled;
-  observableIds = [];
-}
+  /**
+   * This activates all observables to gather their UIDs when they are retrieved via their getter.
+   * All of the ID's gathered can be accessed via getObservableMonitorIds. It is REQUIRED that this
+   * is disabled again to prevent a MASSIVE memory leak.
+   */
+  static setObservableMonitor(enabled: boolean) {
+    ObservableMonitoring.gatherIds = enabled;
+    ObservableMonitoring.observableIds = [];
+  }
 
-/**
- * This retrieves the observables montiored IDs that were gathered when setObservableMonitor was
- * enabled.
- */
-export function getObservableMonitorIds() {
-  return observableIds.slice(0);
+  /**
+   * This retrieves the observables montiored IDs that were gathered when setObservableMonitor was
+   * enabled.
+   */
+  static getObservableMonitorIds(clear?: boolean) {
+    const values = ObservableMonitoring.observableIds.slice(0);
+    if (clear) ObservableMonitoring.observableIds = [];
+
+    return values;
+  }
 }
 
 /**
@@ -34,11 +39,11 @@ export function observable<T extends Instance>(target: T, key: string) {
   // per NAME of an observable. A UID for a name can produce MUCH faster lookups than the name itself.
   // Matching against the name allows us to have instances with their own property sets but have matching
   // name mappings to improve compatibility of Instances with varying Layers.
-  let propertyUID: number = observableNamesToUID.get(key) || 0;
+  let propertyUID: number = ObservableMonitoring.observableNamesToUID.get(key) || 0;
 
   if (!propertyUID) {
     propertyUID = uid();
-    observableNamesToUID.set(key, propertyUID);
+    ObservableMonitoring.observableNamesToUID.set(key, propertyUID);
   }
 
   /**
@@ -46,7 +51,7 @@ export function observable<T extends Instance>(target: T, key: string) {
    * the initial storage with a custom getter and setter.
    */
   function getter(this: T) {
-    if (gatherIds) observableIds.push(propertyUID);
+    if (ObservableMonitoring.gatherIds) ObservableMonitoring.observableIds.push(propertyUID);
     return this.observableStorage[propertyUID];
   }
 

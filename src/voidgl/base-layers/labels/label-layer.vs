@@ -28,7 +28,7 @@ void main() {
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
 
-  size = mix(
+  vec2 adjustedSize = mix(
     size,
     (size * cameraScale.yx),
     unequalZooms
@@ -54,8 +54,8 @@ void main() {
 
   // See how scaled the size on screen will be from the actual height of the label
   float labelScreenScale = mix(
-    screenSize.y / size.y,
-    screenSize.x / size.x,
+    screenSize.y / adjustedSize.y,
+    screenSize.x / adjustedSize.x,
     float((cameraScale.x != 1.0))
   );
 

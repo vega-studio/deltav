@@ -182,11 +182,16 @@ $\{easingMethod} {
 /**
  * Class of base AutoEasingMethods as well as helper constructs for making the methods.
  */
-export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingMethod<T> {
+export class AutoEasingMethod<T extends InstanceIOValue>
+  implements IAutoEasingMethod<T> {
   /**
    * Autoeasing methods for linear easing
    */
-  static immediate<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static immediate<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => end,
       delay,
@@ -200,7 +205,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Autoeasing methods for linear easing
    */
-  static linear<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static linear<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         const { add, scale, subtract } = VecMath(start);
@@ -218,7 +227,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for Accelerating to end
    */
-  static easeInQuad<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -237,7 +250,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for decelerating to end
    */
-  static easeOutQuad<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeOutQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -256,7 +273,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for Accelerate to mid, then decelerate to end
    */
-  static easeInOutQuad<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInOutQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -275,7 +296,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for Slower acceleration
    */
-  static easeInCubic<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -294,11 +319,15 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for Slower deceleration
    */
-  static easeOutCubic<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeOutCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = (--t) * t * t + 1;
+        const time = --t * t * t + 1;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -313,11 +342,16 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for Slower acceleration to mid, and slower deceleration to end
    */
-  static easeInOutCubic<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInOutCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+        const time =
+          t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -332,7 +366,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for even Slower acceleration to end
    */
-  static easeInQuart<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -351,11 +389,15 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for even Slower deceleration to end
    */
-  static easeOutQuart<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeOutQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = 1 - (--t) * t * t * t;
+        const time = 1 - --t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -370,11 +412,15 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for even Slower acceleration to mid, and even slower deceleration to end
    */
-  static easeInOutQuart<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInOutQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
+        const time = t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -389,7 +435,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for super slow accelerating to the end
    */
-  static easeInQuint<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -408,11 +458,15 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for super slow decelerating to the end
    */
-  static easeOutQuint<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeOutQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = 1 + (--t) * t * t * t * t;
+        const time = 1 + --t * t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -427,11 +481,16 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for super slow accelerating to mid and super slow decelerating to the end
    */
-  static easeInOutQuint<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeInOutQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
-        const time = t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
+        const time =
+          t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -446,7 +505,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for elastic effect
    */
-  static easeOutElastic<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeOutElastic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -466,7 +529,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for retracting first then shooting to the end
    */
-  static easeBackIn<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeBackIn<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -486,7 +553,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for overshooting at the end
    */
-  static easeBackOut<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeBackOut<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -507,7 +578,11 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /**
    * Auto easing for overshooting at the end
    */
-  static easeBackInOut<T extends Vec>(duration: number, delay: number = 0, loop = AutoEasingLoopStyle.NONE) {
+  static easeBackInOut<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+  ) {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -516,9 +591,9 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
         const t1 = t / 0.5;
         const t2 = t1 - 2;
         const time =
-          (t1 < 1) ? 0.5 * (t1 * t1 * (a1 + 1) * t1 - a1) :
-          0.5 * (t2 * t2 * ((a1 + 1) * t2 + a1) + 2)
-        ;
+          t1 < 1
+            ? 0.5 * (t1 * t1 * (a1 + 1) * t1 - a1)
+            : 0.5 * (t2 * t2 * ((a1 + 1) * t2 + a1) + 2);
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start);
       },
@@ -543,7 +618,12 @@ export class AutoEasingMethod<T extends InstanceIOValue> implements IAutoEasingM
   /** Method name of the ease function on the gpu */
   methodName: string;
 
-  constructor(cpu: IAutoEasingMethod<T>['cpu'], gpu: IAutoEasingMethod<T>['gpu'], duration?: number, method?: string) {
+  constructor(
+    cpu: IAutoEasingMethod<T>['cpu'],
+    gpu: IAutoEasingMethod<T>['gpu'],
+    duration?: number,
+    method?: string,
+  ) {
     this.cpu = cpu;
     this.gpu = gpu;
     this.duration = duration || 500;

@@ -1,8 +1,21 @@
 import * as Three from 'three';
 import { InstanceProvider } from '../../instance-provider';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize,
+} from '../../types';
 import { Vec } from '../../util';
 import { IAutoEasingMethod } from '../../util/auto-easing-method';
 import { CircleInstance } from './circle-instance';
@@ -49,12 +62,13 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
 
     return {
       // Provide the calculated AABB world bounds for a given circle
-      boundsAccessor: (circle: CircleInstance) => new Bounds({
-        height: circle.radius * 2,
-        width: circle.radius * 2,
-        x: circle.x - circle.radius,
-        y: circle.y - circle.radius,
-      }),
+      boundsAccessor: (circle: CircleInstance) =>
+        new Bounds({
+          height: circle.radius * 2,
+          width: circle.radius * 2,
+          x: circle.x - circle.radius,
+          y: circle.y - circle.radius,
+        }),
 
       // Provide a precise hit test for the circle
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
@@ -67,7 +81,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
           mouseScreen.y - circleScreenCenter.y,
         ];
 
-        return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
+        return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
       },
     };
   }
@@ -84,7 +98,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
       color: animateColor,
     } = animations;
 
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
@@ -93,7 +107,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
       5: -1,
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: -1,
       1: -1,
       2: -1,
@@ -111,7 +125,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
           easing: animateCenter,
           name: 'center',
           size: InstanceAttributeSize.TWO,
-          update: (circle) => [circle.x, circle.y],
+          update: circle => [circle.x, circle.y],
         },
         {
           block: 0,
@@ -119,14 +133,14 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
           easing: animateRadius,
           name: 'radius',
           size: InstanceAttributeSize.ONE,
-          update: (circle) => [circle.radius],
+          update: circle => [circle.radius],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (circle) => [circle.depth],
+          update: circle => [circle.depth],
         },
         {
           block: 1,
@@ -134,7 +148,7 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
           easing: animateColor,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: (circle) => circle.color,
+          update: circle => circle.color,
         },
       ],
       uniforms: [

@@ -40,7 +40,11 @@ function normalizeFirefoxWheel(e: MouseWheelEvent) {
   deltaX = wheel.deltaX * MAX_FIREFOX_WHEELDELTA;
 
   // Calculate the next value output from the FIR filter
-  deltaY = (wheel.deltaY * MAX_FIREFOX_WHEELDELTA) * LOW_PASS_U0 + lowPassY[0] * LOW_PASS_U1 + lowPassY[1] * LOW_PASS_U2 + lowPassY[2] * LOW_PASS_U3;
+  deltaY =
+    wheel.deltaY * MAX_FIREFOX_WHEELDELTA * LOW_PASS_U0 +
+    lowPassY[0] * LOW_PASS_U1 +
+    lowPassY[1] * LOW_PASS_U2 +
+    lowPassY[2] * LOW_PASS_U3;
   // Store the value of the filter in the FIR memory bank
   lowPassY.unshift(deltaY);
   // Keep our FIR memory clean and only the size of the number of coefficients
@@ -60,7 +64,8 @@ function normalizeIE11Wheel(e: MouseWheelEvent) {
   let deltaX = wheel.deltaX;
 
   if (deltaX === undefined) {
-    deltaX = wheel.wheelDeltaX !== undefined ? wheel.wheelDeltaX * IE_ADJUSTMENT : 0;
+    deltaX =
+      wheel.wheelDeltaX !== undefined ? wheel.wheelDeltaX * IE_ADJUSTMENT : 0;
   }
 
   let deltaY = wheel.deltaY;
@@ -68,9 +73,7 @@ function normalizeIE11Wheel(e: MouseWheelEvent) {
   if (deltaY === undefined) {
     if (wheel.wheelDeltaY !== undefined) {
       deltaY = wheel.wheelDeltaY * IE_ADJUSTMENT;
-    }
-
-    else {
+    } else {
       deltaY = (wheel.wheelDelta || -wheel.detail) * OLD_IE_ADJUSTMENT;
     }
   }
@@ -80,18 +83,17 @@ function normalizeIE11Wheel(e: MouseWheelEvent) {
 
 function normalizeIE12Wheel(e: MouseWheelEvent) {
   const wheel: WheelEvent = e;
-  let {deltaX, deltaY} = wheel;
+  let { deltaX, deltaY } = wheel;
 
   if (deltaX === undefined) {
-    deltaX = wheel.wheelDeltaX !== undefined ? wheel.wheelDeltaX * IE_ADJUSTMENT : 0;
+    deltaX =
+      wheel.wheelDeltaX !== undefined ? wheel.wheelDeltaX * IE_ADJUSTMENT : 0;
   }
 
   if (deltaY === undefined) {
     if (wheel.wheelDeltaY !== undefined) {
       deltaY = wheel.wheelDeltaY * IE_ADJUSTMENT;
-    }
-
-    else {
+    } else {
       deltaY = wheel.wheelDelta || -wheel.detail;
     }
   }
@@ -108,19 +110,13 @@ let normalizeWheel: (e: MouseWheelEvent) => Vector2;
 if (browser.firefox) {
   debug('Using mouse wheel for firefox');
   normalizeWheel = normalizeFirefoxWheel;
-}
-
-else if (browser.msie && +browser.version >= 11) {
+} else if (browser.msie && +browser.version >= 11) {
   debug('Using mouse wheel for IE 11');
   normalizeWheel = normalizeIE11Wheel;
-}
-
-else if (browser.msedge) {
+} else if (browser.msedge) {
   debug('Using mouse wheel for MS EDGE');
   normalizeWheel = normalizeIE12Wheel;
-}
-
-else {
+} else {
   debug('Using mouse wheel for Chrome');
   normalizeWheel = normalizeChromeWheel;
 }
@@ -128,12 +124,16 @@ else {
 /**
  * Analyzes a MouseEvent and calculates the mouse coordinates (relative to the element).
  */
-function eventElementPosition(e: any, relative?: HTMLElement): {x: number, y: number} {
+function eventElementPosition(
+  e: any,
+  relative?: HTMLElement,
+): { x: number; y: number } {
   let mouseX: number = 0,
-      mouseY: number = 0,
-      eventX: number = 0,
-      eventY: number = 0,
-      object: any = relative || (e.nativeEvent && e.nativeEvent.target) || e.target;
+    mouseY: number = 0,
+    eventX: number = 0,
+    eventY: number = 0,
+    object: any =
+      relative || (e.nativeEvent && e.nativeEvent.target) || e.target;
 
   // Get mouse position on document crossbrowser
   if (!e) {
@@ -143,13 +143,13 @@ function eventElementPosition(e: any, relative?: HTMLElement): {x: number, y: nu
   if (e.pageX || e.pageY) {
     mouseX = e.pageX;
     mouseY = e.pageY;
-  }
-
-  else if (e.clientX || e.clientY) {
-    mouseX = e.clientX + document.body.scrollLeft
-             + document.documentElement.scrollLeft;
-    mouseY = e.clientY + document.body.scrollTop
-             + document.documentElement.scrollTop;
+  } else if (e.clientX || e.clientY) {
+    mouseX =
+      e.clientX +
+      document.body.scrollLeft +
+      document.documentElement.scrollLeft;
+    mouseY =
+      e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
   }
 
   // Get parent element position in document
@@ -162,10 +162,7 @@ function eventElementPosition(e: any, relative?: HTMLElement): {x: number, y: nu
   }
 
   // Mouse position minus elm position is mouseposition relative to element:
-  return {x: mouseX - eventX, y: mouseY - eventY};
+  return { x: mouseX - eventX, y: mouseY - eventY };
 }
 
-export {
-  eventElementPosition,
-  normalizeWheel,
-};
+export { eventElementPosition, normalizeWheel };

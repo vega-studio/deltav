@@ -1,6 +1,11 @@
 import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
 import {
   IMaterialOptions,
   InstanceAttributeSize,
@@ -22,10 +27,7 @@ export interface IRingLayerProps extends ILayerProps<RingInstance> {
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RingLayer extends Layer<
-  RingInstance,
-  IRingLayerProps
-> {
+export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -33,22 +35,20 @@ export class RingLayer extends Layer<
   getInstancePickingMethods() {
     return {
       // Provide the calculated AABB world bounds for a given circle
-      boundsAccessor: (ring: RingInstance) => new Bounds({
-        height: ring.radius * 2,
-        width: ring.radius * 2,
-        x: ring.x - ring.radius,
-        y: ring.y - ring.radius,
-      }),
+      boundsAccessor: (ring: RingInstance) =>
+        new Bounds({
+          height: ring.radius * 2,
+          width: ring.radius * 2,
+          x: ring.x - ring.radius,
+          y: ring.y - ring.radius,
+        }),
 
       // Provide a precise hit test for the ring
       hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => {
         const r = ring.radius / max(...view.camera.scale);
-        const delta = [
-          point.x - ring.x,
-          point.y - ring.y,
-        ];
+        const delta = [point.x - ring.x, point.y - ring.y];
 
-        return (delta[0] * delta[0] + delta[1] * delta[1]) < (r * r);
+        return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
       },
     };
   }
@@ -59,7 +59,7 @@ export class RingLayer extends Layer<
   initShader(): IShaderInitialization<RingInstance> {
     const scaleFactor = this.props.scaleFactor || (() => 1);
 
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
@@ -68,7 +68,7 @@ export class RingLayer extends Layer<
       5: -1,
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: -1,
       1: -1,
       2: -1,

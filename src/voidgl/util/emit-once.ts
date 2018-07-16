@@ -1,6 +1,9 @@
-const toEmit: {[key: string]: [Function, number, number]} = {};
+const toEmit: { [key: string]: [Function, number, number] } = {};
 
-export function emitOnce(id: string, callback: (calledCountBeforeEmit: number, id: string) => void) {
+export function emitOnce(
+  id: string,
+  callback: (calledCountBeforeEmit: number, id: string) => void,
+) {
   const emit = toEmit[id] || [callback, -1, 0];
   toEmit[id] = emit;
   emit[2]++;

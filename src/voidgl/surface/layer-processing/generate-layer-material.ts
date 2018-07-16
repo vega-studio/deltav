@@ -3,7 +3,7 @@ import { IInstancingUniform, IUniform, UniformSize } from '../../types';
 import { Instance } from '../../util';
 import { ILayerProps, Layer } from '../layer';
 
-const UNIFORM_SIZE_TO_MATERIAL_TYPE: {[key: number]: string} = {
+const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: string } = {
   [UniformSize.ONE]: 'f',
   [UniformSize.TWO]: 'v2',
   [UniformSize.THREE]: 'v3',
@@ -12,7 +12,7 @@ const UNIFORM_SIZE_TO_MATERIAL_TYPE: {[key: number]: string} = {
   [UniformSize.MATRIX4]: 'Matrix4fv',
 };
 
-const DEFAULT_UNIFORM_VALUE: {[key: number]: number[]} = {
+const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
   [UniformSize.ONE]: [0],
   [UniformSize.TWO]: [0, 0],
   [UniformSize.THREE]: [0, 0, 0],
@@ -28,7 +28,16 @@ function toMaterialUniform(uniform: IUniform) {
   };
 }
 
-export function generateLayerMaterial<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, vs: string, fs: string, layerUniforms: IUniform[], instancingUniforms: IInstancingUniform[]): Three.RawShaderMaterial {
+export function generateLayerMaterial<
+  T extends Instance,
+  U extends ILayerProps<T>
+>(
+  layer: Layer<T, U>,
+  vs: string,
+  fs: string,
+  layerUniforms: IUniform[],
+  instancingUniforms: IInstancingUniform[],
+): Three.RawShaderMaterial {
   // We now need to establish the material for the layer
   const materialParams: Three.ShaderMaterialParameters = layer.getMaterialOptions();
   materialParams.vertexShader = vs;

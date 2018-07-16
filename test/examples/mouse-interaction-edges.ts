@@ -1,5 +1,14 @@
 import * as anime from 'animejs';
-import { createLayer, EdgeInstance, EdgeLayer, EdgeType, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import {
+  createLayer,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 export class MouseInteractionEdges extends BaseExample {
@@ -43,7 +52,11 @@ export class MouseInteractionEdges extends BaseExample {
     }
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<EdgeInstance>,
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
       key: 'mouse-interaction-lines',
@@ -63,10 +76,7 @@ export class MouseInteractionEdges extends BaseExample {
       const edge = new EdgeInstance({
         colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
         colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-        control: [
-          [60, 20 * i - 40],
-          [160, 20 * i - 40],
-        ],
+        control: [[60, 20 * i - 40], [160, 20 * i - 40]],
         end: [200, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],

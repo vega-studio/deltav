@@ -16,7 +16,7 @@ export class ImageRasterizer {
     // Iterate till the browser provides a valid canvas to render elements into
     while (!canvas) {
       this.getContext();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
     }
   }
 
@@ -40,22 +40,31 @@ export class ImageRasterizer {
    *                                 should be within world space.
    * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
    */
-  static calculateImageSize(resource: ImageAtlasResource, sampleScale?: number) {
+  static calculateImageSize(
+    resource: ImageAtlasResource,
+    sampleScale?: number,
+  ) {
     /** Get the image properties for rasterizing */
     const image = resource.image.element;
 
     if (!image) {
-      console.warn('Image does not exist! Please ensure the resource contains a valid image.');
+      console.warn(
+        'Image does not exist! Please ensure the resource contains a valid image.',
+      );
       return;
     }
 
     if (!canvas) {
-      console.warn('The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first.');
+      console.warn(
+        'The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first.',
+      );
       return;
     }
 
     if (image.width === 0 || image.height === 0) {
-      console.warn('Images provided shoud have valid dimensions! Please ensure the image is loaded first.');
+      console.warn(
+        'Images provided shoud have valid dimensions! Please ensure the image is loaded first.',
+      );
       return;
     }
 
@@ -68,8 +77,8 @@ export class ImageRasterizer {
 
     // Make sure the rasterization object is initialized
     resource.rasterization = resource.rasterization || {
-      texture: { height: 0, width: 0},
-      world: { height: 0, width: 0},
+      texture: { height: 0, width: 0 },
+      world: { height: 0, width: 0 },
     };
 
     // Update the calculated texture size.
@@ -89,7 +98,9 @@ export class ImageRasterizer {
   /**
    * Performs the rendering of the image
    */
-  static async render(resource: ImageAtlasResource): Promise<ImageAtlasResource> {
+  static async render(
+    resource: ImageAtlasResource,
+  ): Promise<ImageAtlasResource> {
     // Make sure our canvas object is ready for rendering
     await this.awaitContext();
 
@@ -107,7 +118,9 @@ export class ImageRasterizer {
     this.getContext();
 
     if (!canvas) {
-      console.warn('Can not render a image synchronously without the canvas context being ready.');
+      console.warn(
+        'Can not render a image synchronously without the canvas context being ready.',
+      );
       return resource;
     }
 

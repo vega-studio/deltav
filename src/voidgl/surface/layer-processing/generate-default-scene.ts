@@ -31,7 +31,9 @@ export interface IDefaultSceneElements {
  * - y axis is +y downward
  * - entire canvas is the viewport.
  */
-export function generateDefaultScene(context: WebGLRenderingContext): IDefaultSceneElements {
+export function generateDefaultScene(
+  context: WebGLRenderingContext,
+): IDefaultSceneElements {
   // Generate a default view camera that is
   // - Orthographic
   // - (0, 0) is the top left of the canvas

@@ -88,7 +88,12 @@ export class Scene extends IdentifyByKey {
       }
     }
 
-    console.warn('Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:', this.id, 'Layer:', layer.id);
+    console.warn(
+      'Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:',
+      this.id,
+      'Layer:',
+      layer.id,
+    );
   }
 
   sortLayers() {

@@ -5,7 +5,12 @@ import { Vec2 } from './vector';
  * This analyzes the rendered data for color picking and outputs the metrics and data needed
  * for the operation.
  */
-export function analyzeColorPickingRendering(mouse: Vec2, data: Uint8Array, width: number, height: number) {
+export function analyzeColorPickingRendering(
+  mouse: Vec2,
+  data: Uint8Array,
+  width: number,
+  height: number,
+) {
   const pickingData: IColorPickingData = {
     allColors: [],
     colorData: data,
@@ -34,7 +39,7 @@ export function analyzeColorPickingRendering(mouse: Vec2, data: Uint8Array, widt
       const b = data[pixelIndex + 2];
       pixelIndex += 4;
 
-      const color = r << 16 | g << 8 | b;
+      const color = (r << 16) | (g << 8) | b;
       uniqueColors.set(color, true);
       row.push(color);
 

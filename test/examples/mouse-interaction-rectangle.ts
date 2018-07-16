@@ -1,5 +1,17 @@
 import * as anime from 'animejs';
-import { AnchorType, ChartCamera, createLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType, RectangleInstance, RectangleLayer, ReferenceCamera, ScaleType } from '../../src';
+import {
+  AnchorType,
+  ChartCamera,
+  createLayer,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+  RectangleInstance,
+  RectangleLayer,
+  ReferenceCamera,
+  ScaleType,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 export class MouseInteractionRectangle extends BaseExample {
@@ -68,7 +80,11 @@ export class MouseInteractionRectangle extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<RectangleInstance>,
+  ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
       key: 'mouse-interaction-rectangle',

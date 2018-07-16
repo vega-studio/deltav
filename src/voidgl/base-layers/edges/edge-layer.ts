@@ -1,7 +1,21 @@
 import * as Three from 'three';
 import { InstanceProvider } from '../../instance-provider';
-import { ILayerProps, IModelType, IPickingMethods, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import {
+  ILayerProps,
+  IModelType,
+  IPickingMethods,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  InstanceIOValue,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize,
+} from '../../types';
 import { shaderTemplate } from '../../util';
 import { EdgeInstance } from './edge-instance';
 import { edgePicking } from './edge-picking';
@@ -27,12 +41,7 @@ export interface IEdgeLayerState {}
 
 /** Converts a control list to an IO value */
 function toInstanceIOValue(value: [number, number][]): InstanceIOValue {
-  return [
-    value[0][0],
-    value[0][1],
-    value[1][0],
-    value[1][1],
-  ];
+  return [value[0][0], value[0][1], value[1][0], value[1][1]];
 }
 
 /** This picks the appropriate shader for the edge type desired */
@@ -51,10 +60,7 @@ const edgeFS = require('./shader/edge-layer.fs');
  * This layer displays edges and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class EdgeLayer extends Layer<
-  EdgeInstance,
-  IEdgeLayerProps
-> {
+export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
   // Set default props for the layer
   static defaultProps: IEdgeLayerProps = {
     broadphase: EdgeBroadphase.ALL,
@@ -76,7 +82,11 @@ export class EdgeLayer extends Layer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<EdgeInstance> {
-    const { scaleFactor = () => 1, type, scaleType = EdgeScaleType.NONE } = this.props;
+    const {
+      scaleFactor = () => 1,
+      type,
+      scaleType = EdgeScaleType.NONE,
+    } = this.props;
 
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
 
@@ -110,9 +120,7 @@ export class EdgeLayer extends Layer<
       },
       {
         name: 'Edge Layer',
-        values: [
-          'interpolation',
-        ],
+        values: ['interpolation'],
       },
     );
 
@@ -124,71 +132,77 @@ export class EdgeLayer extends Layer<
           blockIndex: InstanceBlockIndex.ONE,
           name: 'start',
           size: InstanceAttributeSize.TWO,
-          update: (o) => o.start,
+          update: o => o.start,
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'end',
           size: InstanceAttributeSize.TWO,
-          update: (o) => o.end,
+          update: o => o.end,
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'widthStart',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.widthStart],
+          update: o => [o.widthStart],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.TWO,
           name: 'widthEnd',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.widthEnd],
+          update: o => [o.widthEnd],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: o => [o.depth],
         },
         {
           block: 2,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'colorStart',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.colorStart,
+          update: o => o.colorStart,
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'colorEnd',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.colorEnd,
+          update: o => o.colorEnd,
         },
-        type === EdgeType.LINE ? {
-          block: 4,
-          blockIndex: InstanceBlockIndex.ONE,
-          name: 'control',
-          size: InstanceAttributeSize.FOUR,
-          update: (o) => [0, 0, 0, 0],
-        } : null,
-        type === EdgeType.BEZIER ? {
-          block: 4,
-          blockIndex: InstanceBlockIndex.ONE,
-          name: 'control',
-          size: InstanceAttributeSize.FOUR,
-          update: (o) => [o.control[0][0], o.control[0][1], 0, 0],
-        } : null,
-        type === EdgeType.BEZIER2 ? {
-          block: 4,
-          blockIndex: InstanceBlockIndex.ONE,
-          name: 'control',
-          size: InstanceAttributeSize.FOUR,
-          update: (o) => toInstanceIOValue(o.control),
-        } : null,
+        type === EdgeType.LINE
+          ? {
+              block: 4,
+              blockIndex: InstanceBlockIndex.ONE,
+              name: 'control',
+              size: InstanceAttributeSize.FOUR,
+              update: o => [0, 0, 0, 0],
+            }
+          : null,
+        type === EdgeType.BEZIER
+          ? {
+              block: 4,
+              blockIndex: InstanceBlockIndex.ONE,
+              name: 'control',
+              size: InstanceAttributeSize.FOUR,
+              update: o => [o.control[0][0], o.control[0][1], 0, 0],
+            }
+          : null,
+        type === EdgeType.BEZIER2
+          ? {
+              block: 4,
+              blockIndex: InstanceBlockIndex.ONE,
+              name: 'control',
+              size: InstanceAttributeSize.FOUR,
+              update: o => toInstanceIOValue(o.control),
+            }
+          : null,
       ],
       uniforms: [
         {

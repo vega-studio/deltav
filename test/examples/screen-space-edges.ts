@@ -1,5 +1,18 @@
 import * as anime from 'animejs';
-import { ChartCamera, createLayer, EdgeBroadphase, EdgeInstance, EdgeLayer, EdgeScaleType, EdgeType, InstanceProvider, IPickInfo, LayerInitializer, PickType, ReferenceCamera } from '../../src';
+import {
+  ChartCamera,
+  createLayer,
+  EdgeBroadphase,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeScaleType,
+  EdgeType,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+  ReferenceCamera,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 /**
@@ -66,7 +79,11 @@ export class ScreenSpaceEdges extends BaseExample {
     return this.camera;
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<EdgeInstance>,
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       broadphase: EdgeBroadphase.PASS_X,
       data: provider,
@@ -87,10 +104,7 @@ export class ScreenSpaceEdges extends BaseExample {
     let edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
       colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-      control: [
-        [45, 45],
-        [45, -45],
-      ],
+      control: [[45, 45], [45, -45]],
       end: [20, 200],
       id: `edge-interaction-0`,
       start: [20, 20],
@@ -103,10 +117,7 @@ export class ScreenSpaceEdges extends BaseExample {
     edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
       colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-      control: [
-        [20, 45],
-        [-20, 45],
-      ],
+      control: [[20, 45], [-20, 45]],
       end: [200, 20],
       id: `edge-interaction-1`,
       start: [20, 20],
@@ -119,10 +130,7 @@ export class ScreenSpaceEdges extends BaseExample {
     edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
       colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-      control: [
-        [20, 20],
-        [-20, -20],
-      ],
+      control: [[20, 20], [-20, -20]],
       end: [200, 200],
       id: `edge-interaction-2`,
       start: [20, 20],

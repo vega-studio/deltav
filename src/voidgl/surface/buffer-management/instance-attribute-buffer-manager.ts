@@ -1,13 +1,21 @@
 import * as Three from 'three';
 import { Instance, ObservableMonitoring } from '../../instance-provider';
 import { instanceAttributeShaderName } from '../../shaders/util/instance-attribute-shader-name';
-import { IInstanceAttribute, IInstanceAttributeInternal, PickType } from '../../types';
+import {
+  IInstanceAttribute,
+  IInstanceAttributeInternal,
+  PickType,
+} from '../../types';
 import { uid } from '../../util';
 import { emitOnce } from '../../util/emit-once';
 import { IModelConstructable, Layer } from '../layer';
 import { generateLayerModel } from '../layer-processing/generate-layer-model';
 import { Scene } from '../scene';
-import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from './buffer-manager-base';
+import {
+  BufferManagerBase,
+  IBufferLocation,
+  IBufferLocationGroup,
+} from './buffer-manager-base';
 
 const { max } = Math;
 
@@ -15,22 +23,27 @@ const { max } = Math;
  * This represents the location of data for an instance's property to the piece of attribute buffer
  * it will update when it changes.
  */
-export interface IInstanceAttributeBufferLocation extends IBufferLocation {
-}
+export interface IInstanceAttributeBufferLocation extends IBufferLocation {}
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
-export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<IInstanceAttributeBufferLocation>;
+export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<
+  IInstanceAttributeBufferLocation
+>;
 
 /**
  * This manages instances in how they associate with buffer data for an instanced attribute strategy.
  */
-export class InstanceAttributeBufferManager<T extends Instance> extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
+export class InstanceAttributeBufferManager<
+  T extends Instance
+> extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
   /** This contains the buffer locations the system will have available to the  */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
   currentInstancedCount = 0;
   /** This is the mapped buffer location to the provided Instance */
-  private instanceToBufferLocation: {[key: number]: IInstanceAttributeBufferLocationGroup} = {};
+  private instanceToBufferLocation: {
+    [key: number]: IInstanceAttributeBufferLocationGroup;
+  } = {};
   /**
    * This is the number of times the buffer has grown. This is used to determine how much the buffer will grow
    * for next growth pass.
@@ -79,7 +92,9 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
       // Access the update which accesses an instances properties (usually)
       attribute.update(instance);
       // We now have all of the ids of the properties that were used in updating the attributes
-      const propertyIdsForAttribute = ObservableMonitoring.getObservableMonitorIds(true);
+      const propertyIdsForAttribute = ObservableMonitoring.getObservableMonitorIds(
+        true,
+      );
       // Store the mapping of the property ids
       this.attributeToPropertyIds.set(attribute, propertyIdsForAttribute);
 
@@ -101,7 +116,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
     // After all of the property id to attribute associations are made, we must break down the buffers
     // into locations and then group those locations which will become our instance to buffer location
     // slots
-    this.gatherLocationsIntoGroups(locationInfo.newLocations, locationInfo.growth);
+    this.gatherLocationsIntoGroups(
+      locationInfo.newLocations,
+      locationInfo.growth,
+    );
     // After the first registration add, we gear shift to a more efficient add method.
     this.add = this.doAdd;
 
@@ -119,7 +137,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
       // Break down the newly generated buffers into property groupings for the instances
-      this.gatherLocationsIntoGroups(locationInfo.newLocations, locationInfo.growth);
+      this.gatherLocationsIntoGroups(
+        locationInfo.newLocations,
+        locationInfo.growth,
+      );
     }
 
     // Get the next available location
@@ -128,11 +149,15 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
     // Pair up the instance with it's buffer location
     if (bufferLocations) {
       this.instanceToBufferLocation[instance.uid] = bufferLocations;
-      this.currentInstancedCount = this.geometry.maxInstancedCount = max(this.currentInstancedCount, bufferLocations.instanceIndex);
-    }
-
-    else {
-      console.error('Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location');
+      this.currentInstancedCount = this.geometry.maxInstancedCount = max(
+        this.currentInstancedCount,
+        // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
+        bufferLocations.instanceIndex + 1,
+      );
+    } else {
+      console.error(
+        'Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location',
+      );
     }
 
     return bufferLocations;
@@ -141,7 +166,9 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
   destroy() {
     this.geometry.dispose();
     this.material.dispose();
-    if (this.scene && this.scene.container) this.scene.container.remove(this.model);
+    if (this.scene && this.scene.container) {
+      this.scene.container.remove(this.model);
+    }
   }
 
   /**
@@ -173,7 +200,7 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
    */
   private makeUpdateAllPropertyIdList() {
     // Make a deduping list of ids
-    const updateAllPropertyIdList: {[key: number]: number} = {};
+    const updateAllPropertyIdList: { [key: number]: number } = {};
 
     // Get unique ids that will target all attributes
     this.attributeToPropertyIds.forEach(ids => {
@@ -181,7 +208,9 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
     });
 
     // Store the list for the diffing process to utilize
-    this.updateAllPropertyIdList = Object.values(updateAllPropertyIdList).filter(Boolean);
+    this.updateAllPropertyIdList = Object.values(
+      updateAllPropertyIdList,
+    ).filter(Boolean);
   }
 
   /**
@@ -202,7 +231,9 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
    * Clears all elements of this manager from the current scene it was in.
    */
   removeFromScene() {
-    if (this.scene && this.scene.container) this.scene.container.remove(this.model);
+    if (this.scene && this.scene.container) {
+      this.scene.container.remove(this.model);
+    }
     this.pickModel && this.scene.pickingContainer.remove(this.pickModel);
     delete this.scene;
   }
@@ -214,7 +245,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
     console.log('RESIZING BUFFERS FOR', this.layer.id);
     let growth = 0;
     // Each attribute will generate lists of new buffer locations after being created or expanded
-    const attributeToNewBufferLocations = new Map<string, IInstanceAttributeBufferLocation[]>();
+    const attributeToNewBufferLocations = new Map<
+      string,
+      IInstanceAttributeBufferLocation[]
+    >();
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
@@ -228,7 +262,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
       this.layer.vertexAttributes.forEach(attribute => {
         if (attribute.materialAttribute) {
-          this.geometry.addAttribute(attribute.name, attribute.materialAttribute);
+          this.geometry.addAttribute(
+            attribute.name,
+            attribute.materialAttribute,
+          );
         }
       });
 
@@ -237,17 +274,29 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
         const buffer = new Float32Array(size * this.maxInstancedCount);
-        const bufferAttribute = new Three.InstancedBufferAttribute(buffer, size);
+        const bufferAttribute = new Three.InstancedBufferAttribute(
+          buffer,
+          size,
+        );
         bufferAttribute.setDynamic(true);
-        this.geometry.addAttribute(instanceAttributeShaderName(attribute), bufferAttribute);
-        let newBufferLocations = attributeToNewBufferLocations.get(attribute.name);
+        this.geometry.addAttribute(
+          instanceAttributeShaderName(attribute),
+          bufferAttribute,
+        );
+        let newBufferLocations = attributeToNewBufferLocations.get(
+          attribute.name,
+        );
 
         if (!newBufferLocations) {
           newBufferLocations = [];
           attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
         }
 
-        const internalAttribute: IInstanceAttributeInternal<T> = Object.assign({}, attribute, { uid: uid(), bufferAttribute: bufferAttribute });
+        const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
+          {},
+          attribute,
+          { uid: uid(), bufferAttribute: bufferAttribute },
+        );
 
         for (let i = 0; i < this.maxInstancedCount; ++i) {
           newBufferLocations.push({
@@ -289,7 +338,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
       this.layer.vertexAttributes.forEach(attribute => {
         if (attribute.materialAttribute) {
-          this.geometry.addAttribute(attribute.name, attribute.materialAttribute);
+          this.geometry.addAttribute(
+            attribute.name,
+            attribute.materialAttribute,
+          );
         }
       });
 
@@ -310,7 +362,9 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
 
         if (bufferAttribute.array instanceof Float32Array) {
           // Make a new buffer that is the proper size
-          const buffer: Float32Array = new Float32Array(this.maxInstancedCount * size);
+          const buffer: Float32Array = new Float32Array(
+            this.maxInstancedCount * size,
+          );
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.array, 0);
           // Make our new attribute based on the grown buffer
@@ -322,14 +376,23 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
           // Add the new attribute to our new geometry object
           this.geometry.addAttribute(attribute.name, newAttribute);
           // Get the temp storage for new buffer locations
-          let newBufferLocations = attributeToNewBufferLocations.get(attribute.name);
+          let newBufferLocations = attributeToNewBufferLocations.get(
+            attribute.name,
+          );
 
           if (!newBufferLocations) {
             newBufferLocations = [];
-            attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
+            attributeToNewBufferLocations.set(
+              attribute.name,
+              newBufferLocations,
+            );
           }
 
-          for (let i = previousInstanceAmount, end = this.maxInstancedCount; i < end; ++i) {
+          for (
+            let i = previousInstanceAmount, end = this.maxInstancedCount;
+            i < end;
+            ++i
+          ) {
             newBufferLocations.push({
               attribute,
               buffer: {
@@ -360,7 +423,10 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
     this.model.frustumCulled = false;
     // Make a picking model if we need it so we can render the model with a different uniform set
     // for the picking procedure.
-    this.pickModel = this.layer.picking.type === PickType.SINGLE ? this.model.clone() : undefined;
+    this.pickModel =
+      this.layer.picking.type === PickType.SINGLE
+        ? this.model.clone()
+        : undefined;
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
@@ -385,7 +451,13 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
    * This takes newly created buffer locations and groups them by the property ids identified by the
    * registration phase.
    */
-  private gatherLocationsIntoGroups(attributeToNewBufferLocations: Map<string, IInstanceAttributeBufferLocation[]>, totalNewInstances: number) {
+  private gatherLocationsIntoGroups(
+    attributeToNewBufferLocations: Map<
+      string,
+      IInstanceAttributeBufferLocation[]
+    >,
+    totalNewInstances: number,
+  ) {
     if (this.attributeToPropertyIds.size === 0) return;
 
     // Loop through all of the new instances available and gather all of the buffer locations
@@ -398,33 +470,48 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
       // Loop through all of the property ids that affect specific attributes. Each of these ids
       // needs an association with the buffer location they modify.
       this.attributeToPropertyIds.forEach((ids, attribute) => {
-        const bufferLocationsForAttribute = attributeToNewBufferLocations.get(attribute.name);
+        const bufferLocationsForAttribute = attributeToNewBufferLocations.get(
+          attribute.name,
+        );
 
         if (!bufferLocationsForAttribute) {
-          emitOnce('Instance Attribute Buffer Error', (count: number, id: string) => {
-            console.warn(`${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`);
-          });
+          emitOnce(
+            'Instance Attribute Buffer Error',
+            (count: number, id: string) => {
+              console.warn(
+                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`,
+              );
+            },
+          );
           return;
         }
 
         const bufferLocation = bufferLocationsForAttribute.shift();
 
         if (!bufferLocation) {
-          emitOnce('Instance Attribute Buffer Error', (count: number, id: string) => {
-            console.warn(`${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`);
-          });
+          emitOnce(
+            'Instance Attribute Buffer Error',
+            (count: number, id: string) => {
+              console.warn(
+                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`,
+              );
+            },
+          );
           return;
         }
 
         if (group.instanceIndex === -1) {
           group.instanceIndex = bufferLocation.instanceIndex;
-        }
-
-        else if (bufferLocation.instanceIndex !== group.instanceIndex) {
-          emitOnce('Instance Attribute Parallelism Error', (count: number, id: string) => {
-            console.warn(`${id}: A buffer location does not have a matching instance index which means the buffer locations are not in parallel with each other somehow. Error count: ${count}`);
-            console.warn(attribute.name, bufferLocation);
-          });
+        } else if (bufferLocation.instanceIndex !== group.instanceIndex) {
+          emitOnce(
+            'Instance Attribute Parallelism Error',
+            (count: number, id: string) => {
+              console.warn(
+                `${id}: A buffer location does not have a matching instance index which means the buffer locations are not in parallel with each other somehow. Error count: ${count}`,
+              );
+              console.warn(attribute.name, bufferLocation);
+            },
+          );
           return;
         }
 
@@ -435,19 +522,28 @@ export class InstanceAttributeBufferManager<T extends Instance> extends BufferMa
 
           attribute.childAttributes.forEach(childAttribute => {
             if (bufferLocation.childLocations) {
-              const bufferLocationsForChildAttribute = attributeToNewBufferLocations.get(childAttribute.name);
+              const bufferLocationsForChildAttribute = attributeToNewBufferLocations.get(
+                childAttribute.name,
+              );
 
               if (bufferLocationsForChildAttribute) {
                 const childBufferLocation = bufferLocationsForChildAttribute.shift();
                 if (childBufferLocation) {
                   bufferLocation.childLocations.push(childBufferLocation);
-                }
-
-                else {
-                  emitOnce('Instance Attribute Child Attribute Error', (count: number, id: string) => {
-                    console.warn(`${id}: A child attribute does not have a buffer location available. Error count: ${count}`);
-                    console.warn(`Parent Attribute: ${attribute.name} Child Attribute: ${childAttribute.name}`);
-                  });
+                } else {
+                  emitOnce(
+                    'Instance Attribute Child Attribute Error',
+                    (count: number, id: string) => {
+                      console.warn(
+                        `${id}: A child attribute does not have a buffer location available. Error count: ${count}`,
+                      );
+                      console.warn(
+                        `Parent Attribute: ${attribute.name} Child Attribute: ${
+                          childAttribute.name
+                        }`,
+                      );
+                    },
+                  );
                 }
               }
             }

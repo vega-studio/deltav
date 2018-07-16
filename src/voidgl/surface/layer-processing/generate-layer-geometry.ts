@@ -1,14 +1,29 @@
 import * as Three from 'three';
 import { Instance } from '../../instance-provider/instance';
-import { IVertexAttribute, IVertexAttributeInternal, ShaderIOValue } from '../../types';
+import {
+  IVertexAttribute,
+  IVertexAttributeInternal,
+  ShaderIOValue,
+} from '../../types';
 import { Layer } from '../layer';
 import { LayerBufferType } from './layer-buffer-type';
 
-function isNumberCluster(val: ShaderIOValue): val is [number] | [number, number] | [number, number, number] | [number, number, number, number] {
+function isNumberCluster(
+  val: ShaderIOValue,
+): val is
+  | [number]
+  | [number, number]
+  | [number, number, number]
+  | [number, number, number, number] {
   return !Array.isArray(val[0]);
 }
 
-export function generateLayerGeometry<T extends Instance>(layer: Layer<T, any>, maxInstancesPerBuffer: number, vertexAttributes: IVertexAttributeInternal[], vertexCount: number): Three.BufferGeometry {
+export function generateLayerGeometry<T extends Instance>(
+  layer: Layer<T, any>,
+  maxInstancesPerBuffer: number,
+  vertexAttributes: IVertexAttributeInternal[],
+  vertexCount: number,
+): Three.BufferGeometry {
   // Make the new buffers to be updated
   const vertexBuffers = [];
 
@@ -18,7 +33,9 @@ export function generateLayerGeometry<T extends Instance>(layer: Layer<T, any>, 
 
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    vertexBuffers.push(new Float32Array((attribute.size) * vertexCount * maxInstancesPerBuffer));
+    vertexBuffers.push(
+      new Float32Array(attribute.size * vertexCount * maxInstancesPerBuffer),
+    );
   }
 
   // Let's now fill in the baseline geometry with the instances we will be generating
@@ -36,19 +53,23 @@ export function generateLayerGeometry<T extends Instance>(layer: Layer<T, any>, 
       value = attribute.update(i);
 
       if (isNumberCluster(value)) {
-        for (let j = i * attribute.size, endj = j + attribute.size, index = 0; j < endj; ++j, ++index) {
+        for (
+          let j = i * attribute.size, endj = j + attribute.size, index = 0;
+          j < endj;
+          ++j, ++index
+        ) {
           buffer[j] = value[index];
         }
-      }
-
-      else {
+      } else {
         formatError = true;
       }
     }
   }
 
   if (formatError) {
-    console.warn('A vertex buffer updating method should not use arrays of arrays of numbers.');
+    console.warn(
+      'A vertex buffer updating method should not use arrays of arrays of numbers.',
+    );
   }
 
   // After getting the geometry for a single instance, we can now copy paste
@@ -57,11 +78,11 @@ export function generateLayerGeometry<T extends Instance>(layer: Layer<T, any>, 
   // maxInstances is set to one.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    const instanceSize = (attribute.size) * vertexCount;
+    const instanceSize = attribute.size * vertexCount;
 
     // Copy the first buffer set into the rest of the buffer
     for (let k = 1, endk = maxInstancesPerBuffer; k < endk; ++k) {
-      vertexBuffers[i].copyWithin(instanceSize * k,  0, instanceSize);
+      vertexBuffers[i].copyWithin(instanceSize * k, 0, instanceSize);
     }
   }
 
@@ -84,7 +105,10 @@ export function generateLayerGeometry<T extends Instance>(layer: Layer<T, any>, 
 
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    const materialAttribute = new Three.BufferAttribute(vertexBuffers[i], attribute.size);
+    const materialAttribute = new Three.BufferAttribute(
+      vertexBuffers[i],
+      attribute.size,
+    );
     attribute.materialAttribute = materialAttribute;
     geometry.addAttribute(attribute.name, materialAttribute);
   }

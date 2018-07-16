@@ -19,7 +19,7 @@ export class LabelRasterizer {
     // Iterate till the browser provides a valid canvas to render elements into
     while (!canvas) {
       this.getContext();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
     }
   }
 
@@ -32,7 +32,11 @@ export class LabelRasterizer {
    *                                 should be within world space.
    * @param {number} sampleScale     INTERNAL: Do not use this parameter manually.
    */
-  static calculateLabelSize(resource: LabelAtlasResource, sampleScale?: number, calculateTexture?: boolean) {
+  static calculateLabelSize(
+    resource: LabelAtlasResource,
+    sampleScale?: number,
+    calculateTexture?: boolean,
+  ) {
     // If a max width is specified, then we must render and determine the potentially truncated text of the
     // Label. We can do a binary search for the correct truncated label size.
     if (calculateTexture) {
@@ -50,8 +54,8 @@ export class LabelRasterizer {
 
     // Make sure the rasterization object is initialized
     resource.rasterization = resource.rasterization || {
-      texture: { height: 0, width: 0},
-      world: { height: 0, width: 0},
+      texture: { height: 0, width: 0 },
+      world: { height: 0, width: 0 },
     };
 
     // When a forced sampling is present, it calculates that as the world space
@@ -71,7 +75,11 @@ export class LabelRasterizer {
         width: maxX - minX,
       };
 
-      resource.rasterization.canvas = this.createCroppedCanvas(resource, minY, minX);
+      resource.rasterization.canvas = this.createCroppedCanvas(
+        resource,
+        minY,
+        minX,
+      );
       this.calculateLabelSize(resource, 1.0, false);
     }
   }
@@ -153,7 +161,11 @@ export class LabelRasterizer {
    * This generates a canvas that has the cropped version of the label where the label
    * fits neatly in the canvas object.
    */
-  static createCroppedCanvas(resource: LabelAtlasResource, top: number, left: number) {
+  static createCroppedCanvas(
+    resource: LabelAtlasResource,
+    top: number,
+    left: number,
+  ) {
     const cropped = document.createElement('canvas');
     const context = cropped.getContext('2d');
 
@@ -166,13 +178,19 @@ export class LabelRasterizer {
       // Draw just the region the label appears into the canvas
       context.drawImage(
         canvas.canvas,
-        left, top, texture.width, texture.height,
-        0, 0, texture.width, texture.height,
+        left,
+        top,
+        texture.width,
+        texture.height,
+        0,
+        0,
+        texture.width,
+        texture.height,
       );
-    }
-
-    else {
-      console.warn('Could not create a canvas 2d context to generate a label\'s cropped image.');
+    } else {
+      console.warn(
+        'Could not create a canvas 2d context to generate a label\'s cropped image.',
+      );
     }
 
     return cropped;
@@ -181,7 +199,12 @@ export class LabelRasterizer {
   /**
    * This actually renders a string to a canvas context using a label's settings
    */
-  static drawLabel(label: Label, text: string, canvas: CanvasRenderingContext2D, sampleScaling: number) {
+  static drawLabel(
+    label: Label,
+    text: string,
+    canvas: CanvasRenderingContext2D,
+    sampleScaling: number,
+  ) {
     // Get the font size we will rasterize with
     const fontSize = this.getLabelRasterizationFontSize(label, sampleScaling);
     // Set the color of the label to white so we know what color to look for
@@ -233,7 +256,10 @@ export class LabelRasterizer {
    * Generates the CSS font string based on the label's values
    */
   static makeCSSFont(label: Label, sampleScale: number) {
-    return `${label.fontWeight} ${this.getLabelRasterizationFontSize(label, sampleScale)}px ${label.fontFamily}`;
+    return `${label.fontWeight} ${this.getLabelRasterizationFontSize(
+      label,
+      sampleScale,
+    )}px ${label.fontFamily}`;
   }
 
   /**
@@ -278,7 +304,9 @@ export class LabelRasterizer {
   /**
    * Performs the rendering of the label
    */
-  static async render(resource: LabelAtlasResource): Promise<LabelAtlasResource> {
+  static async render(
+    resource: LabelAtlasResource,
+  ): Promise<LabelAtlasResource> {
     // Make sure our canvas object is ready for rendering
     await this.awaitContext();
 
@@ -303,7 +331,9 @@ export class LabelRasterizer {
     this.getContext();
 
     if (!canvas) {
-      console.warn('Can not render a label synchronously without the canvas context being ready.');
+      console.warn(
+        'Can not render a label synchronously without the canvas context being ready.',
+      );
       return resource;
     }
 

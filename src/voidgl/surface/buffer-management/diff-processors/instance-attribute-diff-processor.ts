@@ -2,7 +2,11 @@ import { Instance } from '../../../instance-provider/instance';
 import { InstanceDiff } from '../../../instance-provider/instance-provider';
 import { IInstanceAttributeInternal } from '../../../types';
 import { Vec } from '../../../util';
-import { IBufferLocation, IBufferLocationGroup, isBufferLocationGroup } from '../buffer-manager-base';
+import {
+  IBufferLocation,
+  IBufferLocationGroup,
+  isBufferLocationGroup,
+} from '../buffer-manager-base';
 import { IInstanceAttributeBufferLocationGroup } from '../instance-attribute-buffer-manager';
 import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
 import { BaseDiffProcessor } from './base-diff-processor';
@@ -13,20 +17,34 @@ const { min, max } = Math;
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
  */
-export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiffProcessor<T> {
+export class InstanceAttributeDiffProcessor<
+  T extends Instance
+> extends BaseDiffProcessor<T> {
   /** This tracks a buffer attribute's uid to the range of data that it should update */
-  bufferAttributeUpdateRange: {[key: number]: [IInstanceAttributeInternal<T>, number, number]} = {};
+  bufferAttributeUpdateRange: {
+    [key: number]: [IInstanceAttributeInternal<T>, number, number];
+  } = {};
 
   /**
    * The instance updating is a property instead of a method as we will want to be able to gear shift it for varying levels
    * of adjustments.
    */
-  updateInstance: (layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IBufferLocation>) => void = this.updateInstancePartial;
+  updateInstance: (
+    layer: IInstanceDiffManagerTarget<T>,
+    instance: T,
+    propIds: number[],
+    bufferLocations: IBufferLocationGroup<IBufferLocation>,
+  ) => void = this.updateInstancePartial;
 
   /**
    * This processes add operations from changes in the instancing data
    */
-  addInstance(manager: this, instance: T, _propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup) {
+  addInstance(
+    manager: this,
+    instance: T,
+    _propIds: number[],
+    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+  ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (bufferLocations) {
       manager.changeInstance(manager, instance, EMPTY, bufferLocations);
@@ -38,7 +56,12 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
 
       if (isBufferLocationGroup(newBufferLocations)) {
         instance.active = true;
-        manager.updateInstance(manager.layer, instance, EMPTY, newBufferLocations);
+        manager.updateInstance(
+          manager.layer,
+          instance,
+          EMPTY,
+          newBufferLocations,
+        );
       }
     }
   }
@@ -46,7 +69,12 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
   /**
    * This processes change operations from changes in the instancing data
    */
-  changeInstance(manager: this, instance: T, propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup) {
+  changeInstance(
+    manager: this,
+    instance: T,
+    propIds: number[],
+    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+  ) {
     // If there is an existing uniform cluster for this instance, then we can update the bufferLocations
     if (bufferLocations) {
       manager.updateInstance(manager.layer, instance, propIds, bufferLocations);
@@ -61,7 +89,12 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
   /**
    * This processes remove operations from changes in the instancing data
    */
-  removeInstance(manager: this, instance: T, _propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup) {
+  removeInstance(
+    manager: this,
+    instance: T,
+    _propIds: number[],
+    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+  ) {
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -75,7 +108,12 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
   /**
    * This performs the actual updating of buffers the instance needs to update
    */
-  updateInstancePartial(layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IBufferLocation>) {
+  updateInstancePartial(
+    layer: IInstanceDiffManagerTarget<T>,
+    instance: T,
+    propIds: number[],
+    bufferLocations: IBufferLocationGroup<IBufferLocation>,
+  ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
     let location: IBufferLocation;
@@ -94,7 +132,11 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
         location = propertyToLocation[propIds[i]];
         updateValue = location.attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
-        updateRange = bufferAttributeUpdateRange[location.attribute.uid] || [null, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+        updateRange = bufferAttributeUpdateRange[location.attribute.uid] || [
+          null,
+          Number.MAX_SAFE_INTEGER,
+          Number.MIN_SAFE_INTEGER,
+        ];
         updateRange[0] = location.attribute;
         updateRange[1] = min(location.range[0], updateRange[1]);
         updateRange[2] = max(location.range[1], updateRange[2]);
@@ -108,7 +150,9 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
             location = childLocations[k];
             updateValue = location.attribute.update(instance);
             location.buffer.value.set(updateValue, location.range[0]);
-            updateRange = bufferAttributeUpdateRange[location.attribute.uid] || [null, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+            updateRange = bufferAttributeUpdateRange[
+              location.attribute.uid
+            ] || [null, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
             updateRange[0] = location.attribute;
             updateRange[1] = min(location.range[0], updateRange[1]);
             updateRange[2] = max(location.range[1], updateRange[2]);
@@ -120,10 +164,15 @@ export class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiff
 
     // When the instance is inactive all we update is the active attribute to false
     else {
-      location = propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
+      location =
+        propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       updateValue = location.attribute.update(instance);
       location.buffer.value.set(updateValue, location.range[0]);
-      updateRange = bufferAttributeUpdateRange[location.attribute.uid] || [null, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+      updateRange = bufferAttributeUpdateRange[location.attribute.uid] || [
+        null,
+        Number.MAX_SAFE_INTEGER,
+        Number.MIN_SAFE_INTEGER,
+      ];
       updateRange[0] = location.attribute;
       updateRange[1] = min(location.range[0], updateRange[1]);
       updateRange[2] = max(location.range[1], updateRange[2]);

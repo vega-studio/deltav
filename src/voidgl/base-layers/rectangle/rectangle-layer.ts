@@ -1,7 +1,20 @@
 import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize,
+} from '../../types';
 import { ScaleType } from '../types';
 import { RectangleInstance } from './rectangle-instance';
 
@@ -15,7 +28,10 @@ export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
  * This layer displays Rectangles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProps> {
+export class RectangleLayer extends Layer<
+  RectangleInstance,
+  IRectangleLayerProps
+> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -44,7 +60,11 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
       },
 
       // Provide a precise hit test for the circle
-      hitTest: (rectangle: RectangleInstance, point: IPoint, projection: IProjection) => {
+      hitTest: (
+        rectangle: RectangleInstance,
+        point: IPoint,
+        projection: IProjection,
+      ) => {
         // The bounds of the rectangle is in world space, but it does not account for the scale mode of the rectangle.
         // Here, we will apply the scale mode testing to the rectangle
         const maxScale = max(...projection.camera.scale);
@@ -74,8 +94,8 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
             }
 
             const topLeft = [
-              rectangle.x - (anchorEffect[0] / maxScale),
-              rectangle.y - (anchorEffect[1] / maxScale),
+              rectangle.x - anchorEffect[0] / maxScale,
+              rectangle.y - anchorEffect[1] / maxScale,
             ];
 
             // Reverse project the size and we should be within the distorted world coordinates
@@ -100,8 +120,8 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
           }
 
           const topLeft = projection.worldToScreen({
-            x: rectangle.x - (anchorEffect[0] / projection.camera.scale[0]),
-            y: rectangle.y - (anchorEffect[1] / projection.camera.scale[1]),
+            x: rectangle.x - anchorEffect[0] / projection.camera.scale[0],
+            y: rectangle.y - anchorEffect[1] / projection.camera.scale[1],
           });
 
           const screenPoint = projection.worldToScreen(point);
@@ -124,7 +144,7 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<RectangleInstance> {
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
@@ -133,7 +153,7 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
       5: -1,
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: 0,
       1: 0,
       2: 0,
@@ -150,42 +170,42 @@ export class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProp
           blockIndex: InstanceBlockIndex.ONE,
           name: 'location',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: o => [o.x, o.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'size',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.width, o.height],
+          update: o => [o.width, o.height],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: o => [o.depth],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'scaling',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scaling],
+          update: o => [o.scaling],
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: o => o.color,
         },
       ],
       uniforms: [

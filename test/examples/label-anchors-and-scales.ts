@@ -1,8 +1,20 @@
-import { AnchorType, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import {
+  AnchorType,
+  createLayer,
+  InstanceProvider,
+  LabelInstance,
+  LabelLayer,
+  LayerInitializer,
+  ScaleType,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelAnchorsAndScales extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<LabelInstance>,
+  ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -16,25 +28,27 @@ export class LabelAnchorsAndScales extends BaseExample {
 
     let count = 1;
 
-    provider.add(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleLeft,
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: 'Arial',
-      fontSize: 20,
-      fontStyle: 'normal',
-      fontWeight: 'normal',
-      id: `label-vertical-0`,
-      rasterization: {
-        scale: 1.0,
-      },
-      scaling: ScaleType.NEVER,
-      text: 'Anchored MiddleLeft:',
-      x: 20,
-      y: count++ * 20,
-    }));
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleLeft,
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: `label-vertical-0`,
+        rasterization: {
+          scale: 1.0,
+        },
+        scaling: ScaleType.NEVER,
+        text: 'Anchored MiddleLeft:',
+        x: 20,
+        y: count++ * 20,
+      }),
+    );
 
     let label = new LabelInstance({
       anchor: {
@@ -59,45 +73,49 @@ export class LabelAnchorsAndScales extends BaseExample {
     // Left Middle left
     provider.add(label);
 
-    provider.add(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleLeft,
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: 'Arial',
-      fontSize: 20,
-      fontStyle: 'normal',
-      fontWeight: 'normal',
-      id: `label-vertical-2`,
-      rasterization: {
-        scale: 1.0,
-      },
-      scaling: ScaleType.ALWAYS,
-      text: 'Scale Type: ALWAYS',
-      x: 20,
-      y: count++ * 20,
-    }));
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleLeft,
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: `label-vertical-2`,
+        rasterization: {
+          scale: 1.0,
+        },
+        scaling: ScaleType.ALWAYS,
+        text: 'Scale Type: ALWAYS',
+        x: 20,
+        y: count++ * 20,
+      }),
+    );
 
-    provider.add(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleLeft,
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: 'Arial',
-      fontSize: 20,
-      fontStyle: 'normal',
-      fontWeight: 'normal',
-      id: `label-vertical-3`,
-      rasterization: {
-        scale: 1.0,
-      },
-      scaling: ScaleType.BOUND_MAX,
-      text: 'Scale Type: BOUND_MAX',
-      x: 20,
-      y: count++ * 20,
-    }));
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleLeft,
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: `label-vertical-3`,
+        rasterization: {
+          scale: 1.0,
+        },
+        scaling: ScaleType.BOUND_MAX,
+        text: 'Scale Type: BOUND_MAX',
+        x: 20,
+        y: count++ * 20,
+      }),
+    );
 
     // MIDDLE RIGHT ANCHORS
     count++;

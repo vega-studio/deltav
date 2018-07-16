@@ -1,7 +1,20 @@
 import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize,
+} from '../../types';
 import { Vec2 } from '../../util';
 import { ScaleType } from '../types';
 import { LabelInstance } from './label-instance';
@@ -27,10 +40,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
       boundsAccessor: (label: LabelInstance) => {
         const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
 
-        const topLeft = [
-          label.x - anchor[0],
-          label.y - anchor[1],
-        ];
+        const topLeft = [label.x - anchor[0], label.y - anchor[1]];
 
         return new Bounds({
           height: label.height,
@@ -66,8 +76,8 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
 
             // The location is within the world, but we reverse project the anchor spread
             const topLeft = view.worldToScreen({
-              x: label.x - (anchor[0] / view.camera.scale[0]),
-              y: label.y - (anchor[1] / view.camera.scale[1]),
+              x: label.x - anchor[0] / view.camera.scale[0],
+              y: label.y - anchor[1] / view.camera.scale[1],
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -89,8 +99,8 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
 
           // The location is within the world, but we reverse project the anchor spread
           const topLeft = view.worldToScreen({
-            x: label.x - (anchor[0] / view.camera.scale[0]),
-            y: label.y - (anchor[1] / view.camera.scale[1]),
+            x: label.x - anchor[0] / view.camera.scale[0],
+            y: label.y - anchor[1] / view.camera.scale[1],
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -113,7 +123,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<LabelInstance> {
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
@@ -122,7 +132,7 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
       5: -1,
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: 0,
       1: 0,
       2: 0,
@@ -139,35 +149,35 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
           blockIndex: InstanceBlockIndex.ONE,
           name: 'location',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: o => [o.x, o.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'size',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.width, o.height],
+          update: o => [o.width, o.height],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: o => [o.depth],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'scaling',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scaling],
+          update: o => [o.scaling],
         },
         {
           atlas: {
@@ -176,28 +186,28 @@ export class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
           },
           block: 2,
           name: 'texture',
-          update: (o) => this.resource.request(this, o, o.resource),
+          update: o => this.resource.request(this, o, o.resource),
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.color,
+          update: o => o.color,
         },
         {
           block: 4,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'scale',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scale],
+          update: o => [o.scale],
         },
         {
           block: 4,
           blockIndex: InstanceBlockIndex.TWO,
           name: 'maxScale',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.maxScale],
+          update: o => [o.maxScale],
         },
       ],
       uniforms: [

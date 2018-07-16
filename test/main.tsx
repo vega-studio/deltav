@@ -31,12 +31,12 @@ import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
  * The state of the application
  */
 export interface IMainState {
-  size: { width: number, height: number };
+  size: { width: number; height: number };
 }
 
 export type SceneInitializer = {
-  name: string,
-  control: EventManager,
+  name: string;
+  control: EventManager;
   scene: ISceneOptions;
 };
 
@@ -120,9 +120,7 @@ export class Main extends Component<any, IMainState> {
     if (this.surface && this.context !== this.surface.gl.canvas) {
       this.surface.destroy();
       generate = true;
-    }
-
-    else if (!this.surface) {
+    } else if (!this.surface) {
       generate = true;
     }
 
@@ -158,13 +156,15 @@ export class Main extends Component<any, IMainState> {
         test.surface = this.surface;
         test.view = sceneName;
         const provider = test.makeProvider();
-        const layer = test.makeLayer(sceneName, (i % 2 === 0) ? 'all-resources' : 'all-resources', provider);
+        const layer = test.makeLayer(
+          sceneName,
+          i % 2 === 0 ? 'all-resources' : 'all-resources',
+          provider,
+        );
 
         if (isLayerInitializerList(layer)) {
           layer.forEach(l => layers.push(l));
-        }
-
-        else {
+        } else {
           layers.push(layer);
         }
       });
@@ -211,11 +211,17 @@ export class Main extends Component<any, IMainState> {
 
   handleToggleMonitorDensity = () => {
     if (this.surface.pixelRatio !== 1.0) {
-      this.surface.resize(this.context.width / window.devicePixelRatio, this.context.height / window.devicePixelRatio, 1.0);
-    }
-
-    else {
-      this.surface.resize(this.context.width * window.devicePixelRatio, this.context.height * window.devicePixelRatio, window.devicePixelRatio);
+      this.surface.resize(
+        this.context.width / window.devicePixelRatio,
+        this.context.height / window.devicePixelRatio,
+        1.0,
+      );
+    } else {
+      this.surface.resize(
+        this.context.width * window.devicePixelRatio,
+        this.context.height * window.devicePixelRatio,
+        window.devicePixelRatio,
+      );
     }
 
     this.forceUpdate();
@@ -231,9 +237,7 @@ export class Main extends Component<any, IMainState> {
       this.context.removeAttribute('height');
       this.preventAutoCreateSurface = true;
       this.sizeContext();
-    }
-
-    else {
+    } else {
       await this.createSurface();
       this.sizeContext();
     }
@@ -271,7 +275,8 @@ export class Main extends Component<any, IMainState> {
               key: name,
               views: [
                 {
-                  background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
+                  background:
+                    backgrounds[Math.floor(Math.random() * backgrounds.length)],
                   camera: testCamera,
                   clearFlags: [ClearFlags.COLOR],
                   key: name,
@@ -325,7 +330,10 @@ export class Main extends Component<any, IMainState> {
 
     if (size.width === 0 || size.height === 0) {
       return (
-        <div style={{width: '100%', height: '100%'}} ref={this.setContainer}></div>
+        <div
+          style={{ width: '100%', height: '100%' }}
+          ref={this.setContainer}
+        />
       );
     }
 
@@ -336,20 +344,23 @@ export class Main extends Component<any, IMainState> {
 
     return (
       <div className="voidray-layer-surface" ref={this.setContainer}>
-        <canvas ref={this.setContext} width={size.width} height={size.height}/>
-          {window.devicePixelRatio === 1.0 ? null :
-            <div className={'test-button'} onClick={this.handleToggleMonitorDensity}>{
-              (this.surface && this.surface.pixelRatio === window.devicePixelRatio) ?
-              'Disable Monitor Density' :
-              'Enable Monitor Density'
-            }</div>
-          }
-          <div className={'remove-button'} onClick={this.handleToggleSurface}>{
-            this.surface ?
-            'Destroy Surface' :
-            'Regen Surface'
-          }</div>
-          <div className={'remove-button'} onClick={this.handleForceResize}>Force Resize</div>
+        <canvas ref={this.setContext} width={size.width} height={size.height} />
+        {window.devicePixelRatio === 1.0 ? null : (
+          <div
+            className={'test-button'}
+            onClick={this.handleToggleMonitorDensity}
+          >
+            {this.surface && this.surface.pixelRatio === window.devicePixelRatio
+              ? 'Disable Monitor Density'
+              : 'Enable Monitor Density'}
+          </div>
+        )}
+        <div className={'remove-button'} onClick={this.handleToggleSurface}>
+          {this.surface ? 'Destroy Surface' : 'Regen Surface'}
+        </div>
+        <div className={'remove-button'} onClick={this.handleForceResize}>
+          Force Resize
+        </div>
       </div>
     );
   }

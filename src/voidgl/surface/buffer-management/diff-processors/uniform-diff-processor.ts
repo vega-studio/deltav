@@ -12,11 +12,18 @@ const EMPTY: number[] = [];
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
  */
-export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<T> {
+export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
+  T
+> {
   /**
    * This processes add operations from changes in the instancing data
    */
-  addInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
+  addInstance(
+    manager: this,
+    instance: T,
+    _propIds: number[],
+    uniformCluster?: IUniformBufferLocation,
+  ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, EMPTY, uniformCluster);
@@ -36,7 +43,12 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * This processes change operations from changes in the instancing data
    */
-  changeInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
+  changeInstance(
+    manager: this,
+    instance: T,
+    _propIds: number[],
+    uniformCluster?: IUniformBufferLocation,
+  ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(manager.layer, instance, uniformCluster);
@@ -51,7 +63,12 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * This processes remove operations from changes in the instancing data
    */
-  removeInstance(manager: this, instance: T, _propIds: number[], uniformCluster?: IUniformBufferLocation) {
+  removeInstance(
+    manager: this,
+    instance: T,
+    _propIds: number[],
+    uniformCluster?: IUniformBufferLocation,
+  ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -65,7 +82,11 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * This performs the actual updating of buffers the instance needs to update
    */
-  updateInstance(layer: IInstanceDiffManagerTarget<T>, instance: T, uniformCluster: IUniformBufferLocation) {
+  updateInstance(
+    layer: IInstanceDiffManagerTarget<T>,
+    instance: T,
+    uniformCluster: IUniformBufferLocation,
+  ) {
     if (instance.active) {
       const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
@@ -79,7 +100,8 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
         instanceUniform = layer.instanceAttributes[i];
         value = instanceUniform.update(instance);
         block = instanceData[uniformRangeStart + instanceUniform.block];
-        instanceUniform.atlas && layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+        instanceUniform.atlas &&
+          layer.resource.setTargetAtlas(instanceUniform.atlas.key);
         start = instanceUniform.blockIndex;
 
         if (start === undefined) {
@@ -94,9 +116,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       }
 
       uniforms.value = instanceData;
-    }
-
-    else {
+    } else {
       const uniforms: Three.IUniform = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
       const instanceData: Three.Vector4[] = uniforms.value;
@@ -107,12 +127,13 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       instanceUniform = layer.activeAttribute;
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + instanceUniform.block];
-      instanceUniform.atlas && layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+      instanceUniform.atlas &&
+        layer.resource.setTargetAtlas(instanceUniform.atlas.key);
       start = instanceUniform.blockIndex;
 
       if (start !== undefined) {
-      // Hyper optimized vector filling routine. It uses properties that are globally scoped
-      // To greatly reduce overhead
+        // Hyper optimized vector filling routine. It uses properties that are globally scoped
+        // To greatly reduce overhead
         for (let k = start, endk = value.length + start; k < endk; ++k) {
           block[VECTOR_ACCESSORS[k]] = value[k - start];
         }

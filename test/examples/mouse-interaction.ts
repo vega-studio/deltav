@@ -1,5 +1,13 @@
 import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
+import {
+  CircleInstance,
+  CircleLayer,
+  createLayer,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+} from '../../src';
 import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
 import { BaseExample } from './base-example';
 
@@ -44,7 +52,11 @@ export class MouseInteraction extends BaseExample {
     }
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<CircleInstance>,
+  ): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
         radius: AutoEasingMethod.easeOutElastic(500),

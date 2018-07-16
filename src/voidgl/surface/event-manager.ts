@@ -1,6 +1,11 @@
 import { Bounds } from '../primitives';
 import { IProjection } from '../types';
-import { IDragMetrics, IMouseInteraction, IWheelMetrics, MouseEventManager } from './mouse-event-manager';
+import {
+  IDragMetrics,
+  IMouseInteraction,
+  IWheelMetrics,
+  MouseEventManager,
+} from './mouse-event-manager';
 import { View } from './view';
 
 /**

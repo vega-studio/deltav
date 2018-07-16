@@ -8,7 +8,9 @@ export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;
 }
 
-export function isBufferLocationGroup(val: any): val is IBufferLocationGroup<IBufferLocation> {
+export function isBufferLocationGroup(
+  val: any,
+): val is IBufferLocationGroup<IBufferLocation> {
   return val && val.propertyToBufferLocation;
 }
 
@@ -51,7 +53,7 @@ export interface IBufferLocationGroup<T extends IBufferLocation> {
   /** This is the instance index WITHIN THE BUFFERS. This does NOT have relevance to Instance type objects */
   instanceIndex: number;
   /** This is a map of property UIDs to an associated buffer location */
-  propertyToBufferLocation: {[key: number]: T};
+  propertyToBufferLocation: { [key: number]: T };
 }
 
 /**
@@ -62,7 +64,10 @@ export interface IBufferLocationGroup<T extends IBufferLocation> {
  *
  * This provides a uniform interface between instances and their corresponding buffer.
  */
-export abstract class BufferManagerBase<T extends Instance, U extends IBufferLocation> {
+export abstract class BufferManagerBase<
+  T extends Instance,
+  U extends IBufferLocation
+> {
   /** The layer this manager glues Instances to Buffers */
   layer: Layer<T, any>;
   /** The scene the layer is injecting elements into */
@@ -89,7 +94,9 @@ export abstract class BufferManagerBase<T extends Instance, U extends IBufferLoc
   /**
    * Retrieves the buffer locations for the instance provided
    */
-  abstract getBufferLocations(instance: T): U | IBufferLocationGroup<U> | undefined;
+  abstract getBufferLocations(
+    instance: T,
+  ): U | IBufferLocationGroup<U> | undefined;
 
   /**
    * This retrieves the property ID for the active attribute. This is necessary to prevent

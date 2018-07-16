@@ -1,5 +1,9 @@
 import { Instance, InstanceDiff } from '../../../instance-provider';
-import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from '../buffer-manager-base';
+import {
+  BufferManagerBase,
+  IBufferLocation,
+  IBufferLocationGroup,
+} from '../buffer-manager-base';
 import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
 
 /**
@@ -9,17 +13,35 @@ export abstract class BaseDiffProcessor<T extends Instance> {
   layer: IInstanceDiffManagerTarget<T>;
   bufferManager: BufferManagerBase<T, IBufferLocation>;
 
-  constructor(layer: IInstanceDiffManagerTarget<T>, bufferManager: BufferManagerBase<T, IBufferLocation>) {
+  constructor(
+    layer: IInstanceDiffManagerTarget<T>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>,
+  ) {
     this.layer = layer;
     this.bufferManager = bufferManager;
   }
 
   /** Perform an 'add' operation for the instance's buffer */
-  abstract addInstance(manager: this, instance: T, propIds: number[], bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>): void;
+  abstract addInstance(
+    manager: this,
+    instance: T,
+    propIds: number[],
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+  ): void;
   /** Perform a 'change' operation for the instance's buffer */
-  abstract changeInstance(manager: this, instance: T, propIds: number[], bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>): void;
+  abstract changeInstance(
+    manager: this,
+    instance: T,
+    propIds: number[],
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+  ): void;
   /** Perform a 'remove' operation for the instance's buffer */
-  abstract removeInstance(manager: this, instance: T, propIds: number[], bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>): void;
+  abstract removeInstance(
+    manager: this,
+    instance: T,
+    propIds: number[],
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+  ): void;
 
   /**
    * This indicates all changes have been applied, this allows the processor to finalize buffer updates

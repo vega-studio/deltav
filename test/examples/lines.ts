@@ -1,8 +1,19 @@
-import { createLayer, EdgeInstance, EdgeLayer, EdgeType, InstanceProvider, LayerInitializer } from '../../src';
+import {
+  createLayer,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  InstanceProvider,
+  LayerInitializer,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 export class Lines extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<EdgeInstance>,
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
       key: 'lines',
@@ -28,7 +39,10 @@ export class Lines extends BaseExample {
           widthStart: 10,
         });
 
-        edge.end = [(Math.sin(Date.now() / 4E2 + (k * 20)) * 10) + (k * 20), edge.end[1]];
+        edge.end = [
+          Math.sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
+          edge.end[1],
+        ];
         edges.push(edgeProvider.add(edge));
       }
     }
@@ -38,7 +52,10 @@ export class Lines extends BaseExample {
       for (let i = 0; i < 10; ++i) {
         for (let k = 0; k < 100; ++k) {
           const edge = edges[++next];
-          edge.end = [(Math.sin(Date.now() / 4E2 + (k * 20)) * 10) + (k * 20), edge.end[1]];
+          edge.end = [
+            Math.sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
+            edge.end[1],
+          ];
         }
       }
     }, 1000 / 60);

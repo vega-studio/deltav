@@ -2,16 +2,16 @@ export interface IShaderTemplateResults {
   /** This is the resulting shader string generated from the templating */
   shader: string;
   /** This is the template options provided by the shader. {option: num occurrences} */
-  shaderProvidedOptions: Map<string, number>,
+  shaderProvidedOptions: Map<string, number>;
   /**
    * This is the template options provided by the shader that were not resolved by the options parameter
    * {option: num occurrences}
    */
-  unresolvedShaderOptions: Map<string, number>,
+  unresolvedShaderOptions: Map<string, number>;
   /** This is the options provided to the template that did not get resolved by the shader {option: 1} */
-  unresolvedProvidedOptions: Map<string, number>,
+  unresolvedProvidedOptions: Map<string, number>;
   /** This is the list of options that DID get resolved by the options provided {option: num occurrences} */
-  resolvedShaderOptions: Map<string, number>,
+  resolvedShaderOptions: Map<string, number>;
 }
 
 export interface IShaderTemplateRequirements {
@@ -21,23 +21,30 @@ export interface IShaderTemplateRequirements {
   values: string[];
 }
 
-export function shaderTemplate(shader: string, options: {[key: string]: string}, required?: IShaderTemplateRequirements): IShaderTemplateResults {
+export function shaderTemplate(
+  shader: string,
+  options: { [key: string]: string },
+  required?: IShaderTemplateRequirements,
+): IShaderTemplateResults {
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
   const notFound = new Map<string, number>();
   const shaderOptions = new Map<string, number>();
 
-  const shaderResults = shader.replace(/\$\{(\w+)\}/g, (x: string, match: string) => {
-    shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
+  const shaderResults = shader.replace(
+    /\$\{(\w+)\}/g,
+    (x: string, match: string) => {
+      shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
 
-    if (match in options) {
-      matched.set(match, (matched.get(match) || 0) + 1);
-      return options[match];
-    }
+      if (match in options) {
+        matched.set(match, (matched.get(match) || 0) + 1);
+        return options[match];
+      }
 
-    noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
-    return '';
-  });
+      noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
+      return '';
+    },
+  );
 
   Object.keys(options).forEach(option => {
     if (!matched.get(option)) {
@@ -58,15 +65,24 @@ export function shaderTemplate(shader: string, options: {[key: string]: string},
     // This will ensure that BOTH the parameter input AND the shader provided the required options.
     required.values.forEach(require => {
       if (results.unresolvedProvidedOptions.get(require)) {
-        console.error(`${required.name}: Could not resolve all the required inputs. Input:`, require);
-      }
-
-      else if (results.unresolvedShaderOptions.get(require)) {
-        console.error(`${required.name}: A required option was not provided in the options parameter. Option:`, require);
-      }
-
-      else if (!results.resolvedShaderOptions.get(require)) {
-        console.error(`${required.name}: A required option was not provided in the options parameter. Option:`, require);
+        console.error(
+          `${required.name}: Could not resolve all the required inputs. Input:`,
+          require,
+        );
+      } else if (results.unresolvedShaderOptions.get(require)) {
+        console.error(
+          `${
+            required.name
+          }: A required option was not provided in the options parameter. Option:`,
+          require,
+        );
+      } else if (!results.resolvedShaderOptions.get(require)) {
+        console.error(
+          `${
+            required.name
+          }: A required option was not provided in the options parameter. Option:`,
+          require,
+        );
       }
     });
   }

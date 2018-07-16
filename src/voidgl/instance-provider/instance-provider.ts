@@ -5,7 +5,11 @@ import { Instance } from './instance';
  * This is an entry within the change list of the provider. It represents the type of change
  * and stores the property id's of the properties on the instance that have changed.
  */
-export type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {[key: number]: number}];
+export type InstanceDiff<T extends Instance> = [
+  T,
+  InstanceDiffType,
+  { [key: number]: number }
+];
 
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
@@ -13,9 +17,9 @@ export type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {[key: numb
  */
 export class InstanceProvider<T extends Instance> {
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation: {[key: number]: [T, Function]} = {};
+  private cleanObservation: { [key: number]: [T, Function] } = {};
   /** This stores the changes to the instances themselves */
-  private instanceChanges: {[key: number]: InstanceDiff<T>} = {};
+  private instanceChanges: { [key: number]: InstanceDiff<T> } = {};
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
   private allowChanges = true;
 
@@ -45,7 +49,11 @@ export class InstanceProvider<T extends Instance> {
       // Store the disposers so we can clean up the observable properties
       this.cleanObservation[instance.uid] = [instance, disposer];
       // Indicate we have a new instance
-      this.instanceChanges[instance.uid] = [instance, InstanceDiffType.INSERT, {}];
+      this.instanceChanges[instance.uid] = [
+        instance,
+        InstanceDiffType.INSERT,
+        {},
+      ];
     }
 
     return instance;
@@ -84,7 +92,11 @@ export class InstanceProvider<T extends Instance> {
   instanceUpdated(instance: T, property: number) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
-      const change = this.instanceChanges[instance.uid] || [instance, InstanceDiffType.CHANGE, {}];
+      const change = this.instanceChanges[instance.uid] || [
+        instance,
+        InstanceDiffType.CHANGE,
+        {},
+      ];
       this.instanceChanges[instance.uid] = change;
       change[1] = InstanceDiffType.CHANGE;
       change[2][property] = property;
@@ -102,7 +114,11 @@ export class InstanceProvider<T extends Instance> {
       if (disposer) {
         disposer[1]();
         delete this.cleanObservation[instance.uid];
-        this.instanceChanges[instance.uid] = [instance, InstanceDiffType.REMOVE, {}];
+        this.instanceChanges[instance.uid] = [
+          instance,
+          InstanceDiffType.REMOVE,
+          {},
+        ];
       }
     }
 

@@ -1,5 +1,11 @@
 import { Instance } from '../../instance-provider/instance';
-import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics, PickType } from '../../types';
+import {
+  IInstanceAttribute,
+  INonePickingMetrics,
+  IQuadTreePickingMetrics,
+  ISinglePickingMetrics,
+  PickType,
+} from '../../types';
 import { LayerBufferType } from '../layer-processing/layer-buffer-type';
 import { AtlasResourceManager } from '../texture/atlas-resource-manager';
 import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
@@ -11,7 +17,12 @@ import { UniformDiffProcessor } from './diff-processors/uniform-diff-processor';
 import { UniformQuadDiffProcessor } from './diff-processors/uniform-quad-diff-processor';
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (manager: BaseDiffProcessor<T>, instance: T, propIds: number[], bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>) => void;
+export type DiffHandler<T extends Instance> = (
+  manager: BaseDiffProcessor<T>,
+  instance: T,
+  propIds: number[],
+  bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 
@@ -25,7 +36,10 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
   /** This is all of the instance attributes applied to the target */
   instanceAttributes: IInstanceAttribute<T>[];
   /** This is the picking metrics for how Instances are picked with the mouse */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
+  picking:
+    | IQuadTreePickingMetrics<T>
+    | ISinglePickingMetrics<T>
+    | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
   resource: AtlasResourceManager;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
@@ -44,7 +58,10 @@ export class InstanceDiffManager<T extends Instance> {
   processing: DiffLookup<T>;
   layer: IInstanceDiffManagerTarget<T>;
 
-  constructor(layer: IInstanceDiffManagerTarget<T>, bufferManager: BufferManagerBase<T, IBufferLocation>) {
+  constructor(
+    layer: IInstanceDiffManagerTarget<T>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>,
+  ) {
     this.layer = layer;
     this.bufferManager = bufferManager;
   }
@@ -57,23 +74,31 @@ export class InstanceDiffManager<T extends Instance> {
     if (this.processing) return this.processing;
 
     if (this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
-      this.processor = new InstanceAttributeDiffProcessor(this.layer, this.bufferManager);
-    }
-
-    else {
+      this.processor = new InstanceAttributeDiffProcessor(
+        this.layer,
+        this.bufferManager,
+      );
+    } else {
       // Now we look at the state of the layer to determine the best diff processor strategy
       if (this.layer.picking) {
         if (this.layer.picking.type === PickType.ALL) {
-          this.processor = new UniformQuadDiffProcessor(this.layer, this.bufferManager);
-        }
-
-        else if (this.layer.picking.type === PickType.SINGLE) {
-          this.processor = new UniformColorDiffProcessor(this.layer, this.bufferManager);
+          this.processor = new UniformQuadDiffProcessor(
+            this.layer,
+            this.bufferManager,
+          );
+        } else if (this.layer.picking.type === PickType.SINGLE) {
+          this.processor = new UniformColorDiffProcessor(
+            this.layer,
+            this.bufferManager,
+          );
         }
       }
 
       if (!this.processor) {
-        this.processor = new UniformDiffProcessor(this.layer, this.bufferManager);
+        this.processor = new UniformDiffProcessor(
+          this.layer,
+          this.bufferManager,
+        );
       }
     }
 

@@ -1,7 +1,20 @@
 import * as Three from 'three';
 import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, IShaderInitialization, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IUniform, UniformSize, VertexAttributeSize } from '../../types';
+import {
+  ILayerProps,
+  IModelType,
+  IShaderInitialization,
+  Layer,
+} from '../../surface/layer';
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize,
+} from '../../types';
 import { ScaleType } from '../types';
 import { ImageInstance } from './image-instance';
 
@@ -31,10 +44,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
           anchorEffect[1] = image.anchor.y || 0;
         }
 
-        const topLeft = [
-            image.x - anchorEffect[0],
-            image.y - anchorEffect[1],
-          ];
+        const topLeft = [image.x - anchorEffect[0], image.y - anchorEffect[1]];
 
         return new Bounds({
           height: image.height,
@@ -75,8 +85,8 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
             }
 
             const topLeft = view.worldToScreen({
-              x: image.x - (anchorEffect[0] / view.camera.scale[0]),
-              y: image.y - (anchorEffect[1] / view.camera.scale[1]),
+              x: image.x - anchorEffect[0] / view.camera.scale[0],
+              y: image.y - anchorEffect[1] / view.camera.scale[1],
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -103,8 +113,8 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
           }
 
           const topLeft = view.worldToScreen({
-            x: image.x - (anchorEffect[0] / view.camera.scale[0]),
-            y: image.y - (anchorEffect[1] / view.camera.scale[1]),
+            x: image.x - anchorEffect[0] / view.camera.scale[0],
+            y: image.y - anchorEffect[1] / view.camera.scale[1],
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -127,7 +137,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<ImageInstance> {
-    const vertexToNormal: {[key: number]: number} = {
+    const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
       2: -1,
@@ -136,7 +146,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
       5: -1,
     };
 
-    const vertexToSide: {[key: number]: number} = {
+    const vertexToSide: { [key: number]: number } = {
       0: 0,
       1: 0,
       2: 0,
@@ -153,35 +163,35 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
           blockIndex: InstanceBlockIndex.ONE,
           name: 'location',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.x, o.y],
+          update: o => [o.x, o.y],
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'anchor',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'size',
           size: InstanceAttributeSize.TWO,
-          update: (o) => [o.width, o.height],
+          update: o => [o.width, o.height],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
           name: 'depth',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.depth],
+          update: o => [o.depth],
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
           name: 'scaling',
           size: InstanceAttributeSize.ONE,
-          update: (o) => [o.scaling],
+          update: o => [o.scaling],
         },
         {
           atlas: {
@@ -190,14 +200,14 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
           },
           block: 2,
           name: 'texture',
-          update: (o) => this.resource.request(this, o, o.resource),
+          update: o => this.resource.request(this, o, o.resource),
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
           name: 'tint',
           size: InstanceAttributeSize.FOUR,
-          update: (o) => o.tint,
+          update: o => o.tint,
         },
       ],
       uniforms: [

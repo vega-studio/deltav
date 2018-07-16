@@ -1,5 +1,8 @@
 import * as Three from 'three';
-import { AbsolutePosition, getAbsolutePositionBounds } from '../primitives/absolute-position';
+import {
+  AbsolutePosition,
+  getAbsolutePositionBounds,
+} from '../primitives/absolute-position';
 import { Bounds } from '../primitives/bounds';
 import { IPoint } from '../primitives/point';
 import { Color } from '../types';
@@ -93,7 +96,7 @@ export class View extends IdentifyByKey {
   }
 
   screenToPixelSpace(point: IPoint, out?: IPoint) {
-    const p = out || {x: 0, y: 0};
+    const p = out || { x: 0, y: 0 };
 
     p.x = point.x * this.pixelRatio;
     p.y = point.y * this.pixelRatio;
@@ -102,7 +105,7 @@ export class View extends IdentifyByKey {
   }
 
   pixelSpaceToScreen(point: IPoint, out?: IPoint) {
-    const p = out || {x: 0, y: 0};
+    const p = out || { x: 0, y: 0 };
 
     p.x = point.x / this.pixelRatio;
     p.y = point.y / this.pixelRatio;
@@ -120,7 +123,7 @@ export class View extends IdentifyByKey {
   }
 
   viewToScreen(point: IPoint, out?: IPoint) {
-    const p = {x: 0, y: 0};
+    const p = { x: 0, y: 0 };
 
     p.x = point.x + this.viewBounds.x;
     p.y = point.y + this.viewBounds.y;
@@ -131,9 +134,13 @@ export class View extends IdentifyByKey {
   screenToWorld(point: IPoint, out?: IPoint) {
     const view = this.pixelSpaceToScreen(this.screenToView(point));
 
-    const world = out || {x: 0, y: 0};
-    world.x = (view.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
-    world.y = (view.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
+    const world = out || { x: 0, y: 0 };
+    world.x =
+      (view.x - this.camera.offset[0] * this.camera.scale[0]) /
+      this.camera.scale[0];
+    world.y =
+      (view.y - this.camera.offset[1] * this.camera.scale[1]) /
+      this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
@@ -144,11 +151,17 @@ export class View extends IdentifyByKey {
   }
 
   worldToScreen(point: IPoint, out?: IPoint) {
-    const screen = {x: 0, y: 0};
+    const screen = { x: 0, y: 0 };
 
     // Calculate from the camera to view space
-    screen.x = ((point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0])) * this.pixelRatio;
-    screen.y = ((point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1])) * this.pixelRatio;
+    screen.x =
+      (point.x * this.camera.scale[0] +
+        this.camera.offset[0] * this.camera.scale[0]) *
+      this.pixelRatio;
+    screen.y =
+      (point.y * this.camera.scale[1] +
+        this.camera.offset[1] * this.camera.scale[1]) *
+      this.pixelRatio;
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
@@ -160,11 +173,15 @@ export class View extends IdentifyByKey {
   }
 
   viewToWorld(point: IPoint, out?: IPoint) {
-    const world = out || {x: 0, y: 0};
+    const world = out || { x: 0, y: 0 };
 
     const screen = this.pixelSpaceToScreen(point);
-    world.x = (screen.x - (this.camera.offset[0] * this.camera.scale[0])) / this.camera.scale[0];
-    world.y = (screen.y - (this.camera.offset[1] * this.camera.scale[1])) / this.camera.scale[1];
+    world.x =
+      (screen.x - this.camera.offset[0] * this.camera.scale[0]) /
+      this.camera.scale[0];
+    world.y =
+      (screen.y - this.camera.offset[1] * this.camera.scale[1]) /
+      this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
@@ -175,11 +192,15 @@ export class View extends IdentifyByKey {
   }
 
   worldToView(point: IPoint, out?: IPoint) {
-    const screen = out || {x: 0, y: 0};
+    const screen = out || { x: 0, y: 0 };
 
     // Calculate from the camera to view space
-    screen.x = (point.x * this.camera.scale[0]) + (this.camera.offset[0] * this.camera.scale[0]);
-    screen.y = (point.y * this.camera.scale[1]) + (this.camera.offset[1] * this.camera.scale[1]);
+    screen.x =
+      point.x * this.camera.scale[0] +
+      this.camera.offset[0] * this.camera.scale[0];
+    screen.y =
+      point.y * this.camera.scale[1] +
+      this.camera.offset[1] * this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
@@ -195,8 +216,15 @@ export class View extends IdentifyByKey {
    * top left as 0,0 with +y axis pointing down.
    */
   fitViewtoViewport(surfaceDimensions: Bounds) {
-    if (this.viewCamera.type === ViewCameraType.CONTROLLED && isOrthographic(this.viewCamera.baseCamera)) {
-      const viewBounds = getAbsolutePositionBounds<View>(this.viewport, surfaceDimensions, this.pixelRatio);
+    if (
+      this.viewCamera.type === ViewCameraType.CONTROLLED &&
+      isOrthographic(this.viewCamera.baseCamera)
+    ) {
+      const viewBounds = getAbsolutePositionBounds<View>(
+        this.viewport,
+        surfaceDimensions,
+        this.pixelRatio,
+      );
       const width = viewBounds.width;
       const height = viewBounds.height;
 
@@ -214,7 +242,11 @@ export class View extends IdentifyByKey {
       const camera = this.viewCamera.baseCamera;
 
       Object.assign(camera, viewport);
-      camera.position.set(-viewBounds.width / 2.0 * scaleX, viewBounds.height / 2.0 * scaleY, camera.position.z);
+      camera.position.set(
+        -viewBounds.width / 2.0 * scaleX,
+        viewBounds.height / 2.0 * scaleY,
+        camera.position.z,
+      );
       camera.scale.set(scaleX, -scaleY, 1.0);
       camera.updateMatrix();
       camera.updateMatrixWorld(true);
@@ -228,10 +260,10 @@ export class View extends IdentifyByKey {
         x: this.viewBounds.x / this.pixelRatio,
         y: this.viewBounds.y / this.pixelRatio,
       });
-    }
-
-    else if (!isOrthographic(this.viewCamera.baseCamera)) {
-      console.warn('Fit to viewport does not support non-orthographic cameras as a default behavior.');
+    } else if (!isOrthographic(this.viewCamera.baseCamera)) {
+      console.warn(
+        'Fit to viewport does not support non-orthographic cameras as a default behavior.',
+      );
     }
   }
 }

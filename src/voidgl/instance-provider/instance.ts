@@ -13,7 +13,9 @@ export interface IInstanceOptions {
 }
 
 export class Instance implements Identifiable {
-  static get newUID() { return (instanceUID = (++instanceUID) % 0xFFFFFF); }
+  static get newUID() {
+    return (instanceUID = ++instanceUID % 0xffffff);
+  }
 
   /** This indicates when the instance is active / rendering */
   @observable active: boolean;
@@ -39,7 +41,7 @@ export class Instance implements Identifiable {
   }
 
   get observableDisposer(): () => void {
-    return () => (delete this._observer);
+    return () => delete this._observer;
   }
 
   get observer(): InstanceProvider<this> | null {
@@ -47,7 +49,7 @@ export class Instance implements Identifiable {
   }
 
   set observer(val: InstanceProvider<this> | null) {
-     // If an observer already is present, we should inform it, that it is being removed
+    // If an observer already is present, we should inform it, that it is being removed
     // in favor of a new observer
     const oldObserver = this._observer;
 

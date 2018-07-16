@@ -1,5 +1,14 @@
 import * as anime from 'animejs';
-import { createLayer, ImageInstance, ImageLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType, ScaleType } from '../../src';
+import {
+  createLayer,
+  ImageInstance,
+  ImageLayer,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+  ScaleType,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 const iconData = require('./images/leaf.png');
@@ -62,7 +71,11 @@ export class MouseInteractionImages extends BaseExample {
     }
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<ImageInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<ImageInstance>,
+  ): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas,
       data: provider,
@@ -91,23 +104,31 @@ export class MouseInteractionImages extends BaseExample {
     // Left Middle left
     images.push(provider.add(image));
 
-    images.push(provider.add(new ImageInstance({
-      element: icon,
-      id: `image_1`,
-      scaling: ScaleType.BOUND_MAX,
-      tint: [1.0, 1.0, 1.0, 1.0],
-      x: 20,
-      y: 50,
-    })));
+    images.push(
+      provider.add(
+        new ImageInstance({
+          element: icon,
+          id: `image_1`,
+          scaling: ScaleType.BOUND_MAX,
+          tint: [1.0, 1.0, 1.0, 1.0],
+          x: 20,
+          y: 50,
+        }),
+      ),
+    );
 
-    images.push(provider.add(new ImageInstance({
-      element: icon,
-      id: `image_2`,
-      scaling: ScaleType.NEVER,
-      tint: [1.0, 1.0, 1.0, 1.0],
-      x: 20,
-      y: 80,
-    })));
+    images.push(
+      provider.add(
+        new ImageInstance({
+          element: icon,
+          id: `image_2`,
+          scaling: ScaleType.NEVER,
+          tint: [1.0, 1.0, 1.0, 1.0],
+          x: 20,
+          y: 80,
+        }),
+      ),
+    );
 
     images.forEach(image => {
       image.size = 25;

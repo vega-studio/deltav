@@ -2,8 +2,13 @@ import { LayerSurface } from '../surface';
 import { IAutoEasingMethod } from './auto-easing-method';
 import { Vec } from './vector';
 
-export type AnimationDelayAccessor = (groupIndex: number, currentDelay: number) => number;
-export type AnimationInstanceModificationCallback = (groupIndex: number) => void;
+export type AnimationDelayAccessor = (
+  groupIndex: number,
+  currentDelay: number,
+) => number;
+export type AnimationInstanceModificationCallback = (
+  groupIndex: number,
+) => void;
 
 function isNumber(val: any): val is number {
   return !isNaN(val);
@@ -29,7 +34,13 @@ export class AnimationHelper {
    * @param delayGap This is the amount of delay between each group. This can be a static value or
    *                 can be a dynamic callback
    */
-  groupAnimation(easingMethod: IAutoEasingMethod<Vec>, groupCount: number, baseDelay: number, delayGap: number | AnimationDelayAccessor, modifyInstances: AnimationInstanceModificationCallback) {
+  groupAnimation(
+    easingMethod: IAutoEasingMethod<Vec>,
+    groupCount: number,
+    baseDelay: number,
+    delayGap: number | AnimationDelayAccessor,
+    modifyInstances: AnimationInstanceModificationCallback,
+  ) {
     // Get the time of the current frame as our timing basis
     const startFrameTime = this.surface.frameMetrics.currentTime;
     // Do an initial commit to ensure all previous animated properties are committed based on the
@@ -39,7 +50,9 @@ export class AnimationHelper {
     // Loop through the the number of grouped animations to work with
     for (let i = 0; i < groupCount; ++i) {
       // Determine how much extra delay is applied for the provided group
-      const gap = isNumber(delayGap) ? delayGap : delayGap(i, easingMethod.delay);
+      const gap = isNumber(delayGap)
+        ? delayGap
+        : delayGap(i, easingMethod.delay);
       // Apply the delay
       easingMethod.delay = baseDelay + gap * i;
       // Make the instance modifications

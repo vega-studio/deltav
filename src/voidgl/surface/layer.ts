@@ -44,7 +44,8 @@ export interface IShaderInputs<T extends Instance> {
   uniforms?: (IUniform | null)[];
 }
 
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
@@ -101,20 +102,26 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
 }
 
 export interface IModelConstructable {
-  new (geometry?: Three.Geometry | Three.BufferGeometry, material?: Three.Material | Three.Material []): any;
+  new (
+    geometry?: Three.Geometry | Three.BufferGeometry,
+    material?: Three.Material | Three.Material[],
+  ): any;
 }
 
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
-  boundsAccessor: BoundsAccessor<T>,
+  boundsAccessor: BoundsAccessor<T>;
   /** This is the way the system tests hitting an intsance */
-  hitTest: InstanceHitTest<T>,
+  hitTest: InstanceHitTest<T>;
 }
 
 /**
  * A base class for generating drawable content
  */
-export class Layer<T extends Instance, U extends ILayerProps<T>> extends IdentifyByKey {
+export class Layer<
+  T extends Instance,
+  U extends ILayerProps<T>
+> extends IdentifyByKey {
   static defaultProps: any = {};
 
   /** This is the attribute that specifies the _active flag for an instance */
@@ -122,11 +129,15 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
   private _bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** Buffer manager is read only. Must use setBufferManager */
-  get bufferManager() { return this._bufferManager; }
+  get bufferManager() {
+    return this._bufferManager;
+  }
   /** This is the determined buffering strategy of the layer */
   private _bufferType: LayerBufferType;
   /** Buffer type is private and should not be directly modified */
-  get bufferType() { return this._bufferType; }
+  get bufferType() {
+    return this._bufferType;
+  }
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This is the threejs geometry filled with the vertex information */
@@ -148,7 +159,10 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
+  picking:
+    | IQuadTreePickingMetrics<T>
+    | ISinglePickingMetrics<T>
+    | INonePickingMetrics;
   /** Properties handed to the Layer during a LayerSurface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
@@ -181,20 +195,22 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
       this.picking = {
         currentPickMode: PickType.NONE,
         hitTest: pickingMethods.hitTest,
-        quadTree: new TrackedQuadTree<T>(0, 1, 0, 1, pickingMethods.boundsAccessor),
+        quadTree: new TrackedQuadTree<T>(
+          0,
+          1,
+          0,
+          1,
+          pickingMethods.boundsAccessor,
+        ),
         type: PickType.ALL,
       };
-    }
-
-    else if (picking === PickType.SINGLE) {
+    } else if (picking === PickType.SINGLE) {
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.SINGLE,
         uidToInstance: new Map<number, T>(),
       };
-    }
-
-    else {
+    } else {
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.NONE,
@@ -238,7 +254,12 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
       instance = change[0];
       bufferLocations = this.bufferManager.getBufferLocations(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
-      processing[change[1]](processor, instance, Object.values(change[2]), bufferLocations);
+      processing[change[1]](
+        processor,
+        instance,
+        Object.values(change[2]),
+        bufferLocations,
+      );
     }
 
     // Tell the diff processor that it has completed it's task set
@@ -250,7 +271,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
     for (let i = 0, end = this.uniforms.length; i < end; ++i) {
       uniform = this.uniforms[i];
       value = uniform.update(uniform);
-      uniform.materialUniforms.forEach(materialUniform => materialUniform.value = value);
+      uniform.materialUniforms.forEach(
+        materialUniform => (materialUniform.value = value),
+      );
     }
   }
 
@@ -259,7 +282,9 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
    * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
    */
   getInstancePickingMethods(): IPickingMethods<T> {
-    throw new Error('When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.');
+    throw new Error(
+      'When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.',
+    );
   }
 
   /**
@@ -330,7 +355,13 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
    * Helper method for making a uniform type. Depending on set up, this makes creating elements
    * have better documentation when typing out the elements.
    */
-  makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform {
+  makeUniform(
+    name: string,
+    size: UniformSize,
+    update: (o: IUniform) => UniformIOValue,
+    shaderInjection?: ShaderInjectionTarget,
+    qualifier?: string,
+  ): IUniform {
     return {
       name,
       qualifier,
@@ -350,10 +381,10 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
       this.diffManager = new InstanceDiffManager<T>(this, bufferManager);
       this.diffManager.makeProcessor();
       this.interactions = new LayerInteractionHandler(this);
-    }
-
-    else {
-      console.warn('You can not change a layer\'s buffer strategy once it has been instantiated.');
+    } else {
+      console.warn(
+        'You can not change a layer\'s buffer strategy once it has been instantiated.',
+      );
     }
   }
 
@@ -363,10 +394,10 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
   setBufferType(val: LayerBufferType) {
     if (this._bufferType === undefined) {
       this._bufferType = val;
-    }
-
-    else {
-      console.warn('You can not change a layers buffer strategy once it has been instantiated.');
+    } else {
+      console.warn(
+        'You can not change a layers buffer strategy once it has been instantiated.',
+      );
     }
   }
 

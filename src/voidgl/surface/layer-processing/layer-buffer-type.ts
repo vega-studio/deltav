@@ -1,7 +1,14 @@
 import { Instance } from '../../instance-provider/instance';
-import { IInstanceAttribute, instanceAttributeSizeFloatCount, IVertexAttribute } from '../../types';
+import {
+  IInstanceAttribute,
+  instanceAttributeSizeFloatCount,
+  IVertexAttribute,
+} from '../../types';
 import { WebGLStat } from '../../util';
-import { InstanceAttributeBufferManager, UniformBufferManager } from '../buffer-management';
+import {
+  InstanceAttributeBufferManager,
+  UniformBufferManager,
+} from '../buffer-management';
 import { Layer } from '../layer';
 import { Scene } from '../scene';
 
@@ -19,7 +26,12 @@ export enum LayerBufferType {
  * This analyzes a layer and determines if it should use a compatibility instancing mode or use hardware
  * instancing.
  */
-export function getLayerBufferType<T extends Instance>(gl: WebGLRenderingContext, layer: Layer<T, any>, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[]) {
+export function getLayerBufferType<T extends Instance>(
+  gl: WebGLRenderingContext,
+  layer: Layer<T, any>,
+  vertexAttributes: IVertexAttribute[],
+  instanceAttributes: IInstanceAttribute<T>[],
+) {
   let type;
 
   // The layer only gets it's buffer type calculated once
@@ -40,7 +52,9 @@ export function getLayerBufferType<T extends Instance>(gl: WebGLRenderingContext
 
     for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
       const attribute = instanceAttributes[i];
-      attributesUsed += Math.ceil(instanceAttributeSizeFloatCount[attribute.size || 1] / 4);
+      attributesUsed += Math.ceil(
+        instanceAttributeSizeFloatCount[attribute.size || 1] / 4,
+      );
       console.log(attribute.name, attribute.size);
     }
 
@@ -67,9 +81,18 @@ export function getLayerBufferType<T extends Instance>(gl: WebGLRenderingContext
 /**
  * Builds the proper buffer manager for the provided layer
  */
-export function makeLayerBufferManager<T extends Instance>(gl: WebGLRenderingContext, layer: Layer<T, any>, scene: Scene) {
+export function makeLayerBufferManager<T extends Instance>(
+  gl: WebGLRenderingContext,
+  layer: Layer<T, any>,
+  scene: Scene,
+) {
   // Esnure the buffering type has been calculated for the layer
-  const type = getLayerBufferType(gl, layer, layer.vertexAttributes, layer.instanceAttributes);
+  const type = getLayerBufferType(
+    gl,
+    layer,
+    layer.vertexAttributes,
+    layer.instanceAttributes,
+  );
 
   switch (type) {
     // This is the Instance Attribute buffering strategy, which means the system
@@ -84,5 +107,4 @@ export function makeLayerBufferManager<T extends Instance>(gl: WebGLRenderingCon
       break;
     }
   }
-
 }

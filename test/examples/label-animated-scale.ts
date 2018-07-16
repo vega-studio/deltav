@@ -1,4 +1,12 @@
-import { AnchorType, createLayer, InstanceProvider, LabelInstance, LabelLayer, LayerInitializer, ScaleType } from '../../src';
+import {
+  AnchorType,
+  createLayer,
+  InstanceProvider,
+  LabelInstance,
+  LabelLayer,
+  LayerInitializer,
+  ScaleType,
+} from '../../src';
 import { BaseExample } from './base-example';
 
 export class LabelAnimatedScale extends BaseExample {
@@ -6,7 +14,11 @@ export class LabelAnimatedScale extends BaseExample {
   maxScale: number = 2;
   scaleStep: number = 0.05;
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<LabelInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<LabelInstance>,
+  ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
@@ -17,26 +29,28 @@ export class LabelAnimatedScale extends BaseExample {
 
   makeProvider(): InstanceProvider<LabelInstance> {
     const provider = new InstanceProvider<LabelInstance>();
-    const label = provider.add(new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.TopLeft,
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: 'Arial',
-      fontSize: 20,
-      fontStyle: 'normal',
-      fontWeight: 'normal',
-      id: `label-vertical-0`,
-      rasterization: {
+    const label = provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.TopLeft,
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        id: `label-vertical-0`,
+        rasterization: {
+          scale: 1.0,
+        },
         scale: 1.0,
-      },
-      scale: 1.0,
-      scaling: ScaleType.BOUND_MAX,
-      text: 'Scaling text...:',
-      x: 20,
-      y: 100,
-    }));
+        scaling: ScaleType.BOUND_MAX,
+        text: 'Scaling text...:',
+        x: 20,
+        y: 100,
+      }),
+    );
 
     setInterval(() => {
       const newScale = label.scale + this.scaleStep;

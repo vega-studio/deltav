@@ -39,7 +39,8 @@ export function observable<T extends Instance>(target: T, key: string) {
   // per NAME of an observable. A UID for a name can produce MUCH faster lookups than the name itself.
   // Matching against the name allows us to have instances with their own property sets but have matching
   // name mappings to improve compatibility of Instances with varying Layers.
-  let propertyUID: number = ObservableMonitoring.observableNamesToUID.get(key) || 0;
+  let propertyUID: number =
+    ObservableMonitoring.observableNamesToUID.get(key) || 0;
 
   if (!propertyUID) {
     propertyUID = uid();
@@ -51,7 +52,9 @@ export function observable<T extends Instance>(target: T, key: string) {
    * the initial storage with a custom getter and setter.
    */
   function getter(this: T) {
-    if (ObservableMonitoring.gatherIds) ObservableMonitoring.observableIds.push(propertyUID);
+    if (ObservableMonitoring.gatherIds) {
+      ObservableMonitoring.observableIds.push(propertyUID);
+    }
     return this.observableStorage[propertyUID];
   }
 

@@ -66,9 +66,30 @@ export class Quadrants<T extends Instance> {
   ) {
     const mid = bounds.mid;
     this.TL = new Node<T>(bounds.x, mid.x, bounds.y, mid.y, getBounds, depth);
-    this.TR = new Node<T>(mid.x, bounds.right, bounds.y, mid.y, getBounds, depth);
-    this.BL = new Node<T>(bounds.x, mid.x, mid.y, bounds.bottom, getBounds, depth);
-    this.BR = new Node<T>(mid.x, bounds.right, mid.y, bounds.bottom, getBounds, depth);
+    this.TR = new Node<T>(
+      mid.x,
+      bounds.right,
+      bounds.y,
+      mid.y,
+      getBounds,
+      depth,
+    );
+    this.BL = new Node<T>(
+      bounds.x,
+      mid.x,
+      mid.y,
+      bounds.bottom,
+      getBounds,
+      depth,
+    );
+    this.BR = new Node<T>(
+      mid.x,
+      bounds.right,
+      mid.y,
+      bounds.bottom,
+      getBounds,
+      depth,
+    );
     this.TL.childToNode = childToNode;
     this.TR.childToNode = childToNode;
     this.BL.childToNode = childToNode;
@@ -135,10 +156,10 @@ export class Node<T extends Instance> {
   ) {
     // If params insertted
     if (arguments.length >= 4) {
-      this.bounds = new Bounds({left, right, top, bottom});
+      this.bounds = new Bounds({ left, right, top, bottom });
     } else {
       // Otherwise, make tiny start area
-      this.bounds = new Bounds({left: 0, right: 1, top: 1, bottom: 0});
+      this.bounds = new Bounds({ left: 0, right: 1, top: 1, bottom: 0 });
     }
 
     // Ensure the depth is set
@@ -232,11 +253,15 @@ export class Node<T extends Instance> {
       maxY !== -Number.MAX_VALUE
     ) {
       // Make sure our bounds includes the specified bounds
-      this.cover(new Bounds({left: minX, right: maxX, bottom: maxY, top: minY}));
+      this.cover(
+        new Bounds({ left: minX, right: maxX, bottom: maxY, top: minY }),
+      );
     }
 
     // Add all of the children into the tree.
-    children.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null, true));
+    children.forEach((child, index) =>
+      this.doAdd(child, this.childToBounds.get(child) || null, true),
+    );
   }
 
   /**
@@ -271,7 +296,9 @@ export class Node<T extends Instance> {
     // Clear out the child to node relations
     this.childToNode.clear();
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, index) => this.doAdd(child, this.childToBounds.get(child) || null));
+    allChildren.forEach((child, index) =>
+      this.doAdd(child, this.childToBounds.get(child) || null),
+    );
   }
 
   /**
@@ -294,7 +321,9 @@ export class Node<T extends Instance> {
 
     // If no bounds is available at this point, something went terribly wrong
     if (!bounds) {
-      console.warn('A null bounds was added to a Quad Tree node below the top node, which is invalid.');
+      console.warn(
+        'A null bounds was added to a Quad Tree node below the top node, which is invalid.',
+      );
       return false;
     }
 
@@ -353,9 +382,15 @@ export class Node<T extends Instance> {
     } else {
       console.error(
         'Child did not get insertted.',
-        'Parent:', this.bounds.toString(),
-        'Child:', bounds.toString(),
-        'Inside Checks:', bounds.x >= this.bounds.x, bounds.right <= this.bounds.right, bounds.y >= this.bounds.y, bounds.bottom <= this.bounds.bottom,
+        'Parent:',
+        this.bounds.toString(),
+        'Child:',
+        bounds.toString(),
+        'Inside Checks:',
+        bounds.x >= this.bounds.x,
+        bounds.right <= this.bounds.right,
+        bounds.y >= this.bounds.y,
+        bounds.bottom <= this.bounds.bottom,
       );
     }
 
@@ -438,7 +473,7 @@ export class Node<T extends Instance> {
    * @return     Returns the exact same list that was input as the list param
    */
   queryBounds(b: Bounds, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c) => {
+    this.children.forEach(c => {
       const bounds = this.childToBounds.get(c);
 
       if (bounds && bounds.hitBounds(b)) {
@@ -482,7 +517,7 @@ export class Node<T extends Instance> {
    * @return      Returns the exact same list that was input as the list param
    */
   queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c) => {
+    this.children.forEach(c => {
       const bounds = this.childToBounds.get(c);
 
       if (bounds && bounds.containsPoint(p)) {

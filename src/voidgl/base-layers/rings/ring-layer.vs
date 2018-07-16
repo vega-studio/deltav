@@ -20,7 +20,7 @@ void main() {
     float(pixelRatio > 1.0)
   );
 
-  edgeSharpness = 2.0 / size;
+  edgeSharpness = 5.0 / size;
   pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
 
   // Center within clip space

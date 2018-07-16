@@ -32,7 +32,7 @@ export class BoxOfRings extends BaseExample {
   makeProvider(): DataProvider<RingInstance> {
     const ringProvider = new DataProvider<RingInstance>([]);
 
-    setInterval(() => {
+    /*setInterval(() => {
       if (ringProvider.instances.length) {
         ringProvider.instances.pop();
       } else {
@@ -51,7 +51,20 @@ export class BoxOfRings extends BaseExample {
           }
         }
       }
-    }, 1000 / 60);
+    }, 1000 / 60);*/
+
+    for (let k = 0; k < 25; ++k) {
+      ringProvider.instances.push(
+        new RingInstance({
+          color: [Math.random(), Math.random(), Math.random(), 1.0],
+          id: `ring_${k}`,
+          radius: 50 * (k + 1),
+          thickness: 10,
+          x: k * 20,
+          y: 400
+        })
+      );
+    }
 
     return ringProvider;
   }

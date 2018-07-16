@@ -39,8 +39,8 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  new BoxOfRings(),
-  new BoxOfCircles(),
+  new BoxOfRings()
+  /*new BoxOfCircles(),
   new ScreenSpaceEdges(),
   new ChangingAnchorLabels(),
   new LabelAnchorsAndScales(),
@@ -56,7 +56,7 @@ const tests: BaseExample[] = [
   new LabelAnimatedScale(),
   new LabelSizingCorrected(),
   new MouseInteractionRectangle(),
-  new BoundedView()
+  new BoundedView()*/
 ];
 
 /** These are the layers for the tests that are generated */
@@ -116,7 +116,7 @@ export class Main extends Component<any, IMainState> {
 
     if (generate) {
       this.context.removeAttribute("style");
-      const scenes = this.makeSceneBlock(5);
+      const scenes = this.makeSceneBlock(1);
       this.allScenes = scenes;
 
       // Establish the surface and scenes needed

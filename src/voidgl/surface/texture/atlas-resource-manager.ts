@@ -1,10 +1,10 @@
-import * as Three from 'three';
-import { InstanceIOValue } from '../../types';
-import { Instance } from '../../util/instance';
-import { ILayerProps, Layer } from '../layer';
-import { AtlasManager, AtlasResource } from './atlas-manager';
-import { LabelAtlasResource } from './label-atlas-resource';
-import { SubTexture } from './sub-texture';
+import * as Three from "three";
+import { InstanceIOValue } from "../../types";
+import { Instance } from "../../util/instance";
+import { ILayerProps, Layer } from "../layer";
+import { AtlasManager, AtlasResource } from "./atlas-manager";
+import { LabelAtlasResource } from "./label-atlas-resource";
+import { SubTexture } from "./sub-texture";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */
@@ -22,7 +22,7 @@ function toInstanceIOValue(texture?: SubTexture): InstanceIOValue {
     texture.atlasTL.x,
     texture.atlasTL.y,
     texture.atlasBR.x,
-    texture.atlasBR.y,
+    texture.atlasBR.y
   ];
 }
 
@@ -36,13 +36,16 @@ export class AtlasResourceManager {
   /** This is the atlas manager that handles operations with our atlas' */
   atlasManager: AtlasManager;
   /** This is the atlas currently targetted by requests */
-  targetAtlas: string = '';
+  targetAtlas: string = "";
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, AtlasResource[]>();
   /**
    * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
    */
-  private requestLookup = new Map<string, Map<AtlasResource, [Layer<any, any>, Instance][]>>();
+  private requestLookup = new Map<
+    string,
+    Map<AtlasResource, [Layer<any, any>, Instance][]>
+  >();
 
   constructor(options: IAtlasResourceManagerOptions) {
     this.atlasManager = options.atlasManager;
@@ -56,7 +59,9 @@ export class AtlasResourceManager {
     // This flag will be modified to reflect if a dequeue operation has occurred
     let didDequeue = false;
 
-    for (const [targetAtlas, resources] of Array.from(this.requestQueue.entries())) {
+    for (const [targetAtlas, resources] of Array.from(
+      this.requestQueue.entries()
+    )) {
       if (resources.length > 0) {
         // We did dequeue
         didDequeue = true;
@@ -121,7 +126,11 @@ export class AtlasResourceManager {
    * make valid texture lookups, or it will trigger a loading of resources to an atlas and cause an
    * automated deactivation and reactivation of the instance.
    */
-  request<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instance: Instance, resource: AtlasResource): InstanceIOValue {
+  request<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>,
+    instance: Instance,
+    resource: AtlasResource
+  ): InstanceIOValue {
     const texture: SubTexture = resource.texture;
 
     // If the texture is ready and available, then we simply return the IO values
@@ -148,9 +157,7 @@ export class AtlasResourceManager {
 
         return toInstanceIOValue(texture);
       }
-    }
-
-    else {
+    } else {
       atlasRequests = new Map();
       this.requestLookup.set(this.targetAtlas, atlasRequests);
     }

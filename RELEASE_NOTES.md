@@ -1,5 +1,14 @@
 # Release Notes
 
+## 1.9.2
+
+* `(FIXED)` Release process will now produce the correct release file name
+
+## 1.9.1
+
+* `(FIXED)` autoUpdate of null error removed
+* `(FIXED)` Useless resource error removed that was caused from invalidated and no longer used resources finished loading.
+
 ## 1.9.0
 
 * `(ADDED)` maxScale for labels to allow for higher scales in BOUND_MAX scale mode

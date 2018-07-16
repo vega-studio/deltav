@@ -1,13 +1,24 @@
-import { createLayer, DataProvider, EdgeInstance, EdgeLayer, EdgeType, LayerInitializer } from '../../src';
-import { BaseExample } from './base-example';
+import {
+  createLayer,
+  DataProvider,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  LayerInitializer
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class Lines extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: DataProvider<EdgeInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    _atlas: string,
+    provider: DataProvider<EdgeInstance>
+  ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'lines',
+      key: "lines",
       scene: scene,
-      type: EdgeType.LINE,
+      type: EdgeType.LINE
     });
   }
 
@@ -24,10 +35,13 @@ export class Lines extends BaseExample {
           id: `line-${i}-${k}`,
           start: [k * 20, i * LINE_HEIGHT + LINE_HEIGHT],
           widthEnd: 10,
-          widthStart: 10,
+          widthStart: 10
         });
 
-        edge.end = [(Math.sin(Date.now() / 4E2 + (k * 20)) * 10) + (k * 20), edge.end[1]];
+        edge.end = [
+          Math.sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
+          edge.end[1]
+        ];
         edgeProvider.instances.push(edge);
       }
     }
@@ -37,7 +51,10 @@ export class Lines extends BaseExample {
       for (let i = 0; i < 10; ++i) {
         for (let k = 0; k < 100; ++k) {
           const edge = edgeProvider.instances[++next];
-          edge.end = [(Math.sin(Date.now() / 4E2 + (k * 20)) * 10) + (k * 20), edge.end[1]];
+          edge.end = [
+            Math.sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
+            edge.end[1]
+          ];
         }
       }
     }, 1000 / 60);

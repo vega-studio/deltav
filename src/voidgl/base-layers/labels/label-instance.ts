@@ -1,10 +1,12 @@
-import { computed, observable } from 'mobx';
-import { Label } from '../../primitives/label';
-import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
-import { IInstanceOptions, Instance } from '../../util/instance';
-import { Anchor, AnchorType, ScaleType } from '../types';
+import { computed, observable } from "mobx";
+import { Label } from "../../primitives/label";
+import { LabelAtlasResource, LabelRasterizer } from "../../surface/texture";
+import { IInstanceOptions, Instance } from "../../util/instance";
+import { Anchor, AnchorType, ScaleType } from "../types";
 
-export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
+export interface ILabelInstanceOptions
+  extends IInstanceOptions,
+    Partial<Label> {
   /**
    * The point on the label which will be placed in world space via the x, y coords. This is also the point
    * which the label will be scaled around.
@@ -19,9 +21,9 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
   /** The font size of the label in px */
   fontSize?: number;
   /** Stylization of the font */
-  fontStyle?: Label['fontStyle'];
+  fontStyle?: Label["fontStyle"];
   /** The weight of the font */
-  fontWeight?: Label['fontWeight'];
+  fontWeight?: Label["fontWeight"];
   /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
   maxWidth?: number;
   /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
@@ -63,14 +65,19 @@ type RasterizationReference = {
  * This is a lookup to find existing rasterizations for a particularly created label so that every
  * new label does not have to go through the rasterization process.
  */
-const rasterizationLookUp = new Map<TextValue, Map<CSSFont, RasterizationReference>>();
+const rasterizationLookUp = new Map<
+  TextValue,
+  Map<CSSFont, RasterizationReference>
+>();
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
  * position based on the anchor type.
  */
-const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) => void} = {
-  [AnchorType.TopLeft]: (anchor: Anchor, label: LabelInstance) => {
+const anchorCalculator: {
+  [key: number]: (anchor: Anchor, label: LabelInstance) => void;
+} = {
+  [AnchorType.TopLeft]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -106,10 +113,10 @@ const anchorCalculator: {[key: number]: (anchor: Anchor, label: LabelInstance) =
     anchor.x = label.width + anchor.padding;
     anchor.y = label.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, label: LabelInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -155,13 +162,13 @@ export class LabelInstance extends Instance implements Label {
   // As the properties are completely locked into how the label was rasterized and can not
   // Nor should not be easily adjusted for performance concerns
 
-  private _cssFont: string = '';
-  private _fontFamily: string = 'Arial';
+  private _cssFont: string = "";
+  private _fontFamily: string = "Arial";
   private _fontSize: number = 12;
-  private _fontStyle: Label['fontStyle'] = 'normal';
-  private _fontWeight: Label['fontWeight'] = 400;
+  private _fontStyle: Label["fontStyle"] = "normal";
+  private _fontWeight: Label["fontWeight"] = 400;
   private _maxWidth: number = 0;
-  private _text: string = '';
+  private _text: string = "";
   private _width: number = 0;
   private _height: number = 0;
   private _isDestroyed: boolean = false;
@@ -175,31 +182,51 @@ export class LabelInstance extends Instance implements Label {
    * a unique identifier for the rendering of the label and is used to key the rasterization of the label
    * so that label rasterization can be shared for similar labels.
    */
-  get cssFont() { return this._cssFont; }
+  get cssFont() {
+    return this._cssFont;
+  }
   /** This flag indicates if this label is valid anymore */
-  get isDestroyed() { return this._isDestroyed; }
+  get isDestroyed() {
+    return this._isDestroyed;
+  }
   /** This is the font family of the label */
-  get fontFamily() { return this._fontFamily; }
+  get fontFamily() {
+    return this._fontFamily;
+  }
   /**
    * This is the size of the label in pixels. For Labels, this correlates to the rendering font size.
    * The true pixel height of the label is calculated and placed into the height property for the label.
    */
-  get fontSize() { return this._fontSize; }
+  get fontSize() {
+    return this._fontSize;
+  }
   /** This is the style of the font (italic, oblique, etc) */
-  get fontStyle() { return this._fontStyle; }
+  get fontStyle() {
+    return this._fontStyle;
+  }
   /** This is the font weight specified for the label (bold, normal, etc). */
-  get fontWeight() { return this._fontWeight; }
+  get fontWeight() {
+    return this._fontWeight;
+  }
   /** This is the max width in pixels this label can fill */
-  get maxWidth() { return this._maxWidth; }
+  get maxWidth() {
+    return this._maxWidth;
+  }
   /** This gets the atlas resource that is uniquely identified for this label */
-  get resource() { return this._rasterization.resource; }
+  get resource() {
+    return this._rasterization.resource;
+  }
   /** This is the label's text. */
-  get text() { return this._text; }
+  get text() {
+    return this._text;
+  }
   /**
    * If a maxWidth is specified, there is a chance the text will be truncated.
    * This provides the calculated truncated text.
    */
-  get truncatedText() { return this._rasterization.resource.truncatedText || this.text; }
+  get truncatedText() {
+    return this._rasterization.resource.truncatedText || this.text;
+  }
 
   /**
    * This is the width in world space of the label. If there is no camera distortion,
@@ -220,11 +247,12 @@ export class LabelInstance extends Instance implements Label {
   // These are properties that can be altered, but have side effects from being changed
 
   /** This is the anchor location on the  */
-  @observable private _anchor: Anchor = {
+  @observable
+  private _anchor: Anchor = {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: ILabelInstanceOptions) {
@@ -264,9 +292,7 @@ export class LabelInstance extends Instance implements Label {
       if (rasterization) {
         rasterization.references++;
       }
-    }
-
-    else {
+    } else {
       rasterizations = new Map<CSSFont, RasterizationReference>();
     }
 
@@ -274,7 +300,7 @@ export class LabelInstance extends Instance implements Label {
     if (!rasterization) {
       rasterization = {
         references: 1,
-        resource: new LabelAtlasResource(this),
+        resource: new LabelAtlasResource(this)
       };
 
       // Look to see if any rasterization options were specified
@@ -283,7 +309,8 @@ export class LabelInstance extends Instance implements Label {
       }
 
       // Ensure the sample scale is set. Defaults to 1.0
-      rasterization.resource.sampleScale = rasterization.resource.sampleScale || 1.0;
+      rasterization.resource.sampleScale =
+        rasterization.resource.sampleScale || 1.0;
       // Rasterize the resource generated for this label. We need it immediately rasterized so
       // That we can utilize the dimensions for calculations.
       LabelRasterizer.renderSync(rasterization.resource);
@@ -330,7 +357,7 @@ export class LabelInstance extends Instance implements Label {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

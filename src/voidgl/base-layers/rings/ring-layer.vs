@@ -14,15 +14,18 @@ void main() {
 
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
+
+  thickness = mix(2.0 / scaleFactor, thickness, float(thickness * scaleFactor > 2.0));
+
   borderSize = mix(
-    (thickness + 1.5) / size,
+    (thickness) / size,
     ((thickness * pixelRatio) / size),
     float(pixelRatio > 1.0)
   );
 
-  edgeSharpness = 5.0 * min(1.0 / size, 0.5);
+  edgeSharpness = min(0.2 / (thickness * scale),  0.1);
 
-  pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
+  pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;  
 
   // Center within clip space
   vec4 clipCenter = clipSpace(vec3(center, depth));

@@ -248,11 +248,11 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // TODO: This will go away! To satisfy the changing buffer manager interfaces, we make a
     // fake internal attribute for now
     const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
-      uid: uid(),
       bufferAttribute: new Three.InstancedBufferAttribute(
         new Float32Array(1),
         1,
       ),
+      uid: uid(),
     });
 
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {

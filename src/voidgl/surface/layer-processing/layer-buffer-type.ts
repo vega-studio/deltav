@@ -42,12 +42,9 @@ export function getLayerBufferType<T extends Instance>(
   if (WebGLStat.HARDWARE_INSTANCING) {
     let attributesUsed = 0;
 
-    console.log('layer', layer.id, WebGLStat.MAX_VERTEX_ATTRIBUTES);
-
     for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
       const attribute = vertexAttributes[i];
       attributesUsed += Math.ceil(attribute.size / 4);
-      console.log(attribute.name, attribute.size);
     }
 
     for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
@@ -55,10 +52,8 @@ export function getLayerBufferType<T extends Instance>(
       attributesUsed += Math.ceil(
         instanceAttributeSizeFloatCount[attribute.size || 1] / 4,
       );
-      console.log(attribute.name, attribute.size);
     }
 
-    console.log('TOTAL', attributesUsed);
     // Too many attributes. We must use the uniform compatibility mode
     if (attributesUsed > WebGLStat.MAX_VERTEX_ATTRIBUTES) {
       type = LayerBufferType.UNIFORM;

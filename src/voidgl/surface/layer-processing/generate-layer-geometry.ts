@@ -113,7 +113,5 @@ export function generateLayerGeometry<T extends Instance>(
     geometry.addAttribute(attribute.name, materialAttribute);
   }
 
-  console.log('BUILD VERTEX ATTRIBUTES', geometry);
-
   return geometry;
 }

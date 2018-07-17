@@ -1,4 +1,4 @@
-const toEmit: { [key: string]: [Function, number, number] } = {};
+let toEmit: { [key: string]: [Function, number, number] } = {};
 
 export function emitOnce(
   id: string,
@@ -13,4 +13,14 @@ export function emitOnce(
     callback(emit[2], id);
     delete toEmit[id];
   }, 1);
+}
+
+export function flushEmitOnce() {
+  for (const id in toEmit) {
+    const emit = toEmit[id];
+    clearTimeout(emit[1]);
+    emit[0](emit[2], id);
+  }
+
+  toEmit = {};
 }

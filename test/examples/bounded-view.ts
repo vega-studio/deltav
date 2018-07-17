@@ -32,10 +32,10 @@ export class BoundedView extends BaseExample {
       screenPadding: { left: 5, right: 5, top: 5, bottom: 5 },
       view: '3_1',
       worldBounds: new Bounds({
-        left: 0,
-        top: 0,
-        right: 200,
         bottom: 200,
+        left: 0,
+        right: 200,
+        top: 0,
         x: 0,
         y: 0,
       }),

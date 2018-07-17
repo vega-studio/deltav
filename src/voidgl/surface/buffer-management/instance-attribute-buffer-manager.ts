@@ -7,7 +7,7 @@ import {
   PickType,
 } from '../../types';
 import { uid } from '../../util';
-import { emitOnce } from '../../util/emit-once';
+import { emitOnce, flushEmitOnce } from '../../util/emit-once';
 import { IModelConstructable, Layer } from '../layer';
 import { generateLayerModel } from '../layer-processing/generate-layer-model';
 import { Scene } from '../scene';
@@ -36,6 +36,8 @@ export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<
 export class InstanceAttributeBufferManager<
   T extends Instance
 > extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
+  /** This stores an attribute's name to the buffer locations generated for it */
+  private allBufferLocations: {[key: string]: IBufferLocation[]} = {};
   /** This contains the buffer locations the system will have available to the  */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
@@ -242,7 +244,6 @@ export class InstanceAttributeBufferManager<
    * This generates a new buffer of uniforms to associate instances with.
    */
   private resizeBuffer() {
-    console.log('RESIZING BUFFERS FOR', this.layer.id);
     let growth = 0;
     // Each attribute will generate lists of new buffer locations after being created or expanded
     const attributeToNewBufferLocations = new Map<
@@ -292,6 +293,9 @@ export class InstanceAttributeBufferManager<
           attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
         }
 
+        const allLocations = this.allBufferLocations[attribute.name] || [];
+        this.allBufferLocations[attribute.name] = allLocations;
+
         const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
           {},
           attribute,
@@ -299,14 +303,17 @@ export class InstanceAttributeBufferManager<
         );
 
         for (let i = 0; i < this.maxInstancedCount; ++i) {
-          newBufferLocations.push({
+          const newLocation: IBufferLocation = {
             attribute: internalAttribute,
             buffer: {
               value: buffer,
             },
             instanceIndex: i,
             range: [i * size, i * size + size],
-          });
+          };
+
+          newBufferLocations.push(newLocation);
+          allLocations.push(newLocation);
         }
 
         // Make an internal instance attribute for tracking
@@ -348,11 +355,11 @@ export class InstanceAttributeBufferManager<
       // We grow our buffer by magnitudes of 10 * 1024
       // First growth: 1000
       // Next: 10000
-      // Next: 100000
-      // Next: 1000000
-      // Next: 1000000
+      // Next: 10000
+      // Next: 10000
+      // Next: 10000
       // We cap at growth of 1 million to prevent a mass unused RAM void.
-      this.growthCount = Math.min(3, this.growthCount + 1);
+      this.growthCount = Math.min(1, this.growthCount + 1);
       growth = Math.pow(10, this.growthCount) * 1000;
       this.maxInstancedCount += growth;
 
@@ -374,11 +381,24 @@ export class InstanceAttributeBufferManager<
           // Make sure our attribute is updated with the newly made attribute
           attribute.bufferAttribute = newAttribute;
           // Add the new attribute to our new geometry object
-          this.geometry.addAttribute(attribute.name, newAttribute);
+          this.geometry.addAttribute(
+            instanceAttributeShaderName(attribute),
+            newAttribute,
+          );
           // Get the temp storage for new buffer locations
           let newBufferLocations = attributeToNewBufferLocations.get(
             attribute.name,
           );
+
+          // Since we have a new buffer object we are working with, we must update all of the existing buffer
+          // locations to utilize this new buffer. The locations keep everything else the same, but the buffer
+          // object itself should be updated
+          const allLocations = this.allBufferLocations[attribute.name] || [];
+          this.allBufferLocations[attribute.name] = allLocations;
+
+          for (let k = 0, endk = allLocations.length; k < endk; ++k) {
+            allLocations[k].buffer.value = buffer;
+          }
 
           if (!newBufferLocations) {
             newBufferLocations = [];
@@ -393,14 +413,17 @@ export class InstanceAttributeBufferManager<
             i < end;
             ++i
           ) {
-            newBufferLocations.push({
+            const newLocation: IBufferLocation = {
               attribute,
               buffer: {
                 value: buffer,
               },
               instanceIndex: i,
               range: [i * size, i * size + size],
-            });
+            };
+
+            newBufferLocations.push(newLocation);
+            allLocations.push(newLocation);
           }
         }
       });
@@ -408,13 +431,9 @@ export class InstanceAttributeBufferManager<
       this.scene.container.remove(this.model);
     }
 
-    console.log(this.growthCount, growth, attributeToNewBufferLocations);
-
     if (this.scene && this.model) {
       this.scene.container.remove(this.model);
     }
-
-    this.geometry.drawRange;
 
     // Remake the model with the generated geometry
     this.model = generateLayerModel(this.layer, this.geometry, this.material);
@@ -431,15 +450,12 @@ export class InstanceAttributeBufferManager<
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
     if (this.scene) {
-      console.log('ADDED MODEL TO SCENE', this.scene);
       this.scene.container.add(this.model);
 
       if (this.pickModel) {
         this.scene.pickingContainer.add(this.pickModel);
       }
     }
-
-    console.log(this.geometry);
 
     return {
       growth,
@@ -460,6 +476,27 @@ export class InstanceAttributeBufferManager<
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
 
+    // Optimize inner loops by pre-fetching lookups by names
+    const attributesBufferLocations: {
+      attribute: IInstanceAttribute<T>,
+      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
+      childBufferLocations: IInstanceAttributeBufferLocation[][],
+      ids: number[];
+    }[] = [];
+
+    this.attributeToPropertyIds.forEach((ids, attribute) => {
+      attributesBufferLocations.push({
+        attribute,
+        bufferLocationsForAttribute: attributeToNewBufferLocations.get(
+          attribute.name,
+        ) || [],
+        childBufferLocations: (attribute.childAttributes || []).map((attr) => attributeToNewBufferLocations.get(
+          attr.name,
+        ) || []),
+        ids,
+      });
+    });
+
     // Loop through all of the new instances available and gather all of the buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
       const group: IInstanceAttributeBufferLocationGroup = {
@@ -469,10 +506,11 @@ export class InstanceAttributeBufferManager<
 
       // Loop through all of the property ids that affect specific attributes. Each of these ids
       // needs an association with the buffer location they modify.
-      this.attributeToPropertyIds.forEach((ids, attribute) => {
-        const bufferLocationsForAttribute = attributeToNewBufferLocations.get(
-          attribute.name,
-        );
+      for (let j = 0, endj = attributesBufferLocations.length; j < endj; ++j) {
+        const allLocations = attributesBufferLocations[j];
+        const attribute = allLocations.attribute;
+        const ids = allLocations.ids;
+        const bufferLocationsForAttribute = allLocations.bufferLocationsForAttribute;
 
         if (!bufferLocationsForAttribute) {
           emitOnce(
@@ -483,7 +521,7 @@ export class InstanceAttributeBufferManager<
               );
             },
           );
-          return;
+          continue;
         }
 
         const bufferLocation = bufferLocationsForAttribute.shift();
@@ -497,7 +535,7 @@ export class InstanceAttributeBufferManager<
               );
             },
           );
-          return;
+          continue;
         }
 
         if (group.instanceIndex === -1) {
@@ -512,56 +550,55 @@ export class InstanceAttributeBufferManager<
               console.warn(attribute.name, bufferLocation);
             },
           );
-          return;
+          continue;
         }
 
         // If the attribute has children attributes. Then when the attribute is updated, the child attributes should
         // be updated as well. Thus the buffer location needs the child attribute buffer locations.
         if (attribute.childAttributes) {
-          bufferLocation.childLocations = [];
+          const childLocations = [];
 
-          attribute.childAttributes.forEach(childAttribute => {
-            if (bufferLocation.childLocations) {
-              const bufferLocationsForChildAttribute = attributeToNewBufferLocations.get(
-                childAttribute.name,
-              );
+          for (let k = 0, endk = attribute.childAttributes.length; k < endk; ++k) {
+            const childAttribute = attribute.childAttributes[k];
+            const bufferLocationsForChildAttribute = allLocations.childBufferLocations[k];
 
-              if (bufferLocationsForChildAttribute) {
-                const childBufferLocation = bufferLocationsForChildAttribute.shift();
-                if (childBufferLocation) {
-                  bufferLocation.childLocations.push(childBufferLocation);
-                } else {
-                  emitOnce(
-                    'Instance Attribute Child Attribute Error',
-                    (count: number, id: string) => {
-                      console.warn(
-                        `${id}: A child attribute does not have a buffer location available. Error count: ${count}`,
-                      );
-                      console.warn(
-                        `Parent Attribute: ${attribute.name} Child Attribute: ${
-                          childAttribute.name
-                        }`,
-                      );
-                    },
-                  );
-                }
+            if (bufferLocationsForChildAttribute) {
+              const childBufferLocation = bufferLocationsForChildAttribute.shift();
+              if (childBufferLocation) {
+                childLocations.push(childBufferLocation);
+              } else {
+                emitOnce(
+                  'Instance Attribute Child Attribute Error',
+                  (count: number, id: string) => {
+                    console.warn(
+                      `${id}: A child attribute does not have a buffer location available. Error count: ${count}`,
+                    );
+                    console.warn(
+                      `Parent Attribute: ${attribute.name} Child Attribute: ${
+                        childAttribute.name
+                      }`,
+                    );
+                  },
+                );
               }
             }
-          });
+          }
+
+          bufferLocation.childLocations = childLocations;
         }
 
         // In the group, associate the property ids that affect a buffer location WITH the buffer location they affect
         for (let k = 0, endk = ids.length; k < endk; ++k) {
           const id = ids[k];
-
           group.propertyToBufferLocation[id] = bufferLocation;
         }
-      });
+      }
 
       // Store this group as a group that is ready to be associated with an instance
       this.availableLocations.push(group);
     }
 
-    console.log('AVAILABLE', this.availableLocations);
+    // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
+    flushEmitOnce();
   }
 }

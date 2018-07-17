@@ -1020,7 +1020,6 @@ export class LayerSurface {
       if (dispose) {
         const layer = this.layers.get(layerId);
         if (layer) {
-          console.log('REMOVING LAYER', layer.id);
           this.removeLayer(layer);
         } else {
           console.warn(

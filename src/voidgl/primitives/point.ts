@@ -2,8 +2,8 @@
  * Defines a 2d point within a coordinate plane
  */
 export interface IPoint {
-  x : number
-  y : number
+  x: number;
+  y: number;
 }
 
 /**
@@ -132,7 +132,11 @@ export class Point {
    *
    * @returns {number}
    */
-  static subtract(amount: IPoint, from: IPoint, normalize: boolean = false): IPoint {
+  static subtract(
+    amount: IPoint,
+    from: IPoint,
+    normalize: boolean = false,
+  ): IPoint {
     let dx = from.x - amount.x;
     let dy = from.y - amount.y;
 
@@ -185,7 +189,7 @@ export class Point {
   }
 
   static make(x: number, y: number) {
-    return {x, y};
+    return { x, y };
   }
 
   /**

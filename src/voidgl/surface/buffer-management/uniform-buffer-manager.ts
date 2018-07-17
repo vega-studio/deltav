@@ -140,6 +140,14 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   }
 
   /**
+   * TODO: This is irrelevant tot his manager for now.
+   * Number of instances this buffer manages.
+   */
+  getInstanceCount() {
+    return -1;
+  }
+
+  /**
    * TODO: The uniform buffer updates ALL attributes every change for any property so far.
    * This should be fixed for performance improvements on the compatibility mode.
    */

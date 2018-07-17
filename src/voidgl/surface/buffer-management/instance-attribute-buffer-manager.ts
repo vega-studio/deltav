@@ -37,7 +37,7 @@ export class InstanceAttributeBufferManager<
   T extends Instance
 > extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
   /** This stores an attribute's name to the buffer locations generated for it */
-  private allBufferLocations: {[key: string]: IBufferLocation[]} = {};
+  private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
   /** This contains the buffer locations the system will have available to the  */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
@@ -478,21 +478,20 @@ export class InstanceAttributeBufferManager<
 
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
-      attribute: IInstanceAttribute<T>,
-      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
-      childBufferLocations: IInstanceAttributeBufferLocation[][],
+      attribute: IInstanceAttribute<T>;
+      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
+      childBufferLocations: IInstanceAttributeBufferLocation[][];
       ids: number[];
     }[] = [];
 
     this.attributeToPropertyIds.forEach((ids, attribute) => {
       attributesBufferLocations.push({
         attribute,
-        bufferLocationsForAttribute: attributeToNewBufferLocations.get(
-          attribute.name,
-        ) || [],
-        childBufferLocations: (attribute.childAttributes || []).map((attr) => attributeToNewBufferLocations.get(
-          attr.name,
-        ) || []),
+        bufferLocationsForAttribute:
+          attributeToNewBufferLocations.get(attribute.name) || [],
+        childBufferLocations: (attribute.childAttributes || []).map(
+          attr => attributeToNewBufferLocations.get(attr.name) || [],
+        ),
         ids,
       });
     });
@@ -510,7 +509,8 @@ export class InstanceAttributeBufferManager<
         const allLocations = attributesBufferLocations[j];
         const attribute = allLocations.attribute;
         const ids = allLocations.ids;
-        const bufferLocationsForAttribute = allLocations.bufferLocationsForAttribute;
+        const bufferLocationsForAttribute =
+          allLocations.bufferLocationsForAttribute;
 
         if (!bufferLocationsForAttribute) {
           emitOnce(
@@ -558,9 +558,14 @@ export class InstanceAttributeBufferManager<
         if (attribute.childAttributes) {
           const childLocations = [];
 
-          for (let k = 0, endk = attribute.childAttributes.length; k < endk; ++k) {
+          for (
+            let k = 0, endk = attribute.childAttributes.length;
+            k < endk;
+            ++k
+          ) {
             const childAttribute = attribute.childAttributes[k];
-            const bufferLocationsForChildAttribute = allLocations.childBufferLocations[k];
+            const bufferLocationsForChildAttribute =
+              allLocations.childBufferLocations[k];
 
             if (bufferLocationsForChildAttribute) {
               const childBufferLocation = bufferLocationsForChildAttribute.shift();
@@ -600,5 +605,12 @@ export class InstanceAttributeBufferManager<
 
     // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
     flushEmitOnce();
+  }
+
+  /**
+   * Returns the total instances this buffer manages.
+   */
+  getInstanceCount() {
+    return this.maxInstancedCount;
   }
 }

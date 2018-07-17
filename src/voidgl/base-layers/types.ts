@@ -15,11 +15,11 @@ export type Anchor = {
   /** When the anchor gets calculated on the image, this allows the anchor to go beyond the borders of the image by this amount */
   padding: number;
   /** This is the location of the anchor. If a custom anchor is specified, then the x and y are not automatically populated */
-  type: AnchorType,
+  type: AnchorType;
   /** This is populated with the anchor's location relative to the image's surface */
-  x?: number,
+  x?: number;
   /** This is populated with the anchor's location relative to the image's surface */
-  y?: number,
+  y?: number;
 };
 
 export enum ScaleType {

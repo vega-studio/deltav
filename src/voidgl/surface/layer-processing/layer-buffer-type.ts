@@ -39,6 +39,10 @@ export function getLayerBufferType<T extends Instance>(
     return layer.bufferType;
   }
 
+  // Uncomment this to force the uniform buffer strategy
+  // layer.setBufferType(LayerBufferType.UNIFORM);
+  // return LayerBufferType.UNIFORM;
+
   if (WebGLStat.HARDWARE_INSTANCING) {
     let attributesUsed = 0;
 

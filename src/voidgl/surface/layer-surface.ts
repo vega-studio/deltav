@@ -891,6 +891,7 @@ export class LayerSurface {
     layer.vertexAttributes = vertexAttributes;
 
     // Generate the correct buffering strategy for the layer
+    console.log('BUFFER MANAGER CREATED FOR LAYER');
     makeLayerBufferManager(this.gl, layer, scene);
 
     return layer;
@@ -989,6 +990,7 @@ export class LayerSurface {
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
   render(layerInitializers: LayerInitializer[]) {
+    console.log('RENDERING LAYERS');
     if (!this.gl) return;
 
     // Loop through all of the initializers and properly add and remove layers as needed
@@ -1007,6 +1009,7 @@ export class LayerSurface {
           const layer = new layerClass(
             Object.assign({}, layerClass.defaultProps, props),
           );
+          console.log('NEW LAYER IS BORN', layer.id);
           layer.initializer = init;
           this.addLayer(layer);
         }

@@ -249,6 +249,9 @@ export class Layer<
     const processing = diffManager.processing;
     const processor = diffManager.processor;
 
+    // Forewarn the processor how many instances are flagged for a change.
+    processor.incomingChangeList(changeList);
+
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
       instance = change[0];

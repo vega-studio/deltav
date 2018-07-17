@@ -47,13 +47,15 @@ export class Lines extends BaseExample {
       }
     }
 
+    const { sin } = Math;
+
     setInterval(() => {
       let next = -1;
       for (let i = 0; i < 10; ++i) {
         for (let k = 0; k < 100; ++k) {
           const edge = edges[++next];
           edge.end = [
-            Math.sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
+            sin(Date.now() / 4e2 + k * 20) * 10 + k * 20,
             edge.end[1],
           ];
         }

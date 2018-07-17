@@ -100,7 +100,7 @@ export class BoxOfCircles extends BaseExample {
   textPositions: Vec2[];
   textCache: {
     buckets: CircleInstance[][];
-    xy: Vec2[],
+    xy: Vec2[];
   };
 
   keyEvent(e: KeyboardEvent, isDown: boolean) {
@@ -163,7 +163,8 @@ export class BoxOfCircles extends BaseExample {
 
   private async moveToText(circles: CircleInstance[]) {
     if (!this.textCache) {
-      const xy = this.textPositions || makeTextPositions(this.surface, this.view);
+      const xy =
+        this.textPositions || makeTextPositions(this.surface, this.view);
       this.textPositions = xy;
 
       if (this.textPositions.length === 0) {
@@ -216,7 +217,7 @@ export class BoxOfCircles extends BaseExample {
   makeProvider(): IInstanceProvider<CircleInstance> {
     const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
-    const boxSide = 100;
+    const boxSide = 200;
 
     for (let i = 0; i < boxSide; ++i) {
       for (let k = 0; k < boxSide; ++k) {

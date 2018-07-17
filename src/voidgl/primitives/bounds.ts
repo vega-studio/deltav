@@ -79,8 +79,8 @@ export class Bounds {
   constructor(options: IBoundsOptions) {
     this.x = options.x || options.left || 0;
     this.y = options.y || options.top || 0;
-    this.height = options.height || ((options.bottom || 0) - this.y) || 0;
-    this.width = options.width || ((options.right || 0) - this.x) || 0;
+    this.height = options.height || (options.bottom || 0) - this.y || 0;
+    this.width = options.width || (options.right || 0) - this.x || 0;
   }
 
   /**
@@ -89,7 +89,12 @@ export class Bounds {
    * @param point
    */
   containsPoint(point: IPoint) {
-    return !(point.x < this.x || point.y < this.y || point.x > this.right || point.y > this.bottom);
+    return !(
+      point.x < this.x ||
+      point.y < this.y ||
+      point.x > this.right ||
+      point.y > this.bottom
+    );
   }
 
   /**
@@ -118,9 +123,7 @@ export class Bounds {
       }
 
       return true;
-    }
-
-    else {
+    } else {
       if (item.x < this.x) {
         this.width += this.x - item.x;
         this.x = item.x;
@@ -172,7 +175,12 @@ export class Bounds {
    * @param bounds
    */
   hitBounds(bounds: Bounds) {
-    return !(this.right < bounds.x || this.x > bounds.right || this.bottom < bounds.y || this.y > bounds.height);
+    return !(
+      this.right < bounds.x ||
+      this.x > bounds.right ||
+      this.bottom < bounds.y ||
+      this.y > bounds.height
+    );
   }
 
   /**
@@ -182,7 +190,12 @@ export class Bounds {
    * @param bounds
    */
   isInside(bounds: Bounds): boolean {
-    return this.x >= bounds.x && this.right <= bounds.right && this.y >= bounds.y && this.bottom <= bounds.bottom;
+    return (
+      this.x >= bounds.x &&
+      this.right <= bounds.right &&
+      this.y >= bounds.y &&
+      this.bottom <= bounds.bottom
+    );
   }
 
   /**

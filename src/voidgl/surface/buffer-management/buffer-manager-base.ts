@@ -105,6 +105,11 @@ export abstract class BufferManagerBase<
   abstract getActiveAttributePropertyId(): number;
 
   /**
+   * This returns how many instances this buffer manager has grown to accommodate.
+   */
+  abstract getInstanceCount(): number;
+
+  /**
    * This should provide a minimum property id list that represents a set of properties that if triggered
    * for update, would cause all of the attributes to be updated for the layer.
    */

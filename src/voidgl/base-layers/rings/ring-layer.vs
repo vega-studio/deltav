@@ -15,7 +15,7 @@ void main() {
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
 
-  thickness = mix(2.0 / scaleFactor, thickness, float(thickness * scaleFactor > 2.0));
+  thickness = mix(2.0 , thickness, float(thickness > 2.0));
 
   borderSize = mix(
     (thickness) / size,

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.9.3
+
+* `(FIXED)` Section title flattens section circle #135
+
 ## 1.9.2
 
 * `(FIXED)` Release process will now produce the correct release file name

@@ -68,7 +68,7 @@ export class DataProvider<T extends Instance> {
       this._changeList = changes;
     }
 
-    return this._changeList;
+    return this._changeList || [];
   }
 
   constructor(data: T[]) {

@@ -598,6 +598,7 @@ function validateInstanceAttributes<T extends Instance>(
       if (attribute.size !== undefined) {
         const testStart = testStartVector[attribute.size];
         const testEnd = testEndVector[attribute.size];
+        const validationRules = attribute.easing.validation || {};
 
         let test = attribute.easing.cpu(testStart, testEnd, 0);
         if (!compareVec(test, testStart)) {
@@ -609,7 +610,7 @@ function validateInstanceAttributes<T extends Instance>(
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 1);
-        if (!compareVec(test, testEnd)) {
+        if (!validationRules.ignoreEndValueCheck && !compareVec(test, testEnd)) {
           console.warn(
             'Auto Easing Validation Failed: using a time of 1 does not produce the end value',
           );
@@ -627,7 +628,7 @@ function validateInstanceAttributes<T extends Instance>(
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 2);
-        if (!compareVec(test, testEnd)) {
+        if (!validationRules.ignoreOverTimeCheck && !compareVec(test, testEnd)) {
           console.warn(
             'Auto Easing Validation Failed: using a time of 2 does not produce the end value',
           );

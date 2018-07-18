@@ -46,6 +46,14 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
    * the risk of one overriding the other with an undefined chance of who wins.
    */
   methodName: string;
+
+  /**
+   * This lets you modify some auto easing validation rules.
+   */
+  validation?: {
+    ignoreEndValueCheck?: boolean;
+    ignoreOverTimeCheck?: boolean;
+  }
 }
 
 // GPU easing methods! Written here because it's cleaner to write `` style strings
@@ -181,11 +189,11 @@ $\{easingMethod} {
 }
 `;
 
-const continuousSinusoidalGPU = (rate: number) => `
+const continuousSinusoidalGPU = `
 $\{easingMethod} {
   $\{T} direction = end - start;
-  $\{T} amplitude = length(direction) * 2.0;
-  return start + direction * sin(time / ${rate}) * amplitude;
+  float amplitude = length(direction) * 2.0;
+  return start + direction * sin(t * ${GPU_PI} * 2.0) * amplitude;
 }
 `;
 
@@ -201,7 +209,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => end,
       delay,
@@ -219,7 +227,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         const { add, scale, subtract } = VecMath(start);
@@ -241,7 +249,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -264,7 +272,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -287,7 +295,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -310,7 +318,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -333,7 +341,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -356,7 +364,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -380,7 +388,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -403,7 +411,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -426,7 +434,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -449,7 +457,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -472,7 +480,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -495,7 +503,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -519,7 +527,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -543,7 +551,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -567,7 +575,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -592,7 +600,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     duration: number,
     delay: number = 0,
     loop = AutoEasingLoopStyle.NONE,
-  ) {
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
@@ -624,22 +632,29 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static continuousSinusoidal<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
-    rate = 1000,
-  ) {
+    loop = AutoEasingLoopStyle.CONTINUOUS,
+  ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
         const { add, length, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
         const direction = subtract(end, start);
         const amplitude = length(direction) * 2.0;
-        return add(start, scale(direction, sin(t / rate) * amplitude));
+        return add(start, scale(direction, sin(t * PI * 2) * amplitude));
       },
       delay,
       duration,
-      gpu: continuousSinusoidalGPU(rate),
+      gpu: continuousSinusoidalGPU,
       loop,
       methodName: 'repeatingSinusoidal',
+
+      // Since this is sinusoidial and operates off of a continuous time structure
+      validation: {
+        // When time = 1 our value will = start and NOT end
+        ignoreEndValueCheck: true,
+        // When the time is > 1 our value will not clamp to the value at 1.
+        ignoreOverTimeCheck: true,
+      },
     };
   }
 

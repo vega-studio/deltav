@@ -76,6 +76,10 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    */
   picking?: PickType;
   /**
+   * Used for debugging. Logs the generated shader for the layer in the console.
+   */
+  printShader?: boolean;
+  /**
    * This identifies the scene we want the layer to be a part of.
    * Layer's with the same identifiers will render their buffers in the same scene.
    * This only applies to the layer when the layer is initialized in a layer surface. You shouldn't

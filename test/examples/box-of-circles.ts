@@ -215,7 +215,7 @@ export class BoxOfCircles extends BaseExample {
   makeProvider(): IInstanceProvider<CircleInstance> {
     const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
-    const boxSide = 40;
+    const boxSide = 100;
 
     for (let i = 0; i < boxSide; ++i) {
       for (let k = 0; k < boxSide; ++k) {

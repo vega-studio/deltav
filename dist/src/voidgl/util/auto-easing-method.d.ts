@@ -37,6 +37,13 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
      * the risk of one overriding the other with an undefined chance of who wins.
      */
     methodName: string;
+    /**
+     * This lets you modify some auto easing validation rules.
+     */
+    validation?: {
+        ignoreEndValueCheck?: boolean;
+        ignoreOverTimeCheck?: boolean;
+    };
 }
 /**
  * Class of base AutoEasingMethods as well as helper constructs for making the methods.
@@ -45,215 +52,82 @@ export declare class AutoEasingMethod<T extends InstanceIOValue> implements IAut
     /**
      * Autoeasing methods for linear easing
      */
-    static immediate<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static immediate<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Autoeasing methods for linear easing
      */
-    static linear<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static linear<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for Accelerating to end
      */
-    static easeInQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for decelerating to end
      */
-    static easeOutQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeOutQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for Accelerate to mid, then decelerate to end
      */
-    static easeInOutQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInOutQuad<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for Slower acceleration
      */
-    static easeInCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for Slower deceleration
      */
-    static easeOutCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeOutCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for Slower acceleration to mid, and slower deceleration to end
      */
-    static easeInOutCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInOutCubic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for even Slower acceleration to end
      */
-    static easeInQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for even Slower deceleration to end
      */
-    static easeOutQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeOutQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for even Slower acceleration to mid, and even slower deceleration to end
      */
-    static easeInOutQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInOutQuart<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for super slow accelerating to the end
      */
-    static easeInQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for super slow decelerating to the end
      */
-    static easeOutQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeOutQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for super slow accelerating to mid and super slow decelerating to the end
      */
-    static easeInOutQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeInOutQuint<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for elastic effect
      */
-    static easeOutElastic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeOutElastic<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for retracting first then shooting to the end
      */
-    static easeBackIn<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeBackIn<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for overshooting at the end
      */
-    static easeBackOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeBackOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * Auto easing for overshooting at the end
      */
-    static easeBackInOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static easeBackInOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /**
      * This is an easing method that performs a sinusoidal wave where the amplitude is
      * (start - end) * 2 and the wave starts at the start value.
      *
      * This is intended to work best with the CONTINUOUS loop style.
      */
-    static continuousSinusoidal<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle, rate?: number): {
-        cpu: (start: T, end: T, t: number) => T;
-        delay: number;
-        duration: number;
-        gpu: string;
-        loop: AutoEasingLoopStyle;
-        methodName: string;
-    };
+    static continuousSinusoidal<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     /** The easing method for the cpu */
     cpu: IAutoEasingMethod<T>['cpu'];
     /** Time before a delay  */

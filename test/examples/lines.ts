@@ -29,8 +29,8 @@ export class Lines extends BaseExample {
   makeProvider(): InstanceProvider<EdgeInstance> {
     const edgeProvider = new InstanceProvider<EdgeInstance>();
     const LINE_HEIGHT = 100;
-    const countHigh = 100;
-    const countWide = 400;
+    const countHigh = 40;
+    const countWide = 240;
     const edges: EdgeInstance[] = [];
 
     for (let i = 0; i < countHigh; ++i) {
@@ -62,7 +62,7 @@ export class Lines extends BaseExample {
             ];
           }
         }, 20);
-      }, 50 * i);
+      }, 100 * i);
     }
 
     return edgeProvider;

@@ -1,8 +1,17 @@
 import { ILayerProps, IModelType, IPickingMethods, IShaderInitialization, Layer } from '../../surface/layer';
 import { IMaterialOptions } from '../../types';
+import { IAutoEasingMethod, Vec } from '../../util';
 import { EdgeInstance } from './edge-instance';
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
 export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
+    /** Specifies which properties to make GPU easing happen and how they should be animated */
+    animate?: {
+        end?: IAutoEasingMethod<Vec>;
+        start?: IAutoEasingMethod<Vec>;
+        colorStart?: IAutoEasingMethod<Vec>;
+        colorEnd?: IAutoEasingMethod<Vec>;
+        control?: IAutoEasingMethod<Vec>;
+    };
     /** Allows adjustments for broadphase interactions for an edge */
     broadphase?: EdgeBroadphase;
     /** Any distance to the mouse from an edge that is less than this distance will be picked */

@@ -1,8 +1,8 @@
-import { AbsolutePosition } from '../primitives/absolute-position';
-import { ChartCamera } from '../util/chart-camera';
-import { ViewCamera } from '../util/view-camera';
-import { Scene } from './scene';
-import { View } from './view';
+import { AbsolutePosition } from '../../primitives/absolute-position';
+import { ChartCamera } from '../../util/chart-camera';
+import { ViewCamera } from '../../util/view-camera';
+import { Scene } from '../scene';
+import { View } from '../view';
 export interface IDefaultSceneElements {
     /** Default chartting camera */
     camera: ChartCamera;

@@ -11,6 +11,11 @@ const { NODE_ENV } = process.env;
 const IS_RELEASE = NODE_ENV === 'release';
 const IS_PRODUCTION = NODE_ENV === 'production' || IS_RELEASE;
 const IS_DEVELOPMENT = !NODE_ENV || (NODE_ENV === 'development');
+const IS_RELEASE_TEST = IS_DEVELOPMENT && process.env.RELEASE_TEST;
+
+if (IS_RELEASE_TEST) {
+  console.log('Using dist files');
+}
 
 const plugins = [];
 
@@ -72,6 +77,9 @@ module.exports = {
   plugins,
 
   resolve: {
+    alias: {
+      src: IS_RELEASE_TEST ? resolve('dist') : resolve('src'),
+    },
     modules: ['./node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js'],
   },

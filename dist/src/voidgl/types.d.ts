@@ -1,9 +1,9 @@
 import * as Three from 'three';
+import { Instance } from './instance-provider/instance';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
 import { ChartCamera, Vec, Vec2 } from './util';
 import { IAutoEasingMethod } from './util/auto-easing-method';
-import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 export declare type Diff<T extends string, U extends string> = ({
     [P in T]: P;
@@ -32,6 +32,9 @@ export declare enum InstanceAttributeSize {
     /** Special case for making instance attributes that can target Atlas resources */
     ATLAS = 99,
 }
+export declare const instanceAttributeSizeFloatCount: {
+    [key: number]: number;
+};
 export declare enum UniformSize {
     ONE = 1,
     TWO = 2,
@@ -116,38 +119,6 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
 }
 export interface IInstanceAttribute<T extends Instance> {
     /**
-     * This is a block index helping describe the instancing process. It can be any number as
-     * the system will sort and organize them for you. This only helps the system detect when
-     * you cram too much info into a single block. The tighter you pack your blocks the better
-     * your program will perform.
-     */
-    block: number;
-    /**
-     * This is the index within the block this attribute will be available.
-     */
-    blockIndex?: InstanceBlockIndex;
-    /**
-     * When this is set, the system will automatically inject necessary Shader IO to facilitate
-     * performing the easing on the GPU, which saves enormous amounts of CPU processing time
-     * trying to calcuate animations and tweens for properties.
-     *
-     * NOTE: Setting this increases the amount of data per instance by: size * 2 + 2
-     * as it injects in a start value, start time, and duration
-     */
-    easing?: IAutoEasingMethod<Vec>;
-    /**
-     * This is the name that will be available in your shader for use. This will only be
-     * available after the ${attributes} declaration.
-     */
-    name: string;
-    /**
-     * When generating this attribute in the shader this will be the prefix to the attribute:
-     * For instance, if you specify 'highp' as the modifier, then the attribute that appears
-     * in the shader will be:
-     * attribute highp vec3 position;
-     */
-    qualifier?: string;
-    /**
      * If this is specified, this attribute becomes a size of 4 and will have a block index of
      * 0. This makes this attribute and layer become compatible with reading atlas resources.
      * The value provided for this property should be the name of the atlas that is created.
@@ -164,6 +135,48 @@ export interface IInstanceAttribute<T extends Instance> {
         shaderInjection?: ShaderInjectionTarget;
     };
     /**
+     * This is a block index helping describe the instancing process. It can be any number as
+     * the system will sort and organize them for you. This only helps the system detect when
+     * you cram too much info into a single block. The tighter you pack your blocks the better
+     * your program will perform.
+     */
+    block: number;
+    /**
+     * This is the index within the block this attribute will be available.
+     */
+    blockIndex?: InstanceBlockIndex;
+    /**
+     * If the settings on this attrubute spawns additional attributes, those attributes shall
+     * be populated here. Otherwise this remains undefined.
+     */
+    childAttributes?: IInstanceAttribute<T>[];
+    /**
+     * When this is set, the system will automatically inject necessary Shader IO to facilitate
+     * performing the easing on the GPU, which saves enormous amounts of CPU processing time
+     * trying to calcuate animations and tweens for properties.
+     *
+     * NOTE: Setting this increases the amount of data per instance by: size * 2 + ;
+     * as it injects in a start value, start time, and duration
+     */
+    easing?: IAutoEasingMethod<Vec>;
+    /**
+     * This is the name that will be available in your shader for use. This will only be
+     * available after the ${attributes} declaration.
+     */
+    name: string;
+    /**
+     * If this attribute is created automatically by the system based on the settings of another
+     * attribute, that parent attribute will be set here. Otherwise this remains undefined.
+     */
+    parentAttribute?: IInstanceAttribute<T>;
+    /**
+     * When generating this attribute in the shader this will be the prefix to the attribute:
+     * For instance, if you specify 'highp' as the modifier, then the attribute that appears
+     * in the shader will be:
+     * attribute highp vec3 position;
+     */
+    qualifier?: string;
+    /**
      * This is how many floats the instance attribute takes up. Due to how instancing is
      * implemented, we can only take up to 4 floats per variable right now.
      */
@@ -173,6 +186,16 @@ export interface IInstanceAttribute<T extends Instance> {
      * value that should be populated for this attribute.
      */
     update(instance: T): InstanceIOValue;
+}
+/**
+ * Internal Instance Attributes are ones that actually map to an attribute in the shader and use
+ * hardware instancing.
+ */
+export interface IInstanceAttributeInternal<T extends Instance> extends IInstanceAttribute<T> {
+    /** We will keep an internal uid for the  */
+    uid: number;
+    /** This is the actual attribute mapped to a buffer */
+    bufferAttribute: Three.InstancedBufferAttribute;
 }
 /**
  * This is an attribute where the atlas is definitely declared.
@@ -219,7 +242,6 @@ export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAt
      */
     atlas: undefined;
 }
-export declare type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 /** These are flags for indicating which shaders receive certain injection elements */
 export declare enum ShaderInjectionTarget {
     /** ONLY the vertex shader will receive the injection */

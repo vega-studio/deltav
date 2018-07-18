@@ -1,5 +1,6 @@
 import * as anime from 'animejs';
 import {
+  AutoEasingMethod,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -7,8 +8,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-} from '../../src';
-import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
+} from 'src';
 import { BaseExample } from './base-example';
 
 export class MouseInteraction extends BaseExample {

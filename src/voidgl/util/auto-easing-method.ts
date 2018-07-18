@@ -11,6 +11,8 @@ function clamp(x: number, minVal: number, maxVal: number) {
 export enum AutoEasingLoopStyle {
   /** Time will go from 0 -> 1 then stop at 1 */
   NONE = 1,
+  /** Time will go from 0 -> infinity */
+  CONTINUOUS = 4,
   /** Time will continuously go 0 -> 1 then 0 -> 1 then 0 -> 1 etc etc */
   REPEAT = 2,
   /** Time will continously go 0 -> 1 then 1 -> 0 then 0 -> 1 then 1 -> 0 etc etc */
@@ -176,6 +178,14 @@ $\{easingMethod} {
   ;
 
   return (end - start) * time + start;
+}
+`;
+
+const continuousSinusoidalGPU = (rate: number) => `
+$\{easingMethod} {
+  $\{T} direction = end - start;
+  $\{T} amplitude = length(direction) * 2.0;
+  return start + direction * sin(time / ${rate}) * amplitude;
 }
 `;
 
@@ -602,6 +612,34 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       gpu: easeBackInOutGPU,
       loop,
       methodName: 'easeBackInOut',
+    };
+  }
+
+  /**
+   * This is an easing method that performs a sinusoidal wave where the amplitude is
+   * (start - end) * 2 and the wave starts at the start value.
+   *
+   * This is intended to work best with the CONTINUOUS loop style.
+   */
+  static continuousSinusoidal<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE,
+    rate = 1000,
+  ) {
+    return {
+      cpu: (start: T, end: T, t: number) => {
+        const { add, length, scale, subtract } = VecMath(start);
+        t = clamp(t, 0, 1);
+        const direction = subtract(end, start);
+        const amplitude = length(direction) * 2.0;
+        return add(start, scale(direction, sin(t / rate) * amplitude));
+      },
+      delay,
+      duration,
+      gpu: continuousSinusoidalGPU(rate),
+      loop,
+      methodName: 'repeatingSinusoidal',
     };
   }
 

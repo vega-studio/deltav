@@ -169,9 +169,16 @@ export class LabelInstance extends Instance implements Label {
   private _fontWeight: Label['fontWeight'] = 400;
   private _maxWidth: number = 0;
   private _text: string = '';
+
+  @observable
   private _width: number = 0;
+
+  @observable
   private _height: number = 0;
+
   private _isDestroyed: boolean = false;
+
+  @observable
   private _rasterization: RasterizationReference;
 
   // The following are the getters for the locked in parameters of the label so we can read
@@ -328,6 +335,10 @@ export class LabelInstance extends Instance implements Label {
     options.anchor && this.setAnchor(options.anchor);
   }
 
+  get anchor() {
+    return this._anchor;
+  }
+
   /**
    * Labels are a sort of unique case where the use of a label should be destroyed as rasterization
    * resources are in a way kept alive through reference counting.
@@ -344,8 +355,13 @@ export class LabelInstance extends Instance implements Label {
     }
   }
 
-  get anchor() {
-    return this._anchor;
+  /**
+   * Triggers any attributes waiting on resources
+   */
+  resourceTrigger() {
+    // Trigger the accessed element that the layer utilizes for resource fetching.
+    this._rasterization = this._rasterization;
+    this._width = this._width;
   }
 
   /**

@@ -292,6 +292,7 @@ function generateEasingMethods<T extends Instance>(
 
         const templateOptions: { [key: string]: string } = {
           [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
+          [templateVars.T]: `${sizeType}`,
         };
 
         const results = shaderTemplate(method, templateOptions, required);

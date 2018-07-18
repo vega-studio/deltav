@@ -1,20 +1,22 @@
 import * as Three from 'three';
-import { Layer } from '../surface/layer';
-import { Scene } from '../surface/scene';
-import { Instance } from './instance';
-export interface IUniformInstanceCluster {
+import { Instance } from '../../instance-provider';
+import { Vec2 } from '../../util';
+import { Layer } from '../layer';
+import { Scene } from '../scene';
+import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
+export interface IUniformBufferLocation extends IBufferLocation {
     /** This is the index of the instance as it appears in the buffer */
     instanceIndex: number;
     /** This is the instance data uniform */
-    uniform: Three.IUniform;
+    buffer: Three.IUniform;
     /** This is the instance data range within the instanceData uniform */
-    uniformRange: [number, number];
+    range: Vec2;
 }
 export interface InstanceUniformBuffer {
     /** This tracks which instances are active. Helps optimize draw range */
     activeInstances: boolean[];
     /** This is all of the clusters within this buffer */
-    clusters: IUniformInstanceCluster[];
+    clusters: IUniformBufferLocation[];
     /** The first instance in the draw range */
     firstInstance: number;
     /** The unique geometry object for the buffer: Used to set draw range */
@@ -29,6 +31,13 @@ export interface InstanceUniformBuffer {
     pickModel?: Three.Object3D;
 }
 /**
+ * This is a Buffer Management system that performs instancing via the uniforms available to the hardware.
+ * This improves compatibility with instancing for systems DRAMATICALLY as ALL systems WILL support uniforms.
+ * This will NOT perform the best against true hardware instancing support, but it will have edge cases where it
+ * is needed.
+ *
+ * When a layer has too many instance + vertex attributes for the hardware, the system will defer to this buffer methodology.
+ *
  * This class does a whoooooole lot of making the magical instancing optimization controls possible.
  *
  * Our instancing hackyness comes from the idea that uniforms are fast, and you don't have to commit
@@ -46,11 +55,7 @@ export interface InstanceUniformBuffer {
  * If we remove instances, we must free up the uniform set so that others can use the uniforms. While the uniforms
  * are not in use, the instance should not be rendering.
  */
-export declare class InstanceUniformManager<T extends Instance> {
-    /** The layer this manager provides uniforms */
-    private layer;
-    /** The scene the layer should add elements to */
-    private scene;
+export declare class UniformBufferManager<T extends Instance> extends BufferManagerBase<T, IUniformBufferLocation> {
     /** The number of uniform blocks an instance requires */
     private uniformBlocksPerInstance;
     /** The generated buffers by this manager */
@@ -66,7 +71,7 @@ export declare class InstanceUniformManager<T extends Instance> {
      * This adds an instance to the manager and gives the instance an associative
      * block of uniforms to work with.
      */
-    add(instance: T): IUniformInstanceCluster | undefined;
+    add: (instance: T) => any;
     /**
      * Free all resources this manager may be holding onto
      */
@@ -75,12 +80,27 @@ export declare class InstanceUniformManager<T extends Instance> {
      * This retireves the uniforms associated with an instance, or returns nothing
      * if the instance has not been associated yet.
      */
-    getUniforms(instance: T): IUniformInstanceCluster | undefined;
+    getBufferLocations(instance: T): IUniformBufferLocation;
+    /**
+     * TODO: The uniform buffer does not need to utilize this yet. it will be more necessary
+     * when this manager updates only changed properties.
+     */
+    getActiveAttributePropertyId(): number;
+    /**
+     * TODO: This is irrelevant tot his manager for now.
+     * Number of instances this buffer manages.
+     */
+    getInstanceCount(): number;
+    /**
+     * TODO: The uniform buffer updates ALL attributes every change for any property so far.
+     * This should be fixed for performance improvements on the compatibility mode.
+     */
+    getUpdateAllPropertyIdList(): never[];
     /**
      * Disassociates an instance with it's group of uniforms and makes the instance
      * in the buffer no longer drawable.
      */
-    remove(instance: T): IUniformInstanceCluster | undefined;
+    remove: (instance: T) => T;
     /**
      * Clears all elements of this manager from the current scene it was in.
      */
@@ -92,5 +112,5 @@ export declare class InstanceUniformManager<T extends Instance> {
     /**
      * This generates a new buffer of uniforms to associate instances with.
      */
-    private makeNewBuffer();
+    makeNewBuffer(): void;
 }

@@ -1,7 +1,7 @@
 import * as Three from 'three';
-import { ILayerProps, Layer } from '../surface/layer';
 import { Instance } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
+import { ILayerProps, Layer } from './layer';
 import { IViewOptions, View } from './view';
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple

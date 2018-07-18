@@ -12,7 +12,7 @@ import {
   LayerInitializer,
   PickType,
   ReferenceCamera,
-} from '../../src';
+} from 'src';
 import { BaseExample } from './base-example';
 
 /**

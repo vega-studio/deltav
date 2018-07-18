@@ -5,7 +5,7 @@ import {
   LayerInitializer,
   RingInstance,
   RingLayer,
-} from '../../src';
+} from 'src';
 import { BaseExample } from './base-example';
 
 export class BoxOfRings extends BaseExample {

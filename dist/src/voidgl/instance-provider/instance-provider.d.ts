@@ -1,5 +1,12 @@
 import { InstanceDiffType } from '../types';
-import { Instance } from '../util/instance';
+import { Instance } from './instance';
+/**
+ * This is an entry within the change list of the provider. It represents the type of change
+ * and stores the property id's of the properties on the instance that have changed.
+ */
+export declare type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {
+    [key: number]: number;
+}];
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.
@@ -11,7 +18,10 @@ export declare class InstanceProvider<T extends Instance> {
     private instanceChanges;
     /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
     private allowChanges;
-    readonly changeList: [T, InstanceDiffType][];
+    /**
+     * Retrieve all of the changes applied to instances
+     */
+    readonly changeList: InstanceDiff<T>[];
     /**
      * Adds an instance to the provider which will stream observable changes of the instance to
      * the framework.
@@ -28,16 +38,16 @@ export declare class InstanceProvider<T extends Instance> {
      */
     destroy(): void;
     /**
-     * THis is called from observables to indicate it's parent has been updated
+     * This is called from observables to indicate it's parent has been updated
      */
-    instanceUpdated(instance: T): void;
+    instanceUpdated(instance: T, property: number): void;
     /**
      * Removes the instance from being advertised changes and from providing the changes
      * for the instance.
      */
     remove(instance: T): boolean;
     /**
-     * Flagged all changes were dealt with
+     * Flagged all changes as dealt with
      */
     resolve(): void;
 }

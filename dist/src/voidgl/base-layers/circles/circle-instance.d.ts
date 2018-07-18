@@ -1,5 +1,5 @@
+import { IInstanceOptions, Instance } from '../../instance-provider';
 import { Circle } from '../../primitives/circle';
-import { IInstanceOptions, Instance } from '../../util/instance';
 export interface ICircleInstanceOptions extends IInstanceOptions, Circle {
     /** The color of this circle */
     color?: [number, number, number, number];

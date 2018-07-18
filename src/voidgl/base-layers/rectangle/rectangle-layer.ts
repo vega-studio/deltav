@@ -15,6 +15,7 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from '../../types';
+import { CommonMaterialOptions } from '../../util';
 import { ScaleType } from '../types';
 import { RectangleInstance } from './rectangle-instance';
 
@@ -244,11 +245,6 @@ export class RectangleLayer extends Layer<
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      blending: Three.CustomBlending,
-      blendSrc: Three.OneFactor,
-      premultipliedAlpha: true,
-      transparent: true,
-    };
+    return CommonMaterialOptions.transparentShape;
   }
 }

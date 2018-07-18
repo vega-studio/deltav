@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowUnreachableCode": false,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "declaration": true,
     "experimentalDecorators": true,
     "jsx": "react",
@@ -11,11 +11,18 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "paths": {
+      "src": ["./src"]
+    },
+    "pretty": true,
+    "removeComments": false,
+    "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es5"
+    "target": "es2017"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "node_modules"

@@ -12,7 +12,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   ScaleType,
-} from '../../src';
+} from 'src';
 import { BaseExample } from './base-example';
 
 export class BoundedView3 extends BaseExample {

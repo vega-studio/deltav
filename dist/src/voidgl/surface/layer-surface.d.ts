@@ -1,17 +1,17 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
-import { EventManager } from '../surface/event-manager';
-import { IDefaultSceneElements } from '../surface/generate-default-scene';
-import { SceneView } from '../surface/mouse-event-manager';
-import { ISceneOptions, Scene } from '../surface/scene';
-import { View } from '../surface/view';
 import { FrameMetrics } from '../types';
-import { Instance } from '../util/instance';
 import { Vec2 } from '../util/vector';
+import { EventManager } from './event-manager';
 import { ILayerProps, Layer } from './layer';
+import { IDefaultSceneElements } from './layer-processing/generate-default-scene';
+import { SceneView } from './mouse-event-manager';
+import { ISceneOptions, Scene } from './scene';
 import { IAtlasOptions } from './texture/atlas';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import { View } from './view';
 export interface ILayerSurfaceOptions {
     /**
      * These are the atlas resources we want available that our layers can be provided to utilize

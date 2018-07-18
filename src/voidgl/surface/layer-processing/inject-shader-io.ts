@@ -287,6 +287,11 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       let timeValue = 1;
 
       switch (loop) {
+        // Continuous means we start at 0 and let the time go to infinity
+        case AutoEasingLoopStyle.CONTINUOUS:
+          timeValue = (currentTime - easingValues.startTime) / duration;
+          break;
+
         // Repeat means going from 0 to 1 then 0 to 1 etc etc
         case AutoEasingLoopStyle.REPEAT:
           timeValue = ((currentTime - easingValues.startTime) / duration) % 1;

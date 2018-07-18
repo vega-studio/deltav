@@ -1,6 +1,6 @@
+import { IInstanceOptions, Instance } from '../../instance-provider/instance';
 import { Label } from '../../primitives/label';
 import { LabelAtlasResource } from '../../surface/texture';
-import { IInstanceOptions, Instance } from '../../util/instance';
 import { Anchor, ScaleType } from '../types';
 export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
     /**
@@ -107,7 +107,7 @@ export declare class LabelInstance extends Instance implements Label {
     /** This is the style of the font (italic, oblique, etc) */
     readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
     /** This is the font weight specified for the label (bold, normal, etc). */
-    readonly fontWeight: 100 | 300 | 500 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
+    readonly fontWeight: 100 | 500 | 300 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
     /** This is the max width in pixels this label can fill */
     readonly maxWidth: number;
     /** This gets the atlas resource that is uniquely identified for this label */
@@ -132,12 +132,16 @@ export declare class LabelInstance extends Instance implements Label {
     /** This is the anchor location on the  */
     private _anchor;
     constructor(options: ILabelInstanceOptions);
+    readonly anchor: Anchor;
     /**
      * Labels are a sort of unique case where the use of a label should be destroyed as rasterization
      * resources are in a way kept alive through reference counting.
      */
     destroy(): void;
-    readonly anchor: Anchor;
+    /**
+     * Triggers any attributes waiting on resources
+     */
+    resourceTrigger(): void;
     /**
      * This applies a new anchor to this label and properly determines it's anchor position on the label
      */

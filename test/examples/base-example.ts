@@ -8,7 +8,7 @@ import {
   LayerInitializer,
   LayerSurface,
   RingLayer,
-} from '../../src';
+} from 'src';
 
 export abstract class BaseExample {
   surface: LayerSurface;

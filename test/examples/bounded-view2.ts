@@ -1,4 +1,4 @@
-import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from '../../src';
+import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from 'src';
 import { BaseExample } from './base-example';
 
 export class BoundedView2 extends BaseExample {

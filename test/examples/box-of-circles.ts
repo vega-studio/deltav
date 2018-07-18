@@ -1,5 +1,6 @@
 import {
   AnimationHelper,
+  AutoEasingMethod,
   BasicCameraController,
   Bounds,
   ChartCamera,
@@ -7,17 +8,14 @@ import {
   CircleLayer,
   createLayer,
   EventManager,
+  IAutoEasingMethod,
   IInstanceProvider,
   InstanceProvider,
   LayerInitializer,
   LayerSurface,
   Vec,
   Vec2,
-} from '../../src';
-import {
-  AutoEasingMethod,
-  IAutoEasingMethod,
-} from '../../src/voidgl/util/auto-easing-method';
+} from 'src';
 import { BaseExample } from './base-example';
 
 const { min, max, random } = Math;
@@ -217,7 +215,7 @@ export class BoxOfCircles extends BaseExample {
   makeProvider(): IInstanceProvider<CircleInstance> {
     const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
-    const boxSide = 200;
+    const boxSide = 40;
 
     for (let i = 0; i < boxSide; ++i) {
       for (let k = 0; k < boxSide; ++k) {

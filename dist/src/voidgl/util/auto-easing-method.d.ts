@@ -3,6 +3,8 @@ import { Vec } from './vector';
 export declare enum AutoEasingLoopStyle {
     /** Time will go from 0 -> 1 then stop at 1 */
     NONE = 1,
+    /** Time will go from 0 -> infinity */
+    CONTINUOUS = 4,
     /** Time will continuously go 0 -> 1 then 0 -> 1 then 0 -> 1 etc etc */
     REPEAT = 2,
     /** Time will continously go 0 -> 1 then 1 -> 0 then 0 -> 1 then 1 -> 0 etc etc */
@@ -231,6 +233,20 @@ export declare class AutoEasingMethod<T extends InstanceIOValue> implements IAut
      * Auto easing for overshooting at the end
      */
     static easeBackInOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): {
+        cpu: (start: T, end: T, t: number) => T;
+        delay: number;
+        duration: number;
+        gpu: string;
+        loop: AutoEasingLoopStyle;
+        methodName: string;
+    };
+    /**
+     * This is an easing method that performs a sinusoidal wave where the amplitude is
+     * (start - end) * 2 and the wave starts at the start value.
+     *
+     * This is intended to work best with the CONTINUOUS loop style.
+     */
+    static continuousSinusoidal<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle, rate?: number): {
         cpu: (start: T, end: T, t: number) => T;
         delay: number;
         duration: number;

@@ -1,10 +1,7 @@
 /** @jsx h */
 import { Component, h, render } from 'preact';
-import { EventManager, ISceneOptions, LayerInitializer } from '../src';
-import { LayerSurface } from '../src/voidgl/surface/layer-surface';
-import { AtlasSize } from '../src/voidgl/surface/texture/atlas';
-import { ClearFlags } from '../src/voidgl/surface/view';
-import { ChartCamera } from '../src/voidgl/util/chart-camera';
+import { AtlasSize, ChartCamera, ClearFlags, EventManager, ISceneOptions, LayerInitializer, LayerSurface } from 'src';
+
 import { AnimateDeleteAdd } from './examples/animate-delete-add';
 import { BaseExample } from './examples/base-example';
 import { BendyEdge } from './examples/bendy-edge';
@@ -42,27 +39,27 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  new BoxOfRings(),
-  new BoxOfCircles(),
-  new ScreenSpaceEdges(),
-  new ChangingAnchorLabels(),
-  new LabelAnchorsAndScales(),
-  new Images(),
-  new BendyEdge(),
+  // new BoxOfRings(),
+  // new BoxOfCircles(),
+  // new ScreenSpaceEdges(),
+  // new ChangingAnchorLabels(),
+  // new LabelAnchorsAndScales(),
+  // new Images(),
+  // new BendyEdge(),
   new Lines(),
-  new MouseInteraction(),
-  new SingleAxisLabelScaling(true),
-  new SingleAxisLabelScaling(false),
-  new MouseInteractionLabels(),
-  new MouseInteractionImages(),
-  new MouseInteractionEdges(),
-  new LabelAnimatedScale(),
-  new LabelSizingCorrected(),
-  new MouseInteractionRectangle(),
-  new BoundedView(),
-  new BoundedView3(),
-  new AnimateDeleteAdd(),
-  new MouseInteractionColorPicking(),
+  // new MouseInteraction(),
+  // new SingleAxisLabelScaling(true),
+  // new SingleAxisLabelScaling(false),
+  // new MouseInteractionLabels(),
+  // new MouseInteractionImages(),
+  // new MouseInteractionEdges(),
+  // new LabelAnimatedScale(),
+  // new LabelSizingCorrected(),
+  // new MouseInteractionRectangle(),
+  // new BoundedView(),
+  // new BoundedView3(),
+  // new AnimateDeleteAdd(),
+  // new MouseInteractionColorPicking(),
 ];
 
 /** These are the layers for the tests that are generated */
@@ -126,7 +123,11 @@ export class Main extends Component<any, IMainState> {
 
     if (generate) {
       this.context.removeAttribute('style');
-      const scenes = this.makeSceneBlock(5);
+
+      let blockSize = 1;
+      while (blockSize * blockSize < tests.length) blockSize++;
+
+      const scenes = this.makeSceneBlock(blockSize);
       this.allScenes = scenes;
 
       // Establish the surface and scenes needed

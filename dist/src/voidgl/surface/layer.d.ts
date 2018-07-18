@@ -1,12 +1,14 @@
 import * as Three from 'three';
+import { InstanceDiff } from '../instance-provider';
+import { Instance } from '../instance-provider/instance';
 import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
 import { BoundsAccessor } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { Instance } from '../util/instance';
-import { InstanceUniformManager } from '../util/instance-uniform-manager';
-import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
+import { BufferManagerBase, IBufferLocation } from './buffer-management';
+import { InstanceDiffManager } from './buffer-management/instance-diff-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
-import { LayerSurface } from './layer-surface';
+import { LayerBufferType } from './layer-processing/layer-buffer-type';
+import { LayerInitializer, LayerSurface } from './layer-surface';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 import { View } from './view';
 export interface IShaderInputs<T extends Instance> {
@@ -31,7 +33,7 @@ export interface IModelType {
  */
 export interface IInstanceProvider<T extends Instance> {
     /** A list of changes to instances */
-    changeList: [T, InstanceDiffType][];
+    changeList: InstanceDiff<T>[];
     /** Resolves the changes as consumed */
     resolve(): void;
 }
@@ -85,10 +87,20 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     static defaultProps: any;
     /** This is the attribute that specifies the _active flag for an instance */
     activeAttribute: IInstanceAttribute<T>;
+    /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
+    private _bufferManager;
+    /** Buffer manager is read only. Must use setBufferManager */
+    readonly bufferManager: BufferManagerBase<T, IBufferLocation>;
+    /** This is the determined buffering strategy of the layer */
+    private _bufferType;
+    /** Buffer type is private and should not be directly modified */
+    readonly bufferType: LayerBufferType;
     /** This determines the drawing order of the layer within it's scene */
     depth: number;
     /** This is the threejs geometry filled with the vertex information */
     geometry: Three.BufferGeometry;
+    /** This is the initializer used when making this layer. */
+    initializer: LayerInitializer;
     /** This is all of the instance attributes generated for the layer */
     instanceAttributes: IInstanceAttribute<T>[];
     /** A lookup fo an instance by it's ID */
@@ -113,16 +125,12 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     surface: LayerSurface;
     /** This is all of the uniforms generated for the layer */
     uniforms: IUniformInternal[];
-    /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
-    uniformManager: InstanceUniformManager<T>;
     /** This is all of the vertex attributes generated for the layer */
     vertexAttributes: IVertexAttributeInternal[];
     /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
     view: View;
     /** This contains the methods and controls for handling diffs for the layer */
     diffManager: InstanceDiffManager<T>;
-    /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
-    diffProcessor: DiffLookup<T>;
     constructor(props: ILayerProps<T>);
     /**
      * Invalidate and free all resources assocated with this layer.
@@ -171,6 +179,15 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
      * have better documentation when typing out the elements.
      */
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
+    /**
+     * Applies a buffer manager to the layer which handles instance changes and applies those changes
+     * to an appropriate buffer at the appropriate location.
+     */
+    setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>): void;
+    /**
+     * Only allows the buffer type to be set once
+     */
+    setBufferType(val: LayerBufferType): void;
     willUpdateInstances(changes: [T, InstanceDiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
     didUpdate(): void;

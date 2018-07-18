@@ -1,4 +1,4 @@
-import { IInstanceOptions, Instance } from '../../util/instance';
+import { IInstanceOptions, Instance } from '../../instance-provider';
 import { Anchor, ScaleType } from '../types';
 export interface IRectangleInstanceOptions extends IInstanceOptions {
     /**

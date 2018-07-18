@@ -1,6 +1,6 @@
+import { IInstanceOptions, Instance } from '../../instance-provider/instance';
 import { Image } from '../../primitives/image';
 import { ImageAtlasResource } from '../../surface/texture';
-import { IInstanceOptions, Instance } from '../../util/instance';
 import { Anchor, ScaleType } from '../types';
 export interface IImageInstanceOptions extends IInstanceOptions {
     /**
@@ -26,19 +26,18 @@ export interface IImageInstanceOptions extends IInstanceOptions {
     y?: number;
 }
 /**
- * This generates a new image instance which will render a single line of text for a given layer.
+ * This generates a new image instance.
  * There are restrictions surrounding images due to texture sizes and rendering limitations.
  *
  * Currently, we only support rendering a image via canvas, then rendering it to an Atlas texture
  * which is used to render to cards in the world for rendering. This is highly performant, but means:
  *
- * - Images should only be so long.
- * - Multiline is not supported inherently
+ * - Images should only be so large.
  * - Once a image is constructed, only SOME properties can be altered thereafter
  *
- * A image that is constructed can only have some properties set upon creating the image and are locked
+ * An image that is constructed can only have some properties set upon creating the image and are locked
  * thereafter. The only way to modify them would be to destroy the image, then construct a new image
- * with the modifications. This has to deal with performance regarding rasterizing the image
+ * with the modifications. This has to deal with performance regarding rasterizing the image.
  */
 export declare class ImageInstance extends Instance implements Image {
     /**
@@ -88,12 +87,13 @@ export declare class ImageInstance extends Instance implements Image {
     /** This is the anchor location on the  */
     private _anchor;
     constructor(options: IImageInstanceOptions);
+    readonly anchor: Anchor;
     /**
      * Images are a sort of unique case where the use of a image should be destroyed as rasterization
      * resources are in a way kept alive through reference counting.
      */
     destroy(): void;
-    readonly anchor: Anchor;
+    resourceTrigger(): void;
     /**
      * This applies a new anchor to this image and properly determines it's anchor position on the image
      */

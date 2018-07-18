@@ -102,40 +102,8 @@ function instanceAttributeDestructuring<T extends Instance>(
     // If this is the source easing attribute, we must add it in as an eased method along with a calculation for the
     // Easing interpolation time value based on the current time and the injected start time of the change.
     if (attribute.easing && attribute.size) {
-      switch (attribute.easing.loop) {
-        // Repeat means going from 0 to 1 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REPEAT:
-          out += `  float _${
-            attribute.name
-          }_time = clamp(fract((currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
-          break;
-
-        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REFLECT:
-          // Get the time passed in a linear fashion
-          out += `  float _${attribute.name}_timePassed = (currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration;\n`;
-          // Make a triangle wave from the time passed to ping pong the value
-          out += `  float _${attribute.name}_pingPong = abs((fract(_${
-            attribute.name
-          }_timePassed / 2.0)) - 0.5) * 2.0;\n`;
-          // Ensure we're clamped to the right values
-          out += `  float _${attribute.name}_time = clamp(_${
-            attribute.name
-          }_pingPong, 0.0, 1.0);\n`;
-          break;
-
-        // No loop means just linear time
-        case AutoEasingLoopStyle.NONE:
-        default:
-          out += `  float _${attribute.name}_time = clamp((currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
-          break;
-      }
+      // Make the time calculation for the easing equation
+      out += makeAutoEasingTiming(attribute);
 
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = ${
         attribute.easing.methodName
@@ -178,40 +146,8 @@ function uniformInstancingDestructuring<T extends Instance>(
         )};\n`;
       }
 
-      switch (attribute.easing.loop) {
-        // Repeat means going from 0 to 1 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REPEAT:
-          out += `  float _${
-            attribute.name
-          }_time = clamp(fract((currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
-          break;
-
-        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REFLECT:
-          // Get the time passed in a linear fashion
-          out += `  float _${attribute.name}_timePassed = (currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration;\n`;
-          // Make a triangle wave from the time passed to ping pong the value
-          out += `  float _${attribute.name}_pingPong = abs((fract(_${
-            attribute.name
-          }_timePassed / 2.0)) - 0.5) * 2.0;\n`;
-          // Ensure we're clamped to the right values
-          out += `  float _${attribute.name}_time = clamp(_${
-            attribute.name
-          }_pingPong, 0.0, 1.0);\n`;
-          break;
-
-        // No loop means just linear time
-        case AutoEasingLoopStyle.NONE:
-        default:
-          out += `  float _${attribute.name}_time = clamp((currentTime - _${
-            attribute.name
-          }_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
-          break;
-      }
+      // Generate the proper timing calculation for the easing involved
+      out += makeAutoEasingTiming(attribute);
 
       out += `  ${sizeToType[attribute.size]} ${attribute.name} = ${
         attribute.easing.methodName
@@ -244,6 +180,64 @@ function uniformInstancingDestructuring<T extends Instance>(
       )};\n`;
     }
   });
+
+  return out;
+}
+
+function makeAutoEasingTiming<T extends Instance>(attribute: IInstanceAttribute<T>) {
+  if (!attribute.easing) {
+    return;
+  }
+
+  let out = '';
+
+  switch (attribute.easing.loop) {
+    // Continuous means letting the time go from 0 to infinity
+    case AutoEasingLoopStyle.CONTINUOUS: {
+      out += `  float _${
+        attribute.name
+      }_time = (currentTime - _${
+        attribute.name
+      }_start_time) / _${attribute.name}_duration;\n`;
+      break;
+    }
+
+    // Repeat means going from 0 to 1 then 0 to 1 etc etc
+    case AutoEasingLoopStyle.REPEAT: {
+      out += `  float _${
+        attribute.name
+      }_time = clamp(fract((currentTime - _${
+        attribute.name
+      }_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
+      break;
+    }
+
+    // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
+    case AutoEasingLoopStyle.REFLECT: {
+      // Get the time passed in a linear fashion
+      out += `  float _${attribute.name}_timePassed = (currentTime - _${
+        attribute.name
+      }_start_time) / _${attribute.name}_duration;\n`;
+      // Make a triangle wave from the time passed to ping pong the value
+      out += `  float _${attribute.name}_pingPong = abs((fract(_${
+        attribute.name
+      }_timePassed / 2.0)) - 0.5) * 2.0;\n`;
+      // Ensure we're clamped to the right values
+      out += `  float _${attribute.name}_time = clamp(_${
+        attribute.name
+      }_pingPong, 0.0, 1.0);\n`;
+      break;
+    }
+
+    // No loop means just linear time
+    case AutoEasingLoopStyle.NONE:
+    default: {
+      out += `  float _${attribute.name}_time = clamp((currentTime - _${
+        attribute.name
+      }_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
+      break;
+    }
+  }
 
   return out;
 }

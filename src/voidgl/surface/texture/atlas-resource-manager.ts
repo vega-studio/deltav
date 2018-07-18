@@ -88,7 +88,10 @@ export class AtlasResourceManager {
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
                 if (layer.bufferManager.getBufferLocations(instance)) {
+                  // Make sure the instance is active
                   instance.active = true;
+                  // Trigger the resource attributes to update
+                  instance.resourceTrigger();
                 }
               }
             }

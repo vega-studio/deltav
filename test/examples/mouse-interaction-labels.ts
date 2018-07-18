@@ -11,7 +11,7 @@ import {
   PickType,
   ReferenceCamera,
   ScaleType,
-} from '../../src';
+} from 'src';
 import { BaseExample } from './base-example';
 
 export class MouseInteractionLabels extends BaseExample {

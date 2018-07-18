@@ -15,5 +15,6 @@ export const templateVars = {
   projectionMethods: 'projectionMethods',
   shader: 'shader',
   shaderInput: 'shaderInput',
+  T: 'T',
   vertexAttributes: 'vertexAttributes',
 };

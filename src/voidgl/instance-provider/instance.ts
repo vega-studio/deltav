@@ -77,6 +77,15 @@ export class Instance implements Identifiable {
     return this._uid;
   }
 
+  /**
+   * This method is utilized internally to indicate when requested resources are ready.
+   * If you have a property that will be requesting a resource, you should implement this method
+   * to cause a trigger for the property to activate such that the property will update it's buffer.
+   */
+  resourceTrigger() {
+    // For subclasses
+  }
+
   constructor(options: IInstanceOptions) {
     this._id = options.id || '';
     this.active = options.active || this.active;

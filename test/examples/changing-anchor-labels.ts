@@ -7,7 +7,7 @@ import {
   LabelLayer,
   LayerInitializer,
   ScaleType,
-} from '../../src';
+} from 'src';
 import { BaseExample } from './base-example';
 
 export class ChangingAnchorLabels extends BaseExample {

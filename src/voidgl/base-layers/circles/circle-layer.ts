@@ -16,7 +16,7 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from '../../types';
-import { Vec } from '../../util';
+import { CommonMaterialOptions, Vec } from '../../util';
 import { IAutoEasingMethod } from '../../util/auto-easing-method';
 import { CircleInstance } from './circle-instance';
 
@@ -187,9 +187,6 @@ export class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      premultipliedAlpha: true,
-      transparent: true,
-    };
+    return CommonMaterialOptions.transparentShape;
   }
 }

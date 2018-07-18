@@ -5,7 +5,7 @@
     "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",

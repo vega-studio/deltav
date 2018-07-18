@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.9.4
+
+* `(FIXED)` network-bubble-chart #146. Rapid reloading of the chart will no longer cause an error to occur.
+
 ## 1.9.3
 
 * `(FIXED)` Section title flattens section circle #135

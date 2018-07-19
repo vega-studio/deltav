@@ -418,3 +418,35 @@ export interface IEasingProps {
   startTime: number;
   duration: number;
 }
+
+/**
+ * This is the Shader IO information a layer will provide.
+ */
+export interface IShaderInputs<T extends Instance> {
+  /** These are very frequently changing attributes and are uniform across all vertices in the model */
+  instanceAttributes?: (IInstanceAttribute<T> | null)[];
+  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
+  vertexAttributes?: (IVertexAttribute | null)[];
+  /** Specify how many vertices there are per instance */
+  vertexCount: number;
+  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
+  uniforms?: (IUniform | null)[];
+}
+
+/**
+ * This is the initialization of the shader.
+ */
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
+
+export interface IShaderExtension {
+  header?: string;
+  body?: string;
+}
+
+export type IShaderIOExtension<T extends Instance> = Partial<
+  IShaderInputs<T>
+> & {
+  vs?: IShaderExtension;
+  fs?: IShaderExtension;
+};

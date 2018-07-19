@@ -15,6 +15,8 @@ float circle(vec2 coord, float radius){
   );
 }
 
+${extendHeader}
+
 void main() {
   float step_factor = circle(pointCoord, 1.0);
   gl_FragColor = mix(
@@ -22,4 +24,6 @@ void main() {
     vertexColor,
     step_factor
   );
+
+  ${extend}
 }

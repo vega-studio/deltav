@@ -32,6 +32,8 @@ float circle(vec2 coord, float radius){
 
 }
 
+${extendHeader}
+
 void main() {
   float outer_step_factor = circle(pointCoord, 1.0);
   float inner_step_factor = circle(pointCoord, 1.0 - borderSize * scale);
@@ -45,4 +47,6 @@ void main() {
     vec4(0.0, 0.0, 0.0, 0.0),                 // Select inner color inside inner
     inner_step_factor
   );
+
+  ${extend}
 }

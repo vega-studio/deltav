@@ -8,11 +8,11 @@ import { Instance } from "../../util";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { makeInstanceUniformNameArray } from "../../util/make-instance-uniform-name";
 import { shaderTemplate } from "../../util/shader-templating";
-import { templateVars } from "../fragments/template-vars";
+import { templateVars } from "../template-vars";
 
 const instanceRetrievalArrayFragment = require("../fragments/instance-retrieval-array.vs");
 
-/** Defines the elements for destructuring out of a vector */
+/** Defines the elements for d../template-varsor */
 const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */
@@ -64,11 +64,11 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
     values: [templateVars.instanceBlockCount]
   };
 
-  const results = shaderTemplate(
-    instanceRetrievalArrayFragment,
-    templateOptions,
-    required
-  );
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: instanceRetrievalArrayFragment
+  });
 
   return results.shader;
 }

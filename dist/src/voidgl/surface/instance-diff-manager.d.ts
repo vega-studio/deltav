@@ -1,5 +1,5 @@
+import { Instance } from '../instance-provider/instance';
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics } from '../types';
-import { Instance } from '../util';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 /** Signature of a method that handles a diff */

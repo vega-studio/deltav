@@ -1,4 +1,4 @@
-import { IInstanceOptions, Instance } from '../../util/instance';
+import { IInstanceOptions, Instance } from '../../instance-provider/instance';
 export interface IEdgeInstanceOptions extends IInstanceOptions {
     /** The color of this edge at the start point. */
     colorStart?: [number, number, number, number];

@@ -1,6 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../../instance-provider/instance';
 import { InstanceIOValue } from '../../types';
-import { Instance } from '../../util/instance';
 import { ILayerProps, Layer } from '../layer';
 import { AtlasManager, AtlasResource } from './atlas-manager';
 export interface IAtlasResourceManagerOptions {

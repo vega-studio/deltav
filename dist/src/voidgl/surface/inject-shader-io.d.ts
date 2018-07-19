@@ -1,6 +1,6 @@
+import { Instance } from '../instance-provider/instance';
 import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
 import { IInstanceAttribute, IUniformInternal, IVertexAttributeInternal } from '../types';
-import { Instance } from '../util/instance';
 /**
  * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
  * into the shader.

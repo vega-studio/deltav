@@ -1,6 +1,6 @@
+import { Instance } from '../instance-provider/instance';
 import { IPoint } from '../primitives/point';
 import { IColorPickingData, IProjection } from '../types';
-import { Instance } from '../util';
 import { ILayerProps, Layer } from './layer';
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining

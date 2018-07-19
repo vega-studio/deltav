@@ -1,8 +1,9 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
+import { InstanceDiff } from '../instance-provider/instance-provider';
 import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from '../types';
 import { BoundsAccessor } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
@@ -31,7 +32,7 @@ export interface IModelType {
  */
 export interface IInstanceProvider<T extends Instance> {
     /** A list of changes to instances */
-    changeList: [T, InstanceDiffType][];
+    changeList: InstanceDiff<T>[];
     /** Resolves the changes as consumed */
     resolve(): void;
 }

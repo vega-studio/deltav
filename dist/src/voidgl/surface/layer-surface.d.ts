@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { Box } from '../primitives/box';
 import { EventManager } from '../surface/event-manager';
@@ -7,7 +8,6 @@ import { SceneView } from '../surface/mouse-event-manager';
 import { ISceneOptions, Scene } from '../surface/scene';
 import { View } from '../surface/view';
 import { FrameMetrics } from '../types';
-import { Instance } from '../util/instance';
 import { Vec2 } from '../util/vector';
 import { ILayerProps, Layer } from './layer';
 import { IAtlasOptions } from './texture/atlas';

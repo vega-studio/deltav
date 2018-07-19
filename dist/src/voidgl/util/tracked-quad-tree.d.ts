@@ -1,6 +1,6 @@
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives/bounds';
 import { IPoint } from '../primitives/point';
-import { Instance } from './instance';
 export declare type BoundsAccessor<T extends Instance> = (o: T) => Bounds | null;
 /**
  * Allows typing of a callback argument

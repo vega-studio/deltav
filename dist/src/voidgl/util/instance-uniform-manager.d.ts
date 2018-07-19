@@ -1,7 +1,7 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { Layer } from '../surface/layer';
 import { Scene } from '../surface/scene';
-import { Instance } from './instance';
 export interface IUniformInstanceCluster {
     /** This is the index of the instance as it appears in the buffer */
     instanceIndex: number;

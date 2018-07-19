@@ -1,4 +1,4 @@
-import { SubTexture } from './sub-texture';
+import { SubTexture } from "./sub-texture";
 
 export class BaseAtlasResource {
   /** The rasterization metrics of the label */

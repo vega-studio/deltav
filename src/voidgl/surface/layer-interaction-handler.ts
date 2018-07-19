@@ -1,9 +1,15 @@
-import { Instance } from '../instance-provider/instance';
-import { Bounds } from '../primitives';
-import { IPoint } from '../primitives/point';
-import { IColorPickingData, InstanceHitTest, IPickInfo, IProjection, PickType } from '../types';
-import { TrackedQuadTree } from '../util';
-import { ILayerProps, Layer } from './layer';
+import { Instance } from "../instance-provider/instance";
+import { Bounds } from "../primitives";
+import { IPoint } from "../primitives/point";
+import {
+  IColorPickingData,
+  InstanceHitTest,
+  IPickInfo,
+  IProjection,
+  PickType
+} from "../types";
+import { TrackedQuadTree } from "../util";
+import { ILayerProps, Layer } from "./layer";
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
@@ -11,7 +17,10 @@ import { ILayerProps, Layer } from './layer';
  *
  * This class, in summary, takes in the gestures to the view and converts them to gestures to the instances.
  */
-export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>> {
+export class LayerInteractionHandler<
+  T extends Instance,
+  U extends ILayerProps<T>
+> {
   /** This is the color picking information most recently rendered */
   colorPicking?: IColorPickingData;
   /** This tracks the elements that have the mouse currently over them */
@@ -30,7 +39,9 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
    */
   getColorPickInstance() {
     if (this.colorPicking) {
-      return this.layer.diffManager.colorPicking.uidToInstance.get(0xFFFFFF - this.colorPicking.nearestColor);
+      return this.layer.diffManager.colorPicking.uidToInstance.get(
+        0xffffff - this.colorPicking.nearestColor
+      );
     }
 
     return null;
@@ -56,18 +67,19 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
-          query = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
-          querySpace = (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view));
+          query = this.layer.picking.quadTree.query.bind(
+            this.layer.picking.quadTree
+          );
+          querySpace = (check: Bounds | IPoint) =>
+            query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
-        }
-
-        else if (this.layer.picking.type === PickType.SINGLE) {
+        } else if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
           const instanceForColor = this.getColorPickInstance();
 
@@ -83,7 +95,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseDown(info);
@@ -107,13 +119,16 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseOut) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
-          query = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
-          querySpace = (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view));
+          query = this.layer.picking.quadTree.query.bind(
+            this.layer.picking.quadTree
+          );
+          querySpace = (check: Bounds | IPoint) =>
+            query(check).filter(o => hitTest(o, world, view));
         }
 
         const info: IPickInfo<T> = {
@@ -122,7 +137,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseOut(info);
@@ -148,18 +163,19 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
-          query = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
-          querySpace = (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view));
+          query = this.layer.picking.quadTree.query.bind(
+            this.layer.picking.quadTree
+          );
+          querySpace = (check: Bounds | IPoint) =>
+            query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
-        }
-
-        else if (this.layer.picking.type === PickType.SINGLE) {
+        } else if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
           const instanceForColor = this.getColorPickInstance();
 
@@ -175,7 +191,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseUp(info);
@@ -196,18 +212,19 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
         let info: IPickInfo<T>;
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
-          query = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
-          querySpace = (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view));
+          query = this.layer.picking.quadTree.query.bind(
+            this.layer.picking.quadTree
+          );
+          querySpace = (check: Bounds | IPoint) =>
+            query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
-        }
-
-        else if (this.layer.picking.type === PickType.SINGLE) {
+        } else if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
           const instanceForColor = this.getColorPickInstance();
 
@@ -218,14 +235,16 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
 
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
         if (onMouseOver) {
-          const notOverInstances = instances.filter(o => !this.isMouseOver.get(o));
+          const notOverInstances = instances.filter(
+            o => !this.isMouseOver.get(o)
+          );
           info = {
             instances: notOverInstances,
             layer: this.layer.id,
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           if (notOverInstances.length > 0) onMouseOver(info);
@@ -240,7 +259,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           onMouseMove(info);
@@ -252,7 +271,9 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
 
         // Broadcast the the picking info for all instances that the mouse moved off of
         if (onMouseOut) {
-          const noLongerOver = Array.from(this.isMouseOver.keys()).filter(o => !isCurrentlyOver.get(o));
+          const noLongerOver = Array.from(this.isMouseOver.keys()).filter(
+            o => !isCurrentlyOver.get(o)
+          );
 
           // This is the pick info object we will broadcast from the layer
           info = {
@@ -261,7 +282,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           if (noLongerOver.length > 0) onMouseOut(info);
@@ -285,18 +306,19 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
-          query = this.layer.picking.quadTree.query.bind(this.layer.picking.quadTree);
-          querySpace = (check: Bounds | IPoint) => query(check).filter(o => hitTest(o, world, view));
+          query = this.layer.picking.quadTree.query.bind(
+            this.layer.picking.quadTree
+          );
+          querySpace = (check: Bounds | IPoint) =>
+            query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
-        }
-
-        else if (this.layer.picking.type === PickType.SINGLE) {
+        } else if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
           const instanceForColor = this.getColorPickInstance();
 
@@ -312,7 +334,7 @@ export class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseClick(info);

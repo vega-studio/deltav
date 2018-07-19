@@ -1,6 +1,17 @@
-import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, EdgeInstance, EdgeLayer, EdgeType, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
-import { BaseExample } from './base-example';
+import * as anime from "animejs";
+import {
+  CircleInstance,
+  CircleLayer,
+  createLayer,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeType,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class MouseInteractionColorPicking extends BaseExample {
   isOver = new Map<CircleInstance, anime.AnimeInstance>();
@@ -20,25 +31,25 @@ export class MouseInteractionColorPicking extends BaseExample {
         targets: circle.color,
         update: () => {
           circle.color = circle.color;
-        },
+        }
       });
     }
-  }
+  };
 
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
       if (!this.isOver.get(circle)) {
         const animation = anime({
           radius: 20,
-          targets: circle,
+          targets: circle
         });
 
         this.isOver.set(circle, animation);
       }
     }
-  }
+  };
 
-  handleCircleOut = async(info: IPickInfo<CircleInstance>) => {
+  handleCircleOut = async (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
       const animation = this.isOver.get(circle);
 
@@ -47,7 +58,7 @@ export class MouseInteractionColorPicking extends BaseExample {
 
         const leave = anime({
           radius: 5,
-          targets: circle,
+          targets: circle
         });
 
         leave.pause();
@@ -58,7 +69,7 @@ export class MouseInteractionColorPicking extends BaseExample {
         leave.play();
       }
     }
-  }
+  };
 
   handleEdgeMouseOut = (info: IPickInfo<EdgeInstance>) => {
     this.side = 0;
@@ -67,9 +78,9 @@ export class MouseInteractionColorPicking extends BaseExample {
     anime({
       targets: info.instances,
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
-  }
+  };
 
   handleEdgeMouseMove = (info: IPickInfo<EdgeInstance>) => {
     if (info.instances.length <= 0) {
@@ -83,7 +94,7 @@ export class MouseInteractionColorPicking extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 10,
-        widthStart: 20,
+        widthStart: 20
       });
     }
 
@@ -93,32 +104,36 @@ export class MouseInteractionColorPicking extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 20,
-        widthStart: 10,
+        widthStart: 10
       });
     }
-  }
+  };
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer | LayerInitializer[] {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<CircleInstance>
+  ): LayerInitializer | LayerInitializer[] {
     return [
       createLayer(CircleLayer, {
         data: provider,
-        key: 'mouse-interaction-color-picking-1',
+        key: "mouse-interaction-color-picking-1",
         onMouseClick: this.handleCircleClick,
         onMouseOut: this.handleCircleOut,
         onMouseOver: this.handleCircleOver,
         picking: PickType.SINGLE,
         scaleFactor: () => 1,
-        scene,
+        scene
       }),
       createLayer(EdgeLayer, {
         data: this.edgeProvider,
-        key: 'mouse-interaction-color-picking-2',
+        key: "mouse-interaction-color-picking-2",
         onMouseMove: this.handleEdgeMouseMove,
         onMouseOut: this.handleEdgeMouseOut,
         picking: PickType.SINGLE,
         scene,
-        type: EdgeType.BEZIER2,
-      }),
+        type: EdgeType.BEZIER2
+      })
     ];
   }
 
@@ -133,7 +148,7 @@ export class MouseInteractionColorPicking extends BaseExample {
           id: `circle${i * 100 + k}`,
           radius: 5,
           x: i * 10,
-          y: k * 10,
+          y: k * 10
         });
 
         circleProvider.add(circle);
@@ -146,15 +161,12 @@ export class MouseInteractionColorPicking extends BaseExample {
       const edge = new EdgeInstance({
         colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
         colorStart: [Math.random(), 1.0, Math.random(), 1.0],
-        control: [
-          [60, 20 * i + 20],
-          [180, 20 * i + 20],
-        ],
+        control: [[60, 20 * i + 20], [180, 20 * i + 20]],
         end: [10000, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
         widthEnd: 10,
-        widthStart: 10,
+        widthStart: 10
       });
 
       edgeProvider.add(edge);

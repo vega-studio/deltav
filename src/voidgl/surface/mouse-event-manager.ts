@@ -1,13 +1,13 @@
-import { IPoint } from '../primitives/point';
-import { DataBounds } from '../util/data-bounds';
-import { eventElementPosition, normalizeWheel } from '../util/mouse';
-import { QuadTree } from '../util/quad-tree';
-import { EventManager } from './event-manager';
-import { Scene } from './scene';
-import { View } from './view';
+import { IPoint } from "../primitives/point";
+import { DataBounds } from "../util/data-bounds";
+import { eventElementPosition, normalizeWheel } from "../util/mouse";
+import { QuadTree } from "../util/quad-tree";
+import { EventManager } from "./event-manager";
+import { Scene } from "./scene";
+import { View } from "./view";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
-const VALID_CLICK_DELAY = 1E3;
+const VALID_CLICK_DELAY = 1e3;
 
 /**
  * Theorectically we can have a view be applied to multiple scenes. So to properly qualify a view
@@ -21,7 +21,7 @@ export type SceneView = {
   /** This is the view itself that our mouse will interact with */
   view: View;
   /** Gets the bounds of this view for this particular scene */
-  bounds?: DataBounds<SceneView>
+  bounds?: DataBounds<SceneView>;
 };
 
 /**
@@ -48,9 +48,9 @@ export interface IMouseInteraction {
   /** This is populated with ALL of the views underneath the mouse */
   viewsUnderMouse: {
     /** The mouse's location in the views coordinate space */
-    mouse: IPoint,
+    mouse: IPoint;
     /** The view that is interacted with */
-    view: View,
+    view: View;
   }[];
 }
 
@@ -65,7 +65,7 @@ export interface IDragMetrics {
     current: IPoint;
     /** The change in position from last frame to this frame */
     delta: IPoint;
-  },
+  };
 }
 
 export interface IWheelMetrics {
@@ -149,7 +149,12 @@ export class MouseEventManager {
     }
   }
 
-  constructor(canvas: HTMLCanvasElement, views: SceneView[], controllers: EventManager[], handlesWheelEvents?: boolean) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    views: SceneView[],
+    controllers: EventManager[],
+    handlesWheelEvents?: boolean
+  ) {
     this.context = canvas;
     this.setViews(views);
     this.setControllers(controllers);
@@ -169,7 +174,11 @@ export class MouseEventManager {
     if (handlesWheelEvents) {
       const wheelHandler = (event: MouseWheelEvent) => {
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(mouse, startPosition, startView);
+        const interaction = this.makeInteraction(
+          mouse,
+          startPosition,
+          startView
+        );
         const wheel = this.makeWheel(event);
 
         this.controllers.forEach(controller => {
@@ -180,17 +189,17 @@ export class MouseEventManager {
         event.preventDefault();
       };
 
-      if ('onwheel' in element) {
+      if ("onwheel" in element) {
         element.onwheel = wheelHandler;
       }
 
-      if ('addEventListener' in element) {
-        element.addEventListener('DOMMouseScroll', wheelHandler);
-        this.eventCleanup.push(['DOMMouseScroll', wheelHandler]);
+      if ("addEventListener" in element) {
+        element.addEventListener("DOMMouseScroll", wheelHandler);
+        this.eventCleanup.push(["DOMMouseScroll", wheelHandler]);
       }
     }
 
-    element.onmouseleave = (event) => {
+    element.onmouseleave = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
 
@@ -202,7 +211,7 @@ export class MouseEventManager {
       });
     };
 
-    element.onmousemove = (event) => {
+    element.onmousemove = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
 
@@ -230,7 +239,11 @@ export class MouseEventManager {
       }
 
       startView = downViews[0].data;
-      const interaction = this.makeInteraction(startPosition, startPosition, startView);
+      const interaction = this.makeInteraction(
+        startPosition,
+        startPosition,
+        startView
+      );
       let currentPosition = startPosition;
 
       this.controllers.forEach(controller => {
@@ -241,13 +254,22 @@ export class MouseEventManager {
 
       document.onmousemove = (event: MouseEvent) => {
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(mouse, startPosition, startView);
+        const interaction = this.makeInteraction(
+          mouse,
+          startPosition,
+          startView
+        );
         const delta = {
           x: mouse.x - currentPosition.x,
-          y: mouse.y - currentPosition.y,
+          y: mouse.y - currentPosition.y
         };
 
-        const drag = this.makeDrag(mouse, startPosition || {x: 0, y: 0}, currentPosition, delta);
+        const drag = this.makeDrag(
+          mouse,
+          startPosition || { x: 0, y: 0 },
+          currentPosition,
+          delta
+        );
         currentPosition = mouse;
 
         this.controllers.forEach(controller => {
@@ -266,7 +288,11 @@ export class MouseEventManager {
 
       document.onmouseover = (event: MouseEvent) => {
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(mouse, startPosition, startView);
+        const interaction = this.makeInteraction(
+          mouse,
+          startPosition,
+          startView
+        );
 
         this.controllers.forEach(controller => {
           controller.handleMouseOver(interaction);
@@ -277,7 +303,11 @@ export class MouseEventManager {
 
       element.onmouseup = (event: MouseEvent) => {
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(mouse, startPosition, startView);
+        const interaction = this.makeInteraction(
+          mouse,
+          startPosition,
+          startView
+        );
 
         this.controllers.forEach(controller => {
           controller.handleMouseUp(interaction, event.button);
@@ -304,24 +334,24 @@ export class MouseEventManager {
   addTouchContextListeners() {
     const element = this.context;
 
-    element.ontouchstart = (event) => {
+    element.ontouchstart = event => {
       // TODO: This is the start work for the touch events. And this retains sentimental value.
       // For (let i = 0, end = event.changedTouches.length; i < end; ++i) {
-        // TODO
-        // Const touch = event.changedTouches.item(i);
-        // CurrentTouches.set(touch.identifier, to);
+      // TODO
+      // Const touch = event.changedTouches.item(i);
+      // CurrentTouches.set(touch.identifier, to);
       // }
     };
 
-    element.ontouchend = (event) => {
+    element.ontouchend = event => {
       // TODO
     };
 
-    element.ontouchmove = (event) => {
+    element.ontouchmove = event => {
       // TODO
     };
 
-    element.ontouchcancel = (event) => {
+    element.ontouchcancel = event => {
       // TODO
     };
   }
@@ -350,45 +380,55 @@ export class MouseEventManager {
     hitViews.sort(sortByDepth);
 
     return hitViews;
-  }
+  };
 
   /**
    * This generates the metrics for a drag gesture.
    */
-  makeDrag(mouse: IPoint, start: IPoint, previous: IPoint, delta: IPoint): IDragMetrics {
+  makeDrag(
+    mouse: IPoint,
+    start: IPoint,
+    previous: IPoint,
+    delta: IPoint
+  ): IDragMetrics {
     return {
       screen: {
         current: mouse,
         delta,
         previous,
-        start,
-      },
+        start
+      }
     };
   }
 
   /**
    * This makes the metrics for interactions with the views.
    */
-  makeInteraction(mouse: IPoint, start?: IPoint, startView?: SceneView): IMouseInteraction {
+  makeInteraction(
+    mouse: IPoint,
+    start?: IPoint,
+    startView?: SceneView
+  ): IMouseInteraction {
     // Find the views the mouse has interacted with
     const hitViews = this.getViewsUnderMouse(mouse);
 
     return {
       screen: {
-        mouse,
+        mouse
       },
-      start: start && startView && {
-        mouse: startView.view.screenToView(mouse),
-        view: startView.view,
-      },
+      start: start &&
+        startView && {
+          mouse: startView.view.screenToView(mouse),
+          view: startView.view
+        },
       target: {
         mouse: hitViews[0] && hitViews[0].data.view.screenToView(mouse),
-        view: hitViews[0] && hitViews[0].data.view,
+        view: hitViews[0] && hitViews[0].data.view
       },
       viewsUnderMouse: hitViews.map(v => ({
         mouse: v.data.view.screenToView(mouse),
-        view: v.data.view,
-      })),
+        view: v.data.view
+      }))
     };
   }
 
@@ -396,7 +436,7 @@ export class MouseEventManager {
     const wheel = normalizeWheel(event);
 
     return {
-      wheel: [wheel.x, wheel.y],
+      wheel: [wheel.x, wheel.y]
     };
   }
 
@@ -405,7 +445,7 @@ export class MouseEventManager {
    */
   resize = () => {
     this._waitingForRender = true;
-  }
+  };
 
   /**
    * Sets the controllers to receive events from this manager.

@@ -1,6 +1,24 @@
-import { AnimationHelper, BasicCameraController, Bounds, ChartCamera, CircleInstance, CircleLayer, createLayer, EventManager, IInstanceProvider, InstanceProvider, LayerInitializer, LayerSurface, Vec, Vec2 } from '../../src';
-import { AutoEasingMethod, IAutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
-import { BaseExample } from './base-example';
+import {
+  AnimationHelper,
+  BasicCameraController,
+  Bounds,
+  ChartCamera,
+  CircleInstance,
+  CircleLayer,
+  createLayer,
+  EventManager,
+  IInstanceProvider,
+  InstanceProvider,
+  LayerInitializer,
+  LayerSurface,
+  Vec,
+  Vec2
+} from "../../src";
+import {
+  AutoEasingMethod,
+  IAutoEasingMethod
+} from "../../src/voidgl/util/auto-easing-method";
+import { BaseExample } from "./base-example";
 
 const { min, max, random } = Math;
 
@@ -12,21 +30,16 @@ function getColorIndicesForCoord(x: number, y: number, width: number) {
 function makeTextPositions(surface: LayerSurface, view: string) {
   const viewBounds = surface.getViewSize(view);
   if (!viewBounds) return [];
-  const canvas = document.createElement('canvas').getContext('2d');
+  const canvas = document.createElement("canvas").getContext("2d");
   if (!canvas) return [];
 
   let width = (canvas.canvas.width = viewBounds.width - 10);
   let height = (canvas.canvas.height = 80);
-  canvas.fillStyle = 'white';
-  canvas.font = '40px Consolas';
-  canvas.fillText('Vega Animation', 0, 40, viewBounds.width - 10);
+  canvas.fillStyle = "white";
+  canvas.font = "40px Consolas";
+  canvas.fillText("Vega Animation", 0, 40, viewBounds.width - 10);
 
-  const pixels = canvas.getImageData(
-    0,
-    0,
-    width,
-    height,
-  );
+  const pixels = canvas.getImageData(0, 0, width, height);
 
   const imageData = pixels.data;
   width = pixels.width;
@@ -75,9 +88,9 @@ function makeTextPositions(surface: LayerSurface, view: string) {
 
 export class BoxOfCircles extends BaseExample {
   animationControl: {
-    center: IAutoEasingMethod<Vec>,
-    color: IAutoEasingMethod<Vec>,
-    radius: IAutoEasingMethod<Vec>,
+    center: IAutoEasingMethod<Vec>;
+    color: IAutoEasingMethod<Vec>;
+    radius: IAutoEasingMethod<Vec>;
   };
   animationHelper: AnimationHelper;
   camera: ChartCamera;
@@ -92,10 +105,11 @@ export class BoxOfCircles extends BaseExample {
     }
 
     if (e.shiftKey) {
-      this.manager.setRange(new Bounds({ x: 20, y: 20, width: 20, height: 20 }), this.scene);
-    }
-
-    else {
+      this.manager.setRange(
+        new Bounds({ x: 20, y: 20, width: 20, height: 20 }),
+        this.scene
+      );
+    } else {
       this.manager.setRange(this.originalRange, this.scene);
       delete this.originalRange;
     }
@@ -106,22 +120,30 @@ export class BoxOfCircles extends BaseExample {
     return defaultCamera;
   }
 
-  makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
+  makeController(
+    defaultCamera: ChartCamera,
+    testCamera: ChartCamera,
+    viewName: string
+  ): EventManager {
     this.scene = viewName;
 
     this.manager = new BasicCameraController({
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
 
     return this.manager;
   }
 
-makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: IInstanceProvider<CircleInstance>
+  ): LayerInitializer {
     this.animationControl = {
       center: AutoEasingMethod.easeBackOut(1000, 500),
       color: AutoEasingMethod.linear(500, 1500),
-      radius: AutoEasingMethod.linear(500, 1500),
+      radius: AutoEasingMethod.linear(500, 1500)
     };
 
     this.animationHelper = new AnimationHelper(this.surface);
@@ -129,9 +151,9 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
     return createLayer(CircleLayer, {
       animate: this.animationControl,
       data: provider,
-      key: 'box-of-circles',
+      key: "box-of-circles",
       scaleFactor: () => this.camera.scale[0],
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -151,9 +173,12 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
     let i = 0;
 
     while (toProcess.length > 0) {
-      const circle = toProcess.splice(Math.floor(Math.random() * toProcess.length), 1)[0];
+      const circle = toProcess.splice(
+        Math.floor(Math.random() * toProcess.length),
+        1
+      )[0];
       const index = i++ % bucketLength;
-      const bucket = circleBuckets[index] = circleBuckets[index] || [];
+      const bucket = (circleBuckets[index] = circleBuckets[index] || []);
       bucket.push(circle);
     }
 
@@ -176,7 +201,7 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
             circle.color = [random(), random(), 1.0, 1.0];
           }
         }
-      },
+      }
     );
 
     await this.surface.commit(this.surface.frameMetrics.currentTime);
@@ -194,7 +219,7 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
           id: `circle${i * 100 + k}`,
           radius: 2,
           x: i * 4,
-          y: k * 4,
+          y: k * 4
         });
 
         circles.push(circle);
@@ -221,9 +246,7 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
             circle.color = [1.0, 0.0, 0.0, 1.0];
           }
         }
-      }
-
-      else {
+      } else {
         this.animationControl.center.delay = 500;
         this.animationControl.color.delay = 1500;
         this.animationControl.radius.delay = 500;

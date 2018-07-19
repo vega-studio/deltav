@@ -1,5 +1,5 @@
-import { IInstanceOptions, Instance } from '../../instance-provider/instance';
-import { observable } from '../../instance-provider/observable';
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { observable } from "../../instance-provider/observable";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** The color of this edge at the start point. */
@@ -33,10 +33,7 @@ export class EdgeInstance extends Instance {
   @observable widthEnd: number = 1.0;
 
   get length() {
-    const delta = [
-      this.end[0] - this.start[0],
-      this.end[1] - this.start[1],
-    ];
+    const delta = [this.end[0] - this.start[0], this.end[1] - this.start[1]];
 
     return Math.sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
   }
@@ -56,7 +53,7 @@ export class EdgeInstance extends Instance {
 
     return [
       (this.end[1] - this.start[1]) / length,
-      -(this.end[0] - this.start[0]) / length,
+      -(this.end[0] - this.start[0]) / length
     ];
   }
 

@@ -1,5 +1,5 @@
-import { InstanceDiffType } from '../types';
-import { Instance } from './instance';
+import { InstanceDiffType } from "../types";
+import { Instance } from "./instance";
 
 /**
  * This is an entry within the change list of the provider. It represents the type of change
@@ -8,7 +8,7 @@ import { Instance } from './instance';
 export type InstanceDiff<T extends Instance> = [
   T,
   InstanceDiffType,
-  {[key: number]: number}
+  { [key: number]: number }
 ];
 
 /**
@@ -52,7 +52,7 @@ export class InstanceProvider<T extends Instance> {
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.INSERT,
-        instance.changes,
+        instance.changes
       ]);
     }
 
@@ -92,7 +92,11 @@ export class InstanceProvider<T extends Instance> {
   instanceUpdated(instance: T, property: number) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
-      this.instanceChanges.set(instance.uid, [instance, InstanceDiffType.CHANGE, instance.changes]);
+      this.instanceChanges.set(instance.uid, [
+        instance,
+        InstanceDiffType.CHANGE,
+        instance.changes
+      ]);
     }
   }
 
@@ -110,7 +114,7 @@ export class InstanceProvider<T extends Instance> {
         this.instanceChanges.set(instance.uid, [
           instance,
           InstanceDiffType.REMOVE,
-          {},
+          {}
         ]);
       }
     }

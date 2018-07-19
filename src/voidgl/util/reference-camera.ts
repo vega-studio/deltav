@@ -1,4 +1,4 @@
-import { ChartCamera } from './chart-camera';
+import { ChartCamera } from "./chart-camera";
 
 export interface IReferenceCameraOptions {
   /** This is the base camera to monitor */

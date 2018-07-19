@@ -3,28 +3,41 @@
  * while the Instance continues to be moved around. This will ensure changes do not override removals / adds
  * and vice versa.
  */
-import { CircleInstance, CircleLayer, createLayer, IInstanceProvider, InstanceProvider, LayerInitializer } from '../../src';
-import { BaseExample } from './base-example';
+import {
+  CircleInstance,
+  CircleLayer,
+  createLayer,
+  IInstanceProvider,
+  InstanceProvider,
+  LayerInitializer
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class AnimateDeleteAdd extends BaseExample {
-  makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: IInstanceProvider<CircleInstance>
+  ): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,
-      key: 'animate-delete-add',
-      scene: scene,
+      key: "animate-delete-add",
+      scene: scene
     });
   }
 
   makeProvider(): IInstanceProvider<CircleInstance> {
     const circleProvider = new InstanceProvider<CircleInstance>();
 
-    const circle = circleProvider.add(new CircleInstance({
-      color: [0.01, 0.1, 1.0, 1.0],
-      id: 'yay',
-      radius: 10,
-      x: 0,
-      y: 0,
-    }));
+    const circle = circleProvider.add(
+      new CircleInstance({
+        color: [0.01, 0.1, 1.0, 1.0],
+        id: "yay",
+        radius: 10,
+        x: 0,
+        y: 0
+      })
+    );
 
     this.move(circle);
 
@@ -56,5 +69,5 @@ export class AnimateDeleteAdd extends BaseExample {
     if (circle.y > bounds.height) {
       circle.y = 0;
     }
-  }
+  };
 }

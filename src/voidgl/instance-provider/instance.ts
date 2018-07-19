@@ -1,6 +1,6 @@
-import { Identifiable, IEasingProps } from '../types';
-import { InstanceProvider } from './instance-provider';
-import { observable } from './observable';
+import { Identifiable, IEasingProps } from "../types";
+import { InstanceProvider } from "./instance-provider";
+import { observable } from "./observable";
 
 let instanceUID = 0;
 
@@ -82,7 +82,7 @@ export class Instance implements Identifiable {
   }
 
   constructor(options: IInstanceOptions) {
-    this._id = options.id || '';
+    this._id = options.id || "";
     this.active = options.active || this.active;
   }
 }

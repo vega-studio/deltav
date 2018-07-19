@@ -1,7 +1,15 @@
-import * as anime from 'animejs';
-import { CircleInstance, CircleLayer, createLayer, InstanceProvider, IPickInfo, LayerInitializer, PickType } from '../../src';
-import { AutoEasingMethod } from '../../src/voidgl/util/auto-easing-method';
-import { BaseExample } from './base-example';
+import * as anime from "animejs";
+import {
+  CircleInstance,
+  CircleLayer,
+  createLayer,
+  InstanceProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType
+} from "../../src";
+import { AutoEasingMethod } from "../../src/voidgl/util/auto-easing-method";
+import { BaseExample } from "./base-example";
 
 export class MouseInteraction extends BaseExample {
   isOver = new Map<CircleInstance, boolean>();
@@ -19,10 +27,10 @@ export class MouseInteraction extends BaseExample {
         targets: circle.color,
         update: () => {
           circle.color = circle.color;
-        },
+        }
       });
     }
-  }
+  };
 
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
@@ -31,9 +39,9 @@ export class MouseInteraction extends BaseExample {
         this.isOver.set(circle, true);
       }
     }
-  }
+  };
 
-  handleCircleOut = async(info: IPickInfo<CircleInstance>) => {
+  handleCircleOut = async (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {
       const animation = this.isOver.get(circle);
 
@@ -42,21 +50,25 @@ export class MouseInteraction extends BaseExample {
         circle.radius = 5;
       }
     }
-  }
+  };
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    atlas: string,
+    provider: InstanceProvider<CircleInstance>
+  ): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
-        radius: AutoEasingMethod.easeOutElastic(500),
+        radius: AutoEasingMethod.easeOutElastic(500)
       },
       data: provider,
-      key: 'mouse-interaction',
+      key: "mouse-interaction",
       onMouseClick: this.handleCircleClick,
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.SINGLE,
       scaleFactor: () => 1,
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -70,7 +82,7 @@ export class MouseInteraction extends BaseExample {
           id: `circle${i * 100 + k}`,
           radius: 5,
           x: i * 11,
-          y: k * 11,
+          y: k * 11
         });
 
         circleProvider.add(circle);

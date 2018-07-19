@@ -1,22 +1,37 @@
-import * as Three from 'three';
-import { Instance } from './instance-provider/instance';
-import { Bounds } from './primitives/bounds';
-import { IPoint } from './primitives/point';
-import { ChartCamera, Vec, Vec2 } from './util';
-import { IAutoEasingMethod } from './util/auto-easing-method';
-import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
+import * as Three from "three";
+import { Instance } from "./instance-provider/instance";
+import { Bounds } from "./primitives/bounds";
+import { IPoint } from "./primitives/point";
+import { ChartCamera, Vec, Vec2 } from "./util";
+import { IAutoEasingMethod } from "./util/auto-easing-method";
+import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
-export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];
-export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
-export type ShaderIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number] | Three.Vector4[] | Float32Array;
-export type InstanceIOValue = [number] | [number, number] | [number, number, number] | [number, number, number, number];
-export type UniformIOValue = number | InstanceIOValue | Float32Array | Three.Texture;
+export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
+  { [P in U]: never } & { [x: string]: never })[T];
+export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] };
+export type ShaderIOValue =
+  | [number]
+  | [number, number]
+  | [number, number, number]
+  | [number, number, number, number]
+  | Three.Vector4[]
+  | Float32Array;
+export type InstanceIOValue =
+  | [number]
+  | [number, number]
+  | [number, number, number]
+  | [number, number, number, number];
+export type UniformIOValue =
+  | number
+  | InstanceIOValue
+  | Float32Array
+  | Three.Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 export enum InstanceAttributeSize {
@@ -25,7 +40,7 @@ export enum InstanceAttributeSize {
   THREE = 3,
   FOUR = 4,
   /** Special case for making instance attributes that can target Atlas resources */
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export enum UniformSize {
@@ -35,14 +50,14 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export enum VertexAttributeSize {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 /**
@@ -84,7 +99,7 @@ export interface IVertexAttribute {
    * When initWithBuffer and customFill are not specified, this is was the system will initially
    * load each vertex attribute with.
    */
-  defaults?: number[],
+  defaults?: number[];
   /**
    * When this is specified it will initialize the model's attribute with the data in this buffer.
    */
@@ -95,16 +110,16 @@ export interface IVertexAttribute {
    * in the shader will be:
    * attribute highp vec3 position;
    */
-  qualifier?: string,
+  qualifier?: string;
   /**
    * This is the name the attribute will be for the model.
    */
-  name: string,
+  name: string;
   /**
    * This is the number of floats the attribute will consume. For now, we only allow for up
    * to four floats per attribute.
    */
-  size: VertexAttributeSize,
+  size: VertexAttributeSize;
   /**
    * This lets you populate the buffer with an automatically called method. This will fire when
    * necessary updates are detected or on initialization.
@@ -124,11 +139,11 @@ export interface IInstanceAttribute<T extends Instance> {
    * you cram too much info into a single block. The tighter you pack your blocks the better
    * your program will perform.
    */
-  block: number,
+  block: number;
   /**
    * This is the index within the block this attribute will be available.
    */
-  blockIndex?: InstanceBlockIndex,
+  blockIndex?: InstanceBlockIndex;
   /**
    * When this is set, the system will automatically inject necessary Shader IO to facilitate
    * performing the easing on the GPU, which saves enormous amounts of CPU processing time
@@ -137,19 +152,19 @@ export interface IInstanceAttribute<T extends Instance> {
    * NOTE: Setting this increases the amount of data per instance by: size * 2 + 2
    * as it injects in a start value, start time, and duration
    */
-  easing?: IAutoEasingMethod<Vec>,
+  easing?: IAutoEasingMethod<Vec>;
   /**
    * This is the name that will be available in your shader for use. This will only be
    * available after the ${attributes} declaration.
    */
-  name: string,
+  name: string;
   /**
    * When generating this attribute in the shader this will be the prefix to the attribute:
    * For instance, if you specify 'highp' as the modifier, then the attribute that appears
    * in the shader will be:
    * attribute highp vec3 position;
    */
-  qualifier?: string,
+  qualifier?: string;
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
@@ -157,20 +172,20 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   atlas?: {
     /** Specify which generated atlas to target for the resource */
-    key: string,
+    key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
-    name: string,
+    name: string;
     /**
      * This specifies which of the shaders the sampler2D will be injected into.
      * Defaults to the Fragment shader only.
      */
-    shaderInjection?: ShaderInjectionTarget,
-  },
+    shaderInjection?: ShaderInjectionTarget;
+  };
   /**
    * This is how many floats the instance attribute takes up. Due to how instancing is
    * implemented, we can only take up to 4 floats per variable right now.
    */
-  size?: InstanceAttributeSize,
+  size?: InstanceAttributeSize;
   /**
    * This is the accessor that executes when the instance needs updating. Simply return the
    * value that should be populated for this attribute.
@@ -181,7 +196,8 @@ export interface IInstanceAttribute<T extends Instance> {
 /**
  * This is an attribute where the atlas is definitely declared.
  */
-export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+export interface IAtlasInstanceAttribute<T extends Instance>
+  extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
@@ -189,21 +205,22 @@ export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAt
    */
   atlas: {
     /** Specify which generated atlas to target for the resource */
-    key: string,
+    key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
-    name: string,
+    name: string;
     /**
      * This specifies which of the shaders the sampler2D will be injected into.
      * Defaults to the Fragment shader only.
      */
-    shaderInjection?: ShaderInjectionTarget,
-  },
+    shaderInjection?: ShaderInjectionTarget;
+  };
 }
 
 /**
  * This is an attribute that is simply a value
  */
-export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+export interface IEasingInstanceAttribute<T extends Instance>
+  extends IInstanceAttribute<T> {
   /**
    * This MUST be defined to be an Easing attribute
    */
@@ -217,17 +234,20 @@ export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceA
 /**
  * This is an attribute that is simply a value
  */
-export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
+export interface IValueInstanceAttribute<T extends Instance>
+  extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
-  atlas: undefined,
+  atlas: undefined;
 }
 
 // For now internal instance attributes are the same
-export type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
+export type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<
+  T
+>;
 
 /** These are flags for indicating which shaders receive certain injection elements */
 export enum ShaderInjectionTarget {
@@ -236,7 +256,7 @@ export enum ShaderInjectionTarget {
   /** ONLY the fragment shader will receive the injection */
   FRAGMENT = 2,
   /** Both the fragment and vertex shader will receive the injection */
-  ALL = 3,
+  ALL = 3
 }
 
 export interface IUniform {
@@ -278,7 +298,7 @@ export interface IUniformInternal extends IUniform {
  */
 export interface IInstancingUniform {
   name: string;
-  type: 'f' | 'v2' | 'v3' | 'v4' | '4fv' | 'bvec4';
+  type: "f" | "v2" | "v3" | "v4" | "4fv" | "bvec4";
   value: ShaderIOValue;
 }
 
@@ -315,7 +335,12 @@ export interface IProjection {
   worldToView(point: IPoint, out?: IPoint): IPoint;
 }
 
-export type IMaterialOptions = Partial<Omit<Omit<Omit<Three.ShaderMaterialParameters, 'uniforms'>, 'vertexShader'>, 'fragmentShader'>>;
+export type IMaterialOptions = Partial<
+  Omit<
+    Omit<Omit<Three.ShaderMaterialParameters, "uniforms">, "vertexShader">,
+    "fragmentShader"
+  >
+>;
 
 /** This is the method signature for determining whether or not a point hits an instance */
 export type InstanceHitTest<T> = (o: T, p: IPoint, v: IProjection) => boolean;
@@ -338,7 +363,7 @@ export enum PickType {
    *
    * This is vastly more efficient and accurate than ALL. This also will be more readily supported than ALL.
    */
-  SINGLE,
+  SINGLE
 }
 
 /**
@@ -355,7 +380,8 @@ export interface IPickingMetrics {
  * This is the picking settings and objects to facilitate PickType.ALL so we can get
  * all instances underneath the mouse.
  */
-export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMetrics {
+export interface IQuadTreePickingMetrics<T extends Instance>
+  extends IPickingMetrics {
   /** This handles the ALL type only */
   type: PickType.ALL;
   /** This stores all of our instances in a quad tree to spatially track our instances */
@@ -368,7 +394,8 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
  * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
  * a single instance underneath the mouse.
  */
-export interface ISinglePickingMetrics<T extends Instance> extends IPickingMetrics {
+export interface ISinglePickingMetrics<T extends Instance>
+  extends IPickingMetrics {
   /** Set the enum for the type */
   type: PickType.SINGLE;
   /**
@@ -409,7 +436,7 @@ export interface IColorPickingData {
 export enum InstanceDiffType {
   CHANGE = 0,
   INSERT = 1,
-  REMOVE = 2,
+  REMOVE = 2
 }
 
 /**

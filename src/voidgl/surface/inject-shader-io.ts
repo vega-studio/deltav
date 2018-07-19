@@ -6,7 +6,7 @@
  */
 import * as Three from "three";
 import { Instance } from "../instance-provider/instance";
-import { ILayerProps, IShaderInitialization, Layer } from "../surface/layer";
+import { ILayerProps, Layer } from "../surface/layer";
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
@@ -14,6 +14,7 @@ import {
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  IShaderInitialization,
   IUniform,
   IUniformInternal,
   IValueInstanceAttribute,
@@ -328,7 +329,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start`,
       size,
-      update: o => easingValues.start
+      update: _o => easingValues.start
     };
 
     instanceAttributes.push(startAttr);
@@ -340,7 +341,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_start_time`,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.startTime]
+      update: _o => [easingValues.startTime]
     };
 
     instanceAttributes.push(startTimeAttr);
@@ -352,7 +353,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       blockIndex: slot[1],
       name: `_${name}_duration`,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.duration]
+      update: _o => [easingValues.duration]
     };
 
     instanceAttributes.push(durationAttr);
@@ -379,7 +380,6 @@ function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(
 }
 
 function generatePickingAttributes<
-  layer,
   T extends Instance,
   U extends ILayerProps<T>
 >(
@@ -476,6 +476,7 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
  * This creates the base instance attributes that are ALWAYS present
  */
 function generateBaseInstanceAttributes<T extends Instance>(
+  layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[]
 ): IInstanceAttribute<T>[] {
   const fillBlock = findEmptyBlock(
@@ -483,7 +484,7 @@ function generateBaseInstanceAttributes<T extends Instance>(
     InstanceAttributeSize.ONE
   );
 
-  return [
+  const baseAttributes: IInstanceAttribute<T>[] = [
     // This is injected so the system can control when an instance should not be rendered.
     // This allows for holes to be in the buffer without having to correct them immediately
     {
@@ -494,6 +495,11 @@ function generateBaseInstanceAttributes<T extends Instance>(
       update: o => [o.active ? 1 : 0]
     }
   ];
+
+  // Keep track of the active attribute for quick referencing
+  layer.activeAttribute = baseAttributes[0];
+
+  return baseAttributes;
 }
 
 /**
@@ -516,8 +522,9 @@ function compareVec(a: Vec, b: Vec) {
   if (a.length !== b.length) return false;
 
   for (let i = 0, end = a.length; i < end; ++i) {
-    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100)
+    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100) {
       return false;
+    }
   }
 
   return true;
@@ -624,7 +631,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   let addedInstanceAttributes: IInstanceAttribute<
     T
   >[] = instanceAttributes.concat(
-    generateBaseInstanceAttributes(instanceAttributes)
+    generateBaseInstanceAttributes(layer, instanceAttributes)
   );
   // Add in attributes for picking
   addedInstanceAttributes = addedInstanceAttributes.concat(
@@ -632,9 +639,6 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   );
   // Create the base vertex attributes that must be present
   const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
-
-  // Set the active attribute to the layer for quick reference
-  layer.activeAttribute = addedInstanceAttributes[0];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
   const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes

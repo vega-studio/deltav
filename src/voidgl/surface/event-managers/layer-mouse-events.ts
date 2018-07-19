@@ -69,7 +69,7 @@ export class LayerMouseEvents extends EventManager {
     );
   }
 
-  handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
+  handleDrag(e: IMouseInteraction, _drag: IDragMetrics) {
     this.handleInteraction(e, (layer, view, mouse) =>
       layer.interactions.handleMouseDrag(view, mouse)
     );
@@ -104,7 +104,7 @@ export class LayerMouseEvents extends EventManager {
     );
   }
 
-  handleMouseOver(e: IMouseInteraction) {
+  handleMouseOver(_e: IMouseInteraction) {
     // We let the mouse move event handle the registration of moused over views
   }
 
@@ -114,7 +114,7 @@ export class LayerMouseEvents extends EventManager {
     const screen = e.screen.mouse;
 
     // All views that are moused over should no longer be considered over and broadcast a mouse out
-    this.isOver.forEach((flag, sceneView) => {
+    this.isOver.forEach((_flag, sceneView) => {
       // Since we are leaving the view we must make the view relative cooridinates fromt he screen space coords
       viewMouseByViewId.set(
         sceneView.view.id,
@@ -152,7 +152,7 @@ export class LayerMouseEvents extends EventManager {
     allSceneViews.forEach(v => currentSceneViews.set(v, true));
 
     // Detect which of the views are newly over
-    currentSceneViews.forEach((flag, sceneView) => {
+    currentSceneViews.forEach((_flag, sceneView) => {
       if (!this.isOver.get(sceneView)) {
         this.handleSceneView(
           sceneView,
@@ -164,7 +164,7 @@ export class LayerMouseEvents extends EventManager {
     });
 
     // Detect which of the views are no longer over
-    this.isOver.forEach((flag, sceneView) => {
+    this.isOver.forEach((_flag, sceneView) => {
       if (!currentSceneViews.get(sceneView)) {
         // Since these views were not interacted with, we must create the mouse interaction position
         viewMouseByViewId.set(
@@ -201,7 +201,7 @@ export class LayerMouseEvents extends EventManager {
     }
   }
 
-  handleWheel(e: IMouseInteraction) {
+  handleWheel(_e: IMouseInteraction) {
     // TODO: This may need to be implemented. As of right now, there is no particular benefit
   }
 }

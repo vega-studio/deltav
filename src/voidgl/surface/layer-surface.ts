@@ -73,7 +73,7 @@ function isCanvas(val: any): val is HTMLCanvasElement {
   return Boolean(val.getContext);
 }
 
-function isString(val: any): val is String {
+function isString(val: any): val is string {
   return Boolean(val.substr);
 }
 
@@ -180,7 +180,7 @@ export class LayerSurface {
    * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
    * as well as additional helper injections to aid in instancing and shader i/o.
    */
-  private addLayer<T extends Instance, U extends ILayerProps<T>, V>(
+  private addLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
   ): Layer<T, U> {
     if (!layer.id) {
@@ -790,7 +790,7 @@ export class LayerSurface {
    * and injects special automated uniforms and attributes to make instancing work for the
    * shader.
    */
-  private initLayer<T extends Instance, U extends ILayerProps<T>, V>(
+  private initLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
   ): Layer<T, U> {
     // Set the layer's parent surface here
@@ -898,7 +898,7 @@ export class LayerSurface {
    * This finds the scene and view the layer belongs to based on the layer's props. For invalid or not provided
    * props, the layer gets added to default scenes and views.
    */
-  private addLayerToScene<T extends Instance, U extends ILayerProps<T>, V>(
+  private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
   ): Scene {
     // Get the scene the layer will add itself to
@@ -927,7 +927,7 @@ export class LayerSurface {
    * the layer was using in association with the context. If the layer is re-insertted, it will
    * be revaluated as though it were a new layer.
    */
-  private removeLayer<T extends Instance, U extends ILayerProps<T>, V>(
+  private removeLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U> | null
   ): Layer<T, U> | null {
     // Make sure we are removing a layer that exists in the system
@@ -992,7 +992,7 @@ export class LayerSurface {
 
     // Reflag every layer for removal again so creation of layers will determine
     // Which layers remain for a reactive pattern
-    this.layers.forEach((layer, id) => {
+    this.layers.forEach((_layer, id) => {
       this.willDisposeLayer.set(id, true);
     });
   }
@@ -1001,7 +1001,7 @@ export class LayerSurface {
    * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
    * dimensions for handling all of our rendered elements.
    */
-  fitContainer(pixelRatio?: number) {
+  fitContainer(_pixelRatio?: number) {
     const container = this.context.canvas.parentElement;
 
     if (container) {

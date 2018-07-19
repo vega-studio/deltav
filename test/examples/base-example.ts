@@ -14,13 +14,13 @@ export abstract class BaseExample {
   surface: LayerSurface;
   view: string;
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(_e: KeyboardEvent, _isDown: boolean) {
     // Not required key event handler
   }
 
   makeController(
     defaultCamera: ChartCamera,
-    testCamera: ChartCamera,
+    _testCamera: ChartCamera,
     viewName: string
   ): EventManager {
     return new BasicCameraController({
@@ -35,7 +35,7 @@ export abstract class BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: IInstanceProvider<Instance>
   ): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS

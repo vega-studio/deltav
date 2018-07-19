@@ -89,7 +89,7 @@ export class InstanceProvider<T extends Instance> {
   /**
    * This is called from observables to indicate it's parent has been updated
    */
-  instanceUpdated(instance: T, property: number) {
+  instanceUpdated(instance: T, _property: number) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
       this.instanceChanges.set(instance.uid, [

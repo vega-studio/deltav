@@ -1,17 +1,12 @@
 import * as Three from "three";
 import { Bounds, IPoint } from "../../primitives";
-import {
-  ILayerProps,
-  IModelType,
-  IShaderInitialization,
-  Layer
-} from "../../surface/layer";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
-  IUniform,
+  IShaderInitialization,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -20,7 +15,8 @@ import { RectangleInstance } from "./rectangle-instance";
 
 const { min, max } = Math;
 
-export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
+export interface IRectangleLayerProps<T extends RectangleInstance>
+  extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -28,10 +24,10 @@ export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
  * This layer displays Rectangles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RectangleLayer extends Layer<
-  RectangleInstance,
-  IRectangleLayerProps
-> {
+export class RectangleLayer<
+  T extends RectangleInstance,
+  U extends IRectangleLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -212,7 +208,7 @@ export class RectangleLayer extends Layer<
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1]
+          update: _u => [1]
         }
       ],
       vertexAttributes: [

@@ -16,7 +16,7 @@ import { BaseExample } from "./base-example";
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: IInstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {

@@ -1,5 +1,5 @@
-import { Instance } from '../../instance-provider/instance';
-import { IInstanceAttribute, IInstancingUniform } from '../../types';
+import { IInstanceAttribute, IInstancingUniform } from "../../types";
+import { Instance } from "../../util";
 export declare function makeUniformArrayDeclaration(totalBlocks: number): {
     fragment: string;
     materialUniforms: IInstancingUniform[];

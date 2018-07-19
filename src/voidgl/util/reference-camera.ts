@@ -30,7 +30,7 @@ export class ReferenceCamera extends ChartCamera {
   private offsetFilter = (offset: [number, number, number]) => offset;
   private scaleFilter = (scale: [number, number, number]) => scale;
 
-  set offset(val: any) {
+  set offset(_val: any) {
     /** no-op */
   }
 
@@ -38,7 +38,7 @@ export class ReferenceCamera extends ChartCamera {
     return this.offsetFilter(this.base.offset);
   }
 
-  set scale(val: any) {
+  set scale(_val: any) {
     /** no-op */
   }
 

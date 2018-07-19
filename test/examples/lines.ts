@@ -11,7 +11,7 @@ import { BaseExample } from "./base-example";
 export class Lines extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {

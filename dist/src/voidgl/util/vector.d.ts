@@ -1,22 +1,18 @@
-/** Explicit Vec1 */
 export interface IVec1 extends Array<number> {
     0: number;
     length: 1;
 }
-/** Explicit Vec2 */
 export interface IVec2 extends Array<number> {
     0: number;
     1: number;
     length: 2;
 }
-/** Explicit Vec3 */
 export interface IVec3 extends Array<number> {
     0: number;
     1: number;
     2: number;
     length: 3;
 }
-/** Explicit Vec4 */
 export interface IVec4 extends Array<number> {
     0: number;
     1: number;
@@ -24,17 +20,11 @@ export interface IVec4 extends Array<number> {
     3: number;
     length: 4;
 }
-/** Vector of 1 components */
 export declare type Vec1 = [number];
-/** Vector of 2 components */
 export declare type Vec2 = [number, number];
-/** Vector of 3 components */
 export declare type Vec3 = [number, number, number];
-/** Vector of 4 components */
 export declare type Vec4 = [number, number, number, number];
-/** This type defines any possible explicit vector */
 export declare type IVec = IVec1 | IVec2 | IVec3 | IVec4;
-/** This type defines any possible vector */
 export declare type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 export declare function add1(left: Vec1, right: Vec1): Vec1;
 export declare function scale1(vec: Vec1, scale: number): Vec1;

@@ -18,7 +18,7 @@ export class BoxOfRings extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: InstanceProvider<RingInstance>
   ): LayerInitializer {
     return createLayer(RingLayer, {

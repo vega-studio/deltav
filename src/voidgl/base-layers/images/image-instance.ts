@@ -55,7 +55,7 @@ const rasterizationLookUp = new Map<
 const anchorCalculator: {
   [key: number]: (anchor: Anchor, image: ImageInstance) => void;
 } = {
-  [AnchorType.TopLeft]: (anchor: Anchor, image: ImageInstance) => {
+  [AnchorType.TopLeft]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -91,7 +91,7 @@ const anchorCalculator: {
     anchor.x = image.width + anchor.padding;
     anchor.y = image.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, image: ImageInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
   }

@@ -22,7 +22,7 @@ export class BoundedView extends BaseExample {
 
   makeController(
     defaultCamera: ChartCamera,
-    testCamera: ChartCamera,
+    _testCamera: ChartCamera,
     viewName: string
   ): EventManager {
     const bounds: ICameraBoundsOptions = {
@@ -49,7 +49,7 @@ export class BoundedView extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: InstanceProvider<RectangleInstance>
   ): LayerInitializer {
     return createLayer(RectangleLayer, {

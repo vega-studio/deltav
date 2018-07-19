@@ -111,7 +111,7 @@ export class MouseInteractionColorPicking extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    _atlas: string,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer | LayerInitializer[] {
     return [

@@ -50,8 +50,8 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseOver(view: IProjection, mouse: IPoint) {
-    // This is the mouse over for the view itself. We should probably just let the mouse move events handle the interactions
+  handleMouseOver(_view: IProjection, _mouse: IPoint) {
+    // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
     // With the instances
   }
 
@@ -345,7 +345,7 @@ export class LayerInteractionHandler<
   /**
    * Handles drag gestures for the layer within the view
    */
-  handleMouseDrag(view: IProjection, mouse: IPoint) {
+  handleMouseDrag(_view: IProjection, _mouse: IPoint) {
     // We probably should not broadcast drag events for the sake of instances. Instance dragging should be handled on
     // An instance by instance basis rather than coming from the view's gestures
   }

@@ -217,8 +217,13 @@ export class AtlasManager {
         return false;
       }
     } else {
-      // Log an error and load a default sub texture
-      console.error(`Could not load resource:`, resource);
+      if (!resource.texture.isValid) {
+        debug("Resource was invalidated during load:", resource);
+      } else {
+        // Log an error and load a default sub texture
+        console.error(`Could not load resource:`, resource);
+      }
+
       resource.texture = this.setDefaultImage(resource.texture, atlasName);
       return false;
     }
@@ -249,6 +254,8 @@ export class AtlasManager {
     const subTexture = resource.texture || new SubTexture();
     resource.texture = subTexture;
 
+    if (resource.texture.isValid === false) return null;
+
     if (resource instanceof ImageAtlasResource) {
       // If the texture was provided an image then we ensure the image is loaded
       // Then hand it back
@@ -265,26 +272,24 @@ export class AtlasManager {
           return image;
         }
 
-        const image = await new Promise<HTMLImageElement | null>(
-          (resolve, reject) => {
-            const image: HTMLImageElement | undefined = resource.image.element;
+        const image = await new Promise<HTMLImageElement | null>(resolve => {
+          const image: HTMLImageElement | undefined = resource.image.element;
 
-            if (image) {
-              image.onload = function() {
-                subTexture.pixelWidth = image.width;
-                subTexture.pixelHeight = image.height;
-                subTexture.aspectRatio = image.width / image.height;
-                resolve(image);
-              };
+          if (image) {
+            image.onload = function() {
+              subTexture.pixelWidth = image.width;
+              subTexture.pixelHeight = image.height;
+              subTexture.aspectRatio = image.width / image.height;
+              resolve(image);
+            };
 
-              image.onerror = function() {
-                resolve(null);
-              };
-            } else {
+            image.onerror = function() {
               resolve(null);
-            }
+            };
+          } else {
+            resolve(null);
           }
-        );
+        });
 
         return image;
       }
@@ -322,24 +327,22 @@ export class AtlasManager {
     }
 
     if (imageSrc) {
-      const image = await new Promise<HTMLImageElement | null>(
-        (resolve, reject) => {
-          const image: HTMLImageElement = new Image();
+      const image = await new Promise<HTMLImageElement | null>(resolve => {
+        const image: HTMLImageElement = new Image();
 
-          image.onload = function() {
-            subTexture.pixelWidth = image.width;
-            subTexture.pixelHeight = image.height;
-            subTexture.aspectRatio = image.width / image.height;
-            resolve(image);
-          };
+        image.onload = function() {
+          subTexture.pixelWidth = image.width;
+          subTexture.pixelHeight = image.height;
+          subTexture.aspectRatio = image.width / image.height;
+          resolve(image);
+        };
 
-          image.onerror = function() {
-            resolve(null);
-          };
+        image.onerror = function() {
+          resolve(null);
+        };
 
-          image.src = imageSrc;
-        }
-      );
+        image.src = imageSrc;
+      });
 
       return image;
     }

@@ -77,7 +77,7 @@ const rasterizationLookUp = new Map<
 const anchorCalculator: {
   [key: number]: (anchor: Anchor, label: LabelInstance) => void;
 } = {
-  [AnchorType.TopLeft]: (anchor: Anchor, label: LabelInstance) => {
+  [AnchorType.TopLeft]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -113,7 +113,7 @@ const anchorCalculator: {
     anchor.x = label.width + anchor.padding;
     anchor.y = label.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, label: LabelInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
   }

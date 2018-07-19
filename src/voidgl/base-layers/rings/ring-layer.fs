@@ -1,5 +1,7 @@
 precision highp float;
 
+${picking}
+
 /** This is the color of the ring */
 varying vec4 vertexColor;
 /**
@@ -38,7 +40,7 @@ void main() {
   float outer_step_factor = circle(pointCoord, 1.0);
   float inner_step_factor = circle(pointCoord, 1.0 - borderSize * scale);
 
-  gl_FragColor = mix(
+  setColor(mix(
     mix(                        // Select the outer color outside of the inner radius
       vec4(0.0, 0.0, 0.0, 0.0),    // Select invisible outside of inner and outer radius
       vertexColor,                  // Select outer color outside of inner, but inside outer
@@ -46,7 +48,7 @@ void main() {
     ),
     vec4(0.0, 0.0, 0.0, 0.0),                 // Select inner color inside inner
     inner_step_factor
-  );
+  ));
 
   ${extend}
 }

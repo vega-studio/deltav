@@ -1,6 +1,6 @@
+import { Instance } from "../instance-provider/instance";
 import { extendShader } from "../shaders/util/extend-shader";
 import { IShaderInitialization, IShaderIOExtension } from "../types";
-import { Instance } from "./instance";
 
 export function extendShaderInitialization<T extends Instance>(
   shaderIO: IShaderInitialization<T>,

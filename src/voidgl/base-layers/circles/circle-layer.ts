@@ -1,4 +1,5 @@
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
@@ -11,7 +12,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { DataProvider, Vec } from "../../util";
+import { Vec } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
 
@@ -21,7 +22,8 @@ export interface ICircleLayerProps<T extends CircleInstance>
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
-
+  /** Flags this layer to draw  */
+  disableDepthTest?: boolean;
   /**
    * This is the properties that can toggle on animations.
    *
@@ -45,7 +47,7 @@ export class CircleLayer<
   U extends ICircleLayerProps<T>
 > extends Layer<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
-    data: new DataProvider<CircleInstance>([]),
+    data: new InstanceProvider<CircleInstance>(),
     fadeOutOversized: -1,
     key: "",
     scaleFactor: () => 1

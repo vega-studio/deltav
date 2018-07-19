@@ -2,7 +2,7 @@ import {
   Anchor,
   AnchorType,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
@@ -14,7 +14,7 @@ export class ChangingAnchorLabels extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: DataProvider<LabelInstance>
+    provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
@@ -24,11 +24,12 @@ export class ChangingAnchorLabels extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const labelProvider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const labelProvider = new InstanceProvider<LabelInstance>();
+    const labels: LabelInstance[] = [];
 
     for (let i = 0; i < 625; ++i) {
-      labelProvider.instances.push(
+      const label = labelProvider.add(
         new LabelInstance({
           anchor: {
             padding: 0,
@@ -56,10 +57,12 @@ export class ChangingAnchorLabels extends BaseExample {
           y: Math.random() * 1500
         })
       );
+
+      labels.push(label);
     }
 
     setInterval(() => {
-      for (const label of labelProvider.instances) {
+      for (const label of labels) {
         const anchor: Anchor = {
           padding: 0,
           type: [

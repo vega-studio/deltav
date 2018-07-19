@@ -3,7 +3,7 @@ import {
   AnchorType,
   ChartCamera,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   IPickInfo,
   LabelInstance,
   LabelLayer,
@@ -83,7 +83,7 @@ export class MouseInteractionLabels extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: DataProvider<LabelInstance>
+    provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
@@ -97,8 +97,8 @@ export class MouseInteractionLabels extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
 
     const label = new LabelInstance({
       anchor: {
@@ -110,7 +110,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       fontStyle: "normal",
       fontWeight: "normal",
-      id: `label-vertical-${provider.instances.length}`,
+      id: `label-vertical-0`,
       rasterization: {
         scale: 1.0
       },
@@ -121,9 +121,9 @@ export class MouseInteractionLabels extends BaseExample {
     });
 
     // Left Middle left
-    provider.instances.push(label);
+    provider.add(label);
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -134,7 +134,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -145,7 +145,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -156,7 +156,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -167,7 +167,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -178,7 +178,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -189,7 +189,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -200,7 +200,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -211,7 +211,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -222,7 +222,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -233,7 +233,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -244,7 +244,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -255,7 +255,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -266,7 +266,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },
@@ -277,7 +277,7 @@ export class MouseInteractionLabels extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -288,7 +288,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         fontStyle: "normal",
         fontWeight: "normal",
-        id: `label-vertical-${provider.instances.length}`,
+        id: `label-vertical-0`,
         rasterization: {
           scale: 1.0
         },

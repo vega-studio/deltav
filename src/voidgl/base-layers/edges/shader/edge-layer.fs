@@ -1,10 +1,10 @@
 precision highp float;
 
+${picking}
 varying vec4 vertexColor;
 ${extendHeader}
 
 void main() {
-  gl_FragColor = vertexColor;
-
+  setColor(vertexColor);
   ${extend}
 }

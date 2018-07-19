@@ -1,11 +1,12 @@
 import * as Three from "three";
+import { Instance } from "../instance-provider/instance";
 import {
   IInstanceAttribute,
+  INonePickingMetrics,
   IQuadTreePickingMetrics,
   ISinglePickingMetrics,
   PickType
 } from "../types";
-import { Instance } from "../util";
 import {
   InstanceUniformManager,
   IUniformInstanceCluster
@@ -34,7 +35,10 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
   /** This is all of the instance attributes applied to the target */
   instanceAttributes: IInstanceAttribute<T>[];
   /** This is the picking metrics for how Instances are picked with the mouse */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  picking:
+    | IQuadTreePickingMetrics<T>
+    | ISinglePickingMetrics<T>
+    | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
   resource: AtlasResourceManager;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
@@ -48,6 +52,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
 export class InstanceDiffManager<T extends Instance> {
   layer: IInstanceDiffManagerTarget<T>;
   quadPicking: IQuadTreePickingMetrics<T>;
+  colorPicking: ISinglePickingMetrics<T>;
 
   constructor(layer: IInstanceDiffManagerTarget<T>) {
     this.layer = layer;
@@ -65,6 +70,15 @@ export class InstanceDiffManager<T extends Instance> {
           this.changeInstanceQuad,
           this.addInstanceQuad,
           this.removeInstanceQuad
+        ];
+      } else if (this.layer.picking.type === PickType.SINGLE) {
+        this.colorPicking = this.layer.picking;
+        this.colorPicking.uidToInstance = new Map<number, T>();
+
+        return [
+          this.changeInstanceColorPick,
+          this.addInstanceColorPick,
+          this.removeInstanceColorPick
         ];
       }
     }
@@ -126,6 +140,38 @@ export class InstanceDiffManager<T extends Instance> {
   }
 
   /**
+   * This processes add operations from changes in the instancing data and manages the layer's matching of
+   * color / UID to Instance
+   */
+  private addInstanceColorPick(
+    manager: this,
+    instance: T,
+    uniformCluster: IUniformInstanceCluster
+  ) {
+    // If the uniform cluster already exists, then we swap over to a change update
+    if (uniformCluster) {
+      manager.changeInstanceColorPick(manager, instance, uniformCluster);
+    }
+
+    // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
+    else {
+      const uniforms = manager.layer.uniformManager.add(instance);
+
+      if (uniforms) {
+        instance.active = true;
+        manager.updateInstance(instance, uniforms);
+
+        // Make sure the instance is mapped to it's UID
+        manager.colorPicking.uidToInstance.set(instance.uid, instance);
+      } else {
+        console.warn(
+          "A data cluster was not provided by the manager to associate an instance with."
+        );
+      }
+    }
+  }
+
+  /**
    * This processes change operations from changes in the instancing data
    */
   private changeInstance(
@@ -168,6 +214,25 @@ export class InstanceDiffManager<T extends Instance> {
   }
 
   /**
+   * This processes change operations from changes in the instancing data
+   */
+  private changeInstanceColorPick(
+    manager: this,
+    instance: T,
+    uniformCluster: IUniformInstanceCluster
+  ) {
+    // If there is an existing uniform cluster for this instance, then we can update the uniforms
+    if (uniformCluster) {
+      manager.updateInstance(instance, uniformCluster);
+    }
+
+    // If we don't have existing uniforms, then we must remove the instance
+    else {
+      manager.addInstanceColorPick(manager, instance, uniformCluster);
+    }
+  }
+
+  /**
    * This processes remove operations from changes in the instancing data
    */
   private removeInstance(
@@ -202,6 +267,26 @@ export class InstanceDiffManager<T extends Instance> {
       manager.layer.uniformManager.remove(instance);
       // Remove the instance from our quad tree
       manager.quadPicking.quadTree.remove(instance);
+    }
+  }
+
+  /**
+   * This processes remove operations from changes in the instancing data
+   */
+  private removeInstanceColorPick(
+    manager: this,
+    instance: T,
+    uniformCluster: IUniformInstanceCluster
+  ) {
+    if (uniformCluster) {
+      // We deactivate the instance so it does not render anymore
+      instance.active = false;
+      // We do one last update on the instance to update to it's deactivated state
+      manager.updateInstance(instance, uniformCluster);
+      // Unlink the instance from the uniform cluster
+      manager.layer.uniformManager.remove(instance);
+      // Remove the instance from our quad tree
+      manager.colorPicking.uidToInstance.delete(instance.uid);
     }
   }
 

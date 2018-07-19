@@ -109,7 +109,7 @@ function sortByDepth(a: DataBounds<SceneView>, b: DataBounds<SceneView>) {
   return b.data.depth - a.data.depth;
 }
 
-function isDefined<T>(val: T | undefined | null): val is T {
+function isDefined<T>(val: T | null | undefined): val is T {
   return Boolean(val);
 }
 
@@ -168,12 +168,11 @@ export class MouseEventManager {
    */
   addContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
-    let startView: SceneView | null = null;
+    let startView: SceneView | undefined;
     let startPosition: IPoint = { x: 0, y: 0 };
 
     if (handlesWheelEvents) {
       const wheelHandler = (event: MouseWheelEvent) => {
-        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(
           mouse,
@@ -203,7 +202,6 @@ export class MouseEventManager {
     element.onmouseleave = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
-      if (!startView) return;
 
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
@@ -216,7 +214,6 @@ export class MouseEventManager {
     element.onmousemove = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
-      if (!startView) return;
 
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
@@ -258,7 +255,6 @@ export class MouseEventManager {
       event.stopPropagation();
 
       document.onmousemove = (event: MouseEvent) => {
-        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(
           mouse,
@@ -272,7 +268,7 @@ export class MouseEventManager {
 
         const drag = this.makeDrag(
           mouse,
-          startPosition,
+          startPosition || { x: 0, y: 0 },
           currentPosition,
           delta
         );
@@ -293,7 +289,6 @@ export class MouseEventManager {
       };
 
       document.onmouseover = (event: MouseEvent) => {
-        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(
           mouse,
@@ -309,7 +304,6 @@ export class MouseEventManager {
       };
 
       element.onmouseup = (event: MouseEvent) => {
-        if (!startView) return;
         const mouse = eventElementPosition(event, element);
         const interaction = this.makeInteraction(
           mouse,

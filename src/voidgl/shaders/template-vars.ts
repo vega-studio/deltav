@@ -13,6 +13,7 @@ export const templateVars = {
   instanceFragments: "instanceFragments",
   instanceUniformDeclarations: "instanceUniformDeclarations",
   layerUniforms: "layerUniforms",
+  picking: "picking",
   projectionMethods: "projectionMethods",
   shader: "shader",
   shaderInput: "shaderInput",

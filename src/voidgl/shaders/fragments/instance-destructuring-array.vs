@@ -11,3 +11,5 @@
     // Quick exit to prevent any geometry from arising from the instance
     return;
   }
+
+  ${picking}

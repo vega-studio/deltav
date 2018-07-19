@@ -1,10 +1,10 @@
 import * as anime from "animejs";
 import {
   createLayer,
-  DataProvider,
   EdgeInstance,
   EdgeLayer,
   EdgeType,
+  InstanceProvider,
   IPickInfo,
   LayerInitializer,
   PickType
@@ -55,21 +55,21 @@ export class MouseInteractionEdges extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<EdgeInstance>
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
       key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scene: scene,
       type: EdgeType.BEZIER2
     });
   }
 
-  makeProvider(): DataProvider<EdgeInstance> {
-    const edgeProvider = new DataProvider<EdgeInstance>([]);
+  makeProvider(): InstanceProvider<EdgeInstance> {
+    const edgeProvider = new InstanceProvider<EdgeInstance>();
     const TOTAL_EDGES = 10;
 
     for (let i = 0; i < TOTAL_EDGES; ++i) {
@@ -84,7 +84,7 @@ export class MouseInteractionEdges extends BaseExample {
         widthStart: 10
       });
 
-      edgeProvider.instances.push(edge);
+      edgeProvider.add(edge);
     }
 
     return edgeProvider;

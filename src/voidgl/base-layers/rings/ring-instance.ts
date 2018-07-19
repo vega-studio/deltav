@@ -1,6 +1,6 @@
-import { computed, observable } from "mobx";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { observable } from "../../instance-provider/observable";
 import { Circle } from "../../primitives";
-import { IInstanceOptions, Instance } from "../../util";
 
 export interface IRingInstanceOptions extends IInstanceOptions, Circle {
   /** The color of this ring */
@@ -30,17 +30,14 @@ export class RingInstance extends Instance implements Circle {
     this.y = options.y;
   }
 
-  @computed
   get width() {
     return this.radius * 2;
   }
 
-  @computed
   get height() {
     return this.radius * 2;
   }
 
-  @computed
   get innerRadius() {
     return this.radius - this.thickness;
   }

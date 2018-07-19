@@ -1,10 +1,10 @@
 import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   IInstancingUniform,
   InstanceAttributeSize
 } from "../../types";
-import { Instance } from "../../util";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { makeInstanceUniformNameArray } from "../../util/make-instance-uniform-name";
 import { shaderTemplate } from "../../util/shader-templating";
@@ -12,7 +12,7 @@ import { templateVars } from "../template-vars";
 
 const instanceRetrievalArrayFragment = require("../fragments/instance-retrieval-array.vs");
 
-/** Defines the elements for d../template-varsor */
+/** Defines the elements for destructuring out of a vector */
 const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */

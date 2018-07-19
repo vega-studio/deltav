@@ -1,5 +1,5 @@
+import { Instance } from "../../instance-provider/instance";
 import { IShaderExtension, IShaderInitialization } from "../../types";
-import { Instance } from "../../util/instance";
 import {
   IShaderTemplateRequirements,
   shaderTemplate

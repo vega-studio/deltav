@@ -1,5 +1,5 @@
-import { computed, observable } from "mobx";
-import { IInstanceOptions, Instance } from "../../util/instance";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { observable } from "../../instance-provider/observable";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** The color of this edge at the start point. */
@@ -32,7 +32,6 @@ export class EdgeInstance extends Instance {
   @observable widthStart: number = 1.0;
   @observable widthEnd: number = 1.0;
 
-  @computed
   get length() {
     const delta = [this.end[0] - this.start[0], this.end[1] - this.start[1]];
 
@@ -42,7 +41,6 @@ export class EdgeInstance extends Instance {
   /**
    * Calculates the midpoint of the edge
    */
-  @computed
   get midpoint() {
     return 0;
   }
@@ -50,7 +48,6 @@ export class EdgeInstance extends Instance {
   /**
    * Calculates a perpendicular direction vector to the edge
    */
-  @computed
   get perpendicular(): [number, number] {
     const length = this.length;
 

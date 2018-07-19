@@ -5,6 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from "three";
+import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import {
   IAtlasInstanceAttribute,
@@ -19,13 +20,13 @@ import {
   IValueInstanceAttribute,
   IVertexAttribute,
   IVertexAttributeInternal,
+  PickType,
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize
 } from "../types";
 import { uid, Vec } from "../util";
 import { AutoEasingLoopStyle } from "../util/auto-easing-method";
-import { Instance } from "../util/instance";
 
 const { abs } = Math;
 
@@ -359,6 +360,65 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
   }
 }
 
+function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(
+  layer: Layer<T, U>
+): IUniform[] {
+  if (layer.picking.type === PickType.SINGLE) {
+    return [
+      {
+        name: "pickingActive",
+        shaderInjection: ShaderInjectionTarget.ALL,
+        size: UniformSize.ONE,
+        update: () => [
+          layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0
+        ]
+      }
+    ];
+  }
+
+  return [];
+}
+
+function generatePickingAttributes<
+  T extends Instance,
+  U extends ILayerProps<T>
+>(
+  layer: Layer<T, U>,
+  instanceAttributes: IInstanceAttribute<T>[]
+): IInstanceAttribute<T>[] {
+  if (layer.picking.type === PickType.SINGLE) {
+    // Find a compltely empty block within all instance attributes provided and injected
+    const emptyFillBlock = findEmptyBlock(
+      instanceAttributes,
+      InstanceAttributeSize.FOUR
+    );
+
+    return [
+      {
+        block: emptyFillBlock[0],
+        blockIndex: emptyFillBlock[1],
+        name: "_pickingColor",
+        size: InstanceAttributeSize.FOUR,
+        update: o => {
+          // We start from white and move down so the colors are more visible
+          // For debugging
+          const color = 0xffffff - o.uid;
+
+          // Do bit maths do get float components out of the int color
+          return [
+            (color >> 16) / 255.0,
+            ((color & 0x00ff00) >> 8) / 255.0,
+            (color & 0x0000ff) / 255.0,
+            1
+          ];
+        }
+      }
+    ];
+  }
+
+  return [];
+}
+
 function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
   layer: Layer<T, U>
 ): IUniform[] {
@@ -416,6 +476,7 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
  * This creates the base instance attributes that are ALWAYS present
  */
 function generateBaseInstanceAttributes<T extends Instance>(
+  layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[]
 ): IInstanceAttribute<T>[] {
   const fillBlock = findEmptyBlock(
@@ -423,7 +484,7 @@ function generateBaseInstanceAttributes<T extends Instance>(
     InstanceAttributeSize.ONE
   );
 
-  return [
+  const baseAttributes: IInstanceAttribute<T>[] = [
     // This is injected so the system can control when an instance should not be rendered.
     // This allows for holes to be in the buffer without having to correct them immediately
     {
@@ -434,6 +495,11 @@ function generateBaseInstanceAttributes<T extends Instance>(
       update: o => [o.active ? 1 : 0]
     }
   ];
+
+  // Keep track of the active attribute for quick referencing
+  layer.activeAttribute = baseAttributes[0];
+
+  return baseAttributes;
 }
 
 /**
@@ -554,34 +620,36 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // Generates all of the attributes needed to make attributes automagically be eased when changed
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
-  const atlasUniforms: IUniform[] = generateAtlasResourceUniforms(
-    layer,
-    instanceAttributes
+  let addedUniforms: IUniform[] = uniforms.concat(
+    generateAtlasResourceUniforms(layer, instanceAttributes)
   );
   // These are the uniforms that should be present in the shader for basic operation
-  const addedUniforms: IUniform[] = atlasUniforms.concat(
-    generateBaseUniforms(layer)
-  );
+  addedUniforms = addedUniforms.concat(generateBaseUniforms(layer));
+  // Add in uniforms for picking
+  addedUniforms = addedUniforms.concat(generatePickingUniforms(layer));
   // Create the base instance attributes that must be present
-  const addedInstanceAttributes: IInstanceAttribute<
+  let addedInstanceAttributes: IInstanceAttribute<
     T
-  >[] = generateBaseInstanceAttributes(instanceAttributes);
+  >[] = instanceAttributes.concat(
+    generateBaseInstanceAttributes(layer, instanceAttributes)
+  );
+  // Add in attributes for picking
+  addedInstanceAttributes = addedInstanceAttributes.concat(
+    generatePickingAttributes(layer, addedInstanceAttributes)
+  );
   // Create the base vertex attributes that must be present
   const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
-
-  // Set the active attribute to the layer for quick reference
-  layer.activeAttribute = addedInstanceAttributes[0];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
   const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes
     .concat(vertexAttributes || [])
     .map(toVertexAttributeInternal);
 
-  const allUniforms = addedUniforms.concat(uniforms).map(toUniformInternal);
+  const allUniforms = addedUniforms.map(toUniformInternal);
 
-  const allInstanceAttributes = addedInstanceAttributes
-    .concat(instanceAttributes)
-    .sort(sortNeedsUpdateFirstToTop);
+  const allInstanceAttributes = addedInstanceAttributes.sort(
+    sortNeedsUpdateFirstToTop
+  );
 
   return {
     instanceAttributes: allInstanceAttributes,

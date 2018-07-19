@@ -3,6 +3,8 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
+import { Instance } from "../../instance-provider/instance";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -10,9 +12,9 @@ import {
   IShaders,
   IUniform,
   IVertexAttribute,
+  PickType,
   ShaderInjectionTarget
 } from "../../types";
-import { Instance } from "../../util";
 import {
   IShaderTemplateRequirements,
   shaderTemplate
@@ -86,13 +88,15 @@ export interface IInjectionDetails {
  * @param vertexAttributes
  * @param instanceAttributes
  */
-export function injectFragments<T extends Instance>(
+export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
+  layer: Layer<T, U>,
   shaders: IShaders,
   vertexAttributes: IVertexAttribute[],
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<any>[],
   uniforms: IUniform[]
 ): IInjectionDetails {
   const shaderInputMetrics = generateShaderInputs(
+    layer,
     vertexAttributes,
     instanceAttributes,
     uniforms
@@ -100,8 +104,10 @@ export function injectFragments<T extends Instance>(
 
   let templateOptions: { [key: string]: string } = {
     [templateVars.projectionMethods]: generateProjectionMethods(),
+    [templateVars.picking]: generateVertexPicking(layer),
     [templateVars.shaderInput]: shaderInputMetrics.fragment,
     [templateVars.shader]: generateVertexShader(
+      layer,
       shaders,
       instanceAttributes,
       shaderInputMetrics.metrics.maxInstancesPerBuffer,
@@ -118,6 +124,12 @@ export function injectFragments<T extends Instance>(
     ]
   };
 
+  // If our layer is using color picking, then we must require the shader to include the ${picking} annotation
+  // To receive the fragment picking method
+  if (layer.picking.type === PickType.SINGLE) {
+    required.values.push(templateVars.picking);
+  }
+
   const vertexShaderResults = shaderTemplate({
     options: templateOptions,
     required,
@@ -129,13 +141,20 @@ export function injectFragments<T extends Instance>(
       uniforms,
       ShaderInjectionTarget.FRAGMENT
     ),
-    [templateVars.shader]: generateFragmentShader(shaders)
+    [templateVars.shader]: generateFragmentShader(shaders),
+    [templateVars.picking]: generateFragmentPickingMethod(layer)
   };
 
   required = {
     name: "fragment shader composition",
     values: [templateVars.layerUniforms, templateVars.shader]
   };
+
+  // If our layer is using color picking, then we must require the shader to include the ${picking} annotation
+  // To receive the fragment picking method
+  if (layer.picking.type === PickType.SINGLE) {
+    required.values.push(templateVars.picking);
+  }
 
   const fragmentShaderResults = shaderTemplate({
     options: templateOptions,
@@ -173,13 +192,15 @@ function generateProjectionMethods() {
 /**
  * Generates the fragments for shader IO such as vertex and instance attributes
  */
-function generateShaderInputs<T extends Instance>(
+function generateShaderInputs<T extends Instance, U extends ILayerProps<T>>(
+  layer: Layer<T, U>,
   vertexAttributes: IVertexAttribute[],
   instanceAttributes: IInstanceAttribute<T>[],
   uniforms: IUniform[]
 ) {
   const templateOptions: { [key: string]: string } = {};
   const instancingInfo = generateInstanceDataLookupOptions(
+    layer,
     templateOptions,
     instanceAttributes,
     uniforms
@@ -304,7 +325,8 @@ function generateUniforms(
  * This takes in the layer's vertex shader and transforms any required templating within the
  * shader.
  */
-function generateVertexShader<T extends Instance>(
+function generateVertexShader<T extends Instance, U extends ILayerProps<T>>(
+  layer: Layer<T, U>,
   shaders: IShaders,
   instanceAttributes: IInstanceAttribute<T>[],
   _maxInstancesPerBuffer: number,
@@ -312,6 +334,7 @@ function generateVertexShader<T extends Instance>(
 ) {
   const templateOptions: { [key: string]: string } = {
     [templateVars.attributes]: makeInstanceAttributeReferences(
+      layer,
       instanceAttributes,
       blocksPerInstance
     )
@@ -329,6 +352,28 @@ function generateVertexShader<T extends Instance>(
   });
 
   return results.shader;
+}
+
+/**
+ * This generates the header portion required for vertex picking to work
+ */
+function generateVertexPicking(layer: Layer<any, any>) {
+  if (layer.picking.type === PickType.SINGLE) {
+    return require("../fragments/color-picking-vertex-header.vs");
+  }
+
+  return "";
+}
+
+/**
+ * This generates the fragment that defines the picking methods
+ */
+function generateFragmentPickingMethod(layer: Layer<any, any>) {
+  if (layer.picking.type === PickType.SINGLE) {
+    return require("../fragments/color-picking-method.fs");
+  }
+
+  return require("../fragments/color-picking-disabled.fs");
 }
 
 function generateFragmentShader(shaders: IShaders) {
@@ -352,7 +397,11 @@ function generateFragmentShader(shaders: IShaders) {
  * This generates the inline attribute references needed to be able to reference instance attribute
  * vars.
  */
-function makeInstanceAttributeReferences<T extends Instance>(
+function makeInstanceAttributeReferences<
+  T extends Instance,
+  U extends ILayerProps<T>
+>(
+  layer: Layer<T, U>,
   instanceAttributes: IInstanceAttribute<T>[],
   blocksPerInstance: number
 ) {
@@ -361,11 +410,18 @@ function makeInstanceAttributeReferences<T extends Instance>(
   templateOptions[
     templateVars.instanceDestructuring
   ] = makeInstanceDestructuring(instanceAttributes, blocksPerInstance);
+  templateOptions[templateVars.picking] = makePickingDestructuring(layer);
 
   const required = {
     name: "instance attributes fragment",
     values: [templateVars.instanceDestructuring]
   };
+
+  // If picking is enabled, then we require the picking set up that we inject into the destructuring portion
+  // Of the shader
+  if (layer.picking.type === PickType.SINGLE) {
+    required.values.push(templateVars.picking);
+  }
 
   const results = shaderTemplate({
     options: templateOptions,
@@ -387,6 +443,17 @@ function makeInstanceDestructuring<T extends Instance>(
 }
 
 /**
+ * This generates the portion of picking logic that is injected into the destructuring portion of the shader
+ */
+function makePickingDestructuring(layer: Layer<any, any>) {
+  if (layer.picking.type === PickType.SINGLE) {
+    return require("../fragments/color-picking-assignment.vs");
+  }
+
+  return "";
+}
+
+/**
  * This generates the model attribute declarations
  */
 function generateVertexAttributes(vertexAttributes: IVertexAttribute[]) {
@@ -403,7 +470,11 @@ function generateVertexAttributes(vertexAttributes: IVertexAttribute[]) {
 /**
  * This method generates the chunk of shader that is responsible for providing
  */
-function generateInstanceDataLookupOptions<T extends Instance>(
+function generateInstanceDataLookupOptions<
+  T extends Instance,
+  U extends ILayerProps<T>
+>(
+  layer: Layer<T, U>,
   templateOptions: { [key: string]: string },
   instanceAttributes: IInstanceAttribute<T>[],
   uniforms: IUniform[]
@@ -441,6 +512,7 @@ function generateInstanceDataLookupOptions<T extends Instance>(
     if (newUseage > MAX_USE_PER_BLOCK) {
       console.error(
         `An instance attribute was specified that over fills the maximum allowed useage for a block.`,
+        `\nSource Layer: ${layer.id}`,
         `\nMax Allowed per block ${MAX_USE_PER_BLOCK}`,
         `\nAttribute: ${attribute.name} Block Specified: ${attribute.block}`,
         `\nTotal blocks used with this attribute: ${newUseage}`
@@ -494,22 +566,6 @@ function generateInstanceDataLookupOptions<T extends Instance>(
     attribute.block = trueBlockIndex;
   });
 
-  /**
-   * We now must create a decision tree large enough to accomodate our instances.
-   * Explanation:
-   * Our shaders CANNOT do switch case statements, NOR can they handle large amounts of
-   * chained if else statements (it will produce a memory exhausted error on many systems).
-   * There is even limits on how deep if else statements can be nested within each other.
-   * Lastly: We do NOT want to create an array in memory in the shader to create a lookup for our
-   * instance data as it would need to be allocated EVERY vertex operation.
-   *
-   * So, our best workaround is to make a decision tree that balances how many decisions per
-   * node it can make vs the depth of decisions. The more decisions per node, the less deep the
-   * tree will be, but will suffer some performance cost. But the less deep the tree, the better
-   * chance you will not get a 'memory exhausted' error.
-   */
-
-  const branchesPerLevel = 4;
   const blocksPerInstance = trueBlockIndex + 1;
   // This determines how many instances our allowed uniforms will allow for a single draw call
   const maxInstancesPerBuffer = Math.floor(
@@ -520,7 +576,6 @@ function generateInstanceDataLookupOptions<T extends Instance>(
   const instancingMetrics = makeUniformInstanceDataOptions(
     templateOptions,
     maxInstancesPerBuffer,
-    branchesPerLevel,
     blocksPerInstance,
     sortedInstanceAttributes
   );
@@ -541,7 +596,6 @@ function generateInstanceDataLookupOptions<T extends Instance>(
 function makeUniformInstanceDataOptions<T extends Instance>(
   templateOptions: { [key: string]: string },
   maxInstancesPerBuffer: number,
-  _branchesPerLevel: number,
   blocksPerInstance: number,
   instanceAttributes: IInstanceAttribute<T>[]
 ) {
@@ -564,8 +618,6 @@ function makeUniformInstanceDataOptions<T extends Instance>(
     uniformMetrics.fragment;
   templateOptions[templateVars.instanceBlockCount] = `${blocksPerInstance}`;
 
-  // This way produced the data retrieval method for decision tree instancing
-  // *templateOptions[templateVars.instanceDataRetrieval] = makeInstanceRetrievalDecisionTree(blocksPerInstance, instances, branchesPerLevel);
   // This method produces the data retrieval method for array instancing
   templateOptions[
     templateVars.instanceDataRetrieval

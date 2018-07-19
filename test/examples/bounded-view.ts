@@ -5,9 +5,9 @@ import {
   CameraBoundsAnchor,
   ChartCamera,
   createLayer,
-  DataProvider,
   EventManager,
   ICameraBoundsOptions,
+  InstanceProvider,
   LayerInitializer,
   RectangleInstance,
   RectangleLayer,
@@ -50,7 +50,7 @@ export class BoundedView extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<RectangleInstance>
+    provider: InstanceProvider<RectangleInstance>
   ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
@@ -60,8 +60,8 @@ export class BoundedView extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<RectangleInstance> {
-    const rectangleProvider = new DataProvider<RectangleInstance>([]);
+  makeProvider(): InstanceProvider<RectangleInstance> {
+    const rectangleProvider = new InstanceProvider<RectangleInstance>();
 
     const x = [0, 100, 200, 100, 0, 100, 200, 100];
     const y = [100, 0, 100, 200, 100, 0, 100, 200];
@@ -102,7 +102,7 @@ export class BoundedView extends BaseExample {
         y: y[i]
       });
 
-      rectangleProvider.instances.push(rectangle);
+      rectangleProvider.add(rectangle);
     }
     return rectangleProvider;
   }

@@ -4,6 +4,8 @@ export declare const templateVars: {
     blocksPerInstance: string;
     easingMethod: string;
     easingMethods: string;
+    extend: string;
+    extendHeader: string;
     instanceBlockCount: string;
     instanceDataBinaryTree: string;
     instanceDataRetrieval: string;

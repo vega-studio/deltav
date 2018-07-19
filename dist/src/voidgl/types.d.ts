@@ -1,9 +1,9 @@
 import * as Three from "three";
+import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
 import { IPoint } from "./primitives/point";
-import { ChartCamera, Vec } from "./util";
+import { ChartCamera, Vec, Vec2 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import { Instance } from "./util/instance";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 export declare type Diff<T extends string, U extends string> = ({
     [P in T]: P;
@@ -143,6 +143,7 @@ export declare enum PickType {
     SINGLE = 2,
 }
 export interface IPickingMetrics {
+    currentPickMode: PickType;
     type: PickType;
 }
 export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMetrics {
@@ -150,8 +151,25 @@ export interface IQuadTreePickingMetrics<T extends Instance> extends IPickingMet
     quadTree: TrackedQuadTree<T>;
     hitTest: InstanceHitTest<T>;
 }
-export interface ISinglePickingMetrics extends IPickingMetrics {
+export interface ISinglePickingMetrics<T extends Instance> extends IPickingMetrics {
     type: PickType.SINGLE;
+    uidToInstance: Map<number, T>;
+}
+export interface INonePickingMetrics extends IPickingMetrics {
+    type: PickType.NONE;
+}
+export interface IColorPickingData {
+    mouse: Vec2;
+    colorData: Uint8Array;
+    dataHeight: number;
+    dataWidth: number;
+    nearestColor: number;
+    allColors: number[];
+}
+export declare enum InstanceDiffType {
+    CHANGE = 0,
+    INSERT = 1,
+    REMOVE = 2,
 }
 export declare type FrameMetrics = {
     currentFrame: number;
@@ -164,3 +182,18 @@ export interface IEasingProps {
     startTime: number;
     duration: number;
 }
+export interface IShaderInputs<T extends Instance> {
+    instanceAttributes?: (IInstanceAttribute<T> | null)[];
+    vertexAttributes?: (IVertexAttribute | null)[];
+    vertexCount: number;
+    uniforms?: (IUniform | null)[];
+}
+export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
+export interface IShaderExtension {
+    header?: string;
+    body?: string;
+}
+export declare type IShaderIOExtension<T extends Instance> = Partial<IShaderInputs<T>> & {
+    vs?: IShaderExtension;
+    fs?: IShaderExtension;
+};

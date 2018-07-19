@@ -1,4 +1,4 @@
-import { IInstanceOptions, Instance } from "../../util/instance";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 export interface IEdgeInstanceOptions extends IInstanceOptions {
     colorStart?: [number, number, number, number];
     colorEnd?: [number, number, number, number];

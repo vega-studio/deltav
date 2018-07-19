@@ -1,6 +1,6 @@
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Label } from "../../primitives/label";
 import { LabelAtlasResource } from "../../surface/texture";
-import { IInstanceOptions, Instance } from "../../util/instance";
 import { Anchor, ScaleType } from "../types";
 export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
     anchor?: Anchor;

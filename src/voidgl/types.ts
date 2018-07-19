@@ -1,9 +1,9 @@
 import * as Three from 'three';
+import { Instance } from './instance-provider/instance';
 import { Bounds } from './primitives/bounds';
 import { IPoint } from './primitives/point';
 import { ChartCamera, Vec, Vec2 } from './util';
 import { IAutoEasingMethod } from './util/auto-easing-method';
-import { Instance } from './util/instance';
 import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P } & {[P in U]: never } & { [x: string]: never })[T];

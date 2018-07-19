@@ -1,7 +1,6 @@
 export * from './animation-helper';
 export * from './auto-easing-method';
 export * from './chart-camera';
-export * from './instance';
 export * from './mouse';
 export * from './reference-camera';
 export * from './shader-templating';

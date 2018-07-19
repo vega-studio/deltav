@@ -1,7 +1,8 @@
+import { Instance } from '../instance-provider/instance';
 import { Bounds } from '../primitives';
 import { IPoint } from '../primitives/point';
 import { IColorPickingData, InstanceHitTest, IPickInfo, IProjection, PickType } from '../types';
-import { Instance, TrackedQuadTree } from '../util';
+import { TrackedQuadTree } from '../util';
 import { ILayerProps, Layer } from './layer';
 
 /**

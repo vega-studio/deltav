@@ -5,6 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { ILayerProps, IShaderInitialization, Layer } from '../surface/layer';
 import {
   IAtlasInstanceAttribute,
@@ -25,7 +26,6 @@ import {
 } from '../types';
 import { uid, Vec } from '../util';
 import { AutoEasingLoopStyle } from '../util/auto-easing-method';
-import { Instance } from '../util/instance';
 
 const { abs } = Math;
 

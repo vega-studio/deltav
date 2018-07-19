@@ -1,4 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
+import { InstanceDiff } from '../instance-provider/instance-provider';
 import {
   IInstanceAttribute,
   IMaterialOptions,
@@ -23,7 +25,6 @@ import {
 } from '../types';
 import { BoundsAccessor, TrackedQuadTree } from '../util';
 import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { Instance } from '../util/instance';
 import { InstanceUniformManager } from '../util/instance-uniform-manager';
 import { DiffLookup, InstanceDiffManager } from './instance-diff-manager';
 import { LayerInteractionHandler } from './layer-interaction-handler';
@@ -56,7 +57,7 @@ export interface IModelType {
  */
 export interface IInstanceProvider<T extends Instance> {
   /** A list of changes to instances */
-  changeList: [T, InstanceDiffType][];
+  changeList: InstanceDiff<T>[];
   /** Resolves the changes as consumed */
   resolve(): void;
 }
@@ -230,6 +231,8 @@ export class Layer<T extends Instance, U extends ILayerProps<T>> extends Identif
       uniforms = this.uniformManager.getUniforms(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
       diffProcessor[change[1]](diffManager, instance, uniforms);
+      // Clear the instance changes recorded
+      instance.changes = {};
     }
 
     // Indicate the diffs are consumed

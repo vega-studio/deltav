@@ -1,5 +1,5 @@
 import { observable } from '../../instance-provider';
-import { IInstanceOptions, Instance } from '../../util/instance';
+import { IInstanceOptions, Instance } from '../../instance-provider/instance';
 import { Anchor, AnchorType, ScaleType } from '../types';
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {

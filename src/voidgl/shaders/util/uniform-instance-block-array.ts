@@ -1,6 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../../instance-provider/instance';
 import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize } from '../../types';
-import { Instance } from '../../util';
 import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
 import { makeInstanceUniformNameArray } from '../../util/make-instance-uniform-name';
 import { shaderTemplate } from '../../util/shader-templating';

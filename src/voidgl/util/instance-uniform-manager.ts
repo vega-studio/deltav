@@ -1,9 +1,9 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { generateLayerModel } from '../surface/generate-layer-model';
 import { Layer } from '../surface/layer';
 import { Scene } from '../surface/scene';
 import { IInstanceAttribute, PickType } from '../types';
-import { Instance } from './instance';
 import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
 
 export interface IUniformInstanceCluster {

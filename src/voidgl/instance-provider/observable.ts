@@ -1,11 +1,32 @@
-import { Instance } from '../util/instance';
-import { InstanceProvider } from './instance-provider';
+import { uid } from '../util/uid';
+import { Instance } from './instance';
 
-/**
- * This is the storage location on an Instance where
- */
-const observerStorage = '_$$';
-const observerKey = '$$';
+export class ObservableMonitoring {
+  static gatherIds: boolean = false;
+  static observableIds: number[] = [];
+  static observableNamesToUID = new Map<string, number>();
+
+  /**
+   * This activates all observables to gather their UIDs when they are retrieved via their getter.
+   * All of the ID's gathered can be accessed via getObservableMonitorIds. It is REQUIRED that this
+   * is disabled again to prevent a MASSIVE memory leak.
+   */
+  static setObservableMonitor(enabled: boolean) {
+    ObservableMonitoring.gatherIds = enabled;
+    ObservableMonitoring.observableIds = [];
+  }
+
+  /**
+   * This retrieves the observables montiored IDs that were gathered when setObservableMonitor was
+   * enabled.
+   */
+  static getObservableMonitorIds(clear?: boolean) {
+    const values = ObservableMonitoring.observableIds.slice(0);
+    if (clear) ObservableMonitoring.observableIds = [];
+
+    return values;
+  }
+}
 
 /**
  * This is a custom decorator intended for single properties on Instances only! It will
@@ -13,70 +34,41 @@ const observerKey = '$$';
  * update the Instances values in the appropriate and corresponding buffers that will get committed
  * to the GPU.
  */
-export function observable(target: Instance, key: string) {
-  /** This is the privatized version of the property where the actual value is stored */
-  const storage = `_$${key}`;
+export function observable<T extends Instance>(target: T, key: string) {
+  // Here we store the name of the observable to a UID. This mapping allows us to have a UID
+  // per NAME of an observable. A UID for a name can produce MUCH faster lookups than the name itself.
+  // Matching against the name allows us to have instances with their own property sets but have matching
+  // name mappings to improve compatibility of Instances with varying Layers.
+  let propertyUID: number =
+    ObservableMonitoring.observableNamesToUID.get(key) || 0;
+
+  if (!propertyUID) {
+    propertyUID = uid();
+    ObservableMonitoring.observableNamesToUID.set(key, propertyUID);
+  }
 
   /**
    * New property getter to get the property's alternative storage since we overrode
    * the initial storage with a custom getter and setter.
    */
-  function getter() {
-    return this[storage];
+  function getter(this: T) {
+    if (ObservableMonitoring.gatherIds) {
+      ObservableMonitoring.observableIds.push(propertyUID);
+    }
+    return this.observableStorage[propertyUID];
   }
 
   /**
    * New property setter to replace the property marked as observable. This allows
    * us to broadcast a change to our current observer.
    */
-  function setter(newVal: any) {
+  function setter(this: T, newVal: any) {
     // Update the privatized value
-    this[storage] = newVal;
+    this.observableStorage[propertyUID] = newVal;
     // Broadcast change
-    const observer = this[observerStorage];
-    observer && observer.instanceUpdated(this);
+    this.changes[propertyUID] = propertyUID;
+    this.observer && this.observer.instanceUpdated(this, propertyUID);
   }
-
-  /**
-   * When retrieving the current observer, it will provide a disposer for clearing
-   * the registration of the observer from the instance.
-   */
-  function makeDisposer(): () => void {
-    return () => (this[observerStorage] = null);
-  }
-
-  /**
-   * Sets the observer for the
-   */
-  function applyObserver(val: InstanceProvider<any>) {
-    // If an observer already is present, we should inform it, that it is being removed
-    // in favor of a new observer
-    const oldObserver = this[observerStorage];
-
-    if (oldObserver && oldObserver !== val) {
-      oldObserver.remove(this);
-    }
-
-    // Apply the new observer as the current observer
-    this[observerStorage] = val;
-  }
-
-  // Do some validation on our desired name and ensure it does not conflict with needed internal properties
-  if (key === observerStorage || key === observerKey) {
-    console.warn(`Observable Name Error for property ${key} on`, target);
-    console.warn('A class that utilizes DeltaV observables can not declare its own use of $$ or _$$');
-  }
-
-  /**
-   * This is a specially declared accessor for setting the observer for the property
-   * and retrieving a disposer for the registration.
-   */
-  Object.defineProperty(target, observerKey, {
-    configurable: true,
-    enumerable: false,
-    get: makeDisposer,
-    set: applyObserver,
-  });
 
   /**
    * Make sure the desired property is declared on the class with our custom getter and

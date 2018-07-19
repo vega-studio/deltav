@@ -185,7 +185,7 @@ makeLayer(scene: string, atlas: string, provider: IInstanceProvider<CircleInstan
   makeProvider(): IInstanceProvider<CircleInstance> {
     const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
-    const boxSide = 60;
+    const boxSide = 100;
 
     for (let i = 0; i < boxSide; ++i) {
       for (let k = 0; k < boxSide; ++k) {

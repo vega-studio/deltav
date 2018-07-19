@@ -1,7 +1,7 @@
 import { observable } from '../../instance-provider';
+import { IInstanceOptions, Instance } from '../../instance-provider/instance';
 import { Label } from '../../primitives/label';
 import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
-import { IInstanceOptions, Instance } from '../../util/instance';
 import { Anchor, AnchorType, ScaleType } from '../types';
 
 export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {

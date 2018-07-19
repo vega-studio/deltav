@@ -3,9 +3,9 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
+import { Instance } from '../../instance-provider/instance';
 import { ILayerProps, Layer } from '../../surface/layer';
 import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize, IShaders, IUniform, IVertexAttribute, PickType, ShaderInjectionTarget } from '../../types';
-import { Instance } from '../../util';
 import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
 import { WebGLStat } from '../../util/webgl-stat';
 import { templateVars } from '../fragments/template-vars';

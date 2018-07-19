@@ -1,6 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { IInstancingUniform, IUniform, UniformSize } from '../types';
-import { Instance } from '../util';
 import { ILayerProps, Layer } from './layer';
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: {[key: number]: string} = {

@@ -1,11 +1,15 @@
 import { InstanceDiffType } from '../types';
-import { Instance } from '../util/instance';
+import { Instance } from './instance';
 
-const noop = () => { /* no-op */ };
-
-function isObservable(val: any): val is { $$: any } {
-  return val.$$;
-}
+/**
+ * This is an entry within the change list of the provider. It represents the type of change
+ * and stores the property id's of the properties on the instance that have changed.
+ */
+export type InstanceDiff<T extends Instance> = [
+  T,
+  InstanceDiffType,
+  {[key: number]: number}
+];
 
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
@@ -13,15 +17,20 @@ function isObservable(val: any): val is { $$: any } {
  */
 export class InstanceProvider<T extends Instance> {
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation = new Map<number, [T, Function]>();
+  private cleanObservation: { [key: number]: [T, Function] } = {};
   /** This stores the changes to the instances themselves */
-  private instanceChanges = new Map<T, InstanceDiffType>();
+  private instanceChanges = new Map<number, InstanceDiff<T>>();
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
   private allowChanges = true;
 
-  get changeList(): [T, InstanceDiffType][] {
+  /**
+   * Retrieve all of the changes applied to instances
+   */
+  get changeList(): InstanceDiff<T>[] {
     this.allowChanges = false;
-    return Array.from(this.instanceChanges.entries());
+    const changes = Array.from(this.instanceChanges.values());
+
+    return changes;
   }
 
   /**
@@ -30,23 +39,21 @@ export class InstanceProvider<T extends Instance> {
    */
   add(instance: T) {
     // No need to duplicate the addition
-    if (this.cleanObservation.get(instance.uid)) {
+    if (this.cleanObservation[instance.uid]) {
       return instance;
     }
 
     if (this.allowChanges) {
-      // This is the disposer
-      let disposer: Function = noop;
-
-      if (isObservable(instance)) {
-        instance.$$ = this;
-        disposer = instance.$$;
-      }
-
+      instance.observer = this;
+      const disposer: Function = instance.observableDisposer;
       // Store the disposers so we can clean up the observable properties
-      this.cleanObservation.set(instance.uid, [instance, disposer]);
+      this.cleanObservation[instance.uid] = [instance, disposer];
       // Indicate we have a new instance
-      this.instanceChanges.set(instance, InstanceDiffType.INSERT);
+      this.instanceChanges.set(instance.uid, [
+        instance,
+        InstanceDiffType.INSERT,
+        instance.changes,
+      ]);
     }
 
     return instance;
@@ -56,8 +63,10 @@ export class InstanceProvider<T extends Instance> {
    * Removes all instances from this provider
    */
   clear() {
-    for (const instance of Array.from(this.cleanObservation.values())) {
-      this.remove(instance[0]);
+    const values = Object.values(this.cleanObservation);
+
+    for (let i = 0, end = values.length; i < end; ++i) {
+      this.remove(values[i][0]);
     }
   }
 
@@ -67,19 +76,23 @@ export class InstanceProvider<T extends Instance> {
    * desire to hang onto the instance objects, then this should be called.
    */
   destroy() {
-    const toRemove = Array.from(this.cleanObservation.values());
-    toRemove.forEach(instance => instance[1]());
-    this.cleanObservation.clear();
+    const values = Object.values(this.cleanObservation);
+
+    for (let i = 0, end = values.length; i < end; ++i) {
+      values[i][1]();
+    }
+
+    this.cleanObservation = {};
     this.instanceChanges.clear();
   }
 
   /**
-   * THis is called from observables to indicate it's parent has been updated
+   * This is called from observables to indicate it's parent has been updated
    */
-  instanceUpdated(instance: T) {
+  instanceUpdated(instance: T, property: number) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
-      this.instanceChanges.set(instance, InstanceDiffType.CHANGE);
+      this.instanceChanges.set(instance.uid, [instance, InstanceDiffType.CHANGE, instance.changes]);
     }
   }
 
@@ -89,12 +102,16 @@ export class InstanceProvider<T extends Instance> {
    */
   remove(instance: T) {
     if (this.allowChanges) {
-      const disposer = this.cleanObservation.get(instance.uid);
+      const disposer = this.cleanObservation[instance.uid];
 
       if (disposer) {
         disposer[1]();
-        this.cleanObservation.delete(instance.uid);
-        this.instanceChanges.set(instance, InstanceDiffType.REMOVE);
+        delete this.cleanObservation[instance.uid];
+        this.instanceChanges.set(instance.uid, [
+          instance,
+          InstanceDiffType.REMOVE,
+          {},
+        ]);
       }
     }
 
@@ -102,7 +119,7 @@ export class InstanceProvider<T extends Instance> {
   }
 
   /**
-   * Flagged all changes were dealt with
+   * Flagged all changes as dealt with
    */
   resolve() {
     this.allowChanges = true;

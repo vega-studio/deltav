@@ -1,6 +1,6 @@
 import * as Three from 'three';
+import { Instance } from '../instance-provider/instance';
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics, PickType } from '../types';
-import { Instance } from '../util';
 import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
 import { AtlasResourceManager } from './texture/atlas-resource-manager';
 

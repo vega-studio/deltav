@@ -1,5 +1,5 @@
-import { Label } from '../../primitives/label';
-import { BaseAtlasResource } from './base-atlas-resource';
+import { Label } from "../../primitives/label";
+import { BaseAtlasResource } from "./base-atlas-resource";
 
 export class LabelAtlasResource extends BaseAtlasResource {
   /** This is the label to be loaded into the atlas */

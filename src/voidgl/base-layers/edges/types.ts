@@ -6,7 +6,7 @@ export enum EdgeScaleType {
    * screen space as well all measured in pixels. The scaleFactor scales both thickness and control delta values.
    * The endpoints remain in world space
    */
-  SCREEN_CURVE,
+  SCREEN_CURVE
 }
 
 export enum EdgeType {
@@ -15,7 +15,7 @@ export enum EdgeType {
   /** Makes a single control point Bezier curve */
   BEZIER,
   /** Makes a two control point bezier curve */
-  BEZIER2,
+  BEZIER2
 }
 
 /**
@@ -29,5 +29,5 @@ export enum EdgeBroadphase {
   /** Use this to ensure a test against the edge is performed if the mouse aligns with it on the x-axis */
   PASS_Y,
   /** Use this to ensure a test against the edge is performed if the mouse aligns with it on the y axis */
-  PASS_X,
+  PASS_X
 }

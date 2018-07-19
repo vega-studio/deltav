@@ -2,16 +2,16 @@ export interface IShaderTemplateResults {
   /** This is the resulting shader string generated from the templating */
   shader: string;
   /** This is the template options provided by the shader. {option: num occurrences} */
-  shaderProvidedOptions: Map<string, number>,
+  shaderProvidedOptions: Map<string, number>;
   /**
    * This is the template options provided by the shader that were not resolved by the options parameter
    * {option: num occurrences}
    */
-  unresolvedShaderOptions: Map<string, number>,
+  unresolvedShaderOptions: Map<string, number>;
   /** This is the options provided to the template that did not get resolved by the shader {option: 1} */
-  unresolvedProvidedOptions: Map<string, number>,
+  unresolvedProvidedOptions: Map<string, number>;
   /** This is the list of options that DID get resolved by the options provided {option: num occurrences} */
-  resolvedShaderOptions: Map<string, number>,
+  resolvedShaderOptions: Map<string, number>;
 }
 
 export interface IShaderTemplateRequirements {
@@ -80,7 +80,7 @@ export function shaderTemplate(templateOptions: IShaderTemplateOptions): IShader
     shader: shaderResults,
     shaderProvidedOptions: shaderOptions,
     unresolvedProvidedOptions: notFound,
-    unresolvedShaderOptions: noValueProvided,
+    unresolvedShaderOptions: noValueProvided
   };
 
   if (required) {

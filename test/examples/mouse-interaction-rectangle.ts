@@ -1,6 +1,18 @@
-import * as anime from 'animejs';
-import { AnchorType, ChartCamera, createLayer, DataProvider, IPickInfo, LayerInitializer, PickType, RectangleInstance, RectangleLayer, ReferenceCamera, ScaleType } from '../../src';
-import { BaseExample } from './base-example';
+import * as anime from "animejs";
+import {
+  AnchorType,
+  ChartCamera,
+  createLayer,
+  DataProvider,
+  IPickInfo,
+  LayerInitializer,
+  PickType,
+  RectangleInstance,
+  RectangleLayer,
+  ReferenceCamera,
+  ScaleType
+} from "../../src";
+import { BaseExample } from "./base-example";
 
 export class MouseInteractionRectangle extends BaseExample {
   isOver = new Map<RectangleInstance, anime.AnimeInstance>();
@@ -18,10 +30,10 @@ export class MouseInteractionRectangle extends BaseExample {
         targets: rectangle.color,
         update: () => {
           rectangle.color = rectangle.color;
-        },
+        }
       });
     }
-  }
+  };
 
   handleRectangleOver = (info: IPickInfo<RectangleInstance>) => {
     for (const rectangle of info.instances) {
@@ -29,15 +41,15 @@ export class MouseInteractionRectangle extends BaseExample {
         const animation = anime({
           height: 20,
           targets: rectangle,
-          width: 20,
+          width: 20
         });
 
         this.isOver.set(rectangle, animation);
       }
     }
-  }
+  };
 
-  handleRectangleOut = async(info: IPickInfo<RectangleInstance>) => {
+  handleRectangleOut = async (info: IPickInfo<RectangleInstance>) => {
     for (const rectangle of info.instances) {
       const animation = this.isOver.get(rectangle);
 
@@ -47,7 +59,7 @@ export class MouseInteractionRectangle extends BaseExample {
         const leave = anime({
           height: 10,
           targets: rectangle,
-          width: 10,
+          width: 10
         });
 
         leave.pause();
@@ -58,26 +70,30 @@ export class MouseInteractionRectangle extends BaseExample {
         leave.play();
       }
     }
-  }
+  };
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
     return new ReferenceCamera({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
-      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
+      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
     });
   }
 
-  makeLayer(scene: string, atlas: string, provider: DataProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(
+    scene: string,
+    _atlas: string,
+    provider: DataProvider<RectangleInstance>
+  ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
-      key: 'mouse-interaction-rectangle',
+      key: "mouse-interaction-rectangle",
       onMouseClick: this.handleRectangleClick,
       onMouseOut: this.handleRectangleOut,
       onMouseOver: this.handleRectangleOver,
       picking: PickType.ALL,
       scaleFactor: () => 1,
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -89,7 +105,7 @@ export class MouseInteractionRectangle extends BaseExample {
         const rectangle = new RectangleInstance({
           anchor: {
             padding: 0,
-            type: AnchorType.Middle,
+            type: AnchorType.Middle
           },
           color: [Math.random(), Math.random(), 1.0, Math.random() * 0.8 + 0.2],
           height: 10,
@@ -97,7 +113,7 @@ export class MouseInteractionRectangle extends BaseExample {
           scaling: ScaleType.ALWAYS,
           width: 10,
           x: i * 10,
-          y: k * 10,
+          y: k * 10
         });
 
         rectangleProvider.instances.push(rectangle);

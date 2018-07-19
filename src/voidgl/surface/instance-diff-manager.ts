@@ -1,14 +1,26 @@
-import * as Three from 'three';
-import { IInstanceAttribute, IQuadTreePickingMetrics, ISinglePickingMetrics, PickType } from '../types';
-import { Instance } from '../util';
-import { InstanceUniformManager, IUniformInstanceCluster } from '../util/instance-uniform-manager';
-import { AtlasResourceManager } from './texture/atlas-resource-manager';
+import * as Three from "three";
+import {
+  IInstanceAttribute,
+  IQuadTreePickingMetrics,
+  ISinglePickingMetrics,
+  PickType
+} from "../types";
+import { Instance } from "../util";
+import {
+  InstanceUniformManager,
+  IUniformInstanceCluster
+} from "../util/instance-uniform-manager";
+import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
-const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
+const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ["x", "y", "z", "w"];
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (manager: InstanceDiffManager<T>, instance: T, uniformCluster?: IUniformInstanceCluster) => void;
+export type DiffHandler<T extends Instance> = (
+  manager: InstanceDiffManager<T>,
+  instance: T,
+  uniformCluster?: IUniformInstanceCluster
+) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 
@@ -52,22 +64,22 @@ export class InstanceDiffManager<T extends Instance> {
         return [
           this.changeInstanceQuad,
           this.addInstanceQuad,
-          this.removeInstanceQuad,
+          this.removeInstanceQuad
         ];
       }
     }
 
-    return [
-      this.changeInstance,
-      this.addInstance,
-      this.removeInstance,
-    ];
+    return [this.changeInstance, this.addInstance, this.removeInstance];
   }
 
   /**
    * This processes add operations from changes in the instancing data
    */
-  private addInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private addInstance(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, uniformCluster);
@@ -88,7 +100,11 @@ export class InstanceDiffManager<T extends Instance> {
    * This processes add operations from changes in the instancing data and manages the layer's quad tree
    * with the instance as well.
    */
-  private addInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private addInstanceQuad(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstanceQuad(manager, instance, uniformCluster);
@@ -112,7 +128,11 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private changeInstance(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -127,7 +147,11 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes change operations from changes in the instancing data
    */
-  private changeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private changeInstanceQuad(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(instance, uniformCluster);
@@ -146,7 +170,11 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstance(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private removeInstance(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -160,7 +188,11 @@ export class InstanceDiffManager<T extends Instance> {
   /**
    * This processes remove operations from changes in the instancing data
    */
-  private removeInstanceQuad(manager: this, instance: T, uniformCluster?: IUniformInstanceCluster) {
+  private removeInstanceQuad(
+    manager: this,
+    instance: T,
+    uniformCluster?: IUniformInstanceCluster
+  ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
@@ -183,11 +215,16 @@ export class InstanceDiffManager<T extends Instance> {
 
       // Loop through the instance attributes and update the uniform cluster with the valaues
       // Calculated for the instance
-      for (let i = 0, end = this.layer.instanceAttributes.length; i < end; ++i) {
+      for (
+        let i = 0, end = this.layer.instanceAttributes.length;
+        i < end;
+        ++i
+      ) {
         instanceUniform = this.layer.instanceAttributes[i];
         value = instanceUniform.update(instance);
         block = instanceData[uniformRangeStart + instanceUniform.block];
-        instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+        instanceUniform.atlas &&
+          this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
         start = instanceUniform.blockIndex;
 
         if (start === undefined) {
@@ -202,9 +239,7 @@ export class InstanceDiffManager<T extends Instance> {
       }
 
       uniforms.value = instanceData;
-    }
-
-    else {
+    } else {
       const uniforms: Three.IUniform = uniformCluster.uniform;
       const uniformRangeStart = uniformCluster.uniformRange[0];
       const instanceData: Three.Vector4[] = uniforms.value;
@@ -215,12 +250,13 @@ export class InstanceDiffManager<T extends Instance> {
       instanceUniform = this.layer.activeAttribute;
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + instanceUniform.block];
-      instanceUniform.atlas && this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+      instanceUniform.atlas &&
+        this.layer.resource.setTargetAtlas(instanceUniform.atlas.key);
       start = instanceUniform.blockIndex;
 
       if (start !== undefined) {
-      // Hyper optimized vector filling routine. It uses properties that are globally scoped
-      // To greatly reduce overhead
+        // Hyper optimized vector filling routine. It uses properties that are globally scoped
+        // To greatly reduce overhead
         for (let k = start, endk = value.length + start; k < endk; ++k) {
           block[VECTOR_ACCESSORS[k]] = value[k - start];
         }

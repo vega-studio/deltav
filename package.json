@@ -5,7 +5,7 @@
     "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "1.9.0",
+  "version": "1.9.4",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
@@ -33,8 +33,13 @@
     "@types/node": "8.0.58",
     "animejs": "2.2.0",
     "auto": "github:tarwich/auto",
+    "babel-core": "6.26.0",
+    "babel-loader": "7.1.4",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-env": "1.6.1",
     "base64-image-loader": "1.2.1",
     "circular-dependency-plugin": "5.0.2",
+    "copy-webpack-plugin": "4.5.2",
     "css-loader": "0.28.11",
     "debug": "3.1.0",
     "dts-bundle": "0.7.3",
@@ -47,6 +52,7 @@
     "mkdirp": "0.5.1",
     "mobx": "3.4.1",
     "preact": "8.2.7",
+    "prettier": "1.12.1",
     "random": "github:tarwich/node-random#1.0.0",
     "raw-loader": "0.5.1",
     "rimraf": "2.6.2",
@@ -61,5 +67,8 @@
   },
   "greenkeeper": {
     "ignore": []
-  }
+  },
+  "eslintIgnore": [
+    "**/*.min.js"
+  ]
 }

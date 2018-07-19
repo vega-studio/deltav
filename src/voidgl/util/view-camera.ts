@@ -1,4 +1,4 @@
-import * as Three from 'three';
+import * as Three from "three";
 
 export enum ViewCameraType {
   /**
@@ -11,7 +11,7 @@ export enum ViewCameraType {
   /**
    * This allows a custom view camera to be applied to the scene.
    */
-  CUSTOM,
+  CUSTOM
 }
 
 /**

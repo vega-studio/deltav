@@ -1,2 +1,2 @@
-export * from './label-layer';
-export * from './label-instance';
+export * from "./label-layer";
+export * from "./label-instance";

@@ -1,5 +1,5 @@
-import { observable } from 'mobx';
-import { Identifiable, IEasingProps } from '../types';
+import { observable } from "mobx";
+import { Identifiable, IEasingProps } from "../types";
 
 export interface IInstanceOptions {
   /** The instance can be declared with an initial active state */

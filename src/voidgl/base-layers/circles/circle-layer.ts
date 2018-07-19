@@ -1,12 +1,22 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IShaderInitialization, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { DataProvider, Vec } from '../../util';
-import { IAutoEasingMethod } from '../../util/auto-easing-method';
-import { CircleInstance } from './circle-instance';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IShaderInitialization,
+  IUniform,
+  UniformSize,
+  VertexAttributeSize
+} from "../../types";
+import { DataProvider, Vec } from "../../util";
+import { IAutoEasingMethod } from "../../util/auto-easing-method";
+import { CircleInstance } from "./circle-instance";
 
-export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps<T> {
+export interface ICircleLayerProps<T extends CircleInstance>
+  extends ILayerProps<T> {
   /** This sets the  */
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
@@ -30,7 +40,10 @@ export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class CircleLayer<T extends CircleInstance, U extends ICircleLayerProps<T>> extends Layer<T, U> {
+export class CircleLayer<
+  T extends CircleInstance,
+  U extends ICircleLayerProps<T>
+> extends Layer<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new DataProvider<CircleInstance>([]),
     fadeOutOversized: -1,

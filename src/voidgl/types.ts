@@ -436,14 +436,17 @@ export interface IShaderInputs<T extends Instance> {
 /**
  * This is the initialization of the shader.
  */
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
 
 export interface IShaderExtension {
   header?: string;
   body?: string;
 }
 
-export type IShaderIOExtension<T extends Instance> = Partial<IShaderInputs<T>> & {
+export type IShaderIOExtension<T extends Instance> = Partial<
+  IShaderInputs<T>
+> & {
   vs?: IShaderExtension;
   fs?: IShaderExtension;
 };

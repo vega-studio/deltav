@@ -1,13 +1,22 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IShaderInitialization, UniformSize, VertexAttributeSize } from '../../types';
-import { ScaleType } from '../types';
-import { ImageInstance } from './image-instance';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IShaderInitialization,
+  UniformSize,
+  VertexAttributeSize
+} from "../../types";
+import { ScaleType } from "../types";
+import { ImageInstance } from "./image-instance";
 
 const { min, max } = Math;
 
-export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T> {
+export interface IImageLayerProps<T extends ImageInstance>
+  extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -15,7 +24,10 @@ export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T
  * This layer displays Images and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
+export class ImageLayer<
+  T extends ImageInstance,
+  U extends IImageLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

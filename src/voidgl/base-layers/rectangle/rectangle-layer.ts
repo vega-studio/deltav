@@ -1,13 +1,22 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import { ILayerProps, IModelType, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, IProjection, IShaderInitialization, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { ScaleType } from '../types';
-import { RectangleInstance } from './rectangle-instance';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import {
+  IMaterialOptions,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+  IProjection,
+  IShaderInitialization,
+  UniformSize,
+  VertexAttributeSize
+} from "../../types";
+import { ScaleType } from "../types";
+import { RectangleInstance } from "./rectangle-instance";
 
 const { min, max } = Math;
 
-export interface IRectangleLayerProps<T extends RectangleInstance> extends ILayerProps<T> {
+export interface IRectangleLayerProps<T extends RectangleInstance>
+  extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -15,7 +24,10 @@ export interface IRectangleLayerProps<T extends RectangleInstance> extends ILaye
  * This layer displays Rectangles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RectangleLayer<T extends RectangleInstance, U extends IRectangleLayerProps<T>> extends Layer<T, U> {
+export class RectangleLayer<
+  T extends RectangleInstance,
+  U extends IRectangleLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements

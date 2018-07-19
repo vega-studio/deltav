@@ -1,18 +1,8 @@
-<<<<<<< HEAD
-import * as Three from 'three';
-import { ILayerProps, IModelType, IPickingMethods, Layer } from '../../surface/layer';
-import { IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceIOValue, IShaderInitialization, IUniform, UniformSize, VertexAttributeSize } from '../../types';
-import { DataProvider, shaderTemplate } from '../../util';
-import { EdgeInstance } from './edge-instance';
-import { edgePicking } from './edge-picking';
-import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
-=======
 import * as Three from "three";
 import {
   ILayerProps,
   IModelType,
   IPickingMethods,
-  IShaderInitialization,
   Layer
 } from "../../surface/layer";
 import {
@@ -20,6 +10,7 @@ import {
   InstanceAttributeSize,
   InstanceBlockIndex,
   InstanceIOValue,
+  IShaderInitialization,
   IUniform,
   UniformSize,
   VertexAttributeSize
@@ -28,9 +19,9 @@ import { DataProvider, shaderTemplate } from "../../util";
 import { EdgeInstance } from "./edge-instance";
 import { edgePicking } from "./edge-picking";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
->>>>>>> d47117fffd704f1d17d7694d5011a6f7114dac52
 
-export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayerProps<T> {
+export interface IEdgeLayerProps<T extends EdgeInstance>
+  extends ILayerProps<T> {
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadphase;
   /** Any distance to the mouse from an edge that is less than this distance will be picked */
@@ -69,11 +60,10 @@ const edgeFS = require("./shader/edge-layer.fs");
  * This layer displays edges and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-<<<<<<< HEAD
-export class EdgeLayer<T extends EdgeInstance, U extends IEdgeLayerProps<T>> extends Layer<T, U> {
-=======
-export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
->>>>>>> d47117fffd704f1d17d7694d5011a6f7114dac52
+export class EdgeLayer<
+  T extends EdgeInstance,
+  U extends IEdgeLayerProps<T>
+> extends Layer<T, U> {
   // Set default props for the layer
   static defaultProps: IEdgeLayerProps<EdgeInstance> = {
     broadphase: EdgeBroadphase.ALL,
@@ -128,22 +118,12 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
         // Inject the proper interpolation method
         interpolation: pickVS[type]
       },
-<<<<<<< HEAD
       required: {
-        name: 'Edge Layer',
-        values: [
-          'interpolation',
-        ],
-      },
-      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
-    });
-=======
-      {
         name: "Edge Layer",
         values: ["interpolation"]
-      }
-    );
->>>>>>> d47117fffd704f1d17d7694d5011a6f7114dac52
+      },
+      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS
+    });
 
     return {
       fs: edgeFS,

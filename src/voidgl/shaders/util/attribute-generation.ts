@@ -3,12 +3,27 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
-import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize, IShaders, IUniform, IVertexAttribute, ShaderInjectionTarget } from '../../types';
-import { Instance } from '../../util';
-import { IShaderTemplateRequirements, shaderTemplate } from '../../util/shader-templating';
-import { WebGLStat } from '../../util/webgl-stat';
-import { templateVars } from '../template-vars';
-import { makeInstanceDestructuringArray, makeInstanceRetrievalArray, makeUniformArrayDeclaration } from './uniform-instance-block-array';
+import {
+  IInstanceAttribute,
+  IInstancingUniform,
+  InstanceAttributeSize,
+  IShaders,
+  IUniform,
+  IVertexAttribute,
+  ShaderInjectionTarget
+} from "../../types";
+import { Instance } from "../../util";
+import {
+  IShaderTemplateRequirements,
+  shaderTemplate
+} from "../../util/shader-templating";
+import { WebGLStat } from "../../util/webgl-stat";
+import { templateVars } from "../template-vars";
+import {
+  makeInstanceDestructuringArray,
+  makeInstanceRetrievalArray,
+  makeUniformArrayDeclaration
+} from "./uniform-instance-block-array";
 
 // These are all of the necessary fragments that will comprise our shader that is generated
 const vertexShaderComposition = require("../fragments/vertex-shader-composition.vs");
@@ -106,7 +121,7 @@ export function injectFragments<T extends Instance>(
   const vertexShaderResults = shaderTemplate({
     options: templateOptions,
     required,
-    shader: vertexShaderComposition,
+    shader: vertexShaderComposition
   });
 
   templateOptions = {
@@ -125,7 +140,7 @@ export function injectFragments<T extends Instance>(
   const fragmentShaderResults = shaderTemplate({
     options: templateOptions,
     required,
-    shader: fragmentShaderComposition,
+    shader: fragmentShaderComposition
   });
 
   return {
@@ -149,7 +164,7 @@ function generateProjectionMethods() {
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: projectionMethods,
+    shader: projectionMethods
   });
 
   return results.shader;
@@ -195,7 +210,7 @@ function generateShaderInputs<T extends Instance>(
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: shaderInput,
+    shader: shaderInput
   });
 
   return {
@@ -244,11 +259,11 @@ function generateEasingMethods<T extends Instance>(
           [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`
         };
 
-      const results = shaderTemplate({
-        options: templateOptions,
-        required,
-        shader: method,
-      });
+        const results = shaderTemplate({
+          options: templateOptions,
+          required,
+          shader: method
+        });
 
         out += `${results.shader}\n`;
       });
@@ -310,7 +325,7 @@ function generateVertexShader<T extends Instance>(
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: shaders.vs,
+    shader: shaders.vs
   });
 
   return results.shader;
@@ -327,7 +342,7 @@ function generateFragmentShader(shaders: IShaders) {
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: shaders.fs,
+    shader: shaders.fs
   });
 
   return results.shader;
@@ -355,7 +370,7 @@ function makeInstanceAttributeReferences<T extends Instance>(
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: instanceDestructuringArray,
+    shader: instanceDestructuringArray
   });
 
   return results.shader;

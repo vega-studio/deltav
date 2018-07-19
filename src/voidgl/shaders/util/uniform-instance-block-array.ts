@@ -1,15 +1,19 @@
-import * as Three from 'three';
-import { IInstanceAttribute, IInstancingUniform, InstanceAttributeSize } from '../../types';
-import { Instance } from '../../util';
-import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
-import { makeInstanceUniformNameArray } from '../../util/make-instance-uniform-name';
-import { shaderTemplate } from '../../util/shader-templating';
-import { templateVars } from '../template-vars';
+import * as Three from "three";
+import {
+  IInstanceAttribute,
+  IInstancingUniform,
+  InstanceAttributeSize
+} from "../../types";
+import { Instance } from "../../util";
+import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
+import { makeInstanceUniformNameArray } from "../../util/make-instance-uniform-name";
+import { shaderTemplate } from "../../util/shader-templating";
+import { templateVars } from "../template-vars";
 
-const instanceRetrievalArrayFragment = require('../fragments/instance-retrieval-array.vs');
+const instanceRetrievalArrayFragment = require("../fragments/instance-retrieval-array.vs");
 
 /** Defines the elements for d../template-varsor */
-const VECTOR_COMPONENTS = ['x', 'y', 'z', 'w'];
+const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */
 const sizeToType: { [key: number]: string } = {
@@ -63,7 +67,7 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
   const results = shaderTemplate({
     options: templateOptions,
     required,
-    shader: instanceRetrievalArrayFragment,
+    shader: instanceRetrievalArrayFragment
   });
 
   return results.shader;

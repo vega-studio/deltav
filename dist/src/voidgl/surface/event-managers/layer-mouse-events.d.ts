@@ -2,13 +2,11 @@ import { IPoint } from "../../primitives/point";
 import { IProjection } from "../../types";
 import { EventManager } from "../event-manager";
 import { Layer } from "../layer";
-import { LayerSurface } from "../layer-surface";
 import { IDragMetrics, IMouseInteraction, SceneView } from "../mouse-event-manager";
 export declare class LayerMouseEvents extends EventManager {
-    isOver: Map<SceneView, boolean>;
     sceneViews: SceneView[];
-    surface: LayerSurface;
-    constructor(surface: LayerSurface);
+    isOver: Map<SceneView, boolean>;
+    constructor(sceneViews: SceneView[]);
     getSceneViewsUnderMouse(e: IMouseInteraction): SceneView[];
     getMouseByViewId(e: IMouseInteraction): Map<string, IPoint>;
     handleClick(e: IMouseInteraction, button: number): void;

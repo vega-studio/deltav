@@ -1,7 +1,7 @@
 import * as Three from "three";
-import { Instance } from "../instance-provider/instance";
 import { Layer } from "../surface/layer";
 import { Scene } from "../surface/scene";
+import { Instance } from "./instance";
 export interface IUniformInstanceCluster {
     instanceIndex: number;
     uniform: Three.IUniform;
@@ -15,7 +15,6 @@ export interface InstanceUniformBuffer {
     lastInstance: number;
     material: Three.ShaderMaterial;
     model: Three.Object3D;
-    pickModel?: Three.Object3D;
 }
 export declare class InstanceUniformManager<T extends Instance> {
     private layer;

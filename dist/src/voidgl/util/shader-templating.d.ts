@@ -9,13 +9,6 @@ export interface IShaderTemplateRequirements {
     name: string;
     values: string[];
 }
-export interface IShaderTemplateOptions {
-    onError?(msg: string): void;
-    onToken?(token: string, replace: string): string;
-    options: {
-        [key: string]: string;
-    };
-    required?: IShaderTemplateRequirements;
-    shader: string;
-}
-export declare function shaderTemplate(templateOptions: IShaderTemplateOptions): IShaderTemplateResults;
+export declare function shaderTemplate(shader: string, options: {
+    [key: string]: string;
+}, required?: IShaderTemplateRequirements): IShaderTemplateResults;

@@ -1,11 +1,11 @@
 import { Bounds, IPoint } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
-import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from "../../surface/layer";
+import { IMaterialOptions, IProjection } from "../../types";
 import { LabelInstance } from "./label-instance";
-export interface ILabelLayerProps<T extends LabelInstance> extends ILayerProps<T> {
+export interface ILabelLayerProps extends ILayerProps<LabelInstance> {
     atlas?: string;
 }
-export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerProps<T>> extends Layer<T, U> {
+export declare class LabelLayer extends Layer<LabelInstance, ILabelLayerProps> {
     getInstancePickingMethods(): {
         boundsAccessor: (label: LabelInstance) => Bounds;
         hitTest: (label: LabelInstance, point: IPoint, view: IProjection) => boolean;

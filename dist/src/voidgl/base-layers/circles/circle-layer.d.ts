@@ -1,21 +1,20 @@
 import { Bounds, IPoint } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
-import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from "../../surface/layer";
+import { IMaterialOptions, IProjection } from "../../types";
 import { Vec } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
-export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps<T> {
+export interface ICircleLayerProps extends ILayerProps<CircleInstance> {
     fadeOutOversized?: number;
     scaleFactor?(): number;
-    disableDepthTest?: boolean;
     animate?: {
         center?: IAutoEasingMethod<Vec>;
         radius?: IAutoEasingMethod<Vec>;
         color?: IAutoEasingMethod<Vec>;
     };
 }
-export declare class CircleLayer<T extends CircleInstance, U extends ICircleLayerProps<T>> extends Layer<T, U> {
-    static defaultProps: ICircleLayerProps<CircleInstance>;
+export declare class CircleLayer extends Layer<CircleInstance, ICircleLayerProps> {
+    static defaultProps: ICircleLayerProps;
     getInstancePickingMethods(): {
         boundsAccessor: (circle: CircleInstance) => Bounds;
         hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => boolean;

@@ -1,11 +1,11 @@
 import { Bounds, IPoint } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
-import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from "../../surface/layer";
+import { IMaterialOptions, IProjection } from "../../types";
 import { ImageInstance } from "./image-instance";
-export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T> {
+export interface IImageLayerProps extends ILayerProps<ImageInstance> {
     atlas?: string;
 }
-export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
+export declare class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
     getInstancePickingMethods(): {
         boundsAccessor: (image: ImageInstance) => Bounds;
         hitTest: (image: ImageInstance, point: IPoint, view: IProjection) => boolean;

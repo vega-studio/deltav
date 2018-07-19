@@ -1,11 +1,11 @@
 import { Bounds, IPoint } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
-import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
+import { ILayerProps, IModelType, IShaderInitialization, Layer } from "../../surface/layer";
+import { IMaterialOptions, IProjection } from "../../types";
 import { RectangleInstance } from "./rectangle-instance";
-export interface IRectangleLayerProps<T extends RectangleInstance> extends ILayerProps<T> {
+export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
     atlas?: string;
 }
-export declare class RectangleLayer<T extends RectangleInstance, U extends IRectangleLayerProps<T>> extends Layer<T, U> {
+export declare class RectangleLayer extends Layer<RectangleInstance, IRectangleLayerProps> {
     getInstancePickingMethods(): {
         boundsAccessor: (rectangle: RectangleInstance) => Bounds;
         hitTest: (rectangle: RectangleInstance, point: IPoint, projection: IProjection) => boolean;

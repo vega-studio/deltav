@@ -147,24 +147,35 @@ export class InstanceUniformManager<T extends Instance> {
    * Clears all elements of this manager from the current scene it was in.
    */
   removeFromScene() {
-    this.buffers.forEach(buffer => {
-      this.scene.container.remove(buffer.model);
-      buffer.pickModel && this.scene.pickingContainer.remove(buffer.pickModel);
-    });
+    const scene = this.scene;
 
-    delete this.scene;
+    if (scene.container) {
+      for (let i = 0, end = this.buffers.length; i < end; ++i) {
+        const buffer = this.buffers[i];
+        scene.container.remove(buffer.model);
+        buffer.pickModel &&
+          this.scene.pickingContainer.remove(buffer.pickModel);
+      }
+
+      delete this.scene;
+    }
   }
 
   /**
    * Applies the buffers to the provided scene for rendering.
    */
   setScene(scene: Scene) {
-    this.buffers.forEach(buffer => {
-      this.scene.container.add(buffer.model);
-      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
-    });
+    if (scene.container) {
+      for (let i = 0, end = this.buffers.length; i < end; ++i) {
+        const buffer = this.buffers[i];
+        scene.container.add(buffer.model);
+        buffer.pickModel && scene.pickingContainer.add(buffer.pickModel);
+      }
 
-    this.scene = scene;
+      this.scene = scene;
+    } else {
+      console.warn("Can not set a scene that has an undefined container.");
+    }
   }
 
   /**
@@ -248,7 +259,7 @@ export class InstanceUniformManager<T extends Instance> {
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
-    if (this.scene) {
+    if (this.scene && this.scene.container) {
       this.scene.container.add(buffer.model);
       buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     }

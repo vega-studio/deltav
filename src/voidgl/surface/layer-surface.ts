@@ -322,6 +322,8 @@ export class LayerSurface {
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
     this.commit(time, true, (scene, view, pickingPass) => {
+      // Our scene must have a valid container to operate
+      if (!scene.container) return;
       // Now perform the rendering
       this.drawSceneView(scene.container, view);
 

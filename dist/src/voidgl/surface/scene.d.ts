@@ -8,7 +8,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
 }
 export declare class Scene extends IdentifyByKey {
     static DEFAULT_SCENE_ID: string;
-    container: Three.Scene;
+    container: Three.Scene | undefined;
     pickingContainer: Three.Scene;
     layers: Layer<any, any>[];
     sortIsDirty: boolean;

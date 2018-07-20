@@ -1,27 +1,25 @@
 import * as Three from "three";
-import { IInstanceAttribute, IMaterialOptions, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaders, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
-import { BoundsAccessor, DataProvider, DiffType } from "../util";
+import { Instance } from "../instance-provider/instance";
+import { InstanceDiff } from "../instance-provider/instance-provider";
+import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
+import { BoundsAccessor } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { Instance } from "../util/instance";
 import { InstanceUniformManager } from "../util/instance-uniform-manager";
 import { DiffLookup, InstanceDiffManager } from "./instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { LayerSurface } from "./layer-surface";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { View } from "./view";
-export interface IShaderInputs<T extends Instance> {
-    instanceAttributes?: (IInstanceAttribute<T> | null)[];
-    vertexAttributes?: (IVertexAttribute | null)[];
-    vertexCount: number;
-    uniforms?: (IUniform | null)[];
-}
-export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
 export interface IModelType {
     drawMode?: Three.TrianglesDrawModes;
     modelType: IModelConstructable;
 }
+export interface IInstanceProvider<T extends Instance> {
+    changeList: InstanceDiff<T>[];
+    resolve(): void;
+}
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
-    data: DataProvider<T>;
+    data: IInstanceProvider<T>;
     picking?: PickType;
     scene?: string;
     onMouseDown?(info: IPickInfo<T>): void;
@@ -50,7 +48,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     material: Three.RawShaderMaterial;
     maxInstancesPerBuffer: number;
     model: Three.Object3D;
-    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+    picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     props: U;
     resource: AtlasResourceManager;
     surface: LayerSurface;
@@ -74,7 +72,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
         shaderInjection?: ShaderInjectionTarget;
     }): IInstanceAttribute<T>;
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
-    willUpdateInstances(_changes: [T, DiffType]): void;
+    willUpdateInstances(_changes: InstanceDiff<T>[]): void;
     willUpdateProps(_newProps: ILayerProps<T>): void;
     didUpdate(): void;
 }

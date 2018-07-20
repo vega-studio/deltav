@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.10.1
+
+* `(FIXED)` certain async operations caused an undefined scene to crop up and cause issues on FF
+
 ## 1.10.0
 
 * `(ADDED)` Color picking is an option for pick type by setting picking to PickType.SINGLE

@@ -32,7 +32,7 @@ export class Scene extends IdentifyByKey {
   static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
-  container: Three.Scene = new Three.Scene();
+  container: Three.Scene | undefined = new Three.Scene();
   // TODO: This 'could' be smarter when Three is gone. The pipeline could IMMEDIATELY render
   /** We make a picking container specifically for the cases where objects must be rendered for picking */
   pickingContainer: Three.Scene = new Three.Scene();
@@ -45,8 +45,11 @@ export class Scene extends IdentifyByKey {
 
   constructor(options: ISceneOptions) {
     super(options);
-    this.container.frustumCulled = false;
-    this.container.autoUpdate = false;
+
+    if (this.container) {
+      this.container.frustumCulled = false;
+      this.container.autoUpdate = false;
+    }
   }
 
   /**

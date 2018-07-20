@@ -156,6 +156,10 @@ export class InstanceAttributeBufferManager<
         // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
         bufferLocations.instanceIndex + 1,
       );
+      this.geometry.drawRange = {
+        count: this.currentInstancedCount * this.layer.instanceVertexCount,
+        start: 0,
+      };
     } else {
       console.error(
         'Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location',
@@ -433,6 +437,10 @@ export class InstanceAttributeBufferManager<
 
     if (this.scene && this.model) {
       this.scene.container.remove(this.model);
+    }
+
+    if (this.scene && this.scene.pickingContainer && this.pickModel) {
+      this.scene.pickingContainer.remove(this.pickModel);
     }
 
     // Remake the model with the generated geometry

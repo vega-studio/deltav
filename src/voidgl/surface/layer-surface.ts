@@ -433,7 +433,10 @@ export class LayerSurface {
 
           // Analyze the rendered color data for the picking routine
           const pickingData = analyzeColorPickingRendering(
-            mouse,
+            [
+              mouse[0] - view.screenBounds.x,
+              mouse[1] - view.screenBounds.y,
+            ],
             out,
             pickWidth,
             pickHeight,

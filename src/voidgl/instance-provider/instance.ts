@@ -18,6 +18,8 @@ export class Instance implements Identifiable {
 
   /** This indicates when the instance is active / rendering */
   @observable active: boolean;
+  /** The property changes on the instance */
+  changes: { [key: number]: number } = {};
   /** This is an internal easing object to track properties for automated easing */
   private _easing = new Map<number, IEasingProps>();
   /** Internal, non-changeable id */
@@ -27,9 +29,7 @@ export class Instance implements Identifiable {
   /** This is where observables store their data for the instance */
   observableStorage: any[] = [];
   /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
-  private _uid = Instance.newUID;
-  /** The property changes on the instance */
-  changes: { [key: number]: number } = {};
+  @observable private _uid = Instance.newUID;
 
   /**
    * The system will call this on the instance when it believes the instance may be

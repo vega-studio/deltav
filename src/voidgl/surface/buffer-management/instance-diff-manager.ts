@@ -11,6 +11,7 @@ import { AtlasResourceManager } from '../texture/atlas-resource-manager';
 import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
 import { IBufferLocationGroup } from './buffer-manager-base';
 import { BaseDiffProcessor } from './diff-processors/base-diff-processor';
+import { InstanceAttributeColorDiffProcessor } from './diff-processors/instance-attribute-color-diff-processor';
 import { InstanceAttributeDiffProcessor } from './diff-processors/instance-attribute-diff-processor';
 import { UniformColorDiffProcessor } from './diff-processors/uniform-color-diff-processor';
 import { UniformDiffProcessor } from './diff-processors/uniform-diff-processor';
@@ -74,10 +75,22 @@ export class InstanceDiffManager<T extends Instance> {
     if (this.processing) return this.processing;
 
     if (this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
-      this.processor = new InstanceAttributeDiffProcessor(
-        this.layer,
-        this.bufferManager,
-      );
+      // Now we look at the state of the layer to determine the best diff processor strategy
+      if (this.layer.picking) {
+        if (this.layer.picking.type === PickType.SINGLE) {
+          this.processor = new InstanceAttributeColorDiffProcessor(
+            this.layer,
+            this.bufferManager,
+          );
+        }
+      }
+
+      if (!this.processor) {
+        this.processor = new InstanceAttributeDiffProcessor(
+          this.layer,
+          this.bufferManager,
+        );
+      }
     } else {
       // Now we look at the state of the layer to determine the best diff processor strategy
       if (this.layer.picking) {

@@ -1,4 +1,3 @@
-import { IBufferLocation } from '../surface/buffer-management';
 import { Identifiable, IEasingProps } from '../types';
 import { InstanceProvider } from './instance-provider';
 import { observable } from './observable';
@@ -19,8 +18,6 @@ export class Instance implements Identifiable {
 
   /** This indicates when the instance is active / rendering */
   @observable active: boolean;
-  /** This is a mapping of an instance's observable properties to their associated Buffer Mapping */
-  private _attributeMapping = new Map<number, IBufferLocation>();
   /** This is an internal easing object to track properties for automated easing */
   private _easing = new Map<number, IEasingProps>();
   /** Internal, non-changeable id */
@@ -31,6 +28,8 @@ export class Instance implements Identifiable {
   observableStorage: any[] = [];
   /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
   private _uid = Instance.newUID;
+  /** The property changes on the instance */
+  changes: { [key: number]: number } = {};
 
   /**
    * The system will call this on the instance when it believes the instance may be
@@ -59,10 +58,6 @@ export class Instance implements Identifiable {
 
     // Apply the new observer as the current observer
     this._observer = val;
-  }
-
-  get attributeMapping() {
-    return this._attributeMapping;
   }
 
   get easing() {

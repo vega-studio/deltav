@@ -66,8 +66,8 @@ export function observable<T extends Instance>(target: T, key: string) {
     // Update the privatized value
     this.observableStorage[propertyUID] = newVal;
     // Broadcast change
-    const observer = this.observer;
-    observer && observer.instanceUpdated(this, propertyUID);
+    this.changes[propertyUID] = propertyUID;
+    this.observer && this.observer.instanceUpdated(this, propertyUID);
   }
 
   /**

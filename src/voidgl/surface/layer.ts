@@ -267,6 +267,8 @@ export class Layer<
         Object.values(change[2]),
         bufferLocations,
       );
+      // Clear the changes for the instance
+      instance.changes = {};
     }
 
     // Tell the diff processor that it has completed it's task set

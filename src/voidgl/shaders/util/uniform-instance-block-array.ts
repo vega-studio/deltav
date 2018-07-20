@@ -1,14 +1,14 @@
 import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   IInstancingUniform,
   InstanceAttributeSize
 } from "../../types";
-import { Instance } from "../../util";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { makeInstanceUniformNameArray } from "../../util/make-instance-uniform-name";
 import { shaderTemplate } from "../../util/shader-templating";
-import { templateVars } from "../fragments/template-vars";
+import { templateVars } from "../template-vars";
 
 const instanceRetrievalArrayFragment = require("../fragments/instance-retrieval-array.vs");
 
@@ -64,11 +64,11 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
     values: [templateVars.instanceBlockCount]
   };
 
-  const results = shaderTemplate(
-    instanceRetrievalArrayFragment,
-    templateOptions,
-    required
-  );
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: instanceRetrievalArrayFragment
+  });
 
   return results.shader;
 }

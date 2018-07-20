@@ -3,7 +3,7 @@ import {
   CircleInstance,
   CircleLayer,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   IPickInfo,
   LayerInitializer,
   PickType
@@ -55,7 +55,7 @@ export class MouseInteraction extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<CircleInstance>
+    provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
@@ -66,14 +66,14 @@ export class MouseInteraction extends BaseExample {
       onMouseClick: this.handleCircleClick,
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scaleFactor: () => 1,
       scene: scene
     });
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): InstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
 
     for (let i = 0; i < 40; ++i) {
       for (let k = 0; k < 30; ++k) {
@@ -85,7 +85,7 @@ export class MouseInteraction extends BaseExample {
           y: k * 11
         });
 
-        circleProvider.instances.push(circle);
+        circleProvider.add(circle);
       }
     }
 

@@ -1,6 +1,7 @@
 precision highp float;
 
 varying vec4 vertexColor;
+${extendHeader}
 
 void main() {
   ${attributes}
@@ -64,4 +65,5 @@ void main() {
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));
+  ${extend}
 }

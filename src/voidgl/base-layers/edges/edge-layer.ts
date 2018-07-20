@@ -1,9 +1,9 @@
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import {
   ILayerProps,
   IModelType,
   IPickingMethods,
-  IShaderInitialization,
   Layer
 } from "../../surface/layer";
 import {
@@ -11,16 +11,18 @@ import {
   InstanceAttributeSize,
   InstanceBlockIndex,
   InstanceIOValue,
+  IShaderInitialization,
   IUniform,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { DataProvider, shaderTemplate } from "../../util";
+import { shaderTemplate } from "../../util";
 import { EdgeInstance } from "./edge-instance";
 import { edgePicking } from "./edge-picking";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
 
-export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
+export interface IEdgeLayerProps<T extends EdgeInstance>
+  extends ILayerProps<T> {
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadphase;
   /** Any distance to the mouse from an edge that is less than this distance will be picked */
@@ -59,11 +61,14 @@ const edgeFS = require("./shader/edge-layer.fs");
  * This layer displays edges and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
+export class EdgeLayer<
+  T extends EdgeInstance,
+  U extends IEdgeLayerProps<T>
+> extends Layer<T, U> {
   // Set default props for the layer
-  static defaultProps: IEdgeLayerProps = {
+  static defaultProps: IEdgeLayerProps<EdgeInstance> = {
     broadphase: EdgeBroadphase.ALL,
-    data: new DataProvider<EdgeInstance>([]),
+    data: new InstanceProvider<EdgeInstance>(),
     key: "none",
     scaleType: EdgeScaleType.NONE,
     type: EdgeType.LINE
@@ -107,19 +112,19 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
       sign *= -1;
     }
 
-    const vs = shaderTemplate(
-      scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
-      {
+    const vs = shaderTemplate({
+      options: {
         // Retain the attributes injection
         attributes: "${attributes}",
         // Inject the proper interpolation method
         interpolation: pickVS[type]
       },
-      {
+      required: {
         name: "Edge Layer",
         values: ["interpolation"]
-      }
-    );
+      },
+      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS
+    });
 
     return {
       fs: edgeFS,

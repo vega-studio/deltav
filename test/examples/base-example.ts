@@ -2,8 +2,8 @@ import {
   BasicCameraController,
   ChartCamera,
   createLayer,
-  DataProvider,
   EventManager,
+  IInstanceProvider,
   Instance,
   LayerInitializer,
   LayerSurface,
@@ -36,8 +36,8 @@ export abstract class BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<Instance>
-  ): LayerInitializer {
+    provider: IInstanceProvider<Instance>
+  ): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS
     return createLayer(RingLayer, {
       data: provider,
@@ -46,5 +46,5 @@ export abstract class BaseExample {
     });
   }
 
-  abstract makeProvider(): DataProvider<Instance>;
+  abstract makeProvider(): IInstanceProvider<Instance>;
 }

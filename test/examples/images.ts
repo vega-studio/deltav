@@ -1,8 +1,8 @@
 import {
   createLayer,
-  DataProvider,
   ImageInstance,
   ImageLayer,
+  InstanceProvider,
   LayerInitializer,
   ScaleType
 } from "../../src";
@@ -16,7 +16,7 @@ export class Images extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: DataProvider<ImageInstance>
+    provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas,
@@ -26,8 +26,8 @@ export class Images extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<ImageInstance> {
-    const imageProvider = new DataProvider<ImageInstance>([]);
+  makeProvider(): InstanceProvider<ImageInstance> {
+    const imageProvider = new InstanceProvider<ImageInstance>();
 
     for (let i = 0; i < 25; ++i) {
       for (let k = 0; k < 25; ++k) {
@@ -44,7 +44,7 @@ export class Images extends BaseExample {
         image.x = i * image.width;
         image.y = k * image.height;
 
-        imageProvider.instances.push(image);
+        imageProvider.add(image);
       }
     }
 

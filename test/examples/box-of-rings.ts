@@ -1,7 +1,7 @@
 import {
   ChartCamera,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   LayerInitializer,
   RingInstance,
   RingLayer
@@ -19,7 +19,7 @@ export class BoxOfRings extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<RingInstance>
+    provider: InstanceProvider<RingInstance>
   ): LayerInitializer {
     return createLayer(RingLayer, {
       data: provider,
@@ -29,16 +29,21 @@ export class BoxOfRings extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<RingInstance> {
-    const ringProvider = new DataProvider<RingInstance>([]);
+  makeProvider(): InstanceProvider<RingInstance> {
+    const ringProvider = new InstanceProvider<RingInstance>();
+    const rings: RingInstance[] = [];
 
     setInterval(() => {
-      if (ringProvider.instances.length) {
-        ringProvider.instances.pop();
+      if (rings.length) {
+        const ring = rings.pop();
+
+        if (ring) {
+          ringProvider.remove(ring);
+        }
       } else {
         for (let i = 0; i < 25; ++i) {
           for (let k = 0; k < 25; ++k) {
-            ringProvider.instances.push(
+            const ring = ringProvider.add(
               new RingInstance({
                 color: [Math.random(), Math.random(), Math.random(), 1.0],
                 id: `ring_${i}_${k}`,
@@ -48,6 +53,8 @@ export class BoxOfRings extends BaseExample {
                 y: k * 20
               })
             );
+
+            rings.push(ring);
           }
         }
       }

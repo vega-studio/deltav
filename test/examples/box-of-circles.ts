@@ -6,8 +6,9 @@ import {
   CircleInstance,
   CircleLayer,
   createLayer,
-  DataProvider,
   EventManager,
+  IInstanceProvider,
+  InstanceProvider,
   LayerInitializer,
   LayerSurface,
   Vec,
@@ -137,7 +138,7 @@ export class BoxOfCircles extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<CircleInstance>
+    provider: IInstanceProvider<CircleInstance>
   ): LayerInitializer {
     this.animationControl = {
       center: AutoEasingMethod.easeBackOut(1000, 500),
@@ -206,8 +207,8 @@ export class BoxOfCircles extends BaseExample {
     await this.surface.commit(this.surface.frameMetrics.currentTime);
   }
 
-  makeProvider(): DataProvider<CircleInstance> {
-    const circleProvider = new DataProvider<CircleInstance>([]);
+  makeProvider(): IInstanceProvider<CircleInstance> {
+    const circleProvider = new InstanceProvider<CircleInstance>();
     const circles: CircleInstance[] = [];
     const boxSide = 100;
 
@@ -221,8 +222,8 @@ export class BoxOfCircles extends BaseExample {
           y: k * 4
         });
 
-        circleProvider.instances.push(circle);
         circles.push(circle);
+        circleProvider.add(circle);
       }
     }
 

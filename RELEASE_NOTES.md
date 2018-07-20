@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.10.0
+
+* `(ADDED)` Color picking is an option for pick type by setting picking to PickType.SINGLE
+* `(ADDED)` You can now inherit layer's that are properly designed for extension. This allows you to inject additional attributes, uniforms, and shader code into an existing layer's system. This does have some limitations in not allowing overriding or removal of properties. All base layers have been updated to be inheritable.
+* `(FIXED)` MobX is removed, more than doubling performance for committing changes to instances.
+
 ## 1.9.4
 
 * `(FIXED)` network-bubble-chart #146. Rapid reloading of the chart will no longer cause an error to occur.

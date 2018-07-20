@@ -21,11 +21,30 @@ export interface IShaderTemplateRequirements {
   values: string[];
 }
 
+export interface IShaderTemplateOptions {
+  /** Callback for 'required' errors being emitted */
+  onError?(msg: string): void;
+  /** Callback that allows overrides for token replacement. Provides the token found and the suggested replacement for it */
+  onToken?(token: string, replace: string): string;
+  /** This is a key value pair the template uses to match tokens found to replacement values */
+  options: { [key: string]: string };
+  /** This is used to indicate which tokens are required both within the shader AND within the 'options' */
+  required?: IShaderTemplateRequirements;
+  /** THis is the shader written with templating information */
+  shader: string;
+}
+
+/**
+ * This is a method that aids in making shaders a bit more dynamic with simple string replacement based on tokens written
+ * into the shader. Tokens in the shader will appear as ${token} and will either be ignored by this method and thus removed
+ * or will be replaced with a provided value.
+ *
+ * This method will give feedback on the replacements taking place and simplify the process of detecting errors within the process.
+ */
 export function shaderTemplate(
-  shader: string,
-  options: { [key: string]: string },
-  required?: IShaderTemplateRequirements
+  templateOptions: IShaderTemplateOptions
 ): IShaderTemplateResults {
+  const { shader, options, required, onError, onToken } = templateOptions;
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
   const notFound = new Map<string, number>();
@@ -34,15 +53,21 @@ export function shaderTemplate(
   const shaderResults = shader.replace(
     /\$\{(\w+)\}/g,
     (_x: string, match: string) => {
+      let replace = "";
       shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
 
       if (match in options) {
         matched.set(match, (matched.get(match) || 0) + 1);
-        return options[match];
+        replace = options[match];
+      } else {
+        noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
       }
 
-      noValueProvided.set(match, (noValueProvided.get(match) || 0) + 1);
-      return "";
+      if (onToken) {
+        replace = onToken(match, replace);
+      }
+
+      return replace;
     }
   );
 
@@ -65,24 +90,23 @@ export function shaderTemplate(
     // This will ensure that BOTH the parameter input AND the shader provided the required options.
     required.values.forEach(require => {
       if (results.unresolvedProvidedOptions.get(require)) {
-        console.error(
-          `${required.name}: Could not resolve all the required inputs. Input:`,
-          require
-        );
+        const msg = `${
+          required.name
+        }: Could not resolve all the required inputs. Input: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       } else if (results.unresolvedShaderOptions.get(require)) {
-        console.error(
-          `${
-            required.name
-          }: A required option was not provided in the options parameter. Option:`,
-          require
-        );
+        const msg = `${
+          required.name
+        }: A required option was not provided in the options parameter. Option: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       } else if (!results.resolvedShaderOptions.get(require)) {
-        console.error(
-          `${
-            required.name
-          }: A required option was not provided in the options parameter. Option:`,
-          require
-        );
+        const msg = `${
+          required.name
+        }: A required option was not provided in the options parameter. Option: ${require}`;
+        if (onError) onError(msg);
+        else console.error(msg);
       }
     });
   }

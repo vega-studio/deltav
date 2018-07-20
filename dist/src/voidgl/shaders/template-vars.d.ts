@@ -4,6 +4,8 @@ export declare const templateVars: {
     blocksPerInstance: string;
     easingMethod: string;
     easingMethods: string;
+    extend: string;
+    extendHeader: string;
     instanceBlockCount: string;
     instanceDataBinaryTree: string;
     instanceDataRetrieval: string;
@@ -11,6 +13,7 @@ export declare const templateVars: {
     instanceFragments: string;
     instanceUniformDeclarations: string;
     layerUniforms: string;
+    picking: string;
     projectionMethods: string;
     shader: string;
     shaderInput: string;

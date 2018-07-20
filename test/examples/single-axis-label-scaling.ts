@@ -2,7 +2,7 @@ import {
   AnchorType,
   ChartCamera,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
@@ -38,7 +38,7 @@ export class SingleAxisLabelScaling extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: DataProvider<LabelInstance>
+    provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
@@ -48,12 +48,12 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<LabelInstance> {
-    const provider = new DataProvider<LabelInstance>([]);
+  makeProvider(): InstanceProvider<LabelInstance> {
+    const provider = new InstanceProvider<LabelInstance>();
 
     let count = 1;
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -96,9 +96,9 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     // Left Middle left
-    provider.instances.push(label);
+    provider.add(label);
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -120,7 +120,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    provider.instances.push(
+    provider.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -166,7 +166,7 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -189,7 +189,7 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -212,7 +212,7 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     label = new LabelInstance({
       anchor: {
@@ -235,7 +235,7 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     label.x += label.width;
-    provider.instances.push(label);
+    provider.add(label);
 
     return provider;
   }

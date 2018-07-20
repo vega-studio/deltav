@@ -1,6 +1,6 @@
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResource } from "../../surface/texture";
-import { IInstanceOptions, Instance } from "../../util/instance";
 import { Anchor, ScaleType } from "../types";
 export interface IImageInstanceOptions extends IInstanceOptions {
     anchor?: Anchor;

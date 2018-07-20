@@ -1,9 +1,9 @@
 import * as Three from "three";
+import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
 import { IPoint } from "./primitives/point";
-import { ChartCamera, Vec } from "./util";
+import { ChartCamera, Vec, Vec2 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import { Instance } from "./util/instance";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
@@ -370,6 +370,8 @@ export enum PickType {
  * This represents the settings and objects used to facilitate picking in a layer.
  */
 export interface IPickingMetrics {
+  /** This is the current pick mode that is active during the draw pass of the layer */
+  currentPickMode: PickType;
   /** This is the picking style to be used */
   type: PickType;
 }
@@ -392,9 +394,49 @@ export interface IQuadTreePickingMetrics<T extends Instance>
  * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
  * a single instance underneath the mouse.
  */
-export interface ISinglePickingMetrics extends IPickingMetrics {
-  // TODO
+export interface ISinglePickingMetrics<T extends Instance>
+  extends IPickingMetrics {
+  /** Set the enum for the type */
   type: PickType.SINGLE;
+  /**
+   * This is a lookup of the instance by it's UID which is all that is needed to decode a color to an instance
+   * The color UINT8 components composited into a single UINT32 IS the UID of the instance
+   */
+  uidToInstance: Map<number, T>;
+}
+
+/**
+ * This is the picking settings and objects to facilitate PickType.NONE where no information
+ * is retrieved for mouse interactions.
+ */
+export interface INonePickingMetrics extends IPickingMetrics {
+  // Single Picking does not require any special helper information
+  type: PickType.NONE;
+}
+
+export interface IColorPickingData {
+  /** The mouse target position where the data is rendered */
+  mouse: Vec2;
+  /** The color data loaded for last picking rendering */
+  colorData: Uint8Array;
+  /** The height of the data array */
+  dataHeight: number;
+  /** The width of the data array */
+  dataWidth: number;
+  /** The nearest found color */
+  nearestColor: number;
+  /** All colors in the data */
+  allColors: number[];
+}
+
+/**
+ * Diff types that an instance can go through. Used to help the system consume the diff
+ * and apply it to the GL framework.
+ */
+export enum InstanceDiffType {
+  CHANGE = 0,
+  INSERT = 1,
+  REMOVE = 2
 }
 
 /**
@@ -418,3 +460,35 @@ export interface IEasingProps {
   startTime: number;
   duration: number;
 }
+
+/**
+ * This is the Shader IO information a layer will provide.
+ */
+export interface IShaderInputs<T extends Instance> {
+  /** These are very frequently changing attributes and are uniform across all vertices in the model */
+  instanceAttributes?: (IInstanceAttribute<T> | null)[];
+  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
+  vertexAttributes?: (IVertexAttribute | null)[];
+  /** Specify how many vertices there are per instance */
+  vertexCount: number;
+  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
+  uniforms?: (IUniform | null)[];
+}
+
+/**
+ * This is the initialization of the shader.
+ */
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
+
+export interface IShaderExtension {
+  header?: string;
+  body?: string;
+}
+
+export type IShaderIOExtension<T extends Instance> = Partial<
+  IShaderInputs<T>
+> & {
+  vs?: IShaderExtension;
+  fs?: IShaderExtension;
+};

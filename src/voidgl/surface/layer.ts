@@ -1,52 +1,34 @@
 import * as Three from "three";
+import { Instance } from "../instance-provider/instance";
+import { InstanceDiff } from "../instance-provider/instance-provider";
 import {
   IInstanceAttribute,
   IMaterialOptions,
+  INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
   IQuadTreePickingMetrics,
-  IShaders,
+  IShaderInitialization,
   ISinglePickingMetrics,
   IUniform,
   IUniformInternal,
-  IVertexAttribute,
   IVertexAttributeInternal,
   PickType,
   ShaderInjectionTarget,
   UniformIOValue,
   UniformSize
 } from "../types";
-import {
-  BoundsAccessor,
-  DataProvider,
-  DiffType,
-  TrackedQuadTree
-} from "../util";
+import { BoundsAccessor, TrackedQuadTree } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { Instance } from "../util/instance";
 import { InstanceUniformManager } from "../util/instance-uniform-manager";
 import { DiffLookup, InstanceDiffManager } from "./instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { LayerSurface } from "./layer-surface";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { View } from "./view";
-
-export interface IShaderInputs<T extends Instance> {
-  /** These are very frequently changing attributes and are uniform across all vertices in the model */
-  instanceAttributes?: (IInstanceAttribute<T> | null)[];
-  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
-  vertexAttributes?: (IVertexAttribute | null)[];
-  /** Specify how many vertices there are per instance */
-  vertexCount: number;
-  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
-  uniforms?: (IUniform | null)[];
-}
-
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
-  IShaders;
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
@@ -56,11 +38,21 @@ export interface IModelType {
 }
 
 /**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+  /** A list of changes to instances */
+  changeList: InstanceDiff<T>[];
+  /** Resolves the changes as consumed */
+  resolve(): void;
+}
+
+/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
-  data: DataProvider<T>;
+  data: IInstanceProvider<T>;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -136,7 +128,10 @@ export class Layer<
   /** This is the mesh for the Threejs setup */
   model: Three.Object3D;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics;
+  picking:
+    | IQuadTreePickingMetrics<T>
+    | ISinglePickingMetrics<T>
+    | INonePickingMetrics;
   /** Properties handed to the Layer during a LayerSurface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
@@ -171,6 +166,7 @@ export class Layer<
       const pickingMethods = this.getInstancePickingMethods();
 
       this.picking = {
+        currentPickMode: PickType.NONE,
         hitTest: pickingMethods.hitTest,
         quadTree: new TrackedQuadTree<T>(
           0,
@@ -180,6 +176,17 @@ export class Layer<
           pickingMethods.boundsAccessor
         ),
         type: PickType.ALL
+      };
+    } else if (picking === PickType.SINGLE) {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.SINGLE,
+        uidToInstance: new Map<number, T>()
+      };
+    } else {
+      this.picking = {
+        currentPickMode: PickType.NONE,
+        type: PickType.NONE
       };
     }
 
@@ -220,6 +227,8 @@ export class Layer<
       uniforms = this.uniformManager.getUniforms(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
       diffProcessor[change[1]](diffManager, instance, uniforms);
+      // Clear the instance changes recorded
+      instance.changes = {};
     }
 
     // Indicate the diffs are consumed
@@ -329,7 +338,7 @@ export class Layer<
     };
   }
 
-  willUpdateInstances(_changes: [T, DiffType]) {
+  willUpdateInstances(_changes: InstanceDiff<T>[]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }

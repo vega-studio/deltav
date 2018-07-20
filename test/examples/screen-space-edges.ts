@@ -2,12 +2,12 @@ import * as anime from "animejs";
 import {
   ChartCamera,
   createLayer,
-  DataProvider,
   EdgeBroadphase,
   EdgeInstance,
   EdgeLayer,
   EdgeScaleType,
   EdgeType,
+  InstanceProvider,
   IPickInfo,
   LayerInitializer,
   PickType,
@@ -82,7 +82,7 @@ export class ScreenSpaceEdges extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<EdgeInstance>
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       broadphase: EdgeBroadphase.PASS_X,
@@ -98,8 +98,8 @@ export class ScreenSpaceEdges extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<EdgeInstance> {
-    const edgeProvider = new DataProvider<EdgeInstance>([]);
+  makeProvider(): InstanceProvider<EdgeInstance> {
+    const edgeProvider = new InstanceProvider<EdgeInstance>();
 
     let edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
@@ -112,7 +112,7 @@ export class ScreenSpaceEdges extends BaseExample {
       widthStart: 10
     });
 
-    edgeProvider.instances.push(edge);
+    edgeProvider.add(edge);
 
     edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
@@ -125,7 +125,7 @@ export class ScreenSpaceEdges extends BaseExample {
       widthStart: 10
     });
 
-    edgeProvider.instances.push(edge);
+    edgeProvider.add(edge);
 
     edge = new EdgeInstance({
       colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
@@ -138,7 +138,7 @@ export class ScreenSpaceEdges extends BaseExample {
       widthStart: 10
     });
 
-    edgeProvider.instances.push(edge);
+    edgeProvider.add(edge);
 
     return edgeProvider;
   }

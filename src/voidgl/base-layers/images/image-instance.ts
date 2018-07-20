@@ -1,7 +1,7 @@
-import { computed, observable } from "mobx";
+import { observable } from "../../instance-provider";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResource, ImageRasterizer } from "../../surface/texture";
-import { IInstanceOptions, Instance } from "../../util/instance";
 import { Anchor, AnchorType, ScaleType } from "../types";
 
 const { max } = Math;
@@ -268,7 +268,6 @@ export class ImageInstance extends Instance implements Image {
     }
   }
 
-  @computed
   get anchor() {
     return this._anchor;
   }

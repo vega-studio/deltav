@@ -3,7 +3,7 @@ import {
   AnchorType,
   ChartCamera,
   createLayer,
-  DataProvider,
+  InstanceProvider,
   IPickInfo,
   LayerInitializer,
   PickType,
@@ -83,7 +83,7 @@ export class MouseInteractionRectangle extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: DataProvider<RectangleInstance>
+    provider: InstanceProvider<RectangleInstance>
   ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
@@ -97,8 +97,8 @@ export class MouseInteractionRectangle extends BaseExample {
     });
   }
 
-  makeProvider(): DataProvider<RectangleInstance> {
-    const rectangleProvider = new DataProvider<RectangleInstance>([]);
+  makeProvider(): InstanceProvider<RectangleInstance> {
+    const rectangleProvider = new InstanceProvider<RectangleInstance>();
 
     for (let i = 0; i < 40; ++i) {
       for (let k = 0; k < 30; ++k) {
@@ -116,7 +116,7 @@ export class MouseInteractionRectangle extends BaseExample {
           y: k * 10
         });
 
-        rectangleProvider.instances.push(rectangle);
+        rectangleProvider.add(rectangle);
       }
     }
 

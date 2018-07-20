@@ -1,5 +1,5 @@
-import { computed, observable } from "mobx";
-import { IInstanceOptions, Instance } from "../../util/instance";
+import { observable } from "../../instance-provider";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Anchor, AnchorType, ScaleType } from "../types";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
@@ -130,7 +130,6 @@ export class RectangleInstance extends Instance {
     options.anchor && this.setAnchor(options.anchor);
   }
 
-  @computed
   get anchor() {
     return this._anchor;
   }

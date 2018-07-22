@@ -4,8 +4,8 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-import * as Three from 'three';
-import { Instance } from '../../instance-provider/instance';
+import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
@@ -13,6 +13,7 @@ import {
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  IShaderInitialization,
   IUniform,
   IUniformInternal,
   IValueInstanceAttribute,
@@ -21,12 +22,12 @@ import {
   PickType,
   ShaderInjectionTarget,
   UniformSize,
-  VertexAttributeSize,
-} from '../../types';
-import { uid, Vec } from '../../util';
-import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
-import { ILayerProps, IShaderInitialization, Layer } from '../layer';
-import { getLayerBufferType, LayerBufferType } from './layer-buffer-type';
+  VertexAttributeSize
+} from "../../types";
+import { uid, Vec } from "../../util";
+import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
+import { ILayerProps, Layer } from "../layer";
+import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
 
 const { abs } = Math;
 
@@ -37,7 +38,7 @@ const testStartVector: { [key: number]: Vec } = {
   [InstanceAttributeSize.ONE]: [1],
   [InstanceAttributeSize.TWO]: [1, 2],
   [InstanceAttributeSize.THREE]: [1, 2, 3],
-  [InstanceAttributeSize.FOUR]: [1, 2, 3, 4],
+  [InstanceAttributeSize.FOUR]: [1, 2, 3, 4]
 };
 
 /**
@@ -47,25 +48,25 @@ const testEndVector: { [key: number]: Vec } = {
   [InstanceAttributeSize.ONE]: [4],
   [InstanceAttributeSize.TWO]: [4, 3],
   [InstanceAttributeSize.THREE]: [4, 3, 2],
-  [InstanceAttributeSize.FOUR]: [4, 3, 2, 1],
+  [InstanceAttributeSize.FOUR]: [4, 3, 2, 1]
 };
 
 const emptyTexture = new Three.Texture();
 
 function isAtlasAttribute<T extends Instance>(
-  attr: any,
+  attr: any
 ): attr is IAtlasInstanceAttribute<T> {
   return Boolean(attr) && attr.atlas;
 }
 
 function isEasingAttribute<T extends Instance>(
-  attr: any,
+  attr: any
 ): attr is IEasingInstanceAttribute<T> {
   return Boolean(attr) && attr.easing && attr.size !== undefined;
 }
 
 function isInstanceAttribute<T extends Instance>(
-  attr: any,
+  attr: any
 ): attr is IInstanceAttribute<T> {
   return Boolean(attr);
 }
@@ -79,7 +80,7 @@ function isUniform(attr: any): attr is IUniform {
 }
 
 function toVertexAttributeInternal(
-  attribute: IVertexAttribute,
+  attribute: IVertexAttribute
 ): IVertexAttributeInternal {
   return Object.assign({}, attribute, { materialAttribute: null });
 }
@@ -95,7 +96,7 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
  */
 function findEmptyBlock(
   attributes: IInstanceAttribute<any>[],
-  seekingSize?: InstanceAttributeSize,
+  seekingSize?: InstanceAttributeSize
 ): [number, InstanceBlockIndex] {
   const usedBlocks: any[] = [];
   let maxBlock = 0;
@@ -151,7 +152,7 @@ function findEmptyBlock(
  */
 function sortNeedsUpdateFirstToTop<T extends Instance>(
   a: IInstanceAttribute<T>,
-  b: IInstanceAttribute<T>,
+  b: IInstanceAttribute<T>
 ) {
   if (a.atlas && !b.atlas) return -1;
   if (a.easing && !b.easing) return -1;
@@ -194,7 +195,7 @@ function generateAtlasResourceUniforms<
               injection === ShaderInjectionTarget.ALL,
             injections[1] ||
               injection === ShaderInjectionTarget.FRAGMENT ||
-              injection === ShaderInjectionTarget.ALL,
+              injection === ShaderInjectionTarget.ALL
           ]);
         } else {
           atlasInstanceAttributes.push(attribute);
@@ -202,11 +203,11 @@ function generateAtlasResourceUniforms<
             injection === ShaderInjectionTarget.VERTEX ||
               injection === ShaderInjectionTarget.ALL,
             injection === ShaderInjectionTarget.FRAGMENT ||
-              injection === ShaderInjectionTarget.ALL,
+              injection === ShaderInjectionTarget.ALL
           ]);
         }
       }
-    },
+    }
   );
 
   // Make uniforms for all of the unique atlas requests.
@@ -215,7 +216,7 @@ function generateAtlasResourceUniforms<
 
     if (instanceAttribute.atlas) {
       const injections = requestedAtlasInjections.get(
-        instanceAttribute.atlas.name,
+        instanceAttribute.atlas.name
       );
 
       if (injections) {
@@ -233,7 +234,7 @@ function generateAtlasResourceUniforms<
       size: UniformSize.ATLAS,
       update: () =>
         layer.resource.getAtlasTexture(instanceAttribute.atlas.key) ||
-        emptyTexture,
+        emptyTexture
     };
   });
 }
@@ -244,7 +245,7 @@ function generateAtlasResourceUniforms<
  */
 function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
   layer: Layer<T, U>,
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ) {
   const easingAttributes: IEasingInstanceAttribute<T>[] = [];
 
@@ -280,7 +281,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
         duration,
         end,
         start: end,
-        startTime: currentTime,
+        startTime: currentTime
       };
 
       // Previous position time value
@@ -315,7 +316,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       easingValues.start = easing(
         easingValues.start,
         easingValues.end,
-        timeValue,
+        timeValue
       );
       // Set the current time as the start time of our animation
       easingValues.startTime = currentTime + delay;
@@ -338,7 +339,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       name: `_${name}_start`,
       parentAttribute: attribute,
       size,
-      update: o => easingValues.start,
+      update: _o => easingValues.start
     };
 
     attribute.childAttributes.push(startAttr);
@@ -352,7 +353,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       name: `_${name}_start_time`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.startTime],
+      update: _o => [easingValues.startTime]
     };
 
     attribute.childAttributes.push(startTimeAttr);
@@ -366,7 +367,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       name: `_${name}_duration`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
-      update: o => [easingValues.duration],
+      update: _o => [easingValues.duration]
     };
 
     attribute.childAttributes.push(durationAttr);
@@ -375,18 +376,18 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
 }
 
 function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(
-  layer: Layer<T, U>,
+  layer: Layer<T, U>
 ): IUniform[] {
   if (layer.picking.type === PickType.SINGLE) {
     return [
       {
-        name: 'pickingActive',
+        name: "pickingActive",
         shaderInjection: ShaderInjectionTarget.ALL,
         size: UniformSize.ONE,
         update: () => [
-          layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0,
-        ],
-      },
+          layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0
+        ]
+      }
     ];
   }
 
@@ -398,20 +399,20 @@ function generatePickingAttributes<
   U extends ILayerProps<T>
 >(
   layer: Layer<T, U>,
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ): IInstanceAttribute<T>[] {
   if (layer.picking.type === PickType.SINGLE) {
     // Find a compltely empty block within all instance attributes provided and injected
     const emptyFillBlock = findEmptyBlock(
       instanceAttributes,
-      InstanceAttributeSize.FOUR,
+      InstanceAttributeSize.FOUR
     );
 
     return [
       {
         block: emptyFillBlock[0],
         blockIndex: emptyFillBlock[1],
-        name: '_pickingColor',
+        name: "_pickingColor",
         size: InstanceAttributeSize.FOUR,
         update: o => {
           // We start from white and move down so the colors are more visible
@@ -423,10 +424,10 @@ function generatePickingAttributes<
             (color >> 16) / 255.0,
             ((color & 0x00ff00) >> 8) / 255.0,
             (color & 0x0000ff) / 255.0,
-            1,
+            1
           ];
-        },
-      },
+        }
+      }
     ];
   }
 
@@ -434,55 +435,55 @@ function generatePickingAttributes<
 }
 
 function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
-  layer: Layer<T, U>,
+  layer: Layer<T, U>
 ): IUniform[] {
   return [
     // This injects the projection matrix from the view camera
     {
-      name: 'projection',
+      name: "projection",
       size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.baseCamera.projectionMatrix.elements,
+      update: () => layer.view.viewCamera.baseCamera.projectionMatrix.elements
     },
     // This injects the model view matrix from the view camera
     {
-      name: 'modelView',
+      name: "modelView",
       size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.baseCamera.matrix.elements,
+      update: () => layer.view.viewCamera.baseCamera.matrix.elements
     },
     // This injects the camera offset uniforms that need to be present for projecting in a more
     // Chart centric style
     {
-      name: 'cameraOffset',
+      name: "cameraOffset",
       size: UniformSize.THREE,
-      update: () => layer.view.camera.offset,
+      update: () => layer.view.camera.offset
     },
     // This injects the camera scaling uniforms that need to be present for projecting in a more
     // Chart centric style
     {
-      name: 'cameraScale',
+      name: "cameraScale",
       size: UniformSize.THREE,
-      update: () => layer.view.camera.scale,
+      update: () => layer.view.camera.scale
     },
     // This injects the camera scaling uniforms that need to be present for projecting in a more
     // Chart centric style
     {
-      name: 'viewSize',
+      name: "viewSize",
       size: UniformSize.TWO,
-      update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height],
+      update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height]
     },
     // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
     // Things like gl_PointSize will need this metric if not working in clip space
     {
-      name: 'pixelRatio',
+      name: "pixelRatio",
       size: UniformSize.ONE,
-      update: () => [layer.view.pixelRatio],
+      update: () => [layer.view.pixelRatio]
     },
     // This will be the current frame's current time which is updated in the layer's surface draw call
     {
-      name: 'currentTime',
+      name: "currentTime",
       size: UniformSize.ONE,
-      update: () => [layer.surface.frameMetrics.currentTime],
-    },
+      update: () => [layer.surface.frameMetrics.currentTime]
+    }
   ];
 }
 
@@ -491,11 +492,11 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
  */
 function generateBaseInstanceAttributes<T extends Instance>(
   layer: Layer<T, any>,
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ): IInstanceAttribute<T>[] {
   const fillBlock = findEmptyBlock(
     instanceAttributes,
-    InstanceAttributeSize.ONE,
+    InstanceAttributeSize.ONE
   );
 
   // This is injected so the system can control when an instance should not be rendered.
@@ -503,9 +504,9 @@ function generateBaseInstanceAttributes<T extends Instance>(
   const activeAttribute: IInstanceAttribute<T> = {
     block: fillBlock[0],
     blockIndex: fillBlock[1],
-    name: '_active',
+    name: "_active",
     size: InstanceAttributeSize.ONE,
-    update: o => [o.active ? 1 : 0],
+    update: o => [o.active ? 1 : 0]
   };
 
   // Set the active attribute to the layer for quick reference
@@ -518,7 +519,7 @@ function generateBaseInstanceAttributes<T extends Instance>(
  * This creates the base vertex attributes that are ALWAYS present
  */
 function generateBaseVertexAttributes<T extends Instance>(
-  layer: Layer<T, any>,
+  layer: Layer<T, any>
 ): IVertexAttribute[] {
   // Only the uniform buffering strategy requires instance information in it's vertex attributes
   if (layer.bufferType === LayerBufferType.UNIFORM) {
@@ -526,11 +527,11 @@ function generateBaseVertexAttributes<T extends Instance>(
       // We add an inherent instance attribute to our vertices so they can determine the instancing
       // Data to retrieve.
       {
-        name: 'instance',
+        name: "instance",
         size: VertexAttributeSize.ONE,
         // We no op this as our geomtry generating routine will establish the values needed here
-        update: () => [0],
-      },
+        update: () => [0]
+      }
     ];
   }
 
@@ -552,44 +553,44 @@ function compareVec(a: Vec, b: Vec) {
 function validateInstanceAttributes<T extends Instance>(
   layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[],
-  vertexAttributes: IVertexAttribute[],
+  vertexAttributes: IVertexAttribute[]
 ) {
   instanceAttributes.forEach(attribute => {
     if (attribute.name === undefined) {
       console.warn(
-        'All instance attributes MUST have a name on Layer:',
-        layer.id,
+        "All instance attributes MUST have a name on Layer:",
+        layer.id
       );
     }
 
     if (
       instanceAttributes.find(
-        attr => attr !== attribute && attr.name === attribute.name,
+        attr => attr !== attribute && attr.name === attribute.name
       )
     ) {
       console.warn(
-        'An instance attribute can not have the same name used more than once:',
-        attribute.name,
+        "An instance attribute can not have the same name used more than once:",
+        attribute.name
       );
     }
 
     if (vertexAttributes.find(attr => attr.name === attribute.name)) {
       console.warn(
-        'An instance attribute and a vertex attribute in a layer can not share the same name:',
-        attribute.name,
+        "An instance attribute and a vertex attribute in a layer can not share the same name:",
+        attribute.name
       );
     }
 
     if (attribute.easing && attribute.atlas) {
       console.warn(
-        'An instance attribute can not have both easing and atlas properties. Undefined behavior will occur.',
+        "An instance attribute can not have both easing and atlas properties. Undefined behavior will occur."
       );
       console.warn(attribute);
     }
 
     if (!attribute.atlas) {
       if (attribute.size === undefined) {
-        console.warn('An instance attribute requires the size to be defined.');
+        console.warn("An instance attribute requires the size to be defined.");
         console.warn(attribute);
       }
     }
@@ -603,41 +604,47 @@ function validateInstanceAttributes<T extends Instance>(
         let test = attribute.easing.cpu(testStart, testEnd, 0);
         if (!compareVec(test, testStart)) {
           console.warn(
-            'Auto Easing Validation Failed: using a time of 0 does not produce the start value',
+            "Auto Easing Validation Failed: using a time of 0 does not produce the start value"
           );
-          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
           console.warn(attribute);
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 1);
-        if (!validationRules.ignoreEndValueCheck && !compareVec(test, testEnd)) {
+        if (
+          !validationRules.ignoreEndValueCheck &&
+          !compareVec(test, testEnd)
+        ) {
           console.warn(
-            'Auto Easing Validation Failed: using a time of 1 does not produce the end value',
+            "Auto Easing Validation Failed: using a time of 1 does not produce the end value"
           );
-          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
           console.warn(attribute);
         }
 
         test = attribute.easing.cpu(testStart, testEnd, -1);
         if (!compareVec(test, testStart)) {
           console.warn(
-            'Auto Easing Validation Failed: using a time of -1 does not produce the start value',
+            "Auto Easing Validation Failed: using a time of -1 does not produce the start value"
           );
-          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
           console.warn(attribute);
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 2);
-        if (!validationRules.ignoreOverTimeCheck && !compareVec(test, testEnd)) {
+        if (
+          !validationRules.ignoreOverTimeCheck &&
+          !compareVec(test, testEnd)
+        ) {
           console.warn(
-            'Auto Easing Validation Failed: using a time of 2 does not produce the end value',
+            "Auto Easing Validation Failed: using a time of 2 does not produce the end value"
           );
-          console.warn('Start:', testStart, 'End:', testEnd, 'Result:', test);
+          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
           console.warn(attribute);
         }
       } else {
         console.warn(
-          'An Instance Attribute with easing MUST have a size declared',
+          "An Instance Attribute with easing MUST have a size declared"
         );
       }
     }
@@ -651,15 +658,15 @@ function validateInstanceAttributes<T extends Instance>(
 export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   gl: WebGLRenderingContext,
   layer: Layer<T, U>,
-  shaderIO: IShaderInitialization<T>,
+  shaderIO: IShaderInitialization<T>
 ) {
   // All of the instance attributes with nulls filtered out
   const instanceAttributes = (shaderIO.instanceAttributes || []).filter(
-    isInstanceAttribute,
+    isInstanceAttribute
   );
   // All of the vertex attributes with nulls filtered out
   const vertexAttributes = (shaderIO.vertexAttributes || []).filter(
-    isVertexAttribute,
+    isVertexAttribute
   );
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
@@ -669,7 +676,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
   let addedUniforms: IUniform[] = uniforms.concat(
-    generateAtlasResourceUniforms(layer, instanceAttributes),
+    generateAtlasResourceUniforms(layer, instanceAttributes)
   );
   // These are the uniforms that should be present in the shader for basic operation
   addedUniforms = addedUniforms.concat(generateBaseUniforms(layer));
@@ -679,17 +686,17 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   let addedInstanceAttributes: IInstanceAttribute<
     T
   >[] = instanceAttributes.concat(
-    generateBaseInstanceAttributes(layer, instanceAttributes),
+    generateBaseInstanceAttributes(layer, instanceAttributes)
   );
   // Add in attributes for picking
   addedInstanceAttributes = addedInstanceAttributes.concat(
-    generatePickingAttributes(layer, addedInstanceAttributes),
+    generatePickingAttributes(layer, addedInstanceAttributes)
   );
 
   const allUniforms = addedUniforms.map(toUniformInternal);
 
   const allInstanceAttributes = addedInstanceAttributes.sort(
-    sortNeedsUpdateFirstToTop,
+    sortNeedsUpdateFirstToTop
   );
 
   // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
@@ -697,7 +704,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
 
   // Create the base vertex attributes that must be present
   const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes(
-    layer,
+    layer
   );
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
@@ -708,6 +715,6 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   return {
     instanceAttributes: allInstanceAttributes,
     uniforms: allUniforms,
-    vertexAttributes: allVertexAttributes,
+    vertexAttributes: allVertexAttributes
   };
 }

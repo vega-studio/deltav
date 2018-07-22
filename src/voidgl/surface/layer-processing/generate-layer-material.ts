@@ -1,15 +1,15 @@
-import * as Three from 'three';
-import { IInstancingUniform, IUniform, UniformSize } from '../../types';
-import { Instance } from '../../util';
-import { ILayerProps, Layer } from '../layer';
+import * as Three from "three";
+import { IInstancingUniform, IUniform, UniformSize } from "../../types";
+import { Instance } from "../../util";
+import { ILayerProps, Layer } from "../layer";
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: string } = {
-  [UniformSize.ONE]: 'f',
-  [UniformSize.TWO]: 'v2',
-  [UniformSize.THREE]: 'v3',
-  [UniformSize.FOUR]: 'v4',
-  [UniformSize.MATRIX3]: 'Matrix3fv',
-  [UniformSize.MATRIX4]: 'Matrix4fv',
+  [UniformSize.ONE]: "f",
+  [UniformSize.TWO]: "v2",
+  [UniformSize.THREE]: "v3",
+  [UniformSize.FOUR]: "v4",
+  [UniformSize.MATRIX3]: "Matrix3fv",
+  [UniformSize.MATRIX4]: "Matrix4fv"
 };
 
 const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
@@ -18,13 +18,13 @@ const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
   [UniformSize.THREE]: [0, 0, 0],
   [UniformSize.FOUR]: [0, 0, 0, 0],
   [UniformSize.MATRIX3]: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [UniformSize.MATRIX4]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [UniformSize.MATRIX4]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 };
 
 function toMaterialUniform(uniform: IUniform) {
   return {
     type: UNIFORM_SIZE_TO_MATERIAL_TYPE[uniform.size],
-    value: DEFAULT_UNIFORM_VALUE[uniform.size],
+    value: DEFAULT_UNIFORM_VALUE[uniform.size]
   };
 }
 
@@ -36,7 +36,7 @@ export function generateLayerMaterial<
   vs: string,
   fs: string,
   layerUniforms: IUniform[],
-  instancingUniforms: IInstancingUniform[],
+  instancingUniforms: IInstancingUniform[]
 ): Three.RawShaderMaterial {
   // We now need to establish the material for the layer
   const materialParams: Three.ShaderMaterialParameters = layer.getMaterialOptions();
@@ -58,7 +58,7 @@ export function generateLayerMaterial<
     const generatedUniform = instancingUniforms[i];
     materialParams.uniforms[generatedUniform.name] = {
       type: generatedUniform.type,
-      value: generatedUniform.value,
+      value: generatedUniform.value
     };
   }
 

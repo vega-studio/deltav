@@ -1,10 +1,10 @@
-import { Instance, InstanceDiff } from '../../../instance-provider';
+import { Instance, InstanceDiff } from "../../../instance-provider";
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup,
-} from '../buffer-manager-base';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
+  IBufferLocationGroup
+} from "../buffer-manager-base";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 
 /**
  * Base requirements for handling diffs from a layer.
@@ -15,7 +15,7 @@ export abstract class BaseDiffProcessor<T extends Instance> {
 
   constructor(
     layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>
   ) {
     this.layer = layer;
     this.bufferManager = bufferManager;
@@ -26,21 +26,21 @@ export abstract class BaseDiffProcessor<T extends Instance> {
     manager: this,
     instance: T,
     propIds: number[],
-    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
   /** Perform a 'change' operation for the instance's buffer */
   abstract changeInstance(
     manager: this,
     instance: T,
     propIds: number[],
-    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
   /** Perform a 'remove' operation for the instance's buffer */
   abstract removeInstance(
     manager: this,
     instance: T,
     propIds: number[],
-    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+    bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
 
   /**

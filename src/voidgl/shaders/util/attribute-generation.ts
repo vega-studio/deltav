@@ -3,8 +3,9 @@
  * and inject the proper attributes into the shaders so the implementor of the shader does
  * not worry about syncing attribute and uniform names between the JS
  */
-import { ILayerProps, Layer } from '../../surface/layer';
-import { LayerBufferType } from '../../surface/layer-processing/layer-buffer-type';
+import { Instance } from "../../instance-provider/instance";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -13,28 +14,27 @@ import {
   IUniform,
   IVertexAttribute,
   PickType,
-  ShaderInjectionTarget,
-} from '../../types';
-import { Instance } from '../../util';
+  ShaderInjectionTarget
+} from "../../types";
 import {
   IShaderTemplateRequirements,
-  shaderTemplate,
-} from '../../util/shader-templating';
-import { WebGLStat } from '../../util/webgl-stat';
-import { templateVars } from '../fragments/template-vars';
-import { instanceAttributeShaderName } from './instance-attribute-shader-name';
+  shaderTemplate
+} from "../../util/shader-templating";
+import { WebGLStat } from "../../util/webgl-stat";
+import { templateVars } from "../template-vars";
+import { instanceAttributeShaderName } from "./instance-attribute-shader-name";
 import {
   makeInstanceDestructuringArray,
   makeInstanceRetrievalArray,
-  makeUniformArrayDeclaration,
-} from './uniform-instance-block-array';
+  makeUniformArrayDeclaration
+} from "./uniform-instance-block-array";
 
 // These are all of the necessary fragments that will comprise our shader that is generated
-const vertexShaderComposition = require('../fragments/vertex-shader-composition.vs');
-const fragmentShaderComposition = require('../fragments/fragment-shader-composition.fs');
-const instanceDestructuringArray = require('../fragments/instance-destructuring-array.vs');
-const shaderInput = require('../fragments/shader-input.vs');
-const projectionMethods = require('../fragments/projection-methods.vs');
+const vertexShaderComposition = require("../fragments/vertex-shader-composition.vs");
+const fragmentShaderComposition = require("../fragments/fragment-shader-composition.fs");
+const instanceDestructuringArray = require("../fragments/instance-destructuring-array.vs");
+const shaderInput = require("../fragments/shader-input.vs");
+const projectionMethods = require("../fragments/projection-methods.vs");
 
 // Constants
 
@@ -56,13 +56,13 @@ const MAX_USE_PER_BLOCK = 4;
 
 /** Converts a size to a shader type */
 const sizeToType: { [key: number]: string } = {
-  1: 'float',
-  2: 'vec2',
-  3: 'vec3',
-  4: 'vec4',
-  9: 'mat3',
-  16: 'mat4',
-  99: 'sampler2D',
+  1: "float",
+  2: "vec2",
+  3: "vec3",
+  4: "vec4",
+  9: "mat3",
+  16: "mat4",
+  99: "sampler2D"
 };
 
 function calculateUniformBlockUseage(uniforms: IUniform[]) {
@@ -95,13 +95,13 @@ export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
   shaders: IShaders,
   vertexAttributes: IVertexAttribute[],
   instanceAttributes: IInstanceAttribute<any>[],
-  uniforms: IUniform[],
+  uniforms: IUniform[]
 ): IInjectionDetails {
   const shaderInputMetrics = generateShaderInputs(
     layer,
     vertexAttributes,
     instanceAttributes,
-    uniforms,
+    uniforms
   );
 
   let templateOptions: { [key: string]: string } = {
@@ -113,17 +113,17 @@ export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
       shaders,
       instanceAttributes,
       shaderInputMetrics.metrics.maxInstancesPerBuffer,
-      shaderInputMetrics.metrics.blocksPerInstance,
-    ),
+      shaderInputMetrics.metrics.blocksPerInstance
+    )
   };
 
   let required = {
-    name: 'vertex shader composition',
+    name: "vertex shader composition",
     values: [
       templateVars.projectionMethods,
       templateVars.shaderInput,
-      templateVars.shader,
-    ],
+      templateVars.shader
+    ]
   };
 
   // If our layer is using color picking, then we must require the shader to include the ${picking} annotation
@@ -132,24 +132,24 @@ export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
     required.values.push(templateVars.picking);
   }
 
-  const vertexShaderResults = shaderTemplate(
-    vertexShaderComposition,
-    templateOptions,
+  const vertexShaderResults = shaderTemplate({
+    options: templateOptions,
     required,
-  );
+    shader: vertexShaderComposition
+  });
 
   templateOptions = {
     [templateVars.layerUniforms]: generateUniforms(
       uniforms,
-      ShaderInjectionTarget.FRAGMENT,
+      ShaderInjectionTarget.FRAGMENT
     ),
     [templateVars.shader]: generateFragmentShader(shaders),
-    [templateVars.picking]: generateFragmentPickingMethod(layer),
+    [templateVars.picking]: generateFragmentPickingMethod(layer)
   };
 
   required = {
-    name: 'fragment shader composition',
-    values: [templateVars.layerUniforms, templateVars.shader],
+    name: "fragment shader composition",
+    values: [templateVars.layerUniforms, templateVars.shader]
   };
 
   // If our layer is using color picking, then we must require the shader to include the ${picking} annotation
@@ -158,17 +158,17 @@ export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
     required.values.push(templateVars.picking);
   }
 
-  const fragmentShaderResults = shaderTemplate(
-    fragmentShaderComposition,
-    templateOptions,
+  const fragmentShaderResults = shaderTemplate({
+    options: templateOptions,
     required,
-  );
+    shader: fragmentShaderComposition
+  });
 
   return {
     fs: fragmentShaderResults.shader,
     materialUniforms: shaderInputMetrics.materialUniforms,
     maxInstancesPerBuffer: shaderInputMetrics.metrics.maxInstancesPerBuffer,
-    vs: vertexShaderResults.shader,
+    vs: vertexShaderResults.shader
   };
 }
 
@@ -178,11 +178,15 @@ export function injectFragments<T extends Instance, U extends ILayerProps<T>>(
 function generateProjectionMethods() {
   const templateOptions: { [key: string]: string } = {};
   const required: IShaderTemplateRequirements = {
-    name: 'projection methods',
-    values: [],
+    name: "projection methods",
+    values: []
   };
 
-  const results = shaderTemplate(projectionMethods, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: projectionMethods
+  });
 
   return results.shader;
 }
@@ -194,7 +198,7 @@ function generateShaderInputs<T extends Instance, U extends ILayerProps<T>>(
   layer: Layer<T, U>,
   vertexAttributes: IVertexAttribute[],
   instanceAttributes: IInstanceAttribute<T>[],
-  uniforms: IUniform[],
+  uniforms: IUniform[]
 ) {
   const templateOptions: { [key: string]: string } = {};
 
@@ -205,53 +209,57 @@ function generateShaderInputs<T extends Instance, U extends ILayerProps<T>>(
       materialUniforms: [],
       metrics: {
         blocksPerInstance: 0,
-        maxInstancesPerBuffer: 0,
-      },
+        maxInstancesPerBuffer: 0
+      }
     };
 
-    templateOptions.instanceDataRetrieval = '';
-    templateOptions.instanceUniformDeclarations = '';
+    templateOptions.instanceDataRetrieval = "";
+    templateOptions.instanceUniformDeclarations = "";
   } else {
     instancingInfo = generateInstanceDataLookupOptions(
       layer,
       templateOptions,
       instanceAttributes,
-      uniforms,
+      uniforms
     );
   }
 
   const additionalOptions: { [key: string]: string } = {
     [templateVars.layerUniforms]: generateUniforms(
       uniforms,
-      ShaderInjectionTarget.VERTEX,
+      ShaderInjectionTarget.VERTEX
     ),
     [templateVars.vertexAttributes]: generateVertexAttributes(
       layer,
       vertexAttributes,
-      instanceAttributes,
+      instanceAttributes
     ),
-    [templateVars.easingMethods]: generateEasingMethods(instanceAttributes),
+    [templateVars.easingMethods]: generateEasingMethods(instanceAttributes)
   };
 
   Object.assign(templateOptions, additionalOptions);
 
   const required: IShaderTemplateRequirements = {
-    name: 'shader input',
+    name: "shader input",
     values: [
       templateVars.instanceDataRetrieval,
       templateVars.instanceUniformDeclarations,
       templateVars.layerUniforms,
       templateVars.vertexAttributes,
-      templateVars.easingMethods,
-    ],
+      templateVars.easingMethods
+    ]
   };
 
-  const results = shaderTemplate(shaderInput, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaderInput
+  });
 
   return {
     fragment: results.shader,
     materialUniforms: instancingInfo.materialUniforms,
-    metrics: instancingInfo.metrics,
+    metrics: instancingInfo.metrics
   };
 }
 
@@ -259,10 +267,10 @@ function generateShaderInputs<T extends Instance, U extends ILayerProps<T>>(
  * Generates the easing methods for the Shader specified by each attribute
  */
 function generateEasingMethods<T extends Instance>(
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ) {
   const methods = new Map<string, Map<InstanceAttributeSize, string>>();
-  let out = '';
+  let out = "";
 
   // First dedupe the methods needed by their method name
   instanceAttributes.forEach(attribute => {
@@ -279,8 +287,8 @@ function generateEasingMethods<T extends Instance>(
   });
 
   const required: IShaderTemplateRequirements = {
-    name: 'Easing Method Generation',
-    values: [templateVars.easingMethod],
+    name: "Easing Method Generation",
+    values: [templateVars.easingMethod]
   };
 
   // Now generate the full blown method for each element. We create overloaded methods for
@@ -292,14 +300,18 @@ function generateEasingMethods<T extends Instance>(
 
         const templateOptions: { [key: string]: string } = {
           [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
-          [templateVars.T]: `${sizeType}`,
+          [templateVars.T]: `${sizeType}`
         };
 
-        const results = shaderTemplate(method, templateOptions, required);
+        const results = shaderTemplate({
+          options: templateOptions,
+          required,
+          shader: method
+        });
 
         out += `${results.shader}\n`;
       });
-    },
+    }
   );
 
   return out;
@@ -310,9 +322,9 @@ function generateEasingMethods<T extends Instance>(
  */
 function generateUniforms(
   uniforms: IUniform[],
-  injectionType: ShaderInjectionTarget,
+  injectionType: ShaderInjectionTarget
 ) {
-  let out = '';
+  let out = "";
   const injection = injectionType || ShaderInjectionTarget.VERTEX;
 
   uniforms.forEach(uniform => {
@@ -323,8 +335,8 @@ function generateUniforms(
       uniform.shaderInjection === injection ||
       uniform.shaderInjection === ShaderInjectionTarget.ALL
     ) {
-      out += `uniform ${uniform.qualifier || ''}${
-        uniform.qualifier ? ' ' : ''
+      out += `uniform ${uniform.qualifier || ""}${
+        uniform.qualifier ? " " : ""
       }${sizeToType[uniform.size]} ${uniform.name};\n`;
     }
   });
@@ -340,23 +352,27 @@ function generateVertexShader<T extends Instance, U extends ILayerProps<T>>(
   layer: Layer<T, U>,
   shaders: IShaders,
   instanceAttributes: IInstanceAttribute<T>[],
-  maxInstancesPerBuffer: number,
-  blocksPerInstance: number,
+  _maxInstancesPerBuffer: number,
+  blocksPerInstance: number
 ) {
   const templateOptions: { [key: string]: string } = {
     [templateVars.attributes]: makeInstanceAttributeReferences(
       layer,
       instanceAttributes,
-      blocksPerInstance,
-    ),
+      blocksPerInstance
+    )
   };
 
   const required = {
-    name: 'layer vertex shader',
-    values: [templateVars.attributes],
+    name: "layer vertex shader",
+    values: [templateVars.attributes]
   };
 
-  const results = shaderTemplate(shaders.vs, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaders.vs
+  });
 
   return results.shader;
 }
@@ -366,10 +382,10 @@ function generateVertexShader<T extends Instance, U extends ILayerProps<T>>(
  */
 function generateVertexPicking(layer: Layer<any, any>) {
   if (layer.picking.type === PickType.SINGLE) {
-    return require('../fragments/color-picking-vertex-header.vs');
+    return require("../fragments/color-picking-vertex-header.vs");
   }
 
-  return '';
+  return "";
 }
 
 /**
@@ -377,21 +393,25 @@ function generateVertexPicking(layer: Layer<any, any>) {
  */
 function generateFragmentPickingMethod(layer: Layer<any, any>) {
   if (layer.picking.type === PickType.SINGLE) {
-    return require('../fragments/color-picking-method.fs');
+    return require("../fragments/color-picking-method.fs");
   }
 
-  return require('../fragments/color-picking-disabled.fs');
+  return require("../fragments/color-picking-disabled.fs");
 }
 
 function generateFragmentShader(shaders: IShaders) {
   const templateOptions: { [key: string]: string } = {};
 
   const required: IShaderTemplateRequirements = {
-    name: 'layer fragment shader',
-    values: [],
+    name: "layer fragment shader",
+    values: []
   };
 
-  const results = shaderTemplate(shaders.fs, templateOptions, required);
+  const results = shaderTemplate({
+    options: templateOptions,
+    required,
+    shader: shaders.fs
+  });
 
   return results.shader;
 }
@@ -406,7 +426,7 @@ function makeInstanceAttributeReferences<
 >(
   layer: Layer<T, U>,
   instanceAttributes: IInstanceAttribute<T>[],
-  blocksPerInstance: number,
+  blocksPerInstance: number
 ) {
   const templateOptions: { [key: string]: string } = {};
   templateOptions[templateVars.blocksPerInstance] = `${blocksPerInstance}`;
@@ -415,13 +435,13 @@ function makeInstanceAttributeReferences<
   ] = makeInstanceDestructuringArray(
     layer,
     instanceAttributes,
-    blocksPerInstance,
+    blocksPerInstance
   );
   templateOptions[templateVars.picking] = makePickingDestructuring(layer);
 
   const required = {
-    name: 'instance attributes fragment',
-    values: [templateVars.instanceDestructuring],
+    name: "instance attributes fragment",
+    values: [templateVars.instanceDestructuring]
   };
 
   // If picking is enabled, then we require the picking set up that we inject into the destructuring portion
@@ -430,11 +450,11 @@ function makeInstanceAttributeReferences<
     required.values.push(templateVars.picking);
   }
 
-  const results = shaderTemplate(
-    instanceDestructuringArray,
-    templateOptions,
+  const results = shaderTemplate({
+    options: templateOptions,
     required,
-  );
+    shader: instanceDestructuringArray
+  });
 
   return results.shader;
 }
@@ -444,10 +464,10 @@ function makeInstanceAttributeReferences<
  */
 function makePickingDestructuring(layer: Layer<any, any>) {
   if (layer.picking.type === PickType.SINGLE) {
-    return require('../fragments/color-picking-assignment.vs');
+    return require("../fragments/color-picking-assignment.vs");
   }
 
-  return '';
+  return "";
 }
 
 /**
@@ -456,22 +476,22 @@ function makePickingDestructuring(layer: Layer<any, any>) {
 function generateVertexAttributes(
   layer: Layer<any, any>,
   vertexAttributes: IVertexAttribute[],
-  instanceAttributes: IInstanceAttribute<any>[],
+  instanceAttributes: IInstanceAttribute<any>[]
 ) {
-  let out = '';
+  let out = "";
 
   vertexAttributes.forEach(attribute => {
     out += `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-      ''}${(attribute.qualifier && ' ') || ''} ${attribute.name};\n`;
+      ""}${(attribute.qualifier && " ") || ""} ${attribute.name};\n`;
   });
 
   if (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
-    out += '\n// Instance Attributes\n';
+    out += "\n// Instance Attributes\n";
     instanceAttributes.forEach(attribute => {
       out += `attribute ${
         sizeToType[attribute.size || 1]
-      } ${attribute.qualifier || ''}${(attribute.qualifier && ' ') ||
-        ''} ${instanceAttributeShaderName(attribute)};\n`;
+      } ${attribute.qualifier || ""}${(attribute.qualifier && " ") ||
+        ""} ${instanceAttributeShaderName(attribute)};\n`;
     });
   }
 
@@ -488,7 +508,7 @@ function generateInstanceDataLookupOptions<
   layer: Layer<T, U>,
   templateOptions: { [key: string]: string },
   instanceAttributes: IInstanceAttribute<T>[],
-  uniforms: IUniform[],
+  uniforms: IUniform[]
 ) {
   // This is how many uniform blocks the current device can utilize in a shader
   const maxUniforms = WebGLStat.MAX_VERTEX_UNIFORMS;
@@ -526,7 +546,7 @@ function generateInstanceDataLookupOptions<
         `\nSource Layer: ${layer.id}`,
         `\nMax Allowed per block ${MAX_USE_PER_BLOCK}`,
         `\nAttribute: ${attribute.name} Block Specified: ${attribute.block}`,
-        `\nTotal blocks used with this attribute: ${newUseage}`,
+        `\nTotal blocks used with this attribute: ${newUseage}`
       );
       return;
     }
@@ -548,7 +568,7 @@ function generateInstanceDataLookupOptions<
         `\nAttribute: ${attribute.name} Block Index: ${
           attribute.blockIndex
         } Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex +
-          (attribute.size || 1)}`,
+          (attribute.size || 1)}`
       );
 
       return;
@@ -566,7 +586,7 @@ function generateInstanceDataLookupOptions<
           `\nAttribute: ${attribute.name} Block Index: ${
             attribute.blockIndex
           } Size: ${attribute.size} Block Index + Size: ${attribute.blockIndex +
-            (attribute.size || 1)}`,
+            (attribute.size || 1)}`
         );
 
         return;
@@ -580,7 +600,7 @@ function generateInstanceDataLookupOptions<
   const blocksPerInstance = trueBlockIndex + 1;
   // This determines how many instances our allowed uniforms will allow for a single draw call
   const maxInstancesPerBuffer = Math.floor(
-    instanceUniformBlockCount / blocksPerInstance,
+    instanceUniformBlockCount / blocksPerInstance
   );
 
   // Generate the decision tree and uniform declarations
@@ -588,15 +608,15 @@ function generateInstanceDataLookupOptions<
     templateOptions,
     maxInstancesPerBuffer,
     blocksPerInstance,
-    sortedInstanceAttributes,
+    sortedInstanceAttributes
   );
 
   return {
     materialUniforms: instancingMetrics.materialUniforms,
     metrics: {
       blocksPerInstance,
-      maxInstancesPerBuffer,
-    },
+      maxInstancesPerBuffer
+    }
   };
 }
 
@@ -608,7 +628,7 @@ function makeUniformInstanceDataOptions<T extends Instance>(
   templateOptions: { [key: string]: string },
   maxInstancesPerBuffer: number,
   blocksPerInstance: number,
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ) {
   // Make a list containing all instance indicies that will be utilized and will be split
   // Out into the decision tree
@@ -622,7 +642,7 @@ function makeUniformInstanceDataOptions<T extends Instance>(
   // To apply to our three material.
   const uniformMetrics = makeInstanceUniformDeclaration(
     maxInstancesPerBuffer * blocksPerInstance,
-    instanceAttributes,
+    instanceAttributes
   );
 
   templateOptions[templateVars.instanceUniformDeclarations] =
@@ -635,7 +655,7 @@ function makeUniformInstanceDataOptions<T extends Instance>(
   ] = makeInstanceRetrievalArray(blocksPerInstance);
 
   return {
-    materialUniforms: uniformMetrics.materialUniforms,
+    materialUniforms: uniformMetrics.materialUniforms
   };
 }
 
@@ -644,9 +664,9 @@ function makeUniformInstanceDataOptions<T extends Instance>(
  */
 function makeInstanceUniformDeclaration<T extends Instance>(
   instanceUniformBlockCount: number,
-  attributes: IInstanceAttribute<T>[],
+  attributes: IInstanceAttribute<T>[]
 ) {
-  let out = '';
+  let out = "";
   const blockQualifierDedup = new Map<number, Map<string, boolean>>();
   let maxBlock = 0;
 
@@ -668,7 +688,7 @@ function makeInstanceUniformDeclaration<T extends Instance>(
 
   blockQualifierDedup.forEach((qualifierList, block) => {
     const allQualifiers = Array.from(qualifierList.keys());
-    blockQualifiers.set(block, `${allQualifiers.join(' ')} `);
+    blockQualifiers.set(block, `${allQualifiers.join(" ")} `);
   });
 
   // Generate our uniform declarations
@@ -684,6 +704,6 @@ function makeInstanceUniformDeclaration<T extends Instance>(
 
   return {
     fragment: out,
-    materialUniforms: declaration.materialUniforms,
+    materialUniforms: declaration.materialUniforms
   };
 }

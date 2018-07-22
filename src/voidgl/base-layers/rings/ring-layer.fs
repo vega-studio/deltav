@@ -21,19 +21,24 @@ varying float borderSize;
  */
 varying vec2 pointCoord;
 
+varying float scale;
+
 float circle(vec2 coord, float radius){
   vec2 dist = coord - vec2(0.5);
 
   return 1.0 - smoothstep(
     radius - (radius * edgeSharpness),
-    radius + (radius * 0.01),
+    radius,
     dot(dist, dist) * 4.0
   );
+
 }
+
+${extendHeader}
 
 void main() {
   float outer_step_factor = circle(pointCoord, 1.0);
-  float inner_step_factor = circle(pointCoord, 1.0 - borderSize);
+  float inner_step_factor = circle(pointCoord, 1.0 - borderSize * scale);
 
   setColor(mix(
     mix(                        // Select the outer color outside of the inner radius
@@ -44,4 +49,6 @@ void main() {
     vec4(0.0, 0.0, 0.0, 0.0),                 // Select inner color inside inner
     inner_step_factor
   ));
+
+  ${extend}
 }

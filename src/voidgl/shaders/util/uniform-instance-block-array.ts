@@ -1,32 +1,32 @@
-import * as Three from 'three';
-import { Layer } from '../../surface/layer';
-import { LayerBufferType } from '../../surface/layer-processing/layer-buffer-type';
+import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
+import { Layer } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   IInstancingUniform,
-  InstanceAttributeSize,
-} from '../../types';
-import { Instance } from '../../util';
-import { AutoEasingLoopStyle } from '../../util/auto-easing-method';
-import { shaderTemplate } from '../../util/shader-templating';
-import { templateVars } from '../fragments/template-vars';
-import { makeInstanceUniformNameArray } from './make-instance-uniform-name';
+  InstanceAttributeSize
+} from "../../types";
+import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
+import { shaderTemplate } from "../../util/shader-templating";
+import { templateVars } from "../template-vars";
+import { makeInstanceUniformNameArray } from "./make-instance-uniform-name";
 
-const instanceRetrievalArrayFragment = require('../fragments/instance-retrieval-array.vs');
+const instanceRetrievalArrayFragment = require("../fragments/instance-retrieval-array.vs");
 
 /** Defines the elements for destructuring out of a vector */
-const VECTOR_COMPONENTS = ['x', 'y', 'z', 'w'];
+const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */
 const sizeToType: { [key: number]: string } = {
-  1: 'float',
-  2: 'vec2',
-  3: 'vec3',
-  4: 'vec4',
-  9: 'mat3',
-  16: 'mat4',
+  1: "float",
+  2: "vec2",
+  3: "vec3",
+  4: "vec4",
+  9: "mat3",
+  16: "mat4",
   /** This is the special case for instance attributes that want an atlas resource */
-  99: 'vec4',
+  99: "vec4"
 };
 
 /**
@@ -36,7 +36,7 @@ const sizeToType: { [key: number]: string } = {
  */
 function orderByPriority(
   a: IInstanceAttribute<any>,
-  b: IInstanceAttribute<any>,
+  b: IInstanceAttribute<any>
 ) {
   if (a.easing && !b.easing) return 1;
   return -1;
@@ -48,12 +48,12 @@ export function makeUniformArrayDeclaration(totalBlocks: number) {
     materialUniforms: [
       {
         name: makeInstanceUniformNameArray(),
-        type: '4fv',
+        type: "4fv",
         value: new Array(totalBlocks)
           .fill(0)
-          .map(() => new Three.Vector4(0, 0, 0, 0)),
-      },
-    ] as IInstancingUniform[],
+          .map(() => new Three.Vector4(0, 0, 0, 0))
+      }
+    ] as IInstancingUniform[]
   };
 }
 
@@ -62,15 +62,15 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
   templateOptions[templateVars.instanceBlockCount] = `${blocksPerInstance}`;
 
   const required = {
-    name: 'makeInstanceRetrievalArray',
-    values: [templateVars.instanceBlockCount],
+    name: "makeInstanceRetrievalArray",
+    values: [templateVars.instanceBlockCount]
   };
 
-  const results = shaderTemplate(
-    instanceRetrievalArrayFragment,
-    templateOptions,
+  const results = shaderTemplate({
+    options: templateOptions,
     required,
-  );
+    shader: instanceRetrievalArrayFragment
+  });
 
   return results.shader;
 }
@@ -78,9 +78,9 @@ export function makeInstanceRetrievalArray(blocksPerInstance: number) {
 export function makeInstanceDestructuringArray<T extends Instance>(
   layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[],
-  blocksPerInstance: number,
+  blocksPerInstance: number
 ) {
-  let out = '';
+  let out = "";
 
   const orderedAttributes = instanceAttributes.slice(0).sort(orderByPriority);
 
@@ -94,9 +94,9 @@ export function makeInstanceDestructuringArray<T extends Instance>(
 }
 
 function instanceAttributeDestructuring<T extends Instance>(
-  orderedAttributes: IInstanceAttribute<T>[],
+  orderedAttributes: IInstanceAttribute<T>[]
 ) {
-  let out = '';
+  let out = "";
 
   orderedAttributes.forEach(attribute => {
     // If this is the source easing attribute, we must add it in as an eased method along with a calculation for the
@@ -118,9 +118,9 @@ function instanceAttributeDestructuring<T extends Instance>(
 
 function uniformInstancingDestructuring<T extends Instance>(
   orderedAttributes: IInstanceAttribute<T>[],
-  blocksPerInstance: number,
+  blocksPerInstance: number
 ) {
-  let out = 'int instanceIndex = int(instance);';
+  let out = "const int instanceIndex = int(instance);";
 
   // Generate the blocks
   for (let i = 0; i < blocksPerInstance; ++i) {
@@ -142,7 +142,7 @@ function uniformInstancingDestructuring<T extends Instance>(
           attribute.name
         }_end = block${block}.${makeVectorSwizzle(
           attribute.blockIndex || 0,
-          attribute.size || 1,
+          attribute.size || 1
         )};\n`;
       }
 
@@ -176,7 +176,7 @@ function uniformInstancingDestructuring<T extends Instance>(
         attribute.name
       } = block${block}.${makeVectorSwizzle(
         attribute.blockIndex || 0,
-        attribute.size || 1,
+        attribute.size || 1
       )};\n`;
     }
   });
@@ -184,19 +184,19 @@ function uniformInstancingDestructuring<T extends Instance>(
   return out;
 }
 
-function makeAutoEasingTiming<T extends Instance>(attribute: IInstanceAttribute<T>) {
+function makeAutoEasingTiming<T extends Instance>(
+  attribute: IInstanceAttribute<T>
+) {
   if (!attribute.easing) {
     return;
   }
 
-  let out = '';
+  let out = "";
 
   switch (attribute.easing.loop) {
     // Continuous means letting the time go from 0 to infinity
     case AutoEasingLoopStyle.CONTINUOUS: {
-      out += `  float _${
-        attribute.name
-      }_time = (currentTime - _${
+      out += `  float _${attribute.name}_time = (currentTime - _${
         attribute.name
       }_start_time) / _${attribute.name}_duration;\n`;
       break;
@@ -204,9 +204,7 @@ function makeAutoEasingTiming<T extends Instance>(attribute: IInstanceAttribute<
 
     // Repeat means going from 0 to 1 then 0 to 1 etc etc
     case AutoEasingLoopStyle.REPEAT: {
-      out += `  float _${
-        attribute.name
-      }_time = clamp(fract((currentTime - _${
+      out += `  float _${attribute.name}_time = clamp(fract((currentTime - _${
         attribute.name
       }_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
       break;
@@ -243,5 +241,5 @@ function makeAutoEasingTiming<T extends Instance>(attribute: IInstanceAttribute<
 }
 
 function makeVectorSwizzle(start: number, size: number) {
-  return VECTOR_COMPONENTS.slice(start, start + size).join('');
+  return VECTOR_COMPONENTS.slice(start, start + size).join("");
 }

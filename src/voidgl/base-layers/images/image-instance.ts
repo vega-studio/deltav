@@ -1,8 +1,8 @@
-import { observable } from '../../instance-provider';
-import { IInstanceOptions, Instance } from '../../instance-provider/instance';
-import { Image } from '../../primitives/image';
-import { ImageAtlasResource, ImageRasterizer } from '../../surface/texture';
-import { Anchor, AnchorType, ScaleType } from '../types';
+import { observable } from "../../instance-provider";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Image } from "../../primitives/image";
+import { ImageAtlasResource, ImageRasterizer } from "../../surface/texture";
+import { Anchor, AnchorType, ScaleType } from "../types";
 
 const { max } = Math;
 
@@ -55,7 +55,7 @@ const rasterizationLookUp = new Map<
 const anchorCalculator: {
   [key: number]: (anchor: Anchor, image: ImageInstance) => void;
 } = {
-  [AnchorType.TopLeft]: (anchor: Anchor, image: ImageInstance) => {
+  [AnchorType.TopLeft]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -91,10 +91,10 @@ const anchorCalculator: {
     anchor.x = image.width + anchor.padding;
     anchor.y = image.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, image: ImageInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -199,7 +199,7 @@ export class ImageInstance extends Instance implements Image {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: IImageInstanceOptions) {
@@ -225,7 +225,7 @@ export class ImageInstance extends Instance implements Image {
     if (!rasterization) {
       rasterization = {
         references: 1,
-        resource: new ImageAtlasResource(this),
+        resource: new ImageAtlasResource(this)
       };
 
       // Ensure the sample scale is set. Defaults to 1.0
@@ -266,7 +266,7 @@ export class ImageInstance extends Instance implements Image {
       // If all references are cleared, then the rasterization needs to be eradicated
       if (this._rasterization.references === 0) {
         this._rasterization.resource;
-        console.warn('The destroy method still needs completion');
+        console.warn("The destroy method still needs completion");
       }
     }
   }
@@ -284,7 +284,7 @@ export class ImageInstance extends Instance implements Image {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

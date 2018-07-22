@@ -9,6 +9,8 @@ varying vec4 vertexColor;
 // Interpolation type injection
 ${interpolation}
 
+${extendHeader}
+
 void main() {
   ${attributes}
 
@@ -49,4 +51,6 @@ void main() {
 
   gl_Position = clipSpace(vec3(vertex, depth));
   gl_PointSize = 5.0;
+
+  ${extend}
 }

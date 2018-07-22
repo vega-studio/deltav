@@ -1,6 +1,6 @@
-import * as browser from 'bowser';
-import { Vector2 } from 'three';
-const debug = require('debug')('CommunicationsView:Mouse');
+import * as browser from "bowser";
+import { Vector2 } from "three";
+const debug = require("debug")("CommunicationsView:Mouse");
 
 /** Used to adjust the base whee delta for IE browsers */
 const IE_ADJUSTMENT = 1 / 30;
@@ -108,16 +108,16 @@ function normalizeIE12Wheel(e: MouseWheelEvent) {
 let normalizeWheel: (e: MouseWheelEvent) => Vector2;
 
 if (browser.firefox) {
-  debug('Using mouse wheel for firefox');
+  debug("Using mouse wheel for firefox");
   normalizeWheel = normalizeFirefoxWheel;
 } else if (browser.msie && +browser.version >= 11) {
-  debug('Using mouse wheel for IE 11');
+  debug("Using mouse wheel for IE 11");
   normalizeWheel = normalizeIE11Wheel;
 } else if (browser.msedge) {
-  debug('Using mouse wheel for MS EDGE');
+  debug("Using mouse wheel for MS EDGE");
   normalizeWheel = normalizeIE12Wheel;
 } else {
-  debug('Using mouse wheel for Chrome');
+  debug("Using mouse wheel for Chrome");
   normalizeWheel = normalizeChromeWheel;
 }
 
@@ -126,7 +126,7 @@ if (browser.firefox) {
  */
 function eventElementPosition(
   e: any,
-  relative?: HTMLElement,
+  relative?: HTMLElement
 ): { x: number; y: number } {
   let mouseX: number = 0,
     mouseY: number = 0,

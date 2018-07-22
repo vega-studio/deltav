@@ -1,5 +1,5 @@
-import { InstanceIOValue } from '../types';
-import { Vec, VecMath } from './vector';
+import { InstanceIOValue } from "../types";
+import { Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -16,7 +16,7 @@ export enum AutoEasingLoopStyle {
   /** Time will continuously go 0 -> 1 then 0 -> 1 then 0 -> 1 etc etc */
   REPEAT = 2,
   /** Time will continously go 0 -> 1 then 1 -> 0 then 0 -> 1 then 1 -> 0 etc etc */
-  REFLECT = 3,
+  REFLECT = 3
 }
 
 /**
@@ -53,7 +53,7 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
   validation?: {
     ignoreEndValueCheck?: boolean;
     ignoreOverTimeCheck?: boolean;
-  }
+  };
 }
 
 // GPU easing methods! Written here because it's cleaner to write `` style strings
@@ -208,15 +208,15 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static immediate<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
-      cpu: (start: T, end: T, t: number) => end,
+      cpu: (_start: T, end: T, _t: number) => end,
       delay,
       duration,
       gpu: immediateGPU,
       loop,
-      methodName: 'immediate',
+      methodName: "immediate"
     };
   }
 
@@ -226,7 +226,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static linear<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -238,7 +238,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: linearGPU,
       loop,
-      methodName: 'linear',
+      methodName: "linear"
     };
   }
 
@@ -248,7 +248,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInQuad<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -261,7 +261,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuadGPU,
       loop,
-      methodName: 'easeInQuad',
+      methodName: "easeInQuad"
     };
   }
 
@@ -271,7 +271,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeOutQuad<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -284,7 +284,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuadGPU,
       loop,
-      methodName: 'easeOutQuad',
+      methodName: "easeOutQuad"
     };
   }
 
@@ -294,7 +294,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInOutQuad<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -307,7 +307,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuadGPU,
       loop,
-      methodName: 'easeInOutQuad',
+      methodName: "easeInOutQuad"
     };
   }
 
@@ -317,7 +317,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInCubic<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -330,7 +330,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInCubicGPU,
       loop,
-      methodName: 'easeInCubic',
+      methodName: "easeInCubic"
     };
   }
 
@@ -340,7 +340,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeOutCubic<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -353,7 +353,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutCubicGPU,
       loop,
-      methodName: 'easeOutCubic',
+      methodName: "easeOutCubic"
     };
   }
 
@@ -363,7 +363,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInOutCubic<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -377,7 +377,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutCubicGPU,
       loop,
-      methodName: 'easeInOutCubic',
+      methodName: "easeInOutCubic"
     };
   }
 
@@ -387,7 +387,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInQuart<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -400,7 +400,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuartGPU,
       loop,
-      methodName: 'easeInQuart',
+      methodName: "easeInQuart"
     };
   }
 
@@ -410,7 +410,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeOutQuart<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -423,7 +423,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuartGPU,
       loop,
-      methodName: 'easeOutQuart',
+      methodName: "easeOutQuart"
     };
   }
 
@@ -433,7 +433,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInOutQuart<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -446,7 +446,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuartGPU,
       loop,
-      methodName: 'easeInOutQuart',
+      methodName: "easeInOutQuart"
     };
   }
 
@@ -456,7 +456,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInQuint<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -469,7 +469,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuintGPU,
       loop,
-      methodName: 'easeInQuint',
+      methodName: "easeInQuint"
     };
   }
 
@@ -479,7 +479,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeOutQuint<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -492,7 +492,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuintGPU,
       loop,
-      methodName: 'easeOutQuint',
+      methodName: "easeOutQuint"
     };
   }
 
@@ -502,7 +502,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeInOutQuint<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -516,7 +516,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuintGPU,
       loop,
-      methodName: 'easeInOutQuint',
+      methodName: "easeInOutQuint"
     };
   }
 
@@ -526,7 +526,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeOutElastic<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -540,7 +540,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutElasticGPU,
       loop,
-      methodName: 'easeOutElastic',
+      methodName: "easeOutElastic"
     };
   }
 
@@ -550,7 +550,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeBackIn<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -564,7 +564,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInGPU,
       loop,
-      methodName: 'easeBackIn',
+      methodName: "easeBackIn"
     };
   }
 
@@ -574,7 +574,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeBackOut<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -589,7 +589,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackOutGPU,
       loop,
-      methodName: 'easeBackOut',
+      methodName: "easeBackOut"
     };
   }
 
@@ -599,7 +599,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static easeBackInOut<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.NONE,
+    loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -619,7 +619,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInOutGPU,
       loop,
-      methodName: 'easeBackInOut',
+      methodName: "easeBackInOut"
     };
   }
 
@@ -632,7 +632,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   static continuousSinusoidal<T extends Vec>(
     duration: number,
     delay: number = 0,
-    loop = AutoEasingLoopStyle.CONTINUOUS,
+    loop = AutoEasingLoopStyle.CONTINUOUS
   ): IAutoEasingMethod<T> {
     return {
       cpu: (start: T, end: T, t: number) => {
@@ -646,40 +646,40 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: continuousSinusoidalGPU,
       loop,
-      methodName: 'repeatingSinusoidal',
+      methodName: "repeatingSinusoidal",
 
       // Since this is sinusoidial and operates off of a continuous time structure
       validation: {
         // When time = 1 our value will = start and NOT end
         ignoreEndValueCheck: true,
         // When the time is > 1 our value will not clamp to the value at 1.
-        ignoreOverTimeCheck: true,
-      },
+        ignoreOverTimeCheck: true
+      }
     };
   }
 
   /** The easing method for the cpu */
-  cpu: IAutoEasingMethod<T>['cpu'];
+  cpu: IAutoEasingMethod<T>["cpu"];
   /** Time before a delay  */
   delay: number = 0;
   /** The time in ms is takes to complete the animation */
   duration: number = 500;
   /** The easing method on the GPU */
-  gpu: IAutoEasingMethod<T>['gpu'];
+  gpu: IAutoEasingMethod<T>["gpu"];
   /** The looping style of the animation */
   loop = AutoEasingLoopStyle.NONE;
   /** Method name of the ease function on the gpu */
   methodName: string;
 
   constructor(
-    cpu: IAutoEasingMethod<T>['cpu'],
-    gpu: IAutoEasingMethod<T>['gpu'],
+    cpu: IAutoEasingMethod<T>["cpu"],
+    gpu: IAutoEasingMethod<T>["gpu"],
     duration?: number,
-    method?: string,
+    method?: string
   ) {
     this.cpu = cpu;
     this.gpu = gpu;
     this.duration = duration || 500;
-    this.methodName = method || 'easingMethod';
+    this.methodName = method || "easingMethod";
   }
 }

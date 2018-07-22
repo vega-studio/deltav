@@ -1,28 +1,28 @@
-import { Instance } from '../../instance-provider/instance';
+import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   INonePickingMetrics,
   IQuadTreePickingMetrics,
   ISinglePickingMetrics,
-  PickType,
-} from '../../types';
-import { LayerBufferType } from '../layer-processing/layer-buffer-type';
-import { AtlasResourceManager } from '../texture/atlas-resource-manager';
-import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
-import { IBufferLocationGroup } from './buffer-manager-base';
-import { BaseDiffProcessor } from './diff-processors/base-diff-processor';
-import { InstanceAttributeColorDiffProcessor } from './diff-processors/instance-attribute-color-diff-processor';
-import { InstanceAttributeDiffProcessor } from './diff-processors/instance-attribute-diff-processor';
-import { UniformColorDiffProcessor } from './diff-processors/uniform-color-diff-processor';
-import { UniformDiffProcessor } from './diff-processors/uniform-diff-processor';
-import { UniformQuadDiffProcessor } from './diff-processors/uniform-quad-diff-processor';
+  PickType
+} from "../../types";
+import { LayerBufferType } from "../layer-processing/layer-buffer-type";
+import { AtlasResourceManager } from "../texture/atlas-resource-manager";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { IBufferLocationGroup } from "./buffer-manager-base";
+import { BaseDiffProcessor } from "./diff-processors/base-diff-processor";
+import { InstanceAttributeColorDiffProcessor } from "./diff-processors/instance-attribute-color-diff-processor";
+import { InstanceAttributeDiffProcessor } from "./diff-processors/instance-attribute-diff-processor";
+import { UniformColorDiffProcessor } from "./diff-processors/uniform-color-diff-processor";
+import { UniformDiffProcessor } from "./diff-processors/uniform-diff-processor";
+import { UniformQuadDiffProcessor } from "./diff-processors/uniform-quad-diff-processor";
 
 /** Signature of a method that handles a diff */
 export type DiffHandler<T extends Instance> = (
   manager: BaseDiffProcessor<T>,
   instance: T,
   propIds: number[],
-  bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>,
+  bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
 ) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
 export type DiffLookup<T extends Instance> = DiffHandler<T>[];
@@ -61,7 +61,7 @@ export class InstanceDiffManager<T extends Instance> {
 
   constructor(
     layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>
   ) {
     this.layer = layer;
     this.bufferManager = bufferManager;
@@ -80,7 +80,7 @@ export class InstanceDiffManager<T extends Instance> {
         if (this.layer.picking.type === PickType.SINGLE) {
           this.processor = new InstanceAttributeColorDiffProcessor(
             this.layer,
-            this.bufferManager,
+            this.bufferManager
           );
         }
       }
@@ -88,7 +88,7 @@ export class InstanceDiffManager<T extends Instance> {
       if (!this.processor) {
         this.processor = new InstanceAttributeDiffProcessor(
           this.layer,
-          this.bufferManager,
+          this.bufferManager
         );
       }
     } else {
@@ -97,12 +97,12 @@ export class InstanceDiffManager<T extends Instance> {
         if (this.layer.picking.type === PickType.ALL) {
           this.processor = new UniformQuadDiffProcessor(
             this.layer,
-            this.bufferManager,
+            this.bufferManager
           );
         } else if (this.layer.picking.type === PickType.SINGLE) {
           this.processor = new UniformColorDiffProcessor(
             this.layer,
-            this.bufferManager,
+            this.bufferManager
           );
         }
       }
@@ -110,7 +110,7 @@ export class InstanceDiffManager<T extends Instance> {
       if (!this.processor) {
         this.processor = new UniformDiffProcessor(
           this.layer,
-          this.bufferManager,
+          this.bufferManager
         );
       }
     }
@@ -118,7 +118,7 @@ export class InstanceDiffManager<T extends Instance> {
     this.processing = [
       this.processor.changeInstance,
       this.processor.addInstance,
-      this.processor.removeInstance,
+      this.processor.removeInstance
     ];
 
     return this.processing;

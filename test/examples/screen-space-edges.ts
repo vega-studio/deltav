@@ -1,4 +1,4 @@
-import * as anime from 'animejs';
+import * as anime from "animejs";
 import {
   ChartCamera,
   createLayer,
@@ -11,9 +11,9 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-  ReferenceCamera,
-} from 'src';
-import { BaseExample } from './base-example';
+  ReferenceCamera
+} from "src";
+import { BaseExample } from "./base-example";
 
 /**
  * Test edges that are made with their curvature and line width declared in screen space
@@ -30,9 +30,9 @@ export class ScreenSpaceEdges extends BaseExample {
     anime({
       targets: info.instances,
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
-  }
+  };
 
   handleMouseMove = (info: IPickInfo<EdgeInstance>) => {
     if (info.instances.length <= 0) {
@@ -46,7 +46,7 @@ export class ScreenSpaceEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 10,
-        widthStart: 20,
+        widthStart: 20
       });
     }
 
@@ -56,12 +56,12 @@ export class ScreenSpaceEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 20,
-        widthStart: 10,
+        widthStart: 10
       });
     }
-  }
+  };
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(e: KeyboardEvent, _isDown: boolean) {
     this.shiftIsDown = e.shiftKey;
   }
 
@@ -72,8 +72,8 @@ export class ScreenSpaceEdges extends BaseExample {
       scaleFilter: (scale: [number, number, number]) => [
         this.shiftIsDown ? 1 : scale[0],
         this.shiftIsDown ? scale[1] : 1,
-        1,
-      ],
+        1
+      ]
     });
 
     return this.camera;
@@ -81,20 +81,20 @@ export class ScreenSpaceEdges extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: InstanceProvider<EdgeInstance>,
+    _atlas: string,
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       broadphase: EdgeBroadphase.PASS_X,
       data: provider,
-      key: 'screen-space-edges',
+      key: "screen-space-edges",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.ALL,
       scaleFactor: () => this.camera.scale[1],
       scaleType: EdgeScaleType.SCREEN_CURVE,
       scene: scene,
-      type: EdgeType.BEZIER2,
+      type: EdgeType.BEZIER2
     });
   }
 
@@ -109,7 +109,7 @@ export class ScreenSpaceEdges extends BaseExample {
       id: `edge-interaction-0`,
       start: [20, 20],
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
 
     edgeProvider.add(edge);
@@ -122,7 +122,7 @@ export class ScreenSpaceEdges extends BaseExample {
       id: `edge-interaction-1`,
       start: [20, 20],
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
 
     edgeProvider.add(edge);
@@ -135,7 +135,7 @@ export class ScreenSpaceEdges extends BaseExample {
       id: `edge-interaction-2`,
       start: [20, 20],
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
 
     edgeProvider.add(edge);

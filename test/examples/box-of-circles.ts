@@ -14,9 +14,9 @@ import {
   LayerInitializer,
   LayerSurface,
   Vec,
-  Vec2,
-} from 'src';
-import { BaseExample } from './base-example';
+  Vec2
+} from "src";
+import { BaseExample } from "./base-example";
 
 const { min, max, random } = Math;
 
@@ -28,14 +28,14 @@ function getColorIndicesForCoord(x: number, y: number, width: number) {
 function makeTextPositions(surface: LayerSurface, view: string) {
   const viewBounds = surface.getViewSize(view);
   if (!viewBounds) return [];
-  const canvas = document.createElement('canvas').getContext('2d');
+  const canvas = document.createElement("canvas").getContext("2d");
   if (!canvas) return [];
 
   let width = (canvas.canvas.width = viewBounds.width - 10);
   let height = (canvas.canvas.height = 80);
-  canvas.fillStyle = 'white';
-  canvas.font = '40px Consolas';
-  canvas.fillText('Vega Animation', 0, 40, viewBounds.width - 10);
+  canvas.fillStyle = "white";
+  canvas.font = "40px Consolas";
+  canvas.fillText("Vega Animation", 0, 40, viewBounds.width - 10);
 
   const pixels = canvas.getImageData(0, 0, width, height);
 
@@ -101,7 +101,7 @@ export class BoxOfCircles extends BaseExample {
     xy: Vec2[];
   };
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(e: KeyboardEvent, _isDown: boolean) {
     if (!this.originalRange) {
       this.originalRange = this.manager.getRange(this.scene);
     }
@@ -109,7 +109,7 @@ export class BoxOfCircles extends BaseExample {
     if (e.shiftKey) {
       this.manager.setRange(
         new Bounds({ x: 20, y: 20, width: 20, height: 20 }),
-        this.scene,
+        this.scene
       );
     } else {
       this.manager.setRange(this.originalRange, this.scene);
@@ -124,14 +124,14 @@ export class BoxOfCircles extends BaseExample {
 
   makeController(
     defaultCamera: ChartCamera,
-    testCamera: ChartCamera,
-    viewName: string,
+    _testCamera: ChartCamera,
+    viewName: string
   ): EventManager {
     this.scene = viewName;
 
     this.manager = new BasicCameraController({
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
 
     return this.manager;
@@ -139,13 +139,13 @@ export class BoxOfCircles extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: IInstanceProvider<CircleInstance>,
+    _atlas: string,
+    provider: IInstanceProvider<CircleInstance>
   ): LayerInitializer {
     this.animationControl = {
       center: AutoEasingMethod.easeBackOut(1000, 500),
       color: AutoEasingMethod.linear(500, 1500),
-      radius: AutoEasingMethod.linear(500, 1500),
+      radius: AutoEasingMethod.linear(500, 1500)
     };
 
     this.animationHelper = new AnimationHelper(this.surface);
@@ -153,9 +153,9 @@ export class BoxOfCircles extends BaseExample {
     return createLayer(CircleLayer, {
       animate: this.animationControl,
       data: provider,
-      key: 'box-of-circles',
+      key: "box-of-circles",
       scaleFactor: () => this.camera.scale[0],
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -179,7 +179,7 @@ export class BoxOfCircles extends BaseExample {
       while (toProcess.length > 0) {
         const circle = toProcess.splice(
           Math.floor(Math.random() * toProcess.length),
-          1,
+          1
         )[0];
         const index = i++ % bucketLength;
         const bucket = (circleBuckets[index] = circleBuckets[index] || []);
@@ -188,7 +188,7 @@ export class BoxOfCircles extends BaseExample {
 
       this.textCache = {
         buckets: circleBuckets,
-        xy,
+        xy
       };
     }
 
@@ -224,7 +224,7 @@ export class BoxOfCircles extends BaseExample {
           id: `circle${i * 100 + k}`,
           radius: 2,
           x: i * 4,
-          y: k * 4,
+          y: k * 4
         });
 
         circles.push(circle);

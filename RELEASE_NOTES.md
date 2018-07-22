@@ -1,5 +1,32 @@
 # Release Notes
 
+## 1.10.1
+
+* `(FIXED)` certain async operations caused an undefined scene to crop up and cause issues on FF
+
+## 1.10.0
+
+* `(ADDED)` Color picking is an option for pick type by setting picking to PickType.SINGLE
+* `(ADDED)` You can now inherit layer's that are properly designed for extension. This allows you to inject additional attributes, uniforms, and shader code into an existing layer's system. This does have some limitations in not allowing overriding or removal of properties. All base layers have been updated to be inheritable.
+* `(FIXED)` MobX is removed, more than doubling performance for committing changes to instances.
+
+## 1.9.4
+
+* `(FIXED)` network-bubble-chart #146. Rapid reloading of the chart will no longer cause an error to occur.
+
+## 1.9.3
+
+* `(FIXED)` Section title flattens section circle #135
+
+## 1.9.2
+
+* `(FIXED)` Release process will now produce the correct release file name
+
+## 1.9.1
+
+* `(FIXED)` autoUpdate of null error removed
+* `(FIXED)` Useless resource error removed that was caused from invalidated and no longer used resources finished loading.
+
 ## 1.9.0
 
 * `(ADDED)` maxScale for labels to allow for higher scales in BOUND_MAX scale mode

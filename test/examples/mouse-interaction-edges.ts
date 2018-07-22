@@ -1,4 +1,4 @@
-import * as anime from 'animejs';
+import * as anime from "animejs";
 import {
   createLayer,
   EdgeInstance,
@@ -7,9 +7,9 @@ import {
   InstanceProvider,
   IPickInfo,
   LayerInitializer,
-  PickType,
-} from 'src';
-import { BaseExample } from './base-example';
+  PickType
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class MouseInteractionEdges extends BaseExample {
   side = 0;
@@ -21,9 +21,9 @@ export class MouseInteractionEdges extends BaseExample {
     anime({
       targets: info.instances,
       widthEnd: 10,
-      widthStart: 10,
+      widthStart: 10
     });
-  }
+  };
 
   handleMouseMove = (info: IPickInfo<EdgeInstance>) => {
     if (info.instances.length <= 0) {
@@ -37,7 +37,7 @@ export class MouseInteractionEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 10,
-        widthStart: 20,
+        widthStart: 20
       });
     }
 
@@ -47,24 +47,24 @@ export class MouseInteractionEdges extends BaseExample {
       anime({
         targets: info.instances,
         widthEnd: 20,
-        widthStart: 10,
+        widthStart: 10
       });
     }
-  }
+  };
 
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: InstanceProvider<EdgeInstance>,
+    _atlas: string,
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'mouse-interaction-lines',
+      key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.SINGLE,
       scene: scene,
-      type: EdgeType.BEZIER2,
+      type: EdgeType.BEZIER2
     });
   }
 
@@ -81,7 +81,7 @@ export class MouseInteractionEdges extends BaseExample {
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
         widthEnd: 10,
-        widthStart: 10,
+        widthStart: 10
       });
 
       edgeProvider.add(edge);

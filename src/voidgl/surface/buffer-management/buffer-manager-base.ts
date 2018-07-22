@@ -1,15 +1,15 @@
-import { Instance } from '../../instance-provider/instance';
-import { IInstanceAttributeInternal } from '../../types';
-import { Vec2 } from '../../util';
-import { Layer } from '../layer';
-import { Scene } from '../scene';
+import { Instance } from "../../instance-provider/instance";
+import { IInstanceAttributeInternal } from "../../types";
+import { Vec2 } from "../../util";
+import { Layer } from "../layer";
+import { Scene } from "../scene";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;
 }
 
 export function isBufferLocationGroup(
-  val: any,
+  val: any
 ): val is IBufferLocationGroup<IBufferLocation> {
   return val && val.propertyToBufferLocation;
 }
@@ -95,7 +95,7 @@ export abstract class BufferManagerBase<
    * Retrieves the buffer locations for the instance provided
    */
   abstract getBufferLocations(
-    instance: T,
+    instance: T
   ): U | IBufferLocationGroup<U> | undefined;
 
   /**

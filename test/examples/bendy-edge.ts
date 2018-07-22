@@ -4,21 +4,21 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  LayerInitializer,
-} from 'src';
-import { BaseExample } from './base-example';
+  LayerInitializer
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class BendyEdge extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: InstanceProvider<EdgeInstance>,
+    _atlas: string,
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'bendy-edge',
+      key: "bendy-edge",
       scene: scene,
-      type: EdgeType.BEZIER,
+      type: EdgeType.BEZIER
     });
   }
 
@@ -37,7 +37,7 @@ export class BendyEdge extends BaseExample {
         id: `edge-bendy`,
         start: [200, 15],
         widthEnd: 10,
-        widthStart: 10,
+        widthStart: 10
       });
 
       edges.push(edge);
@@ -50,12 +50,12 @@ export class BendyEdge extends BaseExample {
         edge.start = [
           Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
             200,
-          edge.start[1],
+          edge.start[1]
         ];
         edge.end = [
           Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
             200,
-          edge.end[1],
+          edge.end[1]
         ];
       }
     }, 1000 / 60);

@@ -1,15 +1,15 @@
-import * as Three from 'three';
-import { Instance } from '../../instance-provider/instance';
+import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
 import {
   IVertexAttribute,
   IVertexAttributeInternal,
-  ShaderIOValue,
-} from '../../types';
-import { Layer } from '../layer';
-import { LayerBufferType } from './layer-buffer-type';
+  ShaderIOValue
+} from "../../types";
+import { Layer } from "../layer";
+import { LayerBufferType } from "./layer-buffer-type";
 
 function isNumberCluster(
-  val: ShaderIOValue,
+  val: ShaderIOValue
 ): val is
   | [number]
   | [number, number]
@@ -22,7 +22,7 @@ export function generateLayerGeometry<T extends Instance>(
   layer: Layer<T, any>,
   maxInstancesPerBuffer: number,
   vertexAttributes: IVertexAttributeInternal[],
-  vertexCount: number,
+  vertexCount: number
 ): Three.BufferGeometry {
   // Make the new buffers to be updated
   const vertexBuffers = [];
@@ -34,7 +34,7 @@ export function generateLayerGeometry<T extends Instance>(
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
     vertexBuffers.push(
-      new Float32Array(attribute.size * vertexCount * maxInstancesPerBuffer),
+      new Float32Array(attribute.size * vertexCount * maxInstancesPerBuffer)
     );
   }
 
@@ -68,7 +68,7 @@ export function generateLayerGeometry<T extends Instance>(
 
   if (formatError) {
     console.warn(
-      'A vertex buffer updating method should not use arrays of arrays of numbers.',
+      "A vertex buffer updating method should not use arrays of arrays of numbers."
     );
   }
 
@@ -107,7 +107,7 @@ export function generateLayerGeometry<T extends Instance>(
     const attribute = vertexAttributes[i];
     const materialAttribute = new Three.BufferAttribute(
       vertexBuffers[i],
-      attribute.size,
+      attribute.size
     );
     attribute.materialAttribute = materialAttribute;
     geometry.addAttribute(attribute.name, materialAttribute);

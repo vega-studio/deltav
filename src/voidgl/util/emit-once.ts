@@ -2,7 +2,7 @@ let toEmit: { [key: string]: [Function, number, number] } = {};
 
 export function emitOnce(
   id: string,
-  callback: (calledCountBeforeEmit: number, id: string) => void,
+  callback: (calledCountBeforeEmit: number, id: string) => void
 ) {
   const emit = toEmit[id] || [callback, -1, 0];
   toEmit[id] = emit;

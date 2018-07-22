@@ -1,13 +1,13 @@
-import { LayerSurface } from '../surface';
-import { IAutoEasingMethod } from './auto-easing-method';
-import { Vec } from './vector';
+import { LayerSurface } from "../surface";
+import { IAutoEasingMethod } from "./auto-easing-method";
+import { Vec } from "./vector";
 
 export type AnimationDelayAccessor = (
   groupIndex: number,
-  currentDelay: number,
+  currentDelay: number
 ) => number;
 export type AnimationInstanceModificationCallback = (
-  groupIndex: number,
+  groupIndex: number
 ) => void;
 
 function isNumber(val: any): val is number {
@@ -39,7 +39,7 @@ export class AnimationHelper {
     groupCount: number,
     baseDelay: number,
     delayGap: number | AnimationDelayAccessor,
-    modifyInstances: AnimationInstanceModificationCallback,
+    modifyInstances: AnimationInstanceModificationCallback
   ) {
     // Get the time of the current frame as our timing basis
     const startFrameTime = this.surface.frameMetrics.currentTime;

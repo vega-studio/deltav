@@ -1,12 +1,12 @@
-import * as Three from 'three';
-import { Instance, InstanceDiff } from '../../../instance-provider';
-import { isBufferLocation } from '../buffer-manager-base';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
-import { IUniformBufferLocation } from '../uniform-buffer-manager';
-import { BaseDiffProcessor } from './base-diff-processor';
+import * as Three from "three";
+import { Instance, InstanceDiff } from "../../../instance-provider";
+import { isBufferLocation } from "../buffer-manager-base";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { IUniformBufferLocation } from "../uniform-buffer-manager";
+import { BaseDiffProcessor } from "./base-diff-processor";
 
 // This is a mapping of the vector properties as they relate to an array order
-const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ['x', 'y', 'z', 'w'];
+const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ["x", "y", "z", "w"];
 const EMPTY: number[] = [];
 
 /**
@@ -22,7 +22,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
@@ -47,7 +47,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
@@ -67,7 +67,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
@@ -85,7 +85,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   updateInstance(
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
-    uniformCluster: IUniformBufferLocation,
+    uniformCluster: IUniformBufferLocation
   ) {
     if (instance.active) {
       const uniforms = uniformCluster.buffer;

@@ -1,27 +1,23 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import {
-  ILayerProps,
-  IModelType,
-  IShaderInitialization,
-  Layer,
-} from '../../surface/layer';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
-  IUniform,
+  IShaderInitialization,
   UniformSize,
-  VertexAttributeSize,
-} from '../../types';
-import { CommonMaterialOptions } from '../../util';
-import { ScaleType } from '../types';
-import { RectangleInstance } from './rectangle-instance';
+  VertexAttributeSize
+} from "../../types";
+import { CommonMaterialOptions } from "../../util";
+import { ScaleType } from "../types";
+import { RectangleInstance } from "./rectangle-instance";
 
 const { min, max } = Math;
 
-export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
+export interface IRectangleLayerProps<T extends RectangleInstance>
+  extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -29,10 +25,10 @@ export interface IRectangleLayerProps extends ILayerProps<RectangleInstance> {
  * This layer displays Rectangles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RectangleLayer extends Layer<
-  RectangleInstance,
-  IRectangleLayerProps
-> {
+export class RectangleLayer<
+  T extends RectangleInstance,
+  U extends IRectangleLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -49,14 +45,14 @@ export class RectangleLayer extends Layer<
         }
         const topLeft = [
           rectangle.x - anchorEffect[0],
-          rectangle.y - anchorEffect[1],
+          rectangle.y - anchorEffect[1]
         ];
 
         return new Bounds({
           height: rectangle.height,
           width: rectangle.width,
           x: topLeft[0],
-          y: topLeft[1],
+          y: topLeft[1]
         });
       },
 
@@ -64,7 +60,7 @@ export class RectangleLayer extends Layer<
       hitTest: (
         rectangle: RectangleInstance,
         point: IPoint,
-        projection: IProjection,
+        projection: IProjection
       ) => {
         // The bounds of the rectangle is in world space, but it does not account for the scale mode of the rectangle.
         // Here, we will apply the scale mode testing to the rectangle
@@ -96,7 +92,7 @@ export class RectangleLayer extends Layer<
 
             const topLeft = [
               rectangle.x - anchorEffect[0] / maxScale,
-              rectangle.y - anchorEffect[1] / maxScale,
+              rectangle.y - anchorEffect[1] / maxScale
             ];
 
             // Reverse project the size and we should be within the distorted world coordinates
@@ -104,7 +100,7 @@ export class RectangleLayer extends Layer<
               height: rectangle.height / maxScale,
               width: rectangle.width / maxScale,
               x: topLeft[0],
-              y: topLeft[1],
+              y: topLeft[1]
             }).containsPoint(point);
           }
         }
@@ -122,7 +118,7 @@ export class RectangleLayer extends Layer<
 
           const topLeft = projection.worldToScreen({
             x: rectangle.x - anchorEffect[0] / projection.camera.scale[0],
-            y: rectangle.y - anchorEffect[1] / projection.camera.scale[1],
+            y: rectangle.y - anchorEffect[1] / projection.camera.scale[1]
           });
 
           const screenPoint = projection.worldToScreen(point);
@@ -132,12 +128,12 @@ export class RectangleLayer extends Layer<
             height: rectangle.height,
             width: rectangle.width,
             x: topLeft.x,
-            y: topLeft.y,
+            y: topLeft.y
           }).containsPoint(screenPoint);
         }
 
         return true;
-      },
+      }
     };
   }
 
@@ -151,7 +147,7 @@ export class RectangleLayer extends Layer<
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -160,87 +156,87 @@ export class RectangleLayer extends Layer<
       2: 0,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     return {
-      fs: require('./rectangle-layer.fs'),
+      fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'location',
+          name: "location",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y],
+          update: o => [o.x, o.y]
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'anchor',
+          name: "anchor",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'size',
+          name: "size",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height],
+          update: o => [o.width, o.height]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'depth',
+          name: "depth",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
-          name: 'scaling',
+          name: "scaling",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.scaling],
+          update: o => [o.scaling]
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'color',
+          name: "color",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color,
-        },
+          update: o => o.color
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
-        },
+          update: _u => [1]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'position',
+          name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
             vertexToSide[vertex],
-            0,
-          ],
-        },
+            0
+          ]
+        }
       ],
       vertexCount: 6,
-      vs: require('./rectangle-layer.vs'),
+      vs: require("./rectangle-layer.vs")
     };
   }
 
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 

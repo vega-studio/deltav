@@ -17,6 +17,8 @@ float circle(vec2 coord, float radius){
   );
 }
 
+${extendHeader}
+
 void main() {
   float step_factor = circle(pointCoord.xy, 1.0);
 
@@ -25,4 +27,6 @@ void main() {
     vertexColor,
     step_factor
   ));
+
+  ${extend}
 }

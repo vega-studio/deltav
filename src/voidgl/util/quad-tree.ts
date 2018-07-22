@@ -1,5 +1,5 @@
-import { Bounds } from '../primitives/bounds';
-import { IPoint } from '../primitives/point';
+import { Bounds } from "../primitives/bounds";
+import { IPoint } from "../primitives/point";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -34,7 +34,7 @@ export interface IQuadItem {
  */
 export function filterQuery<T extends IQuadItem>(
   type: Function[],
-  queryValues: IQuadItem[],
+  queryValues: IQuadItem[]
 ): T[] {
   const filtered: T[] = [];
 
@@ -154,7 +154,7 @@ export class Node<T extends IQuadItem> {
     right: number,
     top: number,
     bottom: number,
-    depth?: number,
+    depth?: number
   ) {
     // If params insertted
     if (arguments.length >= 4) {
@@ -162,7 +162,7 @@ export class Node<T extends IQuadItem> {
         height: top - bottom,
         width: right - left,
         x: left,
-        y: top,
+        y: top
       });
     }
 
@@ -172,7 +172,7 @@ export class Node<T extends IQuadItem> {
         height: 1,
         width: 1,
         x: 0,
-        y: 0,
+        y: 0
       });
     }
 
@@ -251,12 +251,12 @@ export class Node<T extends IQuadItem> {
         height: maxY - minY,
         width: maxX - minX,
         x: minX,
-        y: minY,
-      }),
+        y: minY
+      })
     );
 
     // Add all of the children into the tree
-    children.forEach((child, index) => this.doAdd(child));
+    children.forEach(child => this.doAdd(child));
   }
 
   /**
@@ -290,7 +290,7 @@ export class Node<T extends IQuadItem> {
     }
 
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach((child, index) => this.doAdd(child));
+    allChildren.forEach(child => this.doAdd(child));
   }
 
   /**
@@ -346,13 +346,13 @@ export class Node<T extends IQuadItem> {
     // Could not grow to accomodate the child.
     if (isNaN(child.width + child.height + child.x + child.y)) {
       console.error(
-        'Child did not fit into bounds because a dimension is NaN',
-        child,
+        "Child did not fit into bounds because a dimension is NaN",
+        child
       );
     } else if (child.area === 0) {
       console.error(
-        'Child did not fit into bounds because the area is zero',
-        child,
+        "Child did not fit into bounds because the area is zero",
+        child
       );
     }
 
@@ -420,7 +420,7 @@ export class Node<T extends IQuadItem> {
    * @return     Returns the exact same list that was input as the list param
    */
   queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
+    this.children.forEach(c => {
       if (c.hitBounds(b)) {
         list.push(c);
       }
@@ -462,7 +462,7 @@ export class Node<T extends IQuadItem> {
    * @return      Returns the exact same list that was input as the list param
    */
   queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
-    this.children.forEach((c, index) => {
+    this.children.forEach(c => {
       if (c.containsPoint(p)) {
         list.push(c);
       }

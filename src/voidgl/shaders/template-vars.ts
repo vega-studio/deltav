@@ -1,0 +1,22 @@
+export const templateVars = {
+  attributeFragments: "attributeFragments",
+  attributes: "attributes",
+  blocksPerInstance: "blocksPerInstance",
+  easingMethod: "easingMethod",
+  easingMethods: "easingMethods",
+  extend: "extend",
+  extendHeader: "extendHeader",
+  instanceBlockCount: "instanceBlockCount",
+  instanceDataBinaryTree: "instanceDataBinaryTree",
+  instanceDataRetrieval: "instanceDataRetrieval",
+  instanceDestructuring: "instanceDestructuring",
+  instanceFragments: "instanceFragments",
+  instanceUniformDeclarations: "instanceUniformDeclarations",
+  layerUniforms: "layerUniforms",
+  picking: "picking",
+  projectionMethods: "projectionMethods",
+  shader: "shader",
+  shaderInput: "shaderInput",
+  T: "T",
+  vertexAttributes: "vertexAttributes"
+};

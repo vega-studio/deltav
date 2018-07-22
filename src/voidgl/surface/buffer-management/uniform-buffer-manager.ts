@@ -1,12 +1,12 @@
-import * as Three from 'three';
-import { Instance } from '../../instance-provider';
-import { makeInstanceUniformNameArray } from '../../shaders/util/make-instance-uniform-name';
-import { IInstanceAttribute, PickType } from '../../types';
-import { uid, Vec2 } from '../../util';
-import { Layer } from '../layer';
-import { generateLayerModel } from '../layer-processing/generate-layer-model';
-import { Scene } from '../scene';
-import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
+import * as Three from "three";
+import { Instance } from "../../instance-provider";
+import { makeInstanceUniformNameArray } from "../../shaders/util/make-instance-uniform-name";
+import { IInstanceAttribute, PickType } from "../../types";
+import { uid, Vec2 } from "../../util";
+import { Layer } from "../layer";
+import { generateLayerModel } from "../layer-processing/generate-layer-model";
+import { Scene } from "../scene";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
 
 export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */
@@ -106,7 +106,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       this.instanceToCluster[instance.uid] = cluster;
     } else {
       console.warn(
-        'No valid cluster available for instance added to uniform manager.',
+        "No valid cluster available for instance added to uniform manager."
       );
     }
 
@@ -176,24 +176,35 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * Clears all elements of this manager from the current scene it was in.
    */
   removeFromScene() {
-    this.buffers.forEach((buffer, index) => {
-      this.scene.container.remove(buffer.model);
-      buffer.pickModel && this.scene.pickingContainer.remove(buffer.pickModel);
-    });
+    const scene = this.scene;
 
-    delete this.scene;
+    if (scene.container) {
+      for (let i = 0, end = this.buffers.length; i < end; ++i) {
+        const buffer = this.buffers[i];
+        scene.container.remove(buffer.model);
+        buffer.pickModel &&
+          this.scene.pickingContainer.remove(buffer.pickModel);
+      }
+
+      delete this.scene;
+    }
   }
 
   /**
    * Applies the buffers to the provided scene for rendering.
    */
   setScene(scene: Scene) {
-    this.buffers.forEach((buffer, index) => {
-      this.scene.container.add(buffer.model);
-      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
-    });
+    if (scene.container) {
+      for (let i = 0, end = this.buffers.length; i < end; ++i) {
+        const buffer = this.buffers[i];
+        scene.container.add(buffer.model);
+        buffer.pickModel && scene.pickingContainer.add(buffer.pickModel);
+      }
 
-    this.scene = scene;
+      this.scene = scene;
+    } else {
+      console.warn("Can not set a scene that has an undefined container.");
+    }
   }
 
   /**
@@ -236,7 +247,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       pickModel:
         this.layer.picking.type === PickType.SINGLE
           ? newModel.clone()
-          : undefined,
+          : undefined
     };
 
     this.buffers.push(buffer);
@@ -250,7 +261,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
     instanceData.value = instanceData.value.map(
-      () => new Three.Vector4(0.0, 0.0, 0.0, 0.0),
+      () => new Three.Vector4(0.0, 0.0, 0.0, 0.0)
     );
 
     // TODO: This will go away! To satisfy the changing buffer manager interfaces, we make a
@@ -258,9 +269,9 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
       bufferAttribute: new Three.InstancedBufferAttribute(
         new Float32Array(1),
-        1,
+        1
       ),
-      uid: uid(),
+      uid: uid()
     });
 
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
@@ -269,7 +280,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
         // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
-        range: [uniformIndex, 0],
+        range: [uniformIndex, 0]
       };
 
       uniformIndex += this.uniformBlocksPerInstance;
@@ -289,7 +300,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
-    if (this.scene) {
+    if (this.scene && this.scene.container) {
       this.scene.container.add(buffer.model);
       buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     }

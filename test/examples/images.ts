@@ -4,11 +4,11 @@ import {
   ImageLayer,
   InstanceProvider,
   LayerInitializer,
-  ScaleType,
-} from 'src';
-import { BaseExample } from './base-example';
+  ScaleType
+} from "src";
+import { BaseExample } from "./base-example";
 
-const iconData = require('./images/leaf.png');
+const iconData = require("./images/leaf.png");
 const icon = new Image();
 icon.src = iconData;
 
@@ -16,13 +16,13 @@ export class Images extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: InstanceProvider<ImageInstance>,
+    provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas,
       data: provider,
-      key: 'images',
-      scene,
+      key: "images",
+      scene
     });
   }
 
@@ -35,7 +35,7 @@ export class Images extends BaseExample {
           element: icon,
           id: `image${i * 100 + k}`,
           scaling: ScaleType.ALWAYS,
-          tint: [1.0, 1.0, 1.0, Math.random() * 0.8 + 0.2],
+          tint: [1.0, 1.0, 1.0, Math.random() * 0.8 + 0.2]
         });
 
         const aspect = image.width / image.height;

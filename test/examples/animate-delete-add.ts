@@ -9,20 +9,20 @@ import {
   createLayer,
   IInstanceProvider,
   InstanceProvider,
-  LayerInitializer,
-} from 'src';
-import { BaseExample } from './base-example';
+  LayerInitializer
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: IInstanceProvider<CircleInstance>,
+    _atlas: string,
+    provider: IInstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,
-      key: 'animate-delete-add',
-      scene: scene,
+      key: "animate-delete-add",
+      scene: scene
     });
   }
 
@@ -32,11 +32,11 @@ export class AnimateDeleteAdd extends BaseExample {
     const circle = circleProvider.add(
       new CircleInstance({
         color: [0.01, 0.1, 1.0, 1.0],
-        id: 'yay',
+        id: "yay",
         radius: 10,
         x: 0,
-        y: 0,
-      }),
+        y: 0
+      })
     );
 
     this.move(circle);
@@ -69,5 +69,5 @@ export class AnimateDeleteAdd extends BaseExample {
     if (circle.y > bounds.height) {
       circle.y = 0;
     }
-  }
+  };
 }

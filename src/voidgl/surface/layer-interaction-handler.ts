@@ -1,18 +1,18 @@
-import { Bounds } from '../primitives';
-import { IPoint } from '../primitives/point';
+import { Bounds } from "../primitives";
+import { IPoint } from "../primitives/point";
 import {
   IColorPickingData,
   InstanceHitTest,
   IPickInfo,
   IProjection,
-  PickType,
-} from '../types';
-import { Instance, TrackedQuadTree } from '../util';
-import { UniformColorDiffProcessor } from './buffer-management/diff-processors/uniform-color-diff-processor';
-import { ILayerProps, Layer } from './layer';
+  PickType
+} from "../types";
+import { Instance, TrackedQuadTree } from "../util";
+import { UniformColorDiffProcessor } from "./buffer-management/diff-processors/uniform-color-diff-processor";
+import { ILayerProps, Layer } from "./layer";
 
 function isColorProcessor<T extends Instance>(
-  val: any,
+  val: any
 ): val is UniformColorDiffProcessor<T> {
   return val && val.colorPicking;
 }
@@ -49,7 +49,7 @@ export class LayerInteractionHandler<
       isColorProcessor<T>(this.layer.diffManager.processor)
     ) {
       return this.layer.diffManager.processor.colorPicking.uidToInstance.get(
-        0xffffff - this.colorPicking.nearestColor,
+        0xffffff - this.colorPicking.nearestColor
       );
     }
 
@@ -59,8 +59,8 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseOver(view: IProjection, mouse: IPoint) {
-    // This is the mouse over for the view itself. We should probably just let the mouse move events handle the interactions
+  handleMouseOver(_view: IProjection, _mouse: IPoint) {
+    // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
     // With the instances
   }
 
@@ -76,14 +76,14 @@ export class LayerInteractionHandler<
       if (onMouseDown) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
           query = this.layer.picking.quadTree.query.bind(
-            this.layer.picking.quadTree,
+            this.layer.picking.quadTree
           );
           querySpace = (check: Bounds | IPoint) =>
             query(check).filter(o => hitTest(o, world, view));
@@ -104,7 +104,7 @@ export class LayerInteractionHandler<
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseDown(info);
@@ -128,13 +128,13 @@ export class LayerInteractionHandler<
       if (onMouseOut) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
           query = this.layer.picking.quadTree.query.bind(
-            this.layer.picking.quadTree,
+            this.layer.picking.quadTree
           );
           querySpace = (check: Bounds | IPoint) =>
             query(check).filter(o => hitTest(o, world, view));
@@ -146,7 +146,7 @@ export class LayerInteractionHandler<
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseOut(info);
@@ -172,14 +172,14 @@ export class LayerInteractionHandler<
       if (onMouseUp) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
           query = this.layer.picking.quadTree.query.bind(
-            this.layer.picking.quadTree,
+            this.layer.picking.quadTree
           );
           querySpace = (check: Bounds | IPoint) =>
             query(check).filter(o => hitTest(o, world, view));
@@ -200,7 +200,7 @@ export class LayerInteractionHandler<
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseUp(info);
@@ -221,14 +221,14 @@ export class LayerInteractionHandler<
         let info: IPickInfo<T>;
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
           query = this.layer.picking.quadTree.query.bind(
-            this.layer.picking.quadTree,
+            this.layer.picking.quadTree
           );
           querySpace = (check: Bounds | IPoint) =>
             query(check).filter(o => hitTest(o, world, view));
@@ -245,7 +245,7 @@ export class LayerInteractionHandler<
         // Broadcast the picking info for newly over instances to any of the layers listeners if needed
         if (onMouseOver) {
           const notOverInstances = instances.filter(
-            o => !this.isMouseOver.get(o),
+            o => !this.isMouseOver.get(o)
           );
           info = {
             instances: notOverInstances,
@@ -253,7 +253,7 @@ export class LayerInteractionHandler<
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           if (notOverInstances.length > 0) onMouseOver(info);
@@ -268,7 +268,7 @@ export class LayerInteractionHandler<
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           onMouseMove(info);
@@ -281,7 +281,7 @@ export class LayerInteractionHandler<
         // Broadcast the the picking info for all instances that the mouse moved off of
         if (onMouseOut) {
           const noLongerOver = Array.from(this.isMouseOver.keys()).filter(
-            o => !isCurrentlyOver.get(o),
+            o => !isCurrentlyOver.get(o)
           );
 
           // This is the pick info object we will broadcast from the layer
@@ -291,7 +291,7 @@ export class LayerInteractionHandler<
             projection: view,
             querySpace,
             screen: [mouse.x, mouse.y],
-            world: [world.x, world.y],
+            world: [world.x, world.y]
           };
 
           if (noLongerOver.length > 0) onMouseOut(info);
@@ -315,14 +315,14 @@ export class LayerInteractionHandler<
       if (onMouseClick) {
         const world = view.viewToWorld(mouse);
         let hitTest: InstanceHitTest<T>;
-        let query: TrackedQuadTree<T>['query'];
+        let query: TrackedQuadTree<T>["query"];
         let querySpace;
         let instances: T[] = [];
 
         if (this.layer.picking.type === PickType.ALL) {
           hitTest = this.layer.picking.hitTest;
           query = this.layer.picking.quadTree.query.bind(
-            this.layer.picking.quadTree,
+            this.layer.picking.quadTree
           );
           querySpace = (check: Bounds | IPoint) =>
             query(check).filter(o => hitTest(o, world, view));
@@ -343,7 +343,7 @@ export class LayerInteractionHandler<
           projection: view,
           querySpace,
           screen: [mouse.x, mouse.y],
-          world: [world.x, world.y],
+          world: [world.x, world.y]
         };
 
         onMouseClick(info);
@@ -354,7 +354,7 @@ export class LayerInteractionHandler<
   /**
    * Handles drag gestures for the layer within the view
    */
-  handleMouseDrag(view: IProjection, mouse: IPoint) {
+  handleMouseDrag(_view: IProjection, _mouse: IPoint) {
     // We probably should not broadcast drag events for the sake of instances. Instance dragging should be handled on
     // An instance by instance basis rather than coming from the view's gestures
   }

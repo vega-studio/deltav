@@ -5,7 +5,8 @@
     "declaration": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "lib": ["es2017", "dom", "dom.iterable", "scripthost"],
+    "jsxFactory": "h",
+    "lib": ["es2015", "es2017", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -14,9 +15,9 @@
     "paths": {
       "src": ["./src"]
     },
-    "pretty": true,
-    "removeComments": false,
     "sourceMap": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
     "strictNullChecks": true,
     "target": "es5"
   },

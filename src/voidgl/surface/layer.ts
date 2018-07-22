@@ -1,6 +1,6 @@
-import * as Three from 'three';
-import { InstanceDiff } from '../instance-provider';
-import { Instance } from '../instance-provider/instance';
+import * as Three from "three";
+import { Instance } from "../instance-provider/instance";
+import { InstanceDiff } from "../instance-provider/instance-provider";
 import {
   IInstanceAttribute,
   IMaterialOptions,
@@ -12,40 +12,28 @@ import {
   InstanceIOValue,
   IPickInfo,
   IQuadTreePickingMetrics,
-  IShaders,
+  IShaderInitialization,
   ISinglePickingMetrics,
   IUniform,
   IUniformInternal,
-  IVertexAttribute,
   IVertexAttributeInternal,
   PickType,
   ShaderInjectionTarget,
   UniformIOValue,
-  UniformSize,
-} from '../types';
-import { BoundsAccessor, TrackedQuadTree } from '../util';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { BufferManagerBase, IBufferLocation } from './buffer-management';
-import { InstanceDiffManager } from './buffer-management/instance-diff-manager';
-import { LayerInteractionHandler } from './layer-interaction-handler';
-import { LayerBufferType } from './layer-processing/layer-buffer-type';
-import { LayerInitializer, LayerSurface } from './layer-surface';
-import { AtlasResourceManager } from './texture/atlas-resource-manager';
-import { View } from './view';
-
-export interface IShaderInputs<T extends Instance> {
-  /** These are very frequently changing attributes and are uniform across all vertices in the model */
-  instanceAttributes?: (IInstanceAttribute<T> | null)[];
-  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
-  vertexAttributes?: (IVertexAttribute | null)[];
-  /** Specify how many vertices there are per instance */
-  vertexCount: number;
-  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
-  uniforms?: (IUniform | null)[];
-}
-
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
-  IShaders;
+  UniformSize
+} from "../types";
+import { BoundsAccessor, TrackedQuadTree } from "../util";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import {
+  BufferManagerBase,
+  IBufferLocation
+} from "./buffer-management/buffer-manager-base";
+import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
+import { LayerInteractionHandler } from "./layer-interaction-handler";
+import { LayerBufferType } from "./layer-processing/layer-buffer-type";
+import { LayerInitializer, LayerSurface } from "./layer-surface";
+import { AtlasResourceManager } from "./texture/atlas-resource-manager";
+import { View } from "./view";
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
@@ -108,7 +96,7 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
 export interface IModelConstructable {
   new (
     geometry?: Three.Geometry | Three.BufferGeometry,
-    material?: Three.Material | Three.Material[],
+    material?: Three.Material | Three.Material[]
   ): any;
 }
 
@@ -204,20 +192,20 @@ export class Layer<
           1,
           0,
           1,
-          pickingMethods.boundsAccessor,
+          pickingMethods.boundsAccessor
         ),
-        type: PickType.ALL,
+        type: PickType.ALL
       };
     } else if (picking === PickType.SINGLE) {
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.SINGLE,
-        uidToInstance: new Map<number, T>(),
+        uidToInstance: new Map<number, T>()
       };
     } else {
       this.picking = {
         currentPickMode: PickType.NONE,
-        type: PickType.NONE,
+        type: PickType.NONE
       };
     }
   }
@@ -265,7 +253,7 @@ export class Layer<
         processor,
         instance,
         Object.values(change[2]),
-        bufferLocations,
+        bufferLocations
       );
       // Clear the changes for the instance
       instance.changes = {};
@@ -281,7 +269,7 @@ export class Layer<
       uniform = this.uniforms[i];
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(
-        materialUniform => (materialUniform.value = value),
+        materialUniform => (materialUniform.value = value)
       );
     }
   }
@@ -292,7 +280,7 @@ export class Layer<
    */
   getInstancePickingMethods(): IPickingMethods<T> {
     throw new Error(
-      'When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode.',
+      "When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode."
     );
   }
 
@@ -302,7 +290,7 @@ export class Layer<
   getModelType(): IModelType {
     return {
       drawMode: Three.TrianglesDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 
@@ -325,12 +313,12 @@ export class Layer<
    */
   initShader(): IShaderInitialization<T> {
     return {
-      fs: require('../shaders/base/no-op.fs'),
+      fs: require("../shaders/base/no-op.fs"),
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: require('../shaders/base/no-op.vs'),
+      vs: require("../shaders/base/no-op.vs")
     };
   }
 
@@ -348,7 +336,7 @@ export class Layer<
       key: string;
       name: string;
       shaderInjection?: ShaderInjectionTarget;
-    },
+    }
   ): IInstanceAttribute<T> {
     return {
       atlas,
@@ -356,7 +344,7 @@ export class Layer<
       blockIndex,
       name,
       size,
-      update,
+      update
     };
   }
 
@@ -369,14 +357,14 @@ export class Layer<
     size: UniformSize,
     update: (o: IUniform) => UniformIOValue,
     shaderInjection?: ShaderInjectionTarget,
-    qualifier?: string,
+    qualifier?: string
   ): IUniform {
     return {
       name,
       qualifier,
       shaderInjection,
       size,
-      update,
+      update
     };
   }
 
@@ -392,7 +380,7 @@ export class Layer<
       this.interactions = new LayerInteractionHandler(this);
     } else {
       console.warn(
-        'You can not change a layer\'s buffer strategy once it has been instantiated.',
+        "You can not change a layer's buffer strategy once it has been instantiated."
       );
     }
   }
@@ -405,17 +393,17 @@ export class Layer<
       this._bufferType = val;
     } else {
       console.warn(
-        'You can not change a layers buffer strategy once it has been instantiated.',
+        "You can not change a layers buffer strategy once it has been instantiated."
       );
     }
   }
 
-  willUpdateInstances(changes: [T, InstanceDiffType]) {
+  willUpdateInstances(_changes: [T, InstanceDiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }
 
-  willUpdateProps(newProps: ILayerProps<T>) {
+  willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
   }
 

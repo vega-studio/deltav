@@ -1,4 +1,4 @@
-import { IPoint } from './point';
+import { IPoint } from "./point";
 
 export interface IBoundsOptions {
   /** Top left x position */
@@ -47,7 +47,7 @@ export class Bounds {
   get mid() {
     return {
       x: this.x + this.width / 2.0,
-      y: this.y + this.height / 2.0,
+      y: this.y + this.height / 2.0
     };
   }
 
@@ -64,7 +64,7 @@ export class Bounds {
       height: 0,
       width: 0,
       x: 0,
-      y: 0,
+      y: 0
     });
   }
 

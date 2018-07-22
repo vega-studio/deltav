@@ -1,4 +1,4 @@
-const INSTANCE_UNIFORM_ATTRIBUTE_PREFIX = 'u';
+const INSTANCE_UNIFORM_ATTRIBUTE_PREFIX = "u";
 
 export function makeInstanceUniformNameArray() {
   return `instanceData`;

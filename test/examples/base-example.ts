@@ -7,25 +7,25 @@ import {
   Instance,
   LayerInitializer,
   LayerSurface,
-  RingLayer,
-} from 'src';
+  RingLayer
+} from "src";
 
 export abstract class BaseExample {
   surface: LayerSurface;
   view: string;
 
-  keyEvent(e: KeyboardEvent, isDown: boolean) {
+  keyEvent(_e: KeyboardEvent, _isDown: boolean) {
     // Not required key event handler
   }
 
   makeController(
     defaultCamera: ChartCamera,
-    testCamera: ChartCamera,
-    viewName: string,
+    _testCamera: ChartCamera,
+    viewName: string
   ): EventManager {
     return new BasicCameraController({
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
   }
 
@@ -35,14 +35,14 @@ export abstract class BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: IInstanceProvider<Instance>,
+    _atlas: string,
+    provider: IInstanceProvider<Instance>
   ): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS
     return createLayer(RingLayer, {
       data: provider,
-      key: 'ring-layer-0',
-      scene,
+      key: "ring-layer-0",
+      scene
     });
   }
 

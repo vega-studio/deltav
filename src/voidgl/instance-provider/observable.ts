@@ -1,5 +1,5 @@
-import { uid } from '../util/uid';
-import { Instance } from './instance';
+import { uid } from "../util/uid";
+import { Instance } from "./instance";
 
 export class ObservableMonitoring {
   static gatherIds: boolean = false;
@@ -67,7 +67,7 @@ export function observable<T extends Instance>(target: T, key: string) {
     this.observableStorage[propertyUID] = newVal;
     // Broadcast change
     this.changes[propertyUID] = propertyUID;
-    this.observer && this.observer.instanceUpdated(this, propertyUID);
+    this.observer && this.observer.instanceUpdated(this);
   }
 
   /**
@@ -78,6 +78,6 @@ export function observable<T extends Instance>(target: T, key: string) {
     configurable: true,
     enumerable: true,
     get: getter,
-    set: setter,
+    set: setter
   });
 }

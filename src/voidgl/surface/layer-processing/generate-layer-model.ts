@@ -1,5 +1,5 @@
-import * as Three from 'three';
-import { IModelConstructable, Layer } from '../layer';
+import * as Three from "three";
+import { IModelConstructable, Layer } from "../layer";
 
 function isMesh(val: any): val is Three.Mesh {
   return Boolean(val.isMesh);
@@ -8,7 +8,7 @@ function isMesh(val: any): val is Three.Mesh {
 export function generateLayerModel(
   layer: Layer<any, any>,
   geometry: Three.BufferGeometry,
-  material: Three.ShaderMaterial,
+  material: Three.ShaderMaterial
 ): IModelConstructable & Three.Object3D {
   const modelInfo = layer.getModelType();
   const model = new modelInfo.modelType(geometry, material);

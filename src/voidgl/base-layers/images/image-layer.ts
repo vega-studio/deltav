@@ -1,27 +1,23 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import {
-  ILayerProps,
-  IModelType,
-  IShaderInitialization,
-  Layer,
-} from '../../surface/layer';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
-  IUniform,
+  IShaderInitialization,
   UniformSize,
-  VertexAttributeSize,
-} from '../../types';
-import { CommonMaterialOptions } from '../../util';
-import { ScaleType } from '../types';
-import { ImageInstance } from './image-instance';
+  VertexAttributeSize
+} from "../../types";
+import { CommonMaterialOptions } from "../../util/common-options";
+import { ScaleType } from "../types";
+import { ImageInstance } from "./image-instance";
 
 const { min, max } = Math;
 
-export interface IImageLayerProps extends ILayerProps<ImageInstance> {
+export interface IImageLayerProps<T extends ImageInstance>
+  extends ILayerProps<T> {
   atlas?: string;
 }
 
@@ -29,7 +25,10 @@ export interface IImageLayerProps extends ILayerProps<ImageInstance> {
  * This layer displays Images and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
+export class ImageLayer<
+  T extends ImageInstance,
+  U extends IImageLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -51,7 +50,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
           height: image.height,
           width: image.width,
           x: topLeft[0],
-          y: topLeft[1],
+          y: topLeft[1]
         });
       },
 
@@ -87,7 +86,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
 
             const topLeft = view.worldToScreen({
               x: image.x - anchorEffect[0] / view.camera.scale[0],
-              y: image.y - anchorEffect[1] / view.camera.scale[1],
+              y: image.y - anchorEffect[1] / view.camera.scale[1]
             });
 
             const screenPoint = view.worldToScreen(point);
@@ -97,7 +96,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
               height: image.height,
               width: image.width,
               x: topLeft.x,
-              y: topLeft.y,
+              y: topLeft.y
             }).containsPoint(screenPoint);
           }
         }
@@ -115,7 +114,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
 
           const topLeft = view.worldToScreen({
             x: image.x - anchorEffect[0] / view.camera.scale[0],
-            y: image.y - anchorEffect[1] / view.camera.scale[1],
+            y: image.y - anchorEffect[1] / view.camera.scale[1]
           });
 
           const screenPoint = view.worldToScreen(point);
@@ -125,12 +124,12 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
             height: image.height,
             width: image.width,
             x: topLeft.x,
-            y: topLeft.y,
+            y: topLeft.y
           }).containsPoint(screenPoint);
         }
 
         return true;
-      },
+      }
     };
   }
 
@@ -144,7 +143,7 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -153,96 +152,96 @@ export class ImageLayer extends Layer<ImageInstance, IImageLayerProps> {
       2: 0,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     return {
-      fs: require('./image-layer.fs'),
+      fs: require("./image-layer.fs"),
       instanceAttributes: [
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'location',
+          name: "location",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y],
+          update: o => [o.x, o.y]
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'anchor',
+          name: "anchor",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'size',
+          name: "size",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height],
+          update: o => [o.width, o.height]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'depth',
+          name: "depth",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.FOUR,
-          name: 'scaling',
+          name: "scaling",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.scaling],
+          update: o => [o.scaling]
         },
         {
           atlas: {
-            key: this.props.atlas || '',
-            name: 'imageAtlas',
+            key: this.props.atlas || "",
+            name: "imageAtlas"
           },
           block: 2,
-          name: 'texture',
-          update: o => this.resource.request(this, o, o.resource),
+          name: "texture",
+          update: o => this.resource.request(this, o, o.resource)
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'tint',
+          name: "tint",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.tint,
-        },
+          update: o => o.tint
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (u: IUniform) => [1],
-        },
+          update: _u => [1]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'position',
+          name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
             vertexToSide[vertex],
-            0,
-          ],
-        },
+            0
+          ]
+        }
       ],
       vertexCount: 6,
-      vs: require('./image-layer.vs'),
+      vs: require("./image-layer.vs")
     };
   }
 
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 

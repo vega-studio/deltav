@@ -1,25 +1,22 @@
-import * as Three from 'three';
-import { Bounds, IPoint } from '../../primitives';
-import {
-  ILayerProps,
-  IModelType,
-  IShaderInitialization,
-  Layer,
-} from '../../surface/layer';
+import * as Three from "three";
+import { Bounds, IPoint } from "../../primitives";
+import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
   IProjection,
+  IShaderInitialization,
   IUniform,
   UniformSize,
-  VertexAttributeSize,
-} from '../../types';
-import { CommonMaterialOptions } from '../../util';
-import { RingInstance } from './ring-instance';
+  VertexAttributeSize
+} from "../../types";
+import { CommonMaterialOptions } from "../../util";
+import { RingInstance } from "./ring-instance";
 const { max } = Math;
 
-export interface IRingLayerProps extends ILayerProps<RingInstance> {
+export interface IRingLayerProps<T extends RingInstance>
+  extends ILayerProps<T> {
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
 }
@@ -28,7 +25,10 @@ export interface IRingLayerProps extends ILayerProps<RingInstance> {
  * This layer displays circles and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
+export class RingLayer<
+  T extends RingInstance,
+  U extends IRingLayerProps<T>
+> extends Layer<T, U> {
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -41,7 +41,7 @@ export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
           height: ring.radius * 2,
           width: ring.radius * 2,
           x: ring.x - ring.radius,
-          y: ring.y - ring.radius,
+          y: ring.y - ring.radius
         }),
 
       // Provide a precise hit test for the ring
@@ -50,7 +50,7 @@ export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
         const delta = [point.x - ring.x, point.y - ring.y];
 
         return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
-      },
+      }
     };
   }
 
@@ -66,7 +66,7 @@ export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -75,80 +75,80 @@ export class RingLayer extends Layer<RingInstance, IRingLayerProps> {
       2: -1,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     return {
-      fs: require('./ring-layer.fs'),
+      fs: require("./ring-layer.fs"),
       instanceAttributes: [
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'center',
+          name: "center",
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y],
+          update: o => [o.x, o.y]
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'radius',
+          name: "radius",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.radius],
+          update: o => [o.radius]
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.FOUR,
-          name: 'depth',
+          name: "depth",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'color',
+          name: "color",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color,
+          update: o => o.color
         },
         {
           block: 2,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'thickness',
+          name: "thickness",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.thickness],
-        },
+          update: o => [o.thickness]
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (_: IUniform) => [scaleFactor()],
-        },
+          update: (_: IUniform) => [scaleFactor()]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'position',
+          name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
             vertexToSide[vertex],
-            0,
-          ],
-        },
+            0
+          ]
+        }
       ],
       vertexCount: 6,
-      vs: require('./ring-layer.vs'),
+      vs: require("./ring-layer.vs")
     };
   }
 
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 

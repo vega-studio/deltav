@@ -5,24 +5,24 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  LayerInitializer,
-} from 'src';
-import { BaseExample } from './base-example';
+  LayerInitializer
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class Lines extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: InstanceProvider<EdgeInstance>,
+    provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       animate: {
-        end: AutoEasingMethod.continuousSinusoidal(5000, 0),
+        end: AutoEasingMethod.continuousSinusoidal(5000, 0)
       },
       data: provider,
-      key: 'lines',
+      key: "lines",
       scene: scene,
-      type: EdgeType.LINE,
+      type: EdgeType.LINE
     });
   }
 
@@ -46,7 +46,7 @@ export class Lines extends BaseExample {
             id: `line-${index}-${k}`,
             start: [k * 20, index * LINE_HEIGHT + LINE_HEIGHT],
             widthEnd: 10,
-            widthStart: 10,
+            widthStart: 10
           });
 
           edges.push(edgeProvider.add(edge));
@@ -56,10 +56,7 @@ export class Lines extends BaseExample {
         setTimeout(() => {
           for (let j = 0; j < newEdges.length; ++j) {
             const edge = newEdges[j];
-            edge.end = [
-              j * 20 + 5,
-              edge.end[1],
-            ];
+            edge.end = [j * 20 + 5, edge.end[1]];
           }
         }, 20);
       }, 100 * i);

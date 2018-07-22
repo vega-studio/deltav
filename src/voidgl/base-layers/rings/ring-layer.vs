@@ -4,18 +4,28 @@ varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float borderSize;
 varying vec2 pointCoord;
+${extendHeader}
+
+varying float scale;
 
 void main() {
   ${attributes}
 
+  scale = scaleFactor;
+
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
+
+  float ringWidth = mix(2.0 , thickness, float(thickness > 2.0));
+
   borderSize = mix(
-    (thickness + 1.5) / size,
-    ((thickness * pixelRatio) / size),
+    (ringWidth) / size,
+    ((ringWidth * pixelRatio) / size),
     float(pixelRatio > 1.0)
   );
-  edgeSharpness = mix(0.8, 0.01, min((size * 3.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
+
+  edgeSharpness = min(0.2 / (ringWidth * scale),  0.1);
+
   pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
 
   // Center within clip space
@@ -26,4 +36,5 @@ void main() {
   vec2 vertex = (position.xy * size) + screenCenter;
   // Position back to clip space
   gl_Position = vec4((vertex / viewSize) * vec2(2.0, 2.0) - vec2(1.0, 1.0), clipCenter.zw);
+  ${extend}
 }

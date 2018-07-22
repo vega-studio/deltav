@@ -133,7 +133,7 @@ export function add4(left: Vec4, right: Vec4): Vec4 {
     left[0] + right[0],
     left[1] + right[1],
     left[2] + right[2],
-    left[3] + right[3],
+    left[3] + right[3]
   ];
 }
 
@@ -146,7 +146,7 @@ export function subtract4(left: Vec4, right: Vec4): Vec4 {
     left[0] - right[0],
     left[1] - right[1],
     left[2] - right[2],
-    left[3] - right[3],
+    left[3] - right[3]
   ];
 }
 
@@ -155,7 +155,7 @@ export function multiply4(left: Vec4, right: Vec4): Vec4 {
     left[0] * right[0],
     left[1] * right[1],
     left[2] * right[2],
-    left[3] * right[3],
+    left[3] * right[3]
   ];
 }
 
@@ -193,7 +193,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   linear: linear1,
   multiply: multiply1,
   scale: scale1,
-  subtract: subtract1,
+  subtract: subtract1
 };
 
 export const vec2Methods: VecMethods<Vec2> = {
@@ -203,7 +203,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   linear: linear2,
   multiply: multiply2,
   scale: scale2,
-  subtract: subtract2,
+  subtract: subtract2
 };
 
 export const vec3Methods: VecMethods<Vec3> = {
@@ -213,7 +213,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   linear: linear3,
   multiply: multiply3,
   scale: scale3,
-  subtract: subtract3,
+  subtract: subtract3
 };
 
 export const vec4Methods: VecMethods<Vec4> = {
@@ -223,7 +223,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   linear: linear4,
   multiply: multiply4,
   scale: scale4,
-  subtract: subtract4,
+  subtract: subtract4
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

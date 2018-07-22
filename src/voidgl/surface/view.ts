@@ -1,20 +1,20 @@
-import * as Three from 'three';
+import * as Three from "three";
 import {
   AbsolutePosition,
-  getAbsolutePositionBounds,
-} from '../primitives/absolute-position';
-import { Bounds } from '../primitives/bounds';
-import { IPoint } from '../primitives/point';
-import { Color } from '../types';
-import { ChartCamera } from '../util/chart-camera';
-import { DataBounds } from '../util/data-bounds';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { ViewCamera, ViewCameraType } from '../util/view-camera';
+  getAbsolutePositionBounds
+} from "../primitives/absolute-position";
+import { Bounds } from "../primitives/bounds";
+import { IPoint } from "../primitives/point";
+import { Color } from "../types";
+import { ChartCamera } from "../util/chart-camera";
+import { DataBounds } from "../util/data-bounds";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { ViewCamera, ViewCameraType } from "../util/view-camera";
 
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
-  STENCIL = 0b0100,
+  STENCIL = 0b0100
 }
 
 /**
@@ -59,14 +59,14 @@ export interface IViewOptions extends IdentifyByKeyOptions {
 }
 
 function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
-  return 'left' in val;
+  return "left" in val;
 }
 
 /**
  * This defines a view of a scene
  */
 export class View extends IdentifyByKey {
-  static DEFAULT_VIEW_ID = '__default__';
+  static DEFAULT_VIEW_ID = "__default__";
 
   /** If present, is the cleared color before this view renders */
   background: Color;
@@ -144,7 +144,7 @@ export class View extends IdentifyByKey {
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
-      console.warn('Custom View Camera projections not supported yet');
+      console.warn("Custom View Camera projections not supported yet");
     }
 
     return world;
@@ -165,7 +165,7 @@ export class View extends IdentifyByKey {
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
-      console.warn('Custom View Camera projections not supported yet');
+      console.warn("Custom View Camera projections not supported yet");
     }
 
     // Convert from view to screen space
@@ -185,7 +185,7 @@ export class View extends IdentifyByKey {
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
-      console.warn('Custom View Camera projections not supported yet');
+      console.warn("Custom View Camera projections not supported yet");
     }
 
     return world;
@@ -204,7 +204,7 @@ export class View extends IdentifyByKey {
 
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
-      console.warn('Custom View Camera projections not supported yet');
+      console.warn("Custom View Camera projections not supported yet");
     }
 
     return screen;
@@ -223,7 +223,7 @@ export class View extends IdentifyByKey {
       const viewBounds = getAbsolutePositionBounds<View>(
         this.viewport,
         surfaceDimensions,
-        this.pixelRatio,
+        this.pixelRatio
       );
       const width = viewBounds.width;
       const height = viewBounds.height;
@@ -234,7 +234,7 @@ export class View extends IdentifyByKey {
         left: -width / 2,
         near: -100,
         right: width / 2,
-        top: height / 2,
+        top: height / 2
       };
 
       const scaleX = 1;
@@ -245,7 +245,7 @@ export class View extends IdentifyByKey {
       camera.position.set(
         -viewBounds.width / 2.0 * scaleX,
         viewBounds.height / 2.0 * scaleY,
-        camera.position.z,
+        camera.position.z
       );
       camera.scale.set(scaleX, -scaleY, 1.0);
       camera.updateMatrix();
@@ -258,11 +258,11 @@ export class View extends IdentifyByKey {
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,
-        y: this.viewBounds.y / this.pixelRatio,
+        y: this.viewBounds.y / this.pixelRatio
       });
     } else if (!isOrthographic(this.viewCamera.baseCamera)) {
       console.warn(
-        'Fit to viewport does not support non-orthographic cameras as a default behavior.',
+        "Fit to viewport does not support non-orthographic cameras as a default behavior."
       );
     }
   }

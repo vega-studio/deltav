@@ -4,9 +4,9 @@ import {
   InstanceProvider,
   LayerInitializer,
   RingInstance,
-  RingLayer,
-} from 'src';
-import { BaseExample } from './base-example';
+  RingLayer
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class BoxOfRings extends BaseExample {
   camera: ChartCamera;
@@ -18,14 +18,14 @@ export class BoxOfRings extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
-    provider: InstanceProvider<RingInstance>,
+    _atlas: string,
+    provider: InstanceProvider<RingInstance>
   ): LayerInitializer {
     return createLayer(RingLayer, {
       data: provider,
-      key: 'box-of-rings',
+      key: "box-of-rings",
       scaleFactor: () => this.camera.scale[0],
-      scene: scene,
+      scene: scene
     });
   }
 
@@ -50,8 +50,8 @@ export class BoxOfRings extends BaseExample {
                 radius: 10,
                 thickness: 1,
                 x: i * 20,
-                y: k * 20,
-              }),
+                y: k * 20
+              })
             );
 
             rings.push(ring);

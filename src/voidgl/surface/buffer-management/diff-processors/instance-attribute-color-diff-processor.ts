@@ -1,13 +1,13 @@
-import { Instance } from '../../../instance-provider';
-import { ISinglePickingMetrics, PickType } from '../../../types';
+import { Instance } from "../../../instance-provider";
+import { ISinglePickingMetrics, PickType } from "../../../types";
 import {
   BufferManagerBase,
   IBufferLocation,
-  isBufferLocationGroup,
-} from '../buffer-manager-base';
-import { IInstanceAttributeBufferLocationGroup } from '../instance-attribute-buffer-manager';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
-import { InstanceAttributeDiffProcessor } from './instance-attribute-diff-processor';
+  isBufferLocationGroup
+} from "../buffer-manager-base";
+import { IInstanceAttributeBufferLocationGroup } from "../instance-attribute-buffer-manager";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { InstanceAttributeDiffProcessor } from "./instance-attribute-diff-processor";
 
 const EMPTY: number[] = [];
 
@@ -21,7 +21,7 @@ export class InstanceAttributeColorDiffProcessor<
 
   constructor(
     layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>
   ) {
     super(layer, bufferManager);
 
@@ -30,7 +30,7 @@ export class InstanceAttributeColorDiffProcessor<
       this.colorPicking.uidToInstance = new Map<number, T>();
     } else {
       console.warn(
-        'Diff Processing Error: A layer has a diff processor requesting Color Processing but the picking type is not valid.',
+        "Diff Processing Error: A layer has a diff processor requesting Color Processing but the picking type is not valid."
       );
     }
   }
@@ -43,7 +43,7 @@ export class InstanceAttributeColorDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (bufferLocations) {
@@ -62,7 +62,7 @@ export class InstanceAttributeColorDiffProcessor<
         manager.colorPicking.uidToInstance.set(instance.uid, instance);
       } else {
         console.warn(
-          'A data cluster was not provided by the manager to associate an instance with.',
+          "A data cluster was not provided by the manager to associate an instance with."
         );
       }
     }
@@ -75,7 +75,7 @@ export class InstanceAttributeColorDiffProcessor<
     manager: this,
     instance: T,
     propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (bufferLocations) {
@@ -95,7 +95,7 @@ export class InstanceAttributeColorDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore

@@ -1,21 +1,21 @@
-import * as Three from 'three';
-import { Instance, ObservableMonitoring } from '../../instance-provider';
-import { instanceAttributeShaderName } from '../../shaders/util/instance-attribute-shader-name';
+import * as Three from "three";
+import { Instance, ObservableMonitoring } from "../../instance-provider";
+import { instanceAttributeShaderName } from "../../shaders/util/instance-attribute-shader-name";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  PickType,
-} from '../../types';
-import { uid } from '../../util';
-import { emitOnce, flushEmitOnce } from '../../util/emit-once';
-import { IModelConstructable, Layer } from '../layer';
-import { generateLayerModel } from '../layer-processing/generate-layer-model';
-import { Scene } from '../scene';
+  PickType
+} from "../../types";
+import { uid } from "../../util";
+import { emitOnce, flushEmitOnce } from "../../util/emit-once";
+import { IModelConstructable, Layer } from "../layer";
+import { generateLayerModel } from "../layer-processing/generate-layer-model";
+import { Scene } from "../scene";
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup,
-} from './buffer-manager-base';
+  IBufferLocationGroup
+} from "./buffer-manager-base";
 
 const { max } = Math;
 
@@ -95,7 +95,7 @@ export class InstanceAttributeBufferManager<
       attribute.update(instance);
       // We now have all of the ids of the properties that were used in updating the attributes
       const propertyIdsForAttribute = ObservableMonitoring.getObservableMonitorIds(
-        true,
+        true
       );
       // Store the mapping of the property ids
       this.attributeToPropertyIds.set(attribute, propertyIdsForAttribute);
@@ -120,7 +120,7 @@ export class InstanceAttributeBufferManager<
     // slots
     this.gatherLocationsIntoGroups(
       locationInfo.newLocations,
-      locationInfo.growth,
+      locationInfo.growth
     );
     // After the first registration add, we gear shift to a more efficient add method.
     this.add = this.doAdd;
@@ -141,7 +141,7 @@ export class InstanceAttributeBufferManager<
       // Break down the newly generated buffers into property groupings for the instances
       this.gatherLocationsIntoGroups(
         locationInfo.newLocations,
-        locationInfo.growth,
+        locationInfo.growth
       );
     }
 
@@ -154,15 +154,15 @@ export class InstanceAttributeBufferManager<
       this.currentInstancedCount = this.geometry.maxInstancedCount = max(
         this.currentInstancedCount,
         // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
-        bufferLocations.instanceIndex + 1,
+        bufferLocations.instanceIndex + 1
       );
       this.geometry.drawRange = {
         count: this.currentInstancedCount * this.layer.instanceVertexCount,
-        start: 0,
+        start: 0
       };
     } else {
       console.error(
-        'Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location',
+        "Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location"
       );
     }
 
@@ -215,7 +215,7 @@ export class InstanceAttributeBufferManager<
 
     // Store the list for the diffing process to utilize
     this.updateAllPropertyIdList = Object.values(
-      updateAllPropertyIdList,
+      updateAllPropertyIdList
     ).filter(Boolean);
   }
 
@@ -231,7 +231,7 @@ export class InstanceAttributeBufferManager<
     }
 
     return instance;
-  }
+  };
 
   /**
    * Clears all elements of this manager from the current scene it was in.
@@ -269,7 +269,7 @@ export class InstanceAttributeBufferManager<
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
-            attribute.materialAttribute,
+            attribute.materialAttribute
           );
         }
       });
@@ -281,15 +281,15 @@ export class InstanceAttributeBufferManager<
         const buffer = new Float32Array(size * this.maxInstancedCount);
         const bufferAttribute = new Three.InstancedBufferAttribute(
           buffer,
-          size,
+          size
         );
         bufferAttribute.setDynamic(true);
         this.geometry.addAttribute(
           instanceAttributeShaderName(attribute),
-          bufferAttribute,
+          bufferAttribute
         );
         let newBufferLocations = attributeToNewBufferLocations.get(
-          attribute.name,
+          attribute.name
         );
 
         if (!newBufferLocations) {
@@ -303,17 +303,17 @@ export class InstanceAttributeBufferManager<
         const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
           {},
           attribute,
-          { uid: uid(), bufferAttribute: bufferAttribute },
+          { uid: uid(), bufferAttribute: bufferAttribute }
         );
 
         for (let i = 0; i < this.maxInstancedCount; ++i) {
           const newLocation: IBufferLocation = {
             attribute: internalAttribute,
             buffer: {
-              value: buffer,
+              value: buffer
             },
             instanceIndex: i,
-            range: [i * size, i * size + size],
+            range: [i * size, i * size + size]
           };
 
           newBufferLocations.push(newLocation);
@@ -351,7 +351,7 @@ export class InstanceAttributeBufferManager<
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
-            attribute.materialAttribute,
+            attribute.materialAttribute
           );
         }
       });
@@ -374,7 +374,7 @@ export class InstanceAttributeBufferManager<
         if (bufferAttribute.array instanceof Float32Array) {
           // Make a new buffer that is the proper size
           const buffer: Float32Array = new Float32Array(
-            this.maxInstancedCount * size,
+            this.maxInstancedCount * size
           );
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.array, 0);
@@ -387,11 +387,11 @@ export class InstanceAttributeBufferManager<
           // Add the new attribute to our new geometry object
           this.geometry.addAttribute(
             instanceAttributeShaderName(attribute),
-            newAttribute,
+            newAttribute
           );
           // Get the temp storage for new buffer locations
           let newBufferLocations = attributeToNewBufferLocations.get(
-            attribute.name,
+            attribute.name
           );
 
           // Since we have a new buffer object we are working with, we must update all of the existing buffer
@@ -408,7 +408,7 @@ export class InstanceAttributeBufferManager<
             newBufferLocations = [];
             attributeToNewBufferLocations.set(
               attribute.name,
-              newBufferLocations,
+              newBufferLocations
             );
           }
 
@@ -420,10 +420,10 @@ export class InstanceAttributeBufferManager<
             const newLocation: IBufferLocation = {
               attribute,
               buffer: {
-                value: buffer,
+                value: buffer
               },
               instanceIndex: i,
-              range: [i * size, i * size + size],
+              range: [i * size, i * size + size]
             };
 
             newBufferLocations.push(newLocation);
@@ -432,10 +432,12 @@ export class InstanceAttributeBufferManager<
         }
       });
 
-      this.scene.container.remove(this.model);
+      if (this.scene.container) {
+        this.scene.container.remove(this.model);
+      }
     }
 
-    if (this.scene && this.model) {
+    if (this.scene && this.model && this.scene.container) {
       this.scene.container.remove(this.model);
     }
 
@@ -457,7 +459,7 @@ export class InstanceAttributeBufferManager<
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
-    if (this.scene) {
+    if (this.scene && this.scene.container) {
       this.scene.container.add(this.model);
 
       if (this.pickModel) {
@@ -467,7 +469,7 @@ export class InstanceAttributeBufferManager<
 
     return {
       growth,
-      newLocations: attributeToNewBufferLocations,
+      newLocations: attributeToNewBufferLocations
     };
   }
 
@@ -480,7 +482,7 @@ export class InstanceAttributeBufferManager<
       string,
       IInstanceAttributeBufferLocation[]
     >,
-    totalNewInstances: number,
+    totalNewInstances: number
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
 
@@ -498,9 +500,9 @@ export class InstanceAttributeBufferManager<
         bufferLocationsForAttribute:
           attributeToNewBufferLocations.get(attribute.name) || [],
         childBufferLocations: (attribute.childAttributes || []).map(
-          attr => attributeToNewBufferLocations.get(attr.name) || [],
+          attr => attributeToNewBufferLocations.get(attr.name) || []
         ),
-        ids,
+        ids
       });
     });
 
@@ -508,7 +510,7 @@ export class InstanceAttributeBufferManager<
     for (let i = 0; i < totalNewInstances; ++i) {
       const group: IInstanceAttributeBufferLocationGroup = {
         instanceIndex: -1,
-        propertyToBufferLocation: {},
+        propertyToBufferLocation: {}
       };
 
       // Loop through all of the property ids that affect specific attributes. Each of these ids
@@ -522,12 +524,12 @@ export class InstanceAttributeBufferManager<
 
         if (!bufferLocationsForAttribute) {
           emitOnce(
-            'Instance Attribute Buffer Error',
+            "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`,
+                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`
               );
-            },
+            }
           );
           continue;
         }
@@ -536,12 +538,12 @@ export class InstanceAttributeBufferManager<
 
         if (!bufferLocation) {
           emitOnce(
-            'Instance Attribute Buffer Error',
+            "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`,
+                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`
               );
-            },
+            }
           );
           continue;
         }
@@ -550,13 +552,13 @@ export class InstanceAttributeBufferManager<
           group.instanceIndex = bufferLocation.instanceIndex;
         } else if (bufferLocation.instanceIndex !== group.instanceIndex) {
           emitOnce(
-            'Instance Attribute Parallelism Error',
+            "Instance Attribute Parallelism Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: A buffer location does not have a matching instance index which means the buffer locations are not in parallel with each other somehow. Error count: ${count}`,
+                `${id}: A buffer location does not have a matching instance index which means the buffer locations are not in parallel with each other somehow. Error count: ${count}`
               );
               console.warn(attribute.name, bufferLocation);
-            },
+            }
           );
           continue;
         }
@@ -581,17 +583,17 @@ export class InstanceAttributeBufferManager<
                 childLocations.push(childBufferLocation);
               } else {
                 emitOnce(
-                  'Instance Attribute Child Attribute Error',
+                  "Instance Attribute Child Attribute Error",
                   (count: number, id: string) => {
                     console.warn(
-                      `${id}: A child attribute does not have a buffer location available. Error count: ${count}`,
+                      `${id}: A child attribute does not have a buffer location available. Error count: ${count}`
                     );
                     console.warn(
                       `Parent Attribute: ${attribute.name} Child Attribute: ${
                         childAttribute.name
-                      }`,
+                      }`
                     );
-                  },
+                  }
                 );
               }
             }

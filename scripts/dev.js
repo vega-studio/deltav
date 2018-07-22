@@ -10,10 +10,10 @@ const args = process.argv;
 
 // Process the args
 for (let i = 2; i < args.length; ++i) {
-  const [arg, next = ''] = args.slice(i);
+  const [arg] = args.slice(i);
 
   switch (arg) {
-    case '-rt':
+    case '-t':
     case '--release-test':
       // Set the project path as a path
       RELEASE_TEST = true;
@@ -24,8 +24,8 @@ for (let i = 2; i < args.length; ++i) {
 Usage: ${0} ${1} «Options»
 
 Options:
-  -rt --release-test: When provided, the dist folder will be used as the folder from which files are utilized
-                      rather than the src folder.
+  -r --release-test: When provided, the dist folder will be used as the folder from which files are utilized
+                     rather than the src folder.
       `);
       break;
 

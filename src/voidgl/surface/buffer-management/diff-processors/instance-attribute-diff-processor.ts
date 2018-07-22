@@ -1,15 +1,15 @@
-import { Instance } from '../../../instance-provider/instance';
-import { InstanceDiff } from '../../../instance-provider/instance-provider';
-import { IInstanceAttributeInternal } from '../../../types';
-import { Vec } from '../../../util';
+import { Instance } from "../../../instance-provider/instance";
+import { InstanceDiff } from "../../../instance-provider/instance-provider";
+import { IInstanceAttributeInternal } from "../../../types";
+import { Vec } from "../../../util";
 import {
   IBufferLocation,
   IBufferLocationGroup,
-  isBufferLocationGroup,
-} from '../buffer-manager-base';
-import { IInstanceAttributeBufferLocationGroup } from '../instance-attribute-buffer-manager';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
-import { BaseDiffProcessor } from './base-diff-processor';
+  isBufferLocationGroup
+} from "../buffer-manager-base";
+import { IInstanceAttributeBufferLocationGroup } from "../instance-attribute-buffer-manager";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { BaseDiffProcessor } from "./base-diff-processor";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
@@ -18,7 +18,7 @@ enum DiffMode {
   /** This mode will analyze incoming buffer location changes and only update the range of changed buffer */
   PARTIAL,
   /** This mode will not spend time figuring out what has changed for a buffer, rather the whole buffer will get an update */
-  FULL,
+  FULL
 }
 
 /**
@@ -37,7 +37,7 @@ export class InstanceAttributeDiffProcessor<
 
   /** This tracks a buffer attribute's uid that will perform a complete update */
   bufferAttributeWillUpdate: {
-    [key: number]: IInstanceAttributeInternal<T>,
+    [key: number]: IInstanceAttributeInternal<T>;
   } = {};
 
   /**
@@ -48,7 +48,7 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>,
+    bufferLocations: IBufferLocationGroup<IBufferLocation>
   ) => void = this.updateInstancePartial;
 
   /**
@@ -58,7 +58,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (bufferLocations) {
@@ -75,7 +75,7 @@ export class InstanceAttributeDiffProcessor<
           manager.layer,
           instance,
           EMPTY,
-          newBufferLocations,
+          newBufferLocations
         );
       }
     }
@@ -88,7 +88,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: T,
     propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     // If there is an existing uniform cluster for this instance, then we can update the bufferLocations
     if (bufferLocations) {
@@ -108,7 +108,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup,
+    bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore
@@ -127,7 +127,7 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>,
+    bufferLocations: IBufferLocationGroup<IBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
@@ -153,7 +153,7 @@ export class InstanceAttributeDiffProcessor<
         updateRange = bufferAttributeUpdateRange[attribute.uid] || [
           null,
           Number.MAX_SAFE_INTEGER,
-          Number.MIN_SAFE_INTEGER,
+          Number.MIN_SAFE_INTEGER
         ];
         updateRange[0] = attribute;
         updateRange[1] = min(location.range[0], updateRange[1]);
@@ -190,7 +190,7 @@ export class InstanceAttributeDiffProcessor<
       updateRange = bufferAttributeUpdateRange[attribute.uid] || [
         null,
         Number.MAX_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER,
+        Number.MIN_SAFE_INTEGER
       ];
       updateRange[0] = attribute;
       updateRange[1] = min(location.range[0], updateRange[1]);
@@ -207,7 +207,7 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>,
+    bufferLocations: IBufferLocationGroup<IBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
@@ -273,7 +273,7 @@ export class InstanceAttributeDiffProcessor<
         attribute.needsUpdate = true;
         attribute.updateRange = {
           count: update[2] - update[1],
-          offset: update[1],
+          offset: update[1]
         };
       }
     }
@@ -288,7 +288,7 @@ export class InstanceAttributeDiffProcessor<
         attribute.needsUpdate = true;
         attribute.updateRange = {
           count: -1,
-          offset: 0,
+          offset: 0
         };
       }
     }
@@ -305,21 +305,15 @@ export class InstanceAttributeDiffProcessor<
   incomingChangeList(changes: InstanceDiff<T>[]) {
     if (changes.length === 0) {
       this.diffMode = DiffMode.PARTIAL;
-    }
-
-    else if (changes.length > this.bufferManager.getInstanceCount() * 0.7) {
+    } else if (changes.length > this.bufferManager.getInstanceCount() * 0.7) {
       this.diffMode = DiffMode.FULL;
-    }
-
-    else {
+    } else {
       this.diffMode = DiffMode.PARTIAL;
     }
 
     if (this.diffMode === DiffMode.PARTIAL) {
       this.updateInstance = this.updateInstancePartial;
-    }
-
-    else {
+    } else {
       this.updateInstance = this.updateInstanceFull;
     }
   }

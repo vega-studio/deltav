@@ -1,10 +1,10 @@
-import * as Three from 'three';
-import { Instance } from './instance-provider/instance';
-import { Bounds } from './primitives/bounds';
-import { IPoint } from './primitives/point';
-import { ChartCamera, Vec, Vec2 } from './util';
-import { IAutoEasingMethod } from './util/auto-easing-method';
-import { IVisitFunction, TrackedQuadTree } from './util/tracked-quad-tree';
+import * as Three from "three";
+import { Instance } from "./instance-provider/instance";
+import { Bounds } from "./primitives/bounds";
+import { IPoint } from "./primitives/point";
+import { ChartCamera, Vec, Vec2 } from "./util";
+import { IAutoEasingMethod } from "./util/auto-easing-method";
+import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -31,7 +31,7 @@ export enum InstanceBlockIndex {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 export enum InstanceAttributeSize {
@@ -40,7 +40,7 @@ export enum InstanceAttributeSize {
   THREE = 3,
   FOUR = 4,
   /** Special case for making instance attributes that can target Atlas resources */
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
@@ -48,7 +48,7 @@ export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
   [InstanceAttributeSize.TWO]: 2,
   [InstanceAttributeSize.THREE]: 3,
   [InstanceAttributeSize.FOUR]: 4,
-  [InstanceAttributeSize.ATLAS]: 4,
+  [InstanceAttributeSize.ATLAS]: 4
 };
 
 export enum UniformSize {
@@ -58,14 +58,14 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export enum VertexAttributeSize {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 /**
@@ -281,7 +281,7 @@ export enum ShaderInjectionTarget {
   /** ONLY the fragment shader will receive the injection */
   FRAGMENT = 2,
   /** Both the fragment and vertex shader will receive the injection */
-  ALL = 3,
+  ALL = 3
 }
 
 export interface IUniform {
@@ -323,7 +323,7 @@ export interface IUniformInternal extends IUniform {
  */
 export interface IInstancingUniform {
   name: string;
-  type: 'f' | 'v2' | 'v3' | 'v4' | '4fv' | 'bvec4';
+  type: "f" | "v2" | "v3" | "v4" | "4fv" | "bvec4";
   value: ShaderIOValue;
 }
 
@@ -362,8 +362,8 @@ export interface IProjection {
 
 export type IMaterialOptions = Partial<
   Omit<
-    Omit<Omit<Three.ShaderMaterialParameters, 'uniforms'>, 'vertexShader'>,
-    'fragmentShader'
+    Omit<Omit<Three.ShaderMaterialParameters, "uniforms">, "vertexShader">,
+    "fragmentShader"
   >
 >;
 
@@ -388,7 +388,7 @@ export enum PickType {
    *
    * This is vastly more efficient and accurate than ALL. This also will be more readily supported than ALL.
    */
-  SINGLE,
+  SINGLE
 }
 
 /**
@@ -461,7 +461,7 @@ export interface IColorPickingData {
 export enum InstanceDiffType {
   CHANGE = 0,
   INSERT = 1,
-  REMOVE = 2,
+  REMOVE = 2
 }
 
 /**
@@ -485,3 +485,35 @@ export interface IEasingProps {
   startTime: number;
   duration: number;
 }
+
+/**
+ * This is the Shader IO information a layer will provide.
+ */
+export interface IShaderInputs<T extends Instance> {
+  /** These are very frequently changing attributes and are uniform across all vertices in the model */
+  instanceAttributes?: (IInstanceAttribute<T> | null)[];
+  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
+  vertexAttributes?: (IVertexAttribute | null)[];
+  /** Specify how many vertices there are per instance */
+  vertexCount: number;
+  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
+  uniforms?: (IUniform | null)[];
+}
+
+/**
+ * This is the initialization of the shader.
+ */
+export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
+  IShaders;
+
+export interface IShaderExtension {
+  header?: string;
+  body?: string;
+}
+
+export type IShaderIOExtension<T extends Instance> = Partial<
+  IShaderInputs<T>
+> & {
+  vs?: IShaderExtension;
+  fs?: IShaderExtension;
+};

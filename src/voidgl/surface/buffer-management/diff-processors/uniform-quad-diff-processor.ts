@@ -1,13 +1,13 @@
-import { Instance } from '../../../instance-provider';
-import { IQuadTreePickingMetrics, PickType } from '../../../types';
+import { Instance } from "../../../instance-provider";
+import { IQuadTreePickingMetrics, PickType } from "../../../types";
 import {
   BufferManagerBase,
   IBufferLocation,
-  isBufferLocation,
-} from '../buffer-manager-base';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
-import { IUniformBufferLocation } from '../uniform-buffer-manager';
-import { UniformDiffProcessor } from './uniform-diff-processor';
+  isBufferLocation
+} from "../buffer-manager-base";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { IUniformBufferLocation } from "../uniform-buffer-manager";
+import { UniformDiffProcessor } from "./uniform-diff-processor";
 
 const EMPTY: number[] = [];
 
@@ -21,7 +21,7 @@ export class UniformQuadDiffProcessor<
 
   constructor(
     layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>
   ) {
     super(layer, bufferManager);
 
@@ -29,7 +29,7 @@ export class UniformQuadDiffProcessor<
       this.quadPicking = layer.picking;
     } else {
       console.warn(
-        'Diff Processing Error: A layer has a diff processor requesting Quad Processing but the picking type is not valid.',
+        "Diff Processing Error: A layer has a diff processor requesting Quad Processing but the picking type is not valid."
       );
     }
   }
@@ -42,7 +42,7 @@ export class UniformQuadDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
@@ -71,7 +71,7 @@ export class UniformQuadDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
@@ -95,7 +95,7 @@ export class UniformQuadDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster?: IUniformBufferLocation,
+    uniformCluster?: IUniformBufferLocation
   ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore

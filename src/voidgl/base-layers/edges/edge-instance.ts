@@ -1,8 +1,5 @@
-import {
-  IInstanceOptions,
-  Instance,
-  observable,
-} from '../../instance-provider';
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { observable } from "../../instance-provider/observable";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** The color of this edge at the start point. */
@@ -56,7 +53,7 @@ export class EdgeInstance extends Instance {
 
     return [
       (this.end[1] - this.start[1]) / length,
-      -(this.end[0] - this.start[0]) / length,
+      -(this.end[0] - this.start[0]) / length
     ];
   }
 

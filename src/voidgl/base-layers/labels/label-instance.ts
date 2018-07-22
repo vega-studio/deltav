@@ -1,8 +1,8 @@
-import { observable } from '../../instance-provider';
-import { IInstanceOptions, Instance } from '../../instance-provider/instance';
-import { Label } from '../../primitives/label';
-import { LabelAtlasResource, LabelRasterizer } from '../../surface/texture';
-import { Anchor, AnchorType, ScaleType } from '../types';
+import { observable } from "../../instance-provider";
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Label } from "../../primitives/label";
+import { LabelAtlasResource, LabelRasterizer } from "../../surface/texture";
+import { Anchor, AnchorType, ScaleType } from "../types";
 
 export interface ILabelInstanceOptions
   extends IInstanceOptions,
@@ -21,9 +21,9 @@ export interface ILabelInstanceOptions
   /** The font size of the label in px */
   fontSize?: number;
   /** Stylization of the font */
-  fontStyle?: Label['fontStyle'];
+  fontStyle?: Label["fontStyle"];
   /** The weight of the font */
-  fontWeight?: Label['fontWeight'];
+  fontWeight?: Label["fontWeight"];
   /** When this is set labels will only draw the label up to this size. If below, the label will automatically truncate with ellipses */
   maxWidth?: number;
   /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
@@ -77,7 +77,7 @@ const rasterizationLookUp = new Map<
 const anchorCalculator: {
   [key: number]: (anchor: Anchor, label: LabelInstance) => void;
 } = {
-  [AnchorType.TopLeft]: (anchor: Anchor, label: LabelInstance) => {
+  [AnchorType.TopLeft]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = -anchor.padding;
     anchor.y = -anchor.padding;
   },
@@ -113,10 +113,10 @@ const anchorCalculator: {
     anchor.x = label.width + anchor.padding;
     anchor.y = label.height + anchor.padding;
   },
-  [AnchorType.Custom]: (anchor: Anchor, label: LabelInstance) => {
+  [AnchorType.Custom]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -162,24 +162,21 @@ export class LabelInstance extends Instance implements Label {
   // As the properties are completely locked into how the label was rasterized and can not
   // Nor should not be easily adjusted for performance concerns
 
-  private _cssFont: string = '';
-  private _fontFamily: string = 'Arial';
+  private _cssFont: string = "";
+  private _fontFamily: string = "Arial";
   private _fontSize: number = 12;
-  private _fontStyle: Label['fontStyle'] = 'normal';
-  private _fontWeight: Label['fontWeight'] = 400;
+  private _fontStyle: Label["fontStyle"] = "normal";
+  private _fontWeight: Label["fontWeight"] = 400;
   private _maxWidth: number = 0;
-  private _text: string = '';
+  private _text: string = "";
 
-  @observable
-  private _width: number = 0;
+  @observable private _width: number = 0;
 
-  @observable
-  private _height: number = 0;
+  @observable private _height: number = 0;
 
   private _isDestroyed: boolean = false;
 
-  @observable
-  private _rasterization: RasterizationReference;
+  @observable private _rasterization: RasterizationReference;
 
   // The following are the getters for the locked in parameters of the label so we can read
   // The properties but not set any of them.
@@ -259,7 +256,7 @@ export class LabelInstance extends Instance implements Label {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: ILabelInstanceOptions) {
@@ -307,7 +304,7 @@ export class LabelInstance extends Instance implements Label {
     if (!rasterization) {
       rasterization = {
         references: 1,
-        resource: new LabelAtlasResource(this),
+        resource: new LabelAtlasResource(this)
       };
 
       // Look to see if any rasterization options were specified
@@ -372,7 +369,7 @@ export class LabelInstance extends Instance implements Label {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

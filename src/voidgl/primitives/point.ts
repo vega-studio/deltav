@@ -56,7 +56,7 @@ export class Point {
 
     return {
       x: p1.x + p2.x,
-      y: p1.y + p2.y,
+      y: p1.y + p2.y
     };
   }
 
@@ -135,7 +135,7 @@ export class Point {
   static subtract(
     amount: IPoint,
     from: IPoint,
-    normalize: boolean = false,
+    normalize: boolean = false
   ): IPoint {
     let dx = from.x - amount.x;
     let dy = from.y - amount.y;
@@ -148,7 +148,7 @@ export class Point {
 
     return {
       x: dx,
-      y: dy,
+      y: dy
     };
   }
 
@@ -184,7 +184,7 @@ export class Point {
 
     return {
       x: direction.x / 2 + p1.x,
-      y: direction.y / 2 + p1.y,
+      y: direction.y / 2 + p1.y
     };
   }
 
@@ -211,7 +211,7 @@ export class Point {
 
     return {
       x: p1.x * s,
-      y: p1.y * s,
+      y: p1.y * s
     };
   }
 
@@ -224,7 +224,7 @@ export class Point {
   static zero(): IPoint {
     return {
       x: 0,
-      y: 0,
+      y: 0
     };
   }
 }

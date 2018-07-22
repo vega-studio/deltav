@@ -1,8 +1,8 @@
-import * as Three from 'three';
-import { Instance } from '../util';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { ILayerProps, Layer } from './layer';
-import { IViewOptions, View } from './view';
+import * as Three from "three";
+import { Instance } from "../instance-provider/instance";
+import { ILayerProps, Layer } from "../surface/layer";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { IViewOptions, View } from "./view";
 
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
@@ -29,10 +29,10 @@ function sortByDepth(a: Layer<any, any>, b: Layer<any, any>) {
  * is rendered with.
  */
 export class Scene extends IdentifyByKey {
-  static DEFAULT_SCENE_ID = '__default__';
+  static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
-  container: Three.Scene = new Three.Scene();
+  container: Three.Scene | undefined = new Three.Scene();
   // TODO: This 'could' be smarter when Three is gone. The pipeline could IMMEDIATELY render
   /** We make a picking container specifically for the cases where objects must be rendered for picking */
   pickingContainer: Three.Scene = new Three.Scene();
@@ -45,8 +45,11 @@ export class Scene extends IdentifyByKey {
 
   constructor(options: ISceneOptions) {
     super(options);
-    this.container.frustumCulled = false;
-    this.container.autoUpdate = false;
+
+    if (this.container) {
+      this.container.frustumCulled = false;
+      this.container.autoUpdate = false;
+    }
   }
 
   /**
@@ -89,10 +92,10 @@ export class Scene extends IdentifyByKey {
     }
 
     console.warn(
-      'Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:',
+      "Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:",
       this.id,
-      'Layer:',
-      layer.id,
+      "Layer:",
+      layer.id
     );
   }
 

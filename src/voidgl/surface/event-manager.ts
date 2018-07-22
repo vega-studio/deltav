@@ -1,12 +1,12 @@
-import { Bounds } from '../primitives';
-import { IProjection } from '../types';
+import { Bounds } from "../primitives";
+import { IProjection } from "../types";
 import {
   IDragMetrics,
   IMouseInteraction,
   IWheelMetrics,
-  MouseEventManager,
-} from './mouse-event-manager';
-import { View } from './view';
+  MouseEventManager
+} from "./mouse-event-manager";
+import { View } from "./view";
 
 /**
  * Classes can extend this and override the methods to respond to events.

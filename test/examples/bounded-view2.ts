@@ -6,7 +6,7 @@ export class BoundedView2 extends BaseExample {
   manager: BasicCameraController;
   originalRange: Bounds;
 
-  makeController(defaultCamera: ChartCamera, testCamera: ChartCamera, viewName: string): EventManager {
+  makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager {
     const bounds: ICameraBoundsOptions = {
       anchor: CameraBoundsAnchor.BOTTOM_MIDDLE,
       screenPadding: {left: 5, right: 5, top: 5, bottom: 5},
@@ -20,7 +20,7 @@ export class BoundedView2 extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, atlas: string, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(scene: string, _atlas: string, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
       key: 'bounded-view2',

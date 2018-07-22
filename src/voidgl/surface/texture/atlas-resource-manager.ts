@@ -1,10 +1,10 @@
-import * as Three from 'three';
-import { Instance } from '../../instance-provider/instance';
-import { InstanceIOValue } from '../../types';
-import { ILayerProps, Layer } from '../layer';
-import { AtlasManager, AtlasResource } from './atlas-manager';
-import { LabelAtlasResource } from './label-atlas-resource';
-import { SubTexture } from './sub-texture';
+import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
+import { InstanceIOValue } from "../../types";
+import { ILayerProps, Layer } from "../layer";
+import { AtlasManager, AtlasResource } from "./atlas-manager";
+import { LabelAtlasResource } from "./label-atlas-resource";
+import { SubTexture } from "./sub-texture";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */
@@ -22,7 +22,7 @@ function toInstanceIOValue(texture?: SubTexture): InstanceIOValue {
     texture.atlasTL.x,
     texture.atlasTL.y,
     texture.atlasBR.x,
-    texture.atlasBR.y,
+    texture.atlasBR.y
   ];
 }
 
@@ -36,7 +36,7 @@ export class AtlasResourceManager {
   /** This is the atlas manager that handles operations with our atlas' */
   atlasManager: AtlasManager;
   /** This is the atlas currently targetted by requests */
-  targetAtlas: string = '';
+  targetAtlas: string = "";
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, AtlasResource[]>();
   /**
@@ -60,7 +60,7 @@ export class AtlasResourceManager {
     let didDequeue = false;
 
     for (const [targetAtlas, resources] of Array.from(
-      this.requestQueue.entries(),
+      this.requestQueue.entries()
     )) {
       if (resources.length > 0) {
         // We did dequeue
@@ -132,7 +132,7 @@ export class AtlasResourceManager {
   request<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     instance: Instance,
-    resource: AtlasResource,
+    resource: AtlasResource
   ): InstanceIOValue {
     const texture: SubTexture = resource.texture;
 

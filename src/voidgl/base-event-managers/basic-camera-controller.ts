@@ -1,13 +1,13 @@
-import { Bounds } from '../primitives/bounds';
-import { EventManager } from '../surface/event-manager';
+import { Bounds } from "../primitives/bounds";
+import { EventManager } from "../surface/event-manager";
 import {
   IDragMetrics,
   IMouseInteraction,
-  IWheelMetrics,
-} from '../surface/mouse-event-manager';
-import { View } from '../surface/view';
-import { add3, subtract3, Vec3 } from '../util';
-import { ChartCamera } from '../util/chart-camera';
+  IWheelMetrics
+} from "../surface/mouse-event-manager";
+import { View } from "../surface/view";
+import { add3, subtract3, Vec3 } from "../util";
+import { ChartCamera } from "../util/chart-camera";
 export enum CameraBoundsAnchor {
   TOP_LEFT,
   TOP_MIDDLE,
@@ -17,7 +17,7 @@ export enum CameraBoundsAnchor {
   MIDDLE_RIGHT,
   BOTTOM_LEFT,
   BOTTOM_MIDDLE,
-  BOTTOM_RIGHT,
+  BOTTOM_RIGHT
 }
 
 const { max, min } = Math;
@@ -56,7 +56,7 @@ export interface IBasicCameraControllerOptions {
   panFilter?(
     offset: [number, number, number],
     view: View,
-    allViews: View[],
+    allViews: View[]
   ): [number, number, number];
   /**
    * This adjusts how fast scaling is applied from the mouse wheel
@@ -69,7 +69,7 @@ export interface IBasicCameraControllerOptions {
   scaleFilter?(
     scale: [number, number, number],
     view: View,
-    allViews: View[],
+    allViews: View[]
   ): [number, number, number];
   /**
    * This is the view that MUST be the start view from the events.
@@ -103,17 +103,17 @@ export class BasicCameraController extends EventManager {
   /** This is the filter applied to panning operations */
   private panFilter = (
     offset: [number, number, number],
-    view: View,
-    allViews: View[],
-  ) => offset
+    _view: View,
+    _allViews: View[]
+  ) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
   /** THis is the filter applied to tscaling operations */
   private scaleFilter = (
     scale: [number, number, number],
-    view: View,
-    allViews: View[],
-  ) => scale
+    _view: View,
+    _allViews: View[]
+  ) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
 
@@ -124,9 +124,9 @@ export class BasicCameraController extends EventManager {
   /**
    * Callback for when the range has changed for the camera in a view
    */
-  private onRangeChanged = (camera: ChartCamera, targetView: View) => {
+  private onRangeChanged = (_camera: ChartCamera, _targetView: View) => {
     /* no-op */
-  }
+  };
   /**
    * This flag is set to true when a start view is targetted on mouse down even if it is not
    * the top most view.
@@ -165,15 +165,15 @@ export class BasicCameraController extends EventManager {
       if (targetView) {
         this.camera.offset[0] = this.boundsHorizontalOffset(
           targetView,
-          this.bounds,
+          this.bounds
         );
         this.camera.offset[1] = this.boundsVerticalOffset(
           targetView,
-          this.bounds,
+          this.bounds
         );
       }
     }
-  }
+  };
 
   applyScaleBounds = () => {
     if (this.camera && this.bounds) {
@@ -182,7 +182,7 @@ export class BasicCameraController extends EventManager {
         this.camera.scale = [
           max(this.camera.scale[0], this.bounds.scaleMin[0]),
           max(this.camera.scale[1], this.bounds.scaleMin[1]),
-          max(this.camera.scale[2], this.bounds.scaleMin[2]),
+          max(this.camera.scale[2], this.bounds.scaleMin[2])
         ];
       }
 
@@ -190,11 +190,11 @@ export class BasicCameraController extends EventManager {
         this.camera.scale = [
           min(this.camera.scale[0], this.bounds.scaleMax[0]),
           min(this.camera.scale[1], this.bounds.scaleMax[1]),
-          min(this.camera.scale[2], this.bounds.scaleMax[2]),
+          min(this.camera.scale[2], this.bounds.scaleMax[2])
         ];
       }
     }
-  }
+  };
 
   /**
    * Calculation for adhering to an anchor - x-axis offset only.
@@ -270,11 +270,11 @@ export class BasicCameraController extends EventManager {
   boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions) {
     const worldTLinScreenSpace = targetView.worldToScreen({
       x: bounds.worldBounds.left,
-      y: bounds.worldBounds.top,
+      y: bounds.worldBounds.top
     });
     const worldBRinScreenSpace = targetView.worldToScreen({
       x: bounds.worldBounds.right,
-      y: bounds.worldBounds.bottom,
+      y: bounds.worldBounds.bottom
     });
 
     const widthDifference =
@@ -320,11 +320,11 @@ export class BasicCameraController extends EventManager {
   boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions) {
     const worldTLinScreenSpace = targetView.worldToScreen({
       x: bounds.worldBounds.left,
-      y: bounds.worldBounds.top,
+      y: bounds.worldBounds.top
     });
     const worldBRinScreenSpace = targetView.worldToScreen({
       x: bounds.worldBounds.right,
-      y: bounds.worldBounds.bottom,
+      y: bounds.worldBounds.bottom
     });
 
     const heightDifference =
@@ -374,7 +374,7 @@ export class BasicCameraController extends EventManager {
 
   private findCoveredStartView(e: IMouseInteraction) {
     const found = e.viewsUnderMouse.find(
-      under => this.startViews.indexOf(under.view.id) > -1,
+      under => this.startViews.indexOf(under.view.id) > -1
     );
     this.startViewDidStart = Boolean(found);
 
@@ -399,7 +399,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Used to aid in handling the pan effect and determine the contextual view targetted.
    */
-  handleMouseDown(e: IMouseInteraction, button: number) {
+  handleMouseDown(e: IMouseInteraction, _button: number) {
     if (this.startViews) {
       // We look for valid covered views on mouse down so dragging will work
       this.findCoveredStartView(e);
@@ -413,7 +413,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Used to aid in handling the pan effect
    */
-  handleMouseUp(e: IMouseInteraction) {
+  handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;
     this.isPanning = false;
   }
@@ -427,14 +427,14 @@ export class BasicCameraController extends EventManager {
         let pan: [number, number, number] = [
           drag.screen.delta.x / this.camera.scale[0],
           drag.screen.delta.y / this.camera.scale[1],
-          0,
+          0
         ];
 
         if (this.panFilter) {
           pan = this.panFilter(
             pan,
             e.start.view,
-            e.viewsUnderMouse.map(v => v.view),
+            e.viewsUnderMouse.map(v => v.view)
           );
         }
 
@@ -468,14 +468,14 @@ export class BasicCameraController extends EventManager {
       let scale: [number, number, number] = [
         wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
         wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
-        1,
+        1
       ];
 
       if (this.scaleFilter) {
         scale = this.scaleFilter(
           scale,
           targetView,
-          e.viewsUnderMouse.map(v => v.view),
+          e.viewsUnderMouse.map(v => v.view)
         );
       }
 
@@ -499,16 +499,16 @@ export class BasicCameraController extends EventManager {
   }
 
   // These are the currently Unused responses for this controller
-  handleMouseOut(e: IMouseInteraction) {
+  handleMouseOut(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleClick(e: IMouseInteraction) {
+  handleClick(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleMouseMove(e: IMouseInteraction) {
+  handleMouseMove(_e: IMouseInteraction) {
     /*no-op*/
   }
-  handleMouseOver(e: IMouseInteraction) {
+  handleMouseOver(_e: IMouseInteraction) {
     /*no-op*/
   }
 
@@ -529,14 +529,14 @@ export class BasicCameraController extends EventManager {
       const topLeft = projection.screenToWorld(screenBounds);
       const bottomRight = projection.screenToWorld({
         x: screenBounds.right,
-        y: screenBounds.bottom,
+        y: screenBounds.bottom
       });
 
       return new Bounds({
         height: bottomRight.y - topLeft.y,
         width: bottomRight.x - topLeft.x,
         x: topLeft.x,
-        y: topLeft.y,
+        y: topLeft.y
       });
     }
 
@@ -586,24 +586,24 @@ export class BasicCameraController extends EventManager {
         [
           screenBounds.width / newWorld.width,
           screenBounds.height / newWorld.height,
-          1,
+          1
         ],
-        this.camera.scale,
+        this.camera.scale
       );
 
       this.camera.scale = add3(
         this.camera.scale,
-        this.scaleFilter(deltaScale, view, [view]),
+        this.scaleFilter(deltaScale, view, [view])
       );
 
       const deltaPan = subtract3(
         [-newWorld.x, -newWorld.y, 0],
-        this.camera.offset,
+        this.camera.offset
       );
 
       this.camera.offset = add3(
         this.camera.offset,
-        this.scaleFilter(deltaPan, view, [view]),
+        this.scaleFilter(deltaPan, view, [view])
       );
 
       // Bound the camera to the specified bounding range

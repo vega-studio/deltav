@@ -5,9 +5,9 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ScaleType,
-} from 'src';
-import { BaseExample } from './base-example';
+  ScaleType
+} from "src";
+import { BaseExample } from "./base-example";
 
 export class LabelAnimatedScale extends BaseExample {
   minScale: number = 0.1;
@@ -17,13 +17,13 @@ export class LabelAnimatedScale extends BaseExample {
   makeLayer(
     scene: string,
     atlas: string,
-    provider: InstanceProvider<LabelInstance>,
+    provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       atlas,
       data: provider,
-      key: 'label-animated-scale',
-      scene,
+      key: "label-animated-scale",
+      scene
     });
   }
 
@@ -33,23 +33,23 @@ export class LabelAnimatedScale extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.TopLeft,
+          type: AnchorType.TopLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: 'Arial',
+        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: 'normal',
-        fontWeight: 'normal',
+        fontStyle: "normal",
+        fontWeight: "normal",
         id: `label-vertical-0`,
         rasterization: {
-          scale: 1.0,
+          scale: 1.0
         },
         scale: 1.0,
         scaling: ScaleType.BOUND_MAX,
-        text: 'Scaling text...:',
+        text: "Scaling text...:",
         x: 20,
-        y: 100,
-      }),
+        y: 100
+      })
     );
 
     setInterval(() => {

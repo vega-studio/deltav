@@ -1,34 +1,40 @@
-import * as Three from 'three';
-import { InstanceProvider } from '../../instance-provider';
+import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import {
   ILayerProps,
   IModelType,
   IPickingMethods,
-  IShaderInitialization,
-  Layer,
-} from '../../surface/layer';
+  Layer
+} from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
   InstanceBlockIndex,
   InstanceIOValue,
+  IShaderInitialization,
   IUniform,
   UniformSize,
-  VertexAttributeSize,
-} from '../../types';
-import { CommonMaterialOptions, IAutoEasingMethod, shaderTemplate, Vec } from '../../util';
-import { EdgeInstance } from './edge-instance';
-import { edgePicking } from './edge-picking';
-import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
+  VertexAttributeSize
+} from "../../types";
+import {
+  CommonMaterialOptions,
+  IAutoEasingMethod,
+  shaderTemplate,
+  Vec
+} from "../../util";
+import { EdgeInstance } from "./edge-instance";
+import { edgePicking } from "./edge-picking";
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
 
-export interface IEdgeLayerProps extends ILayerProps<EdgeInstance> {
-  /** Specifies which properties to make GPU easing happen and how they should be animated */
+export interface IEdgeLayerProps<T extends EdgeInstance>
+  extends ILayerProps<T> {
+  /** Properties for animating attributes */
   animate?: {
-    end?: IAutoEasingMethod<Vec>,
-    start?: IAutoEasingMethod<Vec>,
-    colorStart?: IAutoEasingMethod<Vec>,
-    colorEnd?: IAutoEasingMethod<Vec>,
-    control?: IAutoEasingMethod<Vec>,
+    end?: IAutoEasingMethod<Vec>;
+    start?: IAutoEasingMethod<Vec>;
+    colorStart?: IAutoEasingMethod<Vec>;
+    colorEnd?: IAutoEasingMethod<Vec>;
+    control?: IAutoEasingMethod<Vec>;
   };
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadphase;
@@ -54,28 +60,31 @@ function toInstanceIOValue(value: [number, number][]): InstanceIOValue {
 
 /** This picks the appropriate shader for the edge type desired */
 const pickVS = {
-  [EdgeType.LINE]: require('./shader/edge-layer-line.vs'),
-  [EdgeType.BEZIER]: require('./shader/edge-layer-bezier.vs'),
-  [EdgeType.BEZIER2]: require('./shader/edge-layer-bezier2.vs'),
+  [EdgeType.LINE]: require("./shader/edge-layer-line.vs"),
+  [EdgeType.BEZIER]: require("./shader/edge-layer-bezier.vs"),
+  [EdgeType.BEZIER2]: require("./shader/edge-layer-bezier2.vs")
 };
 
 /** This is the base edge layer which is a template that can be filled with the needed specifics for a given line type */
-const baseVS = require('./shader/edge-layer.vs');
-const screenVS = require('./shader/edge-layer-screen-curve.vs');
-const edgeFS = require('./shader/edge-layer.fs');
+const baseVS = require("./shader/edge-layer.vs");
+const screenVS = require("./shader/edge-layer-screen-curve.vs");
+const edgeFS = require("./shader/edge-layer.fs");
 
 /**
  * This layer displays edges and provides as many controls as possible for displaying
  * them in interesting ways.
  */
-export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
+export class EdgeLayer<
+  T extends EdgeInstance,
+  U extends IEdgeLayerProps<T>
+> extends Layer<T, U> {
   // Set default props for the layer
-  static defaultProps: IEdgeLayerProps = {
+  static defaultProps: IEdgeLayerProps<EdgeInstance> = {
     broadphase: EdgeBroadphase.ALL,
     data: new InstanceProvider<EdgeInstance>(),
-    key: 'none',
+    key: "none",
     scaleType: EdgeScaleType.NONE,
-    type: EdgeType.LINE,
+    type: EdgeType.LINE
   };
 
   /**
@@ -94,7 +103,7 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
       animate = {},
       scaleFactor = () => 1,
       type,
-      scaleType = EdgeScaleType.NONE,
+      scaleType = EdgeScaleType.NONE
     } = this.props;
 
     const {
@@ -102,7 +111,7 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
       start: animateStart,
       colorStart: animateColorStart,
       colorEnd: animateColorEnd,
-      control: animateControl,
+      control: animateControl
     } = animate;
 
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
@@ -110,12 +119,12 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
-      [MAX_SEGMENTS * 2 + 2]: -1,
+      [MAX_SEGMENTS * 2 + 2]: -1
     };
 
     const vertexInterpolation: { [key: number]: number } = {
       0: 0,
-      [MAX_SEGMENTS * 2 + 2]: 1,
+      [MAX_SEGMENTS * 2 + 2]: 1
     };
 
     let sign = 1;
@@ -125,19 +134,19 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
       sign *= -1;
     }
 
-    const vs = shaderTemplate(
-      scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
-      {
+    const vs = shaderTemplate({
+      options: {
         // Retain the attributes injection
-        attributes: '${attributes}',
+        attributes: "${attributes}",
         // Inject the proper interpolation method
-        interpolation: pickVS[type],
+        interpolation: pickVS[type]
       },
-      {
-        name: 'Edge Layer',
-        values: ['interpolation'],
+      required: {
+        name: "Edge Layer",
+        values: ["interpolation"]
       },
-    );
+      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS
+    });
 
     return {
       fs: edgeFS,
@@ -146,63 +155,63 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
           easing: animateStart,
-          name: 'start',
+          name: "start",
           size: InstanceAttributeSize.TWO,
-          update: o => o.start,
+          update: o => o.start
         },
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
           easing: animateEnd,
-          name: 'end',
+          name: "end",
           size: InstanceAttributeSize.TWO,
-          update: o => o.end,
+          update: o => o.end
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
-          name: 'widthStart',
+          name: "widthStart",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.widthStart],
+          update: o => [o.widthStart]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.TWO,
-          name: 'widthEnd',
+          name: "widthEnd",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.widthEnd],
+          update: o => [o.widthEnd]
         },
         {
           block: 1,
           blockIndex: InstanceBlockIndex.THREE,
-          name: 'depth',
+          name: "depth",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           block: 2,
           blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorStart,
-          name: 'colorStart',
+          name: "colorStart",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorStart,
+          update: o => o.colorStart
         },
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorEnd,
-          name: 'colorEnd',
+          name: "colorEnd",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorEnd,
+          update: o => o.colorEnd
         },
         type === EdgeType.LINE
           ? {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
-              name: 'control',
+              name: "control",
               size: InstanceAttributeSize.FOUR,
-              update: o => [0, 0, 0, 0],
+              update: _o => [0, 0, 0, 0]
             }
           : null,
         type === EdgeType.BEZIER
@@ -210,9 +219,9 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
-              name: 'control',
+              name: "control",
               size: InstanceAttributeSize.FOUR,
-              update: o => [o.control[0][0], o.control[0][1], 0, 0],
+              update: o => [o.control[0][0], o.control[0][1], 0, 0]
             }
           : null,
         type === EdgeType.BEZIER2
@@ -220,25 +229,25 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
-              name: 'control',
+              name: "control",
               size: InstanceAttributeSize.FOUR,
-              update: o => toInstanceIOValue(o.control),
+              update: o => toInstanceIOValue(o.control)
             }
-          : null,
+          : null
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (uniform: IUniform) => [scaleFactor()],
-        },
+          update: (_uniform: IUniform) => [scaleFactor()]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'position',
+          name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
@@ -246,19 +255,19 @@ export class EdgeLayer extends Layer<EdgeInstance, IEdgeLayerProps> {
             // The side of the quad
             vertexInterpolation[vertex],
             // The number of vertices
-            MAX_SEGMENTS * 2,
-          ],
-        },
+            MAX_SEGMENTS * 2
+          ]
+        }
       ],
       vertexCount: MAX_SEGMENTS * 2 + 2,
-      vs: vs.shader,
+      vs: vs.shader
     };
   }
 
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh,
+      modelType: Three.Mesh
     };
   }
 

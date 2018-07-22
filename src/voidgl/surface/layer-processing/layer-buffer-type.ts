@@ -1,16 +1,16 @@
-import { Instance } from '../../instance-provider/instance';
+import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   instanceAttributeSizeFloatCount,
-  IVertexAttribute,
-} from '../../types';
-import { WebGLStat } from '../../util';
+  IVertexAttribute
+} from "../../types";
+import { WebGLStat } from "../../util";
 import {
   InstanceAttributeBufferManager,
-  UniformBufferManager,
-} from '../buffer-management';
-import { Layer } from '../layer';
-import { Scene } from '../scene';
+  UniformBufferManager
+} from "../buffer-management";
+import { Layer } from "../layer";
+import { Scene } from "../scene";
 
 export enum LayerBufferType {
   // This is a compatibility mode for instance attributes. This is used when:
@@ -19,7 +19,7 @@ export enum LayerBufferType {
   // 3. When the instance attributes + vertex attributes exceeds the max Vertex Attributes for the hardware
   UNIFORM,
   // This is a fast and zippy buffering strategy used when the hardware supports it for a provided layer!
-  INSTANCE_ATTRIBUTE,
+  INSTANCE_ATTRIBUTE
 }
 
 /**
@@ -27,10 +27,10 @@ export enum LayerBufferType {
  * instancing.
  */
 export function getLayerBufferType<T extends Instance>(
-  gl: WebGLRenderingContext,
+  _gl: WebGLRenderingContext,
   layer: Layer<T, any>,
   vertexAttributes: IVertexAttribute[],
-  instanceAttributes: IInstanceAttribute<T>[],
+  instanceAttributes: IInstanceAttribute<T>[]
 ) {
   let type;
 
@@ -54,7 +54,7 @@ export function getLayerBufferType<T extends Instance>(
     for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
       const attribute = instanceAttributes[i];
       attributesUsed += Math.ceil(
-        instanceAttributeSizeFloatCount[attribute.size || 1] / 4,
+        instanceAttributeSizeFloatCount[attribute.size || 1] / 4
       );
     }
 
@@ -83,14 +83,14 @@ export function getLayerBufferType<T extends Instance>(
 export function makeLayerBufferManager<T extends Instance>(
   gl: WebGLRenderingContext,
   layer: Layer<T, any>,
-  scene: Scene,
+  scene: Scene
 ) {
   // Esnure the buffering type has been calculated for the layer
   const type = getLayerBufferType(
     gl,
     layer,
     layer.vertexAttributes,
-    layer.instanceAttributes,
+    layer.instanceAttributes
   );
 
   switch (type) {

@@ -13,6 +13,7 @@ import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BaseDiffProcessor } from "./diff-processors/base-diff-processor";
 import { InstanceAttributeColorDiffProcessor } from "./diff-processors/instance-attribute-color-diff-processor";
 import { InstanceAttributeDiffProcessor } from "./diff-processors/instance-attribute-diff-processor";
+import { InstanceAttributeQuadDiffProcessor } from "./diff-processors/instance-attribute-quad-diff-processor";
 import { UniformColorDiffProcessor } from "./diff-processors/uniform-color-diff-processor";
 import { UniformDiffProcessor } from "./diff-processors/uniform-diff-processor";
 import { UniformQuadDiffProcessor } from "./diff-processors/uniform-quad-diff-processor";
@@ -79,6 +80,11 @@ export class InstanceDiffManager<T extends Instance> {
       if (this.layer.picking) {
         if (this.layer.picking.type === PickType.SINGLE) {
           this.processor = new InstanceAttributeColorDiffProcessor(
+            this.layer,
+            this.bufferManager
+          );
+        } else if (this.layer.picking.type === PickType.ALL) {
+          this.processor = new InstanceAttributeQuadDiffProcessor(
             this.layer,
             this.bufferManager
           );

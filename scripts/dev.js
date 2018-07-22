@@ -24,8 +24,8 @@ for (let i = 2; i < args.length; ++i) {
 Usage: ${0} ${1} «Options»
 
 Options:
-  -r --release-test: When provided, the dist folder will be used as the folder from which files are utilized
-                     rather than the src folder.
+  -r --release-test: When provided, the dist folder will be used as the folder from which files are
+                     utilized rather than the src folder.
       `);
       break;
 

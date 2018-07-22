@@ -45,4 +45,5 @@ process.env.NODE_ENV = 'development';
 serve({
   config: { ...require(resolve('webpack.config.js')) },
   port: process.env.PORT || 8080,
+  host: process.env.HOST || '0.0.0.0',
 });

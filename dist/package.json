@@ -18,6 +18,6 @@
     "d3-color": "1.0.x",
     "d3-scale": "1.0.x",
     "ramda": "0.25.x",
-    "three": "0.94.x"
+    "three": "0.87.x"
   }
 }

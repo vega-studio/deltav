@@ -1,14 +1,13 @@
 import * as Three from "three";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
-import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
+import { IInstanceAttribute, IMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
 import { BoundsAccessor } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
-import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
+import { InstanceUniformManager } from "../util/instance-uniform-manager";
+import { DiffLookup, InstanceDiffManager } from "./instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerBufferType } from "./layer-processing/layer-buffer-type";
-import { LayerInitializer, LayerSurface } from "./layer-surface";
+import { LayerSurface } from "./layer-surface";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { View } from "./view";
 export interface IModelType {
@@ -22,7 +21,6 @@ export interface IInstanceProvider<T extends Instance> {
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     data: IInstanceProvider<T>;
     picking?: PickType;
-    printShader?: boolean;
     scene?: string;
     onMouseDown?(info: IPickInfo<T>): void;
     onMouseMove?(info: IPickInfo<T>): void;
@@ -41,13 +39,8 @@ export interface IPickingMethods<T extends Instance> {
 export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends IdentifyByKey {
     static defaultProps: any;
     activeAttribute: IInstanceAttribute<T>;
-    private _bufferManager;
-    readonly bufferManager: BufferManagerBase<T, IBufferLocation>;
-    private _bufferType;
-    readonly bufferType: LayerBufferType;
     depth: number;
     geometry: Three.BufferGeometry;
-    initializer: LayerInitializer;
     instanceAttributes: IInstanceAttribute<T>[];
     instanceById: Map<string, T>;
     instanceVertexCount: number;
@@ -60,9 +53,11 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     resource: AtlasResourceManager;
     surface: LayerSurface;
     uniforms: IUniformInternal[];
+    uniformManager: InstanceUniformManager<T>;
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
     diffManager: InstanceDiffManager<T>;
+    diffProcessor: DiffLookup<T>;
     constructor(props: ILayerProps<T>);
     destroy(): void;
     didUpdateProps(): void;
@@ -77,9 +72,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
         shaderInjection?: ShaderInjectionTarget;
     }): IInstanceAttribute<T>;
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
-    setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>): void;
-    setBufferType(val: LayerBufferType): void;
-    willUpdateInstances(_changes: [T, InstanceDiffType]): void;
+    willUpdateInstances(_changes: InstanceDiff<T>[]): void;
     willUpdateProps(_newProps: ILayerProps<T>): void;
     didUpdate(): void;
 }

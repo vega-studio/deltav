@@ -1,16 +1,8 @@
 import { ILayerProps, IModelType, IPickingMethods, Layer } from "../../surface/layer";
 import { IMaterialOptions, IShaderInitialization } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
 import { EdgeInstance } from "./edge-instance";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
 export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayerProps<T> {
-    animate?: {
-        end?: IAutoEasingMethod<Vec>;
-        start?: IAutoEasingMethod<Vec>;
-        colorStart?: IAutoEasingMethod<Vec>;
-        colorEnd?: IAutoEasingMethod<Vec>;
-        control?: IAutoEasingMethod<Vec>;
-    };
     broadphase?: EdgeBroadphase;
     minPickDistance?: number;
     scaleFactor?(): number;

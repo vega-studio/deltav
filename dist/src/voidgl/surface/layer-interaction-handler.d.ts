@@ -1,6 +1,6 @@
+import { Instance } from "../instance-provider/instance";
 import { IPoint } from "../primitives/point";
 import { IColorPickingData, IProjection } from "../types";
-import { Instance } from "../util";
 import { ILayerProps, Layer } from "./layer";
 export declare class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>> {
     colorPicking?: IColorPickingData;

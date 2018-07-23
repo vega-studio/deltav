@@ -55,11 +55,11 @@ export class InstanceAttributeBufferManager<
   private maxInstancedCount: number = 1000;
 
   // These are the only Three objects that must be monitored for disposal
-  private geometry: Three.InstancedBufferGeometry;
-  private material: Three.ShaderMaterial;
-  private model: IModelConstructable & Three.Object3D;
-  private pickModel: IModelConstructable & Three.Object3D | undefined;
-  private attributes: IInstanceAttributeInternal<T>[];
+  private geometry?: Three.InstancedBufferGeometry;
+  private material?: Three.ShaderMaterial;
+  private model?: IModelConstructable & Three.Object3D;
+  private pickModel?: IModelConstructable & Three.Object3D | undefined;
+  private attributes?: IInstanceAttributeInternal<T>[];
 
   /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
   private attributeToPropertyIds = new Map<IInstanceAttribute<T>, number[]>();
@@ -149,7 +149,7 @@ export class InstanceAttributeBufferManager<
     const bufferLocations = this.availableLocations.shift();
 
     // Pair up the instance with it's buffer location
-    if (bufferLocations) {
+    if (bufferLocations && this.geometry) {
       this.instanceToBufferLocation[instance.uid] = bufferLocations;
       this.currentInstancedCount = this.geometry.maxInstancedCount = max(
         this.currentInstancedCount,
@@ -170,9 +170,10 @@ export class InstanceAttributeBufferManager<
   }
 
   destroy() {
-    this.geometry.dispose();
-    this.material.dispose();
-    if (this.scene && this.scene.container) {
+    if (this.geometry) this.geometry.dispose();
+    if (this.material) this.material.dispose();
+
+    if (this.scene && this.scene.container && this.model) {
       this.scene.container.remove(this.model);
     }
   }
@@ -237,7 +238,7 @@ export class InstanceAttributeBufferManager<
    * Clears all elements of this manager from the current scene it was in.
    */
   removeFromScene() {
-    if (this.scene && this.scene.container) {
+    if (this.scene && this.scene.container && this.model) {
       this.scene.container.remove(this.model);
     }
     this.pickModel && this.scene.pickingContainer.remove(this.pickModel);
@@ -265,17 +266,19 @@ export class InstanceAttributeBufferManager<
       this.geometry = new Three.InstancedBufferGeometry();
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
-      this.layer.vertexAttributes.forEach(attribute => {
+      for (const attribute of this.layer.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
             attribute.materialAttribute
           );
         }
-      });
+      }
+
+      this.attributes = [];
 
       // We now take the instance attributes and add them as Instanced Attributes to our geometry
-      this.attributes = this.layer.instanceAttributes.map(attribute => {
+      for (const attribute of this.layer.instanceAttributes) {
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
         const buffer = new Float32Array(size * this.maxInstancedCount);
@@ -321,8 +324,8 @@ export class InstanceAttributeBufferManager<
         }
 
         // Make an internal instance attribute for tracking
-        return internalAttribute;
-      });
+        this.attributes.push(internalAttribute);
+      }
 
       // Ensure the draw range covers every instance in the geometry.
       this.geometry.maxInstancedCount = 0;
@@ -347,14 +350,14 @@ export class InstanceAttributeBufferManager<
       const previousInstanceAmount = this.maxInstancedCount;
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
-      this.layer.vertexAttributes.forEach(attribute => {
+      for (const attribute of this.layer.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
             attribute.materialAttribute
           );
         }
-      });
+      }
 
       // We grow our buffer by magnitudes of 10 * 1024
       // First growth: 1000
@@ -367,7 +370,10 @@ export class InstanceAttributeBufferManager<
       growth = Math.pow(10, this.growthCount) * 1000;
       this.maxInstancedCount += growth;
 
-      this.attributes.forEach(attribute => {
+      // Ensure attributes is still defined
+      this.attributes = this.attributes || [];
+
+      for (const attribute of this.attributes) {
         const bufferAttribute = attribute.bufferAttribute;
         const size: number = attribute.size || 0;
 
@@ -430,9 +436,9 @@ export class InstanceAttributeBufferManager<
             allLocations.push(newLocation);
           }
         }
-      });
+      }
 
-      if (this.scene.container) {
+      if (this.scene.container && this.model) {
         this.scene.container.remove(this.model);
       }
     }
@@ -445,6 +451,8 @@ export class InstanceAttributeBufferManager<
       this.scene.pickingContainer.remove(this.pickModel);
     }
 
+    // Ensure material is defined
+    this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(this.layer, this.geometry, this.material);
     // We render junkloads of instances for a given buffer. Culling will have to happen

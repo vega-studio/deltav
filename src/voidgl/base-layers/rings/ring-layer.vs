@@ -16,17 +16,17 @@ void main() {
   vertexColor = color * color.a;
   float size = radius * scaleFactor;
 
-  thickness = mix(2.0 , thickness, float(thickness > 2.0));
+  float ringWidth = mix(2.0 , thickness, float(thickness > 2.0));
 
   borderSize = mix(
-    (thickness) / size,
-    ((thickness * pixelRatio) / size),
+    (ringWidth) / size,
+    ((ringWidth * pixelRatio) / size),
     float(pixelRatio > 1.0)
   );
 
-  edgeSharpness = min(0.2 / (thickness * scale),  0.1);
+  edgeSharpness = min(0.2 / (ringWidth * scale),  0.1);
 
-  pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;  
+  pointCoord = (position.xy + vec2(1.0, 1.0)) / 2.0;
 
   // Center within clip space
   vec4 clipCenter = clipSpace(vec3(center, depth));

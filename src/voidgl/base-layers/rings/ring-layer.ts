@@ -11,6 +11,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
+import { CommonMaterialOptions } from "../../util";
 import { RingInstance } from "./ring-instance";
 const { max } = Math;
 
@@ -152,9 +153,6 @@ export class RingLayer<
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      premultipliedAlpha: true,
-      transparent: true
-    };
+    return CommonMaterialOptions.transparentShape;
   }
 }

@@ -11,7 +11,7 @@ import {
   RectangleLayer,
   ReferenceCamera,
   ScaleType
-} from "../../src";
+} from "src";
 import { BaseExample } from "./base-example";
 
 export class MouseInteractionRectangle extends BaseExample {

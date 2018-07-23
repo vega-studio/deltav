@@ -5,6 +5,7 @@
  */
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -21,6 +22,7 @@ import {
 } from "../../util/shader-templating";
 import { WebGLStat } from "../../util/webgl-stat";
 import { templateVars } from "../template-vars";
+import { instanceAttributeShaderName } from "./instance-attribute-shader-name";
 import {
   makeInstanceDestructuringArray,
   makeInstanceRetrievalArray,
@@ -199,19 +201,39 @@ function generateShaderInputs<T extends Instance, U extends ILayerProps<T>>(
   uniforms: IUniform[]
 ) {
   const templateOptions: { [key: string]: string } = {};
-  const instancingInfo = generateInstanceDataLookupOptions(
-    layer,
-    templateOptions,
-    instanceAttributes,
-    uniforms
-  );
+
+  let instancingInfo;
+
+  if (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+    instancingInfo = {
+      materialUniforms: [],
+      metrics: {
+        blocksPerInstance: 0,
+        maxInstancesPerBuffer: 0
+      }
+    };
+
+    templateOptions.instanceDataRetrieval = "";
+    templateOptions.instanceUniformDeclarations = "";
+  } else {
+    instancingInfo = generateInstanceDataLookupOptions(
+      layer,
+      templateOptions,
+      instanceAttributes,
+      uniforms
+    );
+  }
 
   const additionalOptions: { [key: string]: string } = {
     [templateVars.layerUniforms]: generateUniforms(
       uniforms,
       ShaderInjectionTarget.VERTEX
     ),
-    [templateVars.vertexAttributes]: generateVertexAttributes(vertexAttributes),
+    [templateVars.vertexAttributes]: generateVertexAttributes(
+      layer,
+      vertexAttributes,
+      instanceAttributes
+    ),
     [templateVars.easingMethods]: generateEasingMethods(instanceAttributes)
   };
 
@@ -277,7 +299,8 @@ function generateEasingMethods<T extends Instance>(
         const sizeType = sizeToType[size];
 
         const templateOptions: { [key: string]: string } = {
-          [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`
+          [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
+          [templateVars.T]: `${sizeType}`
         };
 
         const results = shaderTemplate({
@@ -409,7 +432,11 @@ function makeInstanceAttributeReferences<
   templateOptions[templateVars.blocksPerInstance] = `${blocksPerInstance}`;
   templateOptions[
     templateVars.instanceDestructuring
-  ] = makeInstanceDestructuring(instanceAttributes, blocksPerInstance);
+  ] = makeInstanceDestructuringArray(
+    layer,
+    instanceAttributes,
+    blocksPerInstance
+  );
   templateOptions[templateVars.picking] = makePickingDestructuring(layer);
 
   const required = {
@@ -433,16 +460,6 @@ function makeInstanceAttributeReferences<
 }
 
 /**
- * This generates an in method destructuring pattern to make instance attributes available within a method.
- */
-function makeInstanceDestructuring<T extends Instance>(
-  instanceAttributes: IInstanceAttribute<T>[],
-  blocksPerInstance: number
-) {
-  return makeInstanceDestructuringArray(instanceAttributes, blocksPerInstance);
-}
-
-/**
  * This generates the portion of picking logic that is injected into the destructuring portion of the shader
  */
 function makePickingDestructuring(layer: Layer<any, any>) {
@@ -456,13 +473,27 @@ function makePickingDestructuring(layer: Layer<any, any>) {
 /**
  * This generates the model attribute declarations
  */
-function generateVertexAttributes(vertexAttributes: IVertexAttribute[]) {
+function generateVertexAttributes(
+  layer: Layer<any, any>,
+  vertexAttributes: IVertexAttribute[],
+  instanceAttributes: IInstanceAttribute<any>[]
+) {
   let out = "";
 
   vertexAttributes.forEach(attribute => {
     out += `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-      ""}${(attribute.qualifier && " ") || ""}${attribute.name};\n`;
+      ""}${(attribute.qualifier && " ") || ""} ${attribute.name};\n`;
   });
+
+  if (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+    out += "\n// Instance Attributes\n";
+    instanceAttributes.forEach(attribute => {
+      out += `attribute ${
+        sizeToType[attribute.size || 1]
+      } ${attribute.qualifier || ""}${(attribute.qualifier && " ") ||
+        ""} ${instanceAttributeShaderName(attribute)};\n`;
+    });
+  }
 
   return out;
 }

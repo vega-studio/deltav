@@ -1,9 +1,12 @@
 import * as Three from "three";
+import { Instance } from "../../instance-provider/instance";
 import {
   IVertexAttribute,
   IVertexAttributeInternal,
   ShaderIOValue
-} from "../types";
+} from "../../types";
+import { Layer } from "../layer";
+import { LayerBufferType } from "./layer-buffer-type";
 
 function isNumberCluster(
   val: ShaderIOValue
@@ -15,13 +18,18 @@ function isNumberCluster(
   return !Array.isArray(val[0]);
 }
 
-export function generateLayerGeometry(
+export function generateLayerGeometry<T extends Instance>(
+  layer: Layer<T, any>,
   maxInstancesPerBuffer: number,
   vertexAttributes: IVertexAttributeInternal[],
   vertexCount: number
 ): Three.BufferGeometry {
   // Make the new buffers to be updated
   const vertexBuffers = [];
+
+  if (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+    maxInstancesPerBuffer = 1;
+  }
 
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
@@ -66,6 +74,8 @@ export function generateLayerGeometry(
 
   // After getting the geometry for a single instance, we can now copy paste
   // For subsequent instances using very fast FLoat32 methods
+  // NOTE: This is ONLY for certain buffering strategies. This is essentially a noop when the
+  // maxInstances is set to one.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
     const instanceSize = attribute.size * vertexCount;
@@ -77,14 +87,16 @@ export function generateLayerGeometry(
   }
 
   // Lastly, we make the instance attribute reflect correctly so each instance
-  // Can have varied information
-  const instancingBuffer = vertexBuffers[0];
+  // Can have varied information. This is only appropriate for the uniform buffer strategy
+  if (layer.bufferType === LayerBufferType.UNIFORM) {
+    const instancingBuffer = vertexBuffers[0];
 
-  for (let i = 0, end = maxInstancesPerBuffer; i < end; ++i) {
-    const instanceStartIndex = i * vertexCount;
+    for (let i = 0, end = maxInstancesPerBuffer; i < end; ++i) {
+      const instanceStartIndex = i * vertexCount;
 
-    for (let k = 0; k < vertexCount; ++k) {
-      instancingBuffer[k + instanceStartIndex] = i;
+      for (let k = 0; k < vertexCount; ++k) {
+        instancingBuffer[k + instanceStartIndex] = i;
+      }
     }
   }
 

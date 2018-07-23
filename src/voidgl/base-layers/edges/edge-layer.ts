@@ -16,13 +16,26 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { shaderTemplate } from "../../util";
+import {
+  CommonMaterialOptions,
+  IAutoEasingMethod,
+  shaderTemplate,
+  Vec
+} from "../../util";
 import { EdgeInstance } from "./edge-instance";
 import { edgePicking } from "./edge-picking";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
   extends ILayerProps<T> {
+  /** Properties for animating attributes */
+  animate?: {
+    end?: IAutoEasingMethod<Vec>;
+    start?: IAutoEasingMethod<Vec>;
+    colorStart?: IAutoEasingMethod<Vec>;
+    colorEnd?: IAutoEasingMethod<Vec>;
+    control?: IAutoEasingMethod<Vec>;
+  };
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadphase;
   /** Any distance to the mouse from an edge that is less than this distance will be picked */
@@ -87,10 +100,19 @@ export class EdgeLayer<
    */
   initShader(): IShaderInitialization<EdgeInstance> {
     const {
+      animate = {},
       scaleFactor = () => 1,
       type,
       scaleType = EdgeScaleType.NONE
     } = this.props;
+
+    const {
+      end: animateEnd,
+      start: animateStart,
+      colorStart: animateColorStart,
+      colorEnd: animateColorEnd,
+      control: animateControl
+    } = animate;
 
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
 
@@ -132,6 +154,7 @@ export class EdgeLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateStart,
           name: "start",
           size: InstanceAttributeSize.TWO,
           update: o => o.start
@@ -139,6 +162,7 @@ export class EdgeLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
+          easing: animateEnd,
           name: "end",
           size: InstanceAttributeSize.TWO,
           update: o => o.end
@@ -167,6 +191,7 @@ export class EdgeLayer<
         {
           block: 2,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColorStart,
           name: "colorStart",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
@@ -174,6 +199,7 @@ export class EdgeLayer<
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColorEnd,
           name: "colorEnd",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd
@@ -182,6 +208,7 @@ export class EdgeLayer<
           ? {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
+              easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,
               update: _o => [0, 0, 0, 0]
@@ -191,6 +218,7 @@ export class EdgeLayer<
           ? {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
+              easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,
               update: o => [o.control[0][0], o.control[0][1], 0, 0]
@@ -200,6 +228,7 @@ export class EdgeLayer<
           ? {
               block: 4,
               blockIndex: InstanceBlockIndex.ONE,
+              easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,
               update: o => toInstanceIOValue(o.control)
@@ -243,9 +272,6 @@ export class EdgeLayer<
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      premultipliedAlpha: true,
-      transparent: true
-    };
+    return CommonMaterialOptions.transparentShape;
   }
 }

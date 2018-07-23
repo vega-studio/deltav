@@ -186,56 +186,61 @@ export type VecMethods<T extends Vec> = {
   length(vec: T): number;
 };
 
+export const vec1Methods: VecMethods<Vec1> = {
+  add: add1,
+  dot: dot1,
+  length: length1,
+  linear: linear1,
+  multiply: multiply1,
+  scale: scale1,
+  subtract: subtract1
+};
+
+export const vec2Methods: VecMethods<Vec2> = {
+  add: add2,
+  dot: dot2,
+  length: length2,
+  linear: linear2,
+  multiply: multiply2,
+  scale: scale2,
+  subtract: subtract2
+};
+
+export const vec3Methods: VecMethods<Vec3> = {
+  add: add3,
+  dot: dot3,
+  length: length3,
+  linear: linear3,
+  multiply: multiply3,
+  scale: scale3,
+  subtract: subtract3
+};
+
+export const vec4Methods: VecMethods<Vec4> = {
+  add: add4,
+  dot: dot4,
+  length: length4,
+  linear: linear4,
+  multiply: multiply4,
+  scale: scale4,
+  subtract: subtract4
+};
+
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {
   let methods: VecMethods<T>;
 
   if (vec.length === 1) {
-    methods = {
-      add: add1,
-      dot: dot1,
-      length: length1,
-      linear: linear1,
-      multiply: multiply1,
-      scale: scale1,
-      subtract: subtract1
-    } as VecMethods<T>;
-
+    methods = vec1Methods as VecMethods<T>;
     return methods;
   } else if (vec.length === 2) {
-    methods = {
-      add: add2,
-      dot: dot2,
-      length: length2,
-      linear: linear2,
-      multiply: multiply2,
-      scale: scale2,
-      subtract: subtract2
-    } as VecMethods<T>;
-
+    methods = vec2Methods as VecMethods<T>;
     return methods;
   } else if (vec.length === 3) {
-    methods = {
-      add: add3,
-      dot: dot3,
-      length: length3,
-      linear: linear3,
-      multiply: multiply3,
-      scale: scale3,
-      subtract: subtract3
-    } as VecMethods<T>;
-
+    methods = vec3Methods as VecMethods<T>;
     return methods;
   }
 
-  methods = {
-    add: add4,
-    dot: dot4,
-    length: length4,
-    linear: linear4,
-    multiply: multiply4,
-    scale: scale4,
-    subtract: subtract4
-  } as VecMethods<T>;
+  methods = vec4Methods as VecMethods<T>;
 
   return methods;
 }

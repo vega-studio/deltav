@@ -1,5 +1,6 @@
 import * as anime from "animejs";
 import {
+  AutoEasingMethod,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -7,8 +8,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType
-} from "../../src";
-import { AutoEasingMethod } from "../../src/voidgl/util/auto-easing-method";
+} from "src";
 import { BaseExample } from "./base-example";
 
 export class MouseInteraction extends BaseExample {
@@ -76,7 +76,7 @@ export class MouseInteraction extends BaseExample {
     const circleProvider = new InstanceProvider<CircleInstance>();
 
     for (let i = 0; i < 40; ++i) {
-      for (let k = 0; k < 30; ++k) {
+      for (let k = 0; k < 40; ++k) {
         const circle = new CircleInstance({
           color: [1.0, Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
           id: `circle${i * 100 + k}`,

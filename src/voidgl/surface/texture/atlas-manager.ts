@@ -144,10 +144,10 @@ export class AtlasManager {
       const texture = resource.texture;
       // Now we create a Rectangle to store the image dimensions
       const rect: Bounds = new Bounds({
+        bottom: rasterization.texture.height,
         left: 0,
         right: rasterization.texture.width,
-        top: 0,
-        bottom: rasterization.texture.height
+        top: 0
       });
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: ImageDimensions = {

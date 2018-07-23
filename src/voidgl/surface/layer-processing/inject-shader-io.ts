@@ -5,8 +5,7 @@
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
 import * as Three from "three";
-import { Instance } from "../instance-provider/instance";
-import { ILayerProps, Layer } from "../surface/layer";
+import { Instance } from "../../instance-provider/instance";
 import {
   IAtlasInstanceAttribute,
   IEasingInstanceAttribute,
@@ -24,9 +23,11 @@ import {
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize
-} from "../types";
-import { uid, Vec } from "../util";
-import { AutoEasingLoopStyle } from "../util/auto-easing-method";
+} from "../../types";
+import { uid, Vec } from "../../util";
+import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
+import { ILayerProps, Layer } from "../layer";
+import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
 
 const { abs } = Math;
 
@@ -287,6 +288,11 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       let timeValue = 1;
 
       switch (loop) {
+        // Continuous means we start at 0 and let the time go to infinity
+        case AutoEasingLoopStyle.CONTINUOUS:
+          timeValue = (currentTime - easingValues.startTime) / duration;
+          break;
+
         // Repeat means going from 0 to 1 then 0 to 1 etc etc
         case AutoEasingLoopStyle.REPEAT:
           timeValue = ((currentTime - easingValues.startTime) / duration) % 1;
@@ -322,16 +328,21 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       return end;
     };
 
+    // The attribute is going to generate some child attributes
+    attribute.childAttributes = [];
+
     // Find a slot available for our new start value
     let slot = findEmptyBlock(instanceAttributes, size);
     const startAttr: IInstanceAttribute<T> = {
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_start`,
+      parentAttribute: attribute,
       size,
       update: _o => easingValues.start
     };
 
+    attribute.childAttributes.push(startAttr);
     instanceAttributes.push(startAttr);
 
     // Find a slot available for our new start time
@@ -340,10 +351,12 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_start_time`,
+      parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
       update: _o => [easingValues.startTime]
     };
 
+    attribute.childAttributes.push(startTimeAttr);
     instanceAttributes.push(startTimeAttr);
 
     // Find a slot available for our duration
@@ -352,10 +365,12 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
       block: slot[0],
       blockIndex: slot[1],
       name: `_${name}_duration`,
+      parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
       update: _o => [easingValues.duration]
     };
 
+    attribute.childAttributes.push(durationAttr);
     instanceAttributes.push(durationAttr);
   }
 }
@@ -484,38 +499,43 @@ function generateBaseInstanceAttributes<T extends Instance>(
     InstanceAttributeSize.ONE
   );
 
-  const baseAttributes: IInstanceAttribute<T>[] = [
-    // This is injected so the system can control when an instance should not be rendered.
-    // This allows for holes to be in the buffer without having to correct them immediately
-    {
-      block: fillBlock[0],
-      blockIndex: fillBlock[1],
-      name: "_active",
-      size: InstanceAttributeSize.ONE,
-      update: o => [o.active ? 1 : 0]
-    }
-  ];
+  // This is injected so the system can control when an instance should not be rendered.
+  // This allows for holes to be in the buffer without having to correct them immediately
+  const activeAttribute: IInstanceAttribute<T> = {
+    block: fillBlock[0],
+    blockIndex: fillBlock[1],
+    name: "_active",
+    size: InstanceAttributeSize.ONE,
+    update: o => [o.active ? 1 : 0]
+  };
 
-  // Keep track of the active attribute for quick referencing
-  layer.activeAttribute = baseAttributes[0];
+  // Set the active attribute to the layer for quick reference
+  layer.activeAttribute = activeAttribute;
 
-  return baseAttributes;
+  return [activeAttribute];
 }
 
 /**
  * This creates the base vertex attributes that are ALWAYS present
  */
-function generateBaseVertexAttributes(): IVertexAttribute[] {
-  return [
-    // We add an inherent instance attribute to our vertices so they can determine the instancing
-    // Data to retrieve.
-    {
-      name: "instance",
-      size: VertexAttributeSize.ONE,
-      // We no op this as our geomtry generating routine will establish the values needed here
-      update: () => [0]
-    }
-  ];
+function generateBaseVertexAttributes<T extends Instance>(
+  layer: Layer<T, any>
+): IVertexAttribute[] {
+  // Only the uniform buffering strategy requires instance information in it's vertex attributes
+  if (layer.bufferType === LayerBufferType.UNIFORM) {
+    return [
+      // We add an inherent instance attribute to our vertices so they can determine the instancing
+      // Data to retrieve.
+      {
+        name: "instance",
+        size: VertexAttributeSize.ONE,
+        // We no op this as our geomtry generating routine will establish the values needed here
+        update: () => [0]
+      }
+    ];
+  }
+
+  return [];
 }
 
 function compareVec(a: Vec, b: Vec) {
@@ -531,9 +551,36 @@ function compareVec(a: Vec, b: Vec) {
 }
 
 function validateInstanceAttributes<T extends Instance>(
-  instanceAttributes: IInstanceAttribute<T>[]
+  layer: Layer<T, any>,
+  instanceAttributes: IInstanceAttribute<T>[],
+  vertexAttributes: IVertexAttribute[]
 ) {
   instanceAttributes.forEach(attribute => {
+    if (attribute.name === undefined) {
+      console.warn(
+        "All instance attributes MUST have a name on Layer:",
+        layer.id
+      );
+    }
+
+    if (
+      instanceAttributes.find(
+        attr => attr !== attribute && attr.name === attribute.name
+      )
+    ) {
+      console.warn(
+        "An instance attribute can not have the same name used more than once:",
+        attribute.name
+      );
+    }
+
+    if (vertexAttributes.find(attr => attr.name === attribute.name)) {
+      console.warn(
+        "An instance attribute and a vertex attribute in a layer can not share the same name:",
+        attribute.name
+      );
+    }
+
     if (attribute.easing && attribute.atlas) {
       console.warn(
         "An instance attribute can not have both easing and atlas properties. Undefined behavior will occur."
@@ -552,6 +599,7 @@ function validateInstanceAttributes<T extends Instance>(
       if (attribute.size !== undefined) {
         const testStart = testStartVector[attribute.size];
         const testEnd = testEndVector[attribute.size];
+        const validationRules = attribute.easing.validation || {};
 
         let test = attribute.easing.cpu(testStart, testEnd, 0);
         if (!compareVec(test, testStart)) {
@@ -563,7 +611,10 @@ function validateInstanceAttributes<T extends Instance>(
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 1);
-        if (!compareVec(test, testEnd)) {
+        if (
+          !validationRules.ignoreEndValueCheck &&
+          !compareVec(test, testEnd)
+        ) {
           console.warn(
             "Auto Easing Validation Failed: using a time of 1 does not produce the end value"
           );
@@ -581,7 +632,10 @@ function validateInstanceAttributes<T extends Instance>(
         }
 
         test = attribute.easing.cpu(testStart, testEnd, 2);
-        if (!compareVec(test, testEnd)) {
+        if (
+          !validationRules.ignoreOverTimeCheck &&
+          !compareVec(test, testEnd)
+        ) {
           console.warn(
             "Auto Easing Validation Failed: using a time of 2 does not produce the end value"
           );
@@ -602,6 +656,7 @@ function validateInstanceAttributes<T extends Instance>(
  * into the shader.
  */
 export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
+  gl: WebGLRenderingContext,
   layer: Layer<T, U>,
   shaderIO: IShaderInitialization<T>
 ) {
@@ -616,7 +671,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
   // Do a validation pass of the attributes injected so we can provide feedback as to why things behave odd
-  validateInstanceAttributes(instanceAttributes);
+  validateInstanceAttributes(layer, instanceAttributes, vertexAttributes);
   // Generates all of the attributes needed to make attributes automagically be eased when changed
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
@@ -637,19 +692,25 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   addedInstanceAttributes = addedInstanceAttributes.concat(
     generatePickingAttributes(layer, addedInstanceAttributes)
   );
-  // Create the base vertex attributes that must be present
-  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes();
-
-  // Aggregate all of the injected shaderIO with the layer's shaderIO
-  const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes
-    .concat(vertexAttributes || [])
-    .map(toVertexAttributeInternal);
 
   const allUniforms = addedUniforms.map(toUniformInternal);
 
   const allInstanceAttributes = addedInstanceAttributes.sort(
     sortNeedsUpdateFirstToTop
   );
+
+  // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
+  getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
+
+  // Create the base vertex attributes that must be present
+  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes(
+    layer
+  );
+
+  // Aggregate all of the injected shaderIO with the layer's shaderIO
+  const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes
+    .concat(vertexAttributes || [])
+    .map(toVertexAttributeInternal);
 
   return {
     instanceAttributes: allInstanceAttributes,

@@ -10,7 +10,7 @@ import {
   IInstanceProvider,
   InstanceProvider,
   LayerInitializer
-} from "../../src";
+} from "src";
 import { BaseExample } from "./base-example";
 
 export class AnimateDeleteAdd extends BaseExample {

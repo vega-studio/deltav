@@ -10,6 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
+import { CommonMaterialOptions } from "../../util/common-options";
 import { ScaleType } from "../types";
 import { ImageInstance } from "./image-instance";
 
@@ -245,11 +246,6 @@ export class ImageLayer<
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      blending: Three.CustomBlending,
-      blendSrc: Three.OneFactor,
-      premultipliedAlpha: true,
-      transparent: true
-    };
+    return CommonMaterialOptions.transparentImage;
   }
 }

@@ -15,7 +15,6 @@ export declare class Instance implements Identifiable {
     private _observer;
     observableStorage: any[];
     private _uid;
-    destroy(): void;
     readonly observableDisposer: () => void;
     observer: InstanceProvider<this> | null;
     readonly easing: Map<number, IEasingProps>;

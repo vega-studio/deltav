@@ -63,4 +63,8 @@ export declare type VecMethods<T extends Vec> = {
     linear(start: T, end: T, t: number): T;
     length(vec: T): number;
 };
+export declare const vec1Methods: VecMethods<Vec1>;
+export declare const vec2Methods: VecMethods<Vec2>;
+export declare const vec3Methods: VecMethods<Vec3>;
+export declare const vec4Methods: VecMethods<Vec4>;
 export declare function VecMath<T extends IVec>(vec: T): VecMethods<T>;

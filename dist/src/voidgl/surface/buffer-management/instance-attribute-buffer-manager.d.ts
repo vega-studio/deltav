@@ -12,11 +12,11 @@ export declare class InstanceAttributeBufferManager<T extends Instance> extends 
     private instanceToBufferLocation;
     private growthCount;
     private maxInstancedCount;
-    private geometry;
-    private material;
-    private model;
-    private pickModel;
-    private attributes;
+    private geometry?;
+    private material?;
+    private model?;
+    private pickModel?;
+    private attributes?;
     private attributeToPropertyIds;
     private updateAllPropertyIdList;
     private activePropertyId;

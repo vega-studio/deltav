@@ -1,0 +1,22 @@
+export declare const templateVars: {
+    attributeFragments: string;
+    attributes: string;
+    blocksPerInstance: string;
+    easingMethod: string;
+    easingMethods: string;
+    extend: string;
+    extendHeader: string;
+    instanceBlockCount: string;
+    instanceDataBinaryTree: string;
+    instanceDataRetrieval: string;
+    instanceDestructuring: string;
+    instanceFragments: string;
+    instanceUniformDeclarations: string;
+    layerUniforms: string;
+    picking: string;
+    projectionMethods: string;
+    shader: string;
+    shaderInput: string;
+    T: string;
+    vertexAttributes: string;
+};

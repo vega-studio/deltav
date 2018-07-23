@@ -196,43 +196,49 @@ function makeAutoEasingTiming<T extends Instance>(
   switch (attribute.easing.loop) {
     // Continuous means letting the time go from 0 to infinity
     case AutoEasingLoopStyle.CONTINUOUS: {
-      out += `  float _${attribute.name}_time = (currentTime - _${
-        attribute.name
-      }_start_time) / _${attribute.name}_duration;\n`;
+      const time = `_${attribute.name}_time`;
+      const startTime = `_${attribute.name}_start_time`;
+      const duration = `_${attribute.name}_duration`;
+
+      out += `  float ${time} = (currentTime - ${startTime}) / ${duration};\n`;
       break;
     }
 
     // Repeat means going from 0 to 1 then 0 to 1 etc etc
     case AutoEasingLoopStyle.REPEAT: {
-      out += `  float _${attribute.name}_time = clamp(fract((currentTime - _${
-        attribute.name
-      }_start_time) / _${attribute.name}_duration), 0.0, 1.0);\n`;
+      const time = `_${attribute.name}_time`;
+      const startTime = `_${attribute.name}_start_time`;
+      const duration = `_${attribute.name}_duration`;
+
+      out += `  float ${time} = clamp(fract((currentTime - ${startTime}) / ${duration}), 0.0, 1.0);\n`;
       break;
     }
 
     // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
     case AutoEasingLoopStyle.REFLECT: {
+      const time = `_${attribute.name}_time`;
+      const timePassed = `_${attribute.name}_timePassed`;
+      const startTime = `_${attribute.name}_start_time`;
+      const duration = `_${attribute.name}_duration`;
+      const pingPong = `_${attribute.name}_pingPong`;
+
       // Get the time passed in a linear fashion
-      out += `  float _${attribute.name}_timePassed = (currentTime - _${
-        attribute.name
-      }_start_time) / _${attribute.name}_duration;\n`;
+      out += `  float ${timePassed} = (currentTime - ${startTime}) / ${duration};\n`;
       // Make a triangle wave from the time passed to ping pong the value
-      out += `  float _${attribute.name}_pingPong = abs((fract(_${
-        attribute.name
-      }_timePassed / 2.0)) - 0.5) * 2.0;\n`;
+      out += `  float ${pingPong} = abs((fract(${timePassed} / 2.0)) - 0.5) * 2.0;\n`;
       // Ensure we're clamped to the right values
-      out += `  float _${attribute.name}_time = clamp(_${
-        attribute.name
-      }_pingPong, 0.0, 1.0);\n`;
+      out += `  float ${time} = clamp(${pingPong}, 0.0, 1.0);\n`;
       break;
     }
 
     // No loop means just linear time
     case AutoEasingLoopStyle.NONE:
     default: {
-      out += `  float _${attribute.name}_time = clamp((currentTime - _${
-        attribute.name
-      }_start_time) / _${attribute.name}_duration, 0.0, 1.0);\n`;
+      const time = `_${attribute.name}_time`;
+      const duration = `_${attribute.name}_duration`;
+      const startTime = `_${attribute.name}_start_time`;
+
+      out += `  float ${time} = clamp((currentTime - ${startTime}) / ${duration}, 0.0, 1.0);\n`;
       break;
     }
   }

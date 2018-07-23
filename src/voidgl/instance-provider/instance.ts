@@ -32,27 +32,30 @@ export class Instance implements Identifiable {
   @observable private _uid = Instance.newUID;
 
   /**
-   * The system will call this on the instance when it believes the instance may be
-   * harboring resources that are not released.
+   * Retrieves a method for disposing the link between observables and observer.
    */
-  destroy() {
-    // Generally a No-op
-  }
-
   get observableDisposer(): () => void {
     return () => delete this._observer;
   }
 
+  /**
+   * Retrieves the observer of the observables.
+   */
   get observer(): InstanceProvider<this> | null {
     return this._observer || null;
   }
 
+  /**
+   * Applies an observer for changes to the observables.
+   */
   set observer(val: InstanceProvider<this> | null) {
     // If an observer already is present, we should inform it, that it is being removed
     // in favor of a new observer
     const oldObserver = this._observer;
 
+    // If we're switching observers, then we have to dump out assumptions made within other observers
     if (oldObserver && oldObserver !== val) {
+      this._easing.clear();
       oldObserver.remove(this);
     }
 
@@ -60,14 +63,23 @@ export class Instance implements Identifiable {
     this._observer = val;
   }
 
+  /**
+   * Retrieves easing properties for the observables that are associated with easing.
+   */
   get easing() {
     return this._easing;
   }
 
+  /**
+   * Get the applied id of this instance
+   */
   get id() {
     return this._id;
   }
 
+  /**
+   * Get the auto generated ID of this instance
+   */
   get uid() {
     return this._uid;
   }
@@ -78,7 +90,11 @@ export class Instance implements Identifiable {
    * to cause a trigger for the property to activate such that the property will update it's buffer.
    */
   resourceTrigger() {
-    // For subclasses
+    // No default behavior, subclasses must override and provide behavior.
+    console.warn(
+      "resourceTrigger called on an instance that did not override resourceTrigger. resourceTrigger MUST be overridden for instances",
+      "that utilize a resource. The observable that is tied to committing the resource should be 'triggered' in this method."
+    );
   }
 
   constructor(options: IInstanceOptions) {

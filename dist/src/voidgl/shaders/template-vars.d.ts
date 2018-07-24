@@ -17,5 +17,6 @@ export declare const templateVars: {
     projectionMethods: string;
     shader: string;
     shaderInput: string;
+    T: string;
     vertexAttributes: string;
 };

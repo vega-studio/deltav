@@ -10,7 +10,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType
-} from "../../src";
+} from "src";
 import { BaseExample } from "./base-example";
 
 export class MouseInteractionColorPicking extends BaseExample {

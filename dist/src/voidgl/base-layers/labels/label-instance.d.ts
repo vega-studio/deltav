@@ -55,7 +55,8 @@ export declare class LabelInstance extends Instance implements Label {
     readonly height: number;
     private _anchor;
     constructor(options: ILabelInstanceOptions);
-    destroy(): void;
     readonly anchor: Anchor;
+    destroy(): void;
+    resourceTrigger(): void;
     setAnchor(anchor: Anchor): void;
 }

@@ -11,7 +11,7 @@ export declare class InstanceProvider<T extends Instance> {
     add(instance: T): T;
     clear(): void;
     destroy(): void;
-    instanceUpdated(instance: T, _property: number): void;
+    instanceUpdated(instance: T): void;
     remove(instance: T): boolean;
     resolve(): void;
 }

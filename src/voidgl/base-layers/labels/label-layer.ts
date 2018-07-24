@@ -10,7 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { Vec2 } from "../../util";
+import { CommonMaterialOptions, Vec2 } from "../../util";
 import { ScaleType } from "../types";
 import { LabelInstance } from "./label-instance";
 
@@ -245,11 +245,6 @@ export class LabelLayer<
   }
 
   getMaterialOptions(): IMaterialOptions {
-    return {
-      blending: Three.CustomBlending,
-      blendSrc: Three.OneFactor,
-      premultipliedAlpha: true,
-      transparent: true
-    };
+    return CommonMaterialOptions.transparentImage;
   }
 }

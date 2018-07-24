@@ -67,7 +67,7 @@ export function observable<T extends Instance>(target: T, key: string) {
     this.observableStorage[propertyUID] = newVal;
     // Broadcast change
     this.changes[propertyUID] = propertyUID;
-    this.observer && this.observer.instanceUpdated(this, propertyUID);
+    this.observer && this.observer.instanceUpdated(this);
   }
 
   /**

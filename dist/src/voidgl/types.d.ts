@@ -31,6 +31,9 @@ export declare enum InstanceAttributeSize {
     FOUR = 4,
     ATLAS = 99,
 }
+export declare const instanceAttributeSizeFloatCount: {
+    [key: number]: number;
+};
 export declare enum UniformSize {
     ONE = 1,
     TWO = 2,
@@ -71,18 +74,24 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
     materialAttribute: Three.BufferAttribute | null;
 }
 export interface IInstanceAttribute<T extends Instance> {
-    block: number;
-    blockIndex?: InstanceBlockIndex;
-    easing?: IAutoEasingMethod<Vec>;
-    name: string;
-    qualifier?: string;
     atlas?: {
         key: string;
         name: string;
         shaderInjection?: ShaderInjectionTarget;
     };
+    block: number;
+    blockIndex?: InstanceBlockIndex;
+    childAttributes?: IInstanceAttribute<T>[];
+    easing?: IAutoEasingMethod<Vec>;
+    name: string;
+    parentAttribute?: IInstanceAttribute<T>;
+    qualifier?: string;
     size?: InstanceAttributeSize;
     update(instance: T): InstanceIOValue;
+}
+export interface IInstanceAttributeInternal<T extends Instance> extends IInstanceAttribute<T> {
+    uid: number;
+    bufferAttribute: Three.InstancedBufferAttribute;
 }
 export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
     atlas: {
@@ -98,7 +107,6 @@ export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceA
 export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
     atlas: undefined;
 }
-export declare type IInstanceAttributeInternal<T extends Instance> = IInstanceAttribute<T>;
 export declare enum ShaderInjectionTarget {
     VERTEX = 1,
     FRAGMENT = 2,

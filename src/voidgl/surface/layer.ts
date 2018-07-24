@@ -7,6 +7,7 @@ import {
   INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  InstanceDiffType,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
@@ -23,10 +24,14 @@ import {
 } from "../types";
 import { BoundsAccessor, TrackedQuadTree } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { InstanceUniformManager } from "../util/instance-uniform-manager";
-import { DiffLookup, InstanceDiffManager } from "./instance-diff-manager";
+import {
+  BufferManagerBase,
+  IBufferLocation
+} from "./buffer-management/buffer-manager-base";
+import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerSurface } from "./layer-surface";
+import { LayerBufferType } from "./layer-processing/layer-buffer-type";
+import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { View } from "./view";
 
@@ -58,6 +63,10 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * the value is not NONE.
    */
   picking?: PickType;
+  /**
+   * Used for debugging. Logs the generated shader for the layer in the console.
+   */
+  printShader?: boolean;
   /**
    * This identifies the scene we want the layer to be a part of.
    * Layer's with the same identifiers will render their buffers in the same scene.
@@ -109,10 +118,24 @@ export class Layer<
 
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
+  /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
+  private _bufferManager: BufferManagerBase<T, IBufferLocation>;
+  /** Buffer manager is read only. Must use setBufferManager */
+  get bufferManager() {
+    return this._bufferManager;
+  }
+  /** This is the determined buffering strategy of the layer */
+  private _bufferType: LayerBufferType;
+  /** Buffer type is private and should not be directly modified */
+  get bufferType() {
+    return this._bufferType;
+  }
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This is the threejs geometry filled with the vertex information */
   geometry: Three.BufferGeometry;
+  /** This is the initializer used when making this layer. */
+  initializer: LayerInitializer;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
   /** A lookup fo an instance by it's ID */
@@ -140,8 +163,6 @@ export class Layer<
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
-  /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
-  uniformManager: InstanceUniformManager<T>;
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
@@ -149,8 +170,6 @@ export class Layer<
 
   /** This contains the methods and controls for handling diffs for the layer */
   diffManager: InstanceDiffManager<T>;
-  /** This takes a diff and applies the proper method of change for the diff with quad tree changes */
-  diffProcessor: DiffLookup<T>;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -189,17 +208,17 @@ export class Layer<
         type: PickType.NONE
       };
     }
-
-    this.diffManager = new InstanceDiffManager<T>(this);
-    this.diffProcessor = this.diffManager.getDiffProcessor();
-    this.interactions = new LayerInteractionHandler(this);
   }
 
   /**
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {
-    this.uniformManager.destroy();
+    if (this.bufferManager) {
+      if (this.bufferManager.scene) this.bufferManager.scene.removeLayer(this);
+      this.bufferManager.removeFromScene();
+      this.bufferManager.destroy();
+    }
   }
 
   didUpdateProps() {
@@ -216,21 +235,32 @@ export class Layer<
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
     // Make some holder variables to prevent declaration within the loop
-    let change, instance, uniforms;
+    let change, instance, bufferLocations;
     // Fast ref to the processor and manager
-    const diffProcessor = this.diffProcessor;
     const diffManager = this.diffManager;
+    const processing = diffManager.processing;
+    const processor = diffManager.processor;
+
+    // Forewarn the processor how many instances are flagged for a change.
+    processor.incomingChangeList(changeList);
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
       instance = change[0];
-      uniforms = this.uniformManager.getUniforms(instance);
+      bufferLocations = this.bufferManager.getBufferLocations(instance);
       // The diff type is change[1] which we use to find the diff processing method to use
-      diffProcessor[change[1]](diffManager, instance, uniforms);
-      // Clear the instance changes recorded
+      processing[change[1]](
+        processor,
+        instance,
+        Object.values(change[2]),
+        bufferLocations
+      );
+      // Clear the changes for the instance
       instance.changes = {};
     }
 
+    // Tell the diff processor that it has completed it's task set
+    processor.commit();
     // Indicate the diffs are consumed
     this.props.data.resolve();
 
@@ -338,7 +368,37 @@ export class Layer<
     };
   }
 
-  willUpdateInstances(_changes: InstanceDiff<T>[]) {
+  /**
+   * Applies a buffer manager to the layer which handles instance changes and applies those changes
+   * to an appropriate buffer at the appropriate location.
+   */
+  setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>) {
+    if (!this._bufferManager) {
+      this._bufferManager = bufferManager;
+      this.diffManager = new InstanceDiffManager<T>(this, bufferManager);
+      this.diffManager.makeProcessor();
+      this.interactions = new LayerInteractionHandler(this);
+    } else {
+      console.warn(
+        "You can not change a layer's buffer strategy once it has been instantiated."
+      );
+    }
+  }
+
+  /**
+   * Only allows the buffer type to be set once
+   */
+  setBufferType(val: LayerBufferType) {
+    if (this._bufferType === undefined) {
+      this._bufferType = val;
+    } else {
+      console.warn(
+        "You can not change a layers buffer strategy once it has been instantiated."
+      );
+    }
+  }
+
+  willUpdateInstances(_changes: [T, InstanceDiffType]) {
     // HOOK: Simple hook so a class can review all of it's changed instances before
     //       Getting applied to the Shader IO
   }

@@ -1,9 +1,9 @@
 import {
   CircleInstance,
   CircleLayer,
-  DataProvider,
   extendShaderInitialization,
   ICircleLayerProps,
+  InstanceProvider,
   IShaderInitialization,
   UniformSize
 } from "../../../src";
@@ -18,7 +18,7 @@ export class ExtendedCircles extends CircleLayer<
   IExtendedCirclesProps
 > {
   static defaultProps: IExtendedCirclesProps = {
-    data: new DataProvider<CircleInstance>([]),
+    data: new InstanceProvider<CircleInstance>(),
     key: ""
   };
 

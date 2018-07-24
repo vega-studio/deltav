@@ -5,7 +5,7 @@ import {
   InstanceProvider,
   LayerInitializer,
   ScaleType
-} from "../../src";
+} from "src";
 import { BaseExample } from "./base-example";
 
 const iconData = require("./images/leaf.png");

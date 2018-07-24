@@ -1,5 +1,6 @@
 import {
   AnimationHelper,
+  AutoEasingMethod,
   BasicCameraController,
   Bounds,
   ChartCamera,
@@ -7,17 +8,14 @@ import {
   CircleLayer,
   createLayer,
   EventManager,
+  IAutoEasingMethod,
   IInstanceProvider,
   InstanceProvider,
   LayerInitializer,
   LayerSurface,
   Vec,
   Vec2
-} from "../../src";
-import {
-  AutoEasingMethod,
-  IAutoEasingMethod
-} from "../../src/voidgl/util/auto-easing-method";
+} from "src";
 import { BaseExample } from "./base-example";
 
 const { min, max, random } = Math;
@@ -98,6 +96,10 @@ export class BoxOfCircles extends BaseExample {
   originalRange: Bounds;
   scene: string;
   textPositions: Vec2[];
+  textCache: {
+    buckets: CircleInstance[][];
+    xy: Vec2[];
+  };
 
   keyEvent(e: KeyboardEvent, _isDown: boolean) {
     if (!this.originalRange) {
@@ -158,53 +160,56 @@ export class BoxOfCircles extends BaseExample {
   }
 
   private async moveToText(circles: CircleInstance[]) {
-    const xy = this.textPositions || makeTextPositions(this.surface, this.view);
-    this.textPositions = xy;
+    if (!this.textCache) {
+      const xy =
+        this.textPositions || makeTextPositions(this.surface, this.view);
+      this.textPositions = xy;
 
-    if (this.textPositions.length === 0) {
-      delete this.textPositions;
-      return;
+      if (this.textPositions.length === 0) {
+        delete this.textPositions;
+        return;
+      }
+
+      xy.sort((a, b) => a[0] - b[0]);
+      const circleBuckets: CircleInstance[][] = [];
+      const bucketLength = xy.length;
+      const toProcess = circles.slice(0);
+      let i = 0;
+
+      while (toProcess.length > 0) {
+        const circle = toProcess.splice(
+          Math.floor(Math.random() * toProcess.length),
+          1
+        )[0];
+        const index = i++ % bucketLength;
+        const bucket = (circleBuckets[index] = circleBuckets[index] || []);
+        bucket.push(circle);
+      }
+
+      this.textCache = {
+        buckets: circleBuckets,
+        xy
+      };
     }
 
-    xy.sort((a, b) => a[0] - b[0]);
-    const circleBuckets: CircleInstance[][] = [];
-    const bucketLength = xy.length;
-    const toProcess = circles.slice(0);
-    let i = 0;
+    const xy = this.textCache.xy;
+    const circleBuckets = this.textCache.buckets;
 
-    while (toProcess.length > 0) {
-      const circle = toProcess.splice(
-        Math.floor(Math.random() * toProcess.length),
-        1
-      )[0];
-      const index = i++ % bucketLength;
-      const bucket = (circleBuckets[index] = circleBuckets[index] || []);
-      bucket.push(circle);
-    }
+    for (let i = 0, end = circleBuckets.length; i < end; ++i) {
+      const bucket = circleBuckets[i];
+      const pos = xy[i];
 
-    this.animationHelper.groupAnimation(
-      this.animationControl.center,
-      xy.length,
-      500,
-      1,
-      (groupIndex: number) => {
-        const bucket = circleBuckets[groupIndex];
-        const pos = xy[groupIndex];
+      for (let i = 0, end = bucket.length; i < end; ++i) {
+        const circle = bucket[i];
 
-        for (let i = 0, end = bucket.length; i < end; ++i) {
-          const circle = bucket[i];
-
-          if (circle && pos) {
-            circle.x = pos[0];
-            circle.y = pos[1];
-            circle.radius = 1;
-            circle.color = [random(), random(), 1.0, 1.0];
-          }
+        if (circle && pos) {
+          circle.x = pos[0];
+          circle.y = pos[1];
+          circle.radius = 0.5;
+          circle.color = [random(), random(), 1.0, 1.0];
         }
       }
-    );
-
-    await this.surface.commit(this.surface.frameMetrics.currentTime);
+    }
   }
 
   makeProvider(): IInstanceProvider<CircleInstance> {
@@ -234,7 +239,7 @@ export class BoxOfCircles extends BaseExample {
 
       if (makeBox) {
         this.animationControl.center.delay = 1500;
-        this.animationControl.color.delay = 500;
+        this.animationControl.color.delay = 1000;
         this.animationControl.radius.delay = 1500;
 
         for (let i = 0; i < boxSide; ++i) {
@@ -247,9 +252,9 @@ export class BoxOfCircles extends BaseExample {
           }
         }
       } else {
-        this.animationControl.center.delay = 500;
+        this.animationControl.center.delay = 1000;
         this.animationControl.color.delay = 1500;
-        this.animationControl.radius.delay = 500;
+        this.animationControl.radius.delay = 1000;
 
         this.moveToText(circles);
       }

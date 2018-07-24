@@ -83,9 +83,11 @@ export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
 export class WebGLStat {
   static MAX_VERTEX_UNIFORMS = 0;
   static MAX_FRAGMENT_UNIFORMS = 0;
-  static MAX_ATTRIBUTES = 0;
+  static MAX_VERTEX_ATTRIBUTES = 0;
   static WEBGL_SUPPORTED: boolean = false;
   static MAX_TEXTURE_SIZE = 0;
+  static HARDWARE_INSTANCING = false;
+  static HARDWARE_INSTANCING_ANGLE = false;
 }
 
 function initStats() {
@@ -114,8 +116,12 @@ function initStats() {
     WebGLStat.MAX_FRAGMENT_UNIFORMS = gl.getParameter(
       gl.MAX_FRAGMENT_UNIFORM_VECTORS
     );
-    WebGLStat.MAX_ATTRIBUTES = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+    WebGLStat.MAX_VERTEX_ATTRIBUTES = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
     WebGLStat.MAX_TEXTURE_SIZE = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    WebGLStat.HARDWARE_INSTANCING_ANGLE = Boolean(
+      gl.getExtension("ANGLE_instanced_arrays")
+    );
+    WebGLStat.HARDWARE_INSTANCING = WebGLStat.HARDWARE_INSTANCING_ANGLE;
   }
 }
 

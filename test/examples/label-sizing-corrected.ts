@@ -8,7 +8,7 @@ import {
   LayerInitializer,
   ReferenceCamera,
   ScaleType
-} from "../../src";
+} from "src";
 import { BaseExample } from "./base-example";
 
 export class LabelSizingCorrected extends BaseExample {

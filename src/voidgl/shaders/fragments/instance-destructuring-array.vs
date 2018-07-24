@@ -1,5 +1,4 @@
 // This is the injected dereferencing of the instance attributes
-  int instanceIndex = int(instance);
   ${instanceDestructuring}
 
   // This is a special injected instance attribute. It lets the system

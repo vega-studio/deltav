@@ -98,19 +98,18 @@ const anchorCalculator: {
 };
 
 /**
- * This generates a new image instance which will render a single line of text for a given layer.
+ * This generates a new image instance.
  * There are restrictions surrounding images due to texture sizes and rendering limitations.
  *
  * Currently, we only support rendering a image via canvas, then rendering it to an Atlas texture
  * which is used to render to cards in the world for rendering. This is highly performant, but means:
  *
- * - Images should only be so long.
- * - Multiline is not supported inherently
+ * - Images should only be so large.
  * - Once a image is constructed, only SOME properties can be altered thereafter
  *
- * A image that is constructed can only have some properties set upon creating the image and are locked
+ * An image that is constructed can only have some properties set upon creating the image and are locked
  * thereafter. The only way to modify them would be to destroy the image, then construct a new image
- * with the modifications. This has to deal with performance regarding rasterizing the image
+ * with the modifications. This has to deal with performance regarding rasterizing the image.
  */
 export class ImageInstance extends Instance implements Image {
   /**
@@ -152,7 +151,7 @@ export class ImageInstance extends Instance implements Image {
   private _sourceWidth: number = 0;
   private _sourceHeight: number = 0;
   private _isDestroyed: boolean = false;
-  private _rasterization: RasterizationReference;
+  @observable private _rasterization: RasterizationReference;
   private _path: string;
   private _element: HTMLImageElement;
 
@@ -251,6 +250,10 @@ export class ImageInstance extends Instance implements Image {
     options.anchor && this.setAnchor(options.anchor);
   }
 
+  get anchor() {
+    return this._anchor;
+  }
+
   /**
    * Images are a sort of unique case where the use of a image should be destroyed as rasterization
    * resources are in a way kept alive through reference counting.
@@ -268,8 +271,9 @@ export class ImageInstance extends Instance implements Image {
     }
   }
 
-  get anchor() {
-    return this._anchor;
+  resourceTrigger() {
+    // Trigger the accessed element that the layer utilizes for resource fetching.
+    this._rasterization = this._rasterization;
   }
 
   /**

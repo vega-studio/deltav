@@ -7,15 +7,14 @@ export interface IInstanceOptions {
 export declare class Instance implements Identifiable {
     static readonly newUID: number;
     active: boolean;
+    changes: {
+        [key: number]: number;
+    };
     private _easing;
     private _id;
     private _observer;
     observableStorage: any[];
     private _uid;
-    changes: {
-        [key: number]: number;
-    };
-    destroy(): void;
     readonly observableDisposer: () => void;
     observer: InstanceProvider<this> | null;
     readonly easing: Map<number, IEasingProps>;

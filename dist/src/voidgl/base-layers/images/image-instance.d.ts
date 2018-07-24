@@ -37,7 +37,8 @@ export declare class ImageInstance extends Instance implements Image {
     readonly sourceHeight: number;
     private _anchor;
     constructor(options: IImageInstanceOptions);
-    destroy(): void;
     readonly anchor: Anchor;
+    destroy(): void;
+    resourceTrigger(): void;
     setAnchor(anchor: Anchor): void;
 }

@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.11.0
+
+* `(ADDED)` Automatic Instancing performance is vastly increased for many systems with zero changes to the front facing API.
+* `(ADDED)` Continuous AutoEasing timing mode is available now. This allows easing methods to utilize a time value that ranges from 0 to max value of a float.
+* `(ADDED)` A sinusoidal AutoEasingMethod was added. This allows for easy continuous changing of a value that operates on a sine wave. The value will oscillate based on: start value is where the sine wave begins (x=0) and the set end value is the peak of the amplitude of the sine wave. Thus (end - start) * 2 is the amplitude of the sine wave.
+
 ## 1.10.1
 
 * `(FIXED)` certain async operations caused an undefined scene to crop up and cause issues on FF

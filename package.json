@@ -61,7 +61,7 @@
     "ts-loader": "4.2.0",
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
-    "typescript": "2.8.1",
+    "typescript": "2.9.2",
     "webpack": "4.6.0",
     "webpack-serve": "0.3.1"
   },

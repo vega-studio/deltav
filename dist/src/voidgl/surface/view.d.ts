@@ -9,7 +9,7 @@ import { ViewCamera } from "../util/view-camera";
 export declare enum ClearFlags {
     COLOR = 1,
     DEPTH = 2,
-    STENCIL = 4,
+    STENCIL = 4
 }
 export interface IViewOptions extends IdentifyByKeyOptions {
     background?: Color;

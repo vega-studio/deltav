@@ -21,16 +21,16 @@ export declare class InstanceAttributeBufferManager<T extends Instance> extends 
     private updateAllPropertyIdList;
     private activePropertyId;
     constructor(layer: Layer<T, any>, scene: Scene);
-    private doAddWithRegistration(instance);
-    private doAdd(instance);
+    private doAddWithRegistration;
+    private doAdd;
     destroy(): void;
     getBufferLocations(instance: T): IBufferLocationGroup<IInstanceAttributeBufferLocation>;
     getActiveAttributePropertyId(): number;
     getUpdateAllPropertyIdList(): number[];
-    private makeUpdateAllPropertyIdList();
+    private makeUpdateAllPropertyIdList;
     remove: (instance: T) => T;
     removeFromScene(): void;
-    private resizeBuffer();
-    private gatherLocationsIntoGroups(attributeToNewBufferLocations, totalNewInstances);
+    private resizeBuffer;
+    private gatherLocationsIntoGroups;
     getInstanceCount(): number;
 }

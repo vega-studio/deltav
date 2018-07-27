@@ -27,8 +27,8 @@ export declare class Node<T extends Instance> {
     add(child: T): boolean;
     addAll(children: T[]): void;
     cover(bounds: Bounds): void;
-    private doAdd(child, bounds, fromSplit?);
-    private doRemove(child);
+    private doAdd;
+    private doRemove;
     gatherChildren(list: T[]): T[];
     query(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
     queryBounds(b: Bounds, list: T[], visit?: IVisitFunction<T>): T[];

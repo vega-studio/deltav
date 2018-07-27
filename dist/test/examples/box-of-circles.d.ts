@@ -20,6 +20,6 @@ export declare class BoxOfCircles extends BaseExample {
     makeCamera(defaultCamera: ChartCamera): ChartCamera;
     makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager;
     makeLayer(scene: string, _atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer;
-    private moveToText(circles);
+    private moveToText;
     makeProvider(): IInstanceProvider<CircleInstance>;
 }

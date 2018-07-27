@@ -1,4 +1,3 @@
-/// <reference types="animejs" />
 import * as anime from "animejs";
 import { CircleInstance, EdgeInstance, InstanceProvider, IPickInfo, LayerInitializer } from "src";
 import { BaseExample } from "./base-example";

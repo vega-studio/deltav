@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.12.0
+
+* `(ADDED)` Upgraded to TypeScript 2.9.2 and patched compatability issues
+
 ## 1.11.0
 
 * `(ADDED)` Automatic Instancing performance is vastly increased for many systems with zero changes to the front facing API.

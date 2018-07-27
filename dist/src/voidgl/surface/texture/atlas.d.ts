@@ -14,7 +14,7 @@ export declare enum AtlasSize {
     _512 = 512,
     _1024 = 1024,
     _2048 = 2048,
-    _4096 = 4096,
+    _4096 = 4096
 }
 export interface IAtlasOptions extends IdentifyByKeyOptions {
     height: AtlasSize;
@@ -30,7 +30,7 @@ export declare class Atlas extends IdentifyByKey {
     validResources: Map<AtlasResource, boolean>;
     width: AtlasSize;
     constructor(options: IAtlasOptions);
-    private invalidateResource(resource);
+    private invalidateResource;
     setManager(manager: AtlasManager): void;
     registerResource(resource: AtlasResource): boolean;
     removeResource(resource: AtlasResource): void;

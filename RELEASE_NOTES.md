@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.12.1
+
+* `(FIXED)` Labels in single axis scaling would get distorted and unreadable
+
 ## 1.12.0
 
 * `(ADDED)` Upgraded to TypeScript 2.9.2 and patched compatability issues

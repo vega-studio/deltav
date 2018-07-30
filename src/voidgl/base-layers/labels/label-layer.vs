@@ -51,7 +51,7 @@ void main() {
   );
 
   // Get the position of the current vertex
-  vec2 vertex = vec2(side, float(normal == 1.0)) * scale * size + location - adjustedAnchor;
+  vec2 vertex = vec2(side, float(normal == 1.0)) * scale * adjustedSize + location - adjustedAnchor;
 
   // See how scaled the size on screen will be from the actual height of the label
   float labelScreenScale = mix(

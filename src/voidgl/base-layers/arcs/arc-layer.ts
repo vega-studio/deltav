@@ -59,6 +59,13 @@ export class ArcLayer<
       [MAX_SEGMENTS * 2 + 2]: 1
     };
 
+    let sign = 1;
+    for (let i = 0; i < MAX_SEGMENTS * 2; ++i) {
+      vertexToNormal[i + 1] = sign;
+      vertexInterpolation[i + 1] = Math.floor(i / 2) / (MAX_SEGMENTS - 1);
+      sign *= -1;
+    }
+
     const vs =
       scaleType === ArcScaleType.NONE
         ? require("./arc-layer.vs")
@@ -83,7 +90,7 @@ export class ArcLayer<
         },
         {
           block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
+          blockIndex: InstanceBlockIndex.FOUR,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
@@ -149,7 +156,7 @@ export class ArcLayer<
   getModelType(): IModelType {
     return {
       drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Points
+      modelType: Three.Mesh
     };
   }
 

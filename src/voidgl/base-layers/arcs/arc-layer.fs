@@ -6,6 +6,6 @@ ${extendHeader}
 
 void main() {
   setColor(vertexColor);
-  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  gl_FragColor = vertexColor;
   ${extend}
 }

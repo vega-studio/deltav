@@ -11,6 +11,7 @@ import {
 } from "src";
 
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
+import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
 import { BendyEdge } from "./examples/bendy-edge";
 import { BoundedView } from "./examples/bounded-view";
@@ -67,7 +68,8 @@ const tests: BaseExample[] = [
   new BoundedView(),
   new BoundedView3(),
   new AnimateDeleteAdd(),
-  new MouseInteractionColorPicking()
+  new MouseInteractionColorPicking(),
+  new Arcs()
 ];
 
 /** These are the layers for the tests that are generated */

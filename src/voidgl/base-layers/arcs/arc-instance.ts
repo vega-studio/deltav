@@ -1,6 +1,6 @@
-import { Vec2, Vec4 } from "src/voidgl/util";
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Vec2, Vec4 } from "../../util";
 
 export interface IArcInstanceOptions extends IInstanceOptions {
   /** The start and end angle of the arc */

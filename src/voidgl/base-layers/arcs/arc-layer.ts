@@ -1,5 +1,5 @@
-import { InstanceProvider } from "src/voidgl/instance-provider";
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,

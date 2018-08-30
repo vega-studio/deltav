@@ -3,7 +3,7 @@ import { IMaterialOptions, IShaderInitialization } from "../../types";
 import { ArcInstance } from "./arc-instance";
 export declare enum ArcScaleType {
     NONE = 0,
-    SCREEN_CURVE = 1,
+    SCREEN_CURVE = 1
 }
 export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
     scaleType?: ArcScaleType;

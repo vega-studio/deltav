@@ -19,7 +19,7 @@ export class Arcs extends BaseExample {
       data: provider,
       key: "arcs",
       scene: scene,
-      scaleType: ArcScaleType.SCREEN_CURVE
+      scaleType: ArcScaleType.NONE
     });
   }
 

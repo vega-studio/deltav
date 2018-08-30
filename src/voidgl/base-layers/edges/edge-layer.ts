@@ -1,5 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
+import { templateVars } from "../../shaders/template-vars";
 import {
   ILayerProps,
   IModelType,
@@ -145,7 +146,19 @@ export class EdgeLayer<
         name: "Edge Layer",
         values: ["interpolation"]
       },
-      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS
+      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
+
+      // We do not want to remove any extension macros
+      onToken: (token, replace) => {
+        if (
+          token === templateVars.extendHeader ||
+          token === templateVars.extend
+        ) {
+          return `$\{${token}}`;
+        }
+
+        return replace;
+      }
     });
 
     return {

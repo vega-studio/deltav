@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.13.0
+
+* `(ADDED)` Added arcs as a new base layer for rending circular edges.
+* `(FIXED)` Edges for screen space did not have extending set up correctly
+
 ## 1.12.1
 
 * `(FIXED)` Labels in single axis scaling would get distorted and unreadable

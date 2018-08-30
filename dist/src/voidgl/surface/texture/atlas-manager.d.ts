@@ -8,9 +8,9 @@ export declare class AtlasManager {
     createAtlas(options: IAtlasOptions, resources?: AtlasResource[]): Promise<Atlas>;
     destroy(): void;
     destroyAtlas(atlasName: string): void;
-    private setDefaultImage;
-    private draw;
+    private setDefaultImage(image, atlasName);
+    private draw(atlas, resource);
     getAtlasTexture(atlasName: string): Atlas | undefined;
-    private loadImage;
+    private loadImage(resource);
     updateAtlas(atlasName: string, resources: AtlasResource[]): Promise<void>;
 }

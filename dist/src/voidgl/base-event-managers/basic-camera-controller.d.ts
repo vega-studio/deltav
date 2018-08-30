@@ -13,7 +13,7 @@ export declare enum CameraBoundsAnchor {
     MIDDLE_RIGHT = 5,
     BOTTOM_LEFT = 6,
     BOTTOM_MIDDLE = 7,
-    BOTTOM_RIGHT = 8
+    BOTTOM_RIGHT = 8,
 }
 export interface ICameraBoundsOptions {
     anchor: CameraBoundsAnchor;
@@ -57,9 +57,9 @@ export declare class BasicCameraController extends EventManager {
     anchoredByBoundsVertical(targetView: View, bounds: ICameraBoundsOptions): number;
     boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
     boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
-    private canStart;
-    private findCoveredStartView;
-    private getTargetView;
+    private canStart(viewId);
+    private findCoveredStartView(e);
+    private getTargetView(e);
     handleMouseDown(e: IMouseInteraction, _button: number): void;
     handleMouseUp(_e: IMouseInteraction): void;
     handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;

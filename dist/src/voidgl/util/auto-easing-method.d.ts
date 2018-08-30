@@ -4,7 +4,7 @@ export declare enum AutoEasingLoopStyle {
     NONE = 1,
     CONTINUOUS = 4,
     REPEAT = 2,
-    REFLECT = 3
+    REFLECT = 3,
 }
 export interface IAutoEasingMethod<T extends InstanceIOValue> {
     cpu(start: T, end: T, t: number): T;

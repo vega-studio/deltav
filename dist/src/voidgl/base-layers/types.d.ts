@@ -8,7 +8,7 @@ export declare enum AnchorType {
     MiddleRight = 6,
     TopLeft = 7,
     TopMiddle = 8,
-    TopRight = 9
+    TopRight = 9,
 }
 export declare type Anchor = {
     padding: number;
@@ -19,5 +19,5 @@ export declare type Anchor = {
 export declare enum ScaleType {
     ALWAYS = 1,
     BOUND_MAX = 2,
-    NEVER = 3
+    NEVER = 3,
 }

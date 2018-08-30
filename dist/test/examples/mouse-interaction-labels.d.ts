@@ -1,3 +1,4 @@
+/// <reference types="animejs" />
 import * as anime from "animejs";
 import { ChartCamera, InstanceProvider, IPickInfo, LabelInstance, LayerInitializer } from "src";
 import { BaseExample } from "./base-example";

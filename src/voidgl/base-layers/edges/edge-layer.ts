@@ -1,6 +1,6 @@
-import { templateVars } from "src/voidgl/shaders/template-vars";
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
+import { templateVars } from "../../shaders/template-vars";
 import {
   ILayerProps,
   IModelType,

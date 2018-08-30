@@ -20,14 +20,14 @@ export declare enum InstanceBlockIndex {
     ONE = 1,
     TWO = 2,
     THREE = 3,
-    FOUR = 4,
+    FOUR = 4
 }
 export declare enum InstanceAttributeSize {
     ONE = 1,
     TWO = 2,
     THREE = 3,
     FOUR = 4,
-    ATLAS = 99,
+    ATLAS = 99
 }
 export declare const instanceAttributeSizeFloatCount: {
     [key: number]: number;
@@ -39,13 +39,13 @@ export declare enum UniformSize {
     FOUR = 4,
     MATRIX3 = 9,
     MATRIX4 = 16,
-    ATLAS = 99,
+    ATLAS = 99
 }
 export declare enum VertexAttributeSize {
     ONE = 1,
     TWO = 2,
     THREE = 3,
-    FOUR = 4,
+    FOUR = 4
 }
 export declare type Color = [number, number, number, number];
 export interface Identifiable {
@@ -108,7 +108,7 @@ export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAt
 export declare enum ShaderInjectionTarget {
     VERTEX = 1,
     FRAGMENT = 2,
-    ALL = 3,
+    ALL = 3
 }
 export interface IUniform {
     shaderInjection?: ShaderInjectionTarget;
@@ -146,7 +146,7 @@ export declare type InstanceHitTest<T> = (o: T, p: IPoint, v: IProjection) => bo
 export declare enum PickType {
     NONE = 0,
     ALL = 1,
-    SINGLE = 2,
+    SINGLE = 2
 }
 export interface IPickingMetrics {
     currentPickMode: PickType;
@@ -175,7 +175,7 @@ export interface IColorPickingData {
 export declare enum InstanceDiffType {
     CHANGE = 0,
     INSERT = 1,
-    REMOVE = 2,
+    REMOVE = 2
 }
 export declare type FrameMetrics = {
     currentFrame: number;

@@ -46,7 +46,7 @@ export declare class LabelInstance extends Instance implements Label {
     readonly fontFamily: string;
     readonly fontSize: number;
     readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
-    readonly fontWeight: 100 | 500 | 300 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
+    readonly fontWeight: 100 | 300 | 500 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
     readonly maxWidth: number;
     readonly resource: LabelAtlasResource;
     readonly text: string;

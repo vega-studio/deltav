@@ -174,6 +174,9 @@ export class LayerSurface {
    */
   willDisposeLayer = new Map<string, boolean>();
 
+  /** This is used to indicate whether the loading is completed */
+  loadingCompleted: boolean = false;
+
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
@@ -490,7 +493,10 @@ export class LayerSurface {
 
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
-      if (didBuffer) this.draw();
+      if (didBuffer) {
+        this.loadingCompleted = true;
+        this.draw();
+      }
     }
 
     // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have

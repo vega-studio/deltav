@@ -11,7 +11,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions } from "../../util";
+import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../util";
 import { RingInstance } from "./ring-instance";
 const { max } = Math;
 
@@ -19,6 +19,9 @@ export interface IRingLayerProps<T extends RingInstance>
   extends ILayerProps<T> {
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
+  animate?: {
+    color?: IAutoEasingMethod<Vec>;
+  };
 }
 
 /**
@@ -59,6 +62,10 @@ export class RingLayer<
    */
   initShader(): IShaderInitialization<RingInstance> {
     const scaleFactor = this.props.scaleFactor || (() => 1);
+    const animations = this.props.animate || {};
+    const {
+      color: animateColor
+    } = animations;
 
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
@@ -105,6 +112,7 @@ export class RingLayer<
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColor,
           name: "color",
           size: InstanceAttributeSize.FOUR,
           update: o => o.color

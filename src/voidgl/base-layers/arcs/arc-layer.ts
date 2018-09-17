@@ -9,7 +9,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions } from "../../util";
+import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../util";
 import { ArcInstance } from "./arc-instance";
 
 export enum ArcScaleType {
@@ -24,6 +24,10 @@ export enum ArcScaleType {
 
 export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
   scaleType?: ArcScaleType;
+  animate?: {
+    colorStart?: IAutoEasingMethod<Vec>;
+    colorEnd?: IAutoEasingMethod<Vec>;
+  };
 }
 
 /**
@@ -45,6 +49,11 @@ export class ArcLayer<
    */
   initShader(): IShaderInitialization<ArcInstance> {
     const { scaleType } = this.props;
+    const animations = this.props.animate || {};
+    const {
+      colorStart: animateColorStart,
+      colorEnd: animateColorEnd,
+    } = animations;
 
     const MAX_SEGMENTS = 50;
 
@@ -112,6 +121,7 @@ export class ArcLayer<
         {
           block: 2,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColorStart,
           name: "colorStart",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
@@ -119,6 +129,7 @@ export class ArcLayer<
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColorEnd,
           name: "colorEnd",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd

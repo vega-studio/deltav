@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.14.0
+
+* `(ADDED)` Animation property added to several base layers for custom animation control over certain properties.
+
 ## 1.13.0
 
 * `(ADDED)` Added arcs as a new base layer for rending circular edges.

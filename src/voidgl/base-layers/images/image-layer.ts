@@ -10,6 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
+import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ScaleType } from "../types";
 import { ImageInstance } from "./image-instance";
@@ -19,6 +20,11 @@ const { min, max } = Math;
 export interface IImageLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
   atlas?: string;
+  animate?: {
+    tint?: IAutoEasingMethod<Vec>;
+    location?: IAutoEasingMethod<Vec>;
+    size?: IAutoEasingMethod<Vec>;
+  };
 }
 
 /**
@@ -137,6 +143,12 @@ export class ImageLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<ImageInstance> {
+    const animations = this.props.animate || {};
+    const {
+      tint: animateTint,
+      location: animateLocation,
+      size: animateSize
+    } = animations;
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
@@ -161,6 +173,7 @@ export class ImageLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateLocation,
           name: "location",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
@@ -175,6 +188,7 @@ export class ImageLayer<
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateSize,
           name: "size",
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
@@ -205,6 +219,7 @@ export class ImageLayer<
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateTint,
           name: "tint",
           size: InstanceAttributeSize.FOUR,
           update: o => o.tint

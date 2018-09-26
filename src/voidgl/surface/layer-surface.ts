@@ -175,7 +175,8 @@ export class LayerSurface {
   willDisposeLayer = new Map<string, boolean>();
 
   /** This is used to indicate whether the loading is completed */
-  loadingCompleted: boolean = false;
+  private loadReadyResolve: () => void;
+  loadReady: Promise<void> = new Promise(resolve => this.loadReadyResolve = resolve);
 
   /** Read only getter for the gl context */
   get gl() {
@@ -494,7 +495,8 @@ export class LayerSurface {
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
       if (didBuffer) {
-        this.loadingCompleted = true;
+        this.loadReadyResolve();
+        this.loadReady = new Promise(resolve => this.loadReadyResolve = resolve);
         this.draw();
       }
     }

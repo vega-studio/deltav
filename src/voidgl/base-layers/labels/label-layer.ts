@@ -10,8 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
-import { CommonMaterialOptions, Vec2 } from "../../util";
+import { CommonMaterialOptions, IAutoEasingMethod, Vec, Vec2 } from "../../util";
 import { ScaleType } from "../types";
 import { LabelInstance } from "./label-instance";
 
@@ -19,6 +18,7 @@ export interface ILabelLayerProps<T extends LabelInstance>
   extends ILayerProps<T> {
   atlas?: string;
   animate?: {
+    color?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
     size?: IAutoEasingMethod<Vec>;
   };
@@ -129,6 +129,7 @@ export class LabelLayer<
   initShader(): IShaderInitialization<LabelInstance> {
     const animations = this.props.animate || {};
     const {
+      color: animateColor,
       location: animateLocation,
       size: animateSize
     } = animations;
@@ -203,6 +204,7 @@ export class LabelLayer<
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateColor,
           name: "color",
           size: InstanceAttributeSize.FOUR,
           update: o => o.color

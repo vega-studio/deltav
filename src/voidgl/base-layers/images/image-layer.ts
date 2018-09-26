@@ -21,6 +21,7 @@ export interface IImageLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
   atlas?: string;
   animate?: {
+    tint?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
     size?: IAutoEasingMethod<Vec>;
   };
@@ -144,6 +145,7 @@ export class ImageLayer<
   initShader(): IShaderInitialization<ImageInstance> {
     const animations = this.props.animate || {};
     const {
+      tint: animateTint,
       location: animateLocation,
       size: animateSize
     } = animations;
@@ -217,6 +219,7 @@ export class ImageLayer<
         {
           block: 3,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateTint,
           name: "tint",
           size: InstanceAttributeSize.FOUR,
           update: o => o.tint

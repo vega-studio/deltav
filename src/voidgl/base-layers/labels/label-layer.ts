@@ -10,6 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
+import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions, Vec2 } from "../../util";
 import { ScaleType } from "../types";
 import { LabelInstance } from "./label-instance";
@@ -17,6 +18,10 @@ import { LabelInstance } from "./label-instance";
 export interface ILabelLayerProps<T extends LabelInstance>
   extends ILayerProps<T> {
   atlas?: string;
+  animate?: {
+    location?: IAutoEasingMethod<Vec>;
+    size?: IAutoEasingMethod<Vec>;
+  };
 }
 
 const { max, min } = Math;
@@ -122,6 +127,12 @@ export class LabelLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<LabelInstance> {
+    const animations = this.props.animate || {};
+    const {
+      location: animateLocation,
+      size: animateSize
+    } = animations;
+
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
@@ -146,6 +157,7 @@ export class LabelLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateLocation,
           name: "location",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
@@ -160,6 +172,7 @@ export class LabelLayer<
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateSize,
           name: "size",
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]

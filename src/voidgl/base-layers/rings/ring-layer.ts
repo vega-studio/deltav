@@ -20,7 +20,9 @@ export interface IRingLayerProps<T extends RingInstance>
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
   animate?: {
-    color?: IAutoEasingMethod<Vec>;
+    color?: IAutoEasingMethod<Vec>,
+    center?: IAutoEasingMethod<Vec>,
+    radius?: IAutoEasingMethod<Vec>,
   };
 }
 
@@ -64,7 +66,9 @@ export class RingLayer<
     const scaleFactor = this.props.scaleFactor || (() => 1);
     const animations = this.props.animate || {};
     const {
-      color: animateColor
+      color: animateColor,
+      center: animateCenter,
+      radius: animateRadius
     } = animations;
 
     const vertexToNormal: { [key: number]: number } = {
@@ -91,6 +95,7 @@ export class RingLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateCenter,
           name: "center",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
@@ -98,6 +103,7 @@ export class RingLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.THREE,
+          easing: animateRadius,
           name: "radius",
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]

@@ -22,6 +22,8 @@ export interface IImageLayerProps<T extends ImageInstance>
   atlas?: string;
   animate?: {
     tint?: IAutoEasingMethod<Vec>;
+    location?: IAutoEasingMethod<Vec>;
+    size?: IAutoEasingMethod<Vec>;
   };
 }
 
@@ -143,7 +145,9 @@ export class ImageLayer<
   initShader(): IShaderInitialization<ImageInstance> {
     const animations = this.props.animate || {};
     const {
-      tint: animateTint
+      tint: animateTint,
+      location: animateLocation,
+      size: animateSize
     } = animations;
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
@@ -169,6 +173,7 @@ export class ImageLayer<
         {
           block: 0,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateLocation,
           name: "location",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
@@ -183,6 +188,7 @@ export class ImageLayer<
         {
           block: 1,
           blockIndex: InstanceBlockIndex.ONE,
+          easing: animateSize,
           name: "size",
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]

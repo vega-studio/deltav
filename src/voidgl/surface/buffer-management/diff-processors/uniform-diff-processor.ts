@@ -99,7 +99,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       for (let i = 0, end = layer.instanceAttributes.length; i < end; ++i) {
         instanceUniform = layer.instanceAttributes[i];
         value = instanceUniform.update(instance);
-        block = instanceData[uniformRangeStart + instanceUniform.block];
+        block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
         instanceUniform.atlas &&
           layer.resource.setTargetAtlas(instanceUniform.atlas.key);
         start = instanceUniform.blockIndex;
@@ -126,7 +126,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       // Point to updating any other uniform
       instanceUniform = layer.activeAttribute;
       value = instanceUniform.update(instance);
-      block = instanceData[uniformRangeStart + instanceUniform.block];
+      block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
       instanceUniform.atlas &&
         layer.resource.setTargetAtlas(instanceUniform.atlas.key);
       start = instanceUniform.blockIndex;

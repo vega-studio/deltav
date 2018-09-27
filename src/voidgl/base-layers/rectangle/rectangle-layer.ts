@@ -4,7 +4,6 @@ import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IProjection,
   IShaderInitialization,
   UniformSize,
@@ -163,43 +162,31 @@ export class RectangleLayer<
       fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "location",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "anchor",
           size: InstanceAttributeSize.TWO,
           update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "size",
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.FOUR,
           name: "scaling",
           size: InstanceAttributeSize.ONE,
           update: o => [o.scaling]
         },
         {
-          block: 3,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "color",
           size: InstanceAttributeSize.FOUR,
           update: o => o.color

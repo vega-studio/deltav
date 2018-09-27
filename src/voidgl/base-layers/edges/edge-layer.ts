@@ -10,7 +10,6 @@ import {
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   InstanceIOValue,
   IShaderInitialization,
   IUniform,
@@ -165,53 +164,39 @@ export class EdgeLayer<
       fs: edgeFS,
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateStart,
           name: "start",
           size: InstanceAttributeSize.TWO,
           update: o => o.start
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           easing: animateEnd,
           name: "end",
           size: InstanceAttributeSize.TWO,
           update: o => o.end
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "widthStart",
           size: InstanceAttributeSize.ONE,
           update: o => [o.widthStart]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.TWO,
           name: "widthEnd",
           size: InstanceAttributeSize.ONE,
           update: o => [o.widthEnd]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          block: 2,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorStart,
           name: "colorStart",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         },
         {
-          block: 3,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorEnd,
           name: "colorEnd",
           size: InstanceAttributeSize.FOUR,
@@ -219,8 +204,6 @@ export class EdgeLayer<
         },
         type === EdgeType.LINE
           ? {
-              block: 4,
-              blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,
@@ -229,8 +212,6 @@ export class EdgeLayer<
           : null,
         type === EdgeType.BEZIER
           ? {
-              block: 4,
-              blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,
@@ -239,8 +220,6 @@ export class EdgeLayer<
           : null,
         type === EdgeType.BEZIER2
           ? {
-              block: 4,
-              blockIndex: InstanceBlockIndex.ONE,
               easing: animateControl,
               name: "control",
               size: InstanceAttributeSize.FOUR,

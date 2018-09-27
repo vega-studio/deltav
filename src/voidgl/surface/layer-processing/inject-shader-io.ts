@@ -28,6 +28,7 @@ import { uid, Vec } from "../../util";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { ILayerProps, Layer } from "../layer";
 import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
+import { packAttributes } from "./pack-attributes";
 
 const { abs } = Math;
 
@@ -87,62 +88,6 @@ function toVertexAttributeInternal(
 
 function toUniformInternal(uniform: IUniform): IUniformInternal {
   return Object.assign({}, uniform, { materialUniforms: [] });
-}
-
-/**
- * This finds a block and an index that can accomodate a provided size
- * @param attributes
- * @param seekingSize
- */
-function findEmptyBlock(
-  attributes: IInstanceAttribute<any>[],
-  seekingSize?: InstanceAttributeSize
-): [number, InstanceBlockIndex] {
-  const usedBlocks: any[] = [];
-  let maxBlock = 0;
-  if (seekingSize === undefined) {
-    seekingSize = 1;
-  }
-
-  attributes.forEach(instanceAttribute => {
-    const block = instanceAttribute.block;
-    const index: number =
-      instanceAttribute.blockIndex === undefined
-        ? 0
-        : instanceAttribute.blockIndex;
-    const size: number =
-      instanceAttribute.size === undefined ? 0 : instanceAttribute.size;
-
-    maxBlock = Math.max(block, maxBlock);
-
-    while (usedBlocks.length - 1 < block) {
-      usedBlocks.push([false, false, false, false]);
-    }
-
-    for (let i = index - 1, end = index - 1 + size; i < end; ++i) {
-      usedBlocks[block][i] = true;
-    }
-  });
-
-  for (let x = 0; x < usedBlocks.length; x++) {
-    for (let ind = 0; ind < 4; ind++) {
-      if (usedBlocks[x][ind]) {
-        continue;
-      } else {
-        for (let breadth = ind; breadth < 4; breadth++) {
-          if (!usedBlocks[x][breadth]) {
-            if (breadth - ind + 1 === seekingSize) {
-              return [x, ind + 1];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // If no block was ever found, then we take the max block detected and make
-  // A new block after it
-  return [maxBlock + 1, InstanceBlockIndex.ONE];
 }
 
 /**
@@ -332,10 +277,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
     attribute.childAttributes = [];
 
     // Find a slot available for our new start value
-    let slot = findEmptyBlock(instanceAttributes, size);
     const startAttr: IInstanceAttribute<T> = {
-      block: slot[0],
-      blockIndex: slot[1],
       name: `_${name}_start`,
       parentAttribute: attribute,
       size,
@@ -346,10 +288,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
     instanceAttributes.push(startAttr);
 
     // Find a slot available for our new start time
-    slot = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
     const startTimeAttr: IInstanceAttribute<T> = {
-      block: slot[0],
-      blockIndex: slot[1],
       name: `_${name}_start_time`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
@@ -360,10 +299,7 @@ function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
     instanceAttributes.push(startTimeAttr);
 
     // Find a slot available for our duration
-    slot = findEmptyBlock(instanceAttributes, InstanceAttributeSize.ONE);
     const durationAttr: IInstanceAttribute<T> = {
-      block: slot[0],
-      blockIndex: slot[1],
       name: `_${name}_duration`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
@@ -397,21 +333,10 @@ function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(
 function generatePickingAttributes<
   T extends Instance,
   U extends ILayerProps<T>
->(
-  layer: Layer<T, U>,
-  instanceAttributes: IInstanceAttribute<T>[]
-): IInstanceAttribute<T>[] {
+>(layer: Layer<T, U>): IInstanceAttribute<T>[] {
   if (layer.picking.type === PickType.SINGLE) {
-    // Find a compltely empty block within all instance attributes provided and injected
-    const emptyFillBlock = findEmptyBlock(
-      instanceAttributes,
-      InstanceAttributeSize.FOUR
-    );
-
     return [
       {
-        block: emptyFillBlock[0],
-        blockIndex: emptyFillBlock[1],
         name: "_pickingColor",
         size: InstanceAttributeSize.FOUR,
         update: o => {
@@ -491,19 +416,11 @@ function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
  * This creates the base instance attributes that are ALWAYS present
  */
 function generateBaseInstanceAttributes<T extends Instance>(
-  layer: Layer<T, any>,
-  instanceAttributes: IInstanceAttribute<T>[]
+  layer: Layer<T, any>
 ): IInstanceAttribute<T>[] {
-  const fillBlock = findEmptyBlock(
-    instanceAttributes,
-    InstanceAttributeSize.ONE
-  );
-
   // This is injected so the system can control when an instance should not be rendered.
   // This allows for holes to be in the buffer without having to correct them immediately
   const activeAttribute: IInstanceAttribute<T> = {
-    block: fillBlock[0],
-    blockIndex: fillBlock[1],
     name: "_active",
     size: InstanceAttributeSize.ONE,
     update: o => [o.active ? 1 : 0]
@@ -683,14 +600,12 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // Add in uniforms for picking
   addedUniforms = addedUniforms.concat(generatePickingUniforms(layer));
   // Create the base instance attributes that must be present
-  let addedInstanceAttributes: IInstanceAttribute<
-    T
-  >[] = instanceAttributes.concat(
-    generateBaseInstanceAttributes(layer, instanceAttributes)
+  let addedInstanceAttributes = instanceAttributes.concat(
+    generateBaseInstanceAttributes(layer)
   );
   // Add in attributes for picking
   addedInstanceAttributes = addedInstanceAttributes.concat(
-    generatePickingAttributes(layer, addedInstanceAttributes)
+    generatePickingAttributes(layer)
   );
 
   const allUniforms = addedUniforms.map(toUniformInternal);
@@ -699,6 +614,8 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
     sortNeedsUpdateFirstToTop
   );
 
+  // Let's pack in our attributes automagically so we can determine block and block indices.
+  packAttributes(allInstanceAttributes);
   // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
   getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
 

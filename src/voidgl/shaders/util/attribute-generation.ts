@@ -520,7 +520,7 @@ function generateInstanceDataLookupOptions<
   // Also sort the attributes by block and pack the block useage down.
   const sortedInstanceAttributes = instanceAttributes
     .slice(0)
-    .sort((a, b) => a.block - b.block);
+    .sort((a, b) => (a.block || 0) - (b.block || 0));
 
   let currentBlock = sortedInstanceAttributes[0].block;
   let trueBlockIndex = 0;
@@ -544,6 +544,7 @@ function generateInstanceDataLookupOptions<
       console.error(
         `An instance attribute was specified that over fills the maximum allowed useage for a block.`,
         `\nSource Layer: ${layer.id}`,
+        layer,
         `\nMax Allowed per block ${MAX_USE_PER_BLOCK}`,
         `\nAttribute: ${attribute.name} Block Specified: ${attribute.block}`,
         `\nTotal blocks used with this attribute: ${newUseage}`
@@ -673,14 +674,15 @@ function makeInstanceUniformDeclaration<T extends Instance>(
   // Dedup the attributes specified for the
   attributes.forEach(attribute => {
     const qualifiers =
-      blockQualifierDedup.get(attribute.block) || new Map<string, boolean>();
+      blockQualifierDedup.get(attribute.block || 0) ||
+      new Map<string, boolean>();
     // Make sure the qualifier is added for the block!
     if (attribute.qualifier) {
       qualifiers.set(attribute.qualifier, true);
     }
 
     // Get the max block in use
-    maxBlock = Math.max(maxBlock, attribute.block);
+    maxBlock = Math.max(maxBlock, attribute.block || 0);
   });
 
   // Generate the full string for the specified qualifiers

@@ -4,7 +4,6 @@ import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IProjection,
   IShaderInitialization,
   UniformSize,
@@ -171,38 +170,28 @@ export class ImageLayer<
       fs: require("./image-layer.fs"),
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateLocation,
           name: "location",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "anchor",
           size: InstanceAttributeSize.TWO,
           update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateSize,
           name: "size",
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.FOUR,
           name: "scaling",
           size: InstanceAttributeSize.ONE,
           update: o => [o.scaling]
@@ -212,13 +201,10 @@ export class ImageLayer<
             key: this.props.atlas || "",
             name: "imageAtlas"
           },
-          block: 2,
           name: "texture",
           update: o => this.resource.request(this, o, o.resource)
         },
         {
-          block: 3,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateTint,
           name: "tint",
           size: InstanceAttributeSize.FOUR,

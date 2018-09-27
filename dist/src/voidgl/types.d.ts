@@ -77,7 +77,7 @@ export interface IInstanceAttribute<T extends Instance> {
         name: string;
         shaderInjection?: ShaderInjectionTarget;
     };
-    block: number;
+    block?: number;
     blockIndex?: InstanceBlockIndex;
     childAttributes?: IInstanceAttribute<T>[];
     easing?: IAutoEasingMethod<Vec>;

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.15.0
+
+* `(ADDED)` Block and block index are no longer required when making instance attributes
+* `(FIXED)` Auto packing caused some issues in varying environments
+
 ## 1.14.0
 
 * `(ADDED)` Animation property added to several base layers for custom animation control over certain properties.

@@ -4,7 +4,6 @@ import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IProjection,
   IShaderInitialization,
   IUniform,
@@ -20,9 +19,9 @@ export interface IRingLayerProps<T extends RingInstance>
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
   animate?: {
-    color?: IAutoEasingMethod<Vec>,
-    center?: IAutoEasingMethod<Vec>,
-    radius?: IAutoEasingMethod<Vec>,
+    color?: IAutoEasingMethod<Vec>;
+    center?: IAutoEasingMethod<Vec>;
+    radius?: IAutoEasingMethod<Vec>;
   };
 }
 
@@ -93,39 +92,29 @@ export class RingLayer<
       fs: require("./ring-layer.fs"),
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateCenter,
           name: "center",
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           easing: animateRadius,
           name: "radius",
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.FOUR,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColor,
           name: "color",
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
         },
         {
-          block: 2,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "thickness",
           size: InstanceAttributeSize.ONE,
           update: o => [o.thickness]

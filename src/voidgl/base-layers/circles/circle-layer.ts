@@ -5,7 +5,6 @@ import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IProjection,
   IShaderInitialization,
   IUniform,
@@ -120,31 +119,23 @@ export class CircleLayer<
       fs: require("./circle-layer.fs"),
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateCenter,
           name: "center",
           size: InstanceAttributeSize.TWO,
           update: circle => [circle.x, circle.y]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           easing: animateRadius,
           name: "radius",
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.radius]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.FOUR,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.depth]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColor,
           name: "color",
           size: InstanceAttributeSize.FOUR,

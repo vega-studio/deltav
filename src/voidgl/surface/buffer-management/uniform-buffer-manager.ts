@@ -84,7 +84,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     let maxUniformBlock: number = 0;
     layer.instanceAttributes.forEach((attributes: IInstanceAttribute<T>) => {
-      maxUniformBlock = Math.max(attributes.block, maxUniformBlock);
+      maxUniformBlock = Math.max(attributes.block || 0, maxUniformBlock);
     });
 
     this.uniformBlocksPerInstance = maxUniformBlock + 1;

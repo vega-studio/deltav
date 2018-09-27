@@ -4,7 +4,6 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { packAttributes } from "src/voidgl/surface/layer-processing/pack-attributes";
 import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import {
@@ -29,6 +28,7 @@ import { uid, Vec } from "../../util";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { ILayerProps, Layer } from "../layer";
 import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
+import { packAttributes } from "./pack-attributes";
 
 const { abs } = Math;
 

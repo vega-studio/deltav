@@ -176,7 +176,9 @@ export class LayerSurface {
 
   /** This is used to indicate whether the loading is completed */
   private loadReadyResolve: () => void;
-  loadReady: Promise<void> = new Promise(resolve => this.loadReadyResolve = resolve);
+  loadReady: Promise<void> = new Promise(
+    resolve => (this.loadReadyResolve = resolve)
+  );
 
   /** Read only getter for the gl context */
   get gl() {
@@ -496,7 +498,9 @@ export class LayerSurface {
       // Changes are committed and pushed out.
       if (didBuffer) {
         this.loadReadyResolve();
-        this.loadReady = new Promise(resolve => this.loadReadyResolve = resolve);
+        this.loadReady = new Promise(
+          resolve => (this.loadReadyResolve = resolve)
+        );
         this.draw();
       }
     }

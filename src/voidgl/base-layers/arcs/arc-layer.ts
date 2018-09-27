@@ -52,7 +52,7 @@ export class ArcLayer<
     const animations = this.props.animate || {};
     const {
       colorStart: animateColorStart,
-      colorEnd: animateColorEnd,
+      colorEnd: animateColorEnd
     } = animations;
 
     const MAX_SEGMENTS = 150;

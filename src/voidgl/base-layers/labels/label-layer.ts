@@ -10,7 +10,12 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, IAutoEasingMethod, Vec, Vec2 } from "../../util";
+import {
+  CommonMaterialOptions,
+  IAutoEasingMethod,
+  Vec,
+  Vec2
+} from "../../util";
 import { ScaleType } from "../types";
 import { LabelInstance } from "./label-instance";
 

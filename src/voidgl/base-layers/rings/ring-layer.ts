@@ -20,9 +20,9 @@ export interface IRingLayerProps<T extends RingInstance>
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
   animate?: {
-    color?: IAutoEasingMethod<Vec>,
-    center?: IAutoEasingMethod<Vec>,
-    radius?: IAutoEasingMethod<Vec>,
+    color?: IAutoEasingMethod<Vec>;
+    center?: IAutoEasingMethod<Vec>;
+    radius?: IAutoEasingMethod<Vec>;
   };
 }
 

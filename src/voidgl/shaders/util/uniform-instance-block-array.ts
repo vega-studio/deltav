@@ -120,7 +120,7 @@ function uniformInstancingDestructuring<T extends Instance>(
   orderedAttributes: IInstanceAttribute<T>[],
   blocksPerInstance: number
 ) {
-  let out = "const int instanceIndex = int(instance);";
+  let out = "int instanceIndex = int(instance);";
 
   // Generate the blocks
   for (let i = 0; i < blocksPerInstance; ++i) {

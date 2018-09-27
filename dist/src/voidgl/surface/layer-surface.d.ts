@@ -51,6 +51,8 @@ export declare class LayerSurface {
         views: View[];
     };
     willDisposeLayer: Map<string, boolean>;
+    private loadReadyResolve;
+    loadReady: Promise<void>;
     readonly gl: WebGLRenderingContext;
     private addLayer;
     commit(time?: number, frameIncrement?: boolean, onViewReady?: (scene: Scene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.16.0
+
+* `(ADDED)` After resources are finished loading in, the surface has a new promise loadReady that can be used in a promise or await pattern that will resolve once loading resources have completed loading.
+
 ## 1.15.0
 
 * `(ADDED)` Block and block index are no longer required when making instance attributes

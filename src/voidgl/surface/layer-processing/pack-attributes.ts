@@ -68,14 +68,15 @@ function ensureSizes<T extends Instance>(attributes: IInstanceAttribute<T>[]) {
 }
 
 /**
- * This is the packing method that tries to make
+ * This is the packing method that calculates the block and block index best suited for an attribute
+ * so a layer developer does not have to worry about it.
  */
 export function packAttributes<T extends Instance>(
   attributes: IInstanceAttribute<T>[]
 ) {
   // First make sure each attribute has a size
   ensureSizes(attributes);
-  // Keep a list of
+  // Keep a list of the blocks we have decided needs to be in use
   const blocks = [new Block(0)];
 
   // Loop through all attributes and pack em' in

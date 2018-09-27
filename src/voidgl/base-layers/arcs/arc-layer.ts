@@ -54,7 +54,7 @@ export class ArcLayer<
       colorEnd: animateColorEnd
     } = animations;
 
-    const MAX_SEGMENTS = 50;
+    const MAX_SEGMENTS = 150;
 
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {

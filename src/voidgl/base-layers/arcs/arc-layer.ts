@@ -4,7 +4,6 @@ import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize
@@ -84,51 +83,37 @@ export class ArcLayer<
       fs: require("./arc-layer.fs"),
       instanceAttributes: [
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "center",
           size: InstanceAttributeSize.TWO,
           update: o => o.center
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "radius",
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
         },
         {
-          block: 0,
-          blockIndex: InstanceBlockIndex.FOUR,
           name: "depth",
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.ONE,
           name: "thickness",
           size: InstanceAttributeSize.TWO,
           update: o => o.thickness
         },
         {
-          block: 1,
-          blockIndex: InstanceBlockIndex.THREE,
           name: "angle",
           size: InstanceAttributeSize.TWO,
           update: o => o.angle
         },
         {
-          block: 2,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorStart,
           name: "colorStart",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         },
         {
-          block: 3,
-          blockIndex: InstanceBlockIndex.ONE,
           easing: animateColorEnd,
           name: "colorEnd",
           size: InstanceAttributeSize.FOUR,

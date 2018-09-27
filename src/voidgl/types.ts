@@ -162,8 +162,11 @@ export interface IInstanceAttribute<T extends Instance> {
    * the system will sort and organize them for you. This only helps the system detect when
    * you cram too much info into a single block. The tighter you pack your blocks the better
    * your program will perform.
+   *
+   * Note: It's best to leave this blank as the system now packs your attributes for you and
+   * will determine this number for you.
    */
-  block: number;
+  block?: number;
   /**
    * This is the index within the block this attribute will be available.
    */

@@ -24,7 +24,7 @@ class Block<T extends Instance> {
   }
 
   setAttribute(attr: IInstanceAttribute<T>) {
-    if (attr.size || 0 < this.available) {
+    if ((attr.size || 0) <= this.available) {
       attr.block = this.index;
       attr.blockIndex = 4 - this.available;
       this.available -= attr.size || 0;

@@ -62,6 +62,7 @@ export class MouseInteractionEdges extends BaseExample {
       key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
+      opacity: 0.5,
       picking: PickType.SINGLE,
       scene: scene,
       type: EdgeType.BEZIER2

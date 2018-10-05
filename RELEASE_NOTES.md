@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.17.0
+
+* `(ADDED)` Additional properties added to the arcs to allow for GPU animations.
+* `(FIXED)` Arcs had precision limitations on some hardware due to sine and cosine limitations. This was averted by replacing these methods with high accuracy approximations that retains the precision of floats on the shader.
+
 ## 1.16.0
 
 * `(ADDED)` After resources are finished loading in, the surface has a new promise loadReady that can be used in a promise or await pattern that will resolve once loading resources have completed loading.

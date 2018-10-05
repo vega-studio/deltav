@@ -13,6 +13,7 @@ export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayerProps<T> 
     };
     broadphase?: EdgeBroadphase;
     minPickDistance?: number;
+    opacity?: number;
     scaleFactor?(): number;
     scaleType?: EdgeScaleType;
     type: EdgeType;

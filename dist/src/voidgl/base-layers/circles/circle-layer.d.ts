@@ -8,6 +8,7 @@ export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps
     fadeOutOversized?: number;
     scaleFactor?(): number;
     disableDepthTest?: boolean;
+    opacity?: number;
     animate?: {
         center?: IAutoEasingMethod<Vec>;
         radius?: IAutoEasingMethod<Vec>;

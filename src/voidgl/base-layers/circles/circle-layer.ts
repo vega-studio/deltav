@@ -23,6 +23,8 @@ export interface ICircleLayerProps<T extends CircleInstance>
   scaleFactor?(): number;
   /** Flags this layer to draw  */
   disableDepthTest?: boolean;
+  /** Opacity of the layer as a whole */
+  opacity?: number;
   /**
    * This is the properties that can toggle on animations.
    *
@@ -147,6 +149,13 @@ export class CircleLayer<
           name: "scaleFactor",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [scaleFactor()]
+        },
+        {
+          name: "layerOpacity",
+          size: UniformSize.ONE,
+          update: (_uniform: IUniform) => [
+            this.props.opacity === undefined ? 1.0 : this.props.opacity
+          ]
         }
       ],
       vertexAttributes: [

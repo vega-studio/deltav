@@ -40,6 +40,8 @@ export interface IEdgeLayerProps<T extends EdgeInstance>
   broadphase?: EdgeBroadphase;
   /** Any distance to the mouse from an edge that is less than this distance will be picked */
   minPickDistance?: number;
+  /** The transparency of the layer as a whole. (Makes for very efficient fading of all elements) */
+  opacity?: number;
   /** This sets a scaling factor for the edge's line width and curve  */
   scaleFactor?(): number;
   /**
@@ -232,6 +234,13 @@ export class EdgeLayer<
           name: "scaleFactor",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [scaleFactor()]
+        },
+        {
+          name: "layerOpacity",
+          size: UniformSize.ONE,
+          update: (_uniform: IUniform) => [
+            this.props.opacity === undefined ? 1.0 : this.props.opacity
+          ]
         }
       ],
       vertexAttributes: [

@@ -9,8 +9,12 @@ export declare enum ArcScaleType {
 export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
     scaleType?: ArcScaleType;
     animate?: {
-        colorStart?: IAutoEasingMethod<Vec>;
+        angle?: IAutoEasingMethod<Vec>;
+        center?: IAutoEasingMethod<Vec>;
         colorEnd?: IAutoEasingMethod<Vec>;
+        colorStart?: IAutoEasingMethod<Vec>;
+        radius?: IAutoEasingMethod<Vec>;
+        thickness?: IAutoEasingMethod<Vec>;
     };
 }
 export declare class ArcLayer<T extends ArcInstance, U extends IArcLayerProps<T>> extends Layer<T, U> {

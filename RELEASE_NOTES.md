@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.18.0
+
+* `(ADDED)` Edges and circles now have layer level opacities added to them to allow for fast and efficient transparency control of an entire layer.
+
 ## 1.17.0
 
 * `(ADDED)` Additional properties added to the arcs to allow for GPU animations.

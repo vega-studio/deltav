@@ -24,8 +24,12 @@ export enum ArcScaleType {
 export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
   scaleType?: ArcScaleType;
   animate?: {
-    colorStart?: IAutoEasingMethod<Vec>;
+    angle?: IAutoEasingMethod<Vec>;
+    center?: IAutoEasingMethod<Vec>;
     colorEnd?: IAutoEasingMethod<Vec>;
+    colorStart?: IAutoEasingMethod<Vec>;
+    radius?: IAutoEasingMethod<Vec>;
+    thickness?: IAutoEasingMethod<Vec>;
   };
 }
 
@@ -50,6 +54,10 @@ export class ArcLayer<
     const { scaleType } = this.props;
     const animations = this.props.animate || {};
     const {
+      angle: animateAngle,
+      center: animateCenter,
+      radius: animateRadius,
+      thickness: animateThickness,
       colorStart: animateColorStart,
       colorEnd: animateColorEnd
     } = animations;
@@ -83,11 +91,13 @@ export class ArcLayer<
       fs: require("./arc-layer.fs"),
       instanceAttributes: [
         {
+          easing: animateCenter,
           name: "center",
           size: InstanceAttributeSize.TWO,
           update: o => o.center
         },
         {
+          easing: animateRadius,
           name: "radius",
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
@@ -98,11 +108,13 @@ export class ArcLayer<
           update: o => [o.depth]
         },
         {
+          easing: animateThickness,
           name: "thickness",
           size: InstanceAttributeSize.TWO,
           update: o => o.thickness
         },
         {
+          easing: animateAngle,
           name: "angle",
           size: InstanceAttributeSize.TWO,
           update: o => o.angle

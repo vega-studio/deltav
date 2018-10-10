@@ -37,7 +37,7 @@ export class Arcs extends BaseExample {
       this.surface.getViewSize(this.view) ||
       new Bounds({ x: 0, y: 0, width: 200, height: 200 });
 
-    for (let i = 0; i < 21; ++i) {
+    for (let i = 0; i < 1000; ++i) {
       const arc = new ArcInstance({
         angle: [-Math.PI, -Math.PI],
         center: [viewSize.width / 2, viewSize.height / 2],
@@ -54,19 +54,19 @@ export class Arcs extends BaseExample {
 
     // Wait a tick to get the easing properties available
     setTimeout(() => {
-      for (let i = 0; i < 21; ++i) {
+      for (let i = 0; i < 1000; ++i) {
         const arc = arcs[i];
         arc.angle = [-Math.PI, Math.PI];
         arc.thickness = [3, 3];
 
         let easing = arc.getEasing(ArcLayer.attributeNames.angle);
         if (easing) {
-          easing.setTiming(i * 100);
+          easing.setTiming(i * 100, i * 10);
         }
 
         easing = arc.getEasing(ArcLayer.attributeNames.thickness);
         if (easing) {
-          easing.setTiming(i * 100);
+          easing.setTiming(i * 100, i * 10);
         }
       }
     }, 10);

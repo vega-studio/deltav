@@ -17,7 +17,7 @@ export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: IInstanceProvider<CircleInstance>
+    provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {
       data: provider,

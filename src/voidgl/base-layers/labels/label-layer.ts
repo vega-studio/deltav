@@ -1,3 +1,4 @@
+import { InstanceProvider } from "src/voidgl/instance-provider";
 import * as Three from "three";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
@@ -38,6 +39,23 @@ export class LabelLayer<
   T extends LabelInstance,
   U extends ILabelLayerProps<T>
 > extends Layer<T, U> {
+  static defaultProps: ILabelLayerProps<LabelInstance> = {
+    key: "",
+    data: new InstanceProvider<LabelInstance>()
+  };
+
+  static attributeNames = {
+    location: "location",
+    anchor: "anchor",
+    size: "size",
+    depth: "depth",
+    scaling: "scaling",
+    texture: "texture",
+    color: "color",
+    scale: "scale",
+    maxScale: "maxScale"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -161,28 +179,28 @@ export class LabelLayer<
       instanceAttributes: [
         {
           easing: animateLocation,
-          name: "location",
+          name: LabelLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          name: "anchor",
+          name: LabelLayer.attributeNames.anchor,
           size: InstanceAttributeSize.TWO,
           update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           easing: animateSize,
-          name: "size",
+          name: LabelLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
         },
         {
-          name: "depth",
+          name: LabelLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          name: "scaling",
+          name: LabelLayer.attributeNames.scaling,
           size: InstanceAttributeSize.ONE,
           update: o => [o.scaling]
         },
@@ -191,22 +209,22 @@ export class LabelLayer<
             key: this.props.atlas || "",
             name: "labelAtlas"
           },
-          name: "texture",
+          name: LabelLayer.attributeNames.texture,
           update: o => this.resource.request(this, o, o.resource)
         },
         {
           easing: animateColor,
-          name: "color",
+          name: LabelLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
         },
         {
-          name: "scale",
+          name: LabelLayer.attributeNames.scale,
           size: InstanceAttributeSize.ONE,
           update: o => [o.scale]
         },
         {
-          name: "maxScale",
+          name: LabelLayer.attributeNames.maxScale,
           size: InstanceAttributeSize.ONE,
           update: o => [o.maxScale]
         }

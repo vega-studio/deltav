@@ -54,6 +54,13 @@ export class CircleLayer<
     scaleFactor: () => 1
   };
 
+  static attributeNames = {
+    center: "center",
+    radius: "radius",
+    depth: "depth",
+    color: "color"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -122,24 +129,24 @@ export class CircleLayer<
       instanceAttributes: [
         {
           easing: animateCenter,
-          name: "center",
+          name: CircleLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
           update: circle => [circle.x, circle.y]
         },
         {
           easing: animateRadius,
-          name: "radius",
+          name: CircleLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.radius]
         },
         {
-          name: "depth",
+          name: CircleLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.depth]
         },
         {
           easing: animateColor,
-          name: "color",
+          name: CircleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: circle => circle.color
         }

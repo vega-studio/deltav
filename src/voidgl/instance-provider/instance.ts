@@ -20,6 +20,15 @@ export class Instance implements Identifiable {
   @observable active: boolean;
   /** The property changes on the instance */
   changes: { [key: number]: number } = {};
+  /** Stores property identification numbers */
+  property: { [key: string]: number } = {};
+  /**
+   * This is a lookup that provides a means to retrieve the id of an easing type currently available to the instance.
+   * This is populated when the instance becomes a part of a layer with easing attributes.
+   *
+   * This property is to NOT be mutated except by the system.
+   */
+  easingId: { [key: string]: number } | undefined;
   /** This is an internal easing object to track properties for automated easing */
   private _easing = new Map<number, IEasingProps>();
   /** Internal, non-changeable id */
@@ -64,10 +73,51 @@ export class Instance implements Identifiable {
   }
 
   /**
+   * This clears any lingering easing information that may have been registered with the instance.
+   */
+  clearEasing() {
+    this._easing.clear();
+    delete this.easingId;
+  }
+
+  /**
    * Retrieves easing properties for the observables that are associated with easing.
    */
   get easing() {
     return this._easing;
+  }
+
+  /**
+   * This attempts to get the easing object for this instance for a given attribute that it MIGHT be associated with.
+   *
+   * When an instance is added to a layer and the layer has attributes with easing applied to them, the instance gains easing values
+   * for the attributes in the layer with applied easing.
+   *
+   * You can access the easing values by requesting the attribute's "name" property value using this method.
+   *
+   * There is NO WAY TO GUARANTEE this value is set or available, so this method WILL return undefined if you did
+   * not use the correct name, or no such value exists, or the layer decided to not make the attribute animateable.
+   *
+   * Thus ALWAYS check the returned value to ensure it is defined before attempting to use it's results.
+   *
+   * PERFORMANCE: You can probably get much better performance NOT using this to manipulate the easing object directly.
+   * The system is designed to automatically animate an item from it's current rendered location to the next location
+   * seamlessly thus accounting for most situations. This method is provided to commit much more complex start, duration,
+   * and delay animations within a given frame to prevent the need for complicated setTimeout patterns.
+   *
+   * This CAN be faster than the default behavior if it avoids causing complicated easing computations to determine where
+   * the rendering should be at the moment (complicated cpu methods within the IAutoEasingMethod used).
+   */
+  getEasing(attributeName: string): IEasingProps | undefined {
+    if (this.easingId) {
+      const easingId = this.easingId[attributeName];
+
+      if (easingId) {
+        return this._easing.get(easingId);
+      }
+    }
+
+    return;
   }
 
   /**

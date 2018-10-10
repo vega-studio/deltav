@@ -140,7 +140,7 @@ export class BoxOfCircles extends BaseExample {
   makeLayer(
     scene: string,
     _atlas: string,
-    provider: IInstanceProvider<CircleInstance>
+    provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     this.animationControl = {
       center: AutoEasingMethod.easeBackOut(1000, 500),

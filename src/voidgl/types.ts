@@ -257,7 +257,7 @@ export interface IEasingInstanceAttribute<T extends Instance>
   /**
    * This MUST be defined to be an Easing attribute
    */
-  easing: IAutoEasingMethod<Vec>;
+  easing: IAutoEasingMethod<Vec> & { uid?: number };
   /**
    * Easing attributes requires size to be present
    */
@@ -483,10 +483,20 @@ export type FrameMetrics = {
  * This is the minimum properties required to make all easing functions operate.
  */
 export interface IEasingProps {
-  start: Vec;
-  end: Vec;
-  startTime: number;
+  /** A value in ms that expresses how long the system should wait before beginning the animation */
+  delay?: number;
+  /** Indicates how long the easing should take to complete in ms */
   duration: number;
+  /** The end value the easing should approach */
+  end: Vec;
+  /** A flag indicating if the easing start value is manually set, thus prioritizing the values already set in this object */
+  isManualStart?: boolean;
+  /** A flag indicating if the easing timing is manually set, thus prioritizing the values already set in this object */
+  isTimeSet?: boolean;
+  /** The starting value of the easing object */
+  start: Vec;
+  /** The start time in ms the easing object utilizes */
+  startTime: number;
 }
 
 /**

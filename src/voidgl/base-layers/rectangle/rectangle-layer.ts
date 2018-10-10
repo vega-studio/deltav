@@ -1,3 +1,4 @@
+import { InstanceProvider } from "src/voidgl/instance-provider";
 import * as Three from "three";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
@@ -28,6 +29,20 @@ export class RectangleLayer<
   T extends RectangleInstance,
   U extends IRectangleLayerProps<T>
 > extends Layer<T, U> {
+  static defaultProps: IRectangleLayerProps<RectangleInstance> = {
+    key: "",
+    data: new InstanceProvider<RectangleInstance>()
+  };
+
+  static attributeNames = {
+    location: "location",
+    anchor: "anchor",
+    size: "size",
+    depth: "depth",
+    scaling: "scaling",
+    color: "color"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -162,32 +177,32 @@ export class RectangleLayer<
       fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
         {
-          name: "location",
+          name: RectangleLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          name: "anchor",
+          name: RectangleLayer.attributeNames.anchor,
           size: InstanceAttributeSize.TWO,
           update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
-          name: "size",
+          name: RectangleLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
         },
         {
-          name: "depth",
+          name: RectangleLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          name: "scaling",
+          name: RectangleLayer.attributeNames.scaling,
           size: InstanceAttributeSize.ONE,
           update: o => [o.scaling]
         },
         {
-          name: "color",
+          name: RectangleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
         }

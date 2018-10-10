@@ -89,6 +89,17 @@ export class EdgeLayer<
     type: EdgeType.LINE
   };
 
+  static attributeNames = {
+    start: "start",
+    end: "end",
+    widthStart: "widthStart",
+    widthEnd: "widthEnd",
+    depth: "depth",
+    colorStart: "colorStart",
+    colorEnd: "colorEnd",
+    control: "control"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -167,47 +178,47 @@ export class EdgeLayer<
       instanceAttributes: [
         {
           easing: animateStart,
-          name: "start",
+          name: EdgeLayer.attributeNames.start,
           size: InstanceAttributeSize.TWO,
           update: o => o.start
         },
         {
           easing: animateEnd,
-          name: "end",
+          name: EdgeLayer.attributeNames.end,
           size: InstanceAttributeSize.TWO,
           update: o => o.end
         },
         {
-          name: "widthStart",
+          name: EdgeLayer.attributeNames.widthStart,
           size: InstanceAttributeSize.ONE,
           update: o => [o.widthStart]
         },
         {
-          name: "widthEnd",
+          name: EdgeLayer.attributeNames.widthEnd,
           size: InstanceAttributeSize.ONE,
           update: o => [o.widthEnd]
         },
         {
-          name: "depth",
+          name: EdgeLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
           easing: animateColorStart,
-          name: "colorStart",
+          name: EdgeLayer.attributeNames.colorStart,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         },
         {
           easing: animateColorEnd,
-          name: "colorEnd",
+          name: EdgeLayer.attributeNames.colorEnd,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd
         },
         type === EdgeType.LINE
           ? {
               easing: animateControl,
-              name: "control",
+              name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
               update: _o => [0, 0, 0, 0]
             }
@@ -215,7 +226,7 @@ export class EdgeLayer<
         type === EdgeType.BEZIER
           ? {
               easing: animateControl,
-              name: "control",
+              name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
               update: o => [o.control[0][0], o.control[0][1], 0, 0]
             }
@@ -223,7 +234,7 @@ export class EdgeLayer<
         type === EdgeType.BEZIER2
           ? {
               easing: animateControl,
-              name: "control",
+              name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
               update: o => toInstanceIOValue(o.control)
             }

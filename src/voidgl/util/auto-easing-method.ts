@@ -1,3 +1,4 @@
+import { uid } from "src/voidgl/util/uid";
 import { InstanceIOValue } from "../types";
 import { Vec, VecMath } from "./vector";
 
@@ -46,6 +47,10 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
    * the risk of one overriding the other with an undefined chance of who wins.
    */
   methodName: string;
+  /**
+   * A unique identifier for the auto easing method.
+   */
+  uid: number;
 
   /**
    * This lets you modify some auto easing validation rules.
@@ -211,6 +216,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (_start: T, end: T, _t: number) => end,
       delay,
       duration,
@@ -229,6 +235,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         const { add, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
@@ -251,6 +258,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t * t;
@@ -274,6 +282,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t * (2 - t);
@@ -297,6 +306,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
@@ -320,6 +330,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t * t * t;
@@ -343,6 +354,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = --t * t * t + 1;
@@ -366,6 +378,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time =
@@ -390,6 +403,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t * t * t * t;
@@ -413,6 +427,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = 1 - --t * t * t * t;
@@ -436,6 +451,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
@@ -459,6 +475,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = t * t * t * t * t;
@@ -482,6 +499,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time = 1 + --t * t * t * t * t;
@@ -505,6 +523,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const time =
@@ -529,6 +548,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const p = 0.3;
@@ -553,6 +573,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const a = 1.05;
@@ -577,6 +598,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const a = 1.7;
@@ -602,6 +624,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         t = clamp(t, 0, 1);
         const a = 1.7;
@@ -635,6 +658,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     loop = AutoEasingLoopStyle.CONTINUOUS
   ): IAutoEasingMethod<T> {
     return {
+      uid: uid(),
       cpu: (start: T, end: T, t: number) => {
         const { add, length, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
@@ -658,6 +682,8 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     };
   }
 
+  /** A uid for the easing method */
+  uid = uid();
   /** The easing method for the cpu */
   cpu: IAutoEasingMethod<T>["cpu"];
   /** Time before a delay  */

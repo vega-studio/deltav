@@ -1,4 +1,5 @@
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
@@ -34,6 +35,21 @@ export class ImageLayer<
   T extends ImageInstance,
   U extends IImageLayerProps<T>
 > extends Layer<T, U> {
+  static defaultProps: IImageLayerProps<any> = {
+    key: "",
+    data: new InstanceProvider<ImageInstance>()
+  };
+
+  static attributeNames = {
+    location: "location",
+    anchor: "anchor",
+    size: "size",
+    depth: "depth",
+    scaling: "scaling",
+    texture: "texture",
+    tint: "tint"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -171,28 +187,28 @@ export class ImageLayer<
       instanceAttributes: [
         {
           easing: animateLocation,
-          name: "location",
+          name: ImageLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
-          name: "anchor",
+          name: ImageLayer.attributeNames.anchor,
           size: InstanceAttributeSize.TWO,
           update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           easing: animateSize,
-          name: "size",
+          name: ImageLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
           update: o => [o.width, o.height]
         },
         {
-          name: "depth",
+          name: ImageLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
-          name: "scaling",
+          name: ImageLayer.attributeNames.scaling,
           size: InstanceAttributeSize.ONE,
           update: o => [o.scaling]
         },
@@ -201,12 +217,12 @@ export class ImageLayer<
             key: this.props.atlas || "",
             name: "imageAtlas"
           },
-          name: "texture",
+          name: ImageLayer.attributeNames.texture,
           update: o => this.resource.request(this, o, o.resource)
         },
         {
           easing: animateTint,
-          name: "tint",
+          name: ImageLayer.attributeNames.tint,
           size: InstanceAttributeSize.FOUR,
           update: o => o.tint
         }

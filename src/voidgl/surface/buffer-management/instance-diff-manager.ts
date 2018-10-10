@@ -35,6 +35,8 @@ export type DiffLookup<T extends Instance> = DiffHandler<T>[];
 export interface IInstanceDiffManagerTarget<T extends Instance> {
   /** This is the attribute for the target that represents the _active injected value */
   activeAttribute: IInstanceAttribute<T>;
+  /** This is used by the automated easing system and is the easing Ids used by the layer for given attributes */
+  easingId: { [key: string]: number };
   /** This is all of the instance attributes applied to the target */
   instanceAttributes: IInstanceAttribute<T>[];
   /** This is the picking metrics for how Instances are picked with the mouse */

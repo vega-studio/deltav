@@ -1,13 +1,11 @@
 import {
   BasicCameraController,
   ChartCamera,
-  createLayer,
   EventManager,
   IInstanceProvider,
   Instance,
   LayerInitializer,
-  LayerSurface,
-  RingLayer
+  LayerSurface
 } from "src";
 
 export abstract class BaseExample {
@@ -34,16 +32,12 @@ export abstract class BaseExample {
   }
 
   makeLayer(
-    scene: string,
+    _scene: string,
     _atlas: string,
-    provider: IInstanceProvider<Instance>
+    _provider: IInstanceProvider<Instance>
   ): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS
-    return createLayer(RingLayer, {
-      data: provider,
-      key: "ring-layer-0",
-      scene
-    });
+    return [];
   }
 
   abstract makeProvider(): IInstanceProvider<Instance>;

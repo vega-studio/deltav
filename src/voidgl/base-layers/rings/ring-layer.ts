@@ -1,4 +1,5 @@
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
@@ -33,6 +34,19 @@ export class RingLayer<
   T extends RingInstance,
   U extends IRingLayerProps<T>
 > extends Layer<T, U> {
+  static defaultProps: IRingLayerProps<RingInstance> = {
+    key: "",
+    data: new InstanceProvider<RingInstance>()
+  };
+
+  static attributeNames = {
+    center: "center",
+    radius: "radius",
+    depth: "depth",
+    color: "color",
+    thickness: "thickness"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -93,29 +107,29 @@ export class RingLayer<
       instanceAttributes: [
         {
           easing: animateCenter,
-          name: "center",
+          name: RingLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
           update: o => [o.x, o.y]
         },
         {
           easing: animateRadius,
-          name: "radius",
+          name: RingLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
         },
         {
-          name: "depth",
+          name: RingLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
           easing: animateColor,
-          name: "color",
+          name: RingLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
         },
         {
-          name: "thickness",
+          name: RingLayer.attributeNames.thickness,
           size: InstanceAttributeSize.ONE,
           update: o => [o.thickness]
         }

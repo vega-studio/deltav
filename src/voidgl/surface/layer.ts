@@ -132,6 +132,11 @@ export class Layer<
   }
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
+  /**
+   * This gets populated when there are attributes that have easing applied to them. This
+   * subsequently gets applied to instances when they get added to the layer.
+   */
+  easingId: { [key: string]: number };
   /** This is the threejs geometry filled with the vertex information */
   geometry: Three.BufferGeometry;
   /** This is the initializer used when making this layer. */

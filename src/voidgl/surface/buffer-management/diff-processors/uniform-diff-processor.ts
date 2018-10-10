@@ -35,6 +35,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       if (isBufferLocation(uniforms)) {
         instance.active = true;
+        instance.easingId = this.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
       }
     }
@@ -72,6 +73,8 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
+      // Remove the easing information the instance gained from being apart of the layer
+      instance.clearEasing();
       // We do one last update on the instance to update to it's deactivated state
       manager.updateInstance(manager.layer, instance, uniformCluster);
       // Unlink the instance from the uniform cluster

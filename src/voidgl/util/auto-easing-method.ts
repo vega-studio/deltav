@@ -1,5 +1,5 @@
-import { uid } from "src/voidgl/util/uid";
 import { InstanceIOValue } from "../types";
+import { uid } from "../util/uid";
 import { Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;

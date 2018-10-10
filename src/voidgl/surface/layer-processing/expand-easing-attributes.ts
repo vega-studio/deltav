@@ -1,4 +1,3 @@
-import { EasingProps } from "src/voidgl/util/easing-props";
 import { Instance } from "../../instance-provider/instance";
 import {
   IEasingInstanceAttribute,
@@ -7,6 +6,7 @@ import {
   InstanceAttributeSize
 } from "../../types";
 import { AutoEasingLoopStyle } from "../../util";
+import { EasingProps } from "../../util/easing-props";
 import { ILayerProps, Layer } from "../layer";
 
 const { abs } = Math;

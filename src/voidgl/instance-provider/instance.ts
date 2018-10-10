@@ -1,5 +1,5 @@
-import { EasingProps } from "src/voidgl/util/easing-props";
 import { Identifiable, IEasingProps } from "../types";
+import { EasingProps } from "../util/easing-props";
 import { InstanceProvider } from "./instance-provider";
 import { observable } from "./observable";
 

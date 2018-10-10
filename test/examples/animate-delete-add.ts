@@ -4,6 +4,7 @@
  * and vice versa.
  */
 import {
+  add2,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -34,8 +35,7 @@ export class AnimateDeleteAdd extends BaseExample {
         color: [0.01, 0.1, 1.0, 1.0],
         id: "yay",
         radius: 10,
-        x: 0,
-        y: 0
+        center: [0, 0]
       })
     );
 
@@ -59,15 +59,16 @@ export class AnimateDeleteAdd extends BaseExample {
     const bounds = this.surface.getViewSize(this.view);
     if (!bounds) return;
 
-    circle.x += 2;
-    circle.y += 1;
+    const center = add2(circle.center, [2, 1]);
 
-    if (circle.x > bounds.width) {
-      circle.x = 0;
+    if (center[0] > bounds.width) {
+      center[0] = 0;
     }
 
-    if (circle.y > bounds.height) {
-      circle.y = 0;
+    if (center[1] > bounds.height) {
+      center[1] = 0;
     }
+
+    circle.center = center;
   };
 }

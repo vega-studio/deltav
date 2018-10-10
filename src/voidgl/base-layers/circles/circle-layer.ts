@@ -74,13 +74,16 @@ export class CircleLayer<
         new Bounds({
           height: circle.radius * 2,
           width: circle.radius * 2,
-          x: circle.x - circle.radius,
-          y: circle.y - circle.radius
+          x: circle.center[0] - circle.radius,
+          y: circle.center[1] - circle.radius
         }),
 
       // Provide a precise hit test for the circle
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
-        const circleScreenCenter = view.worldToScreen(circle);
+        const circleScreenCenter = view.worldToScreen({
+          x: circle.center[0],
+          y: circle.center[1]
+        });
         const mouseScreen = view.worldToScreen(point);
         const r = circle.radius * (this.props.scaleFactor || noScaleFactor)();
 
@@ -131,7 +134,7 @@ export class CircleLayer<
           easing: animateCenter,
           name: CircleLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: circle => [circle.x, circle.y]
+          update: circle => circle.center
         },
         {
           easing: animateRadius,

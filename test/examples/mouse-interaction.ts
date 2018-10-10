@@ -81,8 +81,7 @@ export class MouseInteraction extends BaseExample {
           color: [1.0, Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
           id: `circle${i * 100 + k}`,
           radius: 5,
-          x: i * 11,
-          y: k * 11
+          center: [i * 11, k * 11]
         });
 
         circleProvider.add(circle);

@@ -203,8 +203,7 @@ export class BoxOfCircles extends BaseExample {
         const circle = bucket[k];
 
         if (circle && pos) {
-          circle.x = pos[0];
-          circle.y = pos[1];
+          circle.center = [pos[0], pos[1]];
           circle.radius = 0.5;
           circle.color = [random(), random(), 1.0, 1.0];
 
@@ -228,8 +227,7 @@ export class BoxOfCircles extends BaseExample {
           color: [1.0, 0.0, 0.0, 1.0],
           id: `circle${i * 100 + k}`,
           radius: 2,
-          x: i * 4,
-          y: k * 4
+          center: [i * 4, k * 4]
         });
 
         circles.push(circle);
@@ -250,8 +248,7 @@ export class BoxOfCircles extends BaseExample {
         for (let i = 0; i < boxSide; ++i) {
           for (let k = 0; k < boxSide; ++k) {
             const circle = circles[i * boxSide + k];
-            circle.x = i * 4;
-            circle.y = k * 4;
+            circle.center = [i * 4, k * 4];
             circle.radius = 2;
             circle.color = [1.0, 0.0, 0.0, 1.0];
 

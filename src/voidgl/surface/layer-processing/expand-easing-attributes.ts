@@ -101,7 +101,7 @@ export function generateEasingAttributes<
       let delay = attributeDelay;
 
       if (easingValues.isTimeSet) {
-        duration = easingValues.duration;
+        duration = easingValues.duration || attributeDuration;
         delay = easingValues.delay || 0;
       }
 

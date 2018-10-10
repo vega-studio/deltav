@@ -1,3 +1,4 @@
+import { EasingProps } from "src/voidgl/util/easing-props";
 import { Identifiable, IEasingProps } from "../types";
 import { InstanceProvider } from "./instance-provider";
 import { observable } from "./observable";
@@ -108,12 +109,16 @@ export class Instance implements Identifiable {
    * This CAN be faster than the default behavior if it avoids causing complicated easing computations to determine where
    * the rendering should be at the moment (complicated cpu methods within the IAutoEasingMethod used).
    */
-  getEasing(attributeName: string): IEasingProps | undefined {
+  getEasing(attributeName: string): EasingProps | undefined {
     if (this.easingId) {
       const easingId = this.easingId[attributeName];
 
       if (easingId) {
-        return this._easing.get(easingId);
+        const easing = this._easing.get(easingId);
+
+        if (easing instanceof EasingProps) {
+          return easing;
+        }
       }
     }
 

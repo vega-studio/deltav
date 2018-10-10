@@ -193,33 +193,27 @@ function makeAutoEasingTiming<T extends Instance>(
 
   let out = "";
 
+  // These are common values across all easing loop styles
+  const time = `_${attribute.name}_time`;
+  const duration = `_${attribute.name}_duration`;
+  const startTime = `_${attribute.name}_start_time`;
+
   switch (attribute.easing.loop) {
     // Continuous means letting the time go from 0 to infinity
     case AutoEasingLoopStyle.CONTINUOUS: {
-      const time = `_${attribute.name}_time`;
-      const startTime = `_${attribute.name}_start_time`;
-      const duration = `_${attribute.name}_duration`;
-
       out += `  float ${time} = (currentTime - ${startTime}) / ${duration};\n`;
       break;
     }
 
     // Repeat means going from 0 to 1 then 0 to 1 etc etc
     case AutoEasingLoopStyle.REPEAT: {
-      const time = `_${attribute.name}_time`;
-      const startTime = `_${attribute.name}_start_time`;
-      const duration = `_${attribute.name}_duration`;
-
       out += `  float ${time} = clamp(fract((currentTime - ${startTime}) / ${duration}), 0.0, 1.0);\n`;
       break;
     }
 
     // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
     case AutoEasingLoopStyle.REFLECT: {
-      const time = `_${attribute.name}_time`;
       const timePassed = `_${attribute.name}_timePassed`;
-      const startTime = `_${attribute.name}_start_time`;
-      const duration = `_${attribute.name}_duration`;
       const pingPong = `_${attribute.name}_pingPong`;
 
       // Get the time passed in a linear fashion
@@ -234,10 +228,6 @@ function makeAutoEasingTiming<T extends Instance>(
     // No loop means just linear time
     case AutoEasingLoopStyle.NONE:
     default: {
-      const time = `_${attribute.name}_time`;
-      const duration = `_${attribute.name}_duration`;
-      const startTime = `_${attribute.name}_start_time`;
-
       out += `  float ${time} = clamp((currentTime - ${startTime}) / ${duration}, 0.0, 1.0);\n`;
       break;
     }

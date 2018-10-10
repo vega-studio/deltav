@@ -199,14 +199,19 @@ export class BoxOfCircles extends BaseExample {
       const bucket = circleBuckets[i];
       const pos = xy[i];
 
-      for (let i = 0, end = bucket.length; i < end; ++i) {
-        const circle = bucket[i];
+      for (let k = 0, end = bucket.length; k < end; ++k) {
+        const circle = bucket[k];
 
         if (circle && pos) {
           circle.x = pos[0];
           circle.y = pos[1];
           circle.radius = 0.5;
           circle.color = [random(), random(), 1.0, 1.0];
+
+          const easing = circle.getEasing(CircleLayer.attributeNames.center);
+          if (easing) {
+            easing.setTiming(this.animationControl.center.delay + i * 2);
+          }
         }
       }
     }
@@ -249,6 +254,11 @@ export class BoxOfCircles extends BaseExample {
             circle.y = k * 4;
             circle.radius = 2;
             circle.color = [1.0, 0.0, 0.0, 1.0];
+
+            const easing = circle.getEasing(CircleLayer.attributeNames.center);
+            if (easing) {
+              easing.setTiming(1500 + i * 2);
+            }
           }
         }
       } else {

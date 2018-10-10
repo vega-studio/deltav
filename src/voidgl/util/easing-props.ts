@@ -20,8 +20,21 @@ export class EasingProps implements IEasingProps {
   }
 
   /**
+   * If you manually set values for the easing properties, then you use this to return
+   * the easing object back to an automated state which is where the start value is
+   * the calculated current position of the output and the delay and duration is determined
+   * by the easing set to the layer's IAutomatedEasingMethod value set to the layer.
+   */
+  setAutomatic() {
+    this.isManualStart = false;
+    this.isTimeSet = false;
+  }
+
+  /**
    * This controls the start value of the easing. This should be used to force a starting
    * value of the animation.
+   *
+   * Use setAutomatic() to return to default easing behavior.
    */
   setStart(start?: Vec) {
     if (start) {
@@ -31,7 +44,7 @@ export class EasingProps implements IEasingProps {
         );
       } else {
         this.start = start;
-        this.isManualStart;
+        this.isManualStart = true;
       }
     }
   }
@@ -39,6 +52,8 @@ export class EasingProps implements IEasingProps {
   /**
    * This controls of the timing of the easing equation. This should be used to adjust
    * when a value is to be adjusted
+   *
+   * Use setAutomatic() to return to default easing behavior.
    */
   setTiming(delay?: number, duration?: number) {
     this.delay = delay === undefined ? this.delay : delay;

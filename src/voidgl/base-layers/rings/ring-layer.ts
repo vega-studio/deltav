@@ -58,14 +58,14 @@ export class RingLayer<
         new Bounds({
           height: ring.radius * 2,
           width: ring.radius * 2,
-          x: ring.x - ring.radius,
-          y: ring.y - ring.radius
+          x: ring.center[0] - ring.radius,
+          y: ring.center[1] - ring.radius
         }),
 
       // Provide a precise hit test for the ring
       hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => {
         const r = ring.radius / max(...view.camera.scale);
-        const delta = [point.x - ring.x, point.y - ring.y];
+        const delta = [point.x - ring.center[0], point.y - ring.center[1]];
 
         return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
       }
@@ -109,7 +109,7 @@ export class RingLayer<
           easing: animateCenter,
           name: RingLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y]
+          update: o => o.center
         },
         {
           easing: animateRadius,

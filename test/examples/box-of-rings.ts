@@ -49,8 +49,7 @@ export class BoxOfRings extends BaseExample {
                 id: `ring_${i}_${k}`,
                 radius: 10,
                 thickness: 1,
-                x: i * 20,
-                y: k * 20
+                center: [i * 20, k * 20]
               })
             );
 

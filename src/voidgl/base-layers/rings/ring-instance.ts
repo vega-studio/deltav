@@ -1,6 +1,6 @@
-import { Vec2 } from "src/voidgl/util";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { observable } from "../../instance-provider/observable";
+import { Vec2 } from "../../util";
 
 export interface IRingInstanceOptions extends IInstanceOptions {
   /** The center of the ring */

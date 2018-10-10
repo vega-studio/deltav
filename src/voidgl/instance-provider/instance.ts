@@ -1,4 +1,4 @@
-import { Identifiable, IEasingProps } from "../types";
+import { Identifiable, IEasingControl, IEasingProps } from "../types";
 import { EasingProps } from "../util/easing-props";
 import { InstanceProvider } from "./instance-provider";
 import { observable } from "./observable";
@@ -109,7 +109,7 @@ export class Instance implements Identifiable {
    * This CAN be faster than the default behavior if it avoids causing complicated easing computations to determine where
    * the rendering should be at the moment (complicated cpu methods within the IAutoEasingMethod used).
    */
-  getEasing(attributeName: string): EasingProps | undefined {
+  getEasing(attributeName: string): IEasingControl | undefined {
     if (this.easingId) {
       const easingId = this.easingId[attributeName];
 

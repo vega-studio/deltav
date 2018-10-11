@@ -12,6 +12,16 @@ export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T
     };
 }
 export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
+    static defaultProps: IImageLayerProps<any>;
+    static attributeNames: {
+        location: string;
+        anchor: string;
+        size: string;
+        depth: string;
+        scaling: string;
+        texture: string;
+        tint: string;
+    };
     getInstancePickingMethods(): {
         boundsAccessor: (image: ImageInstance) => Bounds;
         hitTest: (image: ImageInstance, point: IPoint, view: IProjection) => boolean;

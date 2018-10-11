@@ -99,7 +99,9 @@ export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAt
     };
 }
 export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
-    easing: IAutoEasingMethod<Vec>;
+    easing: IAutoEasingMethod<Vec> & {
+        uid?: number;
+    };
     size: InstanceAttributeSize;
 }
 export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
@@ -182,11 +184,24 @@ export declare type FrameMetrics = {
     currentTime: number;
     previousTime: number;
 };
+export interface IEasingControl {
+    readonly delay?: number;
+    readonly duration: number;
+    readonly end: Vec;
+    readonly start: Vec;
+    readonly startTime: number;
+    setAutomatic(): void;
+    setStart(start?: Vec): void;
+    setTiming(delay?: number, duration?: number): void;
+}
 export interface IEasingProps {
-    start: Vec;
-    end: Vec;
-    startTime: number;
+    delay?: number;
     duration: number;
+    end: Vec;
+    isManualStart?: boolean;
+    isTimeSet?: boolean;
+    start: Vec;
+    startTime: number;
 }
 export interface IShaderInputs<T extends Instance> {
     instanceAttributes?: (IInstanceAttribute<T> | null)[];

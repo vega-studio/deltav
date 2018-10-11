@@ -19,6 +19,15 @@ export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
 }
 export declare class ArcLayer<T extends ArcInstance, U extends IArcLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IArcLayerProps<ArcInstance>;
+    static attributeNames: {
+        angle: string;
+        center: string;
+        colorEnd: string;
+        colorStart: string;
+        depth: string;
+        radius: string;
+        thickness: string;
+    };
     initShader(): IShaderInitialization<ArcInstance>;
     getModelType(): IModelType;
     getMaterialOptions(): IMaterialOptions;

@@ -35,32 +35,41 @@ export class Lines extends BaseExample {
 
     for (let i = 0; i < countHigh; ++i) {
       const index = i;
-      setTimeout(() => {
-        const newEdges: EdgeInstance[] = [];
 
-        for (let k = 0; k < countWide; ++k) {
-          const edge = new EdgeInstance({
-            colorEnd: [Math.random(), Math.random(), 1.0, 1.0],
-            colorStart: [Math.random(), Math.random(), 1.0, 1.0],
-            end: [k * 20, index * LINE_HEIGHT + 4],
-            id: `line-${index}-${k}`,
-            start: [k * 20, index * LINE_HEIGHT + LINE_HEIGHT],
-            widthEnd: 10,
-            widthStart: 10
-          });
+      for (let k = 0; k < countWide; ++k) {
+        const edge = new EdgeInstance({
+          colorEnd: [Math.random(), Math.random(), 1.0, 1.0],
+          colorStart: [Math.random(), Math.random(), 1.0, 1.0],
+          end: [0, 0],
+          id: `line-${index}-${k}`,
+          start: [k * 20, index * LINE_HEIGHT + LINE_HEIGHT],
+          widthEnd: 10,
+          widthStart: 10
+        });
 
-          edges.push(edgeProvider.add(edge));
-          newEdges.push(edge);
-        }
-
-        setTimeout(() => {
-          for (let j = 0; j < newEdges.length; ++j) {
-            const edge = newEdges[j];
-            edge.end = [j * 20 + 5, edge.end[1]];
-          }
-        }, 20);
-      }, 100 * i);
+        edges.push(edgeProvider.add(edge));
+      }
     }
+
+    // Wait a tick for the instances to be committed to the GPU so we can adjust their animation
+    // to fit a nice wavey pattern
+    setTimeout(() => {
+      let count = 0;
+      for (let i = 0; i < countHigh; ++i) {
+        for (let k = 0; k < countWide; ++k) {
+          const edge = edges[count];
+          edge.end = [k * 20 + 10, i * LINE_HEIGHT + 4];
+
+          const easing = edge.getEasing(EdgeLayer.attributeNames.end);
+          if (easing) {
+            easing.setStart([k * 20, i * LINE_HEIGHT + 4]);
+            easing.setTiming(i * 100);
+          }
+
+          count++;
+        }
+      }
+    }, 100);
 
     return edgeProvider;
   }

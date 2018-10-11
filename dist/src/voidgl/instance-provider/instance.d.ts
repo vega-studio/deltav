@@ -1,4 +1,4 @@
-import { Identifiable, IEasingProps } from "../types";
+import { Identifiable, IEasingControl, IEasingProps } from "../types";
 import { InstanceProvider } from "./instance-provider";
 export interface IInstanceOptions {
     active?: boolean;
@@ -10,6 +10,12 @@ export declare class Instance implements Identifiable {
     changes: {
         [key: number]: number;
     };
+    property: {
+        [key: string]: number;
+    };
+    easingId: {
+        [key: string]: number;
+    } | undefined;
     private _easing;
     private _id;
     private _observer;
@@ -17,7 +23,9 @@ export declare class Instance implements Identifiable {
     private _uid;
     readonly observableDisposer: () => void;
     observer: InstanceProvider<this> | null;
+    clearEasing(): void;
     readonly easing: Map<number, IEasingProps>;
+    getEasing(attributeName: string): IEasingControl | undefined;
     readonly id: string;
     readonly uid: number;
     resourceTrigger(): void;

@@ -5,6 +5,6 @@ export declare abstract class BaseExample {
     keyEvent(_e: KeyboardEvent, _isDown: boolean): void;
     makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager;
     makeCamera(defaultCamera: ChartCamera): ChartCamera;
-    makeLayer(scene: string, _atlas: string, provider: IInstanceProvider<Instance>): LayerInitializer | LayerInitializer[];
+    makeLayer(_scene: string, _atlas: string, _provider: IInstanceProvider<Instance>): LayerInitializer | LayerInitializer[];
     abstract makeProvider(): IInstanceProvider<Instance>;
 }

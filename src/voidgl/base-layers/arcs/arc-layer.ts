@@ -47,6 +47,17 @@ export class ArcLayer<
     scaleType: ArcScaleType.NONE
   };
 
+  /** Easy lookup of all attribute names for the layer */
+  static attributeNames = {
+    angle: "angle",
+    center: "center",
+    colorEnd: "colorEnd",
+    colorStart: "colorStart",
+    depth: "depth",
+    radius: "radius",
+    thickness: "thickness"
+  };
+
   /**
    * Define our shader and it's inputs
    */
@@ -92,42 +103,42 @@ export class ArcLayer<
       instanceAttributes: [
         {
           easing: animateCenter,
-          name: "center",
+          name: ArcLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
           update: o => o.center
         },
         {
           easing: animateRadius,
-          name: "radius",
+          name: ArcLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
         },
         {
-          name: "depth",
+          name: ArcLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
           easing: animateThickness,
-          name: "thickness",
+          name: ArcLayer.attributeNames.thickness,
           size: InstanceAttributeSize.TWO,
           update: o => o.thickness
         },
         {
           easing: animateAngle,
-          name: "angle",
+          name: ArcLayer.attributeNames.angle,
           size: InstanceAttributeSize.TWO,
           update: o => o.angle
         },
         {
           easing: animateColorStart,
-          name: "colorStart",
+          name: ArcLayer.attributeNames.colorStart,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         },
         {
           easing: animateColorEnd,
-          name: "colorEnd",
+          name: ArcLayer.attributeNames.colorEnd,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd
         }

@@ -8,8 +8,6 @@ import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import {
   IAtlasInstanceAttribute,
-  IEasingInstanceAttribute,
-  IEasingProps,
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
@@ -24,13 +22,11 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { uid, Vec } from "../../util";
-import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
+import { Vec } from "../../util";
 import { ILayerProps, Layer } from "../layer";
+import { generateEasingAttributes } from "./expand-easing-attributes";
 import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
 import { packAttributes } from "./pack-attributes";
-
-const { abs } = Math;
 
 /**
  * This is a lookup for a test vector for the provided size
@@ -58,12 +54,6 @@ function isAtlasAttribute<T extends Instance>(
   attr: any
 ): attr is IAtlasInstanceAttribute<T> {
   return Boolean(attr) && attr.atlas;
-}
-
-function isEasingAttribute<T extends Instance>(
-  attr: any
-): attr is IEasingInstanceAttribute<T> {
-  return Boolean(attr) && attr.easing && attr.size !== undefined;
 }
 
 function isInstanceAttribute<T extends Instance>(
@@ -182,133 +172,6 @@ function generateAtlasResourceUniforms<
         emptyTexture
     };
   });
-}
-
-/**
- * This modifies the instance attributes in a way that produces enough attributes to handle the easing equations
- * being performed on the gpu.
- */
-function generateEasingAttributes<T extends Instance, U extends ILayerProps<T>>(
-  layer: Layer<T, U>,
-  instanceAttributes: IInstanceAttribute<T>[]
-) {
-  const easingAttributes: IEasingInstanceAttribute<T>[] = [];
-
-  // We gather all of the easing attributes first so we can modify the attribute array
-  // On next pass
-  for (const attribute of instanceAttributes) {
-    if (isEasingAttribute(attribute)) {
-      easingAttributes.push(attribute);
-    }
-  }
-
-  // Now loop through each easing attribute and generate attributes needed for the easing method
-  for (const attribute of easingAttributes) {
-    const { cpu: easing, loop } = attribute.easing;
-    const { name, size, update } = attribute;
-    const easingUID = uid();
-
-    // We keep this in a scope above the update as we utilize the fact that the attributes will update
-    // In order for a single instance to our advantage.
-    let easingValues: IEasingProps;
-
-    // Hijack the update from the attribute to a new update method which will
-    // Be able to interact with the values for the easing methodology
-    attribute.update = o => {
-      // We retrieve properties that we want to be dynamic from the easing equation
-      const { delay, duration } = attribute.easing;
-      // First get the value that is to be our new destination
-      const end = update(o);
-      const currentTime = layer.surface.frameMetrics.currentTime;
-
-      // Get the easing values specific to an instance
-      easingValues = o.easing.get(easingUID) || {
-        duration,
-        end,
-        start: end,
-        startTime: currentTime
-      };
-
-      // Previous position time value
-      let timeValue = 1;
-
-      switch (loop) {
-        // Continuous means we start at 0 and let the time go to infinity
-        case AutoEasingLoopStyle.CONTINUOUS:
-          timeValue = (currentTime - easingValues.startTime) / duration;
-          break;
-
-        // Repeat means going from 0 to 1 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REPEAT:
-          timeValue = ((currentTime - easingValues.startTime) / duration) % 1;
-          break;
-
-        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
-        case AutoEasingLoopStyle.REFLECT:
-          const timePassed = (currentTime - easingValues.startTime) / duration;
-          // This is a triangle wave for an input
-          timeValue = abs((timePassed / 2.0) % 1 - 0.5) * 2.0;
-          break;
-
-        // No loop means just linear time
-        case AutoEasingLoopStyle.NONE:
-        default:
-          timeValue = (currentTime - easingValues.startTime) / duration;
-          break;
-      }
-
-      // Now get the value of where our instance currently is located this frame
-      easingValues.start = easing(
-        easingValues.start,
-        easingValues.end,
-        timeValue
-      );
-      // Set the current time as the start time of our animation
-      easingValues.startTime = currentTime + delay;
-      // Set the provided value as our destination
-      easingValues.end = end;
-      // Make sure the instance contains the current easing values
-      o.easing.set(easingUID, easingValues);
-
-      return end;
-    };
-
-    // The attribute is going to generate some child attributes
-    attribute.childAttributes = [];
-
-    // Find a slot available for our new start value
-    const startAttr: IInstanceAttribute<T> = {
-      name: `_${name}_start`,
-      parentAttribute: attribute,
-      size,
-      update: _o => easingValues.start
-    };
-
-    attribute.childAttributes.push(startAttr);
-    instanceAttributes.push(startAttr);
-
-    // Find a slot available for our new start time
-    const startTimeAttr: IInstanceAttribute<T> = {
-      name: `_${name}_start_time`,
-      parentAttribute: attribute,
-      size: InstanceAttributeSize.ONE,
-      update: _o => [easingValues.startTime]
-    };
-
-    attribute.childAttributes.push(startTimeAttr);
-    instanceAttributes.push(startTimeAttr);
-
-    // Find a slot available for our duration
-    const durationAttr: IInstanceAttribute<T> = {
-      name: `_${name}_duration`,
-      parentAttribute: attribute,
-      size: InstanceAttributeSize.ONE,
-      update: _o => [easingValues.duration]
-    };
-
-    attribute.childAttributes.push(durationAttr);
-    instanceAttributes.push(durationAttr);
-  }
 }
 
 function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(

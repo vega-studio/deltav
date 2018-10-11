@@ -1,4 +1,5 @@
 import * as Three from "three";
+import { InstanceProvider } from "../../instance-provider";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
@@ -33,6 +34,19 @@ export class RingLayer<
   T extends RingInstance,
   U extends IRingLayerProps<T>
 > extends Layer<T, U> {
+  static defaultProps: IRingLayerProps<RingInstance> = {
+    key: "",
+    data: new InstanceProvider<RingInstance>()
+  };
+
+  static attributeNames = {
+    center: "center",
+    radius: "radius",
+    depth: "depth",
+    color: "color",
+    thickness: "thickness"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -44,14 +58,14 @@ export class RingLayer<
         new Bounds({
           height: ring.radius * 2,
           width: ring.radius * 2,
-          x: ring.x - ring.radius,
-          y: ring.y - ring.radius
+          x: ring.center[0] - ring.radius,
+          y: ring.center[1] - ring.radius
         }),
 
       // Provide a precise hit test for the ring
       hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => {
         const r = ring.radius / max(...view.camera.scale);
-        const delta = [point.x - ring.x, point.y - ring.y];
+        const delta = [point.x - ring.center[0], point.y - ring.center[1]];
 
         return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
       }
@@ -93,29 +107,29 @@ export class RingLayer<
       instanceAttributes: [
         {
           easing: animateCenter,
-          name: "center",
+          name: RingLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y]
+          update: o => o.center
         },
         {
           easing: animateRadius,
-          name: "radius",
+          name: RingLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
           update: o => [o.radius]
         },
         {
-          name: "depth",
+          name: RingLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
         },
         {
           easing: animateColor,
-          name: "color",
+          name: RingLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
         },
         {
-          name: "thickness",
+          name: RingLayer.attributeNames.thickness,
           size: InstanceAttributeSize.ONE,
           update: o => [o.thickness]
         }

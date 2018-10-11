@@ -1,28 +1,30 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Circle } from "../../primitives/circle";
+import { Vec2 } from "../../util";
 
-export interface ICircleInstanceOptions extends IInstanceOptions, Circle {
+export interface ICircleInstanceOptions extends IInstanceOptions {
+  /** Center x position of the circle */
+  center: Vec2;
+  /** The radius of the circle */
+  radius: number;
   /** The color of this circle */
   color?: [number, number, number, number];
   /** The z depth of the circle (for draw ordering) */
   depth?: number;
 }
 
-export class CircleInstance extends Instance implements Circle {
+export class CircleInstance extends Instance {
   @observable color: [number, number, number, number] = [1.0, 1.0, 1.0, 1.0];
   @observable depth: number = 0;
   @observable radius: number = 0;
-  @observable x: number = 0;
-  @observable y: number = 0;
+  @observable center: Vec2 = [0, 0];
 
   constructor(options: ICircleInstanceOptions) {
     super(options);
 
     this.color = options.color || this.color;
     this.radius = options.radius || this.radius;
-    this.x = options.x || this.x;
-    this.y = options.y || this.y;
+    this.center = options.center || this.center;
     this.depth = options.depth || this.depth;
   }
 

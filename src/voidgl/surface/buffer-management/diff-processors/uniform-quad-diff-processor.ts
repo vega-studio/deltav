@@ -55,6 +55,7 @@ export class UniformQuadDiffProcessor<
 
       if (isBufferLocation(uniforms)) {
         instance.active = true;
+        instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
 
         // Ensure the instance has an updated injection in the quad tree
@@ -100,6 +101,8 @@ export class UniformQuadDiffProcessor<
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
+      // Remove the easing information the instance gained from being apart of the layer
+      instance.clearEasing();
       // We do one last update on the instance to update to it's deactivated state
       manager.updateInstance(manager.layer, instance, uniformCluster);
       // Unlink the instance from the uniform cluster

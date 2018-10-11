@@ -53,7 +53,6 @@ export class BoundedView3 extends BaseExample {
     return createLayer(RectangleLayer, {
       data: provider,
       key: "bounded-view3",
-      scaleFactor: () => 1,
       scene: scene
     });
   }

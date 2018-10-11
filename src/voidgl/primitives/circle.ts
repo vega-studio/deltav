@@ -1,8 +1,8 @@
+import { Vec2 } from "../util";
+
 export type Circle = {
   /** Center x position of the circle */
-  x: number;
-  /** Center y position of the circle */
-  y: number;
+  center: Vec2;
   /** The radius of the circle */
   radius: number;
 };

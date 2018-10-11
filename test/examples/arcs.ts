@@ -2,6 +2,8 @@ import {
   ArcInstance,
   ArcLayer,
   ArcScaleType,
+  AutoEasingLoopStyle,
+  AutoEasingMethod,
   Bounds,
   createLayer,
   InstanceProvider,
@@ -16,6 +18,10 @@ export class Arcs extends BaseExample {
     provider: InstanceProvider<ArcInstance>
   ): LayerInitializer {
     return createLayer(ArcLayer, {
+      animate: {
+        angle: AutoEasingMethod.linear(2500, 0, AutoEasingLoopStyle.REFLECT),
+        thickness: AutoEasingMethod.linear(2500, 0, AutoEasingLoopStyle.REFLECT)
+      },
       data: provider,
       key: "arcs",
       scene: scene,
@@ -31,49 +37,39 @@ export class Arcs extends BaseExample {
       this.surface.getViewSize(this.view) ||
       new Bounds({ x: 0, y: 0, width: 200, height: 200 });
 
-    for (let i = 0; i < 21; ++i) {
+    for (let i = 0; i < 1000; ++i) {
       const arc = new ArcInstance({
-        angle: [-Math.PI, Math.PI],
+        angle: [-Math.PI, -Math.PI],
         center: [viewSize.width / 2, viewSize.height / 2],
         colorEnd: [0.0, 1.0, 0.0, 1.0],
         colorStart: [1.0, 0.0, 1.0, 1.0],
         depth: 10,
         radius: (i + 1) * 4,
-        thickness: [3, 3]
+        thickness: [0.1, 0.1]
       });
 
       directions[i] = 1;
       arcs.push(arcProvider.add(arc));
     }
 
-    let count: number = 0;
-    const stopAngle = -Math.PI + Math.PI / 12;
-    setInterval(() => {
-      for (let i = 0, end = arcs.length; i < end; i++) {
+    // Wait a tick to get the easing properties available
+    setTimeout(() => {
+      for (let i = 0; i < 1000; ++i) {
         const arc = arcs[i];
+        arc.angle = [-Math.PI, Math.PI];
+        arc.thickness = [3, 3];
 
-        // New thickness
-        const thicknessToMinus = count >= 5 * i ? 0.015 * directions[i] : 0;
-        const newThickness = arc.thickness[0] - thicknessToMinus;
-        arc.thickness = [newThickness, newThickness];
-
-        // New angles
-        const start = arc.angle[0];
-        const toMinus = count >= i * 5 ? Math.PI / 100 * directions[i] : 0;
-        let end = arc.angle[1] - toMinus;
-
-        // Change direction
-        if (end <= stopAngle) {
-          end = stopAngle;
-          directions[i] *= -1;
-        } else if (end >= Math.PI) {
-          end = Math.PI;
-          directions[i] *= -1;
+        let easing = arc.getEasing(ArcLayer.attributeNames.angle);
+        if (easing) {
+          easing.setTiming(i * 100, i * 10);
         }
-        arc.angle = [start, end];
+
+        easing = arc.getEasing(ArcLayer.attributeNames.thickness);
+        if (easing) {
+          easing.setTiming(i * 100, i * 10);
+        }
       }
-      count++;
-    }, 1000 / 60);
+    }, 10);
 
     return arcProvider;
   }

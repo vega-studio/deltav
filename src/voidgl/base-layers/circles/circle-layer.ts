@@ -54,6 +54,13 @@ export class CircleLayer<
     scaleFactor: () => 1
   };
 
+  static attributeNames = {
+    center: "center",
+    radius: "radius",
+    depth: "depth",
+    color: "color"
+  };
+
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
    * of elements
@@ -67,13 +74,16 @@ export class CircleLayer<
         new Bounds({
           height: circle.radius * 2,
           width: circle.radius * 2,
-          x: circle.x - circle.radius,
-          y: circle.y - circle.radius
+          x: circle.center[0] - circle.radius,
+          y: circle.center[1] - circle.radius
         }),
 
       // Provide a precise hit test for the circle
       hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
-        const circleScreenCenter = view.worldToScreen(circle);
+        const circleScreenCenter = view.worldToScreen({
+          x: circle.center[0],
+          y: circle.center[1]
+        });
         const mouseScreen = view.worldToScreen(point);
         const r = circle.radius * (this.props.scaleFactor || noScaleFactor)();
 
@@ -122,24 +132,24 @@ export class CircleLayer<
       instanceAttributes: [
         {
           easing: animateCenter,
-          name: "center",
+          name: CircleLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: circle => [circle.x, circle.y]
+          update: circle => circle.center
         },
         {
           easing: animateRadius,
-          name: "radius",
+          name: CircleLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.radius]
         },
         {
-          name: "depth",
+          name: CircleLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: circle => [circle.depth]
         },
         {
           easing: animateColor,
-          name: "color",
+          name: CircleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: circle => circle.color
         }

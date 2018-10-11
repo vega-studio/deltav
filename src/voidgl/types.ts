@@ -257,7 +257,7 @@ export interface IEasingInstanceAttribute<T extends Instance>
   /**
    * This MUST be defined to be an Easing attribute
    */
-  easing: IAutoEasingMethod<Vec>;
+  easing: IAutoEasingMethod<Vec> & { uid?: number };
   /**
    * Easing attributes requires size to be present
    */
@@ -480,13 +480,63 @@ export type FrameMetrics = {
 };
 
 /**
+ * This represents controls that can be utilized when adjustig easing
+ */
+export interface IEasingControl {
+  /** A value in ms that expresses how long the system should wait before beginning the animation */
+  readonly delay?: number;
+  /** Indicates how long the easing should take to complete in ms */
+  readonly duration: number;
+  /** The end value the easing should approach */
+  readonly end: Vec;
+  /** The starting value of the easing object */
+  readonly start: Vec;
+  /** The start time in ms the easing object utilizes */
+  readonly startTime: number;
+
+  /**
+   * If you manually set values for the easing properties, then you use this to return
+   * the easing object back to an automated state which is where the start value is
+   * the calculated current position of the output and the delay and duration is determined
+   * by the easing set to the layer's IAutomatedEasingMethod value set to the layer.
+   */
+  setAutomatic(): void;
+
+  /**
+   * This controls the start value of the easing. This should be used to force a starting
+   * value of the animation.
+   *
+   * Use setAutomatic() to return to default easing behavior.
+   */
+  setStart(start?: Vec): void;
+
+  /**
+   * This controls of the timing of the easing equation. This should be used to adjust
+   * when a value is to be adjusted
+   *
+   * Use setAutomatic() to return to default easing behavior.
+   */
+  setTiming(delay?: number, duration?: number): void;
+}
+
+/**
  * This is the minimum properties required to make all easing functions operate.
  */
 export interface IEasingProps {
-  start: Vec;
-  end: Vec;
-  startTime: number;
+  /** A value in ms that expresses how long the system should wait before beginning the animation */
+  delay?: number;
+  /** Indicates how long the easing should take to complete in ms */
   duration: number;
+  /** The end value the easing should approach */
+  end: Vec;
+  /** A flag indicating if the easing start value is manually set, thus prioritizing the values already set in this object */
+  isManualStart?: boolean;
+  /** A flag indicating if the easing timing is manually set, thus prioritizing the values already set in this object */
+  isTimeSet?: boolean;
+  /** The starting value of the easing object */
+  start: Vec;
+  /** The start time in ms the easing object utilizes */
+  startTime: number;
 }
 
 /**

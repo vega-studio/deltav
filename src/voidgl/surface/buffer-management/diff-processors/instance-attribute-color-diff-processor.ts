@@ -56,6 +56,7 @@ export class InstanceAttributeColorDiffProcessor<
 
       if (isBufferLocationGroup(locations)) {
         instance.active = true;
+        instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, EMPTY, locations);
 
         // Make sure the instance is mapped to it's UID
@@ -100,6 +101,8 @@ export class InstanceAttributeColorDiffProcessor<
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
+      // Remove the easing information the instance gained from being apart of the layer
+      instance.clearEasing();
       // We do one last update on the instance to update to it's deactivated state
       manager.updateInstance(manager.layer, instance, EMPTY, bufferLocations);
       // Unlink the instance from the uniform cluster

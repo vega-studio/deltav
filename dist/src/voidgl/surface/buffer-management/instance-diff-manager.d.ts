@@ -9,6 +9,9 @@ export declare type DiffHandler<T extends Instance> = (manager: BaseDiffProcesso
 export declare type DiffLookup<T extends Instance> = DiffHandler<T>[];
 export interface IInstanceDiffManagerTarget<T extends Instance> {
     activeAttribute: IInstanceAttribute<T>;
+    easingId: {
+        [key: string]: number;
+    };
     instanceAttributes: IInstanceAttribute<T>[];
     picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     resource: AtlasResourceManager;

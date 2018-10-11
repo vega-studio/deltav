@@ -12,6 +12,14 @@ export interface IRingLayerProps<T extends RingInstance> extends ILayerProps<T> 
     };
 }
 export declare class RingLayer<T extends RingInstance, U extends IRingLayerProps<T>> extends Layer<T, U> {
+    static defaultProps: IRingLayerProps<RingInstance>;
+    static attributeNames: {
+        center: string;
+        radius: string;
+        depth: string;
+        color: string;
+        thickness: string;
+    };
     getInstancePickingMethods(): {
         boundsAccessor: (ring: RingInstance) => Bounds;
         hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => boolean;

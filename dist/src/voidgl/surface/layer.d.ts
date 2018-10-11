@@ -46,6 +46,9 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     private _bufferType;
     readonly bufferType: LayerBufferType;
     depth: number;
+    easingId: {
+        [key: string]: number;
+    };
     geometry: Three.BufferGeometry;
     initializer: LayerInitializer;
     instanceAttributes: IInstanceAttribute<T>[];

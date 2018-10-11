@@ -1,17 +1,18 @@
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Circle } from "../../primitives";
-export interface IRingInstanceOptions extends IInstanceOptions, Circle {
+import { Vec2 } from "../../util";
+export interface IRingInstanceOptions extends IInstanceOptions {
+    center?: Vec2;
     color?: [number, number, number, number];
     depth?: number;
+    radius?: number;
     thickness?: number;
 }
-export declare class RingInstance extends Instance implements Circle {
+export declare class RingInstance extends Instance {
     color: [number, number, number, number];
     depth: number;
     radius: number;
     thickness: number;
-    x: number;
-    y: number;
+    center: Vec2;
     constructor(options: IRingInstanceOptions);
     readonly width: number;
     readonly height: number;

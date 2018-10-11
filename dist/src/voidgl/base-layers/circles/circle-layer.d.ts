@@ -17,6 +17,12 @@ export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps
 }
 export declare class CircleLayer<T extends CircleInstance, U extends ICircleLayerProps<T>> extends Layer<T, U> {
     static defaultProps: ICircleLayerProps<CircleInstance>;
+    static attributeNames: {
+        center: string;
+        radius: string;
+        depth: string;
+        color: string;
+    };
     getInstancePickingMethods(): {
         boundsAccessor: (circle: CircleInstance) => Bounds;
         hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => boolean;

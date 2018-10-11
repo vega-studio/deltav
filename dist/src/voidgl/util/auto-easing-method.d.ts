@@ -13,6 +13,7 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
     gpu: string;
     loop: AutoEasingLoopStyle;
     methodName: string;
+    uid: number;
     validation?: {
         ignoreEndValueCheck?: boolean;
         ignoreOverTimeCheck?: boolean;
@@ -38,6 +39,7 @@ export declare class AutoEasingMethod<T extends InstanceIOValue> implements IAut
     static easeBackOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     static easeBackInOut<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
     static continuousSinusoidal<T extends Vec>(duration: number, delay?: number, loop?: AutoEasingLoopStyle): IAutoEasingMethod<T>;
+    uid: number;
     cpu: IAutoEasingMethod<T>["cpu"];
     delay: number;
     duration: number;

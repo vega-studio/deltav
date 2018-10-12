@@ -292,10 +292,8 @@ export class AtlasManager {
         });
 
         return image;
-      }
-
-      // If a string was returned, we must load the image then return the image
-      else if (resource.image.path) {
+      } else if (resource.image.path) {
+        // If a string was returned, we must load the image then return the image
         imageSrc = resource.image.path;
       }
     } else if (resource instanceof LabelAtlasResource) {

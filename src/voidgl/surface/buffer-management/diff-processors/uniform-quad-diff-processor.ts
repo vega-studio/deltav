@@ -47,10 +47,8 @@ export class UniformQuadDiffProcessor<
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, EMPTY, uniformCluster);
-    }
-
-    // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
-    else {
+    } else {
+      // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const uniforms = manager.layer.bufferManager.add(instance);
 
       if (isBufferLocation(uniforms)) {
@@ -81,10 +79,8 @@ export class UniformQuadDiffProcessor<
       // Ensure the instance has an updated injection in the quad tree
       manager.quadPicking.quadTree.remove(instance);
       manager.quadPicking.quadTree.add(instance);
-    }
-
-    // If we don't have existing uniforms, then we must remove the instance
-    else {
+    } else {
+      // If we don't have existing uniforms, then we must remove the instance
       manager.addInstance(manager, instance, EMPTY, uniformCluster);
     }
   }

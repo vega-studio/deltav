@@ -388,10 +388,8 @@ export class BasicCameraController extends EventManager {
     // Then our target view is the view we started with
     if (this.startViews && !this.ignoreCoverViews) {
       return e.target.view;
-    }
-
-    // Otherwise, we use the covered start view
-    else {
+    } else {
+      // Otherwise, we use the covered start view
       return this.coveredStartView;
     }
   }

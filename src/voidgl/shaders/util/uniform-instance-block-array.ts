@@ -154,24 +154,18 @@ function uniformInstancingDestructuring<T extends Instance>(
       }(_${attribute.name}_start, _${attribute.name}_end, _${
         attribute.name
       }_time);\n`;
-    }
-
-    // If we have a size the size of a block, then don't swizzle the vector
-    else if (attribute.size === InstanceAttributeSize.FOUR) {
+    } else if (attribute.size === InstanceAttributeSize.FOUR) {
+      // If we have a size the size of a block, then don't swizzle the vector
       out += `  ${sizeToType[attribute.size]} ${
         attribute.name
       } = block${block};\n`;
-    }
-
-    // If the attribute is an atlas, then we use the special ATLAS size and don't swizzle the vector
-    else if (attribute.atlas) {
+    } else if (attribute.atlas) {
+      // If the attribute is an atlas, then we use the special ATLAS size and don't swizzle the vector
       out += `  ${sizeToType[InstanceAttributeSize.ATLAS]} ${
         attribute.name
       } = block${block};\n`;
-    }
-
-    // Do normal destructuring with any other size and type
-    else {
+    } else {
+      // Do normal destructuring with any other size and type
       out += `  ${sizeToType[attribute.size || 1]} ${
         attribute.name
       } = block${block}.${makeVectorSwizzle(

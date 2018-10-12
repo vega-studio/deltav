@@ -50,6 +50,8 @@ export interface IInstanceProvider<T extends Instance> {
   changeList: InstanceDiff<T>[];
   /** Resolves the changes as consumed */
   resolve(): void;
+  /** Forces the provider to make a change list that ensures all elements are added */
+  sync(): void;
 }
 
 /**
@@ -114,6 +116,7 @@ export class Layer<
   T extends Instance,
   U extends ILayerProps<T>
 > extends IdentifyByKey {
+  /** This MUST be implemented by sublayers in order for proper code hinting to happen */
   static defaultProps: any = {};
 
   /** This is the attribute that specifies the _active flag for an instance */
@@ -130,8 +133,16 @@ export class Layer<
   get bufferType() {
     return this._bufferType;
   }
+  /**
+   * When this is set, the layer will utilize a provided changelist other than the changelist the data provider gives.
+   * This is used by the system to aid in situations where the layer may be out of sync with the InstanceProvider given
+   * to it.
+   */
+  customChangeList?: InstanceDiff<T>[];
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
+  /** This contains the methods and controls for handling diffs for the layer */
+  diffManager: InstanceDiffManager<T>;
   /**
    * This gets populated when there are attributes that have easing applied to them. This
    * subsequently gets applied to instances when they get added to the layer.
@@ -172,9 +183,6 @@ export class Layer<
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
-
-  /** This contains the methods and controls for handling diffs for the layer */
-  diffManager: InstanceDiffManager<T>;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -238,7 +246,16 @@ export class Layer<
     let value: UniformIOValue;
 
     // Consume the diffs for the instances to update each element
-    const changeList = this.props.data.changeList;
+    let changeList = this.props.data.changeList;
+
+    // Use a provided custom changelist instead of the provider's change list
+    if (this.customChangeList) {
+      // Use the changelist
+      changeList = this.customChangeList;
+      // Consider the changelist consumed and removed from the layer
+      delete this.customChangeList;
+    }
+
     // Make some holder variables to prevent declaration within the loop
     let change, instance, bufferLocations;
     // Fast ref to the processor and manager

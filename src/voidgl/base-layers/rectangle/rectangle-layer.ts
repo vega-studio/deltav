@@ -84,18 +84,14 @@ export class RectangleLayer<
         // If we scale always then the rectangle stays within it's initial world bounds at all times
         if (rectangle.scaling === ScaleType.ALWAYS) {
           return true;
-        }
-
-        // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
-        // Rectangle the same size. If the camera zooms out then the bounds === the world bounds.
-        else if (rectangle.scaling === ScaleType.BOUND_MAX) {
+        } else if (rectangle.scaling === ScaleType.BOUND_MAX) {
+          // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
+          // Rectangle the same size. If the camera zooms out then the bounds === the world bounds.
           // We are zooming out. the bounds will stay within the world bounds
           if (minScale <= 1 && maxScale <= 1) {
             return true;
-          }
-
-          // We are zooming in. The bounds will shrink to keep the rectangle at max font size
-          else {
+          } else {
+            // We are zooming in. The bounds will shrink to keep the rectangle at max font size
             // The location is within the world, but we reverse project the anchor spread
             const anchorEffect = [0, 0];
 
@@ -117,11 +113,9 @@ export class RectangleLayer<
               y: topLeft[1]
             }).containsPoint(point);
           }
-        }
-
-        // If we never allow the rectangle to scale, then the bounds will grow and shrink to counter the effects
-        // Of the camera zoom
-        else if (rectangle.scaling === ScaleType.NEVER) {
+        } else if (rectangle.scaling === ScaleType.NEVER) {
+          // If we never allow the rectangle to scale, then the bounds will grow and shrink to counter the effects
+          // Of the camera zoom
           // The location is within the world, but we reverse project the anchor spread
           const anchorEffect = [0, 0];
 

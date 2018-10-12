@@ -339,11 +339,9 @@ export class InstanceAttributeBufferManager<
         const uniform = this.layer.uniforms[i];
         uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
       }
-    }
-
-    // If the geometry is already created, then we will expand each instanced attribute to the next growth
-    // level and generate the new buffer locations based on the expansion
-    else {
+    } else {
+      // If the geometry is already created, then we will expand each instanced attribute to the next growth
+      // level and generate the new buffer locations based on the expansion
       // Since were are resizing the buffer, let's destroy the old buffer and make one anew
       this.geometry.dispose();
       this.geometry = new Three.InstancedBufferGeometry();

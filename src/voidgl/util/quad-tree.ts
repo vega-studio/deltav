@@ -164,10 +164,8 @@ export class Node<T extends IQuadItem> {
         x: left,
         y: top
       });
-    }
-
-    // Otherwise, make tiny start area
-    else {
+    } else {
+      // Otherwise, make tiny start area
       this.bounds = new Bounds({
         height: 1,
         width: 1,
@@ -199,10 +197,8 @@ export class Node<T extends IQuadItem> {
     // If we're in bounds, then let's just add the child
     if (child.isInside(this.bounds)) {
       return this.doAdd(child);
-    }
-
-    // Otherwise, we need to expand first
-    else {
+    } else {
+      // Otherwise, we need to expand first
       this.cover(child);
       return this.add(child, props);
     }
@@ -327,10 +323,8 @@ export class Node<T extends IQuadItem> {
       this.children.push(child);
 
       return true;
-    }
-
-    // Otherwise, we have not had a split due to population limits being exceeded
-    else if (child.isInside(this.bounds)) {
+    } else if (child.isInside(this.bounds)) {
+      // Otherwise, we have not had a split due to population limits being exceeded
       this.children.push(child);
 
       // If we exceeded our population for this quadrant, it is time to split up

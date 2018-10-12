@@ -6,6 +6,15 @@ export interface IRectangleLayerProps<T extends RectangleInstance> extends ILaye
     atlas?: string;
 }
 export declare class RectangleLayer<T extends RectangleInstance, U extends IRectangleLayerProps<T>> extends Layer<T, U> {
+    static defaultProps: IRectangleLayerProps<RectangleInstance>;
+    static attributeNames: {
+        location: string;
+        anchor: string;
+        size: string;
+        depth: string;
+        scaling: string;
+        color: string;
+    };
     getInstancePickingMethods(): {
         boundsAccessor: (rectangle: RectangleInstance) => Bounds;
         hitTest: (rectangle: RectangleInstance, point: IPoint, projection: IProjection) => boolean;

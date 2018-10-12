@@ -1,4 +1,4 @@
-import { AnimationHelper, BasicCameraController, Bounds, ChartCamera, CircleInstance, EventManager, IAutoEasingMethod, IInstanceProvider, LayerInitializer, Vec, Vec2 } from "src";
+import { AnimationHelper, BasicCameraController, Bounds, ChartCamera, CircleInstance, EventManager, IAutoEasingMethod, IInstanceProvider, InstanceProvider, LayerInitializer, Vec, Vec2 } from "src";
 import { BaseExample } from "./base-example";
 export declare class BoxOfCircles extends BaseExample {
     animationControl: {
@@ -19,7 +19,7 @@ export declare class BoxOfCircles extends BaseExample {
     keyEvent(e: KeyboardEvent, _isDown: boolean): void;
     makeCamera(defaultCamera: ChartCamera): ChartCamera;
     makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager;
-    makeLayer(scene: string, _atlas: string, provider: IInstanceProvider<CircleInstance>): LayerInitializer;
+    makeLayer(scene: string, _atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer;
     private moveToText;
     makeProvider(): IInstanceProvider<CircleInstance>;
 }

@@ -22,6 +22,16 @@ export interface IEdgeLayerState {
 }
 export declare class EdgeLayer<T extends EdgeInstance, U extends IEdgeLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IEdgeLayerProps<EdgeInstance>;
+    static attributeNames: {
+        start: string;
+        end: string;
+        widthStart: string;
+        widthEnd: string;
+        depth: string;
+        colorStart: string;
+        colorEnd: string;
+        control: string;
+    };
     getInstancePickingMethods(): IPickingMethods<EdgeInstance>;
     initShader(): IShaderInitialization<EdgeInstance>;
     getModelType(): IModelType;

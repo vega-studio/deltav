@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.19.0
+
+* `(ADDED)` This improves animations considerably and grants easier access to the internal easing process to allow for animation timings and initial values to be controlled directly.
+* `(ADDED)` Circles now use a Vec2 for position to increase consistency and improve performance.
+
 ## 1.18.0
 
 * `(ADDED)` Edges and circles now have layer level opacities added to them to allow for fast and efficient transparency control of an entire layer.

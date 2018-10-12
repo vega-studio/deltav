@@ -1,5 +1,5 @@
+import { Vec2 } from "../util";
 export declare type Circle = {
-    x: number;
-    y: number;
+    center: Vec2;
     radius: number;
 };

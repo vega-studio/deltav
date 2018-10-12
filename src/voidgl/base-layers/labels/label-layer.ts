@@ -86,18 +86,14 @@ export class LabelLayer<
         // If we scale always then the label stays within it's initial world bounds at all times
         if (label.scaling === ScaleType.ALWAYS) {
           return true;
-        }
-
-        // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
-        // Label the same size. If the camera zooms out then the bounds === the world bounds.
-        else if (label.scaling === ScaleType.BOUND_MAX) {
+        } else if (label.scaling === ScaleType.BOUND_MAX) {
+          // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
+          // Label the same size. If the camera zooms out then the bounds === the world bounds.
           // We are zooming out. the bounds will stay within the world bounds
           if (minScale <= 1 && maxScale <= 1) {
             return true;
-          }
-
-          // We are zooming in. The bounds will shrink to keep the label at max font size
-          else {
+          } else {
+            // We are zooming in. The bounds will shrink to keep the label at max font size
             const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
 
             // The location is within the world, but we reverse project the anchor spread
@@ -116,11 +112,9 @@ export class LabelLayer<
               y: topLeft.y
             }).containsPoint(screenPoint);
           }
-        }
-
-        // If we never allow the label to scale, then the bounds will grow and shrink to counter the effects
-        // Of the camera zoom
-        else if (label.scaling === ScaleType.NEVER) {
+        } else if (label.scaling === ScaleType.NEVER) {
+          // If we never allow the label to scale, then the bounds will grow and shrink to counter the effects
+          // Of the camera zoom
           const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
 
           // The location is within the world, but we reverse project the anchor spread

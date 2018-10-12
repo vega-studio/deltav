@@ -3,9 +3,9 @@
  */
 export interface IScale {
   /** Scale in the x direction */
-  x?: number,
+  x?: number;
   /** Scale in the y direction */
-  y?: number,
+  y?: number;
   /** Scale in the z direction */
-  z?: number,
+  z?: number;
 }

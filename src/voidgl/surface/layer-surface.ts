@@ -137,7 +137,7 @@ export class LayerSurface {
    */
   private isBufferingAtlas = false;
   /** This is all of the layers in this manager by their id */
-  layers = new Map<string, Layer<any, any>>();
+  layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
   private mouseManager: MouseEventManager;
   /**
@@ -583,10 +583,8 @@ export class LayerSurface {
                 : 0x0)
           );
       }
-    }
-
-    // Default clearing is depth and color
-    else {
+    } else {
+      // Default clearing is depth and color
       // For targets, we must also perform clear operations
       if (target) {
         // TODO: This is frustrating. Right now we can't specify and set the viewport for a render target
@@ -746,10 +744,8 @@ export class LayerSurface {
         ),
         options.background[3]
       );
-    }
-
-    // If a background color was not established, then we set a default background color
-    else {
+    } else {
+      // If a background color was not established, then we set a default background color
       this.renderer.setClearColor(DEFAULT_BACKGROUND_COLOR);
     }
 
@@ -1014,14 +1010,27 @@ export class LayerSurface {
 
         if (existingLayer) {
           existingLayer.willUpdateProps(props);
+
+          // If we have a provider that is about to be newly set to the layer, then the provider
+          // needs to do a full sync in order to have existing
+          if (props.data !== existingLayer.props.data) {
+            props.data.sync();
+          }
+
           Object.assign(existingLayer.props, props);
           existingLayer.initializer[1] = existingLayer.props;
           existingLayer.didUpdateProps();
         } else {
+          // Generate the new layer and provide it it's initial props
           const layer = new layerClass(
             Object.assign({}, layerClass.defaultProps, props)
           );
+          // Keep the initializer object that generated the layer for reference and debugging
           layer.initializer = init;
+          // Sync the data provider applied to the layer in case the provider has existing data
+          // before being applied tot he layer
+          layer.props.data.sync();
+          // Add the layer to this surface
           this.addLayer(layer);
         }
 

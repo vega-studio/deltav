@@ -48,10 +48,8 @@ export class UniformColorDiffProcessor<
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
       manager.changeInstance(manager, instance, EMPTY, uniformCluster);
-    }
-
-    // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
-    else {
+    } else {
+      // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const uniforms = manager.layer.bufferManager.add(instance);
 
       if (isBufferLocation(uniforms)) {
@@ -81,10 +79,8 @@ export class UniformColorDiffProcessor<
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(manager.layer, instance, uniformCluster);
-    }
-
-    // If we don't have existing uniforms, then we must remove the instance
-    else {
+    } else {
+      // If we don't have existing uniforms, then we must remove the instance
       manager.addInstance(manager, instance, EMPTY, uniformCluster);
     }
   }

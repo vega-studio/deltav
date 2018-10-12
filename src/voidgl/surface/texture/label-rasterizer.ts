@@ -65,10 +65,8 @@ export class LabelRasterizer {
         height: maxY - minY,
         width: maxX - minX
       };
-    }
-
-    // Otherwise we first calculate the texture rasterization for the label
-    else {
+    } else {
+      // Otherwise we first calculate the texture rasterization for the label
       // Update the calculated texture size.
       resource.rasterization.texture = {
         height: maxY - minY,
@@ -127,10 +125,8 @@ export class LabelRasterizer {
       // If we pass then we move left to cursor to make the test string longer
       if (maxX - minX <= maxWidth) {
         left = cursor;
-      }
-
-      // If we fail, we move right to cursor to make the test string shorter
-      else {
+      } else {
+        // If we fail, we move right to cursor to make the test string shorter
         right = cursor;
       }
 
@@ -149,10 +145,8 @@ export class LabelRasterizer {
     // If cursor is zero, nothing passed and our truncation is just ellipses
     if (cursor === 0) {
       resource.truncatedText = "...";
-    }
-
-    // Otherwise we get the string that passes and use that as our truncated text
-    else {
+    } else {
+      // Otherwise we get the string that passes and use that as our truncated text
       resource.truncatedText = `${text.substr(0, cursor)}...`;
     }
   }

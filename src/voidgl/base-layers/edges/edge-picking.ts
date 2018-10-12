@@ -128,10 +128,8 @@ export function edgePicking<T extends EdgeInstance>(
         x: edge.control[0][0],
         y: edge.control[0][1]
       });
-    }
-
-    // Encapsulating the bezier control points is enough of a broadphase for beziers
-    else if (props.type === EdgeType.BEZIER2) {
+    } else if (props.type === EdgeType.BEZIER2) {
+      // Encapsulating the bezier control points is enough of a broadphase for beziers
       bounds.encapsulate({
         x: edge.control[0][0],
         y: edge.control[0][1]

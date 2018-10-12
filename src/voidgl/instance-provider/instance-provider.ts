@@ -1,3 +1,4 @@
+import { IInstanceProvider } from "../surface/layer";
 import { InstanceDiffType } from "../types";
 import { Instance } from "./instance";
 
@@ -11,13 +12,16 @@ export type InstanceDiff<T extends Instance> = [
   { [key: number]: number }
 ];
 
+type InstanceDisposer<T extends Instance> = [T, Function];
+
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.
  */
-export class InstanceProvider<T extends Instance> {
+export class InstanceProvider<T extends Instance>
+  implements IInstanceProvider<T> {
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation: { [key: number]: [T, Function] } = {};
+  private cleanObservation = new Map<number, InstanceDisposer<T>>();
   /** This stores the changes to the instances themselves */
   private instanceChanges = new Map<number, InstanceDiff<T>>();
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
@@ -39,7 +43,7 @@ export class InstanceProvider<T extends Instance> {
    */
   add(instance: T) {
     // No need to duplicate the addition
-    if (this.cleanObservation[instance.uid]) {
+    if (this.cleanObservation.get(instance.uid)) {
       return instance;
     }
 
@@ -47,7 +51,7 @@ export class InstanceProvider<T extends Instance> {
       instance.observer = this;
       const disposer: Function = instance.observableDisposer;
       // Store the disposers so we can clean up the observable properties
-      this.cleanObservation[instance.uid] = [instance, disposer];
+      this.cleanObservation.set(instance.uid, [instance, disposer]);
       // Indicate we have a new instance
       this.instanceChanges.set(instance.uid, [
         instance,
@@ -82,7 +86,7 @@ export class InstanceProvider<T extends Instance> {
       values[i][1]();
     }
 
-    this.cleanObservation = {};
+    this.cleanObservation.clear();
     this.instanceChanges.clear();
   }
 
@@ -106,11 +110,11 @@ export class InstanceProvider<T extends Instance> {
    */
   remove(instance: T) {
     if (this.allowChanges) {
-      const disposer = this.cleanObservation[instance.uid];
+      const disposer = this.cleanObservation.get(instance.uid);
 
       if (disposer) {
         disposer[1]();
-        delete this.cleanObservation[instance.uid];
+        this.cleanObservation.delete(instance.uid);
         this.instanceChanges.set(instance.uid, [
           instance,
           InstanceDiffType.REMOVE,
@@ -128,5 +132,28 @@ export class InstanceProvider<T extends Instance> {
   resolve() {
     this.allowChanges = true;
     this.instanceChanges.clear();
+  }
+
+  /**
+   * This performs an operation that forces all of the instances to be flagged as an
+   * 'add' change. This allows a layer listening to this provider to ensure it has added
+   * all currently existing instances monitored by the provider.
+   *
+   * NOTE: This is a VERY poor performing method and should probably be used by the framework
+   * and not manually.
+   */
+  sync() {
+    const emptyPropertyChanges: number[] = [];
+
+    // Loop through all registered instances (which is only stored in the disposer list kept by this provider)
+    this.cleanObservation.forEach(disposer => {
+      const [instance] = disposer;
+      // Flag the instance as having a property changed
+      this.instanceChanges.set(instance.uid, [
+        instance,
+        InstanceDiffType.INSERT,
+        emptyPropertyChanges
+      ]);
+    });
   }
 }

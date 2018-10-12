@@ -11,6 +11,13 @@ import { ILayerProps, Layer } from "../layer";
 
 const { abs } = Math;
 
+const BLANK_EASING_PROPS: IEasingProps = {
+  duration: 0,
+  start: [0],
+  end: [0],
+  startTime: 0
+};
+
 /**
  * Tests an attribute to see if it is an easing attribute
  */
@@ -62,8 +69,10 @@ export function generateEasingAttributes<
     // Flag the uid of the easing method as used
     usedInstanceAttributes.add(easingUID);
     // We keep this in a scope above the update as we utilize the fact that the attributes will update
-    // In order for a single instance to our advantage.
-    let easingValues: IEasingProps;
+    // In the order they are declared for a single instance. The attributes will all share this information.
+    const attributeDataShare: { values: IEasingProps } = {
+      values: BLANK_EASING_PROPS
+    };
 
     // Hijack the update from the attribute to a new update method which will
     // Be able to interact with the values for the easing methodology
@@ -91,12 +100,11 @@ export function generateEasingAttributes<
         });
 
         // Make sure the instance contains the current easing values
-        instance.easing.set(easingUID, easingValues);
+        instance.easing.set(easingUID, values);
       }
 
       // Assign the established values
-      easingValues = values;
-
+      const easingValues = values;
       let duration = attributeDuration;
       let delay = attributeDelay;
 
@@ -147,6 +155,8 @@ export function generateEasingAttributes<
       easingValues.startTime = currentTime + delay;
       // Set the provided value as our destination
       easingValues.end = end;
+      // Update the information shared between this attribute and it's children
+      attributeDataShare.values = easingValues;
 
       return end;
     };
@@ -159,7 +169,7 @@ export function generateEasingAttributes<
       name: `_${name}_start`,
       parentAttribute: attribute,
       size,
-      update: _o => easingValues.start
+      update: _o => attributeDataShare.values.start
     };
 
     attribute.childAttributes.push(startAttr);
@@ -170,7 +180,7 @@ export function generateEasingAttributes<
       name: `_${name}_start_time`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
-      update: _o => [easingValues.startTime]
+      update: _o => [attributeDataShare.values.startTime]
     };
 
     attribute.childAttributes.push(startTimeAttr);
@@ -181,7 +191,7 @@ export function generateEasingAttributes<
       name: `_${name}_duration`,
       parentAttribute: attribute,
       size: InstanceAttributeSize.ONE,
-      update: _o => [easingValues.duration]
+      update: _o => [attributeDataShare.values.duration]
     };
 
     attribute.childAttributes.push(durationAttr);

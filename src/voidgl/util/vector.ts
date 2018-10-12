@@ -48,6 +48,10 @@ export function add1(left: Vec1, right: Vec1): Vec1 {
   return [left[0] + right[0]];
 }
 
+export function copy1(vec: Vec1): Vec1 {
+  return [vec[0]];
+}
+
 export function scale1(vec: Vec1, scale: number): Vec1 {
   return [vec[0] * scale];
 }
@@ -76,6 +80,10 @@ export function add2(left: Vec2, right: Vec2): Vec2 {
   return [left[0] + right[0], left[1] + right[1]];
 }
 
+export function copy2(vec: Vec2): Vec2 {
+  return [vec[0], vec[1]];
+}
+
 export function scale2(left: Vec2, scale: number): Vec2 {
   return [left[0] * scale, left[1] * scale];
 }
@@ -102,6 +110,10 @@ export function length2(start: Vec2): number {
 
 export function add3(left: Vec3, right: Vec3): Vec3 {
   return [left[0] + right[0], left[1] + right[1], left[2] + right[2]];
+}
+
+export function copy3(vec: Vec3): Vec3 {
+  return [vec[0], vec[1], vec[2]];
 }
 
 export function scale3(left: Vec3, scale: number): Vec3 {
@@ -135,6 +147,10 @@ export function add4(left: Vec4, right: Vec4): Vec4 {
     left[2] + right[2],
     left[3] + right[3]
   ];
+}
+
+export function copy4(vec: Vec4): Vec4 {
+  return [vec[0], vec[1], vec[2], vec[3]];
 }
 
 export function scale4(left: Vec4, scale: number): Vec4 {
@@ -178,6 +194,7 @@ export function length4(start: Vec4): number {
 
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T): T;
+  copy(vec: T): T;
   scale(vec: T, scale: number): T;
   subtract(left: T, right: T): T;
   multiply(left: T, right: T): T;
@@ -188,6 +205,7 @@ export type VecMethods<T extends Vec> = {
 
 export const vec1Methods: VecMethods<Vec1> = {
   add: add1,
+  copy: copy1,
   dot: dot1,
   length: length1,
   linear: linear1,
@@ -198,6 +216,7 @@ export const vec1Methods: VecMethods<Vec1> = {
 
 export const vec2Methods: VecMethods<Vec2> = {
   add: add2,
+  copy: copy2,
   dot: dot2,
   length: length2,
   linear: linear2,
@@ -208,6 +227,7 @@ export const vec2Methods: VecMethods<Vec2> = {
 
 export const vec3Methods: VecMethods<Vec3> = {
   add: add3,
+  copy: copy3,
   dot: dot3,
   length: length3,
   linear: linear3,
@@ -218,6 +238,7 @@ export const vec3Methods: VecMethods<Vec3> = {
 
 export const vec4Methods: VecMethods<Vec4> = {
   add: add4,
+  copy: copy4,
   dot: dot4,
   length: length4,
   linear: linear4,

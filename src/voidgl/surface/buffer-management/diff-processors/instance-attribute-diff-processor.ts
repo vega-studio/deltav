@@ -63,10 +63,8 @@ export class InstanceAttributeDiffProcessor<
     // If the uniform cluster already exists, then we swap over to a change update
     if (bufferLocations) {
       manager.changeInstance(manager, instance, EMPTY, bufferLocations);
-    }
-
-    // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
-    else {
+    } else {
+      // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const newBufferLocations = manager.layer.bufferManager.add(instance);
 
       if (isBufferLocationGroup(newBufferLocations)) {
@@ -95,10 +93,8 @@ export class InstanceAttributeDiffProcessor<
     // If there is an existing uniform cluster for this instance, then we can update the bufferLocations
     if (bufferLocations) {
       manager.updateInstance(manager.layer, instance, propIds, bufferLocations);
-    }
-
-    // If we don't have existing bufferLocations, then we must remove the instance
-    else {
+    } else {
+      // If we don't have existing bufferLocations, then we must add the instance
       manager.addInstance(manager, instance, EMPTY, bufferLocations);
     }
   }
@@ -182,10 +178,8 @@ export class InstanceAttributeDiffProcessor<
           }
         }
       }
-    }
-
-    // When the instance is inactive all we update is the active attribute to false
-    else {
+    } else {
+      // When the instance is inactive all we update is the active attribute to false
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
@@ -248,10 +242,8 @@ export class InstanceAttributeDiffProcessor<
           }
         }
       }
-    }
-
-    // When the instance is inactive all we update is the active attribute to false
-    else {
+    } else {
+      // When the instance is inactive all we update is the active attribute to false
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
@@ -280,10 +272,8 @@ export class InstanceAttributeDiffProcessor<
           offset: update[1]
         };
       }
-    }
-
-    // Otherwise just update the full buffer
-    else {
+    } else {
+      // Otherwise just update the full buffer
       // We now grab all of the attributes and set their update ranges
       const updates = Object.values(this.bufferAttributeWillUpdate);
 
@@ -304,7 +294,7 @@ export class InstanceAttributeDiffProcessor<
   /**
    * This will optimize the update method used. If there are enough instances being updated, we will
    * cause the entire attribute buffer to update. If there are not enough, then we will update with
-   * additional steps to
+   * additional steps to only update the chunks of the buffer that are affected by the changelist.
    */
   incomingChangeList(changes: InstanceDiff<T>[]) {
     if (changes.length === 0) {

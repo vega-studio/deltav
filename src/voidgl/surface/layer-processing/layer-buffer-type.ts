@@ -61,10 +61,8 @@ export function getLayerBufferType<T extends Instance>(
     // Too many attributes. We must use the uniform compatibility mode
     if (attributesUsed > WebGLStat.MAX_VERTEX_ATTRIBUTES) {
       type = LayerBufferType.UNIFORM;
-    }
-
-    // If we make it here, we are good to go using hardware instancing! Hooray performance!
-    else {
+    } else {
+      // If we make it here, we are good to go using hardware instancing! Hooray performance!
       type = LayerBufferType.INSTANCE_ATTRIBUTE;
     }
   }

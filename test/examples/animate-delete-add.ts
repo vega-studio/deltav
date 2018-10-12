@@ -4,7 +4,7 @@
  * and vice versa.
  */
 import {
-  add2,
+  AutoEasingMethod,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -21,6 +21,9 @@ export class AnimateDeleteAdd extends BaseExample {
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {
+      animate: {
+        center: AutoEasingMethod.linear(1000)
+      },
       data: provider,
       key: "animate-delete-add",
       scene: scene
@@ -39,36 +42,33 @@ export class AnimateDeleteAdd extends BaseExample {
       })
     );
 
-    this.move(circle);
-
     setInterval(() => {
       circle.color = [1.0, 0.0, 0.0, 1.0];
       circleProvider.remove(circle);
     }, 1000);
 
     setInterval(() => {
-      circle.color = [1.0, 0.0, 1.0, 1.0];
+      // Wait a tick to make sure the circle is added
+      requestAnimationFrame(() => {
+        const size = this.surface.getViewSize(this.view);
+        if (!size) return;
+
+        const start = circle.center;
+        circle.color = [1.0, 0.0, 1.0, 1.0];
+        circle.center = [
+          Math.random() * size.width,
+          Math.random() * size.height
+        ];
+
+        const easing = circle.getEasing(CircleLayer.attributeNames.center);
+        if (easing) {
+          easing.setStart(start);
+        }
+      });
+
       circleProvider.add(circle);
     }, 2000);
 
     return circleProvider;
   }
-
-  move = (circle: CircleInstance) => {
-    requestAnimationFrame(() => this.move(circle));
-    const bounds = this.surface.getViewSize(this.view);
-    if (!bounds) return;
-
-    const center = add2(circle.center, [2, 1]);
-
-    if (center[0] > bounds.width) {
-      center[0] = 0;
-    }
-
-    if (center[1] > bounds.height) {
-      center[1] = 0;
-    }
-
-    circle.center = center;
-  };
 }

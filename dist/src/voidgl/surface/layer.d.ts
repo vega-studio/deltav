@@ -18,6 +18,7 @@ export interface IModelType {
 export interface IInstanceProvider<T extends Instance> {
     changeList: InstanceDiff<T>[];
     resolve(): void;
+    sync(): void;
 }
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     data: IInstanceProvider<T>;
@@ -45,7 +46,9 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     readonly bufferManager: BufferManagerBase<T, IBufferLocation>;
     private _bufferType;
     readonly bufferType: LayerBufferType;
+    customChangeList?: InstanceDiff<T>[];
     depth: number;
+    diffManager: InstanceDiffManager<T>;
     easingId: {
         [key: string]: number;
     };
@@ -65,7 +68,6 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     uniforms: IUniformInternal[];
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
-    diffManager: InstanceDiffManager<T>;
     constructor(props: ILayerProps<T>);
     destroy(): void;
     didUpdateProps(): void;

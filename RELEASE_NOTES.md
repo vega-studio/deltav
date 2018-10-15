@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.19.3
+
+* `(FIXED)` Properties on an instance could get out of sync with their rendering if properties on the instance changed while a resource for the instance was being loaded.
+
 ## 1.19.2
 
 * `(FIXED)` An error would appear when a layer would switch over to Uniform Buffering due to the new easing controls added in.

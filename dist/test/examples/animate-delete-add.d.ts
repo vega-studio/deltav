@@ -3,5 +3,4 @@ import { BaseExample } from "./base-example";
 export declare class AnimateDeleteAdd extends BaseExample {
     makeLayer(scene: string, _atlas: string, provider: InstanceProvider<CircleInstance>): LayerInitializer;
     makeProvider(): IInstanceProvider<CircleInstance>;
-    move: (circle: CircleInstance) => void;
 }

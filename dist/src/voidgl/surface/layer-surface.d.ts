@@ -37,7 +37,7 @@ export declare class LayerSurface {
     defaultSceneElements: IDefaultSceneElements;
     frameMetrics: FrameMetrics;
     private isBufferingAtlas;
-    layers: Map<string, Layer<any, any>>;
+    layers: Map<string, Layer<Instance, ILayerProps<Instance>>>;
     private mouseManager;
     pickingRenderer: Three.WebGLRenderer;
     pickingTarget: Three.WebGLRenderTarget;

@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.19.1
+
+* `(FIXED)` Providers handed to a new layer that had been handled by another layer now will be synced when a layer is initialized so the layer properly tracks all existing items in the provider.
+* `(FIXED)` GPU Easing had a bug that caused start states of animations to be incorrect and point to seemingly other elements start states
+* `(FIXED)` Vectors now have a working copy method for any of the vector sizes.
+* `(FIXED)` syncing providers to new layers, issue with easing animations
+
 ## 1.19.0
 
 * `(ADDED)` This improves animations considerably and grants easier access to the internal easing process to allow for animation timings and initial values to be controlled directly.

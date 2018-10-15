@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.19.2
+
+* `(FIXED)` An error would appear when a layer would switch over to Uniform Buffering due to the new easing controls added in.
+
 ## 1.19.1
 
 * `(FIXED)` Providers handed to a new layer that had been handled by another layer now will be synced when a layer is initialized so the layer properly tracks all existing items in the provider.

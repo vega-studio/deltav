@@ -76,7 +76,11 @@ export function getLayerBufferType<T extends Instance>(
       Used Vertex units %o
       Instance Attributes %o
       Vertex Attributes %o`,
-      layer.id, WebGLStat.MAX_VERTEX_ATTRIBUTES, attributesUsed, instanceAttributes, vertexAttributes
+      layer.id,
+      WebGLStat.MAX_VERTEX_ATTRIBUTES,
+      attributesUsed,
+      instanceAttributes,
+      vertexAttributes
     );
     type = LayerBufferType.UNIFORM;
   }

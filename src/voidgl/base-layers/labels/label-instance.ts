@@ -359,6 +359,15 @@ export class LabelInstance extends Instance implements Label {
     // Trigger the accessed element that the layer utilizes for resource fetching.
     this._rasterization = this._rasterization;
     this._width = this._width;
+    // Make sure all public properties that could have changed during the load are triggered
+    // so they properly have updated all of their elements.
+    this.x = this.x;
+    this.y = this.y;
+    this.color = this.color;
+    this.depth = this.depth;
+    this.maxScale = this.maxScale;
+    this.scaling = this.scaling;
+    this.scale = this.scale;
   }
 
   /**

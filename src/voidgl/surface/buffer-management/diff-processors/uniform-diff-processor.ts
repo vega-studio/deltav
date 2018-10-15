@@ -33,7 +33,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       if (isBufferLocation(uniforms)) {
         instance.active = true;
-        instance.easingId = this.layer.easingId;
+        instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
       }
     }

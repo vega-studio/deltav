@@ -12,6 +12,8 @@ import {
 import { Layer } from "../layer";
 import { Scene } from "../scene";
 
+const debug = require("debug")("performance");
+
 export enum LayerBufferType {
   // This is a compatibility mode for instance attributes. This is used when:
   // 1. It would perform better
@@ -33,6 +35,7 @@ export function getLayerBufferType<T extends Instance>(
   instanceAttributes: IInstanceAttribute<T>[]
 ) {
   let type;
+  let attributesUsed = 0;
 
   // The layer only gets it's buffer type calculated once
   if (layer.bufferType !== undefined) {
@@ -44,8 +47,6 @@ export function getLayerBufferType<T extends Instance>(
   // return LayerBufferType.UNIFORM;
 
   if (WebGLStat.HARDWARE_INSTANCING) {
-    let attributesUsed = 0;
-
     for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
       const attribute = vertexAttributes[i];
       attributesUsed += Math.ceil(attribute.size / 4);
@@ -68,7 +69,18 @@ export function getLayerBufferType<T extends Instance>(
   }
 
   // No other faster mode supported: use uniform instancing
-  if (!type) type = LayerBufferType.UNIFORM;
+  if (!type) {
+    debug(
+      `Warning: Layer %o is utilizing too many vertex attributes and is now using a uniform buffer.
+      Max Vertex units %o
+      Used Vertex units %o
+      Instance Attributes %o
+      Vertex Attributes %o`,
+      layer.id, WebGLStat.MAX_VERTEX_ATTRIBUTES, attributesUsed, instanceAttributes, vertexAttributes
+    );
+    type = LayerBufferType.UNIFORM;
+  }
+
   // Apply the type to the layer
   layer.setBufferType(type);
 

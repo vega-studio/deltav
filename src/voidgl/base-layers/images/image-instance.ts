@@ -274,6 +274,14 @@ export class ImageInstance extends Instance implements Image {
   resourceTrigger() {
     // Trigger the accessed element that the layer utilizes for resource fetching.
     this._rasterization = this._rasterization;
+
+    this.tint = this.tint;
+    this.depth = this.depth;
+    this.height = this.height;
+    this.scaling = this.scaling;
+    this.width = this.width;
+    this.x = this.x;
+    this.y = this.y;
   }
 
   /**

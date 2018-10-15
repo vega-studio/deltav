@@ -38,7 +38,7 @@ export class InstanceAttributeBufferManager<
 > extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
   /** This stores an attribute's name to the buffer locations generated for it */
   private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
-  /** This contains the buffer locations the system will have available to the  */
+  /** This contains the buffer locations the system will have available */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
   currentInstancedCount = 0;

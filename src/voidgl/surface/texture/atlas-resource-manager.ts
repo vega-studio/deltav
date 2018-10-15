@@ -84,16 +84,24 @@ export class AtlasResourceManager {
             atlasRequests.delete(resource);
 
             if (request) {
-              for (const [layer, instance] of request) {
+              for (let i = 0, iMax = request.length; i < iMax; ++i) {
+                const [layer, instance] = request[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
                 if (layer.bufferManager.getBufferLocations(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
-                  // Trigger the resource attributes to update
-                  instance.resourceTrigger();
                 }
               }
+
+              // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
+              // applied to the instance's rendering
+              requestAnimationFrame(() => {
+                for (let i = 0, iMax = request.length; i < iMax; ++i) {
+                  const instance = request[i][1];
+                  instance.resourceTrigger();
+                }
+              });
             }
           });
         }

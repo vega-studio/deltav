@@ -67,11 +67,9 @@ export class InstanceProvider<T extends Instance>
    * Removes all instances from this provider
    */
   clear() {
-    const values = Object.values(this.cleanObservation);
-
-    for (let i = 0, end = values.length; i < end; ++i) {
-      this.remove(values[i][0]);
-    }
+    this.cleanObservation.forEach(values => {
+      this.remove(values[0]);
+    });
   }
 
   /**
@@ -80,11 +78,9 @@ export class InstanceProvider<T extends Instance>
    * desire to hang onto the instance objects, then this should be called.
    */
   destroy() {
-    const values = Object.values(this.cleanObservation);
-
-    for (let i = 0, end = values.length; i < end; ++i) {
-      values[i][1]();
-    }
+    this.cleanObservation.forEach(values => {
+      values[1]();
+    });
 
     this.cleanObservation.clear();
     this.instanceChanges.clear();

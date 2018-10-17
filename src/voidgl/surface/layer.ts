@@ -133,12 +133,6 @@ export class Layer<
   get bufferType() {
     return this._bufferType;
   }
-  /**
-   * When this is set, the layer will utilize a provided changelist other than the changelist the data provider gives.
-   * This is used by the system to aid in situations where the layer may be out of sync with the InstanceProvider given
-   * to it.
-   */
-  customChangeList?: InstanceDiff<T>[];
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This contains the methods and controls for handling diffs for the layer */
@@ -246,16 +240,7 @@ export class Layer<
     let value: UniformIOValue;
 
     // Consume the diffs for the instances to update each element
-    let changeList = this.props.data.changeList;
-
-    // Use a provided custom changelist instead of the provider's change list
-    if (this.customChangeList) {
-      // Use the changelist
-      changeList = this.customChangeList;
-      // Consider the changelist consumed and removed from the layer
-      delete this.customChangeList;
-    }
-
+    const changeList = this.props.data.changeList;
     // Make some holder variables to prevent declaration within the loop
     let change, instance, bufferLocations;
     // Fast ref to the processor and manager

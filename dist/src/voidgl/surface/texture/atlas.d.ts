@@ -27,7 +27,7 @@ export declare class Atlas extends IdentifyByKey {
     packing: PackNode;
     texture: Three.Texture;
     textureSettings?: Partial<Three.Texture>;
-    validResources: Map<AtlasResource, boolean>;
+    validResources: Set<AtlasResource>;
     width: AtlasSize;
     constructor(options: IAtlasOptions);
     private invalidateResource;

@@ -80,7 +80,7 @@ void main() {
   // Get the tex coord from our inject texture info
   texCoord = texture.xy + ((texture.zw - texture.xy) * vec2(side, float(normal == -1.0)));
   // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
-  vertexColor = color;
+  vertexColor = color * color.a;
 
   gl_Position = clipSpace(vec3(vertex, depth));
   ${extend}

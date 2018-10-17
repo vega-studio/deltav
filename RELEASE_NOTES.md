@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.19.5
+
+* `(FIXED)` Labels were overly applying alpha color values thus making them look faded.
+
 ## 1.19.4
 
 * `(FIXED)` Providers would not always fully clear when clear() or destroy() was called.

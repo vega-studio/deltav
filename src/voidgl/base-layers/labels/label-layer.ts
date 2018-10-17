@@ -7,6 +7,7 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
+  ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -201,7 +202,8 @@ export class LabelLayer<
         {
           atlas: {
             key: this.props.atlas || "",
-            name: "labelAtlas"
+            name: "labelAtlas",
+            shaderInjection: ShaderInjectionTarget.ALL
           },
           name: LabelLayer.attributeNames.texture,
           update: o => this.resource.request(this, o, o.resource)

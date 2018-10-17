@@ -63,7 +63,7 @@ export class Atlas extends IdentifyByKey {
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
    * the atlas at any given moment.
    */
-  validResources = new Map<AtlasResource, boolean>();
+  validResources = new Set<AtlasResource>();
   /** Stores the size of the atlas texture */
   width: AtlasSize;
 
@@ -94,6 +94,7 @@ export class Atlas extends IdentifyByKey {
     resource.texture.pixelWidth = 0;
     resource.texture.pixelHeight = 0;
     resource.texture.isValid = false;
+    resource.texture.atlasTexture = null;
   }
 
   /**
@@ -109,14 +110,15 @@ export class Atlas extends IdentifyByKey {
    * @return {boolean} True if the resource successfully registered
    */
   registerResource(resource: AtlasResource) {
-    if (this.validResources.get(resource) === undefined) {
+    if (!this.validResources.has(resource)) {
       if (!resource.texture || !resource.texture.isValid) {
         if (!resource.texture) {
           resource.texture = new SubTexture();
         }
 
         resource.texture.isValid = true;
-        this.validResources.set(resource, true);
+        resource.texture.atlasTexture = this.texture;
+        this.validResources.add(resource);
 
         return true;
       } else {
@@ -152,8 +154,8 @@ export class Atlas extends IdentifyByKey {
    * to actually reflect the resource not existing on the atlas.
    */
   removeResource(resource: AtlasResource) {
-    if (this.validResources.get(resource)) {
-      this.validResources.set(resource, false);
+    if (this.validResources.has(resource)) {
+      this.validResources.delete(resource);
       this.invalidateResource(resource);
     } else {
       console.warn(
@@ -183,6 +185,12 @@ export class Atlas extends IdentifyByKey {
     } else {
       this.texture = new Three.Texture(canvas);
     }
+
+    this.validResources.forEach(resource => {
+      if (resource.texture) {
+        resource.texture.atlasTexture = this.texture;
+      }
+    });
 
     // Apply any relevant options to the texture desired to be set
     this.texture.generateMipmaps = true;

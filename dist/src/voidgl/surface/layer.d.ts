@@ -46,7 +46,6 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     readonly bufferManager: BufferManagerBase<T, IBufferLocation>;
     private _bufferType;
     readonly bufferType: LayerBufferType;
-    customChangeList?: InstanceDiff<T>[];
     depth: number;
     diffManager: InstanceDiffManager<T>;
     easingId: {

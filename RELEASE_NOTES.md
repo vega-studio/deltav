@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.19.4
+
+* `(FIXED)` Providers would not always fully clear when clear() or destroy() was called.
+
 ## 1.19.3
 
 * `(FIXED)` Properties on an instance could get out of sync with their rendering if properties on the instance changed while a resource for the instance was being loaded.

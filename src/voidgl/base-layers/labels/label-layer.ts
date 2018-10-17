@@ -202,8 +202,7 @@ export class LabelLayer<
         {
           atlas: {
             key: this.props.atlas || "",
-            name: "labelAtlas",
-            shaderInjection: ShaderInjectionTarget.ALL
+            name: "labelAtlas"
           },
           name: LabelLayer.attributeNames.texture,
           update: o => this.resource.request(this, o, o.resource)

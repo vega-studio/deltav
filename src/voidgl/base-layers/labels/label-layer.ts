@@ -7,7 +7,6 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
-  ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize
 } from "../../types";

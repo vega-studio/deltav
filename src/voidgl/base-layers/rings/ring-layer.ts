@@ -37,7 +37,7 @@ export class RingLayer<
   static defaultProps: IRingLayerProps<RingInstance> = {
     key: "",
     data: new InstanceProvider<RingInstance>(),
-    scene: "ring"
+    scene: "default"
   };
 
   static attributeNames = {

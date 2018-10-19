@@ -7,10 +7,8 @@ import {
   EventManager,
   ISceneOptions,
   LayerInitializer,
-  LayerSurface,
-  ViewCameraType
+  LayerSurface
 } from "src";
-import * as Three from "three";
 
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
@@ -293,10 +291,6 @@ export class Main extends Component<any, IMainState> {
                   camera: testCamera,
                   clearFlags: [ClearFlags.COLOR],
                   key: name,
-                  viewCamera: {
-                    type: ViewCameraType.CONTROLLED,
-                    baseCamera: new Three.OrthographicCamera(0, 0, 0, 0)
-                  },
                   viewport: {
                     height: `${viewSize}%`,
                     left: `${viewSize * k}%`,

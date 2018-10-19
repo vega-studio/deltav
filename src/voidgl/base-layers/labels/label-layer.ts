@@ -42,7 +42,7 @@ export class LabelLayer<
   static defaultProps: ILabelLayerProps<LabelInstance> = {
     key: "",
     data: new InstanceProvider<LabelInstance>(),
-    scene: "label"
+    scene: "default"
   };
 
   static attributeNames = {

@@ -45,7 +45,7 @@ export class ArcLayer<
     data: new InstanceProvider<ArcInstance>(),
     key: "",
     scaleType: ArcScaleType.NONE,
-    scene: "arc"
+    scene: "default"
   };
 
   /** Easy lookup of all attribute names for the layer */

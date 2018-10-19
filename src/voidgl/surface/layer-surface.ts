@@ -165,8 +165,11 @@ export class LayerSurface {
    * reactive system.
    */
   willDisposeLayer = new Map<string, boolean>();
-  viewDrawDependencies = new Map<View, View[]>();
-
+  /**
+   * This map is a quick look up for a view to determine other views that
+   * would need to be redrawn as a consequence of the source view needing a redraw
+   */
+  private viewDrawDependencies = new Map<View, View[]>();
   /** This is used to indicate whether the loading is completed */
   private loadReadyResolve: () => void;
   loadReady: Promise<void> = new Promise(
@@ -184,7 +187,7 @@ export class LayerSurface {
    */
   private addLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     if (!layer.id) {
       console.warn("All layers must have an id");
       return layer;
@@ -198,7 +201,14 @@ export class LayerSurface {
     // We add the layer to our management
     this.layers.set(layer.id, layer);
     // Now we initialize the layer's gl components
+    const layerId = layer.id;
+
     this.initLayer(layer);
+
+    if (layer === null) {
+      this.layers.delete(layerId);
+      return null;
+    }
 
     return layer;
   }
@@ -758,9 +768,14 @@ export class LayerSurface {
       options.scenes.forEach(sceneOptions => {
         // Make us a new scene based on the requested options
         const newScene = new Scene(sceneOptions);
+        // Use defaultSceneElement to set cameras
+        const defaultSceneElement = generateDefaultScene(this.context);
         // Generate the views requested for the scene
         sceneOptions.views.forEach(viewOptions => {
           const newView = new View(viewOptions);
+          newView.camera = newView.camera || defaultSceneElement.camera;
+          newView.viewCamera =
+            newView.viewCamera || defaultSceneElement.viewCamera;
           newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
@@ -796,24 +811,20 @@ export class LayerSurface {
 
       // Set viewDrawDependencies
       for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
-        const viewi = this.sceneViews[i].view;
+        const sourceView = this.sceneViews[i].view;
         const overlapViews: View[] = [];
 
         for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
           if (j !== i) {
-            const viewj = this.sceneViews[j].view;
-            const overlap: boolean = !(
-              viewi.viewBounds.right <= viewj.viewBounds.left ||
-              viewi.viewBounds.left >= viewj.viewBounds.right ||
-              viewi.viewBounds.top <= viewj.viewBounds.bottom ||
-              viewi.viewBounds.bottom >= viewj.viewBounds.top
-            );
+            const targetView = this.sceneViews[j].view;
 
-            if (overlap) overlapViews.push(viewj);
+            if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
+              overlapViews.push(targetView);
+            }
           }
         }
 
-        this.viewDrawDependencies.set(viewi, overlapViews);
+        this.viewDrawDependencies.set(sourceView, overlapViews);
       }
     }
   }
@@ -825,7 +836,7 @@ export class LayerSurface {
    */
   private initLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     // Set the layer's parent surface here
     layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
@@ -833,6 +844,7 @@ export class LayerSurface {
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
+    if (!scene) return null;
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
@@ -937,24 +949,18 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Scene {
+  ): Scene | undefined {
     // Get the scene the layer will add itself to
-    let scene = this.scenes.get(layer.props.scene || "");
+    const scene = this.scenes.get(layer.props.scene || "");
 
     if (!scene) {
-      // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
-      // To the default scene.
-      scene = generateDefaultScene(this.context).scene;
-
-      if (layer.props.scene) {
-        console.warn(
-          "Layer specified a scene that is not within the layer surface manager. Layer will be added to the default scene."
-        );
-      }
+      console.warn(
+        "No scene is specified by the layer, or the scene identifier is invalid"
+      );
+    } else {
+      // Add the layer to the scene for rendering
+      scene.addLayer(layer);
     }
-
-    // Add the layer to the scene for rendering
-    scene.addLayer(layer);
 
     return scene;
   }
@@ -1021,7 +1027,8 @@ export class LayerSurface {
           // before being applied tot he layer
           layer.props.data.sync();
           // Add the layer to this surface
-          this.addLayer(layer);
+          const addedLayer = this.addLayer(layer);
+          if (addedLayer === null) return;
         }
 
         this.willDisposeLayer.set(props.key, false);

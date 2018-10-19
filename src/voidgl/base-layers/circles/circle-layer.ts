@@ -52,7 +52,7 @@ export class CircleLayer<
     fadeOutOversized: -1,
     key: "",
     scaleFactor: () => 1,
-    scene: "circle"
+    scene: "default"
   };
 
   static attributeNames = {

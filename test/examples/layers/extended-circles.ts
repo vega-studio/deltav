@@ -20,7 +20,7 @@ export class ExtendedCircles extends CircleLayer<
   static defaultProps: IExtendedCirclesProps = {
     data: new InstanceProvider<CircleInstance>(),
     key: "",
-    scene: "extended-circle"
+    scene: "default"
   };
 
   initShader(): IShaderInitialization<CircleInstance> {

@@ -205,7 +205,7 @@ export class LayerSurface {
 
     this.initLayer(layer);
 
-    if (layer === null) {
+    if (!layer) {
       this.layers.delete(layerId);
       return null;
     }
@@ -1028,7 +1028,12 @@ export class LayerSurface {
           layer.props.data.sync();
           // Add the layer to this surface
           const addedLayer = this.addLayer(layer);
-          if (addedLayer === null) return;
+          if (!addedLayer) {
+            console.warn(
+              "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+            );
+            return;
+          }
         }
 
         this.willDisposeLayer.set(props.key, false);

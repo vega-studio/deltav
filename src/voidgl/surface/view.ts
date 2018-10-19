@@ -11,6 +11,8 @@ import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera, ViewCameraType } from "../util/view-camera";
 
+const debug = require("debug")("view");
+
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
@@ -48,14 +50,14 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If this is NOT provided, the camera will be a special orthographic camera for 2d spaces
    * with a y-axis of +y points down with (0, 0) at the top left of the viewport.
    */
-  viewCamera?: ViewCamera;
+  viewCamera: ViewCamera;
   /**
    * This specifies the bounds on the canvas this camera will render to. This let's you render
    * say a little square in the bottom right showing a minimap.
    *
    * If this is not specified, the entire canvas will be the viewport.
    */
-  viewport?: AbsolutePosition;
+  viewport: AbsolutePosition;
 }
 
 function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
@@ -225,6 +227,9 @@ export class View extends IdentifyByKey {
         surfaceDimensions,
         this.pixelRatio
       );
+
+      debug("view bounds %o", viewBounds);
+
       const width = viewBounds.width;
       const height = viewBounds.height;
 

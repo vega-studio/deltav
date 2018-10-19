@@ -31,7 +31,8 @@ export class RectangleLayer<
 > extends Layer<T, U> {
   static defaultProps: IRectangleLayerProps<RectangleInstance> = {
     key: "",
-    data: new InstanceProvider<RectangleInstance>()
+    data: new InstanceProvider<RectangleInstance>(),
+    scene: "rectangle"
   };
 
   static attributeNames = {

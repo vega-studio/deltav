@@ -78,7 +78,7 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * The scene identifier must be an identifier used when constructing the layer surface that this layer
    * is added to.
    */
-  scene?: string;
+  scene: string;
 
   // ---- EVENTS ----
   /** Executes when the mouse is down on instances and a picking type is set */

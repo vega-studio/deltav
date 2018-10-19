@@ -37,7 +37,8 @@ export class ImageLayer<
 > extends Layer<T, U> {
   static defaultProps: IImageLayerProps<any> = {
     key: "",
-    data: new InstanceProvider<ImageInstance>()
+    data: new InstanceProvider<ImageInstance>(),
+    scene: "image"
   };
 
   static attributeNames = {

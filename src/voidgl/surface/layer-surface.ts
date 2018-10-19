@@ -14,10 +14,7 @@ import { Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
-import {
-  generateDefaultScene,
-  IDefaultSceneElements
-} from "./layer-processing/generate-default-scene";
+import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
@@ -67,7 +64,7 @@ export interface ILayerSurfaceOptions {
    * reference the scene by it's scene property. The order of the scenes here is the drawing
    * order of the scenes.
    */
-  scenes?: ISceneOptions[];
+  scenes: ISceneOptions[];
 }
 
 const DEFAULT_BACKGROUND_COLOR = new Three.Color(1.0, 1.0, 1.0);
@@ -119,11 +116,6 @@ export class LayerSurface {
   /** This is the current viewport the renderer state is in */
   currentViewport = new Map<Three.WebGLRenderer, Box>();
   /**
-   * This is the default scene that layers get added to if they do not specify a valid Scene.
-   * This scene by default only has a single default view.
-   */
-  defaultSceneElements: IDefaultSceneElements;
-  /**
    * This is the metrics of the current running frame
    */
   frameMetrics: FrameMetrics = {
@@ -173,6 +165,7 @@ export class LayerSurface {
    * reactive system.
    */
   willDisposeLayer = new Map<string, boolean>();
+  viewDrawDependencies = new Map<View, View[]>();
 
   /** This is used to indicate whether the loading is completed */
   private loadReadyResolve: () => void;
@@ -374,10 +367,7 @@ export class LayerSurface {
         const views = this.updateColorPick.views;
 
         // Only if the view is interacted with should we both with rendering
-        if (
-          view.id !== this.defaultSceneElements.view.id &&
-          views.indexOf(view) > -1
-        ) {
+        if (views.indexOf(view) > -1) {
           // Picking uses a pixel ratio of 1
           view.pixelRatio = 1.0;
           // Get the current flags for the view
@@ -520,7 +510,6 @@ export class LayerSurface {
     target?: Three.WebGLRenderTarget
   ) {
     renderer = renderer || this.renderer;
-
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
     const rendererSize = renderer.getSize();
@@ -757,23 +746,8 @@ export class LayerSurface {
     // Alpha or not
     this.pickingRenderer.setClearColor(new Three.Color(0, 0, 0), 1);
 
-    // Once we have made our renderer we now make us a default scene to which we can add objects
-    this.defaultSceneElements = generateDefaultScene(this.context);
-    this.defaultSceneElements.view.background = options.background;
-    // Set the default scene
-    this.scenes.set(
-      this.defaultSceneElements.scene.id,
-      this.defaultSceneElements.scene
-    );
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
-
-    // Make a SceneView for the default scene and view for mouse interactions
-    this.sceneViews.push({
-      depth: ++sceneViewDepth,
-      scene: this.defaultSceneElements.scene,
-      view: this.defaultSceneElements.view
-    });
 
     // Turn on the scissor test to keep the rendering clipped within the
     // Render region of the context
@@ -784,27 +758,9 @@ export class LayerSurface {
       options.scenes.forEach(sceneOptions => {
         // Make us a new scene based on the requested options
         const newScene = new Scene(sceneOptions);
-
-        // Make sure the default view is available for each scene
-        // IFF no view is provided for the scene
-        if (sceneOptions.views.length === 0) {
-          newScene.addView(this.defaultSceneElements.view);
-
-          this.sceneViews.push({
-            depth: ++sceneViewDepth,
-            scene: newScene,
-            view: this.defaultSceneElements.view
-          });
-        }
-
         // Generate the views requested for the scene
         sceneOptions.views.forEach(viewOptions => {
           const newView = new View(viewOptions);
-          newView.camera = newView.camera || this.defaultSceneElements.camera;
-          newView.viewCamera =
-            newView.viewCamera || this.defaultSceneElements.viewCamera;
-          newView.viewport =
-            newView.viewport || this.defaultSceneElements.viewport;
           newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
@@ -825,6 +781,40 @@ export class LayerSurface {
 
         this.scenes.set(sceneOptions.key, newScene);
       });
+
+      // Fit all views to viewport
+      for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+        this.sceneViews[i].view.fitViewtoViewport(
+          new Bounds({
+            height: this.context.canvas.height,
+            width: this.context.canvas.width,
+            x: 0,
+            y: 0
+          })
+        );
+      }
+
+      // Set viewDrawDependencies
+      for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+        const viewi = this.sceneViews[i].view;
+        const overlapViews: View[] = [];
+
+        for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
+          if (j !== i) {
+            const viewj = this.sceneViews[j].view;
+            const overlap: boolean = !(
+              viewi.viewBounds.right <= viewj.viewBounds.left ||
+              viewi.viewBounds.left >= viewj.viewBounds.right ||
+              viewi.viewBounds.top <= viewj.viewBounds.bottom ||
+              viewi.viewBounds.bottom >= viewj.viewBounds.top
+            );
+
+            if (overlap) overlapViews.push(viewj);
+          }
+        }
+
+        this.viewDrawDependencies.set(viewi, overlapViews);
+      }
     }
   }
 
@@ -954,7 +944,7 @@ export class LayerSurface {
     if (!scene) {
       // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
       // To the default scene.
-      scene = this.defaultSceneElements.scene;
+      scene = generateDefaultScene(this.context).scene;
 
       if (layer.props.scene) {
         console.warn(

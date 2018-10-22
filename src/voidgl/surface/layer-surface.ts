@@ -472,9 +472,6 @@ export class LayerSurface {
             })
           );
         }
-
-        // Set needsViewDrawn of each layer back to false
-        pickingPass.forEach(layer => (layer.needsViewDrawn = false));
       }
     });
 
@@ -511,6 +508,9 @@ export class LayerSurface {
     // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
     // another requested from mouse interactions
     delete this.updateColorPick;
+
+    // Set needsViewDrawn of each layer back to false
+    this.layers.forEach(layer => (layer.needsViewDrawn = false));
   }
 
   /**

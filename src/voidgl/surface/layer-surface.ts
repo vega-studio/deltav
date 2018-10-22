@@ -1013,6 +1013,10 @@ export class LayerSurface {
             props.data.sync();
           }
 
+          if (existingLayer.shouldViewDraw(existingLayer.props, props)) {
+            existingLayer.needsViewDraw = true;
+          }
+
           Object.assign(existingLayer.props, props);
           existingLayer.initializer[1] = existingLayer.props;
           existingLayer.didUpdateProps();

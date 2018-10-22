@@ -177,6 +177,8 @@ export class Layer<
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
+  /** This indicates whether this layer needs to draw */
+  needsViewDraw: boolean;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -241,6 +243,8 @@ export class Layer<
 
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
+    // Set needsViewDraw to be true if there is any change
+    if (changeList.length > 0) this.needsViewDraw = true;
     // Make some holder variables to prevent declaration within the loop
     let change, instance, bufferLocations;
     // Fast ref to the processor and manager
@@ -279,6 +283,9 @@ export class Layer<
         materialUniform => (materialUniform.value = value)
       );
     }
+
+    // Set it back to false
+    this.needsViewDraw = false;
   }
 
   /**
@@ -403,6 +410,11 @@ export class Layer<
         "You can not change a layers buffer strategy once it has been instantiated."
       );
     }
+  }
+
+  // Compare oldPros and newProps
+  shouldViewDraw(oldProps: ILayerProps<T>, newProps: ILayerProps<T>) {
+    return oldProps !== newProps;
   }
 
   willUpdateInstances(_changes: [T, InstanceDiffType]) {

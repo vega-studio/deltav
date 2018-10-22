@@ -409,7 +409,16 @@ export class Layer<
     }
   }
 
-  // Compare oldPros and newProps
+  /**
+   * This method returns a flag indicating whether or not the layer should trigger it's view to redraw.
+   * By default, a redraw is triggered (this returns true) when a shallow comparison of the current props
+   * and the incoming props are different.
+   * This method can be overridden to place custom logic at this point to indicate when redraws should happen.
+   *
+   * NOTE: This should be considered for redraw logic centered around changes in the layer itself.
+   * There ARE additional triggers in the system that causes redraws. This method just aids in ensuring
+   * necessary redraws take place for layer level logic and props.
+   */
   shouldDrawView(oldProps: U, newProps: U) {
     for (const key in newProps) {
       if (newProps[key] !== oldProps[key]) return true;

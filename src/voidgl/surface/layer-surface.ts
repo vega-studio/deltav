@@ -474,7 +474,7 @@ export class LayerSurface {
         }
 
         // Set needsViewDrawn of each layer back to false
-        pickingPass.forEach(layer => layer.needsViewDrawn = false);
+        pickingPass.forEach(layer => (layer.needsViewDrawn = false));
       }
     });
 
@@ -614,7 +614,7 @@ export class LayerSurface {
   /**
    * This gathers all the overlap views of every view
    */
-  private gatherViewDrawDenpendencies() {
+  private gatherViewDrawDependencies() {
     this.viewDrawDependencies.clear();
 
     // Fit all views to viewport
@@ -837,7 +837,7 @@ export class LayerSurface {
         this.scenes.set(sceneOptions.key, newScene);
       });
 
-      this.gatherViewDrawDenpendencies();
+      this.gatherViewDrawDependencies();
     }
   }
 
@@ -1121,6 +1121,7 @@ export class LayerSurface {
     this.renderer.setPixelRatio(this.pixelRatio);
     this.pickingRenderer.setPixelRatio(1.0);
     this.mouseManager.resize();
+    this.gatherViewDrawDependencies();
   }
 
   /**

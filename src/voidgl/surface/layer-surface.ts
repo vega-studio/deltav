@@ -472,6 +472,9 @@ export class LayerSurface {
             })
           );
         }
+
+        // Set needsViewDrawn of each layer back to false
+        pickingPass.forEach(layer => layer.needsViewDrawn = false);
       }
     });
 
@@ -606,6 +609,43 @@ export class LayerSurface {
     );
     // Render the scene with the provided view metrics
     renderer.render(scene, view.viewCamera.baseCamera, target);
+  }
+
+  /**
+   * This gathers all the overlap views of every view
+   */
+  private gatherViewDrawDenpendencies() {
+    this.viewDrawDependencies.clear();
+
+    // Fit all views to viewport
+    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+      this.sceneViews[i].view.fitViewtoViewport(
+        new Bounds({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0
+        })
+      );
+    }
+
+    // Set viewDrawDependencies
+    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+      const sourceView = this.sceneViews[i].view;
+      const overlapViews: View[] = [];
+
+      for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
+        if (j !== i) {
+          const targetView = this.sceneViews[j].view;
+
+          if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
+            overlapViews.push(targetView);
+          }
+        }
+      }
+
+      this.viewDrawDependencies.set(sourceView, overlapViews);
+    }
   }
 
   /**
@@ -797,35 +837,7 @@ export class LayerSurface {
         this.scenes.set(sceneOptions.key, newScene);
       });
 
-      // Fit all views to viewport
-      for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
-        this.sceneViews[i].view.fitViewtoViewport(
-          new Bounds({
-            height: this.context.canvas.height,
-            width: this.context.canvas.width,
-            x: 0,
-            y: 0
-          })
-        );
-      }
-
-      // Set viewDrawDependencies
-      for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
-        const sourceView = this.sceneViews[i].view;
-        const overlapViews: View[] = [];
-
-        for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
-          if (j !== i) {
-            const targetView = this.sceneViews[j].view;
-
-            if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
-              overlapViews.push(targetView);
-            }
-          }
-        }
-
-        this.viewDrawDependencies.set(sourceView, overlapViews);
-      }
+      this.gatherViewDrawDenpendencies();
     }
   }
 
@@ -1013,8 +1025,10 @@ export class LayerSurface {
             props.data.sync();
           }
 
-          if (existingLayer.shouldViewDraw(existingLayer.props, props)) {
-            existingLayer.needsViewDraw = true;
+          // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
+          // or by custom logic of the layer.
+          if (existingLayer.shouldDrawView(existingLayer.props, props)) {
+            existingLayer.needsViewDrawn = true;
           }
 
           Object.assign(existingLayer.props, props);
@@ -1032,6 +1046,7 @@ export class LayerSurface {
           layer.props.data.sync();
           // Add the layer to this surface
           const addedLayer = this.addLayer(layer);
+
           if (!addedLayer) {
             console.warn(
               "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"

@@ -178,7 +178,7 @@ export class Layer<
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
   /** This indicates whether this layer needs to draw */
-  needsViewDraw: boolean;
+  needsViewDrawn: boolean;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -243,8 +243,8 @@ export class Layer<
 
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
-    // Set needsViewDraw to be true if there is any change
-    if (changeList.length > 0) this.needsViewDraw = true;
+    // Set needsViewDrawn to be true if there is any change
+    if (changeList.length > 0) this.needsViewDrawn = true;
     // Make some holder variables to prevent declaration within the loop
     let change, instance, bufferLocations;
     // Fast ref to the processor and manager
@@ -283,9 +283,6 @@ export class Layer<
         materialUniform => (materialUniform.value = value)
       );
     }
-
-    // Set it back to false
-    this.needsViewDraw = false;
   }
 
   /**
@@ -413,8 +410,12 @@ export class Layer<
   }
 
   // Compare oldPros and newProps
-  shouldViewDraw(oldProps: ILayerProps<T>, newProps: ILayerProps<T>) {
-    return oldProps !== newProps;
+  shouldDrawView(oldProps: U, newProps: U) {
+    for (const key in newProps) {
+      if (newProps[key] !== oldProps[key]) return true;
+    }
+
+    return false;
   }
 
   willUpdateInstances(_changes: [T, InstanceDiffType]) {

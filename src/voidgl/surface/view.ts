@@ -89,6 +89,8 @@ export class View extends IdentifyByKey {
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: DataBounds<View>;
+  /** This is the flag to see if a view needs draw */
+  needsDraw: boolean;
 
   constructor(options: IViewOptions) {
     super(options);

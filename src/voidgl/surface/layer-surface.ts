@@ -30,6 +30,8 @@ import { IAtlasOptions } from "./texture/atlas";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { ClearFlags, View } from "./view";
 
+const debug = require("debug")("layer-surface");
+
 export interface ILayerSurfaceOptions {
   /**
    * These are the atlas resources we want available that our layers can be provided to utilize
@@ -230,7 +232,8 @@ export class LayerSurface {
     onViewReady?: (
       scene: Scene,
       view: View,
-      pickingPass: Layer<any, any>[]
+      pickingPass: Layer<any, any>[],
+      layers: Layer<any, any>[]
     ) => void
   ) {
     if (!this.gl) return;
@@ -308,7 +311,7 @@ export class LayerSurface {
         }
 
         if (onViewReady) {
-          onViewReady(scene, view, pickingPass);
+          onViewReady(scene, view, pickingPass, layers);
         }
       }
     }
@@ -351,7 +354,6 @@ export class LayerSurface {
     LabelInstance.destroy();
     ImageInstance.destroy();
   }
-
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
@@ -363,11 +365,38 @@ export class LayerSurface {
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
-    this.commit(time, true, (scene, view, pickingPass) => {
+    this.commit(time, true, (scene, view, pickingPass, layers) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
       // Now perform the rendering
-      this.drawSceneView(scene.container, view);
+
+      let needsDraw = false;
+
+      // If any of the layers under the view need a redraw
+      // Then the view needs a redraw
+      layers.forEach(layer => {
+        if (layer.needsViewDrawn) {
+          needsDraw = true;
+        }
+      });
+
+      // Get all of the dependent views for that view
+      const overlapViews = this.viewDrawDependencies.get(view);
+
+      // And make all of them need a redraw.
+      if (overlapViews) {
+        overlapViews.forEach(view => {
+          view.needsDraw = true;
+        });
+      }
+
+      if (needsDraw) {
+        view.needsDraw = true;
+      } else {
+        view.needsDraw = false;
+      }
+
+      this.drawSceneView(scene.container, view, needsDraw);
 
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
@@ -415,6 +444,7 @@ export class LayerSurface {
           this.drawSceneView(
             scene.pickingContainer,
             view,
+            true,
             this.pickingRenderer,
             this.pickingTarget
           );
@@ -519,6 +549,7 @@ export class LayerSurface {
   private drawSceneView(
     scene: Three.Scene,
     view: View,
+    needsDraw: boolean,
     renderer?: Three.WebGLRenderer,
     target?: Three.WebGLRenderTarget
   ) {
@@ -565,27 +596,32 @@ export class LayerSurface {
         // and not cause this overhead of resizing the render target for every picking pass
         target.setSize(size.width, size.height);
         renderer.setRenderTarget(target);
-        renderer.clear(
-          view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
-          view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
-          view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-        );
-      } else {
-        renderer
-          .getContext()
-          .clear(
-            (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
-              ? context.COLOR_BUFFER_BIT
-              : 0x0) |
-              (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
-                ? context.DEPTH_BUFFER_BIT
-                : 0x0) |
-              (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-                ? context.STENCIL_BUFFER_BIT
-                : 0x0)
+        if (needsDraw) {
+          renderer.clear(
+            view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
+            view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
+            view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
           );
+        }
+      } else {
+        debug("has view clear, No target");
+        if (needsDraw) {
+          renderer
+            .getContext()
+            .clear(
+              (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
+                ? context.COLOR_BUFFER_BIT
+                : 0x0) |
+                (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
+                  ? context.DEPTH_BUFFER_BIT
+                  : 0x0) |
+                (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+                  ? context.STENCIL_BUFFER_BIT
+                  : 0x0)
+            );
+        }
       }
-    } else {
+    } else if (needsDraw) {
       // Default clearing is depth and color
       // For targets, we must also perform clear operations
       if (target) {
@@ -600,15 +636,17 @@ export class LayerSurface {
       }
     }
 
-    // Make sure the viewport is set properly for the next render
-    renderer.setViewport(
-      offset.x / pixelRatio,
-      offset.y / pixelRatio,
-      size.width,
-      size.height
-    );
-    // Render the scene with the provided view metrics
-    renderer.render(scene, view.viewCamera.baseCamera, target);
+    if (needsDraw) {
+      // Make sure the viewport is set properly for the next render
+      renderer.setViewport(
+        offset.x / pixelRatio,
+        offset.y / pixelRatio,
+        size.width,
+        size.height
+      );
+      // Render the scene with the provided view metrics
+      renderer.render(scene, view.viewCamera.baseCamera, target);
+    }
   }
 
   /**
@@ -767,6 +805,7 @@ export class LayerSurface {
 
     // We want clearing to be controlled via the layer
     this.renderer.autoClear = false;
+
     // This sets the pixel ratio to handle differing pixel densities in screens
     this.setRendererSize(width, height);
     // Set the pixel ratio to match the pixel density of the monitor in use

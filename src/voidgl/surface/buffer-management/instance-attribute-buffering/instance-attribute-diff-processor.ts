@@ -2,14 +2,14 @@ import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
 import { IInstanceAttributeInternal } from "../../../types";
 import { Vec } from "../../../util";
+import { BaseDiffProcessor } from "../base-diff-processor";
 import {
   IBufferLocation,
   IBufferLocationGroup,
   isBufferLocationGroup
 } from "../buffer-manager-base";
-import { IInstanceAttributeBufferLocationGroup } from "../instance-attribute-buffer-manager";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { BaseDiffProcessor } from "./base-diff-processor";
+import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;

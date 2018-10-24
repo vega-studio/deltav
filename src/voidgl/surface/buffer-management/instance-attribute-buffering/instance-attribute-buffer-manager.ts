@@ -1,21 +1,21 @@
 import * as Three from "three";
-import { Instance, ObservableMonitoring } from "../../instance-provider";
-import { instanceAttributeShaderName } from "../../shaders/util/instance-attribute-shader-name";
+import { Instance, ObservableMonitoring } from "../../../instance-provider";
+import { instanceAttributeShaderName } from "../../../shaders/util/instance-attribute-shader-name";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
   PickType
-} from "../../types";
-import { uid } from "../../util";
-import { emitOnce, flushEmitOnce } from "../../util/emit-once";
-import { IModelConstructable, Layer } from "../layer";
-import { generateLayerModel } from "../layer-processing/generate-layer-model";
-import { Scene } from "../scene";
+} from "../../../types";
+import { uid } from "../../../util";
+import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
+import { IModelConstructable, Layer } from "../../layer";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model";
+import { Scene } from "../../scene";
 import {
   BufferManagerBase,
   IBufferLocation,
   IBufferLocationGroup
-} from "./buffer-manager-base";
+} from "../buffer-manager-base";
 
 const { max } = Math;
 

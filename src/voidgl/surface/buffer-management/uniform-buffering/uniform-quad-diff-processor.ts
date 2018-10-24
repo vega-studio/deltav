@@ -1,12 +1,12 @@
 import { Instance } from "../../../instance-provider";
-import { ISinglePickingMetrics, PickType } from "../../../types";
+import { IQuadTreePickingMetrics, PickType } from "../../../types";
 import {
   BufferManagerBase,
   IBufferLocation,
   isBufferLocation
 } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "../uniform-buffer-manager";
+import { IUniformBufferLocation } from "./uniform-buffer-manager";
 import { UniformDiffProcessor } from "./uniform-diff-processor";
 
 const EMPTY: number[] = [];
@@ -14,10 +14,10 @@ const EMPTY: number[] = [];
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
  */
-export class UniformColorDiffProcessor<
+export class UniformQuadDiffProcessor<
   T extends Instance
 > extends UniformDiffProcessor<T> {
-  colorPicking: ISinglePickingMetrics<T>;
+  quadPicking: IQuadTreePickingMetrics<T>;
 
   constructor(
     layer: IInstanceDiffManagerTarget<T>,
@@ -25,25 +25,24 @@ export class UniformColorDiffProcessor<
   ) {
     super(layer, bufferManager);
 
-    if (layer.picking.type === PickType.SINGLE) {
-      this.colorPicking = layer.picking;
-      this.colorPicking.uidToInstance = new Map<number, T>();
+    if (layer.picking.type === PickType.ALL) {
+      this.quadPicking = layer.picking;
     } else {
       console.warn(
-        "Diff Processing Error: A layer has a diff processor requesting Color Processing but the picking type is not valid."
+        "Diff Processing Error: A layer has a diff processor requesting Quad Processing but the picking type is not valid."
       );
     }
   }
 
   /**
-   * This processes add operations from changes in the instancing data and manages the layer's matching of
-   * color / UID to Instance
+   * This processes add operations from changes in the instancing data and manages the layer's quad tree
+   * with the instance as well.
    */
   addInstance(
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster: IUniformBufferLocation
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If the uniform cluster already exists, then we swap over to a change update
     if (uniformCluster) {
@@ -57,12 +56,9 @@ export class UniformColorDiffProcessor<
         instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
 
-        // Make sure the instance is mapped to it's UID
-        manager.colorPicking.uidToInstance.set(instance.uid, instance);
-      } else {
-        console.warn(
-          "A data cluster was not provided by the manager to associate an instance with."
-        );
+        // Ensure the instance has an updated injection in the quad tree
+        manager.quadPicking.quadTree.remove(instance);
+        manager.quadPicking.quadTree.add(instance);
       }
     }
   }
@@ -74,11 +70,15 @@ export class UniformColorDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster: IUniformBufferLocation
+    uniformCluster?: IUniformBufferLocation
   ) {
     // If there is an existing uniform cluster for this instance, then we can update the uniforms
     if (uniformCluster) {
       manager.updateInstance(manager.layer, instance, uniformCluster);
+
+      // Ensure the instance has an updated injection in the quad tree
+      manager.quadPicking.quadTree.remove(instance);
+      manager.quadPicking.quadTree.add(instance);
     } else {
       // If we don't have existing uniforms, then we must remove the instance
       manager.addInstance(manager, instance, EMPTY, uniformCluster);
@@ -92,7 +92,7 @@ export class UniformColorDiffProcessor<
     manager: this,
     instance: T,
     _propIds: number[],
-    uniformCluster: IUniformBufferLocation
+    uniformCluster?: IUniformBufferLocation
   ) {
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
@@ -104,7 +104,7 @@ export class UniformColorDiffProcessor<
       // Unlink the instance from the uniform cluster
       manager.layer.bufferManager.remove(instance);
       // Remove the instance from our quad tree
-      manager.colorPicking.uidToInstance.delete(instance.uid);
+      manager.quadPicking.quadTree.remove(instance);
     }
   }
 }

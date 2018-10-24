@@ -18,10 +18,17 @@ export enum LayerBufferType {
   // This is a compatibility mode for instance attributes. This is used when:
   // 1. It would perform better
   // 2. When instance attributes are not available for the gl context (ANGLE draw instanced arrays)
-  // 3. When the instance attributes + vertex attributes exceeds the max Vertex Attributes for the hardware
+  // 3. When the instance attributes + vertex attributes exceeds the max Vertex Attributes for the hardware and Attribute
+  //    packing still can not fit all of the attributes for the item.
   UNIFORM,
   // This is a fast and zippy buffering strategy used when the hardware supports it for a provided layer!
-  INSTANCE_ATTRIBUTE
+  INSTANCE_ATTRIBUTE,
+  // This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering strategy. If provided attributes do
+  // not fit the limited amount of vertex attributes supported by the hardware, then we have one last strategy
+  // to utilize the highly optimized hardware instancing, which is to cram multiple attributes within single
+  // attribute blocks. An attribute block is considered to be 4 32 bit floats. These packed attributes will then
+  // get dereferenced in the shader.
+  INSTANCE_ATTRIBUTE_PACKING
 }
 
 /**
@@ -34,7 +41,7 @@ export function getLayerBufferType<T extends Instance>(
   vertexAttributes: IVertexAttribute[],
   instanceAttributes: IInstanceAttribute<T>[]
 ) {
-  let type;
+  let type = LayerBufferType.UNIFORM;
   let attributesUsed = 0;
 
   // The layer only gets it's buffer type calculated once
@@ -59,9 +66,39 @@ export function getLayerBufferType<T extends Instance>(
       );
     }
 
-    // Too many attributes. We must use the uniform compatibility mode
+    // Too many attempted single attributes. We will next attempt to see if we can pack the vertex
+    // attributes down into blocks.
     if (attributesUsed > WebGLStat.MAX_VERTEX_ATTRIBUTES) {
-      type = LayerBufferType.UNIFORM;
+      attributesUsed = 0;
+
+      for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
+        const attribute = instanceAttributes[i];
+        attributesUsed = Math.max(attributesUsed, attribute.block || 0);
+      }
+
+      for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
+        const attribute = vertexAttributes[i];
+        attributesUsed += Math.ceil(attribute.size / 4);
+      }
+
+      // If we can fit now, then we are good to go with using attribute packing
+      if (attributesUsed < WebGLStat.MAX_VERTEX_ATTRIBUTES) {
+        type = LayerBufferType.INSTANCE_ATTRIBUTE_PACKING;
+
+        debug(
+          `Performance Issue (Moderate):
+          Layer %o is utilizing too many vertex attributes and is now using vertex packing.
+          Max Vertex units %o
+          Used Vertex units %o
+          Instance Attributes %o
+          Vertex Attributes %o`,
+          layer.id,
+          WebGLStat.MAX_VERTEX_ATTRIBUTES,
+          attributesUsed,
+          instanceAttributes,
+          vertexAttributes
+        );
+      }
     } else {
       // If we make it here, we are good to go using hardware instancing! Hooray performance!
       type = LayerBufferType.INSTANCE_ATTRIBUTE;
@@ -69,9 +106,10 @@ export function getLayerBufferType<T extends Instance>(
   }
 
   // No other faster mode supported: use uniform instancing
-  if (!type) {
+  if (type === LayerBufferType.UNIFORM) {
     debug(
-      `Warning: Layer %o is utilizing too many vertex attributes and is now using a uniform buffer.
+      `Performance Issue (High):
+      Layer %o is utilizing too many vertex attributes and is now using a uniform buffer.
       Max Vertex units %o
       Used Vertex units %o
       Instance Attributes %o
@@ -110,6 +148,12 @@ export function makeLayerBufferManager<T extends Instance>(
   switch (type) {
     // This is the Instance Attribute buffering strategy, which means the system
     case LayerBufferType.INSTANCE_ATTRIBUTE: {
+      layer.setBufferManager(new InstanceAttributeBufferManager(layer, scene));
+      break;
+    }
+
+    // This is the Instance Attribute buffering strategy, which means the system
+    case LayerBufferType.INSTANCE_ATTRIBUTE_PACKING: {
       layer.setBufferManager(new InstanceAttributeBufferManager(layer, scene));
       break;
     }

@@ -1,9 +1,9 @@
 import * as Three from "three";
 import { Instance, InstanceDiff } from "../../../instance-provider";
+import { BaseDiffProcessor } from "../base-diff-processor";
 import { isBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "../uniform-buffer-manager";
-import { BaseDiffProcessor } from "./base-diff-processor";
+import { IUniformBufferLocation } from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
 const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ["x", "y", "z", "w"];

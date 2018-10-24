@@ -21,6 +21,8 @@ export function isBufferLocationGroup(
 export interface IBufferLocation {
   /** This is the parent attribute of this location */
   attribute: IInstanceAttributeInternal<Instance>;
+  /** For some buffer strategies, there is a concept of block that is used to tightly pack attributes together. */
+  block?: number;
   /**
    * This is the generic buffer object interface for accessing the actual buffer.
    */

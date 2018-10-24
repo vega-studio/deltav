@@ -1,12 +1,12 @@
 import * as Three from "three";
-import { Instance } from "../../instance-provider";
-import { makeInstanceUniformNameArray } from "../../shaders/util/make-instance-uniform-name";
-import { IInstanceAttribute, PickType } from "../../types";
-import { uid, Vec2 } from "../../util";
-import { Layer } from "../layer";
-import { generateLayerModel } from "../layer-processing/generate-layer-model";
-import { Scene } from "../scene";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { Instance } from "../../../instance-provider";
+import { makeInstanceUniformNameArray } from "../../../shaders/util/make-instance-uniform-name";
+import { IInstanceAttribute, PickType } from "../../../types";
+import { uid, Vec2 } from "../../../util";
+import { Layer } from "../../layer";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model";
+import { Scene } from "../../scene";
+import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
 
 export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */

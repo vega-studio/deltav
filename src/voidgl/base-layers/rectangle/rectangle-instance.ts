@@ -95,6 +95,10 @@ export class RectangleInstance extends Instance {
   @observable depth: number = 0;
   /** The height of the rectangle as it is to be rendered in world space */
   @observable height: number = 1;
+  /** When in BOUND_MAX mode, this allows the rectangle to scale up beyond it's max size */
+  @observable maxScale: number = 1;
+  /** Scales the rectangle uniformly */
+  @observable scale: number = 1;
   /** Sets the way the rectangle scales with the world */
   @observable scaling: ScaleType = ScaleType.BOUND_MAX;
   /** The width of the rectangle as it is to be rendered in world space */

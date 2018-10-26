@@ -445,6 +445,7 @@ export class BasicCameraController extends EventManager {
         this.onRangeChanged(this.camera, e.start.view);
         // Add additional correction for bounds
         this.applyBounds();
+        this.camera.needsViewDrawn = true;
       }
     }
   }
@@ -493,6 +494,7 @@ export class BasicCameraController extends EventManager {
       this.onRangeChanged(this.camera, targetView);
       // Add additional correction for bounds
       this.applyBounds();
+      this.camera.needsViewDrawn = true;
     }
   }
 

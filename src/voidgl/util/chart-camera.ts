@@ -23,6 +23,8 @@ export class ChartCamera {
   offset: [number, number, number] = [0, 0, 0];
   /** Represents how scaled each axis should be in world space */
   scale: [number, number, number] = [1, 1, 1];
+  /** This indicates whether the view where the camera is in needs drawn */
+  needsViewDrawn: boolean = false;
 
   constructor(options?: IChartCameraOptions) {
     if (options) {

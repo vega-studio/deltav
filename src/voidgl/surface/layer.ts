@@ -178,7 +178,9 @@ export class Layer<
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
   /** This indicates whether this layer needs to draw */
-  needsViewDrawn: boolean;
+  needsViewDrawn: boolean = false;
+  /** End time of animation */
+  animationEndTime: number = 0;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us

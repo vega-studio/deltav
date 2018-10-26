@@ -232,8 +232,7 @@ export class LayerSurface {
     onViewReady?: (
       scene: Scene,
       view: View,
-      pickingPass: Layer<any, any>[],
-      layers: Layer<any, any>[]
+      pickingPass: Layer<any, any>[]
     ) => void
   ) {
     if (!this.gl) return;
@@ -268,6 +267,48 @@ export class LayerSurface {
 
       // Make sure the layers are depth sorted
       scene.sortLayers();
+
+      // Loop through the views again
+      for (let k = 0, endk = views.length; k < endk; ++k) {
+        const view = views[k];
+
+        // Flag used to indicate whether any layer under the view needs redrawn
+        let layersNeedRedrawn = false;
+
+        for (let j = 0, endj = layers.length; j < endj; ++j) {
+          // Get the layer to be rendered in the scene
+          const layer = layers[j];
+          // If any of the layers under the view need a redraw
+          // Then the view needs a redraw
+          if (layer.needsViewDrawn) layersNeedRedrawn = true;
+          view.animationEndTime = Math.max(
+            view.animationEndTime,
+            layer.animationEndTime
+          );
+        }
+
+        if (
+          layersNeedRedrawn ||
+          (time && time < view.animationEndTime) ||
+          view.camera.needsViewDrawn
+        ) {
+          view.needsDraw = true;
+
+          // Get all of the dependent views for that view
+          const overlapViews = this.viewDrawDependencies.get(view);
+
+          // And make all of them need a redraw.
+          if (overlapViews) {
+            overlapViews.forEach(view => {
+              view.needsDraw = true;
+            });
+          }
+
+          view.camera.needsViewDrawn = false;
+        } else {
+          if (!view.needsDraw) view.needsDraw = false;
+        }
+      }
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
@@ -311,7 +352,7 @@ export class LayerSurface {
         }
 
         if (onViewReady) {
-          onViewReady(scene, view, pickingPass, layers);
+          onViewReady(scene, view, pickingPass);
         }
       }
     }
@@ -365,38 +406,14 @@ export class LayerSurface {
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
-    this.commit(time, true, (scene, view, pickingPass, layers) => {
+    this.commit(time, true, (scene, view, pickingPass) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
       // Now perform the rendering
 
-      let needsDraw = false;
-
-      // If any of the layers under the view need a redraw
-      // Then the view needs a redraw
-      layers.forEach(layer => {
-        if (layer.needsViewDrawn) {
-          needsDraw = true;
-        }
-      });
-
-      // Get all of the dependent views for that view
-      const overlapViews = this.viewDrawDependencies.get(view);
-
-      // And make all of them need a redraw.
-      if (overlapViews) {
-        overlapViews.forEach(view => {
-          view.needsDraw = true;
-        });
+      if (view.needsDraw) {
+        this.drawSceneView(scene.container, view);
       }
-
-      if (needsDraw) {
-        view.needsDraw = true;
-      } else {
-        view.needsDraw = false;
-      }
-
-      this.drawSceneView(scene.container, view, needsDraw);
 
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
@@ -444,7 +461,6 @@ export class LayerSurface {
           this.drawSceneView(
             scene.pickingContainer,
             view,
-            true,
             this.pickingRenderer,
             this.pickingTarget
           );
@@ -549,7 +565,6 @@ export class LayerSurface {
   private drawSceneView(
     scene: Three.Scene,
     view: View,
-    needsDraw: boolean,
     renderer?: Three.WebGLRenderer,
     target?: Three.WebGLRenderTarget
   ) {
@@ -596,32 +611,28 @@ export class LayerSurface {
         // and not cause this overhead of resizing the render target for every picking pass
         target.setSize(size.width, size.height);
         renderer.setRenderTarget(target);
-        if (needsDraw) {
-          renderer.clear(
-            view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
-            view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
-            view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-          );
-        }
+        renderer.clear(
+          view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
+          view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
+          view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+        );
       } else {
         debug("has view clear, No target");
-        if (needsDraw) {
-          renderer
-            .getContext()
-            .clear(
-              (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
-                ? context.COLOR_BUFFER_BIT
+        renderer
+          .getContext()
+          .clear(
+            (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
+              ? context.COLOR_BUFFER_BIT
+              : 0x0) |
+              (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
+                ? context.DEPTH_BUFFER_BIT
                 : 0x0) |
-                (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
-                  ? context.DEPTH_BUFFER_BIT
-                  : 0x0) |
-                (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-                  ? context.STENCIL_BUFFER_BIT
-                  : 0x0)
-            );
-        }
+              (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+                ? context.STENCIL_BUFFER_BIT
+                : 0x0)
+          );
       }
-    } else if (needsDraw) {
+    } else {
       // Default clearing is depth and color
       // For targets, we must also perform clear operations
       if (target) {
@@ -636,17 +647,16 @@ export class LayerSurface {
       }
     }
 
-    if (needsDraw) {
-      // Make sure the viewport is set properly for the next render
-      renderer.setViewport(
-        offset.x / pixelRatio,
-        offset.y / pixelRatio,
-        size.width,
-        size.height
-      );
-      // Render the scene with the provided view metrics
-      renderer.render(scene, view.viewCamera.baseCamera, target);
-    }
+    // Make sure the viewport is set properly for the next render
+    renderer.setViewport(
+      offset.x / pixelRatio,
+      offset.y / pixelRatio,
+      size.width,
+      size.height
+    );
+
+    // Render the scene with the provided view metrics
+    renderer.render(scene, view.viewCamera.baseCamera, target);
   }
 
   /**

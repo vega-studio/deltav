@@ -90,7 +90,9 @@ export class View extends IdentifyByKey {
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: DataBounds<View>;
   /** This is the flag to see if a view needs draw */
-  needsDraw: boolean;
+  needsDraw: boolean = false;
+  /** End time of animation */
+  animationEndTime: number = 0;
 
   constructor(options: IViewOptions) {
     super(options);

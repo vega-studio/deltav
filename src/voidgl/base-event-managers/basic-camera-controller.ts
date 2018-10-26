@@ -463,22 +463,22 @@ export class BasicCameraController extends EventManager {
       const currentZoomX = this.camera.scale[0] || 1.0;
       const currentZoomY = this.camera.scale[1] || 1.0;
 
-      let scale: [number, number, number] = [
+      let deltaScale: [number, number, number] = [
         wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
         wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
         1
       ];
 
       if (this.scaleFilter) {
-        scale = this.scaleFilter(
-          scale,
+        deltaScale = this.scaleFilter(
+          deltaScale,
           targetView,
           e.viewsUnderMouse.map(v => v.view)
         );
       }
 
-      this.camera.scale[0] = currentZoomX + scale[0];
-      this.camera.scale[1] = currentZoomY + scale[1];
+      this.camera.scale[0] = currentZoomX + deltaScale[0];
+      this.camera.scale[1] = currentZoomY + deltaScale[1];
 
       // Ensure the new scale values are within bounds before attempting to correct offsets
       this.applyScaleBounds();

@@ -124,7 +124,6 @@ export class MouseInteractionColorPicking extends BaseExample {
         opacity: 0.5,
         picking: PickType.SINGLE,
         scaleFactor: () => 1,
-        printShader: true,
         scene
       }),
       createLayer(EdgeLayer, {

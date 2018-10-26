@@ -25,8 +25,7 @@ export class Arcs extends BaseExample {
       data: provider,
       key: "arcs",
       scene: scene,
-      scaleType: ArcScaleType.NONE,
-      printShader: true
+      scaleType: ArcScaleType.NONE
     });
   }
 

@@ -903,6 +903,16 @@ export class LayerSurface {
     // Generate the correct buffering strategy for the layer
     makeLayerBufferManager(this.gl, layer, scene);
 
+    if (layer.props.printShader) {
+      console.warn(
+        "A Layer requested its shader be debugged. Do not leave this active for production:",
+        "Layer:",
+        layer.props.key,
+        "Shader Metrics",
+        shaderMetrics
+      );
+    }
+
     return layer;
   }
 

@@ -35,12 +35,14 @@ export class RectangleLayer<
   };
 
   static attributeNames = {
-    location: "location",
     anchor: "anchor",
-    size: "size",
+    color: "color",
     depth: "depth",
+    location: "location",
+    maxScale: "maxScale",
+    scale: "scale",
     scaling: "scaling",
-    color: "color"
+    size: "size"
   };
 
   /**
@@ -199,6 +201,16 @@ export class RectangleLayer<
           name: RectangleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color
+        },
+        {
+          name: RectangleLayer.attributeNames.scale,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.scale]
+        },
+        {
+          name: RectangleLayer.attributeNames.maxScale,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.maxScale]
         }
       ],
       uniforms: [

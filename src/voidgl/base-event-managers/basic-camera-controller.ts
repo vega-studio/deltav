@@ -179,19 +179,19 @@ export class BasicCameraController extends EventManager {
     if (this.camera && this.bounds) {
       // First bound the scaling
       if (this.bounds.scaleMin) {
-        this.camera.scale = [
+        this.camera.setScale([
           max(this.camera.scale[0], this.bounds.scaleMin[0]),
           max(this.camera.scale[1], this.bounds.scaleMin[1]),
           max(this.camera.scale[2], this.bounds.scaleMin[2])
-        ];
+        ]);
       }
 
       if (this.bounds.scaleMax) {
-        this.camera.scale = [
+        this.camera.setScale([
           min(this.camera.scale[0], this.bounds.scaleMax[0]),
           min(this.camera.scale[1], this.bounds.scaleMax[1]),
           min(this.camera.scale[2], this.bounds.scaleMax[2])
-        ];
+        ]);
       }
     }
   };
@@ -445,7 +445,6 @@ export class BasicCameraController extends EventManager {
         this.onRangeChanged(this.camera, e.start.view);
         // Add additional correction for bounds
         this.applyBounds();
-        this.camera.needsViewDrawn = true;
       }
     }
   }
@@ -494,7 +493,6 @@ export class BasicCameraController extends EventManager {
       this.onRangeChanged(this.camera, targetView);
       // Add additional correction for bounds
       this.applyBounds();
-      this.camera.needsViewDrawn = true;
     }
   }
 
@@ -591,9 +589,8 @@ export class BasicCameraController extends EventManager {
         this.camera.scale
       );
 
-      this.camera.scale = add3(
-        this.camera.scale,
-        this.scaleFilter(deltaScale, view, [view])
+      this.camera.setScale(
+        add3(this.camera.scale, this.scaleFilter(deltaScale, view, [view]))
       );
 
       const deltaPan = subtract3(
@@ -601,9 +598,8 @@ export class BasicCameraController extends EventManager {
         this.camera.offset
       );
 
-      this.camera.offset = add3(
-        this.camera.offset,
-        this.scaleFilter(deltaPan, view, [view])
+      this.camera.setOffset(
+        add3(this.camera.offset, this.scaleFilter(deltaPan, view, [view]))
       );
 
       // Bound the camera to the specified bounding range

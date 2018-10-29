@@ -18,13 +18,13 @@ function applyArray(target?: number[], source?: number[]) {
 
 export class ChartCamera {
   /** Internally set id */
-  _id: number = chartCameraUID++;
+  private _id: number = chartCameraUID++;
   /** Represents how much an element should be offset in world space */
-  offset: [number, number, number] = [0, 0, 0];
+  private _offset: [number, number, number] = [0, 0, 0];
   /** Represents how scaled each axis should be in world space */
-  scale: [number, number, number] = [1, 1, 1];
+  private _scale: [number, number, number] = [1, 1, 1];
   /** This indicates whether the view where the camera is in needs drawn */
-  needsViewDrawn: boolean = false;
+  private _needsViewDrawn: boolean = false;
 
   constructor(options?: IChartCameraOptions) {
     if (options) {
@@ -38,10 +38,34 @@ export class ChartCamera {
     return this._id;
   }
 
+  setId(id: number) {
+    this._id = id;
+  }
+
+  get offset() {
+    return this._offset;
+  }
+
   /**
    * Sets the location of the camera by adjusting the offsets to match.
    */
-  position(location: [number, number, number]) {
-    this.offset = location.slice(0) as [number, number, number];
+  setOffset(offset: [number, number, number]) {
+    this._offset = offset.slice(0) as [number, number, number];
+  }
+
+  get scale() {
+    return this._scale;
+  }
+
+  setScale(scale: [number, number, number]) {
+    this._scale = scale;
+  }
+
+  get needsViewDrawn() {
+    return this._needsViewDrawn;
+  }
+
+  setNeedsViewDrawn(needsViewDrawn: boolean) {
+    this._needsViewDrawn = needsViewDrawn;
   }
 }

@@ -281,6 +281,7 @@ export class LayerSurface {
           // If any of the layers under the view need a redraw
           // Then the view needs a redraw
           if (layer.needsViewDrawn) layersNeedRedrawn = true;
+          // The view's animationEndTime is the largest end time found on one of the view's child layers.
           view.animationEndTime = Math.max(
             view.animationEndTime,
             layer.animationEndTime
@@ -304,7 +305,7 @@ export class LayerSurface {
             });
           }
 
-          view.camera.needsViewDrawn = false;
+          view.camera.setNeedsViewDrawn(false);
         } else {
           if (!view.needsDraw) view.needsDraw = false;
         }
@@ -353,6 +354,22 @@ export class LayerSurface {
 
         if (onViewReady) {
           onViewReady(scene, view, pickingPass);
+        }
+      }
+    }
+
+    for (let i = 0, end = scenes.length; i < end; ++i) {
+      const scene = scenes[i];
+      // Our scene must have a valid container to operate
+      if (!scene.container) continue;
+      const views = Array.from(scene.viewById.values());
+
+      for (let k = 0, endk = views.length; k < endk; ++k) {
+        const view = views[k];
+
+        // Now perform the rendering
+        if (view.needsDraw) {
+          this.drawSceneView(scene.container, view);
         }
       }
     }
@@ -407,14 +424,6 @@ export class LayerSurface {
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
     this.commit(time, true, (scene, view, pickingPass) => {
-      // Our scene must have a valid container to operate
-      if (!scene.container) return;
-      // Now perform the rendering
-
-      if (view.needsDraw) {
-        this.drawSceneView(scene.container, view);
-      }
-
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {

@@ -40,6 +40,7 @@ export class ChartCamera {
 
   setId(id: number) {
     this._id = id;
+    this.setNeedsViewDrawn(true);
   }
 
   get offset() {
@@ -51,6 +52,7 @@ export class ChartCamera {
    */
   setOffset(offset: [number, number, number]) {
     this._offset = offset.slice(0) as [number, number, number];
+    this.setNeedsViewDrawn(true);
   }
 
   get scale() {
@@ -59,6 +61,7 @@ export class ChartCamera {
 
   setScale(scale: [number, number, number]) {
     this._scale = scale;
+    this.setNeedsViewDrawn(true);
   }
 
   get needsViewDrawn() {

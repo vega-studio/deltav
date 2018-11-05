@@ -1,5 +1,3 @@
-// This is the injected dereferencing of the instance attributes
-  ${instanceDestructuring}
 
   // This is a special injected instance attribute. It lets the system
   // control specific instances ability to draw, which allows the backend
@@ -10,5 +8,3 @@
     // Quick exit to prevent any geometry from arising from the instance
     return;
   }
-
-  ${picking}

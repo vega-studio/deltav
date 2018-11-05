@@ -1,6 +1,5 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { templateVars } from "../../shaders/template-vars";
 import {
   ILayerProps,
   IModelType,
@@ -147,25 +146,21 @@ export class EdgeLayer<
       sign *= -1;
     }
 
+    const templateOptions = {
+      interpolation: pickVS[type]
+    };
+
     const vs = shaderTemplate({
-      options: {
-        // Retain the attributes injection
-        attributes: "${attributes}",
-        // Inject the proper interpolation method
-        interpolation: pickVS[type]
-      },
+      options: templateOptions,
       required: {
         name: "Edge Layer",
         values: ["interpolation"]
       },
       shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
 
-      // We do not want to remove any extension macros
+      // We do not want to remove any other templating options present
       onToken: (token, replace) => {
-        if (
-          token === templateVars.extendHeader ||
-          token === templateVars.extend
-        ) {
+        if (!(token in templateOptions)) {
           return `$\{${token}}`;
         }
 

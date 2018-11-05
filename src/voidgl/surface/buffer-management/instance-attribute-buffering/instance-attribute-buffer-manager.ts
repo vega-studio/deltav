@@ -1,13 +1,13 @@
 import * as Three from "three";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import { instanceAttributeShaderName } from "../../../shaders/util/instance-attribute-shader-name";
+import { getAttributeShaderName } from "../../../shaders/processing/formatting";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
   PickType
 } from "../../../types";
-import { uid } from "../../../util";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
+import { uid } from "../../../util/uid";
 import { IModelConstructable, Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { Scene } from "../../scene";
@@ -288,7 +288,7 @@ export class InstanceAttributeBufferManager<
         );
         bufferAttribute.setDynamic(true);
         this.geometry.addAttribute(
-          instanceAttributeShaderName(attribute),
+          getAttributeShaderName(attribute),
           bufferAttribute
         );
         let newBufferLocations = attributeToNewBufferLocations.get(
@@ -390,7 +390,7 @@ export class InstanceAttributeBufferManager<
           attribute.bufferAttribute = newAttribute;
           // Add the new attribute to our new geometry object
           this.geometry.addAttribute(
-            instanceAttributeShaderName(attribute),
+            getAttributeShaderName(attribute),
             newAttribute
           );
           // Get the temp storage for new buffer locations

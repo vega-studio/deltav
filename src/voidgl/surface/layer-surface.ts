@@ -1,3 +1,4 @@
+import { ShaderProcessor } from "src/voidgl/shaders/processing/shader-processor";
 import * as Three from "three";
 import { WebGLRenderTarget } from "three";
 import { ImageInstance } from "../base-layers/images";
@@ -5,7 +6,6 @@ import { LabelInstance } from "../base-layers/labels";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
-import { injectFragments } from "../shaders/util/attribute-generation";
 import { PickType } from "../types";
 import { FrameMetrics } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
@@ -191,7 +191,7 @@ export class LayerSurface {
    */
   private addLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     if (!layer.id) {
       console.warn("All layers must have an id");
       return layer;
@@ -204,8 +204,11 @@ export class LayerSurface {
 
     // We add the layer to our management
     this.layers.set(layer.id, layer);
+
     // Now we initialize the layer's gl components
-    this.initLayer(layer);
+    if (!this.initLayer(layer)) {
+      return null;
+    }
 
     return layer;
   }
@@ -835,7 +838,7 @@ export class LayerSurface {
    */
   private initLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     // Set the layer's parent surface here
     layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
@@ -862,15 +865,27 @@ export class LayerSurface {
     // After all of the shader IO is established, let's calculate the appropriate buffering strategy
     // For the layer.
     getLayerBufferType(this.gl, layer, vertexAttributes, instanceAttributes);
+
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = injectFragments(
+    const shaderMetrics = new ShaderProcessor().process(
       layer,
       shaderIO,
       vertexAttributes,
       instanceAttributes,
       uniforms
     );
+
+    if (!shaderMetrics) return null;
+
+    // const shaderMetrics = injectFragments(
+    //   layer,
+    //   shaderIO,
+    //   vertexAttributes,
+    //   instanceAttributes,
+    //   uniforms
+    // );
+
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(
       layer,
@@ -911,6 +926,8 @@ export class LayerSurface {
         "Shader Metrics",
         shaderMetrics
       );
+      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
+      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
     }
 
     return layer;
@@ -1040,8 +1057,16 @@ export class LayerSurface {
           // Sync the data provider applied to the layer in case the provider has existing data
           // before being applied tot he layer
           layer.props.data.sync();
+
           // Add the layer to this surface
-          this.addLayer(layer);
+          if (!this.addLayer(layer)) {
+            console.warn(
+              "Error initializing layer:",
+              props.key,
+              "This layer will not be added."
+            );
+            return;
+          }
         }
 
         this.willDisposeLayer.set(props.key, false);

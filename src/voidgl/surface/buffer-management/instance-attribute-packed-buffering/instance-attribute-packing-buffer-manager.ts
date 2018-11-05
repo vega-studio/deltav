@@ -1,10 +1,8 @@
 import * as Three from "three";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import { instanceAttributeShaderName } from "../../../shaders/util/instance-attribute-shader-name";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  InstanceAttributeSize,
   PickType
 } from "../../../types";
 import { uid } from "../../../util";
@@ -24,7 +22,8 @@ const { max } = Math;
  * This represents the location of data for an instance's property to the piece of attribute buffer
  * it will update when it changes.
  */
-export interface IInstanceAttributePackingBufferLocation extends IBufferLocation {}
+export interface IInstanceAttributePackingBufferLocation
+  extends IBufferLocation {}
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
 export type IInstanceAttributePackingBufferLocationGroup = IBufferLocationGroup<
@@ -63,7 +62,6 @@ export class InstanceAttributePackingBufferManager<
   private pickModel?: IModelConstructable & Three.Object3D | undefined;
   private attributes?: IInstanceAttributeInternal<T>[];
   private blockAttributes?: IInstanceAttributeInternal<T>[];
-  private blockSizes = new Map<number, number>();
   private blockSubAttributesLookup = new Map<number, IInstanceAttribute<T>[]>();
 
   /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
@@ -295,15 +293,25 @@ export class InstanceAttributePackingBufferManager<
       // So we calculate how big each block will be. The number of sizes calculated will be how manyblocks
       // need to be generated.
       const blockSizes = new Map<number, number>();
-      const blockSubAttributesLookup = new Map<number, IInstanceAttribute<T>[]>();
+      const blockSubAttributesLookup = new Map<
+        number,
+        IInstanceAttribute<T>[]
+      >();
       this.blockSubAttributesLookup = blockSubAttributesLookup;
 
-      for (let i = 0, iMax = this.layer.instanceAttributes.length; i < iMax; ++i) {
+      for (
+        let i = 0, iMax = this.layer.instanceAttributes.length;
+        i < iMax;
+        ++i
+      ) {
         const attribute = this.layer.instanceAttributes[i];
         const block = attribute.block || 0;
         let blockSize = blockSizes.get(block) || 0;
         // Determine the bigger of the block sizes (incoming attribute or previously checked attribute)
-        blockSize = Math.max(blockSize, ((attribute.blockIndex || 1) - 1) + (attribute.size || 0));
+        blockSize = Math.max(
+          blockSize,
+          (attribute.blockIndex || 0) + (attribute.size || 0)
+        );
         // Store the larger size for the block
         blockSizes.set(block, blockSize);
         // We need to store all of the attributes associated with a block
@@ -319,7 +327,9 @@ export class InstanceAttributePackingBufferManager<
 
       // Let's sort all of the attributes associated with each block by their index in the block
       // so from here on out we can assume they are in ascending order
-      blockSubAttributesLookup.forEach(attributes => attributes.sort((a, b) => (a.blockIndex || 0) - (b.blockIndex || 0)));
+      blockSubAttributesLookup.forEach(attributes =>
+        attributes.sort((a, b) => (a.blockIndex || 0) - (b.blockIndex || 0))
+      );
 
       // Now that we have the blocks that will be needed to accommodate the attributes, we will
       // create these blocks as attributes attached to the geometry.
@@ -330,9 +340,12 @@ export class InstanceAttributePackingBufferManager<
         if (!blockSize) {
           console.warn(
             "Instance Attribute Packing Error: The system tried to build an attribute with a size of zero.",
-            "These are the attributes used:", this.layer.instanceAttributes,
-            "These are the block sizes calculated", blockSizes,
-            "This is the block to attribute lookup generated", blockSubAttributesLookup
+            "These are the attributes used:",
+            this.layer.instanceAttributes,
+            "These are the block sizes calculated",
+            blockSizes,
+            "This is the block to attribute lookup generated",
+            blockSubAttributesLookup
           );
         }
 
@@ -346,10 +359,7 @@ export class InstanceAttributePackingBufferManager<
         bufferAttribute.setDynamic(true);
 
         // Add the attribute to our geometry labeled as a block like the uniform block packing strategy
-        this.geometry.addAttribute(
-          `block${block}`,
-          bufferAttribute
-        );
+        this.geometry.addAttribute(`block${block}`, bufferAttribute);
 
         // Get all of the attributes that will be applied to this block
         const blockSubAttributes = blockSubAttributesLookup.get(block);
@@ -364,19 +374,24 @@ export class InstanceAttributePackingBufferManager<
 
             if (!newBufferLocations) {
               newBufferLocations = [];
-              attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
+              attributeToNewBufferLocations.set(
+                attribute.name,
+                newBufferLocations
+              );
             }
 
             const allLocations = this.allBufferLocations[attribute.name] || [];
             this.allBufferLocations[attribute.name] = allLocations;
 
-            const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
-              {},
-              attribute,
-              { uid: uid(), bufferAttribute }
-            );
+            const internalAttribute: IInstanceAttributeInternal<
+              T
+            > = Object.assign({}, attribute, {
+              uid: uid(),
+              bufferAttribute,
+              size: blockSize
+            });
 
-            const startAttributeIndex = (attribute.blockIndex || 1) - 1;
+            const startAttributeIndex = attribute.blockIndex || 0;
             const attributeSize = attribute.size || 1;
 
             for (let i = 0; i < this.maxInstancedCount; ++i) {
@@ -405,17 +420,17 @@ export class InstanceAttributePackingBufferManager<
             uid: uid(),
             bufferAttribute,
             name: `block${block}`,
-            size: blockSize,
-            update: () => [0],
+            update: () => [0]
           });
-        }
-
-        else {
+        } else {
           console.warn(
             "Instance Attribute Packing Buffer Error: Somehow there are no attributes associated with a block.",
-            "These are the attributes used:", this.layer.instanceAttributes,
-            "These are the block sizes calculated", blockSizes,
-            "This is the block to attribute lookup generated", blockSubAttributesLookup
+            "These are the attributes used:",
+            this.layer.instanceAttributes,
+            "These are the block sizes calculated",
+            blockSizes,
+            "This is the block to attribute lookup generated",
+            blockSubAttributesLookup
           );
         }
       }
@@ -465,7 +480,11 @@ export class InstanceAttributePackingBufferManager<
       this.attributes = this.attributes || [];
       this.blockAttributes = this.blockAttributes || [];
 
-      for (let block = 0, iMax = this.blockAttributes.length; block < iMax; ++block) {
+      for (
+        let block = 0, iMax = this.blockAttributes.length;
+        block < iMax;
+        ++block
+      ) {
         const attribute = this.blockAttributes[block];
         let bufferAttribute = attribute.bufferAttribute;
         const size: number = attribute.size || 0;
@@ -484,10 +503,7 @@ export class InstanceAttributePackingBufferManager<
           // Make sure our attribute is updated with the newly made attribute
           attribute.bufferAttribute = bufferAttribute = newAttribute;
           // Add the new attribute to our new geometry object
-          this.geometry.addAttribute(
-            attribute.name,
-            newAttribute
-          );
+          this.geometry.addAttribute(attribute.name, newAttribute);
 
           // Since we have a new buffer object we are working with, we must update all of the existing buffer
           // locations to utilize this new buffer. The locations keep everything else the same, but the buffer
@@ -506,19 +522,21 @@ export class InstanceAttributePackingBufferManager<
 
               if (!newBufferLocations) {
                 newBufferLocations = [];
-                attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
+                attributeToNewBufferLocations.set(
+                  attribute.name,
+                  newBufferLocations
+                );
               }
 
-              const allLocations = this.allBufferLocations[attribute.name] || [];
+              const allLocations =
+                this.allBufferLocations[attribute.name] || [];
               this.allBufferLocations[attribute.name] = allLocations;
 
-              const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
-                {},
-                attribute,
-                { uid: uid(), bufferAttribute }
-              );
+              const internalAttribute: IInstanceAttributeInternal<
+                T
+              > = Object.assign({}, attribute, { uid: uid(), bufferAttribute });
 
-              const startAttributeIndex = (attribute.blockIndex || 1) - 1;
+              const startAttributeIndex = attribute.blockIndex || 0;
               const attributeSize = attribute.size || 1;
 
               // Update all existing attribute locations with the new internal attribute
@@ -528,7 +546,11 @@ export class InstanceAttributePackingBufferManager<
               }
 
               // Create new locations for each new instance we will cover
-              for (let i = previousInstanceAmount; i < this.maxInstancedCount; ++i) {
+              for (
+                let i = previousInstanceAmount;
+                i < this.maxInstancedCount;
+                ++i
+              ) {
                 const newLocation: IBufferLocation = {
                   attribute: internalAttribute,
                   block,

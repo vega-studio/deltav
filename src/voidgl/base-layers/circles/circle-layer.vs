@@ -1,5 +1,7 @@
 precision highp float;
 
+${import: projection}
+
 varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float edgeSharpnessBase;

@@ -4,11 +4,10 @@ import {
   instanceAttributeSizeFloatCount,
   IVertexAttribute
 } from "../../types";
-import { WebGLStat } from "../../util";
-import {
-  InstanceAttributeBufferManager,
-  UniformBufferManager
-} from "../buffer-management";
+import { WebGLStat } from "../../util/webgl-stat";
+import { InstanceAttributeBufferManager } from "../buffer-management/instance-attribute-buffering/instance-attribute-buffer-manager";
+import { InstanceAttributePackingBufferManager } from "../buffer-management/instance-attribute-packed-buffering/instance-attribute-packing-buffer-manager";
+import { UniformBufferManager } from "../buffer-management/uniform-buffering/uniform-buffer-manager";
 import { Layer } from "../layer";
 import { Scene } from "../scene";
 
@@ -154,7 +153,9 @@ export function makeLayerBufferManager<T extends Instance>(
 
     // This is the Instance Attribute buffering strategy, which means the system
     case LayerBufferType.INSTANCE_ATTRIBUTE_PACKING: {
-      layer.setBufferManager(new InstanceAttributeBufferManager(layer, scene));
+      layer.setBufferManager(
+        new InstanceAttributePackingBufferManager(layer, scene)
+      );
       break;
     }
 

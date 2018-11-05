@@ -335,7 +335,6 @@ export interface IInstancingUniform {
  */
 export interface IShaders {
   fs: string;
-  header?: string;
   vs: string;
 }
 

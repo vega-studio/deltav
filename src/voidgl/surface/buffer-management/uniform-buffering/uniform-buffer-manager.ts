@@ -1,6 +1,6 @@
+import { UniformProcessing } from "src/voidgl/shaders/processing/uniform-processing";
 import * as Three from "three";
 import { Instance } from "../../../instance-provider";
-import { makeInstanceUniformNameArray } from "../../../shaders/util/make-instance-uniform-name";
 import { IInstanceAttribute, PickType } from "../../../types";
 import { uid, Vec2 } from "../../../util";
 import { Layer } from "../../layer";
@@ -256,7 +256,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // To use to render more instances. We must take the instancing uniforms
     // And divvy them up into clusters for our available buffer.
     let uniformIndex = 0;
-    const uniformName = makeInstanceUniformNameArray();
+    const uniformName = UniformProcessing.uniformPackingBufferName();
     const instanceData = newMaterial.uniforms[uniformName];
 
     // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers

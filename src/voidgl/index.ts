@@ -5,3 +5,4 @@ export * from "./primitives";
 export * from "./surface";
 export * from "./types";
 export * from "./util";
+export * from "./shaders";

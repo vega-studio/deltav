@@ -10,6 +10,7 @@ import {
   LayerSurface
 } from "src";
 
+import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
@@ -32,6 +33,9 @@ import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
 import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
 import { ScreenSpaceEdges } from "./examples/screen-space-edges";
 import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
+
+// Backend tests, for now, just activate when included
+import "./backend";
 
 /**
  * The state of the application
@@ -69,7 +73,8 @@ const tests: BaseExample[] = [
   new BoundedView3(),
   new AnimateDeleteAdd(),
   new MouseInteractionColorPicking(),
-  new Arcs()
+  new Arcs(),
+  new VertexAttributePacking()
 ];
 
 /** These are the layers for the tests that are generated */

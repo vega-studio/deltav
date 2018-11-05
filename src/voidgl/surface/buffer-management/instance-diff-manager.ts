@@ -77,7 +77,10 @@ export class InstanceDiffManager<T extends Instance> {
     // If this manager has already figured out which processor to use. Just return that processor.
     if (this.processing) return this.processing;
 
-    if (this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+    if (
+      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
+      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+    ) {
       // Now we look at the state of the layer to determine the best diff processor strategy
       if (this.layer.picking) {
         if (this.layer.picking.type === PickType.SINGLE) {
@@ -95,30 +98,6 @@ export class InstanceDiffManager<T extends Instance> {
 
       if (!this.processor) {
         this.processor = new InstanceAttributeDiffProcessor(
-          this.layer,
-          this.bufferManager
-        );
-      }
-    } else if (
-      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
-    ) {
-      // Now we look at the state of the layer to determine the best diff processor strategy
-      if (this.layer.picking) {
-        if (this.layer.picking.type === PickType.SINGLE) {
-          this.processor = new InstanceAttributePackingColorDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
-        } else if (this.layer.picking.type === PickType.ALL) {
-          this.processor = new InstanceAttributePackingQuadDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
-        }
-      }
-
-      if (!this.processor) {
-        this.processor = new InstanceAttributePackingDiffProcessor(
           this.layer,
           this.bufferManager
         );

@@ -1,7 +1,7 @@
+import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute } from "../../types";
-import { Instance } from "../../util";
 
-export function instanceAttributeShaderName<T extends Instance>(
+export function getAttributeShaderName<T extends Instance>(
   attribute: IInstanceAttribute<T>
 ) {
   if (attribute.easing) {

@@ -1,5 +1,7 @@
 precision highp float;
 
+${import: projection}
+
 float PI = 3.14159265;
 float PI_2 = 6.2831853;
 

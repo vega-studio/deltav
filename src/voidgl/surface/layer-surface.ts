@@ -876,15 +876,8 @@ export class LayerSurface {
       uniforms
     );
 
+    // Check to see if the Shader Processing failed. If so return null as a failure flag.
     if (!shaderMetrics) return null;
-
-    // const shaderMetrics = injectFragments(
-    //   layer,
-    //   shaderIO,
-    //   vertexAttributes,
-    //   instanceAttributes,
-    //   uniforms
-    // );
 
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(

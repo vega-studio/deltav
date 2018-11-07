@@ -1,10 +1,3 @@
-import { AttributeProcessing } from "src/voidgl/shaders/processing/attribute-processing";
-import { EasingProcessing } from "src/voidgl/shaders/processing/easing-processing";
-import { MetricsProcessing } from "src/voidgl/shaders/processing/metrics-processing";
-import { ShaderModule } from "src/voidgl/shaders/processing/shader-module";
-import { UniformProcessing } from "src/voidgl/shaders/processing/uniform-processing";
-import { templateVars } from "src/voidgl/shaders/template-vars";
-import { shaderTemplate } from "src/voidgl/util/shader-templating";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
@@ -16,6 +9,13 @@ import {
   PickType,
   ShaderInjectionTarget
 } from "../../types";
+import { shaderTemplate } from "../../util/shader-templating";
+import { templateVars } from "../template-vars";
+import { AttributeProcessing } from "./attribute-processing";
+import { EasingProcessing } from "./easing-processing";
+import { MetricsProcessing } from "./metrics-processing";
+import { ShaderModule } from "./shader-module";
+import { UniformProcessing } from "./uniform-processing";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.

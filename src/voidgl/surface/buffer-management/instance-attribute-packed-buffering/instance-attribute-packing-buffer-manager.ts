@@ -336,6 +336,9 @@ export class InstanceAttributePackingBufferManager<
       for (let block = 0, iMax = blockSizes.size; block < iMax; ++block) {
         // Get the size each attribute will be for the block
         const blockSize: number = blockSizes.get(block) || 0;
+        // This is an interesting case, the attributes that are generated are packed into other attributes
+        // for optimal use of the vertex attributes allotted for a systems resources.
+        const blockAttributeUID = uid();
 
         if (!blockSize) {
           console.warn(
@@ -386,7 +389,8 @@ export class InstanceAttributePackingBufferManager<
             const internalAttribute: IInstanceAttributeInternal<
               T
             > = Object.assign({}, attribute, {
-              uid: uid(),
+              uid: block,
+              packUID: blockAttributeUID,
               bufferAttribute,
               size: blockSize
             });
@@ -418,6 +422,7 @@ export class InstanceAttributePackingBufferManager<
           // Make an internal instance attribute for tracking
           this.blockAttributes.push({
             uid: uid(),
+            packUID: blockAttributeUID,
             bufferAttribute,
             name: `block${block}`,
             update: () => [0]
@@ -514,30 +519,34 @@ export class InstanceAttributePackingBufferManager<
 
           if (blockSubAttributes) {
             for (let k = 0, kMax = blockSubAttributes.length; k < kMax; ++k) {
-              const attribute = blockSubAttributes[k];
+              const subAttribute = blockSubAttributes[k];
 
               let newBufferLocations = attributeToNewBufferLocations.get(
-                attribute.name
+                subAttribute.name
               );
 
               if (!newBufferLocations) {
                 newBufferLocations = [];
                 attributeToNewBufferLocations.set(
-                  attribute.name,
+                  subAttribute.name,
                   newBufferLocations
                 );
               }
 
               const allLocations =
-                this.allBufferLocations[attribute.name] || [];
-              this.allBufferLocations[attribute.name] = allLocations;
+                this.allBufferLocations[subAttribute.name] || [];
+              this.allBufferLocations[subAttribute.name] = allLocations;
 
               const internalAttribute: IInstanceAttributeInternal<
                 T
-              > = Object.assign({}, attribute, { uid: uid(), bufferAttribute });
+              > = Object.assign({}, subAttribute, {
+                uid: uid(),
+                packUID: attribute.packUID,
+                bufferAttribute
+              });
 
-              const startAttributeIndex = attribute.blockIndex || 0;
-              const attributeSize = attribute.size || 1;
+              const startAttributeIndex = subAttribute.blockIndex || 0;
+              const attributeSize = subAttribute.size || 1;
 
               // Update all existing attribute locations with the new internal attribute
               for (let j = 0, jMax = allLocations.length; j < jMax; ++j) {

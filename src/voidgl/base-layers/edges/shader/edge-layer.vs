@@ -1,6 +1,6 @@
-precision highp float;
-
 ${import: projection}
+
+precision highp float;
 
 /**
   This vertex shader calculates edges whose curve and width is in screen space where the curve is

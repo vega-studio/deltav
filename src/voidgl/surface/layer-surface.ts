@@ -1,4 +1,3 @@
-import { ShaderProcessor } from "src/voidgl/shaders/processing/shader-processor";
 import * as Three from "three";
 import { WebGLRenderTarget } from "three";
 import { ImageInstance } from "../base-layers/images";
@@ -6,8 +5,9 @@ import { LabelInstance } from "../base-layers/labels";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
-import { PickType } from "../types";
+import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { FrameMetrics } from "../types";
+import { PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { Vec2 } from "../util/vector";

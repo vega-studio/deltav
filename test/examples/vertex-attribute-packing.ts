@@ -1,4 +1,5 @@
 import {
+  AutoEasingLoopStyle,
   AutoEasingMethod,
   createLayer,
   EdgeInstance,
@@ -17,10 +18,10 @@ export class VertexAttributePacking extends BaseExample {
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       animate: {
-        start: AutoEasingMethod.linear(100),
-        end: AutoEasingMethod.linear(100),
-        colorStart: AutoEasingMethod.linear(100),
-        colorEnd: AutoEasingMethod.linear(100)
+        start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+        end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+        colorStart: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+        colorEnd: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
       },
       data: provider,
       key: "vertex-attribute-packing",
@@ -84,6 +85,7 @@ export class VertexAttributePacking extends BaseExample {
               totalWidth,
             1.0
           ];
+
           edge.start = [
             Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
               (bounds.width / 4) +

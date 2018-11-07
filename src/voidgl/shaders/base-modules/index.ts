@@ -1,5 +1,5 @@
-import { ShaderModule } from "src/voidgl/shaders/processing";
-import { ShaderInjectionTarget } from "src/voidgl/types";
+import { ShaderInjectionTarget } from "../../types";
+import { ShaderModule } from "../processing";
 
 ShaderModule.register([
   {

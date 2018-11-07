@@ -1,4 +1,5 @@
-let UID = 0;
+/** Important to start UIDs at 1 so that falsey evaluations do not pass when examining UIDs */
+let UID = 1;
 
 /**
  * Provides a 64 bit UID.

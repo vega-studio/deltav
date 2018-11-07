@@ -1,6 +1,6 @@
-import { UniformProcessing } from "src/voidgl/shaders/processing/uniform-processing";
 import * as Three from "three";
 import { Instance } from "../../../instance-provider";
+import { UniformProcessing } from "../../../shaders/processing/uniform-processing";
 import { IInstanceAttribute, PickType } from "../../../types";
 import { uid, Vec2 } from "../../../util";
 import { Layer } from "../../layer";

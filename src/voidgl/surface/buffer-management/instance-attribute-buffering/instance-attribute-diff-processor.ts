@@ -136,6 +136,7 @@ export class InstanceAttributeDiffProcessor<
     let updateRange;
     let childLocations: IBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
+    let attributeChangeUID;
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property update
@@ -147,10 +148,11 @@ export class InstanceAttributeDiffProcessor<
         // First update for the instance attribute itself
         location = propertyToLocation[propIds[i]];
         attribute = location.attribute;
+        attributeChangeUID = attribute.packUID || attribute.uid;
         attribute.atlas && layer.resource.setTargetAtlas(attribute.atlas.key);
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
-        updateRange = bufferAttributeUpdateRange[attribute.uid] || [
+        updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
           null,
           Number.MAX_SAFE_INTEGER,
           Number.MIN_SAFE_INTEGER
@@ -158,7 +160,7 @@ export class InstanceAttributeDiffProcessor<
         updateRange[0] = attribute;
         updateRange[1] = min(location.range[0], updateRange[1]);
         updateRange[2] = max(location.range[1], updateRange[2]);
-        bufferAttributeUpdateRange[attribute.uid] = updateRange;
+        bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
 
         // Now update any child attributes that would need updating based on the parent attribute changing
         if (location.childLocations) {
@@ -166,15 +168,19 @@ export class InstanceAttributeDiffProcessor<
 
           for (let k = 0, endk = childLocations.length; k < endk; ++k) {
             location = childLocations[k];
+            attributeChangeUID =
+              location.attribute.packUID || location.attribute.uid;
             updateValue = location.attribute.update(instance);
             location.buffer.value.set(updateValue, location.range[0]);
-            updateRange = bufferAttributeUpdateRange[
-              location.attribute.uid
-            ] || [null, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
+            updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
+              null,
+              Number.MAX_SAFE_INTEGER,
+              Number.MIN_SAFE_INTEGER
+            ];
             updateRange[0] = location.attribute;
             updateRange[1] = min(location.range[0], updateRange[1]);
             updateRange[2] = max(location.range[1], updateRange[2]);
-            bufferAttributeUpdateRange[location.attribute.uid] = updateRange;
+            bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
           }
         }
       }
@@ -183,9 +189,10 @@ export class InstanceAttributeDiffProcessor<
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
+      attributeChangeUID = attribute.packUID || attribute.uid;
       updateValue = attribute.update(instance);
       location.buffer.value.set(updateValue, location.range[0]);
-      updateRange = bufferAttributeUpdateRange[attribute.uid] || [
+      updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
         null,
         Number.MAX_SAFE_INTEGER,
         Number.MIN_SAFE_INTEGER
@@ -193,7 +200,7 @@ export class InstanceAttributeDiffProcessor<
       updateRange[0] = attribute;
       updateRange[1] = min(location.range[0], updateRange[1]);
       updateRange[2] = max(location.range[1], updateRange[2]);
-      bufferAttributeUpdateRange[attribute.uid] = updateRange;
+      bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
     }
   }
 
@@ -227,7 +234,9 @@ export class InstanceAttributeDiffProcessor<
         attribute.atlas && layer.resource.setTargetAtlas(attribute.atlas.key);
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
-        bufferAttributeWillUpdate[attribute.uid] = attribute;
+        bufferAttributeWillUpdate[
+          attribute.packUID || attribute.uid
+        ] = attribute;
 
         // Now update any child attributes that would need updating based on the parent attribute changing
         if (location.childLocations) {
@@ -238,7 +247,9 @@ export class InstanceAttributeDiffProcessor<
             attribute = location.attribute;
             updateValue = attribute.update(instance);
             location.buffer.value.set(updateValue, location.range[0]);
-            bufferAttributeWillUpdate[attribute.uid] = attribute;
+            bufferAttributeWillUpdate[
+              attribute.packUID || attribute.uid
+            ] = attribute;
           }
         }
       }
@@ -250,7 +261,7 @@ export class InstanceAttributeDiffProcessor<
       attribute.atlas && layer.resource.setTargetAtlas(attribute.atlas.key);
       updateValue = attribute.update(instance);
       location.buffer.value.set(updateValue, location.range[0]);
-      bufferAttributeWillUpdate[attribute.uid] = attribute;
+      bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;
     }
   }
 

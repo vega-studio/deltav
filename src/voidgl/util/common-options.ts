@@ -3,7 +3,7 @@ import { IMaterialOptions } from "../types";
 
 export class CommonMaterialOptions {
   static transparentShape: IMaterialOptions = {
-    premultipliedAlpha: true,
+    premultipliedAlpha: false,
     transparent: true
   };
 

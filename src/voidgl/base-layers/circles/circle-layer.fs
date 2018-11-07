@@ -1,7 +1,5 @@
 precision highp float;
 
-${picking}
-
 varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float edgeSharpnessBase;

@@ -1,7 +1,5 @@
 precision highp float;
 
-${picking}
-
 /** This is the color of the ring */
 varying vec4 vertexColor;
 /**

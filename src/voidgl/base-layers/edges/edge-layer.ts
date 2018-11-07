@@ -1,4 +1,3 @@
-import { LayerBufferType } from "src/voidgl/surface/layer-processing/layer-buffer-type";
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
 import {
@@ -7,6 +6,7 @@ import {
   IPickingMethods,
   Layer
 } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
@@ -169,8 +169,6 @@ export class EdgeLayer<
       }
     });
 
-    console.log(this);
-
     return {
       fs: edgeFS,
       instanceAttributes: [
@@ -253,7 +251,7 @@ export class EdgeLayer<
               // to address this issue.
               this.bufferType ===
             LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
-              ? 1.0
+              ? 0.15
               : 1.0
           ]
         }

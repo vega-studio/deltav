@@ -1,8 +1,6 @@
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
-  CircleInstance,
-  CircleLayer,
   createLayer,
   EdgeInstance,
   EdgeLayer,
@@ -11,17 +9,19 @@ import {
   RectangleInstance,
   RectangleLayer,
   scale4,
-  ScaleType
+  ScaleType,
+  uid
 } from "src";
 import { BaseExample } from "./base-example";
 
 export class VertexAttributePacking extends BaseExample {
+  uid = uid();
   rectangleProvider = new InstanceProvider<RectangleInstance>();
   doesVertexpack: boolean;
 
-  constructor(noVertexPacking: boolean) {
+  constructor(noVertexPacking?: boolean) {
     super();
-    this.doesVertexpack = true;
+    this.doesVertexpack = !noVertexPacking;
   }
 
   makeLayer(
@@ -29,29 +29,28 @@ export class VertexAttributePacking extends BaseExample {
     _atlas: string,
     provider: InstanceProvider<EdgeInstance>
   ) {
+    const animate = {
+      start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+      end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+      control: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
+    };
+
+    if (!this.doesVertexpack) {
+      delete animate.control;
+    }
+
     return [
       createLayer(RectangleLayer, {
         data: this.rectangleProvider,
-        key: "vertex-attribute-packing-circles",
+        key: `vertex-attribute-packing-circles-${this.uid}`,
         scene: scene
       }),
       createLayer(EdgeLayer, {
-        animate: {
-          start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
-          end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
-          control: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
-          // colorStart: AutoEasingMethod.linear(
-          //   100,
-          //   0,
-          //   AutoEasingLoopStyle.REPEAT
-          // ),
-          // colorEnd: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
-        },
+        animate,
         data: provider,
-        key: "vertex-attribute-packing",
+        key: `vertex-attribute-packing-${this.uid}`,
         scene: scene,
-        type: EdgeType.LINE,
-        printShader: true
+        type: EdgeType.LINE
       })
     ];
   }
@@ -107,7 +106,7 @@ export class VertexAttributePacking extends BaseExample {
         edgeProvider.add(edge);
       }
 
-      setTimeout(() => {
+      setInterval(() => {
         const totalWidth = bounds.width / 4 + bounds.width / 2;
         for (let i = 0; i < TOTAL_EDGES; ++i) {
           const edge = edges[i];
@@ -130,18 +129,18 @@ export class VertexAttributePacking extends BaseExample {
             0.01
           ];
 
-          // edge.start = [
-          //   Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
-          //     (bounds.width / 4) +
-          //     bounds.width / 2,
-          //   edge.start[1]
-          // ];
-          // edge.end = [
-          //   Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
-          //     (bounds.width / 4) +
-          //     bounds.width / 2,
-          //   edge.end[1]
-          // ];
+          edge.start = [
+            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+              (bounds.width / 4) +
+              bounds.width / 2,
+            edge.start[1]
+          ];
+          edge.end = [
+            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+              (bounds.width / 4) +
+              bounds.width / 2,
+            edge.end[1]
+          ];
         }
       }, 1000 / 20);
     }, 1000);

@@ -15,7 +15,7 @@ void main() {
 
   scale = scaleFactor;
 
-  vertexColor = color * color.a;
+  vertexColor = color;
   float size = radius * scaleFactor;
 
   float ringWidth = mix(2.0 , thickness, float(thickness > 2.0));

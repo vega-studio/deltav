@@ -1,49 +1,93 @@
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
+  CircleInstance,
+  CircleLayer,
   createLayer,
   EdgeInstance,
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  LayerInitializer
+  RectangleInstance,
+  RectangleLayer,
+  scale4,
+  ScaleType
 } from "src";
 import { BaseExample } from "./base-example";
 
 export class VertexAttributePacking extends BaseExample {
+  rectangleProvider = new InstanceProvider<RectangleInstance>();
+  doesVertexpack: boolean;
+
+  constructor(noVertexPacking: boolean) {
+    super();
+    this.doesVertexpack = true;
+  }
+
   makeLayer(
     scene: string,
     _atlas: string,
     provider: InstanceProvider<EdgeInstance>
-  ): LayerInitializer {
-    return createLayer(EdgeLayer, {
-      animate: {
-        start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
-        end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
-        colorStart: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
-        colorEnd: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
-      },
-      data: provider,
-      key: "vertex-attribute-packing",
-      scene: scene,
-      type: EdgeType.BEZIER,
-      printShader: true
-    });
+  ) {
+    return [
+      createLayer(RectangleLayer, {
+        data: this.rectangleProvider,
+        key: "vertex-attribute-packing-circles",
+        scene: scene
+      }),
+      createLayer(EdgeLayer, {
+        animate: {
+          start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+          end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
+          control: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
+          // colorStart: AutoEasingMethod.linear(
+          //   100,
+          //   0,
+          //   AutoEasingLoopStyle.REPEAT
+          // ),
+          // colorEnd: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)
+        },
+        data: provider,
+        key: "vertex-attribute-packing",
+        scene: scene,
+        type: EdgeType.LINE,
+        printShader: true
+      })
+    ];
   }
 
   makeProvider(): InstanceProvider<EdgeInstance> {
     const edgeProvider = new InstanceProvider<EdgeInstance>();
     const edges: EdgeInstance[] = [];
     const TOTAL_EDGES = 10;
+    const { random } = Math;
 
     setTimeout(() => {
       const bounds = this.surface.getViewSize(this.view);
       if (!bounds) return;
 
+      const boxWidth = Math.ceil(bounds.width / 10);
+      const boxHeight = Math.ceil(bounds.height / 10);
+
+      for (let i = 0; i < boxWidth; ++i) {
+        for (let k = 0; k < boxHeight; ++k) {
+          const circle = new RectangleInstance({
+            width: 10,
+            height: 10,
+            x: i * 10,
+            y: k * 10,
+            color: scale4([random(), 1.0, random(), 1.0], 0.5),
+            scaling: ScaleType.ALWAYS
+          });
+
+          this.rectangleProvider.add(circle);
+        }
+      }
+
       for (let i = 0; i < TOTAL_EDGES; ++i) {
         const edge = new EdgeInstance({
           colorEnd: [1.0, 0.0, 1.0, 1.0],
-          colorStart: [0.0, 1.0, 1.0, 1.0],
+          colorStart: [0.0, 1.0, 1.0, 0.1],
           control: [[bounds.width / 2, bounds.height / 2]],
           end: [
             Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
@@ -63,7 +107,7 @@ export class VertexAttributePacking extends BaseExample {
         edgeProvider.add(edge);
       }
 
-      setInterval(() => {
+      setTimeout(() => {
         const totalWidth = bounds.width / 4 + bounds.width / 2;
         for (let i = 0; i < TOTAL_EDGES; ++i) {
           const edge = edges[i];
@@ -83,21 +127,21 @@ export class VertexAttributePacking extends BaseExample {
               (bounds.width / 4) +
               bounds.width / 2) /
               totalWidth,
-            1.0
+            0.01
           ];
 
-          edge.start = [
-            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
-              (bounds.width / 4) +
-              bounds.width / 2,
-            edge.start[1]
-          ];
-          edge.end = [
-            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
-              (bounds.width / 4) +
-              bounds.width / 2,
-            edge.end[1]
-          ];
+          // edge.start = [
+          //   Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+          //     (bounds.width / 4) +
+          //     bounds.width / 2,
+          //   edge.start[1]
+          // ];
+          // edge.end = [
+          //   Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+          //     (bounds.width / 4) +
+          //     bounds.width / 2,
+          //   edge.end[1]
+          // ];
         }
       }, 1000 / 20);
     }, 1000);

@@ -1,3 +1,4 @@
+import { LayerBufferType } from "src/voidgl/surface/layer-processing/layer-buffer-type";
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
 import {
@@ -168,6 +169,8 @@ export class EdgeLayer<
       }
     });
 
+    console.log(this);
+
     return {
       fs: edgeFS,
       instanceAttributes: [
@@ -245,7 +248,13 @@ export class EdgeLayer<
           name: "layerOpacity",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [
-            this.props.opacity === undefined ? 1.0 : this.props.opacity
+            (this.props.opacity === undefined ? 1.0 : this.props.opacity) *
+              // HACK: There is a blending issue with three OR with WebGL itself. This is an adjustment
+              // to address this issue.
+              this.bufferType ===
+            LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+              ? 1.0
+              : 1.0
           ]
         }
       ],

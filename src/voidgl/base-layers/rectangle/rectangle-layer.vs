@@ -79,7 +79,7 @@ void main() {
 
   // --Texture and Color
   // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
-  vertexColor = color * color.a;
+  vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
   ${extend}

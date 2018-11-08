@@ -324,7 +324,7 @@ export class LayerSurface {
           }
         }
 
-        // Analyze the view's animation end timings and the camera to see if their are view changes
+        // Analyze the view's animation end timings and the camera to see if there are view changes
         // that will trigger a redraw outside of our layer changes
         if (
           view.needsDraw ||

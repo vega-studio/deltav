@@ -24,7 +24,7 @@ export class ChartCamera {
   /** Represents how scaled each axis should be in world space */
   private _scale: [number, number, number] = [1, 1, 1];
   /** This indicates whether the view where the camera is in needs drawn */
-  private _needsViewDrawn: boolean = false;
+  private _needsViewDrawn: boolean = true;
 
   constructor(options?: IChartCameraOptions) {
     if (options) {
@@ -40,7 +40,7 @@ export class ChartCamera {
 
   setId(id: number) {
     this._id = id;
-    this.setNeedsViewDrawn(true);
+    this._needsViewDrawn = true;
   }
 
   get offset() {
@@ -52,7 +52,7 @@ export class ChartCamera {
    */
   setOffset(offset: [number, number, number]) {
     this._offset = offset.slice(0) as [number, number, number];
-    this.setNeedsViewDrawn(true);
+    this._needsViewDrawn = true;
   }
 
   get scale() {
@@ -61,14 +61,18 @@ export class ChartCamera {
 
   setScale(scale: [number, number, number]) {
     this._scale = scale;
-    this.setNeedsViewDrawn(true);
+    this._needsViewDrawn = true;
   }
 
   get needsViewDrawn() {
     return this._needsViewDrawn;
   }
 
-  setNeedsViewDrawn(needsViewDrawn: boolean) {
-    this._needsViewDrawn = needsViewDrawn;
+  resolve() {
+    this._needsViewDrawn = false;
+  }
+
+  update() {
+    this._needsViewDrawn = true;
   }
 }

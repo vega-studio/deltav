@@ -30,8 +30,6 @@ import { IAtlasOptions } from "./texture/atlas";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { ClearFlags, View } from "./view";
 
-const debug = require("debug")("layer-surface");
-
 export interface ILayerSurfaceOptions {
   /**
    * These are the atlas resources we want available that our layers can be provided to utilize
@@ -230,6 +228,7 @@ export class LayerSurface {
     time?: number,
     frameIncrement?: boolean,
     onViewReady?: (
+      needsDraw: boolean,
       scene: Scene,
       view: View,
       pickingPass: Layer<any, any>[]
@@ -238,7 +237,9 @@ export class LayerSurface {
     if (!this.gl) return;
 
     // For now, while certain mysteries remain, we will track only if any view needs to be redrawn.
-    // Any view that needs
+    // Any view that needs to be redrawn will trigger a redraw of the entire surface for now until
+    // we can optimize down to only drawing a single view without erasing views that were not redrawn.
+    let needsDraw = false;
 
     // We are rendering a new frame so increment our frame count
     if (frameIncrement) this.frameMetrics.currentFrame++;
@@ -261,6 +262,7 @@ export class LayerSurface {
     const scenes = Array.from(this.scenes.values());
     const validLayers: { [key: string]: Layer<any, any> } = {};
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
+    const pickingPassByView = new Map<View, Layer<any, any>[]>();
 
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
@@ -270,41 +272,6 @@ export class LayerSurface {
 
       // Make sure the layers are depth sorted
       scene.sortLayers();
-
-      // Loop through the views again
-      for (let k = 0, endk = views.length; k < endk; ++k) {
-        const view = views[k];
-
-        for (let j = 0, endj = layers.length; j < endj; ++j) {
-          // Get the layer to be rendered in the scene
-          const layer = layers[j];
-          // If any of the layers under the view need a redraw
-          // Then the view needs a redraw
-          if (layer.needsViewDrawn) view.needsDraw = true;
-          // The view's animationEndTime is the largest end time found on one of the view's child layers.
-          view.animationEndTime = Math.max(
-            view.animationEndTime,
-            layer.animationEndTime
-          );
-        }
-
-        if (
-          (time && time < view.animationEndTime) ||
-          view.camera.needsViewDrawn
-        ) {
-          view.needsDraw = true;
-
-          // Get all of the dependent views for that view
-          const overlapViews = this.viewDrawDependencies.get(view);
-
-          // And make all of them need a redraw.
-          if (overlapViews) {
-            overlapViews.forEach(view => {
-              view.needsDraw = true;
-            });
-          }
-        }
-      }
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
@@ -332,8 +299,18 @@ export class LayerSurface {
           // Make sure the layer is given the opportunity to update all of it's uniforms
           // To match the view state and update any unresolved diffs internally
           try {
+            // Update uniforms, resolve diff changes
             layer.draw();
+            // If any of the layers under the view need a redraw
+            // Then the view needs a redraw
+            if (layer.needsViewDrawn) view.needsDraw = true;
+            // Flag the layer as valid
             validLayers[layer.id] = layer;
+            // The view's animationEndTime is the largest end time found on one of the view's child layers.
+            view.animationEndTime = Math.max(
+              view.animationEndTime,
+              layer.animationEndTime
+            );
           } catch (err) {
             if (!erroredLayers[layer.id]) {
               erroredLayers[layer.id] = [layer, err];
@@ -347,12 +324,33 @@ export class LayerSurface {
           }
         }
 
-        if (onViewReady) {
-          onViewReady(scene, view, pickingPass);
+        // Analyze the view's animation end timings and the camera to see if their are view changes
+        // that will trigger a redraw outside of our layer changes
+        if (
+          view.needsDraw ||
+          (time && time < view.animationEndTime) ||
+          view.camera.needsViewDrawn
+        ) {
+          view.needsDraw = true;
+          needsDraw = true;
+
+          // Get all of the dependent views for that view
+          const overlapViews = this.viewDrawDependencies.get(view);
+
+          // And make all of them need a redraw.
+          if (overlapViews) {
+            overlapViews.forEach(view => {
+              view.needsDraw = true;
+            });
+          }
         }
+
+        // Store the picking pass for the view to use when the view is ready to draw
+        pickingPassByView.set(view, pickingPass);
       }
     }
 
+    // If any draw need was detected, redraw the surface
     for (let i = 0, end = scenes.length; i < end; ++i) {
       const scene = scenes[i];
       // Our scene must have a valid container to operate
@@ -363,8 +361,13 @@ export class LayerSurface {
         const view = views[k];
 
         // Now perform the rendering
-        if (view.needsDraw) {
-          this.drawSceneView(scene.container, view);
+        if (onViewReady) {
+          onViewReady(
+            needsDraw,
+            scene,
+            view,
+            pickingPassByView.get(view) || []
+          );
         }
       }
     }
@@ -418,7 +421,15 @@ export class LayerSurface {
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
-    this.commit(time, true, (scene, view, pickingPass) => {
+    this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
+      // Our scene must have a valid container to operate
+      if (!scene.container) return;
+
+      if (needsDraw) {
+        // Now perform the rendering
+        this.drawSceneView(scene.container, view);
+      }
+
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
@@ -449,12 +460,17 @@ export class LayerSurface {
           // We must redraw the layers so they will update their uniforms to adapt to a picking pass
           for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
             const layer = pickingPass[j];
+            // Adjust the layer to utilize the proper pick mode, thus causing the layer to properly
+            // Set it's uniforms into a pick mode.
             layer.picking.currentPickMode = PickType.SINGLE;
+
+            // Attempt to update the layer by calling it's draw method
             try {
               layer.draw();
             } catch (err) {
               /** No-op, the first draw should have output an error for bad draw calls */
             }
+
             layer.picking.currentPickMode = PickType.NONE;
           }
 
@@ -559,7 +575,14 @@ export class LayerSurface {
     // another requested from mouse interactions
     delete this.updateColorPick;
 
-    // Set needsViewDrawn of each layer back to false
+    // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
+    // be considered resolved for the current set of changes.
+    // Set draw needs of cameras and views back to false
+    this.sceneViews.forEach(sceneView => {
+      sceneView.view.needsDraw = false;
+      sceneView.view.camera.resolve();
+    });
+    // Set all layers draw needs back to false
     this.layers.forEach(layer => (layer.needsViewDrawn = false));
   }
 
@@ -621,7 +644,6 @@ export class LayerSurface {
           view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
         );
       } else {
-        debug("has view clear, No target");
         renderer
           .getContext()
           .clear(

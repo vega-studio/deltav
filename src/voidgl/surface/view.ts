@@ -55,7 +55,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    *
    * If this is not specified, the entire canvas will be the viewport.
    */
-  viewport?: AbsolutePosition;
+  viewport: AbsolutePosition;
 }
 
 function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
@@ -89,6 +89,10 @@ export class View extends IdentifyByKey {
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: DataBounds<View>;
+  /** This is the flag to see if a view needs draw */
+  needsDraw: boolean = false;
+  /** End time of animation */
+  animationEndTime: number = 0;
 
   constructor(options: IViewOptions) {
     super(options);
@@ -225,6 +229,7 @@ export class View extends IdentifyByKey {
         surfaceDimensions,
         this.pixelRatio
       );
+
       const width = viewBounds.width;
       const height = viewBounds.height;
 

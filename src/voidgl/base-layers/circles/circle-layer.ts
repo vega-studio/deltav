@@ -52,7 +52,8 @@ export class CircleLayer<
     data: new InstanceProvider<CircleInstance>(),
     fadeOutOversized: -1,
     key: "",
-    scaleFactor: () => 1
+    scaleFactor: () => 1,
+    scene: "default"
   };
 
   static attributeNames = {

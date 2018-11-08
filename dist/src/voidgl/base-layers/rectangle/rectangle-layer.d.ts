@@ -8,12 +8,14 @@ export interface IRectangleLayerProps<T extends RectangleInstance> extends ILaye
 export declare class RectangleLayer<T extends RectangleInstance, U extends IRectangleLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IRectangleLayerProps<RectangleInstance>;
     static attributeNames: {
-        location: string;
         anchor: string;
-        size: string;
-        depth: string;
-        scaling: string;
         color: string;
+        depth: string;
+        location: string;
+        maxScale: string;
+        scale: string;
+        scaling: string;
+        size: string;
     };
     getInstancePickingMethods(): {
         boundsAccessor: (rectangle: RectangleInstance) => Bounds;

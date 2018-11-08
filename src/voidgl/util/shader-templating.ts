@@ -51,7 +51,7 @@ export function shaderTemplate(
   const shaderOptions = new Map<string, number>();
 
   const shaderResults = shader.replace(
-    /\$\{(\w+)\}/g,
+    /\$\{([^\}]*)\}/g,
     (_x: string, match: string) => {
       let replace = "";
       shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);

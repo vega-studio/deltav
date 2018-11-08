@@ -1,3 +1,5 @@
+${import: projection}
+
 precision highp float;
 
 varying vec4 vertexColor;
@@ -6,10 +8,12 @@ ${extendHeader}
 void main() {
   ${attributes}
 
-  // Figure out the size of the image as it'd show on the screen
-  vec3 screenSize = cameraSpaceSize(vec3(size, 1.0));
-  // Do the test for when the image is larger on the screen than the font size
-  bool largerOnScreen = screenSize.y > size.y;
+  // Determine final screen size of label
+  vec3 screenSize = cameraSpaceSize(vec3(size * scale / maxScale, 1.0));
+
+  // Test whether the label is larger on the screen than the font size
+  bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;
+
   // Determines if a scale mode should be used or not for the vertex
   float useScaleMode = float(
     (
@@ -18,40 +22,49 @@ void main() {
     ) &&
     scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
   );
-  // If zooms are unequal, assume one is filtered to be 1.0
-  float unequalZooms = float((cameraScale.x > cameraScale.y || cameraScale.y > cameraScale.x) && useScaleMode != 0.0);
-  // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float side = position.y;
-  // Get the location of the anchor in world space
-  vec2 worldAnchor = location + anchor;
-  // Apply the image's tint as a tint to the image
-  vertexColor = color * color.a;
 
-  // Correct aspect ratio.
+  // Correct aspect ratio. Sufficient fix for most applications.
+  // Will need another solution in the case of:
+  // (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
+
+  // If zooms are unequal, assume one is filtered to be 1.0
+  float unequalZooms = float(cameraScale.x != cameraScale.y);
+
   vec2 adjustedSize = mix(
     size,
     (size * cameraScale.yx),
     unequalZooms
   );
 
+  // Destructure threejs's bug with the position requirement
+  float normal = position.x;
+  float side = position.y;
+
+  vec2 scaledAnchor = anchor * scale;
+
+  // Get the location of the anchor in world space
+  vec2 worldAnchor = location + scaledAnchor;
+
   vec2 adjustedAnchor = mix(
-    anchor,
-    (anchor * cameraScale.yx),
+    scaledAnchor,
+    (scaledAnchor * cameraScale.yx),
     unequalZooms
   );
 
-  vec2 vertex = vec2(side, float(normal == 1.0)) * size + location - adjustedAnchor;
+  // Get the position of the current vertex
+  vec2 vertex = vec2(side, float(normal == 1.0)) * scale * adjustedSize + location - adjustedAnchor;
 
-  // See how scaled the size on screen will be from the actual height of the image
-  float imageScreenScale = mix(
+  // See how scaled the size on screen will be from the actual height of the label
+  float labelScreenScale = mix(
     screenSize.y / adjustedSize.y,
     screenSize.x / adjustedSize.x,
-    float((cameraScale.x < 1.0) || (cameraScale.x > 1.0))
+    float((cameraScale.x != 1.0))
   );
 
-  // If our screen rendering is larger than the size the image is supposed to be, then we automagically
-  // scale down our image to stay the correct size, centered on the anchor point
+  float currentScale = labelScreenScale * scale;
+
+  // If our screen rendering is larger than the size the label is supposed to be, then we automagically
+  // scale down our label to stay the correct size, centered on the anchor point
   vec2 anchorToVertex = vertex - location;
 
   // We now choose between keeping the same image size or keeping it in world space
@@ -59,10 +72,14 @@ void main() {
     // This option keeps the image size in world space
     vertex,
     // This option counters the scaling of the image on the screen keeping it a static size
-    (anchorToVertex / imageScreenScale) + location,
+    (anchorToVertex / labelScreenScale) + location,
     // This is the flag determining if a scale mode should be applied to the vertex
     useScaleMode
   );
+
+  // --Texture and Color
+  // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
+  vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
   ${extend}

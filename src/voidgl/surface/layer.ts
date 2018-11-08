@@ -326,12 +326,12 @@ export class Layer<
    */
   initShader(): IShaderInitialization<T> {
     return {
-      fs: require("../shaders/base/no-op.fs"),
+      fs: "${import: no-op}",
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: require("../shaders/base/no-op.vs")
+      vs: "${import: no-op}"
     };
   }
 

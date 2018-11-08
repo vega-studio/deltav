@@ -5,9 +5,9 @@ import { LabelInstance } from "../base-layers/labels";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
-import { injectFragments } from "../shaders/util/attribute-generation";
-import { PickType } from "../types";
+import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { FrameMetrics } from "../types";
+import { PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { Vec2 } from "../util/vector";
@@ -202,12 +202,12 @@ export class LayerSurface {
 
     // We add the layer to our management
     this.layers.set(layer.id, layer);
+
     // Now we initialize the layer's gl components
     const layerId = layer.id;
 
-    this.initLayer(layer);
-
-    if (!layer) {
+    // Init the layer and see if the initialization is successful
+    if (!this.initLayer(layer)) {
       this.layers.delete(layerId);
       return null;
     }
@@ -236,6 +236,9 @@ export class LayerSurface {
     ) => void
   ) {
     if (!this.gl) return;
+
+    // For now, while certain mysteries remain, we will track only if any view needs to be redrawn.
+    // Any view that needs
 
     // We are rendering a new frame so increment our frame count
     if (frameIncrement) this.frameMetrics.currentFrame++;
@@ -272,15 +275,12 @@ export class LayerSurface {
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
 
-        // Flag used to indicate whether any layer under the view needs redrawn
-        let layersNeedRedrawn = false;
-
         for (let j = 0, endj = layers.length; j < endj; ++j) {
           // Get the layer to be rendered in the scene
           const layer = layers[j];
           // If any of the layers under the view need a redraw
           // Then the view needs a redraw
-          if (layer.needsViewDrawn) layersNeedRedrawn = true;
+          if (layer.needsViewDrawn) view.needsDraw = true;
           // The view's animationEndTime is the largest end time found on one of the view's child layers.
           view.animationEndTime = Math.max(
             view.animationEndTime,
@@ -289,7 +289,6 @@ export class LayerSurface {
         }
 
         if (
-          layersNeedRedrawn ||
           (time && time < view.animationEndTime) ||
           view.camera.needsViewDrawn
         ) {
@@ -304,10 +303,6 @@ export class LayerSurface {
               view.needsDraw = true;
             });
           }
-
-          view.camera.setNeedsViewDrawn(false);
-        } else {
-          if (!view.needsDraw) view.needsDraw = false;
         }
       }
 
@@ -934,15 +929,20 @@ export class LayerSurface {
     // After all of the shader IO is established, let's calculate the appropriate buffering strategy
     // For the layer.
     getLayerBufferType(this.gl, layer, vertexAttributes, instanceAttributes);
+
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = injectFragments(
+    const shaderMetrics = new ShaderProcessor().process(
       layer,
       shaderIO,
       vertexAttributes,
       instanceAttributes,
       uniforms
     );
+
+    // Check to see if the Shader Processing failed. If so return null as a failure flag.
+    if (!shaderMetrics) return null;
+
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(
       layer,
@@ -974,6 +974,18 @@ export class LayerSurface {
 
     // Generate the correct buffering strategy for the layer
     makeLayerBufferManager(this.gl, layer, scene);
+
+    if (layer.props.printShader) {
+      console.warn(
+        "A Layer requested its shader be debugged. Do not leave this active for production:",
+        "Layer:",
+        layer.props.key,
+        "Shader Metrics",
+        shaderMetrics
+      );
+      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
+      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+    }
 
     return layer;
   }
@@ -1102,13 +1114,15 @@ export class LayerSurface {
           // Sync the data provider applied to the layer in case the provider has existing data
           // before being applied tot he layer
           layer.props.data.sync();
-          // Add the layer to this surface
-          const addedLayer = this.addLayer(layer);
 
-          if (!addedLayer) {
+          // Add the layer to this surface
+          if (!this.addLayer(layer)) {
             console.warn(
+              "Error initializing layer:",
+              props.key,
               "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
             );
+
             return;
           }
         }

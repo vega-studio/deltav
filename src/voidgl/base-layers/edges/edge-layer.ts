@@ -1,12 +1,12 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { templateVars } from "../../shaders/template-vars";
 import {
   ILayerProps,
   IModelType,
   IPickingMethods,
   Layer
 } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
@@ -148,25 +148,21 @@ export class EdgeLayer<
       sign *= -1;
     }
 
+    const templateOptions = {
+      interpolation: pickVS[type]
+    };
+
     const vs = shaderTemplate({
-      options: {
-        // Retain the attributes injection
-        attributes: "${attributes}",
-        // Inject the proper interpolation method
-        interpolation: pickVS[type]
-      },
+      options: templateOptions,
       required: {
         name: "Edge Layer",
         values: ["interpolation"]
       },
       shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
 
-      // We do not want to remove any extension macros
+      // We do not want to remove any other templating options present
       onToken: (token, replace) => {
-        if (
-          token === templateVars.extendHeader ||
-          token === templateVars.extend
-        ) {
+        if (!(token in templateOptions)) {
           return `$\{${token}}`;
         }
 
@@ -251,7 +247,13 @@ export class EdgeLayer<
           name: "layerOpacity",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [
-            this.props.opacity === undefined ? 1.0 : this.props.opacity
+            (this.props.opacity === undefined ? 1.0 : this.props.opacity) *
+              // HACK: There is a blending issue with three OR with WebGL itself. This is an adjustment
+              // to address this issue.
+              this.bufferType ===
+            LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+              ? 0.15
+              : 1.0
           ]
         }
       ],

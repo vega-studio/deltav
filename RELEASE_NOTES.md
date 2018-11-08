@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.19.6
+
+* `(FIXED)` printShader for a layer's props now works properly.
+* `(FIXED)` Rectangles now follow the label rendering logic closer thus making them more uniform in use.
+* `(FIXED)` Updated Three JS to the most recent version that is compatible.
+
 ## 1.19.5
 
 * `(FIXED)` Labels were overly applying alpha color values thus making them look faded.

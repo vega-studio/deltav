@@ -2,9 +2,9 @@ import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics } from "../../types";
 import { LayerBufferType } from "../layer-processing/layer-buffer-type";
 import { AtlasResourceManager } from "../texture/atlas-resource-manager";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
-import { BaseDiffProcessor } from "./diff-processors/base-diff-processor";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
 export declare type DiffHandler<T extends Instance> = (manager: BaseDiffProcessor<T>, instance: T, propIds: number[], bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>) => void;
 export declare type DiffLookup<T extends Instance> = DiffHandler<T>[];
 export interface IInstanceDiffManagerTarget<T extends Instance> {

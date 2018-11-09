@@ -5,19 +5,16 @@ import { LabelInstance } from "../base-layers/labels";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
-import { injectFragments } from "../shaders/util/attribute-generation";
-import { PickType } from "../types";
+import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { FrameMetrics } from "../types";
+import { PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
-import {
-  generateDefaultScene,
-  IDefaultSceneElements
-} from "./layer-processing/generate-default-scene";
+import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
@@ -67,7 +64,7 @@ export interface ILayerSurfaceOptions {
    * reference the scene by it's scene property. The order of the scenes here is the drawing
    * order of the scenes.
    */
-  scenes?: ISceneOptions[];
+  scenes: ISceneOptions[];
 }
 
 const DEFAULT_BACKGROUND_COLOR = new Three.Color(1.0, 1.0, 1.0);
@@ -119,11 +116,6 @@ export class LayerSurface {
   /** This is the current viewport the renderer state is in */
   currentViewport = new Map<Three.WebGLRenderer, Box>();
   /**
-   * This is the default scene that layers get added to if they do not specify a valid Scene.
-   * This scene by default only has a single default view.
-   */
-  defaultSceneElements: IDefaultSceneElements;
-  /**
    * This is the metrics of the current running frame
    */
   frameMetrics: FrameMetrics = {
@@ -173,7 +165,11 @@ export class LayerSurface {
    * reactive system.
    */
   willDisposeLayer = new Map<string, boolean>();
-
+  /**
+   * This map is a quick look up for a view to determine other views that
+   * would need to be redrawn as a consequence of the source view needing a redraw
+   */
+  private viewDrawDependencies = new Map<View, View[]>();
   /** This is used to indicate whether the loading is completed */
   private loadReadyResolve: () => void;
   loadReady: Promise<void> = new Promise(
@@ -191,7 +187,7 @@ export class LayerSurface {
    */
   private addLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     if (!layer.id) {
       console.warn("All layers must have an id");
       return layer;
@@ -204,8 +200,15 @@ export class LayerSurface {
 
     // We add the layer to our management
     this.layers.set(layer.id, layer);
+
     // Now we initialize the layer's gl components
-    this.initLayer(layer);
+    const layerId = layer.id;
+
+    // Init the layer and see if the initialization is successful
+    if (!this.initLayer(layer)) {
+      this.layers.delete(layerId);
+      return null;
+    }
 
     return layer;
   }
@@ -225,12 +228,18 @@ export class LayerSurface {
     time?: number,
     frameIncrement?: boolean,
     onViewReady?: (
+      needsDraw: boolean,
       scene: Scene,
       view: View,
       pickingPass: Layer<any, any>[]
     ) => void
   ) {
     if (!this.gl) return;
+
+    // For now, while certain mysteries remain, we will track only if any view needs to be redrawn.
+    // Any view that needs to be redrawn will trigger a redraw of the entire surface for now until
+    // we can optimize down to only drawing a single view without erasing views that were not redrawn.
+    let needsDraw = false;
 
     // We are rendering a new frame so increment our frame count
     if (frameIncrement) this.frameMetrics.currentFrame++;
@@ -253,6 +262,7 @@ export class LayerSurface {
     const scenes = Array.from(this.scenes.values());
     const validLayers: { [key: string]: Layer<any, any> } = {};
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
+    const pickingPassByView = new Map<View, Layer<any, any>[]>();
 
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
@@ -289,8 +299,18 @@ export class LayerSurface {
           // Make sure the layer is given the opportunity to update all of it's uniforms
           // To match the view state and update any unresolved diffs internally
           try {
+            // Update uniforms, resolve diff changes
             layer.draw();
+            // If any of the layers under the view need a redraw
+            // Then the view needs a redraw
+            if (layer.needsViewDrawn) view.needsDraw = true;
+            // Flag the layer as valid
             validLayers[layer.id] = layer;
+            // The view's animationEndTime is the largest end time found on one of the view's child layers.
+            view.animationEndTime = Math.max(
+              view.animationEndTime,
+              layer.animationEndTime
+            );
           } catch (err) {
             if (!erroredLayers[layer.id]) {
               erroredLayers[layer.id] = [layer, err];
@@ -304,8 +324,50 @@ export class LayerSurface {
           }
         }
 
+        // Analyze the view's animation end timings and the camera to see if there are view changes
+        // that will trigger a redraw outside of our layer changes
+        if (
+          view.needsDraw ||
+          (time && time < view.animationEndTime) ||
+          view.camera.needsViewDrawn
+        ) {
+          view.needsDraw = true;
+          needsDraw = true;
+
+          // Get all of the dependent views for that view
+          const overlapViews = this.viewDrawDependencies.get(view);
+
+          // And make all of them need a redraw.
+          if (overlapViews) {
+            overlapViews.forEach(view => {
+              view.needsDraw = true;
+            });
+          }
+        }
+
+        // Store the picking pass for the view to use when the view is ready to draw
+        pickingPassByView.set(view, pickingPass);
+      }
+    }
+
+    // If any draw need was detected, redraw the surface
+    for (let i = 0, end = scenes.length; i < end; ++i) {
+      const scene = scenes[i];
+      // Our scene must have a valid container to operate
+      if (!scene.container) continue;
+      const views = Array.from(scene.viewById.values());
+
+      for (let k = 0, endk = views.length; k < endk; ++k) {
+        const view = views[k];
+
+        // Now perform the rendering
         if (onViewReady) {
-          onViewReady(scene, view, pickingPass);
+          onViewReady(
+            needsDraw,
+            scene,
+            view,
+            pickingPassByView.get(view) || []
+          );
         }
       }
     }
@@ -348,7 +410,6 @@ export class LayerSurface {
     LabelInstance.destroy();
     ImageInstance.destroy();
   }
-
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
@@ -360,11 +421,14 @@ export class LayerSurface {
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
-    this.commit(time, true, (scene, view, pickingPass) => {
+    this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
-      // Now perform the rendering
-      this.drawSceneView(scene.container, view);
+
+      if (needsDraw) {
+        // Now perform the rendering
+        this.drawSceneView(scene.container, view);
+      }
 
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
@@ -374,10 +438,7 @@ export class LayerSurface {
         const views = this.updateColorPick.views;
 
         // Only if the view is interacted with should we both with rendering
-        if (
-          view.id !== this.defaultSceneElements.view.id &&
-          views.indexOf(view) > -1
-        ) {
+        if (views.indexOf(view) > -1) {
           // Picking uses a pixel ratio of 1
           view.pixelRatio = 1.0;
           // Get the current flags for the view
@@ -399,12 +460,17 @@ export class LayerSurface {
           // We must redraw the layers so they will update their uniforms to adapt to a picking pass
           for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
             const layer = pickingPass[j];
+            // Adjust the layer to utilize the proper pick mode, thus causing the layer to properly
+            // Set it's uniforms into a pick mode.
             layer.picking.currentPickMode = PickType.SINGLE;
+
+            // Attempt to update the layer by calling it's draw method
             try {
               layer.draw();
             } catch (err) {
               /** No-op, the first draw should have output an error for bad draw calls */
             }
+
             layer.picking.currentPickMode = PickType.NONE;
           }
 
@@ -508,6 +574,16 @@ export class LayerSurface {
     // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
     // another requested from mouse interactions
     delete this.updateColorPick;
+
+    // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
+    // be considered resolved for the current set of changes.
+    // Set draw needs of cameras and views back to false
+    this.sceneViews.forEach(sceneView => {
+      sceneView.view.needsDraw = false;
+      sceneView.view.camera.resolve();
+    });
+    // Set all layers draw needs back to false
+    this.layers.forEach(layer => (layer.needsViewDrawn = false));
   }
 
   /**
@@ -520,7 +596,6 @@ export class LayerSurface {
     target?: Three.WebGLRenderTarget
   ) {
     renderer = renderer || this.renderer;
-
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
     const rendererSize = renderer.getSize();
@@ -605,8 +680,46 @@ export class LayerSurface {
       size.width,
       size.height
     );
+
     // Render the scene with the provided view metrics
     renderer.render(scene, view.viewCamera.baseCamera, target);
+  }
+
+  /**
+   * This gathers all the overlap views of every view
+   */
+  private gatherViewDrawDependencies() {
+    this.viewDrawDependencies.clear();
+
+    // Fit all views to viewport
+    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+      this.sceneViews[i].view.fitViewtoViewport(
+        new Bounds({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0
+        })
+      );
+    }
+
+    // Set viewDrawDependencies
+    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
+      const sourceView = this.sceneViews[i].view;
+      const overlapViews: View[] = [];
+
+      for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
+        if (j !== i) {
+          const targetView = this.sceneViews[j].view;
+
+          if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
+            overlapViews.push(targetView);
+          }
+        }
+      }
+
+      this.viewDrawDependencies.set(sourceView, overlapViews);
+    }
   }
 
   /**
@@ -728,6 +841,7 @@ export class LayerSurface {
 
     // We want clearing to be controlled via the layer
     this.renderer.autoClear = false;
+
     // This sets the pixel ratio to handle differing pixel densities in screens
     this.setRendererSize(width, height);
     // Set the pixel ratio to match the pixel density of the monitor in use
@@ -757,23 +871,8 @@ export class LayerSurface {
     // Alpha or not
     this.pickingRenderer.setClearColor(new Three.Color(0, 0, 0), 1);
 
-    // Once we have made our renderer we now make us a default scene to which we can add objects
-    this.defaultSceneElements = generateDefaultScene(this.context);
-    this.defaultSceneElements.view.background = options.background;
-    // Set the default scene
-    this.scenes.set(
-      this.defaultSceneElements.scene.id,
-      this.defaultSceneElements.scene
-    );
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
-
-    // Make a SceneView for the default scene and view for mouse interactions
-    this.sceneViews.push({
-      depth: ++sceneViewDepth,
-      scene: this.defaultSceneElements.scene,
-      view: this.defaultSceneElements.view
-    });
 
     // Turn on the scissor test to keep the rendering clipped within the
     // Render region of the context
@@ -784,27 +883,14 @@ export class LayerSurface {
       options.scenes.forEach(sceneOptions => {
         // Make us a new scene based on the requested options
         const newScene = new Scene(sceneOptions);
-
-        // Make sure the default view is available for each scene
-        // IFF no view is provided for the scene
-        if (sceneOptions.views.length === 0) {
-          newScene.addView(this.defaultSceneElements.view);
-
-          this.sceneViews.push({
-            depth: ++sceneViewDepth,
-            scene: newScene,
-            view: this.defaultSceneElements.view
-          });
-        }
-
+        // Use defaultSceneElement to set cameras
+        const defaultSceneElement = generateDefaultScene(this.context);
         // Generate the views requested for the scene
         sceneOptions.views.forEach(viewOptions => {
           const newView = new View(viewOptions);
-          newView.camera = newView.camera || this.defaultSceneElements.camera;
+          newView.camera = newView.camera || defaultSceneElement.camera;
           newView.viewCamera =
-            newView.viewCamera || this.defaultSceneElements.viewCamera;
-          newView.viewport =
-            newView.viewport || this.defaultSceneElements.viewport;
+            newView.viewCamera || defaultSceneElement.viewCamera;
           newView.pixelRatio = this.pixelRatio;
           newScene.addView(newView);
 
@@ -825,6 +911,8 @@ export class LayerSurface {
 
         this.scenes.set(sceneOptions.key, newScene);
       });
+
+      this.gatherViewDrawDependencies();
     }
   }
 
@@ -835,7 +923,7 @@ export class LayerSurface {
    */
   private initLayer<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Layer<T, U> {
+  ): Layer<T, U> | null {
     // Set the layer's parent surface here
     layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
@@ -843,6 +931,7 @@ export class LayerSurface {
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
+    if (!scene) return null;
     // Get the shader metrics the layer desires
     const shaderIO = layer.initShader();
     // Clean out nulls provided as a convenience to the layer
@@ -862,15 +951,20 @@ export class LayerSurface {
     // After all of the shader IO is established, let's calculate the appropriate buffering strategy
     // For the layer.
     getLayerBufferType(this.gl, layer, vertexAttributes, instanceAttributes);
+
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = injectFragments(
+    const shaderMetrics = new ShaderProcessor().process(
       layer,
       shaderIO,
       vertexAttributes,
       instanceAttributes,
       uniforms
     );
+
+    // Check to see if the Shader Processing failed. If so return null as a failure flag.
+    if (!shaderMetrics) return null;
+
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(
       layer,
@@ -911,6 +1005,8 @@ export class LayerSurface {
         "Shader Metrics",
         shaderMetrics
       );
+      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
+      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
     }
 
     return layer;
@@ -957,24 +1053,18 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Scene {
+  ): Scene | undefined {
     // Get the scene the layer will add itself to
-    let scene = this.scenes.get(layer.props.scene || "");
+    const scene = this.scenes.get(layer.props.scene || "");
 
     if (!scene) {
-      // If no scene is specified by the layer, or the scene identifier is invalid, then we add the layer
-      // To the default scene.
-      scene = this.defaultSceneElements.scene;
-
-      if (layer.props.scene) {
-        console.warn(
-          "Layer specified a scene that is not within the layer surface manager. Layer will be added to the default scene."
-        );
-      }
+      console.warn(
+        "No scene is specified by the layer, or the scene identifier is invalid"
+      );
+    } else {
+      // Add the layer to the scene for rendering
+      scene.addLayer(layer);
     }
-
-    // Add the layer to the scene for rendering
-    scene.addLayer(layer);
 
     return scene;
   }
@@ -1027,6 +1117,12 @@ export class LayerSurface {
             props.data.sync();
           }
 
+          // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
+          // or by custom logic of the layer.
+          if (existingLayer.shouldDrawView(existingLayer.props, props)) {
+            existingLayer.needsViewDrawn = true;
+          }
+
           Object.assign(existingLayer.props, props);
           existingLayer.initializer[1] = existingLayer.props;
           existingLayer.didUpdateProps();
@@ -1040,8 +1136,17 @@ export class LayerSurface {
           // Sync the data provider applied to the layer in case the provider has existing data
           // before being applied tot he layer
           layer.props.data.sync();
+
           // Add the layer to this surface
-          this.addLayer(layer);
+          if (!this.addLayer(layer)) {
+            console.warn(
+              "Error initializing layer:",
+              props.key,
+              "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+            );
+
+            return;
+          }
         }
 
         this.willDisposeLayer.set(props.key, false);
@@ -1110,6 +1215,7 @@ export class LayerSurface {
     this.renderer.setPixelRatio(this.pixelRatio);
     this.pickingRenderer.setPixelRatio(1.0);
     this.mouseManager.resize();
+    this.gatherViewDrawDependencies();
   }
 
   /**

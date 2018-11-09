@@ -1,6 +1,5 @@
 precision highp float;
 
-${picking}
 varying vec4 vertexColor;
 varying vec2 texCoord;
 ${extendHeader}

@@ -28,37 +28,44 @@ export class BendyEdge extends BaseExample {
     const edges: EdgeInstance[] = [];
     const TOTAL_EDGES = 10;
 
-    for (let i = 0; i < TOTAL_EDGES; ++i) {
-      const edge = new EdgeInstance({
-        colorEnd: [1.0, 0.0, 1.0, 1.0],
-        colorStart: [0.0, 1.0, 1.0, 1.0],
-        control: [[200, 150]],
-        end: [200, 250],
-        id: `edge-bendy`,
-        start: [200, 15],
-        widthEnd: 10,
-        widthStart: 10
-      });
+    setTimeout(() => {
+      const bounds = this.surface.getViewSize(this.view);
+      if (!bounds) return;
 
-      edges.push(edge);
-      edgeProvider.add(edge);
-    }
-
-    setInterval(() => {
       for (let i = 0; i < TOTAL_EDGES; ++i) {
-        const edge = edges[i];
-        edge.start = [
-          Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
-            200,
-          edge.start[1]
-        ];
-        edge.end = [
-          Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
-            200,
-          edge.end[1]
-        ];
+        const edge = new EdgeInstance({
+          colorEnd: [1.0, 0.0, 1.0, 1.0],
+          colorStart: [0.0, 1.0, 1.0, 1.0],
+          control: [[bounds.width / 2, bounds.height / 2]],
+          end: [200, bounds.height - 10],
+          id: `edge-bendy`,
+          start: [200, 5],
+          widthEnd: 5,
+          widthStart: 5
+        });
+
+        edges.push(edge);
+        edgeProvider.add(edge);
       }
-    }, 1000 / 60);
+
+      setInterval(() => {
+        for (let i = 0; i < TOTAL_EDGES; ++i) {
+          const edge = edges[i];
+          edge.start = [
+            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+              (bounds.width / 4) +
+              bounds.width / 2,
+            edge.start[1]
+          ];
+          edge.end = [
+            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+              (bounds.width / 4) +
+              bounds.width / 2,
+            edge.end[1]
+          ];
+        }
+      }, 1000 / 60);
+    }, 100);
 
     return edgeProvider;
   }

@@ -1,3 +1,5 @@
+${import: projection}
+
 precision highp float;
 
 varying vec4 vertexColor;
@@ -21,9 +23,9 @@ void main() {
     scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
   );
 
-  // Correct aspect ratio.  Sufficient fix for most applications.
+  // Correct aspect ratio. Sufficient fix for most applications.
   // Will need another solution in the case of:
-  //  (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
+  // (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
 
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
@@ -77,7 +79,7 @@ void main() {
 
   // --Texture and Color
   // Apply the label's color as a tint to the label (all labels are rendered white to the base texture)
-  vertexColor = color * color.a;
+  vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
   ${extend}

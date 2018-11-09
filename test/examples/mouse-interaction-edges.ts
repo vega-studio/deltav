@@ -62,7 +62,7 @@ export class MouseInteractionEdges extends BaseExample {
       key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
-      opacity: 0.5,
+      opacity: 1.0,
       picking: PickType.SINGLE,
       scene: scene,
       type: EdgeType.BEZIER2
@@ -75,7 +75,7 @@ export class MouseInteractionEdges extends BaseExample {
 
     for (let i = 0; i < TOTAL_EDGES; ++i) {
       const edge = new EdgeInstance({
-        colorEnd: [Math.random(), 1.0, Math.random(), 0.25],
+        colorEnd: [Math.random(), 1.0, Math.random(), 0.01],
         colorStart: [Math.random(), 1.0, Math.random(), 1.0],
         control: [[60, 20 * i - 40], [160, 20 * i - 40]],
         end: [200, 20 * i + 20],

@@ -158,6 +158,12 @@ export function generateEasingAttributes<
       // Update the information shared between this attribute and it's children
       attributeDataShare.values = easingValues;
 
+      /** Set layer's animation end time */
+      layer.animationEndTime = Math.max(
+        layer.animationEndTime,
+        easingValues.startTime + duration
+      );
+
       return end;
     };
 

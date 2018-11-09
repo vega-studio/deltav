@@ -222,6 +222,13 @@ export interface IInstanceAttributeInternal<T extends Instance>
   extends IInstanceAttribute<T> {
   /** We will keep an internal uid for the  */
   uid: number;
+  /**
+   * Sometimes an attribute is actually a sub attribute to another attribute, such as in the cases of
+   * attribute packing (in uniforms or in attribute packing). This UID indicates the parental attribute
+   * UID. This parent identifier may be an actual InstanceAttribute or not. It could just indicate this
+   * attribute is packed into SOMETHING.
+   */
+  packUID?: number;
   /** This is the actual attribute mapped to a buffer */
   bufferAttribute: Three.InstancedBufferAttribute;
 }
@@ -335,7 +342,6 @@ export interface IInstancingUniform {
  */
 export interface IShaders {
   fs: string;
-  header?: string;
   vs: string;
 }
 

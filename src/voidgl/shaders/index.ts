@@ -1,1 +1,2 @@
-export * from './util/extend-shader';
+import "./base-modules";
+export * from "./util/extend-shader";

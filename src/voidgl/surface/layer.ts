@@ -78,7 +78,7 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * The scene identifier must be an identifier used when constructing the layer surface that this layer
    * is added to.
    */
-  scene?: string;
+  scene: string;
 
   // ---- EVENTS ----
   /** Executes when the mouse is down on instances and a picking type is set */
@@ -177,6 +177,10 @@ export class Layer<
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
+  /** This indicates whether this layer needs to draw */
+  needsViewDrawn: boolean = false;
+  /** End time of animation */
+  animationEndTime: number = 0;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -241,6 +245,8 @@ export class Layer<
 
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
+    // Set needsViewDrawn to be true if there is any change
+    if (changeList.length > 0) this.needsViewDrawn = true;
     // Make some holder variables to prevent declaration within the loop
     let change, instance, bufferLocations;
     // Fast ref to the processor and manager
@@ -320,12 +326,12 @@ export class Layer<
    */
   initShader(): IShaderInitialization<T> {
     return {
-      fs: require("../shaders/base/no-op.fs"),
+      fs: "${import: no-op}",
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: require("../shaders/base/no-op.vs")
+      vs: "${import: no-op}"
     };
   }
 
@@ -403,6 +409,24 @@ export class Layer<
         "You can not change a layers buffer strategy once it has been instantiated."
       );
     }
+  }
+
+  /**
+   * This method returns a flag indicating whether or not the layer should trigger it's view to redraw.
+   * By default, a redraw is triggered (this returns true) when a shallow comparison of the current props
+   * and the incoming props are different.
+   * This method can be overridden to place custom logic at this point to indicate when redraws should happen.
+   *
+   * NOTE: This should be considered for redraw logic centered around changes in the layer itself.
+   * There ARE additional triggers in the system that causes redraws. This method just aids in ensuring
+   * necessary redraws take place for layer level logic and props.
+   */
+  shouldDrawView(oldProps: U, newProps: U) {
+    for (const key in newProps) {
+      if (newProps[key] !== oldProps[key]) return true;
+    }
+
+    return false;
   }
 
   willUpdateInstances(_changes: [T, InstanceDiffType]) {

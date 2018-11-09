@@ -1,5 +1,7 @@
 precision highp float;
 
+${import: projection}
+
 float PI = 3.14159265;
 float PI_2 = 6.2831853;
 
@@ -94,7 +96,6 @@ void main() {
   vec2 vertex = currentPosition + currentNormal * (normal * lineThickness);
   // Get the color based on where we are on the line
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
-  vertexColor *= vertexColor.a;
 
   gl_Position = clipSpace(vec3(vertex, depth));
 

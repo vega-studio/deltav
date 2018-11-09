@@ -2,6 +2,7 @@ import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds, IPoint } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
@@ -51,7 +52,8 @@ export class CircleLayer<
     data: new InstanceProvider<CircleInstance>(),
     fadeOutOversized: -1,
     key: "",
-    scaleFactor: () => 1
+    scaleFactor: () => 1,
+    scene: "default"
   };
 
   static attributeNames = {
@@ -164,7 +166,13 @@ export class CircleLayer<
           name: "layerOpacity",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [
-            this.props.opacity === undefined ? 1.0 : this.props.opacity
+            (this.props.opacity === undefined ? 1.0 : this.props.opacity) *
+              // HACK: There is a blending issue with three OR with WebGL itself. This is an adjustment
+              // to address this issue.
+              this.bufferType ===
+            LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+              ? 0.15
+              : 1.0
           ]
         }
       ],

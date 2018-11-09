@@ -1,5 +1,7 @@
 precision highp float;
 
+${import: projection}
+
 varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float edgeSharpnessBase;
@@ -10,7 +12,8 @@ ${extendHeader}
 void main() {
   ${attributes}
 
-  vertexColor = color * color.a * layerOpacity;
+  vertexColor = color;
+  vertexColor.a *= layerOpacity;
   float size = radius * scaleFactor;
   edgeSharpness = mix(0.8, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   edgeSharpnessBase = mix(0.1, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));

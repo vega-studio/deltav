@@ -24,7 +24,7 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     data: IInstanceProvider<T>;
     picking?: PickType;
     printShader?: boolean;
-    scene?: string;
+    scene: string;
     onMouseDown?(info: IPickInfo<T>): void;
     onMouseMove?(info: IPickInfo<T>): void;
     onMouseOut?(info: IPickInfo<T>): void;
@@ -67,6 +67,8 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     uniforms: IUniformInternal[];
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
+    needsViewDrawn: boolean;
+    animationEndTime: number;
     constructor(props: ILayerProps<T>);
     destroy(): void;
     didUpdateProps(): void;
@@ -83,6 +85,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
     setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>): void;
     setBufferType(val: LayerBufferType): void;
+    shouldDrawView(oldProps: U, newProps: U): boolean;
     willUpdateInstances(_changes: [T, InstanceDiffType]): void;
     willUpdateProps(_newProps: ILayerProps<T>): void;
     didUpdate(): void;

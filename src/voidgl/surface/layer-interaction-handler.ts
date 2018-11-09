@@ -8,7 +8,7 @@ import {
   PickType
 } from "../types";
 import { Instance, TrackedQuadTree } from "../util";
-import { UniformColorDiffProcessor } from "./buffer-management/diff-processors/uniform-color-diff-processor";
+import { UniformColorDiffProcessor } from "./buffer-management/uniform-buffering/uniform-color-diff-processor";
 import { ILayerProps, Layer } from "./layer";
 
 function isColorProcessor<T extends Instance>(

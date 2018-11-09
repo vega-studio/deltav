@@ -8,15 +8,15 @@ import {
 } from "../../types";
 import { LayerBufferType } from "../layer-processing/layer-buffer-type";
 import { AtlasResourceManager } from "../texture/atlas-resource-manager";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
-import { BaseDiffProcessor } from "./diff-processors/base-diff-processor";
-import { InstanceAttributeColorDiffProcessor } from "./diff-processors/instance-attribute-color-diff-processor";
-import { InstanceAttributeDiffProcessor } from "./diff-processors/instance-attribute-diff-processor";
-import { InstanceAttributeQuadDiffProcessor } from "./diff-processors/instance-attribute-quad-diff-processor";
-import { UniformColorDiffProcessor } from "./diff-processors/uniform-color-diff-processor";
-import { UniformDiffProcessor } from "./diff-processors/uniform-diff-processor";
-import { UniformQuadDiffProcessor } from "./diff-processors/uniform-quad-diff-processor";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { InstanceAttributeColorDiffProcessor } from "./instance-attribute-buffering/instance-attribute-color-diff-processor";
+import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor";
+import { InstanceAttributeQuadDiffProcessor } from "./instance-attribute-buffering/instance-attribute-quad-diff-processor";
+import { UniformColorDiffProcessor } from "./uniform-buffering/uniform-color-diff-processor";
+import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
+import { UniformQuadDiffProcessor } from "./uniform-buffering/uniform-quad-diff-processor";
 
 /** Signature of a method that handles a diff */
 export type DiffHandler<T extends Instance> = (
@@ -77,7 +77,10 @@ export class InstanceDiffManager<T extends Instance> {
     // If this manager has already figured out which processor to use. Just return that processor.
     if (this.processing) return this.processing;
 
-    if (this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+    if (
+      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
+      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+    ) {
       // Now we look at the state of the layer to determine the best diff processor strategy
       if (this.layer.picking) {
         if (this.layer.picking.type === PickType.SINGLE) {

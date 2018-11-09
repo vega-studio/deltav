@@ -1,5 +1,7 @@
 precision highp float;
 
+${import: projection}
+
 varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float borderSize;
@@ -13,7 +15,7 @@ void main() {
 
   scale = scaleFactor;
 
-  vertexColor = color * color.a;
+  vertexColor = color;
   float size = radius * scaleFactor;
 
   float ringWidth = mix(2.0 , thickness, float(thickness > 2.0));

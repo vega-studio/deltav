@@ -1,5 +1,6 @@
 import { Component } from "preact";
 import { EventManager, ISceneOptions, LayerSurface } from "src";
+import "./backend";
 export interface IMainState {
     size: {
         width: number;

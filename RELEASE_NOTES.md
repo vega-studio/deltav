@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.20.0
+
+* `(ADDED)` The framework will now detect when no changes are taking place.  Upon no changes and no mouse interactions detected, draw calls will cease.
+* `(ADDED)` There is an additional buffer strategy to help keep shaders running optimally. Vertex Attribute Packing. This causes the system to detect layers that used too many attributes to utilize vertex attributes explicitly. Usually in this case the system would use the compatibility mode of the uniform buffer strategy, but now it will attempt to pack down the vertex attributes into blocks to maximize the space used for attributes as much as possible thus keeping it in an attribute mode rather than uniform mode for our instancing. This mode is based on the idea that an Attribute is actually a Block of size 4 floats. If you use just one float, the hardware considers the entire block used instead of packing it down internally. Thus we have to help the hardware utilize those blocks a bit smarter.
+* `(ADDED)` Shader modules! You can now register a shader and import it via {import: module-id} within your shader code. As the library grows, modules will be registered in the framework for easy access to useful methods. You can also register your own modules using ShaderModule.register.
+
 ## 1.19.6
 
 * `(FIXED)` printShader for a layer's props now works properly.

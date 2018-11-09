@@ -2,7 +2,7 @@ import { Instance } from "../../../instance-provider";
 import { ISinglePickingMetrics } from "../../../types";
 import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "../uniform-buffer-manager";
+import { IUniformBufferLocation } from "./uniform-buffer-manager";
 import { UniformDiffProcessor } from "./uniform-diff-processor";
 export declare class UniformColorDiffProcessor<T extends Instance> extends UniformDiffProcessor<T> {
     colorPicking: ISinglePickingMetrics<T>;

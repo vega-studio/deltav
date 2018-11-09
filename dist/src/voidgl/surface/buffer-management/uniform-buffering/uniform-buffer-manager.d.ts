@@ -1,9 +1,9 @@
 import * as Three from "three";
-import { Instance } from "../../instance-provider";
-import { Vec2 } from "../../util";
-import { Layer } from "../layer";
-import { Scene } from "../scene";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { Instance } from "../../../instance-provider";
+import { Vec2 } from "../../../util";
+import { Layer } from "../../layer";
+import { Scene } from "../../scene";
+import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
 export interface IUniformBufferLocation extends IBufferLocation {
     instanceIndex: number;
     buffer: Three.IUniform;

@@ -1,6 +1,6 @@
-import { Instance, InstanceDiff } from "../../../instance-provider";
-import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from "../buffer-manager-base";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { Instance, InstanceDiff } from "../../instance-provider";
+import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from "./buffer-manager-base";
+import { IInstanceDiffManagerTarget } from "./instance-diff-manager";
 export declare abstract class BaseDiffProcessor<T extends Instance> {
     layer: IInstanceDiffManagerTarget<T>;
     bufferManager: BufferManagerBase<T, IBufferLocation>;

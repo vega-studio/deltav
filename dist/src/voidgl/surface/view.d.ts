@@ -16,7 +16,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
     camera?: ChartCamera;
     clearFlags?: ClearFlags[];
     viewCamera?: ViewCamera;
-    viewport?: AbsolutePosition;
+    viewport: AbsolutePosition;
 }
 export declare class View extends IdentifyByKey {
     static DEFAULT_VIEW_ID: string;
@@ -29,6 +29,8 @@ export declare class View extends IdentifyByKey {
     viewCamera: ViewCamera;
     viewport: AbsolutePosition;
     viewBounds: DataBounds<View>;
+    needsDraw: boolean;
+    animationEndTime: number;
     constructor(options: IViewOptions);
     screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
     pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;

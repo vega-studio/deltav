@@ -1,10 +1,10 @@
 import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
 import { IInstanceAttributeInternal } from "../../../types";
+import { BaseDiffProcessor } from "../base-diff-processor";
 import { IBufferLocation, IBufferLocationGroup } from "../buffer-manager-base";
-import { IInstanceAttributeBufferLocationGroup } from "../instance-attribute-buffer-manager";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { BaseDiffProcessor } from "./base-diff-processor";
+import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
 export declare class InstanceAttributeDiffProcessor<T extends Instance> extends BaseDiffProcessor<T> {
     private diffMode;
     bufferAttributeUpdateRange: {

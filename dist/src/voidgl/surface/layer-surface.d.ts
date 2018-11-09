@@ -6,7 +6,6 @@ import { FrameMetrics } from "../types";
 import { Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { ILayerProps, Layer } from "./layer";
-import { IDefaultSceneElements } from "./layer-processing/generate-default-scene";
 import { SceneView } from "./mouse-event-manager";
 import { ISceneOptions, Scene } from "./scene";
 import { IAtlasOptions } from "./texture/atlas";
@@ -19,7 +18,7 @@ export interface ILayerSurfaceOptions {
     eventManagers?: EventManager[];
     handlesWheelEvents?: boolean;
     pixelRatio?: number;
-    scenes?: ISceneOptions[];
+    scenes: ISceneOptions[];
 }
 export interface ILayerConstructable<T extends Instance> {
     new (props: ILayerProps<T>): Layer<any, any>;
@@ -34,7 +33,6 @@ export declare class LayerSurface {
     private atlasManager;
     private context;
     currentViewport: Map<Three.WebGLRenderer, Box>;
-    defaultSceneElements: IDefaultSceneElements;
     frameMetrics: FrameMetrics;
     private isBufferingAtlas;
     layers: Map<string, Layer<Instance, ILayerProps<Instance>>>;
@@ -51,14 +49,16 @@ export declare class LayerSurface {
         views: View[];
     };
     willDisposeLayer: Map<string, boolean>;
+    private viewDrawDependencies;
     private loadReadyResolve;
     loadReady: Promise<void>;
     readonly gl: WebGLRenderingContext;
     private addLayer;
-    commit(time?: number, frameIncrement?: boolean, onViewReady?: (scene: Scene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;
+    commit(time?: number, frameIncrement?: boolean, onViewReady?: (needsDraw: boolean, scene: Scene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;
     destroy(): void;
     draw(time?: number): Promise<void>;
     private drawSceneView;
+    private gatherViewDrawDependencies;
     getViewSize(viewId: string): Bounds | null;
     getViewWorldBounds(viewId: string): Bounds | null;
     init(options: ILayerSurfaceOptions): Promise<this>;

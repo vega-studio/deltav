@@ -7,6 +7,7 @@ export declare function isBufferLocation(val: any): val is IBufferLocation;
 export declare function isBufferLocationGroup(val: any): val is IBufferLocationGroup<IBufferLocation>;
 export interface IBufferLocation {
     attribute: IInstanceAttributeInternal<Instance>;
+    block?: number;
     buffer: {
         value: Float32Array | Uint8Array;
     };

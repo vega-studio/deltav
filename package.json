@@ -18,9 +18,9 @@
     "auto": "auto"
   },
   "dependencies": {
-    "@types/three": "0.89.12",
-    "bowser": "1.7.3",
-    "three": "0.94.0"
+    "@types/three": "^0.89.12",
+    "bowser": "^1.7.3",
+    "three": "^0.94.0"
   },
   "devDependencies": {
     "@types/animejs": "2.0.0",

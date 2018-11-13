@@ -252,7 +252,7 @@ export class EdgeLayer<
               // to address this issue.
               this.bufferType ===
             LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
-              ? 0.15
+              ? 1.0
               : 1.0
           ]
         }

@@ -5,13 +5,13 @@
     "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "1.20.1",
+  "version": "1.20.2",
   "main": "index.js",
   "types": "src/index.d.ts",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/three": "0.84.x",
-    "bowser": "1.7.x",
-    "three": "0.94.x"
+    "@types/three": "^0.89.12",
+    "bowser": "^1.7.3",
+    "three": "^0.94.0"
   }
 }

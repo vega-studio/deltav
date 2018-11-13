@@ -6,7 +6,6 @@ import {
   IPickingMethods,
   Layer
 } from "../../surface/layer";
-import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IMaterialOptions,
   InstanceAttributeSize,
@@ -247,13 +246,7 @@ export class EdgeLayer<
           name: "layerOpacity",
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [
-            (this.props.opacity === undefined ? 1.0 : this.props.opacity) *
-              // HACK: There is a blending issue with three OR with WebGL itself. This is an adjustment
-              // to address this issue.
-              this.bufferType ===
-            LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
-              ? 1.0
-              : 1.0
+            this.props.opacity === undefined ? 1.0 : this.props.opacity
           ]
         }
       ],

@@ -50,8 +50,7 @@ export class VertexAttributePacking extends BaseExample {
         data: provider,
         key: `vertex-attribute-packing-${this.uid}`,
         scene: scene,
-        type: EdgeType.LINE,
-        printShader: true
+        type: EdgeType.LINE
       })
     ];
   }

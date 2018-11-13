@@ -89,6 +89,7 @@ export interface IInstanceAttribute<T extends Instance> {
 }
 export interface IInstanceAttributeInternal<T extends Instance> extends IInstanceAttribute<T> {
     uid: number;
+    packUID?: number;
     bufferAttribute: Three.InstancedBufferAttribute;
 }
 export interface IAtlasInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
@@ -129,7 +130,6 @@ export interface IInstancingUniform {
 }
 export interface IShaders {
     fs: string;
-    header?: string;
     vs: string;
 }
 export interface IProjection {

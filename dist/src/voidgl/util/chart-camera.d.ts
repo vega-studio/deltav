@@ -3,10 +3,18 @@ export interface IChartCameraOptions {
     scale?: [number] | [number, number] | [number, number, number];
 }
 export declare class ChartCamera {
-    _id: number;
-    offset: [number, number, number];
-    scale: [number, number, number];
+    private _id;
+    private _offset;
+    private _scale;
+    private _needsViewDrawn;
     constructor(options?: IChartCameraOptions);
     readonly id: number;
-    position(location: [number, number, number]): void;
+    setId(id: number): void;
+    readonly offset: [number, number, number];
+    setOffset(offset: [number, number, number]): void;
+    readonly scale: [number, number, number];
+    setScale(scale: [number, number, number]): void;
+    readonly needsViewDrawn: boolean;
+    resolve(): void;
+    update(): void;
 }

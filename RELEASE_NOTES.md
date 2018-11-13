@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.20.1
+
+* `(FIXED)` Vertex Packing performance buffering strategy was not creating proper blending outcomes for transparent shapes.
+
 ## 1.20.0
 
 * `(ADDED)` The framework will now detect when no changes are taking place.  Upon no changes and no mouse interactions detected, draw calls will cease.

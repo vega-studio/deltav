@@ -2,7 +2,7 @@
 // PickType.SINGLE (color picking).
 varying vec4 _picking_color_pass_;
 
-vec4 setColor(vec4 color) {
+lowp vec4 setColor(vec4 color) {
   gl_FragColor = mix(color, _picking_color_pass_, pickingActive);
 
   if (color.a == 0.0) {

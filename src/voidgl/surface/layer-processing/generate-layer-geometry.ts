@@ -27,7 +27,11 @@ export function generateLayerGeometry<T extends Instance>(
   // Make the new buffers to be updated
   const vertexBuffers = [];
 
-  if (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE) {
+  // Certain buffer strategies only need one instance buffered in
+  if (
+    layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
+    layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+  ) {
     maxInstancesPerBuffer = 1;
   }
 

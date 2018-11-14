@@ -5,12 +5,12 @@
     "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "1.20.2",
+  "version": "1.20.3",
   "main": "index.js",
   "types": "src/index.d.ts",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/three": "^0.89.12",
+    "@types/three": "^0.92.23",
     "bowser": "^1.7.3",
     "three": "^0.94.0"
   }

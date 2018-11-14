@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.20.4
+
+* `(FIXED)` Some devices would force a pixel ratio less than one for the window status. This is problematic for many of fiestas features, so a hard cap on keeping the ratio >= 1.0 has been employed for the context.
+
 ## 1.20.3
 
 * `(FIXED)` Update typescript and threejs typings

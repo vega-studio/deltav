@@ -18,7 +18,7 @@
     "auto": "auto"
   },
   "dependencies": {
-    "@types/three": "^0.89.12",
+    "@types/three": "^0.92.23",
     "bowser": "^1.7.3",
     "three": "^0.94.0"
   },
@@ -55,7 +55,7 @@
     "ts-loader": "4.2.0",
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
-    "typescript": "2.9.2",
+    "typescript": "3.1.1",
     "webpack": "4.6.0",
     "webpack-serve": "0.3.1"
   },

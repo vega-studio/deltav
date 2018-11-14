@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.20.3
+
+* `(FIXED)` Update typescript and threejs typings
+
 ## 1.20.2
 
 * `(FIXED)` Version fixes for the three library as well as updates to address some typing issues showing up in projects using this library.

@@ -324,9 +324,16 @@ export class MouseEventManager {
       };
 
       // Text will not be selected when it is being dragged
-      element.onselectstart = function() {
-        return false;
-      };
+      const experiemental = element as any;
+      if (experiemental.onselectstart !== undefined) {
+        experiemental.onselectstart = function() {
+          return false;
+        };
+      } else {
+        element.addEventListener("selectstart", function() {
+          event.preventDefault();
+        });
+      }
     };
 
     // Enable touch support
@@ -472,7 +479,12 @@ export class MouseEventManager {
     this.context.onmousedown = null;
     this.context.onmousemove = null;
     this.context.onmouseleave = null;
-    this.context.onmousewheel = null;
+
+    const experimental = this.context as any;
+
+    if (experimental.onmousewheel) {
+      experimental.onmousewheel = null;
+    }
 
     this.eventCleanup.forEach(event => {
       this.context.removeEventListener(event[0], event[1]);

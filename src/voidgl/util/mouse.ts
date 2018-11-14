@@ -144,12 +144,16 @@ function eventElementPosition(
     mouseX = e.pageX;
     mouseY = e.pageY;
   } else if (e.clientX || e.clientY) {
-    mouseX =
-      e.clientX +
-      document.body.scrollLeft +
-      document.documentElement.scrollLeft;
-    mouseY =
-      e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    let scrollLeft = 0;
+    let scrollTop = 0;
+
+    if (document.documentElement) {
+      scrollLeft = document.documentElement.scrollLeft;
+      scrollTop = document.documentElement.scrollTop;
+    }
+
+    mouseX = e.clientX + document.body.scrollLeft + scrollLeft;
+    mouseY = e.clientY + document.body.scrollTop + scrollTop;
   }
 
   // Get parent element position in document

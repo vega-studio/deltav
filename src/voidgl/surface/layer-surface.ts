@@ -609,13 +609,14 @@ export class LayerSurface {
     // We simply size the target to the view size and render. Thus scissoring is not required
     if (!target) {
       // Set the scissor rectangle.
-      context.enable(context.SCISSOR_TEST);
-      context.scissor(
-        offset.x,
-        rendererSize.height - offset.y - size.height,
-        size.width,
-        size.height
+      renderer.setScissorTest(true);
+      renderer.setScissor(
+        offset.x / pixelRatio,
+        offset.y / pixelRatio,
+        size.width / pixelRatio,
+        size.height / pixelRatio
       );
+
       // If a background is established, we should clear the background color
       // Specified for this context
       if (view.background) {
@@ -773,6 +774,11 @@ export class LayerSurface {
   async init(options: ILayerSurfaceOptions) {
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
+
+    if (this.pixelRatio < 1.0) {
+      this.pixelRatio = 1.0;
+    }
+
     // Make sure we have a gl context to work with
     this.setContext(options.context);
 

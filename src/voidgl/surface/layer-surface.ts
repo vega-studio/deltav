@@ -1214,6 +1214,11 @@ export class LayerSurface {
    */
   resize(width: number, height: number, pixelRatio?: number) {
     this.pixelRatio = pixelRatio || this.pixelRatio;
+
+    if (this.pixelRatio < 1.0) {
+      this.pixelRatio = 1.0;
+    }
+
     this.sceneViews.forEach(
       sceneView => (sceneView.view.pixelRatio = this.pixelRatio)
     );

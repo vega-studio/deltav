@@ -18,11 +18,7 @@ import { generateDefaultScene } from "./layer-processing/generate-default-scene"
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
-import { injectShaderIO } from "./layer-processing/inject-shader-io";
-import {
-  getLayerBufferType,
-  makeLayerBufferManager
-} from "./layer-processing/layer-buffer-type";
+import { makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
 import { MouseEventManager, SceneView } from "./mouse-event-manager";
 import { ISceneOptions, Scene } from "./scene";
 import { AtlasManager } from "./texture";
@@ -948,28 +944,15 @@ export class LayerSurface {
       Boolean
     );
     shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
-    // Get the injected shader IO attributes and uniforms
-    const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
-      this.gl,
-      layer,
-      shaderIO
-    );
-    // After all of the shader IO is established, let's calculate the appropriate buffering strategy
-    // For the layer.
-    getLayerBufferType(this.gl, layer, vertexAttributes, instanceAttributes);
 
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = new ShaderProcessor().process(
-      layer,
-      shaderIO,
-      vertexAttributes,
-      instanceAttributes,
-      uniforms
-    );
-
+    const shaderMetrics = new ShaderProcessor().process(layer, shaderIO);
     // Check to see if the Shader Processing failed. If so return null as a failure flag.
     if (!shaderMetrics) return null;
+
+    // Retrieve all of the attributes created as a result of layer input and module processing.
+    const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
 
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(

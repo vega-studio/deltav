@@ -7,10 +7,8 @@ import {
   IInstancingUniform,
   IShaderInitialization,
   IShaders,
-  IUniform,
   IUniformInternal,
   IVertexAttributeInternal,
-  PickType,
   ShaderInjectionTarget
 } from "../../types";
 import { shaderTemplate } from "../../util/shader-templating";
@@ -78,31 +76,6 @@ export class ShaderProcessor {
   );
 
   /**
-   * This processes the results of shaders importing modules by gathering the attributes
-   * and uniforms that arose from
-   */
-  private gatherIOFromShaderModules<
-    T extends Instance,
-    U extends ILayerProps<T>
-  >(
-    layer: Layer<T, U>,
-    shaderIO: IShaderInitialization<T>,
-    importResults: ProcessShaderImportResults
-  ) {
-    if (!importResults) return;
-
-    let moduleUniforms: (IUniform | null)[] = shaderIO.uniforms || [];
-
-    importResults.shaderModuleUnits.forEach(unit => {
-      if (unit.uniforms) {
-        moduleUniforms = moduleUniforms.concat(unit.uniforms(layer));
-      }
-    });
-
-    shaderIO.uniforms = moduleUniforms;
-  }
-
-  /**
    * This processes a layer, it's Shader IO requirements, and it's shaders to produce a fully functional
    * shader that is compatible with the client's system.
    */
@@ -118,17 +91,14 @@ export class ShaderProcessor {
       const shadersWithImports = this.processImports(layer, shaderIO);
       if (!shadersWithImports) return null;
 
-      // After processing imports, we now include any uniforms, or attributes the modules requested be included in the
-      // layer so that the modules can operate properly. This mostly includes items such as times, projection matrices etc
-      // that the system should be providing rather than the layer
-      this.gatherIOFromShaderModules(layer, shaderIO, shadersWithImports);
-
-      // After grabbing all of the module related
+      // After processing our imports, we can now fully aggregate the needed shader IO to make our layer
+      // operate properly
       // Get the injected shader IO attributes and uniforms
       const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
         layer.surface.gl,
         layer,
-        shaderIO
+        shaderIO,
+        shadersWithImports
       );
       // After all of the shader IO is established, let's calculate the appropriate buffering strategy
       // For the layer.
@@ -238,23 +208,17 @@ export class ShaderProcessor {
    */
   private processImports<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
-    shaders: IShaders
+    shaders: IShaderInitialization<T>
   ): ProcessShaderImportResults {
     const shaderModuleUnits = new Set<ShaderModuleUnit>();
-    const additionalImports = [];
-
-    if (layer.picking.type === PickType.SINGLE) {
-      additionalImports.push("picking");
-    } else {
-      additionalImports.push("no-picking");
-    }
+    const baseModules = layer.baseShaderModules(shaders);
 
     // Process imports for the vertex shader
     const vs = ShaderModule.process(
       layer.id,
       shaders.vs,
       ShaderInjectionTarget.VERTEX,
-      additionalImports
+      baseModules.vs
     );
 
     if (vs.errors.length > 0) {
@@ -273,7 +237,7 @@ export class ShaderProcessor {
       layer.id,
       shaders.fs,
       ShaderInjectionTarget.FRAGMENT,
-      additionalImports
+      baseModules.fs
     );
 
     if (fs.errors.length > 0) {

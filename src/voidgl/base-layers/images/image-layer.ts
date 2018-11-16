@@ -1,6 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
@@ -10,7 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
+import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ScaleType } from "../types";
 import { ImageInstance } from "./image-instance";
@@ -59,14 +59,14 @@ export class ImageLayer<
     return {
       // Provide the calculated AABB world bounds for a given image
       boundsAccessor: (image: ImageInstance) => {
-        const anchorEffect = [0, 0];
+        const anchorEffect: Vec2 = [0, 0];
 
         if (image.anchor) {
           anchorEffect[0] = image.anchor.x || 0;
           anchorEffect[1] = image.anchor.y || 0;
         }
 
-        const topLeft = [image.x - anchorEffect[0], image.y - anchorEffect[1]];
+        const topLeft = subtract2(image.position, anchorEffect);
 
         return new Bounds({
           height: image.height,
@@ -77,7 +77,7 @@ export class ImageLayer<
       },
 
       // Provide a precise hit test for the circle
-      hitTest: (image: ImageInstance, point: IPoint, view: IProjection) => {
+      hitTest: (image: ImageInstance, point: Vec2, view: IProjection) => {
         // The bounds of the image is in world space, but it does not account for the scale mode of the image.
         // Here, we will apply the scale mode testing to the image
         const maxScale = max(...view.camera.scale);
@@ -95,17 +95,17 @@ export class ImageLayer<
           } else {
             // We are zooming in. The bounds will shrink to keep the image at max font size
             // The location is within the world, but we reverse project the anchor spread
-            const anchorEffect = [0, 0];
+            const anchorEffect: Vec2 = [0, 0];
 
             if (image.anchor) {
               anchorEffect[0] = image.anchor.x || 0;
               anchorEffect[1] = image.anchor.y || 0;
             }
 
-            const topLeft = view.worldToScreen({
-              x: image.x - anchorEffect[0] / view.camera.scale[0],
-              y: image.y - anchorEffect[1] / view.camera.scale[1]
-            });
+            const topLeft = subtract2(
+              image.position,
+              divide2(anchorEffect, view.camera.scale)
+            );
 
             const screenPoint = view.worldToScreen(point);
 
@@ -113,25 +113,25 @@ export class ImageLayer<
             return new Bounds({
               height: image.height,
               width: image.width,
-              x: topLeft.x,
-              y: topLeft.y
+              x: topLeft[0],
+              y: topLeft[1]
             }).containsPoint(screenPoint);
           }
         } else if (image.scaling === ScaleType.NEVER) {
           // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
           // Of the camera zoom
           // The location is within the world, but we reverse project the anchor spread
-          const anchorEffect = [0, 0];
+          const anchorEffect: Vec2 = [0, 0];
 
           if (image.anchor) {
             anchorEffect[0] = image.anchor.x || 0;
             anchorEffect[1] = image.anchor.y || 0;
           }
 
-          const topLeft = view.worldToScreen({
-            x: image.x - anchorEffect[0] / view.camera.scale[0],
-            y: image.y - anchorEffect[1] / view.camera.scale[1]
-          });
+          const topLeft = subtract2(
+            image.position,
+            divide2(anchorEffect, view.camera.scale)
+          );
 
           const screenPoint = view.worldToScreen(point);
 
@@ -139,8 +139,8 @@ export class ImageLayer<
           return new Bounds({
             height: image.height,
             width: image.width,
-            x: topLeft.x,
-            y: topLeft.y
+            x: topLeft[0],
+            y: topLeft[1]
           }).containsPoint(screenPoint);
         }
 
@@ -184,7 +184,7 @@ export class ImageLayer<
           easing: animateLocation,
           name: ImageLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y]
+          update: o => o.position
         },
         {
           name: ImageLayer.attributeNames.anchor,

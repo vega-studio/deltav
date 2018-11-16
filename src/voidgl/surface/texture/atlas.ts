@@ -3,6 +3,7 @@ import {
   IdentifyByKey,
   IdentifyByKeyOptions
 } from "../../util/identify-by-key";
+import { Vec2 } from "../../util/vector";
 import { AtlasManager, AtlasResource } from "./atlas-manager";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
@@ -84,7 +85,7 @@ export class Atlas extends IdentifyByKey {
    * This invalidates the SubTexture of an atlas resource.
    */
   private invalidateResource(resource: AtlasResource) {
-    const zero = { x: 0, y: 0 };
+    const zero: Vec2 = [0, 0];
     resource.texture.aspectRatio = 1;
     resource.texture.atlasBL = zero;
     resource.texture.atlasBR = zero;

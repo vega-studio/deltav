@@ -742,17 +742,17 @@ export class LayerSurface {
         const view = sceneView.view;
 
         if (view.screenBounds) {
-          const topLeft = view.viewToWorld({ x: 0, y: 0 });
-          const bottomRight = view.screenToWorld({
-            x: view.screenBounds.right,
-            y: view.screenBounds.bottom
-          });
+          const topLeft = view.viewToWorld([0, 0]);
+          const bottomRight = view.screenToWorld([
+            view.screenBounds.right,
+            view.screenBounds.bottom
+          ]);
 
           return new Bounds({
-            bottom: bottomRight.y,
-            left: topLeft.x,
-            right: bottomRight.x,
-            top: topLeft.y
+            bottom: bottomRight[1],
+            left: topLeft[0],
+            right: bottomRight[0],
+            top: topLeft[1]
           });
         } else {
           return null;

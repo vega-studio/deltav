@@ -1,10 +1,10 @@
+import { Vec2 } from "src/voidgl/util";
 import * as Three from "three";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
 } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
 import { Color } from "../types";
 import { ChartCamera } from "../util/chart-camera";
 import { DataBounds } from "../util/data-bounds";
@@ -99,51 +99,51 @@ export class View extends IdentifyByKey {
     Object.assign(this, options);
   }
 
-  screenToPixelSpace(point: IPoint, out?: IPoint) {
-    const p = out || { x: 0, y: 0 };
+  screenToPixelSpace(point: Vec2, out?: Vec2) {
+    const p = out || [0, 0];
 
-    p.x = point.x * this.pixelRatio;
-    p.y = point.y * this.pixelRatio;
-
-    return p;
-  }
-
-  pixelSpaceToScreen(point: IPoint, out?: IPoint) {
-    const p = out || { x: 0, y: 0 };
-
-    p.x = point.x / this.pixelRatio;
-    p.y = point.y / this.pixelRatio;
+    p[0] = point[0] * this.pixelRatio;
+    p[1] = point[1] * this.pixelRatio;
 
     return p;
   }
 
-  screenToView(point: IPoint, out?: IPoint) {
+  pixelSpaceToScreen(point: Vec2, out?: Vec2) {
+    const p = out || [0, 0];
+
+    p[0] = point[0] / this.pixelRatio;
+    p[1] = point[1] / this.pixelRatio;
+
+    return p;
+  }
+
+  screenToView(point: Vec2, out?: Vec2) {
     const p = this.screenToPixelSpace(point, out);
 
-    p.x = p.x - this.viewBounds.x;
-    p.y = p.y - this.viewBounds.y;
+    p[0] = p[0] - this.viewBounds.x;
+    p[1] = p[1] - this.viewBounds.y;
 
     return p;
   }
 
-  viewToScreen(point: IPoint, out?: IPoint) {
-    const p = { x: 0, y: 0 };
+  viewToScreen(point: Vec2, out?: Vec2) {
+    const p: Vec2 = [0, 0];
 
-    p.x = point.x + this.viewBounds.x;
-    p.y = point.y + this.viewBounds.y;
+    p[0] = point[0] + this.viewBounds.x;
+    p[1] = point[1] + this.viewBounds.y;
 
     return this.pixelSpaceToScreen(p, out);
   }
 
-  screenToWorld(point: IPoint, out?: IPoint) {
+  screenToWorld(point: Vec2, out?: Vec2) {
     const view = this.pixelSpaceToScreen(this.screenToView(point));
 
-    const world = out || { x: 0, y: 0 };
-    world.x =
-      (view.x - this.camera.offset[0] * this.camera.scale[0]) /
+    const world = out || [0, 0];
+    world[0] =
+      (view[0] - this.camera.offset[0] * this.camera.scale[0]) /
       this.camera.scale[0];
-    world.y =
-      (view.y - this.camera.offset[1] * this.camera.scale[1]) /
+    world[1] =
+      (view[1] - this.camera.offset[1] * this.camera.scale[1]) /
       this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
@@ -154,16 +154,16 @@ export class View extends IdentifyByKey {
     return world;
   }
 
-  worldToScreen(point: IPoint, out?: IPoint) {
-    const screen = { x: 0, y: 0 };
+  worldToScreen(point: Vec2, out?: Vec2) {
+    const screen: Vec2 = [0, 0];
 
     // Calculate from the camera to view space
-    screen.x =
-      (point.x * this.camera.scale[0] +
+    screen[0] =
+      (point[0] * this.camera.scale[0] +
         this.camera.offset[0] * this.camera.scale[0]) *
       this.pixelRatio;
-    screen.y =
-      (point.y * this.camera.scale[1] +
+    screen[1] =
+      (point[1] * this.camera.scale[1] +
         this.camera.offset[1] * this.camera.scale[1]) *
       this.pixelRatio;
 
@@ -176,15 +176,15 @@ export class View extends IdentifyByKey {
     return this.viewToScreen(screen, out);
   }
 
-  viewToWorld(point: IPoint, out?: IPoint) {
-    const world = out || { x: 0, y: 0 };
+  viewToWorld(point: Vec2, out?: Vec2) {
+    const world = out || [0, 0];
 
     const screen = this.pixelSpaceToScreen(point);
-    world.x =
-      (screen.x - this.camera.offset[0] * this.camera.scale[0]) /
+    world[0] =
+      (screen[0] - this.camera.offset[0] * this.camera.scale[0]) /
       this.camera.scale[0];
-    world.y =
-      (screen.y - this.camera.offset[1] * this.camera.scale[1]) /
+    world[1] =
+      (screen[1] - this.camera.offset[1] * this.camera.scale[1]) /
       this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen
@@ -195,15 +195,15 @@ export class View extends IdentifyByKey {
     return world;
   }
 
-  worldToView(point: IPoint, out?: IPoint) {
-    const screen = out || { x: 0, y: 0 };
+  worldToView(point: Vec2, out?: Vec2) {
+    const screen = out || [0, 0];
 
     // Calculate from the camera to view space
-    screen.x =
-      point.x * this.camera.scale[0] +
+    screen[0] =
+      point[0] * this.camera.scale[0] +
       this.camera.offset[0] * this.camera.scale[0];
-    screen.y =
-      point.y * this.camera.scale[1] +
+    screen[1] =
+      point[1] * this.camera.scale[1] +
       this.camera.offset[1] * this.camera.scale[1];
 
     // If this is a custom camera, we must actually project our world point to the screen

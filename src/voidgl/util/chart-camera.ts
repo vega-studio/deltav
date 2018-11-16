@@ -1,10 +1,12 @@
+import { Vec3 } from "src/voidgl/util/vector";
+
 let chartCameraUID = 0;
 
 export interface IChartCameraOptions {
   /** The world space offset of elements in the chart */
-  offset?: [number] | [number, number] | [number, number, number];
+  offset?: [number] | [number, number] | Vec3;
   /** The world space scaling present in the chart */
-  scale?: [number] | [number, number] | [number, number, number];
+  scale?: [number] | [number, number] | Vec3;
 }
 
 /**
@@ -20,9 +22,9 @@ export class ChartCamera {
   /** Internally set id */
   private _id: number = chartCameraUID++;
   /** Represents how much an element should be offset in world space */
-  private _offset: [number, number, number] = [0, 0, 0];
+  private _offset: Vec3 = [0, 0, 0];
   /** Represents how scaled each axis should be in world space */
-  private _scale: [number, number, number] = [1, 1, 1];
+  private _scale: Vec3 = [1, 1, 1];
   /** This indicates whether the view where the camera is in needs drawn */
   private _needsViewDrawn: boolean = true;
 
@@ -50,8 +52,8 @@ export class ChartCamera {
   /**
    * Sets the location of the camera by adjusting the offsets to match.
    */
-  setOffset(offset: [number, number, number]) {
-    this._offset = offset.slice(0) as [number, number, number];
+  setOffset(offset: Vec3) {
+    this._offset = offset.slice(0) as Vec3;
     this._needsViewDrawn = true;
   }
 
@@ -59,7 +61,7 @@ export class ChartCamera {
     return this._scale;
   }
 
-  setScale(scale: [number, number, number]) {
+  setScale(scale: Vec3) {
     this._scale = scale;
     this._needsViewDrawn = true;
   }

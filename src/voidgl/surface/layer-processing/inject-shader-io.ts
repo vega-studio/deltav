@@ -4,6 +4,7 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
+import { ProcessShaderImportResults } from "src/voidgl/shaders/processing/shader-processor";
 import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
@@ -12,17 +13,13 @@ import {
   IUniform,
   IUniformInternal,
   IVertexAttribute,
-  IVertexAttributeInternal,
-  PickType,
-  ShaderInjectionTarget,
-  UniformSize,
-  VertexAttributeSize
+  IVertexAttributeInternal
 } from "../../types";
 import { Vec } from "../../util";
 import { ILayerProps, Layer } from "../layer";
 import { generateAtlasResourceUniforms } from "./expand-atlas-attributes";
 import { generateEasingAttributes } from "./expand-easing-attributes";
-import { getLayerBufferType, LayerBufferType } from "./layer-buffer-type";
+import { getLayerBufferType } from "./layer-buffer-type";
 import { packAttributes } from "./pack-attributes";
 
 /**
@@ -81,150 +78,6 @@ function sortNeedsUpdateFirstToTop<T extends Instance>(
   if (a.atlas && !b.atlas) return -1;
   if (a.easing && !b.easing) return -1;
   return 1;
-}
-
-function generatePickingUniforms<T extends Instance, U extends ILayerProps<T>>(
-  layer: Layer<T, U>
-): IUniform[] {
-  if (layer.picking.type === PickType.SINGLE) {
-    return [
-      {
-        name: "pickingActive",
-        shaderInjection: ShaderInjectionTarget.ALL,
-        size: UniformSize.ONE,
-        update: () => [
-          layer.picking.currentPickMode === PickType.SINGLE ? 1.0 : 0.0
-        ]
-      }
-    ];
-  }
-
-  return [];
-}
-
-function generatePickingAttributes<
-  T extends Instance,
-  U extends ILayerProps<T>
->(layer: Layer<T, U>): IInstanceAttribute<T>[] {
-  if (layer.picking.type === PickType.SINGLE) {
-    return [
-      {
-        name: "_pickingColor",
-        size: InstanceAttributeSize.FOUR,
-        update: o => {
-          // We start from white and move down so the colors are more visible
-          // For debugging
-          const color = 0xffffff - o.uid;
-
-          // Do bit maths do get float components out of the int color
-          return [
-            (color >> 16) / 255.0,
-            ((color & 0x00ff00) >> 8) / 255.0,
-            (color & 0x0000ff) / 255.0,
-            1
-          ];
-        }
-      }
-    ];
-  }
-
-  return [];
-}
-
-function generateBaseUniforms<T extends Instance, U extends ILayerProps<T>>(
-  layer: Layer<T, U>
-): IUniform[] {
-  return [
-    // This injects the projection matrix from the view camera
-    {
-      name: "projection",
-      size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.baseCamera.projectionMatrix.elements
-    },
-    // This injects the model view matrix from the view camera
-    {
-      name: "modelView",
-      size: UniformSize.MATRIX4,
-      update: () => layer.view.viewCamera.baseCamera.matrix.elements
-    },
-    // This injects the camera offset uniforms that need to be present for projecting in a more
-    // Chart centric style
-    {
-      name: "cameraOffset",
-      size: UniformSize.THREE,
-      update: () => layer.view.camera.offset
-    },
-    // This injects the camera scaling uniforms that need to be present for projecting in a more
-    // Chart centric style
-    {
-      name: "cameraScale",
-      size: UniformSize.THREE,
-      update: () => layer.view.camera.scale
-    },
-    // This injects the camera scaling uniforms that need to be present for projecting in a more
-    // Chart centric style
-    {
-      name: "viewSize",
-      size: UniformSize.TWO,
-      update: () => [layer.view.viewBounds.width, layer.view.viewBounds.height]
-    },
-    // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
-    // Things like gl_PointSize will need this metric if not working in clip space
-    {
-      name: "pixelRatio",
-      size: UniformSize.ONE,
-      update: () => [layer.view.pixelRatio]
-    },
-    // This will be the current frame's current time which is updated in the layer's surface draw call
-    {
-      name: "currentTime",
-      size: UniformSize.ONE,
-      update: () => [layer.surface.frameMetrics.currentTime]
-    }
-  ];
-}
-
-/**
- * This creates the base instance attributes that are ALWAYS present
- */
-function generateBaseInstanceAttributes<T extends Instance>(
-  layer: Layer<T, any>
-): IInstanceAttribute<T>[] {
-  // This is injected so the system can control when an instance should not be rendered.
-  // This allows for holes to be in the buffer without having to correct them immediately
-  const activeAttribute: IInstanceAttribute<T> = {
-    name: "_active",
-    size: InstanceAttributeSize.ONE,
-    update: o => [o.active ? 1 : 0]
-  };
-
-  // Set the active attribute to the layer for quick reference
-  layer.activeAttribute = activeAttribute;
-
-  return [activeAttribute];
-}
-
-/**
- * This creates the base vertex attributes that are ALWAYS present
- */
-function generateBaseVertexAttributes<T extends Instance>(
-  layer: Layer<T, any>
-): IVertexAttribute[] {
-  // Only the uniform buffering strategy requires instance information in it's vertex attributes
-  if (layer.bufferType === LayerBufferType.UNIFORM) {
-    return [
-      // We add an inherent instance attribute to our vertices so they can determine the instancing
-      // Data to retrieve.
-      {
-        name: "instance",
-        size: VertexAttributeSize.ONE,
-        // We no op this as our geomtry generating routine will establish the values needed here
-        update: () => [0]
-      }
-    ];
-  }
-
-  return [];
 }
 
 function compareVec(a: Vec, b: Vec) {
@@ -341,14 +194,126 @@ function validateInstanceAttributes<T extends Instance>(
 }
 
 /**
+ * This processes the results of shaders importing modules by gathering the attributes
+ * and uniforms that arose from
+ */
+function gatherIOFromShaderModules<
+  T extends Instance,
+  U extends ILayerProps<T>
+>(
+  layer: Layer<T, U>,
+  shaderIO: IShaderInitialization<T>,
+  importResults: ProcessShaderImportResults
+) {
+  if (!importResults) return;
+
+  // Get the existing items from the IO
+  let moduleInstanceAttributes = shaderIO.instanceAttributes || [];
+  let moduleUniforms = shaderIO.uniforms || [];
+  let moduleVertexAttributes = shaderIO.vertexAttributes || [];
+
+  // Add in the module requested items
+  importResults.shaderModuleUnits.forEach(unit => {
+    if (unit.instanceAttributes) {
+      moduleInstanceAttributes = moduleInstanceAttributes.concat(
+        unit.instanceAttributes(layer)
+      );
+    }
+
+    if (unit.uniforms) {
+      moduleUniforms = moduleUniforms.concat(unit.uniforms(layer));
+    }
+
+    if (unit.vertexAttributes) {
+      moduleVertexAttributes = moduleVertexAttributes.concat(
+        unit.vertexAttributes(layer)
+      );
+    }
+  });
+
+  // Dedup any element by name and show warnings when any item is overridden
+  const uniformNames = new Set<string>();
+  const instanceAttributeNames = new Set<string>();
+  const vertexAttributeNames = new Set<string>();
+
+  moduleUniforms.filter(uniform => {
+    if (uniform) {
+      if (uniformNames.has(uniform.name)) {
+        console.warn(
+          "Included shader modules has introduced duplicate uniform names:",
+          uniform.name,
+          "One will be overridden thus causing a potential crash of the shader."
+        );
+        return false;
+      }
+
+      uniformNames.add(uniform.name);
+
+      return true;
+    }
+
+    return false;
+  });
+
+  moduleInstanceAttributes.filter(attribute => {
+    if (attribute) {
+      if (instanceAttributeNames.has(attribute.name)) {
+        console.warn(
+          "Included shader modules has introduced duplicate Instance Attribute names:",
+          attribute.name,
+          "One will be overridden thus causing a potential crash of the shader."
+        );
+        return false;
+      }
+
+      instanceAttributeNames.add(attribute.name);
+
+      return true;
+    }
+
+    return false;
+  });
+
+  moduleVertexAttributes.filter(attribute => {
+    if (attribute) {
+      if (vertexAttributeNames.has(attribute.name)) {
+        console.warn(
+          "Included shader modules has introduced duplicate Vertex Attribute names:",
+          attribute.name,
+          "One will be overridden thus causing a potential crash of the shader."
+        );
+        return false;
+      }
+
+      vertexAttributeNames.add(attribute.name);
+
+      return true;
+    }
+
+    return false;
+  });
+
+  // Apply any changes to the IO object
+  shaderIO.instanceAttributes = moduleInstanceAttributes;
+  shaderIO.uniforms = moduleUniforms;
+  shaderIO.vertexAttributes = moduleVertexAttributes;
+}
+
+/**
  * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
  * into the shader.
  */
 export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   gl: WebGLRenderingContext,
   layer: Layer<T, U>,
-  shaderIO: IShaderInitialization<T>
+  shaderIO: IShaderInitialization<T>,
+  importResults: ProcessShaderImportResults
 ) {
+  // After processing imports, we can now include any uniforms, or attributes the shader modules requested to be included in the
+  // layer so that the modules can operate properly. This mostly includes items such as times, projection matrices etc
+  // that the system should be providing rather than the layer
+  gatherIOFromShaderModules(layer, shaderIO, importResults);
+
   // All of the instance attributes with nulls filtered out
   const instanceAttributes = (shaderIO.instanceAttributes || []).filter(
     isInstanceAttribute
@@ -364,22 +329,12 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // Generates all of the attributes needed to make attributes automagically be eased when changed
   generateEasingAttributes(layer, instanceAttributes);
   // Get the uniforms needed to facilitate atlas resource requests if any exists
-  let addedUniforms: IUniform[] = uniforms.concat(
+  const addedUniforms: IUniform[] = uniforms.concat(
     generateAtlasResourceUniforms(layer, instanceAttributes)
   );
-  // These are the uniforms that should be present in the shader for basic operation
-  addedUniforms = addedUniforms.concat(generateBaseUniforms(layer));
-  // Add in uniforms for picking
-  addedUniforms = addedUniforms.concat(generatePickingUniforms(layer));
   // Create the base instance attributes that must be present
-  let addedInstanceAttributes = instanceAttributes.concat(
-    generateBaseInstanceAttributes(layer)
-  );
-  // Add in attributes for picking
-  addedInstanceAttributes = addedInstanceAttributes.concat(
-    generatePickingAttributes(layer)
-  );
-
+  const addedInstanceAttributes = instanceAttributes.slice(0);
+  // Convert our uniforms to the internal structure they need to be
   const allUniforms = addedUniforms.map(toUniformInternal);
 
   const allInstanceAttributes = addedInstanceAttributes.sort(
@@ -392,9 +347,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
 
   // Create the base vertex attributes that must be present
-  const addedVertexAttributes: IVertexAttribute[] = generateBaseVertexAttributes(
-    layer
-  );
+  const addedVertexAttributes: IVertexAttribute[] = [];
 
   // Aggregate all of the injected shaderIO with the layer's shaderIO
   const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes

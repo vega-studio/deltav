@@ -2,6 +2,7 @@ import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResource, ImageRasterizer } from "../../surface/texture";
+import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleType } from "../types";
 
 const { max } = Math;
@@ -18,16 +19,14 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   element: HTMLImageElement;
   /** The height of the image as it is to be rendered in world space */
   height?: number;
+  /** The coordinate where the image will be anchored to in world space */
+  position?: Vec2;
   /** Sets the way the image scales with the world */
   scaling?: ScaleType;
   /** The color the image should render as */
   tint: [number, number, number, number];
   /** The width of the image as it is to be rendered in world space */
   width?: number;
-  /** The x coordinate where the image will be anchored to in world space */
-  x?: number;
-  /** The y coordinate where the image will be anchored to in world space */
-  y?: number;
 }
 
 /**
@@ -126,14 +125,12 @@ export class ImageInstance extends Instance implements Image {
   @observable depth: number = 0;
   /** The height of the image as it is to be rendered in world space */
   @observable height: number = 1;
+  /** The coordinate where the image will be anchored to in world space */
+  @observable position: Vec2 = [0, 0];
   /** Sets the way the image scales with the world */
   @observable scaling: ScaleType = ScaleType.BOUND_MAX;
   /** The width of the image as it is to be rendered in world space */
   @observable width: number = 1;
-  /** The x coordinate where the image will be anchored to in world space */
-  @observable x: number = 0;
-  /** The y coordinate where the image will be anchored to in world space */
-  @observable y: number = 0;
 
   get size() {
     return max(this.width, this.height);
@@ -208,8 +205,7 @@ export class ImageInstance extends Instance implements Image {
     this.depth = options.depth || this.depth;
     this.tint = options.tint || this.tint;
     this.scaling = options.scaling || this.scaling;
-    this.x = options.x || this.x;
-    this.y = options.y || this.y;
+    this.position = options.position || this.position;
 
     // This is the image that is to be rendered
     this._element = options.element;
@@ -280,8 +276,7 @@ export class ImageInstance extends Instance implements Image {
     this.height = this.height;
     this.scaling = this.scaling;
     this.width = this.width;
-    this.x = this.x;
-    this.y = this.y;
+    this.position = this.position;
   }
 
   /**

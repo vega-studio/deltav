@@ -198,63 +198,78 @@ export class ShaderModule {
             // Indicates if content was properly found for the requested ID
             let moduleContentFound = false;
             // At this point, ANYTHING after the colon is the module id being requested (with white space trimmed)
-            const moduleId = afterToken.substr(IMPORT_DELIMITER.length).trim();
-            // Get the requested module
-            const mod = ShaderModule.modules.get(moduleId);
+            // We allow comma delimited module ids to be specified
+            const moduleIds = afterToken
+              .substr(IMPORT_DELIMITER.length)
+              .trim()
+              .split(",");
 
-            // If we found the module, great! We can store the identifier as a module associated with this shader
-            // string thus reducing processing time needed for next processing.
-            if (mod) {
-              if (
-                target === ShaderInjectionTarget.FRAGMENT ||
-                target === ShaderInjectionTarget.ALL
-              ) {
-                if (mod.fs) {
-                  moduleContentFound = true;
-
-                  if (!dependentSet.has(moduleId)) {
-                    dependents.push(moduleId);
-                  }
-                } else {
-                  errors.push(
-                    `Could not find requested target fragment module for Module ID: ${moduleId} requested by module: ${id}`
-                  );
-                }
-              }
-
-              if (
-                target === ShaderInjectionTarget.VERTEX ||
-                target === ShaderInjectionTarget.ALL
-              ) {
-                if (mod.vs) {
-                  moduleContentFound = true;
-
-                  if (!dependentSet.has(moduleId)) {
-                    dependents.push(moduleId);
-                  }
-                } else {
-                  errors.push(
-                    `Could not find requested target vertex module for Module ID: ${moduleId} requested by module: ${id}`
-                  );
-                }
-              }
-
-              if (!mod.vs && !mod.fs) {
-                errors.push(
-                  "Could not find a vertex or fragment shader within exisitng module"
-                );
-              }
-
-              if (!moduleContentFound) {
-                errors.push(
-                  `Error Processing module Module ID: ${moduleId} requested by module: ${id}`
-                );
-              }
-            } else {
-              errors.push(
-                `Could not find requested module: ${moduleId} requested by module: ${id}`
-              );
+            // Wealso  allow trailing comma
+            if (moduleIds[moduleIds.length - 1].trim().length === 0) {
+              moduleIds.pop();
             }
+
+            // Loop through all discovered module ids after the import statement
+            moduleIds.forEach(moduleId => {
+              // Make sure whitespace is cleared
+              moduleId = moduleId.trim();
+              // Get the requested module
+              const mod = ShaderModule.modules.get(moduleId);
+
+              // If we found the module, great! We can store the identifier as a module associated with this shader
+              // string thus reducing processing time needed for next processing.
+              if (mod) {
+                if (
+                  target === ShaderInjectionTarget.FRAGMENT ||
+                  target === ShaderInjectionTarget.ALL
+                ) {
+                  if (mod.fs) {
+                    moduleContentFound = true;
+
+                    if (!dependentSet.has(moduleId)) {
+                      dependents.push(moduleId);
+                    }
+                  } else {
+                    errors.push(
+                      `Could not find requested target fragment module for Module ID: ${moduleId} requested by module: ${id}`
+                    );
+                  }
+                }
+
+                if (
+                  target === ShaderInjectionTarget.VERTEX ||
+                  target === ShaderInjectionTarget.ALL
+                ) {
+                  if (mod.vs) {
+                    moduleContentFound = true;
+
+                    if (!dependentSet.has(moduleId)) {
+                      dependents.push(moduleId);
+                    }
+                  } else {
+                    errors.push(
+                      `Could not find requested target vertex module for Module ID: ${moduleId} requested by module: ${id}`
+                    );
+                  }
+                }
+
+                if (!mod.vs && !mod.fs) {
+                  errors.push(
+                    "Could not find a vertex or fragment shader within exisitng module"
+                  );
+                }
+
+                if (!moduleContentFound) {
+                  errors.push(
+                    `Error Processing module Module ID: ${moduleId} requested by module: ${id}`
+                  );
+                }
+              } else {
+                errors.push(
+                  `Could not find requested module: ${moduleId} requested by module: ${id}`
+                );
+              }
+            });
 
             // Clear the import token from the body of the shader
             return "";
@@ -351,8 +366,6 @@ export class ShaderModule {
       // This is the id of the module unit  currently being processed
       const id = unit.moduleId;
 
-      console.log("PROCESS", unit.moduleId);
-
       // Do the circular dependency check for the module
       if (!checkCircularDependency(unit)) {
         return null;
@@ -438,8 +451,10 @@ export class ShaderModule {
         }
       }
 
-      // Set the module as included and processed
-      included.add(id);
+      // Remove the id being processed currently
+      processing.shift();
+      // Add the id to the list of items that have been included
+      included.add(id || "");
 
       // Place the included module content at the top of the shader and return this module with it's necessary
       // inclusions
@@ -450,9 +465,12 @@ export class ShaderModule {
     let modifedShader = shader;
 
     if (additionalModules) {
-      const imports = additionalModules.map(
-        moduleId => `$\{import: ${moduleId}}\n`
+      let imports = "";
+
+      additionalModules.forEach(
+        moduleId => (imports += `$\{import: ${moduleId}}\n`)
       );
+
       modifedShader = imports + shader;
     }
 
@@ -463,7 +481,9 @@ export class ShaderModule {
       moduleId: `Layer "${id}" ${
         target === ShaderInjectionTarget.ALL
           ? "fs vs"
-          : target === ShaderInjectionTarget.VERTEX ? "vs" : "fs"
+          : target === ShaderInjectionTarget.VERTEX
+            ? "vs"
+            : "fs"
       }`
     });
 

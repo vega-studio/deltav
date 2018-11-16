@@ -1,5 +1,12 @@
-import { Layer } from "src/voidgl/surface/layer";
-import { IUniform, Omit, ShaderInjectionTarget } from "../../types";
+import { Instance } from "src/voidgl/instance-provider/instance";
+import { ILayerProps, Layer } from "src/voidgl/surface/layer";
+import {
+  IInstanceAttribute,
+  IUniform,
+  IVertexAttribute,
+  Omit,
+  ShaderInjectionTarget
+} from "../../types";
 
 /** This is the message used when a module unit is attempted to be modified after it has been locked down */
 const LOCKED_MODULE_UNIT_MESSAGE =
@@ -72,6 +79,13 @@ export class ShaderModuleUnit {
   }
 
   /**
+   * Method for the unit to provide instance attributes for the module
+   */
+  instanceAttributes?<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): IInstanceAttribute<T>[];
+
+  /**
    * Indicates this unit cannot be modified anymore.
    */
   isLocked() {
@@ -97,9 +111,18 @@ export class ShaderModuleUnit {
   }
 
   /**
-   * These are uniforms that get added to the layer's uniforms ShaderIO when this module is included.
+   * Method so the unit can provide uniforms for the module.
    */
-  uniforms?(layer: Layer<any, any>): IUniform[];
+  uniforms?<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): IUniform[];
+
+  /**
+   * Method so the unit can provide vertex attributes for the module.
+   */
+  vertexAttributes?<T extends Instance, U extends ILayerProps<T>>(
+    layer: Layer<T, U>
+  ): IVertexAttribute[];
 
   /**
    * Default ctor for creating a new Shader Module Unit to be registered with the system.

@@ -1,4 +1,4 @@
-import { IPoint } from "../primitives/point";
+import { subtract2, Vec2 } from "../util";
 import { DataBounds } from "../util/data-bounds";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
@@ -33,22 +33,22 @@ export interface IMouseInteraction {
   button?: number;
   /** Metrics of the interaction in screen space */
   screen: {
-    mouse: IPoint;
+    mouse: Vec2;
   };
   /** The View the mouse was 'down' on */
   start?: {
-    mouse: IPoint;
+    mouse: Vec2;
     view: View;
   };
   /** The View Immediately underneath the mouse */
   target: {
-    mouse: IPoint;
+    mouse: Vec2;
     view: View;
   };
   /** This is populated with ALL of the views underneath the mouse */
   viewsUnderMouse: {
     /** The mouse's location in the views coordinate space */
-    mouse: IPoint;
+    mouse: Vec2;
     /** The view that is interacted with */
     view: View;
   }[];
@@ -58,13 +58,13 @@ export interface IDragMetrics {
   /** Drag metrics in screen space */
   screen: {
     /** The start position of the drag where the mouse down first occurred */
-    start: IPoint;
+    start: Vec2;
     /** The previous position of the mouse last frame */
-    previous: IPoint;
+    previous: Vec2;
     /** The current position the mouse is located for this frame */
-    current: IPoint;
+    current: Vec2;
     /** The change in position from last frame to this frame */
-    delta: IPoint;
+    delta: Vec2;
   };
 }
 
@@ -77,7 +77,7 @@ export interface IWheelMetrics {
  */
 export interface ITouchRelation {
   /** The direction to the other touch */
-  direction: IPoint;
+  direction: Vec2;
   /** The current distance to the other touch */
   distance: number;
   /** The id of the other touch */
@@ -89,9 +89,9 @@ export interface ITouchRelation {
  */
 export interface ITouchFrame {
   /** This is the location or delta location of the touch for this frame */
-  location: IPoint;
+  location: Vec2;
   /** This is the direction from the start touch frame */
-  direction: IPoint;
+  direction: Vec2;
   /** This is the metrics or delta metrics of the touch relative to the other touches for the frame */
   relations: Map<number, ITouchRelation>;
 }
@@ -169,7 +169,7 @@ export class MouseEventManager {
   addContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
     let startView: SceneView | undefined;
-    let startPosition: IPoint = { x: 0, y: 0 };
+    let startPosition: Vec2 = [0, 0];
 
     if (handlesWheelEvents) {
       const wheelHandler = (event: MouseWheelEvent) => {
@@ -261,10 +261,7 @@ export class MouseEventManager {
           startPosition,
           startView
         );
-        const delta = {
-          x: mouse.x - currentPosition.x,
-          y: mouse.y - currentPosition.y
-        };
+        const delta: Vec2 = subtract2(mouse, currentPosition);
 
         const drag = this.makeDrag(
           mouse,
@@ -382,7 +379,7 @@ export class MouseEventManager {
    * Retrieves the views underneath the mouse with the top most view as
    * the first view in the list.
    */
-  getViewsUnderMouse = (mouse: IPoint) => {
+  getViewsUnderMouse = (mouse: Vec2) => {
     // Find the views the mouse has interacted with
     const hitViews = this.quadTree.query(mouse);
     // Sort them by depth
@@ -395,10 +392,10 @@ export class MouseEventManager {
    * This generates the metrics for a drag gesture.
    */
   makeDrag(
-    mouse: IPoint,
-    start: IPoint,
-    previous: IPoint,
-    delta: IPoint
+    mouse: Vec2,
+    start: Vec2,
+    previous: Vec2,
+    delta: Vec2
   ): IDragMetrics {
     return {
       screen: {
@@ -414,8 +411,8 @@ export class MouseEventManager {
    * This makes the metrics for interactions with the views.
    */
   makeInteraction(
-    mouse: IPoint,
-    start?: IPoint,
+    mouse: Vec2,
+    start?: Vec2,
     startView?: SceneView
   ): IMouseInteraction {
     // Find the views the mouse has interacted with
@@ -445,7 +442,7 @@ export class MouseEventManager {
     const wheel = normalizeWheel(event);
 
     return {
-      wheel: [wheel.x, wheel.y]
+      wheel
     };
   }
 

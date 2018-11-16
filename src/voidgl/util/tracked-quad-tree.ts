@@ -1,6 +1,6 @@
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
+import { isVec2, Vec2 } from "../util/vector";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -65,27 +65,27 @@ export class Quadrants<T extends Instance> {
     childToBounds: Map<T, Bounds | null>
   ) {
     const mid = bounds.mid;
-    this.TL = new Node<T>(bounds.x, mid.x, bounds.y, mid.y, getBounds, depth);
+    this.TL = new Node<T>(bounds.x, mid[0], bounds.y, mid[1], getBounds, depth);
     this.TR = new Node<T>(
-      mid.x,
+      mid[0],
       bounds.right,
       bounds.y,
-      mid.y,
+      mid[1],
       getBounds,
       depth
     );
     this.BL = new Node<T>(
       bounds.x,
-      mid.x,
-      mid.y,
+      mid[0],
+      mid[1],
       bounds.bottom,
       getBounds,
       depth
     );
     this.BR = new Node<T>(
-      mid.x,
+      mid[0],
       bounds.right,
-      mid.y,
+      mid[1],
       bounds.bottom,
       getBounds,
       depth
@@ -437,7 +437,7 @@ export class Node<T extends Instance> {
    *
    * @return An array of children that intersects with the query
    */
-  query(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[] {
+  query(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[] {
     // This stores all of the found Instances when querying by bounds or point
     let found: T[] = [];
 
@@ -453,9 +453,11 @@ export class Node<T extends Instance> {
       }
     }
 
-    // Query a point
-    if (this.bounds.containsPoint(bounds)) {
-      return this.queryPoint(bounds, found, visit);
+    if (isVec2(bounds)) {
+      // Query a point
+      if (this.bounds.containsPoint(bounds)) {
+        return this.queryPoint(bounds, found, visit);
+      }
     }
 
     // Return an empty array when nothing is collided with

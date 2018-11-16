@@ -53,8 +53,7 @@ export class ChangingAnchorLabels extends BaseExample {
             Math.floor(Math.random() * 3.0)
           ],
           text: "Changing Anchor Point",
-          x: Math.random() * 1500,
-          y: Math.random() * 1500
+          position: [Math.random() * 1500, Math.random() * 1500]
         })
       );
 

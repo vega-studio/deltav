@@ -45,8 +45,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "Anchored MiddleLeft:",
-        x: 20,
-        y: count++ * 20
+        position: [20, count++ * 20]
       })
     );
 
@@ -66,8 +65,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.NEVER,
       text: "Scale Type: NEVER",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
     // Left Middle left
@@ -90,8 +88,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         },
         scaling: ScaleType.ALWAYS,
         text: "Scale Type: ALWAYS",
-        x: 20,
-        y: count++ * 20
+        position: [20, count++ * 20]
       })
     );
 
@@ -112,8 +109,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         },
         scaling: ScaleType.BOUND_MAX,
         text: "Scale Type: BOUND_MAX",
-        x: 20,
-        y: count++ * 20
+        position: [20, count++ * 20]
       })
     );
 
@@ -136,11 +132,10 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.NEVER,
       text: "Anchored MiddleRight:",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
-    label.x += label.width;
+    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -159,11 +154,10 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.NEVER,
       text: "Scale Type: NEVER",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
-    label.x += label.width;
+    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -182,11 +176,10 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.ALWAYS,
       text: "Scale Type: ALWAYS",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
-    label.x += label.width;
+    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -205,11 +198,10 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.BOUND_MAX,
       text: "Scale Type: BOUND_MAX",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
-    label.x += label.width;
+    label.position[0] += label.width;
     provider.add(label);
 
     // Test MAX WIDTH
@@ -230,11 +222,10 @@ export class LabelAnchorsAndScales extends BaseExample {
       },
       scaling: ScaleType.NEVER,
       text: "Max Width Should be working on this label!!!",
-      x: 20,
-      y: count++ * 20
+      position: [20, count++ * 20]
     });
 
-    label.x += label.width;
+    label.position[0] += label.width;
     provider.add(label);
 
     return provider;

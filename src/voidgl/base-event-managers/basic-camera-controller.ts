@@ -6,7 +6,16 @@ import {
   IWheelMetrics
 } from "../surface/mouse-event-manager";
 import { View } from "../surface/view";
-import { add3, subtract3, Vec3 } from "../util";
+import {
+  add3,
+  divide2,
+  max3,
+  min3,
+  subtract2,
+  subtract3,
+  Vec3,
+  vec3
+} from "../util";
 import { ChartCamera } from "../util/chart-camera";
 export enum CameraBoundsAnchor {
   TOP_LEFT,
@@ -19,8 +28,6 @@ export enum CameraBoundsAnchor {
   BOTTOM_MIDDLE,
   BOTTOM_RIGHT
 }
-
-const { max, min } = Math;
 
 /**
  * This represents how the camera should be bounded in the world space. This gives enough information
@@ -179,19 +186,11 @@ export class BasicCameraController extends EventManager {
     if (this.camera && this.bounds) {
       // First bound the scaling
       if (this.bounds.scaleMin) {
-        this.camera.setScale([
-          max(this.camera.scale[0], this.bounds.scaleMin[0]),
-          max(this.camera.scale[1], this.bounds.scaleMin[1]),
-          max(this.camera.scale[2], this.bounds.scaleMin[2])
-        ]);
+        this.camera.setScale(max3(this.camera.scale, this.bounds.scaleMin));
       }
 
       if (this.bounds.scaleMax) {
-        this.camera.setScale([
-          min(this.camera.scale[0], this.bounds.scaleMax[0]),
-          min(this.camera.scale[1], this.bounds.scaleMax[1]),
-          min(this.camera.scale[2], this.bounds.scaleMax[2])
-        ]);
+        this.camera.setScale(min3(this.camera.scale, this.bounds.scaleMax));
       }
     }
   };
@@ -268,18 +267,18 @@ export class BasicCameraController extends EventManager {
    * Returns offset on x-axis due to current bounds and anchor.
    */
   boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions) {
-    const worldTLinScreenSpace = targetView.worldToScreen({
-      x: bounds.worldBounds.left,
-      y: bounds.worldBounds.top
-    });
-    const worldBRinScreenSpace = targetView.worldToScreen({
-      x: bounds.worldBounds.right,
-      y: bounds.worldBounds.bottom
-    });
+    const worldTLinScreenSpace = targetView.worldToScreen([
+      bounds.worldBounds.left,
+      bounds.worldBounds.top
+    ]);
+    const worldBRinScreenSpace = targetView.worldToScreen([
+      bounds.worldBounds.right,
+      bounds.worldBounds.bottom
+    ]);
 
     const widthDifference =
-      worldBRinScreenSpace.x -
-      worldTLinScreenSpace.x +
+      worldBRinScreenSpace[0] -
+      worldTLinScreenSpace[0] +
       bounds.screenPadding.left +
       bounds.screenPadding.right -
       targetView.screenBounds.width;
@@ -291,7 +290,7 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldBRinScreenSpace.x <
+      worldBRinScreenSpace[0] <
       targetView.screenBounds.right - bounds.screenPadding.right
     ) {
       return (
@@ -302,7 +301,7 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldTLinScreenSpace.x >
+      worldTLinScreenSpace[0] >
       targetView.screenBounds.left + bounds.screenPadding.left
     ) {
       return (
@@ -318,18 +317,18 @@ export class BasicCameraController extends EventManager {
    * Returns offset on y-axis due to current bounds and anchor.
    */
   boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions) {
-    const worldTLinScreenSpace = targetView.worldToScreen({
-      x: bounds.worldBounds.left,
-      y: bounds.worldBounds.top
-    });
-    const worldBRinScreenSpace = targetView.worldToScreen({
-      x: bounds.worldBounds.right,
-      y: bounds.worldBounds.bottom
-    });
+    const worldTLinScreenSpace = targetView.worldToScreen([
+      bounds.worldBounds.left,
+      bounds.worldBounds.top
+    ]);
+    const worldBRinScreenSpace = targetView.worldToScreen([
+      bounds.worldBounds.right,
+      bounds.worldBounds.bottom
+    ]);
 
     const heightDifference =
-      worldBRinScreenSpace.y -
-      worldTLinScreenSpace.y +
+      worldBRinScreenSpace[1] -
+      worldTLinScreenSpace[1] +
       bounds.screenPadding.top +
       bounds.screenPadding.bottom -
       targetView.screenBounds.height;
@@ -341,7 +340,7 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldTLinScreenSpace.y >
+      worldTLinScreenSpace[1] >
       targetView.screenBounds.top - bounds.screenPadding.top
     ) {
       return -(
@@ -351,7 +350,7 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldBRinScreenSpace.y <
+      worldBRinScreenSpace[1] <
       targetView.screenBounds.bottom + bounds.screenPadding.bottom
     ) {
       return -(
@@ -422,11 +421,7 @@ export class BasicCameraController extends EventManager {
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
-        let pan: [number, number, number] = [
-          drag.screen.delta.x / this.camera.scale[0],
-          drag.screen.delta.y / this.camera.scale[1],
-          0
-        ];
+        let pan: Vec3 = vec3(divide2(drag.screen.delta, this.camera.scale), 0);
 
         if (this.panFilter) {
           pan = this.panFilter(
@@ -485,8 +480,9 @@ export class BasicCameraController extends EventManager {
       this.applyScaleBounds();
 
       const afterZoom = targetView.screenToWorld(e.screen.mouse);
-      this.camera.offset[0] -= beforeZoom.x - afterZoom.x;
-      this.camera.offset[1] -= beforeZoom.y - afterZoom.y;
+      const deltaZoom = subtract2(beforeZoom, afterZoom);
+      this.camera.offset[0] -= deltaZoom[0];
+      this.camera.offset[1] -= deltaZoom[1];
 
       // Add additional correction for bounds
       this.applyBounds();
@@ -528,17 +524,20 @@ export class BasicCameraController extends EventManager {
     // Make sure we have a valid projection and screen bounds to make the adjustment
     if (projection && screenBounds) {
       /** Get the current viewed world bounds of the view */
-      const topLeft = projection.screenToWorld(screenBounds);
-      const bottomRight = projection.screenToWorld({
-        x: screenBounds.right,
-        y: screenBounds.bottom
-      });
+      const topLeft = projection.screenToWorld([
+        screenBounds.x,
+        screenBounds.y
+      ]);
+      const bottomRight = projection.screenToWorld([
+        screenBounds.right,
+        screenBounds.bottom
+      ]);
 
       return new Bounds({
-        height: bottomRight.y - topLeft.y,
-        width: bottomRight.x - topLeft.x,
-        x: topLeft.x,
-        y: topLeft.y
+        height: bottomRight[1] - topLeft[1],
+        width: bottomRight[0] - topLeft[0],
+        x: topLeft[0],
+        y: topLeft[1]
       });
     }
 

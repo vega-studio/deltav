@@ -12,12 +12,12 @@ const debug = require("debug")("webgl-surface:Atlas");
 
 const ZERO_IMAGE: SubTexture = {
   aspectRatio: 0,
-  atlasBL: { x: 0, y: 0 },
-  atlasBR: { x: 0, y: 0 },
+  atlasBL: [0, 0],
+  atlasBR: [0, 0],
   atlasReferenceID: "",
   atlasTexture: null,
-  atlasTL: { x: 0, y: 0 },
-  atlasTR: { x: 0, y: 0 },
+  atlasTL: [0, 0],
+  atlasTR: [0, 0],
   heightOnAtlas: 0,
   isValid: false,
   pixelHeight: 0,
@@ -190,12 +190,16 @@ export class AtlasManager {
         const right = atlasDimensions.x + atlasDimensions.width - onePixelX;
 
         texture.atlasReferenceID = atlasName;
-        texture.atlasTL = { x: left, y: top };
-        texture.atlasBR = { x: right, y: bottom };
-        texture.atlasBL = { x: left, y: bottom };
-        texture.atlasTR = { x: right, y: top };
-        texture.widthOnAtlas = Math.abs(texture.atlasTR.x - texture.atlasTL.x);
-        texture.heightOnAtlas = Math.abs(texture.atlasTR.y - texture.atlasBR.y);
+        texture.atlasTL = [left, top];
+        texture.atlasBR = [right, bottom];
+        texture.atlasBL = [left, bottom];
+        texture.atlasTR = [right, top];
+        texture.widthOnAtlas = Math.abs(
+          texture.atlasTR[0] - texture.atlasTL[0]
+        );
+        texture.heightOnAtlas = Math.abs(
+          texture.atlasTR[1] - texture.atlasBR[1]
+        );
         texture.pixelWidth = rasterization.texture.width;
         texture.pixelHeight = rasterization.texture.height;
 

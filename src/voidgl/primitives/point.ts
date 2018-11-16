@@ -1,10 +1,4 @@
-/**
- * Defines a 2d point within a coordinate plane
- */
-export interface IPoint {
-  x: number;
-  y: number;
-}
+import { add2, scale2, subtract2, Vec2 } from "src/voidgl/util";
 
 /**
  * Calculates the distance between two points, but keeps the distance in dquared form
@@ -23,9 +17,10 @@ export interface IPoint {
  *
  * @return {number} The distance * distance between the two points
  */
-function squareDistance(p1: IPoint, p2: IPoint): number {
-  const dx = p1.x - p2.x;
-  const dy = p1.y - p2.y;
+function squareDistance(p1: Vec2, p2: Vec2): number {
+  const delta = subtract2(p1, p2);
+  const dx = delta[0];
+  const dy = delta[1];
 
   return dx * dx + dy * dy;
 }
@@ -41,23 +36,22 @@ export class Point {
    * Adds two points together
    *
    * @static
-   * @param {IPoint} p1
-   * @param {IPoint} p2
-   * @param {IPoint} out If this is specified, the results will be placed into this rather than allocate a new object
+   * @param p1
+   * @param p2
+   * @param out If this is specified, the results will be placed into this rather than allocate a new object
    *
-   * @return {IPoint} The two points added together
+   * @return The two points added together
    */
-  static add(p1: IPoint, p2: IPoint, out?: IPoint): IPoint {
+  static add(p1: Vec2, p2: Vec2, out?: Vec2): Vec2 {
+    const total = add2(p1, p2);
+
     if (out) {
-      out.x = p1.x + p2.x;
-      out.y = p1.y + p2.y;
+      out[0] = total[0];
+      out[1] = total[1];
       return out;
     }
 
-    return {
-      x: p1.x + p2.x,
-      y: p1.y + p2.y
-    };
+    return total;
   }
 
   /**
@@ -66,17 +60,17 @@ export class Point {
    * the closest to the test point. If there are equi-distant points in the list, this will return
    * the first found in the list.
    *
-   * @param {IPoint} testPoint The point to compare against other points
-   * @param {IPoint[]} points The list of points to be compared against
+   * @param testPoint The point to compare against other points
+   * @param points The list of points to be compared against
    *
-   * @return {IPoint} The closest point to the test point
+   * @return The closest point to the test point
    */
-  static getClosest(testPoint: IPoint, points: IPoint[]): IPoint {
+  static getClosest(testPoint: Vec2, points: Vec2[]): Vec2 {
     let closestDistance = Number.MAX_VALUE;
-    let closestPoint: IPoint = testPoint;
+    let closestPoint: Vec2 = testPoint;
     let distance: number;
 
-    const findClosest = function(point: IPoint) {
+    const findClosest = function(point: Vec2) {
       distance = squareDistance(point, testPoint);
 
       if (distance < closestDistance) {
@@ -98,17 +92,17 @@ export class Point {
    *
    * This just returns the index of the found point and not the point itself
    *
-   * @param {IPoint} testPoint The point to compare against other points
-   * @param {IPoint[]} points The list of points to be compared against
+   * @param testPoint The point to compare against other points
+   * @param points The list of points to be compared against
    *
-   * @return {number} The index of the closest point to the test point
+   * @return The index of the closest point to the test point
    */
-  static getClosestIndex(testPoint: IPoint, points: IPoint[]): number {
+  static getClosestIndex(testPoint: Vec2, points: Vec2[]): number {
     let closestDistance = Number.MAX_VALUE;
     let closestPoint: number = 0;
     let distance: number;
 
-    const findClosest = function(point: IPoint, i: number) {
+    const findClosest = function(point: Vec2, i: number) {
       distance = squareDistance(point, testPoint);
 
       if (distance < closestDistance) {
@@ -126,19 +120,14 @@ export class Point {
    * @static
    * This will calculate a direction vector between two points that points toward p2
    *
-   * @param {IPoint} amount The start of the direction
-   * @param {IPoint} from The direction to point the vector towards
-   * @param {boolean} normalize If true, this will make the vector have a magnitude of 1
-   *
-   * @returns {number}
+   * @param amount The start of the direction
+   * @param from The direction to point the vector towards
+   * @param normalize If true, this will make the vector have a magnitude of 1
    */
-  static subtract(
-    amount: IPoint,
-    from: IPoint,
-    normalize: boolean = false
-  ): IPoint {
-    let dx = from.x - amount.x;
-    let dy = from.y - amount.y;
+  static subtract(amount: Vec2, from: Vec2, normalize: boolean = false): Vec2 {
+    const delta = subtract2(from, amount);
+    let dx = delta[0];
+    let dy = delta[1];
 
     if (normalize) {
       const magnitude = Math.sqrt(dx * dx + dy * dy);
@@ -146,23 +135,18 @@ export class Point {
       dy /= magnitude;
     }
 
-    return {
-      x: dx,
-      y: dy
-    };
+    return [dx, dy];
   }
 
   /**
    * @static
    * Gets the distance between two points
    *
-   * @param {IPoint} p1
-   * @param {IPoint} p2
-   * @param {boolean} squared If set to true, returns the distance * distance (performs faster)
-   *
-   * @returns {number} The real distance between two points
+   * @param p1
+   * @param p2
+   * @param squared If set to true, returns the distance * distance (performs faster)
    */
-  static getDistance(p1: IPoint, p2: IPoint, squared: boolean = false): number {
+  static getDistance(p1: Vec2, p2: Vec2, squared: boolean = false): number {
     if (squared) {
       return squareDistance(p1, p2);
     }
@@ -174,18 +158,15 @@ export class Point {
    * @static
    * Gets a point perfectly between two points
    *
-   * @param {IPoint} p1
-   * @param {IPoint} p2
+   * @param p1
+   * @param p2
    *
-   * @returns {IPoint} The point between the two provided points
+   * @returns The point between the two provided points
    */
-  static getMidpoint(p1: IPoint, p2: IPoint) {
-    const direction = Point.subtract(p1, p2);
+  static getMidpoint(p1: Vec2, p2: Vec2) {
+    const mid = scale2(subtract2(p2, p1), 0.5);
 
-    return {
-      x: direction.x / 2 + p1.x,
-      y: direction.y / 2 + p1.y
-    };
+    return add2(mid, p1);
   }
 
   static make(x: number, y: number) {
@@ -196,35 +177,27 @@ export class Point {
    * Scales a point by a given amount
    *
    * @static
-   * @param {IPoint} p1
-   * @param {number} s The amount to scale the point by
-   * @param {IPoint} out If this is specified, the results will be placed into this rather than allocate a new object
-   *
-   * @memberof Point
+   * @param p1
+   * @param s The amount to scale the point by
+   * @param out If this is specified, the results will be placed into this rather than allocate a new object
    */
-  static scale(p1: IPoint, s: number, out?: IPoint): IPoint {
+  static scale(p1: Vec2, s: number, out?: Vec2): Vec2 {
     if (out) {
-      out.x = p1.x * s;
-      out.y = p1.y * s;
+      out[0] = p1[0] * s;
+      out[1] = p1[1] * s;
       return out;
     }
 
-    return {
-      x: p1.x * s,
-      y: p1.y * s
-    };
+    return [p1[0] * s, p1[1] * s];
   }
 
   /**
    * Makes a new point initialized to {0,0}
    *
    * @static
-   * @returns {IPoint} A new point object at {0,0}
+   * @returns A new point object at {0,0}
    */
-  static zero(): IPoint {
-    return {
-      x: 0,
-      y: 0
-    };
+  static zero(): Vec2 {
+    return [0, 0];
   }
 }

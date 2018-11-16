@@ -19,10 +19,10 @@ function toInstanceIOValue(texture?: SubTexture): InstanceIOValue {
 
   // Otherwise, we return the atlas information of the texture
   return [
-    texture.atlasTL.x,
-    texture.atlasTL.y,
-    texture.atlasBR.x,
-    texture.atlasBR.y
+    texture.atlasTL[0],
+    texture.atlasTL[1],
+    texture.atlasBR[0],
+    texture.atlasBR[1]
   ];
 }
 

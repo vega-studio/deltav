@@ -222,6 +222,44 @@ export class Layer<
   }
 
   /**
+   * This establishes basic modules required by the layer for the shaders. At it's core functionality, it will
+   * support the basic properties a layer has to provide, such as Picking modes
+   */
+  baseShaderModules(
+    shaderIO: IShaderInitialization<T>
+  ): { fs: string[]; vs: string[] } {
+    const additionalImportsVS = [];
+    const additionalImportsFS = [];
+
+    // All layers need the basic instancing functionality
+    additionalImportsVS.push("instancing");
+
+    // See if the layer needs picking modules
+    if (this.picking.type === PickType.SINGLE) {
+      additionalImportsVS.push("picking");
+      additionalImportsFS.push("picking");
+    } else {
+      additionalImportsVS.push("no-picking");
+      additionalImportsFS.push("no-picking");
+    }
+
+    // See if there are any attributes that have  auto easing involved
+    const easing = (shaderIO.instanceAttributes || []).find(check =>
+      Boolean(check && check.easing)
+    );
+
+    // If easing is involved then we need to make sure that frame metrics are imported for our animations
+    if (easing) {
+      additionalImportsVS.push("frame");
+    }
+
+    return {
+      fs: additionalImportsFS,
+      vs: additionalImportsVS
+    };
+  }
+
+  /**
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {

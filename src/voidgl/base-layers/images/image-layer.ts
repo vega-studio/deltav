@@ -78,6 +78,8 @@ export class ImageLayer<
 
       // Provide a precise hit test for the circle
       hitTest: (image: ImageInstance, point: Vec2, view: IProjection) => {
+        console.log("hit");
+
         // The bounds of the image is in world space, but it does not account for the scale mode of the image.
         // Here, we will apply the scale mode testing to the image
         const maxScale = max(...view.camera.scale);

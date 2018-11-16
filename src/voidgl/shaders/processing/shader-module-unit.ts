@@ -1,5 +1,5 @@
-import { Instance } from "src/voidgl/instance-provider/instance";
-import { ILayerProps, Layer } from "src/voidgl/surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   IInstanceAttribute,
   IUniform,

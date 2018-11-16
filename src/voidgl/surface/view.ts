@@ -1,4 +1,3 @@
-import { Vec2 } from "src/voidgl/util";
 import * as Three from "three";
 import {
   AbsolutePosition,
@@ -6,6 +5,7 @@ import {
 } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import { Color } from "../types";
+import { Vec2 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
 import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";

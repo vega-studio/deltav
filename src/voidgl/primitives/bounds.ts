@@ -1,4 +1,4 @@
-import { Vec2 } from "src/voidgl/util";
+import { Vec2 } from "../util";
 
 export interface IBoundsOptions {
   /** Top left x position */

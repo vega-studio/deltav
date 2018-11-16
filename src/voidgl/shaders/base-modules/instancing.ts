@@ -1,4 +1,4 @@
-import { LayerBufferType } from "src/voidgl/surface/layer-processing/layer-buffer-type";
+import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,

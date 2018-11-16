@@ -4,8 +4,8 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { ProcessShaderImportResults } from "src/voidgl/shaders/processing/shader-processor";
 import { Instance } from "../../instance-provider/instance";
+import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,

@@ -1,4 +1,4 @@
-import { Vec3 } from "src/voidgl/util/vector";
+import { Vec3 } from "./vector";
 
 let chartCameraUID = 0;
 

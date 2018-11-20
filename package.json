@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@types/three": "^0.92.23",
+    "aws-sdk": "^2.358.0",
     "bowser": "^1.7.3",
     "three": "^0.94.0"
   },
@@ -26,7 +27,7 @@
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",
     "animejs": "2.2.0",
-    "auto": "github:tarwich/auto",
+    "auto": "github:Diniden/auto",
     "babel-core": "6.26.0",
     "babel-loader": "7.1.4",
     "babel-polyfill": "6.26.0",

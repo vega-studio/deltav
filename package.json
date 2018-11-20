@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@types/three": "^0.92.23",
-    "aws-sdk": "^2.358.0",
     "bowser": "^1.7.3",
     "three": "^0.94.0"
   },

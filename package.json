@@ -5,7 +5,7 @@
     "url": "http://diniden.com"
   },
   "name": "@voidrayco/voidgl",
-  "version": "1.20.4",
+  "version": "1.21.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",
     "animejs": "2.2.0",
-    "auto": "github:Diniden/auto",
+    "auto": "github:tarwich/auto",
     "babel-core": "6.26.0",
     "babel-loader": "7.1.4",
     "babel-polyfill": "6.26.0",

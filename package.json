@@ -41,6 +41,8 @@
     "eslint-config-voidray": "github:voidrayco/eslint-config-voidray",
     "file-loader": "1.1.11",
     "fs-extra": "4.0.3",
+    "less": "3.8.1",
+    "less-loader": "4.1.0",
     "mkdirp": "0.5.1",
     "mobx": "3.4.1",
     "preact": "8.2.7",

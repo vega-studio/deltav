@@ -1,4 +1,4 @@
-import { IPoint } from "./point";
+import { Vec2 } from "../util";
 export interface IBoundsOptions {
     x?: number;
     y?: number;
@@ -17,18 +17,16 @@ export declare class Bounds {
     readonly area: number;
     readonly bottom: number;
     readonly left: number;
-    readonly mid: {
-        x: number;
-        y: number;
-    };
+    readonly mid: Vec2;
     readonly right: number;
     readonly top: number;
     static emptyBounds(): Bounds;
     constructor(options: IBoundsOptions);
-    containsPoint(point: IPoint): boolean;
-    encapsulate(item: Bounds | IPoint): boolean;
+    containsPoint(point: Vec2): boolean;
+    encapsulate(item: Bounds | Vec2): boolean;
     fits(bounds: Bounds): 0 | 1 | 2;
     hitBounds(bounds: Bounds): boolean;
     isInside(bounds: Bounds): boolean;
+    readonly location: Vec2;
     toString(): string;
 }

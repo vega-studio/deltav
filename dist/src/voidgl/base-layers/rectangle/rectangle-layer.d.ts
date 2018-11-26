@@ -1,4 +1,4 @@
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { RectangleInstance } from "./rectangle-instance";
@@ -19,7 +19,7 @@ export declare class RectangleLayer<T extends RectangleInstance, U extends IRect
     };
     getInstancePickingMethods(): {
         boundsAccessor: (rectangle: RectangleInstance) => Bounds;
-        hitTest: (rectangle: RectangleInstance, point: IPoint, projection: IProjection) => boolean;
+        hitTest: (rectangle: RectangleInstance, point: [number, number], projection: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<RectangleInstance>;
     getModelType(): IModelType;

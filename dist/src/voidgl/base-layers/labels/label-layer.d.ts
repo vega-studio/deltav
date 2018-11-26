@@ -1,4 +1,4 @@
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { IAutoEasingMethod, Vec } from "../../util";
@@ -26,7 +26,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     };
     getInstancePickingMethods(): {
         boundsAccessor: (label: LabelInstance) => Bounds;
-        hitTest: (label: LabelInstance, point: IPoint, view: IProjection) => boolean;
+        hitTest: (label: LabelInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<LabelInstance>;
     getModelType(): IModelType;

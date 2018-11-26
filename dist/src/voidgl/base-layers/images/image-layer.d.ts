@@ -1,4 +1,4 @@
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { IAutoEasingMethod, Vec } from "../../util";
@@ -24,7 +24,7 @@ export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerPr
     };
     getInstancePickingMethods(): {
         boundsAccessor: (image: ImageInstance) => Bounds;
-        hitTest: (image: ImageInstance, point: IPoint, view: IProjection) => boolean;
+        hitTest: (image: ImageInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<ImageInstance>;
     getModelType(): IModelType;

@@ -1,4 +1,4 @@
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { IAutoEasingMethod, Vec } from "../../util";
@@ -22,7 +22,7 @@ export declare class RingLayer<T extends RingInstance, U extends IRingLayerProps
     };
     getInstancePickingMethods(): {
         boundsAccessor: (ring: RingInstance) => Bounds;
-        hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => boolean;
+        hitTest: (ring: RingInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<RingInstance>;
     getModelType(): IModelType;

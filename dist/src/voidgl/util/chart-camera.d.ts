@@ -1,6 +1,7 @@
+import { Vec3 } from "./vector";
 export interface IChartCameraOptions {
-    offset?: [number] | [number, number] | [number, number, number];
-    scale?: [number] | [number, number] | [number, number, number];
+    offset?: [number] | [number, number] | Vec3;
+    scale?: [number] | [number, number] | Vec3;
 }
 export declare class ChartCamera {
     private _id;
@@ -11,9 +12,9 @@ export declare class ChartCamera {
     readonly id: number;
     setId(id: number): void;
     readonly offset: [number, number, number];
-    setOffset(offset: [number, number, number]): void;
+    setOffset(offset: Vec3): void;
     readonly scale: [number, number, number];
-    setScale(scale: [number, number, number]): void;
+    setScale(scale: Vec3): void;
     readonly needsViewDrawn: boolean;
     resolve(): void;
     update(): void;

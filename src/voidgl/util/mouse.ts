@@ -1,5 +1,5 @@
 import * as browser from "bowser";
-import { Vector2 } from "three";
+import { scale2, Vec2 } from "./vector";
 const debug = require("debug")("CommunicationsView:Mouse");
 
 /** Used to adjust the base whee delta for IE browsers */
@@ -27,7 +27,7 @@ const LOW_PASS_U1 = 0.1;
 const LOW_PASS_U2 = 0.18;
 const LOW_PASS_U3 = 0.7;
 
-function normalizeFirefoxWheel(e: MouseWheelEvent) {
+function normalizeFirefoxWheel(e: MouseWheelEvent): Vec2 {
   const wheel: WheelEvent = e;
   let deltaX = 0;
   let deltaY = 0;
@@ -50,16 +50,16 @@ function normalizeFirefoxWheel(e: MouseWheelEvent) {
   // Keep our FIR memory clean and only the size of the number of coefficients
   lowPassY.pop();
 
-  return new Vector2(-deltaX, -deltaY);
+  return [-deltaX, -deltaY];
 }
 
-function normalizeChromeWheel(e: MouseWheelEvent) {
+function normalizeChromeWheel(e: MouseWheelEvent): Vec2 {
   const wheel: WheelEvent = e;
 
-  return new Vector2(wheel.deltaX, -wheel.deltaY);
+  return [wheel.deltaX, -wheel.deltaY];
 }
 
-function normalizeIE11Wheel(e: MouseWheelEvent) {
+function normalizeIE11Wheel(e: MouseWheelEvent): Vec2 {
   const wheel: WheelEvent = e;
   let deltaX = wheel.deltaX;
 
@@ -78,10 +78,10 @@ function normalizeIE11Wheel(e: MouseWheelEvent) {
     }
   }
 
-  return new Vector2(-deltaX, -deltaY);
+  return [-deltaX, -deltaY];
 }
 
-function normalizeIE12Wheel(e: MouseWheelEvent) {
+function normalizeIE12Wheel(e: MouseWheelEvent): Vec2 {
   const wheel: WheelEvent = e;
   let { deltaX, deltaY } = wheel;
 
@@ -98,14 +98,14 @@ function normalizeIE12Wheel(e: MouseWheelEvent) {
     }
   }
 
-  const v = new Vector2(deltaX, -deltaY);
-  v.multiplyScalar(0.25);
+  const v: Vec2 = [deltaX, -deltaY];
+  scale2(v, 0.25);
 
   return v;
 }
 
 // Determine this browsers version of wheel normalization and apply it
-let normalizeWheel: (e: MouseWheelEvent) => Vector2;
+let normalizeWheel: (e: MouseWheelEvent) => Vec2;
 
 if (browser.firefox) {
   debug("Using mouse wheel for firefox");
@@ -124,10 +124,7 @@ if (browser.firefox) {
 /**
  * Analyzes a MouseEvent and calculates the mouse coordinates (relative to the element).
  */
-function eventElementPosition(
-  e: any,
-  relative?: HTMLElement
-): { x: number; y: number } {
+function eventElementPosition(e: any, relative?: HTMLElement): Vec2 {
   let mouseX: number = 0,
     mouseY: number = 0,
     eventX: number = 0,
@@ -166,7 +163,7 @@ function eventElementPosition(
   }
 
   // Mouse position minus elm position is mouseposition relative to element:
-  return { x: mouseX - eventX, y: mouseY - eventY };
+  return [mouseX - eventX, mouseY - eventY];
 }
 
 export { eventElementPosition, normalizeWheel };

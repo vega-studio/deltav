@@ -53,8 +53,7 @@ export class LabelSizingCorrected extends BaseExample {
         scale: 0.5,
         scaling: ScaleType.BOUND_MAX,
         text: "0.5",
-        x: 20,
-        y: 40
+        position: [20, 40]
       })
     );
 
@@ -76,8 +75,7 @@ export class LabelSizingCorrected extends BaseExample {
         scale: 1.0,
         scaling: ScaleType.BOUND_MAX,
         text: "1.0",
-        x: 50,
-        y: 40
+        position: [50, 40]
       })
     );
 
@@ -99,8 +97,7 @@ export class LabelSizingCorrected extends BaseExample {
         scale: 2.0,
         scaling: ScaleType.BOUND_MAX,
         text: "2.0",
-        x: 80,
-        y: 40
+        position: [80, 40]
       })
     );
 
@@ -123,8 +120,7 @@ export class LabelSizingCorrected extends BaseExample {
         scale: 0.5,
         scaling: ScaleType.BOUND_MAX,
         text: "0.5 max 2.0",
-        x: 20,
-        y: 80
+        position: [20, 80]
       })
     );
 

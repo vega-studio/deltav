@@ -1,5 +1,5 @@
 import * as Three from "three";
-import { IPoint } from "../../primitives/point";
+import { Vec2 } from "../../util/vector";
 
 /**
  * Defines a texture that is located on an atlas
@@ -12,13 +12,13 @@ export class SubTexture {
   /** This is the actual texture of the atlas this resource is located on */
   atlasTexture: Three.Texture | null = null;
   /** This is the top left UV coordinate of the sub texture on the atlas */
-  atlasTL: IPoint = { x: 0, y: 0 };
+  atlasTL: Vec2 = [0, 0];
   /** This is the top right UV coordinate of the sub texture on the atlas */
-  atlasTR: IPoint = { x: 0, y: 0 };
+  atlasTR: Vec2 = [0, 0];
   /** This is the bottom left UV coordinate of the sub texture on the atlas */
-  atlasBL: IPoint = { x: 0, y: 0 };
+  atlasBL: Vec2 = [0, 0];
   /** This is the bottom right UV coordinate of the sub texture on the atlas */
-  atlasBR: IPoint = { x: 0, y: 0 };
+  atlasBR: Vec2 = [0, 0];
   /** This is the normalized width of the sub texture on the atlas */
   widthOnAtlas: number = 0;
   /** This is the normalized height of the sub texture on the atlas */

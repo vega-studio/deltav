@@ -1,5 +1,5 @@
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
+import { isVec2, Vec2 } from "./vector";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -12,14 +12,15 @@ export interface IQuadItem {
   bottom: number;
   height: number;
   left: number;
-  mid: IPoint;
+  location: Vec2;
+  mid: Vec2;
   right: number;
   top: number;
   width: number;
   x: number;
   y: number;
 
-  containsPoint(point: IPoint): boolean;
+  containsPoint(point: Vec2): boolean;
   encapsulate(item: IQuadItem): boolean;
   fits(item: IQuadItem): 0 | 1 | 2;
   hitBounds(item: IQuadItem): boolean;
@@ -102,10 +103,10 @@ export class Quadrants<T extends IQuadItem> {
    */
   constructor(bounds: IQuadItem, depth: number) {
     const mid = bounds.mid;
-    this.TL = new Node<T>(bounds.x, mid.x, bounds.y, mid.y, depth);
-    this.TR = new Node<T>(mid.x, bounds.right, bounds.y, mid.y, depth);
-    this.BL = new Node<T>(bounds.x, mid.x, mid.y, bounds.bottom, depth);
-    this.BR = new Node<T>(mid.x, bounds.right, mid.y, bounds.bottom, depth);
+    this.TL = new Node<T>(bounds.x, mid[0], bounds.y, mid[1], depth);
+    this.TR = new Node<T>(mid[0], bounds.right, bounds.y, mid[1], depth);
+    this.BL = new Node<T>(bounds.x, mid[0], mid[1], bounds.bottom, depth);
+    this.BR = new Node<T>(mid[0], bounds.right, mid[1], bounds.bottom, depth);
   }
 }
 
@@ -383,7 +384,7 @@ export class Node<T extends IQuadItem> {
    *
    * @return An array of children that intersects with the query
    */
-  query(bounds: IQuadItem | IPoint, visit?: IVisitFunction<T>): T[] {
+  query(bounds: IQuadItem | Vec2, visit?: IVisitFunction<T>): T[] {
     // Query a rectangle
     if (bounds instanceof Bounds) {
       if (bounds.hitBounds(this.bounds)) {
@@ -392,11 +393,11 @@ export class Node<T extends IQuadItem> {
 
       // Return an empty array when nothing is collided with
       return [];
-    }
-
-    // Query a point
-    if (this.bounds.containsPoint(bounds)) {
-      return this.queryPoint(bounds, [], visit);
+    } else if (isVec2(bounds)) {
+      // Query a point
+      if (this.bounds.containsPoint(bounds)) {
+        return this.queryPoint(bounds, [], visit);
+      }
     }
 
     // Return an empty array when nothing is collided with

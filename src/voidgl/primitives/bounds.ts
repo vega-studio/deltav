@@ -1,4 +1,4 @@
-import { IPoint } from "./point";
+import { Vec2 } from "../util";
 
 export interface IBoundsOptions {
   /** Top left x position */
@@ -44,11 +44,8 @@ export class Bounds {
     return this.x;
   }
 
-  get mid() {
-    return {
-      x: this.x + this.width / 2.0,
-      y: this.y + this.height / 2.0
-    };
+  get mid(): Vec2 {
+    return [this.x + this.width / 2.0, this.y + this.height / 2.0];
   }
 
   get right() {
@@ -88,12 +85,12 @@ export class Bounds {
    *
    * @param point
    */
-  containsPoint(point: IPoint) {
+  containsPoint(point: Vec2) {
     return !(
-      point.x < this.x ||
-      point.y < this.y ||
-      point.x > this.right ||
-      point.y > this.bottom
+      point[0] < this.x ||
+      point[1] < this.y ||
+      point[0] > this.right ||
+      point[1] > this.bottom
     );
   }
 
@@ -102,7 +99,7 @@ export class Bounds {
    *
    * @param item
    */
-  encapsulate(item: Bounds | IPoint) {
+  encapsulate(item: Bounds | Vec2) {
     if (item instanceof Bounds) {
       if (item.x < this.x) {
         this.width += Math.abs(item.x - this.x);
@@ -124,22 +121,22 @@ export class Bounds {
 
       return true;
     } else {
-      if (item.x < this.x) {
-        this.width += this.x - item.x;
-        this.x = item.x;
+      if (item[0] < this.x) {
+        this.width += this.x - item[0];
+        this.x = item[0];
       }
 
-      if (item.x > this.right) {
-        this.width += item.x - this.x;
+      if (item[0] > this.right) {
+        this.width += item[0] - this.x;
       }
 
-      if (item.y < this.y) {
-        this.height += this.y - item.y;
-        this.y = item.y;
+      if (item[1] < this.y) {
+        this.height += this.y - item[1];
+        this.y = item[1];
       }
 
-      if (item.y > this.bottom) {
-        this.height += item.y - this.y;
+      if (item[1] > this.bottom) {
+        this.height += item[1] - this.y;
       }
 
       return true;
@@ -196,6 +193,13 @@ export class Bounds {
       this.y >= bounds.y &&
       this.bottom <= bounds.bottom
     );
+  }
+
+  /**
+   * Top left position of the bounds
+   */
+  get location(): Vec2 {
+    return [this.x, this.y];
   }
 
   /**

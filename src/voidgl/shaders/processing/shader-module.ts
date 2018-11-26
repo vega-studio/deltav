@@ -13,8 +13,12 @@ const debugModuleFS = require("debug")("shader-module-fs");
  * This is the results expected from a compile() operation from the ShaderModule.
  */
 export interface IShaderCompileResults {
+  /** Error messages generated from analyzing the shaders */
   errors: string[];
+  /** The generated shader from analyzing the module */
   shader: string | null;
+  /** The shader module units discovered during the processing of the module */
+  shaderModuleUnits: Set<ShaderModuleUnit>;
 }
 
 /**
@@ -149,6 +153,143 @@ export class ShaderModule {
   }
 
   /**
+   * This gathers all of the dependents for the module as ids. This also causes the contents of the module to
+   * be stripped of it's import statements.
+   */
+  static analyzeDependents(unit: ShaderModuleUnit) {
+    // If the dependents are already established for this unit and it can not be modified further,
+    // then we do not bother to analyze the dependents again.
+    if (unit.dependents && unit.isLocked) {
+      return [];
+    }
+
+    // Gathers error messages found while processing the module
+    const errors: string[] = [];
+    // Stores the dependents in the order they are found in the module
+    const dependents: string[] = [];
+    // Stores all of the unique dependents found for this module
+    const dependentSet = new Set<string>();
+    // Get then compatibility target of the module unit so we can properly see what modules are available
+    // to the unit and what is not.
+    const target = unit.compatibility;
+    // This is the identifier of the module requesting it's dependents
+    const id = unit.moduleId;
+
+    // Here we process the module contents and look for additional import statements.
+    const templateResults = shaderTemplate({
+      // We do not want any direct replacement options, we will handle token analyzing
+      // via our onToken callback so we can find our special "import:" case
+      options: {},
+      // Provide the shader to our template processor
+      shader: unit.content,
+
+      // We do not want to remove any template macros that do not deal with extension
+      onToken: token => {
+        const trimmedToken = token.trim();
+
+        // See if the token is the first thing to appear
+        if (trimmedToken.indexOf(IMPORT_TOKEN) === 0) {
+          // Analyze the remainder of the token to find the necessary colon to be the NEXT
+          // Non-whitespace character
+          const afterToken = trimmedToken.substr(IMPORT_TOKEN.length).trim();
+
+          // Make sure the character IS a colon
+          if (afterToken[0] === IMPORT_DELIMITER) {
+            // Indicates if content was properly found for the requested ID
+            let moduleContentFound = false;
+            // At this point, ANYTHING after the colon is the module id being requested (with white space trimmed)
+            // We allow comma delimited module ids to be specified
+            const moduleIds = afterToken
+              .substr(IMPORT_DELIMITER.length)
+              .trim()
+              .split(",");
+
+            // Wealso  allow trailing comma
+            if (moduleIds[moduleIds.length - 1].trim().length === 0) {
+              moduleIds.pop();
+            }
+
+            // Loop through all discovered module ids after the import statement
+            moduleIds.forEach(moduleId => {
+              // Make sure whitespace is cleared
+              moduleId = moduleId.trim();
+              // Get the requested module
+              const mod = ShaderModule.modules.get(moduleId);
+
+              // If we found the module, great! We can store the identifier as a module associated with this shader
+              // string thus reducing processing time needed for next processing.
+              if (mod) {
+                if (
+                  target === ShaderInjectionTarget.FRAGMENT ||
+                  target === ShaderInjectionTarget.ALL
+                ) {
+                  if (mod.fs) {
+                    moduleContentFound = true;
+
+                    if (!dependentSet.has(moduleId)) {
+                      dependents.push(moduleId);
+                    }
+                  } else {
+                    errors.push(
+                      `Could not find requested target fragment module for Module ID: ${moduleId} requested by module: ${id}`
+                    );
+                  }
+                }
+
+                if (
+                  target === ShaderInjectionTarget.VERTEX ||
+                  target === ShaderInjectionTarget.ALL
+                ) {
+                  if (mod.vs) {
+                    moduleContentFound = true;
+
+                    if (!dependentSet.has(moduleId)) {
+                      dependents.push(moduleId);
+                    }
+                  } else {
+                    errors.push(
+                      `Could not find requested target vertex module for Module ID: ${moduleId} requested by module: ${id}`
+                    );
+                  }
+                }
+
+                if (!mod.vs && !mod.fs) {
+                  errors.push(
+                    "Could not find a vertex or fragment shader within exisitng module"
+                  );
+                }
+
+                if (!moduleContentFound) {
+                  errors.push(
+                    `Error Processing module Module ID: ${moduleId} requested by module: ${id}`
+                  );
+                }
+              } else {
+                errors.push(
+                  `Could not find requested module: ${moduleId} requested by module: ${id}`
+                );
+              }
+            });
+
+            // Clear the import token from the body of the shader
+            return "";
+          }
+        }
+
+        // Leave any token not processed alone
+        return `$\{${token}}`;
+      }
+    });
+
+    // Update the content to be stripped of it's import statements
+    unit.applyAnalyzedContent(templateResults.shader);
+    // Update the dependents to include the modules found that this module requested
+    unit.dependents = dependents;
+
+    return errors;
+  }
+
+  /**
    * This examines a shader string and replaces all import statements with any existing registered modules.
    * This will also output any issues such as requested modules that don't exist and detect circular dependencies
    * and such ilk.
@@ -163,6 +304,8 @@ export class ShaderModule {
     target: ShaderInjectionTarget,
     additionalModules?: string[]
   ): IShaderCompileResults {
+    // The discovered shader module units during processing
+    const shaderModuleUnits = new Set<ShaderModuleUnit>();
     // This stores the module id's that have already been included in the shader
     const included = new Set<string>();
     // This stores the import stack that is currently being processed
@@ -174,12 +317,10 @@ export class ShaderModule {
       target === ShaderInjectionTarget.VERTEX ? debugModuleVS : debugModuleFS;
     debugTarget("Processing Shader for id %o:", id);
 
-    // We place this method as an internal recursive strategy to solving this issue due to the complexities of
-    // the problem at hand. We have shaders that have tokens analyzed that MUST be immediately resolved
-    // to a correct value. Thus we can not use a process queue to remove the need for the recursion. Also, as
-    // this is a static method, this provides some needed properties within the context of the function that we
-    // do not want exposed at all, which is impossible to hide within a static context (private static is not supported).
-    function process(shader: string, id: string | null) {
+    // Internal checking method of the state of the process to find circular dependencies
+    function checkCircularDependency(unit: ShaderModuleUnit) {
+      // Get the id of the module being processed for quick reference
+      const id = unit.moduleId;
       // Debugging for the import id's found along with the current stack
       debugTarget(
         "%o: %o",
@@ -189,6 +330,7 @@ export class ShaderModule {
           .reverse()
           .join(" -> ")
       );
+
       // First look to see if the identifier is already in the processing queue. If it is, we
       // have a heinous circular dependency.
       const queueIndex = processing.indexOf(id);
@@ -209,6 +351,23 @@ export class ShaderModule {
         processing.shift();
 
         // Return a null flag indicating the process failed.
+        return false;
+      }
+
+      return true;
+    }
+
+    // We place this method as an internal recursive strategy to solving this issue due to the complexities of
+    // the problem at hand. We have shaders that have tokens analyzed that MUST be immediately resolved
+    // to a correct value. Thus we can not use a process queue to remove the need for the recursion. Also, as
+    // this is a static method, this provides some needed properties within the context of the function that we
+    // do not want exposed at all, which is impossible to hide within a static context (private static is not supported).
+    function process(unit: ShaderModuleUnit): string | null {
+      // This is the id of the module unit  currently being processed
+      const id = unit.moduleId;
+
+      // Do the circular dependency check for the module
+      if (!checkCircularDependency(unit)) {
         return null;
       }
 
@@ -222,127 +381,117 @@ export class ShaderModule {
         return "";
       }
 
-      // All included modules should appear at the top of the current module so we store included module
-      // output here to be added later.
-      let includedModuleOutput = "";
+      // This will store all of the module content that should be injected as the header
+      let includedModuleContent = "";
+      // Make sure the dependents for the module are properly analyzed
+      const dependentsErrors = ShaderModule.analyzeDependents(unit);
+      // Add in any errors discovered during module analysis
+      dependentsErrors.forEach(error => errors.push(error));
+      // Get the dependents for the module for processing
+      const dependents = unit.dependents;
 
-      // Here we process the module contents and look for additional import statements.
-      const template = shaderTemplate({
-        // We do not want any direct replacement options, we will handle token analyzing
-        // via our onToken callback so we can find our special "import:" case
-        options: {},
-        // Provide the shader to our template processor
-        shader,
+      if (dependents && dependents.length > 0) {
+        for (let i = 0, iMax = dependents.length; i < iMax; ++i) {
+          // The dependent is the id of the module id dependency
+          const moduleId = dependents[i];
+          // Get the requested module
+          const mod = ShaderModule.modules.get(moduleId);
 
-        // We do not want to remove any template macros that do not deal with extension
-        onToken: token => {
-          const trimmedToken = token.trim();
+          // If we found the module, great! We can see if the found module has a compatible target for this module.
+          if (mod) {
+            let moduleContent;
 
-          // See if the token is the first thing to appear
-          if (trimmedToken.indexOf(IMPORT_TOKEN) === 0) {
-            // Analyze the remainder of the token to find the necessary colon to be the NEXT
-            // Non-whitespace character
-            const afterToken = trimmedToken.substr(IMPORT_TOKEN.length).trim();
-
-            // Make sure the character IS a colon
-            if (afterToken[0] === IMPORT_DELIMITER) {
-              // At this point, ANYTHING after the colon is the module id being requested (with white space trimmed)
-              const moduleId = afterToken
-                .substr(IMPORT_DELIMITER.length)
-                .trim();
-
-              // Get the requested module
-              const mod = ShaderModule.modules.get(moduleId);
-
-              // If we found the module, great! We can store the identifier as a module associated with this shader
-              // string thus reducing processing time needed for next processing.
-              if (mod) {
-                let moduleContent;
-
-                if (
-                  target === ShaderInjectionTarget.FRAGMENT ||
-                  target === ShaderInjectionTarget.ALL
-                ) {
-                  if (mod.fs) {
-                    moduleContent = process(mod.fs.content, moduleId);
-                  } else {
-                    errors.push(
-                      `Could not find requested target fragment module for Module ID: ${moduleId} requested by module: ${id}`
-                    );
-                  }
-                }
-
-                if (
-                  target === ShaderInjectionTarget.VERTEX ||
-                  target === ShaderInjectionTarget.ALL
-                ) {
-                  if (mod.vs) {
-                    moduleContent = process(mod.vs.content, moduleId);
-                  } else {
-                    errors.push(
-                      `Could not find requested target vertex module for Module ID: ${moduleId} requested by module: ${id}`
-                    );
-                  }
-                }
-
-                if (!mod.vs && !mod.fs) {
-                  errors.push(
-                    "Could not find a vertex or fragment shader within exisitng module"
-                  );
-                }
-
-                if (moduleContent === null) {
-                  errors.push(
-                    `Error Processing module Module ID: ${moduleId} requested by module: ${id}`
-                  );
-                }
-
-                // Include the discovered content in the module content output
-                includedModuleOutput += moduleContent || "";
+            if (
+              target === ShaderInjectionTarget.FRAGMENT ||
+              target === ShaderInjectionTarget.ALL
+            ) {
+              if (mod.fs) {
+                shaderModuleUnits.add(mod.fs);
+                moduleContent = process(mod.fs);
               } else {
                 errors.push(
-                  `Could not find requested module: ${moduleId} requested by module: ${id}`
+                  `Could not find requested target fragment module for Module ID: ${moduleId} requested by module: ${id}`
                 );
               }
-
-              // Clear the import token from the body of the shader
-              return "";
             }
-          }
 
-          // Leave any token not processed alone
-          return `$\{${token}}`;
+            if (
+              target === ShaderInjectionTarget.VERTEX ||
+              target === ShaderInjectionTarget.ALL
+            ) {
+              if (mod.vs) {
+                shaderModuleUnits.add(mod.vs);
+                moduleContent = process(mod.vs);
+              } else {
+                errors.push(
+                  `Could not find requested target vertex module for Module ID: ${moduleId} requested by module: ${id}`
+                );
+              }
+            }
+
+            if (!mod.vs && !mod.fs) {
+              errors.push(
+                "Could not find a vertex or fragment shader within exisitng module"
+              );
+            }
+
+            if (moduleContent === null) {
+              errors.push(
+                `Error Processing module Module ID: ${moduleId} requested by module: ${id}`
+              );
+            }
+
+            // Include the discovered content in the module content output
+            includedModuleContent += moduleContent || "";
+          } else {
+            errors.push(
+              `Could not find requested module: ${moduleId} requested by module: ${id}`
+            );
+          }
         }
-      });
+      }
 
       // Remove the id being processed currently
       processing.shift();
       // Add the id to the list of items that have been included
       included.add(id || "");
 
-      // If the shader had no module content, let's just return the shader and reduce empty whitespace
-      if (!includedModuleOutput || includedModuleOutput.length === 0) {
-        return template.shader.trim();
-      }
-
-      // Return the generated shader chunk with it's included module content at the top of the file
-      return `${includedModuleOutput.trim()}\n\n${template.shader.trim()}`;
+      // Place the included module content at the top of the shader and return this module with it's necessary
+      // inclusions
+      return `${includedModuleContent.trim()}\n\n${unit.content.trim()}`;
     }
 
     // We throw in the additional imports  at the top of the shader being analyzed
     let modifedShader = shader;
 
     if (additionalModules) {
-      const imports = additionalModules.map(
-        moduleId => `$\{import: ${moduleId}}\n`
+      let imports = "";
+
+      additionalModules.forEach(
+        moduleId => (imports += `$\{import: ${moduleId}}\n`)
       );
+
       modifedShader = imports + shader;
     }
 
-    // generate the results needed
+    // Make our shader a temp module unit to make it compatible with the rest of the shader module processing
+    const tempShaderModuleUnit = new ShaderModuleUnit({
+      content: modifedShader,
+      compatibility: target,
+      moduleId: `Layer "${id}" ${
+        target === ShaderInjectionTarget.ALL
+          ? "fs vs"
+          : target === ShaderInjectionTarget.VERTEX
+            ? "vs"
+            : "fs"
+      }`
+    });
+
+    // Generate the results needed
     const results = {
       errors,
-      shader: process(modifedShader, null)
+      shader: process(tempShaderModuleUnit),
+      shaderModuleUnits
     };
 
     return results;

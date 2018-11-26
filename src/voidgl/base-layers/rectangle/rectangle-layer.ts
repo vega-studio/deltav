@@ -1,6 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
@@ -10,7 +10,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions } from "../../util";
+import { CommonMaterialOptions, divide2, subtract2, Vec2 } from "../../util";
 import { ScaleType } from "../types";
 import { RectangleInstance } from "./rectangle-instance";
 
@@ -76,7 +76,7 @@ export class RectangleLayer<
       // Provide a precise hit test for the circle
       hitTest: (
         rectangle: RectangleInstance,
-        point: IPoint,
+        point: Vec2,
         projection: IProjection
       ) => {
         // The bounds of the rectangle is in world space, but it does not account for the scale mode of the rectangle.
@@ -120,17 +120,17 @@ export class RectangleLayer<
           // If we never allow the rectangle to scale, then the bounds will grow and shrink to counter the effects
           // Of the camera zoom
           // The location is within the world, but we reverse project the anchor spread
-          const anchorEffect = [0, 0];
+          const anchorEffect: Vec2 = [0, 0];
 
           if (rectangle.anchor) {
             anchorEffect[0] = rectangle.anchor.x || 0;
             anchorEffect[1] = rectangle.anchor.y || 0;
           }
 
-          const topLeft = projection.worldToScreen({
-            x: rectangle.x - anchorEffect[0] / projection.camera.scale[0],
-            y: rectangle.y - anchorEffect[1] / projection.camera.scale[1]
-          });
+          const topLeft = subtract2(
+            [rectangle.x, rectangle.y],
+            divide2(anchorEffect, projection.camera.scale)
+          );
 
           const screenPoint = projection.worldToScreen(point);
 
@@ -138,8 +138,8 @@ export class RectangleLayer<
           return new Bounds({
             height: rectangle.height,
             width: rectangle.width,
-            x: topLeft.x,
-            y: topLeft.y
+            x: topLeft[0],
+            y: topLeft[1]
           }).containsPoint(screenPoint);
         }
 

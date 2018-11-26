@@ -70,6 +70,10 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     needsViewDrawn: boolean;
     animationEndTime: number;
     constructor(props: ILayerProps<T>);
+    baseShaderModules(shaderIO: IShaderInitialization<T>): {
+        fs: string[];
+        vs: string[];
+    };
     destroy(): void;
     didUpdateProps(): void;
     draw(): void;

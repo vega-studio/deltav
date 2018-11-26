@@ -1,4 +1,4 @@
-import { IPoint } from "../primitives/point";
+import { Vec2 } from "../util";
 import { DataBounds } from "../util/data-bounds";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
@@ -13,40 +13,40 @@ export declare type SceneView = {
 export interface IMouseInteraction {
     button?: number;
     screen: {
-        mouse: IPoint;
+        mouse: Vec2;
     };
     start?: {
-        mouse: IPoint;
+        mouse: Vec2;
         view: View;
     };
     target: {
-        mouse: IPoint;
+        mouse: Vec2;
         view: View;
     };
     viewsUnderMouse: {
-        mouse: IPoint;
+        mouse: Vec2;
         view: View;
     }[];
 }
 export interface IDragMetrics {
     screen: {
-        start: IPoint;
-        previous: IPoint;
-        current: IPoint;
-        delta: IPoint;
+        start: Vec2;
+        previous: Vec2;
+        current: Vec2;
+        delta: Vec2;
     };
 }
 export interface IWheelMetrics {
     wheel: [number, number];
 }
 export interface ITouchRelation {
-    direction: IPoint;
+    direction: Vec2;
     distance: number;
     id: number;
 }
 export interface ITouchFrame {
-    location: IPoint;
-    direction: IPoint;
+    location: Vec2;
+    direction: Vec2;
     relations: Map<number, ITouchRelation>;
 }
 export interface ITouchMetrics {
@@ -66,9 +66,9 @@ export declare class MouseEventManager {
     addContextListeners(handlesWheelEvents?: boolean): void;
     addTouchContextListeners(): void;
     getView(viewId: string): View | null;
-    getViewsUnderMouse: (mouse: IPoint) => DataBounds<SceneView>[];
-    makeDrag(mouse: IPoint, start: IPoint, previous: IPoint, delta: IPoint): IDragMetrics;
-    makeInteraction(mouse: IPoint, start?: IPoint, startView?: SceneView): IMouseInteraction;
+    getViewsUnderMouse: (mouse: [number, number]) => DataBounds<SceneView>[];
+    makeDrag(mouse: Vec2, start: Vec2, previous: Vec2, delta: Vec2): IDragMetrics;
+    makeInteraction(mouse: Vec2, start?: Vec2, startView?: SceneView): IMouseInteraction;
     makeWheel(event: MouseWheelEvent): IWheelMetrics;
     resize: () => void;
     setControllers(controllers: EventManager[]): void;

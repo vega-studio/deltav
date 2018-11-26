@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.21.0
+
+* `(ADDED)` Project now releases to AWS s3 during release process to detach dependence on this private repo without gaining access to the project specifics.
+
 ## 1.20.4
 
 * `(FIXED)` Some devices would force a pixel ratio less than one for the window status. This is problematic for many of fiestas features, so a hard cap on keeping the ratio >= 1.0 has been employed for the context.

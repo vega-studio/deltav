@@ -78,8 +78,6 @@ export class ImageLayer<
 
       // Provide a precise hit test for the circle
       hitTest: (image: ImageInstance, point: Vec2, view: IProjection) => {
-        console.log("hit");
-
         // The bounds of the image is in world space, but it does not account for the scale mode of the image.
         // Here, we will apply the scale mode testing to the image
         const maxScale = max(...view.camera.scale);
@@ -130,20 +128,21 @@ export class ImageLayer<
             anchorEffect[1] = image.anchor.y || 0;
           }
 
-          const topLeft = subtract2(
-            image.position,
-            divide2(anchorEffect, view.camera.scale)
+          const topLeft = view.worldToScreen(
+            subtract2(image.position, divide2(anchorEffect, view.camera.scale))
           );
 
           const screenPoint = view.worldToScreen(point);
 
           // Reverse project the size and we should be within the distorted world coordinates
-          return new Bounds({
+          const bounds = new Bounds({
             height: image.height,
             width: image.width,
             x: topLeft[0],
             y: topLeft[1]
-          }).containsPoint(screenPoint);
+          });
+
+          return bounds.containsPoint(screenPoint);
         }
 
         return true;

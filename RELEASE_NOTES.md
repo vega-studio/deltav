@@ -1,5 +1,14 @@
 # Release Notes
 
+## 1.22.0
+
+* `(ADDED)` Comma delimited imports ${import: module, module2, etc}
+* `(ADDED)` Constants and math methods have been added to the module base. fsin, fcos, PI, PI2, PI_2, etc.
+* `(ADDED)` More component-wise vector methods min<1-4>(), max<1-4>(), divide<1-4>(), vec<1-4>()
+* `(ADDED)` Shader modules can include attributes and uniforms to help guarantee the module has what it needs to work with the layer.
+* `(FIXED)` inject-shader-io is now cleaned up to use the new shader module attribute inclusion pattern to make the code cleaner and easier to follow.
+* `(FIXED)` Vec2 is used a lot more consistently through the project. IPoint has been removed in favor of Vec2.
+
 ## 1.21.0
 
 * `(ADDED)` Project now releases to AWS s3 during release process to detach dependence on this private repo without gaining access to the project specifics.

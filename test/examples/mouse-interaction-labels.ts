@@ -116,8 +116,7 @@ export class MouseInteractionLabels extends BaseExample {
       },
       scaling: ScaleType.NEVER,
       text: "TL",
-      x: 20,
-      y: 20
+      position: [20, 20]
     });
 
     // Left Middle left
@@ -140,8 +139,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "TM",
-        x: 100,
-        y: 20
+        position: [100, 20]
       })
     );
 
@@ -162,8 +160,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "TR",
-        x: 180,
-        y: 20
+        position: [180, 20]
       })
     );
 
@@ -184,8 +181,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "ML",
-        x: 20,
-        y: 100
+        position: [20, 100]
       })
     );
 
@@ -206,8 +202,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "M",
-        x: 100,
-        y: 100
+        position: [100, 100]
       })
     );
 
@@ -228,8 +223,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "MR",
-        x: 180,
-        y: 100
+        position: [180, 100]
       })
     );
 
@@ -250,8 +244,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "BL",
-        x: 20,
-        y: 180
+        position: [20, 180]
       })
     );
 
@@ -272,8 +265,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "BM",
-        x: 100,
-        y: 180
+        position: [100, 180]
       })
     );
 
@@ -294,8 +286,7 @@ export class MouseInteractionLabels extends BaseExample {
         },
         scaling: ScaleType.NEVER,
         text: "BR",
-        x: 180,
-        y: 180
+        position: [180, 180]
       })
     );
 

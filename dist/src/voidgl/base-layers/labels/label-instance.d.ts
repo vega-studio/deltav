@@ -1,6 +1,7 @@
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Label } from "../../primitives/label";
 import { LabelAtlasResource } from "../../surface/texture";
+import { Vec2 } from "../../util";
 import { Anchor, ScaleType } from "../types";
 export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
     anchor?: Anchor;
@@ -18,8 +19,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> 
     scaling?: ScaleType;
     scale?: number;
     text: string;
-    x?: number;
-    y?: number;
+    position: Vec2;
 }
 export declare class LabelInstance extends Instance implements Label {
     static destroy(): void;
@@ -28,8 +28,7 @@ export declare class LabelInstance extends Instance implements Label {
     maxScale: number;
     scaling: ScaleType;
     scale: number;
-    x: number;
-    y: number;
+    position: Vec2;
     private _cssFont;
     private _fontFamily;
     private _fontSize;

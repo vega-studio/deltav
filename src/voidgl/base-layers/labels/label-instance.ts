@@ -2,6 +2,7 @@ import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Label } from "../../primitives/label";
 import { LabelAtlasResource, LabelRasterizer } from "../../surface/texture";
+import { Vec2 } from "../../util";
 import { Anchor, AnchorType, ScaleType } from "../types";
 
 export interface ILabelInstanceOptions
@@ -43,9 +44,7 @@ export interface ILabelInstanceOptions
   /** This will be the text that should render with  */
   text: string;
   /** The x coordinate where the label will be anchored to in world space */
-  x?: number;
-  /** The y coordinate where the label will be anchored to in world space */
-  y?: number;
+  position: Vec2;
 }
 
 /** This is to make a clear type that references label text values */
@@ -154,9 +153,7 @@ export class LabelInstance extends Instance implements Label {
   /** Scales the label uniformly */
   @observable scale: number = 1.0;
   /** The x coordinate where the label will be anchored to in world space */
-  @observable x: number = 0;
-  /** The y coordinate where the label will be anchored to in world space */
-  @observable y: number = 0;
+  @observable position: Vec2 = [0, 0];
 
   // The following properties are properties that are locked in after creating this label
   // As the properties are completely locked into how the label was rasterized and can not
@@ -268,8 +265,7 @@ export class LabelInstance extends Instance implements Label {
     this.scaling = options.scaling || this.scaling;
     this.scale = options.scale || this.scale;
 
-    this.x = options.x || this.x;
-    this.y = options.y || this.y;
+    this.position = options.position;
 
     this._fontFamily = options.fontFamily || this._fontFamily;
     this._fontSize = options.fontSize || this._fontSize;
@@ -361,8 +357,7 @@ export class LabelInstance extends Instance implements Label {
     this._width = this._width;
     // Make sure all public properties that could have changed during the load are triggered
     // so they properly have updated all of their elements.
-    this.x = this.x;
-    this.y = this.y;
+    this.position = this.position;
     this.color = this.color;
     this.depth = this.depth;
     this.maxScale = this.maxScale;

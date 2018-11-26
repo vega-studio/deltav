@@ -1,7 +1,6 @@
 import * as Three from "three";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
-import { IPoint } from "./primitives/point";
 import { ChartCamera, Vec, Vec2 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
@@ -93,7 +92,7 @@ export interface IPickInfo<T extends Instance> {
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
   /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
-  querySpace?(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
+  querySpace?(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[];
   /** This is the screen coordinates of the mouse point that interacted with the instances */
   screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */
@@ -352,21 +351,21 @@ export interface IProjection {
   /** This is the chart camera utilized in the projection of elements */
   camera: ChartCamera;
   /** Converts from the pixel density layer to the screen space */
-  pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
+  pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
   /** Converts from the screen coordinates to the pixel density layer */
-  screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
+  screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;
   /** Converts from screen space to the view's relative coordinates */
-  screenToView(point: IPoint, out?: IPoint): IPoint;
+  screenToView(point: Vec2, out?: Vec2): Vec2;
   /** Converts from screen space to the world space of a scene */
-  screenToWorld(point: IPoint, out?: IPoint): IPoint;
+  screenToWorld(point: Vec2, out?: Vec2): Vec2;
   /** Converts from a view's space to the screen */
-  viewToScreen(point: IPoint, out?: IPoint): IPoint;
+  viewToScreen(point: Vec2, out?: Vec2): Vec2;
   /** Converts from a views space to the world coordinates */
-  viewToWorld(point: IPoint, out?: IPoint): IPoint;
+  viewToWorld(point: Vec2, out?: Vec2): Vec2;
   /** Converts from world coordinate space of a scene to the screen */
-  worldToScreen(point: IPoint, out?: IPoint): IPoint;
+  worldToScreen(point: Vec2, out?: Vec2): Vec2;
   /** Converts from world coordinate space of a scene to the view's space */
-  worldToView(point: IPoint, out?: IPoint): IPoint;
+  worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 
 export type IMaterialOptions = Partial<
@@ -377,7 +376,7 @@ export type IMaterialOptions = Partial<
 >;
 
 /** This is the method signature for determining whether or not a point hits an instance */
-export type InstanceHitTest<T> = (o: T, p: IPoint, v: IProjection) => boolean;
+export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 
 /**
  * This is the type of picking assigned to a layer. Each mode has performance and functionality

@@ -1,7 +1,7 @@
 import { AbsolutePosition } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
 import { Color } from "../types";
+import { Vec2 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
 import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -32,13 +32,13 @@ export declare class View extends IdentifyByKey {
     needsDraw: boolean;
     animationEndTime: number;
     constructor(options: IViewOptions);
-    screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
-    pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
-    screenToView(point: IPoint, out?: IPoint): IPoint;
-    viewToScreen(point: IPoint, out?: IPoint): IPoint;
-    screenToWorld(point: IPoint, out?: IPoint): IPoint;
-    worldToScreen(point: IPoint, out?: IPoint): IPoint;
-    viewToWorld(point: IPoint, out?: IPoint): IPoint;
-    worldToView(point: IPoint, out?: IPoint): IPoint;
+    screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
+    pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];
+    screenToView(point: Vec2, out?: Vec2): [number, number];
+    viewToScreen(point: Vec2, out?: Vec2): [number, number];
+    screenToWorld(point: Vec2, out?: Vec2): [number, number];
+    worldToScreen(point: Vec2, out?: Vec2): [number, number];
+    viewToWorld(point: Vec2, out?: Vec2): [number, number];
+    worldToView(point: Vec2, out?: Vec2): [number, number];
     fitViewtoViewport(surfaceDimensions: Bounds): void;
 }

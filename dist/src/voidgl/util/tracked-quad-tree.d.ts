@@ -1,6 +1,6 @@
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
+import { Vec2 } from "../util/vector";
 export declare type BoundsAccessor<T extends Instance> = (o: T) => Bounds | null;
 export interface IVisitFunction<T extends Instance> {
     (node: Node<T>, child?: Bounds): void;
@@ -30,7 +30,7 @@ export declare class Node<T extends Instance> {
     private doAdd;
     private doRemove;
     gatherChildren(list: T[]): T[];
-    query(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
+    query(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[];
     queryBounds(b: Bounds, list: T[], visit?: IVisitFunction<T>): T[];
     queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[];
     remove(child: T): void;

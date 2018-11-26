@@ -1,7 +1,4 @@
-import { Vector2 } from "three";
-declare let normalizeWheel: (e: MouseWheelEvent) => Vector2;
-declare function eventElementPosition(e: any, relative?: HTMLElement): {
-    x: number;
-    y: number;
-};
+import { Vec2 } from "./vector";
+declare let normalizeWheel: (e: MouseWheelEvent) => Vec2;
+declare function eventElementPosition(e: any, relative?: HTMLElement): Vec2;
 export { eventElementPosition, normalizeWheel };

@@ -1,6 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
@@ -11,7 +11,14 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../util";
+import {
+  CommonMaterialOptions,
+  dot2,
+  IAutoEasingMethod,
+  subtract2,
+  Vec,
+  Vec2
+} from "../../util";
 import { RingInstance } from "./ring-instance";
 const { max } = Math;
 
@@ -64,11 +71,11 @@ export class RingLayer<
         }),
 
       // Provide a precise hit test for the ring
-      hitTest: (ring: RingInstance, point: IPoint, view: IProjection) => {
+      hitTest: (ring: RingInstance, point: Vec2, view: IProjection) => {
         const r = ring.radius / max(...view.camera.scale);
-        const delta = [point.x - ring.center[0], point.y - ring.center[1]];
+        const delta = subtract2(point, ring.center);
 
-        return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
+        return dot2(delta, delta) < r * r;
       }
     };
   }

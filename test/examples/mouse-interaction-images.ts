@@ -97,8 +97,7 @@ export class MouseInteractionImages extends BaseExample {
       id: `image_0`,
       scaling: ScaleType.ALWAYS,
       tint: [1.0, 1.0, 1.0, 1.0],
-      x: 20,
-      y: 20
+      position: [20, 20]
     });
 
     // Left Middle left
@@ -111,8 +110,7 @@ export class MouseInteractionImages extends BaseExample {
           id: `image_1`,
           scaling: ScaleType.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
-          x: 20,
-          y: 50
+          position: [20, 50]
         })
       )
     );
@@ -124,8 +122,7 @@ export class MouseInteractionImages extends BaseExample {
           id: `image_2`,
           scaling: ScaleType.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
-          x: 20,
-          y: 80
+          position: [20, 80]
         })
       )
     );

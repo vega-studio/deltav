@@ -1,4 +1,5 @@
 // These are projection methods utilizing the simpler camera breakdown approach
+${import: camera}
 
 vec3 cameraSpace(vec3 world) {
   return (world + cameraOffset) * cameraScale;

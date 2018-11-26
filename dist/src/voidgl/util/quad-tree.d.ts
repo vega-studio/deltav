@@ -1,17 +1,18 @@
 import { Bounds } from "../primitives/bounds";
-import { IPoint } from "../primitives/point";
+import { Vec2 } from "./vector";
 export interface IQuadItem {
     area: number;
     bottom: number;
     height: number;
     left: number;
-    mid: IPoint;
+    location: Vec2;
+    mid: Vec2;
     right: number;
     top: number;
     width: number;
     x: number;
     y: number;
-    containsPoint(point: IPoint): boolean;
+    containsPoint(point: Vec2): boolean;
     encapsulate(item: IQuadItem): boolean;
     fits(item: IQuadItem): 0 | 1 | 2;
     hitBounds(item: IQuadItem): boolean;
@@ -41,7 +42,7 @@ export declare class Node<T extends IQuadItem> {
     cover(bounds: IQuadItem): void;
     doAdd(child: T): boolean;
     gatherChildren(list: T[]): T[];
-    query(bounds: IQuadItem | IPoint, visit?: IVisitFunction<T>): T[];
+    query(bounds: IQuadItem | Vec2, visit?: IVisitFunction<T>): T[];
     queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[];
     queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[];
     split(): void;

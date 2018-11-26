@@ -1,6 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
@@ -11,7 +11,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, Vec } from "../../util";
+import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
 
@@ -80,18 +80,11 @@ export class CircleLayer<
         }),
 
       // Provide a precise hit test for the circle
-      hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => {
-        const circleScreenCenter = view.worldToScreen({
-          x: circle.center[0],
-          y: circle.center[1]
-        });
+      hitTest: (circle: CircleInstance, point: Vec2, view: IProjection) => {
+        const circleScreenCenter = view.worldToScreen(circle.center);
         const mouseScreen = view.worldToScreen(point);
         const r = circle.radius * (this.props.scaleFactor || noScaleFactor)();
-
-        const delta = [
-          mouseScreen.x - circleScreenCenter.x,
-          mouseScreen.y - circleScreenCenter.y
-        ];
+        const delta = subtract2(mouseScreen, circleScreenCenter);
 
         return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
       }

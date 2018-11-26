@@ -1,4 +1,4 @@
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import { IMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { Vec } from "../../util";
@@ -25,7 +25,7 @@ export declare class CircleLayer<T extends CircleInstance, U extends ICircleLaye
     };
     getInstancePickingMethods(): {
         boundsAccessor: (circle: CircleInstance) => Bounds;
-        hitTest: (circle: CircleInstance, point: IPoint, view: IProjection) => boolean;
+        hitTest: (circle: CircleInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<CircleInstance>;
     getModelType(): IModelType;

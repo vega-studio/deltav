@@ -1,12 +1,14 @@
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
+import { getLayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   IInstancingUniform,
+  IShaderInitialization,
   IShaders,
-  IUniform,
-  IVertexAttribute,
-  PickType,
+  IUniformInternal,
+  IVertexAttributeInternal,
   ShaderInjectionTarget
 } from "../../types";
 import { shaderTemplate } from "../../util/shader-templating";
@@ -15,17 +17,35 @@ import { AttributeProcessing } from "./attribute-processing";
 import { EasingProcessing } from "./easing-processing";
 import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
+import { ShaderModuleUnit } from "./shader-module-unit";
 import { UniformProcessing } from "./uniform-processing";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.
  */
-export interface IShaderProcessingResults {
+export interface IShaderProcessingResults<T extends Instance> {
+  /** The resulting fragment shader from processing the module */
   fs: string;
+  /** Any additional system uniforms that arose from the processing */
   materialUniforms: IInstancingUniform[];
+  /** Calculated max instances per buffer (mostly for uniform packing procedures) */
   maxInstancesPerBuffer: number;
+  /** The modules that were included within the module processing */
+  modules: ShaderModuleUnit[];
+  /** The resulting vertex shader from processing the module */
   vs: string;
+  /** All instance attributes that arise from module processing */
+  instanceAttributes: IInstanceAttribute<T>[];
+  /** All vertex attributes that arise from module processing */
+  vertexAttributes: IVertexAttributeInternal[];
+  /** All uniform attributes that arise from module processing */
+  uniforms: IUniformInternal[];
 }
+
+/** Expected results from processing shader imports */
+export type ProcessShaderImportResults =
+  | (IShaders & { shaderModuleUnits: Set<ShaderModuleUnit> })
+  | null;
 
 /**
  * The intent of this processor is to analyze a layer's Shader IO elements and produce a functional
@@ -61,20 +81,36 @@ export class ShaderProcessor {
    */
   process<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
-    shaders: IShaders,
-    vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<T>[],
-    uniforms: IUniform[]
-  ): IShaderProcessingResults | null {
+    shaderIO: IShaderInitialization<T>
+  ): IShaderProcessingResults<T> | null {
     try {
       // Reset anything state that needs revertting
       this.uniformProcessing.materialUniforms = [];
-      // Calculate needed metrics that may be used by any of the processors
-      this.metricsProcessing.process(instanceAttributes, uniforms);
 
       // First process imports to create a shader complete with the necessary
-      const shadersWithImports = this.processImports(layer, shaders);
+      const shadersWithImports = this.processImports(layer, shaderIO);
       if (!shadersWithImports) return null;
+
+      // After processing our imports, we can now fully aggregate the needed shader IO to make our layer
+      // operate properly
+      // Get the injected shader IO attributes and uniforms
+      const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
+        layer.surface.gl,
+        layer,
+        shaderIO,
+        shadersWithImports
+      );
+      // After all of the shader IO is established, let's calculate the appropriate buffering strategy
+      // For the layer.
+      getLayerBufferType(
+        layer.surface.gl,
+        layer,
+        vertexAttributes,
+        instanceAttributes
+      );
+
+      // Calculate needed metrics that may be used by any of the processors
+      this.metricsProcessing.process(instanceAttributes, uniforms);
 
       // Next generate the attribute packing strategy for the layer. The layer will define how it expects
       // attributes (instance and vertex) to be handled. This will be written as the input to the shader at
@@ -145,7 +181,11 @@ export class ShaderProcessor {
         fs: processShaderFS.shader.trim(),
         materialUniforms: this.uniformProcessing.materialUniforms,
         maxInstancesPerBuffer: this.metricsProcessing.maxInstancesPerBuffer,
-        vs: processedShaderVS.shader.trim()
+        modules: Array.from(shadersWithImports.shaderModuleUnits),
+        vs: processedShaderVS.shader.trim(),
+        vertexAttributes,
+        instanceAttributes,
+        uniforms
       };
 
       return results;
@@ -168,22 +208,17 @@ export class ShaderProcessor {
    */
   private processImports<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
-    shaders: IShaders
-  ): IShaders | null {
-    const additionalImports = [];
-
-    if (layer.picking.type === PickType.SINGLE) {
-      additionalImports.push("picking");
-    } else {
-      additionalImports.push("no-picking");
-    }
+    shaders: IShaderInitialization<T>
+  ): ProcessShaderImportResults {
+    const shaderModuleUnits = new Set<ShaderModuleUnit>();
+    const baseModules = layer.baseShaderModules(shaders);
 
     // Process imports for the vertex shader
     const vs = ShaderModule.process(
       layer.id,
       shaders.vs,
       ShaderInjectionTarget.VERTEX,
-      additionalImports
+      baseModules.vs
     );
 
     if (vs.errors.length > 0) {
@@ -202,7 +237,7 @@ export class ShaderProcessor {
       layer.id,
       shaders.fs,
       ShaderInjectionTarget.FRAGMENT,
-      additionalImports
+      baseModules.fs
     );
 
     if (fs.errors.length > 0) {
@@ -216,9 +251,18 @@ export class ShaderProcessor {
       return null;
     }
 
+    // Gather all discovered Shader Module Units
+    vs.shaderModuleUnits.forEach(moduleUnit =>
+      shaderModuleUnits.add(moduleUnit)
+    );
+    fs.shaderModuleUnits.forEach(moduleUnit =>
+      shaderModuleUnits.add(moduleUnit)
+    );
+
     return {
       fs: fs.shader || "",
-      vs: vs.shader || ""
+      vs: vs.shader || "",
+      shaderModuleUnits
     };
   }
 }

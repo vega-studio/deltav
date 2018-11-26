@@ -2,12 +2,12 @@
  * This file contains the logic for handling edge picking via quad tree and hit tests.
  * The methods involved are fairly robust and would clutter the layer's code file.
  */
-import { IPoint } from "../../primitives";
 import { Bounds } from "../../primitives/bounds";
 import { IPickingMethods } from "../../surface/layer";
 import { IProjection } from "../../types";
 import {
   add2,
+  copy2,
   dot2,
   length2,
   scale2,
@@ -63,19 +63,6 @@ const interpolation: { [key: number]: InterpolationMethod } = {
   [EdgeType.BEZIER2]: bezier2
 };
 
-/** Converts a point array to a point object */
-function toPointObject(point: Vec2): IPoint {
-  return {
-    x: point[0],
-    y: point[1]
-  };
-}
-
-/** Converts a point object to a point array */
-function toPointArray(point: IPoint): Vec2 {
-  return [point.x, point.y];
-}
-
 /** Takes two points that forms a line then calculates the nearest distance from that line to the third point */
 function distanceTo(start: Vec2, end: Vec2, p: Vec2) {
   // Make a vector from a line point to the indicated point
@@ -124,21 +111,11 @@ export function edgePicking<T extends EdgeInstance>(
 
     // Encapsulating the bezier control points is enough of a broadphase for beziers
     if (props.type === EdgeType.BEZIER) {
-      bounds.encapsulate({
-        x: edge.control[0][0],
-        y: edge.control[0][1]
-      });
+      bounds.encapsulate(edge.control[0]);
     } else if (props.type === EdgeType.BEZIER2) {
       // Encapsulating the bezier control points is enough of a broadphase for beziers
-      bounds.encapsulate({
-        x: edge.control[0][0],
-        y: edge.control[0][1]
-      });
-
-      bounds.encapsulate({
-        x: edge.control[1][0],
-        y: edge.control[1][1]
-      });
+      bounds.encapsulate(edge.control[0]);
+      bounds.encapsulate(edge.control[1]);
     }
 
     if (broadphase === EdgeBroadphase.PASS_X) {
@@ -161,28 +138,28 @@ export function edgePicking<T extends EdgeInstance>(
 
       // Provide a precise hit test for the edge. This method performs all of the rendering
       // And hit tests within screen space as opposed to world space.
-      hitTest: (edge: EdgeInstance, point: IPoint, view: IProjection) => {
+      hitTest: (edge: EdgeInstance, point: Vec2, view: IProjection) => {
         point = view.worldToScreen(point);
-        const mouse: Vec2 = [point.x, point.y];
+        const mouse: Vec2 = point;
         let closestIndex = 0;
         let closestDistance = Number.MAX_VALUE;
         let secondClosestIndex = 0;
         let secondClosestDistance = Number.MAX_VALUE;
 
-        const start = view.worldToScreen(toPointObject(edge.start));
-        const end = view.worldToScreen(toPointObject(edge.end));
+        const start = view.worldToScreen(edge.start);
+        const end = view.worldToScreen(edge.end);
         let control1: Vec2 = [0, 0];
         let control2: Vec2 = [0, 0];
 
         if (type === EdgeType.BEZIER) {
-          control1 = add2(toPointArray(start), edge.control[0]);
+          control1 = add2(start, edge.control[0]);
         } else if (type === EdgeType.BEZIER2) {
-          control1 = add2(toPointArray(start), edge.control[0]);
-          control2 = add2(toPointArray(end), edge.control[1]);
+          control1 = add2(start, edge.control[0]);
+          control2 = add2(end, edge.control[1]);
         }
 
-        const startPoint = toPointArray(start);
-        const endPoint = toPointArray(end);
+        const startPoint = copy2(start);
+        const endPoint = copy2(end);
 
         control1 = edge.control.length > 0 ? control1 : [0, 0];
         control2 = edge.control.length > 1 ? control2 : [0, 0];
@@ -257,8 +234,8 @@ export function edgePicking<T extends EdgeInstance>(
     boundsAccessor,
 
     // Provide a precise hit test for the edge
-    hitTest: (edge: EdgeInstance, point: IPoint, _view: IProjection) => {
-      const mouse: [number, number] = [point.x, point.y];
+    hitTest: (edge: EdgeInstance, point: Vec2, _view: IProjection) => {
+      const mouse: Vec2 = point;
       let closestIndex = 0;
       let closestDistance = Number.MAX_VALUE;
 

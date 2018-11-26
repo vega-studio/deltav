@@ -1,7 +1,6 @@
 import * as Three from "three";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
-import { IPoint } from "./primitives/point";
 import { ChartCamera, Vec, Vec2 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
@@ -55,7 +54,7 @@ export interface IPickInfo<T extends Instance> {
     button?: number;
     layer: string;
     instances: T[];
-    querySpace?(bounds: Bounds | IPoint, visit?: IVisitFunction<T>): T[];
+    querySpace?(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[];
     screen: [number, number];
     world: [number, number];
     projection: IProjection;
@@ -134,17 +133,17 @@ export interface IShaders {
 }
 export interface IProjection {
     camera: ChartCamera;
-    pixelSpaceToScreen(point: IPoint, out?: IPoint): IPoint;
-    screenToPixelSpace(point: IPoint, out?: IPoint): IPoint;
-    screenToView(point: IPoint, out?: IPoint): IPoint;
-    screenToWorld(point: IPoint, out?: IPoint): IPoint;
-    viewToScreen(point: IPoint, out?: IPoint): IPoint;
-    viewToWorld(point: IPoint, out?: IPoint): IPoint;
-    worldToScreen(point: IPoint, out?: IPoint): IPoint;
-    worldToView(point: IPoint, out?: IPoint): IPoint;
+    pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
+    screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;
+    screenToView(point: Vec2, out?: Vec2): Vec2;
+    screenToWorld(point: Vec2, out?: Vec2): Vec2;
+    viewToScreen(point: Vec2, out?: Vec2): Vec2;
+    viewToWorld(point: Vec2, out?: Vec2): Vec2;
+    worldToScreen(point: Vec2, out?: Vec2): Vec2;
+    worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 export declare type IMaterialOptions = Partial<Omit<Omit<Omit<Three.ShaderMaterialParameters, "uniforms">, "vertexShader">, "fragmentShader">>;
-export declare type InstanceHitTest<T> = (o: T, p: IPoint, v: IProjection) => boolean;
+export declare type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 export declare enum PickType {
     NONE = 0,
     ALL = 1,

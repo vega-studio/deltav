@@ -1,6 +1,6 @@
 import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds, IPoint } from "../../primitives";
+import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
   IMaterialOptions,
@@ -12,7 +12,9 @@ import {
 } from "../../types";
 import {
   CommonMaterialOptions,
+  divide2,
   IAutoEasingMethod,
+  subtract2,
   Vec,
   Vec2
 } from "../../util";
@@ -67,7 +69,7 @@ export class LabelLayer<
       boundsAccessor: (label: LabelInstance) => {
         const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
 
-        const topLeft = [label.x - anchor[0], label.y - anchor[1]];
+        const topLeft = subtract2(label.position, anchor);
 
         return new Bounds({
           height: label.height,
@@ -78,7 +80,7 @@ export class LabelLayer<
       },
 
       // Provide a precise hit test for the circle
-      hitTest: (label: LabelInstance, point: IPoint, view: IProjection) => {
+      hitTest: (label: LabelInstance, point: Vec2, view: IProjection) => {
         // The bounds of the label is in world space, but it does not account for the scale mode of the label.
         // Here, we will apply the scale mode testing to the label
         const maxScale = max(...view.camera.scale);
@@ -98,10 +100,10 @@ export class LabelLayer<
             const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
 
             // The location is within the world, but we reverse project the anchor spread
-            const topLeft = view.worldToScreen({
-              x: label.x - anchor[0] / view.camera.scale[0],
-              y: label.y - anchor[1] / view.camera.scale[1]
-            });
+            const topLeft = subtract2(
+              label.position,
+              divide2(anchor, view.camera.scale)
+            );
 
             const screenPoint = view.worldToScreen(point);
 
@@ -109,29 +111,26 @@ export class LabelLayer<
             return new Bounds({
               height: label.height,
               width: label.width,
-              x: topLeft.x,
-              y: topLeft.y
+              x: topLeft[0],
+              y: topLeft[1]
             }).containsPoint(screenPoint);
           }
         } else if (label.scaling === ScaleType.NEVER) {
           // If we never allow the label to scale, then the bounds will grow and shrink to counter the effects
           // Of the camera zoom
           const anchor: Vec2 = [label.anchor.x || 0, label.anchor.y || 0];
-
-          // The location is within the world, but we reverse project the anchor spread
-          const topLeft = view.worldToScreen({
-            x: label.x - anchor[0] / view.camera.scale[0],
-            y: label.y - anchor[1] / view.camera.scale[1]
-          });
-
+          const topLeft = subtract2(
+            label.position,
+            divide2(anchor, view.camera.scale)
+          );
           const screenPoint = view.worldToScreen(point);
 
           // Reverse project the size and we should be within the distorted world coordinates
           return new Bounds({
             height: label.height,
             width: label.width,
-            x: topLeft.x,
-            y: topLeft.y
+            x: topLeft[0],
+            y: topLeft[1]
           }).containsPoint(screenPoint);
         }
 
@@ -176,7 +175,7 @@ export class LabelLayer<
           easing: animateLocation,
           name: LabelLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y]
+          update: o => o.position
         },
         {
           name: LabelLayer.attributeNames.anchor,

@@ -1,5 +1,5 @@
-import { IPoint } from "../../primitives/point";
 import { IProjection, PickType } from "../../types";
+import { Vec2 } from "../../util";
 import { EventManager } from "../event-manager";
 import { Layer } from "../layer";
 import { LayerSurface } from "../layer-surface";
@@ -54,7 +54,7 @@ export class LayerMouseEvents extends EventManager {
 
   getMouseByViewId(e: IMouseInteraction) {
     // This is the mouse position for the provided view in view space
-    const viewMouseByViewId = new Map<string, IPoint>();
+    const viewMouseByViewId = new Map<string, Vec2>();
 
     for (const viewItem of e.viewsUnderMouse) {
       viewMouseByViewId.set(viewItem.view.id, viewItem.mouse);
@@ -77,7 +77,7 @@ export class LayerMouseEvents extends EventManager {
 
   handleInteraction(
     e: IMouseInteraction,
-    callback: (layer: Layer<any, any>, view: IProjection, mouse: IPoint) => void
+    callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
   ) {
     // Get all of the scenes under the mouse
     const sceneViews = this.getSceneViewsUnderMouse(e);
@@ -133,7 +133,7 @@ export class LayerMouseEvents extends EventManager {
   handleMouseMove(e: IMouseInteraction) {
     if (this.surface) {
       this.surface.updateColorPickRange(
-        [e.screen.mouse.x, e.screen.mouse.y],
+        e.screen.mouse,
         e.viewsUnderMouse.map(v => v.view)
       );
     }
@@ -186,8 +186,8 @@ export class LayerMouseEvents extends EventManager {
 
   handleSceneView(
     sceneView: SceneView,
-    viewMouseByViewId: Map<string, IPoint>,
-    callback: (layer: Layer<any, any>, view: IProjection, mouse: IPoint) => void
+    viewMouseByViewId: Map<string, Vec2>,
+    callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
   ) {
     const view = sceneView.view;
     const mouse = viewMouseByViewId.get(view.id);

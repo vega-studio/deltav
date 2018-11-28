@@ -4,7 +4,7 @@
     "email": "diniden@outlook.com",
     "url": "http://diniden.com"
   },
-  "name": "@voidrayco/voidgl",
+  "name": "@voidrayco/deltav",
   "version": "1.22.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
@@ -20,7 +20,8 @@
   "dependencies": {
     "@types/three": "^0.92.23",
     "bowser": "^1.7.3",
-    "three": "^0.94.0"
+    "three": "^0.94.0",
+    "twgl.js": "github:Diniden/twgl.js"
   },
   "devDependencies": {
     "@types/animejs": "2.0.0",

@@ -6,3 +6,4 @@ export * from "./surface";
 export * from "./types";
 export * from "./util";
 export * from "./shaders";
+export * from "./typings";

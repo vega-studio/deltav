@@ -25,8 +25,6 @@
     "linebreak-style": [true, "LF"],
     "prefer-const": [true, {"destructuring": "all"}],
     "object-literal-sort-keys": false,
-    // "object-literal-sort-keys": [true, "ignore-case"],
-    // "trailing-comma": [true, {"multiline": "always", "singleline": "never"}], // Managed by prettier
     "array-type": [true, "array"],
     "arrow-return-shorthand": [true, "multiline"],
     "class-name": true,
@@ -44,10 +42,7 @@
     "ordered-imports": [true],
     "prefer-method-signature": true,
     "prefer-template": true,
-    // "quotemark": [true, "single", "jsx-double"], // Managed by prettier
     "semicolon": [true, "always", "ignore-bound-class-methods"],
-    "space-before-function-paren": [false, "never"],
-    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-module", "check-separator", "check-type", "check-typecast"]
   }
 }

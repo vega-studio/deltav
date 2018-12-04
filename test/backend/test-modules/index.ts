@@ -7,7 +7,7 @@ import { ShaderInjectionTarget } from "../../../src";
 import {
   ShaderModule,
   ShaderModuleUnit
-} from "../../../src/voidgl/shaders/processing";
+} from "../../../src/shaders/processing";
 
 // Bulk register our test modules
 const out = ShaderModule.register([

@@ -4,6 +4,7 @@ import {
   AtlasSize,
   ChartCamera,
   ClearFlags,
+  createAtlas,
   EventManager,
   ISceneOptions,
   LayerInitializer,
@@ -148,17 +149,17 @@ export class Main extends Component<any, IMainState> {
 
       // Establish the surface and scenes needed
       this.surface = await new LayerSurface().init({
-        atlasResources: [
-          {
+        resources: [
+          createAtlas({
             height: AtlasSize._2048,
             key: "all-resources",
             width: AtlasSize._2048
-          },
-          {
+          }),
+          createAtlas({
             height: AtlasSize._2048,
             key: "all-resources-2",
             width: AtlasSize._2048
-          }
+          })
         ],
         background: [0.1, 0.2, 0.3, 1.0],
         context: this.context,

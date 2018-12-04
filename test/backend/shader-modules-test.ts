@@ -2,7 +2,7 @@ import { ShaderInjectionTarget } from "../../src";
 import {
   IShaderCompileResults,
   ShaderModule
-} from "../../src/voidgl/shaders/processing/shader-module";
+} from "../../src/shaders/processing/shader-module";
 import "./test-modules";
 
 let testTitle: string = "";

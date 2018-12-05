@@ -1,3 +1,4 @@
+import { isResourceAttribute } from "src/types";
 import * as Three from "three";
 import { Instance, InstanceDiff } from "../../../instance-provider";
 import { BaseDiffProcessor } from "../base-diff-processor";
@@ -99,8 +100,11 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
         instanceUniform = layer.instanceAttributes[i];
         value = instanceUniform.update(instance);
         block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
-        instanceUniform.atlas &&
-          layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+        isResourceAttribute(instanceUniform) &&
+          layer.resource.setAttributeContext(
+            instanceUniform,
+            instanceUniform.resource.type
+          );
         start = instanceUniform.blockIndex;
 
         if (start === undefined) {
@@ -126,8 +130,11 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       instanceUniform = layer.activeAttribute;
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
-      instanceUniform.atlas &&
-        layer.resource.setTargetAtlas(instanceUniform.atlas.key);
+      isResourceAttribute(instanceUniform) &&
+        layer.resource.setAttributeContext(
+          instanceUniform,
+          instanceUniform.resource.type
+        );
       start = instanceUniform.blockIndex;
 
       if (start !== undefined) {

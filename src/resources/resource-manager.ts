@@ -1,6 +1,10 @@
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
-import { IInstanceAttribute, InstanceIOValue, IResourceType } from "../types";
+import {
+  InstanceIOValue,
+  IResourceInstanceAttribute,
+  IResourceType
+} from "../types";
 import {
   BaseResourceManager,
   INVALID_RESOURCE_MANAGER
@@ -101,14 +105,13 @@ export class ResourceManager {
    * This will cause the attributes requested resource (if existing) to set the attribute
    * as it's current context while performing tasks.
    */
-  setAttributeContext(operation: {
-    attribute: IInstanceAttribute<Instance>;
-    type: number;
-    manager: BaseResourceManager<any, any>;
-  }) {
+  setAttributeContext(
+    attribute: IResourceInstanceAttribute<Instance>,
+    resourceType: number
+  ) {
     (
-      this.managers.get(operation.type) || INVALID_RESOURCE_MANAGER
-    ).setAttributeContext(operation.attribute);
+      this.managers.get(resourceType) || INVALID_RESOURCE_MANAGER
+    ).setAttributeContext(attribute);
   }
 
   /**

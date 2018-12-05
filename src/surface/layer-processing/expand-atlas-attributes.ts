@@ -2,10 +2,10 @@ import { isAtlasResource } from "src/resources/texture/base-atlas-resource-reque
 import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import {
-  IAtlasInstanceAttribute,
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  IResourceInstanceAttribute,
   IUniform,
   IValueInstanceAttribute,
   ResourceType,
@@ -18,8 +18,10 @@ const emptyTexture = new Three.Texture();
 
 function isAtlasAttribute<T extends Instance>(
   attr: any
-): attr is IAtlasInstanceAttribute<T> {
-  return Boolean(attr) && attr.atlas;
+): attr is IResourceInstanceAttribute<T> {
+  return (
+    Boolean(attr) && attr.resource && attr.resource.type === ResourceType.ATLAS
+  );
 }
 
 /**
@@ -30,7 +32,7 @@ export function generateAtlasResourceUniforms<
   U extends ILayerProps<T>
 >(layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[]) {
   // Retrieve all of the instance attributes that are atlas references
-  const atlasInstanceAttributes: IAtlasInstanceAttribute<T>[] = [];
+  const atlasInstanceAttributes: IResourceInstanceAttribute<T>[] = [];
   // Key: The atlas uniform name requested
   const requestedAtlasInjections = new Map<string, [boolean, boolean]>();
 
@@ -38,7 +40,7 @@ export function generateAtlasResourceUniforms<
   // For a single unique provided name. We also must merge the requests for
   // Vertex and fragment injections
   instanceAttributes.forEach(
-    (attribute: IValueInstanceAttribute<T> | IAtlasInstanceAttribute<T>) => {
+    (attribute: IValueInstanceAttribute<T> | IResourceInstanceAttribute<T>) => {
       if (isAtlasAttribute(attribute)) {
         // Auto set the size of the attribute. Attribute's that are a resource automatically
         // Consume a size of four
@@ -47,12 +49,14 @@ export function generateAtlasResourceUniforms<
         // Get the atlas resource uniform (sampler2D) injection targets. We default to only the
         // Fragment shader as it's the most commonly used location for sampler2Ds
         const injection: number =
-          attribute.atlas.shaderInjection || ShaderInjectionTarget.FRAGMENT;
+          attribute.resource.shaderInjection || ShaderInjectionTarget.FRAGMENT;
         // See if we already have an injection for the given injected uniform name for an atlas resource.
-        const injections = requestedAtlasInjections.get(attribute.atlas.name);
+        const injections = requestedAtlasInjections.get(
+          attribute.resource.name
+        );
 
         if (injections) {
-          requestedAtlasInjections.set(attribute.atlas.name, [
+          requestedAtlasInjections.set(attribute.resource.name, [
             injections[0] ||
               injection === ShaderInjectionTarget.VERTEX ||
               injection === ShaderInjectionTarget.ALL,
@@ -62,7 +66,7 @@ export function generateAtlasResourceUniforms<
           ]);
         } else {
           atlasInstanceAttributes.push(attribute);
-          requestedAtlasInjections.set(attribute.atlas.name, [
+          requestedAtlasInjections.set(attribute.resource.name, [
             injection === ShaderInjectionTarget.VERTEX ||
               injection === ShaderInjectionTarget.ALL,
             injection === ShaderInjectionTarget.FRAGMENT ||
@@ -78,9 +82,9 @@ export function generateAtlasResourceUniforms<
     (instanceAttribute): IUniform[] => {
       let injection: ShaderInjectionTarget = ShaderInjectionTarget.FRAGMENT;
 
-      if (instanceAttribute.atlas) {
+      if (instanceAttribute.resource) {
         const injections = requestedAtlasInjections.get(
-          instanceAttribute.atlas.name
+          instanceAttribute.resource.name
         );
 
         if (injections) {
@@ -96,13 +100,13 @@ export function generateAtlasResourceUniforms<
 
       return [
         {
-          name: instanceAttribute.atlas.name,
+          name: instanceAttribute.resource.name,
           shaderInjection: injection,
           size: UniformSize.ATLAS,
           update: () => {
             const resource = layer.resource
               .getManager(ResourceType.ATLAS)
-              .getResource(instanceAttribute.atlas.key);
+              .getResource(instanceAttribute.resource.key);
 
             if (isAtlasResource(resource)) {
               return resource.texture.atlasTexture || emptyTexture;
@@ -112,13 +116,13 @@ export function generateAtlasResourceUniforms<
           }
         },
         {
-          name: `${instanceAttribute.atlas.name}_size`,
+          name: `${instanceAttribute.resource.name}_size`,
           shaderInjection: injection,
           size: UniformSize.TWO,
           update: () => {
             const resource = layer.resource
               .getManager(ResourceType.ATLAS)
-              .getResource(instanceAttribute.atlas.key);
+              .getResource(instanceAttribute.resource.key);
 
             if (isAtlasResource(resource)) {
               const atlas = resource.texture.atlasTexture;

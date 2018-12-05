@@ -5,7 +5,8 @@ import {
   IInstanceAttribute,
   InstanceAttributeSize,
   IVertexAttribute,
-  PickType
+  PickType,
+  ResourceType
 } from "../../types";
 import { AutoEasingLoopStyle } from "../../util/auto-easing-method";
 import { getAttributeShaderName } from "./formatting";
@@ -295,7 +296,10 @@ export class AttributeProcessing {
         out += `  ${sizeToType[attribute.size]} ${
           attribute.name
         } = block${block};\n`;
-      } else if (attribute.atlas) {
+      } else if (
+        attribute.resource &&
+        attribute.resource.type === ResourceType.ATLAS
+      ) {
         // If the attribute is an atlas, then we use the special ATLAS size and don't swizzle the vector
         out += `  ${sizeToType[InstanceAttributeSize.ATLAS]} ${
           attribute.name

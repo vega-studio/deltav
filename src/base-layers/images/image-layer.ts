@@ -7,6 +7,7 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
+  ResourceType,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -209,7 +210,8 @@ export class ImageLayer<
           update: o => [o.scaling]
         },
         {
-          atlas: {
+          resource: {
+            type: ResourceType.ATLAS,
             key: this.props.atlas || "",
             name: "imageAtlas"
           },

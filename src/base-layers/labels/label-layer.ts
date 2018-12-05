@@ -7,6 +7,7 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
+  ResourceType,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -199,7 +200,8 @@ export class LabelLayer<
           update: o => [o.scaling]
         },
         {
-          atlas: {
+          resource: {
+            type: ResourceType.ATLAS,
             key: this.props.atlas || "",
             name: "labelAtlas"
           },

@@ -1,7 +1,7 @@
 import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
-import { IInstanceAttribute, InstanceIOValue } from "../../types";
+import { InstanceIOValue, IResourceInstanceAttribute } from "../../types";
 import {
   BaseResourceManager,
   BaseResourceOptions
@@ -220,25 +220,9 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * Sets the context
+   * Sets the context attribute during attribute updates from the layers
    */
-  setAttributeContext(attribute: IInstanceAttribute<Instance>) {
-
-  }
-
-  /**
-   * This is used by the system to target the correct atlas for subsequent requests to a resource.
-   */
-  setTargetAtlas(target: string) {
-    this.targetAtlas = target;
-  }
-
-  /**
-   * Uses the manager messaging system to allow callers to change the target atlas
-   */
-  sendMessage(obj: any) {
-    if (typeof obj === "string") {
-      this.setTargetAtlas(obj);
-    }
+  setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
+    this.targetAtlas = attribute.resource.key;
   }
 }

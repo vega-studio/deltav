@@ -383,14 +383,15 @@ export class Layer<
     name: string,
     size: InstanceAttributeSize,
     update: (o: T) => InstanceIOValue,
-    atlas?: {
+    resource?: {
+      type: number;
       key: string;
       name: string;
       shaderInjection?: ShaderInjectionTarget;
     }
   ): IInstanceAttribute<T> {
     return {
-      atlas,
+      resource,
       block,
       blockIndex,
       name,

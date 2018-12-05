@@ -1,6 +1,9 @@
 import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
-import { IInstanceAttributeInternal, ResourceType } from "../../../types";
+import {
+  IInstanceAttributeInternal,
+  isResourceAttribute
+} from "../../../types";
 import { Vec } from "../../../util";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import {
@@ -131,7 +134,7 @@ export class InstanceAttributeDiffProcessor<
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
-    const resourceManager = layer.resource.getManager(ResourceType.ATLAS);
+    const resourceManager = layer.resource;
 
     let location: IBufferLocation;
     let updateValue: Vec;
@@ -151,7 +154,11 @@ export class InstanceAttributeDiffProcessor<
         location = propertyToLocation[propIds[i]];
         attribute = location.attribute;
         attributeChangeUID = attribute.packUID || attribute.uid;
-        attribute.atlas && resourceManager.sendMessage(attribute.atlas.key);
+        isResourceAttribute(attribute) &&
+          resourceManager.setAttributeContext(
+            attribute,
+            attribute.resource.type
+          );
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
         updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
@@ -218,7 +225,7 @@ export class InstanceAttributeDiffProcessor<
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
-    const resourceManager = layer.resource.getManager(ResourceType.ATLAS);
+    const resourceManager = layer.resource;
 
     let location: IBufferLocation;
     let updateValue: Vec;
@@ -235,7 +242,11 @@ export class InstanceAttributeDiffProcessor<
         // First update for the instance attribute itself
         location = propertyToLocation[propIds[i]];
         attribute = location.attribute;
-        attribute.atlas && resourceManager.sendMessage(attribute.atlas.key);
+        isResourceAttribute(attribute) &&
+          resourceManager.setAttributeContext(
+            attribute,
+            attribute.resource.type
+          );
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
         bufferAttributeWillUpdate[
@@ -262,7 +273,8 @@ export class InstanceAttributeDiffProcessor<
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
-      attribute.atlas && resourceManager.sendMessage(attribute.atlas.key);
+      isResourceAttribute(attribute) &&
+        resourceManager.setAttributeContext(attribute, attribute.resource.type);
       updateValue = attribute.update(instance);
       location.buffer.value.set(updateValue, location.range[0]);
       bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;

@@ -75,7 +75,7 @@ function sortNeedsUpdateFirstToTop<T extends Instance>(
   a: IInstanceAttribute<T>,
   b: IInstanceAttribute<T>
 ) {
-  if (a.atlas && !b.atlas) return -1;
+  if (a.resource && !b.resource) return -1;
   if (a.easing && !b.easing) return -1;
   return 1;
 }
@@ -123,14 +123,14 @@ function validateInstanceAttributes<T extends Instance>(
       );
     }
 
-    if (attribute.easing && attribute.atlas) {
+    if (attribute.easing && attribute.resource) {
       console.warn(
-        "An instance attribute can not have both easing and atlas properties. Undefined behavior will occur."
+        "An instance attribute can not have both easing and resource properties. Undefined behavior will occur."
       );
       console.warn(attribute);
     }
 
-    if (!attribute.atlas) {
+    if (!attribute.resource) {
       if (attribute.size === undefined) {
         console.warn("An instance attribute requires the size to be defined.");
         console.warn(attribute);

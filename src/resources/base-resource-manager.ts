@@ -1,6 +1,10 @@
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
-import { IInstanceAttribute, InstanceIOValue, IResourceType } from "../types";
+import {
+  InstanceIOValue,
+  IResourceInstanceAttribute,
+  IResourceType
+} from "../types";
 
 /**
  * The Base Options for initializing a resource.
@@ -57,7 +61,7 @@ export abstract class BaseResourceManager<
   /**
    * This applies an attribute as the current context
    */
-  setAttributeContext(attribute: IInstanceAttribute<Instance>) {
+  setAttributeContext(_attribute: IResourceInstanceAttribute<Instance>) {
     // Implemented by sub classes if needed
   }
 

@@ -275,17 +275,19 @@ export interface IInstanceAttributeInternal<T extends Instance>
 }
 
 /**
- * This is an attribute where the atlas is definitely declared.
+ * This is an attribute where the resource is definitely declared.
  */
-export interface IAtlasInstanceAttribute<T extends Instance>
+export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
-  atlas: {
-    /** Specify which generated atlas to target for the resource */
+  resource: {
+    /** This is the resource type targeted which can be provided by managers */
+    type: number;
+    /** Specify which generated resource to target */
     key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
@@ -295,6 +297,14 @@ export interface IAtlasInstanceAttribute<T extends Instance>
      */
     shaderInjection?: ShaderInjectionTarget;
   };
+}
+/**
+ * Type guard for resource instance attributes
+ */
+export function isResourceAttribute<T extends Instance>(
+  val: IInstanceAttribute<T>
+): val is IResourceInstanceAttribute<T> {
+  return Boolean(val && val.resource);
 }
 
 /**

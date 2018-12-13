@@ -8,7 +8,6 @@ import {
   INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
-  InstanceDiffType,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,
@@ -146,6 +145,11 @@ export class Layer<
   geometry: Three.BufferGeometry;
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
+  /**
+   * This is specified by the surface to set and assert the order the layer appears and is updated
+   * within the list of layers the surface manages.
+   */
+  injectionOrder: number;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
   /** A lookup fo an instance by it's ID */
@@ -260,6 +264,18 @@ export class Layer<
   }
 
   /**
+   * This provides a means for a layer to have child layers that are injected immediately after this layer.
+   *
+   * This essentially lets composite layer management occur allowing the compositer to behave as a layer does
+   * but have layers managed by it. This has the advantage of allowing a composition layer able to handle a
+   * data provider but split it's processing across it's own internal data providers which is thus picked up
+   * by it's child layers and output by the layers.
+   */
+  childLayers(): LayerInitializer[] {
+    return [];
+  }
+
+  /**
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {
@@ -270,6 +286,9 @@ export class Layer<
     }
   }
 
+  /**
+   * Lifecycle method for layers to inherit that executes after the props for the layer have been updated
+   */
   didUpdateProps() {
     /** LIFECYCLE */
   }
@@ -468,16 +487,12 @@ export class Layer<
     return false;
   }
 
-  willUpdateInstances(_changes: [T, InstanceDiffType]) {
-    // HOOK: Simple hook so a class can review all of it's changed instances before
-    //       Getting applied to the Shader IO
-  }
-
+  /**
+   * Lifecycle hook for sub classes.
+   *
+   * This executes before the props on this layer gets clobbered with the new properties coming in.
+   */
   willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
-  }
-
-  didUpdate() {
-    this.props.data.resolve();
   }
 }

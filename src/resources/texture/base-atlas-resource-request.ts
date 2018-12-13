@@ -1,15 +1,6 @@
-import { IResourceType, ResourceType } from "../../types";
+import { ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
 import { SubTexture } from "./sub-texture";
-
-/**
- * Validates a resource option or object is indeed an atlas resource
- */
-export function isAtlasResource(
-  val: IResourceType
-): val is BaseAtlasResourceRequest {
-  return val && val.type === ResourceType.ATLAS;
-}
 
 /**
  * Base information an atlas resource can provide

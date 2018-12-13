@@ -7,29 +7,14 @@ import {
   BaseResourceOptions
 } from "../base-resource-manager";
 import { Atlas, IAtlasResource, isAtlasResource } from "./atlas";
-import { AtlasManager, AtlasResource } from "./atlas-manager";
+import { AtlasManager, AtlasResourceRequest } from "./atlas-manager";
 import { BaseAtlasResourceRequest } from "./base-atlas-resource-request";
 import { LabelAtlasResourceRequest } from "./label-atlas-resource-request";
-import { SubTexture } from "./sub-texture";
+import { SubTexture, subTextureIOValue } from "./sub-texture";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */
   atlasManager: AtlasManager;
-}
-
-function toInstanceIOValue(texture?: SubTexture): InstanceIOValue {
-  // If the texture is not defined we just output an empty reference
-  if (!texture) {
-    return [0, 0, 0, 0];
-  }
-
-  // Otherwise, we return the atlas information of the texture
-  return [
-    texture.atlasTL[0],
-    texture.atlasTL[1],
-    texture.atlasBR[0],
-    texture.atlasBR[1]
-  ];
 }
 
 /**
@@ -49,13 +34,13 @@ export class AtlasResourceManager extends BaseResourceManager<
   /** This is the atlas currently targetted by requests */
   targetAtlas: string = "";
   /** This stores all of the requests awaiting dequeueing */
-  private requestQueue = new Map<string, AtlasResource[]>();
+  private requestQueue = new Map<string, AtlasResourceRequest[]>();
   /**
    * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
    */
   private requestLookup = new Map<
     string,
-    Map<AtlasResource, [Layer<any, any>, Instance][]>
+    Map<AtlasResourceRequest, [Layer<any, any>, Instance][]>
   >();
 
   constructor(options: IAtlasResourceManagerOptions) {
@@ -156,7 +141,8 @@ export class AtlasResourceManager extends BaseResourceManager<
    */
   async initResource(resource: BaseResourceOptions) {
     if (isAtlasResource(resource)) {
-      // TODO
+      const atlas = await this.atlasManager.createAtlas(resource);
+      this.resources.set(resource.key, atlas);
     }
   }
 
@@ -168,18 +154,18 @@ export class AtlasResourceManager extends BaseResourceManager<
   request<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     instance: Instance,
-    resource: AtlasResource
+    resource: AtlasResourceRequest
   ): InstanceIOValue {
     const texture: SubTexture = resource.texture;
 
     // If the texture is ready and available, then we simply return the IO values
     if (texture) {
-      return toInstanceIOValue(texture);
+      return subTextureIOValue(texture);
     }
 
     if (resource instanceof LabelAtlasResourceRequest) {
       if (!resource.label.text) {
-        return toInstanceIOValue(texture);
+        return subTextureIOValue(texture);
       }
     }
 
@@ -194,7 +180,7 @@ export class AtlasResourceManager extends BaseResourceManager<
         existingRequests.push([layer, instance]);
         instance.active = false;
 
-        return toInstanceIOValue(texture);
+        return subTextureIOValue(texture);
       }
     } else {
       atlasRequests = new Map();
@@ -216,7 +202,7 @@ export class AtlasResourceManager extends BaseResourceManager<
     atlasRequests.set(resource, [[layer, instance]]);
 
     // This returns essentially returns blank values for the resource lookup
-    return toInstanceIOValue(texture);
+    return subTextureIOValue(texture);
   }
 
   /**

@@ -3,7 +3,7 @@ import * as Three from "three";
 import { AtlasSize, Omit, ResourceType } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { Vec2 } from "../../util/vector";
-import { AtlasManager, AtlasResource } from "./atlas-manager";
+import { AtlasManager, AtlasResourceRequest } from "./atlas-manager";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
 
@@ -41,9 +41,7 @@ export function createAtlas(
 /**
  * Type guard for the atlas resource type.
  */
-export function isAtlasResource(
-  val: BaseResourceOptions
-): val is IAtlasResource {
+export function isAtlasResource(val: BaseResourceOptions): val is Atlas {
   return val && val.type === ResourceType.ATLAS;
 }
 
@@ -56,7 +54,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   height: AtlasSize;
   /** This is the parent manager of the atlas */
   manager: AtlasManager;
-  /** This is the packing of the  */
+  /** This is the packing of the atlas with images */
   packing: PackNode;
   /** This is the actual texture object that represents the atlas on the GPU */
   texture: Three.Texture;
@@ -69,7 +67,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
    * the atlas at any given moment.
    */
-  validResources = new Set<AtlasResource>();
+  validResources = new Set<AtlasResourceRequest>();
   /** Stores the size of the atlas texture */
   width: AtlasSize;
 
@@ -89,7 +87,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   /**
    * This invalidates the SubTexture of an atlas resource.
    */
-  private invalidateResource(resource: AtlasResource) {
+  private invalidateResource(resource: AtlasResourceRequest) {
     const zero: Vec2 = [0, 0];
     resource.texture.aspectRatio = 1;
     resource.texture.atlasBL = zero;
@@ -108,7 +106,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    *
    * @return {boolean} True if the resource successfully registered
    */
-  registerResource(resource: AtlasResource) {
+  registerResource(resource: AtlasResourceRequest) {
     if (!this.validResources.has(resource)) {
       if (!resource.texture || !resource.texture.isValid) {
         if (!resource.texture) {
@@ -152,7 +150,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * and makes the SubTexture invalid. It could be a long while before the atlas gets regnerated and repacked
    * to actually reflect the resource not existing on the atlas.
    */
-  removeResource(resource: AtlasResource) {
+  removeResource(resource: AtlasResourceRequest) {
     if (this.validResources.has(resource)) {
       this.validResources.delete(resource);
       this.invalidateResource(resource);

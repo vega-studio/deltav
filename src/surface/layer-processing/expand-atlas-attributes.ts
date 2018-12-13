@@ -1,6 +1,6 @@
-import { isAtlasResource } from "src/resources/texture/base-atlas-resource-request";
 import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
+import { isAtlasResource } from "../../resources/texture/atlas";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
@@ -109,7 +109,7 @@ export function generateAtlasResourceUniforms<
               .getResource(instanceAttribute.resource.key);
 
             if (isAtlasResource(resource)) {
-              return resource.texture.atlasTexture || emptyTexture;
+              return resource.texture || emptyTexture;
             }
 
             return emptyTexture;
@@ -125,7 +125,7 @@ export function generateAtlasResourceUniforms<
               .getResource(instanceAttribute.resource.key);
 
             if (isAtlasResource(resource)) {
-              const atlas = resource.texture.atlasTexture;
+              const atlas = resource.texture;
 
               if (atlas && atlas.image) {
                 const { width, height } = atlas.image;

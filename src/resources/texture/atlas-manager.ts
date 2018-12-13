@@ -25,7 +25,7 @@ const ZERO_IMAGE: SubTexture = {
   widthOnAtlas: 0
 };
 
-export type AtlasResource =
+export type AtlasResourceRequest =
   | ColorAtlasResourceRequest
   | LabelAtlasResourceRequest
   | ImageAtlasResourceRequest;
@@ -65,7 +65,10 @@ export class AtlasManager {
    * @return {Texture} The Threejs texture that is created as our atlas. The images injected
    *                   into the texture will be populated with the atlas'
    */
-  async createAtlas(options: IAtlasResource, resources?: AtlasResource[]) {
+  async createAtlas(
+    options: IAtlasResource,
+    resources?: AtlasResourceRequest[]
+  ) {
     // Create the new Atlas object that tracks all of our atlas' metrics
     const atlas = new Atlas(options);
     // Set the manager to the atlas
@@ -118,7 +121,10 @@ export class AtlasManager {
    *
    * @return {Promise<boolean>} Promise that resolves to if the image successfully was drawn or not
    */
-  private async draw(atlas: Atlas, resource: AtlasResource): Promise<boolean> {
+  private async draw(
+    atlas: Atlas,
+    resource: AtlasResourceRequest
+  ): Promise<boolean> {
     const canvas = atlas.texture.image;
     const atlasName = atlas.id;
 
@@ -251,7 +257,7 @@ export class AtlasManager {
    *                                     or null if there was an error
    */
   private async loadImage(
-    resource: AtlasResource
+    resource: AtlasResourceRequest
   ): Promise<HTMLImageElement | null> {
     let imageSrc: string = "";
 
@@ -358,7 +364,7 @@ export class AtlasManager {
    * @param atlasName
    * @param resources
    */
-  async updateAtlas(atlasName: string, resources: AtlasResource[]) {
+  async updateAtlas(atlasName: string, resources: AtlasResourceRequest[]) {
     const atlas = this.allAtlas.get(atlasName);
 
     if (atlas) {

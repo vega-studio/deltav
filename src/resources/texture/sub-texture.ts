@@ -1,5 +1,27 @@
 import * as Three from "three";
+import { InstanceIOValue } from "../../types";
 import { Vec2 } from "../../util/vector";
+
+/**
+ * Converts a SubTexture reference to a valid Instance IO value where:
+ * [top left x, top left y, bottom right x, bottom right y]
+ *
+ * This also handles falsey texture values where invalid is a zero vector
+ */
+export function subTextureIOValue(texture?: SubTexture): InstanceIOValue {
+  // If the texture is not defined we just output an empty reference
+  if (!texture) {
+    return [0, 0, 0, 0];
+  }
+
+  // Otherwise, we return the atlas information of the texture
+  return [
+    texture.atlasTL[0],
+    texture.atlasTL[1],
+    texture.atlasBR[0],
+    texture.atlasBR[1]
+  ];
+}
 
 /**
  * Defines a texture that is located on an atlas

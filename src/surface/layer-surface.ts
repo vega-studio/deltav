@@ -1097,7 +1097,8 @@ export class LayerSurface {
 
     // Loop through all of the initializers and properly add and remove layers as needed
     if (layerInitializers && layerInitializers.length > 0) {
-      layerInitializers.forEach(init => {
+      for (let i = 0; i < layerInitializers.length; ++i) {
+        const init = layerInitializers[i];
         const layerClass = init[0];
         const props = init[1];
         const existingLayer = this.layers.get(props.key);
@@ -1117,9 +1118,18 @@ export class LayerSurface {
             existingLayer.needsViewDrawn = true;
           }
 
+          // Make sure the layer has the current props applied to it
           Object.assign(existingLayer.props, props);
+          // Keep the initializer up to date with the injected props
           existingLayer.initializer[1] = existingLayer.props;
+          // Update the layer's injection order so we can make sure the update order remains stable
+          existingLayer.injectionOrder = i;
+          // Lifecycle hook
           existingLayer.didUpdateProps();
+
+          // Merge in the child layers this layer may request as the immediate next layers in the sequence
+          const childLayers = existingLayer.childLayers();
+          layerInitializers.splice(i + 1, 0, ...childLayers);
         } else {
           // Generate the new layer and provide it it's initial props
           const layer = new layerClass(
@@ -1141,10 +1151,16 @@ export class LayerSurface {
 
             return;
           }
+
+          // Update the layer's injection order so we can make sure the update order remains stable
+          layer.injectionOrder = i;
+          // Merge in the child layers this layer may request as the immediate next layers in the sequence
+          const childLayers = layer.childLayers();
+          layerInitializers.splice(i + 1, 0, ...childLayers);
         }
 
         this.willDisposeLayer.set(props.key, false);
-      });
+      }
     }
 
     // Take any layer that retained it's disposal flag and trash it

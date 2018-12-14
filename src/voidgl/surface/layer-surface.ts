@@ -292,6 +292,7 @@ export class LayerSurface {
           const layer = layers[j];
           // Update the layer with the view it is about to be rendered with
           layer.view = view;
+
           // Make sure the layer is given the opportunity to update all of it's uniforms
           // To match the view state and update any unresolved diffs internally
           try {
@@ -417,7 +418,7 @@ export class LayerSurface {
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
-    this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
+    await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
 
@@ -460,11 +461,12 @@ export class LayerSurface {
             // Set it's uniforms into a pick mode.
             layer.picking.currentPickMode = PickType.SINGLE;
 
-            // Attempt to update the layer by calling it's draw method
+            // Update the layer's material uniforms and avoid causing the changelist to attempt updates again
             try {
-              layer.draw();
+              layer.updateUniforms();
             } catch (err) {
               /** No-op, the first draw should have output an error for bad draw calls */
+              console.warn(err);
             }
 
             layer.picking.currentPickMode = PickType.NONE;
@@ -578,8 +580,13 @@ export class LayerSurface {
       sceneView.view.needsDraw = false;
       sceneView.view.camera.resolve();
     });
-    // Set all layers draw needs back to false
-    this.layers.forEach(layer => (layer.needsViewDrawn = false));
+
+    // Set all layers draw needs back to false, also, resolve all of the data providers
+    // so their changelists are considered consumed.
+    this.layers.forEach(layer => {
+      layer.needsViewDrawn = false;
+      layer.props.data.resolveContext = "";
+    });
   }
 
   /**

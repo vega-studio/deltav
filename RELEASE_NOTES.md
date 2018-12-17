@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.22.1
+
+* `(FIXED)` The framework now detects and warns when a provider is improperly used across two layers
+
 ## 1.22.0
 
 * `(ADDED)` Comma delimited imports ${import: module, module2, etc}

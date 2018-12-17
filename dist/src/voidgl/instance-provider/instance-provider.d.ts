@@ -8,12 +8,13 @@ export declare class InstanceProvider<T extends Instance> implements IInstancePr
     private cleanObservation;
     private instanceChanges;
     private allowChanges;
+    resolveContext: string;
     readonly changeList: InstanceDiff<T>[];
     add(instance: T): T;
     clear(): void;
     destroy(): void;
     instanceUpdated(instance: T): void;
     remove(instance: T): boolean;
-    resolve(): void;
+    resolve(context: string): void;
     sync(): void;
 }

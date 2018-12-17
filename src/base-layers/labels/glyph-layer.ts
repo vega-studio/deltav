@@ -67,7 +67,7 @@ export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>
             shaderInjection: ShaderInjectionTarget.ALL,
             type: ResourceType.FONT,
           },
-          update: o => this.resource.request(this, o, o.res),
+          update: o => this.resource.request(this, o, o.resourceRequest),
         }
       ],
       uniforms: [],

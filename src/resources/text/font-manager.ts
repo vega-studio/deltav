@@ -1,4 +1,5 @@
 import { BaseResourceOptions } from "src/resources/base-resource-manager";
+import { FontMap } from "src/resources/text/font-map";
 import { IFontResourceRequest } from "src/resources/text/font-resource-manager";
 import { ResourceType } from "src/types";
 
@@ -59,6 +60,9 @@ export function isFontResource(
  * either generating the SDF at run time or loading up a provided pre-rendered font resource.
  */
 export class FontManager {
+  /** The lookup for the font map resources by their key */
+  fontMaps = new Map<string, FontMap>();
+
   /**
    * This generates a new font map object to work with. It will either be pre-rendered or dynamically
    * populated as requests are made.
@@ -66,6 +70,12 @@ export class FontManager {
   async createFontMap(resourceOptions: IFontResourceOptions) {
     // Dynamic resources will load a blank font map as it's initial state
     if (resourceOptions.dynamic) {
+      // Get the dynamic configuration for the font map
+      const dynamic = resourceOptions.dynamic;
+      // Create our new font map resource
+      const blankFontMap = new FontMap({ key: resourceOptions.key });
+      // Keep the generated font map as our resource
+      this.fontMaps.set(resourceOptions.key, blankFontMap);
     }
   }
 

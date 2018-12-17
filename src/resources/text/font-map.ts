@@ -1,11 +1,12 @@
 import * as Three from 'three';
+import { IdentifyByKey } from '../../util/identify-by-key';
 import { SubTexture } from '../texture/sub-texture';
 import { FontManager } from './font-manager';
 
 /**
  * This represents the actual font map resource. It contains the raw texture object for manipulating.
  */
-export class FontMap {
+export class FontMap extends IdentifyByKey {
   /**
    * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
    */

@@ -455,7 +455,6 @@ export class BasicCameraController extends EventManager {
     if (this.canStart(e.target.view.id)) {
       const targetView = this.getTargetView(e);
       const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-
       const currentZoomX = this.camera.scale[0] || 1.0;
       const currentZoomY = this.camera.scale[1] || 1.0;
 
@@ -473,23 +472,38 @@ export class BasicCameraController extends EventManager {
         );
       }
 
-      this.camera.scale[0] = currentZoomX + deltaScale[0];
-      this.camera.scale[1] = currentZoomY + deltaScale[1];
+      if (
+        targetView.wheelShouldScroll &&
+        (window.event instanceof WheelEvent && window.event.ctrlKey === false)
+      ) {
+        // Change camera's Y offset to scroll the chart
+        if (deltaScale[1] > 0) {
+          this.camera.offset[1] -= 20;
+        } else {
+          this.camera.offset[1] += 20;
+        }
 
-      // Ensure the new scale values are within bounds before attempting to correct offsets
-      this.applyScaleBounds();
+        // Y offset cannot be bigger than 0
+        if (this.camera.offset[1] >= 0) this.camera.offset[1] = 0;
+      } else {
+        this.camera.scale[0] = currentZoomX + deltaScale[0];
+        this.camera.scale[1] = currentZoomY + deltaScale[1];
 
-      const afterZoom = targetView.screenToWorld(e.screen.mouse);
-      const deltaZoom = subtract2(beforeZoom, afterZoom);
-      this.camera.offset[0] -= deltaZoom[0];
-      this.camera.offset[1] -= deltaZoom[1];
+        // Ensure the new scale values are within bounds before attempting to correct offsets
+        this.applyScaleBounds();
 
-      // Add additional correction for bounds
-      this.applyBounds();
-      // Broadcast the change occurred
-      this.onRangeChanged(this.camera, targetView);
-      // Add additional correction for bounds
-      this.applyBounds();
+        const afterZoom = targetView.screenToWorld(e.screen.mouse);
+        const deltaZoom = subtract2(beforeZoom, afterZoom);
+        this.camera.offset[0] -= deltaZoom[0];
+        this.camera.offset[1] -= deltaZoom[1];
+
+        // Add additional correction for bounds
+        this.applyBounds();
+        // Broadcast the change occurred
+        this.onRangeChanged(this.camera, targetView);
+        // Add additional correction for bounds
+        this.applyBounds();
+      }
 
       // Make sure the camera updates
       this.camera.update();

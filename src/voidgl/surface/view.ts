@@ -56,6 +56,11 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If this is not specified, the entire canvas will be the viewport.
    */
   viewport: AbsolutePosition;
+  /**
+   * This specifies whether a view can be scrolled by wheel
+   * If this is not specified or set false, the view can be zoomed by wheel
+   */
+  wheelShouldScroll?: boolean;
 }
 
 function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
@@ -93,6 +98,8 @@ export class View extends IdentifyByKey {
   needsDraw: boolean = false;
   /** End time of animation */
   animationEndTime: number = 0;
+  /** Whether a view can be scrolled by wheel */
+  wheelShouldScroll: boolean = false;
 
   constructor(options: IViewOptions) {
     super(options);

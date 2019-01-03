@@ -1,3 +1,4 @@
+import { FontMap } from "src/resources/text/font-map";
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
@@ -5,7 +6,6 @@ import {
 } from "../../resources/texture/sub-texture";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
-  IInstanceAttribute,
   InstanceIOValue,
   IResourceInstanceAttribute,
   ResourceType
@@ -15,7 +15,11 @@ import {
   BaseResourceOptions,
   BaseResourceRequest
 } from "../base-resource-manager";
-import { FontManager, IFontResourceOptions } from "./font-manager";
+import {
+  FontManager,
+  IFontResourceOptions,
+  isFontResource
+} from "./font-manager";
 
 export interface IFontResourceRequest extends BaseResourceRequest {
   /** This is the sub texture information where the glyph exists within its parent lookup */
@@ -38,7 +42,7 @@ export class FontResourceManager extends BaseResourceManager<
   IFontResourceRequest
 > {
   /** The current attribute that is making request calls */
-  currentAttribute: IResourceInstanceAttribute<Instance>;
+  private currentAttribute: IResourceInstanceAttribute<Instance>;
   /**
    * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
    */
@@ -49,6 +53,8 @@ export class FontResourceManager extends BaseResourceManager<
 
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, IFontResourceRequest[]>();
+  /** This is the lookup for generated font map resources */
+  private resourceLookup = new Map<string, IFontResourceOptions>();
   /** This is the manager that is used to create and update font resources */
   private fontManager = new FontManager();
 
@@ -124,13 +130,21 @@ export class FontResourceManager extends BaseResourceManager<
    * This will provide the resource generated from the initResource operation.
    */
   getResource(resourceKey: string): IFontResourceOptions | null {
-    throw new Error("Method not implemented.");
+    return this.resourceLookup.get(resourceKey) || null;
   }
 
   /**
    * This is a request to intiialize a resource by this manager.
    */
-  async initResource(options: BaseResourceOptions) {}
+  async initResource(options: BaseResourceOptions) {
+    if (isFontResource(options)) {
+      const fontMap = await this.fontManager.createFontMap(options);
+
+      if (fontMap) {
+        this.resourceLookup.set(options.key, fontMap);
+      }
+    }
+  }
 
   /**
    * This is for attributes making a request for a resource of this type to create shader compatible info

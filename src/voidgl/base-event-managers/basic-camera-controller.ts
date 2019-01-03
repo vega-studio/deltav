@@ -89,6 +89,11 @@ export interface IBasicCameraControllerOptions {
    * Which most likely means offset or scale has been altered.
    */
   onRangeChanged?(camera: ChartCamera, targetView: View): void;
+  /**
+   * This specifies whether a view can be scrolled by wheel
+   * If this is not specified or set false, the view can be zoomed by wheel
+   */
+  wheelShouldScroll?: boolean;
 }
 
 /**
@@ -123,6 +128,8 @@ export class BasicCameraController extends EventManager {
   ) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
+  /** Whether a view can be scrolled by wheel */
+  wheelShouldScroll: boolean = false;
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -158,6 +165,10 @@ export class BasicCameraController extends EventManager {
     this.panFilter = options.panFilter || this.panFilter;
     this.scaleFilter = options.scaleFilter || this.scaleFilter;
     this.onRangeChanged = options.onRangeChanged || this.onRangeChanged;
+
+    if (options.wheelShouldScroll) {
+      this.wheelShouldScroll = options.wheelShouldScroll;
+    }
   }
 
   /**
@@ -473,7 +484,7 @@ export class BasicCameraController extends EventManager {
       }
 
       if (
-        targetView.wheelShouldScroll &&
+        this.wheelShouldScroll &&
         (window.event instanceof WheelEvent && window.event.ctrlKey === false)
       ) {
         // Change camera's Y offset to scroll the chart

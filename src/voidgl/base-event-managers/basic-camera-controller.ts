@@ -185,10 +185,13 @@ export class BasicCameraController extends EventManager {
           targetView,
           this.bounds
         );
-        this.camera.offset[1] = this.boundsVerticalOffset(
-          targetView,
-          this.bounds
-        );
+
+        if (!this.wheelShouldScroll) {
+          this.camera.offset[1] = this.boundsVerticalOffset(
+            targetView,
+            this.bounds
+          );
+        }
       }
     }
   };
@@ -489,9 +492,9 @@ export class BasicCameraController extends EventManager {
       ) {
         // Change camera's Y offset to scroll the chart
         if (deltaScale[1] > 0) {
-          this.camera.offset[1] -= 20;
-        } else {
           this.camera.offset[1] += 20;
+        } else {
+          this.camera.offset[1] -= 20;
         }
 
         // Y offset cannot be bigger than 0

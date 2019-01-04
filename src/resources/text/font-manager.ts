@@ -239,10 +239,8 @@ export class FontManager {
         glyphSize,
         characters
       );
-    }
-
-    // Otherwise, we generate the glyph as an SDF glyph
-    else if (isStringFontSource(source)) {
+    } else if (isStringFontSource(source)) {
+      // Otherwise, we generate the glyph as an SDF glyph
       const sdf: TinySDF.ITinyGenerator = new TinySDF(
         glyphSize - 6,
         6,

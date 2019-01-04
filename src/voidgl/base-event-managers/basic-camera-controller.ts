@@ -94,6 +94,8 @@ export interface IBasicCameraControllerOptions {
    * If this is not specified or set false, the view can be zoomed by wheel
    */
   wheelShouldScroll?: boolean;
+
+  customHandler?(e: WheelEvent): void;
 }
 
 /**
@@ -129,7 +131,7 @@ export class BasicCameraController extends EventManager {
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
   /** Whether a view can be scrolled by wheel */
-  wheelShouldScroll: boolean = false;
+  wheelShouldScroll: boolean;
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -139,6 +141,10 @@ export class BasicCameraController extends EventManager {
    * Callback for when the range has changed for the camera in a view
    */
   private onRangeChanged = (_camera: ChartCamera, _targetView: View) => {
+    /* no-op */
+  };
+
+  private customHandler = (_e: Event) => {
     /* no-op */
   };
   /**
@@ -165,6 +171,7 @@ export class BasicCameraController extends EventManager {
     this.panFilter = options.panFilter || this.panFilter;
     this.scaleFilter = options.scaleFilter || this.scaleFilter;
     this.onRangeChanged = options.onRangeChanged || this.onRangeChanged;
+    this.customHandler = options.customHandler || this.customHandler;
 
     if (options.wheelShouldScroll) {
       this.wheelShouldScroll = options.wheelShouldScroll;
@@ -186,12 +193,10 @@ export class BasicCameraController extends EventManager {
           this.bounds
         );
 
-        if (!this.wheelShouldScroll) {
-          this.camera.offset[1] = this.boundsVerticalOffset(
-            targetView,
-            this.bounds
-          );
-        }
+        this.camera.offset[1] = this.boundsVerticalOffset(
+          targetView,
+          this.bounds
+        );
       }
     }
   };
@@ -486,10 +491,9 @@ export class BasicCameraController extends EventManager {
         );
       }
 
-      if (
-        this.wheelShouldScroll &&
-        (window.event instanceof WheelEvent && window.event.ctrlKey === false)
-      ) {
+      if (window.event) this.customHandler(window.event);
+
+      if (this.wheelShouldScroll) {
         // Change camera's Y offset to scroll the chart
         if (deltaScale[1] > 0) {
           this.camera.offset[1] += 20;
@@ -584,8 +588,10 @@ export class BasicCameraController extends EventManager {
    * If no view is supplied, it uses the first in the startViews array
    */
   setBounds(bounds: ICameraBoundsOptions) {
-    this.bounds = bounds;
-    this.applyBounds();
+    if (!this.wheelShouldScroll) {
+      this.bounds = bounds;
+      this.applyBounds();
+    }
   }
 
   /**
@@ -602,6 +608,7 @@ export class BasicCameraController extends EventManager {
    * @param viewId The id of the view when the view was generated when the surface was made
    */
   setRange(newWorld: Bounds, viewId: string) {
+    console.warn("setRange");
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */

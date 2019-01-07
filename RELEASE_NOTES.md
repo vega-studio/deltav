@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.23.0
+
+* `(ADDED)` Basic Camera Controller now supports panning via scroll wheel when desired.
+* `(FIXED)` Error with large numbers of instances being created causing a vertex packing buffer to resize and cause a buffer error
+
 ## 1.22.1
 
 * `(FIXED)` The framework now detects and warns when a provider is improperly used across two layers

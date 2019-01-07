@@ -1,3 +1,4 @@
+import { Camera } from "three";
 import { Bounds } from "../primitives/bounds";
 import { EventManager } from "../surface/event-manager";
 import {
@@ -94,8 +95,6 @@ export interface IBasicCameraControllerOptions {
    * If this is not specified or set false, the view can be zoomed by wheel
    */
   wheelShouldScroll?: boolean;
-
-  customHandler?(e: WheelEvent): void;
 }
 
 /**
@@ -144,9 +143,6 @@ export class BasicCameraController extends EventManager {
     /* no-op */
   };
 
-  private customHandler = (_e: Event) => {
-    /* no-op */
-  };
   /**
    * This flag is set to true when a start view is targetted on mouse down even if it is not
    * the top most view.
@@ -171,7 +167,6 @@ export class BasicCameraController extends EventManager {
     this.panFilter = options.panFilter || this.panFilter;
     this.scaleFilter = options.scaleFilter || this.scaleFilter;
     this.onRangeChanged = options.onRangeChanged || this.onRangeChanged;
-    this.customHandler = options.customHandler || this.customHandler;
 
     if (options.wheelShouldScroll) {
       this.wheelShouldScroll = options.wheelShouldScroll;
@@ -434,32 +429,33 @@ export class BasicCameraController extends EventManager {
     this.isPanning = false;
   }
 
+  private doPan(
+    e: IMouseInteraction,
+    view: View,
+    delta: [number, number],
+    drag: boolean
+  ) {
+    let pan: Vec3 = vec3(divide2(delta, this.camera.scale), 0);
+
+    if (this.panFilter) {
+      pan = this.panFilter(pan, view, e.viewsUnderMouse.map(v => v.view));
+    }
+
+    if (drag) this.camera.offset[0] += pan[0];
+    this.camera.offset[1] += pan[1];
+
+    if (this.camera.offset[0] < 0) this.camera.offset[0] = 0;
+    if (this.camera.offset[1] > 0) this.camera.offset[1] = 0;
+    this.camera.update();
+  }
+
   /**
    * Applies a panning effect by adjusting the camera's offset.
    */
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
-        let pan: Vec3 = vec3(divide2(drag.screen.delta, this.camera.scale), 0);
-
-        if (this.panFilter) {
-          pan = this.panFilter(
-            pan,
-            e.start.view,
-            e.viewsUnderMouse.map(v => v.view)
-          );
-        }
-
-        this.camera.offset[0] += pan[0];
-        this.camera.offset[1] += pan[1];
-        this.camera.update();
-
-        // Add additional correction for bounds
-        this.applyBounds();
-        // Broadcast the change occurred
-        this.onRangeChanged(this.camera, e.start.view);
-        // Add additional correction for bounds
-        this.applyBounds();
+        this.doPan(e, e.start.view, drag.screen.delta, true);
       }
     }
   }
@@ -472,38 +468,39 @@ export class BasicCameraController extends EventManager {
     this.findCoveredStartView(e);
 
     if (this.canStart(e.target.view.id)) {
-      const targetView = this.getTargetView(e);
-      const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-      const currentZoomX = this.camera.scale[0] || 1.0;
-      const currentZoomY = this.camera.scale[1] || 1.0;
-
-      let deltaScale: [number, number, number] = [
-        wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
-        wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
-        1
-      ];
-
-      if (this.scaleFilter) {
-        deltaScale = this.scaleFilter(
-          deltaScale,
-          targetView,
-          e.viewsUnderMouse.map(v => v.view)
-        );
-      }
-
-      if (window.event) this.customHandler(window.event);
-
       if (this.wheelShouldScroll) {
-        // Change camera's Y offset to scroll the chart
-        if (deltaScale[1] > 0) {
-          this.camera.offset[1] += 20;
-        } else {
-          this.camera.offset[1] -= 20;
+        const targetView = this.getTargetView(e);
+        const panFactor = 100;
+
+        const currentZoomX = this.camera.scale[0] || 1.0;
+        const currentZoomY = this.camera.scale[1] || 1.0;
+
+        const deltaScale: [number, number] = [
+          wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomX,
+          wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomY
+        ];
+
+        this.doPan(e, targetView, deltaScale, false);
+      } else {
+        const targetView = this.getTargetView(e);
+        const beforeZoom = targetView.screenToWorld(e.screen.mouse);
+        const currentZoomX = this.camera.scale[0] || 1.0;
+        const currentZoomY = this.camera.scale[1] || 1.0;
+
+        let deltaScale: [number, number, number] = [
+          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
+          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
+          1
+        ];
+
+        if (this.scaleFilter) {
+          deltaScale = this.scaleFilter(
+            deltaScale,
+            targetView,
+            e.viewsUnderMouse.map(v => v.view)
+          );
         }
 
-        // Y offset cannot be bigger than 0
-        if (this.camera.offset[1] >= 0) this.camera.offset[1] = 0;
-      } else {
         this.camera.scale[0] = currentZoomX + deltaScale[0];
         this.camera.scale[1] = currentZoomY + deltaScale[1];
 
@@ -521,10 +518,10 @@ export class BasicCameraController extends EventManager {
         this.onRangeChanged(this.camera, targetView);
         // Add additional correction for bounds
         this.applyBounds();
-      }
 
-      // Make sure the camera updates
-      this.camera.update();
+        // Make sure the camera updates
+        this.camera.update();
+      }
     }
   }
 

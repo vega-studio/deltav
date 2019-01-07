@@ -3,6 +3,7 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
+  InstanceAttributeSize,
   PickType
 } from "../../../types";
 import { uid } from "../../../util";
@@ -425,6 +426,7 @@ export class InstanceAttributePackingBufferManager<
             packUID: blockAttributeUID,
             bufferAttribute,
             name: `block${block}`,
+            size: InstanceAttributeSize.FOUR,
             update: () => [0]
           });
         } else {

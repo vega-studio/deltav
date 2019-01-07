@@ -443,7 +443,6 @@ export class BasicCameraController extends EventManager {
     if (drag) this.camera.offset[0] += pan[0];
     this.camera.offset[1] += pan[1];
 
-<<<<<<< HEAD
     // Add additional correction for bounds
     this.applyBounds();
     // Broadcast the change occurred
@@ -451,10 +450,6 @@ export class BasicCameraController extends EventManager {
     // Add additional correction for bounds
     this.applyBounds();
     // Indicate the camera needs a refresh
-=======
-    if (this.camera.offset[0] > 0 && drag) this.camera.offset[0] = 0;
-    if (this.camera.offset[1] > 0) this.camera.offset[1] = 0;
->>>>>>> c7f9e3bb47bd07de2c3748d624af258fd2bb969f
     this.camera.update();
   }
 

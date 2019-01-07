@@ -1,4 +1,3 @@
-import { Camera } from "three";
 import { Bounds } from "../primitives/bounds";
 import { EventManager } from "../surface/event-manager";
 import {

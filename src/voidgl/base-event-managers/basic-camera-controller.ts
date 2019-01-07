@@ -443,7 +443,7 @@ export class BasicCameraController extends EventManager {
     if (drag) this.camera.offset[0] += pan[0];
     this.camera.offset[1] += pan[1];
 
-    if (this.camera.offset[0] < 0) this.camera.offset[0] = 0;
+    if (this.camera.offset[0] > 0) this.camera.offset[0] = 0;
     if (this.camera.offset[1] > 0) this.camera.offset[1] = 0;
     this.camera.update();
   }

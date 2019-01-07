@@ -1,4 +1,3 @@
-import * as tinySDF from "tiny-sdf";
 import { dot2, subtract2, Vec2 } from "../../util/vector";
 
 const { ceil, max, log2, pow, sqrt } = Math;
@@ -282,9 +281,6 @@ export function convertToSDF(
   // Render the out data to the input canvas
   context.putImageData(outImageData, 0, 0);
 }
-
-// window.convertToSDF = convertToSDF;
-(window as any).tinySDF = tinySDF;
 
 /**
  * Makes a SDF of the input font specified

@@ -37,6 +37,7 @@ export interface IBasicCameraControllerOptions {
     scaleFilter?(scale: [number, number, number], view: View, allViews: View[]): [number, number, number];
     startView?: string | string[];
     onRangeChanged?(camera: ChartCamera, targetView: View): void;
+    wheelShouldScroll?: boolean;
 }
 export declare class BasicCameraController extends EventManager {
     bounds?: ICameraBoundsOptions;
@@ -47,6 +48,7 @@ export declare class BasicCameraController extends EventManager {
     scaleFactor: number;
     private scaleFilter;
     startViews: string[];
+    wheelShouldScroll: boolean;
     private coveredStartView;
     private onRangeChanged;
     private startViewDidStart;
@@ -62,6 +64,7 @@ export declare class BasicCameraController extends EventManager {
     private getTargetView;
     handleMouseDown(e: IMouseInteraction, _button: number): void;
     handleMouseUp(_e: IMouseInteraction): void;
+    private doPan;
     handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
     handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics): void;
     handleMouseOut(_e: IMouseInteraction): void;

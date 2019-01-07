@@ -31,6 +31,7 @@ import { MouseInteractionEdges } from "./examples/mouse-interaction-edges";
 import { MouseInteractionImages } from "./examples/mouse-interaction-images";
 import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
 import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
+import { MouseScroll } from "./examples/mouse-scroll";
 import { ScreenSpaceEdges } from "./examples/screen-space-edges";
 import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
 
@@ -75,7 +76,8 @@ const tests: BaseExample[] = [
   new MouseInteractionColorPicking(),
   new Arcs(),
   new VertexAttributePacking(),
-  new VertexAttributePacking(true)
+  new VertexAttributePacking(true),
+  new MouseScroll()
 ];
 
 /** These are the layers for the tests that are generated */

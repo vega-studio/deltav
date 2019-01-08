@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.23.1
+
+* `(FIXED)` Panning would not happen under certain conditions or would be incorrect with the applied bounds.
+
 ## 1.23.0
 
 * `(ADDED)` Basic Camera Controller now supports panning via scroll wheel when desired.

@@ -428,19 +428,14 @@ export class BasicCameraController extends EventManager {
     this.isPanning = false;
   }
 
-  private doPan(
-    e: IMouseInteraction,
-    view: View,
-    delta: [number, number],
-    drag: boolean
-  ) {
+  private doPan(e: IMouseInteraction, view: View, delta: [number, number]) {
     let pan: Vec3 = vec3(divide2(delta, this.camera.scale), 0);
 
     if (this.panFilter) {
       pan = this.panFilter(pan, view, e.viewsUnderMouse.map(v => v.view));
     }
 
-    if (drag) this.camera.offset[0] += pan[0];
+    this.camera.offset[0] += pan[0];
     this.camera.offset[1] += pan[1];
 
     // Add additional correction for bounds
@@ -459,7 +454,7 @@ export class BasicCameraController extends EventManager {
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
-        this.doPan(e, e.start.view, drag.screen.delta, true);
+        this.doPan(e, e.start.view, drag.screen.delta);
       }
     }
   }
@@ -473,18 +468,17 @@ export class BasicCameraController extends EventManager {
 
     if (this.canStart(e.target.view.id)) {
       if (this.wheelShouldScroll) {
-        const targetView = this.getTargetView(e);
-        const panFactor = 100;
+        const panFactor = 1000;
 
         const currentZoomX = this.camera.scale[0] || 1.0;
         const currentZoomY = this.camera.scale[1] || 1.0;
 
         const deltaScale: [number, number] = [
-          wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomX,
+          wheelMetrics.wheel[0] * currentZoomX,
           wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomY
         ];
 
-        this.doPan(e, targetView, deltaScale, false);
+        if (e.start) this.doPan(e, e.start.view, deltaScale);
       } else {
         const targetView = this.getTargetView(e);
         const beforeZoom = targetView.screenToWorld(e.screen.mouse);
@@ -589,10 +583,8 @@ export class BasicCameraController extends EventManager {
    * If no view is supplied, it uses the first in the startViews array
    */
   setBounds(bounds: ICameraBoundsOptions) {
-    if (!this.wheelShouldScroll) {
-      this.bounds = bounds;
-      this.applyBounds();
-    }
+    this.bounds = bounds;
+    this.applyBounds();
   }
 
   /**
@@ -609,7 +601,6 @@ export class BasicCameraController extends EventManager {
    * @param viewId The id of the view when the view was generated when the surface was made
    */
   setRange(newWorld: Bounds, viewId: string) {
-    console.warn("setRange");
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */

@@ -473,12 +473,12 @@ export class BasicCameraController extends EventManager {
         const currentZoomX = this.camera.scale[0] || 1.0;
         const currentZoomY = this.camera.scale[1] || 1.0;
 
-        const deltaScale: [number, number] = [
-          wheelMetrics.wheel[0] * currentZoomX,
+        const deltaPosition: [number, number] = [
+          -wheelMetrics.wheel[0] * currentZoomX,
           wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomY
         ];
 
-        if (e.start) this.doPan(e, e.start.view, deltaScale);
+        if (e.start) this.doPan(e, e.start.view, deltaPosition);
       } else {
         const targetView = this.getTargetView(e);
         const beforeZoom = targetView.screenToWorld(e.screen.mouse);

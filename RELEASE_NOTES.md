@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.23.3
+
+* `(FIXED)` Mouse wheel to pan was very sensitive when zoomed in deep
+
 ## 1.23.2
 
 * `(FIXED)` Vertex packing resizing its buffer caused instances in the first buffer to not update the correct buffer

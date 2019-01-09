@@ -468,14 +468,9 @@ export class BasicCameraController extends EventManager {
 
     if (this.canStart(e.target.view.id)) {
       if (this.wheelShouldScroll) {
-        const panFactor = 1000;
-
-        const currentZoomX = this.camera.scale[0] || 1.0;
-        const currentZoomY = this.camera.scale[1] || 1.0;
-
         const deltaPosition: [number, number] = [
-          -wheelMetrics.wheel[0] * currentZoomX,
-          wheelMetrics.wheel[1] * panFactor / this.scaleFactor * currentZoomY
+          -wheelMetrics.wheel[0],
+          wheelMetrics.wheel[1]
         ];
 
         if (e.start) this.doPan(e, e.start.view, deltaPosition);

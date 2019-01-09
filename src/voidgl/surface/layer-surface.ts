@@ -117,6 +117,7 @@ export class LayerSurface {
   frameMetrics: FrameMetrics = {
     currentFrame: 0,
     currentTime: Date.now() | 0,
+    frameDuration: 1000 / 60,
     previousTime: Date.now() | 0
   };
   /**
@@ -239,6 +240,8 @@ export class LayerSurface {
 
     // We are rendering a new frame so increment our frame count
     if (frameIncrement) this.frameMetrics.currentFrame++;
+    this.frameMetrics.frameDuration =
+      this.frameMetrics.currentTime - this.frameMetrics.previousTime;
     this.frameMetrics.previousTime = this.frameMetrics.currentTime;
 
     // If no manual time was provided, we shall use Date.now in 32 bit format

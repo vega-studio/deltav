@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.23.2
+
+* `(FIXED)` Vertex packing resizing its buffer caused instances in the first buffer to not update the correct buffer
+
 ## 1.23.1
 
 * `(FIXED)` Panning would not happen under certain conditions or would be incorrect with the applied bounds.

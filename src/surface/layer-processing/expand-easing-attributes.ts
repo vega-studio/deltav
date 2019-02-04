@@ -161,7 +161,9 @@ export function generateEasingAttributes<
       /** Set layer's animation end time */
       layer.animationEndTime = Math.max(
         layer.animationEndTime,
-        easingValues.startTime + duration
+        easingValues.startTime +
+          duration +
+          layer.surface.frameMetrics.frameDuration
       );
 
       return end;

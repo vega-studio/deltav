@@ -16,8 +16,9 @@ export interface IModelType {
     modelType: IModelConstructable;
 }
 export interface IInstanceProvider<T extends Instance> {
+    resolveContext: string;
     changeList: InstanceDiff<T>[];
-    resolve(): void;
+    resolve(context: string): void;
     sync(): void;
 }
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
@@ -90,6 +91,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>): void;
     setBufferType(val: LayerBufferType): void;
     shouldDrawView(oldProps: U, newProps: U): boolean;
+    updateUniforms(): void;
     willUpdateInstances(_changes: [T, InstanceDiffType]): void;
     willUpdateProps(_newProps: ILayerProps<T>): void;
     didUpdate(): void;

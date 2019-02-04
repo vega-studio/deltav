@@ -3,6 +3,7 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
+  InstanceAttributeSize,
   PickType
 } from "../../../types";
 import { uid } from "../../../util";
@@ -17,6 +18,7 @@ import {
 } from "../buffer-manager-base";
 
 const { max } = Math;
+const debug = require("debug")("performance");
 
 /**
  * This represents the location of data for an instance's property to the piece of attribute buffer
@@ -425,6 +427,7 @@ export class InstanceAttributePackingBufferManager<
             packUID: blockAttributeUID,
             bufferAttribute,
             name: `block${block}`,
+            size: InstanceAttributeSize.FOUR,
             update: () => [0]
           });
         } else {
@@ -453,6 +456,11 @@ export class InstanceAttributePackingBufferManager<
         uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
       }
     } else {
+      debug(
+        `Info: Vertex packing buffer is being resized for layer ${
+          this.layer.id
+        }`
+      );
       // If the geometry is already created, then we will expand each instanced attribute to the next growth
       // level and generate the new buffer locations based on the expansion
       // Since were are resizing the buffer, let's destroy the old buffer and make one anew
@@ -548,10 +556,13 @@ export class InstanceAttributePackingBufferManager<
               const startAttributeIndex = subAttribute.blockIndex || 0;
               const attributeSize = subAttribute.size || 1;
 
-              // Update all existing attribute locations with the new internal attribute
+              // Update all existing attribute locations with the new internal attribute and new buffer
               for (let j = 0, jMax = allLocations.length; j < jMax; ++j) {
                 const location = allLocations[j];
                 location.attribute = internalAttribute;
+                location.buffer = {
+                  value: buffer
+                };
               }
 
               // Create new locations for each new instance we will cover

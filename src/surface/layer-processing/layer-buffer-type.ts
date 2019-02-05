@@ -1,10 +1,10 @@
+import { WebGLStat } from "../../gl/webgl-stat";
 import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   instanceAttributeSizeFloatCount,
   IVertexAttribute
 } from "../../types";
-import { WebGLStat } from "../../util/webgl-stat";
 import { InstanceAttributeBufferManager } from "../buffer-management/instance-attribute-buffering/instance-attribute-buffer-manager";
 import { InstanceAttributePackingBufferManager } from "../buffer-management/instance-attribute-packed-buffering/instance-attribute-packing-buffer-manager";
 import { UniformBufferManager } from "../buffer-management/uniform-buffering/uniform-buffer-manager";

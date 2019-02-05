@@ -11,4 +11,3 @@ export * from "./tracked-quad-tree";
 export * from "./uid";
 export * from "./vector";
 export * from "./view-camera";
-export * from "./webgl-stat";

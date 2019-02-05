@@ -2,7 +2,6 @@
   "rules": {
     "ban-types": [true, ["Number"], ["Object"], ["String"]],
     "no-magic-numbers": [false],
-    "no-namespace": [true, "allow-declarations"],
     "prefer-for-of": true,
     "no-console": [true, "log"],
     "curly": [true, "ignore-same-line"],

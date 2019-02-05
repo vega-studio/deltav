@@ -4,3 +4,7 @@ export * from './model';
 export * from './render-target';
 export * from './scene-container';
 export * from './webgl-renderer';
+export * from './gl-settings';
+export * from './gl-state';
+export * from './attribute';
+export * from './webgl-stat';

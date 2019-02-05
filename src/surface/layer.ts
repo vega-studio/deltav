@@ -45,10 +45,16 @@ export interface IModelType {
  * Bare minimum required features a provider must provide to be the data for the layer.
  */
 export interface IInstanceProvider<T extends Instance> {
+  /**
+   * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
+   * so we use this to detect when multiple contexts have attempted use of this provider.
+   */
+  resolveContext: string;
+
   /** A list of changes to instances */
   changeList: InstanceDiff<T>[];
   /** Resolves the changes as consumed */
-  resolve(): void;
+  resolve(context: string): void;
   /** Forces the provider to make a change list that ensures all elements are added */
   sync(): void;
 }
@@ -297,9 +303,6 @@ export class Layer<
    * This is where global uniforms should update their values. Executes every frame.
    */
   draw() {
-    let uniform: IUniformInternal;
-    let value: UniformIOValue;
-
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
     // Set needsViewDrawn to be true if there is any change
@@ -331,17 +334,10 @@ export class Layer<
 
     // Tell the diff processor that it has completed it's task set
     processor.commit();
-    // Indicate the diffs are consumed
-    this.props.data.resolve();
-
-    // Loop through the uniforms that are across all instances
-    for (let i = 0, end = this.uniforms.length; i < end; ++i) {
-      uniform = this.uniforms[i];
-      value = uniform.update(uniform);
-      uniform.materialUniforms.forEach(
-        materialUniform => (materialUniform.value = value)
-      );
-    }
+    // Flag the changes as resolved
+    this.props.data.resolve(this.id);
+    // Trigger uniform updates
+    this.updateUniforms();
   }
 
   /**
@@ -488,11 +484,33 @@ export class Layer<
   }
 
   /**
-   * Lifecycle hook for sub classes.
-   *
-   * This executes before the props on this layer gets clobbered with the new properties coming in.
+   * This triggers the layer to update the material uniforms that have been created for the layer.
+   * This is primarily used internally.
    */
+  updateUniforms() {
+    let uniform: IUniformInternal;
+    let value: UniformIOValue;
+
+    // Loop through the uniforms that are across all instances
+    for (let i = 0, end = this.uniforms.length; i < end; ++i) {
+      uniform = this.uniforms[i];
+      value = uniform.update(uniform);
+      uniform.materialUniforms.forEach(
+        materialUniform => (materialUniform.value = value)
+      );
+    }
+  }
+
+  willUpdateInstances(_changes: [T, InstanceDiffType]) {
+    // HOOK: Simple hook so a class can review all of it's changed instances before
+    //       Getting applied to the Shader IO
+  }
+
   willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
+  }
+
+  didUpdate() {
+    this.props.data.resolve(this.id);
   }
 }

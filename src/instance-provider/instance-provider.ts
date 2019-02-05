@@ -26,6 +26,11 @@ export class InstanceProvider<T extends Instance>
   private instanceChanges = new Map<number, InstanceDiff<T>>();
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
   private allowChanges = true;
+  /**
+   * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
+   * so we use this to detect when multiple contexts have attempted use of this provider.
+   */
+  resolveContext: string = "";
 
   /**
    * Retrieve all of the changes applied to instances
@@ -125,9 +130,17 @@ export class InstanceProvider<T extends Instance>
   /**
    * Flagged all changes as dealt with
    */
-  resolve() {
+  resolve(context: string) {
     this.allowChanges = true;
     this.instanceChanges.clear();
+
+    if (this.resolveContext && this.resolveContext !== context) {
+      throw new Error(
+        "An instance provider has been issued to two layers. This is not a suppported feature yet and will cause issues."
+      );
+    }
+
+    this.resolveContext = context;
   }
 
   /**

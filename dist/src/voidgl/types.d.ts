@@ -181,6 +181,7 @@ export declare enum InstanceDiffType {
 export declare type FrameMetrics = {
     currentFrame: number;
     currentTime: number;
+    frameDuration: number;
     previousTime: number;
 };
 export interface IEasingControl {

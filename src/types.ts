@@ -532,6 +532,8 @@ export type FrameMetrics = {
   currentFrame: number;
   /** The start time of the current frame */
   currentTime: number;
+  /** This is the duration of the previous frame */
+  frameDuration: number;
   /** The start time of the previous frame */
   previousTime: number;
 };

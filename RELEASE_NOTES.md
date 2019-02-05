@@ -1,5 +1,26 @@
 # Release Notes
 
+## 1.23.3
+
+* `(FIXED)` Mouse wheel to pan was very sensitive when zoomed in deep
+
+## 1.23.2
+
+* `(FIXED)` Vertex packing resizing its buffer caused instances in the first buffer to not update the correct buffer
+
+## 1.23.1
+
+* `(FIXED)` Panning would not happen under certain conditions or would be incorrect with the applied bounds.
+
+## 1.23.0
+
+* `(ADDED)` Basic Camera Controller now supports panning via scroll wheel when desired.
+* `(FIXED)` Error with large numbers of instances being created causing a vertex packing buffer to resize and cause a buffer error
+
+## 1.22.1
+
+* `(FIXED)` The framework now detects and warns when a provider is improperly used across two layers
+
 ## 1.22.0
 
 * `(ADDED)` Comma delimited imports ${import: module, module2, etc}

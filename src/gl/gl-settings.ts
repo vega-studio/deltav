@@ -47,10 +47,11 @@ export namespace GLSettings {
      */
     export enum BlendingEquations {
       Add = 0,
-      Subtraction = 1,
-      ReverseSubtraction = 2,
-      Min = 3,
-      Max = 4
+      Subtract = 1,
+      ReverseSubtract = 2,
+      /** Requires extension for Webgl 1.0 */
+      // Min = 3,
+      // Max = 4
     }
 
     /**

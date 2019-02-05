@@ -32,13 +32,13 @@ export class GLState {
   /** The channels in the color buffer a fragment is allowed to write to */
   get colorMask() { return this._colorMask; }
 
-  private _depthFunc = GLSettings.Material.DepthFunctions;
+  private _depthFunc = GLSettings.Material.DepthFunctions.ALWAYS;
   /** Comparator used when testing a fragment against the depth buffer */
   get depthFunc() { return this._depthFunc; }
 
   private _depthTestEnabled = true;
   /** Indicates if fragments are tested against the depth buffer or not */
-  get depthTest() { return this._depthTestEnabled; }
+  get depthTestEnabled() { return this._depthTestEnabled; }
 
   private _depthMask = true;
   /** Indicates if the fragment will write to the depth buffer or not */
@@ -46,7 +46,7 @@ export class GLState {
 
   private _ditheringEnabled = true;
   /** Indicates if dithering is enabled */
-  get dithering() { return this._ditheringEnabled; }
+  get ditheringEnabled() { return this._ditheringEnabled; }
 
   constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -63,10 +63,54 @@ export class GLState {
     this._ditheringEnabled ? gl.enable(gl.DITHER) : gl.disable(gl.DITHER);
     this._depthTestEnabled ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
     this.applyCullFace();
-    this._blendDstFactor;
+    this.applyBlendFactors();
+    this.applyBlendEquation();
+    this.applyColorMask();
+    this.applyDepthFunc();
+    gl.depthMask(this._depthMask);
   }
 
-  applyBlendFactors() {
+  private applyDepthFunc() {
+    const gl = this.gl;
+
+    switch (this._depthFunc) {
+      case GLSettings.Material.DepthFunctions.ALWAYS: gl.depthFunc(gl.ALWAYS); break;
+      case GLSettings.Material.DepthFunctions.EQUAL: gl.depthFunc(gl.EQUAL); break;
+      case GLSettings.Material.DepthFunctions.GREATER: gl.depthFunc(gl.GREATER); break;
+      case GLSettings.Material.DepthFunctions.GREATER_OR_EQUAL: gl.depthFunc(gl.GEQUAL); break;
+      case GLSettings.Material.DepthFunctions.LESS: gl.depthFunc(gl.LESS); break;
+      case GLSettings.Material.DepthFunctions.LESS_OR_EQUAL: gl.depthFunc(gl.LEQUAL); break;
+      case GLSettings.Material.DepthFunctions.NEVER: gl.depthFunc(gl.NEVER); break;
+      case GLSettings.Material.DepthFunctions.NOTEQUAL: gl.depthFunc(gl.NOTEQUAL); break;
+
+      default:
+        gl.depthFunc(gl.ALWAYS);
+        break;
+    }
+  }
+
+  private applyColorMask() {
+    this.gl.colorMask(
+      this.colorMask[0],
+      this.colorMask[1],
+      this.colorMask[2],
+      this.colorMask[3],
+    );
+  }
+
+  private applyBlendEquation() {
+    const gl = this.gl;
+
+    switch (this._blendEquation) {
+      case GLSettings.Material.BlendingEquations.Add: gl.blendEquation(gl.FUNC_ADD); break;
+      case GLSettings.Material.BlendingEquations.Subtract: gl.blendEquation(gl.FUNC_SUBTRACT); break;
+      case GLSettings.Material.BlendingEquations.ReverseSubtract: gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT); break;
+      // case GLSettings.Material.BlendingEquations.Min: /** Requires extension for Webgl 1 */ break;
+      // case GLSettings.Material.BlendingEquations.Max: /** Requires extension for Webgl 1 */ break;
+    }
+  }
+
+  private applyBlendFactors() {
     const gl = this.gl;
     let dst, src;
 
@@ -108,7 +152,7 @@ export class GLState {
     gl.blendFunc(src, dst);
   }
 
-  applyCullFace() {
+  private applyCullFace() {
     const gl = this.gl;
 
     if (this._cullFace !== GLSettings.Material.CullSide.NONE) {

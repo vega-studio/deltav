@@ -21,16 +21,16 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     export enum BlendingDstFactor {
-      ZeroFactor = 0,
-      OneFactor = 1,
-      SrcColorFactor = 2,
-      OneMinusSrcColorFactor = 3,
-      SrcAlphaFactor = 4,
-      OneMinusSrcAlphaFactor = 5,
-      DstAlphaFactor = 6,
-      OneMinusDstAlphaFactor = 7,
-      DstColorFactor = 8,
-      OneMinusDstColorFactor = 9,
+      Zero = 0,
+      One = 1,
+      SrcColor = 2,
+      OneMinusSrcColor = 3,
+      SrcAlpha = 4,
+      OneMinusSrcAlpha = 5,
+      DstAlpha = 6,
+      OneMinusDstAlpha = 7,
+      DstColor = 8,
+      OneMinusDstColor = 9,
     }
 
     /**
@@ -38,7 +38,17 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     export enum BlendingSrcFactor {
-      SrcAlphaSaturateFactor = 10,
+      Zero = 0,
+      One = 1,
+      SrcColor = 2,
+      OneMinusSrcColor = 3,
+      SrcAlpha = 4,
+      OneMinusSrcAlpha = 5,
+      DstAlpha = 6,
+      OneMinusDstAlpha = 7,
+      DstColor = 8,
+      OneMinusDstColor = 9,
+      SrcAlphaSaturate = 10,
     }
 
     /**
@@ -79,6 +89,113 @@ export namespace GLSettings {
       FRONT = 1,
       BACK = 2,
       BOTH = 3,
+    }
+  }
+
+  /**
+   * Settings that are applied to textures
+   */
+  export namespace Texture {
+    /**
+     * Specifies which target to bind the texture to. 2D or a cubemap.
+     */
+    export enum TextureBindingTarget {
+      TEXTURE_2D,
+      CUBE_MAP
+    }
+
+    /**
+     * The wrap mode when reading values outside of 0 - 1 when sampling the texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    export enum Wrapping {
+      REPEAT = 0,
+      CLAMP_TO_EDGE = 1,
+      MIRRORED_REPEAT = 2
+    }
+
+    /**
+     * The interpolation method to use when sampling between texels when the render space is smaller than the texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    export enum TextureMinFilter {
+      Nearest = 0,
+      NearestMipMapNearest = 1,
+      NearestMipMapLinear = 2,
+      Linear = 3,
+      LinearMipMapNearest = 4,
+      LinearMipMapLinear = 5,
+    }
+
+    /**
+     * The interpolation method to use when sampling between texels when the render space is larger than the texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    export enum TextureMagFilter {
+      Nearest = 0,
+      Linear = 1,
+    }
+
+    /**
+     * This is the format of the input texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    export enum SourcePixelFormat {
+      Alpha = 0,
+      Depth = 1,
+      DepthStencil = 2,
+      Luminance = 3,
+      LuminanceAlpha = 4,
+      RGB = 5,
+      RGBA = 6,
+      RGBE = 7,
+    }
+
+    /**
+     * This is the data format the texels in the texture will take on. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    export enum TexelDataType {
+      UnsignedByte = 0,
+      Byte = 1,
+      Short = 2,
+      UnsignedShort = 3,
+      Int = 4,
+      UnsignedInt = 5,
+      Float = 6,
+      HalfFloat = 7,
+    }
+
+    /**
+     * This specifies hwo the texture data is unpacked when using gl.readPixels. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+     * https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glPixelStorei.xml
+     */
+    export enum PackAlignment {
+      /** Byte-alignment */
+      ONE = 1,
+      /** Rows aligned to even-numbered bytes */
+      TWO = 2,
+      /** Word-alignment */
+      FOUR = 4,
+      /** Rows start on double-word boundaries */
+      EIGHT = 8,
+    }
+
+    /**
+     * This specifies how the texture data is packed into memory (for gl.texImage2D and gl.texSubImage2D) See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+     * https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glPixelStorei.xml
+     */
+    export enum UnpackAlignment {
+      /** Byte-alignment */
+      ONE = 1,
+      /** Rows aligned to even-numbered bytes */
+      TWO = 2,
+      /** Word-alignment */
+      FOUR = 4,
+      /** Rows start on double-word boundaries */
+      EIGHT = 8,
     }
   }
 }

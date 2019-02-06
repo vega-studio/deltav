@@ -1,7 +1,7 @@
-import { RenderTarget } from 'src/gl/render-target';
-import { SceneContainer } from 'src/gl/scene-container';
-import * as twgl from 'twgl.js';
 import { Vec2, Vec4 } from '../util';
+import { GPUProxy } from './gpu-proxy';
+import { RenderTarget } from './render-target';
+import { SceneContainer } from './scene-container';
 
 /**
  * Options used to create or update the renderer.
@@ -31,6 +31,11 @@ export interface IWebGLRendererOptions {
    * Set to true to make the default context expect premultipled alpha for blending.
    */
   premultipliedAlpha?: boolean;
+
+  /**
+   * Callback indicating a context could not be generated.
+   */
+  onNoContext?(): void;
 }
 
 /**
@@ -56,6 +61,8 @@ export class WebGLRenderer {
   private _gl: WebGLRenderingContext;
   /** The readonly gl context the renderer determined for use */
   get gl() { return this._gl; }
+  /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
+  private glProxy: GPUProxy;
   /** The options that constructed or are currently applied to the renderer */
   options: IWebGLRendererOptions;
   /** Any current internal state the renderer has applied to it's target */
@@ -132,12 +139,24 @@ export class WebGLRenderer {
   getContext() {
     if (this._gl) return this._gl;
 
-    this._gl = twgl.getWebGLContext(this.options.canvas, {
+    const gl = this.glProxy.getContext(this.options.canvas, {
       alpha: this.options.alpha || false,
       antialias: this.options.antialias || false,
       premultipliedAlpha: this.options.premultipliedAlpha || false,
       preserveDrawingBuffer: this.options.preserveDrawingBuffer || false,
     });
+
+    if (gl) {
+      this._gl = gl;
+    }
+
+    else if (this.options.onNoContext) {
+      this.options.onNoContext();
+    }
+
+    else {
+      console.warn('No context was able to be produced, and the handler onNoContext was not implemented for such cases.');
+    }
 
     return this._gl;
   }
@@ -146,7 +165,10 @@ export class WebGLRenderer {
    * Renders the Scene specified
    */
   render(scene: SceneContainer) {
-    // TODO
+    // Loop through all of the models of the scene and process them for rendering
+    scene.models.forEach(model => {
+      model.geometry;
+    });
   }
 
   /**

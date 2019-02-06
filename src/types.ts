@@ -7,7 +7,7 @@ import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
-export type Omit<TType, TKeys> = Pick<TType, Exclude<keyof TType, TKeys>>;
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type ShaderIOValue =
   | [number]
   | [number, number]
@@ -577,3 +577,9 @@ export type IShaderIOExtension<T extends Instance> = Partial<
   vs?: IShaderExtension;
   fs?: IShaderExtension;
 };
+
+/**
+ * A convenience for making short lists of items that are of the same type, such as the
+ * common scenario of [boolean, boolean, boolean, boolean]
+ */
+export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];

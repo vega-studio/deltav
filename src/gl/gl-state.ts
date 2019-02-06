@@ -1,4 +1,6 @@
+import { TypeVec } from "src/types";
 import { GLSettings } from "./gl-settings";
+import { Material } from "./material";
 
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
@@ -12,11 +14,11 @@ export class GLState {
   /** Indicates if blending is enabled */
   get blendingEnabled() { return this._blendingEnabled; }
 
-  private _blendDstFactor = GLSettings.Material.BlendingDstFactor.OneFactor;
+  private _blendDstFactor = GLSettings.Material.BlendingDstFactor.One;
   /** The current destination factor used in the blending equation */
   get blendDstFactor() { return this._blendDstFactor; }
 
-  private _blendSrcFactor: GLSettings.Material.BlendingSrcFactor | GLSettings.Material.BlendingDstFactor = GLSettings.Material.BlendingDstFactor.OneFactor;
+  private _blendSrcFactor: GLSettings.Material.BlendingSrcFactor | GLSettings.Material.BlendingDstFactor = GLSettings.Material.BlendingDstFactor.One;
   /** The current destination factor used in the blending equation */
   get blendSrcFactor() { return this._blendSrcFactor; }
 
@@ -28,7 +30,7 @@ export class GLState {
   /** Indicates which faces will be culled */
   get cullFace() { return this._cullFace; }
 
-  private _colorMask: [boolean, boolean, boolean, boolean] = [true, true, true, true];
+  private _colorMask: TypeVec<boolean> = [true, true, true, true];
   /** The channels in the color buffer a fragment is allowed to write to */
   get colorMask() { return this._colorMask; }
 
@@ -48,8 +50,144 @@ export class GLState {
   /** Indicates if dithering is enabled */
   get ditheringEnabled() { return this._ditheringEnabled; }
 
+  private _boundFBO: WebGLFramebuffer | null = null;
+  /** The currently bound frame buffer object. null if nothing bound. */
+  get boundFBO() { return this._boundFBO; }
+
+  private _boundRBO: WebGLRenderbuffer | null = null;
+  /** The currently bound render buffer object. null if nothing bound. */
+  get boundRBO() { return this._boundRBO; }
+
+  private _boundVBO: WebGLBuffer | null = null;
+  /** The current id of the current bound vbo. If null, nothing is bound */
+  get boundVBO() { return this._boundVBO; }
+
+  private _boundTexture: WebGLTexture | null = null;
+  /** The current texture object bound. If null, nothing is bound */
+  get boundTexture() { return this._boundTexture; }
+
   constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
+  }
+
+  /**
+   * Sets the provided buffer identifier as the current bound item.
+   */
+  bindVBO(id: WebGLBuffer | null) {
+    if (this._boundVBO !== id) {
+      this._boundVBO = id;
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, id);
+    }
+  }
+
+  /**
+   * Sets the provided buffer identifier as the current bound item
+   */
+  bindRBO(id: WebGLRenderbuffer) {
+    if (this._boundRBO !== id) {
+      this._boundRBO = id;
+      this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, id);
+    }
+  }
+
+  /**
+   * Sets the provided buffer identifier as the current bound item
+   */
+  bindFBO(id: WebGLFramebuffer) {
+    if (this._boundFBO !== id) {
+      this._boundFBO = id;
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, id);
+    }
+  }
+
+  /**
+   * Sets the provided buffer identifier as the current bound item
+   */
+  bindTexture(id: WebGLTexture, target: GLSettings.Texture.TextureBindingTarget) {
+    if (this._boundTexture !== id) {
+      this._boundTexture = id;
+
+      switch (target) {
+        case GLSettings.Texture.TextureBindingTarget.TEXTURE_2D:
+          this.gl.bindTexture(this.gl.TEXTURE_2D, id);
+          break;
+
+        case GLSettings.Texture.TextureBindingTarget.TEXTURE_2D:
+          this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, id);
+          break;
+      }
+    }
+  }
+
+  /**
+   * This syncs the state of the GL context with the requested state of a material
+   */
+  syncMaterial(material: Material) {
+    const gl = this.gl;
+    const depthWrite = Boolean(material.depthWrite);
+
+    // Depth mode changes
+    if (this._depthMask !== depthWrite) {
+      this._depthMask = depthWrite;
+      gl.depthMask(this._depthMask);
+    }
+
+    if (this._depthTestEnabled !== material.depthTest) {
+      this._depthTestEnabled = material.depthTest;
+      this._depthTestEnabled ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
+    }
+
+    if (this._depthFunc !== material.depthFunc) {
+      this._depthFunc = material.depthFunc;
+      this.applyDepthFunc();
+    }
+
+    // Blending changes
+    if (material.blending) {
+      if (!this._blendingEnabled) {
+        gl.enable(gl.BLEND);
+      }
+
+      if (
+        this._blendDstFactor !== material.blending.blendDst ||
+        this._blendSrcFactor !== material.blending.blendSrc ||
+        this._blendEquation !== material.blending.blendEquation
+      ) {
+        this._blendDstFactor = material.blending.blendDst || this._blendDstFactor;
+        this._blendSrcFactor = material.blending.blendSrc || this._blendSrcFactor;
+        this._blendEquation = material.blending.blendEquation || this._blendEquation;
+        this.applyBlendFactors();
+      }
+    }
+
+    else {
+      if (this._blendingEnabled) {
+        gl.disable(gl.BLEND);
+      }
+    }
+
+    // Cull mode
+    if (this._cullFace !== material.culling) {
+      this._cullFace = material.culling;
+      this.applyCullFace();
+    }
+
+    // Color mode
+    if (
+      this._colorMask[0] !== material.colorWrite[0] ||
+      this._colorMask[1] !== material.colorWrite[1] ||
+      this._colorMask[2] !== material.colorWrite[2] ||
+      this._colorMask[3] !== material.colorWrite[3]
+    ) {
+      this._colorMask = material.colorWrite;
+      this.applyColorMask();
+    }
+
+    // Dithering
+    if (this._ditheringEnabled !== material.dithering) {
+      this._ditheringEnabled = material.dithering;
+      this._ditheringEnabled ? gl.enable(gl.DITHER) : gl.disable(gl.DITHER);
+    }
   }
 
   /**
@@ -70,6 +208,9 @@ export class GLState {
     gl.depthMask(this._depthMask);
   }
 
+  /**
+   * Applies the current depth function to the gl state
+   */
   private applyDepthFunc() {
     const gl = this.gl;
 
@@ -89,15 +230,21 @@ export class GLState {
     }
   }
 
+  /**
+   * Applies the writing mask to the color buffer to the gl state.
+   */
   private applyColorMask() {
     this.gl.colorMask(
-      this.colorMask[0],
-      this.colorMask[1],
-      this.colorMask[2],
-      this.colorMask[3],
+      this.colorMask[0] || false,
+      this.colorMask[1] || false,
+      this.colorMask[2] || false,
+      this.colorMask[3] || false,
     );
   }
 
+  /**
+   * Applies the blending equations to the gl state
+   */
   private applyBlendEquation() {
     const gl = this.gl;
 
@@ -110,21 +257,24 @@ export class GLState {
     }
   }
 
+  /**
+   * Applies the blending factors to the gl state
+   */
   private applyBlendFactors() {
     const gl = this.gl;
     let dst, src;
 
     switch (this._blendDstFactor) {
-      case GLSettings.Material.BlendingDstFactor.DstAlphaFactor: dst = gl.BLEND_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.DstColorFactor: dst = gl.BLEND_DST_RGB; break;
-      case GLSettings.Material.BlendingDstFactor.OneFactor: dst = gl.ONE; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlphaFactor: dst = gl.ONE_MINUS_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstColorFactor: dst = gl.ONE_MINUS_DST_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlphaFactor: dst = gl.ONE_MINUS_SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColorFactor: dst = gl.ONE_MINUS_SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.SrcAlphaFactor: dst = gl.SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.SrcColorFactor: dst = gl.SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.ZeroFactor: dst = gl.ZERO; break;
+      case GLSettings.Material.BlendingDstFactor.DstAlpha: dst = gl.BLEND_DST_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.DstColor: dst = gl.BLEND_DST_RGB; break;
+      case GLSettings.Material.BlendingDstFactor.One: dst = gl.ONE; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha: dst = gl.ONE_MINUS_DST_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor: dst = gl.ONE_MINUS_DST_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha: dst = gl.ONE_MINUS_SRC_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor: dst = gl.ONE_MINUS_SRC_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.SrcAlpha: dst = gl.SRC_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.SrcColor: dst = gl.SRC_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.Zero: dst = gl.ZERO; break;
 
       default:
         dst = gl.ONE;
@@ -132,17 +282,17 @@ export class GLState {
     }
 
     switch (this._blendSrcFactor) {
-      case GLSettings.Material.BlendingDstFactor.DstAlphaFactor: src = gl.BLEND_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.DstColorFactor: src = gl.BLEND_DST_RGB; break;
-      case GLSettings.Material.BlendingDstFactor.OneFactor: src = gl.ONE; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlphaFactor: src = gl.ONE_MINUS_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstColorFactor: src = gl.ONE_MINUS_DST_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlphaFactor: src = gl.ONE_MINUS_SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColorFactor: src = gl.ONE_MINUS_SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.SrcAlphaFactor: src = gl.SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.SrcColorFactor: src = gl.SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.ZeroFactor: src = gl.ZERO; break;
-      case GLSettings.Material.BlendingSrcFactor.SrcAlphaSaturateFactor: src = gl.SRC_ALPHA_SATURATE; break;
+      case GLSettings.Material.BlendingDstFactor.DstAlpha: src = gl.BLEND_DST_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.DstColor: src = gl.BLEND_DST_RGB; break;
+      case GLSettings.Material.BlendingDstFactor.One: src = gl.ONE; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha: src = gl.ONE_MINUS_DST_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor: src = gl.ONE_MINUS_DST_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha: src = gl.ONE_MINUS_SRC_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor: src = gl.ONE_MINUS_SRC_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.SrcAlpha: src = gl.SRC_ALPHA; break;
+      case GLSettings.Material.BlendingDstFactor.SrcColor: src = gl.SRC_COLOR; break;
+      case GLSettings.Material.BlendingDstFactor.Zero: src = gl.ZERO; break;
+      case GLSettings.Material.BlendingSrcFactor.SrcAlphaSaturate: src = gl.SRC_ALPHA_SATURATE; break;
 
       default:
         src = gl.ONE;
@@ -152,6 +302,9 @@ export class GLState {
     gl.blendFunc(src, dst);
   }
 
+  /**
+   * Applies the cull face property to the gl state
+   */
   private applyCullFace() {
     const gl = this.gl;
 

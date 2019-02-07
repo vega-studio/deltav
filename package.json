@@ -18,8 +18,10 @@
     "auto": "auto"
   },
   "dependencies": {
+    "@types/html2canvas": "0.0.35",
     "@types/three": "^0.92.23",
     "bowser": "^1.7.3",
+    "html2canvas": "^1.0.0-alpha.12",
     "three": "^0.94.0"
   },
   "devDependencies": {

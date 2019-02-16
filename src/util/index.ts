@@ -10,4 +10,5 @@ export * from "./shader-templating";
 export * from "./tracked-quad-tree";
 export * from "./uid";
 export * from "./vector";
+export * from "./matrix";
 export * from "./view-camera";

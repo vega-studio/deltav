@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",
+    "@types/webgl2": "0.0.4",
     "animejs": "2.2.0",
     "auto": "github:tarwich/auto",
     "babel-core": "6.26.0",

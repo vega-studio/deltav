@@ -77,6 +77,10 @@ export function add1(left: Vec1Compat, right: Vec1Compat): Vec1 {
   return [left[0] + right[0]];
 }
 
+export function compare1(left: Vec1Compat, right: Vec1Compat): boolean {
+  return left[0] === right[0];
+}
+
 export function copy1(vec: Vec1Compat): Vec1 {
   return [vec[0]];
 }
@@ -160,6 +164,13 @@ export function copy2(vec: Vec2Compat): Vec2 {
   return [vec[0], vec[1]];
 }
 
+export function compare2(left: Vec2Compat, right: Vec2Compat): boolean {
+  return (
+    left[0] === right[0] &&
+    left[1] === right[1]
+  );
+}
+
 export function divide2(top: Vec2Compat, bottom: Vec2Compat): Vec2 {
   return [top[0] / bottom[0], top[1] / bottom[1]];
 }
@@ -237,6 +248,14 @@ export function add3(left: Vec3Compat, right: Vec3Compat): Vec3 {
 
 export function copy3(vec: Vec3Compat): Vec3 {
   return [vec[0], vec[1], vec[2]];
+}
+
+export function compare3(left: Vec3Compat, right: Vec3Compat): boolean {
+  return (
+    left[0] === right[0] &&
+    left[1] === right[1] &&
+    left[2] === right[2]
+  );
 }
 
 export function divide3(top: Vec3Compat, bottom: Vec3Compat): Vec3 {
@@ -329,6 +348,15 @@ export function add4(left: Vec4, right: Vec4): Vec4 {
 
 export function copy4(vec: Vec4): Vec4 {
   return [vec[0], vec[1], vec[2], vec[3]];
+}
+
+export function compare4(left: Vec4Compat, right: Vec4Compat): boolean {
+  return (
+    left[0] === right[0] &&
+    left[1] === right[1] &&
+    left[2] === right[2] &&
+    left[3] === right[3]
+  );
 }
 
 export function divide4(top: Vec4Compat, bottom: Vec4Compat): Vec4 {
@@ -435,6 +463,7 @@ export function vec4(
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T): T;
   copy(vec: T): T;
+  compare(left: T, right: T): boolean;
   divide(top: T, bottom: T): T;
   dot(left: T, right: T): number;
   inverse(vec: T): T;
@@ -450,6 +479,7 @@ export type VecMethods<T extends Vec> = {
 export const vec1Methods: VecMethods<Vec1> = {
   add: add1,
   copy: copy1,
+  compare: compare1,
   divide: divide1,
   dot: dot1,
   inverse: inverse1,
@@ -465,6 +495,7 @@ export const vec1Methods: VecMethods<Vec1> = {
 export const vec2Methods: VecMethods<Vec2> = {
   add: add2,
   copy: copy2,
+  compare: compare2,
   divide: divide2,
   dot: dot2,
   inverse: inverse2,
@@ -480,6 +511,7 @@ export const vec2Methods: VecMethods<Vec2> = {
 export const vec3Methods: VecMethods<Vec3> = {
   add: add3,
   copy: copy3,
+  compare: compare3,
   divide: divide3,
   dot: dot3,
   inverse: inverse3,
@@ -495,6 +527,7 @@ export const vec3Methods: VecMethods<Vec3> = {
 export const vec4Methods: VecMethods<Vec4> = {
   add: add4,
   copy: copy4,
+  compare: compare4,
   divide: divide4,
   dot: dot4,
   inverse: inverse4,

@@ -141,14 +141,50 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
     export enum SourcePixelFormat {
-      Alpha = 0,
-      Depth = 1,
-      DepthStencil = 2,
-      Luminance = 3,
-      LuminanceAlpha = 4,
-      RGB = 5,
-      RGBA = 6,
-      RGBE = 7,
+      /**
+       * Highly supported webgl 1
+       * Pairs with: TexelDataType.RGBA, RGB, LuminanceAlpha, Luminance, Alpha
+       */
+      UnsignedByte = 0,
+      /**
+       * Highly supported webgl 1
+       * Pairs with: TexelDataType.RGB
+       */
+      UnsignedShort_5_6_5 = 1,
+      /**
+       * Highly supported webgl 1
+       * Pairs with: TexelDataType.RGBA
+       */
+      UnsignedShort_4_4_4_4 = 2,
+      /**
+       * Highly supported webgl 1
+       * Pairs with: TexelDataType.RGBA
+       */
+      UnsignedShort_5_5_5_1 = 3,
+      /** Depth texture or Webgl 2 */
+      UnsignedShort = 4,
+      /** Depth texture or Webgl 2 */
+      UnsignedInt = 5,
+      /** Depth texture extension or Webgl 2 */
+      UnsignedInt_24_8 = 6,
+      /** Webgl 2 */
+      Byte = 7,
+      /** Webgl 2 */
+      Short = 8,
+      /** Webgl 2 */
+      Int = 9,
+      /** Webgl 2 */
+      Float = 10,
+      /** Webgl 2 */
+      HalfFloat = 11,
+      /** Webgl 2 */
+      UnsignedInt_2_10_10_10_REV = 12,
+      /** Webgl 2 */
+      UnsignedInt_10F_11F_11F_REV = 13,
+      /** Webgl 2 */
+      UnsignedInt_5_9_9_9_REV = 14,
+      /** Webgl 2 */
+      Float32UnsignedInt_24_8_REV = 15
     }
 
     /**
@@ -156,14 +192,38 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
     export enum TexelDataType {
-      UnsignedByte = 0,
-      Byte = 1,
-      Short = 2,
-      UnsignedShort = 3,
-      Int = 4,
-      UnsignedInt = 5,
-      Float = 6,
-      HalfFloat = 7,
+      /**
+       * Discards the red, green and blue components and reads the alpha component.
+       * Pairs with: UNSIGNED_BYTE
+       */
+      Alpha = 0,
+      /**
+       * Requires Depth extension or webgl2
+       */
+      DepthComponent = 1,
+      /**
+       * Requires Depth extension or webgl2
+       */
+      DepthStencil = 2,
+      /**
+       * Each color component is a luminance component, alpha is 1.0.
+       * Pairs with:
+       */
+      Luminance = 3,
+      /**
+       * Each component is a luminance/alpha component.
+       */
+      LuminanceAlpha = 4,
+      /**
+       * Discards the alpha components and reads the red, green and blue components.
+       * Pairs with:
+       */
+      RGB = 5,
+      /**
+       * Red, green, blue and alpha components are read from the color buffer.
+       */
+      RGBA = 6,
+      RGBE = 7,
     }
 
     /**

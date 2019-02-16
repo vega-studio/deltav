@@ -1,6 +1,7 @@
 import { Omit, TypeVec } from '../types';
 import { GLSettings } from './gl-settings';
-import { IMaterialUniform } from './types';
+import { GPUProxy } from './gpu-proxy';
+import { IMaterialUniform, MaterialUniformType } from './types';
 
 /**
  * This represents a Shader configuration and a state for the configuration to be applied
@@ -43,21 +44,29 @@ export class Material {
   dithering: boolean = true;
   /** The fragment shader in raw text format that will be compiled to run as the program to use when this material is used */
   fragmentShader: string = '';
-  /** Stores any gl state associated with this object */
-  gl = {
-
+  /**
+   * Stores any gl state associated with this object. Modifying this outside the framework
+   * is almost guaranteed to break something.
+   */
+  gl?: {
+    fsId: WebGLShader;
+    vsId: WebGLShader;
+    programId: WebGLProgram;
+    proxy: GPUProxy;
   };
   /**
+   * TODO: This is NOT IN USE YET
    * GL Polygon offset settings. When set, enables polygon offset modes within the gl state. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
    */
-  // polygonOffset?: {
-  //   polygonOffsetFactor?: number;
-  //   polygonOffsetUnits?: number;
-  // };
-  /** Uniforms that will be pushed to the GPU when this is rendered */
-  uniforms: { [key: string]: IMaterialUniform } = {};
+  polygonOffset?: {
+    polygonOffsetFactor?: number;
+    polygonOffsetUnits?: number;
+  };
+
+  /** Uniforms that will be synced with the GPU when this material is used */
+  uniforms: { [key: string]: IMaterialUniform<MaterialUniformType> } = {};
   /** The vertex shader that will be compiled to run as the program to use when this material is used */
   vertexShader: string = '';
 

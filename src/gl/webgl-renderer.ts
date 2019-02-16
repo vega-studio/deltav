@@ -1,3 +1,4 @@
+import { GLState } from 'src/gl/gl-state';
 import { Vec2, Vec4 } from '../util';
 import { GPUProxy } from './gpu-proxy';
 import { RenderTarget } from './render-target';
@@ -42,12 +43,8 @@ export interface IWebGLRendererOptions {
  * Internal state of the renderer.
  */
 export interface IWebGLRendererState {
-  /** The color that will be applied when the renderer clears a space */
-  clearColor: Vec4;
   /** The current pixel ratio in use */
   pixelRatio: number;
-  /** Indicates if the scissor test is enabled for next draw cycle */
-  scissorTestEnabled: boolean;
 }
 
 /**
@@ -63,6 +60,8 @@ export class WebGLRenderer {
   get gl() { return this._gl; }
   /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
   private glProxy: GPUProxy;
+  /** This handles anything related to state changes in the GL state */
+  private glState: GLState;
   /** The options that constructed or are currently applied to the renderer */
   options: IWebGLRendererOptions;
   /** Any current internal state the renderer has applied to it's target */
@@ -84,29 +83,15 @@ export class WebGLRenderer {
    * Clears the specified buffers.
    */
   clear(color?: boolean, depth?: boolean, stencil?: boolean) {
-    let mask = 0;
-
-    if (color) mask = mask | this.gl.COLOR_BUFFER_BIT;
-    if (depth) mask = mask | this.gl.DEPTH_BUFFER_BIT;
-    if (stencil) mask = mask | this.gl.STENCIL_BUFFER_BIT;
-
-    this.gl.clear(mask);
+    this.glProxy.clear(color, depth, stencil);
   }
 
   /**
    * Clears the color either set with setClearColor, or clears the color specified.
    */
   clearColor(color?: Vec4) {
-    const colorToClear = color || this.state.clearColor;
-
-    this.gl.clearColor(
-      colorToClear[0],
-      colorToClear[1],
-      colorToClear[2],
-      colorToClear[3],
-    );
-
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    if (color) this.glState.setClearColor(color);
+    this.glProxy.clearColor();
   }
 
   /**
@@ -148,6 +133,12 @@ export class WebGLRenderer {
 
     if (gl) {
       this._gl = gl;
+      this.glState = new GLState(gl);
+      this.glProxy = new GPUProxy(gl, this.glState);
+      this.glState.setProxy(this.glProxy);
+
+      // Make sure our GPU is synced with our default state
+      this.glState.syncState();
     }
 
     else if (this.options.onNoContext) {
@@ -167,7 +158,22 @@ export class WebGLRenderer {
   render(scene: SceneContainer) {
     // Loop through all of the models of the scene and process them for rendering
     scene.models.forEach(model => {
-      model.geometry;
+      const geometry = model.geometry;
+      const material = model.material;
+
+      // Let's put the material's program in use so we can have the attribute information
+      // available to us.
+      if (this.glState.useMaterial(material)) {
+
+      }
+
+      // First update/compile all aspects of the geometry
+      geometry.attributes.forEach((attribute, _name) => {
+        // If we successfully update/compile the attribute, then we enable it's vertex array
+        if (this.glProxy.updateAttribute(attribute)) {
+
+        }
+      });
     });
   }
 
@@ -175,7 +181,7 @@ export class WebGLRenderer {
    * Sets the clear color to be used when the clear operation executes.
    */
   setClearColor(color: Vec4) {
-    this.state.clearColor = color;
+    this.glState.setClearColor(color);
   }
 
   /**
@@ -200,26 +206,23 @@ export class WebGLRenderer {
    * Sets the region the scissor test will accept as visible. Anything outside the region
    * will be clipped.
    */
-  setScissor(x: number, y: number, width: number, height: number) {
+  setScissor(bounds?: {x: number, y: number, width: number, height: number}) {
     const { pixelRatio } = this.state;
     const size = this.getCanvasDimensions();
     const _height = size[1];
 
-    this.gl.scissor(x * pixelRatio, (_height - y - height) * pixelRatio, width * pixelRatio, height * pixelRatio);
-  }
-
-  /**
-   * Sets the state of the scissor test.
-   */
-  setScissorTest(active: boolean) {
-    this.state.scissorTestEnabled = active;
-
-    if (active) {
-      this.gl.enable(this.gl.SCISSOR_TEST);
+    if (bounds) {
+      const { x, y, width, height } = bounds;
+      this.glState.setScissor({
+        x: x * pixelRatio,
+        y: (_height - y - height) * pixelRatio,
+        width: width * pixelRatio,
+        height: height * pixelRatio
+      });
     }
 
     else {
-      this.gl.disable(this.gl.SCISSOR_TEST);
+      this.glState.setScissor(null);
     }
   }
 

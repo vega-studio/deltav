@@ -7,7 +7,8 @@ import { Attribute } from "src/gl/attribute";
  */
 export class Geometry {
   /** The attributes bound to this geometry.  */
-  private attributes: { [key: string]: Attribute } = {};
+  private _attributes: { [key: string]: Attribute } = {};
+  get attributes() { return new Map(Object.entries(this._attributes)); }
   /** This contains any gl specific state associated with this object */
   gl = {
 
@@ -20,17 +21,17 @@ export class Geometry {
    * with the same name used within the shader program.
    */
   addAttribute(name: string, attribute: Attribute) {
-    this.attributes[name] = attribute;
+    this._attributes[name] = attribute;
   }
 
   /**
    * Removes any attributes associated with the specified identifying name.
    */
   removeAttribute(name: string) {
-    delete this.attributes[name];
+    delete this._attributes[name];
   }
 
   dispose() {
-
+    // TODO
   }
 }

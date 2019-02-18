@@ -28,7 +28,7 @@ export type MaterialUniformValue<T> =
   T extends MaterialUniformType.VEC2 ? Vec2 :
   T extends MaterialUniformType.VEC3 ? Vec3 :
   T extends MaterialUniformType.VEC4 ? Vec4 :
-  T extends MaterialUniformType.VEC4_ARRAY ? number[] :
+  T extends MaterialUniformType.VEC4_ARRAY ? Vec4[] :
   T extends MaterialUniformType.MATRIX3x3 ? Mat3 :
   T extends MaterialUniformType.MATRIX4x4 ? Mat4 :
   T extends MaterialUniformType.TEXTURE ? Texture :

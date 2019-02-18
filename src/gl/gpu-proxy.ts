@@ -9,6 +9,99 @@ import { GLContext } from "./types";
 const debug = require('debug')('performance');
 
 /**
+ * Type guard to see if a textire object's data is a buffer.
+ */
+function isDataBuffer(val: any): val is { width: number, height: number, buffer: ArrayBufferView | null } {
+  return val && val.buffer && val.buffer.byteOffset !== undefined && val.buffer.byteLength;
+}
+
+/**
+ * Tests if a value is a power of 2
+ */
+function isPowerOf2(val: number) {
+  return (val & (val - 1)) === 0;
+}
+
+/**
+ * Decodes the TexelDataType to a GL setting
+ */
+function texelFormat(gl: WebGLRenderingContext, format: GLSettings.Texture.TexelDataType) {
+  switch (format) {
+    case GLSettings.Texture.TexelDataType.Alpha: return gl.ALPHA;
+    case GLSettings.Texture.TexelDataType.DepthComponent: return gl.DEPTH_COMPONENT;
+    case GLSettings.Texture.TexelDataType.DepthStencil: return gl.DEPTH_STENCIL;
+    case GLSettings.Texture.TexelDataType.Luminance: return gl.LUMINANCE;
+    case GLSettings.Texture.TexelDataType.LuminanceAlpha: return gl.LUMINANCE_ALPHA;
+    case GLSettings.Texture.TexelDataType.RGB: return gl.RGB;
+    case GLSettings.Texture.TexelDataType.RGBA: return gl.RGBA;
+
+    default:
+      console.warn('An Unsupported texel format was provided', format);
+      return gl.RGBA;
+  }
+}
+
+/**
+ * Decodes the SourcePixelFormat to a GL setting
+ */
+function inputImageFormat(gl: WebGLRenderingContext, format: GLSettings.Texture.SourcePixelFormat) {
+  switch (format) {
+    case GLSettings.Texture.SourcePixelFormat.Byte: return gl.BYTE;
+    case GLSettings.Texture.SourcePixelFormat.Float: return gl.FLOAT;
+    case GLSettings.Texture.SourcePixelFormat.HalfFloat: console.warn('Unsupported HALF_FLOAT'); return gl.BYTE;
+    case GLSettings.Texture.SourcePixelFormat.Int: return gl.INT;
+    case GLSettings.Texture.SourcePixelFormat.Short: return gl.SHORT;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedByte: return gl.UNSIGNED_BYTE;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedInt: return gl.UNSIGNED_INT;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedShort: return gl.UNSIGNED_SHORT;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedShort_4_4_4_4: return gl.UNSIGNED_SHORT_4_4_4_4;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedShort_5_5_5_1: return gl.UNSIGNED_SHORT_5_5_5_1;
+    case GLSettings.Texture.SourcePixelFormat.UnsignedShort_5_6_5: return gl.UNSIGNED_SHORT_5_6_5;
+
+    default:
+      console.warn('An Unsupported input image format was provided', format);
+      return gl.BYTE;
+  }
+}
+
+/**
+ * Decodes TextureMagFilter to a GL setting
+ */
+function magFilter(gl: WebGLRenderingContext, filter: GLSettings.Texture.TextureMagFilter) {
+  switch (filter) {
+    case GLSettings.Texture.TextureMagFilter.Linear: return gl.LINEAR;
+    case GLSettings.Texture.TextureMagFilter.Nearest: return gl.NEAREST;
+  }
+}
+
+/**
+ * Decodes TextureMinFilter to a GL setting
+ */
+function minFilter(gl: WebGLRenderingContext, filter: GLSettings.Texture.TextureMinFilter) {
+  switch (filter) {
+    case GLSettings.Texture.TextureMinFilter.Linear: return gl.LINEAR;
+    case GLSettings.Texture.TextureMinFilter.Nearest: return gl.NEAREST;
+    case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear: return gl.LINEAR_MIPMAP_LINEAR;
+    case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest: return gl.LINEAR_MIPMAP_NEAREST;
+    case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear: return gl.NEAREST_MIPMAP_LINEAR;
+    case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest: return gl.NEAREST_MIPMAP_NEAREST;
+
+    default: return gl.LINEAR;
+  }
+}
+
+/**
+ * Decodes Wrapping to a GL setting
+ */
+function wrapMode(gl: WebGLRenderingContext, mode: GLSettings.Texture.Wrapping) {
+  switch (mode) {
+    case GLSettings.Texture.Wrapping.CLAMP_TO_EDGE: return gl.CLAMP_TO_EDGE;
+    case GLSettings.Texture.Wrapping.MIRRORED_REPEAT: return gl.MIRRORED_REPEAT;
+    case GLSettings.Texture.Wrapping.REPEAT: return gl.REPEAT;
+  }
+}
+
+/**
  * This is where all objects go to be processed and updated with webgl calls. Such as textures, geometries, etc
  */
 export class GPUProxy {
@@ -253,7 +346,19 @@ export class GPUProxy {
    * Texture object specifications.
    */
   compileTexture(texture: Texture) {
-    if (texture.gl) return;
+    if (!texture.gl) return;
+    // If the id is already established, this does noe need a compile but an update
+    if (texture.gl.textureId) return;
+
+    // The texture must have a unit established in order to be compiled
+    if (texture.gl.textureUnit < 0) {
+      console.warn('A Texture object attempted to be compiled without an established Texture Unit.', texture);
+      return;
+    }
+
+    // Set our unit to the unit allotted to the texture for this operation
+    this.state.setActiveTextureUnit(texture.gl.textureUnit);
+
     const gl = this.gl;
     const textureId = gl.createTexture();
 
@@ -263,39 +368,122 @@ export class GPUProxy {
       return;
     }
 
-    this.state.bindTexture(textureId, GLSettings.Texture.TextureBindingTarget.TEXTURE_2D);
+    // Establish the texture's generated gl context
+    texture.gl.textureId = textureId;
+    // No matter what, when compiled both data and settings should be updated immediately
+    texture.needsDataUpload = true;
+    texture.needsSettingsUpdate = true;
 
-    gl.texImage2D(gl.TEXTURE_2D, 0, );
+    // Upload the texture's data to the object
+    this.updateTextureData(texture);
+    // Make sure the settings for the texture are set correctly to match the texture object
+    this.updateTextureSettings(texture);
 
-    texture.gl = {
-      textureId,
-      textureUnit: -1
-    };
+    if (texture.generateMipmaps) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+    }
 
     return true;
   }
 
   /**
-   * Decodes the TexelDataType to a GL setting
+   * Ensures a texture object is compiled and/or updated.
    */
-  private texelFormat(format: GLSettings.Texture.TexelDataType) {
-    switch (format) {
-      case GLSettings.Texture.TexelDataType.Byte: return this.gl.BYTE;
-      case GLSettings.Texture.TexelDataType.Float: return this.gl.FLOAT;
-      case GLSettings.Texture.TexelDataType.HalfFloat: return this.gl.FL;
-      case GLSettings.Texture.TexelDataType.Int: return this.gl.BYTE;
-      case GLSettings.Texture.TexelDataType.Short: return this.gl.BYTE;
-      case GLSettings.Texture.TexelDataType.UnsignedByte: return this.gl.BYTE;
-      case GLSettings.Texture.TexelDataType.UnsignedInt: return this.gl.BYTE;
-      case GLSettings.Texture.TexelDataType.UnsignedShort: return this.gl.BYTE;
+  updateTexture(texture: Texture) {
+    if (!texture.gl || texture.gl.textureUnit < 0) {
+      console.warn('Can not update or compile a texture that does not have an established texture unit.', texture);
+      return;
+    }
+
+    this.compileTexture(texture);
+    this.updateTextureData(texture);
+    this.updateTextureSettings(texture);
+  }
+
+  /**
+   * Ensures the texture object has it's data uploaded to the GPU
+   */
+  updateTextureData(texture: Texture) {
+    // Check for upload flag
+    if (!texture.needsDataUpload) return;
+    // Check for gl context established
+    if (!texture.gl) return;
+    // This texture must have an establish texture id
+    if (!texture.gl.textureId) return;
+
+    // The texture must have a unit established in order to have it's data updated
+    if (texture.gl.textureUnit < 0) {
+      console.warn('A Texture object attempted to update it\'s data without an established Texture Unit.', texture);
+      return;
+    }
+
+    const gl = this.gl;
+
+    // Ensure we are operating on the correct active unit
+    this.state.setActiveTextureUnit(texture.gl.textureUnit);
+    // Ensure our texture is bound as the active texture unit
+    this.state.bindTexture(texture, GLSettings.Texture.TextureBindingTarget.TEXTURE_2D);
+
+    // First set the data in the texture
+    if (isDataBuffer(texture.data)) {
+      if (!isPowerOf2(texture.data.width) || !isPowerOf2(texture.data.height)) {
+        debug('Created a texture that is not using power of 2 dimensions.');
+      }
+
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        texelFormat(gl, texture.format),
+        texture.data.width,
+        texture.data.height,
+        0,
+        texelFormat(gl, texture.format),
+        inputImageFormat(gl, texture.type),
+        texture.data.buffer
+      );
+    }
+    else if (texture.data) {
+      if (!isPowerOf2(texture.data.width) || !isPowerOf2(texture.data.height)) {
+        debug('Created a texture that is not using power of 2 dimensions. %o', texture);
+      }
+
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        texelFormat(gl, texture.format),
+        texelFormat(gl, texture.format),
+        inputImageFormat(gl, texture.type),
+        texture.data
+      );
     }
   }
 
   /**
-   * Decodes the SourcePixelFormat to a GL setting
+   * Modifies all settings needing modified on the provided texture object.
    */
-  private inputImageFormat(format: GLSettings.Texture.SourcePixelFormat) {
+  updateTextureSettings(texture: Texture) {
+    // Check update flag
+    if (!texture.needsSettingsUpdate) return;
+    // Check for gl context
+    if (!texture.gl) return;
+    // This texture must have an establish texture id
+    if (!texture.gl.textureId) return;
 
+    // The texture must have a unit established in order to be compiled
+    if (texture.gl.textureUnit < 0) {
+      console.warn('A Texture object attempted to update it\'s settings without an established Texture Unit.', texture);
+      return;
+    }
+
+    const gl = this.gl;
+    this.state.setActiveTextureUnit(texture.gl.textureUnit);
+    this.state.bindTexture(texture, GLSettings.Texture.TextureBindingTarget.TEXTURE_2D);
+
+    // Set filtering and other properties to the texture
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter(gl, texture.magFilter));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter(gl, texture.minFilter));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapMode(gl, texture.wrapHorizontal));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapMode(gl, texture.wrapVertical));
   }
 
   /**

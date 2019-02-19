@@ -1,4 +1,5 @@
-import { Instance, Mat4, Vec3, Vec4 } from "src/voidgl/util";
+import { Instance } from "../../instance-provider/instance";
+import { Mat4, Vec3, Vec4 } from "../../util";
 
 export class MeshInstance extends Instance {
   position: Vec3 = [0, 0, 0];

@@ -1,16 +1,16 @@
-import * as Three from "three";
-import { WebGLRenderTarget } from "three";
+import { GLSettings, RenderTarget, SceneContainer } from "src/gl";
 import { ImageInstance } from "../base-layers/images";
 import { LabelInstance } from "../base-layers/labels";
+import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { FrameMetrics } from "../types";
 import { PickType } from "../types";
+import { FrameMetrics } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
-import { Vec2 } from "../util/vector";
+import { Vec2, Vec4 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
@@ -63,7 +63,7 @@ export interface ILayerSurfaceOptions {
   scenes: ISceneOptions[];
 }
 
-const DEFAULT_BACKGROUND_COLOR = new Three.Color(1.0, 1.0, 1.0);
+const DEFAULT_BACKGROUND_COLOR: Vec4 = [1.0, 1.0, 1.0, 1.0];
 
 function isCanvas(val: any): val is HTMLCanvasElement {
   return Boolean(val.getContext);
@@ -110,7 +110,7 @@ export class LayerSurface {
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
   /** This is the current viewport the renderer state is in */
-  currentViewport = new Map<Three.WebGLRenderer, Box>();
+  currentViewport = new Map<WebGLRenderer, Box>();
   /**
    * This is the metrics of the current running frame
    */
@@ -129,17 +129,12 @@ export class LayerSurface {
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
   private mouseManager: MouseEventManager;
-  /**
-   * This is the renderer that is meant for rendering the picking pass. We have a separate renderer so we can disable
-   * over complicated features like antialiasing which would ruin the picking pass.
-   */
-  pickingRenderer: Three.WebGLRenderer;
   /** This is a target used to perform rendering our picking pass */
-  pickingTarget: Three.WebGLRenderTarget;
+  pickingTarget: RenderTarget;
   /** This is the density the rendering renders for the surface */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the THREE render system we use to render scenes with views */
-  renderer: Three.WebGLRenderer;
+  renderer: WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
   resourceManager: AtlasResourceManager;
   /**
@@ -403,7 +398,7 @@ export class LayerSurface {
     this.mouseManager.destroy();
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
-    this.pickingRenderer.dispose();
+    this.pickingTarget.dispose();
     this.currentViewport.clear();
 
     // TODO: Instances should be implementing destroy for these clean ups.
@@ -437,7 +432,7 @@ export class LayerSurface {
         const mouse = this.updateColorPick.mouse;
         const views = this.updateColorPick.views;
 
-        // Only if the view is interacted with should we both with rendering
+        // Only if the view is interacted with should we bother with rendering
         if (views.indexOf(view) > -1) {
           // Picking uses a pixel ratio of 1
           view.pixelRatio = 1.0;
@@ -482,7 +477,7 @@ export class LayerSurface {
           this.drawSceneView(
             scene.pickingContainer,
             view,
-            this.pickingRenderer,
+            this.renderer,
             this.pickingTarget
           );
 
@@ -495,8 +490,7 @@ export class LayerSurface {
           // Read the pixels out
           // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
           // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-          this.pickingRenderer.readRenderTargetPixels(
-            this.pickingTarget,
+          this.renderer.readPixels(
             mouse[0] - view.screenBounds.x - pickWidth / 2,
             view.screenBounds.height -
               (mouse[1] - view.screenBounds.y) -
@@ -596,10 +590,10 @@ export class LayerSurface {
    * This finalizes everything and sets up viewports and clears colors and performs the actual render step
    */
   private drawSceneView(
-    scene: Three.Scene,
+    scene: SceneContainer,
     view: View,
-    renderer?: Three.WebGLRenderer,
-    target?: Three.WebGLRenderTarget
+    renderer?: WebGLRenderer,
+    target?: RenderTarget
   ) {
     renderer = renderer || this.renderer;
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
@@ -615,24 +609,23 @@ export class LayerSurface {
     // We simply size the target to the view size and render. Thus scissoring is not required
     if (!target) {
       // Set the scissor rectangle.
-      renderer.setScissorTest(true);
-      renderer.setScissor(
-        offset.x / pixelRatio,
-        offset.y / pixelRatio,
-        size.width / pixelRatio,
-        size.height / pixelRatio
-      );
+      renderer.setScissor({
+        x: offset.x / pixelRatio,
+        y: offset.y / pixelRatio,
+        width: size.width / pixelRatio,
+        height: size.height / pixelRatio
+      });
 
       // If a background is established, we should clear the background color
       // Specified for this context
       if (view.background) {
         // Clear the rect of color and depth so the region is totally it's own
-        context.clearColor(
+        renderer.clearColor([
           background[0],
           background[1],
           background[2],
           background[3]
-        );
+        ]);
       }
     }
 
@@ -650,20 +643,18 @@ export class LayerSurface {
           view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
           view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
         );
-      } else {
-        renderer
-          .getContext()
-          .clear(
-            (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
-              ? context.COLOR_BUFFER_BIT
+      } else if (context) {
+        context.clear(
+          (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
+            ? context.COLOR_BUFFER_BIT
+            : 0x0) |
+            (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
+              ? context.DEPTH_BUFFER_BIT
               : 0x0) |
-              (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
-                ? context.DEPTH_BUFFER_BIT
-                : 0x0) |
-              (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-                ? context.STENCIL_BUFFER_BIT
-                : 0x0)
-          );
+            (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+              ? context.STENCIL_BUFFER_BIT
+              : 0x0)
+        );
       }
     } else {
       // Default clearing is depth and color
@@ -675,7 +666,7 @@ export class LayerSurface {
         target.setSize(size.width, size.height);
         renderer.setRenderTarget(target);
         renderer.clear(true, true);
-      } else {
+      } else if (context) {
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
       }
     }
@@ -689,7 +680,7 @@ export class LayerSurface {
     );
 
     // Render the scene with the provided view metrics
-    renderer.render(scene, view.viewCamera.baseCamera, target);
+    renderer.render(scene, target);
   }
 
   /**
@@ -822,7 +813,7 @@ export class LayerSurface {
     const height = canvas.height;
 
     // Generate the renderer along with it's properties
-    this.renderer = new Three.WebGLRenderer({
+    this.renderer = new WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
@@ -835,24 +826,14 @@ export class LayerSurface {
       preserveDrawingBuffer: true
     });
 
-    // Generate a renderer for the picking pass
-    this.pickingRenderer = new Three.WebGLRenderer({
-      // Context supports rendering to an alpha canvas only if the background color has a transparent
-      // Alpha value.
-      alpha: false,
-      // Picking shall not
-      antialias: false,
-      // Do not need this for picking
-      preserveDrawingBuffer: true
+    // Generate a target for the picking pass
+    this.pickingTarget = new RenderTarget({
+      buffers: {
+        color: GLSettings.RenderTarget.ColorBufferFormat.RGBA4
+      },
+      width: width * this.pixelRatio,
+      height: height * this.pixelRatio,
     });
-
-    // NOTE: Uncomment this plus remove this.pickingTarget from the drawSceneView of the color picking pass
-    // to view the colors rendered to the color picking buffer. This disables the interactions but helps
-    // debug what's going on with shaders etc
-    // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
-
-    // We want clearing to be controlled via the layer
-    this.renderer.autoClear = false;
 
     // This sets the pixel ratio to handle differing pixel densities in screens
     this.setRendererSize(width, height);
@@ -862,30 +843,19 @@ export class LayerSurface {
     // Applies the background color and establishes whether or not the context supports
     // Alpha or not
     if (options.background) {
-      this.renderer.setClearColor(
-        new Three.Color(
-          options.background[0],
-          options.background[1],
-          options.background[2]
-        ),
+      this.renderer.setClearColor([
+        options.background[0],
+        options.background[1],
+        options.background[2],
         options.background[3]
-      );
+      ]);
     } else {
       // If a background color was not established, then we set a default background color
       this.renderer.setClearColor(DEFAULT_BACKGROUND_COLOR);
     }
 
-    // We want clearing to be controlled via the layer
-    this.pickingRenderer.autoClear = false;
-    // Picking does not need retina style precision
-    this.pickingRenderer.setPixelRatio(1.0);
-    // Applies the background color and establishes whether or not the context supports
-    // Alpha or not
-    this.pickingRenderer.setClearColor(new Three.Color(0, 0, 0), 1);
-
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
-
     // Turn on the scissor test to keep the rendering clipped within the
     // Render region of the context
     this.context.enable(this.context.SCISSOR_TEST);
@@ -1217,7 +1187,6 @@ export class LayerSurface {
     );
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
-    this.pickingRenderer.setPixelRatio(1.0);
     this.mouseManager.resize();
     this.gatherViewDrawDependencies();
   }
@@ -1263,16 +1232,6 @@ export class LayerSurface {
     height = height || 100;
 
     this.renderer.setSize(width, height);
-    this.pickingRenderer.setSize(width, height);
-
-    if (!this.pickingTarget) {
-      this.pickingTarget = new WebGLRenderTarget(width, height, {
-        magFilter: Three.LinearFilter,
-        minFilter: Three.LinearFilter,
-        stencilBuffer: false
-      });
-    }
-
     this.pickingTarget.setSize(width, height);
   }
 

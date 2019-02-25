@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
 import {

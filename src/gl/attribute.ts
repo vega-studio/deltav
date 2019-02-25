@@ -14,8 +14,12 @@ export class Attribute {
    * break everything.
    */
   gl?: {
+    /** Stores the buffer id for the attribute */
     bufferId: WebGLBuffer;
+    /** Stores the buffer type (typically gl.ARRAY_BUFFER) */
     type: number;
+    /** Stores the locations of each attribute discovered for each program identified */
+    locations?: Map<WebGLProgram, number>;
   };
   /**
    * The optimization state for frequently changing buffers. See:
@@ -23,12 +27,14 @@ export class Attribute {
    */
   get isDynamic() { return this._isDynamic; }
   private _isDynamic: boolean;
-  /** This flags the attribute as needing to commit updates to it's buffer */
-  get needsUpdate() { return this._needsUpdate; }
-  private _needsUpdate: boolean;
   /** Indicates a full update of the buffer will happen. This is managed internally to determine when needed */
   get fullUpdate() { return this._fullUpdate; }
   private _fullUpdate: boolean = false;
+  /** Indicates if the data should be normalized when provided to the shader. */
+  normalize: boolean = false;
+  /** This flags the attribute as needing to commit updates to it's buffer */
+  get needsUpdate() { return this._needsUpdate; }
+  private _needsUpdate: boolean;
   /**
    * The packing size of the vertex attribute (how many floats per attribute). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray

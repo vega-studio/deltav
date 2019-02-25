@@ -1,4 +1,4 @@
-import * as Three from "three";
+import { SceneContainer } from "../gl/scene-container";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -32,10 +32,7 @@ export class Scene extends IdentifyByKey {
   static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
-  container: Three.Scene | undefined = new Three.Scene();
-  // TODO: This 'could' be smarter when Three is gone. The pipeline could IMMEDIATELY render
-  /** We make a picking container specifically for the cases where objects must be rendered for picking */
-  pickingContainer: Three.Scene = new Three.Scene();
+  container: SceneContainer | undefined = new SceneContainer();
   /** This is all of the layers tracked to the scene */
   layers: Layer<any, any>[] = [];
   /** This indicates the sort is dirty for a set of layers */
@@ -45,11 +42,6 @@ export class Scene extends IdentifyByKey {
 
   constructor(options: ISceneOptions) {
     super(options);
-
-    if (this.container) {
-      this.container.frustumCulled = false;
-      this.container.autoUpdate = false;
-    }
   }
 
   /**

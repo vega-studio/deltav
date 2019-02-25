@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { IMaterialOptions } from "../types";
 
 export class CommonMaterialOptions {

@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../../util/identify-by-key";
 import { AtlasManager, AtlasResource } from "./atlas-manager";
 import { PackNode } from "./pack-node";

@@ -1,95 +1,18 @@
-import { GPUProxy } from "src/gl/gpu-proxy";
-import { Texture } from "src/gl/texture";
-import { GLContext, IMaterialUniform, MaterialUniformType, MaterialUniformValue } from "src/gl/types";
+import { indexToTextureUnit, textureUnitToIndex } from "src/gl/gl-decode";
+import { RenderTarget } from "src/gl/render-target";
 import { TypeVec } from "src/types";
 import { compare4, copy4, Vec4 } from "src/util";
-import { debug } from "util";
+import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
+import { Texture } from "./texture";
+import {
+  IMaterialUniform,
+  MaterialUniformType,
+  MaterialUniformValue
+} from "./types";
 
-/**
- * Maps an index to a texture units Enum key to use on a WebGLRenderingContext object
- */
-function indexToTextureUnit(index: number): keyof WebGLRenderingContext {
-  switch (index) {
-    case 0: return 'TEXTURE0';
-    case 1: return 'TEXTURE1';
-    case 2: return 'TEXTURE2';
-    case 3: return 'TEXTURE3';
-    case 4: return 'TEXTURE4';
-    case 5: return 'TEXTURE5';
-    case 6: return 'TEXTURE6';
-    case 7: return 'TEXTURE7';
-    case 8: return 'TEXTURE8';
-    case 9: return 'TEXTURE9';
-    case 10: return 'TEXTURE10';
-    case 11: return 'TEXTURE11';
-    case 12: return 'TEXTURE12';
-    case 13: return 'TEXTURE13';
-    case 14: return 'TEXTURE14';
-    case 15: return 'TEXTURE15';
-    case 16: return 'TEXTURE16';
-    case 17: return 'TEXTURE17';
-    case 18: return 'TEXTURE18';
-    case 19: return 'TEXTURE19';
-    case 20: return 'TEXTURE20';
-    case 21: return 'TEXTURE21';
-    case 22: return 'TEXTURE22';
-    case 23: return 'TEXTURE23';
-    case 24: return 'TEXTURE24';
-    case 25: return 'TEXTURE25';
-    case 26: return 'TEXTURE26';
-    case 27: return 'TEXTURE27';
-    case 28: return 'TEXTURE28';
-    case 29: return 'TEXTURE29';
-    case 30: return 'TEXTURE30';
-    case 31: return 'TEXTURE31';
-
-    default: return 'TEXTURE0';
-  }
-}
-
-/**
- * Maps a texture unit to an index that can be used for a uniform.
- */
-function textureUnitToIndex(gl: GLContext, unit: number) {
-  switch (unit) {
-    case gl.TEXTURE0: return 0;
-    case gl.TEXTURE1: return 1;
-    case gl.TEXTURE2: return 2;
-    case gl.TEXTURE3: return 3;
-    case gl.TEXTURE4: return 4;
-    case gl.TEXTURE5: return 5;
-    case gl.TEXTURE6: return 6;
-    case gl.TEXTURE7: return 7;
-    case gl.TEXTURE8: return 8;
-    case gl.TEXTURE9: return 9;
-    case gl.TEXTURE10: return 10;
-    case gl.TEXTURE11: return 11;
-    case gl.TEXTURE12: return 12;
-    case gl.TEXTURE13: return 13;
-    case gl.TEXTURE14: return 14;
-    case gl.TEXTURE15: return 15;
-    case gl.TEXTURE16: return 16;
-    case gl.TEXTURE17: return 17;
-    case gl.TEXTURE18: return 18;
-    case gl.TEXTURE19: return 19;
-    case gl.TEXTURE20: return 20;
-    case gl.TEXTURE21: return 21;
-    case gl.TEXTURE22: return 22;
-    case gl.TEXTURE23: return 23;
-    case gl.TEXTURE24: return 24;
-    case gl.TEXTURE25: return 25;
-    case gl.TEXTURE26: return 26;
-    case gl.TEXTURE27: return 27;
-    case gl.TEXTURE28: return 28;
-    case gl.TEXTURE29: return 29;
-    case gl.TEXTURE30: return 30;
-    case gl.TEXTURE31: return 31;
-
-    default: return 0;
-  }
-}
+const debug = require("debug")("performance");
 
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
@@ -102,66 +25,98 @@ export class GLState {
   /** Stores the gl context this is watching the state over */
   private gl: WebGLRenderingContext;
   /** This is a proxy to execute commands that do not change global gl state */
-  private glProxy: GPUProxy;
+  private glProxy: GLProxy;
   /** Lookup a texture unit to it's current assigned texture. */
   private _textureUnitToTexture = new Map<number, Texture | null>();
   /** This holds which texture units are free for use and have no Texture assigned to them */
   private _freeUnits: number[] = [];
 
   /** Indicates if blending is enabled */
-  get blendingEnabled() { return this._blendingEnabled; }
+  get blendingEnabled() {
+    return this._blendingEnabled;
+  }
   private _blendingEnabled = true;
 
   /** The current destination factor used in the blending equation */
-  get blendDstFactor() { return this._blendDstFactor; }
+  get blendDstFactor() {
+    return this._blendDstFactor;
+  }
   private _blendDstFactor = GLSettings.Material.BlendingDstFactor.One;
 
   /** The current destination factor used in the blending equation */
-  get blendSrcFactor() { return this._blendSrcFactor; }
-  private _blendSrcFactor: GLSettings.Material.BlendingSrcFactor | GLSettings.Material.BlendingDstFactor = GLSettings.Material.BlendingDstFactor.One;
+  get blendSrcFactor() {
+    return this._blendSrcFactor;
+  }
+  private _blendSrcFactor:
+    | GLSettings.Material.BlendingSrcFactor
+    | GLSettings.Material.BlendingDstFactor = GLSettings.Material
+    .BlendingDstFactor.One;
 
   /** The current equation used in the blend mode */
-  get blendEquation() { return this._blendEquation; }
+  get blendEquation() {
+    return this._blendEquation;
+  }
   private _blendEquation = GLSettings.Material.BlendingEquations.Add;
 
   /** Indicates which faces will be culled */
-  get cullFace() { return this._cullFace; }
-  private _cullFace: GLSettings.Material.CullSide = GLSettings.Material.CullSide.NONE;
+  get cullFace() {
+    return this._cullFace;
+  }
+  private _cullFace: GLSettings.Material.CullSide = GLSettings.Material.CullSide
+    .NONE;
 
   /** The channels in the color buffer a fragment is allowed to write to */
-  get colorMask() { return this._colorMask; }
+  get colorMask() {
+    return this._colorMask;
+  }
   private _colorMask: TypeVec<boolean> = [true, true, true, true];
 
   /** The current color the context will clear when clear with the color buffer bit is called */
-  get clearColor() { return this._clearColor; }
+  get clearColor() {
+    return this._clearColor;
+  }
   private _clearColor: Vec4 = [0.0, 0.0, 0.0, 1.0];
 
   /** Comparator used when testing a fragment against the depth buffer */
-  get depthFunc() { return this._depthFunc; }
+  get depthFunc() {
+    return this._depthFunc;
+  }
   private _depthFunc = GLSettings.Material.DepthFunctions.ALWAYS;
 
   /** Indicates if fragments are tested against the depth buffer or not */
-  get depthTestEnabled() { return this._depthTestEnabled; }
+  get depthTestEnabled() {
+    return this._depthTestEnabled;
+  }
   private _depthTestEnabled = true;
 
   /** Indicates if the fragment will write to the depth buffer or not */
-  get depthMask() { return this._depthMask; }
+  get depthMask() {
+    return this._depthMask;
+  }
   private _depthMask = true;
 
   /** Indicates if dithering is enabled */
-  get ditheringEnabled() { return this._ditheringEnabled; }
+  get ditheringEnabled() {
+    return this._ditheringEnabled;
+  }
   private _ditheringEnabled = true;
 
   /** The currently bound frame buffer object. null if nothing bound. */
-  get boundFBO() { return this._boundFBO; }
+  get boundFBO() {
+    return this._boundFBO;
+  }
   private _boundFBO: WebGLFramebuffer | null = null;
 
   /** The currently bound render buffer object. null if nothing bound. */
-  get boundRBO() { return this._boundRBO; }
+  get boundRBO() {
+    return this._boundRBO;
+  }
   private _boundRBO: WebGLRenderbuffer | null = null;
 
   /** The current id of the current bound vbo. If null, nothing is bound */
-  get boundVBO() { return this._boundVBO; }
+  get boundVBO() {
+    return this._boundVBO;
+  }
   private _boundVBO: WebGLBuffer | null = null;
 
   /**
@@ -169,38 +124,64 @@ export class GLState {
    * the texture unit to which it was bound. The unit and the texture object must match for
    * a binding call to be skipped.
    */
-  get boundTexture() { return this._boundTexture; }
-  private _boundTexture: { id: WebGLTexture | null, unit: number } = {
+  get boundTexture() {
+    return this._boundTexture;
+  }
+  private _boundTexture: { id: WebGLTexture | null; unit: number } = {
     id: null,
-    unit: -1,
+    unit: -1
   };
 
   /** The current program in use */
-  get currentProgram() { return this._currentProgram; }
+  get currentProgram() {
+    return this._currentProgram;
+  }
   private _currentProgram: WebGLProgram | null = null;
 
   /** Indicates if the scissor test is enabled in the context */
-  get scissorTestEnabled() { return this._scissorTestEnabled; }
+  get scissorTestEnabled() {
+    return this._scissorTestEnabled;
+  }
   private _scissorTestEnabled: boolean = false;
 
   /** The current bounds of the scissor test */
-  get scissorBounds() { return this._scissorBounds; }
-  private _scissorBounds = {x: 0, y: 0, width: 1, height: 1};
+  get scissorBounds() {
+    return this._scissorBounds;
+  }
+  private _scissorBounds = { x: 0, y: 0, width: 1, height: 1 };
 
   /** These are the current uniforms uploaded to the GPU */
-  get currentUniforms() { return this._currentUniforms; }
-  private _currentUniforms: { [name: string]: IMaterialUniform<MaterialUniformType> };
+  get currentUniforms() {
+    return this._currentUniforms;
+  }
+  private _currentUniforms: {
+    [name: string]: IMaterialUniform<MaterialUniformType>;
+  };
 
   /** This is the texture unit currently active */
-  get activeTextureUnit() { return this._activeTextureUnit; }
+  get activeTextureUnit() {
+    return this._activeTextureUnit;
+  }
   private _activeTextureUnit: number = -1;
 
   /**
    * This contains all of the textures that are are needing to be utilized for next draw.
-   * This also tracks which uniforms are requiring the use of the texture.
+   * Textures are used by either uniforms or by RenderTargets in a single draw call. Thus
+   * we track the uniforms or the render targets awaiting use of the texture.
    */
-  get textureWillBeUsed() { return this._textureWillBeUsed; }
-  private _textureWillBeUsed = new Map<Texture, Set<WebGLUniformLocation>>();
+  get textureWillBeUsed() {
+    return this._textureWillBeUsed;
+  }
+  private _textureWillBeUsed = new Map<
+    Texture,
+    Set<WebGLUniformLocation> | RenderTarget
+  >();
+
+  /** The current viewport gl is using */
+  get viewport() {
+    return this._viewport;
+  }
+  private _viewport = { x: 0, y: 0, width: 100, height: 100 };
 
   /**
    * Generate a new state manager and establish some initial state settings by querying the context.
@@ -208,10 +189,12 @@ export class GLState {
   constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     // Retrieve how many units are allowed at the same time to be assiged so we can initialize our free units array
-    const totalUnits = this.gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+    const totalUnits = this.gl.getParameter(
+      gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS
+    );
 
     for (let i = 0; i < totalUnits; ++i) {
-      this._freeUnits.push(gl[indexToTextureUnit(i)] as number);
+      this._freeUnits.push(indexToTextureUnit(gl, i));
     }
 
     // Initialize state to valid value
@@ -241,7 +224,7 @@ export class GLState {
   /**
    * Sets the provided buffer identifier as the current bound item
    */
-  bindFBO(id: WebGLFramebuffer) {
+  bindFBO(id: WebGLFramebuffer | null) {
     if (this._boundFBO !== id) {
       this._boundFBO = id;
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, id);
@@ -252,13 +235,20 @@ export class GLState {
    * Sets the provided buffer identifier as the current bound item. This automatically
    * updates all stateful information to track that a texture is now utilizing a texture unit.
    */
-  bindTexture(texture: Texture, target: GLSettings.Texture.TextureBindingTarget) {
+  bindTexture(
+    texture: Texture,
+    target: GLSettings.Texture.TextureBindingTarget
+  ) {
     if (!texture.gl || !texture.gl.textureId) return;
 
-    if (!texture || this._boundTexture.id !== texture || this._boundTexture.unit !== this._activeTextureUnit) {
+    if (
+      !texture ||
+      this._boundTexture.id !== texture ||
+      this._boundTexture.unit !== this._activeTextureUnit
+    ) {
       this._boundTexture = {
         id: texture.gl.textureId,
-        unit: this._activeTextureUnit,
+        unit: this._activeTextureUnit
       };
 
       switch (target) {
@@ -286,6 +276,18 @@ export class GLState {
   }
 
   /**
+   * This takes a texture and flags it's texture unit as freed if the texture has a used unit
+   */
+  freeTextureUnit(texture: Texture) {
+    if (texture.gl) {
+      if (texture.gl.textureUnit > -1) {
+        this._freeUnits.unshift(texture.gl.textureUnit);
+        texture.gl.textureUnit = -1;
+      }
+    }
+  }
+
+  /**
    * Changes the active texture unit to the provided unit.
    */
   setActiveTextureUnit(unit: number) {
@@ -309,14 +311,16 @@ export class GLState {
    * Sets the GPU proxy to be used to handle commands that call to the GPU but don't alter
    * global GL state.
    */
-  setProxy(proxy: GPUProxy) {
+  setProxy(proxy: GLProxy) {
     this.glProxy = proxy;
   }
 
   /**
    * Enables or disables the scissor test
    */
-  setScissor(bounds: {x: number, y: number, width: number, height: number} | null) {
+  setScissor(
+    bounds: { x: number; y: number; width: number; height: number } | null
+  ) {
     if (bounds) {
       if (!this._scissorTestEnabled) {
         this._scissorTestEnabled = true;
@@ -332,9 +336,7 @@ export class GLState {
         this._scissorBounds = bounds;
         this.applyScissorBounds();
       }
-    }
-
-    else {
+    } else {
       if (this._scissorTestEnabled) {
         this._scissorTestEnabled = false;
         this.gl.disable(this.gl.SCISSOR_TEST);
@@ -343,10 +345,34 @@ export class GLState {
   }
 
   /**
+   * Applies a viewport to the given state
+   */
+  setViewport(x: number, y: number, width: number, height: number) {
+    if (
+      x !== this._viewport.x ||
+      y !== this._viewport.y ||
+      width !== this._viewport.width ||
+      height !== this._viewport.height
+    ) {
+      this._viewport = { x, y, width, height };
+      this.applyViewport();
+    }
+  }
+
+  /**
    * Sets all current gl state to match the materials settings.
    */
   useMaterial(material: Material) {
-    if (!material.gl) return false;
+    // Make sure the material is compiled
+    if (!material.gl) {
+      if (!this.glProxy.compileMaterial(material)) {
+        return false;
+      }
+
+      if (!material.gl) {
+        return false;
+      }
+    }
 
     // Use the material's program
     if (this._currentProgram !== material.gl.programId) {
@@ -356,6 +382,23 @@ export class GLState {
 
     // Synchronize the material's settings to the gl state
     this.syncMaterial(material);
+
+    return true;
+  }
+
+  /**
+   * Sets all current gl state to match the render target specified
+   */
+  useRenderTarget(target: RenderTarget | null) {
+    if (!target) {
+      this.bindFBO(null);
+      return true;
+    }
+
+    // The gl context must be specified for the target in order to use it
+    if (!target.gl) return false;
+    // Bind the FBO of the target as the current item we are rendering into
+    this.bindFBO(target.gl.fboId);
 
     return true;
   }
@@ -375,7 +418,9 @@ export class GLState {
 
     if (this._depthTestEnabled !== material.depthTest) {
       this._depthTestEnabled = material.depthTest;
-      this._depthTestEnabled ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
+      this._depthTestEnabled
+        ? gl.enable(gl.DEPTH_TEST)
+        : gl.disable(gl.DEPTH_TEST);
     }
 
     if (this._depthFunc !== material.depthFunc) {
@@ -394,14 +439,15 @@ export class GLState {
         this._blendSrcFactor !== material.blending.blendSrc ||
         this._blendEquation !== material.blending.blendEquation
       ) {
-        this._blendDstFactor = material.blending.blendDst || this._blendDstFactor;
-        this._blendSrcFactor = material.blending.blendSrc || this._blendSrcFactor;
-        this._blendEquation = material.blending.blendEquation || this._blendEquation;
+        this._blendDstFactor =
+          material.blending.blendDst || this._blendDstFactor;
+        this._blendSrcFactor =
+          material.blending.blendSrc || this._blendSrcFactor;
+        this._blendEquation =
+          material.blending.blendEquation || this._blendEquation;
         this.applyBlendFactors();
       }
-    }
-
-    else {
+    } else {
       if (this._blendingEnabled) {
         gl.disable(gl.BLEND);
       }
@@ -442,10 +488,15 @@ export class GLState {
         // If no settings for the given program are present, then we must
         // query the program for the uniform's locations and what not.
         if (!glSettings) {
-          const location = this.gl.getUniformLocation(this._currentProgram, name);
+          const location = this.gl.getUniformLocation(
+            this._currentProgram,
+            name
+          );
 
           if (!location) {
-            console.warn(`A Material specified a uniform ${name}, but none was found in the current program.`);
+            console.warn(
+              `A Material specified a uniform ${name}, but none was found in the current program.`
+            );
             return;
           }
 
@@ -469,7 +520,10 @@ export class GLState {
   /**
    * Performs the upload operation of a uniform to the GL context
    */
-  private uploadUniform(location: WebGLUniformLocation, uniform: IMaterialUniform<MaterialUniformType>) {
+  private uploadUniform(
+    location: WebGLUniformLocation,
+    uniform: IMaterialUniform<MaterialUniformType>
+  ) {
     let v;
 
     switch (uniform.type) {
@@ -494,17 +548,23 @@ export class GLState {
         break;
 
       case MaterialUniformType.VEC4_ARRAY:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.VEC4_ARRAY>;
+        v = uniform.value as MaterialUniformValue<
+          MaterialUniformType.VEC4_ARRAY
+        >;
         this.gl.uniform4fv(location, [].concat.apply([], v));
         break;
 
       case MaterialUniformType.MATRIX3x3:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX3x3>;
+        v = uniform.value as MaterialUniformValue<
+          MaterialUniformType.MATRIX3x3
+        >;
         this.gl.uniformMatrix3fv(location, false, v);
         break;
 
       case MaterialUniformType.MATRIX4x4:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX4x4>;
+        v = uniform.value as MaterialUniformValue<
+          MaterialUniformType.MATRIX4x4
+        >;
         this.gl.uniformMatrix4fv(location, false, v);
         break;
 
@@ -514,7 +574,10 @@ export class GLState {
         break;
 
       default:
-        console.warn('A uniform specified an unrecognized type. It will not sync with the GPU:', uniform);
+        console.warn(
+          "A uniform specified an unrecognized type. It will not sync with the GPU:",
+          uniform
+        );
     }
   }
 
@@ -526,7 +589,9 @@ export class GLState {
    */
   applyUsedTextures() {
     // Assign texture units to the textures that will be used
-    const failedTextures = this.assignTextureUnits(Array.from(this._textureWillBeUsed.keys()));
+    const failedTextures = this.assignTextureUnits(
+      Array.from(this._textureWillBeUsed.keys())
+    );
 
     // We apply the default unit to each texture that failed. Output will be made from the
     // previous method, so at this point, let's just try to make lemonade out of lemons (set
@@ -534,19 +599,34 @@ export class GLState {
     failedTextures.forEach(texture => {
       if (texture.gl) {
         texture.gl.textureUnit = this.gl.TEXTURE0;
-      }
-
-      else {
+      } else {
         texture.gl = {
           textureId: null,
           textureUnit: this.gl.TEXTURE0,
+          proxy: this.glProxy
         };
       }
     });
 
+    // Let's sort out which textures are affiliated with a RenderTarget or with a uniform set.
+    const textureToUniforms = new Map<Texture, Set<WebGLUniformLocation>>();
+    const renderTargets = new Set<RenderTarget>();
+
+    this._textureWillBeUsed.forEach((targets, texture) => {
+      if (targets instanceof RenderTarget) {
+        renderTargets.add(targets);
+      } else {
+        textureToUniforms.set(texture, targets);
+      }
+    });
+
+    // Now our list of render targets is guaranteed to have their textures properly compiled,
+    // so we can now officially ensure the render target is compiled.
+    renderTargets.forEach(target => this.glProxy.compileRenderTarget(target));
+
     // Now that all of our textures have units, we loop through each texture and have them
     // compiled and/or updated then upload the unit to the appropriate uniforms indicated.
-    this._textureWillBeUsed.forEach((uniforms, texture) => {
+    textureToUniforms.forEach((uniforms, texture) => {
       // Only compile and process successful texture units
       if (failedTextures.indexOf(texture) < 0) {
         this.glProxy.updateTexture(texture);
@@ -580,9 +660,7 @@ export class GLState {
     textures.forEach(texture => {
       if (!texture.gl || texture.gl.textureUnit < 0) {
         needsUnit.push(texture);
-      }
-
-      else {
+      } else {
         hasUnit.push(texture);
       }
     });
@@ -603,10 +681,9 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit,
+          proxy: this.glProxy
         };
-      }
-
-      else {
+      } else {
         texture.gl.textureUnit = freeUnit;
       }
 
@@ -622,7 +699,9 @@ export class GLState {
     // of a texture using a unit but is NOT going to be used for the next call.
     // If there are no units available in this manner, then we are officially using too many
     // textures for the next draw call.
-    debug('WARNING: Too many textures in use are causing texture units to be swapped. Doing this occasionally is fine, but handling this on a frame loop can have serious performance concerns.');
+    debug(
+      "WARNING: Too many textures in use are causing texture units to be swapped. Doing this occasionally is fine, but handling this on a frame loop can have serious performance concerns."
+    );
 
     // Get a list of texture units in use but are not required for next draw call
     const inUse = new Map<Texture, boolean>();
@@ -645,7 +724,10 @@ export class GLState {
 
     // We should now have all textures able to give up their unit for the next draw call
     if (canGiveUpUnit.length === 0) {
-      console.warn('There are too many textures being used for a single draw call. These textures will not be utilized on the GPU', needsUnit);
+      console.warn(
+        "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
+        needsUnit
+      );
       return needsUnit;
     }
 
@@ -655,7 +737,11 @@ export class GLState {
 
       const freeUnit = canGiveUpUnit.shift();
 
-      if (freeUnit === undefined || !freeUnit.gl || freeUnit.gl.textureUnit < 0) {
+      if (
+        freeUnit === undefined ||
+        !freeUnit.gl ||
+        freeUnit.gl.textureUnit < 0
+      ) {
         needsUnit.unshift(texture);
         continue;
       }
@@ -664,10 +750,9 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit.gl.textureUnit,
+          proxy: this.glProxy
         };
-      }
-
-      else {
+      } else {
         texture.gl.textureUnit = freeUnit.gl.textureUnit;
       }
 
@@ -676,7 +761,10 @@ export class GLState {
 
     // If by some voodoo we still have not provided a unit for a texture needing it, then we have a problem
     if (needsUnit.length > 0) {
-      console.warn('There are too many textures being used for a single draw call. These textures will not be utilized on the GPU', needsUnit);
+      console.warn(
+        "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
+        needsUnit
+      );
     }
 
     return needsUnit;
@@ -685,28 +773,54 @@ export class GLState {
   /**
    * Applies the necessary value for a texture to be applied to a sampler uniform.
    */
-  private uploadTextureToUniform(location: WebGLUniformLocation, texture: Texture) {
+  private uploadTextureToUniform(
+    location: WebGLUniformLocation,
+    texture: Texture
+  ) {
     if (texture.gl && texture.gl.textureUnit >= 0) {
-      this.gl.uniform1i(location, textureUnitToIndex(this.gl, texture.gl.textureUnit));
-    }
-
-    else {
-      console.warn('Attempted to set a Texture Object to a uniform, but the Texture object did not have a valid texture unit.', texture);
+      this.gl.uniform1i(
+        location,
+        textureUnitToIndex(this.gl, texture.gl.textureUnit)
+      );
+    } else {
+      console.warn(
+        "Attempted to set a Texture Object to a uniform, but the Texture object did not have a valid texture unit.",
+        texture
+      );
     }
   }
 
   /**
    * This flags a texture as going to be used within the next upcoming draw call
    */
-  private willUseTextureUnit(texture: Texture, location: WebGLUniformLocation) {
+  willUseTextureUnit(
+    texture: Texture,
+    target: WebGLUniformLocation | RenderTarget
+  ) {
     const uniforms = this._textureWillBeUsed.get(texture);
 
-    if (!uniforms) {
-      this._textureWillBeUsed.set(texture, new Set([location]));
-    }
-
-    else {
-      uniforms.add(location);
+    if (target instanceof RenderTarget) {
+      if (!uniforms) {
+        this._textureWillBeUsed.set(texture, target);
+      } else if (uniforms instanceof RenderTarget) {
+        if (uniforms !== target) {
+          console.warn(
+            "A Texture is attempting to be used by two different render targets in a single draw."
+          );
+        }
+      }
+    } else {
+      if (!uniforms) {
+        this._textureWillBeUsed.set(texture, new Set([target]));
+      } else {
+        if (uniforms instanceof RenderTarget) {
+          console.warn(
+            "A texture in a single draw is attempting to attach to a uniform AND a render target which is invalid."
+          );
+        } else {
+          uniforms.add(target);
+        }
+      }
     }
   }
 
@@ -719,8 +833,12 @@ export class GLState {
 
     this._blendingEnabled ? gl.enable(gl.BLEND) : gl.disable(gl.BLEND);
     this._ditheringEnabled ? gl.enable(gl.DITHER) : gl.disable(gl.DITHER);
-    this._depthTestEnabled ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
-    this._scissorTestEnabled ? gl.enable(gl.SCISSOR_TEST) : gl.disable(gl.SCISSOR_TEST);
+    this._depthTestEnabled
+      ? gl.enable(gl.DEPTH_TEST)
+      : gl.disable(gl.DEPTH_TEST);
+    this._scissorTestEnabled
+      ? gl.enable(gl.SCISSOR_TEST)
+      : gl.disable(gl.SCISSOR_TEST);
     this.setActiveTextureUnit(this._activeTextureUnit);
     this.applyClearColor();
     this.applyCullFace();
@@ -729,6 +847,7 @@ export class GLState {
     this.applyColorMask();
     this.applyDepthFunc();
     this.applyScissorBounds();
+    this.applyViewport();
     gl.depthMask(this._depthMask);
   }
 
@@ -742,7 +861,7 @@ export class GLState {
       this._clearColor[0],
       this._clearColor[1],
       this._clearColor[2],
-      this._clearColor[3],
+      this._clearColor[3]
     );
   }
 
@@ -753,14 +872,30 @@ export class GLState {
     const gl = this.gl;
 
     switch (this._depthFunc) {
-      case GLSettings.Material.DepthFunctions.ALWAYS: gl.depthFunc(gl.ALWAYS); break;
-      case GLSettings.Material.DepthFunctions.EQUAL: gl.depthFunc(gl.EQUAL); break;
-      case GLSettings.Material.DepthFunctions.GREATER: gl.depthFunc(gl.GREATER); break;
-      case GLSettings.Material.DepthFunctions.GREATER_OR_EQUAL: gl.depthFunc(gl.GEQUAL); break;
-      case GLSettings.Material.DepthFunctions.LESS: gl.depthFunc(gl.LESS); break;
-      case GLSettings.Material.DepthFunctions.LESS_OR_EQUAL: gl.depthFunc(gl.LEQUAL); break;
-      case GLSettings.Material.DepthFunctions.NEVER: gl.depthFunc(gl.NEVER); break;
-      case GLSettings.Material.DepthFunctions.NOTEQUAL: gl.depthFunc(gl.NOTEQUAL); break;
+      case GLSettings.Material.DepthFunctions.ALWAYS:
+        gl.depthFunc(gl.ALWAYS);
+        break;
+      case GLSettings.Material.DepthFunctions.EQUAL:
+        gl.depthFunc(gl.EQUAL);
+        break;
+      case GLSettings.Material.DepthFunctions.GREATER:
+        gl.depthFunc(gl.GREATER);
+        break;
+      case GLSettings.Material.DepthFunctions.GREATER_OR_EQUAL:
+        gl.depthFunc(gl.GEQUAL);
+        break;
+      case GLSettings.Material.DepthFunctions.LESS:
+        gl.depthFunc(gl.LESS);
+        break;
+      case GLSettings.Material.DepthFunctions.LESS_OR_EQUAL:
+        gl.depthFunc(gl.LEQUAL);
+        break;
+      case GLSettings.Material.DepthFunctions.NEVER:
+        gl.depthFunc(gl.NEVER);
+        break;
+      case GLSettings.Material.DepthFunctions.NOTEQUAL:
+        gl.depthFunc(gl.NOTEQUAL);
+        break;
 
       default:
         gl.depthFunc(gl.ALWAYS);
@@ -776,7 +911,7 @@ export class GLState {
       this._scissorBounds.x,
       this._scissorBounds.y,
       this._scissorBounds.width,
-      this._scissorBounds.height,
+      this._scissorBounds.height
     );
   }
 
@@ -788,7 +923,7 @@ export class GLState {
       this.colorMask[0] || false,
       this.colorMask[1] || false,
       this.colorMask[2] || false,
-      this.colorMask[3] || false,
+      this.colorMask[3] || false
     );
   }
 
@@ -799,9 +934,15 @@ export class GLState {
     const gl = this.gl;
 
     switch (this._blendEquation) {
-      case GLSettings.Material.BlendingEquations.Add: gl.blendEquation(gl.FUNC_ADD); break;
-      case GLSettings.Material.BlendingEquations.Subtract: gl.blendEquation(gl.FUNC_SUBTRACT); break;
-      case GLSettings.Material.BlendingEquations.ReverseSubtract: gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT); break;
+      case GLSettings.Material.BlendingEquations.Add:
+        gl.blendEquation(gl.FUNC_ADD);
+        break;
+      case GLSettings.Material.BlendingEquations.Subtract:
+        gl.blendEquation(gl.FUNC_SUBTRACT);
+        break;
+      case GLSettings.Material.BlendingEquations.ReverseSubtract:
+        gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT);
+        break;
       // case GLSettings.Material.BlendingEquations.Min: /** Requires extension for Webgl 1 */ break;
       // case GLSettings.Material.BlendingEquations.Max: /** Requires extension for Webgl 1 */ break;
     }
@@ -815,16 +956,36 @@ export class GLState {
     let dst, src;
 
     switch (this._blendDstFactor) {
-      case GLSettings.Material.BlendingDstFactor.DstAlpha: dst = gl.BLEND_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.DstColor: dst = gl.BLEND_DST_RGB; break;
-      case GLSettings.Material.BlendingDstFactor.One: dst = gl.ONE; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha: dst = gl.ONE_MINUS_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor: dst = gl.ONE_MINUS_DST_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha: dst = gl.ONE_MINUS_SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor: dst = gl.ONE_MINUS_SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.SrcAlpha: dst = gl.SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.SrcColor: dst = gl.SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.Zero: dst = gl.ZERO; break;
+      case GLSettings.Material.BlendingDstFactor.DstAlpha:
+        dst = gl.BLEND_DST_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.DstColor:
+        dst = gl.BLEND_DST_RGB;
+        break;
+      case GLSettings.Material.BlendingDstFactor.One:
+        dst = gl.ONE;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha:
+        dst = gl.ONE_MINUS_DST_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor:
+        dst = gl.ONE_MINUS_DST_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha:
+        dst = gl.ONE_MINUS_SRC_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor:
+        dst = gl.ONE_MINUS_SRC_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.SrcAlpha:
+        dst = gl.SRC_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.SrcColor:
+        dst = gl.SRC_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.Zero:
+        dst = gl.ZERO;
+        break;
 
       default:
         dst = gl.ONE;
@@ -832,17 +993,39 @@ export class GLState {
     }
 
     switch (this._blendSrcFactor) {
-      case GLSettings.Material.BlendingDstFactor.DstAlpha: src = gl.BLEND_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.DstColor: src = gl.BLEND_DST_RGB; break;
-      case GLSettings.Material.BlendingDstFactor.One: src = gl.ONE; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha: src = gl.ONE_MINUS_DST_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor: src = gl.ONE_MINUS_DST_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha: src = gl.ONE_MINUS_SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor: src = gl.ONE_MINUS_SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.SrcAlpha: src = gl.SRC_ALPHA; break;
-      case GLSettings.Material.BlendingDstFactor.SrcColor: src = gl.SRC_COLOR; break;
-      case GLSettings.Material.BlendingDstFactor.Zero: src = gl.ZERO; break;
-      case GLSettings.Material.BlendingSrcFactor.SrcAlphaSaturate: src = gl.SRC_ALPHA_SATURATE; break;
+      case GLSettings.Material.BlendingDstFactor.DstAlpha:
+        src = gl.BLEND_DST_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.DstColor:
+        src = gl.BLEND_DST_RGB;
+        break;
+      case GLSettings.Material.BlendingDstFactor.One:
+        src = gl.ONE;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstAlpha:
+        src = gl.ONE_MINUS_DST_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusDstColor:
+        src = gl.ONE_MINUS_DST_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha:
+        src = gl.ONE_MINUS_SRC_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.OneMinusSrcColor:
+        src = gl.ONE_MINUS_SRC_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.SrcAlpha:
+        src = gl.SRC_ALPHA;
+        break;
+      case GLSettings.Material.BlendingDstFactor.SrcColor:
+        src = gl.SRC_COLOR;
+        break;
+      case GLSettings.Material.BlendingDstFactor.Zero:
+        src = gl.ZERO;
+        break;
+      case GLSettings.Material.BlendingSrcFactor.SrcAlphaSaturate:
+        src = gl.SRC_ALPHA_SATURATE;
+        break;
 
       default:
         src = gl.ONE;
@@ -863,12 +1046,30 @@ export class GLState {
     }
 
     switch (this._cullFace) {
-      case GLSettings.Material.CullSide.BACK: gl.cullFace(gl.BACK); break;
-      case GLSettings.Material.CullSide.FRONT: gl.cullFace(gl.FRONT); break;
-      case GLSettings.Material.CullSide.BOTH: gl.cullFace(gl.FRONT_AND_BACK); break;
+      case GLSettings.Material.CullSide.BACK:
+        gl.cullFace(gl.BACK);
+        break;
+      case GLSettings.Material.CullSide.FRONT:
+        gl.cullFace(gl.FRONT);
+        break;
+      case GLSettings.Material.CullSide.BOTH:
+        gl.cullFace(gl.FRONT_AND_BACK);
+        break;
 
       default:
         gl.disable(gl.CULL_FACE);
     }
+  }
+
+  /**
+   * This applies the current viewport property to the gl context
+   */
+  private applyViewport() {
+    this.gl.viewport(
+      this._viewport.x,
+      this._viewport.y,
+      this._viewport.width,
+      this._viewport.height
+    );
   }
 }

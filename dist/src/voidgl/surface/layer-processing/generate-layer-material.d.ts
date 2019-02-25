@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { IInstancingUniform, IUniform } from "../../types";
 import { Instance } from "../../util";
 import { ILayerProps, Layer } from "../layer";

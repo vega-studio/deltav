@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { Instance } from "../../../instance-provider";
 import { Vec2 } from "../../../util";
 import { Layer } from "../../layer";

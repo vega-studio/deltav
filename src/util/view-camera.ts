@@ -1,5 +1,3 @@
-import * as Three from "three";
-
 export enum ViewCameraType {
   /**
    * Indicates a camera that is forced by the system to follow:

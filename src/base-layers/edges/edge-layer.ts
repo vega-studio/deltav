@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
 import {
   ILayerProps,

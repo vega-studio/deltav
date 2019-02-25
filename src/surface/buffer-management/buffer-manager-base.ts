@@ -1,6 +1,6 @@
 import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttributeInternal } from "../../types";
-import { Vec2 } from "../../util";
+import { Vec2, Vec4 } from "../../util";
 import { Layer } from "../layer";
 import { Scene } from "../scene";
 
@@ -27,7 +27,7 @@ export interface IBufferLocation {
    * This is the generic buffer object interface for accessing the actual buffer.
    */
   buffer: {
-    value: Float32Array | Uint8Array;
+    value: Float32Array | Uint8Array | Vec4[];
   };
   /**
    * If the attribute has child attributes (attributes auto generated as a consequence of the attributes settings)

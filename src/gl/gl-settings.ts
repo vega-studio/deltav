@@ -2,6 +2,41 @@
  * These are all of the settings that can be used to configure the GL state of the system
  */
 export namespace GLSettings {
+  /**
+   * Settings used when defining render target parameters
+   */
+  export namespace RenderTarget {
+    /**
+     * Specifies the internal format of the color buffer for a render target
+     * when not using a Texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
+     */
+    export enum ColorBufferFormat {
+      RGBA4,
+      RGB565,
+      RGB5_A1
+    }
+
+    /**
+     * Specifies the internal format of the depth buffer for a render target
+     * when not using a Texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
+     */
+    export enum DepthBufferFormat {
+      DEPTH_COMPONENT16,
+      DEPTH_STENCIL
+    }
+
+    /**
+     * Specifies the internal format of the stencil buffer for a render target
+     * when not using a Texture. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
+     */
+    export enum StencilBufferFormat {
+      STENCIL_INDEX8
+    }
+  }
+
   export namespace Material {
     /**
      * Sets the blending function to be either a preset blending function or enables the
@@ -13,7 +48,7 @@ export namespace GLSettings {
       NormalBlending = 1,
       AdditiveBlending = 2,
       SubtractiveBlending = 3,
-      MultiplyBlending = 4,
+      MultiplyBlending = 4
     }
 
     /**
@@ -30,7 +65,7 @@ export namespace GLSettings {
       DstAlpha = 6,
       OneMinusDstAlpha = 7,
       DstColor = 8,
-      OneMinusDstColor = 9,
+      OneMinusDstColor = 9
     }
 
     /**
@@ -48,7 +83,7 @@ export namespace GLSettings {
       OneMinusDstAlpha = 7,
       DstColor = 8,
       OneMinusDstColor = 9,
-      SrcAlphaSaturate = 10,
+      SrcAlphaSaturate = 10
     }
 
     /**
@@ -58,7 +93,7 @@ export namespace GLSettings {
     export enum BlendingEquations {
       Add = 0,
       Subtract = 1,
-      ReverseSubtract = 2,
+      ReverseSubtract = 2
       /** Requires extension for Webgl 1.0 */
       // Min = 3,
       // Max = 4
@@ -77,7 +112,7 @@ export namespace GLSettings {
       GREATER = 4,
       NOTEQUAL = 5,
       GREATER_OR_EQUAL = 6,
-      ALWAYS = 7,
+      ALWAYS = 7
     }
 
     /**
@@ -88,7 +123,22 @@ export namespace GLSettings {
       NONE = 0,
       FRONT = 1,
       BACK = 2,
-      BOTH = 3,
+      BOTH = 3
+    }
+  }
+
+  /**
+   * These are settings applied to a model
+   */
+  export namespace Model {
+    export enum DrawMode {
+      LINE_LOOP,
+      LINE_STRIP,
+      LINES,
+      POINTS,
+      TRIANGLE_FAN,
+      TRIANGLE_STRIP,
+      TRIANGLES
     }
   }
 
@@ -124,7 +174,7 @@ export namespace GLSettings {
       NearestMipMapLinear = 2,
       Linear = 3,
       LinearMipMapNearest = 4,
-      LinearMipMapLinear = 5,
+      LinearMipMapLinear = 5
     }
 
     /**
@@ -133,7 +183,7 @@ export namespace GLSettings {
      */
     export enum TextureMagFilter {
       Nearest = 0,
-      Linear = 1,
+      Linear = 1
     }
 
     /**
@@ -223,7 +273,7 @@ export namespace GLSettings {
        * Red, green, blue and alpha components are read from the color buffer.
        */
       RGBA = 6,
-      RGBE = 7,
+      RGBE = 7
     }
 
     /**
@@ -239,7 +289,7 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8,
+      EIGHT = 8
     }
 
     /**
@@ -255,7 +305,32 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8,
+      EIGHT = 8
+    }
+  }
+
+  /**
+   * Settings associated with the Renderer
+   */
+  export namespace Renderer {
+    /**
+     * This specifies what data is read out and how
+     */
+    export enum ReadFilter {
+      ALPHA,
+      RGB,
+      RGBA
+    }
+
+    /**
+     * Specifies the data format of the array buffer the data is read into
+     */
+    export enum ReadTargetArrayFormat {
+      UNSIGNED_BYTE,
+      UNSIGNED_SHORT_5_6_5,
+      UNSIGNED_SHORT_4_4_4_4,
+      UNSIGNED_SHORT_5_5_5_1,
+      FLOAT
     }
   }
 }

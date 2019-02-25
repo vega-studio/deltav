@@ -18,10 +18,7 @@
     "auto": "auto"
   },
   "dependencies": {
-    "@types/three": "^0.92.23",
-    "bowser": "^1.7.3",
-    "three": "^0.94.0",
-    "twgl.js": "github:Diniden/twgl.js"
+    "bowser": "^1.7.3"
   },
   "devDependencies": {
     "@types/animejs": "2.0.0",
@@ -46,7 +43,6 @@
     "less": "3.8.1",
     "less-loader": "4.1.0",
     "mkdirp": "0.5.1",
-    "mobx": "3.4.1",
     "preact": "8.2.7",
     "prettier": "1.12.1",
     "random": "github:tarwich/node-random#1.0.0",

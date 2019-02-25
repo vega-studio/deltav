@@ -1,8 +1,9 @@
-import * as Three from "three";
+import { Attribute, Geometry, Material, Model } from "src/gl";
+import { IMaterialUniform, isUniformVec4Array, MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
 import { UniformProcessing } from "../../../shaders/processing/uniform-processing";
-import { IInstanceAttribute, PickType } from "../../../types";
-import { uid, Vec2 } from "../../../util";
+import { IInstanceAttribute } from "../../../types";
+import { uid, Vec2, Vec4 } from "../../../util";
 import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { Scene } from "../../scene";
@@ -12,7 +13,7 @@ export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */
   instanceIndex: number;
   /** This is the instance data uniform */
-  buffer: Three.IUniform;
+  buffer: IMaterialUniform<MaterialUniformType.VEC4_ARRAY>;
   /** This is the instance data range within the instanceData uniform */
   range: Vec2;
 }
@@ -25,15 +26,13 @@ export interface InstanceUniformBuffer {
   /** The first instance in the draw range */
   firstInstance: number;
   /** The unique geometry object for the buffer: Used to set draw range */
-  geometry: Three.BufferGeometry;
+  geometry: Geometry;
   /** The last instance in the draw range */
   lastInstance: number;
   /** The unique material for the buffer: Used to provide a new set of uniforms */
-  material: Three.ShaderMaterial;
+  material: Material;
   /** The unique model generated for the buffer: Used to allow the buffer to be rendered by adding to a scene */
-  model: Three.Object3D;
-  /** Threejs can not have duplicate objects across Scenes */
-  pickModel?: Three.Object3D;
+  model: Model;
 }
 
 /**
@@ -182,8 +181,6 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       for (let i = 0, end = this.buffers.length; i < end; ++i) {
         const buffer = this.buffers[i];
         scene.container.remove(buffer.model);
-        buffer.pickModel &&
-          this.scene.pickingContainer.remove(buffer.pickModel);
       }
 
       delete this.scene;
@@ -198,7 +195,6 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       for (let i = 0, end = this.buffers.length; i < end; ++i) {
         const buffer = this.buffers[i];
         scene.container.add(buffer.model);
-        buffer.pickModel && scene.pickingContainer.add(buffer.pickModel);
       }
 
       this.scene = scene;
@@ -214,23 +210,22 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // We generate a new geometry object for the buffer as the geometry
     // Needs to have it's own unique draw range per buffer for optimal
     // Performance
-    const newGeometry = new Three.BufferGeometry();
+    const newGeometry = new Geometry();
     this.layer.vertexAttributes.forEach(attribute => {
       if (attribute.materialAttribute) {
         newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
       }
     });
 
-    // Ensure the draw range covers every instance in the geometry.
-    newGeometry.drawRange.start = 0;
-    newGeometry.drawRange.count =
-      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount;
-
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
     const newMaterial = this.layer.material.clone();
     // Now make a Model for the buffer so it can be rendered withn the scene
     const newModel = generateLayerModel(this.layer, newGeometry, newMaterial);
+    // Ensure the draw range covers every instance in the geometry.
+    newModel.drawRange.start = 0;
+    newModel.drawRange.count =
+      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount;
     // We render junkloads of instances in a buffer. Culling will have to happen
     // On an instance level.
     newModel.frustumCulled = false;
@@ -244,10 +239,6 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       lastInstance: 0,
       material: newMaterial,
       model: newModel,
-      pickModel:
-        this.layer.picking.type === PickType.SINGLE
-          ? newModel.clone()
-          : undefined
     };
 
     this.buffers.push(buffer);
@@ -259,15 +250,22 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     const uniformName = UniformProcessing.uniformPackingBufferName();
     const instanceData = newMaterial.uniforms[uniformName];
 
-    // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
-    instanceData.value = instanceData.value.map(
-      () => new Three.Vector4(0.0, 0.0, 0.0, 0.0)
-    );
+    // Type guard this uniform to ensure we're dealing with the correct type
+    if (isUniformVec4Array(instanceData)) {
+      // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
+      instanceData.value = instanceData.value.map<Vec4>(
+        () => [0.0, 0.0, 0.0, 0.0]
+      );
+    }
 
-    // TODO: This will go away! To satisfy the changing buffer manager interfaces, we make a
-    // fake internal attribute for now
+    else {
+      console.warn('Material is utilizing an invalid uniform type for Uniform Buffer Management. Buffering will not be possible.');
+      return;
+    }
+
+    // A fake attribute to satisfy type requirements
     const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
-      bufferAttribute: new Three.InstancedBufferAttribute(
+      bufferAttribute: new Attribute(
         new Float32Array(1),
         1
       ),
@@ -277,7 +275,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
       const cluster: IUniformBufferLocation = {
         attribute: fakeAttribute, // TODO: This is not needed for the uniform method yet. When we break down
-        // the uniform updates into attributes, this will be utilized.
+                                  // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
         range: [uniformIndex, 0]
@@ -302,7 +300,6 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Each new buffer equates to one draw call.
     if (this.scene && this.scene.container) {
       this.scene.container.add(buffer.model);
-      buffer.pickModel && this.scene.pickingContainer.add(buffer.pickModel);
     }
   }
 }

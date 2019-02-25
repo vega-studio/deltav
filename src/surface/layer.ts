@@ -1,4 +1,7 @@
-import * as Three from "three";
+import { Geometry } from "../gl/geometry";
+import { GLSettings } from "../gl/gl-settings";
+import { Material } from "../gl/material";
+import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import {
@@ -37,9 +40,7 @@ import { View } from "./view";
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
-  drawMode?: Three.TrianglesDrawModes;
-  /** This is the THREE JS model type */
-  modelType: IModelConstructable;
+  drawMode?: GLSettings.Model.DrawMode;
 }
 
 /**
@@ -102,10 +103,7 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
 }
 
 export interface IModelConstructable {
-  new (
-    geometry?: Three.Geometry | Three.BufferGeometry,
-    material?: Three.Material | Three.Material[]
-  ): any;
+  new (geometry?: Geometry, material?: Material): Model;
 }
 
 export interface IPickingMethods<T extends Instance> {
@@ -149,7 +147,7 @@ export class Layer<
    */
   easingId: { [key: string]: number };
   /** This is the threejs geometry filled with the vertex information */
-  geometry: Three.BufferGeometry;
+  geometry: Geometry;
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
   /** This is all of the instance attributes generated for the layer */
@@ -161,11 +159,11 @@ export class Layer<
   /** This is the handler that manages interactions for the layer */
   interactions: LayerInteractionHandler<T, U>;
   /** The official shader material generated for the layer */
-  material: Three.RawShaderMaterial;
+  material: Material;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
   /** This is the mesh for the Threejs setup */
-  model: Three.Object3D;
+  model: Model;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking:
     | IQuadTreePickingMetrics<T>
@@ -336,8 +334,7 @@ export class Layer<
    */
   getModelType(): IModelType {
     return {
-      drawMode: Three.TrianglesDrawMode,
-      modelType: Three.Mesh
+      drawMode: GLSettings.Model.DrawMode.TRIANGLE_STRIP
     };
   }
 

@@ -1,8 +1,8 @@
-import { GLState } from 'src/gl/gl-state';
-import { Vec2, Vec4 } from '../util';
-import { GPUProxy } from './gpu-proxy';
-import { RenderTarget } from './render-target';
-import { SceneContainer } from './scene-container';
+import { GLState } from "src/gl/gl-state";
+import { Vec2, Vec4 } from "../util";
+import { GLProxy } from "./gl-proxy";
+import { RenderTarget } from "./render-target";
+import { SceneContainer } from "./scene-container";
 
 /**
  * Options used to create or update the renderer.
@@ -55,11 +55,13 @@ export interface IWebGLRendererState {
  */
 export class WebGLRenderer {
   /** The context the renderer is managing */
-  private _gl: WebGLRenderingContext;
+  private _gl?: WebGLRenderingContext;
   /** The readonly gl context the renderer determined for use */
-  get gl() { return this._gl; }
+  get gl() {
+    return this._gl;
+  }
   /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
-  private glProxy: GPUProxy;
+  private glProxy: GLProxy;
   /** This handles anything related to state changes in the GL state */
   private glState: GLState;
   /** The options that constructed or are currently applied to the renderer */
@@ -68,14 +70,17 @@ export class WebGLRenderer {
   state: IWebGLRendererState;
 
   constructor(options: IWebGLRendererOptions) {
-    this.options = Object.assign({
-      alpha: false,
-      antialias: true,
-      preserveDrawingBuffer: true,
-    }, options);
+    this.options = Object.assign(
+      {
+        alpha: true,
+        antialias: true,
+        preserveDrawingBuffer: true
+      },
+      options
+    );
 
     if (!this.options.canvas) {
-      console.warn('WebGLRenderer ERROR: A canvas is REQUIRED as a parameter.');
+      console.warn("WebGLRenderer ERROR: A canvas is REQUIRED as a parameter.");
     }
   }
 
@@ -124,29 +129,27 @@ export class WebGLRenderer {
   getContext() {
     if (this._gl) return this._gl;
 
-    const gl = this.glProxy.getContext(this.options.canvas, {
+    const gl = GLProxy.getContext(this.options.canvas, {
       alpha: this.options.alpha || false,
       antialias: this.options.antialias || false,
       premultipliedAlpha: this.options.premultipliedAlpha || false,
-      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false,
+      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false
     });
 
-    if (gl) {
-      this._gl = gl;
-      this.glState = new GLState(gl);
-      this.glProxy = new GPUProxy(gl, this.glState);
+    if (gl.context) {
+      this._gl = gl.context;
+      this.glState = new GLState(gl.context);
+      this.glProxy = new GLProxy(gl.context, this.glState, gl.extensions);
       this.glState.setProxy(this.glProxy);
 
       // Make sure our GPU is synced with our default state
       this.glState.syncState();
-    }
-
-    else if (this.options.onNoContext) {
+    } else if (this.options.onNoContext) {
       this.options.onNoContext();
-    }
-
-    else {
-      console.warn('No context was able to be produced, and the handler onNoContext was not implemented for such cases.');
+    } else {
+      console.warn(
+        "No context was able to be produced, and the handler onNoContext was not implemented for such cases."
+      );
     }
 
     return this._gl;
@@ -155,26 +158,88 @@ export class WebGLRenderer {
   /**
    * Renders the Scene specified
    */
-  render(scene: SceneContainer) {
+  render(scene: SceneContainer, target: RenderTarget | null = null) {
+    // Context must be established to render
+    if (!this.gl) return;
+
+    // Establish the rendering state we're in right now
+    this.setRenderTarget(target);
+
+    // If the fbo is not ready, we're not drawing
+    if (target && !target.gl) {
+      console.warn(
+        "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
+        { scene, target }
+      );
+      return;
+    }
+
     // Loop through all of the models of the scene and process them for rendering
     scene.models.forEach(model => {
       const geometry = model.geometry;
       const material = model.material;
 
-      // Let's put the material's program in use so we can have the attribute information
+      // Let's put the material's program in use first so we can have the attribute information
       // available to us.
       if (this.glState.useMaterial(material)) {
+        let geometryIsValid = true;
 
-      }
+        // First update/compile all aspects of the geometry
+        geometry.attributes.forEach((attribute, name) => {
+          // If we successfully update/compile the attribute, then we enable it's vertex array
+          if (this.glProxy.updateAttribute(attribute)) {
+            this.glProxy.useAttribute(name, attribute);
+          }
 
-      // First update/compile all aspects of the geometry
-      geometry.attributes.forEach((attribute, _name) => {
-        // If we successfully update/compile the attribute, then we enable it's vertex array
-        if (this.glProxy.updateAttribute(attribute)) {
+          // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
+          // behavior while rendering
+          else {
+            console.warn("Could not update attribute", attribute);
+            geometryIsValid = false;
+          }
+        });
 
+        // If all of the attribute updates passed correctly, then we can use the established state
+        // to make our draw call
+        if (geometryIsValid) {
+          this.glProxy.draw(model);
+        } else {
+          console.warn(
+            "Geometry was unable to update correctly, thus we are skipping the drawing of",
+            model
+          );
         }
-      });
+      } else {
+        console.warn(
+          "Could not utilize material. Skipping draw call for:",
+          material,
+          geometry
+        );
+      }
     });
+  }
+
+  /**
+   * Reads the pixels from the current Render Target (or more specifically from the current framebuffer)
+   */
+  readPixels(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    out: ArrayBufferView
+  ) {
+    if (this.gl) {
+      this.gl.readPixels(
+        x,
+        y,
+        width,
+        height,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
+        out
+      );
+    }
   }
 
   /**
@@ -196,17 +261,10 @@ export class WebGLRenderer {
   }
 
   /**
-   * Sets the target to be rendered into which sets up the buffers to be rendered into.
-   */
-  setRenderTarget(target: RenderTarget) {
-    // TODO
-  }
-
-  /**
    * Sets the region the scissor test will accept as visible. Anything outside the region
    * will be clipped.
    */
-  setScissor(bounds?: {x: number, y: number, width: number, height: number}) {
+  setScissor(bounds?: { x: number; y: number; width: number; height: number }) {
     const { pixelRatio } = this.state;
     const size = this.getCanvasDimensions();
     const _height = size[1];
@@ -219,11 +277,29 @@ export class WebGLRenderer {
         width: width * pixelRatio,
         height: height * pixelRatio
       });
-    }
-
-    else {
+    } else {
       this.glState.setScissor(null);
     }
+  }
+
+  /**
+   * Retrieves the current pixel ratio in use for the context.
+   */
+  getPixelRatio() {
+    return this.state.pixelRatio;
+  }
+
+  /**
+   * Retrieves the size of the canvas ignoring pixel ratio.
+   */
+  getSize() {
+    const { canvas } = this.options;
+    const { pixelRatio } = this.state;
+
+    return {
+      width: canvas.width / pixelRatio,
+      height: canvas.height / pixelRatio
+    };
   }
 
   /**
@@ -241,6 +317,25 @@ export class WebGLRenderer {
   }
 
   /**
+   * This sets the context to render into the indicated target
+   */
+  setRenderTarget(target: RenderTarget | null) {
+    if (!this.glState.useRenderTarget(target) && target) {
+      // If unable to use yet, this indicates the FBO needs to be compiled
+      // Probably due to uncompiled texture objects that the FBO needs.
+      // First flag all textures as needing a texture unit
+      target.getTextures().forEach(texture => {
+        this.glState.willUseTextureUnit(texture, target);
+      });
+
+      // Now apply those textures (compile them while utilizing the texture units requested)
+      // This will also trigger the compilation of the target since the textures used
+      // This will also ensure the FBO is in use for the next draw call
+      this.glState.applyUsedTextures();
+    }
+  }
+
+  /**
    * Sets the viewport we render into.
    */
   setViewport(x: number, y: number, width: number, height: number) {
@@ -248,6 +343,12 @@ export class WebGLRenderer {
     const size = this.getCanvasDimensions();
     const _height = size[1];
 
-    this.gl.viewport(x * pixelRatio, (_height - y - height) * pixelRatio, width * pixelRatio, height * pixelRatio);
+    // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+    this.glState.setViewport(
+      x * pixelRatio,
+      (_height - y - height) * pixelRatio,
+      width * pixelRatio,
+      height * pixelRatio
+    );
   }
 }

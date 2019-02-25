@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { AbsolutePosition } from "../../primitives/absolute-position";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";

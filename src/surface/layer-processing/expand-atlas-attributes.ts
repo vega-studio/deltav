@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import {
   IAtlasInstanceAttribute,

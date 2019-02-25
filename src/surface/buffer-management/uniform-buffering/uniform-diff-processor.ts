@@ -1,13 +1,19 @@
-import * as Three from "three";
+import { IMaterialUniform, MaterialUniformType } from "src/gl/types";
+import { Vec4 } from "src/util/vector";
 import { Instance, InstanceDiff } from "../../../instance-provider";
 import { BaseDiffProcessor } from "../base-diff-processor";
-import { isBufferLocation } from "../buffer-manager-base";
+import { IBufferLocation, isBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 import { IUniformBufferLocation } from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
-const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ["x", "y", "z", "w"];
 const EMPTY: number[] = [];
+
+export interface IUniformDiffProcessorUniformBuffer extends IBufferLocation {
+  buffer: {
+    value: Vec4[],
+  };
+}
 
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
@@ -84,14 +90,14 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   updateInstance(
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
-    uniformCluster: IUniformBufferLocation
+    uniformCluster: IUniformDiffProcessorUniformBuffer
   ) {
     if (instance.active) {
       const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
+      const instanceData: Vec4[] = uniforms.value;
       let instanceUniform, value, block, start;
-      let k, endk;
+      let k: number, endk;
 
       // Loop through the instance attributes and update the uniform cluster with the valaues
       // Calculated for the instance
@@ -110,15 +116,15 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
         for (k = start, endk = value.length + start; k < endk; ++k) {
-          block[VECTOR_ACCESSORS[k]] = value[k - start];
+          block[k] = value[k - start];
         }
       }
 
       uniforms.value = instanceData;
     } else {
-      const uniforms: Three.IUniform = uniformCluster.buffer;
+      const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
+      const instanceData: Vec4[] = uniforms.value;
       let instanceUniform, value, block, start;
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
@@ -133,8 +139,8 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       if (start !== undefined) {
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
-        for (let k = start, endk = value.length + start; k < endk; ++k) {
-          block[VECTOR_ACCESSORS[k]] = value[k - start];
+        for (let k: number = start, endk = value.length + start; k < endk; ++k) {
+          block[k] = value[k - start];
         }
       }
 

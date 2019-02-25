@@ -1,4 +1,3 @@
-import * as Three from "three";
 import {
   IdentifyByKey,
   IdentifyByKeyOptions

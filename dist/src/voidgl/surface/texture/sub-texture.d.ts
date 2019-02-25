@@ -1,4 +1,3 @@
-import * as Three from "three";
 import { Vec2 } from "../../util/vector";
 export declare class SubTexture {
     aspectRatio: number;

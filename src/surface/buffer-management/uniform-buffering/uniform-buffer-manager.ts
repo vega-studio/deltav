@@ -6,7 +6,7 @@ import { IInstanceAttribute } from "../../../types";
 import { uid, Vec2, Vec4 } from "../../../util";
 import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { Scene } from "../../scene";
+import { LayerScene } from "../../layer-scene";
 import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
 
 export interface IUniformBufferLocation extends IBufferLocation {
@@ -16,6 +16,13 @@ export interface IUniformBufferLocation extends IBufferLocation {
   buffer: IMaterialUniform<MaterialUniformType.VEC4_ARRAY>;
   /** This is the instance data range within the instanceData uniform */
   range: Vec2;
+}
+
+/**
+ * Typeguard for uniform buffer locations
+ */
+export function isUniformBufferLocation(val: any): val is IUniformBufferLocation {
+  return val && val.buffer && val.buffer.value && val.type === MaterialUniformType.VEC4_ARRAY;
 }
 
 export interface InstanceUniformBuffer {
@@ -78,7 +85,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     InstanceUniformBuffer
   >();
 
-  constructor(layer: Layer<T, any>, scene: Scene) {
+  constructor(layer: Layer<T, any>, scene: LayerScene) {
     super(layer, scene);
 
     let maxUniformBlock: number = 0;
@@ -93,7 +100,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * This adds an instance to the manager and gives the instance an associative
    * block of uniforms to work with.
    */
-  add = function(instance: T) {
+  add = (instance: T) => {
     // If there are no available buffers, we must add a buffer
     if (this.availableClusters.length <= 0) {
       this.makeNewBuffer();
@@ -190,7 +197,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   /**
    * Applies the buffers to the provided scene for rendering.
    */
-  setScene(scene: Scene) {
+  setScene(scene: LayerScene) {
     if (scene.container) {
       for (let i = 0, end = this.buffers.length; i < end; ++i) {
         const buffer = this.buffers[i];

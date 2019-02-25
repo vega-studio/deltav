@@ -1,3 +1,5 @@
+import { Camera } from "./camera";
+
 export enum ViewCameraType {
   /**
    * Indicates a camera that is forced by the system to follow:
@@ -21,5 +23,5 @@ export enum ViewCameraType {
  */
 export class ViewCamera {
   type: ViewCameraType = ViewCameraType.CONTROLLED;
-  baseCamera: Three.Camera;
+  baseCamera: Camera;
 }

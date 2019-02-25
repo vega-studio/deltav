@@ -1,15 +1,15 @@
+import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
   InstanceAttributeSize,
-  PickType
 } from "../../../types";
 import { uid } from "../../../util";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { IModelConstructable, Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { Scene } from "../../scene";
+import { LayerScene } from "../../layer-scene";
 import {
   BufferManagerBase,
   IBufferLocation,
@@ -57,10 +57,9 @@ export class InstanceAttributePackingBufferManager<
   private maxInstancedCount: number = 1000;
 
   // These are the only Three objects that must be monitored for disposal
-  private geometry?: Three.InstancedBufferGeometry;
-  private material?: Three.ShaderMaterial;
-  private model?: IModelConstructable & Three.Object3D;
-  private pickModel?: IModelConstructable & Three.Object3D | undefined;
+  private geometry?: Geometry;
+  private material?: Material;
+  private model?: IModelConstructable & Model;
   private attributes?: IInstanceAttributeInternal<T>[];
   private blockAttributes?: IInstanceAttributeInternal<T>[];
   private blockSubAttributesLookup = new Map<number, IInstanceAttribute<T>[]>();
@@ -78,7 +77,7 @@ export class InstanceAttributePackingBufferManager<
    */
   private activePropertyId: number = -1;
 
-  constructor(layer: Layer<T, any>, scene: Scene) {
+  constructor(layer: Layer<T, any>, scene: LayerScene) {
     super(layer, scene);
     // Start our add method as a registration step.
     this.add = this.doAddWithRegistration;
@@ -160,10 +159,10 @@ export class InstanceAttributePackingBufferManager<
         // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
         bufferLocations.instanceIndex + 1
       );
-      this.geometry.drawRange = {
-        count: this.currentInstancedCount * this.layer.instanceVertexCount,
-        start: 0
-      };
+
+      if (this.model) {
+        this.model.drawRange = [0, this.currentInstancedCount * this.layer.instanceVertexCount];
+      }
     } else {
       console.error(
         "Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location"
@@ -249,7 +248,6 @@ export class InstanceAttributePackingBufferManager<
       this.scene.container.remove(this.model);
     }
 
-    this.pickModel && this.scene.pickingContainer.remove(this.pickModel);
     delete this.scene;
   }
 
@@ -274,7 +272,7 @@ export class InstanceAttributePackingBufferManager<
       // We generate a new geometry object for the buffer as the geometry
       // Needs to have it's own unique draw range per buffer for optimal
       // Performance.
-      this.geometry = new Three.InstancedBufferGeometry();
+      this.geometry = new Geometry();
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
       // These are static non-dynamic buffers for the instance.
@@ -356,7 +354,7 @@ export class InstanceAttributePackingBufferManager<
         // Make our attribute buffer to accommodate all of the instances to be rendered.
         const buffer = new Float32Array(blockSize * this.maxInstancedCount);
         // Make an instanced buffer to take advantage of hardware instancing
-        const bufferAttribute = new Three.InstancedBufferAttribute(
+        const bufferAttribute = new Attribute(
           buffer,
           blockSize
         );
@@ -464,7 +462,7 @@ export class InstanceAttributePackingBufferManager<
       // level and generate the new buffer locations based on the expansion
       // Since were are resizing the buffer, let's destroy the old buffer and make one anew
       this.geometry.dispose();
-      this.geometry = new Three.InstancedBufferGeometry();
+      this.geometry = new Geometry();
       const previousInstanceAmount = this.maxInstancedCount;
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
@@ -509,7 +507,7 @@ export class InstanceAttributePackingBufferManager<
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.array, 0);
           // Make our new attribute based on the grown buffer
-          const newAttribute = new Three.InstancedBufferAttribute(buffer, size);
+          const newAttribute = new Attribute(buffer, size);
           // Set the attribute to dynamic so we can update ranges within it
           newAttribute.setDynamic(true);
           // Make sure our attribute is updated with the newly made attribute
@@ -597,33 +595,15 @@ export class InstanceAttributePackingBufferManager<
       this.scene.container.remove(this.model);
     }
 
-    // Make sure the picking element is removed as well
-    if (this.scene && this.scene.pickingContainer && this.pickModel) {
-      this.scene.pickingContainer.remove(this.pickModel);
-    }
-
     // Ensure material is defined
     this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(this.layer, this.geometry, this.material);
-    // We render junkloads of instances for a given buffer. Culling will have to happen
-    // On an instance level.
-    this.model.frustumCulled = false;
-    // Make a picking model if we need it so we can render the model with a different uniform set
-    // for the picking procedure.
-    this.pickModel =
-      this.layer.picking.type === PickType.SINGLE
-        ? this.model.clone()
-        : undefined;
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
-    if (this.scene && this.scene.container) {
+    if (this.scene && this.scene.container && this.model) {
       this.scene.container.add(this.model);
-
-      if (this.pickModel) {
-        this.scene.pickingContainer.add(this.pickModel);
-      }
     }
 
     return {

@@ -3,7 +3,7 @@ import { DataBounds } from "../util/data-bounds";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
-import { Scene } from "./scene";
+import { LayerScene } from "./layer-scene";
 import { View } from "./view";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
@@ -17,7 +17,7 @@ export type SceneView = {
   /** This specifies the order the view is rendered in so we can pick the top most item when needed */
   depth: number;
   /** This is the scene the view is rendering for */
-  scene: Scene;
+  scene: LayerScene;
   /** This is the view itself that our mouse will interact with */
   view: View;
   /** Gets the bounds of this view for this particular scene */

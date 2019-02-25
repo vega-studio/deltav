@@ -9,7 +9,7 @@ import {
   isBufferLocationGroup
 } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
+import { IInstanceAttributeBufferLocation, IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
@@ -127,14 +127,14 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>
+    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
-    let location: IBufferLocation;
+    let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
     let updateRange;
-    let childLocations: IBufferLocation[];
+    let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
     let attributeChangeUID;
 
@@ -212,13 +212,13 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>
+    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
-    let location: IBufferLocation;
+    let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
-    let childLocations: IBufferLocation[];
+    let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
 
     if (instance.active) {

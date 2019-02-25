@@ -1,7 +1,7 @@
-import { SceneContainer } from "../gl/scene-container";
+import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
-import { ILayerProps, Layer } from "../surface/layer";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { ILayerProps, Layer } from "./layer";
 import { IViewOptions, View } from "./view";
 
 /**
@@ -28,11 +28,11 @@ function sortByDepth(a: Layer<any, any>, b: Layer<any, any>) {
  * This defines a scene to which layers are added to. It also tracks the views that this scene
  * is rendered with.
  */
-export class Scene extends IdentifyByKey {
+export class LayerScene extends IdentifyByKey {
   static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the three scene which actually sets up the rendering objects */
-  container: SceneContainer | undefined = new SceneContainer();
+  container: Scene | undefined = new Scene();
   /** This is all of the layers tracked to the scene */
   layers: Layer<any, any>[] = [];
   /** This indicates the sort is dirty for a set of layers */

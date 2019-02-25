@@ -1,14 +1,14 @@
 import { AbsolutePosition } from "../../primitives/absolute-position";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";
-import { Scene } from "../scene";
+import { LayerScene } from "../layer-scene";
 import { View } from "../view";
 
 export interface IDefaultSceneElements {
   /** Default chartting camera */
   camera: ChartCamera;
   /** Default scene for elements to be added into */
-  scene: Scene;
+  scene: LayerScene;
   /** Default view scenes are rendered with when no other views are specified by the layer or the surface */
   view: View;
   /**
@@ -91,8 +91,8 @@ export function generateDefaultScene(
   });
 
   // Make a scene with our defaults
-  const defaultScene = new Scene({
-    key: Scene.DEFAULT_SCENE_ID,
+  const defaultScene = new LayerScene({
+    key: LayerScene.DEFAULT_SCENE_ID,
     views: []
   });
 

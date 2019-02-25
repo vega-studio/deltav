@@ -2,7 +2,7 @@ import { GLState } from "src/gl/gl-state";
 import { Vec2, Vec4 } from "../util";
 import { GLProxy } from "./gl-proxy";
 import { RenderTarget } from "./render-target";
-import { SceneContainer } from "./scene-container";
+import { Scene } from "./scene";
 
 /**
  * Options used to create or update the renderer.
@@ -158,7 +158,7 @@ export class WebGLRenderer {
   /**
    * Renders the Scene specified
    */
-  render(scene: SceneContainer, target: RenderTarget | null = null) {
+  render(scene: Scene, target: RenderTarget | null = null) {
     // Context must be established to render
     if (!this.gl) return;
 

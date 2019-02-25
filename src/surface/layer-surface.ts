@@ -1,4 +1,4 @@
-import { GLSettings, RenderTarget, SceneContainer } from "src/gl";
+import { GLSettings, RenderTarget, Scene } from "src/gl";
 import { ImageInstance } from "../base-layers/images";
 import { LabelInstance } from "../base-layers/labels";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -6,8 +6,8 @@ import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { PickType } from "../types";
 import { FrameMetrics } from "../types";
+import { PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { Vec2, Vec4 } from "../util/vector";
@@ -19,8 +19,8 @@ import { generateLayerGeometry } from "./layer-processing/generate-layer-geometr
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
 import { makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
+import { ISceneOptions, LayerScene } from "./layer-scene";
 import { MouseEventManager, SceneView } from "./mouse-event-manager";
-import { ISceneOptions, Scene } from "./scene";
 import { AtlasManager } from "./texture";
 import { IAtlasOptions } from "./texture/atlas";
 import { AtlasResourceManager } from "./texture/atlas-resource-manager";
@@ -141,7 +141,7 @@ export class LayerSurface {
    * This is all of the available scenes and their views for this surface. Layers reference the IDs
    * of the scenes and the views to be a part of their rendering state.
    */
-  scenes = new Map<string, Scene>();
+  scenes = new Map<string, LayerScene>();
   /**
    * This is all of the views currently generated for this surface paired with the scene they render.
    */
@@ -221,7 +221,7 @@ export class LayerSurface {
     frameIncrement?: boolean,
     onViewReady?: (
       needsDraw: boolean,
-      scene: Scene,
+      scene: LayerScene,
       view: View,
       pickingPass: Layer<any, any>[]
     ) => void
@@ -590,7 +590,7 @@ export class LayerSurface {
    * This finalizes everything and sets up viewports and clears colors and performs the actual render step
    */
   private drawSceneView(
-    scene: SceneContainer,
+    scene: Scene,
     view: View,
     renderer?: WebGLRenderer,
     target?: RenderTarget
@@ -864,7 +864,7 @@ export class LayerSurface {
     if (options.scenes) {
       options.scenes.forEach(sceneOptions => {
         // Make us a new scene based on the requested options
-        const newScene = new Scene(sceneOptions);
+        const newScene = new LayerScene(sceneOptions);
         // Use defaultSceneElement to set cameras
         const defaultSceneElement = generateDefaultScene(this.context);
         // Generate the views requested for the scene
@@ -1022,7 +1022,7 @@ export class LayerSurface {
    */
   private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>
-  ): Scene | undefined {
+  ): LayerScene | undefined {
     // Get the scene the layer will add itself to
     const scene = this.scenes.get(layer.props.scene || "");
 

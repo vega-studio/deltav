@@ -1,3 +1,4 @@
+import { Camera, CameraProjectionType } from "src/util/camera";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
@@ -57,8 +58,11 @@ export interface IViewOptions extends IdentifyByKeyOptions {
   viewport: AbsolutePosition;
 }
 
-function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
-  return "left" in val;
+/**
+ * Type guard to ensure the camera type is orthographic
+ */
+function isOrthographic(val: Camera): val is Camera {
+  return val.projectionType === CameraProjectionType.ORTHOGRAPHIC;
 }
 
 /**

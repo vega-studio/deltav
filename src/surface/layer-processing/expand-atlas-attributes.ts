@@ -1,3 +1,4 @@
+import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import {
   IAtlasInstanceAttribute,
@@ -11,7 +12,14 @@ import {
 } from "../../types";
 import { ILayerProps, Layer } from "../layer";
 
-const emptyTexture = new Three.Texture();
+/** Empty texture that will default to the zero texture and unit */
+const emptyTexture = new Texture({
+  data: {
+    width: 1,
+    height: 1,
+    data: new Uint8ClampedArray(4),
+  }
+});
 
 function isAtlasAttribute<T extends Instance>(
   attr: any

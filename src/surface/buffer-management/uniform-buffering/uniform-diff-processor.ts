@@ -1,19 +1,11 @@
-import { IMaterialUniform, MaterialUniformType } from "src/gl/types";
 import { Vec4 } from "src/util/vector";
 import { Instance, InstanceDiff } from "../../../instance-provider";
 import { BaseDiffProcessor } from "../base-diff-processor";
-import { IBufferLocation, isBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "./uniform-buffer-manager";
+import { isUniformBufferLocation, IUniformBufferLocation } from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];
-
-export interface IUniformDiffProcessorUniformBuffer extends IBufferLocation {
-  buffer: {
-    value: Vec4[],
-  };
-}
 
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
@@ -37,7 +29,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const uniforms = manager.layer.bufferManager.add(instance);
 
-      if (isBufferLocation(uniforms)) {
+      if (isUniformBufferLocation(uniforms)) {
         instance.active = true;
         instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
@@ -90,7 +82,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   updateInstance(
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
-    uniformCluster: IUniformDiffProcessorUniformBuffer
+    uniformCluster: IUniformBufferLocation
   ) {
     if (instance.active) {
       const uniforms = uniformCluster.buffer;
@@ -113,8 +105,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
           continue;
         }
 
-        // Hyper optimized vector filling routine. It uses properties that are globally scoped
-        // To greatly reduce overhead
+        // Vec4 updating routine. Makes sure the correct components are updated for the provided values
         for (k = start, endk = value.length + start; k < endk; ++k) {
           block[k] = value[k - start];
         }

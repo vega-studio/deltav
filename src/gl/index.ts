@@ -2,7 +2,7 @@ export * from './geometry';
 export * from './material';
 export * from './model';
 export * from './render-target';
-export * from './scene-container';
+export * from './scene';
 export * from './webgl-renderer';
 export * from './gl-settings';
 export * from './gl-state';

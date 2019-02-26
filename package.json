@@ -17,10 +17,7 @@
     "start": "node scripts/dev",
     "auto": "auto"
   },
-  "dependencies": {
-    "bowser": "^1.7.3",
-    "normalize-wheel": "^1.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",

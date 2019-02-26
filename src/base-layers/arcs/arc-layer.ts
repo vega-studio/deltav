@@ -1,7 +1,7 @@
 import { InstanceProvider } from "../../instance-provider";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
@@ -179,9 +179,9 @@ export class ArcLayer<
     };
   }
 
-  getMaterialOptions(): IMaterialOptions {
-    return Object.assign({}, CommonMaterialOptions.transparentShape, {
+  getMaterialOptions(): ILayerMaterialOptions {
+    return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
       side: Three.DoubleSide
-    } as IMaterialOptions);
+    } as ILayerMaterialOptions);
   }
 }

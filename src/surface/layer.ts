@@ -6,7 +6,7 @@ import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import {
   IInstanceAttribute,
-  IMaterialOptions,
+  ILayerMaterialOptions,
   INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
@@ -100,10 +100,6 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   onMouseUp?(info: IPickInfo<T>): void;
   /** Executes when the mouse click gesture is executed over instances and a picking type is set */
   onMouseClick?(info: IPickInfo<T>): void;
-}
-
-export interface IModelConstructable {
-  new (geometry?: Geometry, material?: Material): Model;
 }
 
 export interface IPickingMethods<T extends Instance> {
@@ -341,7 +337,7 @@ export class Layer<
   /**
    * The options for a three material without uniforms.
    */
-  getMaterialOptions(): IMaterialOptions {
+  getMaterialOptions(): ILayerMaterialOptions {
     return {};
   }
 

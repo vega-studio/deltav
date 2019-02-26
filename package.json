@@ -18,7 +18,8 @@
     "auto": "auto"
   },
   "dependencies": {
-    "bowser": "^1.7.3"
+    "bowser": "^1.7.3",
+    "normalize-wheel": "^1.0.1"
   },
   "devDependencies": {
     "@types/animejs": "2.0.0",

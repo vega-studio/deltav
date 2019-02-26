@@ -1,3 +1,5 @@
+import { Vec3, Vec3Compat, Vec4 } from "src/util/vector";
+
 export type Mat2x2 = [
   number, number,
   number, number
@@ -133,7 +135,7 @@ export function scale3x3(mat: Mat3x3, scale: number): Mat3x3 {
   ];
 }
 
-export function scale4x4(mat: Mat4x4, scale: number): Mat4x4 {
+export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
   return[
     mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale,
     mat[4] * scale, mat[5] * scale, mat[6] * scale, mat[7] * scale,
@@ -479,5 +481,76 @@ export function transpose4x4(mat: Mat4x4): Mat4x4 {
     mat[1], mat[5], mat[9], mat[13],
     mat[2], mat[6], mat[10], mat[14],
     mat[3], mat[7], mat[11], mat[15]
+  ];
+}
+
+/**
+ * Converts a 4x4 to a pretty print string
+ */
+export function toString4x4(mat: Mat4x4): string {
+  return `Matrix: [
+    ${mat[0]}, ${mat[1]}, ${mat[2]}, ${mat[3]},
+    ${mat[4]}, ${mat[5]}, ${mat[6]}, ${mat[7]},
+    ${mat[8]}, ${mat[9]}, ${mat[10]}, ${mat[11]},
+    ${mat[12]}, ${mat[13]}, ${mat[14]}, ${mat[15]},
+  ]`;
+}
+
+/**
+ * Creates a scaling matrix from a vector
+ */
+export function scale4x4by3(p: Vec3Compat): Mat4x4 { return scale4x4(p[0], p[1], p[2]); }
+/**
+ * Creates a scaling matrix
+ */
+export function scale4x4(x: number, y: number, z: number): Mat4x4 {
+  return [
+    x, 0, 0, 0,
+    0, y, 0, 0,
+    0, 0, z, 0,
+    0, 0, 0, 1
+  ];
+}
+
+/**
+ * Creates a translation Matrix from a vector
+ */
+export function translation4x4by3(t: Vec3Compat): Mat4x4 { return translation4x4(t[0], t[1], t[2]); }
+/**
+ * Creates a translation Matrix
+ */
+export function translation4x4(x: number, y: number, z: number): Mat4x4 {
+  return [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    x, y, z, 1
+  ];
+}
+
+/**
+ * Generate a projection matrix with perspective
+ */
+export function perspective4x4(fovRadians: number, aspectRatio: number, near: number, far: number): Mat4x4 {
+  const f = 1.0 / Math.tan(fovRadians / 2);
+  const rangeInv = 1 / (near - far);
+
+  return [
+    f / aspectRatio, 0,                          0,   0,
+    0,               f,                          0,   0,
+    0,               0,    (near + far) * rangeInv,  -1,
+    0,               0,  near * far * rangeInv * 2,   0
+  ];
+}
+
+/**
+ * Generate a projection matrix with no perspective. Useful for flat 2D or isometric rendering.
+ */
+export function orthographic4x4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4x4 {
+  return [
+    2 / (right - left),                                            0,                    0,                                  0,
+    0,                                            2 / (top - bottom),                    0,                                  0,
+    0,                                                             0,    -1 / (far - near),                                  0,
+    (right + left) / (left - right), (top + bottom) / (bottom - top), -near / (near - far),                                  1,
   ];
 }

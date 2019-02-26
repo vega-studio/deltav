@@ -1,14 +1,15 @@
+import { Material, MaterialOptions, MaterialUniformType } from "../../gl";
 import { IInstancingUniform, IUniform, UniformSize } from "../../types";
 import { Instance } from "../../util";
 import { ILayerProps, Layer } from "../layer";
 
-const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: string } = {
-  [UniformSize.ONE]: "f",
-  [UniformSize.TWO]: "v2",
-  [UniformSize.THREE]: "v3",
-  [UniformSize.FOUR]: "v4",
-  [UniformSize.MATRIX3]: "Matrix3fv",
-  [UniformSize.MATRIX4]: "Matrix4fv"
+const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
+  [UniformSize.ONE]: MaterialUniformType.FLOAT,
+  [UniformSize.TWO]: MaterialUniformType.VEC2,
+  [UniformSize.THREE]: MaterialUniformType.VEC3,
+  [UniformSize.FOUR]: MaterialUniformType.VEC4,
+  [UniformSize.MATRIX3]: MaterialUniformType.MATRIX3x3,
+  [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4
 };
 
 const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
@@ -36,9 +37,9 @@ export function generateLayerMaterial<
   fs: string,
   layerUniforms: IUniform[],
   instancingUniforms: IInstancingUniform[]
-): Three.RawShaderMaterial {
+): Material {
   // We now need to establish the material for the layer
-  const materialParams: Three.ShaderMaterialParameters = layer.getMaterialOptions();
+  const materialParams: MaterialOptions = layer.getMaterialOptions();
   materialParams.vertexShader = vs;
   materialParams.fragmentShader = fs;
 
@@ -61,5 +62,5 @@ export function generateLayerMaterial<
     };
   }
 
-  return new Three.RawShaderMaterial(materialParams);
+  return new Material(materialParams);
 }

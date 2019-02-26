@@ -15,13 +15,13 @@ ShaderModule.register([
       {
         name: "projection",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.viewCamera.baseCamera.projectionMatrix.elements
+        update: () => layer.view.viewCamera.baseCamera.projection
       },
       // This injects the model view matrix from the view camera
       {
         name: "modelView",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.viewCamera.baseCamera.matrix.elements
+        update: () => layer.view.viewCamera.baseCamera.view
       },
       // This injects the camera offset uniforms that need to be present for projecting in a more
       // Chart centric style

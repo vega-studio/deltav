@@ -29,7 +29,6 @@
     "comment-format": [true, "check-space"],
     "encoding": true,
     "interface-name": [true, "always-prefix"],
-    "jsdoc-format": true,
     "new-parens": true,
     "no-angle-bracket-type-assertion": true,
     "no-consecutive-blank-lines": true,
@@ -42,5 +41,10 @@
     "prefer-template": true,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-module", "check-separator", "check-type", "check-typecast"]
+  },
+  "linterOptions": {
+    "exclude": [
+      "src/util/normalize-wheel/*.js"
+    ]
   }
 }

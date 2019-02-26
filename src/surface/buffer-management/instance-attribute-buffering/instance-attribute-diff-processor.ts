@@ -277,7 +277,6 @@ export class InstanceAttributeDiffProcessor<
       for (let i = 0, end = updates.length; i < end; ++i) {
         const update = updates[i];
         const attribute = update[0].bufferAttribute;
-        attribute.needsUpdate = true;
         attribute.updateRange = {
           count: update[2] - update[1],
           offset: update[1]
@@ -290,7 +289,6 @@ export class InstanceAttributeDiffProcessor<
 
       for (let i = 0, end = updates.length; i < end; ++i) {
         const attribute = updates[i].bufferAttribute;
-        attribute.needsUpdate = true;
         attribute.updateRange = {
           count: -1,
           offset: 0

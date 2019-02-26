@@ -41,11 +41,17 @@ export class Attribute {
    */
   size: number;
   /**
-   * Defines a range to update for the buffer object. Although these properties represent
-   * vertex indicies it directly ties to all implications of:
+   * Defines a range to update for the buffer object. Getting the range object is a copy of the object.
+   * Setting the updateRange triggers an update.
+   *
+   * Although these properties represent vertex indicies it directly ties to all implications of:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferSubData
    */
   get updateRange() { return this._updateRange; }
+  set updateRange(val: Attribute['_updateRange']) {
+    this._updateRange = val;
+    this._needsUpdate = true;
+  }
   private _updateRange = {
     /** Number of vertices to update */
     count: -1,

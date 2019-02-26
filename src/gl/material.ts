@@ -3,6 +3,8 @@ import { GLProxy } from './gl-proxy';
 import { GLSettings } from './gl-settings';
 import { IMaterialUniform, MaterialUniformType } from './types';
 
+export type MaterialOptions = Omit<Partial<Material>, "clone" | "dispose" | "gl">;
+
 /**
  * This represents a Shader configuration and a state for the configuration to be applied
  * when a model is rendered.
@@ -14,9 +16,9 @@ export class Material {
     blendEquation: GLSettings.Material.BlendingEquations;
     blendSrc: GLSettings.Material.BlendingSrcFactor;
   } | null = {
-    blendDst: GLSettings.Material.BlendingDstFactor.One,
+    blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
     blendEquation: GLSettings.Material.BlendingEquations.Add,
-    blendSrc: GLSettings.Material.BlendingSrcFactor.Zero,
+    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
   };
   /**
    * The write mask to the color buffer. Each channel can be toggled on or off as the color buffer is written to. See:
@@ -70,18 +72,11 @@ export class Material {
   /** The vertex shader that will be compiled to run as the program to use when this material is used */
   vertexShader: string = '';
 
-  constructor(options: Omit<Partial<Material>, "clone" | "dispose" | "applyBlendModePreset" | "gl">) {
+  constructor(options: MaterialOptions) {
     // Take in the properties
     Object.assign(this, options);
     // Ensure the gl property did not get copied in if using the copy constructor new Material(Material)
     delete this.gl;
-  }
-
-  /**
-   * This grabs a blend mode preset and sets up a proper equation for it.
-   */
-  applyBlendModePreset(blending: GLSettings.Material.Blending) {
-    // TODO
   }
 
   /**

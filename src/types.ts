@@ -1,6 +1,7 @@
+import { Attribute, IMaterialUniform, Material, MaterialOptions, MaterialUniformType, Texture } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
-import { ChartCamera, Vec, Vec2 } from "./util";
+import { ChartCamera, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
@@ -8,22 +9,22 @@ export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type ShaderIOValue =
-  | [number]
-  | [number, number]
-  | [number, number, number]
-  | [number, number, number, number]
-  | Three.Vector4[]
+  | Vec1
+  | Vec2
+  | Vec3
+  | Vec4
+  | Vec4[]
   | Float32Array;
 export type InstanceIOValue =
-  | [number]
-  | [number, number]
-  | [number, number, number]
-  | [number, number, number, number];
+  | Vec1
+  | Vec2
+  | Vec3
+  | Vec4;
 export type UniformIOValue =
   | number
   | InstanceIOValue
   | Float32Array
-  | Three.Texture;
+  | Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,
@@ -135,7 +136,7 @@ export interface IVertexAttribute {
 
 export interface IVertexAttributeInternal extends IVertexAttribute {
   /** This is the actual attribute generated internally for the ThreeJS interfacing */
-  materialAttribute: Three.BufferAttribute | null;
+  materialAttribute: Attribute | null;
 }
 
 export interface IInstanceAttribute<T extends Instance> {
@@ -228,7 +229,7 @@ export interface IInstanceAttributeInternal<T extends Instance>
    */
   packUID?: number;
   /** This is the actual attribute mapped to a buffer */
-  bufferAttribute: Three.InstancedBufferAttribute;
+  bufferAttribute: Attribute;
 }
 
 /**
@@ -323,7 +324,7 @@ export interface IUniformInternal extends IUniform {
    * the material uniforms that need to be updated as a Uniform for a layer is dictated as uniform across
    * all instances.
    */
-  materialUniforms: Three.IUniform[];
+  materialUniforms: IMaterialUniform<MaterialUniformType>[];
 }
 
 /**
@@ -331,7 +332,12 @@ export interface IUniformInternal extends IUniform {
  */
 export interface IInstancingUniform {
   name: string;
-  type: "f" | "v2" | "v3" | "v4" | "4fv" | "bvec4";
+  type: MaterialUniformType.FLOAT |
+    MaterialUniformType.VEC2 |
+    MaterialUniformType.VEC3 |
+    MaterialUniformType.VEC4 |
+    MaterialUniformType.VEC4_ARRAY
+  ;
   value: ShaderIOValue;
 }
 
@@ -367,9 +373,9 @@ export interface IProjection {
   worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 
-export type IMaterialOptions = Partial<
+export type ILayerMaterialOptions = Partial<
   Omit<
-    Omit<Omit<Three.ShaderMaterialParameters, "uniforms">, "vertexShader">,
+    Omit<Omit<MaterialOptions, "uniforms">, "vertexShader">,
     "fragmentShader"
   >
 >;

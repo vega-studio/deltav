@@ -442,7 +442,7 @@ export class MouseEventManager {
     const wheel = normalizeWheel(event);
 
     return {
-      wheel
+      wheel: [wheel.pixelX, wheel.pixelY]
     };
   }
 

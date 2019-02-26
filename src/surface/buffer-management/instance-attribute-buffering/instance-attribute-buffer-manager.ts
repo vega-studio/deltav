@@ -71,7 +71,7 @@ export class InstanceAttributeBufferManager<
   // These are the only Three objects that must be monitored for disposal
   private geometry?: Geometry;
   private material?: Material;
-  private model?: IModelConstructable & Model;
+  private model?: Model;
   private attributes?: IInstanceAttributeInternal<T>[];
 
   /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
@@ -388,13 +388,13 @@ export class InstanceAttributeBufferManager<
         const bufferAttribute = attribute.bufferAttribute;
         const size: number = attribute.size || 0;
 
-        if (bufferAttribute.array instanceof Float32Array) {
+        if (bufferAttribute.data instanceof Float32Array) {
           // Make a new buffer that is the proper size
           const buffer: Float32Array = new Float32Array(
             this.maxInstancedCount * size
           );
           // Retain all of the information in the previous buffer
-          buffer.set(bufferAttribute.array, 0);
+          buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
           const newAttribute = new Attribute(buffer, size);
           // Set the attribute to dynamic so we can update ranges within it

@@ -2,7 +2,7 @@ import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
@@ -257,7 +257,7 @@ export class ImageLayer<
     };
   }
 
-  getMaterialOptions(): IMaterialOptions {
-    return CommonMaterialOptions.transparentImage;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return CommonMaterialOptions.transparentImageBlending;
   }
 }

@@ -1,10 +1,10 @@
-import { indexToTextureUnit, textureUnitToIndex } from "src/gl/gl-decode";
-import { RenderTarget } from "src/gl/render-target";
-import { TypeVec } from "src/types";
-import { compare4, copy4, Vec4 } from "src/util";
+import { TypeVec } from "../types";
+import { compare4, copy4, flatten4, Vec4 } from "../util";
+import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
+import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
 import {
   IMaterialUniform,
@@ -551,7 +551,7 @@ export class GLState {
         v = uniform.value as MaterialUniformValue<
           MaterialUniformType.VEC4_ARRAY
         >;
-        this.gl.uniform4fv(location, [].concat.apply([], v));
+        this.gl.uniform4fv(location, flatten4(v));
         break;
 
       case MaterialUniformType.MATRIX3x3:

@@ -1,3 +1,4 @@
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { AbsolutePosition } from "../../primitives/absolute-position";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";
@@ -53,23 +54,19 @@ export function generateDefaultScene(
   };
 
   const defaultCamera: ViewCamera = new ViewCamera();
-  defaultCamera.baseCamera = new Three.OrthographicCamera(
-    viewport.left,
-    viewport.right,
-    viewport.top,
-    viewport.bottom,
-    viewport.near,
-    viewport.far
-  );
+  defaultCamera.baseCamera = new Camera({
+    type: CameraProjectionType.ORTHOGRAPHIC,
+    left: viewport.left,
+    right: viewport.right,
+    top: viewport.top,
+    bottom: viewport.bottom,
+    near: viewport.near,
+    far: viewport.far
+  });
 
-  defaultCamera.baseCamera.scale.set(1.0, -1.0, 1.0);
-  defaultCamera.baseCamera.position.set(0.0, 0.0, -300.0);
-  defaultCamera.baseCamera.updateMatrixWorld(true);
-  defaultCamera.baseCamera.updateMatrix();
-
-  if (defaultCamera.baseCamera instanceof Three.OrthographicCamera) {
-    defaultCamera.baseCamera.updateProjectionMatrix();
-  }
+  defaultCamera.baseCamera.scale = [1.0, -1.0, 1.0];
+  defaultCamera.baseCamera.position = [0.0, 0.0, -300.0];
+  defaultCamera.baseCamera.update();
 
   // Generate a charting camera with all scales set to 1 and no offsets in any direction
   const defaultChartCamera: ChartCamera = new ChartCamera();

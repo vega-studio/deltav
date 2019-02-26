@@ -2,7 +2,7 @@ import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, IModelType, Layer } from "../../surface/layer";
 import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
@@ -176,7 +176,7 @@ export class RingLayer<
     };
   }
 
-  getMaterialOptions(): IMaterialOptions {
-    return CommonMaterialOptions.transparentShape;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return CommonMaterialOptions.transparentShapeBlending;
   }
 }

@@ -250,15 +250,13 @@ export class View extends IdentifyByKey {
       const camera = this.viewCamera.baseCamera;
 
       Object.assign(camera, viewport);
-      camera.position.set(
+      camera.position = [
         -viewBounds.width / 2.0 * scaleX,
         viewBounds.height / 2.0 * scaleY,
-        camera.position.z
-      );
-      camera.scale.set(scaleX, -scaleY, 1.0);
-      camera.updateMatrix();
-      camera.updateMatrixWorld(true);
-      camera.updateProjectionMatrix();
+        camera.position[2]
+      ];
+      camera.scale = [scaleX, -scaleY, 1.0];
+      camera.update();
 
       this.viewBounds = viewBounds;
       this.viewBounds.data = this;

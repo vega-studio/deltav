@@ -1,3 +1,5 @@
+import { MaterialUniformType } from "src/gl";
+import { Vec4 } from "src/util";
 import {
   IInstancingUniform,
   IUniform,
@@ -52,10 +54,10 @@ export class UniformProcessing {
     // Add our extra uniform to the material uniform output so the system can utilize it as needed.
     this.materialUniforms.push({
       name: UniformProcessing.uniformPackingBufferName(),
-      type: "4fv",
+      type: MaterialUniformType.VEC4_ARRAY,
       value: new Array(this.metricsProcessor.totalInstanceUniformBlocks)
         .fill(0)
-        .map(() => new Three.Vector4(0, 0, 0, 0))
+        .map<Vec4>(() => [0, 0, 0, 0])
     });
 
     return out;

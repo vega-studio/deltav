@@ -89,6 +89,16 @@ export function divide1(top: Vec1Compat, bottom: Vec1Compat): Vec1 {
   return [top[0] / bottom[0]];
 }
 
+export function flatten1(list: Vec1Compat[]): number[] {
+  const out: number[] = [];
+
+  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+    out.push(list[i][0]);
+  }
+
+  return out;
+}
+
 export function inverse1(vec: Vec1Compat): Vec1 {
   return [1 / vec[0]];
 }
@@ -172,6 +182,18 @@ export function divide2(top: Vec2Compat, bottom: Vec2Compat): Vec2 {
   return [top[0] / bottom[0], top[1] / bottom[1]];
 }
 
+export function flatten2(list: Vec2Compat[]): number[] {
+  const out: number[] = [];
+
+  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+    const v = list[i];
+    out.push(v[0]);
+    out.push(v[1]);
+  }
+
+  return out;
+}
+
 export function inverse2(vec: Vec2Compat): Vec2 {
   return [1 / vec[0], 1 / vec[1]];
 }
@@ -253,6 +275,19 @@ export function compare3(left: Vec3Compat, right: Vec3Compat): boolean {
 
 export function divide3(top: Vec3Compat, bottom: Vec3Compat): Vec3 {
   return [top[0] / bottom[0], top[1] / bottom[1], top[2] / bottom[2]];
+}
+
+export function flatten3(list: Vec3Compat[]): number[] {
+  const out: number[] = [];
+
+  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+    const v = list[i];
+    out.push(v[0]);
+    out.push(v[1]);
+    out.push(v[2]);
+  }
+
+  return out;
 }
 
 export function inverse3(vec: Vec3Compat): Vec3 {
@@ -361,6 +396,20 @@ export function divide4(top: Vec4Compat, bottom: Vec4Compat): Vec4 {
   ];
 }
 
+export function flatten4(list: Vec4Compat[]): number[] {
+  const out: number[] = [];
+
+  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+    const v = list[i];
+    out.push(v[0]);
+    out.push(v[1]);
+    out.push(v[2]);
+    out.push(v[3]);
+  }
+
+  return out;
+}
+
 export function inverse4(vec: Vec4): Vec4 {
   return [1 / vec[0], 1 / vec[1], 1 / vec[2], 1 / vec[3]];
 }
@@ -459,6 +508,7 @@ export type VecMethods<T extends Vec> = {
   compare(left: T, right: T): boolean;
   divide(top: T, bottom: T): T;
   dot(left: T, right: T): number;
+  flatten(list: T[]): number[];
   inverse(vec: T): T;
   length(vec: T): number;
   linear(start: T, end: T, t: number): T;
@@ -475,6 +525,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   compare: compare1,
   divide: divide1,
   dot: dot1,
+  flatten: flatten1,
   inverse: inverse1,
   length: length1,
   linear: linear1,
@@ -491,6 +542,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   compare: compare2,
   divide: divide2,
   dot: dot2,
+  flatten: flatten2,
   inverse: inverse2,
   length: length2,
   linear: linear2,
@@ -507,6 +559,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   compare: compare3,
   divide: divide3,
   dot: dot3,
+  flatten: flatten3,
   inverse: inverse3,
   length: length3,
   linear: linear3,
@@ -523,6 +576,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   compare: compare4,
   divide: divide4,
   dot: dot4,
+  flatten: flatten4,
   inverse: inverse4,
   length: length4,
   linear: linear4,

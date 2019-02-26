@@ -1,23 +1,18 @@
-import { IModelConstructable, Layer } from "../layer";
-
-function isMesh(val: any): val is Three.Mesh {
-  return Boolean(val.isMesh);
-}
+import { Geometry, GLSettings, Material, Model } from "../../gl";
+import { Layer } from "../layer";
 
 export function generateLayerModel(
   layer: Layer<any, any>,
-  geometry: Three.BufferGeometry,
-  material: Three.ShaderMaterial
-): IModelConstructable & Three.Object3D {
+  geometry: Geometry,
+  material: Material
+): Model {
   const modelInfo = layer.getModelType();
-  const model = new modelInfo.modelType(geometry, material);
+  const model = new Model(geometry, material);
 
-  if (isMesh(model)) {
-    model.drawMode =
-      modelInfo.drawMode === undefined
-        ? Three.TriangleStripDrawMode
-        : modelInfo.drawMode;
-  }
+  model.drawMode =
+    modelInfo.drawMode === undefined
+      ? GLSettings.Model.DrawMode.TRIANGLE_STRIP
+      : modelInfo.drawMode;
 
   return model;
 }

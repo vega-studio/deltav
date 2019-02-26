@@ -6,7 +6,7 @@ import {
   Layer
 } from "../../surface/layer";
 import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   InstanceIOValue,
   IShaderInitialization,
@@ -278,7 +278,7 @@ export class EdgeLayer<
     };
   }
 
-  getMaterialOptions(): IMaterialOptions {
-    return CommonMaterialOptions.transparentShape;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return CommonMaterialOptions.transparentShapeBlending;
   }
 }

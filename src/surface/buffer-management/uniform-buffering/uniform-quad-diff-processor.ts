@@ -3,10 +3,9 @@ import { IQuadTreePickingMetrics, PickType } from "../../../types";
 import {
   BufferManagerBase,
   IBufferLocation,
-  isBufferLocation
 } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "./uniform-buffer-manager";
+import { isUniformBufferLocation, IUniformBufferLocation } from "./uniform-buffer-manager";
 import { UniformDiffProcessor } from "./uniform-diff-processor";
 
 const EMPTY: number[] = [];
@@ -51,7 +50,7 @@ export class UniformQuadDiffProcessor<
       // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const uniforms = manager.layer.bufferManager.add(instance);
 
-      if (isBufferLocation(uniforms)) {
+      if (isUniformBufferLocation(uniforms)) {
         instance.active = true;
         instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);

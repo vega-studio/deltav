@@ -499,13 +499,13 @@ export class InstanceAttributePackingBufferManager<
         let bufferAttribute = attribute.bufferAttribute;
         const size: number = attribute.size || 0;
 
-        if (bufferAttribute.array instanceof Float32Array) {
+        if (bufferAttribute.data instanceof Float32Array) {
           // Make a new buffer that is the proper size
           const buffer: Float32Array = new Float32Array(
             this.maxInstancedCount * size
           );
           // Retain all of the information in the previous buffer
-          buffer.set(bufferAttribute.array, 0);
+          buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
           const newAttribute = new Attribute(buffer, size);
           // Set the attribute to dynamic so we can update ranges within it

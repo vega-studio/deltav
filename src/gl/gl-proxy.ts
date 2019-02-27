@@ -1,6 +1,17 @@
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
-import { colorBufferFormat, depthBufferFormat, drawMode, indexToColorAttachment, inputImageFormat, magFilter, minFilter, stencilBufferFormat, texelFormat, wrapMode } from "./gl-decode";
+import {
+  colorBufferFormat,
+  depthBufferFormat,
+  drawMode,
+  indexToColorAttachment,
+  inputImageFormat,
+  magFilter,
+  minFilter,
+  stencilBufferFormat,
+  texelFormat,
+  wrapMode
+} from "./gl-decode";
 import { GLSettings } from "./gl-settings";
 import { GLState } from "./gl-state";
 import { Material } from "./material";
@@ -70,7 +81,10 @@ export class GLProxy {
   /**
    * Make a look up for existing programs based on shader objects.
    */
-  private programs = new Map<WebGLShader, Map<WebGLShader, { useCount: number, program: WebGLProgram}>>();
+  private programs = new Map<
+    WebGLShader,
+    Map<WebGLShader, { useCount: number; program: WebGLProgram }>
+  >();
 
   constructor(gl: GLContext, state: GLState, extensions: IExtensions) {
     this.gl = gl;
@@ -201,6 +215,8 @@ export class GLProxy {
       this.gl.compileShader(fs);
 
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
+        console.error("FRAGMENT SHADER COMPILER ERROR");
+        console.warn(material.fragmentShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
@@ -227,10 +243,12 @@ export class GLProxy {
         return;
       }
 
-      this.gl.shaderSource(vs, material.fragmentShader);
+      this.gl.shaderSource(vs, material.vertexShader);
       this.gl.compileShader(vs);
 
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
+        console.error("VERTEX SHADER COMPILER ERROR");
+        console.warn(material.vertexShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
@@ -285,9 +303,7 @@ export class GLProxy {
       }
 
       vertexPrograms.set(fs, useMetrics);
-    }
-
-    else {
+    } else {
       // Up the use count of the program for like programs that are found
       useMetrics.useCount++;
     }
@@ -333,7 +349,7 @@ export class GLProxy {
     // Generate the context to be attached to the render target
     const glContext: RenderTarget["gl"] = {
       fboId: fbo,
-      proxy: this,
+      proxy: this
     };
 
     // Color buffer
@@ -730,7 +746,7 @@ export class GLProxy {
       if (!useMetrics) {
         useMetrics = {
           useCount: 0,
-          program: programId,
+          program: programId
         };
       }
 
@@ -784,31 +800,23 @@ export class GLProxy {
           if (buffer instanceof Texture) this.disposeTexture(buffer);
           else this.disposeRenderBuffer(buffer);
         });
-      }
-
-      else if (target.gl.colorBufferId instanceof Texture) {
+      } else if (target.gl.colorBufferId instanceof Texture) {
         this.disposeTexture(target.gl.colorBufferId);
-      }
-
-      else if (target.gl.colorBufferId instanceof WebGLRenderbuffer) {
+      } else if (target.gl.colorBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.colorBufferId);
       }
 
       // Dispose of depth buffer
       if (target.gl.depthBufferId instanceof Texture) {
         this.disposeTexture(target.gl.depthBufferId);
-      }
-
-      else if (target.gl.depthBufferId instanceof WebGLRenderbuffer) {
+      } else if (target.gl.depthBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.depthBufferId);
       }
 
       // Dispose of stencil buffer
       if (target.gl.stencilBufferId instanceof Texture) {
         this.disposeTexture(target.gl.stencilBufferId);
-      }
-
-      else if (target.gl.stencilBufferId instanceof WebGLRenderbuffer) {
+      } else if (target.gl.stencilBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.stencilBufferId);
       }
 
@@ -948,43 +956,54 @@ export class GLProxy {
     );
 
     // First set the data in the texture
-    if (isDataBuffer(texture.data)) {
-      if (!isPowerOf2(texture.data.width) || !isPowerOf2(texture.data.height)) {
-        debug("Created a texture that is not using power of 2 dimensions.");
-      }
+    if (gl instanceof WebGLRenderingContext) {
+      if (isDataBuffer(texture.data)) {
+        if (
+          !isPowerOf2(texture.data.width) ||
+          !isPowerOf2(texture.data.height)
+        ) {
+          debug("Created a texture that is not using power of 2 dimensions.");
+        }
 
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        texelFormat(gl, texture.format),
-        texture.data.width,
-        texture.data.height,
-        0,
-        texelFormat(gl, texture.format),
-        inputImageFormat(gl, texture.type),
-        texture.data.buffer
-      );
-    } else if (texture.data) {
-      if (!isPowerOf2(texture.data.width) || !isPowerOf2(texture.data.height)) {
-        debug(
-          "Created a texture that is not using power of 2 dimensions. %o",
-          texture
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          texelFormat(gl, texture.format),
+          texture.data.width,
+          texture.data.height,
+          0,
+          texelFormat(gl, texture.format),
+          inputImageFormat(gl, texture.type),
+          texture.data.buffer
+        );
+      } else if (texture.data) {
+        if (
+          !isPowerOf2(texture.data.width) ||
+          !isPowerOf2(texture.data.height)
+        ) {
+          debug(
+            "Created a texture that is not using power of 2 dimensions. %o",
+            texture
+          );
+        }
+
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          texelFormat(gl, texture.format),
+          texelFormat(gl, texture.format),
+          inputImageFormat(gl, texture.type),
+          texture.data
         );
       }
 
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        texelFormat(gl, texture.format),
-        texelFormat(gl, texture.format),
-        inputImageFormat(gl, texture.type),
-        texture.data
-      );
+      if (texture.generateMipmaps) {
+        gl.generateMipmap(gl.TEXTURE_2D);
+      }
     }
 
-    if (texture.generateMipmaps) {
-      gl.generateMipmap(gl.TEXTURE_2D);
-    }
+    // Clear the flag for updates
+    texture.needsDataUpload = false;
   }
 
   /**
@@ -1035,6 +1054,18 @@ export class GLProxy {
       gl.TEXTURE_WRAP_T,
       wrapMode(gl, texture.wrapVertical)
     );
+
+    if (texture.premultiplyAlpha) {
+      // NOTE: The typescript definitions are wrong right now thus requiring some weird casting
+      // voodoo. The correct value according to the webgl specs IS true right here.
+      gl.pixelStorei(
+        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        (true as unknown) as number
+      );
+    }
+
+    // Clear the flag for updates
+    texture.needsSettingsUpdate = false;
   }
 
   /**

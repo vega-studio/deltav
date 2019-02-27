@@ -3,11 +3,11 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  InstanceAttributeSize,
+  InstanceAttributeSize
 } from "../../../types";
 import { uid } from "../../../util";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
-import { IModelConstructable, Layer } from "../../layer";
+import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
 import {
@@ -59,7 +59,7 @@ export class InstanceAttributePackingBufferManager<
   // These are the only Three objects that must be monitored for disposal
   private geometry?: Geometry;
   private material?: Material;
-  private model?: IModelConstructable & Model;
+  private model?: Model;
   private attributes?: IInstanceAttributeInternal<T>[];
   private blockAttributes?: IInstanceAttributeInternal<T>[];
   private blockSubAttributesLookup = new Map<number, IInstanceAttribute<T>[]>();
@@ -161,7 +161,10 @@ export class InstanceAttributePackingBufferManager<
       );
 
       if (this.model) {
-        this.model.drawRange = [0, this.currentInstancedCount * this.layer.instanceVertexCount];
+        this.model.drawRange = [
+          0,
+          this.currentInstancedCount * this.layer.instanceVertexCount
+        ];
       }
     } else {
       console.error(
@@ -354,10 +357,7 @@ export class InstanceAttributePackingBufferManager<
         // Make our attribute buffer to accommodate all of the instances to be rendered.
         const buffer = new Float32Array(blockSize * this.maxInstancedCount);
         // Make an instanced buffer to take advantage of hardware instancing
-        const bufferAttribute = new Attribute(
-          buffer,
-          blockSize
-        );
+        const bufferAttribute = new Attribute(buffer, blockSize);
         bufferAttribute.setDynamic(true);
 
         // Add the attribute to our geometry labeled as a block like the uniform block packing strategy
@@ -598,7 +598,11 @@ export class InstanceAttributePackingBufferManager<
     // Ensure material is defined
     this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
-    this.model = generateLayerModel(this.layer, this.geometry, this.material);
+    this.model = generateLayerModel(
+      this.geometry,
+      this.material,
+      this.layer.model.drawMode
+    );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.

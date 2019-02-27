@@ -17,7 +17,7 @@ const emptyTexture = new Texture({
   data: {
     width: 1,
     height: 1,
-    data: new Uint8ClampedArray(4),
+    data: new Uint8ClampedArray(4)
   }
 });
 
@@ -117,8 +117,8 @@ export function generateAtlasResourceUniforms<
               instanceAttribute.atlas.key
             );
 
-            if (atlas && atlas.image) {
-              const { width, height } = atlas.image;
+            if (atlas && atlas.data) {
+              const { width, height } = atlas.data;
               return [width || 1, height || 1];
             }
 

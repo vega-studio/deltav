@@ -158,7 +158,7 @@ export class Layer<
   material: Material;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
-  /** This is the mesh for the Threejs setup */
+  /** Default model configuration for rendering in the gl layer */
   model: Model;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking:
@@ -323,15 +323,6 @@ export class Layer<
     throw new Error(
       "When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode."
     );
-  }
-
-  /**
-   * The type of Three model as well as the preferred draw mode associated with it.
-   */
-  getModelType(): IModelType {
-    return {
-      drawMode: GLSettings.Model.DrawMode.TRIANGLE_STRIP
-    };
   }
 
   /**

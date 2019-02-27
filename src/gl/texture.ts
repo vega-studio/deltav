@@ -51,8 +51,8 @@ export class Texture {
     this.needsDataUpload = true;
     this._format = val;
   }
-  private _format: GLSettings.Texture.TexelDataType = GLSettings.Texture.TexelDataType
-    .RGBA;
+  private _format: GLSettings.Texture.TexelDataType = GLSettings.Texture
+    .TexelDataType.RGBA;
 
   /**
    * Auto generates mipmaps. See:
@@ -139,7 +139,7 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._premultiplyAlpha = val;
   }
-  private _premultiplyAlpha: boolean;
+  private _premultiplyAlpha: boolean = false;
 
   /**
    * The source pixel data type.
@@ -152,7 +152,7 @@ export class Texture {
     this.needsDataUpload = true;
     this._type = val;
   }
-  private _type: GLSettings.Texture.SourcePixelFormat;
+  private _type = GLSettings.Texture.SourcePixelFormat.UnsignedByte;
 
   /**
    * Sets the data alignment for packing the pixels. See:
@@ -166,8 +166,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._unpackAlignment = val;
   }
-  private _unpackAlignment: GLSettings.Texture.UnpackAlignment = GLSettings.Texture
-    .UnpackAlignment.FOUR;
+  private _unpackAlignment: GLSettings.Texture.UnpackAlignment = GLSettings
+    .Texture.UnpackAlignment.FOUR;
 
   /**
    * Specifies sample wrapping for when samples fall outside the 0 - 1 range See:
@@ -180,8 +180,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._wrapHorizontal = val;
   }
-  private _wrapHorizontal: GLSettings.Texture.Wrapping = GLSettings.Texture.Wrapping
-    .CLAMP_TO_EDGE;
+  private _wrapHorizontal: GLSettings.Texture.Wrapping = GLSettings.Texture
+    .Wrapping.CLAMP_TO_EDGE;
 
   /**
    * Specifies sample wrapping for when samples fall outside the 0 - 1 range. See:
@@ -194,12 +194,10 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._wrapVertical = val;
   }
-  private _wrapVertical: GLSettings.Texture.Wrapping = GLSettings.Texture.Wrapping
-    .CLAMP_TO_EDGE;
+  private _wrapVertical: GLSettings.Texture.Wrapping = GLSettings.Texture
+    .Wrapping.CLAMP_TO_EDGE;
 
-  constructor(
-    options: Partial<Texture>
-  ) {
+  constructor(options: Partial<Texture>) {
     Object.assign(this, options);
   }
 

@@ -247,7 +247,7 @@ export class RenderTarget {
       texture.data = {
         buffer: null,
         height,
-        width,
+        width
       };
     });
   }

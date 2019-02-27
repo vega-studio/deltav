@@ -118,11 +118,12 @@ export namespace GLSettings {
     /**
      * Specifies which side of the polygon should be culled or not. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
     export enum CullSide {
       NONE = 0,
-      FRONT = 1,
-      BACK = 2,
+      CW = 1,
+      CCW = 2,
       BOTH = 3
     }
   }

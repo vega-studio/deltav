@@ -1,4 +1,5 @@
 import { GLState } from "src/gl/gl-state";
+import { Model } from "src/gl/model";
 import { Vec2, Vec4 } from "../util";
 import { GLProxy } from "./gl-proxy";
 import { RenderTarget } from "./render-target";
@@ -66,10 +67,14 @@ export class WebGLRenderer {
   private glState: GLState;
   /** The options that constructed or are currently applied to the renderer */
   options: IWebGLRendererOptions;
+
   /** Any current internal state the renderer has applied to it's target */
-  state: IWebGLRendererState;
+  state: IWebGLRendererState = {
+    pixelRatio: 1
+  };
 
   constructor(options: IWebGLRendererOptions) {
+    // Assign defaults to our options
     this.options = Object.assign(
       {
         alpha: true,
@@ -79,9 +84,13 @@ export class WebGLRenderer {
       options
     );
 
+    // Make sure we are provided a canvas to work with
     if (!this.options.canvas) {
       console.warn("WebGLRenderer ERROR: A canvas is REQUIRED as a parameter.");
     }
+
+    // Initialize context for the renderer
+    this.getContext();
   }
 
   /**
@@ -174,6 +183,9 @@ export class WebGLRenderer {
       return;
     }
 
+    // We'll remove any models that have errored from the scene
+    const toRemove: Model[] = [];
+
     // Loop through all of the models of the scene and process them for rendering
     scene.models.forEach(model => {
       const geometry = model.geometry;
@@ -208,6 +220,8 @@ export class WebGLRenderer {
             "Geometry was unable to update correctly, thus we are skipping the drawing of",
             model
           );
+
+          toRemove.push(model);
         }
       } else {
         console.warn(
@@ -215,8 +229,17 @@ export class WebGLRenderer {
           material,
           geometry
         );
+
+        toRemove.push(model);
       }
     });
+
+    // Clear out any failed models from the scene
+    toRemove.forEach(model => {
+      scene.remove(model);
+    });
+
+    debugger;
   }
 
   /**

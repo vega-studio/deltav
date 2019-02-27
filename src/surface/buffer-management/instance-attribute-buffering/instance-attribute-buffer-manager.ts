@@ -1,13 +1,10 @@
 import { Attribute, Geometry, Material, Model } from "src/gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
-import {
-  IInstanceAttribute,
-  IInstanceAttributeInternal,
-} from "../../../types";
+import { IInstanceAttribute, IInstanceAttributeInternal } from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
-import { IModelConstructable, Layer } from "../../layer";
+import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
 import {
@@ -40,7 +37,9 @@ export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<
 /**
  * Typeguard for the instance attribute buffer location.
  */
-export function isInstanceAttributeBufferLocation(val: IBufferLocation): val is IInstanceAttributeBufferLocation {
+export function isInstanceAttributeBufferLocation(
+  val: IBufferLocation
+): val is IInstanceAttributeBufferLocation {
   return Boolean(val && val.buffer && val.buffer.value);
 }
 
@@ -171,7 +170,10 @@ export class InstanceAttributeBufferManager<
       );
 
       if (this.model) {
-        this.model.drawRange = [0, this.currentInstancedCount * this.layer.instanceVertexCount];
+        this.model.drawRange = [
+          0,
+          this.currentInstancedCount * this.layer.instanceVertexCount
+        ];
       }
     } else {
       console.error(
@@ -295,10 +297,7 @@ export class InstanceAttributeBufferManager<
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
         const buffer = new Float32Array(size * this.maxInstancedCount);
-        const bufferAttribute = new Attribute(
-          buffer,
-          size
-        );
+        const bufferAttribute = new Attribute(buffer, size);
         bufferAttribute.setDynamic(true);
         this.geometry.addAttribute(
           getAttributeShaderName(attribute),
@@ -461,7 +460,11 @@ export class InstanceAttributeBufferManager<
     // Ensure material is defined
     this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
-    this.model = generateLayerModel(this.layer, this.geometry, this.material);
+    this.model = generateLayerModel(
+      this.geometry,
+      this.material,
+      this.layer.model.drawMode
+    );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.

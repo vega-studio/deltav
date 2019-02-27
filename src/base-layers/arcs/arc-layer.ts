@@ -1,5 +1,6 @@
+import { GLSettings } from "src/gl";
 import { InstanceProvider } from "../../instance-provider";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -172,16 +173,9 @@ export class ArcLayer<
     };
   }
 
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh
-    };
-  }
-
   getMaterialOptions(): ILayerMaterialOptions {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      side: Three.DoubleSide
+      culling: GLSettings.Material.CullSide.NONE
     } as ILayerMaterialOptions);
   }
 }

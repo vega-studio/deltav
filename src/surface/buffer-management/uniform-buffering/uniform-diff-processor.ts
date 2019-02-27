@@ -2,7 +2,10 @@ import { Vec4 } from "src/util/vector";
 import { Instance, InstanceDiff } from "../../../instance-provider";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { isUniformBufferLocation, IUniformBufferLocation } from "./uniform-buffer-manager";
+import {
+  isUniformBufferLocation,
+  IUniformBufferLocation
+} from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];
@@ -130,7 +133,11 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       if (start !== undefined) {
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
-        for (let k: number = start, endk = value.length + start; k < endk; ++k) {
+        for (
+          let k: number = start, endk = value.length + start;
+          k < endk;
+          ++k
+        ) {
           block[k] = value[k - start];
         }
       }

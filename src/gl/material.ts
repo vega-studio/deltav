@@ -1,9 +1,12 @@
-import { Omit, TypeVec } from '../types';
-import { GLProxy } from './gl-proxy';
-import { GLSettings } from './gl-settings';
-import { IMaterialUniform, MaterialUniformType } from './types';
+import { Omit, TypeVec } from "../types";
+import { GLProxy } from "./gl-proxy";
+import { GLSettings } from "./gl-settings";
+import { IMaterialUniform, MaterialUniformType } from "./types";
 
-export type MaterialOptions = Omit<Partial<Material>, "clone" | "dispose" | "gl">;
+export type MaterialOptions = Omit<
+  Partial<Material>,
+  "clone" | "dispose" | "gl"
+>;
 
 /**
  * This represents a Shader configuration and a state for the configuration to be applied
@@ -18,7 +21,7 @@ export class Material {
   } | null = {
     blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
     blendEquation: GLSettings.Material.BlendingEquations.Add,
-    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
+    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
   };
   /**
    * The write mask to the color buffer. Each channel can be toggled on or off as the color buffer is written to. See:
@@ -26,9 +29,10 @@ export class Material {
    */
   colorWrite: TypeVec<boolean> = [true, true, true, true];
   /** Sets the cull mode of GL for the polygons */
-  culling: GLSettings.Material.CullSide = GLSettings.Material.CullSide.BACK;
+  culling: GLSettings.Material.CullSide = GLSettings.Material.CullSide.CCW;
   /** The comparator used to classify when a fragment will be rendered vs discarded when tested against the depth buffer */
-  depthFunc: GLSettings.Material.DepthFunctions = GLSettings.Material.DepthFunctions.LESS;
+  depthFunc: GLSettings.Material.DepthFunctions = GLSettings.Material
+    .DepthFunctions.LESS;
   /**
    * Enable / disable depth test (determines if the fragment depth is compared to the depth buffer before writing). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
@@ -45,7 +49,7 @@ export class Material {
    */
   dithering: boolean = true;
   /** The fragment shader in raw text format that will be compiled to run as the program to use when this material is used */
-  fragmentShader: string = '';
+  fragmentShader: string = "";
   /**
    * Stores any gl state associated with this object. Modifying this outside the framework
    * is almost guaranteed to break something.
@@ -70,7 +74,7 @@ export class Material {
   /** Uniforms that will be synced with the GPU when this material is used */
   uniforms: { [key: string]: IMaterialUniform<MaterialUniformType> } = {};
   /** The vertex shader that will be compiled to run as the program to use when this material is used */
-  vertexShader: string = '';
+  vertexShader: string = "";
 
   constructor(options: MaterialOptions) {
     // Take in the properties
@@ -97,7 +101,8 @@ export class Material {
     // We DO NOT copy the data object as it is expected to be able to share data buffers
     // between uniforms.
     for (const name in copy.uniforms) {
-      const uniform: IMaterialUniform<MaterialUniformType> = copy.uniforms[name];
+      const uniform: IMaterialUniform<MaterialUniformType> =
+        copy.uniforms[name];
 
       // Make sure the gl references are the same but their own object
       if (uniform.gl) {

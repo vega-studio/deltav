@@ -1,5 +1,3 @@
-import { normalizeWheel } from './normalizeWheel';
+import { normalizeWheel } from "./normalizeWheel";
 
-export {
-  normalizeWheel
-};
+export { normalizeWheel };

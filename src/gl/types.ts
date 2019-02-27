@@ -1,4 +1,4 @@
-import { Mat3, Mat4, Vec2, Vec3, Vec4 } from "../util";
+import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../util";
 import { Texture } from "./texture";
 
 export enum MaterialUniformType {
@@ -24,35 +24,51 @@ export enum MaterialUniformType {
 
 // Uniform type guards
 
-export function isUniformVec2(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.VEC2> {
+export function isUniformVec2(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.VEC2> {
   return val.type === MaterialUniformType.VEC2;
 }
 
-export function isUniformVec3(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.VEC3> {
+export function isUniformVec3(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.VEC3> {
   return val.type === MaterialUniformType.VEC3;
 }
 
-export function isUniformVec4(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.VEC4> {
+export function isUniformVec4(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.VEC4> {
   return val.type === MaterialUniformType.VEC4;
 }
 
-export function isUniformVec4Array(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.VEC4_ARRAY> {
+export function isUniformVec4Array(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.VEC4_ARRAY> {
   return val.type === MaterialUniformType.VEC4_ARRAY;
 }
 
-export function isUniformMat3(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.MATRIX3x3> {
+export function isUniformMat3(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.MATRIX3x3> {
   return val.type === MaterialUniformType.MATRIX3x3;
 }
 
-export function isUniformMat4(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.MATRIX4x4> {
+export function isUniformMat4(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.MATRIX4x4> {
   return val.type === MaterialUniformType.MATRIX4x4;
 }
 
-export function isUniformTexture(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.TEXTURE> {
+export function isUniformTexture(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.TEXTURE> {
   return val.type === MaterialUniformType.TEXTURE;
 }
 
-export function isUniformFloat(val: IMaterialUniform<MaterialUniformType>): val is IMaterialUniform<MaterialUniformType.FLOAT> {
+export function isUniformFloat(
+  val: IMaterialUniform<MaterialUniformType>
+): val is IMaterialUniform<MaterialUniformType.FLOAT> {
   return val.type === MaterialUniformType.FLOAT;
 }
 
@@ -70,10 +86,14 @@ export type MaterialUniformValue<T> = T extends MaterialUniformType.FLOAT
         : T extends MaterialUniformType.VEC4_ARRAY
           ? Vec4[]
           : T extends MaterialUniformType.MATRIX3x3
-            ? Mat3
+            ? Mat3x3
             : T extends MaterialUniformType.MATRIX4x4
-              ? Mat4
-              : T extends MaterialUniformType.TEXTURE ? Texture : number;
+              ? Mat4x4
+              : T extends MaterialUniformType.TEXTURE
+                ? Texture
+                : T extends MaterialUniformType.FLOAT_ARRAY
+                  ? (number[] | Float32Array)
+                  : number;
 
 /**
  * Defines a uniform applied to a material

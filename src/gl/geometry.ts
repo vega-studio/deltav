@@ -8,11 +8,11 @@ import { Attribute } from "src/gl/attribute";
 export class Geometry {
   /** The attributes bound to this geometry.  */
   private _attributes: { [key: string]: Attribute } = {};
-  get attributes() { return new Map(Object.entries(this._attributes)); }
+  get attributes() {
+    return new Map(Object.entries(this._attributes));
+  }
   /** This contains any gl specific state associated with this object */
-  gl = {
-
-  };
+  gl = {};
   /** Number of instances this geometry covers */
   maxInstancedCount: number = 0;
 

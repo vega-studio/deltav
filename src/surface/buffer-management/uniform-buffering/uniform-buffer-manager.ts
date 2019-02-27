@@ -1,5 +1,9 @@
 import { Attribute, Geometry, Material, Model } from "src/gl";
-import { IMaterialUniform, isUniformVec4Array, MaterialUniformType } from "../../../gl/types";
+import {
+  IMaterialUniform,
+  isUniformVec4Array,
+  MaterialUniformType
+} from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
 import { UniformProcessing } from "../../../shaders/processing/uniform-processing";
 import { IInstanceAttribute } from "../../../types";
@@ -21,8 +25,15 @@ export interface IUniformBufferLocation extends IBufferLocation {
 /**
  * Typeguard for uniform buffer locations
  */
-export function isUniformBufferLocation(val: any): val is IUniformBufferLocation {
-  return val && val.buffer && val.buffer.value && val.type === MaterialUniformType.VEC4_ARRAY;
+export function isUniformBufferLocation(
+  val: any
+): val is IUniformBufferLocation {
+  return (
+    val &&
+    val.buffer &&
+    val.buffer.value &&
+    val.type === MaterialUniformType.VEC4_ARRAY
+  );
 }
 
 export interface InstanceUniformBuffer {
@@ -228,14 +239,16 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Injected shader IO and shader fragments
     const newMaterial = this.layer.material.clone();
     // Now make a Model for the buffer so it can be rendered withn the scene
-    const newModel = generateLayerModel(this.layer, newGeometry, newMaterial);
+    const newModel = generateLayerModel(
+      newGeometry,
+      newMaterial,
+      this.layer.model.drawMode
+    );
     // Ensure the draw range covers every instance in the geometry.
-    newModel.drawRange.start = 0;
-    newModel.drawRange.count =
-      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount;
-    // We render junkloads of instances in a buffer. Culling will have to happen
-    // On an instance level.
-    newModel.frustumCulled = false;
+    newModel.drawRange = [
+      0,
+      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount
+    ];
 
     // Make our new buffer which will manage the geometry and everything necessary
     const buffer: InstanceUniformBuffer = {
@@ -245,7 +258,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       geometry: newGeometry,
       lastInstance: 0,
       material: newMaterial,
-      model: newModel,
+      model: newModel
     };
 
     this.buffers.push(buffer);
@@ -260,29 +273,29 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Type guard this uniform to ensure we're dealing with the correct type
     if (isUniformVec4Array(instanceData)) {
       // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
-      instanceData.value = instanceData.value.map<Vec4>(
-        () => [0.0, 0.0, 0.0, 0.0]
+      instanceData.value = instanceData.value.map<Vec4>(() => [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]);
+    } else {
+      console.warn(
+        "Material is utilizing an invalid uniform type for Uniform Buffer Management. Buffering will not be possible."
       );
-    }
-
-    else {
-      console.warn('Material is utilizing an invalid uniform type for Uniform Buffer Management. Buffering will not be possible.');
       return;
     }
 
     // A fake attribute to satisfy type requirements
     const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
-      bufferAttribute: new Attribute(
-        new Float32Array(1),
-        1
-      ),
+      bufferAttribute: new Attribute(new Float32Array(1), 1),
       uid: uid()
     });
 
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
       const cluster: IUniformBufferLocation = {
         attribute: fakeAttribute, // TODO: This is not needed for the uniform method yet. When we break down
-                                  // the uniform updates into attributes, this will be utilized.
+        // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
         range: [uniformIndex, 0]

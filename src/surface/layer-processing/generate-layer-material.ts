@@ -1,6 +1,6 @@
 import { Material, MaterialOptions, MaterialUniformType } from "../../gl";
+import { Instance } from "../../instance-provider/instance";
 import { IInstancingUniform, IUniform, UniformSize } from "../../types";
-import { Instance } from "../../util";
 import { ILayerProps, Layer } from "../layer";
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
@@ -9,7 +9,8 @@ const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.THREE]: MaterialUniformType.VEC3,
   [UniformSize.FOUR]: MaterialUniformType.VEC4,
   [UniformSize.MATRIX3]: MaterialUniformType.MATRIX3x3,
-  [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4
+  [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4,
+  [UniformSize.ATLAS]: MaterialUniformType.TEXTURE
 };
 
 const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {

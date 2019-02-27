@@ -109,10 +109,7 @@ export function generateLayerGeometry<T extends Instance>(
 
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    const materialAttribute = new Attribute(
-      vertexBuffers[i],
-      attribute.size
-    );
+    const materialAttribute = new Attribute(vertexBuffers[i], attribute.size);
     attribute.materialAttribute = materialAttribute;
     geometry.addAttribute(attribute.name, materialAttribute);
   }

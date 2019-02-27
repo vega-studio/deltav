@@ -119,7 +119,7 @@ export class AtlasManager {
    * @return {Promise<boolean>} Promise that resolves to if the image successfully was drawn or not
    */
   private async draw(atlas: Atlas, resource: AtlasResource): Promise<boolean> {
-    const canvas = atlas.texture.image;
+    const canvas = atlas.texture.data;
     const atlasName = atlas.id;
 
     // Register the resource with the atlas
@@ -204,13 +204,25 @@ export class AtlasManager {
         texture.pixelHeight = rasterization.texture.height;
 
         // Now draw the image to the indicated canvas
-        canvas
-          .getContext("2d")
-          .drawImage(
-            loadedImage,
-            insertedNode.nodeDimensions.x,
-            insertedNode.nodeDimensions.y
+        if (canvas instanceof HTMLCanvasElement) {
+          const ctx = canvas.getContext("2d");
+
+          if (ctx) {
+            ctx.drawImage(
+              loadedImage,
+              insertedNode.nodeDimensions.x,
+              insertedNode.nodeDimensions.y
+            );
+          } else {
+            console.warn(
+              "Unable to get a context from a canvas element. This is an error that can not be handled at this point and will produce undefined behavior in this WebGL application"
+            );
+          }
+        } else {
+          console.warn(
+            "The data for the Texture that is defining our atlas is not a Canvas element which is invalid in this operation."
           );
+        }
 
         // We have finished inserting
         return true;

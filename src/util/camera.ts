@@ -1,9 +1,17 @@
-import { identity4, Mat4x4, multiply4x4, orthographic4x4, perspective4x4, scale4x4by3, translation4x4by3 } from "src/util/matrix";
+import {
+  identity4,
+  Mat4x4,
+  multiply4x4,
+  orthographic4x4,
+  perspective4x4,
+  scale4x4by3,
+  translation4x4by3
+} from "src/util/matrix";
 import { copy3, Vec3 } from "src/util/vector";
 
 export enum CameraProjectionType {
   PERSPECTIVE,
-  ORTHOGRAPHIC,
+  ORTHOGRAPHIC
 }
 
 /**
@@ -49,7 +57,9 @@ export interface ICameraPerspectiveOptions {
 /**
  * Base options for camera construction
  */
-export type ICameraOptions = ICameraOrthographicOptions | ICameraPerspectiveOptions;
+export type ICameraOptions =
+  | ICameraOrthographicOptions
+  | ICameraPerspectiveOptions;
 
 export interface IOrthoGraphicCamera extends Camera {
   projectionOptions: ICameraOrthographicOptions;
@@ -60,11 +70,17 @@ export interface IPerspectiveCamera extends Camera {
 }
 
 export function isOrthographic(camera: Camera): camera is IOrthoGraphicCamera {
-  return camera.projectionOptions.type === CameraProjectionType.ORTHOGRAPHIC && 'left' in camera.projectionOptions;
+  return (
+    camera.projectionOptions.type === CameraProjectionType.ORTHOGRAPHIC &&
+    "left" in camera.projectionOptions
+  );
 }
 
 export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
-  return camera.projectionOptions.type === CameraProjectionType.PERSPECTIVE && 'fov' in camera.projectionOptions;
+  return (
+    camera.projectionOptions.type === CameraProjectionType.PERSPECTIVE &&
+    "fov" in camera.projectionOptions
+  );
 }
 
 /**
@@ -72,21 +88,30 @@ export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
  */
 export class Camera {
   /** The expected projection style of the Camera. */
-  get projectionType() { return this._projectionType; }
-  private _projectionType = CameraProjectionType.PERSPECTIVE;
+  get projectionType() {
+    return this._projectionOptions.type;
+  }
 
   /** The computed projection of the camera. */
-  get projection() { return this._projection; }
+  get projection() {
+    return this._projection;
+  }
   private _projection: Mat4x4 = identity4();
   /** The computed view transform of the camera. */
-  get view() { return this._view; }
+  get view() {
+    return this._view;
+  }
   private _view: Mat4x4 = identity4();
   /** Flag indicating the transforms for this camera need updating. */
-  get needsUpdate() { return this._needsUpdate; }
+  get needsUpdate() {
+    return this._needsUpdate;
+  }
   private _needsUpdate = false;
 
   /** This is the position of the camera within the world. Call updateTransform for changes to take effect. */
-  get position() { return copy3(this._position); }
+  get position() {
+    return copy3(this._position);
+  }
   set position(val: Vec3) {
     this._position = val;
     this._needsUpdate = true;
@@ -94,7 +119,9 @@ export class Camera {
   private _position: Vec3 = [0, 0, 0];
 
   /** This is a scale distortion the camera views the world with */
-  get scale() { return copy3(this._scale); }
+  get scale() {
+    return copy3(this._scale);
+  }
   set scale(val: Vec3) {
     this._scale = val;
     this._needsUpdate = true;
@@ -102,7 +129,9 @@ export class Camera {
   private _scale: Vec3 = [1, 1, 1];
 
   /** This is the rotation of the camera looking into the world */
-  get rotation() { return copy3(this._rotation); }
+  get rotation() {
+    return copy3(this._rotation);
+  }
   set rotation(val: Vec3) {
     this._rotation = val;
     this._needsUpdate = true;
@@ -113,7 +142,9 @@ export class Camera {
    * Options used for making the projection of the camera. Set new options to update the projection.
    * Getting the options returns a copy of the object and is not the internal object itself.
    */
-  get projectionOptions() { return Object.assign({}, this._projectionOptions); }
+  get projectionOptions() {
+    return Object.assign({}, this._projectionOptions);
+  }
   set projectionOptions(val: ICameraOptions) {
     this._projectionOptions = val;
     this._needsUpdate = true;
@@ -149,9 +180,7 @@ export class Camera {
         this.projectionOptions.near,
         this.projectionOptions.far
       );
-    }
-
-    else if (isPerspective(this)) {
+    } else if (isPerspective(this)) {
       this._projection = perspective4x4(
         this.projectionOptions.fov,
         this.projectionOptions.width / this.projectionOptions.height,

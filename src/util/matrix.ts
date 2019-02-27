@@ -1,21 +1,36 @@
-import { Vec3, Vec3Compat, Vec4 } from "src/util/vector";
+import { Vec3Compat } from "src/util/vector";
 
-export type Mat2x2 = [
-  number, number,
-  number, number
-];
+export type Mat2x2 = [number, number, number, number];
 
 export type Mat3x3 = [
-  number, number, number,
-  number, number, number,
-  number, number, number
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
 ];
 
 export type Mat4x4 = [
-  number, number, number, number,
-  number, number, number, number,
-  number, number, number, number,
-  number, number, number, number
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
 ];
 
 export function determinant2x2(mat: Mat2x2) {
@@ -23,26 +38,78 @@ export function determinant2x2(mat: Mat2x2) {
 }
 
 export function determinant3x3(mat: Mat3x3): number {
-  return  mat[0] * mat[4] * mat[8] - mat[0] * mat[5] * mat[7] +
-    mat[1] * mat[5] * mat[6] - mat[1] * mat[3] * mat[8] +
-    mat[2] * mat[3] * mat[7] - mat[2] * mat[4] * mat[6];
+  return (
+    mat[0] * mat[4] * mat[8] -
+    mat[0] * mat[5] * mat[7] +
+    mat[1] * mat[5] * mat[6] -
+    mat[1] * mat[3] * mat[8] +
+    mat[2] * mat[3] * mat[7] -
+    mat[2] * mat[4] * mat[6]
+  );
 }
 
 export function determinant4x4(mat: Mat4x4): number {
-  const m0: Mat3x3 = [mat[5], mat[6], mat[7], mat[9], mat[10], mat[11], mat[13], mat[14], mat[15]];
-  const m1: Mat3x3 = [mat[4], mat[6], mat[7], mat[8], mat[10], mat[11], mat[12], mat[14], mat[15]];
-  const m2: Mat3x3 = [mat[4], mat[5], mat[7], mat[8], mat[9], mat[11], mat[12], mat[13], mat[15]];
-  const m3: Mat3x3 = [mat[4], mat[5], mat[6], mat[8], mat[9], mat[10], mat[12], mat[13], mat[14]];
+  const m0: Mat3x3 = [
+    mat[5],
+    mat[6],
+    mat[7],
+    mat[9],
+    mat[10],
+    mat[11],
+    mat[13],
+    mat[14],
+    mat[15]
+  ];
+  const m1: Mat3x3 = [
+    mat[4],
+    mat[6],
+    mat[7],
+    mat[8],
+    mat[10],
+    mat[11],
+    mat[12],
+    mat[14],
+    mat[15]
+  ];
+  const m2: Mat3x3 = [
+    mat[4],
+    mat[5],
+    mat[7],
+    mat[8],
+    mat[9],
+    mat[11],
+    mat[12],
+    mat[13],
+    mat[15]
+  ];
+  const m3: Mat3x3 = [
+    mat[4],
+    mat[5],
+    mat[6],
+    mat[8],
+    mat[9],
+    mat[10],
+    mat[12],
+    mat[13],
+    mat[14]
+  ];
 
-  return mat[0] * determinant3x3(m0) - mat[1] * determinant3x3(m1) + mat[2] * determinant3x3(m2) - mat[3] * determinant3x3(m3);
+  return (
+    mat[0] * determinant3x3(m0) -
+    mat[1] * determinant3x3(m1) +
+    mat[2] * determinant3x3(m2) -
+    mat[3] * determinant3x3(m3)
+  );
 }
 
 export function affineInverse2x2(mat: Mat2x2): Mat2x2 | null {
   const determinant = determinant2x2(mat);
   if (determinant === 0) return null;
   return [
-    mat[3] / determinant, -mat[1] / determinant,
-    -mat[2] / determinant, mat[0] / determinant,
+    mat[3] / determinant,
+    -mat[1] / determinant,
+    -mat[2] / determinant,
+    mat[0] / determinant
   ];
 }
 
@@ -60,9 +127,15 @@ export function affineInverse3x3(mat: Mat3x3): Mat3x3 | null {
   const m8 = determinant2x2([mat[0], mat[1], mat[3], mat[4]]);
 
   return [
-    m0 / determiant, -m3 / determiant, m6 / determiant,
-    -m1 / determiant, m4 / determiant, m7 / determiant,
-    m2 / determiant, -m5 / determiant, m8 / determiant
+    m0 / determiant,
+    -m3 / determiant,
+    m6 / determiant,
+    -m1 / determiant,
+    m4 / determiant,
+    m7 / determiant,
+    m2 / determiant,
+    -m5 / determiant,
+    m8 / determiant
   ];
 }
 
@@ -121,51 +194,54 @@ export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
 }
 
 export function scale2x2(mat: Mat2x2, scale: number): Mat2x2 {
-  return[
-    mat[0] * scale, mat[1] * scale,
-    mat[2] * scale, mat[3] * scale
-  ];
+  return [mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale];
 }
 
 export function scale3x3(mat: Mat3x3, scale: number): Mat3x3 {
-  return[
-    mat[0] * scale, mat[1] * scale, mat[2] * scale,
-    mat[3] * scale, mat[4] * scale, mat[5] * scale,
-    mat[6] * scale, mat[7] * scale, mat[8] * scale
+  return [
+    mat[0] * scale,
+    mat[1] * scale,
+    mat[2] * scale,
+    mat[3] * scale,
+    mat[4] * scale,
+    mat[5] * scale,
+    mat[6] * scale,
+    mat[7] * scale,
+    mat[8] * scale
   ];
 }
 
 export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
-  return[
-    mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale,
-    mat[4] * scale, mat[5] * scale, mat[6] * scale, mat[7] * scale,
-    mat[8] * scale, mat[9] * scale, mat[10] * scale, mat[11] * scale,
-    mat[12] * scale, mat[13] * scale, mat[14] * scale, mat[15] * scale
+  return [
+    mat[0] * scale,
+    mat[1] * scale,
+    mat[2] * scale,
+    mat[3] * scale,
+    mat[4] * scale,
+    mat[5] * scale,
+    mat[6] * scale,
+    mat[7] * scale,
+    mat[8] * scale,
+    mat[9] * scale,
+    mat[10] * scale,
+    mat[11] * scale,
+    mat[12] * scale,
+    mat[13] * scale,
+    mat[14] * scale,
+    mat[15] * scale
   ];
 }
 
 export function identity2(): Mat2x2 {
-  return [
-    1, 0,
-    0, 1
-  ];
+  return [1, 0, 0, 1];
 }
 
 export function identity3(): Mat3x3 {
-  return [
-    1, 0, 0,
-    0, 1, 0,
-    0, 0, 1
-  ];
+  return [1, 0, 0, 0, 1, 0, 0, 0, 1];
 }
 
 export function identity4(): Mat4x4 {
-  return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1
-  ];
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 }
 
 export function multiply2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
@@ -207,37 +283,85 @@ export function multiply3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
 export function multiply4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   return [
     // r0
-    left[0] * right[0] + left[1] * right[4] + left[2] * right[8] + left[3] * right[12],
+    left[0] * right[0] +
+      left[1] * right[4] +
+      left[2] * right[8] +
+      left[3] * right[12],
     // r1
-    left[0] * right[1] + left[1] * right[5] + left[2] * right[9] + left[3] * right[13],
+    left[0] * right[1] +
+      left[1] * right[5] +
+      left[2] * right[9] +
+      left[3] * right[13],
     // r2
-    left[0] * right[2] + left[1] * right[6] + left[2] * right[10] + left[3] * right[14],
+    left[0] * right[2] +
+      left[1] * right[6] +
+      left[2] * right[10] +
+      left[3] * right[14],
     // r3
-    left[0] * right[3] + left[1] * right[7] + left[2] * right[11] + left[3] * right[15],
+    left[0] * right[3] +
+      left[1] * right[7] +
+      left[2] * right[11] +
+      left[3] * right[15],
     // r4
-    left[4] * right[0] + left[5] * right[4] + left[6] * right[8] + left[7] * right[12],
+    left[4] * right[0] +
+      left[5] * right[4] +
+      left[6] * right[8] +
+      left[7] * right[12],
     // r5
-    left[4] * right[1] + left[5] * right[5] + left[6] * right[9] + left[7] * right[13],
+    left[4] * right[1] +
+      left[5] * right[5] +
+      left[6] * right[9] +
+      left[7] * right[13],
     // r6
-    left[4] * right[2] + left[5] * right[6] + left[6] * right[10] + left[7] * right[14],
+    left[4] * right[2] +
+      left[5] * right[6] +
+      left[6] * right[10] +
+      left[7] * right[14],
     // r7
-    left[4] * right[3] + left[5] * right[7] + left[6] * right[11] + left[7] * right[15],
+    left[4] * right[3] +
+      left[5] * right[7] +
+      left[6] * right[11] +
+      left[7] * right[15],
     // r8
-    left[8] * right[0] + left[9] * right[4] + left[10] * right[8] + left[11] * right[12],
+    left[8] * right[0] +
+      left[9] * right[4] +
+      left[10] * right[8] +
+      left[11] * right[12],
     // r9
-    left[8] * right[1] + left[9] * right[5] + left[10] * right[9] + left[11] * right[13],
+    left[8] * right[1] +
+      left[9] * right[5] +
+      left[10] * right[9] +
+      left[11] * right[13],
     // r10
-    left[8] * right[2] + left[9] * right[6] + left[10] * right[10] + left[11] * right[14],
+    left[8] * right[2] +
+      left[9] * right[6] +
+      left[10] * right[10] +
+      left[11] * right[14],
     // r11
-    left[8] * right[3] + left[9] * right[7] + left[10] * right[11] + left[11] * right[15],
+    left[8] * right[3] +
+      left[9] * right[7] +
+      left[10] * right[11] +
+      left[11] * right[15],
     // r12
-    left[12] * right[0] + left[13] * right[4] + left[14] * right[8] + left[15] * right[12],
+    left[12] * right[0] +
+      left[13] * right[4] +
+      left[14] * right[8] +
+      left[15] * right[12],
     // r13
-    left[12] * right[1] + left[13] * right[5] + left[14] * right[9] + left[15] * right[13],
+    left[12] * right[1] +
+      left[13] * right[5] +
+      left[14] * right[9] +
+      left[15] * right[13],
     // r14
-    left[12] * right[2] + left[13] * right[6] + left[14] * right[10] + left[15] * right[14],
+    left[12] * right[2] +
+      left[13] * right[6] +
+      left[14] * right[10] +
+      left[15] * right[14],
     // r15
-    left[12] * right[3] + left[13] * right[7] + left[14] * right[11] + left[15] * right[15]
+    left[12] * right[3] +
+      left[13] * right[7] +
+      left[14] * right[11] +
+      left[15] * right[15]
   ];
 }
 
@@ -250,7 +374,7 @@ export function add2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
     // r2
     left[2] + right[2],
     // r3
-    left[3] + right[3],
+    left[3] + right[3]
   ];
 }
 
@@ -273,7 +397,7 @@ export function add3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
     // r7,
     left[7] + right[7],
     // r8,
-    left[8] + right[8],
+    left[8] + right[8]
   ];
 }
 
@@ -323,7 +447,7 @@ export function subtract2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
     // r2
     left[2] - right[2],
     // r3
-    left[3] - right[3],
+    left[3] - right[3]
   ];
 }
 
@@ -346,7 +470,7 @@ export function subtract3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
     // r7,
     left[7] - right[7],
     // r8,
-    left[8] - right[8],
+    left[8] - right[8]
   ];
 }
 
@@ -396,7 +520,7 @@ export function Hadamard2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
     // r2
     left[2] * right[2],
     // r3
-    left[3] * right[3],
+    left[3] * right[3]
   ];
 }
 
@@ -419,7 +543,7 @@ export function Hadamard3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
     // r7,
     left[7] * right[7],
     // r8,
-    left[8] * right[8],
+    left[8] * right[8]
   ];
 }
 
@@ -461,26 +585,41 @@ export function Hadamard4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
 }
 
 export function transpose2x2(mat: Mat2x2): Mat2x2 {
-  return [
-    mat[0], mat[2],
-    mat[1], mat[3],
-  ];
+  return [mat[0], mat[2], mat[1], mat[3]];
 }
 
 export function transpose3x3(mat: Mat3x3): Mat3x3 {
   return [
-    mat[0], mat[3], mat[6],
-    mat[1], mat[4], mat[7],
-    mat[2], mat[5], mat[8],
+    mat[0],
+    mat[3],
+    mat[6],
+    mat[1],
+    mat[4],
+    mat[7],
+    mat[2],
+    mat[5],
+    mat[8]
   ];
 }
 
 export function transpose4x4(mat: Mat4x4): Mat4x4 {
   return [
-    mat[0], mat[4], mat[8], mat[12],
-    mat[1], mat[5], mat[9], mat[13],
-    mat[2], mat[6], mat[10], mat[14],
-    mat[3], mat[7], mat[11], mat[15]
+    mat[0],
+    mat[4],
+    mat[8],
+    mat[12],
+    mat[1],
+    mat[5],
+    mat[9],
+    mat[13],
+    mat[2],
+    mat[6],
+    mat[10],
+    mat[14],
+    mat[3],
+    mat[7],
+    mat[11],
+    mat[15]
   ];
 }
 
@@ -499,58 +638,88 @@ export function toString4x4(mat: Mat4x4): string {
 /**
  * Creates a scaling matrix from a vector
  */
-export function scale4x4by3(p: Vec3Compat): Mat4x4 { return scale4x4(p[0], p[1], p[2]); }
+export function scale4x4by3(p: Vec3Compat): Mat4x4 {
+  return scale4x4(p[0], p[1], p[2]);
+}
 /**
  * Creates a scaling matrix
  */
 export function scale4x4(x: number, y: number, z: number): Mat4x4 {
-  return [
-    x, 0, 0, 0,
-    0, y, 0, 0,
-    0, 0, z, 0,
-    0, 0, 0, 1
-  ];
+  return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
 }
 
 /**
  * Creates a translation Matrix from a vector
  */
-export function translation4x4by3(t: Vec3Compat): Mat4x4 { return translation4x4(t[0], t[1], t[2]); }
+export function translation4x4by3(t: Vec3Compat): Mat4x4 {
+  return translation4x4(t[0], t[1], t[2]);
+}
 /**
  * Creates a translation Matrix
  */
 export function translation4x4(x: number, y: number, z: number): Mat4x4 {
-  return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    x, y, z, 1
-  ];
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
 }
 
 /**
  * Generate a projection matrix with perspective
  */
-export function perspective4x4(fovRadians: number, aspectRatio: number, near: number, far: number): Mat4x4 {
+export function perspective4x4(
+  fovRadians: number,
+  aspectRatio: number,
+  near: number,
+  far: number
+): Mat4x4 {
   const f = 1.0 / Math.tan(fovRadians / 2);
   const rangeInv = 1 / (near - far);
 
   return [
-    f / aspectRatio, 0,                          0,   0,
-    0,               f,                          0,   0,
-    0,               0,    (near + far) * rangeInv,  -1,
-    0,               0,  near * far * rangeInv * 2,   0
+    f / aspectRatio,
+    0,
+    0,
+    0,
+    0,
+    f,
+    0,
+    0,
+    0,
+    0,
+    (near + far) * rangeInv,
+    -1,
+    0,
+    0,
+    near * far * rangeInv * 2,
+    0
   ];
 }
 
 /**
  * Generate a projection matrix with no perspective. Useful for flat 2D or isometric rendering.
  */
-export function orthographic4x4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4x4 {
+export function orthographic4x4(
+  left: number,
+  right: number,
+  bottom: number,
+  top: number,
+  near: number,
+  far: number
+): Mat4x4 {
   return [
-    2 / (right - left),                                            0,                    0,                                  0,
-    0,                                            2 / (top - bottom),                    0,                                  0,
-    0,                                                             0,    -1 / (far - near),                                  0,
-    (right + left) / (left - right), (top + bottom) / (bottom - top), -near / (near - far),                                  1,
+    2 / (right - left),
+    0,
+    0,
+    0,
+    0,
+    2 / (top - bottom),
+    0,
+    0,
+    0,
+    0,
+    -1 / (far - near),
+    0,
+    (right + left) / (left - right),
+    (top + bottom) / (bottom - top),
+    -near / (near - far),
+    1
   ];
 }

@@ -9,7 +9,10 @@ import {
   isBufferLocationGroup
 } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IInstanceAttributeBufferLocation, IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
+import {
+  IInstanceAttributeBufferLocation,
+  IInstanceAttributeBufferLocationGroup
+} from "./instance-attribute-buffer-manager";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;

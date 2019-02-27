@@ -1,11 +1,11 @@
 import { Instance } from "../../../instance-provider";
 import { ISinglePickingMetrics, PickType } from "../../../types";
-import {
-  BufferManagerBase,
-  IBufferLocation,
-} from "../buffer-manager-base";
+import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { isUniformBufferLocation, IUniformBufferLocation } from "./uniform-buffer-manager";
+import {
+  isUniformBufferLocation,
+  IUniformBufferLocation
+} from "./uniform-buffer-manager";
 import { UniformDiffProcessor } from "./uniform-diff-processor";
 
 const EMPTY: number[] = [];

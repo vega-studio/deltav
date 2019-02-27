@@ -1,6 +1,6 @@
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -179,13 +179,6 @@ export class CircleLayer<
       ],
       vertexCount: 6,
       vs: require("./circle-layer.vs")
-    };
-  }
-
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh
     };
   }
 

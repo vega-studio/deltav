@@ -1,4 +1,3 @@
-export * from "../instance-provider/instance";
 export * from "./common-options";
 export * from "./animation-helper";
 export * from "./auto-easing-method";

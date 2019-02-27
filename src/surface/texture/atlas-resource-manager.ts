@@ -1,3 +1,4 @@
+import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { InstanceIOValue } from "../../types";
 import { ILayerProps, Layer } from "../layer";
@@ -121,7 +122,7 @@ export class AtlasResourceManager {
    * This retrieves the actual atlas texture that should be applied to a uniform's
    * value.
    */
-  getAtlasTexture(key: string): Three.Texture | null {
+  getAtlasTexture(key: string): Texture | null {
     const atlas = this.atlasManager.getAtlasTexture(key);
 
     if (atlas) {

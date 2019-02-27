@@ -1,18 +1,16 @@
 import { Geometry, GLSettings, Material, Model } from "../../gl";
-import { Layer } from "../layer";
 
 export function generateLayerModel(
-  layer: Layer<any, any>,
   geometry: Geometry,
-  material: Material
+  material: Material,
+  drawMode?: GLSettings.Model.DrawMode
 ): Model {
-  const modelInfo = layer.getModelType();
   const model = new Model(geometry, material);
 
   model.drawMode =
-    modelInfo.drawMode === undefined
+    drawMode === undefined
       ? GLSettings.Model.DrawMode.TRIANGLE_STRIP
-      : modelInfo.drawMode;
+      : drawMode;
 
   return model;
 }

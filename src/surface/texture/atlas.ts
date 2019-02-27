@@ -1,3 +1,4 @@
+import { Texture } from "../../gl/texture";
 import {
   IdentifyByKey,
   IdentifyByKeyOptions
@@ -40,7 +41,7 @@ export interface IAtlasOptions extends IdentifyByKeyOptions {
    *  - generateMipMaps is false and
    *  - premultiply alpha is true.
    */
-  textureSettings?: Partial<Three.Texture>;
+  textureSettings?: Partial<Texture>;
 }
 
 /**
@@ -55,9 +56,9 @@ export class Atlas extends IdentifyByKey {
   /** This is the packing of the  */
   packing: PackNode;
   /** This is the actual texture object that represents the atlas on the GPU */
-  texture: Three.Texture;
+  texture: Texture;
   /** These are the applied settings to our texture */
-  textureSettings?: Partial<Three.Texture>;
+  textureSettings?: Partial<Texture>;
   /**
    * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
@@ -179,11 +180,17 @@ export class Atlas extends IdentifyByKey {
    */
   updateTexture(canvas?: HTMLCanvasElement) {
     if (this.texture) {
-      const redoneCanvas: HTMLCanvasElement = this.texture.image;
+      const redoneCanvas = this.texture.data;
       this.texture.dispose();
-      this.texture = new Three.Texture(redoneCanvas);
+      this.texture = new Texture({
+        data: redoneCanvas,
+        premultiplyAlpha: true
+      });
     } else {
-      this.texture = new Three.Texture(canvas);
+      this.texture = new Texture({
+        data: canvas,
+        premultiplyAlpha: true
+      });
     }
 
     this.validResources.forEach(resource => {
@@ -196,7 +203,6 @@ export class Atlas extends IdentifyByKey {
     this.texture.generateMipmaps = true;
     this.texture.premultiplyAlpha = true;
     this.textureSettings && Object.assign(this.texture, this.textureSettings);
-    this.texture.needsUpdate = true;
   }
 
   /**

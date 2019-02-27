@@ -33,7 +33,10 @@ export function drawMode(gl: GLContext, mode: GLSettings.Model.DrawMode) {
 /**
  * Decodes the TexelDataType to a GL setting
  */
-export function texelFormat(gl: GLContext, format: GLSettings.Texture.TexelDataType) {
+export function texelFormat(
+  gl: GLContext,
+  format: GLSettings.Texture.TexelDataType
+) {
   switch (format) {
     case GLSettings.Texture.TexelDataType.Alpha:
       return gl.ALPHA;
@@ -97,7 +100,10 @@ export function inputImageFormat(
 /**
  * Decodes TextureMagFilter to a GL setting
  */
-export function magFilter(gl: GLContext, filter: GLSettings.Texture.TextureMagFilter) {
+export function magFilter(
+  gl: GLContext,
+  filter: GLSettings.Texture.TextureMagFilter
+) {
   switch (filter) {
     case GLSettings.Texture.TextureMagFilter.Linear:
       return gl.LINEAR;
@@ -109,7 +115,10 @@ export function magFilter(gl: GLContext, filter: GLSettings.Texture.TextureMagFi
 /**
  * Decodes TextureMinFilter to a GL setting
  */
-export function minFilter(gl: GLContext, filter: GLSettings.Texture.TextureMinFilter) {
+export function minFilter(
+  gl: GLContext,
+  filter: GLSettings.Texture.TextureMinFilter
+) {
   switch (filter) {
     case GLSettings.Texture.TextureMinFilter.Linear:
       return gl.LINEAR;

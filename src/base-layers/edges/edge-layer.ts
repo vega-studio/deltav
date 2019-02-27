@@ -1,10 +1,5 @@
 import { InstanceProvider } from "../../instance-provider";
-import {
-  ILayerProps,
-  IModelType,
-  IPickingMethods,
-  Layer
-} from "../../surface/layer";
+import { ILayerProps, IPickingMethods, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -268,13 +263,6 @@ export class EdgeLayer<
       ],
       vertexCount: MAX_SEGMENTS * 2 + 2,
       vs: vs.shader
-    };
-  }
-
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh
     };
   }
 

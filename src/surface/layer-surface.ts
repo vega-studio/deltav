@@ -475,7 +475,7 @@ export class LayerSurface {
           // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
           // below where the picking Target is created and you will see what is being rendered to the color picking buffer
           this.drawSceneView(
-            scene.pickingContainer,
+            scene.container,
             view,
             this.renderer,
             this.pickingTarget
@@ -832,7 +832,7 @@ export class LayerSurface {
         color: GLSettings.RenderTarget.ColorBufferFormat.RGBA4
       },
       width: width * this.pixelRatio,
-      height: height * this.pixelRatio,
+      height: height * this.pixelRatio
     });
 
     // This sets the pixel ratio to handle differing pixel densities in screens
@@ -951,7 +951,7 @@ export class LayerSurface {
       shaderMetrics.materialUniforms
     );
     // And now we can now generate the mesh that will be added to the scene
-    const model = generateLayerModel(layer, geometry, material);
+    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
     layer.geometry = geometry;

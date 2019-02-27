@@ -243,7 +243,7 @@ export class GLState {
 
     if (
       !texture ||
-      this._boundTexture.id !== texture ||
+      this._boundTexture.id !== texture.gl.textureId ||
       this._boundTexture.unit !== this._activeTextureUnit
     ) {
       this._boundTexture = {
@@ -253,11 +253,11 @@ export class GLState {
 
       switch (target) {
         case GLSettings.Texture.TextureBindingTarget.TEXTURE_2D:
-          this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+          this.gl.bindTexture(this.gl.TEXTURE_2D, texture.gl.textureId);
           break;
 
         case GLSettings.Texture.TextureBindingTarget.TEXTURE_2D:
-          this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture);
+          this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture.gl.textureId);
           break;
       }
 
@@ -374,6 +374,10 @@ export class GLState {
       }
     }
 
+    if (!material.gl.programId) {
+      return false;
+    }
+
     // Use the material's program
     if (this._currentProgram !== material.gl.programId) {
       this._currentProgram = material.gl.programId;
@@ -479,7 +483,57 @@ export class GLState {
     // Uniforms
     if (this._currentUniforms !== material.uniforms) {
       this._currentUniforms = material.uniforms;
+      let success = true;
 
+      if (!this._currentProgram) {
+        return false;
+      }
+
+      // Let's get a list of all uniforms the shader is demanding and make sure the material is
+      // supplying them. If not, then the shader will not have all of the information it may need
+      // and thus would be considered invalid rendering.
+      const totalProgramUniforms = gl.getProgramParameter(
+        this._currentProgram,
+        gl.ACTIVE_UNIFORMS
+      );
+      const usedUniforms = new Set<string>();
+
+      for (let i = 0; i < totalProgramUniforms; i++) {
+        const uniformInfo = gl.getActiveUniform(this._currentProgram, i);
+
+        if (uniformInfo) {
+          usedUniforms.add(uniformInfo.name);
+        }
+      }
+
+      // We now delete any uniforms that are not matched between material and program as they are not needed
+      // and will just be lingering unused clutter.
+      const uniformToRemove = new Set();
+
+      Object.keys(material.uniforms).forEach(name => {
+        if (!usedUniforms.has(name)) {
+          uniformToRemove.add(name);
+        }
+      });
+
+      uniformToRemove.forEach(name => {
+        delete material.uniforms[name];
+      });
+
+      // Now we validate we have all of the uniforms the program requested
+      if (Object.keys(material.uniforms).length !== usedUniforms.size) {
+        console.warn(
+          "A program is requesting a set of uniforms:",
+          Array.from(usedUniforms.values()),
+          "but our material only provides",
+          Object.keys(material.uniforms),
+          "thus the expected rendering will be considered invalid."
+        );
+
+        return false;
+      }
+
+      // Now we can update and retrieve the locations for each uniform in the program
       Object.entries(material.uniforms).forEach(([name, uniform]) => {
         if (!this._currentProgram) return;
         if (!uniform.gl) uniform.gl = new Map();
@@ -497,24 +551,38 @@ export class GLState {
             console.warn(
               `A Material specified a uniform ${name}, but none was found in the current program.`
             );
+            success = false;
             return;
           }
 
           glSettings = {
             location
           };
+
+          // Store the found location for the uniform
+          uniform.gl.set(this._currentProgram, glSettings);
         }
 
         // After locations for the uniforms are established, we must now copy the uniform
         // info into the GPU
         this.uploadUniform(glSettings.location, uniform);
       });
+
+      if (!success) {
+        console.warn(material.vertexShader);
+        console.warn(material.fragmentShader);
+        return false;
+      }
     }
 
     // Textures
     if (this._textureWillBeUsed.size > 0) {
-      this.applyUsedTextures();
+      if (!this.applyUsedTextures()) {
+        return false;
+      }
     }
+
+    return true;
   }
 
   /**
@@ -646,6 +714,8 @@ export class GLState {
 
     // We used the textures! This is no longer needed
     this._textureWillBeUsed.clear();
+
+    return true;
   }
 
   /**
@@ -1046,13 +1116,16 @@ export class GLState {
     }
 
     switch (this._cullFace) {
-      case GLSettings.Material.CullSide.BACK:
-        gl.cullFace(gl.BACK);
+      case GLSettings.Material.CullSide.CW:
+        gl.frontFace(gl.CW);
+        gl.cullFace(gl.FRONT);
         break;
-      case GLSettings.Material.CullSide.FRONT:
+      case GLSettings.Material.CullSide.CCW:
+        gl.frontFace(gl.CCW);
         gl.cullFace(gl.FRONT);
         break;
       case GLSettings.Material.CullSide.BOTH:
+        gl.frontFace(gl.CW);
         gl.cullFace(gl.FRONT_AND_BACK);
         break;
 

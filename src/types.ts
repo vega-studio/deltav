@@ -1,28 +1,36 @@
-import { Attribute, IMaterialUniform, Material, MaterialOptions, MaterialUniformType, Texture } from "./gl";
+import {
+  Attribute,
+  GLSettings,
+  IMaterialUniform,
+  MaterialOptions,
+  MaterialUniformType,
+  Texture
+} from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
-import { ChartCamera, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
+import {
+  ChartCamera,
+  Mat3x3,
+  Mat4x4,
+  Vec,
+  Vec1,
+  Vec2,
+  Vec3,
+  Vec4
+} from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-export type ShaderIOValue =
-  | Vec1
-  | Vec2
-  | Vec3
-  | Vec4
-  | Vec4[]
-  | Float32Array;
-export type InstanceIOValue =
-  | Vec1
-  | Vec2
-  | Vec3
-  | Vec4;
+export type ShaderIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Vec4[] | Float32Array;
+export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4;
 export type UniformIOValue =
   | number
   | InstanceIOValue
+  | Mat3x3
+  | Mat4x4
   | Float32Array
   | Texture;
 
@@ -332,12 +340,12 @@ export interface IUniformInternal extends IUniform {
  */
 export interface IInstancingUniform {
   name: string;
-  type: MaterialUniformType.FLOAT |
-    MaterialUniformType.VEC2 |
-    MaterialUniformType.VEC3 |
-    MaterialUniformType.VEC4 |
-    MaterialUniformType.VEC4_ARRAY
-  ;
+  type:
+    | MaterialUniformType.FLOAT
+    | MaterialUniformType.VEC2
+    | MaterialUniformType.VEC3
+    | MaterialUniformType.VEC4
+    | MaterialUniformType.VEC4_ARRAY;
   value: ShaderIOValue;
 }
 
@@ -555,6 +563,8 @@ export interface IEasingProps {
  * This is the Shader IO information a layer will provide.
  */
 export interface IShaderInputs<T extends Instance> {
+  /** Specifies how the vertices are laid out in the model. This defaults to Triangle Strip if not specified */
+  drawMode?: GLSettings.Model.DrawMode;
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */

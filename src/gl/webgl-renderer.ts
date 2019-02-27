@@ -238,8 +238,6 @@ export class WebGLRenderer {
     toRemove.forEach(model => {
       scene.remove(model);
     });
-
-    debugger;
   }
 
   /**
@@ -281,6 +279,8 @@ export class WebGLRenderer {
 
     canvas.width = size[0] * ratio;
     canvas.height = size[1] * ratio;
+
+    this.state.pixelRatio = ratio;
   }
 
   /**

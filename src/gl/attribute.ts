@@ -29,6 +29,13 @@ export class Attribute {
     return this._isDynamic;
   }
   private _isDynamic: boolean;
+  /**
+   * Indicates the data in this attribute is structured per instance rather than per vertex.
+   */
+  get isInstanced() {
+    return this._isInstanced;
+  }
+  private _isInstanced: boolean = false;
   /** Indicates a full update of the buffer will happen. This is managed internally to determine when needed */
   get fullUpdate() {
     return this._fullUpdate;
@@ -71,10 +78,16 @@ export class Attribute {
    * The data provided is the array that holds all of the information that should be pushed to
    * the GPU. The size defines how large the vertex attribute is defined in the shader.
    */
-  constructor(data: Float32Array, size: number, isDynamic: boolean = false) {
+  constructor(
+    data: Float32Array,
+    size: number,
+    isDynamic: boolean = false,
+    isInstanced: boolean = false
+  ) {
     this.data = data;
     this.size = size;
     this._isDynamic = isDynamic;
+    this._isInstanced = isInstanced;
   }
 
   /**

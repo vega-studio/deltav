@@ -710,17 +710,47 @@ export class GLProxy {
    * Executes the draw operation for a given model
    */
   draw(model: Model) {
-    if (model.drawRange) {
-      this.gl.drawArrays(
+    let instancing;
+    let drawRange = [0, 0];
+
+    // Get the appropriate draw range from the model
+    if (
+      model.vertexDrawRange &&
+      model.vertexDrawRange[0] >= 0 &&
+      model.vertexDrawRange[1] >= 0
+    ) {
+      drawRange = [
+        model.vertexDrawRange[0],
+        model.vertexDrawRange[1] - model.vertexDrawRange[0]
+      ];
+    } else {
+      drawRange = [0, model.vertexCount];
+    }
+
+    // Only if this geomxetry has instances requested will it attempt to render instances
+    if (model.geometry.maxInstancedCount >= 0) {
+      instancing = this.extensions.instancing;
+    }
+
+    if (instancing && instancing instanceof WebGL2RenderingContext) {
+      instancing.drawArraysInstanced(
         drawMode(this.gl, model.drawMode),
-        model.drawRange[0],
-        model.drawRange[1]
+        drawRange[0],
+        drawRange[1],
+        model.geometry.maxInstancedCount
+      );
+    } else if (instancing) {
+      instancing.drawArraysInstancedANGLE(
+        drawMode(this.gl, model.drawMode),
+        drawRange[0],
+        drawRange[1],
+        model.geometry.maxInstancedCount
       );
     } else {
       this.gl.drawArrays(
         drawMode(this.gl, model.drawMode),
-        0,
-        model.vertexCount
+        drawRange[0],
+        drawRange[1]
       );
     }
   }
@@ -1121,10 +1151,7 @@ export class GLProxy {
     if (!attribute.gl) return false;
 
     // Ensure the attribute has established location information for this program
-    if (!attribute.gl.locations) {
-      attribute.gl.locations = new Map();
-    }
-
+    attribute.gl.locations = attribute.gl.locations || new Map();
     // Find existing attribute location for the current program
     let location = attribute.gl.locations.get(this.state.currentProgram);
 
@@ -1147,17 +1174,25 @@ export class GLProxy {
 
     // At this point we're ready to establish the attribute's state and stride
     this.state.bindVBO(attribute.gl.bufferId);
+    // Enable the use of the vertex location
+    this.gl.enableVertexAttribArray(location);
     // Now we establish the metrics of the buffer
     this.gl.vertexAttribPointer(
       location,
-      attribute.size,
-      this.gl.FLOAT,
+      attribute.size, // How many floats used for the attribute
+      this.gl.FLOAT, // We are only sending over float data right now
       attribute.normalize,
-      0,
+      4 * attribute.size, // 4 bytes per float
       0
     );
-    // Enable the use of the vertex location
-    this.gl.enableVertexAttribArray(location);
+
+    if (attribute.isInstanced && this.extensions.instancing) {
+      if (this.extensions.instancing instanceof WebGL2RenderingContext) {
+        this.extensions.instancing.vertexAttribDivisor(location, 1);
+      } else {
+        this.extensions.instancing.vertexAttribDivisorANGLE(location, 1);
+      }
+    }
 
     return true;
   }

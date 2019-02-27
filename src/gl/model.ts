@@ -11,7 +11,9 @@ export class Model {
   /** Specifies how the system will utilize the geometry applied */
   drawMode: GLSettings.Model.DrawMode = GLSettings.Model.DrawMode.TRIANGLES;
   /** Specifies the vertices to render within the Model */
-  drawRange?: Vec2 = [-1, -1];
+  vertexDrawRange?: Vec2 = [-1, -1];
+  /** This specifies how many instances to draw of this model */
+  drawInstances: number = -1;
   /** The vertex information of the Model */
   geometry: Geometry;
   /** The material associated with the model */

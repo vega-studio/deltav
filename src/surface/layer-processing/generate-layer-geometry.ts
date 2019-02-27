@@ -107,6 +107,7 @@ export function generateLayerGeometry<T extends Instance>(
   // Now we can generate the attributes and apply them to a geometry object
   const geometry = new Geometry();
 
+  // Generate the attributes, they are all Vertex attributes, thus instancing does not get flagged on them.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
     const materialAttribute = new Attribute(vertexBuffers[i], attribute.size);

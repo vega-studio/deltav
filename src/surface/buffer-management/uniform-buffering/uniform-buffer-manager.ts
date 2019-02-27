@@ -245,7 +245,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       this.layer.model.drawMode
     );
     // Ensure the draw range covers every instance in the geometry.
-    newModel.drawRange = [
+    newModel.vertexDrawRange = [
       0,
       this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount
     ];

@@ -170,10 +170,8 @@ export class InstanceAttributeBufferManager<
       );
 
       if (this.model) {
-        this.model.drawRange = [
-          0,
-          this.currentInstancedCount * this.layer.instanceVertexCount
-        ];
+        this.model.vertexDrawRange = [0, this.layer.instanceVertexCount];
+        this.model.drawInstances = this.currentInstancedCount;
       }
     } else {
       console.error(
@@ -297,7 +295,7 @@ export class InstanceAttributeBufferManager<
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
         const buffer = new Float32Array(size * this.maxInstancedCount);
-        const bufferAttribute = new Attribute(buffer, size);
+        const bufferAttribute = new Attribute(buffer, size, true, true);
         bufferAttribute.setDynamic(true);
         this.geometry.addAttribute(
           getAttributeShaderName(attribute),
@@ -395,7 +393,7 @@ export class InstanceAttributeBufferManager<
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
-          const newAttribute = new Attribute(buffer, size);
+          const newAttribute = new Attribute(buffer, size, true, true);
           // Set the attribute to dynamic so we can update ranges within it
           newAttribute.setDynamic(true);
           // Make sure our attribute is updated with the newly made attribute

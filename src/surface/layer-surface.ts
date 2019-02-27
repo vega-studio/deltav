@@ -324,7 +324,8 @@ export class LayerSurface {
         if (
           view.needsDraw ||
           (time && time < view.animationEndTime) ||
-          view.camera.needsViewDrawn
+          view.camera.needsViewDrawn ||
+          true
         ) {
           view.needsDraw = true;
           needsDraw = true;

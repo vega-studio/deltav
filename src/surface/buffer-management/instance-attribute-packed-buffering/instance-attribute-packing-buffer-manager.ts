@@ -161,10 +161,8 @@ export class InstanceAttributePackingBufferManager<
       );
 
       if (this.model) {
-        this.model.drawRange = [
-          0,
-          this.currentInstancedCount * this.layer.instanceVertexCount
-        ];
+        this.model.vertexDrawRange = [0, this.layer.instanceVertexCount];
+        this.model.drawInstances = this.currentInstancedCount;
       }
     } else {
       console.error(
@@ -357,8 +355,7 @@ export class InstanceAttributePackingBufferManager<
         // Make our attribute buffer to accommodate all of the instances to be rendered.
         const buffer = new Float32Array(blockSize * this.maxInstancedCount);
         // Make an instanced buffer to take advantage of hardware instancing
-        const bufferAttribute = new Attribute(buffer, blockSize);
-        bufferAttribute.setDynamic(true);
+        const bufferAttribute = new Attribute(buffer, blockSize, true, true);
 
         // Add the attribute to our geometry labeled as a block like the uniform block packing strategy
         this.geometry.addAttribute(`block${block}`, bufferAttribute);
@@ -507,9 +504,7 @@ export class InstanceAttributePackingBufferManager<
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
-          const newAttribute = new Attribute(buffer, size);
-          // Set the attribute to dynamic so we can update ranges within it
-          newAttribute.setDynamic(true);
+          const newAttribute = new Attribute(buffer, size, true, true);
           // Make sure our attribute is updated with the newly made attribute
           attribute.bufferAttribute = bufferAttribute = newAttribute;
           // Add the new attribute to our new geometry object

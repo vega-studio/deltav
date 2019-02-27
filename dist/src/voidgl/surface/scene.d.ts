@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";

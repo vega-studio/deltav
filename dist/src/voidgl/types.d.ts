@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
 import { ChartCamera, Vec, Vec2 } from "./util";

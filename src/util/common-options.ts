@@ -14,7 +14,8 @@ export class CommonMaterialOptions {
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
       blendEquation: GLSettings.Material.BlendingEquations.Add,
       blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
-    }
+    },
+    culling: GLSettings.Material.CullSide.NONE
   };
 
   /**
@@ -26,6 +27,7 @@ export class CommonMaterialOptions {
       blendSrc: GLSettings.Material.BlendingSrcFactor.One,
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
       blendEquation: GLSettings.Material.BlendingEquations.Add
-    }
+    },
+    culling: GLSettings.Material.CullSide.NONE
   };
 }

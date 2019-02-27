@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { Instance } from "../../instance-provider/instance";
 import { IVertexAttributeInternal } from "../../types";
 import { Layer } from "../layer";

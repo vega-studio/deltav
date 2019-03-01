@@ -122,6 +122,13 @@ export type GLContext = WebGLRenderingContext | WebGL2RenderingContext;
  * This defines the extensions the framework works with
  */
 export interface IExtensions {
+  /** Extension for anisotropic filtering */
+  anisotropicFiltering?: {
+    ext: EXT_texture_filter_anisotropic;
+    stat: {
+      maxAnistropicFilter: number;
+    };
+  };
   /** Extension for MRT (Multiple render targets) */
   drawBuffers?: WebGL2RenderingContext | WEBGL_draw_buffers;
   /** Extension for hardware instancing */

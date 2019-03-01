@@ -95,19 +95,39 @@ export class GLProxy {
   /**
    * This enables the desired and supported extensions this framework utilizes.
    */
-  static addExtensions(gl: GLContext) {
+  static addExtensions(gl: GLContext): IExtensions {
     const instancing = gl.getExtension("ANGLE_instanced_arrays");
     const drawBuffers = gl.getExtension("WEBGL_draw_buffers");
+    const anisotropicFiltering = gl.getExtension(
+      "EXT_texture_filter_anisotropic"
+    );
 
-    if (!instancing || gl instanceof WebGL2RenderingContext) {
+    const anisotropicStats = {
+      maxAnistropicFilter: 0
+    };
+
+    // This exists as an extension or as a webgl2 context
+    if (!instancing && !(gl instanceof WebGL2RenderingContext)) {
       debug(
         "This device does not have hardware instancing. All buffering strategies will be utilizing compatibility modes."
       );
     }
 
-    if (!drawBuffers || gl instanceof WebGL2RenderingContext) {
+    // This exists as an extension or as a webgl2 context
+    if (!drawBuffers && !(gl instanceof WebGL2RenderingContext)) {
       debug(
         "This device does not have hardware multi-render target capabilities. The system will have to fallback to multiple render passes to multiple FBOs to achieve the same result."
+      );
+    }
+
+    // This only exists as an extension
+    if (!anisotropicFiltering) {
+      debug(
+        "This device does not have hardware anisotropic filtering for textures. This property will be ignored when setting texture settings."
+      );
+    } else {
+      anisotropicStats.maxAnistropicFilter = gl.getParameter(
+        anisotropicFiltering.MAX_TEXTURE_MAX_ANISOTROPY_EXT
       );
     }
 
@@ -115,7 +135,13 @@ export class GLProxy {
       instancing:
         (gl instanceof WebGL2RenderingContext ? gl : instancing) || undefined,
       drawBuffers:
-        (gl instanceof WebGL2RenderingContext ? gl : drawBuffers) || undefined
+        (gl instanceof WebGL2RenderingContext ? gl : drawBuffers) || undefined,
+      anisotropicFiltering: anisotropicFiltering
+        ? {
+            ext: anisotropicFiltering,
+            stat: anisotropicStats
+          }
+        : undefined
     };
   }
 
@@ -130,13 +156,6 @@ export class GLProxy {
     if (stencil) mask = mask | this.gl.STENCIL_BUFFER_BIT;
 
     this.gl.clear(mask);
-  }
-
-  /**
-   * Clears the color buffer only
-   */
-  clearColor() {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   }
 
   /**
@@ -171,6 +190,9 @@ export class GLProxy {
       bufferId: buffer,
       type: gl.ARRAY_BUFFER
     };
+
+    // Indicate the attribute is updated to it's latest needs and concerns
+    attribute.resolve();
 
     return true;
   }
@@ -316,6 +338,58 @@ export class GLProxy {
       proxy: this
     };
 
+    // Let's get a list of all uniforms the shaders are demanding and make sure the material is
+    // supplying them. If not, then the shader will not have all of the information it may need
+    // and thus would be considered invalid rendering.
+
+    // Switch to the program and clean up any uniform mismatches
+    this.state.useProgram(useMetrics.program);
+    // Get the current program applied to our state
+    const program = this.state.currentProgram;
+    if (!program) return false;
+
+    // Get the total uniforms requested by the program so we can loop through them
+    const totalProgramUniforms = this.gl.getProgramParameter(
+      program,
+      this.gl.ACTIVE_UNIFORMS
+    );
+    const usedUniforms = new Set<string>();
+
+    for (let i = 0; i < totalProgramUniforms; i++) {
+      const uniformInfo = this.gl.getActiveUniform(program, i);
+
+      if (uniformInfo) {
+        usedUniforms.add(uniformInfo.name);
+      }
+    }
+
+    // We now delete any uniforms that are not matched between material and program as they are not needed
+    // and will just be lingering unused clutter.
+    const uniformToRemove = new Set();
+
+    Object.keys(material.uniforms).forEach(name => {
+      if (!usedUniforms.has(name)) {
+        uniformToRemove.add(name);
+      }
+    });
+
+    uniformToRemove.forEach(name => {
+      delete material.uniforms[name];
+    });
+
+    // Now we validate we have all of the uniforms the program requested
+    if (Object.keys(material.uniforms).length !== usedUniforms.size) {
+      console.warn(
+        "A program is requesting a set of uniforms:",
+        Array.from(usedUniforms.values()),
+        "but our material only provides",
+        Object.keys(material.uniforms),
+        "thus the expected rendering will be considered invalid."
+      );
+
+      return false;
+    }
+
     return true;
   }
 
@@ -388,7 +462,7 @@ export class GLProxy {
           }
         }
       });
-    } else if (target.buffers.color) {
+    } else if (target.buffers.color !== undefined) {
       const buffer = target.buffers.color;
 
       if (buffer instanceof Texture) {
@@ -414,7 +488,7 @@ export class GLProxy {
           glContext.colorBufferId = rboId;
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, false),
+            indexToColorAttachment(gl, this.extensions, 0, true),
             gl.RENDERBUFFER,
             rboId
           );
@@ -423,7 +497,7 @@ export class GLProxy {
     }
 
     // Depth buffer
-    if (target.buffers.depth) {
+    if (target.buffers.depth !== undefined) {
       const buffer = target.buffers.depth;
 
       if (buffer instanceof Texture) {
@@ -458,7 +532,7 @@ export class GLProxy {
     }
 
     // Stencil buffer
-    if (target.buffers.stencil) {
+    if (target.buffers.stencil !== undefined) {
       const buffer = target.buffers.stencil;
 
       if (buffer instanceof Texture) {
@@ -556,6 +630,7 @@ export class GLProxy {
         "When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:"
       );
       console.warn(message);
+      console.warn("FAILED RENDER TARGET:", target);
       delete target.gl;
 
       return false;
@@ -985,6 +1060,10 @@ export class GLProxy {
       GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
     );
 
+    // Make sure the settings are properly set for the texture before performing the data upload
+    texture.needsSettingsUpdate = true;
+    this.updateTextureSettings(texture);
+
     // First set the data in the texture
     if (gl instanceof WebGLRenderingContext) {
       if (isDataBuffer(texture.data)) {
@@ -1085,12 +1164,28 @@ export class GLProxy {
       wrapMode(gl, texture.wrapVertical)
     );
 
-    if (texture.premultiplyAlpha) {
-      // NOTE: The typescript definitions are wrong right now thus requiring some weird casting
-      // voodoo. The correct value according to the webgl specs IS true right here.
-      gl.pixelStorei(
-        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        (true as unknown) as number
+    // NOTE: All pixelStorei with boolean settings:
+    // The typescript definitions are wrong right now thus requiring some weird casting
+    // voodoo. The correct value according to the webgl specs IS true right here and not a number
+    // for this particular enum.
+
+    gl.pixelStorei(
+      gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+      (texture.premultiplyAlpha as unknown) as number
+    );
+
+    gl.pixelStorei(
+      gl.UNPACK_FLIP_Y_WEBGL,
+      (texture.flipY as unknown) as number
+    );
+
+    // Apply the anistropic extension (if available)
+    if (this.extensions.anisotropicFiltering) {
+      const { ext, stat } = this.extensions.anisotropicFiltering;
+      gl.texParameterf(
+        gl.TEXTURE_2D,
+        ext.TEXTURE_MAX_ANISOTROPY_EXT,
+        Math.min(stat.maxAnistropicFilter, Math.floor(texture.anisotropy))
       );
     }
 
@@ -1103,6 +1198,12 @@ export class GLProxy {
    */
   updateAttribute(attribute: Attribute) {
     if (!attribute.gl) return this.compileAttribute(attribute);
+
+    // Make sure an update is even needed
+    if (!attribute.fullUpdate && !attribute.needsUpdate) {
+      return true;
+    }
+
     const gl = this.gl;
 
     // Check to see if this should be a complete buffer update
@@ -1136,6 +1237,9 @@ export class GLProxy {
         )
       );
     }
+
+    // Flag the attribute as updated to all of it's necessities
+    attribute.resolve();
 
     return true;
   }
@@ -1175,23 +1279,21 @@ export class GLProxy {
     // At this point we're ready to establish the attribute's state and stride
     this.state.bindVBO(attribute.gl.bufferId);
     // Enable the use of the vertex location
-    this.gl.enableVertexAttribArray(location);
+    this.state.willUseVertexAttributeArray(location);
     // Now we establish the metrics of the buffer
     this.gl.vertexAttribPointer(
       location,
       attribute.size, // How many floats used for the attribute
       this.gl.FLOAT, // We are only sending over float data right now
       attribute.normalize,
-      4 * attribute.size, // 4 bytes per float
+      0,
       0
     );
 
     if (attribute.isInstanced && this.extensions.instancing) {
-      if (this.extensions.instancing instanceof WebGL2RenderingContext) {
-        this.extensions.instancing.vertexAttribDivisor(location, 1);
-      } else {
-        this.extensions.instancing.vertexAttribDivisorANGLE(location, 1);
-      }
+      this.state.setVertexAttributeArrayDivisor(location, 1);
+    } else {
+      this.state.setVertexAttributeArrayDivisor(location, 0);
     }
 
     return true;

@@ -41,6 +41,18 @@ export class Texture {
       };
 
   /**
+   * Indicates the data gets flipped vertically when uploaded to the GPU.
+   */
+  get flipY() {
+    return this._flipY;
+  }
+  set flipY(val: boolean) {
+    this.needsDataUpload = true;
+    this._flipY = val;
+  }
+  private _flipY: boolean = true;
+
+  /**
    * Source format of the input. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
    */

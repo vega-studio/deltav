@@ -249,7 +249,10 @@ export class View extends IdentifyByKey {
       const scaleY = 1;
       const camera = this.viewCamera.baseCamera;
 
-      Object.assign(camera, viewport);
+      camera.projectionOptions = Object.assign(
+        camera.projectionOptions,
+        viewport
+      );
       camera.position = [
         -viewBounds.width / 2.0 * scaleX,
         viewBounds.height / 2.0 * scaleY,

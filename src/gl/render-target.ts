@@ -1,4 +1,5 @@
 import { GLProxy } from "src/gl/gl-proxy";
+import { uid } from "src/util";
 import { GLSettings } from "./gl-settings";
 import { Texture } from "./texture";
 
@@ -38,6 +39,12 @@ export interface IRenderTargetOptions {
  * and create new ones.
  */
 export class RenderTarget {
+  /** UID for the object */
+  get uid() {
+    return this._uid;
+  }
+  private _uid = uid();
+
   /** The buffer settings utilized in rendering this target */
   get buffers() {
     return {

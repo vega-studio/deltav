@@ -1,5 +1,6 @@
 import { GLState } from "src/gl/gl-state";
 import { Model } from "src/gl/model";
+import { WebGLStat } from "src/gl/webgl-stat";
 import { Vec2, Vec4 } from "../util";
 import { GLProxy } from "./gl-proxy";
 import { RenderTarget } from "./render-target";
@@ -44,6 +45,8 @@ export interface IWebGLRendererOptions {
  * Internal state of the renderer.
  */
 export interface IWebGLRendererState {
+  /** Sets up a clear mask to ensure the clear operation only happens once per draw */
+  clearMask: [boolean, boolean, boolean];
   /** The current pixel ratio in use */
   pixelRatio: number;
 }
@@ -70,6 +73,7 @@ export class WebGLRenderer {
 
   /** Any current internal state the renderer has applied to it's target */
   state: IWebGLRendererState = {
+    clearMask: [false, false, false],
     pixelRatio: 1
   };
 
@@ -97,15 +101,96 @@ export class WebGLRenderer {
    * Clears the specified buffers.
    */
   clear(color?: boolean, depth?: boolean, stencil?: boolean) {
-    this.glProxy.clear(color, depth, stencil);
+    const clear = this.state.clearMask;
+
+    this.state.clearMask = [
+      clear[0] || color || false,
+      clear[1] || depth || false,
+      clear[2] || stencil || false
+    ];
   }
 
   /**
    * Clears the color either set with setClearColor, or clears the color specified.
    */
   clearColor(color?: Vec4) {
-    if (color) this.glState.setClearColor(color);
-    this.glProxy.clearColor();
+    if (color) {
+      this.glState.setClearColor(color);
+    }
+  }
+
+  /**
+   * This makes the contents of the render target appear in the bottom right of the screen.
+   * This will only show the color buffer. If there are texture render targets, then you will
+   * have to debug those separately.
+   */
+  debugRenderTarget(target: RenderTarget) {
+    if (!this.glState.useRenderTarget(target)) return;
+    const debugId = `__debug_read_pixels__${target.uid}`;
+    const dataWidth = Math.floor(target.width);
+    const dataHeight = Math.floor(target.height);
+    const data = new Uint8Array(dataWidth * dataHeight * 4);
+    this.readPixels(0, 0, dataWidth, dataHeight, data, target);
+    this.glState.useRenderTarget(null);
+    this.debugReadPixels(data, target.width, target.height, debugId);
+  }
+
+  /**
+   * Makes a chunk of readPixel data viewable in the bottom right of the screen.
+   */
+  debugReadPixels(
+    data: Uint8Array,
+    width: number,
+    height: number,
+    debugId: string
+  ) {
+    const debugViewHeight = 200;
+    let container = document.getElementById(`__debug_read_pixels__`);
+
+    if (!container) {
+      container = document.createElement("div");
+      document.getElementsByTagName("body")[0].appendChild(container);
+      container.id = `__debug_read_pixels__`;
+      container.style.background = "rgba(64, 64, 64, 0.5)";
+      container.style.border = "1px solid #FFFFFF";
+      container.style.padding = "4px";
+      container.style.position = "fixed";
+      container.style.right = `10px`;
+      container.style.bottom = "10px";
+    }
+
+    const element: HTMLElement | null = document.getElementById(debugId);
+    let canvas: HTMLCanvasElement | undefined;
+
+    if (element && element instanceof HTMLCanvasElement) {
+      canvas = element;
+    }
+
+    if (!canvas) {
+      const aspect = height / width;
+      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      container.appendChild(canvas);
+      canvas.style.height = `${debugViewHeight}px`;
+      canvas.height = height;
+      canvas.width = width;
+      canvas.style.width = `${debugViewHeight / aspect}px`;
+      canvas.style.marginLeft = "4px";
+      canvas.id = debugId;
+    }
+
+    const imageData = new ImageData(
+      Uint8ClampedArray.from(data),
+      width,
+      height
+    );
+
+    // Make a temp canvas to fully render the data retrieved, then we'll render
+    // it down to the display debug canvas for the screen.
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      ctx.putImageData(imageData, 0, 0);
+    }
   }
 
   /**
@@ -147,7 +232,7 @@ export class WebGLRenderer {
 
     if (gl.context) {
       this._gl = gl.context;
-      this.glState = new GLState(gl.context);
+      this.glState = new GLState(gl.context, gl.extensions);
       this.glProxy = new GLProxy(gl.context, this.glState, gl.extensions);
       this.glState.setProxy(this.glProxy);
 
@@ -165,6 +250,38 @@ export class WebGLRenderer {
   }
 
   /**
+   * Retrieves the size of the canvas ignoring pixel ratio.
+   */
+  getDisplaySize() {
+    const { canvas } = this.options;
+
+    return {
+      width: canvas.offsetWidth,
+      height: canvas.offsetHeight
+    };
+  }
+
+  /**
+   * Retrieves the current pixel ratio in use for the context.
+   */
+  getPixelRatio() {
+    return this.state.pixelRatio;
+  }
+
+  /**
+   * Retrieves the size of the rendering context. This is the pixel dimensions
+   * of what is being rendered into.
+   */
+  getRenderSize() {
+    const { canvas } = this.options;
+
+    return {
+      width: canvas.width,
+      height: canvas.height
+    };
+  }
+
+  /**
    * Renders the Scene specified
    */
   render(scene: Scene, target: RenderTarget | null = null) {
@@ -173,6 +290,13 @@ export class WebGLRenderer {
 
     // Establish the rendering state we're in right now
     this.setRenderTarget(target);
+
+    // Apply the last clear mask provided for the render
+    const clear = this.state.clearMask;
+    if (clear[0] || clear[1] || clear[2]) {
+      this.glProxy.clear(clear[0], clear[1], clear[2]);
+      this.state.clearMask = [false, false, false];
+    }
 
     // If the fbo is not ready, we're not drawing
     if (target && !target.gl) {
@@ -211,6 +335,9 @@ export class WebGLRenderer {
           }
         });
 
+        // Now all of our attributes are established, we must make sure our vertex arrays are cleaned up
+        this.glState.applyVertexAttributeArrays();
+
         // If all of the attribute updates passed correctly, then we can use the established state
         // to make our draw call
         if (geometryIsValid) {
@@ -242,20 +369,42 @@ export class WebGLRenderer {
 
   /**
    * Reads the pixels from the current Render Target (or more specifically from the current framebuffer)
+   *
+   * By default the viewport is set based on the canvas being rendered into. Include a render target
+   * to make the viewport be applied with the target considered rather than needing pixel density considerations.
    */
   readPixels(
     x: number,
     y: number,
     width: number,
     height: number,
-    out: ArrayBufferView
+    out: ArrayBufferView,
+    target?: RenderTarget
   ) {
-    if (this.gl) {
+    if (!this.gl) return;
+
+    if (target) {
+      const _height = target.height;
+
       this.gl.readPixels(
         x,
-        y,
+        _height - y - height,
         width,
         height,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
+        out
+      );
+    } else {
+      const { pixelRatio } = this.state;
+      const size = this.getCanvasDimensions();
+      const _height = size[1];
+
+      this.gl.readPixels(
+        x * pixelRatio,
+        (_height - y - height) * pixelRatio,
+        width * pixelRatio,
+        height * pixelRatio,
         this.gl.RGBA,
         this.gl.UNSIGNED_BYTE,
         out
@@ -286,43 +435,41 @@ export class WebGLRenderer {
   /**
    * Sets the region the scissor test will accept as visible. Anything outside the region
    * will be clipped.
+   *
+   * By default the scissor region is set based on the canvas being rendered into. Include a render target
+   * to make the scissor region be applied with the target considered rather than needing pixel density considerations.
    */
-  setScissor(bounds?: { x: number; y: number; width: number; height: number }) {
-    const { pixelRatio } = this.state;
-    const size = this.getCanvasDimensions();
-    const _height = size[1];
+  setScissor(
+    bounds?: { x: number; y: number; width: number; height: number },
+    target?: RenderTarget
+  ) {
+    if (target) {
+      const _height = target.height;
 
-    if (bounds) {
-      const { x, y, width, height } = bounds;
-      this.glState.setScissor({
-        x: x * pixelRatio,
-        y: (_height - y - height) * pixelRatio,
-        width: width * pixelRatio,
-        height: height * pixelRatio
-      });
+      if (bounds) {
+        const { x, y, width, height } = bounds;
+        // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+        this.glState.setScissor({ x, y: _height - y - height, width, height });
+      } else {
+        this.glState.setScissor(null);
+      }
     } else {
-      this.glState.setScissor(null);
+      const { pixelRatio } = this.state;
+      const size = this.getCanvasDimensions();
+      const _height = size[1];
+
+      if (bounds) {
+        const { x, y, width, height } = bounds;
+        this.glState.setScissor({
+          x: x * pixelRatio,
+          y: (_height - y - height) * pixelRatio,
+          width: width * pixelRatio,
+          height: height * pixelRatio
+        });
+      } else {
+        this.glState.setScissor(null);
+      }
     }
-  }
-
-  /**
-   * Retrieves the current pixel ratio in use for the context.
-   */
-  getPixelRatio() {
-    return this.state.pixelRatio;
-  }
-
-  /**
-   * Retrieves the size of the canvas ignoring pixel ratio.
-   */
-  getSize() {
-    const { canvas } = this.options;
-    const { pixelRatio } = this.state;
-
-    return {
-      width: canvas.width / pixelRatio,
-      height: canvas.height / pixelRatio
-    };
   }
 
   /**
@@ -332,9 +479,12 @@ export class WebGLRenderer {
     const { canvas } = this.options;
     const { pixelRatio } = this.state;
 
-    canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
+    // Set the rendering width and height of the canvas to the screen's resolution for maximum sharpness
+    // but it must be limited by the max texture size the hardware supports
+    canvas.width = Math.min(width * pixelRatio, WebGLStat.MAX_TEXTURE_SIZE);
+    canvas.height = Math.min(height * pixelRatio, WebGLStat.MAX_TEXTURE_SIZE);
 
+    // Scale the canvas to fit the desired width and height
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
   }
@@ -355,23 +505,44 @@ export class WebGLRenderer {
       // This will also trigger the compilation of the target since the textures used
       // This will also ensure the FBO is in use for the next draw call
       this.glState.applyUsedTextures();
+
+      // Compile the render target then use if successful
+      if (this.glProxy.compileRenderTarget(target)) {
+        this.glState.useRenderTarget(target);
+      }
     }
   }
 
   /**
    * Sets the viewport we render into.
+   *
+   * By default the viewport is set based on the canvas being rendered into. Include a render target
+   * to make the viewport be applied with the target considered rather than needing pixel density considerations.
    */
-  setViewport(x: number, y: number, width: number, height: number) {
-    const { pixelRatio } = this.state;
-    const size = this.getCanvasDimensions();
-    const _height = size[1];
+  setViewport(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    target?: RenderTarget
+  ) {
+    if (target) {
+      const _height = target.height;
 
-    // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
-    this.glState.setViewport(
-      x * pixelRatio,
-      (_height - y - height) * pixelRatio,
-      width * pixelRatio,
-      height * pixelRatio
-    );
+      // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+      this.glState.setViewport(x, _height - y - height, width, height);
+    } else {
+      const { pixelRatio } = this.state;
+      const size = this.getCanvasDimensions();
+      const _height = size[1];
+
+      // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+      this.glState.setViewport(
+        x * pixelRatio,
+        (_height - y - height) * pixelRatio,
+        width * pixelRatio,
+        height * pixelRatio
+      );
+    }
   }
 }

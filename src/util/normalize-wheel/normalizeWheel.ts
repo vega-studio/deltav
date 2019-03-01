@@ -198,9 +198,9 @@ export function normalizeWheel(/*object*/ event: any) /*object*/ {
 
   return {
     spinX: sX,
-    spinY: sY,
+    spinY: -sY,
     pixelX: pX,
-    pixelY: pY
+    pixelY: -pY
   };
 }
 

@@ -7,6 +7,7 @@ import { Material } from "./material";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
 import {
+  IExtensions,
   IMaterialUniform,
   MaterialUniformType,
   MaterialUniformValue
@@ -22,6 +23,8 @@ const debug = require("debug")("performance");
  * for the GL context is stored within objects that are generated, such as Texture and Attribute.
  */
 export class GLState {
+  /** The extensions enabled for the context */
+  private extensions: IExtensions;
   /** Stores the gl context this is watching the state over */
   private gl: WebGLRenderingContext;
   /** This is a proxy to execute commands that do not change global gl state */
@@ -183,11 +186,22 @@ export class GLState {
   }
   private _viewport = { x: 0, y: 0, width: 100, height: 100 };
 
+  /** This contains all of the currently enabled vertex attribute pointers */
+  get enabledVertexAttributeArray() {
+    return Array.from(this._enabledVertexAttributeArray.values());
+  }
+  private _enabledVertexAttributeArray = new Set<number>();
+  private _willUseVertexAttributeArray = new Set<number>();
+
+  /** Tracks the current divisor set to a given vertex array location. */
+  private _vertexAttributeArrayDivisor = new Map<number, number>();
+
   /**
    * Generate a new state manager and establish some initial state settings by querying the context.
    */
-  constructor(gl: WebGLRenderingContext) {
+  constructor(gl: WebGLRenderingContext, extensions: IExtensions) {
     this.gl = gl;
+    this.extensions = extensions;
     // Retrieve how many units are allowed at the same time to be assiged so we can initialize our free units array
     const totalUnits = this.gl.getParameter(
       gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS
@@ -276,6 +290,57 @@ export class GLState {
   }
 
   /**
+   * Flags an attribute array as going to be used. Any attribute array location
+   * no longer in use will be disabled when applyVertexAttributeArrays is called.
+   */
+  willUseVertexAttributeArray(index: number) {
+    // Flag the index as will be used
+    this._willUseVertexAttributeArray.add(index);
+    // If already enabled we're done
+    if (this._enabledVertexAttributeArray.has(index)) return;
+    // Flag the index as enabled
+    this._enabledVertexAttributeArray.add(index);
+    // Otherwise, get this location enabled right away
+    this.gl.enableVertexAttribArray(index);
+  }
+
+  /**
+   * This enables the necessary vertex attribute arrays.
+   */
+  applyVertexAttributeArrays() {
+    // All locations that should be enabled are now enabled
+    // Disable any locations that will not be used
+    this._enabledVertexAttributeArray.forEach(index => {
+      if (this._willUseVertexAttributeArray.has(index)) return;
+      this.gl.disableVertexAttribArray(index);
+      this._enabledVertexAttributeArray.delete(index);
+    });
+
+    // Reset the use array for next draw
+    this._willUseVertexAttributeArray.clear();
+  }
+
+  /**
+   * Applies (if necessary) the divisor for a given array. This only works if the array location
+   * is enabled.
+   */
+  setVertexAttributeArrayDivisor(index: number, divisor: number) {
+    if (!this.extensions.instancing) return;
+
+    if (this._enabledVertexAttributeArray.has(index)) {
+      if (this._vertexAttributeArrayDivisor.get(index) !== divisor) {
+        if (this.extensions.instancing instanceof WebGL2RenderingContext) {
+          this.extensions.instancing.vertexAttribDivisor(index, divisor);
+        } else {
+          this.extensions.instancing.vertexAttribDivisorANGLE(index, divisor);
+        }
+
+        this._vertexAttributeArrayDivisor.set(index, divisor);
+      }
+    }
+  }
+
+  /**
    * This takes a texture and flags it's texture unit as freed if the texture has a used unit
    */
   freeTextureUnit(texture: Texture) {
@@ -360,6 +425,16 @@ export class GLState {
   }
 
   /**
+   * Uses the program indicated
+   */
+  useProgram(program: WebGLProgram) {
+    if (this._currentProgram !== program) {
+      this._currentProgram = program;
+      this.gl.useProgram(this._currentProgram);
+    }
+  }
+
+  /**
    * Sets all current gl state to match the materials settings.
    */
   useMaterial(material: Material) {
@@ -379,11 +454,7 @@ export class GLState {
     }
 
     // Use the material's program
-    if (this._currentProgram !== material.gl.programId) {
-      this._currentProgram = material.gl.programId;
-      this.gl.useProgram(this._currentProgram);
-    }
-
+    this.useProgram(material.gl.programId);
     // Synchronize the material's settings to the gl state
     this.syncMaterial(material);
 
@@ -481,98 +552,49 @@ export class GLState {
     }
 
     // Uniforms
-    if (this._currentUniforms !== material.uniforms) {
-      this._currentUniforms = material.uniforms;
-      let success = true;
+    this._currentUniforms = material.uniforms;
+    let success = true;
 
-      if (!this._currentProgram) {
-        return false;
-      }
+    if (!this._currentProgram) {
+      return false;
+    }
 
-      // Let's get a list of all uniforms the shader is demanding and make sure the material is
-      // supplying them. If not, then the shader will not have all of the information it may need
-      // and thus would be considered invalid rendering.
-      const totalProgramUniforms = gl.getProgramParameter(
-        this._currentProgram,
-        gl.ACTIVE_UNIFORMS
-      );
-      const usedUniforms = new Set<string>();
+    // Now we can update and retrieve the locations for each uniform in the program
+    Object.entries(material.uniforms).forEach(([name, uniform]) => {
+      if (!this._currentProgram) return;
+      if (!uniform.gl) uniform.gl = new Map();
+      let glSettings = uniform.gl.get(this._currentProgram);
 
-      for (let i = 0; i < totalProgramUniforms; i++) {
-        const uniformInfo = gl.getActiveUniform(this._currentProgram, i);
+      // If no settings for the given program are present, then we must
+      // query the program for the uniform's locations and what not.
+      if (!glSettings) {
+        const location = this.gl.getUniformLocation(this._currentProgram, name);
 
-        if (uniformInfo) {
-          usedUniforms.add(uniformInfo.name);
-        }
-      }
-
-      // We now delete any uniforms that are not matched between material and program as they are not needed
-      // and will just be lingering unused clutter.
-      const uniformToRemove = new Set();
-
-      Object.keys(material.uniforms).forEach(name => {
-        if (!usedUniforms.has(name)) {
-          uniformToRemove.add(name);
-        }
-      });
-
-      uniformToRemove.forEach(name => {
-        delete material.uniforms[name];
-      });
-
-      // Now we validate we have all of the uniforms the program requested
-      if (Object.keys(material.uniforms).length !== usedUniforms.size) {
-        console.warn(
-          "A program is requesting a set of uniforms:",
-          Array.from(usedUniforms.values()),
-          "but our material only provides",
-          Object.keys(material.uniforms),
-          "thus the expected rendering will be considered invalid."
-        );
-
-        return false;
-      }
-
-      // Now we can update and retrieve the locations for each uniform in the program
-      Object.entries(material.uniforms).forEach(([name, uniform]) => {
-        if (!this._currentProgram) return;
-        if (!uniform.gl) uniform.gl = new Map();
-        let glSettings = uniform.gl.get(this._currentProgram);
-
-        // If no settings for the given program are present, then we must
-        // query the program for the uniform's locations and what not.
-        if (!glSettings) {
-          const location = this.gl.getUniformLocation(
-            this._currentProgram,
-            name
+        if (!location) {
+          console.warn(
+            `A Material specified a uniform ${name}, but none was found in the current program.`
           );
-
-          if (!location) {
-            console.warn(
-              `A Material specified a uniform ${name}, but none was found in the current program.`
-            );
-            success = false;
-            return;
-          }
-
-          glSettings = {
-            location
-          };
-
-          // Store the found location for the uniform
-          uniform.gl.set(this._currentProgram, glSettings);
+          success = false;
+          return;
         }
 
-        // After locations for the uniforms are established, we must now copy the uniform
-        // info into the GPU
-        this.uploadUniform(glSettings.location, uniform);
-      });
+        glSettings = {
+          location
+        };
 
-      if (!success) {
-        console.warn(material.vertexShader);
-        console.warn(material.fragmentShader);
-        return false;
+        // Store the found location for the uniform
+        uniform.gl.set(this._currentProgram, glSettings);
       }
+
+      // After locations for the uniforms are established, we must now copy the uniform
+      // info into the GPU
+      this.uploadUniform(glSettings.location, uniform);
+    });
+
+    if (!success) {
+      console.warn(material.vertexShader);
+      console.warn(material.fragmentShader);
+      return false;
     }
 
     // Textures

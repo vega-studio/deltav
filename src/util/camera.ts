@@ -196,8 +196,8 @@ export class Camera {
    */
   updateTransform() {
     this._view = multiply4x4(
-      translation4x4by3(this._position),
-      scale4x4by3(this._scale)
+      scale4x4by3(this._scale),
+      translation4x4by3(this._position)
     );
   }
 }

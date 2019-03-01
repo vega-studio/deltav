@@ -37,9 +37,24 @@ export class Arcs extends BaseExample {
       this.surface.getViewSize(this.view) ||
       new Bounds({ x: 0, y: 0, width: 200, height: 200 });
 
-    for (let i = 0; i < 1000; ++i) {
+    for (let i = 0; i < 25; ++i) {
       const arc = new ArcInstance({
-        angle: [-Math.PI, -Math.PI],
+        angle: [-Math.PI / 2, -Math.PI / 2],
+        center: [viewSize.width / 2, viewSize.height / 2],
+        colorEnd: [0.0, 1.0, 0.0, 1.0],
+        colorStart: [1.0, 0.0, 1.0, 1.0],
+        depth: 10,
+        radius: (i + 1) * 4,
+        thickness: [0.1, 0.1]
+      });
+
+      directions[i] = 1;
+      arcs.push(arcProvider.add(arc));
+    }
+
+    for (let i = 0; i < 25; ++i) {
+      const arc = new ArcInstance({
+        angle: [-Math.PI / 2, -Math.PI / 2],
         center: [viewSize.width / 2, viewSize.height / 2],
         colorEnd: [0.0, 1.0, 0.0, 1.0],
         colorStart: [1.0, 0.0, 1.0, 1.0],
@@ -54,19 +69,35 @@ export class Arcs extends BaseExample {
 
     // Wait a tick to get the easing properties available
     setTimeout(() => {
-      for (let i = 0; i < 1000; ++i) {
+      for (let i = 0; i < 25; ++i) {
         const arc = arcs[i];
-        arc.angle = [-Math.PI, Math.PI];
+        arc.angle = [-Math.PI / 2, Math.PI / 2];
         arc.thickness = [3, 3];
 
         let easing = arc.getEasing(ArcLayer.attributeNames.angle);
         if (easing) {
-          easing.setTiming(i * 100, i * 10);
+          easing.setTiming(i * 100, 2000);
         }
 
         easing = arc.getEasing(ArcLayer.attributeNames.thickness);
         if (easing) {
-          easing.setTiming(i * 100, i * 10);
+          easing.setTiming(i * 100, 2000);
+        }
+      }
+
+      for (let i = 25; i < 50; ++i) {
+        const arc = arcs[i];
+        arc.angle = [-Math.PI / 2, -Math.PI / 2 - Math.PI];
+        arc.thickness = [3, 3];
+
+        let easing = arc.getEasing(ArcLayer.attributeNames.angle);
+        if (easing) {
+          easing.setTiming((i - 25) * 100, 2000);
+        }
+
+        easing = arc.getEasing(ArcLayer.attributeNames.thickness);
+        if (easing) {
+          easing.setTiming((i - 25) * 100, 2000);
         }
       }
     }, 10);

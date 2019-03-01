@@ -6,11 +6,11 @@ import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { Box } from "../primitives/box";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { FrameMetrics } from "../types";
 import { PickType } from "../types";
+import { FrameMetrics } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
-import { Vec2, Vec4 } from "../util/vector";
+import { copy4, Vec2, Vec4 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
@@ -368,7 +368,7 @@ export class LayerSurface {
       }
     }
 
-    // get the layers with errors flagged for them
+    // Get the layers with errors flagged for them
     const errors = Object.values(erroredLayers);
 
     if (errors.length > 0) {
@@ -406,6 +406,7 @@ export class LayerSurface {
     LabelInstance.destroy();
     ImageInstance.destroy();
   }
+
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
@@ -429,111 +430,7 @@ export class LayerSurface {
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
-        // Get the requested metrics
-        const mouse = this.updateColorPick.mouse;
-        const views = this.updateColorPick.views;
-
-        // Only if the view is interacted with should we bother with rendering
-        if (views.indexOf(view) > -1) {
-          // Picking uses a pixel ratio of 1
-          view.pixelRatio = 1.0;
-          // Get the current flags for the view
-          const flags = view.clearFlags.slice(0);
-          // Set color rendering flasg
-          view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
-
-          // We must perform any operations necessary to make the view camera fit the viewport
-          // Correctly with the possibly adjusted pixel ratio
-          view.fitViewtoViewport(
-            new Bounds({
-              height: this.context.canvas.height / this.pixelRatio,
-              width: this.context.canvas.width / this.pixelRatio,
-              x: 0,
-              y: 0
-            })
-          );
-
-          // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-          for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-            const layer = pickingPass[j];
-            // Adjust the layer to utilize the proper pick mode, thus causing the layer to properly
-            // Set it's uniforms into a pick mode.
-            layer.picking.currentPickMode = PickType.SINGLE;
-
-            // Update the layer's material uniforms and avoid causing the changelist to attempt updates again
-            try {
-              layer.updateUniforms();
-            } catch (err) {
-              /** No-op, the first draw should have output an error for bad draw calls */
-              console.warn(err);
-            }
-
-            layer.picking.currentPickMode = PickType.NONE;
-          }
-
-          // Draw the picking container for the scene with our view long with our specialized picking renderer
-          // NOTE: Neat trick, just remove 'this.pickingTarget' from the argument and add
-          // canvas.parentNode.appendChild(this.pickingRenderer.getContext().canvas);
-          // below where the picking Target is created and you will see what is being rendered to the color picking buffer
-          this.drawSceneView(
-            scene.container,
-            view,
-            this.renderer,
-            this.pickingTarget
-          );
-
-          // Make our metrics for how much of the image we wish to analyze
-          const pickWidth = 5;
-          const pickHeight = 5;
-          const numBytesPerColor = 4;
-          const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-          // Read the pixels out
-          // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-          // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-          this.renderer.readPixels(
-            mouse[0] - view.screenBounds.x - pickWidth / 2,
-            view.screenBounds.height -
-              (mouse[1] - view.screenBounds.y) -
-              pickHeight / 2,
-            pickWidth,
-            pickHeight,
-            out
-          );
-
-          // Analyze the rendered color data for the picking routine
-          const pickingData = analyzeColorPickingRendering(
-            [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-            out,
-            pickWidth,
-            pickHeight
-          );
-
-          // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-          for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-            const layer = pickingPass[j];
-
-            if (layer.picking.type === PickType.SINGLE) {
-              layer.interactions.colorPicking = pickingData;
-            }
-          }
-
-          // Return the pixel ratio back to the rendered ratio
-          view.pixelRatio = this.pixelRatio;
-          // Return the view's clear flags
-          view.clearFlags = flags;
-
-          // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
-          // will work properly
-          view.fitViewtoViewport(
-            new Bounds({
-              height: this.context.canvas.height,
-              width: this.context.canvas.width,
-              x: 0,
-              y: 0
-            })
-          );
-        }
+        this.drawPicking(scene, view, pickingPass);
       }
     });
 
@@ -588,6 +485,128 @@ export class LayerSurface {
   }
 
   /**
+   * NOTE: This is a temp way to handle picking. Picking will be handled with MRT once that pipeline is set up.
+   *
+   * This renders a selected scene/view into our picking target. Settings get adjusted
+   */
+  private drawPicking(
+    scene: LayerScene,
+    view: View,
+    pickingPass: Layer<any, any>[]
+  ) {
+    if (!this.updateColorPick) return;
+    if (!scene.container) return;
+
+    // Get the requested metrics for the pick
+    const mouse = this.updateColorPick.mouse;
+    const views = this.updateColorPick.views;
+
+    // Ensure the view provided is a view that is registered with this surface
+    if (views.indexOf(view) > -1) {
+      // Picking uses a pixel ratio of 1
+      view.pixelRatio = 1.0;
+      // Get the current flags for the view
+      const flags = view.clearFlags.slice(0);
+      // Store the current background of the view
+      const background = copy4(view.background);
+      // Set color rendering flag
+      view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
+      // Set the view's background to a solid black so we don't interfere with color encoding
+      view.background = [0, 0, 0, 0];
+
+      // We must perform any operations necessary to make the view camera fit the viewport
+      // Correctly with the possibly adjusted pixel ratio
+      view.fitViewtoViewport(
+        new Bounds({
+          height: this.pickingTarget.height,
+          width: this.pickingTarget.width,
+          x: 0,
+          y: 0
+        })
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+        // Adjust the layer to utilize the proper pick mode, thus causing the layer to properly
+        // Set it's uniforms into a pick mode.
+        layer.picking.currentPickMode = PickType.SINGLE;
+
+        // Update the layer's material uniforms and avoid causing the changelist to attempt updates again
+        try {
+          layer.updateUniforms();
+        } catch (err) {
+          /** No-op, the first draw should have output an error for bad draw calls */
+          console.warn(err);
+        }
+
+        layer.picking.currentPickMode = PickType.NONE;
+      }
+
+      // Draw the scene with our picking target as the target
+      this.drawSceneView(
+        scene.container,
+        view,
+        this.renderer,
+        this.pickingTarget
+      );
+
+      // Make our metrics for how much of the image we wish to analyze
+      const pickWidth = 5;
+      const pickHeight = 5;
+      const numBytesPerColor = 4;
+      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+      // Read the pixels out
+      // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
+      // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
+      this.renderer.readPixels(
+        mouse[0] - pickWidth / 2,
+        mouse[1] - pickHeight / 2,
+        pickWidth,
+        pickHeight,
+        out,
+        this.pickingTarget
+      );
+
+      // Analyze the rendered color data for the picking routine
+      const pickingData = analyzeColorPickingRendering(
+        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
+        out,
+        pickWidth,
+        pickHeight
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+
+        if (layer.picking.type === PickType.SINGLE) {
+          layer.interactions.colorPicking = pickingData;
+        }
+      }
+
+      // Return the pixel ratio back to the rendered ratio
+      view.pixelRatio = this.pixelRatio;
+      // Return the view's clear flags
+      view.clearFlags = flags;
+      // Return the view's background color
+      view.background = background;
+
+      // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
+      // will work properly
+      view.fitViewtoViewport(
+        new Bounds({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0
+        })
+      );
+    }
+  }
+
+  /**
    * This finalizes everything and sets up viewports and clears colors and performs the actual render step
    */
   private drawSceneView(
@@ -599,77 +618,33 @@ export class LayerSurface {
     renderer = renderer || this.renderer;
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
-    const rendererSize = renderer.getSize();
-    const pixelRatio = renderer.getPixelRatio();
-    rendererSize.width *= pixelRatio;
-    rendererSize.height *= pixelRatio;
+    const pixelRatio = view.pixelRatio;
     const background = view.background;
-    const context = renderer.getContext();
 
-    // Something is up with threejs that does not allow us to set viewport x and y values. So for targets
-    // We simply size the target to the view size and render. Thus scissoring is not required
-    if (!target) {
-      // Set the scissor rectangle.
-      renderer.setScissor({
+    if (target) {
+      renderer.setRenderTarget(target);
+    }
+
+    // Set the scissor rectangle.
+    renderer.setScissor(
+      {
         x: offset.x / pixelRatio,
         y: offset.y / pixelRatio,
         width: size.width / pixelRatio,
         height: size.height / pixelRatio
-      });
-
-      // If a background is established, we should clear the background color
-      // Specified for this context
-      if (view.background) {
-        // Clear the rect of color and depth so the region is totally it's own
-        renderer.clearColor([
-          background[0],
-          background[1],
-          background[2],
-          background[3]
-        ]);
-      }
-    }
-
-    // Get the view's clearing preferences
-    if (view.clearFlags) {
-      // For targets, we must also perform clear operations
-      if (target) {
-        // TODO: This is frustrating. Right now we can't specify and set the viewport for a render target
-        // Possibly with Threejs going away we can actually be more explcit for the render area to a render target
-        // and not cause this overhead of resizing the render target for every picking pass
-        target.setSize(size.width, size.height);
-        renderer.setRenderTarget(target);
-        renderer.clear(
-          view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
-          view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
-          view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-        );
-      } else if (context) {
-        context.clear(
-          (view.clearFlags.indexOf(ClearFlags.COLOR) > -1
-            ? context.COLOR_BUFFER_BIT
-            : 0x0) |
-            (view.clearFlags.indexOf(ClearFlags.DEPTH) > -1
-              ? context.DEPTH_BUFFER_BIT
-              : 0x0) |
-            (view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
-              ? context.STENCIL_BUFFER_BIT
-              : 0x0)
-        );
-      }
-    } else {
-      // Default clearing is depth and color
-      // For targets, we must also perform clear operations
-      if (target) {
-        // TODO: This is frustrating. Right now we can't specify and set the viewport for a render target
-        // Possibly with Threejs going away we can actually be more explcit for the render area to a render target
-        // and not cause this overhead of resizing the render target for every picking pass
-        target.setSize(size.width, size.height);
-        renderer.setRenderTarget(target);
-        renderer.clear(true, true);
-      } else if (context) {
-        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
-      }
+      },
+      target
+    );
+    // If a background is established, we should clear the background color
+    // Specified for this context
+    if (view.background) {
+      // Clear the rect of color and depth so the region is totally it's own
+      renderer.clearColor([
+        background[0],
+        background[1],
+        background[2],
+        background[3]
+      ]);
     }
 
     // Make sure the viewport is set properly for the next render
@@ -677,8 +652,20 @@ export class LayerSurface {
       offset.x / pixelRatio,
       offset.y / pixelRatio,
       size.width,
-      size.height
+      size.height,
+      target
     );
+
+    // Get the view's clearing preferences
+    if (view.clearFlags) {
+      renderer.clear(
+        view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
+        view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
+        view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
+      );
+    } else {
+      renderer.clear(true, true);
+    }
 
     // Render the scene with the provided view metrics
     renderer.render(scene, target);
@@ -830,10 +817,12 @@ export class LayerSurface {
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
       buffers: {
-        color: GLSettings.RenderTarget.ColorBufferFormat.RGBA4
+        color: GLSettings.RenderTarget.ColorBufferFormat.RGBA4,
+        depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
-      width: width * this.pixelRatio,
-      height: height * this.pixelRatio
+      // We want a target with a pixel ratio of just 1, which will be more than enough accuracy for mouse picking
+      width,
+      height
     });
 
     // This sets the pixel ratio to handle differing pixel densities in screens
@@ -1232,7 +1221,9 @@ export class LayerSurface {
     width = width || 100;
     height = height || 100;
 
+    // Set the canvas size for the renderer
     this.renderer.setSize(width, height);
+    // Set the picking target size to be the dimensions of our renderer as well
     this.pickingTarget.setSize(width, height);
   }
 

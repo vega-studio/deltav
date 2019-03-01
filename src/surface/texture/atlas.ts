@@ -183,11 +183,13 @@ export class Atlas extends IdentifyByKey {
       const redoneCanvas = this.texture.data;
       this.texture.dispose();
       this.texture = new Texture({
+        anisotropy: 2,
         data: redoneCanvas,
         premultiplyAlpha: true
       });
     } else {
       this.texture = new Texture({
+        anisotropy: 2,
         data: canvas,
         premultiplyAlpha: true
       });

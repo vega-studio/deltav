@@ -191,11 +191,11 @@ export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
   ];
 }
 
-export function scale2x2(mat: Mat2x2, scale: number): Mat2x2 {
+export function multiplyScalar2x2(mat: Mat2x2, scale: number): Mat2x2 {
   return [mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale];
 }
 
-export function scale3x3(mat: Mat3x3, scale: number): Mat3x3 {
+export function multiplyScalar3x3(mat: Mat3x3, scale: number): Mat3x3 {
   return [
     mat[0] * scale,
     mat[1] * scale,
@@ -209,7 +209,7 @@ export function scale3x3(mat: Mat3x3, scale: number): Mat3x3 {
   ];
 }
 
-export function scale4x4(mat: Mat4x4, scale: number): Mat4x4 {
+export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
   return [
     mat[0] * scale,
     mat[1] * scale,

@@ -1,4 +1,4 @@
-import { Vec2Compat, Vec3Compat } from "./vector";
+import { Vec2Compat, Vec3, Vec3Compat, Vec4 } from "./vector";
 
 export type Mat2x2 = [number, number, number, number];
 
@@ -33,73 +33,77 @@ export type Mat4x4 = [
   number
 ];
 
-export function determinant2x2(mat: Mat2x2) {
-  return mat[3] * mat[0] - mat[1] * mat[2];
+export function add2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
+  return [
+    // r0
+    left[0] + right[0],
+    // r1
+    left[1] + right[1],
+    // r2
+    left[2] + right[2],
+    // r3
+    left[3] + right[3]
+  ];
 }
 
-export function determinant3x3(mat: Mat3x3): number {
-  return (
-    mat[0] * mat[4] * mat[8] -
-    mat[0] * mat[5] * mat[7] +
-    mat[1] * mat[5] * mat[6] -
-    mat[1] * mat[3] * mat[8] +
-    mat[2] * mat[3] * mat[7] -
-    mat[2] * mat[4] * mat[6]
-  );
+export function add3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
+  return [
+    // r0
+    left[0] + right[0],
+    // r1
+    left[1] + right[1],
+    // r2
+    left[2] + right[2],
+    // r3
+    left[3] + right[3],
+    // r4
+    left[4] + right[4],
+    // r5
+    left[5] + right[5],
+    // r6,
+    left[6] + right[6],
+    // r7,
+    left[7] + right[7],
+    // r8,
+    left[8] + right[8]
+  ];
 }
 
-export function determinant4x4(mat: Mat4x4): number {
-  const m0: Mat3x3 = [
-    mat[5],
-    mat[6],
-    mat[7],
-    mat[9],
-    mat[10],
-    mat[11],
-    mat[13],
-    mat[14],
-    mat[15]
+export function add4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
+  return [
+    // r0
+    left[0] + right[0],
+    // r1
+    left[1] + right[1],
+    // r2
+    left[2] + right[2],
+    // r3
+    left[3] + right[3],
+    // r4
+    left[4] + right[4],
+    // r5
+    left[5] + right[5],
+    // r6,
+    left[6] + right[6],
+    // r7,
+    left[7] + right[7],
+    // r8,
+    left[8] + right[8],
+    // r9,
+    left[9] + right[9],
+    // r10,
+    left[10] + right[10],
+    // r11,
+    left[11] + right[11],
+    // r12,
+    left[12] + right[12],
+    // r13,
+    left[13] + right[13],
+    // r14,
+    left[14] + right[14],
+    // r15
+    left[15] + right[15]
   ];
-  const m1: Mat3x3 = [
-    mat[4],
-    mat[6],
-    mat[7],
-    mat[8],
-    mat[10],
-    mat[11],
-    mat[12],
-    mat[14],
-    mat[15]
-  ];
-  const m2: Mat3x3 = [
-    mat[4],
-    mat[5],
-    mat[7],
-    mat[8],
-    mat[9],
-    mat[11],
-    mat[12],
-    mat[13],
-    mat[15]
-  ];
-  const m3: Mat3x3 = [
-    mat[4],
-    mat[5],
-    mat[6],
-    mat[8],
-    mat[9],
-    mat[10],
-    mat[12],
-    mat[13],
-    mat[14]
-  ];
-
-  return (
-    mat[0] * determinant3x3(m0) -
-    mat[1] * determinant3x3(m1) +
-    mat[2] * determinant3x3(m2) -
-    mat[3] * determinant3x3(m3)
-  );
 }
 
 export function affineInverse2x2(mat: Mat2x2): Mat2x2 | null {
@@ -193,6 +197,160 @@ export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
   ];
 }
 
+export function determinant2x2(mat: Mat2x2) {
+  return mat[3] * mat[0] - mat[1] * mat[2];
+}
+
+export function determinant3x3(mat: Mat3x3): number {
+  return (
+    mat[0] * mat[4] * mat[8] -
+    mat[0] * mat[5] * mat[7] +
+    mat[1] * mat[5] * mat[6] -
+    mat[1] * mat[3] * mat[8] +
+    mat[2] * mat[3] * mat[7] -
+    mat[2] * mat[4] * mat[6]
+  );
+}
+
+export function determinant4x4(mat: Mat4x4): number {
+  const m0: Mat3x3 = [
+    mat[5],
+    mat[6],
+    mat[7],
+    mat[9],
+    mat[10],
+    mat[11],
+    mat[13],
+    mat[14],
+    mat[15]
+  ];
+  const m1: Mat3x3 = [
+    mat[4],
+    mat[6],
+    mat[7],
+    mat[8],
+    mat[10],
+    mat[11],
+    mat[12],
+    mat[14],
+    mat[15]
+  ];
+  const m2: Mat3x3 = [
+    mat[4],
+    mat[5],
+    mat[7],
+    mat[8],
+    mat[9],
+    mat[11],
+    mat[12],
+    mat[13],
+    mat[15]
+  ];
+  const m3: Mat3x3 = [
+    mat[4],
+    mat[5],
+    mat[6],
+    mat[8],
+    mat[9],
+    mat[10],
+    mat[12],
+    mat[13],
+    mat[14]
+  ];
+
+  return (
+    mat[0] * determinant3x3(m0) -
+    mat[1] * determinant3x3(m1) +
+    mat[2] * determinant3x3(m2) -
+    mat[3] * determinant3x3(m3)
+  );
+}
+
+export function hadamard2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
+  return [
+    // r0
+    left[0] * right[0],
+    // r1
+    left[1] * right[1],
+    // r2
+    left[2] * right[2],
+    // r3
+    left[3] * right[3]
+  ];
+}
+
+export function hadamard3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
+  return [
+    // r0
+    left[0] * right[0],
+    // r1
+    left[1] * right[1],
+    // r2
+    left[2] * right[2],
+    // r3
+    left[3] * right[3],
+    // r4
+    left[4] * right[4],
+    // r5
+    left[5] * right[5],
+    // r6,
+    left[6] * right[6],
+    // r7,
+    left[7] * right[7],
+    // r8,
+    left[8] * right[8]
+  ];
+}
+
+export function hadamard4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
+  return [
+    // r0
+    left[0] * right[0],
+    // r1
+    left[1] * right[1],
+    // r2
+    left[2] * right[2],
+    // r3
+    left[3] * right[3],
+    // r4
+    left[4] * right[4],
+    // r5
+    left[5] * right[5],
+    // r6,
+    left[6] * right[6],
+    // r7,
+    left[7] * right[7],
+    // r8,
+    left[8] * right[8],
+    // r9,
+    left[9] * right[9],
+    // r10,
+    left[10] * right[10],
+    // r11,
+    left[11] * right[11],
+    // r12,
+    left[12] * right[12],
+    // r13,
+    left[13] * right[13],
+    // r14,
+    left[14] * right[14],
+    // r15
+    left[15] * right[15]
+  ];
+}
+
+export function identity2(): Mat2x2 {
+  return [1, 0, 0, 1];
+}
+
+export function identity3(): Mat3x3 {
+  return [1, 0, 0, 0, 1, 0, 0, 0, 1];
+}
+
+export function identity4(): Mat4x4 {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
 export function multiplyScalar2x2(mat: Mat2x2, scale: number): Mat2x2 {
   return [mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale];
 }
@@ -232,87 +390,303 @@ export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
   ];
 }
 
-export function scale3x3by2(p: Vec2Compat): Mat3x3 { return scale3x3(p[0], p[1]); }
+export function multiply2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
+  return [
+    // r0
+    left[0] * right[0] + left[2] * right[1],
+    // r1
+    left[1] * right[0] + left[3] * right[1],
+    // r2
+    left[0] * right[2] + left[2] * right[3],
+    // r3
+    left[1] * right[2] + left[3] * right[3]
+  ];
+}
+
+export function multiply3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
+  return [
+    // r0
+    left[0] * right[0] + left[3] * right[1] + left[6] * right[2],
+    // r1
+    left[1] * right[0] + left[4] * right[1] + left[7] * right[2],
+    // r2
+    left[2] * right[0] + left[5] * right[1] + left[8] * right[2],
+    // r3
+    left[0] * right[3] + left[3] * right[4] + left[6] * right[5],
+    // r4
+    left[1] * right[3] + left[4] * right[4] + left[7] * right[5],
+    // r5
+    left[2] * right[3] + left[5] * right[4] + left[8] * right[5],
+    // r6
+    left[0] * right[6] + left[3] * right[7] + left[6] * right[8],
+    // r7
+    left[1] * right[6] + left[4] * right[7] + left[7] * right[8],
+    // r8
+    left[2] * right[6] + left[5] * right[7] + left[8] * right[8]
+  ];
+}
+
+export function multiply4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
+  return [
+    // r0
+    left[0] * right[0] +
+      left[4] * right[1] +
+      left[8] * right[2] +
+      left[12] * right[3],
+    // r1
+    left[1] * right[0] +
+      left[5] * right[1] +
+      left[9] * right[2] +
+      left[13] * right[3],
+    // r2
+    left[2] * right[0] +
+      left[6] * right[1] +
+      left[10] * right[2] +
+      left[14] * right[3],
+    // r3
+    left[3] * right[0] +
+      left[7] * right[1] +
+      left[11] * right[2] +
+      left[15] * right[3],
+    // r4
+    left[0] * right[4] +
+      left[4] * right[5] +
+      left[8] * right[6] +
+      left[12] * right[7],
+    // r5
+    left[1] * right[4] +
+      left[5] * right[5] +
+      left[9] * right[6] +
+      left[13] * right[7],
+    // r6
+    left[2] * right[4] +
+      left[6] * right[5] +
+      left[10] * right[6] +
+      left[14] * right[7],
+    // r7
+    left[3] * right[4] +
+      left[7] * right[5] +
+      left[11] * right[6] +
+      left[15] * right[7],
+    // r8
+    left[0] * right[8] +
+      left[4] * right[9] +
+      left[8] * right[10] +
+      left[12] * right[11],
+    // r9
+    left[1] * right[8] +
+      left[5] * right[9] +
+      left[9] * right[10] +
+      left[13] * right[11],
+    // r10
+    left[2] * right[8] +
+      left[6] * right[9] +
+      left[10] * right[10] +
+      left[14] * right[11],
+    // r11
+    left[3] * right[8] +
+      left[7] * right[9] +
+      left[11] * right[10] +
+      left[15] * right[11],
+    // r12
+    left[0] * right[12] +
+      left[4] * right[13] +
+      left[8] * right[14] +
+      left[12] * right[15],
+    // r13
+    left[1] * right[12] +
+      left[5] * right[13] +
+      left[9] * right[14] +
+      left[13] * right[15],
+    // r14
+    left[2] * right[12] +
+      left[6] * right[13] +
+      left[10] * right[14] +
+      left[14] * right[15],
+    // r15
+    left[3] * right[12] +
+      left[7] * right[13] +
+      left[11] * right[14] +
+      left[15] * right[15]
+  ];
+}
+
+export function multiply3x3by3(mat: Mat3x3, vec: Vec3): Vec3 {
+  return [
+    mat[0] * vec[0] + mat[3] * vec[1] + mat[6] * vec[2],
+    mat[1] * vec[0] + mat[4] * vec[1] + mat[7] * vec[2],
+    mat[2] * vec[0] + mat[5] * vec[1] + mat[8] * vec[2]
+  ];
+}
+
+export function multiply4x4by3(
+  mat: Mat4x4,
+  vec: Vec3,
+  isRotation: boolean
+): Vec4 {
+  const w = isRotation ? 0 : 1;
+  return [
+    mat[0] * vec[0] + mat[4] * vec[1] + mat[8] * vec[2] + mat[12] * w,
+    mat[1] * vec[0] + mat[5] * vec[1] + mat[9] * vec[2] + mat[13] * w,
+    mat[2] * vec[0] + mat[6] * vec[1] + mat[10] * vec[2] + mat[14] * w,
+    mat[3] * vec[0] + mat[7] * vec[1] + mat[11] * vec[2] + mat[15] * w
+  ];
+}
+
+export function multiply4x4by4(mat: Mat4x4, vec: Vec4): Vec4 {
+  return [
+    mat[0] * vec[0] + mat[4] * vec[1] + mat[8] * vec[2] + mat[12] * vec[3],
+    mat[1] * vec[0] + mat[5] * vec[1] + mat[9] * vec[2] + mat[13] * vec[3],
+    mat[2] * vec[0] + mat[6] * vec[1] + mat[10] * vec[2] + mat[14] * vec[3],
+    mat[3] * vec[0] + mat[7] * vec[1] + mat[11] * vec[2] + mat[15] * vec[3]
+  ];
+}
+
+export function scale3x3by2(p: Vec2Compat): Mat3x3 {
+  return scale3x3(p[0], p[1]);
+}
 
 export function scale3x3(x: number, y: number): Mat3x3 {
-  return [
-    x, 0, 0,
-    0, y, 0,
-    0, 0, 1
-  ];
+  return [x, 0, 0, 0, y, 0, 0, 0, 1];
 }
 /**
  * Creates a scaling matrix from a vector
  */
-export function scale4x4by3(p: Vec3Compat): Mat4x4 { return scale4x4(p[0], p[1], p[2]); }
+export function scale4x4by3(p: Vec3Compat): Mat4x4 {
+  return scale4x4(p[0], p[1], p[2]);
+}
 
 /**
  * Creates a scaling matrix
  */
 export function scale4x4(x: number, y: number, z: number): Mat4x4 {
+  return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
+}
+
+export function skew3x3(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat3x3 {
+  return [0, -zRadian, yRadian, zRadian, 0, -xRadian, -yRadian, xRadian, 0];
+}
+
+export function skew4x4(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat4x4 {
   return [
-    x, 0, 0, 0,
-    0, y, 0, 0,
-    0, 0, z, 0,
-    0, 0, 0, 1
+    0,
+    -zRadian,
+    yRadian,
+    0,
+    zRadian,
+    0,
+    -xRadian,
+    0,
+    -yRadian,
+    xRadian,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1
   ];
 }
 
-export function translation3x3by2(t: Vec2Compat): Mat3x3 { return translation3x3(t[0], t[1]); }
+export function translation3x3by2(t: Vec2Compat): Mat3x3 {
+  return translation3x3(t[0], t[1]);
+}
 
 export function translation3x3(x: number, y: number): Mat3x3 {
-  return [
-    1, 0, 0,
-    0, 1, 0,
-    x, y, 1
-  ];
+  return [1, 0, 0, 0, 1, 0, x, y, 1];
 }
 
 /**
  * Creates a translation Matrix from a vector
  */
-export function translation4x4by3(t: Vec3Compat): Mat4x4 { return translation4x4(t[0], t[1], t[2]); }
+export function translation4x4by3(t: Vec3Compat): Mat4x4 {
+  return translation4x4(t[0], t[1], t[2]);
+}
 
 /**
  * Creates a translation Matrix
  */
 export function translation4x4(x: number, y: number, z: number): Mat4x4 {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
+}
+
+/**
+ * Generates a projection matrix with no perspective. Useful for flat 2D or isometric rendering.
+ */
+export function orthographic4x4(
+  left: number,
+  right: number,
+  bottom: number,
+  top: number,
+  near: number,
+  far: number
+): Mat4x4 {
   return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    x, y, z, 1
+    2 / (right - left),
+    0,
+    0,
+    0,
+    0,
+    2 / (top - bottom),
+    0,
+    0,
+    0,
+    0,
+    2 / (near - far),
+    0,
+    (left + right) / (left - right),
+    (top + bottom) / (bottom - top),
+    (near + far) / (near - far),
+    1
   ];
 }
 
 /**
  * Generates a projection matrix with perspective
  */
-export function perspective4x4(fovRadian: number, aspectRatio: number, near: number, far: number): Mat4x4 {
+export function perspective4x4(
+  fovRadian: number,
+  aspectRatio: number,
+  near: number,
+  far: number
+): Mat4x4 {
   const f = 1.0 / Math.tan(fovRadian / 2.0);
   const rangeInv = 1.0 / (near - far);
 
   return [
-    f / aspectRatio, 0, 0, 0,
-    0, f, 0, 0,
-    0, 0, (near + far) * rangeInv, -1,
-    0, 0, near * far * rangeInv * 2, 0
+    f / aspectRatio,
+    0,
+    0,
+    0,
+    0,
+    f,
+    0,
+    0,
+    0,
+    0,
+    (near + far) * rangeInv,
+    -1,
+    0,
+    0,
+    near * far * rangeInv * 2,
+    0
   ];
 }
 
-/**
- * Generates a projection matrix with no perspective. Useful for flat 2D or isometric rendering.
- */
-export function orthographic4x4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4x4 {
-  return [
-    2 / (right - left), 0, 0, 0,
-    0, 2 / (top - bottom), 0, 0,
-    0, 0, 2 / (near - far), 0,
-    (left + right) / (left - right), (top + bottom) / (bottom - top), (near + far) / (near - far), 1
-  ];
-}
-
-export function rotationAxis3x3(x: number, y: number, z: number, radian: number): Mat3x3 {
+export function rotationAxis3x3(
+  x: number,
+  y: number,
+  z: number,
+  radian: number
+): Mat3x3 {
   const r = Math.sqrt(x * x + y * y + z * z);
   const u = x / r;
   const v = y / r;
@@ -340,7 +714,12 @@ export function rotationAxis3x3(x: number, y: number, z: number, radian: number)
   ];
 }
 
-export function rotationAxis4x4(x: number, y: number, z: number, radian: number): Mat4x4 {
+export function rotationAxis4x4(
+  x: number,
+  y: number,
+  z: number,
+  radian: number
+): Mat4x4 {
   const r = Math.sqrt(x * x + y * y + z * z);
   const u = x / r;
   const v = y / r;
@@ -382,224 +761,32 @@ export function rotationAxis4x4(x: number, y: number, z: number, radian: number)
   ];
 }
 
-export function rotationEuler3x3(xRadian: number, yRadian: number, zRadian: number): Mat3x3 {
-  return  multiply3x3(
-    multiply3x3(rotationAxis3x3(1, 0 , 0, xRadian), rotationAxis3x3(0, 1, 0, yRadian)),
+export function rotationEuler3x3(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat3x3 {
+  return multiply3x3(
+    multiply3x3(
+      rotationAxis3x3(1, 0, 0, xRadian),
+      rotationAxis3x3(0, 1, 0, yRadian)
+    ),
     rotationAxis3x3(0, 0, 1, zRadian)
   );
 }
 
-export function rotationEuler4x4(xRadian: number, yRadian: number, zRadian: number): Mat4x4 {
-  return  multiply4x4(
-    multiply4x4(rotationAxis4x4(1, 0 , 0, xRadian), rotationAxis4x4(0, 1, 0, yRadian)),
+export function rotationEuler4x4(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat4x4 {
+  return multiply4x4(
+    multiply4x4(
+      rotationAxis4x4(1, 0, 0, xRadian),
+      rotationAxis4x4(0, 1, 0, yRadian)
+    ),
     rotationAxis4x4(0, 0, 1, zRadian)
   );
-}
-
-export function identity2(): Mat2x2 {
-  return [1, 0, 0, 1];
-}
-
-export function identity3(): Mat3x3 {
-  return [1, 0, 0, 0, 1, 0, 0, 0, 1];
-}
-
-export function identity4(): Mat4x4 {
-  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-}
-
-export function multiply2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
-  return [
-    // r0
-    left[0] * right[0] + left[1] * right[2],
-    // r1
-    left[0] * right[1] + left[1] * right[3],
-    // r2
-    left[2] * right[0] + left[3] * right[2],
-    // r3
-    left[2] * right[1] + left[1] * right[3]
-  ];
-}
-
-export function multiply3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
-  return [
-    // r0
-    left[0] * right[0] + left[1] * right[3] + left[2] * right[6],
-    // r1
-    left[0] * right[1] + left[1] * right[4] + left[2] * right[7],
-    // r2
-    left[0] * right[2] + left[1] * right[5] + left[2] * right[8],
-    // r3
-    left[3] * right[0] + left[4] * right[3] + left[5] * right[6],
-    // r4
-    left[3] * right[1] + left[4] * right[4] + left[5] * right[7],
-    // r5
-    left[3] * right[2] + left[4] * right[5] + left[5] * right[8],
-    // r6
-    left[6] * right[0] + left[7] * right[3] + left[8] * right[6],
-    // r7
-    left[6] * right[1] + left[7] * right[4] + left[8] * right[7],
-    // r8
-    left[6] * right[2] + left[7] * right[5] + left[8] * right[8]
-  ];
-}
-
-export function multiply4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
-  return [
-    // r0
-    left[0] * right[0] +
-      left[1] * right[4] +
-      left[2] * right[8] +
-      left[3] * right[12],
-    // r1
-    left[0] * right[1] +
-      left[1] * right[5] +
-      left[2] * right[9] +
-      left[3] * right[13],
-    // r2
-    left[0] * right[2] +
-      left[1] * right[6] +
-      left[2] * right[10] +
-      left[3] * right[14],
-    // r3
-    left[0] * right[3] +
-      left[1] * right[7] +
-      left[2] * right[11] +
-      left[3] * right[15],
-    // r4
-    left[4] * right[0] +
-      left[5] * right[4] +
-      left[6] * right[8] +
-      left[7] * right[12],
-    // r5
-    left[4] * right[1] +
-      left[5] * right[5] +
-      left[6] * right[9] +
-      left[7] * right[13],
-    // r6
-    left[4] * right[2] +
-      left[5] * right[6] +
-      left[6] * right[10] +
-      left[7] * right[14],
-    // r7
-    left[4] * right[3] +
-      left[5] * right[7] +
-      left[6] * right[11] +
-      left[7] * right[15],
-    // r8
-    left[8] * right[0] +
-      left[9] * right[4] +
-      left[10] * right[8] +
-      left[11] * right[12],
-    // r9
-    left[8] * right[1] +
-      left[9] * right[5] +
-      left[10] * right[9] +
-      left[11] * right[13],
-    // r10
-    left[8] * right[2] +
-      left[9] * right[6] +
-      left[10] * right[10] +
-      left[11] * right[14],
-    // r11
-    left[8] * right[3] +
-      left[9] * right[7] +
-      left[10] * right[11] +
-      left[11] * right[15],
-    // r12
-    left[12] * right[0] +
-      left[13] * right[4] +
-      left[14] * right[8] +
-      left[15] * right[12],
-    // r13
-    left[12] * right[1] +
-      left[13] * right[5] +
-      left[14] * right[9] +
-      left[15] * right[13],
-    // r14
-    left[12] * right[2] +
-      left[13] * right[6] +
-      left[14] * right[10] +
-      left[15] * right[14],
-    // r15
-    left[12] * right[3] +
-      left[13] * right[7] +
-      left[14] * right[11] +
-      left[15] * right[15]
-  ];
-}
-
-export function add2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
-  return [
-    // r0
-    left[0] + right[0],
-    // r1
-    left[1] + right[1],
-    // r2
-    left[2] + right[2],
-    // r3
-    left[3] + right[3]
-  ];
-}
-
-export function add3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
-  return [
-    // r0
-    left[0] + right[0],
-    // r1
-    left[1] + right[1],
-    // r2
-    left[2] + right[2],
-    // r3
-    left[3] + right[3],
-    // r4
-    left[4] + right[4],
-    // r5
-    left[5] + right[5],
-    // r6,
-    left[6] + right[6],
-    // r7,
-    left[7] + right[7],
-    // r8,
-    left[8] + right[8]
-  ];
-}
-
-export function add4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
-  return [
-    // r0
-    left[0] + right[0],
-    // r1
-    left[1] + right[1],
-    // r2
-    left[2] + right[2],
-    // r3
-    left[3] + right[3],
-    // r4
-    left[4] + right[4],
-    // r5
-    left[5] + right[5],
-    // r6,
-    left[6] + right[6],
-    // r7,
-    left[7] + right[7],
-    // r8,
-    left[8] + right[8],
-    // r9,
-    left[9] + right[9],
-    // r10,
-    left[10] + right[10],
-    // r11,
-    left[11] + right[11],
-    // r12,
-    left[12] + right[12],
-    // r13,
-    left[13] + right[13],
-    // r14,
-    left[14] + right[14],
-    // r15
-    left[15] + right[15]
-  ];
 }
 
 export function subtract2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
@@ -672,79 +859,6 @@ export function subtract4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
     left[14] - right[14],
     // r15
     left[15] - right[15]
-  ];
-}
-
-export function Hadamard2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
-  return [
-    // r0
-    left[0] * right[0],
-    // r1
-    left[1] * right[1],
-    // r2
-    left[2] * right[2],
-    // r3
-    left[3] * right[3]
-  ];
-}
-
-export function Hadamard3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
-  return [
-    // r0
-    left[0] * right[0],
-    // r1
-    left[1] * right[1],
-    // r2
-    left[2] * right[2],
-    // r3
-    left[3] * right[3],
-    // r4
-    left[4] * right[4],
-    // r5
-    left[5] * right[5],
-    // r6,
-    left[6] * right[6],
-    // r7,
-    left[7] * right[7],
-    // r8,
-    left[8] * right[8]
-  ];
-}
-
-export function Hadamard4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
-  return [
-    // r0
-    left[0] * right[0],
-    // r1
-    left[1] * right[1],
-    // r2
-    left[2] * right[2],
-    // r3
-    left[3] * right[3],
-    // r4
-    left[4] * right[4],
-    // r5
-    left[5] * right[5],
-    // r6,
-    left[6] * right[6],
-    // r7,
-    left[7] * right[7],
-    // r8,
-    left[8] * right[8],
-    // r9,
-    left[9] * right[9],
-    // r10,
-    left[10] * right[10],
-    // r11,
-    left[11] * right[11],
-    // r12,
-    left[12] * right[12],
-    // r13,
-    left[13] * right[13],
-    // r14,
-    left[14] * right[14],
-    // r15
-    left[15] * right[15]
   ];
 }
 

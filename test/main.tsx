@@ -34,6 +34,7 @@ import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangl
 import { MouseScroll } from "./examples/mouse-scroll";
 import { ScreenSpaceEdges } from "./examples/screen-space-edges";
 import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
+import { matrix_test } from "./matix-tests";
 
 // Backend tests, for now, just activate when included
 import "./backend";
@@ -355,6 +356,8 @@ export class Main extends Component<any, IMainState> {
         />
       );
     }
+
+    matrix_test();
 
     if (this.surface) {
       this.surface.render(layers);

@@ -1,3 +1,5 @@
+import { Vec2Compat, Vec3Compat } from "./vector";
+
 export type Mat2x2 = [number, number, number, number];
 
 export type Mat3x3 = [
@@ -228,6 +230,170 @@ export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
     mat[14] * scale,
     mat[15] * scale
   ];
+}
+
+export function scale3x3by2(p: Vec2Compat): Mat3x3 { return scale3x3(p[0], p[1]); }
+
+export function scale3x3(x: number, y: number): Mat3x3 {
+  return [
+    x, 0, 0,
+    0, y, 0,
+    0, 0, 1
+  ];
+}
+/**
+ * Creates a scaling matrix from a vector
+ */
+export function scale4x4by3(p: Vec3Compat): Mat4x4 { return scale4x4(p[0], p[1], p[2]); }
+
+/**
+ * Creates a scaling matrix
+ */
+export function scale4x4(x: number, y: number, z: number): Mat4x4 {
+  return [
+    x, 0, 0, 0,
+    0, y, 0, 0,
+    0, 0, z, 0,
+    0, 0, 0, 1
+  ];
+}
+
+export function translation3x3by2(t: Vec2Compat): Mat3x3 { return translation3x3(t[0], t[1]); }
+
+export function translation3x3(x: number, y: number): Mat3x3 {
+  return [
+    1, 0, 0,
+    0, 1, 0,
+    x, y, 1
+  ];
+}
+
+/**
+ * Creates a translation Matrix from a vector
+ */
+export function translation4x4by3(t: Vec3Compat): Mat4x4 { return translation4x4(t[0], t[1], t[2]); }
+
+/**
+ * Creates a translation Matrix
+ */
+export function translation4x4(x: number, y: number, z: number): Mat4x4 {
+  return [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    x, y, z, 1
+  ];
+}
+
+/**
+ * Generates a projection matrix with perspective
+ */
+export function perspective4x4(fovRadian: number, aspectRatio: number, near: number, far: number): Mat4x4 {
+  const f = 1.0 / Math.tan(fovRadian / 2.0);
+  const rangeInv = 1.0 / (near - far);
+
+  return [
+    f / aspectRatio, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (near + far) * rangeInv, -1,
+    0, 0, near * far * rangeInv * 2, 0
+  ];
+}
+
+/**
+ * Generates a projection matrix with no perspective. Useful for flat 2D or isometric rendering.
+ */
+export function orthographic4x4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4x4 {
+  return [
+    2 / (right - left), 0, 0, 0,
+    0, 2 / (top - bottom), 0, 0,
+    0, 0, 2 / (near - far), 0,
+    (left + right) / (left - right), (top + bottom) / (bottom - top), (near + far) / (near - far), 1
+  ];
+}
+
+export function rotationAxis3x3(x: number, y: number, z: number, radian: number): Mat3x3 {
+  const r = Math.sqrt(x * x + y * y + z * z);
+  const u = x / r;
+  const v = y / r;
+  const w = z / r;
+
+  return [
+    // r00
+    u * u + (1 - u * u) * Math.cos(radian),
+    // r01
+    u * v * (1 - Math.cos(radian)) + w * Math.sin(radian),
+    // r02
+    u * w * (1 - Math.cos(radian)) - v * Math.sin(radian),
+    // r10
+    u * v * (1 - Math.cos(radian)) - w * Math.sin(radian),
+    // r11
+    v * v + (1 - v * v) * Math.cos(radian),
+    // r12
+    v * w + (1 - Math.cos(radian)) + u * Math.sin(radian),
+    // r20
+    u * w * (1 - Math.cos(radian)) + v * Math.sin(radian),
+    // r21
+    v * w * (1 - Math.cos(radian)) - u * Math.sin(radian),
+    // r22
+    w * w + (1 - w * w) * Math.cos(radian)
+  ];
+}
+
+export function rotationAxis4x4(x: number, y: number, z: number, radian: number): Mat4x4 {
+  const r = Math.sqrt(x * x + y * y + z * z);
+  const u = x / r;
+  const v = y / r;
+  const w = z / r;
+
+  return [
+    // r00
+    u * u + (1 - u * u) * Math.cos(radian),
+    // r01
+    u * v * (1 - Math.cos(radian)) + w * Math.sin(radian),
+    // r02
+    u * w * (1 - Math.cos(radian)) - v * Math.sin(radian),
+    // r03
+    0,
+    // r10
+    u * v * (1 - Math.cos(radian)) - w * Math.sin(radian),
+    // r11
+    v * v + (1 - v * v) * Math.cos(radian),
+    // r12
+    v * w + (1 - Math.cos(radian)) + u * Math.sin(radian),
+    // r13
+    0,
+    // r20
+    u * w * (1 - Math.cos(radian)) + v * Math.sin(radian),
+    // r21
+    v * w * (1 - Math.cos(radian)) - u * Math.sin(radian),
+    // r22
+    w * w + (1 - w * w) * Math.cos(radian),
+    // r23
+    0,
+    // r30
+    0,
+    // r31
+    0,
+    // r32
+    0,
+    // r33
+    1
+  ];
+}
+
+export function rotationEuler3x3(xRadian: number, yRadian: number, zRadian: number): Mat3x3 {
+  return  multiply3x3(
+    multiply3x3(rotationAxis3x3(1, 0 , 0, xRadian), rotationAxis3x3(0, 1, 0, yRadian)),
+    rotationAxis3x3(0, 0, 1, zRadian)
+  );
+}
+
+export function rotationEuler4x4(xRadian: number, yRadian: number, zRadian: number): Mat4x4 {
+  return  multiply4x4(
+    multiply4x4(rotationAxis4x4(1, 0 , 0, xRadian), rotationAxis4x4(0, 1, 0, yRadian)),
+    rotationAxis4x4(0, 0, 1, zRadian)
+  );
 }
 
 export function identity2(): Mat2x2 {

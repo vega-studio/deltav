@@ -7,7 +7,12 @@ import {
 import { Vec4 } from "../src/voidgl/util/vector";
 
 function compare4(a: Vec4, b: Vec4): boolean {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+  return (
+    Math.abs(a[0] - b[0]) < 0.0001 &&
+    Math.abs(a[1] - b[1]) < 0.0001 &&
+    Math.abs(a[2] - b[2]) < 0.0001 &&
+    Math.abs(a[3] - b[3]) < 0.0001
+  );
 }
 
 export function matrix_test() {
@@ -18,8 +23,6 @@ export function matrix_test() {
   );
   const check = multiply4x4by4(transform, point);
   if (!compare4(check, [-1, 0, 0, 1.0])) {
-    console.warn("FAILED MATRIX MATH CHECK %o transform %o", check, transform);
-  } else {
-    console.warn("SUCCESS!");
+    console.warn("FAILED MATRIX MATH");
   }
 }

@@ -471,6 +471,8 @@ export interface IColorPickingData {
   dataWidth: number;
   /** The nearest found color */
   nearestColor: number;
+  /** The nearest found color in byte form */
+  nearestColorBytes: Vec4;
   /** All colors in the data */
   allColors: number[];
 }
@@ -598,3 +600,9 @@ export type IShaderIOExtension<T extends Instance> = Partial<
  * common scenario of [boolean, boolean, boolean, boolean]
  */
 export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
+
+/**
+ * Depicts a two or three dimensional size:
+ * [width, height, depth]
+ */
+export type Size = Vec2 | Vec3;

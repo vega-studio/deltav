@@ -1,4 +1,5 @@
-import { GLSettings, RenderTarget, Scene } from "src/gl";
+import { GLSettings, RenderTarget, Scene, Texture } from "src/gl";
+import { flushDebug } from "src/gl/debug-resources";
 import { ImageInstance } from "../base-layers/images";
 import { LabelInstance } from "../base-layers/labels";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -482,6 +483,9 @@ export class LayerSurface {
       layer.needsViewDrawn = false;
       layer.props.data.resolveContext = "";
     });
+
+    // Dequeue rendering debugs
+    flushDebug();
   }
 
   /**
@@ -552,8 +556,8 @@ export class LayerSurface {
       );
 
       // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
+      const pickWidth = 25;
+      const pickHeight = 25;
       const numBytesPerColor = 4;
       const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
@@ -565,8 +569,7 @@ export class LayerSurface {
         mouse[1] - pickHeight / 2,
         pickWidth,
         pickHeight,
-        out,
-        this.pickingTarget
+        out
       );
 
       // Analyze the rendered color data for the picking routine
@@ -621,9 +624,8 @@ export class LayerSurface {
     const pixelRatio = view.pixelRatio;
     const background = view.background;
 
-    if (target) {
-      renderer.setRenderTarget(target);
-    }
+    // Make sure the correct render target is applied
+    renderer.setRenderTarget(target || null);
 
     // Set the scissor rectangle.
     renderer.setScissor(
@@ -648,13 +650,12 @@ export class LayerSurface {
     }
 
     // Make sure the viewport is set properly for the next render
-    renderer.setViewport(
-      offset.x / pixelRatio,
-      offset.y / pixelRatio,
-      size.width,
-      size.height,
-      target
-    );
+    renderer.setViewport({
+      x: offset.x / pixelRatio,
+      y: offset.y / pixelRatio,
+      width: size.width,
+      height: size.height
+    });
 
     // Get the view's clearing preferences
     if (view.clearFlags) {
@@ -817,7 +818,14 @@ export class LayerSurface {
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
       buffers: {
-        color: GLSettings.RenderTarget.ColorBufferFormat.RGBA4,
+        color: new Texture({
+          generateMipmaps: false,
+          data: {
+            width,
+            height,
+            buffer: null
+          }
+        }),
         depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
       // We want a target with a pixel ratio of just 1, which will be more than enough accuracy for mouse picking

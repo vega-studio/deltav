@@ -29,10 +29,11 @@ function isDataBuffer(
   val: any
 ): val is { width: number; height: number; buffer: ArrayBufferView | null } {
   return (
-    val &&
-    val.buffer &&
-    val.buffer.byteOffset !== undefined &&
-    val.buffer.byteLength
+    (val &&
+      val.buffer &&
+      val.buffer.byteOffset !== undefined &&
+      val.buffer.byteLength) ||
+    val.buffer === null
   );
 }
 
@@ -429,9 +430,11 @@ export class GLProxy {
     // Color buffer
     if (Array.isArray(target.buffers.color)) {
       const buffers: (WebGLRenderbuffer | Texture)[] = [];
+      let isReady = true;
       glContext.colorBufferId = buffers;
 
       target.buffers.color.forEach((buffer, i) => {
+        if (!isReady) return;
         if (buffer instanceof Texture) {
           buffers.push(buffer);
 
@@ -443,6 +446,11 @@ export class GLProxy {
               buffer.gl.textureId,
               0
             );
+          } else {
+            console.warn(
+              "Attempted to compile render target whose target texture was not ready for use."
+            );
+            isReady = false;
           }
         } else {
           const rboId = this.compileColorBuffer(
@@ -462,6 +470,10 @@ export class GLProxy {
           }
         }
       });
+
+      if (!isReady) {
+        return false;
+      }
     } else if (target.buffers.color !== undefined) {
       const buffer = target.buffers.color;
 
@@ -471,11 +483,16 @@ export class GLProxy {
         if (isTextureReady(buffer)) {
           gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, false),
+            indexToColorAttachment(gl, this.extensions, 0, true),
             gl.TEXTURE_2D,
             buffer.gl.textureId,
             0
           );
+        } else {
+          console.warn(
+            "Attempted to compile render target whose target texture was not ready for use."
+          );
+          return false;
         }
       } else {
         const rboId = this.compileColorBuffer(
@@ -803,7 +820,7 @@ export class GLProxy {
     }
 
     // Only if this geomxetry has instances requested will it attempt to render instances
-    if (model.geometry.maxInstancedCount >= 0) {
+    if (model.drawInstances >= 0) {
       instancing = this.extensions.instancing;
     }
 
@@ -812,14 +829,14 @@ export class GLProxy {
         drawMode(this.gl, model.drawMode),
         drawRange[0],
         drawRange[1],
-        model.geometry.maxInstancedCount
+        model.drawInstances
       );
     } else if (instancing) {
       instancing.drawArraysInstancedANGLE(
         drawMode(this.gl, model.drawMode),
         drawRange[0],
         drawRange[1],
-        model.geometry.maxInstancedCount
+        model.drawInstances
       );
     } else {
       this.gl.drawArrays(
@@ -1122,7 +1139,7 @@ export class GLProxy {
     // Check update flag
     if (!texture.needsSettingsUpdate) return;
     // Check for gl context
-    if (!texture.gl) return;
+    if (!texture.gl || !texture.data) return;
     // This texture must have an establish texture id
     if (!texture.gl.textureId) return;
 
@@ -1135,6 +1152,8 @@ export class GLProxy {
       return;
     }
 
+    const isPower2 =
+      isPowerOf2(texture.data.width) && isPowerOf2(texture.data.height);
     const gl = this.gl;
     this.state.setActiveTextureUnit(texture.gl.textureUnit);
     this.state.bindTexture(
@@ -1146,12 +1165,12 @@ export class GLProxy {
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MAG_FILTER,
-      magFilter(gl, texture.magFilter)
+      magFilter(gl, texture.magFilter, isPower2)
     );
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MIN_FILTER,
-      minFilter(gl, texture.minFilter)
+      minFilter(gl, texture.minFilter, isPower2)
     );
     gl.texParameteri(
       gl.TEXTURE_2D,
@@ -1227,14 +1246,11 @@ export class GLProxy {
       // State change
       this.state.bindVBO(attribute.gl.bufferId);
       // Upload data
-      const start = attribute.updateRange.offset * attribute.size;
+      const start = attribute.updateRange.offset;
       gl.bufferSubData(
         gl.ARRAY_BUFFER,
-        start,
-        attribute.data.subarray(
-          start,
-          start + attribute.updateRange.count * attribute.size
-        )
+        start * 4,
+        attribute.data.subarray(start, start + attribute.updateRange.count)
       );
     }
 

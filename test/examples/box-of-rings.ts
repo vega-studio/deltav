@@ -28,6 +28,13 @@ export class BoxOfRings extends BaseExample {
       scaleFactor: () => this.camera.scale[0],
       scene: scene,
       picking: PickType.SINGLE
+      // onMouseOver: info => {
+      //   // console.log(
+      //   //   "event",
+      //   //   0xffffff - info.instances.map(instance => instance.uid)[0]
+      //   // );
+      //   info.instances[0].color = [1, 1, 1, 1];
+      // }
     });
   }
 

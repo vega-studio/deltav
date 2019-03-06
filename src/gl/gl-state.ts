@@ -188,10 +188,12 @@ export class GLState {
 
   /** This contains all of the currently enabled vertex attribute pointers */
   get enabledVertexAttributeArray() {
-    return Array.from(this._enabledVertexAttributeArray.values());
+    return this._enabledVertexAttributeArray
+      .slice(0)
+      .filter(n => n !== undefined);
   }
-  private _enabledVertexAttributeArray = new Set<number>();
-  private _willUseVertexAttributeArray = new Set<number>();
+  private _enabledVertexAttributeArray: number[] = [];
+  private _willUseVertexAttributeArray: number[] = [];
 
   /** Tracks the current divisor set to a given vertex array location. */
   private _vertexAttributeArrayDivisor = new Map<number, number>();
@@ -295,11 +297,11 @@ export class GLState {
    */
   willUseVertexAttributeArray(index: number) {
     // Flag the index as will be used
-    this._willUseVertexAttributeArray.add(index);
+    this._willUseVertexAttributeArray[index] = index;
     // If already enabled we're done
-    if (this._enabledVertexAttributeArray.has(index)) return;
+    if (this._enabledVertexAttributeArray[index] !== undefined) return;
     // Flag the index as enabled
-    this._enabledVertexAttributeArray.add(index);
+    this._enabledVertexAttributeArray[index] = index;
     // Otherwise, get this location enabled right away
     this.gl.enableVertexAttribArray(index);
   }
@@ -310,14 +312,22 @@ export class GLState {
   applyVertexAttributeArrays() {
     // All locations that should be enabled are now enabled
     // Disable any locations that will not be used
-    this._enabledVertexAttributeArray.forEach(index => {
-      if (this._willUseVertexAttributeArray.has(index)) return;
-      this.gl.disableVertexAttribArray(index);
-      this._enabledVertexAttributeArray.delete(index);
-    });
+    for (
+      let i = 0, iMax = this._enabledVertexAttributeArray.length;
+      i < iMax;
+      ++i
+    ) {
+      const index = this._enabledVertexAttributeArray[i];
+
+      if (index !== undefined) {
+        if (this._willUseVertexAttributeArray[index] !== undefined) return;
+        this.gl.disableVertexAttribArray(index);
+        delete this._enabledVertexAttributeArray[index];
+      }
+    }
 
     // Reset the use array for next draw
-    this._willUseVertexAttributeArray.clear();
+    this._willUseVertexAttributeArray = [];
   }
 
   /**
@@ -327,7 +337,7 @@ export class GLState {
   setVertexAttributeArrayDivisor(index: number, divisor: number) {
     if (!this.extensions.instancing) return;
 
-    if (this._enabledVertexAttributeArray.has(index)) {
+    if (this._enabledVertexAttributeArray[index] !== undefined) {
       if (this._vertexAttributeArrayDivisor.get(index) !== divisor) {
         if (this.extensions.instancing instanceof WebGL2RenderingContext) {
           this.extensions.instancing.vertexAttribDivisor(index, divisor);
@@ -710,9 +720,27 @@ export class GLState {
       }
     });
 
-    // Now our list of render targets is guaranteed to have their textures properly compiled,
+    // Now our list of render targets is guaranteed to have their textures set with an active texture unit,
     // so we can now officially ensure the render target is compiled.
-    renderTargets.forEach(target => this.glProxy.compileRenderTarget(target));
+    renderTargets.forEach(target => {
+      const textures = target.getTextures();
+      const failed = textures.some(texture => {
+        // Only compile and process successful texture units
+        if (failedTextures.indexOf(texture) < 0) {
+          this.glProxy.updateTexture(texture);
+        } else return true;
+
+        return false;
+      });
+
+      if (!failed) {
+        this.glProxy.compileRenderTarget(target);
+      } else {
+        console.warn(
+          "A RenderTarget can not be used because all of it's textures could not be compiled."
+        );
+      }
+    });
 
     // Now that all of our textures have units, we loop through each texture and have them
     // compiled and/or updated then upload the unit to the appropriate uniforms indicated.

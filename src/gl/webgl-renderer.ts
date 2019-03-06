@@ -1,7 +1,9 @@
+import { Attribute } from "src/gl/attribute";
 import { GLState } from "src/gl/gl-state";
 import { Model } from "src/gl/model";
 import { WebGLStat } from "src/gl/webgl-stat";
-import { Vec2, Vec4 } from "../util";
+import { Size } from "src/types";
+import { Vec4 } from "../util";
 import { GLProxy } from "./gl-proxy";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
@@ -47,8 +49,14 @@ export interface IWebGLRendererOptions {
 export interface IWebGLRendererState {
   /** Sets up a clear mask to ensure the clear operation only happens once per draw */
   clearMask: [boolean, boolean, boolean];
+  /** Stores which render target is in focus for the current operations on the renderer */
+  currentRenderTarget: RenderTarget | null;
+  /** The current display size of the canvas */
+  displaySize: Size;
   /** The current pixel ratio in use */
   pixelRatio: number;
+  /** The current rendering size of the canvas */
+  renderSize: Size;
 }
 
 /**
@@ -65,16 +73,19 @@ export class WebGLRenderer {
     return this._gl;
   }
   /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
-  private glProxy: GLProxy;
+  glProxy: GLProxy;
   /** This handles anything related to state changes in the GL state */
-  private glState: GLState;
+  glState: GLState;
   /** The options that constructed or are currently applied to the renderer */
   options: IWebGLRendererOptions;
 
   /** Any current internal state the renderer has applied to it's target */
   state: IWebGLRendererState = {
     clearMask: [false, false, false],
-    pixelRatio: 1
+    currentRenderTarget: null,
+    displaySize: [1, 1],
+    pixelRatio: 1,
+    renderSize: [1, 1]
   };
 
   constructor(options: IWebGLRendererOptions) {
@@ -120,101 +131,12 @@ export class WebGLRenderer {
   }
 
   /**
-   * This makes the contents of the render target appear in the bottom right of the screen.
-   * This will only show the color buffer. If there are texture render targets, then you will
-   * have to debug those separately.
-   */
-  debugRenderTarget(target: RenderTarget) {
-    if (!this.glState.useRenderTarget(target)) return;
-    const debugId = `__debug_read_pixels__${target.uid}`;
-    const dataWidth = Math.floor(target.width);
-    const dataHeight = Math.floor(target.height);
-    const data = new Uint8Array(dataWidth * dataHeight * 4);
-    this.readPixels(0, 0, dataWidth, dataHeight, data, target);
-    this.glState.useRenderTarget(null);
-    this.debugReadPixels(data, target.width, target.height, debugId);
-  }
-
-  /**
-   * Makes a chunk of readPixel data viewable in the bottom right of the screen.
-   */
-  debugReadPixels(
-    data: Uint8Array,
-    width: number,
-    height: number,
-    debugId: string
-  ) {
-    const debugViewHeight = 200;
-    let container = document.getElementById(`__debug_read_pixels__`);
-
-    if (!container) {
-      container = document.createElement("div");
-      document.getElementsByTagName("body")[0].appendChild(container);
-      container.id = `__debug_read_pixels__`;
-      container.style.background = "rgba(64, 64, 64, 0.5)";
-      container.style.border = "1px solid #FFFFFF";
-      container.style.padding = "4px";
-      container.style.position = "fixed";
-      container.style.right = `10px`;
-      container.style.bottom = "10px";
-    }
-
-    const element: HTMLElement | null = document.getElementById(debugId);
-    let canvas: HTMLCanvasElement | undefined;
-
-    if (element && element instanceof HTMLCanvasElement) {
-      canvas = element;
-    }
-
-    if (!canvas) {
-      const aspect = height / width;
-      canvas = document.createElement("canvas") as HTMLCanvasElement;
-      container.appendChild(canvas);
-      canvas.style.height = `${debugViewHeight}px`;
-      canvas.height = height;
-      canvas.width = width;
-      canvas.style.width = `${debugViewHeight / aspect}px`;
-      canvas.style.marginLeft = "4px";
-      canvas.id = debugId;
-    }
-
-    const imageData = new ImageData(
-      Uint8ClampedArray.from(data),
-      width,
-      height
-    );
-
-    // Make a temp canvas to fully render the data retrieved, then we'll render
-    // it down to the display debug canvas for the screen.
-    const ctx = canvas.getContext("2d");
-
-    if (ctx) {
-      ctx.putImageData(imageData, 0, 0);
-    }
-  }
-
-  /**
    * Free all resources this renderer utilized. Make sure textures and frame/render/geometry
    * buffers are all deleted. We may even use aggressive buffer removal that force resizes the buffers
    * so their resources are immediately reduced instead of waiting for the JS engine to free up resources.
    */
   dispose() {
     // TODO
-  }
-
-  /**
-   * Retrieves the screendimensions of the canvas
-   */
-  getCanvasDimensions(): Vec2 {
-    const { canvas } = this.options;
-    const box = canvas.getBoundingClientRect();
-    let width = canvas.offsetWidth;
-    let height = canvas.offsetHeight;
-
-    if (box.width) width = box.width;
-    if (box.height) height = box.height;
-
-    return [width, height];
   }
 
   /**
@@ -252,13 +174,8 @@ export class WebGLRenderer {
   /**
    * Retrieves the size of the canvas ignoring pixel ratio.
    */
-  getDisplaySize() {
-    const { canvas } = this.options;
-
-    return {
-      width: canvas.offsetWidth,
-      height: canvas.offsetHeight
-    };
+  getDisplaySize(): Size {
+    return this.state.displaySize;
   }
 
   /**
@@ -272,13 +189,55 @@ export class WebGLRenderer {
    * Retrieves the size of the rendering context. This is the pixel dimensions
    * of what is being rendered into.
    */
-  getRenderSize() {
-    const { canvas } = this.options;
+  getRenderSize(): Size {
+    return this.state.renderSize;
+  }
 
-    return {
-      width: canvas.width,
-      height: canvas.height
-    };
+  /**
+   * Returns the full viewport for the current target.
+   *
+   * If a RenderTarget is not set, then this returns the viewport of the canvas ignoring
+   * the current pixel ratio.
+   */
+  getFullViewport() {
+    const target = this.state.currentRenderTarget;
+
+    if (target) {
+      return {
+        x: 0,
+        y: 0,
+        width: target.width,
+        height: target.height
+      };
+    } else {
+      const size = this.getDisplaySize();
+
+      return {
+        x: 0,
+        y: 0,
+        width: size[0],
+        height: size[1]
+      };
+    }
+  }
+
+  /**
+   * Prepares the specified attribute
+   */
+  private prepareAttribute(attribute: Attribute, name: string) {
+    // If we successfully update/compile the attribute, then we enable it's vertex array
+    if (this.glProxy.updateAttribute(attribute)) {
+      this.glProxy.useAttribute(name, attribute);
+    }
+
+    // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
+    // behavior while rendering
+    else {
+      console.warn("Could not update attribute", attribute);
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -309,62 +268,61 @@ export class WebGLRenderer {
 
     // We'll remove any models that have errored from the scene
     const toRemove: Model[] = [];
-
     // Loop through all of the models of the scene and process them for rendering
-    scene.models.forEach(model => {
-      const geometry = model.geometry;
-      const material = model.material;
-
-      // Let's put the material's program in use first so we can have the attribute information
-      // available to us.
-      if (this.glState.useMaterial(material)) {
-        let geometryIsValid = true;
-
-        // First update/compile all aspects of the geometry
-        geometry.attributes.forEach((attribute, name) => {
-          // If we successfully update/compile the attribute, then we enable it's vertex array
-          if (this.glProxy.updateAttribute(attribute)) {
-            this.glProxy.useAttribute(name, attribute);
-          }
-
-          // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
-          // behavior while rendering
-          else {
-            console.warn("Could not update attribute", attribute);
-            geometryIsValid = false;
-          }
-        });
-
-        // Now all of our attributes are established, we must make sure our vertex arrays are cleaned up
-        this.glState.applyVertexAttributeArrays();
-
-        // If all of the attribute updates passed correctly, then we can use the established state
-        // to make our draw call
-        if (geometryIsValid) {
-          this.glProxy.draw(model);
-        } else {
-          console.warn(
-            "Geometry was unable to update correctly, thus we are skipping the drawing of",
-            model
-          );
-
-          toRemove.push(model);
-        }
-      } else {
-        console.warn(
-          "Could not utilize material. Skipping draw call for:",
-          material,
-          geometry
-        );
-
-        toRemove.push(model);
-      }
+    scene.models.forEach((model: Model) => {
+      this.renderModel(model, toRemove);
     });
 
     // Clear out any failed models from the scene
     toRemove.forEach(model => {
       scene.remove(model);
     });
+  }
+
+  /**
+   * Renders the specified model
+   */
+  private renderModel(model: Model, toRemove: Model[]) {
+    const geometry = model.geometry;
+    const material = model.material;
+
+    // Let's put the material's program in use first so we can have the attribute information
+    // available to us.
+    if (this.glState.useMaterial(material)) {
+      let geometryIsValid = true;
+
+      // Faster to use defined functions rather than closures for loops
+      const attributeLoop = function(attribute: Attribute, name: string) {
+        geometryIsValid =
+          this.prepareAttribute(attribute, name) && geometryIsValid;
+      };
+
+      // First update/compile all aspects of the geometry
+      geometry.attributes.forEach(attributeLoop, this);
+      // Now all of our attributes are established, we must make sure our vertex arrays are cleaned up
+      this.glState.applyVertexAttributeArrays();
+
+      // If all of the attribute updates passed correctly, then we can use the established state
+      // to make our draw call
+      if (geometryIsValid) {
+        this.glProxy.draw(model);
+      } else {
+        console.warn(
+          "Geometry was unable to update correctly, thus we are skipping the drawing of",
+          model
+        );
+
+        toRemove.push(model);
+      }
+    } else {
+      console.warn(
+        "Could not utilize material. Skipping draw call for:",
+        material,
+        geometry
+      );
+
+      toRemove.push(model);
+    }
   }
 
   /**
@@ -378,12 +336,28 @@ export class WebGLRenderer {
     y: number,
     width: number,
     height: number,
-    out: ArrayBufferView,
-    target?: RenderTarget
+    out: ArrayBufferView
   ) {
     if (!this.gl) return;
+    const target = this.state.currentRenderTarget;
+
+    x = Math.max(0, x);
+    y = Math.max(0, y);
+
+    const canRead =
+      this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) ===
+      this.gl.FRAMEBUFFER_COMPLETE;
+
+    if (!canRead) {
+      console.warn(
+        "Framebuffer is incomplete. Can not read pixels at this time."
+      );
+      return;
+    }
 
     if (target) {
+      if (x + width > target.width) width = target.width - x;
+      if (y + height > target.height) height = target.height - y;
       const _height = target.height;
 
       this.gl.readPixels(
@@ -397,8 +371,11 @@ export class WebGLRenderer {
       );
     } else {
       const { pixelRatio } = this.state;
-      const size = this.getCanvasDimensions();
+      const size = this.getDisplaySize();
       const _height = size[1];
+
+      if (x + width > size[0]) width = size[0] - x;
+      if (y + height > size[1]) height = size[1] - y;
 
       this.gl.readPixels(
         x * pixelRatio,
@@ -424,7 +401,7 @@ export class WebGLRenderer {
    */
   setPixelRatio(ratio: number) {
     const { canvas } = this.options;
-    const size = this.getCanvasDimensions();
+    const size = this.getDisplaySize();
 
     canvas.width = size[0] * ratio;
     canvas.height = size[1] * ratio;
@@ -455,7 +432,7 @@ export class WebGLRenderer {
       }
     } else {
       const { pixelRatio } = this.state;
-      const size = this.getCanvasDimensions();
+      const size = this.getDisplaySize();
       const _height = size[1];
 
       if (bounds) {
@@ -487,12 +464,18 @@ export class WebGLRenderer {
     // Scale the canvas to fit the desired width and height
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
+
+    this.state.renderSize = [canvas.width, canvas.height];
+    this.state.displaySize = [width, height];
   }
 
   /**
    * This sets the context to render into the indicated target
    */
   setRenderTarget(target: RenderTarget | null) {
+    // Don't need to do anything forsame render targets
+    if (this.state.currentRenderTarget === target) return;
+
     if (!this.glState.useRenderTarget(target) && target) {
       // If unable to use yet, this indicates the FBO needs to be compiled
       // Probably due to uncompiled texture objects that the FBO needs.
@@ -511,6 +494,9 @@ export class WebGLRenderer {
         this.glState.useRenderTarget(target);
       }
     }
+
+    // Set this as the current render target for the renderer
+    this.state.currentRenderTarget = target;
   }
 
   /**
@@ -519,13 +505,10 @@ export class WebGLRenderer {
    * By default the viewport is set based on the canvas being rendered into. Include a render target
    * to make the viewport be applied with the target considered rather than needing pixel density considerations.
    */
-  setViewport(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    target?: RenderTarget
-  ) {
+  setViewport(bounds: { x: number; y: number; width: number; height: number }) {
+    const target = this.state.currentRenderTarget;
+    const { x, y, width, height } = bounds;
+
     if (target) {
       const _height = target.height;
 
@@ -533,7 +516,7 @@ export class WebGLRenderer {
       this.glState.setViewport(x, _height - y - height, width, height);
     } else {
       const { pixelRatio } = this.state;
-      const size = this.getCanvasDimensions();
+      const size = this.getDisplaySize();
       const _height = size[1];
 
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0

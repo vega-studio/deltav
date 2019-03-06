@@ -1,5 +1,5 @@
 import { IColorPickingData } from "../types";
-import { Vec2 } from "./vector";
+import { Vec2, Vec4 } from "./vector";
 
 /**
  * This analyzes the rendered data for color picking and outputs the metrics and data needed
@@ -17,7 +17,8 @@ export function analyzeColorPickingRendering(
     dataHeight: height,
     dataWidth: width,
     mouse,
-    nearestColor: 0
+    nearestColor: 0,
+    nearestColorBytes: [0, 0, 0, 0]
   };
 
   const uniqueColors = new Map<number, boolean>();
@@ -27,6 +28,7 @@ export function analyzeColorPickingRendering(
   const mouseY: number = height / 2;
 
   let nearestColor = 0x000000;
+  let nearestColorBytes: Vec4 = [0, 0, 0, 0];
   let distance = Number.MAX_SAFE_INTEGER;
 
   for (let i = 0; i < height; ++i) {
@@ -52,6 +54,7 @@ export function analyzeColorPickingRendering(
         if (testDistance < distance) {
           distance = testDistance;
           nearestColor = color;
+          nearestColorBytes = [r, g, b, 255];
         }
       }
     }
@@ -61,6 +64,8 @@ export function analyzeColorPickingRendering(
   pickingData.allColors = Array.from(uniqueColors.keys());
   // The nearest color will be the element in the middle of the array of colors
   pickingData.nearestColor = nearestColor;
+  // The nearest color in byte components
+  pickingData.nearestColorBytes = nearestColorBytes;
 
   return pickingData;
 }

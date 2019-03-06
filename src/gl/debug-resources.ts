@@ -1,4 +1,3 @@
-import { MaterialUniformType } from "src/gl/types";
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import { GLSettings } from "./gl-settings";
@@ -7,6 +6,7 @@ import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
 import { Texture } from "./texture";
+import { MaterialUniformType } from "./types";
 import { WebGLRenderer } from "./webgl-renderer";
 
 const drawQuadVS = `

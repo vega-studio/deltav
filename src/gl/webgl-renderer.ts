@@ -1,12 +1,12 @@
-import { Attribute } from "src/gl/attribute";
-import { GLState } from "src/gl/gl-state";
-import { Model } from "src/gl/model";
-import { WebGLStat } from "src/gl/webgl-stat";
-import { Size } from "src/types";
+import { Size } from "../types";
 import { Vec4 } from "../util";
+import { Attribute } from "./attribute";
 import { GLProxy } from "./gl-proxy";
+import { GLState } from "./gl-state";
+import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
+import { WebGLStat } from "./webgl-stat";
 
 /**
  * Options used to create or update the renderer.
@@ -224,7 +224,7 @@ export class WebGLRenderer {
   /**
    * Prepares the specified attribute
    */
-  private prepareAttribute(attribute: Attribute, name: string) {
+  prepareAttribute(attribute: Attribute, name: string) {
     // If we successfully update/compile the attribute, then we enable it's vertex array
     if (this.glProxy.updateAttribute(attribute)) {
       this.glProxy.useAttribute(name, attribute);

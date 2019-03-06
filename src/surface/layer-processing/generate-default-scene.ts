@@ -1,5 +1,5 @@
-import { Camera, CameraProjectionType } from "src/util/camera";
 import { AbsolutePosition } from "../../primitives/absolute-position";
+import { Camera, CameraProjectionType } from "../../util/camera";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";
 import { LayerScene } from "../layer-scene";

@@ -1,4 +1,4 @@
-import { Attribute, Geometry, Material, Model } from "src/gl";
+import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
 import { IInstanceAttribute, IInstanceAttributeInternal } from "../../../types";

@@ -1,4 +1,4 @@
-import { Vec3Compat } from "src/util/vector";
+import { Vec3Compat } from "./vector";
 
 export type Mat2x2 = [number, number, number, number];
 

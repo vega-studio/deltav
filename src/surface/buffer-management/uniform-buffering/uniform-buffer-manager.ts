@@ -1,4 +1,4 @@
-import { Attribute, Geometry, Material, Model } from "src/gl";
+import { Attribute, Geometry, Material, Model } from "../../../gl";
 import {
   IMaterialUniform,
   isUniformVec4Array,

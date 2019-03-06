@@ -1,10 +1,10 @@
-import { MaterialUniformType } from "src/gl";
-import { Vec4 } from "src/util";
+import { MaterialUniformType } from "../../gl";
 import {
   IInstancingUniform,
   IUniform,
   ShaderInjectionTarget
 } from "../../types";
+import { Vec4 } from "../../util";
 import { MetricsProcessing } from "./metrics-processing";
 
 /** Converts a size to a shader type */

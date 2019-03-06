@@ -1,5 +1,5 @@
-import { GLProxy } from "src/gl/gl-proxy";
-import { uid } from "src/util";
+import { uid } from "../util";
+import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Texture } from "./texture";
 

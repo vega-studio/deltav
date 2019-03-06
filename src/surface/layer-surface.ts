@@ -1,7 +1,7 @@
-import { GLSettings, RenderTarget, Scene, Texture } from "src/gl";
-import { flushDebug } from "src/gl/debug-resources";
 import { ImageInstance } from "../base-layers/images";
 import { LabelInstance } from "../base-layers/labels";
+import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
+import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";

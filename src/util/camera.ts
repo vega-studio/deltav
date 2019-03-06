@@ -6,8 +6,8 @@ import {
   perspective4x4,
   scale4x4by3,
   translation4x4by3
-} from "src/util/matrix";
-import { copy3, Vec3 } from "src/util/vector";
+} from "./matrix";
+import { copy3, Vec3 } from "./vector";
 
 export enum CameraProjectionType {
   PERSPECTIVE,

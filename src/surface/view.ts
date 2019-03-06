@@ -1,4 +1,3 @@
-import { Camera, CameraProjectionType } from "src/util/camera";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
@@ -6,6 +5,7 @@ import {
 import { Bounds } from "../primitives/bounds";
 import { Color } from "../types";
 import { Vec2 } from "../util";
+import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";

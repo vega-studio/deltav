@@ -90,7 +90,7 @@ function compare4x4(a: Mat4x4, b: Mat4x4): boolean {
   );
 }
 
-export function matrix_test() {
+function matrix_test() {
   add_sub_test();
   inverse_test();
   determinant_test();
@@ -417,3 +417,5 @@ function rotation3x3_test() {
     console.warn("FAILED: rotate Pi / 4 3x3");
   }
 }
+
+matrix_test();

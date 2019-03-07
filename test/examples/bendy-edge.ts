@@ -4,7 +4,8 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  LayerInitializer
+  LayerInitializer,
+  nextFrame
 } from "src";
 import { BaseExample } from "./base-example";
 
@@ -28,7 +29,7 @@ export class BendyEdge extends BaseExample {
     const edges: EdgeInstance[] = [];
     const TOTAL_EDGES = 10;
 
-    setTimeout(() => {
+    nextFrame(() => {
       const bounds = this.surface.getViewSize(this.view);
       if (!bounds) return;
 
@@ -65,7 +66,7 @@ export class BendyEdge extends BaseExample {
           ];
         }
       }, 1000 / 60);
-    }, 100);
+    });
 
     return edgeProvider;
   }

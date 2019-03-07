@@ -6,6 +6,7 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
+  nextFrame,
   RectangleInstance,
   RectangleLayer,
   scale4,
@@ -61,7 +62,7 @@ export class VertexAttributePacking extends BaseExample {
     const TOTAL_EDGES = 10;
     const { random } = Math;
 
-    setTimeout(() => {
+    nextFrame(() => {
       const bounds = this.surface.getViewSize(this.view);
       if (!bounds) return;
 
@@ -143,7 +144,7 @@ export class VertexAttributePacking extends BaseExample {
           ];
         }
       }, 1000 / 20);
-    }, 1000);
+    });
 
     return edgeProvider;
   }

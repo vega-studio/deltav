@@ -91,7 +91,7 @@ export class MouseInteractionRectangle extends BaseExample {
       onMouseClick: this.handleRectangleClick,
       onMouseOut: this.handleRectangleOut,
       onMouseOver: this.handleRectangleOver,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scene: scene
     });
   }

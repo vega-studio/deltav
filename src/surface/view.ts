@@ -96,6 +96,8 @@ export class View extends IdentifyByKey {
   needsDraw: boolean = false;
   /** End time of animation */
   animationEndTime: number = 0;
+  /** Last frame time this view was rendered under */
+  lastFrameTime: number = 0;
 
   constructor(options: IViewOptions) {
     super(options);

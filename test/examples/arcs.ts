@@ -9,6 +9,7 @@ import {
   InstanceProvider,
   LayerInitializer
 } from "src";
+import { nextFrame } from "src/util/next-frame";
 import { BaseExample } from "./base-example";
 
 export class Arcs extends BaseExample {
@@ -36,8 +37,9 @@ export class Arcs extends BaseExample {
     const viewSize =
       this.surface.getViewSize(this.view) ||
       new Bounds({ x: 0, y: 0, width: 200, height: 200 });
+    const arcCount = 15;
 
-    for (let i = 0; i < 25; ++i) {
+    for (let i = 0; i < arcCount; ++i) {
       const arc = new ArcInstance({
         angle: [-Math.PI / 2, -Math.PI / 2],
         center: [viewSize.width / 2, viewSize.height / 2],
@@ -52,7 +54,7 @@ export class Arcs extends BaseExample {
       arcs.push(arcProvider.add(arc));
     }
 
-    for (let i = 0; i < 25; ++i) {
+    for (let i = 0; i < arcCount; ++i) {
       const arc = new ArcInstance({
         angle: [-Math.PI / 2, -Math.PI / 2],
         center: [viewSize.width / 2, viewSize.height / 2],
@@ -68,8 +70,8 @@ export class Arcs extends BaseExample {
     }
 
     // Wait a tick to get the easing properties available
-    setTimeout(() => {
-      for (let i = 0; i < 25; ++i) {
+    nextFrame(() => {
+      for (let i = 0; i < arcCount; ++i) {
         const arc = arcs[i];
         arc.angle = [-Math.PI / 2, Math.PI / 2];
         arc.thickness = [3, 3];
@@ -85,22 +87,22 @@ export class Arcs extends BaseExample {
         }
       }
 
-      for (let i = 25; i < 50; ++i) {
+      for (let i = arcCount; i < arcCount * 2; ++i) {
         const arc = arcs[i];
         arc.angle = [-Math.PI / 2, -Math.PI / 2 - Math.PI];
         arc.thickness = [3, 3];
 
         let easing = arc.getEasing(ArcLayer.attributeNames.angle);
         if (easing) {
-          easing.setTiming((i - 25) * 100, 2000);
+          easing.setTiming((i - arcCount) * 100, 2000);
         }
 
         easing = arc.getEasing(ArcLayer.attributeNames.thickness);
         if (easing) {
-          easing.setTiming((i - 25) * 100, 2000);
+          easing.setTiming((i - arcCount) * 100, 2000);
         }
       }
-    }, 10);
+    });
 
     return arcProvider;
   }

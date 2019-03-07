@@ -148,8 +148,6 @@ export class Layer<
   initializer: LayerInitializer;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
-  /** A lookup fo an instance by it's ID */
-  instanceById = new Map<string, T>();
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
@@ -181,6 +179,8 @@ export class Layer<
   needsViewDrawn: boolean = false;
   /** End time of animation */
   animationEndTime: number = 0;
+  /** The last time stamp this layer had its contents rendered */
+  lastFrameTime: number = 0;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us

@@ -253,6 +253,10 @@ export class LayerSurface {
       this.frameMetrics.currentTime = time;
     }
 
+    // Now that we have established what the time should be, let's swap our input parameter to reflect
+    // the time we will be using for this frame
+    time = this.frameMetrics.currentTime;
+
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
     const validLayers: { [key: string]: Layer<any, any> } = {};
@@ -307,6 +311,8 @@ export class LayerSurface {
               view.animationEndTime,
               layer.animationEndTime
             );
+            // Indicate this layer is being rendered at the current time frame
+            layer.lastFrameTime = time;
           } catch (err) {
             if (!erroredLayers[layer.id]) {
               erroredLayers[layer.id] = [layer, err];
@@ -324,7 +330,7 @@ export class LayerSurface {
         // that will trigger a redraw outside of our layer changes
         if (
           view.needsDraw ||
-          (time && time < view.animationEndTime) ||
+          (time && time < view.lastFrameTime) ||
           view.camera.needsViewDrawn ||
           true
         ) {
@@ -670,6 +676,8 @@ export class LayerSurface {
 
     // Render the scene with the provided view metrics
     renderer.render(scene, target);
+    // Indicate this view has been rendered for the given time allottment
+    view.lastFrameTime = this.frameMetrics.currentTime;
   }
 
   /**

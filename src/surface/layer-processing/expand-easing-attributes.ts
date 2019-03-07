@@ -1,15 +1,17 @@
 import { Instance } from "../../instance-provider/instance";
 import {
+  FrameMetrics,
   IEasingInstanceAttribute,
   IEasingProps,
   IInstanceAttribute,
-  InstanceAttributeSize
+  InstanceAttributeSize,
+  InstanceIOValue
 } from "../../types";
 import { AutoEasingLoopStyle } from "../../util";
 import { EasingProps } from "../../util/easing-props";
 import { ILayerProps, Layer } from "../layer";
 
-const { abs } = Math;
+const { abs, max } = Math;
 
 const BLANK_EASING_PROPS: IEasingProps = {
   duration: 0,
@@ -74,18 +76,28 @@ export function generateEasingAttributes<
       values: BLANK_EASING_PROPS
     };
 
+    // Remove declaring any variables within the scope of the update method for speed
+    let delay: number,
+      attributeDelay: number,
+      attributeDuration: number,
+      duration: number,
+      easingValues: IEasingProps,
+      timeValue: number,
+      end: InstanceIOValue,
+      currentTime: number,
+      frameMetrics: FrameMetrics;
+
     // Hijack the update from the attribute to a new update method which will
     // Be able to interact with the values for the easing methodology
     attribute.update = instance => {
+      frameMetrics = layer.surface.frameMetrics;
       // We retrieve properties that we want to be dynamic from the easing equation
-      const {
-        delay: attributeDelay,
-        duration: attributeDuration
-      } = attribute.easing;
+      attributeDelay = attribute.easing.delay;
+      attributeDuration = attribute.easing.duration;
 
       // First get the value that is to be our new destination
-      const end = update(instance);
-      const currentTime = layer.surface.frameMetrics.currentTime;
+      end = update(instance);
+      currentTime = frameMetrics.currentTime;
 
       // Get the easing values specific to an instance.
       let values = instance.easing.get(easingUID);
@@ -104,9 +116,9 @@ export function generateEasingAttributes<
       }
 
       // Assign the established values
-      const easingValues = values;
-      let duration = attributeDuration;
-      let delay = attributeDelay;
+      easingValues = values;
+      duration = attributeDuration;
+      delay = attributeDelay;
 
       if (easingValues.isTimeSet) {
         duration = easingValues.duration || attributeDuration;
@@ -115,7 +127,7 @@ export function generateEasingAttributes<
 
       if (!easingValues.isManualStart) {
         // Previous position time value
-        let timeValue = 1;
+        timeValue = 1;
 
         switch (loop) {
           // Continuous means we start at 0 and let the time go to infinity
@@ -159,11 +171,9 @@ export function generateEasingAttributes<
       attributeDataShare.values = easingValues;
 
       /** Set layer's animation end time */
-      layer.animationEndTime = Math.max(
+      layer.animationEndTime = max(
         layer.animationEndTime,
-        easingValues.startTime +
-          duration +
-          layer.surface.frameMetrics.frameDuration
+        easingValues.startTime + duration + frameMetrics.frameDuration
       );
 
       return end;

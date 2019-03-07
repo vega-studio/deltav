@@ -179,6 +179,11 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   blockIndex?: InstanceBlockIndex;
   /**
+   * Child attributes are attributes that are guaranteed to update when the parent attribute
+   * is updated. This is useful for attributes with special properties that get expanded to
+   * other types of attributes such as easing attributes which gain start, duration, and other values
+   * to make the attribute work.
+   *
    * If the settings on this attrubute spawns additional attributes, those attributes shall
    * be populated here. Otherwise this remains undefined.
    */

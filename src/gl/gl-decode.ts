@@ -269,7 +269,7 @@ export function indexToColorAttachment(
   } else if (glExt) {
     switch (index) {
       case 0:
-        return glExt.COLOR_ATTACHMENT10_WEBGL;
+        return glExt.COLOR_ATTACHMENT0_WEBGL;
       case 1:
         return glExt.COLOR_ATTACHMENT1_WEBGL;
       case 2:

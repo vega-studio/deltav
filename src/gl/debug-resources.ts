@@ -55,6 +55,7 @@ const emptyTexture = new Texture({
 });
 
 const positionData = new Float32Array([
+  // Top tri
   -1,
   -1,
   1,
@@ -62,6 +63,7 @@ const positionData = new Float32Array([
   -1,
   1,
 
+  // Bottom tri
   1,
   -1,
   1,

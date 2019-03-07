@@ -1,4 +1,3 @@
-import * as Three from "three";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
@@ -6,6 +5,7 @@ import {
 import { Bounds } from "../primitives/bounds";
 import { Color } from "../types";
 import { Vec2 } from "../util";
+import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -58,8 +58,11 @@ export interface IViewOptions extends IdentifyByKeyOptions {
   viewport: AbsolutePosition;
 }
 
-function isOrthographic(val: Three.Camera): val is Three.OrthographicCamera {
-  return "left" in val;
+/**
+ * Type guard to ensure the camera type is orthographic
+ */
+function isOrthographic(val: Camera): val is Camera {
+  return val.projectionType === CameraProjectionType.ORTHOGRAPHIC;
 }
 
 /**
@@ -93,6 +96,8 @@ export class View extends IdentifyByKey {
   needsDraw: boolean = false;
   /** End time of animation */
   animationEndTime: number = 0;
+  /** Last frame time this view was rendered under */
+  lastFrameTime: number = 0;
 
   constructor(options: IViewOptions) {
     super(options);
@@ -248,16 +253,17 @@ export class View extends IdentifyByKey {
       const scaleY = 1;
       const camera = this.viewCamera.baseCamera;
 
-      Object.assign(camera, viewport);
-      camera.position.set(
+      camera.projectionOptions = Object.assign(
+        camera.projectionOptions,
+        viewport
+      );
+      camera.position = [
         -viewBounds.width / 2.0 * scaleX,
         viewBounds.height / 2.0 * scaleY,
-        camera.position.z
-      );
-      camera.scale.set(scaleX, -scaleY, 1.0);
-      camera.updateMatrix();
-      camera.updateMatrixWorld(true);
-      camera.updateProjectionMatrix();
+        camera.position[2]
+      ];
+      camera.scale = [scaleX, -scaleY, 1.0];
+      camera.update();
 
       this.viewBounds = viewBounds;
       this.viewBounds.data = this;

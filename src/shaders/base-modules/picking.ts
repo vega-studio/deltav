@@ -24,7 +24,7 @@ ShaderModule.register([
 
           // Do bit maths do get float components out of the int color
           return [
-            (color >> 16) / 255.0,
+            ((color & 0xff0000) >> 16) / 255.0,
             ((color & 0x00ff00) >> 8) / 255.0,
             (color & 0x0000ff) / 255.0,
             1

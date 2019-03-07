@@ -481,7 +481,9 @@ export class ShaderModule {
       moduleId: `Layer "${id}" ${
         target === ShaderInjectionTarget.ALL
           ? "fs vs"
-          : target === ShaderInjectionTarget.VERTEX ? "vs" : "fs"
+          : target === ShaderInjectionTarget.VERTEX
+            ? "vs"
+            : "fs"
       }`
     });
 

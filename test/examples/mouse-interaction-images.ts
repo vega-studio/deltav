@@ -83,7 +83,7 @@ export class MouseInteractionImages extends BaseExample {
       onMouseClick: this.handleImageClick,
       onMouseOut: this.handleImageOut,
       onMouseOver: this.handleImageOver,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scene: scene
     });
   }

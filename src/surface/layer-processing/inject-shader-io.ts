@@ -92,6 +92,10 @@ function compareVec(a: Vec, b: Vec) {
   return true;
 }
 
+/**
+ * This processes instance attributes and performs some basic validation on them to ensure their
+ * properties are sane and expected for rendering.
+ */
 function validateInstanceAttributes<T extends Instance>(
   layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[],
@@ -195,7 +199,7 @@ function validateInstanceAttributes<T extends Instance>(
 
 /**
  * This processes the results of shaders importing modules by gathering the attributes
- * and uniforms that arose from
+ * and uniforms that arose from them.
  */
 function gatherIOFromShaderModules<
   T extends Instance,

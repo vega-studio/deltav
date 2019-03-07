@@ -1,9 +1,8 @@
-import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
-import { ILayerProps, IModelType, Layer } from "../../surface/layer";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
@@ -183,14 +182,7 @@ export class CircleLayer<
     };
   }
 
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh
-    };
-  }
-
-  getMaterialOptions(): IMaterialOptions {
-    return CommonMaterialOptions.transparentShape;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return CommonMaterialOptions.transparentShapeBlending;
   }
 }

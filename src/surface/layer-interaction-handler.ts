@@ -1,3 +1,4 @@
+import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives";
 import {
   IColorPickingData,
@@ -6,7 +7,7 @@ import {
   IProjection,
   PickType
 } from "../types";
-import { Instance, TrackedQuadTree, Vec2 } from "../util";
+import { TrackedQuadTree, Vec2 } from "../util";
 import { UniformColorDiffProcessor } from "./buffer-management/uniform-buffering/uniform-color-diff-processor";
 import { ILayerProps, Layer } from "./layer";
 

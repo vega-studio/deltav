@@ -1,4 +1,4 @@
-import * as Three from "three";
+import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { isAtlasResource } from "../../resources/texture/atlas";
 import {
@@ -14,7 +14,14 @@ import {
 } from "../../types";
 import { ILayerProps, Layer } from "../layer";
 
-const emptyTexture = new Three.Texture();
+/** Empty texture that will default to the zero texture and unit */
+const emptyTexture = new Texture({
+  data: {
+    width: 1,
+    height: 1,
+    data: new Uint8ClampedArray(4)
+  }
+});
 
 function isAtlasAttribute<T extends Instance>(
   attr: any
@@ -127,10 +134,9 @@ export function generateAtlasResourceUniforms<
             if (isAtlasResource(resource)) {
               const atlas = resource.texture;
 
-              if (atlas && atlas.image) {
-                const { width, height } = atlas.image;
-                return [width || 1, height || 1];
-              }
+            if (atlas && atlas.data) {
+              const { width, height } = atlas.data;
+              return [width || 1, height || 1];
             }
 
             return [1, 1];

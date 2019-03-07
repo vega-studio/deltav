@@ -1,16 +1,12 @@
-import * as Three from "three";
+import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
-import {
-  IInstanceAttribute,
-  IInstanceAttributeInternal,
-  PickType
-} from "../../../types";
+import { IInstanceAttribute, IInstanceAttributeInternal } from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
-import { IModelConstructable, Layer } from "../../layer";
+import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { Scene } from "../../scene";
+import { LayerScene } from "../../layer-scene";
 import {
   BufferManagerBase,
   IBufferLocation,
@@ -23,12 +19,29 @@ const { max } = Math;
  * This represents the location of data for an instance's property to the piece of attribute buffer
  * it will update when it changes.
  */
-export interface IInstanceAttributeBufferLocation extends IBufferLocation {}
+export interface IInstanceAttributeBufferLocation extends IBufferLocation {
+  /** We narrow the buffer type for instance attributes down to just array buffers */
+  buffer: {
+    value: Float32Array | Uint8Array;
+  };
+
+  /** We narrow the chaild locations to be the same as this buffer location */
+  childLocations?: IInstanceAttributeBufferLocation[];
+}
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
 export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<
   IInstanceAttributeBufferLocation
 >;
+
+/**
+ * Typeguard for the instance attribute buffer location.
+ */
+export function isInstanceAttributeBufferLocation(
+  val: IBufferLocation
+): val is IInstanceAttributeBufferLocation {
+  return Boolean(val && val.buffer && val.buffer.value);
+}
 
 /**
  * This manages instances in how they associate with buffer data for an instanced attribute strategy.
@@ -55,10 +68,9 @@ export class InstanceAttributeBufferManager<
   private maxInstancedCount: number = 1000;
 
   // These are the only Three objects that must be monitored for disposal
-  private geometry?: Three.InstancedBufferGeometry;
-  private material?: Three.ShaderMaterial;
-  private model?: IModelConstructable & Three.Object3D;
-  private pickModel?: IModelConstructable & Three.Object3D | undefined;
+  private geometry?: Geometry;
+  private material?: Material;
+  private model?: Model;
   private attributes?: IInstanceAttributeInternal<T>[];
 
   /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
@@ -74,7 +86,7 @@ export class InstanceAttributeBufferManager<
    */
   private activePropertyId: number = -1;
 
-  constructor(layer: Layer<T, any>, scene: Scene) {
+  constructor(layer: Layer<T, any>, scene: LayerScene) {
     super(layer, scene);
     // Start our add method as a registration step.
     this.add = this.doAddWithRegistration;
@@ -156,10 +168,11 @@ export class InstanceAttributeBufferManager<
         // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
         bufferLocations.instanceIndex + 1
       );
-      this.geometry.drawRange = {
-        count: this.currentInstancedCount * this.layer.instanceVertexCount,
-        start: 0
-      };
+
+      if (this.model) {
+        this.model.vertexDrawRange = [0, this.layer.instanceVertexCount];
+        this.model.drawInstances = this.currentInstancedCount;
+      }
     } else {
       console.error(
         "Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location"
@@ -241,7 +254,7 @@ export class InstanceAttributeBufferManager<
     if (this.scene && this.scene.container && this.model) {
       this.scene.container.remove(this.model);
     }
-    this.pickModel && this.scene.pickingContainer.remove(this.pickModel);
+
     delete this.scene;
   }
 
@@ -263,7 +276,7 @@ export class InstanceAttributeBufferManager<
       // We generate a new geometry object for the buffer as the geometry
       // Needs to have it's own unique draw range per buffer for optimal
       // Performance.
-      this.geometry = new Three.InstancedBufferGeometry();
+      this.geometry = new Geometry();
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
       for (const attribute of this.layer.vertexAttributes) {
@@ -282,10 +295,7 @@ export class InstanceAttributeBufferManager<
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
         const buffer = new Float32Array(size * this.maxInstancedCount);
-        const bufferAttribute = new Three.InstancedBufferAttribute(
-          buffer,
-          size
-        );
+        const bufferAttribute = new Attribute(buffer, size, true, true);
         bufferAttribute.setDynamic(true);
         this.geometry.addAttribute(
           getAttributeShaderName(attribute),
@@ -310,7 +320,7 @@ export class InstanceAttributeBufferManager<
         );
 
         for (let i = 0; i < this.maxInstancedCount; ++i) {
-          const newLocation: IBufferLocation = {
+          const newLocation: IInstanceAttributeBufferLocation = {
             attribute: internalAttribute,
             buffer: {
               value: buffer
@@ -344,7 +354,7 @@ export class InstanceAttributeBufferManager<
       // level and generate the new buffer locations based on the expansion
       // Since were are resizing the buffer, let's destroy the old buffer and make one anew
       this.geometry.dispose();
-      this.geometry = new Three.InstancedBufferGeometry();
+      this.geometry = new Geometry();
       const previousInstanceAmount = this.maxInstancedCount;
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
@@ -375,15 +385,15 @@ export class InstanceAttributeBufferManager<
         const bufferAttribute = attribute.bufferAttribute;
         const size: number = attribute.size || 0;
 
-        if (bufferAttribute.array instanceof Float32Array) {
+        if (bufferAttribute.data instanceof Float32Array) {
           // Make a new buffer that is the proper size
           const buffer: Float32Array = new Float32Array(
             this.maxInstancedCount * size
           );
           // Retain all of the information in the previous buffer
-          buffer.set(bufferAttribute.array, 0);
+          buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
-          const newAttribute = new Three.InstancedBufferAttribute(buffer, size);
+          const newAttribute = new Attribute(buffer, size, true, true);
           // Set the attribute to dynamic so we can update ranges within it
           newAttribute.setDynamic(true);
           // Make sure our attribute is updated with the newly made attribute
@@ -421,7 +431,7 @@ export class InstanceAttributeBufferManager<
             i < end;
             ++i
           ) {
-            const newLocation: IBufferLocation = {
+            const newLocation: IInstanceAttributeBufferLocation = {
               attribute,
               buffer: {
                 value: buffer
@@ -445,32 +455,19 @@ export class InstanceAttributeBufferManager<
       this.scene.container.remove(this.model);
     }
 
-    if (this.scene && this.scene.pickingContainer && this.pickModel) {
-      this.scene.pickingContainer.remove(this.pickModel);
-    }
-
     // Ensure material is defined
     this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
-    this.model = generateLayerModel(this.layer, this.geometry, this.material);
-    // We render junkloads of instances for a given buffer. Culling will have to happen
-    // On an instance level.
-    this.model.frustumCulled = false;
-    // Make a picking model if we need it so we can render the model with a different uniform set
-    // for the picking procedure.
-    this.pickModel =
-      this.layer.picking.type === PickType.SINGLE
-        ? this.model.clone()
-        : undefined;
+    this.model = generateLayerModel(
+      this.geometry,
+      this.material,
+      this.layer.model.drawMode
+    );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
     // Each new buffer equates to one draw call.
-    if (this.scene && this.scene.container) {
+    if (this.scene && this.scene.container && this.model) {
       this.scene.container.add(this.model);
-
-      if (this.pickModel) {
-        this.scene.pickingContainer.add(this.pickModel);
-      }
     }
 
     return {

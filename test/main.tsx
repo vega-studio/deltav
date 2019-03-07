@@ -8,7 +8,8 @@ import {
   EventManager,
   ISceneOptions,
   LayerInitializer,
-  LayerSurface
+  LayerSurface,
+  nextFrame
 } from "src";
 
 import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
@@ -54,6 +55,7 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
+  new MouseInteractionColorPicking(),
   new BoxOfRings(),
   new BoxOfCircles(),
   new ScreenSpaceEdges(),
@@ -74,7 +76,6 @@ const tests: BaseExample[] = [
   new BoundedView(),
   new BoundedView3(),
   new AnimateDeleteAdd(),
-  new MouseInteractionColorPicking(),
   new Arcs(),
   new VertexAttributePacking(),
   new VertexAttributePacking(true),
@@ -210,9 +211,9 @@ export class Main extends Component<any, IMainState> {
   handleForceResize = () => {
     const box = this.container.getBoundingClientRect();
     this.surface.resize(box.width, box.height, 1.0);
-    setTimeout(() => {
+    nextFrame(() => {
       this.surface.resize(box.width, box.height, window.devicePixelRatio);
-    }, 1);
+    });
   };
 
   handleKeyDown = (e: KeyboardEvent) => {
@@ -321,7 +322,7 @@ export class Main extends Component<any, IMainState> {
 
   setContainer = (element: HTMLDivElement) => {
     this.container = element;
-    setTimeout(() => this.sizeContext(), 100);
+    nextFrame(() => this.sizeContext());
   };
 
   setContext = async (canvas: HTMLCanvasElement) => {

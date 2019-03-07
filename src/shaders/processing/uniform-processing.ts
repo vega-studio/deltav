@@ -1,9 +1,10 @@
-import * as Three from "three";
+import { MaterialUniformType } from "../../gl";
 import {
   IInstancingUniform,
   IUniform,
   ShaderInjectionTarget
 } from "../../types";
+import { Vec4 } from "../../util";
 import { MetricsProcessing } from "./metrics-processing";
 
 /** Converts a size to a shader type */
@@ -33,7 +34,7 @@ export class UniformProcessing {
 
   /**
    * This is the special case where attributes are packed into a uniform buffer instead of into
-   * attributes. This is to maximize compatibility with hard and maximize flexibility in creative approaches
+   * attributes. This is to maximize compatibility with hardware and maximize flexibility in creative approaches
    * to utilizing shaders that need a lot of input.
    */
   generateUniformAttributePacking() {
@@ -53,10 +54,10 @@ export class UniformProcessing {
     // Add our extra uniform to the material uniform output so the system can utilize it as needed.
     this.materialUniforms.push({
       name: UniformProcessing.uniformPackingBufferName(),
-      type: "4fv",
+      type: MaterialUniformType.VEC4_ARRAY,
       value: new Array(this.metricsProcessor.totalInstanceUniformBlocks)
         .fill(0)
-        .map(() => new Three.Vector4(0, 0, 0, 0))
+        .map<Vec4>(() => [0, 0, 0, 0])
     });
 
     return out;

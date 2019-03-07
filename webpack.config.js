@@ -55,14 +55,7 @@ if (IS_DEVELOPMENT) {
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do
   // not get bundled into ours
-  externals = [
-    'd3-color',
-    'd3-scale',
-    'ramda',
-    'three',
-    'bowser',
-    'mobx',
-  ];
+  externals = [];
 
   // We are bundling a library so set the output targets correctly
   library = 'network-bubble-chart';

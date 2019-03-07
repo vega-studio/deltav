@@ -1,13 +1,14 @@
 import { isResourceAttribute } from "src/types";
-import * as Three from "three";
 import { Instance, InstanceDiff } from "../../../instance-provider";
+import { Vec4 } from "../../../util/vector";
 import { BaseDiffProcessor } from "../base-diff-processor";
-import { isBufferLocation } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IUniformBufferLocation } from "./uniform-buffer-manager";
+import {
+  isUniformBufferLocation,
+  IUniformBufferLocation
+} from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
-const VECTOR_ACCESSORS: (keyof Three.Vector4)[] = ["x", "y", "z", "w"];
 const EMPTY: number[] = [];
 
 /**
@@ -32,7 +33,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const uniforms = manager.layer.bufferManager.add(instance);
 
-      if (isBufferLocation(uniforms)) {
+      if (isUniformBufferLocation(uniforms)) {
         instance.active = true;
         instance.easingId = manager.layer.easingId;
         manager.updateInstance(manager.layer, instance, uniforms);
@@ -90,9 +91,9 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     if (instance.active) {
       const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
+      const instanceData: Vec4[] = uniforms.value;
       let instanceUniform, value, block, start;
-      let k, endk;
+      let k: number, endk;
 
       // Loop through the instance attributes and update the uniform cluster with the valaues
       // Calculated for the instance
@@ -111,18 +112,17 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
           continue;
         }
 
-        // Hyper optimized vector filling routine. It uses properties that are globally scoped
-        // To greatly reduce overhead
+        // Vec4 updating routine. Makes sure the correct components are updated for the provided values
         for (k = start, endk = value.length + start; k < endk; ++k) {
-          block[VECTOR_ACCESSORS[k]] = value[k - start];
+          block[k] = value[k - start];
         }
       }
 
       uniforms.value = instanceData;
     } else {
-      const uniforms: Three.IUniform = uniformCluster.buffer;
+      const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Three.Vector4[] = uniforms.value;
+      const instanceData: Vec4[] = uniforms.value;
       let instanceUniform, value, block, start;
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
@@ -140,8 +140,12 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       if (start !== undefined) {
         // Hyper optimized vector filling routine. It uses properties that are globally scoped
         // To greatly reduce overhead
-        for (let k = start, endk = value.length + start; k < endk; ++k) {
-          block[VECTOR_ACCESSORS[k]] = value[k - start];
+        for (
+          let k: number = start, endk = value.length + start;
+          k < endk;
+          ++k
+        ) {
+          block[k] = value[k - start];
         }
       }
 

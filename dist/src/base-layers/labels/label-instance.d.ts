@@ -1,0 +1,61 @@
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Label } from "../../primitives/label";
+import { LabelAtlasResource } from "../../surface/texture";
+import { Vec2 } from "../../util";
+import { Anchor, ScaleType } from "../types";
+export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
+    anchor?: Anchor;
+    color: [number, number, number, number];
+    depth?: number;
+    fontFamily?: string;
+    fontSize?: number;
+    fontStyle?: Label["fontStyle"];
+    fontWeight?: Label["fontWeight"];
+    maxWidth?: number;
+    maxScale?: number;
+    rasterization?: {
+        scale: number;
+    };
+    scaling?: ScaleType;
+    scale?: number;
+    text: string;
+    position: Vec2;
+}
+export declare class LabelInstance extends Instance implements Label {
+    static destroy(): void;
+    color: [number, number, number, number];
+    depth: number;
+    maxScale: number;
+    scaling: ScaleType;
+    scale: number;
+    position: Vec2;
+    private _cssFont;
+    private _fontFamily;
+    private _fontSize;
+    private _fontStyle;
+    private _fontWeight;
+    private _maxWidth;
+    private _text;
+    private _width;
+    private _height;
+    private _isDestroyed;
+    private _rasterization;
+    readonly cssFont: string;
+    readonly isDestroyed: boolean;
+    readonly fontFamily: string;
+    readonly fontSize: number;
+    readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
+    readonly fontWeight: 100 | 300 | 500 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
+    readonly maxWidth: number;
+    readonly resource: LabelAtlasResource;
+    readonly text: string;
+    readonly truncatedText: string;
+    readonly width: number;
+    readonly height: number;
+    private _anchor;
+    constructor(options: ILabelInstanceOptions);
+    readonly anchor: Anchor;
+    destroy(): void;
+    resourceTrigger(): void;
+    setAnchor(anchor: Anchor): void;
+}

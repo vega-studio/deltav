@@ -1,3 +1,4 @@
+import { Instance } from "../../instance-provider/instance";
 import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
@@ -5,7 +6,6 @@ import {
   ShaderInjectionTarget,
   VertexAttributeSize
 } from "../../types";
-import { Instance } from "../../util";
 import { ShaderModule } from "../processing";
 
 /**

@@ -1,3 +1,5 @@
+import "./util/webgl2-type-shim";
+
 export * from "./base-event-managers";
 export * from "./base-layers";
 export * from "./instance-provider";

@@ -1,33 +1,38 @@
-import * as Three from "three";
+import {
+  Attribute,
+  GLSettings,
+  IMaterialUniform,
+  MaterialOptions,
+  MaterialUniformType,
+  Texture
+} from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
-import { ChartCamera, Vec, Vec2 } from "./util";
+import {
+  ChartCamera,
+  Mat3x3,
+  Mat4x4,
+  Vec,
+  Vec1,
+  Vec2,
+  Vec3,
+  Vec4
+} from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
-export type Omit<TType, TKeys> = Pick<TType, Exclude<keyof TType, TKeys>>;
-
-export type ShaderIOValue =
-  | [number]
-  | [number, number]
-  | [number, number, number]
-  | [number, number, number, number]
-  | Three.Vector4[]
-  | Float32Array;
-
-export type InstanceIOValue =
-  | [number]
-  | [number, number]
-  | [number, number, number]
-  | [number, number, number, number];
-
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export type ShaderIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Vec4[] | Float32Array;
+export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4;
 export type UniformIOValue =
   | number
   | InstanceIOValue
+  | Mat3x3
+  | Mat4x4
   | Float32Array
-  | Three.Texture;
+  | Texture;
 
 export enum InstanceBlockIndex {
   ONE = 1,
@@ -176,7 +181,7 @@ export interface IVertexAttribute {
 
 export interface IVertexAttributeInternal extends IVertexAttribute {
   /** This is the actual attribute generated internally for the ThreeJS interfacing */
-  materialAttribute: Three.BufferAttribute | null;
+  materialAttribute: Attribute | null;
 }
 
 export interface IInstanceAttribute<T extends Instance> {
@@ -213,6 +218,11 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   blockIndex?: InstanceBlockIndex;
   /**
+   * Child attributes are attributes that are guaranteed to update when the parent attribute
+   * is updated. This is useful for attributes with special properties that get expanded to
+   * other types of attributes such as easing attributes which gain start, duration, and other values
+   * to make the attribute work.
+   *
    * If the settings on this attrubute spawns additional attributes, those attributes shall
    * be populated here. Otherwise this remains undefined.
    */
@@ -271,7 +281,7 @@ export interface IInstanceAttributeInternal<T extends Instance>
    */
   packUID?: number;
   /** This is the actual attribute mapped to a buffer */
-  bufferAttribute: Three.InstancedBufferAttribute;
+  bufferAttribute: Attribute;
 }
 
 /**
@@ -376,7 +386,7 @@ export interface IUniformInternal extends IUniform {
    * the material uniforms that need to be updated as a Uniform for a layer is dictated as uniform across
    * all instances.
    */
-  materialUniforms: Three.IUniform[];
+  materialUniforms: IMaterialUniform<MaterialUniformType>[];
 }
 
 /**
@@ -384,7 +394,12 @@ export interface IUniformInternal extends IUniform {
  */
 export interface IInstancingUniform {
   name: string;
-  type: "f" | "v2" | "v3" | "v4" | "4fv" | "bvec4";
+  type:
+    | MaterialUniformType.FLOAT
+    | MaterialUniformType.VEC2
+    | MaterialUniformType.VEC3
+    | MaterialUniformType.VEC4
+    | MaterialUniformType.VEC4_ARRAY;
   value: ShaderIOValue;
 }
 
@@ -420,9 +435,9 @@ export interface IProjection {
   worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 
-export type IMaterialOptions = Partial<
+export type ILayerMaterialOptions = Partial<
   Omit<
-    Omit<Omit<Three.ShaderMaterialParameters, "uniforms">, "vertexShader">,
+    Omit<Omit<MaterialOptions, "uniforms">, "vertexShader">,
     "fragmentShader"
   >
 >;
@@ -510,6 +525,8 @@ export interface IColorPickingData {
   dataWidth: number;
   /** The nearest found color */
   nearestColor: number;
+  /** The nearest found color in byte form */
+  nearestColorBytes: Vec4;
   /** All colors in the data */
   allColors: number[];
 }
@@ -602,6 +619,8 @@ export interface IEasingProps {
  * This is the Shader IO information a layer will provide.
  */
 export interface IShaderInputs<T extends Instance> {
+  /** Specifies how the vertices are laid out in the model. This defaults to Triangle Strip if not specified */
+  drawMode?: GLSettings.Model.DrawMode;
   /** These are very frequently changing attributes and are uniform across all vertices in the model */
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
@@ -629,3 +648,15 @@ export type IShaderIOExtension<T extends Instance> = Partial<
   vs?: IShaderExtension;
   fs?: IShaderExtension;
 };
+
+/**
+ * A convenience for making short lists of items that are of the same type, such as the
+ * common scenario of [boolean, boolean, boolean, boolean]
+ */
+export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
+
+/**
+ * Depicts a two or three dimensional size:
+ * [width, height, depth]
+ */
+export type Size = Vec2 | Vec3;

@@ -1,15 +1,15 @@
+import { WebGLStat } from "../../gl/webgl-stat";
 import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   instanceAttributeSizeFloatCount,
   IVertexAttribute
 } from "../../types";
-import { WebGLStat } from "../../util/webgl-stat";
 import { InstanceAttributeBufferManager } from "../buffer-management/instance-attribute-buffering/instance-attribute-buffer-manager";
 import { InstanceAttributePackingBufferManager } from "../buffer-management/instance-attribute-packed-buffering/instance-attribute-packing-buffer-manager";
 import { UniformBufferManager } from "../buffer-management/uniform-buffering/uniform-buffer-manager";
 import { Layer } from "../layer";
-import { Scene } from "../scene";
+import { LayerScene } from "../layer-scene";
 
 const debug = require("debug")("performance");
 
@@ -134,7 +134,7 @@ export function getLayerBufferType<T extends Instance>(
 export function makeLayerBufferManager<T extends Instance>(
   gl: WebGLRenderingContext,
   layer: Layer<T, any>,
-  scene: Scene
+  scene: LayerScene
 ) {
   // Esnure the buffering type has been calculated for the layer
   const type = getLayerBufferType(

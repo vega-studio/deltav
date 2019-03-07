@@ -8,8 +8,8 @@
  * Thus, we pack down the attributes into appropriate block indices and slots.
  */
 
+import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute, InstanceAttributeSize } from "../../types";
-import { Instance } from "../../util";
 
 /**
  * A quick representation of an available block with a convenience method to easily apply

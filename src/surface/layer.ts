@@ -1,10 +1,13 @@
-import * as Three from "three";
+import { Geometry } from "../gl/geometry";
+import { GLSettings } from "../gl/gl-settings";
+import { Material } from "../gl/material";
+import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ResourceManager } from "../resources";
 import {
   IInstanceAttribute,
-  IMaterialOptions,
+  ILayerMaterialOptions,
   INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
@@ -36,9 +39,7 @@ import { View } from "./view";
 
 export interface IModelType {
   /** This is the draw type of the model to be used */
-  drawMode?: Three.TrianglesDrawModes;
-  /** This is the THREE JS model type */
-  modelType: IModelConstructable;
+  drawMode?: GLSettings.Model.DrawMode;
 }
 
 /**
@@ -100,13 +101,6 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   onMouseClick?(info: IPickInfo<T>): void;
 }
 
-export interface IModelConstructable {
-  new (
-    geometry?: Three.Geometry | Three.BufferGeometry,
-    material?: Three.Material | Three.Material[]
-  ): any;
-}
-
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
   boundsAccessor: BoundsAccessor<T>;
@@ -148,7 +142,7 @@ export class Layer<
    */
   easingId: { [key: string]: number };
   /** This is the threejs geometry filled with the vertex information */
-  geometry: Three.BufferGeometry;
+  geometry: Geometry;
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
   /**
@@ -158,18 +152,16 @@ export class Layer<
   injectionOrder: number;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
-  /** A lookup fo an instance by it's ID */
-  instanceById = new Map<string, T>();
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
   interactions: LayerInteractionHandler<T, U>;
   /** The official shader material generated for the layer */
-  material: Three.RawShaderMaterial;
+  material: Material;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
-  /** This is the mesh for the Threejs setup */
-  model: Three.Object3D;
+  /** Default model configuration for rendering in the gl layer */
+  model: Model;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking:
     | IQuadTreePickingMetrics<T>
@@ -191,6 +183,8 @@ export class Layer<
   needsViewDrawn: boolean = false;
   /** End time of animation */
   animationEndTime: number = 0;
+  /** The last time stamp this layer had its contents rendered */
+  lastFrameTime: number = 0;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -351,19 +345,9 @@ export class Layer<
   }
 
   /**
-   * The type of Three model as well as the preferred draw mode associated with it.
-   */
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TrianglesDrawMode,
-      modelType: Three.Mesh
-    };
-  }
-
-  /**
    * The options for a three material without uniforms.
    */
-  getMaterialOptions(): IMaterialOptions {
+  getMaterialOptions(): ILayerMaterialOptions {
     return {};
   }
 

@@ -1,8 +1,8 @@
 import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttributeInternal } from "../../types";
-import { Vec2 } from "../../util";
+import { Vec2, Vec4 } from "../../util";
 import { Layer } from "../layer";
-import { Scene } from "../scene";
+import { LayerScene } from "../layer-scene";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;
@@ -27,7 +27,7 @@ export interface IBufferLocation {
    * This is the generic buffer object interface for accessing the actual buffer.
    */
   buffer: {
-    value: Float32Array | Uint8Array;
+    value: Float32Array | Uint8Array | Vec4[];
   };
   /**
    * If the attribute has child attributes (attributes auto generated as a consequence of the attributes settings)
@@ -73,12 +73,12 @@ export abstract class BufferManagerBase<
   /** The layer this manager glues Instances to Buffers */
   layer: Layer<T, any>;
   /** The scene the layer is injecting elements into */
-  scene: Scene;
+  scene: LayerScene;
 
   /**
    * Base constructor. A manager always needs to be associated with it's layer and it's scene.
    */
-  constructor(layer: Layer<T, any>, scene: Scene) {
+  constructor(layer: Layer<T, any>, scene: LayerScene) {
     this.layer = layer;
     this.scene = scene;
   }

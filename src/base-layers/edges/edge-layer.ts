@@ -1,13 +1,7 @@
-import * as Three from "three";
 import { InstanceProvider } from "../../instance-provider";
+import { ILayerProps, IPickingMethods, Layer } from "../../surface/layer";
 import {
-  ILayerProps,
-  IModelType,
-  IPickingMethods,
-  Layer
-} from "../../surface/layer";
-import {
-  IMaterialOptions,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   InstanceIOValue,
   IShaderInitialization,
@@ -272,14 +266,7 @@ export class EdgeLayer<
     };
   }
 
-  getModelType(): IModelType {
-    return {
-      drawMode: Three.TriangleStripDrawMode,
-      modelType: Three.Mesh
-    };
-  }
-
-  getMaterialOptions(): IMaterialOptions {
-    return CommonMaterialOptions.transparentShape;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return CommonMaterialOptions.transparentShapeBlending;
   }
 }

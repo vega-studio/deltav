@@ -1,4 +1,4 @@
-import * as Three from "three";
+import { Attribute, Geometry } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
   IVertexAttribute,
@@ -23,7 +23,7 @@ export function generateLayerGeometry<T extends Instance>(
   maxInstancesPerBuffer: number,
   vertexAttributes: IVertexAttributeInternal[],
   vertexCount: number
-): Three.BufferGeometry {
+): Geometry {
   // Make the new buffers to be updated
   const vertexBuffers = [];
 
@@ -105,14 +105,12 @@ export function generateLayerGeometry<T extends Instance>(
   }
 
   // Now we can generate the attributes and apply them to a geometry object
-  const geometry = new Three.BufferGeometry();
+  const geometry = new Geometry();
 
+  // Generate the attributes, they are all Vertex attributes, thus instancing does not get flagged on them.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    const materialAttribute = new Three.BufferAttribute(
-      vertexBuffers[i],
-      attribute.size
-    );
+    const materialAttribute = new Attribute(vertexBuffers[i], attribute.size);
     attribute.materialAttribute = materialAttribute;
     geometry.addAttribute(attribute.name, materialAttribute);
   }

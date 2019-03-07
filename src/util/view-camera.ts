@@ -1,4 +1,4 @@
-import * as Three from "three";
+import { Camera } from "./camera";
 
 export enum ViewCameraType {
   /**
@@ -23,5 +23,5 @@ export enum ViewCameraType {
  */
 export class ViewCamera {
   type: ViewCameraType = ViewCameraType.CONTROLLED;
-  baseCamera: Three.Camera;
+  baseCamera: Camera;
 }

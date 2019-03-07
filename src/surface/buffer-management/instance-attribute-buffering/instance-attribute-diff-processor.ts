@@ -12,7 +12,10 @@ import {
   isBufferLocationGroup
 } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
+import {
+  IInstanceAttributeBufferLocation,
+  IInstanceAttributeBufferLocationGroup
+} from "./instance-attribute-buffer-manager";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
@@ -130,16 +133,16 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>
+    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
     const resourceManager = layer.resource;
 
-    let location: IBufferLocation;
+    let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
     let updateRange;
-    let childLocations: IBufferLocation[];
+    let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
     let attributeChangeUID;
 
@@ -221,15 +224,15 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>
+    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
     const resourceManager = layer.resource;
 
-    let location: IBufferLocation;
+    let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
-    let childLocations: IBufferLocation[];
+    let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
 
     if (instance.active) {
@@ -293,7 +296,6 @@ export class InstanceAttributeDiffProcessor<
       for (let i = 0, end = updates.length; i < end; ++i) {
         const update = updates[i];
         const attribute = update[0].bufferAttribute;
-        attribute.needsUpdate = true;
         attribute.updateRange = {
           count: update[2] - update[1],
           offset: update[1]
@@ -306,7 +308,6 @@ export class InstanceAttributeDiffProcessor<
 
       for (let i = 0, end = updates.length; i < end; ++i) {
         const attribute = updates[i].bufferAttribute;
-        attribute.needsUpdate = true;
         attribute.updateRange = {
           count: -1,
           offset: 0

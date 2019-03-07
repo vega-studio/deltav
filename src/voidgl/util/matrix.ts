@@ -33,6 +33,9 @@ export type Mat4x4 = [
   number
 ];
 
+/**
+ * Mat2x2 add operation
+ */
 export function add2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   return [
     // r0
@@ -46,6 +49,9 @@ export function add2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   ];
 }
 
+/**
+ * Mat3x3 add operation
+ */
 export function add3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   return [
     // r0
@@ -69,6 +75,9 @@ export function add3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   ];
 }
 
+/**
+ * Mat4x4 add operation
+ */
 export function add4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   return [
     // r0
@@ -106,6 +115,9 @@ export function add4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   ];
 }
 
+/**
+ * affineInverse of Mat2x2
+ */
 export function affineInverse2x2(mat: Mat2x2): Mat2x2 | null {
   const determinant = determinant2x2(mat);
   if (determinant === 0) return null;
@@ -117,6 +129,9 @@ export function affineInverse2x2(mat: Mat2x2): Mat2x2 | null {
   ];
 }
 
+/**
+ * affineInverse of Mat3x3
+ */
 export function affineInverse3x3(mat: Mat3x3): Mat3x3 | null {
   const determiant = determinant3x3(mat);
   if (determiant === 0) return null;
@@ -136,13 +151,16 @@ export function affineInverse3x3(mat: Mat3x3): Mat3x3 | null {
     m6 / determiant,
     -m1 / determiant,
     m4 / determiant,
-    m7 / determiant,
+    -m7 / determiant,
     m2 / determiant,
     -m5 / determiant,
     m8 / determiant
   ];
 }
 
+/**
+ * affineInverse of Mat3x3
+ */
 export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
   const determiant = determinant4x4(mat);
   if (determiant === 0) return null;
@@ -167,7 +185,7 @@ export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
     // r01
     (-mat[1] * c5 + mat[2] * c4 - mat[3] * c3) / determiant,
     // r02
-    (mat[12] * s5 - mat[13] * s4 + mat[14] * s3) / determiant,
+    (mat[13] * s5 - mat[14] * s4 + mat[15] * s3) / determiant,
     // r03
     (-mat[9] * s5 + mat[10] * s4 - mat[11] * s3) / determiant,
     // r10
@@ -197,10 +215,16 @@ export function affineInverse4x4(mat: Mat4x4): Mat4x4 | null {
   ];
 }
 
+/**
+ * determinant of Mat2x2
+ */
 export function determinant2x2(mat: Mat2x2) {
   return mat[3] * mat[0] - mat[1] * mat[2];
 }
 
+/**
+ * determinant of Mat3x3
+ */
 export function determinant3x3(mat: Mat3x3): number {
   return (
     mat[0] * mat[4] * mat[8] -
@@ -212,6 +236,9 @@ export function determinant3x3(mat: Mat3x3): number {
   );
 }
 
+/**
+ * determinant of Mat4x4
+ */
 export function determinant4x4(mat: Mat4x4): number {
   const m0: Mat3x3 = [
     mat[5],
@@ -266,6 +293,9 @@ export function determinant4x4(mat: Mat4x4): number {
   );
 }
 
+/**
+ * hadamard product of Mat2x2
+ */
 export function hadamard2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   return [
     // r0
@@ -279,6 +309,9 @@ export function hadamard2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   ];
 }
 
+/**
+ * hadamard product of Mat3x3
+ */
 export function hadamard3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   return [
     // r0
@@ -302,6 +335,9 @@ export function hadamard3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   ];
 }
 
+/**
+ * hadamard product of Mat4x4
+ */
 export function hadamard4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   return [
     // r0
@@ -339,22 +375,37 @@ export function hadamard4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   ];
 }
 
+/**
+ * return identity of Mat2x2
+ */
 export function identity2(): Mat2x2 {
   return [1, 0, 0, 1];
 }
 
+/**
+ * return identity of Mat3x3
+ */
 export function identity3(): Mat3x3 {
   return [1, 0, 0, 0, 1, 0, 0, 0, 1];
 }
 
+/**
+ * return identity of Mat4x4
+ */
 export function identity4(): Mat4x4 {
   return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 }
 
+/**
+ * scalar multiply of Mat2x2
+ */
 export function multiplyScalar2x2(mat: Mat2x2, scale: number): Mat2x2 {
   return [mat[0] * scale, mat[1] * scale, mat[2] * scale, mat[3] * scale];
 }
 
+/**
+ * scalar multiply of Mat3x3
+ */
 export function multiplyScalar3x3(mat: Mat3x3, scale: number): Mat3x3 {
   return [
     mat[0] * scale,
@@ -369,6 +420,9 @@ export function multiplyScalar3x3(mat: Mat3x3, scale: number): Mat3x3 {
   ];
 }
 
+/**
+ * scalar multiply of Mat4x4
+ */
 export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
   return [
     mat[0] * scale,
@@ -390,6 +444,9 @@ export function multiplyScalar4x4(mat: Mat4x4, scale: number): Mat4x4 {
   ];
 }
 
+/**
+ * Mat2x2 multiplies Mat2x2
+ */
 export function multiply2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   return [
     // r0
@@ -403,6 +460,9 @@ export function multiply2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   ];
 }
 
+/**
+ * Mat3x3 multiplies Mat2x2
+ */
 export function multiply3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   return [
     // r0
@@ -426,6 +486,9 @@ export function multiply3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   ];
 }
 
+/**
+ * Mat4x4 multiplies Matx4x4
+ */
 export function multiply4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   return [
     // r0
@@ -511,6 +574,9 @@ export function multiply4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   ];
 }
 
+/**
+ * Mat3x3 multiplies Vec3
+ */
 export function multiply3x3by3(mat: Mat3x3, vec: Vec3): Vec3 {
   return [
     mat[0] * vec[0] + mat[3] * vec[1] + mat[6] * vec[2],
@@ -519,6 +585,9 @@ export function multiply3x3by3(mat: Mat3x3, vec: Vec3): Vec3 {
   ];
 }
 
+/**
+ * Mat4x4 multiplies Vec3 and w
+ */
 export function multiply4x4by3(
   mat: Mat4x4,
   vec: Vec3,
@@ -533,6 +602,9 @@ export function multiply4x4by3(
   ];
 }
 
+/**
+ * Mat4x4 multiplies Vec4
+ */
 export function multiply4x4by4(mat: Mat4x4, vec: Vec4): Vec4 {
   return [
     mat[0] * vec[0] + mat[4] * vec[1] + mat[8] * vec[2] + mat[12] * vec[3],
@@ -540,82 +612,6 @@ export function multiply4x4by4(mat: Mat4x4, vec: Vec4): Vec4 {
     mat[2] * vec[0] + mat[6] * vec[1] + mat[10] * vec[2] + mat[14] * vec[3],
     mat[3] * vec[0] + mat[7] * vec[1] + mat[11] * vec[2] + mat[15] * vec[3]
   ];
-}
-
-export function scale3x3by2(p: Vec2Compat): Mat3x3 {
-  return scale3x3(p[0], p[1]);
-}
-
-export function scale3x3(x: number, y: number): Mat3x3 {
-  return [x, 0, 0, 0, y, 0, 0, 0, 1];
-}
-/**
- * Creates a scaling matrix from a vector
- */
-export function scale4x4by3(p: Vec3Compat): Mat4x4 {
-  return scale4x4(p[0], p[1], p[2]);
-}
-
-/**
- * Creates a scaling matrix
- */
-export function scale4x4(x: number, y: number, z: number): Mat4x4 {
-  return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
-}
-
-export function skew3x3(
-  xRadian: number,
-  yRadian: number,
-  zRadian: number
-): Mat3x3 {
-  return [0, -zRadian, yRadian, zRadian, 0, -xRadian, -yRadian, xRadian, 0];
-}
-
-export function skew4x4(
-  xRadian: number,
-  yRadian: number,
-  zRadian: number
-): Mat4x4 {
-  return [
-    0,
-    -zRadian,
-    yRadian,
-    0,
-    zRadian,
-    0,
-    -xRadian,
-    0,
-    -yRadian,
-    xRadian,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1
-  ];
-}
-
-export function translation3x3by2(t: Vec2Compat): Mat3x3 {
-  return translation3x3(t[0], t[1]);
-}
-
-export function translation3x3(x: number, y: number): Mat3x3 {
-  return [1, 0, 0, 0, 1, 0, x, y, 1];
-}
-
-/**
- * Creates a translation Matrix from a vector
- */
-export function translation4x4by3(t: Vec3Compat): Mat4x4 {
-  return translation4x4(t[0], t[1], t[2]);
-}
-
-/**
- * Creates a translation Matrix
- */
-export function translation4x4(x: number, y: number, z: number): Mat4x4 {
-  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
 }
 
 /**
@@ -681,11 +677,14 @@ export function perspective4x4(
   ];
 }
 
+/**
+ * Rotate radians around axis (x, y, z), return Mat3x3
+ */
 export function rotationAxis3x3(
   x: number,
   y: number,
   z: number,
-  radian: number
+  radians: number
 ): Mat3x3 {
   const r = Math.sqrt(x * x + y * y + z * z);
   const u = x / r;
@@ -694,31 +693,34 @@ export function rotationAxis3x3(
 
   return [
     // r00
-    u * u + (1 - u * u) * Math.cos(radian),
+    u * u + (1 - u * u) * Math.cos(radians),
     // r01
-    u * v * (1 - Math.cos(radian)) + w * Math.sin(radian),
+    u * v * (1 - Math.cos(radians)) - w * Math.sin(radians),
     // r02
-    u * w * (1 - Math.cos(radian)) - v * Math.sin(radian),
+    u * w * (1 - Math.cos(radians)) + v * Math.sin(radians),
     // r10
-    u * v * (1 - Math.cos(radian)) - w * Math.sin(radian),
+    u * v * (1 - Math.cos(radians)) + w * Math.sin(radians),
     // r11
-    v * v + (1 - v * v) * Math.cos(radian),
+    v * v + (1 - v * v) * Math.cos(radians),
     // r12
-    v * w + (1 - Math.cos(radian)) + u * Math.sin(radian),
+    v * w * (1 - Math.cos(radians)) - u * Math.sin(radians),
     // r20
-    u * w * (1 - Math.cos(radian)) + v * Math.sin(radian),
+    u * w * (1 - Math.cos(radians)) - v * Math.sin(radians),
     // r21
-    v * w * (1 - Math.cos(radian)) - u * Math.sin(radian),
+    v * w * (1 - Math.cos(radians)) + u * Math.sin(radians),
     // r22
-    w * w + (1 - w * w) * Math.cos(radian)
+    w * w + (1 - w * w) * Math.cos(radians)
   ];
 }
 
+/**
+ * Rotate radians around axis (x, y, z), return Mat4x4
+ */
 export function rotationAxis4x4(
   x: number,
   y: number,
   z: number,
-  radian: number
+  radians: number
 ): Mat4x4 {
   const r = Math.sqrt(x * x + y * y + z * z);
   const u = x / r;
@@ -727,27 +729,27 @@ export function rotationAxis4x4(
 
   return [
     // r00
-    u * u + (1 - u * u) * Math.cos(radian),
+    u * u + (1 - u * u) * Math.cos(radians),
     // r01
-    u * v * (1 - Math.cos(radian)) + w * Math.sin(radian),
+    u * v * (1 - Math.cos(radians)) - w * Math.sin(radians),
     // r02
-    u * w * (1 - Math.cos(radian)) - v * Math.sin(radian),
+    u * w * (1 - Math.cos(radians)) + v * Math.sin(radians),
     // r03
     0,
     // r10
-    u * v * (1 - Math.cos(radian)) - w * Math.sin(radian),
+    u * v * (1 - Math.cos(radians)) + w * Math.sin(radians),
     // r11
-    v * v + (1 - v * v) * Math.cos(radian),
+    v * v + (1 - v * v) * Math.cos(radians),
     // r12
-    v * w + (1 - Math.cos(radian)) + u * Math.sin(radian),
+    v * w * (1 - Math.cos(radians)) - u * Math.sin(radians),
     // r13
     0,
     // r20
-    u * w * (1 - Math.cos(radian)) + v * Math.sin(radian),
+    u * w * (1 - Math.cos(radians)) - v * Math.sin(radians),
     // r21
-    v * w * (1 - Math.cos(radian)) - u * Math.sin(radian),
+    v * w * (1 - Math.cos(radians)) + u * Math.sin(radians),
     // r22
-    w * w + (1 - w * w) * Math.cos(radian),
+    w * w + (1 - w * w) * Math.cos(radians),
     // r23
     0,
     // r30
@@ -761,34 +763,71 @@ export function rotationAxis4x4(
   ];
 }
 
+/**
+ *        z
+ *        |
+ *        |
+ *        | ______x
+ *       /
+ *      /
+ *     /
+ *    y
+ *  Rotation uses right hand principle.
+ *  This represents rotate by x, then by y and then by z.
+ *  Return a Mat3x3
+ */
+// 2D rotation
+export function rotationEuler3x3(zRadians: number): Mat3x3;
+// 3D rotation
 export function rotationEuler3x3(
-  xRadian: number,
-  yRadian: number,
-  zRadian: number
+  zRadians: number,
+  yRadians: number,
+  xRadians: number
+): Mat3x3;
+export function rotationEuler3x3(
+  zRadians: number,
+  yRadians?: number,
+  xRadians?: number
 ): Mat3x3 {
   return multiply3x3(
+    rotationAxis3x3(0, 0, 1, zRadians),
     multiply3x3(
-      rotationAxis3x3(1, 0, 0, xRadian),
-      rotationAxis3x3(0, 1, 0, yRadian)
-    ),
-    rotationAxis3x3(0, 0, 1, zRadian)
+      rotationAxis3x3(0, 1, 0, yRadians ? yRadians : 0),
+      rotationAxis3x3(1, 0, 0, xRadians ? xRadians : 0)
+    )
   );
 }
 
+/**
+ *        z
+ *        |
+ *        |
+ *        | ______x
+ *       /
+ *      /
+ *     /
+ *    y
+ *  Rotation uses right hand principle.
+ *  This represents rotate by x, then by y and then by z.
+ *  Return a Mat4x4
+ */
 export function rotationEuler4x4(
-  xRadian: number,
-  yRadian: number,
-  zRadian: number
+  xRadians: number,
+  yRadians: number,
+  zRadians: number
 ): Mat4x4 {
   return multiply4x4(
+    rotationAxis4x4(0, 0, 1, zRadians),
     multiply4x4(
-      rotationAxis4x4(1, 0, 0, xRadian),
-      rotationAxis4x4(0, 1, 0, yRadian)
-    ),
-    rotationAxis4x4(0, 0, 1, zRadian)
+      rotationAxis4x4(0, 1, 0, yRadians),
+      rotationAxis4x4(1, 0, 0, xRadians)
+    )
   );
 }
 
+/**
+ * Substract of Mat2x2
+ */
 export function subtract2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   return [
     // r0
@@ -802,6 +841,9 @@ export function subtract2x2(left: Mat2x2, right: Mat2x2): Mat2x2 {
   ];
 }
 
+/**
+ * Substract of Mat3x3
+ */
 export function subtract3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   return [
     // r0
@@ -825,6 +867,9 @@ export function subtract3x3(left: Mat3x3, right: Mat3x3): Mat3x3 {
   ];
 }
 
+/**
+ * Substract of Mat4x4
+ */
 export function subtract4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   return [
     // r0
@@ -862,10 +907,110 @@ export function subtract4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   ];
 }
 
+/**
+ * Creates a scaling matrix3x3 from a vector2
+ */
+export function scale3x3by2(p: Vec2Compat): Mat3x3 {
+  return scale3x3(p[0], p[1]);
+}
+
+/**
+ * Creates a scaling matrix3x3
+ */
+export function scale3x3(x: number, y: number): Mat3x3 {
+  return [x, 0, 0, 0, y, 0, 0, 0, 1];
+}
+/**
+ * Creates a scaling matrix4x4 from a vector3
+ */
+export function scale4x4by3(p: Vec3Compat): Mat4x4 {
+  return scale4x4(p[0], p[1], p[2]);
+}
+
+/**
+ * Creates a scaling matrix4x4
+ */
+export function scale4x4(x: number, y: number, z: number): Mat4x4 {
+  return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
+}
+
+/**
+ * Creates a skew matrix3x3
+ */
+export function skew3x3(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat3x3 {
+  return [0, -zRadian, yRadian, zRadian, 0, -xRadian, -yRadian, xRadian, 0];
+}
+
+/**
+ * Creates a skew matrix4x4
+ */
+export function skew4x4(
+  xRadian: number,
+  yRadian: number,
+  zRadian: number
+): Mat4x4 {
+  return [
+    0,
+    -zRadian,
+    yRadian,
+    0,
+    zRadian,
+    0,
+    -xRadian,
+    0,
+    -yRadian,
+    xRadian,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1
+  ];
+}
+
+/**
+ * Creates a translation Matrix3x3 from a vector2
+ */
+export function translation3x3by2(t: Vec2Compat): Mat3x3 {
+  return translation3x3(t[0], t[1]);
+}
+
+/**
+ * Creates a translation Matrix3x3
+ */
+export function translation3x3(x: number, y: number): Mat3x3 {
+  return [1, 0, 0, 0, 1, 0, x, y, 1];
+}
+
+/**
+ * Creates a translation Matrix4x4 from a vector3
+ */
+export function translation4x4by3(t: Vec3Compat): Mat4x4 {
+  return translation4x4(t[0], t[1], t[2]);
+}
+
+/**
+ * Creates a translation Matrix4x4
+ */
+export function translation4x4(x: number, y: number, z: number): Mat4x4 {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
+}
+
+/**
+ * Creates a transpose Matrix2x2
+ */
 export function transpose2x2(mat: Mat2x2): Mat2x2 {
   return [mat[0], mat[2], mat[1], mat[3]];
 }
 
+/**
+ * Creates a transpose Matrix3x3
+ */
 export function transpose3x3(mat: Mat3x3): Mat3x3 {
   return [
     mat[0],
@@ -880,6 +1025,9 @@ export function transpose3x3(mat: Mat3x3): Mat3x3 {
   ];
 }
 
+/**
+ * Creates a transpose Matrix4x4
+ */
 export function transpose4x4(mat: Mat4x4): Mat4x4 {
   return [
     mat[0],

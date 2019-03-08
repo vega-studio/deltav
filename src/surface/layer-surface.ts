@@ -957,7 +957,7 @@ export class LayerSurface {
       shaderMetrics.materialUniforms
     );
     // And now we can now generate the mesh that will be added to the scene
-    const model = generateLayerModel(layer, geometry, material);
+    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
     layer.geometry = geometry;

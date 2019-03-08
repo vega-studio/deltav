@@ -99,7 +99,7 @@ export class FontMap extends IdentifyByKey {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
-          format: GLSettings.Texture.TexelDataType.Luminance,
+          format: GLSettings.Texture.TexelDataType.Luminance
         };
         break;
 
@@ -109,7 +109,7 @@ export class FontMap extends IdentifyByKey {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
-          format: GLSettings.Texture.TexelDataType.RGB,
+          format: GLSettings.Texture.TexelDataType.RGB
         };
         break;
     }

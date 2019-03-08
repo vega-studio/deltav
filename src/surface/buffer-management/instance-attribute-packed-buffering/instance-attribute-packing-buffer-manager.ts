@@ -594,9 +594,9 @@ export class InstanceAttributePackingBufferManager<
     this.material = this.material || this.layer.material.clone();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
-      this.layer,
       this.geometry,
       this.material,
+      this.layer.model.drawMode
     );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.

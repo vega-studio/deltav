@@ -127,7 +127,7 @@ export class AtlasManager {
     const atlasName = atlas.id;
 
     if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
-      console.warn('Canvas is not defined for the texture.');
+      console.warn("Canvas is not defined for the texture.");
       return false;
     }
 
@@ -217,14 +217,14 @@ export class AtlasManager {
 
         if (context) {
           context.drawImage(
-              loadedImage,
-              insertedNode.nodeDimensions.x,
-              insertedNode.nodeDimensions.y
-            );
-        }
-
-        else {
-          console.error('Unable to generate a 2D context from the Textures canvas.');
+            loadedImage,
+            insertedNode.nodeDimensions.x,
+            insertedNode.nodeDimensions.y
+          );
+        } else {
+          console.error(
+            "Unable to generate a 2D context from the Textures canvas."
+          );
           resource.texture = this.setDefaultImage(resource.texture, atlasName);
           return false;
         }

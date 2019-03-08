@@ -1,4 +1,5 @@
 import { InstanceProvider } from "src/instance-provider";
+import { CommonMaterialOptions } from "src/util";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { InstanceAttributeSize, IShaderInitialization, ResourceType, ShaderInjectionTarget, VertexAttributeSize } from "../../types";
 import { GlyphInstance } from "./glyph-instance";
@@ -8,7 +9,7 @@ import { GlyphInstance } from "./glyph-instance";
  */
 export interface IGlyphLayerOptions<T extends GlyphInstance> extends ILayerProps<T> {
   /** This is the font resource this pulls from in order to render the glyphs */
-  resourceKey: string;
+  resourceKey?: string;
 }
 
 /**
@@ -62,11 +63,12 @@ export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>
         {
           name: 'resource',
           resource: {
-            key: this.props.resourceKey,
+            key: this.props.resourceKey || '',
             name: 'fontMap',
             shaderInjection: ShaderInjectionTarget.ALL,
             type: ResourceType.FONT,
           },
+          size: InstanceAttributeSize.FOUR,
           update: o => this.resource.request(this, o, o.resourceRequest),
         }
       ],
@@ -90,5 +92,12 @@ export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>
       vertexCount: 6,
       vs: '',
     };
+  }
+
+  /**
+   * Set up material options for the layer
+   */
+  getMaterialOptions() {
+    return CommonMaterialOptions.transparentImageBlending;
   }
 }

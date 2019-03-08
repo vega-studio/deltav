@@ -1,4 +1,3 @@
-import { FontMap } from "src/resources/text/font-map";
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
@@ -141,7 +140,7 @@ export class FontResourceManager extends BaseResourceManager<
       const fontMap = await this.fontManager.createFontMap(options);
 
       if (fontMap) {
-        this.resourceLookup.set(options.key, fontMap);
+        this.resourceLookup.set(options.key, options);
       }
     }
   }

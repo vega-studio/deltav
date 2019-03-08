@@ -1,10 +1,8 @@
-import { BaseResourceOptions } from "src/resources/base-resource-manager";
-import { FontMap, FontMapGlyphType } from "src/resources/text/font-map";
-import { IFontResourceRequest } from "src/resources/text/font-resource-manager";
-import { SubTexture } from "src/resources/texture/sub-texture";
-import { ResourceType } from "src/types";
-import { WebGLStat } from "src/util";
-import * as TinySDF from "tiny-sdf";
+import { ResourceType } from "../../types";
+import { BaseResourceOptions } from "../base-resource-manager";
+import { FontMap, FontMapGlyphType } from "../text/font-map";
+import { IFontResourceRequest } from "../text/font-resource-manager";
+import { SubTexture } from "../texture/sub-texture";
 
 /**
  * Valid glyph rendering sizes that the system will use when rendering the glyphs to the font map's texture.
@@ -207,7 +205,7 @@ export class FontManager {
    */
   private async updateFontMapCharacters(
     fontMap: FontMap | undefined,
-    characters: string[]
+    _characters: string[]
   ) {
     if (!fontMap) return;
   }
@@ -215,40 +213,40 @@ export class FontManager {
   /**
    * This generates the character texture information and subtexture information for the characters.
    */
-  private async createSDFFontMapCharacters(
+  async createSDFFontMapCharacters(
     source: FontMapSource,
     startCharacterIndex: number,
-    glyphSize: FontGlyphRenderSize,
-    characters: string[]
+    _glyphSize: FontGlyphRenderSize,
+    _characters: string[]
   ): Promise<[string, SubTexture][]> {
     // Valid start character required
     if (startCharacterIndex < 0) return [];
-    // Font map width is the max width texture allowance
-    const width = WebGLStat.MAX_TEXTURE_SIZE;
-    // This is the number of columns the font map can have
-    const columnsWide = Math.floor(width / glyphSize);
-    // This is the column the character index applies to
-    const column = startCharacterIndex % columnsWide;
-    // This is the row the character index applies to
-    const row = Math.floor(startCharacterIndex / columnsWide);
+    // // Font map width is the max width texture allowance
+    // const width = WebGLStat.MAX_TEXTURE_SIZE;
+    // // This is the number of columns the font map can have
+    // const columnsWide = Math.floor(width / glyphSize);
+    // // This is the column the character index applies to
+    // const column = startCharacterIndex % columnsWide;
+    // // This is the row the character index applies to
+    // const row = Math.floor(startCharacterIndex / columnsWide);
 
     // If a prerendered source is provided, we derive the glyphs from the provided source item
     if (isPrerenderedSource(source)) {
-      const glyphImageData = this.getPrerenderedImageData(
-        source,
-        glyphSize,
-        characters
-      );
+      // const glyphImageData = this.getPrerenderedImageData(
+      //   source,
+      //   glyphSize,
+      //   characters
+      // );
     } else if (isStringFontSource(source)) {
       // Otherwise, we generate the glyph as an SDF glyph
-      const sdf: TinySDF.ITinyGenerator = new TinySDF(
-        glyphSize - 6,
-        6,
-        8,
-        0.25,
-        source
-      );
-      sdf.generate("c");
+      // const sdf: TinySDF.ITinyGenerator = new TinySDF(
+      //   glyphSize - 6,
+      //   6,
+      //   8,
+      //   0.25,
+      //   source
+      // );
+      // sdf.generate("c");
     }
 
     return [];
@@ -258,7 +256,7 @@ export class FontManager {
    * This renders the specified characters from a pre-rendered font source in ImageData that can be used to composite
    * a texture.
    */
-  private async getPrerenderedImageData(
+  async getPrerenderedImageData(
     source: IPrerenderedFontSource,
     glyphSize: FontGlyphRenderSize,
     characters: string[]
@@ -282,7 +280,7 @@ export class FontManager {
         return [];
       }
 
-      // Set up the waiting mechnaisms and the resources to render our glyphs from Base64
+      // Set up the waiting mechanisms and the resources to render our glyphs from Base64
       const image = new Image();
       let resolve: Function;
       const promise = new Promise<void>(resolver => (resolve = resolver));
@@ -294,9 +292,9 @@ export class FontManager {
         const context = canvas.getContext("2d");
         if (!context) return;
         // Get the aspect ratio of the glyp data being rendered
-        const aspect = image.height / image.width;
-        const renderWidth = aspect < 1 ? glyphSize : glyphSize * aspect;
-        const renderHeight = aspect > 1 ? glyphSize : glyphSize * aspect;
+        // const aspect = image.height / image.width;
+        // const renderWidth = aspect < 1 ? glyphSize : glyphSize * aspect;
+        // const renderHeight = aspect > 1 ? glyphSize : glyphSize * aspect;
         // Our canvas to render to will be the specified glyphSize block
         canvas.width = glyphSize;
         canvas.height = glyphSize;
@@ -320,11 +318,11 @@ export class FontManager {
       // Begin loading the glyph data into the image
       image.src = source.glyphs[char];
       promises.push(promise);
+
+      return [];
     });
 
     // This will contain all of the glyph render information
-    const allGlyphData = await Promise.all(promises);
+    // const allGlyphData = await Promise.all(promises);
   }
 }
-
-window.sdf = TinySDF;

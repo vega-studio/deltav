@@ -1,3 +1,5 @@
+import { GlyphInstance } from "src/base-layers/labels/glyph-instance";
+import { GlyphLayer } from "src/base-layers/labels/glyph-layer";
 import { createLayer, LayerInitializer } from "src/surface";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -7,7 +9,7 @@ import { LabelInstance } from "./label-instance";
 
 export interface ILabelLayerProps<T extends LabelInstance>
   extends ILayerProps<T> {
-  atlas?: string;
+  resourceKey?: string;
   animate?: {
     color?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
@@ -30,10 +32,24 @@ export class LabelLayer<
     data: new InstanceProvider<LabelInstance>(),
     scene: "default"
   };
+  /** Provider for glyphs */
+  glyphProvider = new InstanceProvider<GlyphInstance>();
 
+  /**
+   * This provides the child layers that will render on behalf of this layer.
+   *
+   * For Labels, a label is simply a group of well placed glyphs. So we defer all of
+   * the labels changes by converting the label into glyphs and applying the changes to
+   * it's set of glyphs.
+   */
   childLayers(): LayerInitializer[] {
     return [
-      createLayer(),
+      createLayer(GlyphLayer, {
+        data: this.glyphProvider,
+        key: `${this.id}_glyphs`,
+        resourceKey: this.props.resourceKey,
+        scene: this.props.scene,
+      }),
     ];
   }
 }

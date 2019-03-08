@@ -141,8 +141,8 @@ function renderEachPair(
       td.appendChild(div);
       tr.appendChild(td);
     }
-    table.appendChild(tr);
 
+    table.appendChild(tr);
   }
 
   document.getElementsByTagName('div')[0].appendChild(table);
@@ -377,7 +377,7 @@ export interface IFontOptions extends IdentifyByKey, IResourceType {
 }
 
 export class Font {
-  constructor(options: IFontOptions) {
+  constructor(_options: IFontOptions) {
     //
   }
 
@@ -412,7 +412,7 @@ export class Font {
     const ctx = canvas.getContext("2d");
 
     if (ctx) {
-      ctx.font = `;$;{fontSize;}px; $;{fontFamily;}`;
+      ctx.font = `${fontSize}px ${fontFamily}`;
 
       // Measure width and height of each glyph to set the map
       for	(let i = 0, charLength = chars.length; i < charLength; i++) {
@@ -491,5 +491,4 @@ export class Font {
     const offsets = estimateOffset(str, fontSize, fontFamily);
     renderEachPair(str, fontSize, fontFamily, pairs, offsets);
   }
-
 }

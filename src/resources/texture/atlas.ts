@@ -188,12 +188,10 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
         premultiplyAlpha: true,
         ...this.textureSettings
       };
-    }
-
-    else {
+    } else {
       textureSettings = {
         generateMipMaps: true,
-        premultiplyAlpha: true,
+        premultiplyAlpha: true
       };
     }
 

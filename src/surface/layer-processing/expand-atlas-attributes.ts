@@ -141,7 +141,7 @@ export function generateAtlasResourceUniforms<
             }
 
             return [1, 1];
-          },
+          }
         }
       ];
     }

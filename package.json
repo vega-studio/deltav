@@ -4,7 +4,7 @@
     "email": "diniden@outlook.com",
     "url": "http://diniden.com"
   },
-  "name": "@voidrayco/voidgl",
+  "name": "@voidrayco/deltav",
   "version": "1.23.3",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
@@ -17,14 +17,11 @@
     "start": "node scripts/dev",
     "auto": "auto"
   },
-  "dependencies": {
-    "@types/three": "^0.92.23",
-    "bowser": "^1.7.3",
-    "three": "^0.94.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",
+    "@types/webgl2": "0.0.4",
     "animejs": "2.2.0",
     "auto": "github:tarwich/auto",
     "babel-core": "6.26.0",
@@ -44,7 +41,6 @@
     "less": "3.8.1",
     "less-loader": "4.1.0",
     "mkdirp": "0.5.1",
-    "mobx": "3.4.1",
     "preact": "8.2.7",
     "prettier": "1.12.1",
     "random": "github:tarwich/node-random#1.0.0",
@@ -54,9 +50,9 @@
     "ts-loader": "4.2.0",
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
-    "typescript": "3.1.1",
+    "typescript": "3.3.1",
     "webpack": "4.6.0",
-    "webpack-serve": "0.3.1"
+    "webpack-dev-server": "3.2.1"
   },
   "greenkeeper": {
     "ignore": []

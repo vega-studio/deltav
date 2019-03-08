@@ -1,5 +1,6 @@
 const { resolve } = require('path');
-const serve = require('webpack-serve');
+const DevServer = require('webpack-dev-server');
+const webpack = require('webpack');
 
 // This is an optional path that can be passed into the program. When set, the
 // project will use the source code from the webgl project specified instead of
@@ -40,10 +41,11 @@ Options:
 // We do not apply 'undefined' to the env as it will cause an 'undefined' literal string
 // to populate the item
 if (RELEASE_TEST) process.env.RELEASE_TEST = RELEASE_TEST;
-
 process.env.NODE_ENV = 'development';
-serve({
-  config: { ...require(resolve('webpack.config.js')) },
-  port: process.env.PORT || 8080,
-  host: process.env.HOST || '0.0.0.0',
+
+const compiler = webpack(require(resolve('webpack.config.js')));
+const server = new DevServer(compiler, {});
+
+server.listen(process.env.PORT || 8080, process.env.HOST || '0.0.0.0', () => {
+  console.log(`Starting server on ${process.env.HOST || '0.0.0.0'}:${process.env.PORT || 8080}`);
 });

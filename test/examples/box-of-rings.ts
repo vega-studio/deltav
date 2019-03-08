@@ -3,6 +3,7 @@ import {
   createLayer,
   InstanceProvider,
   LayerInitializer,
+  PickType,
   RingInstance,
   RingLayer
 } from "src";
@@ -25,7 +26,8 @@ export class BoxOfRings extends BaseExample {
       data: provider,
       key: "box-of-rings",
       scaleFactor: () => this.camera.scale[0],
-      scene: scene
+      scene: scene,
+      picking: PickType.SINGLE
     });
   }
 

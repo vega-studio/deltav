@@ -7,6 +7,7 @@ import {
   InstanceProvider,
   LayerInitializer
 } from "src";
+import { nextFrame } from "src/util/next-frame";
 import { BaseExample } from "./base-example";
 
 export class Lines extends BaseExample {
@@ -53,7 +54,7 @@ export class Lines extends BaseExample {
 
     // Wait a tick for the instances to be committed to the GPU so we can adjust their animation
     // to fit a nice wavey pattern
-    setTimeout(() => {
+    nextFrame(() => {
       let count = 0;
       for (let i = 0; i < countHigh; ++i) {
         for (let k = 0; k < countWide; ++k) {
@@ -69,7 +70,7 @@ export class Lines extends BaseExample {
           count++;
         }
       }
-    }, 100);
+    });
 
     return edgeProvider;
   }

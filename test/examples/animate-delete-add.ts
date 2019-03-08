@@ -10,7 +10,8 @@ import {
   createLayer,
   IInstanceProvider,
   InstanceProvider,
-  LayerInitializer
+  LayerInitializer,
+  nextFrame
 } from "src";
 import { BaseExample } from "./base-example";
 
@@ -49,7 +50,7 @@ export class AnimateDeleteAdd extends BaseExample {
 
     setInterval(() => {
       // Wait a tick to make sure the circle is added
-      requestAnimationFrame(() => {
+      nextFrame(() => {
         const size = this.surface.getViewSize(this.view);
         if (!size) return;
 

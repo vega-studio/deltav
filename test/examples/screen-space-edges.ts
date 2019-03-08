@@ -90,7 +90,7 @@ export class ScreenSpaceEdges extends BaseExample {
       key: "screen-space-edges",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
-      picking: PickType.ALL,
+      picking: PickType.SINGLE,
       scaleFactor: () => this.camera.scale[1],
       scaleType: EdgeScaleType.SCREEN_CURVE,
       scene: scene,

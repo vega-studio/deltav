@@ -134,13 +134,14 @@ export function generateAtlasResourceUniforms<
             if (isAtlasResource(resource)) {
               const atlas = resource.texture;
 
-            if (atlas && atlas.data) {
-              const { width, height } = atlas.data;
-              return [width || 1, height || 1];
+              if (atlas && atlas.data) {
+                const { width, height } = atlas.data;
+                return [width || 1, height || 1];
+              }
             }
 
             return [1, 1];
-          }
+          },
         }
       ];
     }

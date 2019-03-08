@@ -25,9 +25,6 @@ import { generateLayerModel } from "./layer-processing/generate-layer-model";
 import { makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
 import { ISceneOptions, LayerScene } from "./layer-scene";
 import { MouseEventManager, SceneView } from "./mouse-event-manager";
-import { AtlasManager } from "./texture";
-import { IAtlasOptions } from "./texture/atlas";
-import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { ClearFlags, View } from "./view";
 
 export interface ILayerSurfaceOptions {
@@ -960,7 +957,7 @@ export class LayerSurface {
       shaderMetrics.materialUniforms
     );
     // And now we can now generate the mesh that will be added to the scene
-    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
+    const model = generateLayerModel(layer, geometry, material);
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
     layer.geometry = geometry;

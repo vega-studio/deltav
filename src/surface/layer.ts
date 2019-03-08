@@ -11,6 +11,7 @@ import {
   INonePickingMetrics,
   InstanceAttributeSize,
   InstanceBlockIndex,
+  InstanceDiffType,
   InstanceHitTest,
   InstanceIOValue,
   IPickInfo,

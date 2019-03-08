@@ -1,8 +1,8 @@
-import { BaseResourceOptions } from "src/resources/base-resource-manager";
-import * as Three from "three";
+import { Texture } from "../../gl/texture";
 import { AtlasSize, Omit, ResourceType } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { Vec2 } from "../../util/vector";
+import { BaseResourceOptions } from "../base-resource-manager";
 import { AtlasManager, AtlasResourceRequest } from "./atlas-manager";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
@@ -18,12 +18,12 @@ export interface IAtlasResource extends BaseResourceOptions {
   /** This is the width of the atlas */
   width: AtlasSize;
   /**
-   * This applies any desired settings to the Threejs texture as desired.
+   * This applies any desired settings to the Texture.
    * Some noteable defaults this system sets:
-   *  - generateMipMaps is false and
+   *  - generateMipMaps is true and
    *  - premultiply alpha is true.
    */
-  textureSettings?: Partial<Three.Texture>;
+  textureSettings?: Partial<Texture>;
 }
 
 /**
@@ -57,9 +57,9 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   /** This is the packing of the atlas with images */
   packing: PackNode;
   /** This is the actual texture object that represents the atlas on the GPU */
-  texture: Three.Texture;
+  texture: Texture;
   /** These are the applied settings to our texture */
-  textureSettings?: Partial<Three.Texture>;
+  textureSettings?: Partial<Texture>;
   /** The resource type for resource management */
   type: number = ResourceType.ATLAS;
   /**
@@ -175,32 +175,49 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
 
   /**
    * TODO:
-   * This performs the currently best known way to update a texture.
-   *
-   * This is the current best attempt at updating the atlas which is junk as it destroys the old texture
-   * And makes a new one. We REALLY should be just subTexture2D updating the texture, but Three makes that really
-   * Difficult
+   * This now uses the new gl framework and should be updated to update a portion of the texture using
+   * SubTexture2D
    */
   updateTexture(canvas?: HTMLCanvasElement) {
-    if (this.texture) {
-      const redoneCanvas: HTMLCanvasElement = this.texture.image;
-      this.texture.dispose();
-      this.texture = new Three.Texture(redoneCanvas);
-    } else {
-      this.texture = new Three.Texture(canvas);
+    // Establish the settings to be applied to the Texture
+    let textureSettings;
+
+    if (this.textureSettings) {
+      textureSettings = {
+        generateMipMaps: true,
+        premultiplyAlpha: true,
+        ...this.textureSettings
+      };
     }
 
+    else {
+      textureSettings = {
+        generateMipMaps: true,
+        premultiplyAlpha: true,
+      };
+    }
+
+    // Generate the texture
+    if (this.texture) {
+      const redoneCanvas = this.texture.data;
+      this.texture.dispose();
+      this.texture = new Texture({
+        data: redoneCanvas,
+        ...textureSettings
+      });
+    } else {
+      this.texture = new Texture({
+        data: canvas,
+        ...textureSettings
+      });
+    }
+
+    // Update resources referencing the texture
     this.validResources.forEach(resource => {
       if (resource.texture) {
         resource.texture.atlasTexture = this.texture;
       }
     });
-
-    // Apply any relevant options to the texture desired to be set
-    this.texture.generateMipmaps = true;
-    this.texture.premultiplyAlpha = true;
-    this.textureSettings && Object.assign(this.texture, this.textureSettings);
-    this.texture.needsUpdate = true;
   }
 
   /**

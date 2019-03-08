@@ -54,15 +54,13 @@ export class AtlasManager {
   allAtlas = new Map<string, Atlas>();
 
   /**
-   * Atlas' must be created from scratch to update them. In order to properly
-   * update an existing one, you must destroy it then recreate it again.
-   * This is from not knowing how to update a texture via three js.
+   * Creates a new atlas that resources can be loaded into.
    *
    * @param resources The images with their image path set to be loaded into the atlas.
    *               Images that keep an atlas ID of null indicates the image did not load
    *               correctly
    *
-   * @return {Texture} The Threejs texture that is created as our atlas. The images injected
+   * @return {Texture} The texture that is created as our atlas. The images injected
    *                   into the texture will be populated with the atlas'
    */
   async createAtlas(
@@ -125,8 +123,13 @@ export class AtlasManager {
     atlas: Atlas,
     resource: AtlasResourceRequest
   ): Promise<boolean> {
-    const canvas = atlas.texture.image;
+    const canvas = atlas.texture.data;
     const atlasName = atlas.id;
+
+    if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+      console.warn('Canvas is not defined for the texture.');
+      return false;
+    }
 
     // Register the resource with the atlas
     if (!atlas.registerResource(resource)) {
@@ -135,7 +138,7 @@ export class AtlasManager {
         atlas,
         resource
       );
-      return Promise.resolve(false);
+      return false;
     }
 
     // First we must load the image
@@ -210,13 +213,21 @@ export class AtlasManager {
         texture.pixelHeight = rasterization.texture.height;
 
         // Now draw the image to the indicated canvas
-        canvas
-          .getContext("2d")
-          .drawImage(
-            loadedImage,
-            insertedNode.nodeDimensions.x,
-            insertedNode.nodeDimensions.y
-          );
+        const context = canvas.getContext("2d");
+
+        if (context) {
+          context.drawImage(
+              loadedImage,
+              insertedNode.nodeDimensions.x,
+              insertedNode.nodeDimensions.y
+            );
+        }
+
+        else {
+          console.error('Unable to generate a 2D context from the Textures canvas.');
+          resource.texture = this.setDefaultImage(resource.texture, atlasName);
+          return false;
+        }
 
         // We have finished inserting
         return true;
@@ -240,7 +251,7 @@ export class AtlasManager {
   }
 
   /**
-   * Retrieves the threejs texture for the atlas
+   * Retrieves the Texture for the atlas
    *
    * @param atlasName The identifier of the atlas
    */

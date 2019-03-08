@@ -1,4 +1,5 @@
-import * as Three from "three";
+import { GLSettings } from "src/gl";
+import { Texture } from "src/gl/texture";
 import {
   IdentifyByKey,
   IdentifyByKeyOptions
@@ -48,11 +49,11 @@ export class FontMap extends IdentifyByKey {
   /** This is the manager storing the Font Map */
   manager: FontManager;
   /** The base texture where the font map is stored */
-  texture: Three.Texture;
+  texture: Texture;
   /**
    * The settings applied to the texture object itself. This is managed by the type of glyph in use.
    */
-  private textureSettings: Partial<Three.Texture>;
+  private textureSettings: Partial<Texture>;
 
   constructor(options: IFontMapOptions) {
     super(options);
@@ -96,20 +97,20 @@ export class FontMap extends IdentifyByKey {
       // Only a single channel is needed for SDF
       case FontMapGlyphType.SDF:
         this.textureSettings = {
-          magFilter: Three.LinearFilter,
-          minFilter: Three.LinearFilter,
-          format: Three.LuminanceFormat
-        } as Partial<Three.Texture>;
+          magFilter: GLSettings.Texture.TextureMagFilter.Linear,
+          minFilter: GLSettings.Texture.TextureMinFilter.Linear,
+          format: GLSettings.Texture.TexelDataType.Luminance,
+        };
         break;
 
       // The MSDF strategy uses all RGB channels for the algorithm. Heavier data use
       // better quality results.
       case FontMapGlyphType.MSDF:
         this.textureSettings = {
-          magFilter: Three.LinearFilter,
-          minFilter: Three.LinearFilter,
-          format: Three.RGBFormat
-        } as Partial<Three.Texture>;
+          magFilter: GLSettings.Texture.TextureMagFilter.Linear,
+          minFilter: GLSettings.Texture.TextureMinFilter.Linear,
+          format: GLSettings.Texture.TexelDataType.RGB,
+        };
         break;
     }
   }
@@ -129,19 +130,22 @@ export class FontMap extends IdentifyByKey {
 
   /**
    * TODO:
-   * This performs the currently best known way to update a texture.
-   *
-   * This is the current best attempt at updating the atlas which is junk as it destroys the old texture
-   * And makes a new one. We REALLY should be just subTexture2D updating the texture, but Three makes that really
-   * Difficult
+   * We now are using the new gl system so this should be using subtexture2d to update a portion of the texture
+   * rather than destroying the old and making anew.
    */
   updateTexture(canvas?: HTMLCanvasElement) {
     if (this.texture) {
-      const redoneCanvas: HTMLCanvasElement = this.texture.image;
+      const redoneCanvas = this.texture.data;
       this.texture.dispose();
-      this.texture = new Three.Texture(redoneCanvas);
+      this.texture = new Texture({
+        data: redoneCanvas,
+        ...this.textureSettings
+      });
     } else {
-      this.texture = new Three.Texture(canvas);
+      this.texture = new Texture({
+        data: canvas,
+        ...this.textureSettings
+      });
     }
 
     const subTextures = Object.values(this.glyphMap);
@@ -154,7 +158,5 @@ export class FontMap extends IdentifyByKey {
     // Apply any relevant options to the texture desired to be set
     this.texture.generateMipmaps = true;
     this.texture.premultiplyAlpha = true;
-    this.textureSettings && Object.assign(this.texture, this.textureSettings);
-    this.texture.needsUpdate = true;
   }
 }

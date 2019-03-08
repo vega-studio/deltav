@@ -1,4 +1,4 @@
-import * as Three from "three";
+import { Texture } from "../../gl/texture";
 import { InstanceIOValue } from "../../types";
 import { Vec2 } from "../../util/vector";
 
@@ -32,7 +32,7 @@ export class SubTexture {
   /** The id of the atlas this texture is located on */
   atlasReferenceID: string = "";
   /** This is the actual texture of the atlas this resource is located on */
-  atlasTexture: Three.Texture | null = null;
+  atlasTexture: Texture | null = null;
   /** This is the top left UV coordinate of the sub texture on the atlas */
   atlasTL: Vec2 = [0, 0];
   /** This is the top right UV coordinate of the sub texture on the atlas */

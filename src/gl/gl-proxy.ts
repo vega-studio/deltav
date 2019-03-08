@@ -1123,7 +1123,7 @@ export class GLProxy {
         );
       }
 
-      if (texture.generateMipmaps) {
+      if (texture.generateMipMaps) {
         gl.generateMipmap(gl.TEXTURE_2D);
       }
     }
@@ -1170,7 +1170,7 @@ export class GLProxy {
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MIN_FILTER,
-      minFilter(gl, texture.minFilter, isPower2)
+      minFilter(gl, texture.minFilter, isPower2, texture.generateMipMaps)
     );
     gl.texParameteri(
       gl.TEXTURE_2D,

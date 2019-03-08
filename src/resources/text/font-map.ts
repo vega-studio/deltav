@@ -156,7 +156,7 @@ export class FontMap extends IdentifyByKey {
     });
 
     // Apply any relevant options to the texture desired to be set
-    this.texture.generateMipmaps = true;
+    this.texture.generateMipMaps = true;
     this.texture.premultiplyAlpha = true;
   }
 }

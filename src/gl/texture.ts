@@ -70,10 +70,10 @@ export class Texture {
    * Auto generates mipmaps. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
    */
-  get generateMipmaps() {
+  get generateMipMaps() {
     return this._generateMipmaps;
   }
-  set generateMipmaps(val: Texture["_generateMipmaps"]) {
+  set generateMipMaps(val: Texture["_generateMipmaps"]) {
     this.needsSettingsUpdate = true;
     this._generateMipmaps = val;
   }

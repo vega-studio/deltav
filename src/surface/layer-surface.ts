@@ -562,8 +562,8 @@ export class LayerSurface {
       );
 
       // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 25;
-      const pickHeight = 25;
+      const pickWidth = 5;
+      const pickHeight = 5;
       const numBytesPerColor = 4;
       const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
@@ -827,7 +827,7 @@ export class LayerSurface {
     this.pickingTarget = new RenderTarget({
       buffers: {
         color: new Texture({
-          generateMipmaps: false,
+          generateMipMaps: false,
           data: {
             width,
             height,

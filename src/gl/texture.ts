@@ -1,5 +1,14 @@
+import { Omit } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
+
+/**
+ * This is the options to apply to a texture
+ */
+export type TextureOptions = Omit<
+  Partial<Texture>,
+  "dispose" | "update" | "updateRegions"
+>;
 
 /**
  * This represents a texture that is loaded into the GPU.
@@ -122,6 +131,8 @@ export class Texture {
 
   /** Flag indicates if the texture object needs to have it's data modified */
   needsDataUpload: boolean = false;
+  /** Flag indicates if the texture object has sub texture updates needed to be applied to it */
+  needsPartialDataUpload: boolean = false;
   /** Flag indicates if the texture object needs it's settings modified */
   needsSettingsUpdate: boolean = false;
 
@@ -182,6 +193,18 @@ export class Texture {
     .Texture.UnpackAlignment.FOUR;
 
   /**
+   * These are the regions that have been requested to be applied to the Texture along
+   * with the data that should be buffered into that region.
+   */
+  get updateRegions() {
+    return this._updateRegions;
+  }
+  private _updateRegions: [
+    Texture["data"],
+    { x: number; y: number; width: number; height: number }
+  ][] = [];
+
+  /**
    * Specifies sample wrapping for when samples fall outside the 0 - 1 range See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
    */
@@ -209,7 +232,7 @@ export class Texture {
   private _wrapVertical: GLSettings.Texture.Wrapping = GLSettings.Texture
     .Wrapping.CLAMP_TO_EDGE;
 
-  constructor(options: Partial<Texture>) {
+  constructor(options: TextureOptions) {
     Object.assign(this, options);
   }
 
@@ -224,5 +247,30 @@ export class Texture {
 
     // Ensure the large data object for the texture is cleared
     delete this._data;
+  }
+
+  /**
+   * Clears all update flags and clears out requested updates to the texture object.
+   *
+   * NOTE: Calling this does not perform any actions, but instead prevents actions from
+   * being taken again. The system uses this to clear up any changes requested for the texture
+   * after the texture has been updated with the GPU.
+   */
+  resolve() {
+    this.needsDataUpload = false;
+    this.needsPartialDataUpload = false;
+    this.needsSettingsUpdate = false;
+    this._updateRegions = [];
+  }
+
+  /**
+   * This updates a portion of the texture object.
+   */
+  update(
+    data: Texture["data"],
+    region: { x: number; y: number; width: number; height: number }
+  ) {
+    this.needsPartialDataUpload = true;
+    this._updateRegions.push([data, region]);
   }
 }

@@ -123,13 +123,7 @@ export class AtlasManager {
     atlas: Atlas,
     resource: AtlasResourceRequest
   ): Promise<boolean> {
-    const canvas = atlas.texture.data;
     const atlasName = atlas.id;
-
-    if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
-      console.warn("Canvas is not defined for the texture.");
-      return false;
-    }
 
     // Register the resource with the atlas
     if (!atlas.registerResource(resource)) {
@@ -212,22 +206,14 @@ export class AtlasManager {
         texture.pixelWidth = rasterization.texture.width;
         texture.pixelHeight = rasterization.texture.height;
 
-        // Now draw the image to the indicated canvas
-        const context = canvas.getContext("2d");
-
-        if (context) {
-          context.drawImage(
-            loadedImage,
-            insertedNode.nodeDimensions.x,
-            insertedNode.nodeDimensions.y
-          );
-        } else {
-          console.error(
-            "Unable to generate a 2D context from the Textures canvas."
-          );
-          resource.texture = this.setDefaultImage(resource.texture, atlasName);
-          return false;
-        }
+        // Now specify the update region to be applied to the texture
+        atlas.texture.update(loadedImage, {
+          ...insertedNode.nodeDimensions,
+          y:
+            atlas.height -
+            insertedNode.nodeDimensions.y -
+            insertedNode.nodeDimensions.height
+        });
 
         // We have finished inserting
         return true;
@@ -382,9 +368,6 @@ export class AtlasManager {
       for (const resource of resources) {
         await this.draw(atlas, resource);
       }
-
-      // Perform the best method for updating the underlying texture of the atlas to the latest changes
-      atlas.updateTexture();
     } else {
       console.warn(
         "Can not update non-existing atlas:",

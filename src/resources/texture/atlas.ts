@@ -1,4 +1,4 @@
-import { Texture } from "../../gl/texture";
+import { Texture, TextureOptions } from "../../gl/texture";
 import { AtlasSize, Omit, ResourceType } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { Vec2 } from "../../util/vector";
@@ -23,7 +23,7 @@ export interface IAtlasResource extends BaseResourceOptions {
    *  - generateMipMaps is true and
    *  - premultiply alpha is true.
    */
-  textureSettings?: Partial<Texture>;
+  textureSettings?: TextureOptions;
 }
 
 /**
@@ -59,7 +59,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   /** This is the actual texture object that represents the atlas on the GPU */
   texture: Texture;
   /** These are the applied settings to our texture */
-  textureSettings?: Partial<Texture>;
+  textureSettings?: TextureOptions;
   /** The resource type for resource management */
   type: number = ResourceType.ATLAS;
   /**
@@ -81,7 +81,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     // Set up the packing for this atlas
     this.packing = new PackNode(0, 0, options.width, options.height);
     // Make sure the texture is started and updated
-    this.updateTexture(canvas);
+    this.createTexture(canvas);
   }
 
   /**
@@ -174,11 +174,11 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   }
 
   /**
-   * TODO:
-   * This now uses the new gl framework and should be updated to update a portion of the texture using
-   * SubTexture2D
+   * This generates the texture object needed for this atlas.
    */
-  updateTexture(canvas?: HTMLCanvasElement) {
+  private createTexture(canvas?: HTMLCanvasElement) {
+    if (this.texture) return;
+
     // Establish the settings to be applied to the Texture
     let textureSettings;
 
@@ -196,19 +196,10 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     }
 
     // Generate the texture
-    if (this.texture) {
-      const redoneCanvas = this.texture.data;
-      this.texture.dispose();
-      this.texture = new Texture({
-        data: redoneCanvas,
-        ...textureSettings
-      });
-    } else {
-      this.texture = new Texture({
-        data: canvas,
-        ...textureSettings
-      });
-    }
+    this.texture = new Texture({
+      data: canvas,
+      ...textureSettings
+    });
 
     // Update resources referencing the texture
     this.validResources.forEach(resource => {

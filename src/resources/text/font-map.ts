@@ -1,5 +1,5 @@
 import { GLSettings } from "src/gl";
-import { Texture } from "src/gl/texture";
+import { Texture, TextureOptions } from "src/gl/texture";
 import {
   IdentifyByKey,
   IdentifyByKeyOptions
@@ -53,7 +53,7 @@ export class FontMap extends IdentifyByKey {
   /**
    * The settings applied to the texture object itself. This is managed by the type of glyph in use.
    */
-  private textureSettings: Partial<Texture>;
+  private textureSettings: TextureOptions;
 
   constructor(options: IFontMapOptions) {
     super(options);

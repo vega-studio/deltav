@@ -1042,15 +1042,20 @@ export class GLProxy {
       return;
     }
 
+    // Perform any necessary compilation or settings changes requested of the texture
     this.compileTexture(texture);
     this.updateTextureData(texture);
+    this.updateTexturePartialData(texture);
     this.updateTextureSettings(texture);
+
+    // Indicate all updates required of the texture have been performed
+    texture.resolve();
   }
 
   /**
    * Ensures the texture object has it's data uploaded to the GPU
    */
-  updateTextureData(texture: Texture) {
+  private updateTextureData(texture: Texture) {
     // Check for upload flag
     if (!texture.needsDataUpload) return;
     // Check for gl context established
@@ -1128,14 +1133,95 @@ export class GLProxy {
       }
     }
 
+    // Let's not hang onto large data buffers that are being uploaded to the gpu. Let's
+    // delete the buffer but keep some simple metrics about it.
+    if (texture.data) {
+      texture.data = {
+        width: texture.data.width,
+        height: texture.data.height,
+        buffer: null
+      };
+    }
+
     // Clear the flag for updates
     texture.needsDataUpload = false;
   }
 
   /**
+   * This consumes all of the partial texture updates applied to the texture.
+   */
+  private updateTexturePartialData(texture: Texture) {
+    // Check for partial update flag
+    if (!texture.needsPartialDataUpload) return;
+    // Check for gl context established
+    if (!texture.gl) return;
+    // This texture must have an establish texture id
+    if (!texture.gl.textureId) return;
+
+    // The texture must have a unit established in order to have it's data updated
+    if (texture.gl.textureUnit < 0) {
+      console.warn(
+        "A Texture object attempted to update it's data without an established Texture Unit.",
+        texture
+      );
+      return;
+    }
+
+    // Get gl context to work with
+    const gl = this.gl;
+    // Ensure we are operating on the correct active unit
+    this.state.setActiveTextureUnit(texture.gl.textureUnit);
+    // Ensure our texture is bound as the active texture unit
+    this.state.bindTexture(
+      texture,
+      GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
+    );
+
+    // Loop through all the necessary update regions and apply the changes
+    texture.updateRegions.forEach(region => {
+      const buffer = region[0];
+      const bounds = region[1];
+
+      // First set the data in the texture
+      if (gl instanceof WebGLRenderingContext) {
+        if (isDataBuffer(buffer)) {
+          gl.texSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            bounds.x,
+            bounds.y,
+            buffer.width,
+            buffer.height,
+            texelFormat(gl, texture.format),
+            inputImageFormat(gl, texture.type),
+            buffer.buffer
+          );
+        } else if (buffer) {
+          gl.texSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            bounds.x,
+            bounds.y,
+            texelFormat(gl, texture.format),
+            inputImageFormat(gl, texture.type),
+            buffer
+          );
+        }
+
+        if (texture.generateMipMaps) {
+          gl.generateMipmap(gl.TEXTURE_2D);
+        }
+      }
+    });
+
+    // Flag the deed as done
+    texture.needsPartialDataUpload = false;
+  }
+
+  /**
    * Modifies all settings needing modified on the provided texture object.
    */
-  updateTextureSettings(texture: Texture) {
+  private updateTextureSettings(texture: Texture) {
     // Check update flag
     if (!texture.needsSettingsUpdate) return;
     // Check for gl context

@@ -11,6 +11,7 @@ import {
   nextFrame
 } from "src";
 
+import * as datGUI from "dat.gui";
 import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
@@ -82,7 +83,7 @@ const tests: BaseExample[] = [
 ];
 
 /** These are the layers for the tests that are generated */
-const layers: LayerInitializer[] = [];
+let layers: LayerInitializer[] = [];
 
 function isLayerInitializerList(val: any): val is LayerInitializer[] {
   return Array.isArray(val) && Array.isArray(val[0]);
@@ -104,6 +105,10 @@ export class Main extends Component<any, IMainState> {
   allScenes: SceneInitializer[] = [];
   /** Flagged to true when the surface shouldn't be auto generated */
   preventAutoCreateSurface: boolean = false;
+  /* The index of demo to show */
+  demoIndex: number = 0;
+  /* Mode 0: destroy, 1: regen */
+  toggleButtonMode: number = 0;
 
   state: IMainState = {
     size: {
@@ -114,6 +119,7 @@ export class Main extends Component<any, IMainState> {
 
   componentWillMount() {
     window.addEventListener("resize", this.handleResize);
+    this.createGui();
   }
 
   componentWillUnmount() {
@@ -126,11 +132,11 @@ export class Main extends Component<any, IMainState> {
 
   componentDidUpdate() {
     if (!this.preventAutoCreateSurface) {
-      this.createSurface();
+      this.createSurface(this.demoIndex);
     }
   }
 
-  async createSurface() {
+  async createSurface(index: number) {
     let generate = false;
 
     if (this.surface && this.context !== this.surface.gl.canvas) {
@@ -171,23 +177,23 @@ export class Main extends Component<any, IMainState> {
       });
 
       // Generate the Layers for the tests now that the scenes are established
-      tests.forEach((test, i) => {
-        const sceneName = this.allScenes[i].name;
-        test.surface = this.surface;
-        test.view = sceneName;
-        const provider = test.makeProvider();
-        const layer = test.makeLayer(
-          sceneName,
-          i % 2 === 0 ? "all-resources" : "all-resources",
-          provider
-        );
+      const test = tests[index];
+      const sceneName = this.allScenes[0].name;
+      test.surface = this.surface;
+      test.view = sceneName;
+      const provider = test.makeProvider();
+      const layer = test.makeLayer(
+        sceneName,
+        index % 2 === 0 ? "all-resources" : "all-resources",
+        provider
+      );
 
-        if (isLayerInitializerList(layer)) {
-          layer.forEach(l => layers.push(l));
-        } else {
-          layers.push(layer);
-        }
-      });
+      layers = [];
+      if (isLayerInitializerList(layer)) {
+        layer.forEach(l => layers.push(l));
+      } else {
+        layers.push(layer);
+      }
 
       // Begin the draw loop
       this.willAnimate = 10;
@@ -256,16 +262,14 @@ export class Main extends Component<any, IMainState> {
       this.context.removeAttribute("width");
       this.context.removeAttribute("height");
       this.preventAutoCreateSurface = true;
-      this.sizeContext();
     } else {
-      await this.createSurface();
-      this.sizeContext();
+      await this.createSurface(this.demoIndex);
     }
   };
 
   makeSceneBlock(sceneBlockSize: number) {
     const scenes: SceneInitializer[] = [];
-    const viewSize = 100 / sceneBlockSize;
+    const viewSize = 100 / 1;
 
     const backgrounds: [number, number, number, number][] = [
       [0.1, 0.0, 0.0, 1.0],
@@ -288,30 +292,34 @@ export class Main extends Component<any, IMainState> {
         if (test) {
           const testCamera = test.makeCamera(camera);
 
-          const init: SceneInitializer = {
-            control: test.makeController(camera, testCamera, name),
-            name,
-            scene: {
-              key: name,
-              views: [
-                {
-                  background:
-                    backgrounds[Math.floor(Math.random() * backgrounds.length)],
-                  camera: testCamera,
-                  clearFlags: [ClearFlags.COLOR],
-                  key: name,
-                  viewport: {
-                    height: `${viewSize}%`,
-                    left: `${viewSize * k}%`,
-                    top: `${viewSize * i}%`,
-                    width: `${viewSize}%`
+          if (i === 0 && k === 0) {
+            const init: SceneInitializer = {
+              control: test.makeController(camera, testCamera, name),
+              name,
+              scene: {
+                key: name,
+                views: [
+                  {
+                    background:
+                      backgrounds[
+                        Math.floor(Math.random() * backgrounds.length)
+                      ],
+                    camera: testCamera,
+                    clearFlags: [ClearFlags.COLOR],
+                    key: name,
+                    viewport: {
+                      height: `${viewSize}%`,
+                      left: `${viewSize * k}%`,
+                      top: `${viewSize * i}%`,
+                      width: `${viewSize}%`
+                    }
                   }
-                }
-              ]
-            }
-          };
+                ]
+              }
+            };
 
-          scenes.push(init);
+            scenes.push(init);
+          }
         }
       }
     }
@@ -341,6 +349,81 @@ export class Main extends Component<any, IMainState> {
     });
   }
 
+  async changeView(value: number) {
+    this.surface.destroy();
+    delete this.surface;
+    await this.createSurface(value);
+  }
+
+  createGui() {
+    const guiStore = {
+      demo: 0,
+      toggleSurface: () => {
+        this.handleToggleSurface();
+        this.toggleButtonMode === 0
+          ? (this.toggleButtonMode = 1)
+          : (this.toggleButtonMode = 0);
+        toggleController.name(
+          this.toggleButtonMode === 0 ? "Destroy Surface" : "Regen Surface"
+        );
+      },
+      resize: () => {
+        this.handleForceResize();
+      }
+    };
+
+    const gui = new datGUI.GUI({
+      autoPlace: false,
+      closed: true,
+      width: 350
+    });
+    gui.domElement.id = "gui";
+    gui
+      .add(guiStore, "demo", {
+        MouseInteractionColorPicking: 0,
+        BoxOfRings: 1,
+        BoxOfCircles: 2,
+        ScreenSpaceEdges: 3,
+        ChangingAnchorsAndScales: 4,
+        LabelAndchorsAndScales: 5,
+        Images: 6,
+        BendyEdge: 7,
+        Lines: 8,
+        MouseInteraction: 9,
+        SingleAxisLabelScaleTrue: 10,
+        SingleAxieLabelScaleFalse: 11,
+        MouseInteractionLabels: 12,
+        MouseInteractionImages: 13,
+        MouseInteractionEdges: 14,
+        LabelAnimatdScale: 15,
+        LabelSizingCorrected: 16,
+        MouseInteractionRectangle: 17,
+        BoundedView: 18,
+        BoundedView3: 19,
+        AnimateDeleteAdd: 20,
+        Arcs: 21,
+        VertexAttributePacking: 22,
+        VertexAttributePackingTrue: 23,
+        MouseScroll: 24
+      })
+      .onFinishChange((value: number) => {
+        this.changeView(value);
+        this.demoIndex = value;
+      });
+
+    const toggleController = gui
+      .add(guiStore, "toggleSurface")
+      .name("Destroy Surface");
+
+    gui.add(guiStore, "resize");
+    gui.close();
+
+    const customContainer = document.getElementById("controller");
+    if (customContainer) {
+      customContainer.appendChild(gui.domElement);
+    }
+  }
+
   /**
    * @override
    * The React defined render method
@@ -365,22 +448,6 @@ export class Main extends Component<any, IMainState> {
     return (
       <div className="voidray-layer-surface" ref={this.setContainer}>
         <canvas ref={this.setContext} width={size.width} height={size.height} />
-        {window.devicePixelRatio === 1.0 ? null : (
-          <div
-            className={"test-button"}
-            onClick={this.handleToggleMonitorDensity}
-          >
-            {this.surface && this.surface.pixelRatio === window.devicePixelRatio
-              ? "Disable Monitor Density"
-              : "Enable Monitor Density"}
-          </div>
-        )}
-        <div className={"remove-button"} onClick={this.handleToggleSurface}>
-          {this.surface ? "Destroy Surface" : "Regen Surface"}
-        </div>
-        <div className={"remove-button"} onClick={this.handleForceResize}>
-          Force Resize
-        </div>
       </div>
     );
   }

@@ -1,7 +1,10 @@
 html {
+  height: 100%;
+
   body {
-    background-color: #4a407d;
+    background-color: #000000;
     color: white;
+    height: 100%;
     margin: 0px;
   }
 
@@ -35,8 +38,24 @@ html {
   }
 
   #main {
-    height: 800px;
+    height: 99.7%;
+    width: 100%;
+    z-index: 0;
   }
+
+  #gui {
+    transform: translate(0px, -20px);
+  }
+
+  #controller {
+    //border-style: solid;
+    //border-color: red;
+    position: absolute;
+    bottom: 0%;
+    right: 0%;
+  }
+
+ // #gui { position: absolute; top: 2px; left: 2px }
 
   .voidray-layer-surface {
     height: 800px;

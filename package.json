@@ -17,7 +17,9 @@
     "start": "node scripts/dev",
     "auto": "auto"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/dat.gui": "^0.7.2"
+  },
   "devDependencies": {
     "@types/animejs": "2.0.0",
     "@types/node": "8.0.58",

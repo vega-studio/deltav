@@ -1,6 +1,7 @@
 import {
   add3x3,
   add4x4,
+  addQuaternion4x4,
   affineInverse2x2,
   affineInverse3x3,
   affineInverse4x4,
@@ -22,6 +23,7 @@ import {
   scale3x3by2,
   scale4x4,
   scale4x4by3,
+  slerp,
   subtract3x3,
   subtract4x4,
   translation3x3,
@@ -405,12 +407,34 @@ function rotation3x3_test() {
 
 function quaternion_test() {
   const point: Vec4 = [0, 0, 0, 1];
+
   const transform1 = multiply4x4(
-    rotation4x4Quaternion(quaternion(0, 0, 1, Math.PI / 2)),
+    rotation4x4Quaternion(quaternion(0, 0, 1, Math.PI * 2 / 3)),
     translation4x4(1, 0, 0)
   );
   const check1 = multiply4x4by4(transform1, point);
-  console.warn(check1);
+  if (!compare4(check1, [-0.5, Math.sqrt(3) / 2, 0, 1])) {
+    console.warn("FAILED: Quaternion rotate 2 * Pi / 3 4x4");
+  }
+
+  const q1 = quaternion(0, 0, 1, Math.PI / 2);
+  const q2 = quaternion(1, 0, 0, Math.PI / 2);
+  const transform2 = multiply4x4(
+    addQuaternion4x4(q1, q2),
+    translation4x4(1, 0, 0)
+  );
+  const check2 = multiply4x4by4(transform2, point);
+  if (!compare4(check2, [0, 0, 1, 1])) {
+    console.warn("FAILED: Quaternion add");
+  }
+
+  const q3 = quaternion(0, 0, 1, 0);
+  const q4 = quaternion(0, 0, 1, Math.PI / 2);
+  const check3 = slerp(q3, q4, 1 / 3);
+  console.warn(check3);
+  if (!compare4(check3, quaternion(0, 0, 1, Math.PI / 6))) {
+    console.warn("FAILED: Quaternion Slerp");
+  }
 }
 
 matrix_test();

@@ -115,16 +115,22 @@ export function add4x4(left: Mat4x4, right: Mat4x4): Mat4x4 {
   ];
 }
 
+/**
+ * Add quaternion q2 to q1, return rotation matrix3x3
+ */
 export function addQuaternion3x3(q1: Vec4, q2: Vec4): Mat3x3 {
   const mat1 = rotation3x3Quaternion(q1);
   const mat2 = rotation3x3Quaternion(q2);
-  return multiply3x3(mat1, mat2);
+  return multiply3x3(mat2, mat1);
 }
 
+/**
+ * Add quaternion q2 to q1, return rotation matrix4x4
+ */
 export function addQuaternion4x4(q1: Vec4, q2: Vec4): Mat4x4 {
   const mat1 = rotation4x4Quaternion(q1);
   const mat2 = rotation4x4Quaternion(q2);
-  return multiply4x4(mat1, mat2);
+  return multiply4x4(mat2, mat1);
 }
 
 /**
@@ -656,6 +662,9 @@ export function perspective4x4(
   ];
 }
 
+/**
+ * Generate quaternion of rotating axis(x, y, z) by radians
+ */
 export function quaternion(
   x: number,
   y: number,
@@ -816,6 +825,9 @@ export function rotationEuler4x4(
   );
 }
 
+/**
+ * Take quaternion to generate rotation matrix3x3
+ */
 export function rotation3x3Quaternion(q: Vec4): Mat3x3 {
   const s = 1 / (q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
   return [
@@ -840,6 +852,9 @@ export function rotation3x3Quaternion(q: Vec4): Mat3x3 {
   ];
 }
 
+/**
+ * Take quaternion to generate rotation matrix4x4
+ */
 export function rotation4x4Quaternion(q: Vec4): Mat4x4 {
   const s = 1 / (q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
   return [
@@ -878,6 +893,9 @@ export function rotation4x4Quaternion(q: Vec4): Mat4x4 {
   ];
 }
 
+/**
+ * Interpolation from q1 to q2 by t
+ */
 export function slerp(q1: Vec4, q2: Vec4, t: number): Vec4 {
   const cosTheta =
     q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];

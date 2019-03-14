@@ -16,7 +16,7 @@ import {
   Vec,
   Vec2
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 const { min, max, random } = Math;
 
@@ -139,7 +139,7 @@ export class BoxOfCircles extends BaseExample {
 
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     this.animationControl = {

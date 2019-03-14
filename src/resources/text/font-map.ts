@@ -1,13 +1,18 @@
-import { GLSettings } from "src/gl";
+import { GLSettings, WebGLStat } from "src/gl";
 import { Texture, TextureOptions } from "src/gl/texture";
+import { KerningPairs } from "src/resources/text/font-renderer";
+import { PackNode } from "src/resources/texture/pack-node";
+import { Vec2 } from "src/util/vector";
 import {
   IdentifyByKey,
   IdentifyByKeyOptions
 } from "../../util/identify-by-key";
 import { SubTexture } from "../texture/sub-texture";
-import { FontManager } from "./font-manager";
+import { FontManager, IFontMapMetrics } from "./font-manager";
 
 export enum FontMapGlyphType {
+  /** Straight images for each glyph */
+  BITMAP,
   /** Signed distance field glyphs */
   SDF,
   /** Multichannel signed distance fields */
@@ -20,18 +25,24 @@ export interface IFontMapOptions extends IdentifyByKeyOptions {
    * these are the only characters this map can provide.
    */
   characters?: [string, SubTexture][];
-  /** When set to true, this let's the font map add characters over time instead of a predefined list */
-  isDynamic?: boolean;
   /**
    * This is the glyph type for the font.
    */
   glyphType: FontMapGlyphType;
+  /** When set to true, this let's the font map add characters over time instead of a predefined list */
+  isDynamic?: boolean;
+  /** Metrics for the font */
+  metrics: IFontMapMetrics;
 }
 
 /**
  * This represents the actual font map resource. It contains the raw texture object for manipulating.
  */
 export class FontMap extends IdentifyByKey {
+  /** Makes a CSS font string from the font properties in the map */
+  get fontString() {
+    return `${this.metrics.size}px ${this.metrics.family}`;
+  }
   /**
    * The number of glyphs successfully registered with this font map. This is used to determine the
    * position of the next glyph for the font map.
@@ -41,13 +52,23 @@ export class FontMap extends IdentifyByKey {
    * This maps all of the glyphs this resource provides for to the SubTexture where the glyph is rendered
    * on the resource.
    */
-  glyphMap: { [key: string]: SubTexture } = {};
+  glyphMap: { [char: string]: SubTexture } = {};
   /**
    * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
    */
   isDynamic: boolean = false;
+  /**
+   * These  are the calculated kerning pairs available for this font map. If a pair does not
+   * exist here, then the map may not have the character or the pair may not have been calculated
+   * for the font map yet.
+   */
+  kerning: KerningPairs = {};
   /** This is the manager storing the Font Map */
   manager: FontManager;
+  /** The metrics of the font rendered to this font map */
+  metrics: IFontMapMetrics;
+  /** Tracks how the glyphs are packed into the map */
+  packing: PackNode<SubTexture>;
   /** The base texture where the font map is stored */
   texture: Texture;
   /**
@@ -59,6 +80,7 @@ export class FontMap extends IdentifyByKey {
     super(options);
 
     this.isDynamic = options.isDynamic || false;
+    this.metrics = options.metrics;
 
     if (options.characters) {
       options.characters.forEach(pair => {
@@ -67,6 +89,63 @@ export class FontMap extends IdentifyByKey {
     }
 
     this.makeGlyphTypeTextureSettings(options.glyphType);
+    this.createTexture();
+
+    // Initialize the packing layout for the texture
+    this.packing = new PackNode(
+      0,
+      0,
+      WebGLStat.MAX_TEXTURE_SIZE,
+      WebGLStat.MAX_TEXTURE_SIZE
+    );
+  }
+
+  /**
+   * Applies additional kerning pair information to the map.
+   */
+  addKerning(kerning: KerningPairs) {
+    for (const left in kerning) {
+      const rights = kerning[left];
+
+      for (const right in rights) {
+        const rightKerning = (this.kerning[left] = this.kerning[left] || {});
+        rightKerning[right] = rights[right];
+      }
+    }
+  }
+
+  /**
+   * Generates the texture for the font map which makes it ready for utilization and ready
+   * for updates.
+   */
+  private createTexture() {
+    if (this.texture) return;
+
+    // Establish the settings to be applied to the Texture
+    let textureSettings;
+
+    if (this.textureSettings) {
+      textureSettings = {
+        generateMipMaps: true,
+        premultiplyAlpha: true,
+        ...this.textureSettings
+      };
+    } else {
+      textureSettings = {
+        generateMipMaps: true,
+        premultiplyAlpha: true
+      };
+    }
+
+    // Generate the texture
+    this.texture = new Texture({
+      data: {
+        width: WebGLStat.MAX_TEXTURE_SIZE,
+        height: WebGLStat.MAX_TEXTURE_SIZE,
+        buffer: null
+      },
+      ...textureSettings
+    });
   }
 
   /**
@@ -83,10 +162,37 @@ export class FontMap extends IdentifyByKey {
   }
 
   /**
-   * This retrieves the glyph texture information from the FontMap's
+   * This returns which characters are not included in this font map.
+   */
+  findMissingCharacters(newCharacters: string) {
+    const missing = new Set<string>();
+
+    for (let i = 0, iMax = newCharacters.length; i < iMax; ++i) {
+      const char = newCharacters[i];
+      if (!this.glyphMap[char]) missing.add(char);
+    }
+
+    return Array.from(missing.values()).join("");
+  }
+
+  /**
+   * This retrieves the glyph texture information from the FontMap.
    */
   getGlyphTexture(char: string): SubTexture | null {
     return this.glyphMap[char[0]] || null;
+  }
+
+  /**
+   * This provides the expected vector from the top left corner of the left vector
+   * to the top left corner of the right vector.
+   */
+  getGlyphKerning(leftChar: string, rightChar: string): Vec2 {
+    const right = this.kerning[leftChar];
+    // If not pairs for the provided left character, just provide 0
+    if (!right) return [0, 0];
+
+    // Produce the kerning value or zero if none exists
+    return right[rightChar] || [0, 0];
   }
 
   /**
@@ -94,6 +200,15 @@ export class FontMap extends IdentifyByKey {
    */
   private makeGlyphTypeTextureSettings(type: FontMapGlyphType) {
     switch (type) {
+      // Simple bitmap glyphs. Just need luminance and alpha value for the glyph
+      case FontMapGlyphType.BITMAP:
+        this.textureSettings = {
+          magFilter: GLSettings.Texture.TextureMagFilter.Linear,
+          minFilter: GLSettings.Texture.TextureMinFilter.LinearMipMapLinear,
+          format: GLSettings.Texture.TexelDataType.LuminanceAlpha
+        };
+        break;
+
       // Only a single channel is needed for SDF
       case FontMapGlyphType.SDF:
         this.textureSettings = {
@@ -126,37 +241,5 @@ export class FontMap extends IdentifyByKey {
         "Attempted to register a new glyph with a non-dynamic FontMap"
       );
     }
-  }
-
-  /**
-   * TODO:
-   * We now are using the new gl system so this should be using subtexture2d to update a portion of the texture
-   * rather than destroying the old and making anew.
-   */
-  updateTexture(canvas?: HTMLCanvasElement) {
-    if (this.texture) {
-      const redoneCanvas = this.texture.data;
-      this.texture.dispose();
-      this.texture = new Texture({
-        data: redoneCanvas,
-        ...this.textureSettings
-      });
-    } else {
-      this.texture = new Texture({
-        data: canvas,
-        ...this.textureSettings
-      });
-    }
-
-    const subTextures = Object.values(this.glyphMap);
-    subTextures.forEach(tex => {
-      if (tex) {
-        tex.atlasTexture = this.texture;
-      }
-    });
-
-    // Apply any relevant options to the texture desired to be set
-    this.texture.generateMipMaps = true;
-    this.texture.premultiplyAlpha = true;
   }
 }

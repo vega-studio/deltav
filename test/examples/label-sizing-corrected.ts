@@ -9,16 +9,16 @@ import {
   ReferenceCamera,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelSizingCorrected extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
+    resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
-      atlas,
+      resourceKey: resource.font,
       data: provider,
       key: "label-sizing-corrected",
       scene

@@ -13,7 +13,7 @@ import {
   RectangleLayer,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView3 extends BaseExample {
   view: string;
@@ -47,7 +47,7 @@ export class BoundedView3 extends BaseExample {
 
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<RectangleInstance>
   ): LayerInitializer {
     return createLayer(RectangleLayer, {

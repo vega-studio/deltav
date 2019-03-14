@@ -4,92 +4,59 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
+import { BaseIOSorting } from "src/surface/base-io-sorting";
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../../instance-provider/instance";
 import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
-  InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal
 } from "../../types";
-import { Vec } from "../../util";
 import { ILayerProps, Layer } from "../layer";
-import { generateAtlasResourceUniforms } from "./expand-atlas-attributes";
-import { generateEasingAttributes } from "./expand-easing-attributes";
 import { getLayerBufferType } from "./layer-buffer-type";
 import { packAttributes } from "./pack-attributes";
 
 /**
- * This is a lookup for a test vector for the provided size
+ * Instance attribute typeguard
  */
-const testStartVector: { [key: number]: Vec } = {
-  [InstanceAttributeSize.ONE]: [1],
-  [InstanceAttributeSize.TWO]: [1, 2],
-  [InstanceAttributeSize.THREE]: [1, 2, 3],
-  [InstanceAttributeSize.FOUR]: [1, 2, 3, 4]
-};
-
-/**
- * This is a lookup for a test vector for the provided size
- */
-const testEndVector: { [key: number]: Vec } = {
-  [InstanceAttributeSize.ONE]: [4],
-  [InstanceAttributeSize.TWO]: [4, 3],
-  [InstanceAttributeSize.THREE]: [4, 3, 2],
-  [InstanceAttributeSize.FOUR]: [4, 3, 2, 1]
-};
-
 function isInstanceAttribute<T extends Instance>(
   attr: any
 ): attr is IInstanceAttribute<T> {
   return Boolean(attr);
 }
 
+/**
+ * Vertex attribute typeguard
+ */
 function isVertexAttribute(attr: any): attr is IVertexAttribute {
   return Boolean(attr);
 }
 
+/**
+ * Uniform typeguard
+ */
 function isUniform(attr: any): attr is IUniform {
   return Boolean(attr);
 }
 
+/**
+ * Converts a layer's vertex to the internal vertex structure used by the framework.
+ */
 function toVertexAttributeInternal(
   attribute: IVertexAttribute
 ): IVertexAttributeInternal {
   return Object.assign({}, attribute, { materialAttribute: null });
 }
 
+/**
+ * Converts a layer's uniform to the internal uniform structure used by the framework.
+ */
 function toUniformInternal(uniform: IUniform): IUniformInternal {
   return Object.assign({}, uniform, { materialUniforms: [] });
-}
-
-/**
- * This sorts the attributes such that the attributes that MUST be updated first are put to the top.
- * This is necessary for complex attributes like atlas and easing attributes who have other attributes
- * that have dependent behaviors based on their source attribute.
- */
-function sortNeedsUpdateFirstToTop<T extends Instance>(
-  a: IInstanceAttribute<T>,
-  b: IInstanceAttribute<T>
-) {
-  if (a.resource && !b.resource) return -1;
-  if (a.easing && !b.easing) return -1;
-  return 1;
-}
-
-function compareVec(a: Vec, b: Vec) {
-  if (a.length !== b.length) return false;
-
-  for (let i = 0, end = a.length; i < end; ++i) {
-    if (Math.round(a[i] * 100) / 100 !== Math.round(b[i] * 100) / 100) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 /**
@@ -99,7 +66,8 @@ function compareVec(a: Vec, b: Vec) {
 function validateInstanceAttributes<T extends Instance>(
   layer: Layer<T, any>,
   instanceAttributes: IInstanceAttribute<T>[],
-  vertexAttributes: IVertexAttribute[]
+  vertexAttributes: IVertexAttribute[],
+  _uniforms: IUniform[]
 ) {
   instanceAttributes.forEach(attribute => {
     if (attribute.name === undefined) {
@@ -127,71 +95,10 @@ function validateInstanceAttributes<T extends Instance>(
       );
     }
 
-    if (attribute.easing && attribute.resource) {
-      console.warn(
-        "An instance attribute can not have both easing and resource properties. Undefined behavior will occur."
-      );
-      console.warn(attribute);
-    }
-
     if (!attribute.resource) {
       if (attribute.size === undefined) {
         console.warn("An instance attribute requires the size to be defined.");
         console.warn(attribute);
-      }
-    }
-
-    if (attribute.easing) {
-      if (attribute.size !== undefined) {
-        const testStart = testStartVector[attribute.size];
-        const testEnd = testEndVector[attribute.size];
-        const validationRules = attribute.easing.validation || {};
-
-        let test = attribute.easing.cpu(testStart, testEnd, 0);
-        if (!compareVec(test, testStart)) {
-          console.warn(
-            "Auto Easing Validation Failed: using a time of 0 does not produce the start value"
-          );
-          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
-          console.warn(attribute);
-        }
-
-        test = attribute.easing.cpu(testStart, testEnd, 1);
-        if (
-          !validationRules.ignoreEndValueCheck &&
-          !compareVec(test, testEnd)
-        ) {
-          console.warn(
-            "Auto Easing Validation Failed: using a time of 1 does not produce the end value"
-          );
-          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
-          console.warn(attribute);
-        }
-
-        test = attribute.easing.cpu(testStart, testEnd, -1);
-        if (!compareVec(test, testStart)) {
-          console.warn(
-            "Auto Easing Validation Failed: using a time of -1 does not produce the start value"
-          );
-          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
-          console.warn(attribute);
-        }
-
-        test = attribute.easing.cpu(testStart, testEnd, 2);
-        if (
-          !validationRules.ignoreOverTimeCheck &&
-          !compareVec(test, testEnd)
-        ) {
-          console.warn(
-            "Auto Easing Validation Failed: using a time of 2 does not produce the end value"
-          );
-          console.warn("Start:", testStart, "End:", testEnd, "Result:", test);
-          console.warn(attribute);
-        }
-      } else {
-        console.warn(
-          "An Instance Attribute with easing MUST have a size declared"
-        );
       }
     }
   });
@@ -306,11 +213,20 @@ function gatherIOFromShaderModules<
 /**
  * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
  * into the shader.
+ *
+ * @param gl The WebGL context this is being utilized on behalf of.
+ * @param layer The layer who's ShaderIO we're analyzing and developing.
+ * @param shaderIO The initial ShaderIO the layer has provided.
+ * @param ioExpansion The list of BaseIOExpansion objects we will use to expand and process the layer's initial Shader IO
+ * @param sortIO  The methods to sort the IO configurations
+ * @param importResults The Shader IO object provided by the layer after it's had it's imports analyzed from the provided shader.
  */
 export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   gl: WebGLRenderingContext,
   layer: Layer<T, U>,
   shaderIO: IShaderInitialization<T>,
+  ioExpansion: BaseIOExpansion[],
+  sortIO: BaseIOSorting,
   importResults: ProcessShaderImportResults
 ) {
   // After processing imports, we can now include any uniforms, or attributes the shader modules requested to be included in the
@@ -328,35 +244,63 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   );
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
-  // Do a validation pass of the attributes injected so we can provide feedback as to why things behave odd
-  validateInstanceAttributes(layer, instanceAttributes, vertexAttributes);
-  // Generates all of the attributes needed to make attributes automagically be eased when changed
-  generateEasingAttributes(layer, instanceAttributes);
-  // Get the uniforms needed to facilitate atlas resource requests if any exists
-  const addedUniforms: IUniform[] = uniforms.concat(
-    generateAtlasResourceUniforms(layer, instanceAttributes)
-  );
-  // Create the base instance attributes that must be present
-  const addedInstanceAttributes = instanceAttributes.slice(0);
-  // Convert our uniforms to the internal structure they need to be
-  const allUniforms = addedUniforms.map(toUniformInternal);
 
-  const allInstanceAttributes = addedInstanceAttributes.sort(
-    sortNeedsUpdateFirstToTop
+  // Now we process all of the custom attribute expansion specified by the surface
+  // to process the layer's IO to make special features with the attributes operate correctly.
+  for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
+    const expansion = ioExpansion[i];
+
+    // Do special expansion validation for attributes that may meet the criteria of the expander.
+    // If the validation fails, then we skip performing the expansion as it would result in
+    // invalid or undefined behavior. This validation method should provide all of the logged
+    // output necessary to determine why the configuration was wrong.
+    if (
+      expansion.validate(layer, instanceAttributes, vertexAttributes, uniforms)
+    ) {
+      // Perform the expansion
+      const extraIO = expansion.expand(
+        layer,
+        instanceAttributes,
+        vertexAttributes,
+        uniforms
+      );
+      // Now we add in the extra IO discovered
+      extraIO.instanceAttributes
+        .filter(isInstanceAttribute)
+        .forEach(attr => instanceAttributes.push(attr));
+      extraIO.vertexAttributes
+        .filter(isVertexAttribute)
+        .forEach(attr => vertexAttributes.push(attr));
+      extraIO.uniforms.filter(isUniform).forEach(attr => uniforms.push(attr));
+    }
+  }
+
+  // Do a final validation pass of the attributes injected so we can provide feedback as to why things behave odd
+  validateInstanceAttributes(
+    layer,
+    instanceAttributes,
+    vertexAttributes,
+    uniforms
   );
+
+  // Gather instance attributes in such a way to not be mutated
+  const allInstanceAttributes = instanceAttributes.slice(0);
+  // Make sure the vertex attributes are internal attributes at this point
+  const allVertexAttributes = (vertexAttributes || []).map(
+    toVertexAttributeInternal
+  );
+  // Convert our uniforms to the internal structure they need to be
+  const allUniforms = uniforms.map(toUniformInternal);
+
+  // Apply the sorting
+  allInstanceAttributes.sort(sortIO.sortInstanceAttributes);
+  allUniforms.sort(sortIO.sortUniforms);
+  allVertexAttributes.sort(sortIO.sortVertexAttributes);
 
   // Let's pack in our attributes automagically so we can determine block and block indices.
   packAttributes(allInstanceAttributes);
   // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
   getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
-
-  // Create the base vertex attributes that must be present
-  const addedVertexAttributes: IVertexAttribute[] = [];
-
-  // Aggregate all of the injected shaderIO with the layer's shaderIO
-  const allVertexAttributes: IVertexAttributeInternal[] = addedVertexAttributes
-    .concat(vertexAttributes || [])
-    .map(toVertexAttributeInternal);
 
   return {
     instanceAttributes: allInstanceAttributes,

@@ -1,8 +1,11 @@
-import { ResourceType } from "../../types";
+import { Bounds } from "src/primitives";
+import { PackNode } from "src/resources/texture/pack-node";
+import { Omit, ResourceType } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { FontMap, FontMapGlyphType } from "../text/font-map";
 import { IFontResourceRequest } from "../text/font-resource-manager";
 import { SubTexture } from "../texture/sub-texture";
+import { FontRenderer } from "./font-renderer";
 
 /**
  * Valid glyph rendering sizes that the system will use when rendering the glyphs to the font map's texture.
@@ -19,9 +22,35 @@ export enum FontGlyphRenderSize {
 }
 
 /**
+ * Metrics for a font map source specification.
+ */
+export interface IFontMapMetrics {
+  /** A type indicator to help identify which type of font resource is provided */
+  type?: FontMapGlyphType;
+  /** Size the font is rendered to the font map */
+  size: number;
+  /** Family of the font to be rendered to the font map */
+  family: string;
+  /** Font weight of the font to be rendered to the font map */
+  weight: string | number;
+}
+
+export interface ISimpleFontMapMetrics extends IFontMapMetrics {
+  type: undefined;
+}
+
+/**
+ * Indicates a bitmap font source.
+ */
+export interface IBitmapFontSource extends IFontMapMetrics {
+  /** This indicates a bitmap style of font rendering is required of the font. */
+  type: FontMapGlyphType.BITMAP;
+}
+
+/**
  * The available properties of a prerendered font source
  */
-export interface IPrerenderedFontSource {
+export interface IPrerenderedFontSource extends IFontMapMetrics {
   /** This is the glyph renderings in Base64 encoding */
   glyphs: { [key: string]: string };
   /** This is the glyph used when no glyph is available */
@@ -31,17 +60,17 @@ export interface IPrerenderedFontSource {
 /**
  * This is a provided pre-rendered SDF resource object format.
  */
-export interface IPrerenderedSDFFontSource {
+export interface IPrerenderedSDFFontSource extends IPrerenderedFontSource {
   /** This is the indicator that this prerendered resource is SDF */
-  type: "SDF";
+  type: FontMapGlyphType.SDF;
 }
 
 /**
  * This is a provided pre-rendered MSDF resource object format.
  */
-export interface IPrerenderedMSDFFontSource {
+export interface IPrerenderedMSDFFontSource extends IPrerenderedFontSource {
   /** This is the indicator that this prerendered resource is MlSDF */
-  type: "MSDF";
+  type: FontMapGlyphType.MSDF;
 }
 
 /**
@@ -49,7 +78,8 @@ export interface IPrerenderedMSDFFontSource {
  * to render text to the screen.
  */
 export type FontMapSource =
-  | string
+  | IFontMapMetrics
+  | IBitmapFontSource
   | IPrerenderedSDFFontSource
   | IPrerenderedMSDFFontSource;
 
@@ -98,29 +128,21 @@ export function isFontResource(
 /**
  * This is the string font source type guard.
  */
-function isStringFontSource(val: any): val is string {
-  return typeof val === "string";
+function isSimpleFontMetrics(val: any): val is ISimpleFontMapMetrics {
+  return val && val.type === undefined;
 }
 
 /**
- * Type guard for any source that is pre-rendered
+ * Method for making typings and API feedback easier. Just a wrapper for building
+ * an IFontResourceOptions object. Excludes the need to specify the type.
  */
-function isPrerenderedSource(val: any): val is IPrerenderedFontSource {
-  return val && val.glyphs;
-}
-
-/**
- * This is the pre-rendered SDF source type guard
- */
-function isPrerenderedSDFSource(val: any): val is IPrerenderedSDFFontSource {
-  return val && val.type === "SDF";
-}
-
-/**
- * This is the pre-rendered MSDF source type guard
- */
-function isPrerenderedMSDFSource(val: any): val is IPrerenderedMSDFFontSource {
-  return val && val.type === "MSDF";
+export function createFont(
+  options: Omit<IFontResourceOptions, "type">
+): IFontResourceOptions {
+  return {
+    type: ResourceType.FONT,
+    ...options
+  };
 }
 
 /**
@@ -132,6 +154,11 @@ function isPrerenderedMSDFSource(val: any): val is IPrerenderedMSDFFontSource {
 export class FontManager {
   /** The lookup for the font map resources by their key */
   fontMaps = new Map<string, FontMap>();
+  /**
+   * Contains the methods needed to render glyphs and calculate kerning
+   * when no precomputed resources are available.
+   */
+  fontRenderer = new FontRenderer();
 
   /**
    * Converts a character filter to a deduped list of single characters
@@ -165,23 +192,28 @@ export class FontManager {
 
     // We now determine what type of font source the options provide and set our font map
     // up properly for it.
-    if (isStringFontSource(fontSource)) {
-      glyphType = FontMapGlyphType.SDF;
-    } else if (isPrerenderedSDFSource(fontSource)) {
-      glyphType = FontMapGlyphType.SDF;
-    } else if (isPrerenderedMSDFSource(fontSource)) {
-      glyphType = FontMapGlyphType.MSDF;
+    if (fontSource) {
+      if (isSimpleFontMetrics(fontSource)) {
+        glyphType = FontMapGlyphType.BITMAP;
+      } else {
+        glyphType = fontSource.type || glyphType;
+      }
     }
 
     // Create our new font map resource
     fontMap = new FontMap({
       key: resourceOptions.key,
       glyphType,
-      isDynamic: resourceOptions.dynamic
+      isDynamic: resourceOptions.dynamic,
+      metrics: resourceOptions.fontSource
     });
 
     // Apply initial characters to the fontMap
-    await this.updateFontMapCharacters(fontMap, characters || []);
+    await this.updateFontMapCharacters(
+      fontMap,
+      (characters || []).join(""),
+      ""
+    );
 
     // Keep the generated font map as our resource
     this.fontMaps.set(resourceOptions.key, fontMap);
@@ -196,7 +228,8 @@ export class FontManager {
   async updateFontMap(resourceKey: string, requests: IFontResourceRequest[]) {
     await this.updateFontMapCharacters(
       this.fontMaps.get(resourceKey),
-      requests.map(req => req.character)
+      requests.map(req => req.character).join(""),
+      requests.map(req => req.leftCharacter + req.character).join(" ")
     );
   }
 
@@ -205,54 +238,92 @@ export class FontManager {
    */
   private async updateFontMapCharacters(
     fontMap: FontMap | undefined,
-    _characters: string[]
+    characters: string,
+    pairs: string
   ) {
     if (!fontMap) return;
-  }
+    const texture = fontMap.texture;
 
-  /**
-   * This generates the character texture information and subtexture information for the characters.
-   */
-  async createSDFFontMapCharacters(
-    source: FontMapSource,
-    startCharacterIndex: number,
-    _glyphSize: FontGlyphRenderSize,
-    _characters: string[]
-  ): Promise<[string, SubTexture][]> {
-    // Valid start character required
-    if (startCharacterIndex < 0) return [];
-    // // Font map width is the max width texture allowance
-    // const width = WebGLStat.MAX_TEXTURE_SIZE;
-    // // This is the number of columns the font map can have
-    // const columnsWide = Math.floor(width / glyphSize);
-    // // This is the column the character index applies to
-    // const column = startCharacterIndex % columnsWide;
-    // // This is the row the character index applies to
-    // const row = Math.floor(startCharacterIndex / columnsWide);
+    // We must determine which characters are not supported by the font map first
+    const toAdd = fontMap.findMissingCharacters(characters);
 
-    // If a prerendered source is provided, we derive the glyphs from the provided source item
-    if (isPrerenderedSource(source)) {
-      // const glyphImageData = this.getPrerenderedImageData(
-      //   source,
-      //   glyphSize,
-      //   characters
-      // );
-    } else if (isStringFontSource(source)) {
-      // Otherwise, we generate the glyph as an SDF glyph
-      // const sdf: TinySDF.ITinyGenerator = new TinySDF(
-      //   glyphSize - 6,
-      //   6,
-      //   8,
-      //   0.25,
-      //   source
-      // );
-      // sdf.generate("c");
+    // Get all the glyph data we need to update to the Font Map's texture
+    const glyphs = this.fontRenderer.makeBitmapGlyphs(
+      toAdd,
+      fontMap.fontString,
+      fontMap.metrics.size
+    );
+
+    // Apply each newly rendered glyph into the font map
+    for (const char in glyphs) {
+      const metrics = glyphs[char];
+
+      if (texture.data) {
+        const packBounds = new Bounds({
+          x: 0,
+          y: 0,
+          width: metrics.glyph.width,
+          height: metrics.glyph.height
+        });
+
+        // Make the sub texture object our packing is going to associate with
+        const subTexture = new SubTexture();
+
+        // Pack the glyph information into the font map texture
+        const packing = fontMap.packing.insert({
+          data: subTexture,
+          bounds: packBounds
+        });
+
+        if (!packing) {
+          console.warn(
+            "Font map is full and could not pack in any more glyphs"
+          );
+          return;
+        }
+
+        // Now use the packing information to update our texture
+        PackNode.applyToSubTexture(fontMap.packing, packing, subTexture);
+
+        // Apply the image to the texture
+        texture.update(metrics.glyph, {
+          ...packing.bounds,
+          y:
+            fontMap.packing.bounds.height -
+            packing.bounds.y -
+            packing.bounds.height
+        });
+
+        // Register the glyph with the font map
+        if (subTexture) fontMap.registerGlyph(char, subTexture);
+        else {
+          console.warn(
+            "Could not generate a subtexture for the font map registration."
+          );
+        }
+      } else {
+        console.warn(
+          "Can not update font map as the maps texture data is not defined."
+        );
+      }
     }
 
-    return [];
+    // Calculate the new kerning pair information
+    const kerning = this.fontRenderer.estimateKerning(
+      pairs,
+      fontMap.fontString,
+      fontMap.metrics.size,
+      fontMap.kerning
+    );
+    // Add the pairs to the font map
+    fontMap.addKerning(kerning.pairs);
   }
 
   /**
+   * TODO:
+   * We do not use this method yet as we do not have a format set for prerendered fonts.
+   * Currently the system only uses the bitmap font dynamic pattern.
+   *
    * This renders the specified characters from a pre-rendered font source in ImageData that can be used to composite
    * a texture.
    */
@@ -291,7 +362,7 @@ export class FontManager {
         const canvas: HTMLCanvasElement = document.createElement("canvas");
         const context = canvas.getContext("2d");
         if (!context) return;
-        // Get the aspect ratio of the glyp data being rendered
+        // Get the aspect ratio of the glyph data being rendered
         // const aspect = image.height / image.width;
         // const renderWidth = aspect < 1 ? glyphSize : glyphSize * aspect;
         // const renderHeight = aspect > 1 ? glyphSize : glyphSize * aspect;

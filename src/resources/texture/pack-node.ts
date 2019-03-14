@@ -5,9 +5,9 @@ import { SubTexture } from "./sub-texture";
  * Helps us track the bounds of the image being loaded in tied in with the
  * texture it represents
  */
-export interface ImageDimensions {
-  first: SubTexture;
-  second: Bounds;
+export interface IPackNodeDimensions<T> {
+  data: T;
+  bounds: Bounds;
 }
 
 /**
@@ -15,14 +15,14 @@ export interface ImageDimensions {
  * in textures within an area. This will guarantee boundaries of textures are
  * not violated and provide proper feedback for where to draw a given image
  */
-export class PackNode {
-  child: [PackNode | null, PackNode | null] = [null, null];
+export class PackNode<T> {
+  child: [PackNode<T> | null, PackNode<T> | null] = [null, null];
   isLeaf: boolean = true;
-  nodeDimensions: Bounds;
-  nodeImage: SubTexture | null = null;
+  bounds: Bounds;
+  data: T | null = null;
 
   constructor(x: number, y: number, width: number, height: number) {
-    this.nodeDimensions = new Bounds({
+    this.bounds = new Bounds({
       height,
       width,
       x,
@@ -36,7 +36,7 @@ export class PackNode {
   destroy() {
     const child0 = this.child[0];
     const child1 = this.child[1];
-    this.nodeImage = null;
+    this.data = null;
     if (child0) {
       child0.destroy();
     }
@@ -53,10 +53,10 @@ export class PackNode {
   hasChild(): boolean {
     const child0 = this.child[0];
     const child1 = this.child[1];
-    if (child0 && !child0.nodeImage) {
+    if (child0 && !child0.data) {
       return !child0.isLeaf;
     }
-    if (child1 && !child1.nodeImage) {
+    if (child1 && !child1.data) {
       return !child1.isLeaf;
     }
     return false;
@@ -65,67 +65,63 @@ export class PackNode {
   /**
    * Inserts images into our mapping, fitting them appropriately
    */
-  insert(image: ImageDimensions): PackNode | null {
+  insert(image: IPackNodeDimensions<T>): PackNode<T> | null {
     let child0 = this.child[0];
     let child1 = this.child[1];
 
     if (!this.isLeaf && child0 && child1) {
       // Try inserting into first child
-      const newNode: PackNode | null = child0.insert(image);
-      if (newNode !== null) {
-        return newNode;
-      }
+      const newNode: PackNode<T> | null = child0.insert(image);
+      if (newNode !== null) return newNode;
       // No room in first so insert into second
       return child1.insert(image);
     } else {
       // If there's already an image here, return
-      if (this.nodeImage) {
-        return null;
-      }
+      if (this.data) return null;
       // Check the fit status of the image in this nodes rectangle space
-      const fitFlag: number = this.nodeDimensions.fits(image.second);
+      const fitFlag: number = this.bounds.fits(image.bounds);
       // If we're too small, return null indicating can not fit
-      if (fitFlag === 0) {
-        return null;
-      }
+      if (fitFlag === 0) return null;
+
       // If we're just right, accept
       if (fitFlag === 1) {
+        this.data = image.data;
         return this;
       }
 
       // Otherwise, gotta split this node and create some leaves
       this.isLeaf = false;
       // Get the image width
-      const imgWidth: number = image.second.width;
-      const imgHeight: number = image.second.height;
+      const imgWidth: number = image.bounds.width;
+      const imgHeight: number = image.bounds.height;
       // Decide which way to split
-      const dWidth: number = this.nodeDimensions.width - imgWidth;
-      const dHeight: number = this.nodeDimensions.height - image.second.height;
+      const dWidth: number = this.bounds.width - imgWidth;
+      const dHeight: number = this.bounds.height - image.bounds.height;
 
       if (dWidth > dHeight) {
         child0 = this.child[0] = new PackNode(
-          this.nodeDimensions.x,
-          this.nodeDimensions.y,
+          this.bounds.x,
+          this.bounds.y,
           imgWidth,
-          this.nodeDimensions.height
+          this.bounds.height
         );
         child1 = this.child[1] = new PackNode(
-          this.nodeDimensions.x + imgWidth,
-          this.nodeDimensions.y,
+          this.bounds.x + imgWidth,
+          this.bounds.y,
           dWidth,
-          this.nodeDimensions.height
+          this.bounds.height
         );
       } else {
         child0 = this.child[0] = new PackNode(
-          this.nodeDimensions.x,
-          this.nodeDimensions.y,
-          this.nodeDimensions.width,
+          this.bounds.x,
+          this.bounds.y,
+          this.bounds.width,
           imgHeight
         );
         child1 = this.child[1] = new PackNode(
-          this.nodeDimensions.x,
-          this.nodeDimensions.y + imgHeight,
-          this.nodeDimensions.width,
+          this.bounds.x,
+          this.bounds.y + imgHeight,
+          this.bounds.width,
           dHeight
         );
       }
@@ -138,20 +134,18 @@ export class PackNode {
   /**
    * Removes the image from the mapping and tries to open up as much space as possible.
    *
-   * @param {AtlasTexture} image The image to insert into the
+   * @param {AtlasTexture} data The image to insert into the
    */
-  remove(image: SubTexture): boolean {
+  remove(data: T): boolean {
     const child0 = this.child[0];
     const child1 = this.child[1];
 
     if (child1 && child0 && !this.isLeaf) {
       // Try removing from first child
-      let removed: boolean = child0.remove(image);
-      if (removed) {
-        return true;
-      }
+      let removed: boolean = child0.remove(data);
+      if (removed) return true;
       // Try remove from second
-      removed = child1.remove(image);
+      removed = child1.remove(data);
 
       if (!child0.hasChild()) {
         if (!child1.hasChild()) {
@@ -162,14 +156,61 @@ export class PackNode {
 
       return removed;
     } else {
-      if (this.nodeImage === image) {
-        this.nodeImage = null;
-        delete image.atlasReferenceID;
-        image.pixelWidth = 0;
+      if (this.data === data) {
+        this.data = null;
+
         return true;
       } else {
         return false;
       }
     }
+  }
+
+  /**
+   * Applies a node's bounds to SubTexture.
+   */
+  static applyToSubTexture<T>(
+    root: PackNode<T>,
+    node: PackNode<T>,
+    texture?: SubTexture,
+    padding?: { top: number; left: number; right: number; bottom: number }
+  ) {
+    if (!texture) return;
+
+    padding = padding || {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0
+    };
+
+    // Set our image's atlas properties
+    const ux = (node.bounds.x + padding.left) / root.bounds.width;
+    const uy = (node.bounds.y + padding.top) / root.bounds.height;
+    const uw =
+      (node.bounds.width - padding.left - padding.right) / root.bounds.width;
+    const uh =
+      (node.bounds.height - padding.top - padding.bottom) / root.bounds.height;
+
+    const atlasDimensions: Bounds = new Bounds({
+      top: 1.0 - uy,
+      left: ux,
+      right: ux + uw,
+      bottom: 1.0 - (uy + uh)
+    });
+
+    const bottom = atlasDimensions.bottom;
+    const top = atlasDimensions.y;
+    const left = atlasDimensions.x;
+    const right = atlasDimensions.x + atlasDimensions.width;
+
+    texture.atlasTL = [left, top];
+    texture.atlasBR = [right, bottom];
+    texture.atlasBL = [left, bottom];
+    texture.atlasTR = [right, top];
+    texture.widthOnAtlas = Math.abs(texture.atlasTR[0] - texture.atlasTL[0]);
+    texture.heightOnAtlas = Math.abs(texture.atlasTR[1] - texture.atlasBR[1]);
+    texture.pixelWidth = uw * root.bounds.width;
+    texture.pixelHeight = uh * root.bounds.height;
   }
 }

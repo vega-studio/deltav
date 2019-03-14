@@ -9,7 +9,7 @@ import {
   ReferenceCamera,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class SingleAxisLabelScaling extends BaseExample {
   isYAxis: boolean = true;
@@ -37,11 +37,11 @@ export class SingleAxisLabelScaling extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
-      atlas,
+      resourceKey: resource.font,
       data: provider,
       key: this.isYAxis ? "vertical-label-scaling" : "horizontal-label-scaling",
       scene

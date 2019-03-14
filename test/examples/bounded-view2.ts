@@ -1,5 +1,5 @@
 import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from 'src';
-import { BaseExample } from './base-example';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class BoundedView2 extends BaseExample {
   view: string;
@@ -20,7 +20,7 @@ export class BoundedView2 extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, _atlas: string, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(scene: string, _resource: TestResourceKeys, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
       key: 'bounded-view2',

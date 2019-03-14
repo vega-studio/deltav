@@ -8,6 +8,11 @@ import {
   LayerSurface
 } from "src";
 
+export type TestResourceKeys = {
+  atlas: string;
+  font: string;
+};
+
 export abstract class BaseExample {
   surface: LayerSurface;
   view: string;
@@ -33,7 +38,7 @@ export abstract class BaseExample {
 
   makeLayer(
     _scene: string,
-    _atlas: string,
+    _resources: TestResourceKeys,
     _provider: IInstanceProvider<Instance>
   ): LayerInitializer | LayerInitializer[] {
     // IMPLEMENTED BY SUB CLASS

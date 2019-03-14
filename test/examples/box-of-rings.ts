@@ -7,7 +7,7 @@ import {
   RingInstance,
   RingLayer
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoxOfRings extends BaseExample {
   camera: ChartCamera;
@@ -19,7 +19,7 @@ export class BoxOfRings extends BaseExample {
 
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<RingInstance>
   ): LayerInitializer {
     return createLayer(RingLayer, {

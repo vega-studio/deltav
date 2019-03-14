@@ -1,3 +1,4 @@
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import {
@@ -40,6 +41,14 @@ export abstract class BaseResourceManager<
    * This expects a resource manager to free all of it's resources it is hanging onto.
    */
   abstract destroy(): void;
+
+  /**
+   * Allows a resource manager to provide it's own IO Expansion to handle special attributes
+   * the layer may have for handling.
+   */
+  getIOExpansion(): BaseIOExpansion[] {
+    return [];
+  }
 
   /**
    * The method to access a resource initialized by this resource manager.

@@ -11,7 +11,7 @@ import {
   LayerInitializer,
   PickType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionColorPicking extends BaseExample {
   isOver = new Map<CircleInstance, anime.AnimeInstance>();
@@ -111,7 +111,7 @@ export class MouseInteractionColorPicking extends BaseExample {
 
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer | LayerInitializer[] {
     return [

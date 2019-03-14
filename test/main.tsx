@@ -38,6 +38,8 @@ import { ScreenSpaceEdges } from "./examples/screen-space-edges";
 import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
 
 // Backend tests, for now, just activate when included
+import { createFont } from "src/resources/text/font-manager";
+import { FontMapGlyphType } from "src/resources/text/font-map";
 import "./backend";
 
 /**
@@ -155,13 +157,23 @@ export class Main extends Component<any, IMainState> {
         resources: [
           createAtlas({
             height: AtlasSize._2048,
-            key: "all-resources",
+            key: " ",
             width: AtlasSize._2048
           }),
           createAtlas({
             height: AtlasSize._2048,
-            key: "all-resources-2",
+            key: " -2",
             width: AtlasSize._2048
+          }),
+          createFont({
+            key: "test-font",
+            fontSource: {
+              size: 32,
+              errorGlyph: " ",
+              family: "Calibri",
+              type: FontMapGlyphType.BITMAP,
+              weight: "normal"
+            }
           })
         ],
         background: [0.1, 0.2, 0.3, 1.0],
@@ -179,7 +191,7 @@ export class Main extends Component<any, IMainState> {
         const provider = test.makeProvider();
         const layer = test.makeLayer(
           sceneName,
-          i % 2 === 0 ? "all-resources" : "all-resources",
+          i % 2 === 0 ? " " : "all-resources",
           provider
         );
 

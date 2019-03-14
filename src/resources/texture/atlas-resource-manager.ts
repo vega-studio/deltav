@@ -1,7 +1,13 @@
+import { TextureIOExpansion } from "src/resources/texture/texture-io-expansion";
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
-import { InstanceIOValue, IResourceInstanceAttribute } from "../../types";
+import {
+  InstanceIOValue,
+  IResourceInstanceAttribute,
+  ResourceType
+} from "../../types";
 import {
   BaseResourceManager,
   BaseResourceOptions
@@ -14,7 +20,7 @@ import { SubTexture, subTextureIOValue } from "./sub-texture";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */
-  atlasManager: AtlasManager;
+  atlasManager?: AtlasManager;
 }
 
 /**
@@ -45,7 +51,7 @@ export class AtlasResourceManager extends BaseResourceManager<
 
   constructor(options: IAtlasResourceManagerOptions) {
     super();
-    this.atlasManager = options.atlasManager;
+    this.atlasManager = options.atlasManager || new AtlasManager();
   }
 
   /**
@@ -85,7 +91,7 @@ export class AtlasResourceManager extends BaseResourceManager<
                 const [layer, instance] = request[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
-                if (layer.bufferManager.getBufferLocations(instance)) {
+                if (layer.bufferManager.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
                 }
@@ -134,6 +140,13 @@ export class AtlasResourceManager extends BaseResourceManager<
    */
   getResource(resourceKey: string) {
     return this.resources.get(resourceKey) || null;
+  }
+
+  /**
+   * Return the IO Expander necessary to handle the resurce type this manager is attempting to provide for layers.
+   */
+  getIOExpansion(): BaseIOExpansion[] {
+    return [new TextureIOExpansion(ResourceType.ATLAS, this)];
   }
 
   /**

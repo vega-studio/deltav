@@ -13,12 +13,12 @@ import {
   LayerInitializer,
   nextFrame
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
     scene: string,
-    _atlas: string,
+    resources: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {

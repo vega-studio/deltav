@@ -1,3 +1,5 @@
+import { BaseIOSorting } from "src/surface/base-io-sorting";
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
@@ -81,23 +83,27 @@ export class ShaderProcessor {
    */
   process<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
-    shaderIO: IShaderInitialization<T>
+    shaderIO: IShaderInitialization<T>,
+    ioExpansion: BaseIOExpansion[],
+    sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
       // Reset anything state that needs revertting
       this.uniformProcessing.materialUniforms = [];
 
-      // First process imports to create a shader complete with the necessary
+      // First process imports to retrieve the requested IO the shader modules would be requiring
       const shadersWithImports = this.processImports(layer, shaderIO);
       if (!shadersWithImports) return null;
 
       // After processing our imports, we can now fully aggregate the needed shader IO to make our layer
-      // operate properly
-      // Get the injected shader IO attributes and uniforms
+      // operate properly. Process all of the attributes and apply IO expansion to all of the discovered
+      // shader IO the layer will need to execute.
       const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
         layer.surface.gl,
         layer,
         shaderIO,
+        ioExpansion,
+        sortIO,
         shadersWithImports
       );
       // After all of the shader IO is established, let's calculate the appropriate buffering strategy

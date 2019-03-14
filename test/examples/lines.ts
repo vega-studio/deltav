@@ -8,12 +8,12 @@ import {
   LayerInitializer
 } from "src";
 import { nextFrame } from "src/util/next-frame";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Lines extends BaseExample {
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {

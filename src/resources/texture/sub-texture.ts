@@ -1,3 +1,4 @@
+import { Bounds } from "src/primitives/bounds";
 import { Texture } from "../../gl/texture";
 import { InstanceIOValue } from "../../types";
 import { Vec2 } from "../../util/vector";
@@ -29,10 +30,10 @@ export function subTextureIOValue(texture?: SubTexture): InstanceIOValue {
 export class SubTexture {
   /** Stores the aspect ratio of the image for quick reference */
   aspectRatio: number = 1.0;
-  /** The id of the atlas this texture is located on */
-  atlasReferenceID: string = "";
-  /** This is the actual texture of the atlas this resource is located on */
-  atlasTexture: Texture | null = null;
+  /** The id of the texture this resource is located within */
+  textureReferenceID: string = "";
+  /** This is the actual texture this resource is located within */
+  texture: Texture | null = null;
   /** This is the top left UV coordinate of the sub texture on the atlas */
   atlasTL: Vec2 = [0, 0];
   /** This is the top right UV coordinate of the sub texture on the atlas */
@@ -51,4 +52,36 @@ export class SubTexture {
   pixelWidth: number = 0;
   /** Height in pixels of the image on the atlas */
   pixelHeight: number = 0;
+
+  /**
+   * Generates a SubTexture object based on the texture and region provided.
+   */
+  static fromRegion(source: Texture, region: Bounds) {
+    if (!source.data) return null;
+
+    const ux = region.x / source.data.width;
+    const uy = region.y / source.data.height;
+    const uw = region.width / source.data.width;
+    const uh = region.height / source.data.height;
+
+    const atlasDimensions: Bounds = new Bounds({
+      bottom: uy + uh,
+      left: ux,
+      right: ux + uw,
+      top: uy
+    });
+
+    const bottom = atlasDimensions.bottom;
+    const top = atlasDimensions.y;
+    const left = atlasDimensions.x;
+    const right = atlasDimensions.x + atlasDimensions.width;
+
+    const sub = new SubTexture();
+    sub.atlasTL = [left, top];
+    sub.atlasBR = [right, bottom];
+    sub.atlasBL = [left, bottom];
+    sub.atlasTR = [right, top];
+
+    return sub;
+  }
 }

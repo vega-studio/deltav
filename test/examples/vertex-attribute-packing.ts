@@ -13,7 +13,7 @@ import {
   ScaleType,
   uid
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class VertexAttributePacking extends BaseExample {
   uid = uid();
@@ -27,7 +27,7 @@ export class VertexAttributePacking extends BaseExample {
 
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ) {
     const animate = {

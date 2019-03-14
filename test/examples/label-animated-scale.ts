@@ -7,7 +7,7 @@ import {
   LayerInitializer,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelAnimatedScale extends BaseExample {
   minScale: number = 0.1;
@@ -16,11 +16,11 @@ export class LabelAnimatedScale extends BaseExample {
 
   makeLayer(
     scene: string,
-    atlas: string,
+    resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
-      atlas,
+      resourceKey: resource.font,
       data: provider,
       key: "label-animated-scale",
       scene

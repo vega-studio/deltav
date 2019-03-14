@@ -1,3 +1,4 @@
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import {
@@ -44,9 +45,22 @@ export class ResourceManager {
   }
 
   /**
+   * Retrieves the Shader IO Expansion controllers that may be provided by resource managers.
+   */
+  getIOExpansion() {
+    let all: BaseIOExpansion[] = [];
+
+    this.managers.forEach(manager => {
+      all = all.concat(manager.getIOExpansion());
+    });
+
+    return all;
+  }
+
+  /**
    * Gets the manager for the provided resource type
    */
-  getManager(resourceType: number) {
+  getManager(resourceType: number): BaseResourceManager<any, any> {
     const manager = this.managers.get(resourceType);
 
     if (!manager) {

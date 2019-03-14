@@ -10,12 +10,12 @@ import {
   LayerInitializer
 } from "src";
 import { nextFrame } from "src/util/next-frame";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Arcs extends BaseExample {
   makeLayer(
     scene: string,
-    _atlas: string,
+    _resource: TestResourceKeys,
     provider: InstanceProvider<ArcInstance>
   ): LayerInitializer {
     return createLayer(ArcLayer, {

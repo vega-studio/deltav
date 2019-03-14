@@ -215,6 +215,14 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
+   * Checks to see if an instance is managed by this manager.
+   */
+  managesInstance(instance: T) {
+    // We know this instance is managed if the instance has buffer location real estate assigned to it
+    return this.instanceToBufferLocation[instance.uid] !== undefined;
+  }
+
+  /**
    * Analyzes the list of attributes to the property ids that affects them. This populates the list
    * of minimal property ids needed to trigger updates on all of the attributes.
    */

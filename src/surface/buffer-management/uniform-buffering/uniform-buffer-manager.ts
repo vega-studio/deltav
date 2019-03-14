@@ -173,6 +173,13 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   }
 
   /**
+   * Checks to see if the instance is managed by this manager.
+   */
+  managesInstance(instance: T) {
+    return this.instanceToCluster[instance.uid] === undefined;
+  }
+
+  /**
    * Disassociates an instance with it's group of uniforms and makes the instance
    * in the buffer no longer drawable.
    */

@@ -1,13 +1,20 @@
 import { InstanceProvider } from "src/instance-provider";
 import { CommonMaterialOptions } from "src/util";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { InstanceAttributeSize, IShaderInitialization, ResourceType, ShaderInjectionTarget, VertexAttributeSize } from "../../types";
+import {
+  InstanceAttributeSize,
+  IShaderInitialization,
+  ResourceType,
+  ShaderInjectionTarget,
+  VertexAttributeSize
+} from "../../types";
 import { GlyphInstance } from "./glyph-instance";
 
 /**
  * Options available to this layer as props.
  */
-export interface IGlyphLayerOptions<T extends GlyphInstance> extends ILayerProps<T> {
+export interface IGlyphLayerOptions<T extends GlyphInstance>
+  extends ILayerProps<T> {
   /** This is the font resource this pulls from in order to render the glyphs */
   resourceKey?: string;
 }
@@ -15,20 +22,22 @@ export interface IGlyphLayerOptions<T extends GlyphInstance> extends ILayerProps
 /**
  * Handles rendering single character glyphs using SDF and MSDF techniques
  */
-export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>> extends Layer<T, U> {
+export class GlyphLayer<
+  T extends GlyphInstance,
+  U extends IGlyphLayerOptions<T>
+> extends Layer<T, U> {
   /** Set up the default props so our auto complete is a happier place */
   static defaultProps: IGlyphLayerOptions<GlyphInstance> = {
-    key: '',
+    key: "",
     data: new InstanceProvider<GlyphInstance>(),
-    resourceKey: 'No resource specified',
-    scene: 'default',
+    resourceKey: "No resource specified",
+    scene: "default"
   };
 
   /**
    * Create the Shader IO needed to tie our instances and the GPU together.
    */
   initShader(): IShaderInitialization<T> {
-
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
@@ -48,28 +57,28 @@ export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>
     };
 
     return {
-      fs: '',
+      fs: "",
       instanceAttributes: [
         {
-          name: 'origin',
+          name: "origin",
           size: InstanceAttributeSize.TWO,
-          update: o => o.origin,
+          update: o => o.origin
         },
         {
-          name: 'offset',
+          name: "offset",
           size: InstanceAttributeSize.TWO,
           update: o => o.offset
         },
         {
-          name: 'resource',
+          name: "resource",
           resource: {
-            key: this.props.resourceKey || '',
-            name: 'fontMap',
+            key: this.props.resourceKey || "",
+            name: "fontMap",
             shaderInjection: ShaderInjectionTarget.ALL,
-            type: ResourceType.FONT,
+            type: ResourceType.FONT
           },
           size: InstanceAttributeSize.FOUR,
-          update: o => this.resource.request(this, o, o.resourceRequest),
+          update: o => this.resource.request(this, o, o.resourceRequest)
         }
       ],
       uniforms: [],
@@ -90,7 +99,7 @@ export class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOptions<T>
         }
       ],
       vertexCount: 6,
-      vs: '',
+      vs: ""
     };
   }
 

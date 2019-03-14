@@ -209,6 +209,13 @@ export class InstanceAttributePackingBufferManager<
   }
 
   /**
+   * Checks to see if this buffer manager manages the indicated instance
+   */
+  managesInstance(instance: T) {
+    return this.instanceToBufferLocation[instance.uid] !== undefined;
+  }
+
+  /**
    * Analyzes the list of attributes to the property ids that affects them. This populates the list
    * of minimal property ids needed to trigger updates on all of the attributes.
    */

@@ -59,7 +59,7 @@ export class Texture {
     this.needsDataUpload = true;
     this._flipY = val;
   }
-  private _flipY: boolean = true;
+  private _flipY: boolean = false;
 
   /**
    * Source format of the input. See:

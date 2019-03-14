@@ -1,3 +1,5 @@
+import { BaseIOSorting } from "src/surface/base-io-sorting";
+import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { ImageInstance } from "../base-layers/images";
 import { LabelInstance } from "../base-layers/labels";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
@@ -5,12 +7,14 @@ import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
-import { Box } from "../primitives/box";
-import { BaseResourceOptions, ResourceManager } from "../resources";
-import { AtlasManager } from "../resources/texture";
+import {
+  BaseResourceManager,
+  BaseResourceOptions,
+  ResourceManager
+} from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { PickType } from "../types";
+import { IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
@@ -18,6 +22,7 @@ import { copy4, Vec2, Vec4 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
+import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
@@ -27,6 +32,27 @@ import { ISceneOptions, LayerScene } from "./layer-scene";
 import { MouseEventManager, SceneView } from "./mouse-event-manager";
 import { ClearFlags, View } from "./view";
 
+/**
+ * Default IO expansion controllers applied to the system when explicit settings
+ * are not provided.
+ */
+export const DEFAULT_IO_EXPANSION: ILayerSurfaceOptions["ioExpansion"] = [
+  new EasingIOExpansion()
+];
+
+/**
+ * Default resource managers the system will utilize to handle default / basic resources.
+ */
+export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers"] = [
+  {
+    type: ResourceType.ATLAS,
+    manager: new AtlasResourceManager({})
+  }
+];
+
+/**
+ * Options for generating a new layer surface.
+ */
 export interface ILayerSurfaceOptions {
   /**
    * This is the color the canvas will be set to.
@@ -46,6 +72,21 @@ export interface ILayerSurfaceOptions {
    */
   handlesWheelEvents?: boolean;
   /**
+   * Provides additional expansion controllers that will contribute to our Shader IO configuration
+   * for the layers. If this is not provided, this defaults to default system behaviors.
+   *
+   * To add additional Expansion controllers and keep default system controllers inject:
+   * [
+   *   ...DEFAULT_IO_EXPANSION,
+   *   <your own Expansion controllers>
+   * ]
+   *
+   * For instance: easing properties on attributes requires the attribute to be expanded to additional
+   * attributes + modified behavior of the base attribute. Thus the system by default adds in the
+   * EasinggIOExpansion controller when this is not provided to make those property types work.
+   */
+  ioExpansion?: BaseIOExpansion[];
+  /**
    * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
    * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
    * have better performance if needed.
@@ -56,6 +97,23 @@ export interface ILayerSurfaceOptions {
    * for their internal processes.
    */
   resources?: BaseResourceOptions[];
+  /**
+   * This specifies the resource managers that will be applied to the surface. If this is not
+   * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
+   *
+   * To add additional managers to the default framework:
+   * [
+   *   ...DEFAULT_RESOURCE_MANAGEMENT,
+   *   <your own resource managers>
+   * ]
+   *
+   * Resource managers handle a layer's requests for a resource (this.resource.request(layer, instance, requestObject))
+   * during update cycles of the attributes.
+   */
+  resourceManagers?: {
+    type: number;
+    manager: BaseResourceManager<IResourceType, IResourceType>;
+  }[];
   /**
    * This sets up the available scenes the surface will have to work with. Layers then can
    * reference the scene by it's scene property. The order of the scenes here is the drawing
@@ -106,12 +164,8 @@ export function createLayer<T extends Instance, U extends ILayerProps<T>>(
  * surface will provide some basic camera controls by default.
  */
 export class LayerSurface {
-  /** This is the atlas manager that will help with modifying and tracking atlas' generated for the layers */
-  private atlasManager: AtlasManager = new AtlasManager();
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
-  /** This is the current viewport the renderer state is in */
-  currentViewport = new Map<WebGLRenderer, Box>();
   /**
    * This is the metrics of the current running frame
    */
@@ -121,11 +175,12 @@ export class LayerSurface {
     frameDuration: 1000 / 60,
     previousTime: Date.now() | 0
   };
-  /**
-   * This is used to help resolve concurrent draws. There are some very async operations that should
-   * not overlap in draw calls.
-   */
-  private isBufferingAtlas = false;
+  /** This is used to help resolve concurrent draws and resolving resource request dequeue operations. */
+  private isBufferingResources = false;
+  /** These are the registered expanders of Shader IO configuration */
+  private ioExpanders: BaseIOExpansion[] = [];
+  /** This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been generated that are needed */
+  ioSorting = new BaseIOSorting();
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
@@ -160,7 +215,7 @@ export class LayerSurface {
   willDisposeLayer = new Map<string, boolean>();
   /**
    * This map is a quick look up for a view to determine other views that
-   * would need to be redrawn as a consequence of the source view needing a redraw
+   * would need to be redrawn as a consequence of the key view needing a redraw.
    */
   private viewDrawDependencies = new Map<View, View[]>();
   /** This is used to indicate whether the loading is completed */
@@ -407,7 +462,6 @@ export class LayerSurface {
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
     this.pickingTarget.dispose();
-    this.currentViewport.clear();
 
     // TODO: Instances should be implementing destroy for these clean ups.
     LabelInstance.destroy();
@@ -455,10 +509,10 @@ export class LayerSurface {
     // Now that all of our layers have performed updates to everything, we can now dequeue
     // All resource requests
     // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
-    if (!this.isBufferingAtlas) {
-      this.isBufferingAtlas = true;
+    if (!this.isBufferingResources) {
+      this.isBufferingResources = true;
       const didBuffer = await this.resourceManager.dequeueRequests();
-      this.isBufferingAtlas = false;
+      this.isBufferingResources = false;
 
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
@@ -783,6 +837,9 @@ export class LayerSurface {
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
       await this.initResources(options);
+      // Initialize any io expanders requested or needed. This must happen after resource initialization
+      // as resource managers can produce their own expanders.
+      await this.initIOExpanders(options);
     } else {
       console.warn(
         "Could not establish a GL context. Layer Surface will be unable to render"
@@ -905,6 +962,22 @@ export class LayerSurface {
   }
 
   /**
+   * Initializes the expanders that should be applied to the surface for layer processing.
+   */
+  private initIOExpanders(options: ILayerSurfaceOptions) {
+    // Initialize the Shader IO expansion objects
+    this.ioExpanders =
+      (options.ioExpansion && options.ioExpansion.slice(0)) ||
+      (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
+      [];
+
+    // Retrieve any expansion objects the resource managers may provide
+    const managerIOExpanders = this.resourceManager.getIOExpansion();
+    // Add the expanders to our current handled list.
+    this.ioExpanders = this.ioExpanders.concat(managerIOExpanders);
+  }
+
+  /**
    * This does special initialization by gathering the layers shader IO, generates a material
    * and injects special automated uniforms and attributes to make instancing work for the
    * shader.
@@ -933,7 +1006,12 @@ export class LayerSurface {
 
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = new ShaderProcessor().process(layer, shaderIO);
+    const shaderMetrics = new ShaderProcessor().process(
+      layer,
+      shaderIO,
+      this.ioExpanders,
+      this.ioSorting
+    );
     // Check to see if the Shader Processing failed. If so return null as a failure flag.
     if (!shaderMetrics) return null;
 
@@ -1009,17 +1087,22 @@ export class LayerSurface {
    * This initializes resources needed or requested such as textures or render surfaces.
    */
   private async initResources(options: ILayerSurfaceOptions) {
+    // Create the controller for handling all resource managers
     this.resourceManager = new ResourceManager();
 
-    // Set up our atlas manager to handle atlas resources
-    this.resourceManager.setManager(
-      ResourceType.ATLAS,
-      new AtlasResourceManager({
-        atlasManager: this.atlasManager
-      })
-    );
+    // Get the managers requested by the configuration
+    const managers =
+      (options.resourceManagers && options.resourceManagers.slice(0)) ||
+      (DEFAULT_RESOURCE_MANAGEMENT && DEFAULT_RESOURCE_MANAGEMENT.slice(0)) ||
+      [];
 
-    // Tell our manager to generate all of the atlas' requested for surface
+    // Register all of the managers for use by their type.
+    managers.forEach(manager => {
+      this.resourceManager.setManager(manager.type, manager.manager);
+    });
+
+    // Tell our managers to handle all of the requested resources injected into the
+    // configuration
     if (options.resources) {
       for (const resource of options.resources) {
         await this.resourceManager.initResource(resource);

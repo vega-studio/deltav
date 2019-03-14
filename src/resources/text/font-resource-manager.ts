@@ -4,6 +4,7 @@ import {
   subTextureIOValue
 } from "../../resources/texture/sub-texture";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
   IResourceInstanceAttribute,
@@ -14,6 +15,7 @@ import {
   BaseResourceOptions,
   BaseResourceRequest
 } from "../base-resource-manager";
+import { TextureIOExpansion } from "../texture/texture-io-expansion";
 import {
   FontManager,
   IFontResourceOptions,
@@ -21,12 +23,14 @@ import {
 } from "./font-manager";
 
 export interface IFontResourceRequest extends BaseResourceRequest {
-  /** This is the sub texture information where the glyph exists within its parent lookup */
-  texture?: SubTexture;
+  /** This is the information needed to pick the correct glyph texture coordinates */
+  glyph?: SubTexture;
   /** Establish the only type that this request shall be is a FONT type */
   type: ResourceType.FONT;
   /** The character being requested from the fontmap */
   character: string;
+  /** The character immediately to the left of the character */
+  leftCharacter: string;
 }
 
 /**
@@ -80,21 +84,21 @@ export class FontResourceManager extends BaseResourceManager<
         // Tell the atlas manager to update with all of the requested resources
         await this.fontManager.updateFontMap(fontResource, requests);
         // Get the requests for the given atlas
-        const atlasRequests = this.requestLookup.get(fontResource);
+        const glyphRequests = this.requestLookup.get(fontResource);
 
-        if (atlasRequests) {
+        if (glyphRequests) {
           // Once the manager has been updated, we can now flag all of the instances waiting for the resources
           // As active, which should thus trigger an update to the layers to perform a diff for each instance
           requests.forEach(resource => {
-            const request = atlasRequests.get(resource);
-            atlasRequests.delete(resource);
+            const request = glyphRequests.get(resource);
+            glyphRequests.delete(resource);
 
             if (request) {
               for (let i = 0, iMax = request.length; i < iMax; ++i) {
                 const [layer, instance] = request[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
-                if (layer.bufferManager.getBufferLocations(instance)) {
+                if (layer.bufferManager.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
                 }
@@ -133,6 +137,13 @@ export class FontResourceManager extends BaseResourceManager<
   }
 
   /**
+   * Make the expander to handle making the attribute changes necessary to
+   */
+  getIOExpansion(): BaseIOExpansion[] {
+    return [new TextureIOExpansion(ResourceType.FONT, this)];
+  }
+
+  /**
    * This is a request to intiialize a resource by this manager.
    */
   async initResource(options: BaseResourceOptions) {
@@ -154,7 +165,7 @@ export class FontResourceManager extends BaseResourceManager<
     instance: Instance,
     request: IFontResourceRequest
   ): InstanceIOValue {
-    const texture = request.texture;
+    const texture = request.glyph;
 
     // If the texture is ready and available, then we simply return the IO values
     if (texture) {

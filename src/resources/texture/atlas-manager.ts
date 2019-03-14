@@ -5,7 +5,7 @@ import { ColorRasterizer } from "./color-rasterizer";
 import { ImageAtlasResourceRequest } from "./image-atlas-resource-request";
 import { LabelAtlasResourceRequest } from "./label-atlas-resource-request";
 import { LabelRasterizer } from "./label-rasterizer";
-import { ImageDimensions, PackNode } from "./pack-node";
+import { IPackNodeDimensions, PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
 
 const debug = require("debug")("webgl-surface:Atlas");
@@ -14,8 +14,8 @@ const ZERO_IMAGE: SubTexture = {
   aspectRatio: 0,
   atlasBL: [0, 0],
   atlasBR: [0, 0],
-  atlasReferenceID: "",
-  atlasTexture: null,
+  textureReferenceID: "",
+  texture: null,
   atlasTL: [0, 0],
   atlasTR: [0, 0],
   heightOnAtlas: 0,
@@ -153,66 +153,40 @@ export class AtlasManager {
         top: 0
       });
       // Create ImageDimension to insert into our atlas mapper
-      const dimensions: ImageDimensions = {
-        first: texture,
-        second: rect
+      const dimensions: IPackNodeDimensions<SubTexture> = {
+        data: texture,
+        bounds: rect
       };
 
       // Auto add a buffer in
-      dimensions.second.width += 1;
-      dimensions.second.height += 1;
+      dimensions.bounds.width += 1;
+      dimensions.bounds.height += 1;
       // Get the atlas map node
-      const packing: PackNode = atlas.packing;
+      const packing: PackNode<SubTexture> = atlas.packing;
       // Store the node resulting from the insert operation
-      const insertedNode: PackNode | null = packing.insert(dimensions);
+      const insertedNode: PackNode<SubTexture> | null = packing.insert(
+        dimensions
+      );
 
       // If the result was NULL we did not successfully insert the image into any map
       if (insertedNode) {
         debug("Atlas location determined: %o", insertedNode);
 
         // Apply the image to the node
-        insertedNode.nodeImage = texture;
+        insertedNode.data = texture;
 
         // Set our image's atlas properties
-        const ux = insertedNode.nodeDimensions.x / atlas.width;
-        const uy = insertedNode.nodeDimensions.y / atlas.height;
-        const uw = insertedNode.nodeDimensions.width / atlas.width;
-        const uh = insertedNode.nodeDimensions.height / atlas.height;
-        const onePixelX = 1 / atlas.width;
-
-        const atlasDimensions: Bounds = new Bounds({
-          bottom: 1.0 - uy,
-          left: ux,
-          right: ux + uw,
-          top: 1.0 - (uy + uh)
+        PackNode.applyToSubTexture(packing, insertedNode, texture, {
+          top: 0,
+          left: 0,
+          right: 1,
+          bottom: 1
         });
-
-        const bottom = atlasDimensions.bottom;
-        const top = atlasDimensions.y;
-        const left = atlasDimensions.x;
-        const right = atlasDimensions.x + atlasDimensions.width - onePixelX;
-
-        texture.atlasReferenceID = atlasName;
-        texture.atlasTL = [left, top];
-        texture.atlasBR = [right, bottom];
-        texture.atlasBL = [left, bottom];
-        texture.atlasTR = [right, top];
-        texture.widthOnAtlas = Math.abs(
-          texture.atlasTR[0] - texture.atlasTL[0]
-        );
-        texture.heightOnAtlas = Math.abs(
-          texture.atlasTR[1] - texture.atlasBR[1]
-        );
-        texture.pixelWidth = rasterization.texture.width;
-        texture.pixelHeight = rasterization.texture.height;
 
         // Now specify the update region to be applied to the texture
         atlas.texture.update(loadedImage, {
-          ...insertedNode.nodeDimensions,
-          y:
-            atlas.height -
-            insertedNode.nodeDimensions.y -
-            insertedNode.nodeDimensions.height
+          ...insertedNode.bounds,
+          y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height
         });
 
         // We have finished inserting

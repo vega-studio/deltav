@@ -118,6 +118,12 @@ export abstract class BufferManagerBase<
   abstract getUpdateAllPropertyIdList(): number[];
 
   /**
+   * This method checks to see if this buffer manager has linked an instance to a buffer
+   * location managed by this object.
+   */
+  abstract managesInstance(instance: T): boolean;
+
+  /**
    * Disassociates an instance with it's buffer location and makes the instance
    * in the buffer no longer drawable.
    */

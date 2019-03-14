@@ -6,7 +6,7 @@ import {
   LayerInitializer,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 const iconData = require("./images/leaf.png");
 const icon = new Image();
@@ -15,11 +15,11 @@ icon.src = iconData;
 export class Images extends BaseExample {
   makeLayer(
     scene: string,
-    atlas: string,
+    resource: TestResourceKeys,
     provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
     return createLayer(ImageLayer, {
-      atlas,
+      atlas: resource.atlas,
       data: provider,
       key: "images",
       scene

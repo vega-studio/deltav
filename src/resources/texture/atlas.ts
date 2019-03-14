@@ -55,7 +55,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   /** This is the parent manager of the atlas */
   manager: AtlasManager;
   /** This is the packing of the atlas with images */
-  packing: PackNode;
+  packing: PackNode<SubTexture>;
   /** This is the actual texture object that represents the atlas on the GPU */
   texture: Texture;
   /** These are the applied settings to our texture */
@@ -94,11 +94,11 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     resource.texture.atlasBR = zero;
     resource.texture.atlasTL = zero;
     resource.texture.atlasTR = zero;
-    resource.texture.atlasReferenceID = "";
+    resource.texture.textureReferenceID = "";
     resource.texture.pixelWidth = 0;
     resource.texture.pixelHeight = 0;
     resource.texture.isValid = false;
-    resource.texture.atlasTexture = null;
+    resource.texture.texture = null;
   }
 
   /**
@@ -114,7 +114,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
         }
 
         resource.texture.isValid = true;
-        resource.texture.atlasTexture = this.texture;
+        resource.texture.texture = this.texture;
         this.validResources.add(resource);
 
         return true;
@@ -204,7 +204,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     // Update resources referencing the texture
     this.validResources.forEach(resource => {
       if (resource.texture) {
-        resource.texture.atlasTexture = this.texture;
+        resource.texture.texture = this.texture;
       }
     });
   }

@@ -20,7 +20,11 @@
   "dependencies": {
     "@types/three": "^0.92.23",
     "bowser": "^1.7.3",
-    "three": "^0.94.0"
+    "file-system": "^2.2.2",
+    "fs": "0.0.1-security",
+    "fs-filesystem": "^2.1.2",
+    "three": "^0.94.0",
+    "webgl-obj-loader": "^2.0.3"
   },
   "devDependencies": {
     "@types/animejs": "2.0.0",

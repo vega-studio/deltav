@@ -39,6 +39,8 @@ import "./matrix-tests";
 // Backend tests, for now, just activate when included
 import "./backend";
 
+const objLoader = require("webgl-obj-loader");
+
 /**
  * The state of the application
  */
@@ -356,6 +358,11 @@ export class Main extends Component<any, IMainState> {
         />
       );
     }
+
+    const obj = require("cube.obj");
+    console.warn(obj);
+    const mesh = new objLoader.Mesh(obj);
+    console.warn(mesh);
 
     if (this.surface) {
       this.surface.render(layers);

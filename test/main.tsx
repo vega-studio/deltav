@@ -38,8 +38,9 @@ import "./matrix-tests";
 
 // Backend tests, for now, just activate when included
 import "./backend";
+import { Meshes } from "./examples/meshes";
 
-const objLoader = require("webgl-obj-loader");
+// const objLoader = require("webgl-obj-loader");
 
 /**
  * The state of the application
@@ -56,7 +57,7 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  new BoxOfRings(),
+  /*new BoxOfRings(),
   new BoxOfCircles(),
   new ScreenSpaceEdges(),
   new ChangingAnchorLabels(),
@@ -80,7 +81,8 @@ const tests: BaseExample[] = [
   new Arcs(),
   new VertexAttributePacking(),
   new VertexAttributePacking(true),
-  new MouseScroll()
+  new MouseScroll(),*/
+  new Meshes()
 ];
 
 /** These are the layers for the tests that are generated */
@@ -284,7 +286,10 @@ export class Main extends Component<any, IMainState> {
     for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
       for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
-        const camera = new ChartCamera();
+        const camera = new ChartCamera({
+          // offset: [0.8, 0.1, 1],
+          target: [0, 0, 0]
+        });
         const test = tests[++testIndex];
 
         if (test) {
@@ -313,6 +318,7 @@ export class Main extends Component<any, IMainState> {
             }
           };
 
+          console.warn("init", init);
           scenes.push(init);
         }
       }
@@ -358,11 +364,6 @@ export class Main extends Component<any, IMainState> {
         />
       );
     }
-
-    const obj = require("cube.obj");
-    console.warn(obj);
-    const mesh = new objLoader.Mesh(obj);
-    console.warn(mesh);
 
     if (this.surface) {
       this.surface.render(layers);

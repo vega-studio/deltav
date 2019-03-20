@@ -239,6 +239,14 @@ export function copy3(vec: Vec3Compat): Vec3 {
   return [vec[0], vec[1], vec[2]];
 }
 
+export function cross3(left: Vec3Compat, right: Vec3Compat): Vec3 {
+  return [
+    left[1] * right[2] - left[2] * right[1],
+    left[2] * right[0] - left[0] * right[2],
+    left[0] * right[1] - left[1] * right[0]
+  ];
+}
+
 export function divide3(top: Vec3Compat, bottom: Vec3Compat): Vec3 {
   return [top[0] / bottom[0], top[1] / bottom[1], top[2] / bottom[2]];
 }
@@ -257,6 +265,11 @@ export function subtract3(left: Vec3Compat, right: Vec3Compat): Vec3 {
 
 export function multiply3(left: Vec3Compat, right: Vec3Compat): Vec3 {
   return [left[0] * right[0], left[1] * right[1], left[2] * right[2]];
+}
+
+export function normalize3(vec: Vec3Compat): Vec3 {
+  const r = Math.sqrt(vec[0] ** 2 + vec[1] ** 2 + vec[2] ** 2);
+  return [vec[0] / r, vec[1] / r, vec[2] / r];
 }
 
 export function linear3(start: Vec3Compat, end: Vec3Compat, t: number): Vec3 {

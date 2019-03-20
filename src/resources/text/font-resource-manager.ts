@@ -1,3 +1,4 @@
+import { Texture } from "src/gl";
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
@@ -7,7 +8,9 @@ import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
+  IResourceContext,
   IResourceInstanceAttribute,
+  Omit,
   ResourceType
 } from "../../types";
 import {
@@ -21,16 +24,54 @@ import {
   IFontResourceOptions,
   isFontResource
 } from "./font-manager";
+import { FontMap } from "./font-map";
 
+export enum FontResourceRequestFetch {
+  /** Retrieves the tex coordinates on the font map of the specified character glyph. Defaults to [0, 0, 0, 0] */
+  TEXCOORDS = 0,
+  /** Retrieves the pixel size of the character glyph on the font map */
+  IMAGE_SIZE = 1
+}
+
+/**
+ * Properties needed to make a font resource request
+ */
 export interface IFontResourceRequest extends BaseResourceRequest {
-  /** This is the information needed to pick the correct glyph texture coordinates */
-  glyph?: SubTexture;
+  /** The character being requested from the fontmap */
+  character?: string;
+  /** This changes the information retrieved as a result of the request method. */
+  fetch?: FontResourceRequestFetch;
+  /**
+   * When the request has been processed and results become available, this is populated with the FontMap object that has everything
+   * needed for the requester to get the information needed.
+   */
+  fontMap?: FontMap;
+  /** The characters for which we want to have the kerning information retrieved. */
+  kerningPairs?: string;
+  /** This is to satisfy the use of the TextureIOExpansion. This is the texture within the fontmap */
+  texture?: Texture;
   /** Establish the only type that this request shall be is a FONT type */
   type: ResourceType.FONT;
-  /** The character being requested from the fontmap */
-  character: string;
-  /** The character immediately to the left of the character */
-  leftCharacter: string;
+}
+
+export interface IFontResourceRequestInternal extends IFontResourceRequest {
+  /**
+   * This is used to flag a request object as requested so that the same request object can be used for
+   * similar resources without generating two request lifecycles.
+   */
+  isRequested?: boolean;
+}
+
+/**
+ * Wrapper method to create a font resource request to make typings and intellisense work better.
+ */
+export function fontRequest(
+  options: Omit<IFontResourceRequest, "type">
+): IFontResourceRequest {
+  return {
+    type: ResourceType.FONT,
+    ...options
+  };
 }
 
 /**
@@ -57,7 +98,7 @@ export class FontResourceManager extends BaseResourceManager<
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, IFontResourceRequest[]>();
   /** This is the lookup for generated font map resources */
-  private resourceLookup = new Map<string, IFontResourceOptions>();
+  private resourceLookup = new Map<string, FontMap>();
   /** This is the manager that is used to create and update font resources */
   private fontManager = new FontManager();
 
@@ -68,18 +109,26 @@ export class FontResourceManager extends BaseResourceManager<
   async dequeueRequests(): Promise<boolean> {
     // This flag will be modified to reflect if a dequeue operation has occurred
     let didDequeue = false;
+    const resourceRequestsWithKey: [string, IFontResourceRequest[]][] = [];
 
-    for (const [fontResource, resources] of Array.from(
-      this.requestQueue.entries()
-    )) {
-      if (resources.length > 0) {
+    this.requestQueue.forEach((requests, resourceKey) => {
+      resourceRequestsWithKey.push([resourceKey, requests]);
+    });
+
+    this.requestQueue.clear();
+
+    // Loop through all requests paired with their resource key context
+    for (let i = 0, iMax = resourceRequestsWithKey.length; i < iMax; ++i) {
+      const [fontResource, allRequests] = resourceRequestsWithKey[i];
+
+      if (allRequests.length > 0) {
         // We did dequeue
         didDequeue = true;
         // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
         // New requests while this dequeue is being processed
-        const requests = resources.slice(0);
+        const requests = allRequests.slice(0);
         // Empty the queue to begin taking in new requests as needed
-        resources.length = 0;
+        allRequests.length = 0;
 
         // Tell the atlas manager to update with all of the requested resources
         await this.fontManager.updateFontMap(fontResource, requests);
@@ -98,7 +147,7 @@ export class FontResourceManager extends BaseResourceManager<
                 const [layer, instance] = request[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
-                if (layer.bufferManager.managesInstance(instance)) {
+                if (layer.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
                 }
@@ -132,12 +181,13 @@ export class FontResourceManager extends BaseResourceManager<
   /**
    * This will provide the resource generated from the initResource operation.
    */
-  getResource(resourceKey: string): IFontResourceOptions | null {
+  getResource(resourceKey: string) {
     return this.resourceLookup.get(resourceKey) || null;
   }
 
   /**
-   * Make the expander to handle making the attribute changes necessary to
+   * Make the expander to handle making the attribute changes necessary to have the texture applied
+   * to a uniform when the attribute places a resource request with a key.
    */
   getIOExpansion(): BaseIOExpansion[] {
     return [new TextureIOExpansion(ResourceType.FONT, this)];
@@ -151,7 +201,7 @@ export class FontResourceManager extends BaseResourceManager<
       const fontMap = await this.fontManager.createFontMap(options);
 
       if (fontMap) {
-        this.resourceLookup.set(options.key, options);
+        this.resourceLookup.set(options.key, fontMap);
       }
     }
   }
@@ -163,17 +213,49 @@ export class FontResourceManager extends BaseResourceManager<
   request<U extends Instance, V extends ILayerProps<U>>(
     layer: Layer<U, V>,
     instance: Instance,
-    request: IFontResourceRequest
+    req: IFontResourceRequest,
+    context?: IResourceContext
   ): InstanceIOValue {
-    const texture = request.glyph;
+    const request: IFontResourceRequestInternal = req;
+    const resourceContex = this.currentAttribute || context;
+    const fontMap = request.fontMap;
+    let texture: SubTexture | null = null;
 
     // If the texture is ready and available, then we simply return the IO values
-    if (texture) {
-      return subTextureIOValue(texture);
+    if (fontMap) {
+      // If this is a character request, then we output the texture desired. Kerning requests only needs
+      // the font map populated in the request.
+      if (request.character) {
+        texture = fontMap.getGlyphTexture(request.character);
+      }
+
+      if (texture) {
+        if (request.fetch) {
+          return [texture.pixelWidth, texture.pixelHeight];
+        }
+
+        return subTextureIOValue(texture);
+      }
+
+      if (request.fetch) {
+        return [0, 0];
+      }
+
+      return subTextureIOValue(null);
+    }
+
+    // If already requested for this request object. Don't create another as the resource trigger should
+    // handle responses for such needs.
+    if (request.isRequested) {
+      if (request.fetch) {
+        return [0, 0];
+      }
+
+      return subTextureIOValue(null);
     }
 
     // This is the attributes resource key being requested
-    const resourceKey = this.currentAttribute.resource.key;
+    const resourceKey = resourceContex.resource.key;
     // If a request is already made, then we must save the instance making the request for deactivation and
     // Reactivation but without any additional atlas loading
     let fontRequests = this.requestLookup.get(resourceKey);
@@ -207,6 +289,10 @@ export class FontResourceManager extends BaseResourceManager<
     fontRequests.set(request, [[layer, instance]]);
 
     // This returns essentially returns blank values for the resource lookup
+    if (request.fetch) {
+      return [0, 0];
+    }
+
     return subTextureIOValue(texture);
   }
 

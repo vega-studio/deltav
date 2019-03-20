@@ -3,6 +3,7 @@ import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import {
   InstanceIOValue,
+  IResourceContext,
   IResourceInstanceAttribute,
   IResourceType
 } from "../types";
@@ -99,7 +100,12 @@ export class ResourceManager {
     T extends Instance,
     U extends ILayerProps<T>,
     V extends IResourceType
-  >(layer: Layer<T, U>, instance: Instance, resource: V): InstanceIOValue {
+  >(
+    layer: Layer<T, U>,
+    instance: Instance,
+    resource: V,
+    context?: IResourceContext
+  ): InstanceIOValue {
     const manager = this.managers.get(resource.type);
 
     if (!manager) {
@@ -111,7 +117,7 @@ export class ResourceManager {
       return [-1, -1, -1, -1];
     }
 
-    return manager.request(layer, instance, resource);
+    return manager.request(layer, instance, resource, context);
   }
 
   /**

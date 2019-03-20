@@ -12,29 +12,29 @@ import {
   nextFrame
 } from "src";
 
-import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
-import { AnimateDeleteAdd } from "./examples/animate-delete-add";
-import { Arcs } from "./examples/arcs";
+// import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
+// import { AnimateDeleteAdd } from "./examples/animate-delete-add";
+// import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
-import { BendyEdge } from "./examples/bendy-edge";
-import { BoundedView } from "./examples/bounded-view";
-import { BoundedView3 } from "./examples/bounded-view3";
-import { BoxOfCircles } from "./examples/box-of-circles";
-import { BoxOfRings } from "./examples/box-of-rings";
-import { ChangingAnchorLabels } from "./examples/changing-anchor-labels";
-import { Images } from "./examples/images";
-import { LabelAnchorsAndScales } from "./examples/label-anchors-and-scales";
-import { LabelAnimatedScale } from "./examples/label-animated-scale";
-import { LabelSizingCorrected } from "./examples/label-sizing-corrected";
-import { Lines } from "./examples/lines";
-import { MouseInteraction } from "./examples/mouse-interaction";
-import { MouseInteractionColorPicking } from "./examples/mouse-interaction-color-picking";
-import { MouseInteractionEdges } from "./examples/mouse-interaction-edges";
-import { MouseInteractionImages } from "./examples/mouse-interaction-images";
-import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
-import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
-import { MouseScroll } from "./examples/mouse-scroll";
-import { ScreenSpaceEdges } from "./examples/screen-space-edges";
+// import { BendyEdge } from "./examples/bendy-edge";
+// import { BoundedView } from "./examples/bounded-view";
+// import { BoundedView3 } from "./examples/bounded-view3";
+// import { BoxOfCircles } from "./examples/box-of-circles";
+// import { BoxOfRings } from "./examples/box-of-rings";
+// import { ChangingAnchorLabels } from "./examples/changing-anchor-labels";
+// import { Images } from "./examples/images";
+// import { LabelAnchorsAndScales } from "./examples/label-anchors-and-scales";
+// import { LabelAnimatedScale } from "./examples/label-animated-scale";
+// import { LabelSizingCorrected } from "./examples/label-sizing-corrected";
+// import { Lines } from "./examples/lines";
+// import { MouseInteraction } from "./examples/mouse-interaction";
+// import { MouseInteractionColorPicking } from "./examples/mouse-interaction-color-picking";
+// import { MouseInteractionEdges } from "./examples/mouse-interaction-edges";
+// import { MouseInteractionImages } from "./examples/mouse-interaction-images";
+// import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
+// import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
+// import { MouseScroll } from "./examples/mouse-scroll";
+// import { ScreenSpaceEdges } from "./examples/screen-space-edges";
 import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
 
 // Backend tests, for now, just activate when included
@@ -57,31 +57,31 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  new MouseInteractionColorPicking(),
-  new BoxOfRings(),
-  new BoxOfCircles(),
-  new ScreenSpaceEdges(),
-  new ChangingAnchorLabels(),
-  new LabelAnchorsAndScales(),
-  new Images(),
-  new BendyEdge(),
-  new Lines(),
-  new MouseInteraction(),
-  new SingleAxisLabelScaling(true),
-  new SingleAxisLabelScaling(false),
-  new MouseInteractionLabels(),
-  new MouseInteractionImages(),
-  new MouseInteractionEdges(),
-  new LabelAnimatedScale(),
-  new LabelSizingCorrected(),
-  new MouseInteractionRectangle(),
-  new BoundedView(),
-  new BoundedView3(),
-  new AnimateDeleteAdd(),
-  new Arcs(),
-  new VertexAttributePacking(),
-  new VertexAttributePacking(true),
-  new MouseScroll()
+  // new MouseInteractionColorPicking(),
+  // new BoxOfRings(),
+  // new BoxOfCircles(),
+  // new ScreenSpaceEdges(),
+  // new ChangingAnchorLabels(),
+  // new LabelAnchorsAndScales(),
+  // new Images(),
+  // new BendyEdge(),
+  // new Lines(),
+  // new MouseInteraction(),
+  new SingleAxisLabelScaling(true)
+  // new SingleAxisLabelScaling(false),
+  // new MouseInteractionLabels(),
+  // new MouseInteractionImages(),
+  // new MouseInteractionEdges(),
+  // new LabelAnimatedScale(),
+  // new LabelSizingCorrected(),
+  // new MouseInteractionRectangle(),
+  // new BoundedView(),
+  // new BoundedView3(),
+  // new AnimateDeleteAdd(),
+  // new Arcs(),
+  // new VertexAttributePacking(),
+  // new VertexAttributePacking(true),
+  // new MouseScroll()
 ];
 
 /** These are the layers for the tests that are generated */
@@ -166,6 +166,7 @@ export class Main extends Component<any, IMainState> {
             width: AtlasSize._2048
           }),
           createFont({
+            dynamic: true,
             key: "test-font",
             fontSource: {
               size: 32,
@@ -191,7 +192,10 @@ export class Main extends Component<any, IMainState> {
         const provider = test.makeProvider();
         const layer = test.makeLayer(
           sceneName,
-          i % 2 === 0 ? " " : "all-resources",
+          {
+            atlas: "all-resources",
+            font: "test-font"
+          },
           provider
         );
 

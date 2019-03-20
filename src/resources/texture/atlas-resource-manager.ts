@@ -5,6 +5,7 @@ import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
 import {
   InstanceIOValue,
+  IResourceContext,
   IResourceInstanceAttribute,
   ResourceType
 } from "../../types";
@@ -49,9 +50,9 @@ export class AtlasResourceManager extends BaseResourceManager<
     Map<AtlasResourceRequest, [Layer<any, any>, Instance][]>
   >();
 
-  constructor(options: IAtlasResourceManagerOptions) {
+  constructor(options?: IAtlasResourceManagerOptions) {
     super();
-    this.atlasManager = options.atlasManager || new AtlasManager();
+    this.atlasManager = (options && options.atlasManager) || new AtlasManager();
   }
 
   /**
@@ -62,9 +63,17 @@ export class AtlasResourceManager extends BaseResourceManager<
     // This flag will be modified to reflect if a dequeue operation has occurred
     let didDequeue = false;
 
-    for (const [targetAtlas, resources] of Array.from(
-      this.requestQueue.entries()
-    )) {
+    const resourceRequestsWithKey: [string, AtlasResourceRequest[]][] = [];
+
+    this.requestQueue.forEach((requests, resourceKey) => {
+      resourceRequestsWithKey.push([resourceKey, requests]);
+    });
+
+    this.requestQueue.clear();
+
+    for (let i = 0, iMax = resourceRequestsWithKey.length; i < iMax; ++i) {
+      const [targetAtlas, resources] = resourceRequestsWithKey[i];
+
       if (resources.length > 0) {
         // We did dequeue
         didDequeue = true;
@@ -91,7 +100,7 @@ export class AtlasResourceManager extends BaseResourceManager<
                 const [layer, instance] = request[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
-                if (layer.bufferManager.managesInstance(instance)) {
+                if (layer.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
                 }
@@ -167,8 +176,11 @@ export class AtlasResourceManager extends BaseResourceManager<
   request<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     instance: Instance,
-    resource: AtlasResourceRequest
+    resource: AtlasResourceRequest,
+    context?: IResourceContext
   ): InstanceIOValue {
+    const resourceContext =
+      this.targetAtlas || (context && context.resource.key) || "";
     const texture: SubTexture = resource.texture;
 
     // If the texture is ready and available, then we simply return the IO values
@@ -184,7 +196,7 @@ export class AtlasResourceManager extends BaseResourceManager<
 
     // If a request is already made, then we must save the instance making the request for deactivation and
     // Reactivation but without any additional atlas loading
-    let atlasRequests = this.requestLookup.get(this.targetAtlas);
+    let atlasRequests = this.requestLookup.get(resourceContext);
 
     if (atlasRequests) {
       const existingRequests = atlasRequests.get(resource);
@@ -197,18 +209,18 @@ export class AtlasResourceManager extends BaseResourceManager<
       }
     } else {
       atlasRequests = new Map();
-      this.requestLookup.set(this.targetAtlas, atlasRequests);
+      this.requestLookup.set(resourceContext, atlasRequests);
     }
 
     // If the texture is not available, then we must load the resource, deactivate the instance
     // And wait for the resource to become available. Once the resource is available, the system
     // Must activate the instance to render the resource.
     instance.active = false;
-    let requests = this.requestQueue.get(this.targetAtlas);
+    let requests = this.requestQueue.get(resourceContext);
 
     if (!requests) {
       requests = [];
-      this.requestQueue.set(this.targetAtlas, requests);
+      this.requestQueue.set(resourceContext, requests);
     }
 
     requests.push(resource);

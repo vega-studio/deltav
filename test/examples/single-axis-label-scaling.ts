@@ -1,13 +1,13 @@
 import {
   AnchorType,
+  AutoEasingMethod,
   ChartCamera,
   createLayer,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ReferenceCamera,
-  ScaleType
+  ReferenceCamera
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -41,6 +41,10 @@ export class SingleAxisLabelScaling extends BaseExample {
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
+      animate: {
+        offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
+        color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+      },
       resourceKey: resource.font,
       data: provider,
       key: this.isYAxis ? "vertical-label-scaling" : "horizontal-label-scaling",
@@ -60,17 +64,23 @@ export class SingleAxisLabelScaling extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.BOUND_MAX,
-        text: "Anchored MiddleLeft:",
-        position: [20, count++ * 20]
+        text: "Anchored Middle Left:",
+        position: [20, count++ * 20],
+
+        onReady: async (label: LabelInstance) => {
+          const size = await this.surface.getViewSize(this.view);
+          if (!size) return;
+
+          label.glyphs.forEach(glyph => {
+            glyph.offset = [
+              Math.random() * size.width,
+              Math.random() * size.height
+            ];
+            glyph.color = [1, 0, 0, 1];
+          });
+        }
       })
     );
 
@@ -80,16 +90,9 @@ export class SingleAxisLabelScaling extends BaseExample {
         type: AnchorType.MiddleLeft
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-1`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
-      text: "Scale Type: NEVER",
+      text: "ScaleType: NEVER",
       position: [20, count++ * 20]
     });
 
@@ -103,16 +106,9 @@ export class SingleAxisLabelScaling extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-2`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.ALWAYS,
-        text: "Scale Type: ALWAYS",
+        text: "ScaleType: ALWAYS",
         position: [20, count++ * 20]
       })
     );
@@ -124,16 +120,9 @@ export class SingleAxisLabelScaling extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-3`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.BOUND_MAX,
-        text: "Scale Type: BOUND_MAX",
+        text: "ScaleType: BOUND_MAX",
         position: [20, count++ * 20]
       })
     );
@@ -147,20 +136,12 @@ export class SingleAxisLabelScaling extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-4`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
-      text: "Anchored MiddleRight:",
+      text: "Anchored Middle Right:",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -169,20 +150,12 @@ export class SingleAxisLabelScaling extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-5`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
-      text: "Scale Type: NEVER",
+      text: "ScaleType: NEVER",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -191,20 +164,12 @@ export class SingleAxisLabelScaling extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-6`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.ALWAYS,
-      text: "Scale Type: ALWAYS",
+      text: "ScaleType: ALWAYS",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -213,20 +178,12 @@ export class SingleAxisLabelScaling extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-7`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.BOUND_MAX,
-      text: "Scale Type: BOUND_MAX",
+      text: "ScaleType: BOUND_MAX",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     return provider;

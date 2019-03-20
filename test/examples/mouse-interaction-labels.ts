@@ -9,8 +9,7 @@ import {
   LabelLayer,
   LayerInitializer,
   PickType,
-  ReferenceCamera,
-  ScaleType
+  ReferenceCamera
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -106,15 +105,8 @@ export class MouseInteractionLabels extends BaseExample {
         type: AnchorType.TopLeft
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-0`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
       text: "TL",
       position: [20, 20]
     });
@@ -129,15 +121,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.TopMiddle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "TM",
         position: [100, 20]
       })
@@ -150,15 +135,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.TopRight
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "TR",
         position: [180, 20]
       })
@@ -171,15 +149,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "ML",
         position: [20, 100]
       })
@@ -192,15 +163,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.Middle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "M",
         position: [100, 100]
       })
@@ -213,15 +177,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.MiddleRight
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "MR",
         position: [180, 100]
       })
@@ -234,15 +191,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.BottomLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "BL",
         position: [20, 180]
       })
@@ -255,15 +205,8 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.BottomMiddle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "BM",
         position: [100, 180]
       })
@@ -276,15 +219,7 @@ export class MouseInteractionLabels extends BaseExample {
           type: AnchorType.BottomRight
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
-        id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "BR",
         position: [180, 180]
       })

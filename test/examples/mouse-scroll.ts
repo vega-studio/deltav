@@ -10,7 +10,7 @@ import {
   LayerInitializer,
   PickType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseScroll extends BaseExample {
   makeController(

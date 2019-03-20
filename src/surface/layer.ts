@@ -4,6 +4,7 @@ import { Material } from "../gl/material";
 import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
+import { ObservableMonitoring } from "../instance-provider/observable";
 import { ResourceManager } from "../resources";
 import {
   IInstanceAttribute,
@@ -336,6 +337,42 @@ export class Layer<
   }
 
   /**
+   * This retrieves the observable IDs for instance observable properties. This triggers a
+   * getter of the indicated property.
+   *
+   * Do NOT use this in intensive loops, try to cache these results where possible.
+   */
+  getInstanceObservableIds<K extends keyof T>(
+    instance: T,
+    properties: Extract<K, string>[]
+  ): { [key: string]: number } {
+    const out: { [key: string]: number } = {};
+
+    // Loop through all of the requested properties to see if they are observable and have
+    // an id associated with them.
+    for (let i = 0, iMax = properties.length; i < iMax; ++i) {
+      // Activate monitoring of ids, this also resets the monitor's list
+      ObservableMonitoring.setObservableMonitor(true);
+      // Trigger the getter of the property
+      instance[properties[i]];
+      // We now can see if the property triggered an identifier thus indicating it's observable
+      // and has an ID
+      const propertyIds = ObservableMonitoring.getObservableMonitorIds(true);
+
+      // If an id is found, then the property was observable.
+      if (propertyIds[0] !== undefined) {
+        out[properties[i]] = propertyIds[0];
+      }
+    }
+
+    // SUPER IMPORTANT to deactivate this here. Leaving this turned on causes memory to be chewed up
+    // for every property getter.
+    ObservableMonitoring.setObservableMonitor(false);
+
+    return out;
+  }
+
+  /**
    * This method is for layers to implement to specify how the bounds for an instance are retrieved or
    * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
    */
@@ -361,8 +398,11 @@ export class Layer<
    *                    The only time making these modifieable is in the event of GL_POINTS.
    * Uniforms: These set up the uniforms for the layer, thus having all normal implications of a uniform. Global
    *           across the fragment and vertex shaders and can be modified with little consequence.
+   *
+   * NOTE: Return null to indicate this layer is not going to render anything. This is typical for parent
+   * layers that manage child layers who themselves do not cause rendering of any sort.
    */
-  initShader(): IShaderInitialization<T> {
+  initShader(): IShaderInitialization<T> | null {
     return {
       fs: "${import: no-op}",
       instanceAttributes: [],
@@ -418,6 +458,37 @@ export class Layer<
       size,
       update
     };
+  }
+
+  /**
+   * Indicates if this layer is managing an instance or not. This is normally done by determining
+   * if this layer's buffer manager has assigned buffer space to the instance. In special layer cases
+   * this may be overridden here to make the assertion in some other way.
+   */
+  managesInstance(instance: T): boolean {
+    return this.bufferManager && this.bufferManager.managesInstance(instance);
+  }
+
+  /**
+   * Retrieves the changes from the data provider and resolves the provider. This should be
+   * used by sub Layer classes that wish to create their own custom draw handlers.
+   */
+  resolveChanges() {
+    // Consume the diffs for the instances to update each element
+    const changeList = this.props.data.changeList;
+    // Set needsViewDrawn to be true if there is any change
+    if (changeList.length > 0) this.needsViewDrawn = true;
+    // Resolve the changes from the provider so it can start collecting
+    // a new list of changes to apply
+    this.props.data.resolve(this.id);
+
+    // Clear the changes from all instances to be ready for next frame
+    for (let i = 0, iMax = changeList.length; i < iMax; ++i) {
+      changeList[i][0].changes = {};
+    }
+
+    // Return the list of changes so the changes can be handled in some fashion
+    return changeList;
   }
 
   /**
@@ -493,9 +564,5 @@ export class Layer<
 
   willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
-  }
-
-  didUpdate() {
-    this.props.data.resolve(this.id);
   }
 }

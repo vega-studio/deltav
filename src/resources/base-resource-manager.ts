@@ -3,6 +3,7 @@ import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import {
   InstanceIOValue,
+  IResourceContext,
   IResourceInstanceAttribute,
   IResourceType
 } from "../types";
@@ -58,13 +59,13 @@ export abstract class BaseResourceManager<
   /**
    * This will trigger a request of a resource to be generated. It will immediately return either a
    * value refelecting the resource is in a Pending state (such as [0, 0, 0, 0]) or it will return
-   * metrics indicative of a resource's metrics (such as an atlas resource request provides the
-   * top left and bottom right coordinates of the resource on the atlas).
+   * metrics indicative of expected resource's metrics, but will always be in InstanceIOValue format.
    */
   abstract request<U extends Instance, V extends ILayerProps<U>>(
     layer: Layer<U, V>,
     instance: Instance,
-    resourceRequest: S
+    resourceRequest: S,
+    context?: IResourceContext
   ): InstanceIOValue;
 
   /**

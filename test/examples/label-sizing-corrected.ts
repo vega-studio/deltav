@@ -6,8 +6,7 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ReferenceCamera,
-  ScaleType
+  ReferenceCamera
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -42,16 +41,9 @@ export class LabelSizingCorrected extends BaseExample {
           type: AnchorType.Middle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 18,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-compare-0`,
-        rasterization: {
-          scale: 1.0
-        },
         scale: 0.5,
-        scaling: ScaleType.BOUND_MAX,
         text: "0.5",
         position: [20, 40]
       })
@@ -64,16 +56,9 @@ export class LabelSizingCorrected extends BaseExample {
           type: AnchorType.Middle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 18,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-compare-1`,
-        rasterization: {
-          scale: 1.0
-        },
         scale: 1.0,
-        scaling: ScaleType.BOUND_MAX,
         text: "1.0",
         position: [50, 40]
       })
@@ -86,16 +71,9 @@ export class LabelSizingCorrected extends BaseExample {
           type: AnchorType.Middle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 18,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-compare-2`,
-        rasterization: {
-          scale: 1.0
-        },
         scale: 2.0,
-        scaling: ScaleType.BOUND_MAX,
         text: "2.0",
         position: [80, 40]
       })
@@ -108,17 +86,10 @@ export class LabelSizingCorrected extends BaseExample {
           type: AnchorType.Middle
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 18,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-compare-2`,
         maxScale: 2.0,
-        rasterization: {
-          scale: 1.0
-        },
         scale: 0.5,
-        scaling: ScaleType.BOUND_MAX,
         text: "0.5 max 2.0",
         position: [20, 80]
       })

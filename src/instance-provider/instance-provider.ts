@@ -37,7 +37,8 @@ export class InstanceProvider<T extends Instance>
    */
   get changeList(): InstanceDiff<T>[] {
     this.allowChanges = false;
-    const changes = Array.from(this.instanceChanges.values());
+    const changes: InstanceDiff<T>[] = [];
+    this.instanceChanges.forEach(val => changes.push(val));
 
     return changes;
   }
@@ -92,7 +93,8 @@ export class InstanceProvider<T extends Instance>
   }
 
   /**
-   * This is called from observables to indicate it's parent has been updated
+   * This is called from observables to indicate it's parent has been updated.
+   * This is what an instance calls when it's observable property is modified.
    */
   instanceUpdated(instance: T) {
     if (this.allowChanges) {
@@ -106,8 +108,8 @@ export class InstanceProvider<T extends Instance>
   }
 
   /**
-   * Removes the instance from being advertised changes and from providing the changes
-   * for the instance.
+   * Stops the instance's ability to register changes with this provider and flags
+   * a final removal diff change.
    */
   remove(instance: T) {
     if (this.allowChanges) {

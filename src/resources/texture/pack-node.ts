@@ -173,7 +173,8 @@ export class PackNode<T> {
     root: PackNode<T>,
     node: PackNode<T>,
     texture?: SubTexture,
-    padding?: { top: number; left: number; right: number; bottom: number }
+    padding?: { top: number; left: number; right: number; bottom: number },
+    flipY?: boolean
   ) {
     if (!texture) return;
 
@@ -192,12 +193,23 @@ export class PackNode<T> {
     const uh =
       (node.bounds.height - padding.top - padding.bottom) / root.bounds.height;
 
-    const atlasDimensions: Bounds = new Bounds({
-      top: 1.0 - uy,
-      left: ux,
-      right: ux + uw,
-      bottom: 1.0 - (uy + uh)
-    });
+    let atlasDimensions: Bounds;
+
+    if (flipY) {
+      atlasDimensions = new Bounds({
+        bottom: 1.0 - uy,
+        left: ux,
+        right: ux + uw,
+        top: 1.0 - (uy + uh)
+      });
+    } else {
+      atlasDimensions = new Bounds({
+        top: 1.0 - uy,
+        left: ux,
+        right: ux + uw,
+        bottom: 1.0 - (uy + uh)
+      });
+    }
 
     const bottom = atlasDimensions.bottom;
     const top = atlasDimensions.y;

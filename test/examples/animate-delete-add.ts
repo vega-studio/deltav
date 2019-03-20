@@ -18,7 +18,7 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
     scene: string,
-    resources: TestResourceKeys,
+    _resources: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
     return createLayer(CircleLayer, {

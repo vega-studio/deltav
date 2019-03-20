@@ -9,7 +9,9 @@ import { Vec2 } from "../../util/vector";
  *
  * This also handles falsey texture values where invalid is a zero vector
  */
-export function subTextureIOValue(texture?: SubTexture): InstanceIOValue {
+export function subTextureIOValue(
+  texture?: SubTexture | null
+): InstanceIOValue {
   // If the texture is not defined we just output an empty reference
   if (!texture) {
     return [0, 0, 0, 0];

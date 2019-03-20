@@ -1,4 +1,3 @@
-import { BaseResourceManager } from "src/resources/base-resource-manager";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -9,7 +8,6 @@ import {
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
-  InstanceBlockIndex,
   IResourceInstanceAttribute,
   IResourceType,
   IUniform,
@@ -22,9 +20,9 @@ import {
 /** Empty texture that will default to the zero texture and unit */
 const emptyTexture = new Texture({
   data: {
-    width: 1,
-    height: 1,
-    data: new Uint8ClampedArray(4)
+    width: 2,
+    height: 2,
+    buffer: new Uint8Array(16)
   }
 });
 
@@ -46,12 +44,14 @@ function isTextureAttribute<T extends Instance>(
  * Minimal information a resource is required to have to operate for this expander.
  */
 interface ITextureIOExpansionResource extends IResourceType {
-  data: {
-    width: number;
-    height: number;
-  };
-
   texture: Texture;
+}
+
+/**
+ * Minimal manager requirements for being applied to this expanded.
+ */
+interface ITextureResourceManager {
+  getResource(key: string): ITextureIOExpansionResource | null;
 }
 
 /**
@@ -60,11 +60,11 @@ interface ITextureIOExpansionResource extends IResourceType {
  */
 export class TextureIOExpansion extends BaseIOExpansion {
   /** The manager which will contain the texture object to be used */
-  manager: BaseResourceManager<ITextureIOExpansionResource, any>;
+  manager: ITextureResourceManager;
   /** The resource type this expansion filters on */
   resourceType: number;
 
-  constructor(resourceType: number, manager: BaseResourceManager<any, any>) {
+  constructor(resourceType: number, manager: ITextureResourceManager) {
     super();
     this.manager = manager;
     this.resourceType = resourceType;
@@ -79,6 +79,8 @@ export class TextureIOExpansion extends BaseIOExpansion {
     _vertexAttributes: IVertexAttribute[],
     _uniforms: IUniform[]
   ): ShaderIOExpansion<T> {
+    // Pull down the manager to this method's context
+    const manager = this.manager;
     // Retrieve all of the instance attributes that are atlas references
     const atlasInstanceAttributes: IResourceInstanceAttribute<T>[] = [];
     // Key: The atlas uniform name requested
@@ -93,9 +95,11 @@ export class TextureIOExpansion extends BaseIOExpansion {
       ) => {
         if (isTextureAttribute(attribute, this.resourceType)) {
           // Auto set the size of the attribute. Attribute's that are a resource automatically
-          // Consume a size of four
-          attribute.size = InstanceAttributeSize.FOUR;
-          attribute.blockIndex = InstanceBlockIndex.ONE;
+          // Consume a size of four unless otherwise stated by the attribute
+          if (attribute.size === undefined) {
+            attribute.size = InstanceAttributeSize.FOUR;
+          }
+
           // Get the atlas resource uniform (sampler2D) injection targets. We default to only the
           // Fragment shader as it's the most commonly used location for sampler2Ds
           const injection: number =
@@ -157,7 +161,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
             shaderInjection: injection,
             size: UniformSize.ATLAS,
             update: () => {
-              const resource = this.manager.getResource(
+              const resource = manager.getResource(
                 instanceAttribute.resource.key
               );
 
@@ -173,7 +177,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
             shaderInjection: injection,
             size: UniformSize.TWO,
             update: () => {
-              const resource = this.manager.getResource(
+              const resource = manager.getResource(
                 instanceAttribute.resource.key
               );
 

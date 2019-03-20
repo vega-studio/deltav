@@ -2,13 +2,15 @@ import { GLSettings, WebGLStat } from "src/gl";
 import { Texture, TextureOptions } from "src/gl/texture";
 import { KerningPairs } from "src/resources/text/font-renderer";
 import { PackNode } from "src/resources/texture/pack-node";
+import { ResourceType } from "src/types";
 import { Vec2 } from "src/util/vector";
-import {
-  IdentifyByKey,
-  IdentifyByKeyOptions
-} from "../../util/identify-by-key";
+import { IdentifyByKey } from "../../util/identify-by-key";
 import { SubTexture } from "../texture/sub-texture";
-import { FontManager, IFontMapMetrics } from "./font-manager";
+import {
+  FontManager,
+  FontMapSource,
+  IFontResourceOptions
+} from "./font-manager";
 
 export enum FontMapGlyphType {
   /** Straight images for each glyph */
@@ -19,7 +21,7 @@ export enum FontMapGlyphType {
   MSDF
 }
 
-export interface IFontMapOptions extends IdentifyByKeyOptions {
+export interface IFontMapOptions extends IFontResourceOptions {
   /**
    * This is the initial characters registered with this font map. If this is not Dynamic,
    * these are the only characters this map can provide.
@@ -29,20 +31,22 @@ export interface IFontMapOptions extends IdentifyByKeyOptions {
    * This is the glyph type for the font.
    */
   glyphType: FontMapGlyphType;
-  /** When set to true, this let's the font map add characters over time instead of a predefined list */
-  isDynamic?: boolean;
-  /** Metrics for the font */
-  metrics: IFontMapMetrics;
 }
 
 /**
  * This represents the actual font map resource. It contains the raw texture object for manipulating.
  */
-export class FontMap extends IdentifyByKey {
+export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   /** Makes a CSS font string from the font properties in the map */
   get fontString() {
-    return `${this.metrics.size}px ${this.metrics.family}`;
+    return `${this.fontSource.size}px ${this.fontSource.family}`;
   }
+  /**
+   * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
+   */
+  dynamic: boolean = false;
+  /** The metrics of the font rendered to this font map */
+  fontSource: FontMapSource;
   /**
    * The number of glyphs successfully registered with this font map. This is used to determine the
    * position of the next glyph for the font map.
@@ -54,10 +58,6 @@ export class FontMap extends IdentifyByKey {
    */
   glyphMap: { [char: string]: SubTexture } = {};
   /**
-   * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
-   */
-  isDynamic: boolean = false;
-  /**
    * These  are the calculated kerning pairs available for this font map. If a pair does not
    * exist here, then the map may not have the character or the pair may not have been calculated
    * for the font map yet.
@@ -65,8 +65,6 @@ export class FontMap extends IdentifyByKey {
   kerning: KerningPairs = {};
   /** This is the manager storing the Font Map */
   manager: FontManager;
-  /** The metrics of the font rendered to this font map */
-  metrics: IFontMapMetrics;
   /** Tracks how the glyphs are packed into the map */
   packing: PackNode<SubTexture>;
   /** The base texture where the font map is stored */
@@ -75,12 +73,16 @@ export class FontMap extends IdentifyByKey {
    * The settings applied to the texture object itself. This is managed by the type of glyph in use.
    */
   private textureSettings: TextureOptions;
+  /**
+   * This finishes establishing this font map as a resource that is a IFontMapResourceOptions
+   */
+  type: ResourceType.FONT = ResourceType.FONT;
 
   constructor(options: IFontMapOptions) {
     super(options);
 
-    this.isDynamic = options.isDynamic || false;
-    this.metrics = options.metrics;
+    this.dynamic = options.dynamic || false;
+    this.fontSource = options.fontSource;
 
     if (options.characters) {
       options.characters.forEach(pair => {
@@ -166,13 +168,18 @@ export class FontMap extends IdentifyByKey {
    */
   findMissingCharacters(newCharacters: string) {
     const missing = new Set<string>();
+    let allMissing: string = "";
 
     for (let i = 0, iMax = newCharacters.length; i < iMax; ++i) {
       const char = newCharacters[i];
-      if (!this.glyphMap[char]) missing.add(char);
+
+      if (!this.glyphMap[char] && !missing.has(char)) {
+        missing.add(char);
+        allMissing += char;
+      }
     }
 
-    return Array.from(missing.values()).join("");
+    return allMissing;
   }
 
   /**
@@ -234,12 +241,34 @@ export class FontMap extends IdentifyByKey {
    * Registers a glyph with it's location on the map.
    */
   registerGlyph(char: string, tex: SubTexture) {
-    if (this.isDynamic) {
+    if (this.dynamic) {
       this.doRegisterGlyph(char, tex);
     } else {
       console.warn(
         "Attempted to register a new glyph with a non-dynamic FontMap"
       );
     }
+  }
+
+  /**
+   * Validates if all the kerning specified is ready for the text
+   */
+  supportsKerning(text: string) {
+    // Loop through the characters in the text and see if all pairs of glyphs
+    // have their kerning determined and calculated.
+    for (let i = 0, iMax = text.length; i < iMax; ++i) {
+      const char = text[i];
+      const leftChar = text[i - 1];
+
+      // If the left or the right character is not found properly, then this text is not supported
+      // by the font map kerning yet.
+      if (this.kerning[leftChar]) {
+        if (!this.kerning[leftChar][char]) {
+          return false;
+        }
+      } else return false;
+    }
+
+    return true;
   }
 }

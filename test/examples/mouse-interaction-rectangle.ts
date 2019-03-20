@@ -12,7 +12,7 @@ import {
   ReferenceCamera,
   ScaleType
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionRectangle extends BaseExample {
   isOver = new Map<RectangleInstance, anime.AnimeInstance>();

@@ -13,7 +13,7 @@ import {
   PickType,
   ReferenceCamera
 } from "src";
-import { BaseExample } from "./base-example";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 /**
  * Test edges that are made with their curvature and line width declared in screen space

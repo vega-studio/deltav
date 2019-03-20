@@ -1,7 +1,11 @@
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
-import { IInstanceAttribute, IInstanceAttributeInternal } from "../../../types";
+import {
+  IInstanceAttribute,
+  IInstanceAttributeInternal,
+  isResourceAttribute
+} from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
 import { Layer } from "../../layer";
@@ -101,6 +105,15 @@ export class InstanceAttributeBufferManager<
     this.layer.instanceAttributes.forEach(attribute => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
+
+      // Make sure attribute context is set before performing update methods
+      if (isResourceAttribute(attribute)) {
+        this.layer.resource.setAttributeContext(
+          attribute,
+          attribute.resource.type
+        );
+      }
+
       // Activate monitoring of ids, this also resets the monitor's list
       ObservableMonitoring.setObservableMonitor(true);
       // Access the update which accesses an instances properties (usually)

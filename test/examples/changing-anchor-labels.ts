@@ -5,8 +5,7 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
-  ScaleType
+  LayerInitializer
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -41,17 +40,8 @@ export class ChangingAnchorLabels extends BaseExample {
             Math.random(),
             Math.random() * 0.8 + 0.2
           ],
-          fontFamily: "Arial",
           fontSize: 20,
-          fontStyle: "normal",
-          fontWeight: "normal",
           id: `label-test-${i}`,
-          rasterization: {
-            scale: 1.0
-          },
-          scaling: [ScaleType.NEVER, ScaleType.ALWAYS, ScaleType.BOUND_MAX][
-            Math.floor(Math.random() * 3.0)
-          ],
           text: "Changing Anchor Point",
           position: [Math.random() * 1500, Math.random() * 1500]
         })

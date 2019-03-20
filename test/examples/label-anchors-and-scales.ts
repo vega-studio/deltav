@@ -4,8 +4,7 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
-  ScaleType
+  LayerInitializer
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -35,15 +34,8 @@ export class LabelAnchorsAndScales extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.NEVER,
         text: "Anchored MiddleLeft:",
         position: [20, count++ * 20]
       })
@@ -55,15 +47,8 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleLeft
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-1`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
       text: "Scale Type: NEVER",
       position: [20, count++ * 20]
     });
@@ -78,15 +63,8 @@ export class LabelAnchorsAndScales extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-2`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.ALWAYS,
         text: "Scale Type: ALWAYS",
         position: [20, count++ * 20]
       })
@@ -99,15 +77,8 @@ export class LabelAnchorsAndScales extends BaseExample {
           type: AnchorType.MiddleLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-3`,
-        rasterization: {
-          scale: 1.0
-        },
-        scaling: ScaleType.BOUND_MAX,
         text: "Scale Type: BOUND_MAX",
         position: [20, count++ * 20]
       })
@@ -122,20 +93,12 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-4`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
       text: "Anchored MiddleRight:",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -144,20 +107,12 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-5`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
       text: "Scale Type: NEVER",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -166,20 +121,12 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-6`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.ALWAYS,
       text: "Scale Type: ALWAYS",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     label = new LabelInstance({
@@ -188,20 +135,12 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-7`,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.BOUND_MAX,
       text: "Scale Type: BOUND_MAX",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     // Test MAX WIDTH
@@ -211,21 +150,13 @@ export class LabelAnchorsAndScales extends BaseExample {
         type: AnchorType.MiddleRight
       },
       color: [1.0, 1.0, 1.0, 1.0],
-      fontFamily: "Arial",
       fontSize: 20,
-      fontStyle: "normal",
-      fontWeight: "normal",
       id: `label-vertical-4`,
       maxWidth: 209,
-      rasterization: {
-        scale: 1.0
-      },
-      scaling: ScaleType.NEVER,
       text: "Max Width Should be working on this label!!!",
       position: [20, count++ * 20]
     });
 
-    label.position[0] += label.width;
     provider.add(label);
 
     return provider;

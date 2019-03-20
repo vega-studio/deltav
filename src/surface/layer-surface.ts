@@ -1,7 +1,4 @@
-import { BaseIOSorting } from "src/surface/base-io-sorting";
-import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { ImageInstance } from "../base-layers/images";
-import { LabelInstance } from "../base-layers/labels";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -10,6 +7,7 @@ import { Bounds } from "../primitives/bounds";
 import {
   BaseResourceManager,
   BaseResourceOptions,
+  FontResourceManager,
   ResourceManager
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
@@ -19,10 +17,12 @@ import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
+import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
+import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
@@ -47,6 +47,10 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers
   {
     type: ResourceType.ATLAS,
     manager: new AtlasResourceManager({})
+  },
+  {
+    type: ResourceType.FONT,
+    manager: new FontResourceManager()
   }
 ];
 
@@ -136,15 +140,26 @@ function isWebGLContext(val: any): val is WebGLRenderingContext {
   return Boolean(val.canvas);
 }
 
+/**
+ * A type to describe the constructor of a Layer class.
+ */
 export interface ILayerConstructable<T extends Instance> {
   new (props: ILayerProps<T>): Layer<any, any>;
 }
 
 /**
+ * This specifies a class type that can be used in creating a layer with createLayer
+ */
+export type ILayerConstructionClass<
+  T extends Instance,
+  U extends ILayerProps<T>
+> = ILayerConstructable<T> & { defaultProps: U };
+
+/**
  * This is a pair of a Class Type and the props to be applied to that class type.
  */
 export type LayerInitializer = [
-  ILayerConstructable<Instance> & { defaultProps: ILayerProps<Instance> },
+  ILayerConstructionClass<Instance, ILayerProps<Instance>>,
   ILayerProps<Instance>
 ];
 
@@ -464,7 +479,6 @@ export class LayerSurface {
     this.pickingTarget.dispose();
 
     // TODO: Instances should be implementing destroy for these clean ups.
-    LabelInstance.destroy();
     ImageInstance.destroy();
   }
 
@@ -989,12 +1003,24 @@ export class LayerSurface {
     layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
     layer.resource = this.resourceManager;
+    // Get the shader metrics the layer desires
+    const shaderIO = layer.initShader();
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
     if (!scene) return null;
-    // Get the shader metrics the layer desires
-    const shaderIO = layer.initShader();
+    // If no metrics are provided, this layer is merely a shell layer and will not
+    // receive any GPU handling objects.
+    if (!shaderIO) return layer;
+
+    if (!shaderIO.fs || !shaderIO.vs) {
+      console.warn(
+        "Layer needs to specify the fragment and vertex shaders:",
+        layer.id
+      );
+      return null;
+    }
+
     // Clean out nulls provided as a convenience to the layer
     shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
       Boolean
@@ -1012,9 +1038,9 @@ export class LayerSurface {
       this.ioExpanders,
       this.ioSorting
     );
-    // Check to see if the Shader Processing failed. If so return null as a failure flag.
-    if (!shaderMetrics) return null;
 
+    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    if (!shaderMetrics) return null;
     // Retrieve all of the attributes created as a result of layer input and module processing.
     const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
 

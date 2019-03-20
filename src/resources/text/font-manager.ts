@@ -163,15 +163,20 @@ export class FontManager {
   /**
    * Converts a character filter to a deduped list of single characters
    */
-  private characterFilterToCharacters(filter: string): string[] {
+  private characterFilterToCharacters(filter: string): string {
     const characters = new Set<string>();
+    let all = "";
 
     for (let i = 0, iMax = filter.length; i < iMax; ++i) {
       const char = filter[i];
-      characters.add(char);
+
+      if (!characters.has(char)) {
+        characters.add(char);
+        all += char;
+      }
     }
 
-    return Array.from(characters.values());
+    return all;
   }
 
   /**
@@ -180,7 +185,7 @@ export class FontManager {
    */
   async createFontMap(resourceOptions: IFontResourceOptions) {
     // This will contain all of the characters that the map initially starts with
-    const characters: string[] = this.characterFilterToCharacters(
+    const characters: string = this.characterFilterToCharacters(
       resourceOptions.characterFilter || ""
     );
     // This is the generated font map specified by the resource options
@@ -202,18 +207,12 @@ export class FontManager {
 
     // Create our new font map resource
     fontMap = new FontMap({
-      key: resourceOptions.key,
-      glyphType,
-      isDynamic: resourceOptions.dynamic,
-      metrics: resourceOptions.fontSource
+      ...resourceOptions,
+      glyphType
     });
 
     // Apply initial characters to the fontMap
-    await this.updateFontMapCharacters(
-      fontMap,
-      (characters || []).join(""),
-      ""
-    );
+    await this.updateFontMapCharacters(characters, fontMap);
 
     // Keep the generated font map as our resource
     this.fontMaps.set(resourceOptions.key, fontMap);
@@ -226,32 +225,72 @@ export class FontManager {
    * requests should be populated with the appropriate sub texture information.
    */
   async updateFontMap(resourceKey: string, requests: IFontResourceRequest[]) {
-    await this.updateFontMapCharacters(
-      this.fontMaps.get(resourceKey),
-      requests.map(req => req.character).join(""),
-      requests.map(req => req.leftCharacter + req.character).join(" ")
+    const fontMap = this.fontMaps.get(resourceKey);
+    if (!fontMap) return;
+
+    let allPairs = "";
+    const allCharacters = new Set<string>();
+
+    // Aggregate all kerning and character requests and needs
+    requests.forEach(req => {
+      if (req.character) allCharacters.add(req.character);
+      if (req.kerningPairs) allPairs += req.kerningPairs;
+    });
+
+    // Kerning pairs are also candidates for being rendered to the font map
+    for (let i = 0, iMax = allPairs.length; i < iMax; ++i) {
+      allCharacters.add(allPairs[i]);
+    }
+
+    // Convert the characters to be rendered to a sinple string
+    let uniqueCharacters: string = "";
+    allCharacters.forEach(char => (uniqueCharacters += char));
+
+    // Perform the updates to the font map
+    await this.updateFontMapCharacters(uniqueCharacters, fontMap);
+    // Perform the updates to the kerning pairs
+    await this.updateKerningPairs(allPairs, fontMap);
+
+    // After all this is done, all the requests can be populated with the font map
+    // signaling the request now has the resources to accomplish what it needs
+    requests.forEach(req => (req.fontMap = fontMap));
+  }
+
+  /**
+   * This updates the calculated kerning pairs for a given font map.
+   */
+  private async updateKerningPairs(pairs: string, fontMap?: FontMap) {
+    if (!fontMap) return;
+
+    // Calculate the new kerning pair information
+    const kerning = await this.fontRenderer.estimateKerning(
+      pairs,
+      fontMap.fontString,
+      fontMap.fontSource.size,
+      fontMap.kerning
     );
+
+    // Add the pairs to the font map
+    fontMap.addKerning(kerning.pairs);
   }
 
   /**
    * This updates a specified font map with a list of characters expected within it.
    */
-  private async updateFontMapCharacters(
-    fontMap: FontMap | undefined,
-    characters: string,
-    pairs: string
-  ) {
+  private async updateFontMapCharacters(characters: string, fontMap?: FontMap) {
     if (!fontMap) return;
     const texture = fontMap.texture;
 
     // We must determine which characters are not supported by the font map first
     const toAdd = fontMap.findMissingCharacters(characters);
+    // Nothing to add, then nothig to do!
+    if (toAdd.length <= 0) return;
 
     // Get all the glyph data we need to update to the Font Map's texture
     const glyphs = this.fontRenderer.makeBitmapGlyphs(
       toAdd,
       fontMap.fontString,
-      fontMap.metrics.size
+      fontMap.fontSource.size
     );
 
     // Apply each newly rendered glyph into the font map
@@ -283,7 +322,13 @@ export class FontManager {
         }
 
         // Now use the packing information to update our texture
-        PackNode.applyToSubTexture(fontMap.packing, packing, subTexture);
+        PackNode.applyToSubTexture(
+          fontMap.packing,
+          packing,
+          subTexture,
+          undefined,
+          true
+        );
 
         // Apply the image to the texture
         texture.update(metrics.glyph, {
@@ -307,16 +352,6 @@ export class FontManager {
         );
       }
     }
-
-    // Calculate the new kerning pair information
-    const kerning = this.fontRenderer.estimateKerning(
-      pairs,
-      fontMap.fontString,
-      fontMap.metrics.size,
-      fontMap.kerning
-    );
-    // Add the pairs to the font map
-    fontMap.addKerning(kerning.pairs);
   }
 
   /**

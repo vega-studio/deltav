@@ -308,6 +308,20 @@ export interface IResourceInstanceAttribute<T extends Instance>
     shaderInjection?: ShaderInjectionTarget;
   };
 }
+
+/**
+ * This represents the minimum information to target a specific resource.
+ */
+export interface IResourceContext {
+  /** Indicates a resource is specified */
+  resource: {
+    /** The resource type. This is the type a manager is registered with when setting up a surface. */
+    type: number;
+    /** This is the identifier of the specific resource within the manager */
+    key: string;
+  };
+}
+
 /**
  * Type guard for resource instance attributes
  */
@@ -435,12 +449,25 @@ export interface IProjection {
   worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 
+/**
+ * White space character test
+ */
+const reg = /\s/;
+export const isWhiteSpace = reg.test.bind(reg);
+
+/**
+ * Options a layer can provide for a material
+ */
 export type ILayerMaterialOptions = Partial<
-  Omit<
-    Omit<Omit<MaterialOptions, "uniforms">, "vertexShader">,
-    "fragmentShader"
-  >
+  Omit<MaterialOptions, "uniforms" | "vertexShader" | "fragmentShader">
 >;
+
+/**
+ * A wrapper to make declaring layer material options easier and clearer
+ */
+export function createMaterialOptions(options: ILayerMaterialOptions) {
+  return options;
+}
 
 /** This is the method signature for determining whether or not a point hits an instance */
 export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;

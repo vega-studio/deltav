@@ -239,12 +239,13 @@ export class GLProxy {
 
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
         console.error("FRAGMENT SHADER COMPILER ERROR");
-        console.warn(material.fragmentShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
-        this.printError();
+        console.warn(this.lineFormatShader(material.fragmentShader));
+        console.warn("LOGS:");
         console.warn(this.gl.getShaderInfoLog(fs));
+        this.printError();
         this.gl.deleteShader(fs);
 
         return;
@@ -271,12 +272,13 @@ export class GLProxy {
 
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
         console.error("VERTEX SHADER COMPILER ERROR");
-        console.warn(material.vertexShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
-        this.printError();
+        console.warn(this.lineFormatShader(material.vertexShader));
+        console.warn("LOGS:");
         console.warn(this.gl.getShaderInfoLog(vs));
+        this.printError();
         this.gl.deleteShader(vs);
 
         return;
@@ -997,37 +999,55 @@ export class GLProxy {
 
     switch (glError) {
       case this.gl.NO_ERROR:
-        console.warn("No Error");
+        console.warn("GL Error: No Error");
         break;
 
       case this.gl.INVALID_ENUM:
-        console.warn("INVALID ENUM");
+        console.warn("GL Error: INVALID ENUM");
         break;
 
       case this.gl.INVALID_VALUE:
-        console.warn("INVALID_VALUE");
+        console.warn("GL Error: INVALID_VALUE");
         break;
 
       case this.gl.INVALID_OPERATION:
-        console.warn("INVALID OPERATION");
+        console.warn("GL Error: INVALID OPERATION");
         break;
 
       case this.gl.INVALID_FRAMEBUFFER_OPERATION:
-        console.warn("INVALID FRAMEBUFFER OPERATION");
+        console.warn("GL Error: INVALID FRAMEBUFFER OPERATION");
         break;
 
       case this.gl.OUT_OF_MEMORY:
-        console.warn("OUT OF MEMORY");
+        console.warn("GL Error: OUT OF MEMORY");
         break;
 
       case this.gl.CONTEXT_LOST_WEBGL:
-        console.warn("CONTEXT LOST WEBGL");
+        console.warn("GL Error: CONTEXT LOST WEBGL");
         break;
 
       default:
-        console.warn("GL Context output an unrecognized error value:", glError);
+        console.warn(
+          "GL Error: GL Context output an unrecognized error value:",
+          glError
+        );
         break;
     }
+  }
+
+  /**
+   * Prints a shader broken down by lines
+   */
+  lineFormatShader(shader: string) {
+    const lines = shader.split("\n");
+    const lineChars = String(lines.length).length + 1;
+
+    return `\n${lines
+      .map(
+        (l, i) =>
+          `${Array(lineChars - String(i + 1).length).join(" ")}${i + 1}: ${l}`
+      )
+      .join("\n")}`;
   }
 
   /**

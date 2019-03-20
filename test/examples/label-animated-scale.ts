@@ -4,8 +4,7 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
-  ScaleType
+  LayerInitializer
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -36,16 +35,9 @@ export class LabelAnimatedScale extends BaseExample {
           type: AnchorType.TopLeft
         },
         color: [1.0, 1.0, 1.0, 1.0],
-        fontFamily: "Arial",
         fontSize: 20,
-        fontStyle: "normal",
-        fontWeight: "normal",
         id: `label-vertical-0`,
-        rasterization: {
-          scale: 1.0
-        },
         scale: 1.0,
-        scaling: ScaleType.BOUND_MAX,
         text: "Scaling text...:",
         position: [20, 100]
       })

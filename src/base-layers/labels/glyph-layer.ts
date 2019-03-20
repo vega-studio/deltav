@@ -1,11 +1,14 @@
 import { InstanceProvider } from "src/instance-provider";
-import { CommonMaterialOptions } from "src/util";
+import { fontRequest, FontResourceRequestFetch } from "src/resources";
+import { CommonMaterialOptions, IAutoEasingMethod, Vec, Vec2 } from "src/util";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
+  createMaterialOptions,
+  IInstanceAttribute,
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   ResourceType,
-  ShaderInjectionTarget,
   VertexAttributeSize
 } from "../../types";
 import { GlyphInstance } from "./glyph-instance";
@@ -15,6 +18,13 @@ import { GlyphInstance } from "./glyph-instance";
  */
 export interface IGlyphLayerOptions<T extends GlyphInstance>
   extends ILayerProps<T> {
+  /** Specifies which attributes to animate */
+  animate?: {
+    anchor?: IAutoEasingMethod<Vec>;
+    color?: IAutoEasingMethod<Vec>;
+    offset?: IAutoEasingMethod<Vec>;
+    origin?: IAutoEasingMethod<Vec>;
+  };
   /** This is the font resource this pulls from in order to render the glyphs */
   resourceKey?: string;
 }
@@ -35,78 +45,153 @@ export class GlyphLayer<
   };
 
   /**
+   * Easy access names of each attribute to make easing controls easier
+   */
+  static attributeNames = {
+    color: "color",
+    depth: "depth",
+    anchor: "anchor",
+    origin: "origin",
+    offset: "offset"
+  };
+
+  /**
    * Create the Shader IO needed to tie our instances and the GPU together.
    */
   initShader(): IShaderInitialization<T> {
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      1: 1,
-      2: -1,
-      3: 1,
-      4: -1,
-      5: -1
+    const animate = this.props.animate || {};
+    const {
+      anchor: animateAnchor,
+      color: animateColor,
+      offset: animateOffset,
+      origin: animateOrigin
+    } = animate;
+
+    const vertexInfo: { [key: number]: Vec2 } = {
+      0: [0, 0],
+      1: [0, 0],
+      2: [1, 0],
+      3: [0, 1],
+      4: [1, 1],
+      5: [1, 1]
     };
 
-    const vertexToSide: { [key: number]: number } = {
-      0: 0,
-      1: 0,
-      2: 0,
-      3: 1,
-      4: 1,
-      5: 1
+    const glyphTextureAttr: IInstanceAttribute<T> = {
+      name: "texture",
+      resource: {
+        key: this.props.resourceKey || "",
+        name: "fontMap",
+        type: ResourceType.FONT
+      },
+      update: o => {
+        const char = o.character;
+
+        if (!o.request || o.character !== o.request.character) {
+          o.request = fontRequest({
+            character: char
+          });
+        }
+
+        o.request.fetch = FontResourceRequestFetch.TEXCOORDS;
+        return this.resource.request(this, o, o.request);
+      }
     };
+
+    /**
+     * We must make this attribute a child attribute as it is based on the exact same property
+     * as another attribute from an instance. This ensures that the change on the instance property
+     * triggers this attribute as well.
+     */
+    const glyphSizeAttr: IInstanceAttribute<T> = {
+      name: "glyphSize",
+      parentAttribute: glyphTextureAttr,
+      resource: {
+        key: this.props.resourceKey || "",
+        name: "fontMap",
+        type: ResourceType.FONT
+      },
+      size: InstanceAttributeSize.TWO,
+      update: o => {
+        const char = o.character;
+
+        if (!o.request || o.character !== o.request.character) {
+          o.request = fontRequest({
+            character: char
+          });
+        }
+
+        o.request.fetch = FontResourceRequestFetch.IMAGE_SIZE;
+        return this.resource.request(this, o, o.request);
+      }
+    };
+
+    glyphTextureAttr.childAttributes = [glyphSizeAttr];
 
     return {
-      fs: "",
+      fs: require("./glyph-layer.fs"),
       instanceAttributes: [
         {
-          name: "origin",
-          size: InstanceAttributeSize.TWO,
-          update: o => o.origin
+          easing: animateColor,
+          name: GlyphLayer.attributeNames.color,
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.color
         },
         {
-          name: "offset",
+          name: GlyphLayer.attributeNames.depth,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.depth]
+        },
+        {
+          name: "fontScale",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.fontScale]
+        },
+        {
+          easing: animateAnchor,
+          name: GlyphLayer.attributeNames.anchor,
+          size: InstanceAttributeSize.TWO,
+          update: o => o.anchor
+        },
+        {
+          easing: animateOrigin,
+          name: GlyphLayer.attributeNames.origin,
+          size: InstanceAttributeSize.TWO,
+          update: o => o.position
+        },
+        {
+          easing: animateOffset,
+          name: GlyphLayer.attributeNames.offset,
           size: InstanceAttributeSize.TWO,
           update: o => o.offset
         },
-        {
-          name: "resource",
-          resource: {
-            key: this.props.resourceKey || "",
-            name: "fontMap",
-            shaderInjection: ShaderInjectionTarget.ALL,
-            type: ResourceType.FONT
-          },
-          size: InstanceAttributeSize.FOUR,
-          update: o => this.resource.request(this, o, o.resourceRequest)
-        }
+        glyphSizeAttr,
+        glyphTextureAttr
       ],
       uniforms: [],
       vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
         {
-          name: "position",
-          size: VertexAttributeSize.THREE,
-          update: (vertex: number) => [
-            // Normal
-            vertexToNormal[vertex],
-            // The side of the quad
-            vertexToSide[vertex],
-            0
-          ]
+          name: "quadVertex",
+          size: VertexAttributeSize.TWO,
+          update: (vertex: number) =>
+            // Quad vertex side information
+            vertexInfo[vertex]
         }
       ],
       vertexCount: 6,
-      vs: ""
+      vs: require("./glyph-layer.vs")
     };
   }
 
   /**
    * Set up material options for the layer
    */
-  getMaterialOptions() {
-    return CommonMaterialOptions.transparentImageBlending;
+  getMaterialOptions(): ILayerMaterialOptions {
+    return Object.assign(
+      {},
+      CommonMaterialOptions.transparentImageBlending,
+      createMaterialOptions({
+        depthTest: false
+      })
+    );
   }
 }

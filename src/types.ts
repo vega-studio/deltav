@@ -450,10 +450,25 @@ export interface IProjection {
 }
 
 /**
+ * The empty, do-nothing, method we devs find ourselves using too much.
+ */
+export function NOOP() {
+  /** No-op */
+}
+
+/**
  * White space character test
  */
-const reg = /\s/;
-export const isWhiteSpace = reg.test.bind(reg);
+export const whiteSpaceRegEx = /\s/g;
+export const whiteSpaceCharRegEx = /\s/;
+export const isWhiteSpace = whiteSpaceCharRegEx.test.bind(whiteSpaceCharRegEx);
+
+/**
+ * Newline character test
+ */
+export const newLineRegEx = /(\r\n|\n|\r)/g;
+export const newLineCharRegEx = /(\r\n|\n|\r)/;
+export const isNewline = newLineCharRegEx.test.bind(newLineCharRegEx);
 
 /**
  * Options a layer can provide for a material

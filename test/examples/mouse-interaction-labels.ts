@@ -108,7 +108,7 @@ export class MouseInteractionLabels extends BaseExample {
       fontSize: 20,
       id: `label-vertical-0`,
       text: "TL",
-      position: [20, 20]
+      origin: [20, 20]
     });
 
     // Left Middle left
@@ -124,7 +124,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "TM",
-        position: [100, 20]
+        origin: [100, 20]
       })
     );
 
@@ -138,7 +138,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "TR",
-        position: [180, 20]
+        origin: [180, 20]
       })
     );
 
@@ -152,7 +152,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "ML",
-        position: [20, 100]
+        origin: [20, 100]
       })
     );
 
@@ -166,7 +166,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "M",
-        position: [100, 100]
+        origin: [100, 100]
       })
     );
 
@@ -180,7 +180,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "MR",
-        position: [180, 100]
+        origin: [180, 100]
       })
     );
 
@@ -194,7 +194,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "BL",
-        position: [20, 180]
+        origin: [20, 180]
       })
     );
 
@@ -208,7 +208,7 @@ export class MouseInteractionLabels extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "BM",
-        position: [100, 180]
+        origin: [100, 180]
       })
     );
 
@@ -221,7 +221,7 @@ export class MouseInteractionLabels extends BaseExample {
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         text: "BR",
-        position: [180, 180]
+        origin: [180, 180]
       })
     );
 

@@ -2,8 +2,8 @@ import { GLSettings, WebGLStat } from "src/gl";
 import { Texture, TextureOptions } from "src/gl/texture";
 import { KerningPairs } from "src/resources/text/font-renderer";
 import { PackNode } from "src/resources/texture/pack-node";
-import { ResourceType } from "src/types";
-import { Vec2 } from "src/util/vector";
+import { isWhiteSpace, ResourceType, Size } from "src/types";
+import { add2, scale2, Vec2 } from "src/util/vector";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { SubTexture } from "../texture/sub-texture";
 import {
@@ -32,6 +32,26 @@ export interface IFontMapOptions extends IFontResourceOptions {
    */
   glyphType: FontMapGlyphType;
 }
+
+/**
+ * This describes a string's individual letter offsets when properly kerned relative to each other.
+ */
+export type KernedLayout = {
+  /** The scaling of the font relative to the desired font size vs the rendered size of the font on the font map */
+  fontScale: number;
+  /** This is the glyphs given positions. This is essentially the text minus the whitespace. */
+  glyphs: string;
+  /**
+   * This provides the kerning of each letter. The order of the positions provided is in
+   * the order the letters appear in the text measured. This is all relative to placing the
+   * top left of the rendering at [0, 0]
+   */
+  positions: Vec2[];
+  /** The width and height of the entire rendered string */
+  size: Size;
+  /** The text used in calculating this layout */
+  text: string;
+};
 
 /**
  * This represents the actual font map resource. It contains the raw texture object for manipulating.
@@ -67,6 +87,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   manager: FontManager;
   /** Tracks how the glyphs are packed into the map */
   packing: PackNode<SubTexture>;
+  /** This is the calculated width of a space for the font map */
+  spaceWidth: number = 0;
   /** The base texture where the font map is stored */
   texture: Texture;
   /**
@@ -108,9 +130,10 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   addKerning(kerning: KerningPairs) {
     for (const left in kerning) {
       const rights = kerning[left];
+      const rightKerning = this.kerning[left] || {};
+      this.kerning[left] = rightKerning;
 
       for (const right in rights) {
-        const rightKerning = (this.kerning[left] = this.kerning[left] || {});
         rightKerning[right] = rights[right];
       }
     }
@@ -203,6 +226,204 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   }
 
   /**
+   * This looks at the glyphs directly from a layout and provides the width of the glyphs.
+   *
+   * This differs from getStringWidth as the indices reference GLYPHS (not white space) while
+   * the parameters on the other reference the text.
+   *
+   * This method is a little less intuitive but can perform faster.
+   */
+  getGlyphWidth(stringLayout: KernedLayout, start: number, end: number) {
+    const startOffset = stringLayout.positions[start];
+    const endOffset = stringLayout.positions[end];
+    // The indices must be valid to work
+    if (!start || !end) return 0;
+    // Get the width of the final glyph
+    const image = this.glyphMap[stringLayout.glyphs[end]];
+    if (!image) return 0;
+
+    // Now we can output the rendered width
+    return endOffset[0] + image.pixelWidth - startOffset[0];
+  }
+
+  /**
+   * Get the width of a set of characters within a string layout.
+   *
+   * To use this, first use the getStringLayout() method to get the KernedLayout then insert
+   * the the range of characters the width should be calculated for.
+   *
+   * [start, end)
+   */
+  getStringWidth(
+    stringLayout: KernedLayout,
+    start: number,
+    end: number
+  ): number;
+  /**
+   * Get the width of a substring from a string layout.
+   *
+   * To use this, first use the getStringLayout() method to get the KernedLayout then insert
+   * the substring of text desired for calculating the width.
+   */
+  getStringWidth(stringLayout: KernedLayout, substr: string): number;
+  /**
+   * Calculates the width of a chunk of characters within a calculated KernedLayout.
+   * To use this, first use the getStringLayout() method to get the KernedLayout then insert
+   * the substring of text desired for calculating the width.
+   */
+  getStringWidth(
+    stringLayout: KernedLayout,
+    param1: string | number,
+    param2?: number
+  ): number {
+    const text = stringLayout.text;
+    let firstChar = 0;
+    let lastChar = text.length;
+
+    // String param means we look for a substring
+    if (typeof param1 === "string") {
+      const index = text.indexOf(param1);
+      // No found sub string means the examined text does not exist
+      if (index < 0) return 0;
+      // Now we have the letter within the text we begin with.
+      firstChar = index;
+      // Last character is the first + length of sub string
+      lastChar = firstChar + param1.length;
+    } else {
+      firstChar = param1;
+    }
+
+    // Set the explicit last character to use
+    if (param2 !== undefined) {
+      lastChar = param2;
+    }
+
+    // We now trim out white space from our indices to get the actual glyph indices that match our search
+    let i = 0;
+    const endOfFirst = Math.min(text.length, firstChar);
+    const endOfLast = Math.min(text.length, lastChar);
+
+    for (; i < endOfFirst; ++i) {
+      if (isWhiteSpace(text[i])) {
+        firstChar--;
+        lastChar--;
+      }
+    }
+
+    for (; i < endOfLast; ++i) {
+      if (isWhiteSpace(text[i])) lastChar--;
+    }
+
+    // We now have the indices of the first and last glyph's position information in our text.
+    // We can use these two to determine the width of the text.
+    const lastGlyph = this.glyphMap[stringLayout.text[lastChar] || ""];
+    if (!lastGlyph) return 0;
+
+    return (
+      (stringLayout.positions[lastChar] || [0, 0])[0] -
+      (stringLayout.positions[firstChar] || [0, 0])[0] +
+      lastGlyph.pixelWidth
+    );
+  }
+
+  /**
+   * This processes a string and lays it out by the kerning rules available to this font map.
+   *
+   * NOTE: This ONLY processes a SINGLE LINE!! ALL whitespace characters will be considered a single
+   * space.
+   */
+  getStringLayout(
+    text: string,
+    fontSize: number,
+    pixelRatio: number
+  ): KernedLayout {
+    // The output positions for each letter in the text
+    const positions: Vec2[] = [];
+    // The output of each character found that is provided a position (the string without the whitespace)
+    let glyphs: string = "";
+    // Calculate the scaling of the font which would be the font map's rendered glyph size
+    // as a ratio to the label's desired font size.
+    const fontScale = fontSize / this.fontSource.size * pixelRatio;
+
+    // Start with the initial glyph dimensions as the min and max y the label will have
+    let minY = Number.MAX_SAFE_INTEGER;
+    let maxY = 0;
+    let currentWidth = 0;
+    // The current offset for the current letter to be rendered properly
+    let offset: Vec2 = [0, 0];
+    // The amount each white space moves the text forward
+    const whiteSpacing = this.spaceWidth;
+    // Number of found whitespace characters since last character
+    let whiteSpaceCount = 0;
+    // The current character found to the left of the current one being processed
+    let leftChar = "";
+    // Holder for the found kerning of the character pair
+    let kern: Vec2;
+    // The image of the glyph that was rendered
+    let image: SubTexture;
+
+    // Loop through the text and calculate the offsets of each non-whitespace character
+    for (let i = 0, iMax = text.length; i < iMax; ++i) {
+      const char = text[i];
+
+      // White space merely moves the offset forward by the amount of a space
+      if (isWhiteSpace(char)) {
+        whiteSpaceCount++;
+        continue;
+      }
+
+      kern = [0, 0];
+
+      if (leftChar) {
+        kern = this.kerning[leftChar][char] || [0, 0];
+      }
+
+      offset = add2(add2(offset, scale2(kern, fontScale)), [
+        whiteSpaceCount * whiteSpacing * fontScale,
+        0
+      ]);
+
+      // Copy the offset to our output positions for the character
+      positions.push([offset[0], offset[1]]);
+      glyphs += char;
+
+      // Get the glyph rendering from the font map
+      image = this.glyphMap[char];
+      // Use the offset and the rendering height to determine the top and bottom of the glyph
+      minY = Math.min(offset[1], minY);
+      maxY = Math.max(offset[1] + image.pixelHeight, maxY);
+      // Make this processed glyph the next glyph that is 'to the left' for the next glyph
+      leftChar = char;
+      // Calculate the width of the label as we lay out
+      currentWidth = offset[0] + image.pixelWidth * fontScale;
+      // Reset the whitespace count so we can see whitespaces to next character
+      whiteSpaceCount = 0;
+    }
+
+    // Now we have positioned all of our glyphs with relative kerning.
+    // We can now get a width and height of the total label
+    const height = maxY - minY;
+    // Update the instance with the calculated width of the label
+    const size: Size = [currentWidth, height];
+
+    // Move all of the glyphs by -minY. This will effectively frame the label where the
+    // top left is 0,0 relative to all of the contents of the label.
+    // We also apply the calculated anchor at this time for the label
+    for (let i = 0, iMax = positions.length; i < iMax; ++i) {
+      offset = positions[i];
+      offset[1] -= minY;
+    }
+
+    return {
+      fontScale,
+      glyphs,
+      positions,
+      size,
+      text
+    };
+  }
+
+  /**
    * This generates the necessary texture settings for the font map based on it's glyph type.
    */
   private makeGlyphTypeTextureSettings(type: FontMapGlyphType) {
@@ -256,7 +477,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   supportsKerning(text: string) {
     // Loop through the characters in the text and see if all pairs of glyphs
     // have their kerning determined and calculated.
-    for (let i = 0, iMax = text.length; i < iMax; ++i) {
+    for (let i = 1, iMax = text.length; i < iMax; ++i) {
       const char = text[i];
       const leftChar = text[i - 1];
 

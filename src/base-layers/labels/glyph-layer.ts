@@ -1,5 +1,10 @@
+import { GLSettings } from "src/gl";
 import { InstanceProvider } from "src/instance-provider";
-import { fontRequest, FontResourceRequestFetch } from "src/resources";
+import {
+  fontRequest,
+  FontResourceRequestFetch,
+  IFontResourceRequest
+} from "src/resources";
 import { CommonMaterialOptions, IAutoEasingMethod, Vec, Vec2 } from "src/util";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
@@ -56,6 +61,12 @@ export class GlyphLayer<
   };
 
   /**
+   * These are all of the requests the glyphs have generated for each character. This let's us
+   * recycle requests for same glyphs.
+   */
+  glyphRequests: { [key: string]: IFontResourceRequest } = {};
+
+  /**
    * Create the Shader IO needed to tie our instances and the GPU together.
    */
   initShader(): IShaderInitialization<T> {
@@ -87,9 +98,15 @@ export class GlyphLayer<
         const char = o.character;
 
         if (!o.request || o.character !== o.request.character) {
-          o.request = fontRequest({
-            character: char
-          });
+          if (this.glyphRequests[o.character]) {
+            o.request = this.glyphRequests[o.character];
+          } else {
+            o.request = fontRequest({
+              character: char
+            });
+
+            this.glyphRequests[o.character] = o.request;
+          }
         }
 
         o.request.fetch = FontResourceRequestFetch.TEXCOORDS;
@@ -115,9 +132,15 @@ export class GlyphLayer<
         const char = o.character;
 
         if (!o.request || o.character !== o.request.character) {
-          o.request = fontRequest({
-            character: char
-          });
+          if (this.glyphRequests[o.character]) {
+            o.request = this.glyphRequests[o.character];
+          } else {
+            o.request = fontRequest({
+              character: char
+            });
+
+            this.glyphRequests[o.character] = o.request;
+          }
         }
 
         o.request.fetch = FontResourceRequestFetch.IMAGE_SIZE;
@@ -156,7 +179,7 @@ export class GlyphLayer<
           easing: animateOrigin,
           name: GlyphLayer.attributeNames.origin,
           size: InstanceAttributeSize.TWO,
-          update: o => o.position
+          update: o => o.origin
         },
         {
           easing: animateOffset,

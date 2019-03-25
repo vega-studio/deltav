@@ -267,11 +267,14 @@ export class FontManager {
       pairs,
       fontMap.fontString,
       fontMap.fontSource.size,
-      fontMap.kerning
+      fontMap.kerning,
+      !fontMap.spaceWidth
     );
 
     // Add the pairs to the font map
     fontMap.addKerning(kerning.pairs);
+    // Set the calculated width of a space
+    fontMap.spaceWidth = fontMap.spaceWidth || kerning.spaceWidth;
   }
 
   /**

@@ -39,7 +39,7 @@ export class LabelAnimatedScale extends BaseExample {
         id: `label-vertical-0`,
         scale: 1.0,
         text: "Scaling text...:",
-        position: [20, 100]
+        origin: [20, 100]
       })
     );
 

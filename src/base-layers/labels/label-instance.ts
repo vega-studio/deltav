@@ -1,5 +1,6 @@
 import { GlyphInstance } from "src/base-layers/labels/glyph-instance";
-import { Size } from "src/types";
+import { TextAreaInstance } from "src/base-layers/labels/text-area-instance";
+import { isWhiteSpace, Size } from "src/types";
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Vec2 } from "../../util";
@@ -26,7 +27,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
   /** The text rendered by this label*/
   text: string;
   /** The x coordinate where the label will be anchored to in world space */
-  position: Vec2;
+  origin: Vec2;
 
   /** Event when the label is completely ready to render all of it's glyphs */
   onReady?(instance: LabelInstance): void;
@@ -50,10 +51,15 @@ export class LabelInstance extends Instance {
   @observable fontSize: number = 12;
   /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
   @observable maxScale: number = 1;
-  /** This is the maximum width the label can take up. If this is exceeded the label gets truncated */
+  /**
+   * This is the maximum width the label can take up. If this is exceeded the label gets truncated.
+   * A max width of 0 or less is unbounded and will not truncate the text. When a max width is specified,
+   * there will always be a minimum requirement to show ellipses which inevitably causes a min width to
+   * arise and is dependent on the font in use.
+   */
   @observable maxWidth: number = 0;
   /** The x coordinate where the label will be anchored to in world space */
-  @observable position: Vec2 = [0, 0];
+  @observable origin: Vec2 = [0, 0];
   /** Scales the label uniformly */
   @observable scale: number = 1.0;
   /** The rendered text for the label. */
@@ -61,6 +67,8 @@ export class LabelInstance extends Instance {
 
   /** This executes when the label is finished waiting for it's glyphs to be ready to render */
   onReady?: (label: LabelInstance) => void;
+  /** The text area this label is associated with (may NOT be associated at all) */
+  parentTextArea?: TextAreaInstance;
   /**
    * After the label has been rendered, this will be populated with all of the glyphs that
    * have been created for the label. Using this you can manipulate each character very easily.
@@ -76,13 +84,14 @@ export class LabelInstance extends Instance {
 
   /**
    * If a maxWidth is specified, there is a chance the text will be truncated.
-   * This provides the calculated truncated text.
+   * This provides the calculated truncated text. If not populated, then no truncation
+   * has happened.
    */
-  get truncatedText() {
-    return "";
-  }
-
-  // These are properties that can be altered, but have side effects from being changed
+  truncatedText: string = "";
+  /**
+   * Flag used by the label system to track if a label needs it's truncation checked.
+   */
+  willCheckTruncation: boolean = false;
 
   /** This is the anchor location relative to the label's render space */
   @observable
@@ -102,7 +111,7 @@ export class LabelInstance extends Instance {
     this.scale = options.scale || this.scale;
     this.maxWidth = options.maxWidth || 0;
     this.text = options.text || this.text;
-    this.position = options.position;
+    this.origin = options.origin;
     this.onReady = options.onReady;
 
     // Make sure the anchor is set to the appropriate location
@@ -126,6 +135,34 @@ export class LabelInstance extends Instance {
 
     // Apply the anchor
     this._anchor = newAnchor;
+  }
+
+  /**
+   * Looks for the subtext provided, then provides the glyphs for that subtext if any.
+   */
+  subTextGlyphs(text: string): GlyphInstance[] {
+    const glyphs: GlyphInstance[] = [];
+    const index = this.text.indexOf(text);
+    // The substring must exist within the text.
+    if (index < 0) return glyphs;
+    // Current glyph index we are at as white space does not receive a glyph.
+    let glyphIndex = 0;
+
+    for (
+      let i = 0, iMax = Math.min(this.text.length, index + text.length);
+      i < iMax;
+      ++i
+    ) {
+      if (!isWhiteSpace(this.text[i])) {
+        glyphIndex++;
+
+        if (i >= index) {
+          glyphs.push(this.glyphs[glyphIndex]);
+        }
+      }
+    }
+
+    return glyphs;
   }
 
   /**

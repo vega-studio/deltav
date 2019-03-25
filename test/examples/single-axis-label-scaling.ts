@@ -1,4 +1,5 @@
 import {
+  add2,
   AnchorType,
   AutoEasingMethod,
   ChartCamera,
@@ -67,24 +68,11 @@ export class SingleAxisLabelScaling extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "Anchored Middle Left:",
-        position: [20, count++ * 20],
-
-        onReady: async (label: LabelInstance) => {
-          const size = await this.surface.getViewSize(this.view);
-          if (!size) return;
-
-          label.glyphs.forEach(glyph => {
-            glyph.offset = [
-              Math.random() * size.width,
-              Math.random() * size.height
-            ];
-            glyph.color = [1, 0, 0, 1];
-          });
-        }
+        origin: [20, count++ * 20]
       })
     );
 
-    let label = new LabelInstance({
+    const label = new LabelInstance({
       anchor: {
         padding: 0,
         type: AnchorType.MiddleLeft
@@ -93,7 +81,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       fontSize: 20,
       id: `label-vertical-1`,
       text: "ScaleType: NEVER",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     // Left Middle left
@@ -109,7 +97,7 @@ export class SingleAxisLabelScaling extends BaseExample {
         fontSize: 20,
         id: `label-vertical-2`,
         text: "ScaleType: ALWAYS",
-        position: [20, count++ * 20]
+        origin: [20, count++ * 20]
       })
     );
 
@@ -123,68 +111,84 @@ export class SingleAxisLabelScaling extends BaseExample {
         fontSize: 20,
         id: `label-vertical-3`,
         text: "ScaleType: BOUND_MAX",
-        position: [20, count++ * 20]
+        origin: [20, count++ * 20]
       })
     );
 
     // MIDDLE RIGHT ANCHORS
     count++;
 
-    label = new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleRight
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontSize: 20,
-      id: `label-vertical-4`,
-      text: "Anchored Middle Right:",
-      position: [20, count++ * 20]
-    });
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleRight
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontSize: 20,
+        id: `label-vertical-4`,
+        text: "Anchored Middle Right:",
+        origin: [20, count++ * 20],
 
-    provider.add(label);
+        onReady: label => {
+          label.origin = add2(label.origin, [label.size[0], 0]);
+        }
+      })
+    );
 
-    label = new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleRight
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontSize: 20,
-      id: `label-vertical-5`,
-      text: "ScaleType: NEVER",
-      position: [20, count++ * 20]
-    });
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleRight
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontSize: 20,
+        id: `label-vertical-5`,
+        text: "ScaleType: NEVER",
+        origin: [20, count++ * 20],
 
-    provider.add(label);
+        onReady: label => {
+          label.origin = add2(label.origin, [label.size[0], 0]);
+        }
+      })
+    );
 
-    label = new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleRight
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontSize: 20,
-      id: `label-vertical-6`,
-      text: "ScaleType: ALWAYS",
-      position: [20, count++ * 20]
-    });
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleRight
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontSize: 20,
+        id: `label-vertical-6`,
+        text: "ScaleType: ALWAYS",
+        origin: [20, count++ * 20],
 
-    provider.add(label);
+        onReady: label => {
+          label.origin = add2(label.origin, [label.size[0], 0]);
+        }
+      })
+    );
 
-    label = new LabelInstance({
-      anchor: {
-        padding: 0,
-        type: AnchorType.MiddleRight
-      },
-      color: [1.0, 1.0, 1.0, 1.0],
-      fontSize: 20,
-      id: `label-vertical-7`,
-      text: "ScaleType: BOUND_MAX",
-      position: [20, count++ * 20]
-    });
+    provider.add(
+      new LabelInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.MiddleRight
+        },
+        color: [1.0, 1.0, 1.0, 1.0],
+        fontSize: 20,
+        id: `label-vertical-7`,
+        text: "ScaleType: BOUND_MAX",
+        origin: [20, count++ * 20],
 
-    provider.add(label);
+        onReady: label => {
+          label.origin = add2(label.origin, [label.size[0], 0]);
+        }
+      })
+    );
 
     return provider;
   }

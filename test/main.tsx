@@ -35,11 +35,12 @@ import { BaseExample } from "./examples/base-example";
 // import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
 // import { MouseScroll } from "./examples/mouse-scroll";
 // import { ScreenSpaceEdges } from "./examples/screen-space-edges";
-import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
+// import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
 
 // Backend tests, for now, just activate when included
 import { createFont } from "src/resources/text/font-manager";
 import { FontMapGlyphType } from "src/resources/text/font-map";
+import { FontEngineGlyphControl } from "test/examples/font-engine-glyph-control";
 import "./backend";
 
 /**
@@ -67,7 +68,7 @@ const tests: BaseExample[] = [
   // new BendyEdge(),
   // new Lines(),
   // new MouseInteraction(),
-  new SingleAxisLabelScaling(true)
+  // new SingleAxisLabelScaling(true),
   // new SingleAxisLabelScaling(false),
   // new MouseInteractionLabels(),
   // new MouseInteractionImages(),
@@ -81,7 +82,8 @@ const tests: BaseExample[] = [
   // new Arcs(),
   // new VertexAttributePacking(),
   // new VertexAttributePacking(true),
-  // new MouseScroll()
+  // new MouseScroll(),
+  new FontEngineGlyphControl()
 ];
 
 /** These are the layers for the tests that are generated */

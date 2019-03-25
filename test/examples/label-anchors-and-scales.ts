@@ -37,7 +37,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         fontSize: 20,
         id: `label-vertical-0`,
         text: "Anchored MiddleLeft:",
-        position: [20, count++ * 20]
+        origin: [20, count++ * 20]
       })
     );
 
@@ -50,7 +50,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       fontSize: 20,
       id: `label-vertical-1`,
       text: "Scale Type: NEVER",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     // Left Middle left
@@ -66,7 +66,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         fontSize: 20,
         id: `label-vertical-2`,
         text: "Scale Type: ALWAYS",
-        position: [20, count++ * 20]
+        origin: [20, count++ * 20]
       })
     );
 
@@ -80,7 +80,7 @@ export class LabelAnchorsAndScales extends BaseExample {
         fontSize: 20,
         id: `label-vertical-3`,
         text: "Scale Type: BOUND_MAX",
-        position: [20, count++ * 20]
+        origin: [20, count++ * 20]
       })
     );
 
@@ -96,7 +96,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       fontSize: 20,
       id: `label-vertical-4`,
       text: "Anchored MiddleRight:",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     provider.add(label);
@@ -110,7 +110,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       fontSize: 20,
       id: `label-vertical-5`,
       text: "Scale Type: NEVER",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     provider.add(label);
@@ -124,7 +124,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       fontSize: 20,
       id: `label-vertical-6`,
       text: "Scale Type: ALWAYS",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     provider.add(label);
@@ -138,7 +138,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       fontSize: 20,
       id: `label-vertical-7`,
       text: "Scale Type: BOUND_MAX",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     provider.add(label);
@@ -154,7 +154,7 @@ export class LabelAnchorsAndScales extends BaseExample {
       id: `label-vertical-4`,
       maxWidth: 209,
       text: "Max Width Should be working on this label!!!",
-      position: [20, count++ * 20]
+      origin: [20, count++ * 20]
     });
 
     provider.add(label);

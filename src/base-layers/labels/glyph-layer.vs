@@ -15,5 +15,5 @@ void main() {
   // Get the atlas position of the texture information
   texCoord = texture.xy + (texture.zw - texture.xy) * quadVertex;
   // Apply the color of the glyph
-  vertexColor = color;
+  vertexColor = color * color.a;
 }

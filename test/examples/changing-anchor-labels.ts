@@ -43,7 +43,7 @@ export class ChangingAnchorLabels extends BaseExample {
           fontSize: 20,
           id: `label-test-${i}`,
           text: "Changing Anchor Point",
-          position: [Math.random() * 1500, Math.random() * 1500]
+          origin: [Math.random() * 1500, Math.random() * 1500]
         })
       );
 

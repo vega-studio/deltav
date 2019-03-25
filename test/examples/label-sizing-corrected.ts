@@ -45,7 +45,7 @@ export class LabelSizingCorrected extends BaseExample {
         id: `label-compare-0`,
         scale: 0.5,
         text: "0.5",
-        position: [20, 40]
+        origin: [20, 40]
       })
     );
 
@@ -60,7 +60,7 @@ export class LabelSizingCorrected extends BaseExample {
         id: `label-compare-1`,
         scale: 1.0,
         text: "1.0",
-        position: [50, 40]
+        origin: [50, 40]
       })
     );
 
@@ -75,7 +75,7 @@ export class LabelSizingCorrected extends BaseExample {
         id: `label-compare-2`,
         scale: 2.0,
         text: "2.0",
-        position: [80, 40]
+        origin: [80, 40]
       })
     );
 
@@ -91,7 +91,7 @@ export class LabelSizingCorrected extends BaseExample {
         maxScale: 2.0,
         scale: 0.5,
         text: "0.5 max 2.0",
-        position: [20, 80]
+        origin: [20, 80]
       })
     );
 

@@ -22,13 +22,20 @@ export type KerningPairs = {
   [leftLetter: string]: { [rightLtter: string]: Vec2 };
 };
 
+export type KerningInfo = {
+  all: string[];
+  pairs: KerningPairs;
+  spaceWidth: number;
+};
+
 /**
  * This function is calculate the offset of adjacent letters
  */
 async function renderEachPair(
   fontString: string,
   fontSize: number,
-  pairs: { all: string[]; pairs: KerningPairs }
+  pairs: KerningInfo,
+  calculateSpace: boolean
 ) {
   // Calculate the max width the system can reliably handle
   const contextWidth = WebGLStat.MAX_TEXTURE_SIZE / window.devicePixelRatio;
@@ -47,10 +54,15 @@ async function renderEachPair(
   table.style.top = `${window.innerHeight}px`;
 
   let currentPair = 0;
+  let columnIndex = 0;
+  let currentRow;
+  let rowSpacer;
+  let remainingSpace = 0;
 
   // Render each pair to cell of the table
   while (currentPair < pairs.all.length) {
     const tr = document.createElement("div");
+    currentRow = tr;
     tr.style.display = "table-row";
     tr.style.height = `${cellHeight}px`;
     tr.style.width = `width:${contextWidth}px`;
@@ -60,11 +72,17 @@ async function renderEachPair(
     let remaining = contextWidth;
 
     // Render each tr with col number of td
-    for (let j = 0; j < maxColumns && currentPair < pairs.all.length; j++) {
+    for (
+      columnIndex = 0;
+      columnIndex < maxColumns && currentPair < pairs.all.length;
+      columnIndex++
+    ) {
       const td = document.createElement("div");
       td.style.display = "table-cell";
       td.style.width = `${cellWidth}px`;
       td.style.height = `${cellHeight}px`;
+      td.style.overflow = "hidden";
+      td.style.font = fontString;
 
       const pair = pairs.all[currentPair];
       currentPair++;
@@ -74,14 +92,8 @@ async function renderEachPair(
       // Each td has two spans
       const leftSpan = document.createElement("span");
       const rightSpan = document.createElement("span");
-      const leftColor = "color:#ff0000;";
-      const rightColor = "color:#0000ff;";
-      const size = `font:${fontString}`;
-      const leftStyle = leftColor + size;
-      const rightStyle = rightColor + size;
-
-      leftSpan.setAttribute("style", leftStyle);
-      rightSpan.setAttribute("style", rightStyle);
+      leftSpan.style.color = "#ff0000";
+      rightSpan.style.color = "#0000ff";
 
       leftSpan.innerText = leftStr;
       rightSpan.innerText = rightStr;
@@ -98,12 +110,14 @@ async function renderEachPair(
       td.style.display = "table-cell";
       td.style.width = `${remaining}px`;
       tr.appendChild(td);
+      rowSpacer = td;
+    } else {
+      rowSpacer = null;
     }
 
+    remainingSpace = remaining;
     table.appendChild(tr);
   }
-
-  document.getElementsByTagName("body")[0].appendChild(table);
 
   // Init the array for left-top corners for each letter in a pair
   // [leftLetter->left, leftLetter->top, rightLetter->left, rightLetter->top]
@@ -116,6 +130,82 @@ async function renderEachPair(
       Number.MAX_SAFE_INTEGER
     ]);
   }
+
+  // This stores how large the test character's rendering is that will be used for analyzing
+  // how large a space between characters is.
+  let testSpaceCharacterWidth = 0;
+  let doSpaceCheck = false;
+
+  // If the distance of a space is required, then we add in one more additional cell
+  if (calculateSpace) {
+    const testChar = pairs.all[0][0];
+    const td = document.createElement("div");
+    td.style.display = "table-cell";
+    td.style.width = `${cellWidth}px`;
+    td.style.height = `${cellHeight}px`;
+    td.style.overflow = "hidden";
+    td.style.font = fontString;
+
+    // The test character for the spacing will be the first character in the pairs we
+    // wanted to render.
+    const render = await renderGlyph(testChar, 128, 128, fontString);
+
+    if (render) {
+      // Keep how wide the test character is for after the kerning calculation so we can accurately
+      // determine how large a space is by subtracting the width of the character from the kerning distance.
+      testSpaceCharacterWidth = render.size[0];
+      // We create two of the test characters and place a space between them. This will allow
+      td.innerHTML = `<span style="color:#ff0000">${testChar}</span> <span style="color:#0000ff">${testChar}</span>`;
+
+      // If the last row has room for the rendering, then we just add to it
+      if (columnIndex < maxColumns && currentRow) {
+        currentRow.appendChild(td);
+        remainingSpace -= cellWidth;
+
+        // If a spacer at the end of the row is present, it should be adjusted to the size needed
+        // It should also be moved to the end of the child list
+        if (rowSpacer) {
+          rowSpacer.remove();
+
+          if (remainingSpace > 0) {
+            currentRow.style.width = `${remainingSpace}px`;
+            currentRow.appendChild(rowSpacer);
+          }
+        }
+      }
+
+      // Otherwise, we make a new row to inject into
+      else {
+        const tr = document.createElement("div");
+        currentRow = tr;
+        tr.style.display = "table-row";
+        tr.style.height = `${cellHeight}px`;
+        tr.style.width = `width:${contextWidth}px`;
+        currentRow.appendChild(td);
+        table.appendChild(tr);
+
+        // Inject a spacer to fill the remaining space
+        rowSpacer = document.createElement("div");
+        rowSpacer.style.display = "table-cell";
+        rowSpacer.style.width = `${(maxColumns - 1) * cellWidth}px`;
+        tr.appendChild(rowSpacer);
+      }
+
+      // Add an additional min tracker for the check
+      mins.push([
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER
+      ]);
+
+      // Indicate the space check is indeed happening
+      doSpaceCheck = true;
+    }
+  }
+
+  // The element must be a part of the body for html2canvas to work
+  document.getElementsByTagName("body")[0].appendChild(table);
 
   // Config for html2canvas
   // Detail from https://html2canvas.hertzen.com/configuration
@@ -169,6 +259,17 @@ async function renderEachPair(
       }
     }
 
+    // Before letter processing, remove and analyze processing for the 'space' character
+    if (doSpaceCheck) {
+      const min = mins.pop();
+
+      if (min) {
+        const vec: Vec2 = [min[2] - min[0], 0];
+        const exact = scale2(vec, 1 / window.devicePixelRatio);
+        pairs.spaceWidth = Math.ceil(exact[0]) - testSpaceCharacterWidth;
+      }
+    }
+
     // Set pairs map based on mins array
     for (let i = 0, iMax = mins.length; i < iMax; i++) {
       const pair = pairs.all[i];
@@ -197,10 +298,7 @@ async function renderEachPair(
 /**
  * This function takes a string to return a map with next letters of each letter
  */
-function stringToPairs(
-  str: string,
-  existing: KerningPairs
-): { all: string[]; pairs: KerningPairs } {
+function stringToPairs(str: string, existing: KerningPairs): KerningInfo {
   // Remove all the blanks
   str = str.replace(/ /g, "");
   const all: string[] = [];
@@ -218,13 +316,14 @@ function stringToPairs(
     // Don't remake a pair for already existing pairs
     if ((!existing[left] || !existing[left][right]) && !neighbors[right]) {
       neighbors[right] = [0, 0];
-      all.push(`${left}${right} `);
+      all.push(`${left}${right}`);
     }
   }
 
   return {
     all,
-    pairs
+    pairs,
+    spaceWidth: 0
   };
 }
 
@@ -285,7 +384,8 @@ export class FontRenderer {
     str: string,
     fontString: string,
     fontSize: number,
-    existing: KerningPairs
+    existing: KerningPairs,
+    includeSpace: boolean
   ) {
     // Get all of the new pairs of letters that need kerning infoz
     const pairInfo = stringToPairs(str, existing);
@@ -293,7 +393,7 @@ export class FontRenderer {
 
     // Only if there are new kerning needs do we actually need to run this method
     if (pairInfo.all.length > 0) {
-      await renderEachPair(fontString, fontSize, pairInfo);
+      await renderEachPair(fontString, fontSize, pairInfo, includeSpace);
     }
 
     return pairInfo;

@@ -431,7 +431,6 @@ function quaternion_test() {
   const q3 = quaternion(0, 0, 1, 0);
   const q4 = quaternion(0, 0, 1, Math.PI / 2);
   const check3 = slerp(q3, q4, 1 / 3);
-  console.warn(check3);
   if (!compare4(check3, quaternion(0, 0, 1, Math.PI / 6))) {
     console.warn("FAILED: Quaternion Slerp");
   }

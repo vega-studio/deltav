@@ -9,7 +9,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions } from "../../util";
+import { CommonMaterialOptions, Vec3 } from "../../util";
 import { MeshInstance } from "./mesh-instance";
 
 export enum MeshScaleType {
@@ -20,7 +20,10 @@ export enum MeshScaleType {
 export interface IMeshLayerProps<T extends MeshInstance>
   extends ILayerProps<T> {
   scaleType?: MeshScaleType;
-  obj?: string;
+  obj: string;
+  mtl: string;
+  eye: Vec3;
+  light: Vec3;
 }
 
 export class MeshLayer<
@@ -31,7 +34,11 @@ export class MeshLayer<
     data: new InstanceProvider<MeshInstance>(),
     key: "",
     scaleType: MeshScaleType.NONE,
-    scene: "default"
+    scene: "default",
+    obj: "",
+    mtl: "",
+    eye: [1, 1, 1],
+    light: [1, 1, 1]
   };
 
   static attributeNames = {
@@ -43,42 +50,49 @@ export class MeshLayer<
     const normals: { [key: number]: number } = {};
     const vertices: { [key: number]: number } = {};
 
-    if (this.props.obj) {
-      const obj = new objLoader.Mesh(this.props.obj);
-      console.warn("layer", obj);
-      obj.vertexNormals.forEach((value, index) => {
-        normals[index] = value;
-      });
+    const ambients: { [key: number]: number } = {};
+    const diffuses: { [key: number]: number } = {};
+    const speculars: { [key: number]: number } = {};
 
-      let xMin = obj.vertices[0];
-      let xMax = obj.vertices[0];
-      let yMin = obj.vertices[1];
-      let yMax = obj.vertices[1];
-      let zMin = obj.vertices[2];
-      let zMax = obj.vertices[2];
+    const illums: { [key: number]: number } = {};
 
-      obj.vertices.forEach((value, index) => {
-        vertices[index] = value;
+    const mtl = new objLoader.MaterialLibrary(this.props.mtl);
+    const obj = new objLoader.Mesh(this.props.obj);
 
-        if (index % 3 === 0) {
-          if (value < xMin) xMin = value;
-          if (value > xMax) xMax = value;
-        } else if (index % 3 === 1) {
-          if (value < yMin) yMin = value;
-          if (value > yMax) yMax = value;
-        } else {
-          if (value < zMin) zMin = value;
-          if (value > zMax) zMax = value;
-        }
-      });
+    let i = 0;
+    obj.indices.forEach(index => {
+      const materialIndex = obj.vertexMaterialIndices[index];
+      const materialName = obj.materialNames[materialIndex];
+      const material = mtl.materials[materialName];
 
-      console.warn(xMax - xMin, yMax - yMin, zMax - zMin);
+      vertices[i] = obj.vertices[index * 3];
+      normals[i] = obj.vertexNormals[index * 3];
+      ambients[i] = material.ambient[0];
+      diffuses[i] = material.diffuse[0];
+      speculars[i] = material.diffuse[0];
+      illums[i] = material.illumination;
+      i++;
+      vertices[i] = obj.vertices[index * 3 + 1];
+      normals[i] = obj.vertexNormals[index * 3 + 1];
+      ambients[i] = material.ambient[1];
+      diffuses[i] = material.diffuse[1];
+      speculars[i] = material.diffuse[1];
+      illums[i] = material.illumination;
+      i++;
+      vertices[i] = obj.vertices[index * 3 + 2];
+      normals[i] = obj.vertexNormals[index * 3 + 2];
+      ambients[i] = material.ambient[2];
+      diffuses[i] = material.diffuse[2];
+      speculars[i] = material.diffuse[2];
+      illums[i] = material.illumination;
+      i++;
+    });
 
-      count = obj.vertices.length;
-    }
+    count = i;
+    console.warn("obj", obj);
 
-    //console.warn(normals, vertices);
-    console.warn("layer view", this.view);
+    console.warn("view", this.view);
+
     return {
       fs: require("./mesh-layer.fs"),
       instanceAttributes: [
@@ -93,6 +107,16 @@ export class MeshLayer<
           name: "scaleFactor",
           size: UniformSize.ONE,
           update: _u => [1]
+        },
+        {
+          name: "eye_position",
+          size: UniformSize.THREE,
+          update: _u => this.props.eye
+        },
+        {
+          name: "light_position",
+          size: UniformSize.THREE,
+          update: _u => this.props.light
         }
       ],
       vertexAttributes: [
@@ -104,23 +128,64 @@ export class MeshLayer<
             vertices[3 * vertex + 1],
             vertices[3 * vertex + 2]
           ]
+        },
+        {
+          name: "normal",
+          size: VertexAttributeSize.THREE,
+          update: (vertex: number) => [
+            normals[3 * vertex],
+            normals[3 * vertex + 1],
+            normals[3 * vertex + 2]
+          ]
+        },
+        {
+          name: "ambient",
+          size: VertexAttributeSize.THREE,
+          update: (vertex: number) => [
+            ambients[3 * vertex],
+            ambients[3 * vertex + 1],
+            ambients[3 * vertex + 2]
+          ]
+        },
+        {
+          name: "diffuse",
+          size: VertexAttributeSize.THREE,
+          update: (vertex: number) => [
+            diffuses[3 * vertex],
+            diffuses[3 * vertex + 1],
+            diffuses[3 * vertex + 2]
+          ]
+        },
+        {
+          name: "specular",
+          size: VertexAttributeSize.THREE,
+          update: (vertex: number) => [
+            speculars[3 * vertex],
+            speculars[3 * vertex + 1],
+            speculars[3 * vertex + 2]
+          ]
+        },
+        {
+          name: "illumination",
+          size: VertexAttributeSize.ONE,
+          update: (vertex: number) => [illums[vertex]]
         }
       ],
-      vertexCount: count / 3,
+      vertexCount: count,
       vs: require("./mesh-layer.vs")
     };
   }
 
   getModelType(): IModelType {
     return {
-      drawMode: Three.TriangleStripDrawMode,
+      drawMode: Three.TrianglesDrawMode,
       modelType: Three.Mesh
     };
   }
 
   getMaterialOptions(): IMaterialOptions {
     return Object.assign({}, CommonMaterialOptions.transparentShape, {
-      side: Three.DoubleSide,
+      side: Three.FrontSide,
       wireframe: false
     } as IMaterialOptions);
   }

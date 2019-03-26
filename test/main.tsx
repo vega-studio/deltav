@@ -40,8 +40,6 @@ import "./matrix-tests";
 import "./backend";
 import { Meshes } from "./examples/meshes";
 
-// const objLoader = require("webgl-obj-loader");
-
 /**
  * The state of the application
  */
@@ -287,7 +285,6 @@ export class Main extends Component<any, IMainState> {
       for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
         const camera = new ChartCamera({
-          // offset: [0.8, 0.1, 1],
           target: [0, 0, 0]
         });
         const test = tests[++testIndex];
@@ -318,7 +315,6 @@ export class Main extends Component<any, IMainState> {
             }
           };
 
-          console.warn("init", init);
           scenes.push(init);
         }
       }

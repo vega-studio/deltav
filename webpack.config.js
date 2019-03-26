@@ -88,7 +88,8 @@ module.exports = {
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
       { test: /\.png$/, loader: 'base64-image-loader' },
       { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
-      { test: /\.obj$/, use: [{loader: resolve('obj-loader.js'), options: {}}]}
+      { test: /\.obj$/, use: [{loader: resolve('obj-loader.js'), options: {}}]},
+      { test: /\.mtl$/, use: ['raw-loader']}
     ],
   },
 

@@ -1,4 +1,4 @@
-import { Vec3, Vec4, subtract3, normalize3, cross3 } from "./vector";
+import { Vec3, subtract3, normalize3, cross3 } from "./vector";
 import { Mat4x4, perspective4x4, translation4x4, multiply4x4 } from "./matrix";
 
 let chartCameraUID = 0;
@@ -98,7 +98,7 @@ export class ChartCamera {
   private _projectionMatrix: Mat4x4 = perspective4x4(
     Math.PI / 4,
     window.innerWidth / window.innerHeight,
-    1.0,
+    0.0,
     1000.0
   );
 
@@ -159,7 +159,7 @@ export class ChartCamera {
   }
 
   setTarget(target: Vec3) {
-    this._target = target;
+    this._target = target.slice(0) as Vec3;
     this._modelViewMatrix = calculateModelView(this._offset, this._target);
     this._needsViewDrawn = true;
   }

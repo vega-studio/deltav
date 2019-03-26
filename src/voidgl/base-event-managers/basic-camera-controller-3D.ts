@@ -5,7 +5,6 @@ import {
   IWheelMetrics
 } from "../surface";
 import { ChartCamera } from "../util";
-import { timingSafeEqual } from "crypto";
 
 export interface IBasicCameraController3DOptions {
   camera: ChartCamera;
@@ -81,8 +80,23 @@ export class BasicCameraController3D extends EventManager {
     this.mouseIsDown = false;
   }
 
-  handleWheel(e: IMouseInteraction, wheel: IWheelMetrics) {
-    //const offset = this.camera.offset;
-    //this.camera.setOffset([offset[0], offset[1], offset[2] - 0.01]);
+  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
+    const r = Math.sqrt(
+      (this.camera.offset[0] - this.camera.target[0]) ** 2 +
+        (this.camera.offset[1] - this.camera.target[1]) ** 2 +
+        (this.camera.offset[2] - this.camera.target[2]) ** 2
+    );
+
+    const addR = wheelMetrics.wheel[1] * 0.01;
+    if (r - addR > 0) {
+      this.camera.setOffset([
+        this.camera.target[0] +
+          (this.camera.offset[0] - this.camera.target[0]) * (r - addR) / r,
+        this.camera.target[1] +
+          (this.camera.offset[1] - this.camera.target[1]) * (r - addR) / r,
+        this.camera.target[2] +
+          (this.camera.offset[2] - this.camera.target[2]) * (r - addR) / r
+      ]);
+    }
   }
 }

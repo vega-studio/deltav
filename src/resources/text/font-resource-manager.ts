@@ -24,7 +24,7 @@ import {
   IFontResourceOptions,
   isFontResource
 } from "./font-manager";
-import { FontMap } from "./font-map";
+import { FontMap, KernedLayout } from "./font-map";
 
 export enum FontResourceRequestFetch {
   /** Retrieves the tex coordinates on the font map of the specified character glyph. Defaults to [0, 0, 0, 0] */
@@ -32,6 +32,8 @@ export enum FontResourceRequestFetch {
   /** Retrieves the pixel size of the character glyph on the font map */
   IMAGE_SIZE = 1
 }
+
+const debug = require("debug")("performance");
 
 /**
  * Properties needed to make a font resource request
@@ -48,6 +50,27 @@ export interface IFontResourceRequest extends BaseResourceRequest {
   fontMap?: FontMap;
   /** The characters for which we want to have the kerning information retrieved. */
   kerningPairs?: string;
+  /** When provided, the request will fill in the metrics for the input parameters */
+  metrics?: {
+    /** The desired font size for the layout */
+    fontSize: number;
+    /**
+     * The system will populate this for you with the layout (top left is at 0,0) of the text.
+     * If maxWidth is provided, this will be the layout of the truncated text.
+     */
+    layout?: KernedLayout;
+    /** When provided, this will cause the system to see if the text should be truncated or not */
+    maxWidth?: number;
+    /** This is the source text that we wish to receive the metrics for. */
+    text: string;
+    /** These are the characters to use to indicate truncation in the event truncation takes place */
+    truncation?: string;
+    /**
+     * If maxWidth is provided, this will provide the calculated truncated text. This will be the full
+     * text if no truncation is provided.
+     */
+    truncatedText?: string;
+  };
   /** This is to satisfy the use of the TextureIOExpansion. This is the texture within the fontmap */
   texture?: Texture;
   /** Establish the only type that this request shall be is a FONT type */
@@ -130,10 +153,16 @@ export class FontResourceManager extends BaseResourceManager<
         // Empty the queue to begin taking in new requests as needed
         allRequests.length = 0;
 
-        // Tell the atlas manager to update with all of the requested resources
+        debug("Processing requests for resource '%s'", fontResource);
+
+        // Tell the font manager to update with all of the requested resources
         await this.fontManager.updateFontMap(fontResource, requests);
-        // Get the requests for the given atlas
+        // Tell the manager to process all of the metrics requests for the text
+        await this.fontManager.calculateMetrics(fontResource, requests);
+        // Get the requests for the given font
         const glyphRequests = this.requestLookup.get(fontResource);
+
+        debug("All requests for resource '%s' are processed", fontResource);
 
         if (glyphRequests) {
           // Once the manager has been updated, we can now flag all of the instances waiting for the resources

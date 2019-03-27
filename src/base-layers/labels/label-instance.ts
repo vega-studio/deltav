@@ -88,10 +88,6 @@ export class LabelInstance extends Instance {
    * has happened.
    */
   truncatedText: string = "";
-  /**
-   * Flag used by the label system to track if a label needs it's truncation checked.
-   */
-  willCheckTruncation: boolean = false;
 
   /** This is the anchor location relative to the label's render space */
   @observable
@@ -106,6 +102,7 @@ export class LabelInstance extends Instance {
     super(options);
 
     this.depth = options.depth || this.depth;
+    this.fontSize = options.fontSize || this.fontSize;
     this.color = options.color || this.color;
     this.maxScale = options.maxScale || this.maxScale;
     this.scale = options.scale || this.scale;

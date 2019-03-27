@@ -7,6 +7,8 @@ import { IFontResourceRequest } from "../text/font-resource-manager";
 import { SubTexture } from "../texture/sub-texture";
 import { FontRenderer } from "./font-renderer";
 
+const debug = require("debug")("performance");
+
 /**
  * Valid glyph rendering sizes that the system will use when rendering the glyphs to the font map's texture.
  */
@@ -161,6 +163,49 @@ export class FontManager {
   fontRenderer = new FontRenderer();
 
   /**
+   * This takes all requests that want layout information included for a group of text
+   * and populates the request with the appropriate information.
+   */
+  async calculateMetrics(
+    resourceKey: string,
+    requests: IFontResourceRequest[]
+  ) {
+    debug("Calculating metrics for requests");
+    const fontMap = this.fontMaps.get(resourceKey);
+    if (!fontMap) return;
+
+    for (let i = 0, iMax = requests.length; i < iMax; ++i) {
+      const request = requests[i];
+      const metrics = request.metrics;
+
+      // Only some requests will have metrics to be calculated
+      if (metrics) {
+        // Get the layout of the request
+        metrics.layout = fontMap.getStringLayout(
+          metrics.text,
+          metrics.fontSize
+        );
+
+        // If a max width is present, we need to calculate the truncation of the label
+        if (metrics.maxWidth) {
+          debug("Calculating truncation for", metrics.text, metrics.maxWidth);
+
+          metrics.layout = await fontMap.getTruncatedLayout(
+            metrics.layout,
+            metrics.truncation || "",
+            metrics.maxWidth,
+            metrics.fontSize,
+            this.fontRenderer
+          );
+
+          // Show what the truncated text is
+          metrics.truncatedText = metrics.layout.text;
+        }
+      }
+    }
+  }
+
+  /**
    * Converts a character filter to a deduped list of single characters
    */
   private characterFilterToCharacters(filter: string): string {
@@ -213,7 +258,6 @@ export class FontManager {
 
     // Apply initial characters to the fontMap
     await this.updateFontMapCharacters(characters, fontMap);
-
     // Keep the generated font map as our resource
     this.fontMaps.set(resourceOptions.key, fontMap);
 
@@ -232,10 +276,23 @@ export class FontManager {
     const allCharacters = new Set<string>();
 
     // Aggregate all kerning and character requests and needs
-    requests.forEach(req => {
+    for (let i = 0, iMax = requests.length; i < iMax; ++i) {
+      const req = requests[i];
       if (req.character) allCharacters.add(req.character);
       if (req.kerningPairs) allPairs += req.kerningPairs;
-    });
+
+      // We add in truncation characters as well if provided
+      if (req.metrics) {
+        if (req.metrics.truncation) {
+          const truncation = req.metrics.truncation.replace(/\s/g, "");
+          allPairs += truncation;
+
+          for (let i = 0, iMax = req.metrics.truncation.length; i < iMax; ++i) {
+            allCharacters.add(truncation);
+          }
+        }
+      }
+    }
 
     // Kerning pairs are also candidates for being rendered to the font map
     for (let i = 0, iMax = allPairs.length; i < iMax; ++i) {
@@ -253,7 +310,9 @@ export class FontManager {
 
     // After all this is done, all the requests can be populated with the font map
     // signaling the request now has the resources to accomplish what it needs
-    requests.forEach(req => (req.fontMap = fontMap));
+    for (let i = 0, iMax = requests.length; i < iMax; ++i) {
+      requests[i].fontMap = fontMap;
+    }
   }
 
   /**

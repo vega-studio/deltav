@@ -22,9 +22,7 @@ export class TextAreaInstance extends LabelInstance {
    */
   @observable maxHeight: number = 0;
   /**
-   * The line height of each line starts at the font size specified for the text area.
-   * This property is an offset to that size so custom spacing can be achieved easily between
-   * each row of text.
+   * This specifies how tall a line should be for each line.
    */
   @observable lineHeight: number = 0;
   /**

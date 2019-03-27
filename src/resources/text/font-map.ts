@@ -1,6 +1,6 @@
 import { GLSettings, WebGLStat } from "src/gl";
 import { Texture, TextureOptions } from "src/gl/texture";
-import { KerningPairs } from "src/resources/text/font-renderer";
+import { FontRenderer, KerningPairs } from "src/resources/text/font-renderer";
 import { PackNode } from "src/resources/texture/pack-node";
 import { isWhiteSpace, ResourceType, Size } from "src/types";
 import { add2, scale2, Vec2 } from "src/util/vector";
@@ -247,6 +247,139 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   }
 
   /**
+   * This looks at a string layout and provides a layout that reflects the layout bounded
+   * by a max width. This accounts for including
+   */
+  async getTruncatedLayout(
+    layout: KernedLayout,
+    truncation: string,
+    maxWidth: number,
+    fontSize: number,
+    fontRenderer: FontRenderer
+  ) {
+    // If the label exceeds the specified maxWidth then truncation must take places
+    if (layout.size[0] > maxWidth) {
+      let truncatedText = "";
+      let truncationWidth = 0;
+
+      // We'll get a rough and dirty truncation character width estimate by simply adding the width of
+      // all the glyphs
+      for (let i = 0, iMax = truncation.length; i < iMax; ++i) {
+        truncationWidth += this.glyphMap[truncation[i]].pixelWidth;
+      }
+
+      // Now find a width of glyphs + the width of the truncation that will fit within the maxWidth
+      // If the truncation width is wider than the max width, then we truncate to no text at all.
+      if (truncationWidth > maxWidth) {
+        return {
+          fontScale: 1,
+          glyphs: "",
+          positions: [],
+          size: [0, 0],
+          text: ""
+        } as KernedLayout;
+      }
+
+      // Otherwise, let's do the search for the correct glyphs to show that will fit properly.
+      // We will use a simple binary search to find the appropriate length to use.
+      let left = 0;
+      let right = layout.positions.length;
+      let cursor = 0;
+      let check = 0;
+      let char = "";
+
+      while (left !== right) {
+        cursor = Math.floor((right - left) / 2) + left;
+        char = layout.glyphs[cursor];
+        check =
+          layout.positions[cursor][0] +
+          this.glyphMap[char].pixelWidth +
+          truncationWidth;
+
+        if (check > maxWidth) right = cursor;
+        else if (check < maxWidth) left = cursor;
+        else break;
+
+        if (Math.abs(left - right) <= 1) {
+          if (check < maxWidth) break;
+
+          while (check > maxWidth && cursor >= 0) {
+            cursor--;
+            check =
+              layout.positions[cursor][0] +
+              this.glyphMap[char].pixelWidth +
+              truncationWidth;
+          }
+
+          break;
+        }
+      }
+
+      // Our cursor should now be pointing to the letter that will be our truncation point
+      // We must make sure with the characters specified it does fit, if not, we only render
+      // the truncation glyphs
+      check =
+        layout.positions[cursor][0] +
+        this.glyphMap[char].pixelWidth +
+        truncationWidth;
+
+      if (check < maxWidth) {
+        // Loop through the text and find the glyph matching to the actual text with glyphs
+        let glyphIndex = 0;
+        let charIndex = 0;
+
+        for (
+          let i = 0, iMax = layout.text.length;
+          i < iMax && glyphIndex <= cursor;
+          ++i
+        ) {
+          const char = layout.text[i];
+
+          charIndex++;
+          if (!isWhiteSpace(char)) glyphIndex++;
+        }
+
+        // Make sure the last character attached to the first truncated letter has kerning info
+        const lastChar = layout.text[charIndex - 1];
+        let firstTruncChar;
+
+        for (let i = 0, iMax = truncation.length; i < iMax; ++i) {
+          if (!isWhiteSpace(truncation[i])) {
+            firstTruncChar = truncation[i];
+            break;
+          }
+        }
+
+        if (
+          lastChar &&
+          firstTruncChar &&
+          !this.kerning[lastChar][firstTruncChar]
+        ) {
+          const kerning = await fontRenderer.estimateKerning(
+            lastChar + firstTruncChar,
+            this.fontString,
+            this.fontSource.size,
+            this.kerning,
+            false
+          );
+
+          this.addKerning(kerning.pairs);
+        }
+
+        truncatedText = `${layout.text.substr(0, charIndex)}${truncation}`;
+      } else {
+        console.log("TEXT REDUCED TO TRUNCATION", check, maxWidth);
+        truncatedText = truncation;
+      }
+
+      // Caculate the layout of the truncated text
+      return this.getStringLayout(truncatedText, fontSize);
+    }
+
+    return layout;
+  }
+
+  /**
    * Get the width of a set of characters within a string layout.
    *
    * To use this, first use the getStringLayout() method to get the KernedLayout then insert
@@ -332,18 +465,14 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * NOTE: This ONLY processes a SINGLE LINE!! ALL whitespace characters will be considered a single
    * space.
    */
-  getStringLayout(
-    text: string,
-    fontSize: number,
-    pixelRatio: number
-  ): KernedLayout {
+  getStringLayout(text: string, fontSize: number): KernedLayout {
     // The output positions for each letter in the text
     const positions: Vec2[] = [];
     // The output of each character found that is provided a position (the string without the whitespace)
     let glyphs: string = "";
     // Calculate the scaling of the font which would be the font map's rendered glyph size
     // as a ratio to the label's desired font size.
-    const fontScale = fontSize / this.fontSource.size * pixelRatio;
+    const fontScale = fontSize / this.fontSource.size;
 
     // Start with the initial glyph dimensions as the min and max y the label will have
     let minY = Number.MAX_SAFE_INTEGER;

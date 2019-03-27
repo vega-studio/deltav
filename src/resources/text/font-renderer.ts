@@ -299,8 +299,8 @@ async function renderEachPair(
  * This function takes a string to return a map with next letters of each letter
  */
 function stringToPairs(str: string, existing: KerningPairs): KerningInfo {
-  // Remove all the blanks
-  str = str.replace(/ /g, "");
+  // Remove all the whitespace
+  str = str.replace(/\s/g, "");
   const all: string[] = [];
   const pairs: KerningPairs = {};
 

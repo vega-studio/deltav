@@ -22,10 +22,8 @@ import {
 } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
-  add2,
   copy4,
   divide2,
-  scale2,
   subtract2,
   Vec,
   Vec2
@@ -47,36 +45,36 @@ const anchorCalculator: {
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] / 2.0;
+    anchor.x = label.maxWidth / 2.0;
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
+    anchor.x = label.maxWidth + anchor.padding;
     anchor.y = -anchor.padding;
   },
   [AnchorType.MiddleLeft]: (anchor: Anchor, label: TextAreaInstance) => {
     anchor.x = -anchor.padding;
-    anchor.y = label.size[1] / 2;
+    anchor.y = label.maxHeight / 2;
   },
   [AnchorType.Middle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] / 2.0;
-    anchor.y = label.size[1] / 2.0;
+    anchor.x = label.maxWidth / 2.0;
+    anchor.y = label.maxHeight / 2.0;
   },
   [AnchorType.MiddleRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
-    anchor.y = label.size[1] / 2.0;
+    anchor.x = label.maxWidth + anchor.padding;
+    anchor.y = label.maxHeight / 2.0;
   },
   [AnchorType.BottomLeft]: (anchor: Anchor, label: TextAreaInstance) => {
     anchor.x = -anchor.padding;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.y = label.maxHeight + anchor.padding;
   },
   [AnchorType.BottomMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] / 2.0;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.x = label.maxWidth / 2.0;
+    anchor.y = label.maxHeight + anchor.padding;
   },
   [AnchorType.BottomRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.x = label.maxWidth + anchor.padding;
+    anchor.y = label.maxHeight + anchor.padding;
   },
   [AnchorType.Custom]: (anchor: Anchor, _label: TextAreaInstance) => {
     anchor.x = anchor.x || 0;
@@ -239,11 +237,14 @@ export class TextAreaLayer<
     if (!this.propertyIds) {
       const instance = changes[0][0];
       this.propertyIds = this.getInstanceObservableIds(instance, [
-        "text",
         "active",
+        "alignment",
         "color",
+        "fontSize",
+        "lineHeight",
+        "lineWrap",
         "origin",
-        "fontSize"
+        "text",
       ]);
     }
 
@@ -252,7 +253,10 @@ export class TextAreaLayer<
       active: activeId,
       color: colorId,
       origin: originId,
-      fontSize: fontSizeId
+      fontSize: fontSizeId,
+      alignment: alignmentId,
+      lineWrap: lineWrapId,
+      lineHeight: lineHeightId,
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {

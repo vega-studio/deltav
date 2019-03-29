@@ -3,7 +3,6 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-
 import * as html2canvas from "html2canvas";
 import { WebGLStat } from "src/gl/webgl-stat";
 import { IResourceType, ResourceType } from "../../types";
@@ -208,17 +207,19 @@ async function renderEachPair(
   document.getElementsByTagName("body")[0].appendChild(table);
 
   // Config for html2canvas
-  // Detail from https://html2canvas.hertzen.com/configuration
   const config: Html2Canvas.Html2CanvasOptions = {
-    // Transparent background makes analyzing easier
-    backgroundColor: null,
-    // If performance debugging is enabled, then log the html2canvas performance logs
-    logging: debug.enabled
+    backgroundColor: null
   };
 
   debug("Rendering table for font kerning analysis", pairs, table);
   const canvas = await html2canvas(table, config);
-  table.remove();
+
+  if (!canvas) {
+    console.warn("Could not convert DOM structure to canvas");
+    return;
+  }
+
+  // table.remove();
 
   // Width and height of each cell
   const w = cellWidth * window.devicePixelRatio;

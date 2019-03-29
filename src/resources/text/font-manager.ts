@@ -265,6 +265,14 @@ export class FontManager {
   }
 
   /**
+   * Free all generated resources here.
+   */
+  destroy() {
+    // Clears up resources
+    this.fontMaps.forEach(font => font.destroy());
+  }
+
+  /**
    * This updates a font map with requests made. After the font map is updated, the
    * requests should be populated with the appropriate sub texture information.
    */

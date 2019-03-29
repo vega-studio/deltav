@@ -1,5 +1,4 @@
 import { Geometry } from "../gl/geometry";
-import { GLSettings } from "../gl/gl-settings";
 import { Material } from "../gl/material";
 import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
@@ -38,11 +37,6 @@ import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { LayerBufferType } from "./layer-processing/layer-buffer-type";
 import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
-
-export interface IModelType {
-  /** This is the draw type of the model to be used */
-  drawMode?: GLSettings.Model.DrawMode;
-}
 
 /**
  * Bare minimum required features a provider must provide to be the data for the layer.
@@ -312,6 +306,8 @@ export class Layer<
 
     // Forewarn the processor how many instances are flagged for a change.
     processor.incomingChangeList(changeList);
+    // Forewarn the buffer manager of changes so it can optimize it's handling of changes as well
+    this.bufferManager.incomingChangeList(changeList);
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
@@ -330,6 +326,8 @@ export class Layer<
 
     // Tell the diff processor that it has completed it's task set
     processor.commit();
+    // Tell the manager changes are processed to allow it to free up resources
+    this.bufferManager.changesProcessed();
     // Flag the changes as resolved
     this.props.data.resolve(this.id);
     // Trigger uniform updates

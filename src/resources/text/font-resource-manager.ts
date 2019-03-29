@@ -204,7 +204,7 @@ export class FontResourceManager extends BaseResourceManager<
    * it be holding onto resources that can not be freed by lack of references.
    */
   destroy(): void {
-    throw new Error("Method not implemented.");
+    this.fontManager.destroy();
   }
 
   /**

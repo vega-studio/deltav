@@ -1,4 +1,3 @@
-import { GLSettings } from "src/gl";
 import { InstanceProvider } from "src/instance-provider";
 import {
   fontRequest,

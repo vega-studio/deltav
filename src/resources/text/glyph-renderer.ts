@@ -16,6 +16,7 @@ function measureBlackWhiteCanvasContents(canvas: CanvasRenderingContext2D) {
   const imageData = canvas.getImageData(0, 0, width, height).data;
   let r;
 
+  let found = false;
   let minY = Number.MAX_SAFE_INTEGER;
   let minX = Number.MAX_SAFE_INTEGER;
   let maxX = Number.MIN_SAFE_INTEGER;
@@ -27,12 +28,17 @@ function measureBlackWhiteCanvasContents(canvas: CanvasRenderingContext2D) {
       r = imageData[redIndex];
 
       if (r > 0.0) {
+        found = true;
         minY = min(minY, k);
         minX = min(minX, i);
         maxX = max(maxX, i);
         maxY = max(maxY, k);
       }
     }
+  }
+
+  if (!found) {
+    return null;
   }
 
   // The identified pixel needs to be encased and not a direct target
@@ -81,6 +87,16 @@ export function renderGlyph(
 
   // Get the metrics of the glyph within the rendering
   const dimensions = measureBlackWhiteCanvasContents(ctx);
+
+  if (!dimensions) {
+    const data = ctx.getImageData(0, 0, 1, 1);
+
+    return {
+      data,
+      size: [0, 0]
+    };
+  }
+
   // Copy the data from the rendering
   const glyphWidth = dimensions.maxX - dimensions.minX;
   const glyphHeight = dimensions.maxY - dimensions.minY;

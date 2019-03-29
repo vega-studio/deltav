@@ -6,7 +6,7 @@ import {
   InstanceProvider,
   IShaderInitialization,
   UniformSize
-} from "../../../src";
+} from "src";
 
 export interface IExtendedCirclesProps
   extends ICircleLayerProps<CircleInstance> {

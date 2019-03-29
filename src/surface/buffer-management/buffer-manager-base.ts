@@ -1,4 +1,5 @@
 import { Instance } from "../../instance-provider/instance";
+import { InstanceDiff } from "../../instance-provider/instance-provider";
 import { IInstanceAttributeInternal } from "../../types";
 import { Vec2, Vec4 } from "../../util";
 import { Layer } from "../layer";
@@ -70,6 +71,8 @@ export abstract class BufferManagerBase<
   T extends Instance,
   U extends IBufferLocation
 > {
+  /** This is the list of changes in effect while this manager is processing requests */
+  changeListContext: InstanceDiff<T>[];
   /** The layer this manager glues Instances to Buffers */
   layer: Layer<T, any>;
   /** The scene the layer is injecting elements into */
@@ -84,14 +87,21 @@ export abstract class BufferManagerBase<
   }
 
   /**
-   * Destroy all elements that consume GPU resources or consumes otherwise unreleaseable resources.
-   */
-  abstract destroy(): void;
-
-  /**
    * This adds an instance to the manager and thus ties the instance to an IBuffer location
    */
   add: (instance: T) => U | IBufferLocationGroup<U> | undefined;
+
+  /**
+   * This allows a manager to clean up any contextual information it may have stored while processing changes.
+   */
+  changesProcessed() {
+    delete this.changeListContext;
+  }
+
+  /**
+   * Destroy all elements that consume GPU resources or consumes otherwise unreleaseable resources.
+   */
+  abstract destroy(): void;
 
   /**
    * Retrieves the buffer locations for the instance provided
@@ -116,6 +126,20 @@ export abstract class BufferManagerBase<
    * for update, would cause all of the attributes to be updated for the layer.
    */
   abstract getUpdateAllPropertyIdList(): number[];
+
+  /**
+   * This will be called with the changes that WILL be processed. This allows this manager to make extra judgement calls on
+   * how it will process the changes and let's it optimize itself before changes are actually processed. An example optimization:
+   *
+   * The manager is receiving add requests. The manager receives an add request that triggers a resize of the buffer. Ideally,
+   * the buffer should perform a single resize operation to accommodate ALL add requests getting ready to stream in plus the
+   * current size of of the buffer. With this method, the changes will be available to the manager and let the manager make this
+   * important decision instead of reflexively grow the buffer as requests stream in, which can cause a large number of costly
+   * resize operations.
+   */
+  incomingChangeList(changes: InstanceDiff<T>[]) {
+    this.changeListContext = changes;
+  }
 
   /**
    * This method checks to see if this buffer manager has linked an instance to a buffer

@@ -40,7 +40,8 @@ import { BaseExample } from "./examples/base-example";
 // Backend tests, for now, just activate when included
 import { createFont } from "src/resources/text/font-manager";
 import { FontMapGlyphType } from "src/resources/text/font-map";
-import { FontEngineGlyphControl } from "test/examples/font-engine-glyph-control";
+import { FontEngineGlyphControl } from "./examples/font-engine-glyph-control";
+
 import "./backend";
 
 /**
@@ -159,12 +160,12 @@ export class Main extends Component<any, IMainState> {
         resources: [
           createAtlas({
             height: AtlasSize._2048,
-            key: " ",
+            key: "atlas",
             width: AtlasSize._2048
           }),
           createAtlas({
             height: AtlasSize._2048,
-            key: " -2",
+            key: "atlas-2",
             width: AtlasSize._2048
           }),
           createFont({

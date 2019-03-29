@@ -6,7 +6,6 @@ import { LabelLayer } from "src/base-layers/labels/label-layer";
 import { TextAreaInstance } from "src/base-layers/labels/text-area-instance";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
-import { fontRequest } from "../../resources";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   createLayer,
@@ -16,9 +15,6 @@ import {
 import {
   InstanceDiffType,
   IProjection,
-  isWhiteSpace,
-  newLineRegEx,
-  ResourceType
 } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
@@ -28,59 +24,58 @@ import {
   Vec,
   Vec2
 } from "../../util/vector";
-import { Anchor, AnchorType } from "../types";
 import { GlyphInstance } from "./glyph-instance";
-import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
+import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
  * position based on the anchor type.
  */
-const anchorCalculator: {
-  [key: number]: (anchor: Anchor, label: TextAreaInstance) => void;
-} = {
-  [AnchorType.TopLeft]: (anchor: Anchor, _label: TextAreaInstance) => {
-    anchor.x = -anchor.padding;
-    anchor.y = -anchor.padding;
-  },
-  [AnchorType.TopMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth / 2.0;
-    anchor.y = -anchor.padding;
-  },
-  [AnchorType.TopRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth + anchor.padding;
-    anchor.y = -anchor.padding;
-  },
-  [AnchorType.MiddleLeft]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = -anchor.padding;
-    anchor.y = label.maxHeight / 2;
-  },
-  [AnchorType.Middle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth / 2.0;
-    anchor.y = label.maxHeight / 2.0;
-  },
-  [AnchorType.MiddleRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth + anchor.padding;
-    anchor.y = label.maxHeight / 2.0;
-  },
-  [AnchorType.BottomLeft]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = -anchor.padding;
-    anchor.y = label.maxHeight + anchor.padding;
-  },
-  [AnchorType.BottomMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth / 2.0;
-    anchor.y = label.maxHeight + anchor.padding;
-  },
-  [AnchorType.BottomRight]: (anchor: Anchor, label: TextAreaInstance) => {
-    anchor.x = label.maxWidth + anchor.padding;
-    anchor.y = label.maxHeight + anchor.padding;
-  },
-  [AnchorType.Custom]: (anchor: Anchor, _label: TextAreaInstance) => {
-    anchor.x = anchor.x || 0;
-    anchor.y = anchor.y || 0;
-  }
-};
+// const anchorCalculator: {
+//   [key: number]: (anchor: Anchor, label: TextAreaInstance) => void;
+// } = {
+//   [AnchorType.TopLeft]: (anchor: Anchor, _label: TextAreaInstance) => {
+//     anchor.x = -anchor.padding;
+//     anchor.y = -anchor.padding;
+//   },
+//   [AnchorType.TopMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth / 2.0;
+//     anchor.y = -anchor.padding;
+//   },
+//   [AnchorType.TopRight]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth + anchor.padding;
+//     anchor.y = -anchor.padding;
+//   },
+//   [AnchorType.MiddleLeft]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = -anchor.padding;
+//     anchor.y = label.maxHeight / 2;
+//   },
+//   [AnchorType.Middle]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth / 2.0;
+//     anchor.y = label.maxHeight / 2.0;
+//   },
+//   [AnchorType.MiddleRight]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth + anchor.padding;
+//     anchor.y = label.maxHeight / 2.0;
+//   },
+//   [AnchorType.BottomLeft]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = -anchor.padding;
+//     anchor.y = label.maxHeight + anchor.padding;
+//   },
+//   [AnchorType.BottomMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth / 2.0;
+//     anchor.y = label.maxHeight + anchor.padding;
+//   },
+//   [AnchorType.BottomRight]: (anchor: Anchor, label: TextAreaInstance) => {
+//     anchor.x = label.maxWidth + anchor.padding;
+//     anchor.y = label.maxHeight + anchor.padding;
+//   },
+//   [AnchorType.Custom]: (anchor: Anchor, _label: TextAreaInstance) => {
+//     anchor.x = anchor.x || 0;
+//     anchor.y = anchor.y || 0;
+//   }
+// };
 
 /**
  * Constructor props for making a new label layer
@@ -254,9 +249,9 @@ export class TextAreaLayer<
       color: colorId,
       origin: originId,
       fontSize: fontSizeId,
-      alignment: alignmentId,
-      lineWrap: lineWrapId,
-      lineHeight: lineHeightId,
+      // alignment: alignmentId,
+      // lineWrap: lineWrapId,
+      // lineHeight: lineHeightId,
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -279,15 +274,15 @@ export class TextAreaLayer<
           }
 
           if (changed[colorId] !== undefined) {
-            this.updateGlyphColors(instance);
+            this.updateLabelColors(instance);
           }
 
           if (changed[originId] !== undefined) {
-            this.updateGlyphOrigins(instance);
+            this.updateLabelOrigins(instance);
           }
 
           if (changed[fontSizeId] !== undefined) {
-            this.updateGlyphFontSizes(instance);
+            this.updateLabelFontSizes(instance);
           }
           break;
 
@@ -305,7 +300,6 @@ export class TextAreaLayer<
             }
 
             this.areaToLabels.delete(instance);
-            this.labelToKerningRequest.delete(instance);
             this.areaWaitingOnLabel.delete(instance);
           }
           break;
@@ -381,11 +375,11 @@ export class TextAreaLayer<
     const labels = this.areaToLabels.get(instance);
     if (!labels || labels.length === 0) return;
 
-    // This is the spacing between the labels for white spacing
-    const whiteSpaceKerning = this.props.whiteSpaceKerning || 10;
-    // Calculate the scaling of the font which would be the font map's rendered glyph size
-    // as a ratio to the label's desired font size. This is already calculated for the glyphs of a label.
-    const fontScale = labels[0].glyphs[0].fontScale;
+    // // This is the spacing between the labels for white spacing
+    // const whiteSpaceKerning = this.props.whiteSpaceKerning || 10;
+    // // Calculate the scaling of the font which would be the font map's rendered glyph size
+    // // as a ratio to the label's desired font size. This is already calculated for the glyphs of a label.
+    // const fontScale = labels[0].glyphs[0].fontScale;
   }
 
   /**
@@ -411,199 +405,47 @@ export class TextAreaLayer<
   /**
    * This ensures the correct number of glyphs is being provided for the label indicated.
    */
-  updateLabels(instance: T) {
-    let currentLines = this.areaToLines.get(instance);
-    const sourceLines = instance.text.split(newLineRegEx);
-
-    // Make sure we have glyph storage
-    if (!currentLines) {
-      currentLines = [];
-      this.areaToLines.set(instance, currentLines);
-    }
-
-    // Update the existing lines
-    for (
-      let i = 0, iMax = Math.min(currentLines.length, text.length);
-      i < iMax;
-      ++i
-    ) {
-      const glyph = currentLabels[i];
-
-      if (glyph.character !== text[i]) {
-        glyph.character = text[i];
-      }
-    }
-
-    // Make any missing glyphs
-    if (currentLabels.length < text.length) {
-      let sourceIndex = 0;
-
-      for (
-        let i = currentLabels.length,
-          iMax = text.length,
-          iMax2 = sourceText.length;
-        i < iMax && sourceIndex < iMax2;
-        ++i, ++sourceIndex
-      ) {
-        const char = text[i];
-        let sourceChar = sourceText[sourceIndex];
-        const glyph = new GlyphInstance({
-          character: char,
-          color: instance.color,
-          origin: instance.origin,
-          onReady: this.handleLabelReady
-        });
-
-        glyph.parentLabel = instance;
-        currentLabels.push(glyph);
-
-        // Gather the preceding whitespace of the glyph
-        while (isWhiteSpace(sourceChar)) {
-          glyph.whiteSpace++;
-          sourceChar = sourceText[++sourceIndex];
-        }
-
-        if (instance.active) {
-          this.labelProvider.add(glyph);
-        }
-
-        let waiting = this.areaWaitingOnLabel.get(instance);
-
-        if (!waiting) {
-          waiting = new Set();
-          this.areaWaitingOnLabel.set(instance, waiting);
-        }
-
-        waiting.add(glyph);
-      }
-    }
-
-    // Remove excess glyphs
-    else if (currentLabels.length > instance.text.length) {
-      for (
-        let i = instance.text.length, iMax = currentLabels.length;
-        i < iMax;
-        ++i
-      ) {
-        const glyph = currentLabels[i];
-        this.labelProvider.remove(glyph);
-      }
-    }
-
-    // Update the list of glyphs that are utilized for the label's rendering
-    instance.glyphs = currentLabels;
+  updateLabels(_instance: T) {
+    // const currentLines = this.areaToLines.get(instance);
+    // const sourceLines = instance.text.split(newLineRegEx);
   }
 
   /**
-   * Updates the glyph colors to match the label's glyph colors
+   * Updates the label colors to match the label's label colors
    */
-  updateGlyphColors(instance: T) {
-    const glyphs = this.areaToLabels.get(instance);
-    if (!glyphs) return;
+  updateLabelColors(instance: T) {
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
 
-    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
-      glyphs[i].color = copy4(instance.color);
+    for (let i = 0, iMax = labels.length; i < iMax; ++i) {
+      labels[i].color = copy4(instance.color);
     }
   }
 
   /**
-   * Updates all the glyph's font scale for a label.
+   * Updates all the label's font scale for a label.
    */
-  updateGlyphFontSizes(instance: T) {
-    const glyphs = this.areaToLabels.get(instance);
-    if (!glyphs) return;
-    const request = this.labelToKerningRequest.get(instance);
-    if (!request) return;
-    const fontMap = request.fontMap;
-    if (!fontMap) return;
+  updateLabelFontSizes(instance: T) {
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
 
-    // This is the font scale of the glyph based on the label's requested font size
-    // vs the font resources rendered font size.
-    const fontScale =
-      instance.fontSize / fontMap.fontSource.size * this.view.pixelRatio;
-
-    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
-      glyphs[i].fontScale = fontScale;
+    for (let i = 0, iMax = labels.length; i < iMax; ++i) {
+      labels[i].fontSize = instance.fontSize;
     }
   }
 
   /**
-   * This updates all of the glyphs for the label to have the same position
+   * This updates all of the labels for the label to have the same position
    * as the label.
    */
-  updateGlyphOrigins(instance: T) {
-    const glyphs = this.areaToLabels.get(instance);
-    if (!glyphs) return;
+  updateLabelOrigins(instance: T) {
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
     const origin = instance.origin;
 
-    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
-      glyphs[i].origin = [origin[0], origin[1]];
+    for (let i = 0, iMax = labels.length; i < iMax; ++i) {
+      labels[i].origin = [origin[0], origin[1]];
     }
-
-    console.log("SIZE", instance.size);
-    console.log("ANCHOR", instance.anchor.x, instance.anchor.y);
-    console.log("ORIGIN", instance.origin);
-  }
-
-  /**
-   * Checks the label to ensure calculated kerning supports the text specified.
-   *
-   * Returns true when the kerning information is already available
-   */
-  updateKerning(instance: T) {
-    // A change in glyphs requires a potential kerning request
-    let labelKerningRequest = this.labelToKerningRequest.get(instance);
-
-    // If we have the label kerning request, we should check to see if the font map
-    // supports the contents of the label.
-    if (labelKerningRequest) {
-      // If the request already embodies the request for the text, we just see if the
-      // font map has been provided yet to indicate if the kerning information is ready
-      if (labelKerningRequest.kerningPairs === instance.text) {
-        return Boolean(labelKerningRequest.fontMap);
-      }
-
-      // If the request exists for a different text, and the font map does not support
-      // the kerning needs of the text, then we must make a new request.
-      if (
-        labelKerningRequest.fontMap &&
-        !labelKerningRequest.fontMap.supportsKerning(instance.text)
-      ) {
-        this.labelToKerningRequest.delete(instance);
-        labelKerningRequest = undefined;
-      }
-
-      // Otherwise, nothing needs to happen and we can use the font map for kerning information
-      else {
-        return true;
-      }
-    }
-
-    // If no request is present we must make one
-    if (!labelKerningRequest) {
-      // Make the request for retrieving the kerning information.
-      labelKerningRequest = fontRequest({
-        character: "",
-        kerningPairs: instance.text
-      });
-
-      // In order for the glyphs to be laid out, we need the font map to get the kerning information.
-      // So we send out a request to the font manager for the resource.
-      // Once the kerning information has been retrieved, the label active  property will be triggered
-      // to true.
-      this.resource.request(this, instance, labelKerningRequest, {
-        resource: {
-          type: ResourceType.FONT,
-          key: this.props.resourceKey || ""
-        }
-      });
-
-      this.labelToKerningRequest.set(instance, labelKerningRequest);
-
-      return false;
-    }
-
-    return true;
   }
 
   /**

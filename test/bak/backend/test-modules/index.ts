@@ -3,11 +3,11 @@
  * shaders.
  */
 
-import { ShaderInjectionTarget } from "../../../src";
 import {
+  ShaderInjectionTarget,
   ShaderModule,
   ShaderModuleUnit
-} from "../../../src/shaders/processing";
+} from "src";
 
 // Bulk register our test modules
 const out = ShaderModule.register([

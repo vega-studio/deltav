@@ -1,8 +1,9 @@
-import { ShaderInjectionTarget } from "../../src";
 import {
   IShaderCompileResults,
+  ShaderInjectionTarget,
   ShaderModule
-} from "../../src/shaders/processing/shader-module";
+} from "src";
+
 import "./test-modules";
 
 let testTitle: string = "";

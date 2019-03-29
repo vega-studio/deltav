@@ -174,6 +174,13 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   }
 
   /**
+   * Free resources for this manager
+   */
+  destroy() {
+    this.texture.dispose();
+  }
+
+  /**
    * Performs the internal glyph registration.
    */
   private doRegisterGlyph(char: string, tex: SubTexture) {
@@ -368,7 +375,6 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
 
         truncatedText = `${layout.text.substr(0, charIndex)}${truncation}`;
       } else {
-        console.log("TEXT REDUCED TO TRUNCATION", check, maxWidth);
         truncatedText = truncation;
       }
 

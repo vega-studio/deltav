@@ -76,7 +76,7 @@ export class ChartCamera {
   /** Internally set id */
   private _id: number = chartCameraUID++;
   /** Represents how much an element should be offset in world space */
-  private _offset: Vec3 = [0, 0, 1];
+  private _offset: Vec3 = [0, 0, 0];
   /** Represents how scaled each axis should be in world space */
   private _scale: Vec3 = [1, 1, 1];
   /** This indicates whether the view where the camera is in needs drawn */
@@ -116,6 +116,7 @@ export class ChartCamera {
       applyArray(this.scale, options.scale);
       applyArray(this.target, options.target);
       applyArray(this.up, options.up);
+
       if (options.perspective) {
         const metrics = options.perspective;
         this._projectionMatrix = perspective4x4(

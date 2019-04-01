@@ -8,8 +8,8 @@ varying vec2 vertexTexture;
 void main() {
     ${attributes}
 
-    vec4 aColor = vec4(0.0, 1.0, 0.0, 1.0);
-    vec4 dColor = vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 aColor = vec4(1.0, 1.0, 1.0, 1.0);
+    vec4 dColor = vec4(1.0, 1.0, 1.0, 1.0);
     vec4 sColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     //vec4 new_light = projection * modelView * vec4(light_position, 1.0);

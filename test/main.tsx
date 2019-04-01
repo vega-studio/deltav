@@ -11,11 +11,11 @@ import {
   nextFrame
 } from "src";
 
-/*import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
+import { VertexAttributePacking } from "test/examples/vertex-attribute-packing";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
-import { Arcs } from "./examples/arcs";*/
+import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
-/*import { BendyEdge } from "./examples/bendy-edge";
+import { BendyEdge } from "./examples/bendy-edge";
 import { BoundedView } from "./examples/bounded-view";
 import { BoundedView3 } from "./examples/bounded-view3";
 import { BoxOfCircles } from "./examples/box-of-circles";
@@ -34,7 +34,7 @@ import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
 import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
 import { MouseScroll } from "./examples/mouse-scroll";
 import { ScreenSpaceEdges } from "./examples/screen-space-edges";
-import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";*/
+import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
 import "./matix-tests";
 
 // Backend tests, for now, just activate when included
@@ -56,7 +56,7 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  /*new MouseInteractionColorPicking(),
+  new MouseInteractionColorPicking(),
   new BoxOfRings(),
   new BoxOfCircles(),
   new ScreenSpaceEdges(),
@@ -80,8 +80,8 @@ const tests: BaseExample[] = [
   new Arcs(),
   new VertexAttributePacking(),
   new VertexAttributePacking(true),
-  new MouseScroll(),*/
-  new Meshes()
+  new MouseScroll()
+  //new Meshes()
 ];
 
 /** These are the layers for the tests that are generated */
@@ -285,9 +285,9 @@ export class Main extends Component<any, IMainState> {
     for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
       for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
-        const camera = new ChartCamera({
-          target: [0, 0, 0]
-        });
+        const camera = new ChartCamera(); //{
+        //target: [0, 0, 0]
+        //});
         const test = tests[++testIndex];
 
         if (test) {

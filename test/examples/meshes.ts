@@ -26,8 +26,8 @@ export class Meshes extends BaseExample {
 
   constructor() {
     super();
-    this.obj = require("../obj/sphere/sphere.obj");
-    this.mtl = require("../obj/sphere/sphere.mtl");
+    this.obj = require("../obj/bmw/bmw.obj");
+    this.mtl = require("../obj/bmw/bmw.mtl");
 
     let xMin = Number.MAX_SAFE_INTEGER;
     let xMax = Number.MIN_SAFE_INTEGER;
@@ -60,7 +60,7 @@ export class Meshes extends BaseExample {
       (zMax - centerZ) * 1.5 + centerZ
     ];*/
 
-    this.offset = [xMax * 2, yMax * 2, zMax * 2];
+    this.offset = [xMax, yMax, zMax];
   }
 
   makeLayer(
@@ -69,7 +69,7 @@ export class Meshes extends BaseExample {
     provider: InstanceProvider<MeshInstance>
   ): LayerInitializer {
     return createLayer(MeshLayer, {
-      atlas,
+      atlas: atlas,
       data: provider,
       key: "meshes",
       scene: scene,
@@ -77,15 +77,15 @@ export class Meshes extends BaseExample {
       obj: this.obj,
       mtl: this.mtl,
       eye: this.offset,
-      light: this.offset
+      light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
       // light: this.target
       // light: [this.target[0] + 0.2, this.target[1] + 0.2, this.target[2] + 5]
     });
   }
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    defaultCamera.setTarget(this.target);
-    defaultCamera.setOffset(this.offset);
+    //defaultCamera.setTarget(this.target);
+    //defaultCamera.setOffset(this.offset);
     this.camera = defaultCamera;
 
     return defaultCamera;
@@ -110,6 +110,7 @@ export class Meshes extends BaseExample {
     });
 
     meshProvider.add(mesh);
+    console.warn("provider", meshProvider);
 
     return meshProvider;
   }

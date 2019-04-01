@@ -1170,6 +1170,7 @@ export class LayerSurface {
     if (!layer) {
       return null;
     }
+
     if (!this.layers.get(layer && layer.id)) {
       console.warn(
         "Tried to remove a layer that is not in the manager.",
@@ -1190,10 +1191,13 @@ export class LayerSurface {
   render(layerInitializers: LayerInitializer[]) {
     if (!this.gl) return;
 
+    // Prevent mutations of the input
+    const initializers = layerInitializers.slice(0);
+
     // Loop through all of the initializers and properly add and remove layers as needed
-    if (layerInitializers && layerInitializers.length > 0) {
-      for (let i = 0; i < layerInitializers.length; ++i) {
-        const init = layerInitializers[i];
+    if (initializers && initializers.length > 0) {
+      for (let i = 0; i < initializers.length; ++i) {
+        const init = initializers[i];
         const layerClass = init[0];
         const props = init[1];
         const existingLayer = this.layers.get(props.key);
@@ -1202,7 +1206,7 @@ export class LayerSurface {
           existingLayer.willUpdateProps(props);
 
           // If we have a provider that is about to be newly set to the layer, then the provider
-          // needs to do a full sync in order to have existing
+          // needs to do a full sync in order to have existing elements in the provider
           if (props.data !== existingLayer.props.data) {
             props.data.sync();
           }
@@ -1224,7 +1228,7 @@ export class LayerSurface {
 
           // Merge in the child layers this layer may request as the immediate next layers in the sequence
           const childLayers = existingLayer.childLayers();
-          layerInitializers.splice(i + 1, 0, ...childLayers);
+          initializers.splice(i + 1, 0, ...childLayers);
         } else {
           // Generate the new layer and provide it it's initial props
           const layer = new layerClass(
@@ -1251,7 +1255,7 @@ export class LayerSurface {
           layer.injectionOrder = i;
           // Merge in the child layers this layer may request as the immediate next layers in the sequence
           const childLayers = layer.childLayers();
-          layerInitializers.splice(i + 1, 0, ...childLayers);
+          initializers.splice(i + 1, 0, ...childLayers);
         }
 
         this.willDisposeLayer.set(props.key, false);
@@ -1280,6 +1284,8 @@ export class LayerSurface {
     this.layers.forEach((_layer, id) => {
       this.willDisposeLayer.set(id, true);
     });
+
+    // Log
   }
 
   /**

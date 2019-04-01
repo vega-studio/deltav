@@ -58,6 +58,7 @@ export class TextDemo extends BaseDemo {
     count: 200,
     fontSize: 14,
     words: 4,
+    maxWidth: 0,
 
     previous: {
       count: 200
@@ -76,7 +77,7 @@ export class TextDemo extends BaseDemo {
     const parameters = gui.addFolder("Parameters");
 
     // Changes the shape the circles take on
-    parameters.add(this.parameters, "count").onChange(
+    parameters.add(this.parameters, "count", 1, 500, 1).onChange(
       debounce(async (value: number) => {
         const delta = value - this.parameters.previous.count;
 
@@ -96,7 +97,7 @@ export class TextDemo extends BaseDemo {
       }, 250)
     );
 
-    parameters.add(this.parameters, "words", 1, 100, 1).onChange(
+    parameters.add(this.parameters, "words", 1, 50, 1).onChange(
       debounce(async (_value: number) => {
         while (this.labels.length > 0) this.removeLabel();
 
@@ -110,6 +111,12 @@ export class TextDemo extends BaseDemo {
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
         this.layoutLabels();
+      }, 250)
+    );
+
+    parameters.add(this.parameters, "maxWidth", 0, 1200, 1).onChange(
+      debounce(async (value: number) => {
+        this.labels.forEach(lbl => (lbl.maxWidth = value));
       }, 250)
     );
 

@@ -94,6 +94,14 @@ export abstract class BaseDemo {
   }
 
   /**
+   * When called, causes the current demo to be reloaded from the ground up. Allows the demo to toggle
+   * properties that needs a layer reconstruction since layers are unable to perform that
+   */
+  refreshDemo() {
+    // TODO
+  }
+
+  /**
    * This triggers when a window resize event occurrs
    */
   resize() {

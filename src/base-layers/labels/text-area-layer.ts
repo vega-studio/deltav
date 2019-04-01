@@ -313,7 +313,7 @@ export class TextAreaLayer<
   handleLabelReady = (label: LabelInstance) => {
     // The glyph must be associated to have this work
     if (!label.parentTextArea) {
-      // If no parent text area, we should not have this glyph returningfalse alarms to this method
+      // If no parent text area, we should not have this glyph returning false alarms to this method
       delete label.onReady;
 
       return;
@@ -342,11 +342,12 @@ export class TextAreaLayer<
   };
 
   /**
-   * Unmounts all of the glyphs that make the lable
+   * Unmount all of the glyphs that make the label
    */
   hideLabels(instance: T) {
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
+    console.log('hey');
 
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       this.labelProvider.remove(labels[i]);

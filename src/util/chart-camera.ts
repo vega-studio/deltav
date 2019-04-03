@@ -5,15 +5,31 @@ import {
   multiply4x4,
   perspective4x4,
   translation4x4,
-  transpose4x4
+  transpose4x4,
+  orthographic4x4
 } from "./matrix";
 import { cross3, normalize3, subtract3, Vec3 } from "./vector";
 
 let chartCameraUID = 0;
 
+export enum CameraType {
+  PROJECTION,
+  ORTHOGRAPHIC,
+  NONE
+}
+
 export interface IPerspectiveMetrics {
   fovRadian: number;
   aspectRadio: number;
+  near: number;
+  far: number;
+}
+
+export interface IOrthographicMetrics {
+  left: number;
+  right: number;
+  bottom: number;
+  top: number;
   near: number;
   far: number;
 }
@@ -29,6 +45,9 @@ export interface IChartCameraOptions {
   up?: Vec3;
 
   perspective?: IPerspectiveMetrics;
+  orthographic?: IOrthographicMetrics;
+
+  type?: CameraType;
 
   enable3D?: boolean;
 }
@@ -87,9 +106,10 @@ export class ChartCamera {
   private _target: Vec3 = [0, 0, 0];
   private _up: Vec3 = [0, 1, 0];
   private _modelViewMatrix: Mat4x4 = identity4();
+  private _projectionOrOrthographicMatrix: Mat4x4 = identity4();
   private _enable3D: boolean = false;
 
-  private _projectionMatrix: Mat4x4 = identity4();
+  private _type: CameraType = CameraType.NONE;
 
   constructor(options?: IChartCameraOptions) {
     if (options) {
@@ -98,20 +118,46 @@ export class ChartCamera {
       applyArray(this.target, options.target);
       applyArray(this.up, options.up);
 
-      if (options.perspective) {
-        const metrics = options.perspective;
-        this._projectionMatrix = perspective4x4(
-          metrics.fovRadian,
-          metrics.aspectRadio,
-          metrics.near,
-          metrics.far
-        );
-      }
-
       this._modelViewMatrix = calculateModelView(this._offset, this._target);
 
       this._enable3D = options.enable3D || this._enable3D;
+
+      this._type = options.type || this._type;
+
+      if (this._type !== CameraType.NONE) {
+        if (this._type === CameraType.PROJECTION) {
+          if (options.perspective) {
+            const metrics = options.perspective;
+            this._projectionOrOrthographicMatrix = perspective4x4(
+              metrics.fovRadian,
+              metrics.aspectRadio,
+              metrics.near,
+              metrics.far
+            );
+          }
+        } else if (this._type === CameraType.ORTHOGRAPHIC) {
+          if (options.orthographic) {
+            const metrics = options.orthographic;
+            this._projectionOrOrthographicMatrix = orthographic4x4(
+              metrics.left,
+              metrics.right,
+              metrics.bottom,
+              metrics.top,
+              metrics.near,
+              metrics.far
+            );
+          }
+        }
+      }
     }
+  }
+
+  setType(type: CameraType) {
+    this._type = type;
+  }
+
+  get type() {
+    return this._type;
   }
 
   setEnable3D(value: boolean) {
@@ -173,7 +219,7 @@ export class ChartCamera {
   }
 
   get projectionMatrix() {
-    return this._projectionMatrix;
+    return this._projectionOrOrthographicMatrix;
   }
 
   setProjectionMatrix(
@@ -182,11 +228,38 @@ export class ChartCamera {
     near: number,
     far: number
   ) {
-    this._projectionMatrix = perspective4x4(fovRadian, aspectRadio, near, far);
+    if (this.type === CameraType.PROJECTION) {
+      this._projectionOrOrthographicMatrix = perspective4x4(
+        fovRadian,
+        aspectRadio,
+        near,
+        far
+      );
+    }
   }
 
-  getProjectionElements() {
-    return new Float32Array(this._projectionMatrix);
+  setOrthographicMatrix(
+    left: number,
+    right: number,
+    bottom: number,
+    top: number,
+    near: number,
+    far: number
+  ) {
+    if (this.type === CameraType.ORTHOGRAPHIC) {
+      this._projectionOrOrthographicMatrix = orthographic4x4(
+        left,
+        right,
+        bottom,
+        top,
+        near,
+        far
+      );
+    }
+  }
+
+  getProjectionOrOthographicElements() {
+    return new Float32Array(this._projectionOrOrthographicMatrix);
   }
 
   getModelViewMatrixElements() {

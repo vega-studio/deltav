@@ -56,7 +56,7 @@ export type SceneInitializer = {
 
 /** These are all of the tests to be rendered */
 const tests: BaseExample[] = [
-  new MouseInteractionColorPicking(),
+  /*new MouseInteractionColorPicking(),
   new BoxOfRings(),
   new BoxOfCircles(),
   new ScreenSpaceEdges(),
@@ -80,7 +80,7 @@ const tests: BaseExample[] = [
   new Arcs(),
   new VertexAttributePacking(),
   new VertexAttributePacking(true),
-  new MouseScroll(),
+  new MouseScroll(),*/
   new Meshes()
 ];
 

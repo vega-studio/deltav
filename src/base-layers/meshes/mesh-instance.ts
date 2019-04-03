@@ -2,12 +2,12 @@ import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResource, ImageRasterizer } from "../../surface";
-import { quaternion, Vec4 } from "../../util";
+import { quaternion, Vec3, Vec4 } from "../../util";
 
 export interface IMeshInstanceOptions extends IInstanceOptions {
   color: Vec4;
-  depth: number;
   element: HTMLImageElement;
+  position?: Vec3;
 }
 
 type RasterizationReference = {
@@ -22,7 +22,6 @@ const rasterizationLookUp = new Map<
 
 export class MeshInstance extends Instance implements Image {
   @observable color: Vec4 = [0, 0, 0, 1];
-  @observable depth: number = 0.1;
   @observable transform: Vec4 = [0, 0, 0, 1];
   @observable scale: Vec4 = [1, 1, 1, 1];
   @observable quaternion: Vec4 = quaternion(0, 1, 0, 0);
@@ -33,6 +32,7 @@ export class MeshInstance extends Instance implements Image {
   @observable private _rasterization: RasterizationReference;
   private _path: string;
   private _element: HTMLImageElement;
+  private _position: Vec3 = [0, 0, 0];
 
   get sourceWidth() {
     return this._sourceWidth;
@@ -54,6 +54,10 @@ export class MeshInstance extends Instance implements Image {
     return this._path;
   }
 
+  get position() {
+    return this._position;
+  }
+
   get resource() {
     return this._rasterization.resource;
   }
@@ -61,7 +65,13 @@ export class MeshInstance extends Instance implements Image {
   constructor(options: IMeshInstanceOptions) {
     super(options);
     this.color = options.color || this.color;
-    this.depth = options.depth || this.depth;
+    this._position = options.position || this._position;
+    this.transform = [
+      this._position[0],
+      this._position[1],
+      this._position[2],
+      1
+    ];
 
     this._element = options.element;
 

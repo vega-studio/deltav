@@ -8,7 +8,8 @@ import {
   MeshLayer,
   MeshScaleType,
   quaternion,
-  Vec3
+  Vec3,
+  CameraType
 } from "src";
 import * as objLoader from "webgl-obj-loader";
 import { BasicCameraController3D } from "../../src/base-event-managers/basic-camera-controller-3D";
@@ -39,6 +40,7 @@ export class Meshes extends BaseExample {
     let zMax = Number.MIN_SAFE_INTEGER;
 
     const objModel = new objLoader.Mesh(this.obj);
+
     for (let i = 0, endi = objModel.vertices.length; i < endi; i += 3) {
       const x = objModel.vertices[i * 3];
       if (x > xMax) xMax = x;
@@ -78,14 +80,23 @@ export class Meshes extends BaseExample {
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
     this.camera = defaultCamera;
-    this.camera.setEnable3D(true);
+    this.camera.setType(CameraType.ORTHOGRAPHIC);
     this.camera.setTarget(this.target);
     this.camera.setOffset(this.offset);
-    this.camera.setProjectionMatrix(
+    /*this.camera.setProjectionMatrix(
       Math.PI / 4,
       window.innerWidth / window.innerHeight,
       0.1,
       2000
+    );*/
+
+    this.camera.setOrthographicMatrix(
+      -window.innerWidth / 200,
+      window.innerWidth / 200,
+      -window.innerHeight / 200,
+      window.innerHeight / 200,
+      -100,
+      1000
     );
 
     return this.camera;
@@ -107,19 +118,16 @@ export class Meshes extends BaseExample {
 
     const mesh = new MeshInstance({
       color: [1, 0, 0, 1],
-      depth: 0,
       element: texture
     });
 
     meshProvider.add(mesh);
 
-    mesh.transform = [-this.target[0], 0, -this.target[2], 1];
-
     let angle = 0;
     setInterval(() => {
-      angle += Math.PI / 100;
+      angle += Math.PI / 200;
       mesh.quaternion = quaternion(0, 1, 0, angle);
-    }, 20);
+    }, 40);
 
     return meshProvider;
   }

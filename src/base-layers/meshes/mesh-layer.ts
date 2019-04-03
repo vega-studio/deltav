@@ -105,11 +105,6 @@ export class MeshLayer<
       fs: require("./mesh-layer.fs"),
       instanceAttributes: [
         {
-          name: MeshLayer.attributeNames.depth,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
-        },
-        {
           atlas: {
             key: this.props.atlas || "",
             name: "imageAtlas"

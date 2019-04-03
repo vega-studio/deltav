@@ -59,7 +59,7 @@ void main() {
     vec4 dColor = vec4(1.0, 1.0, 1.0, 1.0);
     vec4 sColor = vec4(1.0, 1.0, 1.0, 1.0);
 
-    mat4 transformMatrix = translation4x4(transform) * rotationQuaternion(quaternion) * scale4(scale);
+    mat4 transformMatrix = rotationQuaternion(quaternion) * translation4x4(transform) * scale4(scale);
     
     vec4 newPosition = transformMatrix * vec4(position, 1.0);
 
@@ -67,7 +67,6 @@ void main() {
 
     vec3 L = normalize(light_position - newPosition.xyz);
     vec3 V = normalize(cameraOffset - newPosition.xyz);
-    //vec3 R = normalize(L + V);
     vec3 R = reflect(-L, normalize(N));
 
     float diffuseFactor = max(dot(normalize(N), L), 0.0);
@@ -80,7 +79,6 @@ void main() {
     vec4 specularColor = specularFactor * vec4(specular, 1.0) * sColor;
 
     vertexColor = ambientColor + diffuseColor + specularColor;
-    //vertexTexture = tex;
 
     vertexTexture = texture.xy + (texture.zw - texture.xy) * tex;
 

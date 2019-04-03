@@ -257,7 +257,7 @@ export class View extends IdentifyByKey {
       );
       camera.position = [
         -viewBounds.width / 2.0 * scaleX,
-        viewBounds.height / 2.0 * scaleY,
+        -viewBounds.height / 2.0 * scaleY,
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];

@@ -7,6 +7,7 @@ import {
   MeshInstance,
   MeshLayer,
   MeshScaleType,
+  quaternion,
   Vec3
 } from "src";
 import * as objLoader from "webgl-obj-loader";
@@ -23,11 +24,12 @@ export class Meshes extends BaseExample {
   mtl: string;
   offset: Vec3;
   target: Vec3;
+  center: Vec3;
 
   constructor() {
     super();
-    this.obj = require("../obj/bmw/bmw.obj");
-    this.mtl = require("../obj/bmw/bmw.mtl");
+    this.obj = require("../obj/cube/cube.obj");
+    this.mtl = require("../obj/cube/cube.mtl");
 
     let xMin = Number.MAX_SAFE_INTEGER;
     let xMax = Number.MIN_SAFE_INTEGER;
@@ -54,13 +56,7 @@ export class Meshes extends BaseExample {
     const centerZ = (zMin + zMax) / 2;
 
     this.target = [centerX, centerY, centerZ];
-    /*this.offset = [
-      (xMax - centerX) * 1.5 + centerX,
-      (yMax - centerY) * 1.5 + centerY,
-      (zMax - centerZ) * 1.5 + centerZ
-    ];*/
-
-    this.offset = [xMax, yMax, zMax];
+    this.offset = [xMax * 2, yMax * 2, zMax * 2];
   }
 
   makeLayer(
@@ -69,34 +65,40 @@ export class Meshes extends BaseExample {
     provider: InstanceProvider<MeshInstance>
   ): LayerInitializer {
     return createLayer(MeshLayer, {
-      atlas: atlas,
+      atlas,
       data: provider,
       key: "meshes",
       scene: scene,
       scaleType: MeshScaleType.NONE,
       obj: this.obj,
       mtl: this.mtl,
-      eye: this.offset,
       light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
-      // light: this.target
-      // light: [this.target[0] + 0.2, this.target[1] + 0.2, this.target[2] + 5]
     });
   }
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    //defaultCamera.setTarget(this.target);
-    //defaultCamera.setOffset(this.offset);
     this.camera = defaultCamera;
+    this.camera.setEnable3D(true);
+    this.camera.setTarget(this.target);
+    this.camera.setOffset(this.offset);
+    this.camera.setProjectionMatrix(
+      Math.PI / 4,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      2000
+    );
 
-    return defaultCamera;
+    return this.camera;
   }
 
   makeController(
     defaultCamera: ChartCamera,
-    _testCamera: ChartCamera
+    _testCamera: ChartCamera,
+    viewName: string
   ): EventManager {
     return new BasicCameraController3D({
-      camera: defaultCamera
+      camera: defaultCamera,
+      startView: viewName
     });
   }
 
@@ -110,7 +112,14 @@ export class Meshes extends BaseExample {
     });
 
     meshProvider.add(mesh);
-    console.warn("provider", meshProvider);
+
+    mesh.transform = [-this.target[0], 0, -this.target[2], 1];
+
+    let angle = 0;
+    setInterval(() => {
+      angle += Math.PI / 100;
+      mesh.quaternion = quaternion(0, 1, 0, angle);
+    }, 20);
 
     return meshProvider;
   }

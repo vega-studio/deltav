@@ -2,7 +2,7 @@ import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResource, ImageRasterizer } from "../../surface";
-import { Mat4x4, Vec4 } from "../../util";
+import { quaternion, Vec4 } from "../../util";
 
 export interface IMeshInstanceOptions extends IInstanceOptions {
   color: Vec4;
@@ -23,11 +23,9 @@ const rasterizationLookUp = new Map<
 export class MeshInstance extends Instance implements Image {
   @observable color: Vec4 = [0, 0, 0, 1];
   @observable depth: number = 0.1;
-  eye: Vec4 = [0, 0, 0, 1];
-  position: Vec4 = [0, 0, 0, 1];
-  scale: Vec4 = [1, 1, 1, 1];
-  quaternion: Vec4 = [0, 0, 0, 1];
-  transform: Mat4x4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  @observable transform: Vec4 = [0, 0, 0, 1];
+  @observable scale: Vec4 = [1, 1, 1, 1];
+  @observable quaternion: Vec4 = quaternion(0, 1, 0, 0);
 
   private _sourceWidth: number = 0;
   private _sourceHeight: number = 0;

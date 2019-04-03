@@ -23,7 +23,6 @@ export interface IMeshLayerProps<T extends MeshInstance>
   scaleType?: MeshScaleType;
   obj: string;
   mtl: string;
-  eye: Vec3;
   light: Vec3;
 }
 
@@ -38,7 +37,6 @@ export class MeshLayer<
     scene: "default",
     obj: "",
     mtl: "",
-    eye: [1, 1, 1],
     light: [1, 1, 1]
   };
 
@@ -118,6 +116,21 @@ export class MeshLayer<
           },
           name: MeshLayer.attributeNames.texture,
           update: o => this.resource.request(this, o, o.resource)
+        },
+        {
+          name: "transform",
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.transform
+        },
+        {
+          name: "quaternion",
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.quaternion
+        },
+        {
+          name: "scale",
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.scale
         }
       ],
       uniforms: [
@@ -125,11 +138,6 @@ export class MeshLayer<
           name: "scaleFactor",
           size: UniformSize.ONE,
           update: _u => [1]
-        },
-        {
-          name: "eye_position",
-          size: UniformSize.THREE,
-          update: _u => this.props.eye
         },
         {
           name: "light_position",

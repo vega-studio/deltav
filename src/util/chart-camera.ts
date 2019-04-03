@@ -29,6 +29,8 @@ export interface IChartCameraOptions {
   up?: Vec3;
 
   perspective?: IPerspectiveMetrics;
+
+  enable3D?: boolean;
 }
 
 /**
@@ -84,31 +86,10 @@ export class ChartCamera {
 
   private _target: Vec3 = [0, 0, 0];
   private _up: Vec3 = [0, 1, 0];
-  private _modelViewMatrix: Mat4x4 = [
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1
-  ];
+  private _modelViewMatrix: Mat4x4 = identity4();
+  private _enable3D: boolean = false;
 
-  private _projectionMatrix: Mat4x4 = perspective4x4(
-    Math.PI / 4,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000.0
-  );
+  private _projectionMatrix: Mat4x4 = identity4();
 
   constructor(options?: IChartCameraOptions) {
     if (options) {
@@ -128,7 +109,17 @@ export class ChartCamera {
       }
 
       this._modelViewMatrix = calculateModelView(this._offset, this._target);
+
+      this._enable3D = options.enable3D || this._enable3D;
     }
+  }
+
+  setEnable3D(value: boolean) {
+    this._enable3D = value;
+  }
+
+  get enable3D() {
+    return this._enable3D;
   }
 
   /** Keep id as readonly */
@@ -191,7 +182,7 @@ export class ChartCamera {
     near: number,
     far: number
   ) {
-    return perspective4x4(fovRadian, aspectRadio, near, far);
+    this._projectionMatrix = perspective4x4(fovRadian, aspectRadio, near, far);
   }
 
   getProjectionElements() {

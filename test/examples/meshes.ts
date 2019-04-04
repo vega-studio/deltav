@@ -27,6 +27,8 @@ export class Meshes extends BaseExample {
   target: Vec3;
   center: Vec3;
 
+  sphereProvider = new InstanceProvider<MeshInstance>();
+
   constructor() {
     super();
     this.obj = require("../obj/cube/cube.obj");
@@ -65,30 +67,42 @@ export class Meshes extends BaseExample {
     scene: string,
     atlas: string,
     provider: InstanceProvider<MeshInstance>
-  ): LayerInitializer {
-    return createLayer(MeshLayer, {
-      atlas,
-      data: provider,
-      key: "meshes",
-      scene: scene,
-      scaleType: MeshScaleType.NONE,
-      obj: this.obj,
-      mtl: this.mtl,
-      light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
-    });
+  ): LayerInitializer | LayerInitializer[] {
+    return [
+      createLayer(MeshLayer, {
+        atlas,
+        data: provider,
+        key: "meshes",
+        scene: scene,
+        scaleType: MeshScaleType.NONE,
+        obj: this.obj,
+        mtl: this.mtl,
+        light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
+      }),
+      createLayer(MeshLayer, {
+        atlas,
+        data: this.sphereProvider,
+        key: "meshes2",
+        scene: scene,
+        scaleType: MeshScaleType.NONE,
+        obj: require("../obj/sphere/sphere.obj"),
+        mtl: require("../obj/sphere/sphere.mtl"),
+        light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
+      })
+    ];
   }
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
     this.camera = defaultCamera;
-    this.camera.setType(CameraType.ORTHOGRAPHIC);
+    this.camera.setType(CameraType.PROJECTION);
     this.camera.setTarget(this.target);
     this.camera.setOffset(this.offset);
-    /*this.camera.setProjectionMatrix(
+    this.camera.setProjectionMatrix(
       Math.PI / 4,
       window.innerWidth / window.innerHeight,
       0.1,
       2000
-    );*/
+    );
 
     this.camera.setOrthographicMatrix(
       -window.innerWidth / 200,
@@ -115,6 +129,7 @@ export class Meshes extends BaseExample {
 
   makeProvider(): InstanceProvider<MeshInstance> {
     const meshProvider = new InstanceProvider<MeshInstance>();
+    const sphereProvider = new InstanceProvider<MeshInstance>();
 
     const mesh = new MeshInstance({
       color: [1, 0, 0, 1],
@@ -128,6 +143,14 @@ export class Meshes extends BaseExample {
       angle += Math.PI / 200;
       mesh.quaternion = quaternion(0, 1, 0, angle);
     }, 40);
+
+    const sphere = new MeshInstance({
+      color: [1, 0, 0, 1],
+      element: texture
+    });
+
+    sphereProvider.add(sphere);
+    this.sphereProvider = sphereProvider;
 
     return meshProvider;
   }

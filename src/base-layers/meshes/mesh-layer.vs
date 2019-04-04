@@ -55,9 +55,9 @@ mat4 scale4(vec4 vec) {
 void main() {
     ${attributes}
 
-    vec4 aColor = vec4(1.0, 1.0, 1.0, 1.0);
-    vec4 dColor = vec4(1.0, 1.0, 1.0, 1.0);
-    vec4 sColor = vec4(1.0, 1.0, 1.0, 1.0);
+    vec4 aColor = vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 dColor = vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 sColor = vec4(0.0, 1.0, 0.0, 1.0);
 
     mat4 transformMatrix = rotationQuaternion(quaternion) * translation4x4(transform) * scale4(scale);
     
@@ -82,7 +82,7 @@ void main() {
 
     vertexTexture = texture.xy + (texture.zw - texture.xy) * tex;
 
-    gl_Position = (projection * modelView)  * newPosition;
+    gl_Position = (projection * modelView) * newPosition;
 
     ${extend}
 }  

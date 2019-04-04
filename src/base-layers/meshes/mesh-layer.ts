@@ -96,9 +96,6 @@ export class MeshLayer<
     });
 
     count = i;
-    console.warn("obj", obj);
-    console.warn("mtl", mtl);
-    console.warn("vertices", vertices);
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,

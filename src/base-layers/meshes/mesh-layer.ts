@@ -9,8 +9,9 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, Vec3 } from "../../util";
+import { CommonMaterialOptions } from "../../util";
 import { MeshInstance } from "./mesh-instance";
+import { Light } from "src/util/light";
 
 export enum MeshScaleType {
   NONE,
@@ -23,7 +24,8 @@ export interface IMeshLayerProps<T extends MeshInstance>
   scaleType?: MeshScaleType;
   obj: string;
   mtl: string;
-  light: Vec3;
+  light: Light;
+  hasTexture?: boolean;
 }
 
 export class MeshLayer<
@@ -37,7 +39,8 @@ export class MeshLayer<
     scene: "default",
     obj: "",
     mtl: "",
-    light: [1, 1, 1]
+    light: new Light({ position: [1, 1, 1] }),
+    hasTexture: false
   };
 
   static attributeNames = {
@@ -134,7 +137,32 @@ export class MeshLayer<
         {
           name: "light_position",
           size: UniformSize.THREE,
-          update: _u => this.props.light
+          update: _u => this.props.light.position
+        },
+        {
+          name: "light_type",
+          size: UniformSize.ONE,
+          update: _u => this.props.light.type
+        },
+        {
+          name: "ambient_color",
+          size: UniformSize.FOUR,
+          update: _u => this.props.light.ambientColor
+        },
+        {
+          name: "diffuse_color",
+          size: UniformSize.FOUR,
+          update: _u => this.props.light.diffuseColor
+        },
+        {
+          name: "specular_color",
+          size: UniformSize.FOUR,
+          update: _u => this.props.light.specularColor
+        },
+        {
+          name: "has_texture",
+          size: UniformSize.ONE,
+          update: _u => Number(this.props.hasTexture)
         }
       ],
       vertexAttributes: [

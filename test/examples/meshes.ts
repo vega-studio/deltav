@@ -14,10 +14,14 @@ import {
 import * as objLoader from "webgl-obj-loader";
 import { BasicCameraController3D } from "../../src/base-event-managers/basic-camera-controller-3D";
 import { BaseExample } from "./base-example";
+import { Light, LightType } from "src/util/light";
 
-const imageData = require("./images/Face.png");
-const texture = new Image();
-texture.src = imageData;
+const imageData1 = require("./images/Face.png");
+const imageData2 = require("./images/tex.png");
+const cubeTexture = new Image();
+cubeTexture.src = imageData1;
+const sphereTexture = new Image();
+sphereTexture.src = imageData2;
 
 export class Meshes extends BaseExample {
   camera: ChartCamera;
@@ -77,7 +81,16 @@ export class Meshes extends BaseExample {
         scaleType: MeshScaleType.NONE,
         obj: this.obj,
         mtl: this.mtl,
-        light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
+        light: new Light({
+          position: [
+            -this.offset[0] * 2,
+            this.offset[1] * 2,
+            -this.offset[2] * 2
+          ],
+          type: LightType.DIRECTION,
+          ambientColor: [1.0, 0.0, 0.0, 1.0]
+        }),
+        hasTexture: true
       }),
       createLayer(MeshLayer, {
         atlas,
@@ -87,7 +100,15 @@ export class Meshes extends BaseExample {
         scaleType: MeshScaleType.NONE,
         obj: require("../obj/sphere/sphere.obj"),
         mtl: require("../obj/sphere/sphere.mtl"),
-        light: [this.offset[0] * 2, this.offset[1] * 2, this.offset[2] * 2]
+        light: new Light({
+          position: [
+            this.offset[0] * 2,
+            this.offset[1] * 2,
+            this.offset[2] * 2
+          ],
+          type: LightType.POINT,
+          ambientColor: [0.0, 0.0, 1.0, 1.0]
+        })
       })
     ];
   }
@@ -128,30 +149,34 @@ export class Meshes extends BaseExample {
   }
 
   makeProvider(): InstanceProvider<MeshInstance> {
-    const meshProvider = new InstanceProvider<MeshInstance>();
+    const cubeProvider = new InstanceProvider<MeshInstance>();
     const sphereProvider = new InstanceProvider<MeshInstance>();
 
-    const mesh = new MeshInstance({
+    const cube = new MeshInstance({
       color: [1, 0, 0, 1],
-      element: texture
+      element: cubeTexture
     });
 
-    meshProvider.add(mesh);
+    cube.transform = [2, 0, 2, 1];
+    cubeProvider.add(cube);
 
     let angle = 0;
     setInterval(() => {
       angle += Math.PI / 200;
-      mesh.quaternion = quaternion(0, 1, 0, angle);
+      cube.quaternion = quaternion(0, 1, 0, angle);
     }, 40);
 
     const sphere = new MeshInstance({
       color: [1, 0, 0, 1],
-      element: texture
+      element: sphereTexture
     });
-
     sphereProvider.add(sphere);
+    setInterval(() => {
+      const scale = Math.cos(angle) * 0.2 + 0.8;
+      sphere.scale = [scale, scale, scale, 1];
+    });
     this.sphereProvider = sphereProvider;
 
-    return meshProvider;
+    return cubeProvider;
   }
 }

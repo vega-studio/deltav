@@ -4,6 +4,7 @@ precision highp float;
 
 varying vec4 vertexColor;
 varying vec2 vertexTexture;
+varying float enableTexture;
 
 mat4 translation4x4(vec4 vec) {
     return mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, vec[0], vec[1], vec[2], 1.0);
@@ -55,9 +56,9 @@ mat4 scale4(vec4 vec) {
 void main() {
     ${attributes}
 
-    vec4 aColor = vec4(1.0, 0.0, 0.0, 1.0);
-    vec4 dColor = vec4(1.0, 0.0, 0.0, 1.0);
-    vec4 sColor = vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 aColor = ambient_color;
+    vec4 dColor = diffuse_color;
+    vec4 sColor = specular_color;
 
     mat4 transformMatrix = rotationQuaternion(quaternion) * translation4x4(transform) * scale4(scale);
     
@@ -65,7 +66,7 @@ void main() {
 
     vec3 N = (rotationQuaternion(quaternion) * vec4(normal, 1.0)).xyz;
 
-    vec3 L = normalize(light_position - newPosition.xyz);
+    vec3 L = normalize(mix(light_position, light_position - newPosition.xyz, light_type));
     vec3 V = normalize(cameraOffset - newPosition.xyz);
     vec3 R = reflect(-L, normalize(N));
 
@@ -81,6 +82,8 @@ void main() {
     vertexColor = ambientColor + diffuseColor + specularColor;
 
     vertexTexture = texture.xy + (texture.zw - texture.xy) * tex;
+
+    enableTexture = has_texture;
 
     gl_Position = (projection * modelView) * newPosition;
 

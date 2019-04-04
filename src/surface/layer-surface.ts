@@ -1203,6 +1203,8 @@ export class LayerSurface {
   ) {
     // Merge in the child layers this layer may request as the immediate next layers in the sequence
     const childLayers: LayerInitializerInternal[] = layer.childLayers();
+    // No children, no need to do anything
+    if (childLayers.length <= 0) return;
 
     // Make sure each child layer knows their parent
     for (let i = 0, iMax = childLayers.length; i < iMax; ++i) {
@@ -1251,6 +1253,12 @@ export class LayerSurface {
       if (layer.parent && layer.parent !== props.parent) {
         // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
         // updated properly.
+        const children = layer.parent.children || [];
+        const index = children.indexOf(layer) || -1;
+
+        if (index > -1) {
+          children.splice(index, 1);
+        }
       }
     }
 
@@ -1327,6 +1335,8 @@ export class LayerSurface {
 
     // Loop through all of the initializers and properly add and remove layers as needed
     if (initializers && initializers.length > 0) {
+      // This loop is VERY specifically putting the length check in the conditional of the loop
+      // The list CAN add additional initializers to account for the children being added
       for (let i = 0; i < initializers.length; ++i) {
         const init = initializers[i];
         const props = init[1];
@@ -1364,8 +1374,6 @@ export class LayerSurface {
     this.layers.forEach((_layer, id) => {
       this.willDisposeLayer.set(id, true);
     });
-
-    // Log
   }
 
   /**

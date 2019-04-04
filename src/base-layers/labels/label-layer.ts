@@ -217,7 +217,7 @@ export class LabelLayer<
       createLayer(this.props.customGlyphLayer || GlyphLayer, {
         animate: this.props.animate,
         data: this.glyphProvider,
-        key: `${this.id}_glyphs`,
+        key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
         scene: this.props.scene,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX

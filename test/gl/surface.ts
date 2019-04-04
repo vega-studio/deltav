@@ -73,6 +73,8 @@ export class Surface {
   private waitForSizeContext: number = 0;
   /** This is the animation frame id we are waiting for. This is used to dispose the animation before it fires */
   private animationFrameId: number;
+  /** Flagged to true when a layer update should happen */
+  needsLayerUpdate: boolean = false;
 
   constructor(options: ISurfaceOptions) {
     this.container = options.container;
@@ -221,9 +223,10 @@ export class Surface {
       });
 
     // Start up the draw loop
-    this.animationFrameId = requestAnimationFrame((time: number) =>
-      this.draw(time)
-    );
+    this.animationFrameId = requestAnimationFrame((time: number) => {
+      this.draw(time);
+      this.needsLayerUpdate = true;
+    });
   }
 
   /**
@@ -257,7 +260,12 @@ export class Surface {
     if (this.surface) {
       try {
         this.currentTime = time;
-        this.updateLayers();
+
+        if (this.needsLayerUpdate || true) {
+          this.needsLayerUpdate = false;
+          this.updateLayers();
+        }
+
         this.surface.draw(time);
       } catch (err) {
         /* Absorb any errors the draw loop may emit */

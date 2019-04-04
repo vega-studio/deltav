@@ -133,6 +133,7 @@ export class KitchenSink extends BaseDemo {
 
   getLayers(): LayerInitializer[] {
     this.makeSceneControls();
+    layers = [];
 
     // Generate the Layers for the tests now that the scenes are established
     tests.forEach((test, i) => {

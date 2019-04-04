@@ -1,16 +1,15 @@
-import { GLSettings, WebGLStat } from "src/gl";
-import { Texture, TextureOptions } from "src/gl/texture";
-import { FontRenderer, KerningPairs } from "src/resources/text/font-renderer";
-import { PackNode } from "src/resources/texture/pack-node";
-import { isWhiteSpace, ResourceType, Size } from "src/types";
-import { add2, scale2, Vec2 } from "src/util/vector";
+import { GLSettings, Texture, TextureOptions, WebGLStat } from "../../gl";
+import { isWhiteSpace, ResourceType, Size } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
+import { add2, scale2, Vec2 } from "../../util/vector";
+import { PackNode } from "../texture/pack-node";
 import { SubTexture } from "../texture/sub-texture";
 import {
   FontManager,
   FontMapSource,
   IFontResourceOptions
 } from "./font-manager";
+import { FontRenderer, KerningPairs } from "./font-renderer";
 
 export enum FontMapGlyphType {
   /** Straight images for each glyph */

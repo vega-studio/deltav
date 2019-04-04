@@ -1,8 +1,7 @@
-import { TextureIOExpansion } from "src/resources/texture/texture-io-expansion";
-import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
   IResourceContext,
@@ -18,6 +17,7 @@ import { AtlasManager, AtlasResourceRequest } from "./atlas-manager";
 import { BaseAtlasResourceRequest } from "./base-atlas-resource-request";
 import { LabelAtlasResourceRequest } from "./label-atlas-resource-request";
 import { SubTexture, subTextureIOValue } from "./sub-texture";
+import { TextureIOExpansion } from "./texture-io-expansion";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */

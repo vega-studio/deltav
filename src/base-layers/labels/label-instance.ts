@@ -1,10 +1,10 @@
-import { GlyphInstance } from "src/base-layers/labels/glyph-instance";
-import { TextAreaInstance } from "src/base-layers/labels/text-area-instance";
-import { isWhiteSpace, Size } from "src/types";
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { isWhiteSpace, Size } from "../../types";
 import { Vec2 } from "../../util";
 import { Anchor, AnchorType } from "../types";
+import { GlyphInstance } from "./glyph-instance";
+import { TextAreaInstance } from "./text-area-instance";
 
 export interface ILabelInstanceOptions extends IInstanceOptions {
   /**

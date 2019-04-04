@@ -1,12 +1,12 @@
-import { LabelInstance } from "src/base-layers/labels/label-instance";
-import { IFontResourceRequest } from "src/resources";
 import {
   IInstanceOptions,
   Instance,
   observable
 } from "../../instance-provider";
+import { IFontResourceRequest } from "../../resources";
 import { Omit } from "../../types";
 import { Vec2, Vec4 } from "../../util/vector";
+import { LabelInstance } from "./label-instance";
 
 export type GlyphInstanceOptions = Omit<
   Partial<GlyphInstance>,

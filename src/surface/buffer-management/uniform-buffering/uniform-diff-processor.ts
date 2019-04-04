@@ -1,5 +1,5 @@
-import { isResourceAttribute } from "src/types";
 import { Instance, InstanceDiff } from "../../../instance-provider";
+import { isResourceAttribute } from "../../../types";
 import { Vec4 } from "../../../util/vector";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";

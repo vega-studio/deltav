@@ -1,11 +1,9 @@
-import { ScaleMode } from "src/base-layers/types";
-import { InstanceProvider } from "src/instance-provider";
+import { InstanceProvider } from "../../instance-provider";
 import {
   fontRequest,
   FontResourceRequestFetch,
   IFontResourceRequest
-} from "src/resources";
-import { CommonMaterialOptions, IAutoEasingMethod, Vec, Vec2 } from "src/util";
+} from "../../resources";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   createMaterialOptions,
@@ -16,6 +14,13 @@ import {
   ResourceType,
   VertexAttributeSize
 } from "../../types";
+import {
+  CommonMaterialOptions,
+  IAutoEasingMethod,
+  Vec,
+  Vec2
+} from "../../util";
+import { ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
 
 /**

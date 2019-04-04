@@ -1,5 +1,5 @@
-import { Bounds } from "src/primitives/bounds";
 import { Texture } from "../../gl/texture";
+import { Bounds } from "../../primitives/bounds";
 import { InstanceIOValue } from "../../types";
 import { Vec2 } from "../../util/vector";
 

@@ -1,5 +1,5 @@
-import { Bounds } from "src/primitives";
-import { PackNode } from "src/resources/texture/pack-node";
+import { Bounds } from "../../primitives";
+import { PackNode } from "../../resources/texture/pack-node";
 import { Omit, ResourceType } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { FontMap, FontMapGlyphType } from "../text/font-map";

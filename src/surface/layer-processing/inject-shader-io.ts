@@ -4,8 +4,6 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { BaseIOSorting } from "src/surface/base-io-sorting";
-import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../../instance-provider/instance";
 import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
 import {
@@ -16,7 +14,9 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal
 } from "../../types";
+import { BaseIOSorting } from "../base-io-sorting";
 import { ILayerProps, Layer } from "../layer";
+import { BaseIOExpansion } from "./base-io-expansion";
 import { getLayerBufferType } from "./layer-buffer-type";
 import { packAttributes } from "./pack-attributes";
 

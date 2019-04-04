@@ -1,6 +1,6 @@
-import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
+import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
   IResourceContext,

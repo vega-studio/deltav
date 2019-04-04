@@ -4,7 +4,7 @@
  * in a web page.
  */
 import * as html2canvas from "html2canvas";
-import { WebGLStat } from "src/gl/webgl-stat";
+import { WebGLStat } from "../../gl/webgl-stat";
 import { IResourceType, ResourceType } from "../../types";
 import { scale2, Vec2 } from "../../util";
 import { IdentifyByKey } from "../../util/identify-by-key";

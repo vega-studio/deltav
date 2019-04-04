@@ -1,7 +1,7 @@
-import { BaseIOSorting } from "src/surface/base-io-sorting";
-import { BaseIOExpansion } from "src/surface/layer-processing/base-io-expansion";
 import { Instance } from "../../instance-provider/instance";
+import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
 import { getLayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {

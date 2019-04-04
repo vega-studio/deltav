@@ -1,4 +1,4 @@
-import { Texture } from "src/gl";
+import { Texture } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,

@@ -2,8 +2,6 @@
  * TODO: This layer is still a WIP!
  */
 
-import { LabelLayer } from "src/base-layers/labels/label-layer";
-import { TextAreaInstance } from "src/base-layers/labels/text-area-instance";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -27,6 +25,8 @@ import {
 import { GlyphInstance } from "./glyph-instance";
 import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
+import { LabelLayer } from "./label-layer";
+import { TextAreaInstance } from "./text-area-instance";
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor

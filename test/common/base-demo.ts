@@ -114,4 +114,11 @@ export abstract class BaseDemo {
   setSurface(surface: Surface) {
     this.surface = surface;
   }
+
+  /**
+   * Causes all layers to be updated.
+   */
+  updateLayer() {
+    this.surface.updateLayers();
+  }
 }

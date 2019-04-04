@@ -1,6 +1,6 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Anchor, AnchorType, ScaleType } from "../types";
+import { Anchor, AnchorType, ScaleMode } from "../types";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**
@@ -13,7 +13,7 @@ export interface IRectangleInstanceOptions extends IInstanceOptions {
   /** The height of the rectangle as it is to be rendered in world space */
   height?: number;
   /** Sets the way the rectangle scales with the world */
-  scaling?: ScaleType;
+  scaling?: ScaleMode;
   /** The color the rectangle should render as */
   color: [number, number, number, number];
   /** The width of the rectangle as it is to be rendered in world space */
@@ -100,7 +100,7 @@ export class RectangleInstance extends Instance {
   /** Scales the rectangle uniformly */
   @observable scale: number = 1;
   /** Sets the way the rectangle scales with the world */
-  @observable scaling: ScaleType = ScaleType.BOUND_MAX;
+  @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
   /** The width of the rectangle as it is to be rendered in world space */
   @observable width: number = 1;
   /** The x coordinate where the rectangle will be anchored to in world space */

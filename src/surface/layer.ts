@@ -97,6 +97,15 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   onMouseClick?(info: IPickInfo<T>): void;
 }
 
+/**
+ * Layer properties that contains internal system values
+ */
+export interface ILayerPropsInternal<T extends Instance>
+  extends ILayerProps<T> {
+  /** The system provides this for the layer when the layer is being produced as a child of another layer */
+  parent?: Layer<Instance, ILayerProps<Instance>>;
+}
+
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
   boundsAccessor: BoundsAccessor<T>;
@@ -116,6 +125,12 @@ export class Layer<
 
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
+  /**
+   * Calculated end time of all animations that will take place. This will cause the system to keep rendering
+   * and not go into an idle state until the time of the last rendered frame has exceeded the time flagged
+   * here.
+   */
+  animationEndTime: number = 0;
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
   private _bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** Buffer manager is read only. Must use setBufferManager */
@@ -128,6 +143,8 @@ export class Layer<
   get bufferType() {
     return this._bufferType;
   }
+  /** When a layer creates children, this is populated with those children */
+  children?: Layer<Instance, ILayerProps<Instance>>[];
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This contains the methods and controls for handling diffs for the layer */
@@ -141,23 +158,24 @@ export class Layer<
   geometry: Geometry;
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
-  /**
-   * This is specified by the surface to set and assert the order the layer appears and is updated
-   * within the list of layers the surface manages.
-   */
-  injectionOrder: number;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
   interactions: LayerInteractionHandler<T, U>;
+  /** The last time stamp this layer had its contents rendered */
+  lastFrameTime: number = 0;
   /** The official shader material generated for the layer */
   material: Material;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
   /** Default model configuration for rendering in the gl layer */
   model: Model;
+  /** This indicates whether this layer needs to draw */
+  needsViewDrawn: boolean = false;
+  /** If this is populated, then this layer is the product of a parent producing this layer. */
+  parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking:
     | IQuadTreePickingMetrics<T>
@@ -175,12 +193,8 @@ export class Layer<
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
-  /** This indicates whether this layer needs to draw */
-  needsViewDrawn: boolean = false;
-  /** End time of animation */
-  animationEndTime: number = 0;
-  /** The last time stamp this layer had its contents rendered */
-  lastFrameTime: number = 0;
+  /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
+  willRebuildLayer: boolean = false;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -465,6 +479,22 @@ export class Layer<
    */
   managesInstance(instance: T): boolean {
     return this.bufferManager && this.bufferManager.managesInstance(instance);
+  }
+
+  /**
+   * This tells the framework to rebuild the layer from scratch, thus reconstructing the shaders and geometries
+   * of the layer.
+   */
+  rebuildLayer() {
+    this.willRebuildLayer = true;
+
+    // Children will be rebuilt as well
+    if (this.children) {
+      for (let i = 0, iMax = this.children.length; i < iMax; ++i) {
+        const child = this.children[i];
+        child.rebuildLayer();
+      }
+    }
   }
 
   /**

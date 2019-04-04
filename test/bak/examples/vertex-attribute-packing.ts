@@ -10,7 +10,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   scale4,
-  ScaleType,
+  ScaleMode,
   uid
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
@@ -77,7 +77,7 @@ export class VertexAttributePacking extends BaseExample {
             x: i * 10,
             y: k * 10,
             color: scale4([random(), 1.0, random(), 1.0], 0.5),
-            scaling: ScaleType.ALWAYS
+            scaling: ScaleMode.ALWAYS
           });
 
           this.rectangleProvider.add(circle);

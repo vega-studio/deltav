@@ -4,7 +4,7 @@ import {
   ImageLayer,
   InstanceProvider,
   LayerInitializer,
-  ScaleType
+  ScaleMode
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -34,7 +34,7 @@ export class Images extends BaseExample {
         const image = new ImageInstance({
           element: icon,
           id: `image${i * 100 + k}`,
-          scaling: ScaleType.ALWAYS,
+          scaling: ScaleMode.ALWAYS,
           tint: [1.0, 1.0, 1.0, Math.random() * 0.8 + 0.2]
         });
 

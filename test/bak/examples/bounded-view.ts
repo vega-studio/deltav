@@ -11,7 +11,7 @@ import {
   LayerInitializer,
   RectangleInstance,
   RectangleLayer,
-  ScaleType
+  ScaleMode
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -95,7 +95,7 @@ export class BoundedView extends BaseExample {
         color: [color[i][0], color[i][1], color[i][2], color[i][3]],
         height: height[i],
         id: `rectangle${i}`,
-        scaling: ScaleType.ALWAYS,
+        scaling: ScaleMode.ALWAYS,
         width: width[i],
         x: x[i],
         y: y[i]

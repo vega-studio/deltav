@@ -1,4 +1,4 @@
-import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleType } from 'src';
+import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleMode } from 'src';
 import { BaseExample, TestResourceKeys } from './base-example';
 
 export class BoundedView2 extends BaseExample {
@@ -57,7 +57,7 @@ export class BoundedView2 extends BaseExample {
         color: [color[i][0], color[i][1], color[i][2], color[i][3]],
         height: height[i],
         id: `rectangle${i}`,
-        scaling: ScaleType.ALWAYS,
+        scaling: ScaleMode.ALWAYS,
         width: width[i],
         x: x[i],
         y: y[i],

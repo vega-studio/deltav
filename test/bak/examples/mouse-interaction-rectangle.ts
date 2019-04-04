@@ -10,7 +10,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   ReferenceCamera,
-  ScaleType
+  ScaleMode
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -109,7 +109,7 @@ export class MouseInteractionRectangle extends BaseExample {
           color: [Math.random(), Math.random(), 1.0, Math.random() * 0.8 + 0.2],
           height: 10,
           id: `rectangle${i * 100 + k}`,
-          scaling: ScaleType.ALWAYS,
+          scaling: ScaleMode.ALWAYS,
           width: 10,
           x: i * 10,
           y: k * 10

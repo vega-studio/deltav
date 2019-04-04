@@ -3,7 +3,7 @@ import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
 import { ImageAtlasResourceRequest, ImageRasterizer } from "../../resources";
 import { Vec2 } from "../../util/vector";
-import { Anchor, AnchorType, ScaleType } from "../types";
+import { Anchor, AnchorType, ScaleMode } from "../types";
 
 const { max } = Math;
 
@@ -22,7 +22,7 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** The coordinate where the image will be anchored to in world space */
   position?: Vec2;
   /** Sets the way the image scales with the world */
-  scaling?: ScaleType;
+  scaling?: ScaleMode;
   /** The color the image should render as */
   tint: [number, number, number, number];
   /** The width of the image as it is to be rendered in world space */
@@ -128,7 +128,7 @@ export class ImageInstance extends Instance implements Image {
   /** The coordinate where the image will be anchored to in world space */
   @observable position: Vec2 = [0, 0];
   /** Sets the way the image scales with the world */
-  @observable scaling: ScaleType = ScaleType.BOUND_MAX;
+  @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
   /** The width of the image as it is to be rendered in world space */
   @observable width: number = 1;
 

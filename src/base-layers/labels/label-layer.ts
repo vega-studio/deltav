@@ -1,7 +1,7 @@
-import { KernedLayout } from "src/resources/text/font-map";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
 import { fontRequest, IFontResourceRequest } from "../../resources";
+import { KernedLayout } from "../../resources/text/font-map";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   createLayer,
@@ -11,7 +11,7 @@ import {
 import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { copy2, copy4, divide2, subtract2, Vec, Vec2 } from "../../util/vector";
-import { Anchor, AnchorType } from "../types";
+import { Anchor, AnchorType, ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
 import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
@@ -89,6 +89,8 @@ export interface ILabelLayerProps<T extends LabelInstance>
   >;
   /** String identifier of the resource font to use for the layer */
   resourceKey?: string;
+  /** The scaling strategy the labels will use wheh scaling the scene up and down */
+  scaleMode?: ScaleMode;
   /**
    * This defines what characters to use to indicate truncation of labels when needed. This
    * defaults to ellipses or three periods '...'
@@ -217,7 +219,8 @@ export class LabelLayer<
         data: this.glyphProvider,
         key: `${this.id}_glyphs`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene
+        scene: this.props.scene,
+        scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
       })
     ];
   }
@@ -645,6 +648,11 @@ export class LabelLayer<
   willUpdateProps(newProps: U) {
     if (newProps.data !== this.props.data) {
       delete this.propertyIds;
+    }
+
+    // Scale mode change changes the shader needs of the underlying glyphs
+    if (newProps.scaleMode !== this.props.scaleMode) {
+      this.rebuildLayer();
     }
 
     if (newProps.resourceKey !== this.props.resourceKey) {

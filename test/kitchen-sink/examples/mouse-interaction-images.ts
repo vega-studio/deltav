@@ -7,7 +7,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-  ScaleType
+  ScaleMode
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -95,7 +95,7 @@ export class MouseInteractionImages extends BaseExample {
     const image = new ImageInstance({
       element: icon,
       id: `image_0`,
-      scaling: ScaleType.ALWAYS,
+      scaling: ScaleMode.ALWAYS,
       tint: [1.0, 1.0, 1.0, 1.0],
       position: [20, 20]
     });
@@ -108,7 +108,7 @@ export class MouseInteractionImages extends BaseExample {
         new ImageInstance({
           element: icon,
           id: `image_1`,
-          scaling: ScaleType.BOUND_MAX,
+          scaling: ScaleMode.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
           position: [20, 50]
         })
@@ -120,7 +120,7 @@ export class MouseInteractionImages extends BaseExample {
         new ImageInstance({
           element: icon,
           id: `image_2`,
-          scaling: ScaleType.NEVER,
+          scaling: ScaleMode.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
           position: [20, 80]
         })

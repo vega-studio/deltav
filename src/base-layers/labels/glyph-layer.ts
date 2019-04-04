@@ -1,3 +1,4 @@
+import { ScaleMode } from "src/base-layers/types";
 import { InstanceProvider } from "src/instance-provider";
 import {
   fontRequest,
@@ -31,6 +32,8 @@ export interface IGlyphLayerOptions<T extends GlyphInstance>
   };
   /** This is the font resource this pulls from in order to render the glyphs */
   resourceKey?: string;
+  /** This is the scaling strategy the glyph will use when text is involved. */
+  scaleMode?: ScaleMode;
 }
 
 /**

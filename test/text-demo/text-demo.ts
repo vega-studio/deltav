@@ -7,7 +7,8 @@ import {
   ISceneOptions,
   LabelInstance,
   LabelLayer,
-  LayerInitializer
+  LayerInitializer,
+  ScaleMode
 } from "src";
 import { IDefaultResources, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
@@ -59,6 +60,7 @@ export class TextDemo extends BaseDemo {
     fontSize: 14,
     words: 4,
     maxWidth: 0,
+    scaleMode: ScaleMode.BOUND_MAX,
 
     previous: {
       count: 200
@@ -120,6 +122,18 @@ export class TextDemo extends BaseDemo {
       }, 250)
     );
 
+    parameters
+      .add(this.parameters, "scaleMode", {
+        Always: ScaleMode.ALWAYS,
+        BoundMax: ScaleMode.BOUND_MAX,
+        Never: ScaleMode.NEVER
+      })
+      .onChange(
+        debounce(async () => {
+          this.updateLayer();
+        }, 250)
+      );
+
     parameters.add(this.parameters, "copy");
   }
 
@@ -148,7 +162,8 @@ export class TextDemo extends BaseDemo {
         data: this.providers.labels,
         key: "labels",
         scene: "default",
-        resourceKey: resources.font.key
+        resourceKey: resources.font.key,
+        scaleMode: this.parameters.scaleMode
       })
     ];
   }

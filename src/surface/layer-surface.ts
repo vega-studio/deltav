@@ -12,15 +12,15 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
+import { IResourceType, PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
-import { ILayerProps, Layer } from "./layer";
+import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
@@ -164,6 +164,15 @@ export type LayerInitializer = [
 ];
 
 /**
+ * The internal system layer initializer that hides additional properties the front
+ * facing API should not be concerned with.
+ */
+export type LayerInitializerInternal = [
+  ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
+  ILayerPropsInternal<Instance>
+];
+
+/**
  * Used for reactive layer generation and updates.
  */
 export function createLayer<T extends Instance, U extends ILayerProps<T>>(
@@ -263,7 +272,6 @@ export class LayerSurface {
 
     // We add the layer to our management
     this.layers.set(layer.id, layer);
-
     // Now we initialize the layer's gl components
     const layerId = layer.id;
 
@@ -1186,76 +1194,148 @@ export class LayerSurface {
   }
 
   /**
+   * This expands a layer's children within the initializer list
+   */
+  private expandLayerChildren(
+    initializers: LayerInitializerInternal[],
+    layer: Layer<Instance, ILayerProps<Instance>>,
+    index: number
+  ) {
+    // Merge in the child layers this layer may request as the immediate next layers in the sequence
+    const childLayers: LayerInitializerInternal[] = layer.childLayers();
+
+    // Make sure each child layer knows their parent
+    for (let i = 0, iMax = childLayers.length; i < iMax; ++i) {
+      const init = childLayers[i];
+      init[1].parent = layer;
+    }
+
+    // Add in the initializers of the children to be immediately updated or generated
+    initializers.splice(index + 1, 0, ...childLayers);
+  }
+
+  /**
+   * This handles a layer's update lifecycle during the layer rendering phase.
+   */
+  private updateLayer(
+    initializers: LayerInitializerInternal[],
+    layer: Layer<Instance, ILayerPropsInternal<Instance>>,
+    props: ILayerPropsInternal<Instance>,
+    index: number
+  ) {
+    // Execute lifecycle method
+    layer.willUpdateProps(props);
+
+    // If we have a provider that is about to be newly set to the layer, then the provider
+    // needs to do a full sync in order to have existing elements in the provider
+    if (props.data !== layer.props.data) {
+      props.data.sync();
+    }
+
+    // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
+    // or by custom logic of the layer.
+    if (layer.shouldDrawView(layer.props, props)) {
+      layer.needsViewDrawn = true;
+    }
+
+    // Make sure the layer has the current props applied to it
+    Object.assign(layer.props, props);
+    // Keep the initializer up to date with the injected props
+    layer.initializer[1] = layer.props;
+    // Lifecycle hook
+    layer.didUpdateProps();
+
+    // If we are having a parent swap, we need to make sure the previous parent does not
+    // register this layer as a child anymore
+    if (props.parent) {
+      if (layer.parent && layer.parent !== props.parent) {
+        // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
+        // updated properly.
+      }
+    }
+
+    // Always make sure the layer's parent is set properly by the props
+    layer.parent = props.parent;
+
+    // A layer may flag itself as needing to be rebuilt. This is handled here and is completed by deleting
+    // the layer completely then generating the layer anew.
+    if (layer.willRebuildLayer) {
+      this.removeLayer(layer);
+      this.generateLayer(initializers, layer.initializer, index, true);
+    }
+
+    // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
+    else {
+      this.expandLayerChildren(initializers, layer, index);
+    }
+  }
+
+  /**
+   * This handles a layer's creation during the rendering of layers.
+   */
+  private generateLayer(
+    initializers: LayerInitializerInternal[],
+    init: LayerInitializerInternal,
+    index: number,
+    preventChildren?: boolean
+  ) {
+    const layerClass = init[0];
+    const props = init[1];
+    // Generate the new layer and provide it it's initial props
+    const layer = new layerClass(
+      Object.assign({}, layerClass.defaultProps, props)
+    );
+    // Keep the initializer object that generated the layer for reference and debugging
+    layer.initializer = init;
+    // Sync the data provider applied to the layer in case the provider has existing data
+    // before being applied tot he layer
+    layer.props.data.sync();
+    // Look in the props of the layer for the parent of the layer
+    layer.parent = props.parent;
+
+    // If the parent is present, the parent should have the child added
+    if (props.parent) {
+      if (props.parent.children) props.parent.children.push(layer);
+      else props.parent.children = [layer];
+    }
+
+    // Add the layer to this surface
+    if (!this.addLayer(layer)) {
+      console.warn(
+        "Error initializing layer:",
+        props.key,
+        "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+      );
+
+      return;
+    }
+
+    // Add in the children of the layer
+    if (!preventChildren) {
+      this.expandLayerChildren(initializers, layer, index);
+    }
+  }
+
+  /**
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
   render(layerInitializers: LayerInitializer[]) {
     if (!this.gl) return;
 
     // Prevent mutations of the input
-    const initializers = layerInitializers.slice(0);
+    const initializers: LayerInitializerInternal[] = layerInitializers.slice(0);
 
     // Loop through all of the initializers and properly add and remove layers as needed
     if (initializers && initializers.length > 0) {
       for (let i = 0; i < initializers.length; ++i) {
         const init = initializers[i];
-        const layerClass = init[0];
         const props = init[1];
         const existingLayer = this.layers.get(props.key);
 
         if (existingLayer) {
-          existingLayer.willUpdateProps(props);
-
-          // If we have a provider that is about to be newly set to the layer, then the provider
-          // needs to do a full sync in order to have existing elements in the provider
-          if (props.data !== existingLayer.props.data) {
-            props.data.sync();
-          }
-
-          // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
-          // or by custom logic of the layer.
-          if (existingLayer.shouldDrawView(existingLayer.props, props)) {
-            existingLayer.needsViewDrawn = true;
-          }
-
-          // Make sure the layer has the current props applied to it
-          Object.assign(existingLayer.props, props);
-          // Keep the initializer up to date with the injected props
-          existingLayer.initializer[1] = existingLayer.props;
-          // Update the layer's injection order so we can make sure the update order remains stable
-          existingLayer.injectionOrder = i;
-          // Lifecycle hook
-          existingLayer.didUpdateProps();
-
-          // Merge in the child layers this layer may request as the immediate next layers in the sequence
-          const childLayers = existingLayer.childLayers();
-          initializers.splice(i + 1, 0, ...childLayers);
+          this.updateLayer(initializers, existingLayer, props, i);
         } else {
-          // Generate the new layer and provide it it's initial props
-          const layer = new layerClass(
-            Object.assign({}, layerClass.defaultProps, props)
-          );
-          // Keep the initializer object that generated the layer for reference and debugging
-          layer.initializer = init;
-          // Sync the data provider applied to the layer in case the provider has existing data
-          // before being applied tot he layer
-          layer.props.data.sync();
-
-          // Add the layer to this surface
-          if (!this.addLayer(layer)) {
-            console.warn(
-              "Error initializing layer:",
-              props.key,
-              "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
-            );
-
-            return;
-          }
-
-          // Update the layer's injection order so we can make sure the update order remains stable
-          layer.injectionOrder = i;
-          // Merge in the child layers this layer may request as the immediate next layers in the sequence
-          const childLayers = layer.childLayers();
-          initializers.splice(i + 1, 0, ...childLayers);
+          this.generateLayer(initializers, init, i);
         }
 
         this.willDisposeLayer.set(props.key, false);

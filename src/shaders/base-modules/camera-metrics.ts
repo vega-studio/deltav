@@ -1,8 +1,7 @@
 import { Layer } from "../../surface/layer";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
+import { CameraType } from "../../util";
 import { ShaderModule } from "../processing";
-import { CameraType } from "src/util";
-
 /**
  * This module provides uniforms for retrieving camera propeerties within the shader.
  */

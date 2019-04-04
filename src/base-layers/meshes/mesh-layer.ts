@@ -10,8 +10,8 @@ import {
   VertexAttributeSize
 } from "../../types";
 import { CommonMaterialOptions } from "../../util";
+import { Light } from "../../util/light";
 import { MeshInstance } from "./mesh-instance";
-import { Light } from "src/util/light";
 
 export enum MeshScaleType {
   NONE,

@@ -3,10 +3,10 @@ import {
   identity4,
   Mat4x4,
   multiply4x4,
+  orthographic4x4,
   perspective4x4,
   translation4x4,
-  transpose4x4,
-  orthographic4x4
+  transpose4x4
 } from "./matrix";
 import { cross3, normalize3, subtract3, Vec3 } from "./vector";
 

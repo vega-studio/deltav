@@ -1,4 +1,5 @@
 import {
+  CameraType,
   ChartCamera,
   createLayer,
   EventManager,
@@ -8,13 +9,12 @@ import {
   MeshLayer,
   MeshScaleType,
   quaternion,
-  Vec3,
-  CameraType
+  Vec3
 } from "src";
 import * as objLoader from "webgl-obj-loader";
 import { BasicCameraController3D } from "../../src/base-event-managers/basic-camera-controller-3D";
+import { Light, LightType } from "../../src/util/light";
 import { BaseExample } from "./base-example";
-import { Light, LightType } from "src/util/light";
 
 const imageData1 = require("./images/Face.png");
 const imageData2 = require("./images/tex.png");

@@ -1,6 +1,6 @@
 import { Bounds } from "../../primitives";
 import { PackNode } from "../../resources/texture/pack-node";
-import { Omit, ResourceType } from "../../types";
+import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { FontMap, FontMapGlyphType } from "../text/font-map";
 import { IFontResourceRequest } from "../text/font-resource-manager";
@@ -116,6 +116,8 @@ export interface IFontResourceOptions extends BaseResourceOptions {
   fontSource: FontMapSource;
   /** Enforce the resource to be a FONT type */
   type: ResourceType.FONT;
+  /** If provided will constrain the texture to the provided size */
+  fontMapSize?: Size;
 }
 
 /**

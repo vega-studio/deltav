@@ -51,7 +51,8 @@ export const DEFAULT_RESOURCES = {
       family: "Calibri",
       type: FontMapGlyphType.BITMAP,
       weight: "normal"
-    }
+    },
+    fontMapSize: [AtlasSize._2048, AtlasSize._2048]
   })
 };
 

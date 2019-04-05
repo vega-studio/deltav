@@ -86,6 +86,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   manager: FontManager;
   /** Tracks how the glyphs are packed into the map */
   packing: PackNode<SubTexture>;
+  /** COnstrained size of the font map */
+  size: Size;
   /** This is the calculated width of a space for the font map */
   spaceWidth: number = 0;
   /** The base texture where the font map is stored */
@@ -105,6 +107,13 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     this.dynamic = options.dynamic || false;
     this.fontSource = options.fontSource;
 
+    this.size = options.fontMapSize
+      ? [
+          Math.min(options.fontMapSize[0], WebGLStat.MAX_TEXTURE_SIZE),
+          Math.min(options.fontMapSize[1], WebGLStat.MAX_TEXTURE_SIZE)
+        ]
+      : [WebGLStat.MAX_TEXTURE_SIZE, WebGLStat.MAX_TEXTURE_SIZE];
+
     if (options.characters) {
       options.characters.forEach(pair => {
         this.doRegisterGlyph(pair[0], pair[1]);
@@ -115,12 +124,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     this.createTexture();
 
     // Initialize the packing layout for the texture
-    this.packing = new PackNode(
-      0,
-      0,
-      WebGLStat.MAX_TEXTURE_SIZE,
-      WebGLStat.MAX_TEXTURE_SIZE
-    );
+    this.packing = new PackNode(0, 0, this.size[0], this.size[1]);
   }
 
   /**
@@ -164,8 +168,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // Generate the texture
     this.texture = new Texture({
       data: {
-        width: WebGLStat.MAX_TEXTURE_SIZE,
-        height: WebGLStat.MAX_TEXTURE_SIZE,
+        width: this.size[0],
+        height: this.size[1],
         buffer: null
       },
       ...textureSettings

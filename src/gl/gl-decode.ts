@@ -123,7 +123,8 @@ export function magFilter(
 export function minFilter(
   gl: GLContext,
   filter: GLSettings.Texture.TextureMinFilter,
-  isPowerOf2: boolean
+  isPowerOf2: boolean,
+  hasMipMaps: boolean
 ) {
   if (!isPowerOf2) {
     return gl.LINEAR;
@@ -135,13 +136,13 @@ export function minFilter(
     case GLSettings.Texture.TextureMinFilter.Nearest:
       return gl.NEAREST;
     case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear:
-      return gl.LINEAR_MIPMAP_LINEAR;
+      return hasMipMaps ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR;
     case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest:
-      return gl.LINEAR_MIPMAP_NEAREST;
+      return hasMipMaps ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR;
     case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear:
-      return gl.NEAREST_MIPMAP_LINEAR;
+      return hasMipMaps ? gl.NEAREST_MIPMAP_LINEAR : gl.NEAREST;
     case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest:
-      return gl.NEAREST_MIPMAP_NEAREST;
+      return hasMipMaps ? gl.NEAREST_MIPMAP_NEAREST : gl.NEAREST;
 
     default:
       return gl.LINEAR;

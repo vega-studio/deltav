@@ -41,7 +41,7 @@ class Block<T extends Instance> {
  */
 function ensureSizes<T extends Instance>(attributes: IInstanceAttribute<T>[]) {
   attributes.forEach(attr => {
-    if (attr.atlas) {
+    if (attr.resource && attr.size === undefined) {
       attr.size = InstanceAttributeSize.FOUR;
     }
 

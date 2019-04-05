@@ -3,7 +3,9 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  InstanceAttributeSize
+  InstanceAttributeSize,
+  InstanceDiffType,
+  isResourceAttribute
 } from "../../../types";
 import { uid } from "../../../util";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
@@ -48,11 +50,6 @@ export class InstanceAttributePackingBufferManager<
   private instanceToBufferLocation: {
     [key: number]: IInstanceAttributePackingBufferLocationGroup;
   } = {};
-  /**
-   * This is the number of times the buffer has grown. This is used to determine how much the buffer will grow
-   * for next growth pass.
-   */
-  private growthCount: number = 0;
   /** This is the number of instances the buffer currently supports */
   private maxInstancedCount: number = 1000;
 
@@ -92,6 +89,15 @@ export class InstanceAttributePackingBufferManager<
     this.layer.instanceAttributes.forEach(attribute => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
+
+      // Make sure attribute context is set before performing update methods
+      if (isResourceAttribute(attribute)) {
+        this.layer.resource.setAttributeContext(
+          attribute,
+          attribute.resource.type
+        );
+      }
+
       // Activate monitoring of ids, this also resets the monitor's list
       ObservableMonitoring.setObservableMonitor(true);
       // Access the update which accesses an instance's properties (usually)
@@ -209,6 +215,13 @@ export class InstanceAttributePackingBufferManager<
   }
 
   /**
+   * Checks to see if this buffer manager manages the indicated instance
+   */
+  managesInstance(instance: T) {
+    return this.instanceToBufferLocation[instance.uid] !== undefined;
+  }
+
+  /**
    * Analyzes the list of attributes to the property ids that affects them. This populates the list
    * of minimal property ids needed to trigger updates on all of the attributes.
    */
@@ -266,10 +279,35 @@ export class InstanceAttributePackingBufferManager<
       IInstanceAttributePackingBufferLocation[]
     >();
 
+    // As an optimization to guarantee the buffer is resized only a single time for a single changelist
+    // we  will calculate the necessary growth of the buffer by finding all of the insertions the changelist
+    // will cause.
+    if (this.changeListContext) {
+      // We will always grow beyond a 1000 units. That way there is room to prevent immediate resize operations
+      // from happening too frequently.
+      growth = 1000;
+
+      // We loop through all of the changes to find which operations will result in an additional unit
+      for (let i = 0, iMax = this.changeListContext.length; i < iMax; ++i) {
+        const diff = this.changeListContext[i];
+
+        switch (diff[1]) {
+          case InstanceDiffType.CHANGE:
+          case InstanceDiffType.INSERT:
+            // If the instance is not managed, it is a buffer growth
+            if (!this.instanceToBufferLocation[diff[0].uid]) growth++;
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
       // The buffer grows from 0 to our initial instance count
-      growth = this.maxInstancedCount;
+      this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
       // Needs to have it's own unique draw range per buffer for optimal
       // Performance.
@@ -472,15 +510,6 @@ export class InstanceAttributePackingBufferManager<
         }
       }
 
-      // We grow our buffer by magnitudes of 10 * 1024
-      // First growth: 1000
-      // Next: 10000
-      // Next: 10000
-      // Next: 10000
-      // Next: 10000
-      // We cap at growth of 1 million to prevent a mass unused RAM void.
-      this.growthCount = Math.min(1, this.growthCount + 1);
-      growth = Math.pow(10, this.growthCount) * 1000;
       this.maxInstancedCount += growth;
 
       // Ensure attributes is still defined
@@ -630,6 +659,7 @@ export class InstanceAttributePackingBufferManager<
       bufferLocationsForAttribute: IInstanceAttributePackingBufferLocation[];
       childBufferLocations: IInstanceAttributePackingBufferLocation[][];
       ids: number[];
+      bufferIndex: number;
     }[] = [];
 
     this.attributeToPropertyIds.forEach((ids, attribute) => {
@@ -640,7 +670,8 @@ export class InstanceAttributePackingBufferManager<
         childBufferLocations: (attribute.childAttributes || []).map(
           attr => attributeToNewBufferLocations.get(attr.name) || []
         ),
-        ids
+        ids,
+        bufferIndex: -1
       });
     });
 
@@ -672,7 +703,8 @@ export class InstanceAttributePackingBufferManager<
           continue;
         }
 
-        const bufferLocation = bufferLocationsForAttribute.shift();
+        const bufferLocation =
+          bufferLocationsForAttribute[++allLocations.bufferIndex];
 
         if (!bufferLocation) {
           emitOnce(

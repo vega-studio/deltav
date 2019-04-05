@@ -8,3 +8,5 @@ export * from "./surface";
 export * from "./types";
 export * from "./util";
 export * from "./shaders";
+export * from "./resources";
+export * from "./gl";

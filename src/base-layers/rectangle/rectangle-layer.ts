@@ -10,7 +10,7 @@ import {
   VertexAttributeSize
 } from "../../types";
 import { CommonMaterialOptions, divide2, subtract2, Vec2 } from "../../util";
-import { ScaleType } from "../types";
+import { ScaleMode } from "../types";
 import { RectangleInstance } from "./rectangle-instance";
 
 const { min, max } = Math;
@@ -84,9 +84,9 @@ export class RectangleLayer<
         const minScale = min(...projection.camera.scale);
 
         // If we scale always then the rectangle stays within it's initial world bounds at all times
-        if (rectangle.scaling === ScaleType.ALWAYS) {
+        if (rectangle.scaling === ScaleMode.ALWAYS) {
           return true;
-        } else if (rectangle.scaling === ScaleType.BOUND_MAX) {
+        } else if (rectangle.scaling === ScaleMode.BOUND_MAX) {
           // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
           // Rectangle the same size. If the camera zooms out then the bounds === the world bounds.
           // We are zooming out. the bounds will stay within the world bounds
@@ -115,7 +115,7 @@ export class RectangleLayer<
               y: topLeft[1]
             }).containsPoint(point);
           }
-        } else if (rectangle.scaling === ScaleType.NEVER) {
+        } else if (rectangle.scaling === ScaleMode.NEVER) {
           // If we never allow the rectangle to scale, then the bounds will grow and shrink to counter the effects
           // Of the camera zoom
           // The location is within the world, but we reverse project the anchor spread

@@ -1,9 +1,10 @@
 import { Geometry } from "../gl/geometry";
-import { GLSettings } from "../gl/gl-settings";
 import { Material } from "../gl/material";
 import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
+import { ObservableMonitoring } from "../instance-provider/observable";
+import { ResourceManager } from "../resources";
 import {
   IInstanceAttribute,
   ILayerMaterialOptions,
@@ -35,13 +36,7 @@ import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { LayerBufferType } from "./layer-processing/layer-buffer-type";
 import { LayerInitializer, LayerSurface } from "./layer-surface";
-import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { View } from "./view";
-
-export interface IModelType {
-  /** This is the draw type of the model to be used */
-  drawMode?: GLSettings.Model.DrawMode;
-}
 
 /**
  * Bare minimum required features a provider must provide to be the data for the layer.
@@ -102,6 +97,15 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   onMouseClick?(info: IPickInfo<T>): void;
 }
 
+/**
+ * Layer properties that contains internal system values
+ */
+export interface ILayerPropsInternal<T extends Instance>
+  extends ILayerProps<T> {
+  /** The system provides this for the layer when the layer is being produced as a child of another layer */
+  parent?: Layer<Instance, ILayerProps<Instance>>;
+}
+
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
   boundsAccessor: BoundsAccessor<T>;
@@ -121,6 +125,12 @@ export class Layer<
 
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
+  /**
+   * Calculated end time of all animations that will take place. This will cause the system to keep rendering
+   * and not go into an idle state until the time of the last rendered frame has exceeded the time flagged
+   * here.
+   */
+  animationEndTime: number = 0;
   /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
   private _bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** Buffer manager is read only. Must use setBufferManager */
@@ -133,6 +143,8 @@ export class Layer<
   get bufferType() {
     return this._bufferType;
   }
+  /** When a layer creates children, this is populated with those children */
+  children?: Layer<Instance, ILayerProps<Instance>>[];
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This contains the methods and controls for handling diffs for the layer */
@@ -152,12 +164,18 @@ export class Layer<
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
   interactions: LayerInteractionHandler<T, U>;
+  /** The last time stamp this layer had its contents rendered */
+  lastFrameTime: number = 0;
   /** The official shader material generated for the layer */
   material: Material;
   /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
   maxInstancesPerBuffer: number;
   /** Default model configuration for rendering in the gl layer */
   model: Model;
+  /** This indicates whether this layer needs to draw */
+  needsViewDrawn: boolean = false;
+  /** If this is populated, then this layer is the product of a parent producing this layer. */
+  parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */
   picking:
     | IQuadTreePickingMetrics<T>
@@ -166,7 +184,7 @@ export class Layer<
   /** Properties handed to the Layer during a LayerSurface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
-  resource: AtlasResourceManager;
+  resource: ResourceManager;
   /** This is the surface this layer is generated under */
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
@@ -175,12 +193,8 @@ export class Layer<
   vertexAttributes: IVertexAttributeInternal[];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
-  /** This indicates whether this layer needs to draw */
-  needsViewDrawn: boolean = false;
-  /** End time of animation */
-  animationEndTime: number = 0;
-  /** The last time stamp this layer had its contents rendered */
-  lastFrameTime: number = 0;
+  /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
+  willRebuildLayer: boolean = false;
 
   constructor(props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -260,6 +274,18 @@ export class Layer<
   }
 
   /**
+   * This provides a means for a layer to have child layers that are injected immediately after this layer.
+   *
+   * This essentially lets composite layer management occur allowing the compositer to behave as a layer does
+   * but have layers managed by it. This has the advantage of allowing a composition layer able to handle a
+   * data provider but split it's processing across it's own internal data providers which is thus picked up
+   * by it's child layers and output by the layers.
+   */
+  childLayers(): LayerInitializer[] {
+    return [];
+  }
+
+  /**
    * Invalidate and free all resources assocated with this layer.
    */
   destroy() {
@@ -270,6 +296,9 @@ export class Layer<
     }
   }
 
+  /**
+   * Lifecycle method for layers to inherit that executes after the props for the layer have been updated
+   */
   didUpdateProps() {
     /** LIFECYCLE */
   }
@@ -291,6 +320,8 @@ export class Layer<
 
     // Forewarn the processor how many instances are flagged for a change.
     processor.incomingChangeList(changeList);
+    // Forewarn the buffer manager of changes so it can optimize it's handling of changes as well
+    this.bufferManager.incomingChangeList(changeList);
 
     for (let i = 0, end = changeList.length; i < end; ++i) {
       change = changeList[i];
@@ -309,10 +340,48 @@ export class Layer<
 
     // Tell the diff processor that it has completed it's task set
     processor.commit();
+    // Tell the manager changes are processed to allow it to free up resources
+    this.bufferManager.changesProcessed();
     // Flag the changes as resolved
     this.props.data.resolve(this.id);
     // Trigger uniform updates
     this.updateUniforms();
+  }
+
+  /**
+   * This retrieves the observable IDs for instance observable properties. This triggers a
+   * getter of the indicated property.
+   *
+   * Do NOT use this in intensive loops, try to cache these results where possible.
+   */
+  getInstanceObservableIds<K extends keyof T>(
+    instance: T,
+    properties: Extract<K, string>[]
+  ): { [key: string]: number } {
+    const out: { [key: string]: number } = {};
+
+    // Loop through all of the requested properties to see if they are observable and have
+    // an id associated with them.
+    for (let i = 0, iMax = properties.length; i < iMax; ++i) {
+      // Activate monitoring of ids, this also resets the monitor's list
+      ObservableMonitoring.setObservableMonitor(true);
+      // Trigger the getter of the property
+      instance[properties[i]];
+      // We now can see if the property triggered an identifier thus indicating it's observable
+      // and has an ID
+      const propertyIds = ObservableMonitoring.getObservableMonitorIds(true);
+
+      // If an id is found, then the property was observable.
+      if (propertyIds[0] !== undefined) {
+        out[properties[i]] = propertyIds[0];
+      }
+    }
+
+    // SUPER IMPORTANT to deactivate this here. Leaving this turned on causes memory to be chewed up
+    // for every property getter.
+    ObservableMonitoring.setObservableMonitor(false);
+
+    return out;
   }
 
   /**
@@ -341,8 +410,11 @@ export class Layer<
    *                    The only time making these modifieable is in the event of GL_POINTS.
    * Uniforms: These set up the uniforms for the layer, thus having all normal implications of a uniform. Global
    *           across the fragment and vertex shaders and can be modified with little consequence.
+   *
+   * NOTE: Return null to indicate this layer is not going to render anything. This is typical for parent
+   * layers that manage child layers who themselves do not cause rendering of any sort.
    */
-  initShader(): IShaderInitialization<T> {
+  initShader(): IShaderInitialization<T> | null {
     return {
       fs: "${import: no-op}",
       instanceAttributes: [],
@@ -363,14 +435,15 @@ export class Layer<
     name: string,
     size: InstanceAttributeSize,
     update: (o: T) => InstanceIOValue,
-    atlas?: {
+    resource?: {
+      type: number;
       key: string;
       name: string;
       shaderInjection?: ShaderInjectionTarget;
     }
   ): IInstanceAttribute<T> {
     return {
-      atlas,
+      resource,
       block,
       blockIndex,
       name,
@@ -397,6 +470,53 @@ export class Layer<
       size,
       update
     };
+  }
+
+  /**
+   * Indicates if this layer is managing an instance or not. This is normally done by determining
+   * if this layer's buffer manager has assigned buffer space to the instance. In special layer cases
+   * this may be overridden here to make the assertion in some other way.
+   */
+  managesInstance(instance: T): boolean {
+    return this.bufferManager && this.bufferManager.managesInstance(instance);
+  }
+
+  /**
+   * This tells the framework to rebuild the layer from scratch, thus reconstructing the shaders and geometries
+   * of the layer.
+   */
+  rebuildLayer() {
+    this.willRebuildLayer = true;
+
+    // Children will be rebuilt as well
+    if (this.children) {
+      for (let i = 0, iMax = this.children.length; i < iMax; ++i) {
+        const child = this.children[i];
+        child.rebuildLayer();
+      }
+    }
+  }
+
+  /**
+   * Retrieves the changes from the data provider and resolves the provider. This should be
+   * used by sub Layer classes that wish to create their own custom draw handlers.
+   */
+  resolveChanges() {
+    // Consume the diffs for the instances to update each element
+    const changeList = this.props.data.changeList;
+    // Set needsViewDrawn to be true if there is any change
+    if (changeList.length > 0) this.needsViewDrawn = true;
+    // Resolve the changes from the provider so it can start collecting
+    // a new list of changes to apply
+    this.props.data.resolve(this.id);
+
+    // Clear the changes from all instances to be ready for next frame
+    for (let i = 0, iMax = changeList.length; i < iMax; ++i) {
+      changeList[i][0].changes = {};
+    }
+
+    // Return the list of changes so the changes can be handled in some fashion
+    return changeList;
   }
 
   /**
@@ -472,9 +592,5 @@ export class Layer<
 
   willUpdateProps(_newProps: ILayerProps<T>) {
     /** LIFECYCLE */
-  }
-
-  didUpdate() {
-    this.props.data.resolve(this.id);
   }
 }

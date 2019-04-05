@@ -10,14 +10,19 @@ export interface IdentifyByKeyOptions {
  */
 export class IdentifyByKey {
   /** Internal key held by the object */
-  private key: string;
+  private _key: string;
 
   /** READONLY id of the object. */
   get id() {
-    return this.key;
+    return this._key;
+  }
+
+  /** READONLY key of the object */
+  get key() {
+    return this._key;
   }
 
   constructor(options: IdentifyByKeyOptions) {
-    this.key = options.key;
+    this._key = options.key;
   }
 }

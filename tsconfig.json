@@ -27,5 +27,8 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "files": [
+    "src/typings/tiny-sdf.d.ts"
   ]
 }

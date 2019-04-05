@@ -1,4 +1,4 @@
-${import: circularArc, projection}
+${import: arc, projection}
 precision highp float;
 
 /**
@@ -22,7 +22,7 @@ void main() {
   float interpolationTime = position.y;
   float interpolationIncrement = 1.0 / position.z;
   // Get the position of the current vertex
-  vec2 currentPosition = circularArc(interpolationTime, center, radius, startAngle, endAngle);
+  vec2 currentPosition = arc(interpolationTime, center, radius, startAngle, endAngle);
   // Get normal with currentPosition and center
   vec2 currentNormal = normalize(currentPosition - center);
   // Get the thickness based on the side we're on

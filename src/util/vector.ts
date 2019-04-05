@@ -1,4 +1,4 @@
-const { sqrt, max, min } = Math;
+const { sqrt, max, min, floor, ceil } = Math;
 
 /** Explicit Vec1 */
 export interface IVec1 extends Array<number> {
@@ -77,6 +77,10 @@ export function add1(left: Vec1Compat, right: Vec1Compat): Vec1 {
   return [left[0] + right[0]];
 }
 
+export function ceil1(vec: Vec1Compat): Vec1 {
+  return [ceil(vec[0])];
+}
+
 export function compare1(left: Vec1Compat, right: Vec1Compat): boolean {
   return left[0] === right[0];
 }
@@ -97,6 +101,10 @@ export function flatten1(list: Vec1Compat[]): number[] {
   }
 
   return out;
+}
+
+export function floor1(vec: Vec1Compat): Vec1 {
+  return [floor(vec[0])];
 }
 
 export function inverse1(vec: Vec1Compat): Vec1 {
@@ -170,6 +178,10 @@ export function add2(left: Vec2Compat, right: Vec2Compat): Vec2 {
   return [left[0] + right[0], left[1] + right[1]];
 }
 
+export function ceil2(vec: Vec2Compat): Vec2 {
+  return [ceil(vec[0]), ceil(vec[1])];
+}
+
 export function copy2(vec: Vec2Compat): Vec2 {
   return [vec[0], vec[1]];
 }
@@ -192,6 +204,10 @@ export function flatten2(list: Vec2Compat[]): number[] {
   }
 
   return out;
+}
+
+export function floor2(vec: Vec2Compat): Vec2 {
+  return [floor(vec[0]), floor(vec[1])];
 }
 
 export function inverse2(vec: Vec2Compat): Vec2 {
@@ -265,6 +281,10 @@ export function add3(left: Vec3Compat, right: Vec3Compat): Vec3 {
   return [left[0] + right[0], left[1] + right[1], left[2] + right[2]];
 }
 
+export function ceil3(vec: Vec3Compat): Vec3 {
+  return [ceil(vec[0]), ceil(vec[1]), ceil(vec[2])];
+}
+
 export function copy3(vec: Vec3Compat): Vec3 {
   return [vec[0], vec[1], vec[2]];
 }
@@ -288,6 +308,10 @@ export function flatten3(list: Vec3Compat[]): number[] {
   }
 
   return out;
+}
+
+export function floor3(vec: Vec3Compat): Vec3 {
+  return [floor(vec[0]), floor(vec[1]), floor(vec[2])];
 }
 
 export function inverse3(vec: Vec3Compat): Vec3 {
@@ -374,6 +398,10 @@ export function add4(left: Vec4, right: Vec4): Vec4 {
   ];
 }
 
+export function ceil4(vec: Vec4Compat): Vec4 {
+  return [ceil(vec[0]), ceil(vec[1]), ceil(vec[2]), ceil(vec[3])];
+}
+
 export function copy4(vec: Vec4): Vec4 {
   return [vec[0], vec[1], vec[2], vec[3]];
 }
@@ -408,6 +436,10 @@ export function flatten4(list: Vec4Compat[]): number[] {
   }
 
   return out;
+}
+
+export function floor4(vec: Vec4Compat): Vec4 {
+  return [floor(vec[0]), floor(vec[1]), floor(vec[2]), floor(vec[3])];
 }
 
 export function inverse4(vec: Vec4): Vec4 {
@@ -504,11 +536,13 @@ export function vec4(
 
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T): T;
+  ceil(vec: T): T;
   copy(vec: T): T;
   compare(left: T, right: T): boolean;
   divide(top: T, bottom: T): T;
   dot(left: T, right: T): number;
   flatten(list: T[]): number[];
+  floor(vec: T): T;
   inverse(vec: T): T;
   length(vec: T): number;
   linear(start: T, end: T, t: number): T;
@@ -521,11 +555,13 @@ export type VecMethods<T extends Vec> = {
 
 export const vec1Methods: VecMethods<Vec1> = {
   add: add1,
+  ceil: ceil1,
   copy: copy1,
   compare: compare1,
   divide: divide1,
   dot: dot1,
   flatten: flatten1,
+  floor: floor1,
   inverse: inverse1,
   length: length1,
   linear: linear1,
@@ -538,11 +574,13 @@ export const vec1Methods: VecMethods<Vec1> = {
 
 export const vec2Methods: VecMethods<Vec2> = {
   add: add2,
+  ceil: ceil2,
   copy: copy2,
   compare: compare2,
   divide: divide2,
   dot: dot2,
   flatten: flatten2,
+  floor: floor2,
   inverse: inverse2,
   length: length2,
   linear: linear2,
@@ -555,11 +593,13 @@ export const vec2Methods: VecMethods<Vec2> = {
 
 export const vec3Methods: VecMethods<Vec3> = {
   add: add3,
+  ceil: ceil3,
   copy: copy3,
   compare: compare3,
   divide: divide3,
   dot: dot3,
   flatten: flatten3,
+  floor: floor3,
   inverse: inverse3,
   length: length3,
   linear: linear3,
@@ -572,11 +612,13 @@ export const vec3Methods: VecMethods<Vec3> = {
 
 export const vec4Methods: VecMethods<Vec4> = {
   add: add4,
+  ceil: ceil4,
   copy: copy4,
   compare: compare4,
   divide: divide4,
   dot: dot4,
   flatten: flatten4,
+  floor: floor4,
   inverse: inverse4,
   length: length4,
   linear: linear4,

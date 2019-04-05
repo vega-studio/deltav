@@ -1,7 +1,14 @@
+"use strict";
+
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { getAttributeShaderName } from "../../../shaders/processing/formatting";
-import { IInstanceAttribute, IInstanceAttributeInternal } from "../../../types";
+import {
+  IInstanceAttribute,
+  IInstanceAttributeInternal,
+  InstanceDiffType,
+  isResourceAttribute
+} from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
 import { Layer } from "../../layer";
@@ -13,6 +20,7 @@ import {
   IBufferLocationGroup
 } from "../buffer-manager-base";
 
+const debug = require("debug")("performance");
 const { max } = Math;
 
 /**
@@ -59,13 +67,8 @@ export class InstanceAttributeBufferManager<
   private instanceToBufferLocation: {
     [key: number]: IInstanceAttributeBufferLocationGroup;
   } = {};
-  /**
-   * This is the number of times the buffer has grown. This is used to determine how much the buffer will grow
-   * for next growth pass.
-   */
-  private growthCount: number = 0;
   /** This is the number of instances the buffer currently supports */
-  private maxInstancedCount: number = 1000;
+  private maxInstancedCount: number = 0;
 
   // These are the only Three objects that must be monitored for disposal
   private geometry?: Geometry;
@@ -101,6 +104,15 @@ export class InstanceAttributeBufferManager<
     this.layer.instanceAttributes.forEach(attribute => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
+
+      // Make sure attribute context is set before performing update methods
+      if (isResourceAttribute(attribute)) {
+        this.layer.resource.setAttributeContext(
+          attribute,
+          attribute.resource.type
+        );
+      }
+
       // Activate monitoring of ids, this also resets the monitor's list
       ObservableMonitoring.setObservableMonitor(true);
       // Access the update which accesses an instances properties (usually)
@@ -182,6 +194,9 @@ export class InstanceAttributeBufferManager<
     return bufferLocations;
   }
 
+  /**
+   * Free any buffer and material resources this is managing.
+   */
   destroy() {
     if (this.geometry) this.geometry.dispose();
     if (this.material) this.material.dispose();
@@ -212,6 +227,14 @@ export class InstanceAttributeBufferManager<
    */
   getUpdateAllPropertyIdList() {
     return this.updateAllPropertyIdList;
+  }
+
+  /**
+   * Checks to see if an instance is managed by this manager.
+   */
+  managesInstance(instance: T) {
+    // We know this instance is managed if the instance has buffer location real estate assigned to it
+    return this.instanceToBufferLocation[instance.uid] !== undefined;
   }
 
   /**
@@ -269,10 +292,37 @@ export class InstanceAttributeBufferManager<
       IInstanceAttributeBufferLocation[]
     >();
 
+    // As an optimization to guarantee the buffer is resized only a single time for a single changelist
+    // we  will calculate the necessary growth of the buffer by finding all of the insertions the changelist
+    // will cause.
+    if (this.changeListContext) {
+      // We will always grow beyond a 1000 units. That way there is room to prevent immediate resize operations
+      // from happening too frequently.
+      growth = 1000;
+
+      // We loop through all of the changes to find which operations will result in an additional unit
+      for (let i = 0, iMax = this.changeListContext.length; i < iMax; ++i) {
+        const diff = this.changeListContext[i];
+
+        switch (diff[1]) {
+          case InstanceDiffType.CHANGE:
+          case InstanceDiffType.INSERT:
+            // If the instance is not managed, it is a buffer growth
+            if (!this.instanceToBufferLocation[diff[0].uid]) growth++;
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
+    debug("BEGIN: Resizing unpacked attribute buffer by %d instances", growth);
+
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
       // The buffer grows from 0 to our initial instance count
-      growth = this.maxInstancedCount;
+      this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
       // Needs to have it's own unique draw range per buffer for optimal
       // Performance.
@@ -367,15 +417,6 @@ export class InstanceAttributeBufferManager<
         }
       }
 
-      // We grow our buffer by magnitudes of 10 * 1024
-      // First growth: 1000
-      // Next: 10000
-      // Next: 10000
-      // Next: 10000
-      // Next: 10000
-      // We cap at growth of 1 million to prevent a mass unused RAM void.
-      this.growthCount = Math.min(1, this.growthCount + 1);
-      growth = Math.pow(10, this.growthCount) * 1000;
       this.maxInstancedCount += growth;
 
       // Ensure attributes is still defined
@@ -470,6 +511,8 @@ export class InstanceAttributeBufferManager<
       this.scene.container.add(this.model);
     }
 
+    debug("COMPLETE: Resizing unpacked attribute buffer");
+
     return {
       growth,
       newLocations: attributeToNewBufferLocations
@@ -489,12 +532,15 @@ export class InstanceAttributeBufferManager<
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
 
+    debug("BEGIN: Unpacked attribute manager grouping new buffer locations");
+
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
       attribute: IInstanceAttribute<T>;
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
       childBufferLocations: IInstanceAttributeBufferLocation[][];
       ids: number[];
+      bufferIndex: number;
     }[] = [];
 
     this.attributeToPropertyIds.forEach((ids, attribute) => {
@@ -505,9 +551,19 @@ export class InstanceAttributeBufferManager<
         childBufferLocations: (attribute.childAttributes || []).map(
           attr => attributeToNewBufferLocations.get(attr.name) || []
         ),
-        ids
+        ids,
+        bufferIndex: -1
       });
     });
+
+    let allLocations,
+      attribute: IInstanceAttribute<T>,
+      ids: number[],
+      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
+      bufferLocation: IInstanceAttributeBufferLocation | undefined,
+      childAttribute: IInstanceAttribute<T>,
+      bufferLocationsForChildAttribute: IInstanceAttributeBufferLocation[],
+      childBufferLocation: IInstanceAttributeBufferLocation | undefined;
 
     // Loop through all of the new instances available and gather all of the buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
@@ -519,11 +575,10 @@ export class InstanceAttributeBufferManager<
       // Loop through all of the property ids that affect specific attributes. Each of these ids
       // needs an association with the buffer location they modify.
       for (let j = 0, endj = attributesBufferLocations.length; j < endj; ++j) {
-        const allLocations = attributesBufferLocations[j];
-        const attribute = allLocations.attribute;
-        const ids = allLocations.ids;
-        const bufferLocationsForAttribute =
-          allLocations.bufferLocationsForAttribute;
+        allLocations = attributesBufferLocations[j];
+        attribute = allLocations.attribute;
+        ids = allLocations.ids;
+        bufferLocationsForAttribute = allLocations.bufferLocationsForAttribute;
 
         if (!bufferLocationsForAttribute) {
           emitOnce(
@@ -537,7 +592,8 @@ export class InstanceAttributeBufferManager<
           continue;
         }
 
-        const bufferLocation = bufferLocationsForAttribute.shift();
+        bufferLocation =
+          bufferLocationsForAttribute[++allLocations.bufferIndex];
 
         if (!bufferLocation) {
           emitOnce(
@@ -569,22 +625,22 @@ export class InstanceAttributeBufferManager<
         // If the attribute has children attributes. Then when the attribute is updated, the child attributes should
         // be updated as well. Thus the buffer location needs the child attribute buffer locations.
         if (attribute.childAttributes) {
-          const childLocations = [];
+          bufferLocation.childLocations = [];
 
           for (
             let k = 0, endk = attribute.childAttributes.length;
             k < endk;
             ++k
           ) {
-            const childAttribute = attribute.childAttributes[k];
-            const bufferLocationsForChildAttribute =
+            bufferLocationsForChildAttribute =
               allLocations.childBufferLocations[k];
 
             if (bufferLocationsForChildAttribute) {
-              const childBufferLocation = bufferLocationsForChildAttribute.shift();
+              childBufferLocation = bufferLocationsForChildAttribute.shift();
               if (childBufferLocation) {
-                childLocations.push(childBufferLocation);
+                bufferLocation.childLocations.push(childBufferLocation);
               } else {
+                childAttribute = attribute.childAttributes[k];
                 emitOnce(
                   "Instance Attribute Child Attribute Error",
                   (count: number, id: string) => {
@@ -601,14 +657,11 @@ export class InstanceAttributeBufferManager<
               }
             }
           }
-
-          bufferLocation.childLocations = childLocations;
         }
 
         // In the group, associate the property ids that affect a buffer location WITH the buffer location they affect
         for (let k = 0, endk = ids.length; k < endk; ++k) {
-          const id = ids[k];
-          group.propertyToBufferLocation[id] = bufferLocation;
+          group.propertyToBufferLocation[ids[k]] = bufferLocation;
         }
       }
 
@@ -616,6 +669,9 @@ export class InstanceAttributeBufferManager<
       this.availableLocations.push(group);
     }
 
+    debug(
+      "COMPLETE: Unpacked attribute buffer manager buffer location grouping"
+    );
     // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
     flushEmitOnce();
   }

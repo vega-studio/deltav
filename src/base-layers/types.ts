@@ -22,7 +22,7 @@ export type Anchor = {
   y?: number;
 };
 
-export enum ScaleType {
+export enum ScaleMode {
   /** The size of the image will be tied to world space */
   ALWAYS = 1,
   /** The image will scale to it's font size then stop growing */

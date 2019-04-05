@@ -239,12 +239,13 @@ export class GLProxy {
 
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
         console.error("FRAGMENT SHADER COMPILER ERROR");
-        console.warn(material.fragmentShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
-        this.printError();
+        console.warn(this.lineFormatShader(material.fragmentShader));
+        console.warn("LOGS:");
         console.warn(this.gl.getShaderInfoLog(fs));
+        this.printError();
         this.gl.deleteShader(fs);
 
         return;
@@ -271,12 +272,13 @@ export class GLProxy {
 
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
         console.error("VERTEX SHADER COMPILER ERROR");
-        console.warn(material.vertexShader);
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
-        this.printError();
+        console.warn(this.lineFormatShader(material.vertexShader));
+        console.warn("LOGS:");
         console.warn(this.gl.getShaderInfoLog(vs));
+        this.printError();
         this.gl.deleteShader(vs);
 
         return;
@@ -997,37 +999,55 @@ export class GLProxy {
 
     switch (glError) {
       case this.gl.NO_ERROR:
-        console.warn("No Error");
+        console.warn("GL Error: No Error");
         break;
 
       case this.gl.INVALID_ENUM:
-        console.warn("INVALID ENUM");
+        console.warn("GL Error: INVALID ENUM");
         break;
 
       case this.gl.INVALID_VALUE:
-        console.warn("INVALID_VALUE");
+        console.warn("GL Error: INVALID_VALUE");
         break;
 
       case this.gl.INVALID_OPERATION:
-        console.warn("INVALID OPERATION");
+        console.warn("GL Error: INVALID OPERATION");
         break;
 
       case this.gl.INVALID_FRAMEBUFFER_OPERATION:
-        console.warn("INVALID FRAMEBUFFER OPERATION");
+        console.warn("GL Error: INVALID FRAMEBUFFER OPERATION");
         break;
 
       case this.gl.OUT_OF_MEMORY:
-        console.warn("OUT OF MEMORY");
+        console.warn("GL Error: OUT OF MEMORY");
         break;
 
       case this.gl.CONTEXT_LOST_WEBGL:
-        console.warn("CONTEXT LOST WEBGL");
+        console.warn("GL Error: CONTEXT LOST WEBGL");
         break;
 
       default:
-        console.warn("GL Context output an unrecognized error value:", glError);
+        console.warn(
+          "GL Error: GL Context output an unrecognized error value:",
+          glError
+        );
         break;
     }
+  }
+
+  /**
+   * Prints a shader broken down by lines
+   */
+  lineFormatShader(shader: string) {
+    const lines = shader.split("\n");
+    const lineChars = String(lines.length).length + 1;
+
+    return `\n${lines
+      .map(
+        (l, i) =>
+          `${Array(lineChars - String(i + 1).length).join(" ")}${i + 1}: ${l}`
+      )
+      .join("\n")}`;
   }
 
   /**
@@ -1042,15 +1062,20 @@ export class GLProxy {
       return;
     }
 
+    // Perform any necessary compilation or settings changes requested of the texture
     this.compileTexture(texture);
     this.updateTextureData(texture);
+    this.updateTexturePartialData(texture);
     this.updateTextureSettings(texture);
+
+    // Indicate all updates required of the texture have been performed
+    texture.resolve();
   }
 
   /**
    * Ensures the texture object has it's data uploaded to the GPU
    */
-  updateTextureData(texture: Texture) {
+  private updateTextureData(texture: Texture) {
     // Check for upload flag
     if (!texture.needsDataUpload) return;
     // Check for gl context established
@@ -1123,9 +1148,19 @@ export class GLProxy {
         );
       }
 
-      if (texture.generateMipmaps) {
+      if (texture.generateMipMaps) {
         gl.generateMipmap(gl.TEXTURE_2D);
       }
+    }
+
+    // Let's not hang onto large data buffers that are being uploaded to the gpu. Let's
+    // delete the buffer but keep some simple metrics about it.
+    if (texture.data) {
+      texture.data = {
+        width: texture.data.width,
+        height: texture.data.height,
+        buffer: null
+      };
     }
 
     // Clear the flag for updates
@@ -1133,9 +1168,80 @@ export class GLProxy {
   }
 
   /**
+   * This consumes all of the partial texture updates applied to the texture.
+   */
+  private updateTexturePartialData(texture: Texture) {
+    // Check for partial update flag
+    if (!texture.needsPartialDataUpload) return;
+    // Check for gl context established
+    if (!texture.gl) return;
+    // This texture must have an establish texture id
+    if (!texture.gl.textureId) return;
+
+    // The texture must have a unit established in order to have it's data updated
+    if (texture.gl.textureUnit < 0) {
+      console.warn(
+        "A Texture object attempted to update it's data without an established Texture Unit.",
+        texture
+      );
+      return;
+    }
+
+    // Get gl context to work with
+    const gl = this.gl;
+    // Ensure we are operating on the correct active unit
+    this.state.setActiveTextureUnit(texture.gl.textureUnit);
+    // Ensure our texture is bound as the active texture unit
+    this.state.bindTexture(
+      texture,
+      GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
+    );
+
+    // Loop through all the necessary update regions and apply the changes
+    texture.updateRegions.forEach(region => {
+      const buffer = region[0];
+      const bounds = region[1];
+
+      // First set the data in the texture
+      if (gl instanceof WebGLRenderingContext) {
+        if (isDataBuffer(buffer)) {
+          gl.texSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            bounds.x,
+            bounds.y,
+            buffer.width,
+            buffer.height,
+            texelFormat(gl, texture.format),
+            inputImageFormat(gl, texture.type),
+            buffer.buffer
+          );
+        } else if (buffer) {
+          gl.texSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            bounds.x,
+            bounds.y,
+            texelFormat(gl, texture.format),
+            inputImageFormat(gl, texture.type),
+            buffer
+          );
+        }
+
+        if (texture.generateMipMaps) {
+          gl.generateMipmap(gl.TEXTURE_2D);
+        }
+      }
+    });
+
+    // Flag the deed as done
+    texture.needsPartialDataUpload = false;
+  }
+
+  /**
    * Modifies all settings needing modified on the provided texture object.
    */
-  updateTextureSettings(texture: Texture) {
+  private updateTextureSettings(texture: Texture) {
     // Check update flag
     if (!texture.needsSettingsUpdate) return;
     // Check for gl context
@@ -1170,7 +1276,7 @@ export class GLProxy {
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_MIN_FILTER,
-      minFilter(gl, texture.minFilter, isPower2)
+      minFilter(gl, texture.minFilter, isPower2, texture.generateMipMaps)
     );
     gl.texParameteri(
       gl.TEXTURE_2D,

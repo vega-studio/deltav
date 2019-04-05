@@ -76,6 +76,43 @@ export enum VertexAttributeSize {
 }
 
 /**
+ * These are valid atlas sizes available. We force a power of 2 to be utilized.
+ * We do not allow crazy large sizes as browsers have very real caps on resources.
+ * This helps implementations be a little smarter about what they are using. Future
+ * versions may increase this number as GPUs improve and standards allow greater
+ * flexibility.
+ */
+export enum AtlasSize {
+  _2 = 0x01 << 1,
+  _4 = 0x01 << 2,
+  _8 = 0x01 << 3,
+  _16 = 0x01 << 4,
+  _32 = 0x01 << 5,
+  _64 = 0x01 << 6,
+  _128 = 0x01 << 7,
+  _256 = 0x01 << 8,
+  _512 = 0x01 << 9,
+  _1024 = 0x01 << 10,
+  _2048 = 0x01 << 11,
+  _4096 = 0x01 << 12
+}
+
+/**
+ * Types of reesources that can be generated and provided via the resource manager
+ */
+export enum ResourceType {
+  ATLAS = 0,
+  FONT = 1
+}
+
+/**
+ * Base options needed for a resource to be considered a viable resource
+ */
+export interface IResourceType {
+  type: number;
+}
+
+/**
  * This represents a color in the VoidGL system. Ranges are [0 - 1, 0 - 1, 0 - 1, 0 - 1]
  */
 export type Color = [number, number, number, number];
@@ -153,8 +190,10 @@ export interface IInstanceAttribute<T extends Instance> {
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
-  atlas?: {
-    /** Specify which generated atlas to target for the resource */
+  resource?: {
+    /** This is the resource type that the attribute will be requesting (ie ResourceType.ATLAS, ResourceType.FONT, or custom resource type values) */
+    type: number;
+    /** Specify which generated resource to target for the resource */
     key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
@@ -246,17 +285,19 @@ export interface IInstanceAttributeInternal<T extends Instance>
 }
 
 /**
- * This is an attribute where the atlas is definitely declared.
+ * This is an attribute where the resource is definitely declared.
  */
-export interface IAtlasInstanceAttribute<T extends Instance>
+export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
    * 0. This makes this attribute and layer become compatible with reading atlas resources.
    * The value provided for this property should be the name of the atlas that is created.
    */
-  atlas: {
-    /** Specify which generated atlas to target for the resource */
+  resource: {
+    /** This is the resource type targeted which can be provided by managers */
+    type: number;
+    /** Specify which generated resource to target */
     key: string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
@@ -266,6 +307,28 @@ export interface IAtlasInstanceAttribute<T extends Instance>
      */
     shaderInjection?: ShaderInjectionTarget;
   };
+}
+
+/**
+ * This represents the minimum information to target a specific resource.
+ */
+export interface IResourceContext {
+  /** Indicates a resource is specified */
+  resource: {
+    /** The resource type. This is the type a manager is registered with when setting up a surface. */
+    type: number;
+    /** This is the identifier of the specific resource within the manager */
+    key: string;
+  };
+}
+
+/**
+ * Type guard for resource instance attributes
+ */
+export function isResourceAttribute<T extends Instance>(
+  val: IInstanceAttribute<T>
+): val is IResourceInstanceAttribute<T> {
+  return Boolean(val && val.resource);
 }
 
 /**
@@ -386,12 +449,40 @@ export interface IProjection {
   worldToView(point: Vec2, out?: Vec2): Vec2;
 }
 
+/**
+ * The empty, do-nothing, method we devs find ourselves using too much.
+ */
+export function NOOP() {
+  /** No-op */
+}
+
+/**
+ * White space character test
+ */
+export const whiteSpaceRegEx = /\s/g;
+export const whiteSpaceCharRegEx = /\s/;
+export const isWhiteSpace = whiteSpaceCharRegEx.test.bind(whiteSpaceCharRegEx);
+
+/**
+ * Newline character test
+ */
+export const newLineRegEx = /(\r\n|\n|\r)/g;
+export const newLineCharRegEx = /(\r\n|\n|\r)/;
+export const isNewline = newLineCharRegEx.test.bind(newLineCharRegEx);
+
+/**
+ * Options a layer can provide for a material
+ */
 export type ILayerMaterialOptions = Partial<
-  Omit<
-    Omit<Omit<MaterialOptions, "uniforms">, "vertexShader">,
-    "fragmentShader"
-  >
+  Omit<MaterialOptions, "uniforms" | "vertexShader" | "fragmentShader">
 >;
+
+/**
+ * A wrapper to make declaring layer material options easier and clearer
+ */
+export function createMaterialOptions(options: ILayerMaterialOptions) {
+  return options;
+}
 
 /** This is the method signature for determining whether or not a point hits an instance */
 export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;

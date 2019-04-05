@@ -21,8 +21,6 @@ export class Instance implements Identifiable {
   @observable active: boolean;
   /** The property changes on the instance */
   changes: { [key: number]: number } = {};
-  /** Stores property identification numbers */
-  property: { [key: string]: number } = {};
   /**
    * This is a lookup that provides a means to retrieve the id of an easing type currently available to the instance.
    * This is populated when the instance becomes a part of a layer with easing attributes.

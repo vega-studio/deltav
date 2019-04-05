@@ -55,8 +55,8 @@ const methods = [
     compatibility: ShaderInjectionTarget.ALL
   },
   {
-    moduleId: "circularArc",
-    content: require("./shader-fragments/circular-arc.vs"),
+    moduleId: "arc",
+    content: require("./shader-fragments/arc.vs"),
     compatibility: ShaderInjectionTarget.ALL
   },
   {

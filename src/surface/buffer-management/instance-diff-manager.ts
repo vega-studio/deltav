@@ -1,4 +1,5 @@
 import { Instance } from "../../instance-provider/instance";
+import { ResourceManager } from "../../resources";
 import {
   IInstanceAttribute,
   INonePickingMetrics,
@@ -7,7 +8,6 @@ import {
   PickType
 } from "../../types";
 import { LayerBufferType } from "../layer-processing/layer-buffer-type";
-import { AtlasResourceManager } from "../texture/atlas-resource-manager";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
@@ -45,7 +45,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
     | ISinglePickingMetrics<T>
     | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
-  resource: AtlasResourceManager;
+  resource: ResourceManager;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
   bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** This is the buffering strategy being used */

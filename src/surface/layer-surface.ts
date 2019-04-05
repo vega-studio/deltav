@@ -1,20 +1,28 @@
 import { ImageInstance } from "../base-layers/images";
-import { LabelInstance } from "../base-layers/labels";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
-import { Box } from "../primitives/box";
+import {
+  BaseResourceManager,
+  BaseResourceOptions,
+  FontResourceManager,
+  ResourceManager
+} from "../resources";
+import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { PickType } from "../types";
-import { FrameMetrics } from "../types";
+import { FrameMetrics, ResourceType } from "../types";
+import { IResourceType, PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
+import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
-import { ILayerProps, Layer } from "./layer";
+import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
+import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
@@ -22,17 +30,34 @@ import { generateLayerModel } from "./layer-processing/generate-layer-model";
 import { makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
 import { ISceneOptions, LayerScene } from "./layer-scene";
 import { MouseEventManager, SceneView } from "./mouse-event-manager";
-import { AtlasManager } from "./texture";
-import { IAtlasOptions } from "./texture/atlas";
-import { AtlasResourceManager } from "./texture/atlas-resource-manager";
 import { ClearFlags, View } from "./view";
 
+/**
+ * Default IO expansion controllers applied to the system when explicit settings
+ * are not provided.
+ */
+export const DEFAULT_IO_EXPANSION: ILayerSurfaceOptions["ioExpansion"] = [
+  new EasingIOExpansion()
+];
+
+/**
+ * Default resource managers the system will utilize to handle default / basic resources.
+ */
+export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers"] = [
+  {
+    type: ResourceType.ATLAS,
+    manager: new AtlasResourceManager({})
+  },
+  {
+    type: ResourceType.FONT,
+    manager: new FontResourceManager()
+  }
+];
+
+/**
+ * Options for generating a new layer surface.
+ */
 export interface ILayerSurfaceOptions {
-  /**
-   * These are the atlas resources we want available that our layers can be provided to utilize
-   * for their internal processes.
-   */
-  atlasResources?: IAtlasOptions[];
   /**
    * This is the color the canvas will be set to.
    */
@@ -51,11 +76,48 @@ export interface ILayerSurfaceOptions {
    */
   handlesWheelEvents?: boolean;
   /**
+   * Provides additional expansion controllers that will contribute to our Shader IO configuration
+   * for the layers. If this is not provided, this defaults to default system behaviors.
+   *
+   * To add additional Expansion controllers and keep default system controllers inject:
+   * [
+   *   ...DEFAULT_IO_EXPANSION,
+   *   <your own Expansion controllers>
+   * ]
+   *
+   * For instance: easing properties on attributes requires the attribute to be expanded to additional
+   * attributes + modified behavior of the base attribute. Thus the system by default adds in the
+   * EasinggIOExpansion controller when this is not provided to make those property types work.
+   */
+  ioExpansion?: BaseIOExpansion[];
+  /**
    * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
    * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
    * have better performance if needed.
    */
   pixelRatio?: number;
+  /**
+   * These are the resources we want available that our layers can be provided to utilize
+   * for their internal processes.
+   */
+  resources?: BaseResourceOptions[];
+  /**
+   * This specifies the resource managers that will be applied to the surface. If this is not
+   * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
+   *
+   * To add additional managers to the default framework:
+   * [
+   *   ...DEFAULT_RESOURCE_MANAGEMENT,
+   *   <your own resource managers>
+   * ]
+   *
+   * Resource managers handle a layer's requests for a resource (this.resource.request(layer, instance, requestObject))
+   * during update cycles of the attributes.
+   */
+  resourceManagers?: {
+    type: number;
+    manager: BaseResourceManager<IResourceType, IResourceType>;
+  }[];
   /**
    * This sets up the available scenes the surface will have to work with. Layers then can
    * reference the scene by it's scene property. The order of the scenes here is the drawing
@@ -78,16 +140,36 @@ function isWebGLContext(val: any): val is WebGLRenderingContext {
   return Boolean(val.canvas);
 }
 
+/**
+ * A type to describe the constructor of a Layer class.
+ */
 export interface ILayerConstructable<T extends Instance> {
   new (props: ILayerProps<T>): Layer<any, any>;
 }
 
 /**
+ * This specifies a class type that can be used in creating a layer with createLayer
+ */
+export type ILayerConstructionClass<
+  T extends Instance,
+  U extends ILayerProps<T>
+> = ILayerConstructable<T> & { defaultProps: U };
+
+/**
  * This is a pair of a Class Type and the props to be applied to that class type.
  */
 export type LayerInitializer = [
-  ILayerConstructable<Instance> & { defaultProps: ILayerProps<Instance> },
+  ILayerConstructionClass<Instance, ILayerProps<Instance>>,
   ILayerProps<Instance>
+];
+
+/**
+ * The internal system layer initializer that hides additional properties the front
+ * facing API should not be concerned with.
+ */
+export type LayerInitializerInternal = [
+  ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
+  ILayerPropsInternal<Instance>
 ];
 
 /**
@@ -106,12 +188,8 @@ export function createLayer<T extends Instance, U extends ILayerProps<T>>(
  * surface will provide some basic camera controls by default.
  */
 export class LayerSurface {
-  /** This is the atlas manager that will help with modifying and tracking atlas' generated for the layers */
-  private atlasManager: AtlasManager = new AtlasManager();
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
-  /** This is the current viewport the renderer state is in */
-  currentViewport = new Map<WebGLRenderer, Box>();
   /**
    * This is the metrics of the current running frame
    */
@@ -121,11 +199,12 @@ export class LayerSurface {
     frameDuration: 1000 / 60,
     previousTime: Date.now() | 0
   };
-  /**
-   * This is used to help resolve concurrent draws. There are some very async operations that should
-   * not overlap in draw calls.
-   */
-  private isBufferingAtlas = false;
+  /** This is used to help resolve concurrent draws and resolving resource request dequeue operations. */
+  private isBufferingResources = false;
+  /** These are the registered expanders of Shader IO configuration */
+  private ioExpanders: BaseIOExpansion[] = [];
+  /** This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been generated that are needed */
+  ioSorting = new BaseIOSorting();
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
@@ -137,7 +216,7 @@ export class LayerSurface {
   /** This is the THREE render system we use to render scenes with views */
   renderer: WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
-  resourceManager: AtlasResourceManager;
+  resourceManager: ResourceManager;
   /**
    * This is all of the available scenes and their views for this surface. Layers reference the IDs
    * of the scenes and the views to be a part of their rendering state.
@@ -160,7 +239,7 @@ export class LayerSurface {
   willDisposeLayer = new Map<string, boolean>();
   /**
    * This map is a quick look up for a view to determine other views that
-   * would need to be redrawn as a consequence of the source view needing a redraw
+   * would need to be redrawn as a consequence of the key view needing a redraw.
    */
   private viewDrawDependencies = new Map<View, View[]>();
   /** This is used to indicate whether the loading is completed */
@@ -193,7 +272,6 @@ export class LayerSurface {
 
     // We add the layer to our management
     this.layers.set(layer.id, layer);
-
     // Now we initialize the layer's gl components
     const layerId = layer.id;
 
@@ -407,10 +485,8 @@ export class LayerSurface {
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
     this.pickingTarget.dispose();
-    this.currentViewport.clear();
 
     // TODO: Instances should be implementing destroy for these clean ups.
-    LabelInstance.destroy();
     ImageInstance.destroy();
   }
 
@@ -455,10 +531,10 @@ export class LayerSurface {
     // Now that all of our layers have performed updates to everything, we can now dequeue
     // All resource requests
     // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
-    if (!this.isBufferingAtlas) {
-      this.isBufferingAtlas = true;
+    if (!this.isBufferingResources) {
+      this.isBufferingResources = true;
       const didBuffer = await this.resourceManager.dequeueRequests();
-      this.isBufferingAtlas = false;
+      this.isBufferingResources = false;
 
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
@@ -562,8 +638,8 @@ export class LayerSurface {
       );
 
       // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 25;
-      const pickHeight = 25;
+      const pickWidth = 5;
+      const pickHeight = 5;
       const numBytesPerColor = 4;
       const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
@@ -783,6 +859,9 @@ export class LayerSurface {
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
       await this.initResources(options);
+      // Initialize any io expanders requested or needed. This must happen after resource initialization
+      // as resource managers can produce their own expanders.
+      await this.initIOExpanders(options);
     } else {
       console.warn(
         "Could not establish a GL context. Layer Surface will be unable to render"
@@ -827,7 +906,7 @@ export class LayerSurface {
     this.pickingTarget = new RenderTarget({
       buffers: {
         color: new Texture({
-          generateMipmaps: false,
+          generateMipMaps: false,
           data: {
             width,
             height,
@@ -905,6 +984,22 @@ export class LayerSurface {
   }
 
   /**
+   * Initializes the expanders that should be applied to the surface for layer processing.
+   */
+  private initIOExpanders(options: ILayerSurfaceOptions) {
+    // Initialize the Shader IO expansion objects
+    this.ioExpanders =
+      (options.ioExpansion && options.ioExpansion.slice(0)) ||
+      (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
+      [];
+
+    // Retrieve any expansion objects the resource managers may provide
+    const managerIOExpanders = this.resourceManager.getIOExpansion();
+    // Add the expanders to our current handled list.
+    this.ioExpanders = this.ioExpanders.concat(managerIOExpanders);
+  }
+
+  /**
    * This does special initialization by gathering the layers shader IO, generates a material
    * and injects special automated uniforms and attributes to make instancing work for the
    * shader.
@@ -916,12 +1011,24 @@ export class LayerSurface {
     layer.surface = this;
     // Set the resource manager this surface utilizes to the layer
     layer.resource = this.resourceManager;
+    // Get the shader metrics the layer desires
+    const shaderIO = layer.initShader();
     // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
     if (!scene) return null;
-    // Get the shader metrics the layer desires
-    const shaderIO = layer.initShader();
+    // If no metrics are provided, this layer is merely a shell layer and will not
+    // receive any GPU handling objects.
+    if (!shaderIO) return layer;
+
+    if (!shaderIO.fs || !shaderIO.vs) {
+      console.warn(
+        "Layer needs to specify the fragment and vertex shaders:",
+        layer.id
+      );
+      return null;
+    }
+
     // Clean out nulls provided as a convenience to the layer
     shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
       Boolean
@@ -933,10 +1040,15 @@ export class LayerSurface {
 
     // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
     // Instancing fragments
-    const shaderMetrics = new ShaderProcessor().process(layer, shaderIO);
-    // Check to see if the Shader Processing failed. If so return null as a failure flag.
-    if (!shaderMetrics) return null;
+    const shaderMetrics = new ShaderProcessor().process(
+      layer,
+      shaderIO,
+      this.ioExpanders,
+      this.ioSorting
+    );
 
+    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    if (!shaderMetrics) return null;
     // Retrieve all of the attributes created as a result of layer input and module processing.
     const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
 
@@ -1009,17 +1121,27 @@ export class LayerSurface {
    * This initializes resources needed or requested such as textures or render surfaces.
    */
   private async initResources(options: ILayerSurfaceOptions) {
-    // Tell our manager to generate all of the atlas' requested for surface
-    if (options.atlasResources) {
-      for (const resource of options.atlasResources) {
-        await this.atlasManager.createAtlas(resource);
+    // Create the controller for handling all resource managers
+    this.resourceManager = new ResourceManager();
+
+    // Get the managers requested by the configuration
+    const managers =
+      (options.resourceManagers && options.resourceManagers.slice(0)) ||
+      (DEFAULT_RESOURCE_MANAGEMENT && DEFAULT_RESOURCE_MANAGEMENT.slice(0)) ||
+      [];
+
+    // Register all of the managers for use by their type.
+    managers.forEach(manager => {
+      this.resourceManager.setManager(manager.type, manager.manager);
+    });
+
+    // Tell our managers to handle all of the requested resources injected into the
+    // configuration
+    if (options.resources) {
+      for (const resource of options.resources) {
+        await this.resourceManager.initResource(resource);
       }
     }
-
-    // Initialize our resource manager with the atlas manager
-    this.resourceManager = new AtlasResourceManager({
-      atlasManager: this.atlasManager
-    });
   }
 
   /**
@@ -1056,6 +1178,7 @@ export class LayerSurface {
     if (!layer) {
       return null;
     }
+
     if (!this.layers.get(layer && layer.id)) {
       console.warn(
         "Tried to remove a layer that is not in the manager.",
@@ -1071,61 +1194,162 @@ export class LayerSurface {
   }
 
   /**
+   * This expands a layer's children within the initializer list
+   */
+  private expandLayerChildren(
+    initializers: LayerInitializerInternal[],
+    layer: Layer<Instance, ILayerProps<Instance>>,
+    index: number
+  ) {
+    // Merge in the child layers this layer may request as the immediate next layers in the sequence
+    const childLayers: LayerInitializerInternal[] = layer.childLayers();
+    // No children, no need to do anything
+    if (childLayers.length <= 0) return;
+
+    // Make sure each child layer knows their parent
+    for (let i = 0, iMax = childLayers.length; i < iMax; ++i) {
+      const init = childLayers[i];
+      init[1].parent = layer;
+    }
+
+    // Add in the initializers of the children to be immediately updated or generated
+    initializers.splice(index + 1, 0, ...childLayers);
+  }
+
+  /**
+   * This handles a layer's update lifecycle during the layer rendering phase.
+   */
+  private updateLayer(
+    initializers: LayerInitializerInternal[],
+    layer: Layer<Instance, ILayerPropsInternal<Instance>>,
+    props: ILayerPropsInternal<Instance>,
+    index: number
+  ) {
+    // Execute lifecycle method
+    layer.willUpdateProps(props);
+
+    // If we have a provider that is about to be newly set to the layer, then the provider
+    // needs to do a full sync in order to have existing elements in the provider
+    if (props.data !== layer.props.data) {
+      props.data.sync();
+    }
+
+    // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
+    // or by custom logic of the layer.
+    if (layer.shouldDrawView(layer.props, props)) {
+      layer.needsViewDrawn = true;
+    }
+
+    // Make sure the layer has the current props applied to it
+    Object.assign(layer.props, props);
+    // Keep the initializer up to date with the injected props
+    layer.initializer[1] = layer.props;
+    // Lifecycle hook
+    layer.didUpdateProps();
+
+    // If we are having a parent swap, we need to make sure the previous parent does not
+    // register this layer as a child anymore
+    if (props.parent) {
+      if (layer.parent && layer.parent !== props.parent) {
+        // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
+        // updated properly.
+        const children = layer.parent.children || [];
+        const index = children.indexOf(layer) || -1;
+
+        if (index > -1) {
+          children.splice(index, 1);
+        }
+      }
+    }
+
+    // Always make sure the layer's parent is set properly by the props
+    layer.parent = props.parent;
+
+    // A layer may flag itself as needing to be rebuilt. This is handled here and is completed by deleting
+    // the layer completely then generating the layer anew.
+    if (layer.willRebuildLayer) {
+      this.removeLayer(layer);
+      this.generateLayer(initializers, layer.initializer, index, true);
+    }
+
+    // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
+    else {
+      this.expandLayerChildren(initializers, layer, index);
+    }
+  }
+
+  /**
+   * This handles a layer's creation during the rendering of layers.
+   */
+  private generateLayer(
+    initializers: LayerInitializerInternal[],
+    init: LayerInitializerInternal,
+    index: number,
+    preventChildren?: boolean
+  ) {
+    const layerClass = init[0];
+    const props = init[1];
+    // Generate the new layer and provide it it's initial props
+    const layer = new layerClass(
+      Object.assign({}, layerClass.defaultProps, props)
+    );
+    // Keep the initializer object that generated the layer for reference and debugging
+    layer.initializer = init;
+    // Sync the data provider applied to the layer in case the provider has existing data
+    // before being applied tot he layer
+    layer.props.data.sync();
+    // Look in the props of the layer for the parent of the layer
+    layer.parent = props.parent;
+
+    // If the parent is present, the parent should have the child added
+    if (props.parent) {
+      if (props.parent.children) props.parent.children.push(layer);
+      else props.parent.children = [layer];
+    }
+
+    // Add the layer to this surface
+    if (!this.addLayer(layer)) {
+      console.warn(
+        "Error initializing layer:",
+        props.key,
+        "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+      );
+
+      return;
+    }
+
+    // Add in the children of the layer
+    if (!preventChildren) {
+      this.expandLayerChildren(initializers, layer, index);
+    }
+  }
+
+  /**
    * Used for reactive rendering and diffs out the layers for changed layers.
    */
   render(layerInitializers: LayerInitializer[]) {
     if (!this.gl) return;
 
+    // Prevent mutations of the input
+    const initializers: LayerInitializerInternal[] = layerInitializers.slice(0);
+
     // Loop through all of the initializers and properly add and remove layers as needed
-    if (layerInitializers && layerInitializers.length > 0) {
-      layerInitializers.forEach(init => {
-        const layerClass = init[0];
+    if (initializers && initializers.length > 0) {
+      // This loop is VERY specifically putting the length check in the conditional of the loop
+      // The list CAN add additional initializers to account for the children being added
+      for (let i = 0; i < initializers.length; ++i) {
+        const init = initializers[i];
         const props = init[1];
         const existingLayer = this.layers.get(props.key);
 
         if (existingLayer) {
-          existingLayer.willUpdateProps(props);
-
-          // If we have a provider that is about to be newly set to the layer, then the provider
-          // needs to do a full sync in order to have existing
-          if (props.data !== existingLayer.props.data) {
-            props.data.sync();
-          }
-
-          // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
-          // or by custom logic of the layer.
-          if (existingLayer.shouldDrawView(existingLayer.props, props)) {
-            existingLayer.needsViewDrawn = true;
-          }
-
-          Object.assign(existingLayer.props, props);
-          existingLayer.initializer[1] = existingLayer.props;
-          existingLayer.didUpdateProps();
+          this.updateLayer(initializers, existingLayer, props, i);
         } else {
-          // Generate the new layer and provide it it's initial props
-          const layer = new layerClass(
-            Object.assign({}, layerClass.defaultProps, props)
-          );
-          // Keep the initializer object that generated the layer for reference and debugging
-          layer.initializer = init;
-          // Sync the data provider applied to the layer in case the provider has existing data
-          // before being applied tot he layer
-          layer.props.data.sync();
-
-          // Add the layer to this surface
-          if (!this.addLayer(layer)) {
-            console.warn(
-              "Error initializing layer:",
-              props.key,
-              "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
-            );
-
-            return;
-          }
+          this.generateLayer(initializers, init, i);
         }
 
         this.willDisposeLayer.set(props.key, false);
-      });
+      }
     }
 
     // Take any layer that retained it's disposal flag and trash it

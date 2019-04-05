@@ -101,7 +101,9 @@ export class View extends IdentifyByKey {
 
   constructor(options: IViewOptions) {
     super(options);
-    Object.assign(this, options);
+    const toAssign = Object.assign({}, options);
+    delete toAssign.key;
+    Object.assign(this, toAssign);
   }
 
   screenToPixelSpace(point: Vec2, out?: Vec2) {

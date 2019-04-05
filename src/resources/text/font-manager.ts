@@ -467,10 +467,6 @@ export class FontManager {
         const canvas: HTMLCanvasElement = document.createElement("canvas");
         const context = canvas.getContext("2d");
         if (!context) return;
-        // Get the aspect ratio of the glyph data being rendered
-        // const aspect = image.height / image.width;
-        // const renderWidth = aspect < 1 ? glyphSize : glyphSize * aspect;
-        // const renderHeight = aspect > 1 ? glyphSize : glyphSize * aspect;
         // Our canvas to render to will be the specified glyphSize block
         canvas.width = glyphSize;
         canvas.height = glyphSize;
@@ -499,6 +495,6 @@ export class FontManager {
     });
 
     // This will contain all of the glyph render information
-    // const allGlyphData = await Promise.all(promises);
+    return await Promise.all(promises);
   }
 }

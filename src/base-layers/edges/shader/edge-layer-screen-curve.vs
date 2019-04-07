@@ -17,9 +17,9 @@ void main() {
   ${attributes}
 
   // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float interpolationTime = position.y;
-  float interpolationIncrement = 1.0 / position.z;
+  float normal = vertex.x;
+  float interpolationTime = vertex.y;
+  float interpolationIncrement = 1.0 / vertex.z;
 
   // Convert our world points to screen space
   vec4 startClip = clipSpace(vec3(start, depth));
@@ -48,20 +48,20 @@ void main() {
       normalize(vec2(preLine.y, -preLine.x) + vec2(-nextLine.y, nextLine.x)),
       // Pick this value if we're at the end of the line
       normalize(vec2(-nextLine.y, nextLine.x)),
-      float(position.x >= 1.0)
+      float(vertex.x >= 1.0)
     ),
-    float(position.x > 0.0)
+    float(vertex.x > 0.0)
   );
 
   // Get the thickness based on the side we're on
   float lineThickness = mix(widthStart, widthEnd, interpolationTime) / 2.0;
   // Start on the calculated line and push out by the normal's value
-  vec2 vertex = currentPosition + currentNormal * (-normal * lineThickness * scaleFactor);
+  vec2 vertexPos = currentPosition + currentNormal * (-normal * lineThickness * scaleFactor);
   // Get the color based on where we are on the line
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
   vertexColor.a *= vertexColor.a * layerOpacity;
 
-  gl_Position = vec4((vertex / viewSize) * vec2(2.0, 2.0) - vec2(1.0, 1.0), startClip.zw);
+  gl_Position = vec4((vertexPos / viewSize) * vec2(2.0, 2.0) - vec2(1.0, 1.0), startClip.zw);
   gl_PointSize = 5.0;
 
   ${extend}

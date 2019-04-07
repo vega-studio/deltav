@@ -149,18 +149,14 @@ export class RingLayer<
         }
       ],
       vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
         {
-          name: "position",
-          size: VertexAttributeSize.THREE,
+          name: "normals",
+          size: VertexAttributeSize.TWO,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
-            vertexToSide[vertex],
-            0
+            vertexToSide[vertex]
           ]
         }
       ],

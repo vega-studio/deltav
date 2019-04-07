@@ -37,8 +37,8 @@ void main() {
   );
 
   // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float side = position.y;
+  float normal = normals.x;
+  float side = normals.y;
 
   vec2 scaledAnchor = anchor * scale;
 

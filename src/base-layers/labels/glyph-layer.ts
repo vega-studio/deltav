@@ -200,7 +200,7 @@ export class GlyphLayer<
       uniforms: [],
       vertexAttributes: [
         {
-          name: "quadVertex",
+          name: "normals",
           size: VertexAttributeSize.TWO,
           update: (vertex: number) =>
             // Quad vertex side information

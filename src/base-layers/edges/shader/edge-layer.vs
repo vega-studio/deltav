@@ -17,9 +17,9 @@ void main() {
   ${attributes}
 
   // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float interpolationTime = position.y;
-  float interpolationIncrement = 1.0 / position.z;
+  float normal = vertex.x;
+  float interpolationTime = vertex.y;
+  float interpolationIncrement = 1.0 / vertex.z;
   // Get the position of the current vertex
   vec2 currentPosition = interpolation(interpolationTime, start, end, control.xy, control.zw);
   // Calculate the next and previous segment's location on the line
@@ -38,20 +38,20 @@ void main() {
       normalize(vec2(preLine.y, -preLine.x) + vec2(-nextLine.y, nextLine.x)),
       // Pick this value if we're at the end of the line
       normalize(vec2(-nextLine.y, nextLine.x)),
-      float(position.x >= 1.0)
+      float(vertex.x >= 1.0)
     ),
-    float(position.x > 0.0)
+    float(vertex.x > 0.0)
   );
 
   // Get the thickness based on the side we're on
   float lineThickness = mix(widthStart, widthEnd, interpolationTime) / 2.0;
   // Start on the calculated line and push out by the normal's value
-  vec2 vertex = currentPosition + currentNormal * (normal * lineThickness);
+  vec2 vertexPos = currentPosition + currentNormal * (normal * lineThickness);
   // Get the color based on where we are on the line
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
   vertexColor.a *= layerOpacity;
 
-  gl_Position = clipSpace(vec3(vertex, depth));
+  gl_Position = clipSpace(vec3(vertexPos, depth));
   gl_PointSize = 5.0;
 
   ${extend}

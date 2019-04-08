@@ -18,9 +18,9 @@ void main() {
   float widthStart = thickness.x;
   float widthEnd = thickness.y;
   // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float interpolationTime = position.y;
-  float interpolationIncrement = 1.0 / position.z;
+  float normal = vertex.x;
+  float interpolationTime = vertex.y;
+  float interpolationIncrement = 1.0 / vertex.z;
   // Get the position of the current vertex
   vec2 currentPosition = arc(interpolationTime, center, radius, startAngle, endAngle);
   // Get normal with currentPosition and center

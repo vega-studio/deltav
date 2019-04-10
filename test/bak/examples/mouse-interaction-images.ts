@@ -97,7 +97,8 @@ export class MouseInteractionImages extends BaseExample {
       id: `image_0`,
       scaling: ScaleMode.ALWAYS,
       tint: [1.0, 1.0, 1.0, 1.0],
-      position: [20, 20]
+      position: [20, 20],
+      source: "./images/leaf.png"
     });
 
     // Left Middle left
@@ -110,7 +111,8 @@ export class MouseInteractionImages extends BaseExample {
           id: `image_1`,
           scaling: ScaleMode.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
-          position: [20, 50]
+          position: [20, 50],
+          source: "./images/leaf.png"
         })
       )
     );
@@ -122,13 +124,14 @@ export class MouseInteractionImages extends BaseExample {
           id: `image_2`,
           scaling: ScaleMode.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
-          position: [20, 80]
+          position: [20, 80],
+          source: "./images/leaf.png"
         })
       )
     );
 
     images.forEach(image => {
-      image.size = 25;
+      //image.size = 25;
     });
 
     return provider;

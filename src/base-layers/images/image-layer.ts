@@ -1,19 +1,12 @@
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
-import {
-  ILayerMaterialOptions,
-  InstanceAttributeSize,
-  IProjection,
-  IShaderInitialization,
-  ResourceType,
-  UniformSize,
-  VertexAttributeSize
-} from "../../types";
+import { IProjection } from "../../types";
 import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
-import { CommonMaterialOptions } from "../../util/common-options";
 import { ScaleMode } from "../types";
 import { ImageInstance } from "./image-instance";
+import { LayerInitializer, createLayer } from "src/surface";
+import { ImageRenderLayer } from "./ImageRenderLayer";
 
 const { min, max } = Math;
 
@@ -25,6 +18,8 @@ export interface IImageLayerProps<T extends ImageInstance>
     location?: IAutoEasingMethod<Vec>;
     size?: IAutoEasingMethod<Vec>;
   };
+  resourceKey?: string;
+  scaleMode?: ScaleMode;
 }
 
 /**
@@ -41,15 +36,7 @@ export class ImageLayer<
     scene: "default"
   };
 
-  static attributeNames = {
-    location: "location",
-    anchor: "anchor",
-    size: "size",
-    depth: "depth",
-    scaling: "scaling",
-    texture: "texture",
-    tint: "tint"
-  };
+  imageProvider = new InstanceProvider<ImageInstance>();
 
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
@@ -150,109 +137,42 @@ export class ImageLayer<
     };
   }
 
-  /**
-   * Define our shader and it's inputs
-   */
-  initShader(): IShaderInitialization<ImageInstance> {
-    const animations = this.props.animate || {};
-    const {
-      tint: animateTint,
-      location: animateLocation,
-      size: animateSize
-    } = animations;
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      1: 1,
-      2: -1,
-      3: 1,
-      4: -1,
-      5: -1
-    };
-
-    const vertexToSide: { [key: number]: number } = {
-      0: 0,
-      1: 0,
-      2: 0,
-      3: 1,
-      4: 1,
-      5: 1
-    };
-
-    return {
-      fs: require("./image-layer.fs"),
-      instanceAttributes: [
-        {
-          easing: animateLocation,
-          name: ImageLayer.attributeNames.location,
-          size: InstanceAttributeSize.TWO,
-          update: o => o.position
-        },
-        {
-          name: ImageLayer.attributeNames.anchor,
-          size: InstanceAttributeSize.TWO,
-          update: o => [o.anchor.x || 0, o.anchor.y || 0]
-        },
-        {
-          easing: animateSize,
-          name: ImageLayer.attributeNames.size,
-          size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height]
-        },
-        {
-          name: ImageLayer.attributeNames.depth,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
-        },
-        {
-          name: ImageLayer.attributeNames.scaling,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.scaling]
-        },
-        {
-          resource: {
-            type: ResourceType.ATLAS,
-            key: this.props.atlas || "",
-            name: "imageAtlas"
-          },
-          name: ImageLayer.attributeNames.texture,
-          update: o => this.resource.request(this, o, o.resource)
-        },
-        {
-          easing: animateTint,
-          name: ImageLayer.attributeNames.tint,
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.tint
-        }
-      ],
-      uniforms: [
-        {
-          name: "scaleFactor",
-          size: UniformSize.ONE,
-          update: _u => [1]
-        }
-      ],
-      vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
-        {
-          name: "position",
-          size: VertexAttributeSize.THREE,
-          update: (vertex: number) => [
-            // Normal
-            vertexToNormal[vertex],
-            // The side of the quad
-            vertexToSide[vertex],
-            0
-          ]
-        }
-      ],
-      vertexCount: 6,
-      vs: require("./image-layer.vs")
-    };
+  childLayers(): LayerInitializer[] {
+    return [
+      createLayer(ImageRenderLayer, {
+        animate: this.props.animate,
+        data: this.imageProvider,
+        key: `${this.id}.images`,
+        resourceKey: this.props.resourceKey,
+        scene: this.props.scene,
+        scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
+      })
+    ];
   }
 
-  getMaterialOptions(): ILayerMaterialOptions {
-    return CommonMaterialOptions.transparentImageBlending;
+  draw() {
+    const changes = this.resolveChanges();
+    if (changes.length <= 0) return;
+
+    //console.warn("changes", changes);
+    for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+      const [instance, diffType, changed] = changes[i];
+      this.imageProvider.add(instance);
+    }
+  }
+
+  initShader() {
+    return null;
+  }
+
+  willUpdateProps(newProps: U) {
+    // Scale mode change changes the shader needs of the underlying glyphs
+    if (newProps.scaleMode !== this.props.scaleMode) {
+      this.rebuildLayer();
+    }
+
+    if (newProps.resourceKey !== this.props.resourceKey) {
+      this.needsViewDrawn = true;
+    }
   }
 }

@@ -1,4 +1,3 @@
-import { ImageInstance } from "../base-layers/images";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -487,7 +486,7 @@ export class LayerSurface {
     this.pickingTarget.dispose();
 
     // TODO: Instances should be implementing destroy for these clean ups.
-    ImageInstance.destroy();
+    // ImageInstance.destroy();
   }
 
   /**

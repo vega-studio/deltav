@@ -162,8 +162,11 @@ export class AtlasResourceManager extends BaseResourceManager<
    * Initialize the atlas resources requested for construction
    */
   async initResource(resource: BaseResourceOptions) {
+    console.warn("init resource", resource);
     if (isAtlasResource(resource)) {
+      console.warn("YES it it atlas");
       const atlas = await this.atlasManager.createAtlas(resource);
+      console.warn("key", resource.key, atlas);
       this.resources.set(resource.key, atlas);
     }
   }

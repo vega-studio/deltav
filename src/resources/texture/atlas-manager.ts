@@ -73,7 +73,8 @@ export class AtlasManager {
     atlas.setManager(this);
     // Make the atlas identifiable by it's name
     this.allAtlas.set(atlas.id, atlas);
-
+    console.warn("atlas id", atlas.id);
+    console.warn("rsources ", resources);
     // Now we load, pack in, and draw each requested resource
     if (resources) {
       await this.updateAtlas(atlas.id, resources);

@@ -1,7 +1,7 @@
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { IProjection } from "../../types";
+import { IProjection, InstanceDiffType } from "../../types";
 import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
 import { ScaleMode } from "../types";
 import { ImageInstance } from "./image-instance";
@@ -37,6 +37,8 @@ export class ImageLayer<
   };
 
   imageProvider = new InstanceProvider<ImageInstance>();
+
+  propertyIds: { [key: string]: number } | undefined;
 
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
@@ -154,10 +156,34 @@ export class ImageLayer<
     const changes = this.resolveChanges();
     if (changes.length <= 0) return;
 
-    //console.warn("changes", changes);
+    if (!this.propertyIds) {
+      const instance = changes[0][0];
+      this.propertyIds = this.getInstanceObservableIds(instance, [
+        "active",
+        "tint",
+        "depth",
+        "height",
+        "width",
+        "position",
+        "scaling",
+        "source"
+      ]);
+    }
+
+    const { active: activeId } = this.propertyIds;
+
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
       const [instance, diffType, changed] = changes[i];
-      this.imageProvider.add(instance);
+      switch (diffType) {
+        case InstanceDiffType.CHANGE:
+          if (changed[activeId] !== undefined) {
+            if (instance.active) {
+              console.warn("instance active");
+              this.imageProvider.add(instance);
+            }
+          }
+          break;
+      }
     }
   }
 

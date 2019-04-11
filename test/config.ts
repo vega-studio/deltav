@@ -1,4 +1,5 @@
 import { BaseDemo } from "./common/base-demo";
+import { ImageDemo } from "./image-demo";
 import { KitchenSink } from "./kitchen-sink";
 import { PhysicsDemo } from "./physics-demo";
 import { TextDemo } from "./text-demo";
@@ -11,5 +12,6 @@ demos.set("text-demo", new TextDemo());
 demos.set("word-sand", new WordSandDemo());
 demos.set("physics-demo", new PhysicsDemo());
 demos.set("kitchen-sink", new KitchenSink());
+demos.set("image-demo", new ImageDemo());
 
 export const demoKeys = Array.from(demos.keys());

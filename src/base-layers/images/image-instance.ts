@@ -1,34 +1,23 @@
+import { Image } from "src/primitives";
+import { ImageAtlasResourceRequest } from "src/resources";
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
-import { Image } from "src/primitives";
-import { ImageAtlasResourceRequest } from "src/resources";
 
 export interface IImageInstanceOptions extends IInstanceOptions {
-  /**
-   * The point on the image which will be placed in world space via the x, y coords. This is also the point
-   * which the image will be scaled around.
-   */
   anchor?: Anchor;
-  /** Depth sorting of the image (or the z value of the lable) */
   depth?: number;
-  /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
   element: HTMLImageElement;
-  /** The height of the image as it is to be rendered in world space */
   height?: number;
-  /** The coordinate where the image will be anchored to in world space */
   position?: Vec2;
-  /** Sets the way the image scales with the world */
   scaling?: ScaleMode;
-  /** The color the image should render as */
   tint: [number, number, number, number];
-  /** The width of the image as it is to be rendered in world space */
   width?: number;
 
   source: string | Image | ImageData | HTMLCanvasElement;
 
-  onReady?: (image: ImageInstance) => void;
+  onReady?(image: ImageInstance): void;
 }
 
 /**
@@ -109,12 +98,11 @@ export class ImageInstance extends Instance {
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
 
   @observable source: string | Image | ImageData | HTMLCanvasElement;
-  element: HTMLImageElement;
+  @observable element: HTMLImageElement;
 
   // These are properties that can be altered, but have side effects from being changed
   onReady?: (image: ImageInstance) => void;
 
-  //request
   request: ImageAtlasResourceRequest;
 
   /** This is the anchor location on the  */

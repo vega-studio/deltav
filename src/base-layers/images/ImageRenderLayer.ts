@@ -1,6 +1,7 @@
-import { ImageInstance } from "./image-instance";
-import { Layer, ILayerProps } from "../../surface/layer";
+import { ImageAtlasResourceRequest } from "src/resources";
+
 import { InstanceProvider } from "../../instance-provider";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -12,7 +13,7 @@ import {
 import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ScaleMode } from "../types";
-import { ImageAtlasResourceRequest } from "src/resources";
+import { ImageInstance } from "./image-instance";
 
 export interface IImageRenderLayerOptions<T extends ImageInstance>
   extends ILayerProps<T> {

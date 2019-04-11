@@ -1,14 +1,18 @@
+import { createLayer, LayerInitializer } from "src/surface";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds } from "../../primitives";
+import { Bounds, Image } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { IProjection, InstanceDiffType } from "../../types";
+import { InstanceDiffType, IProjection } from "../../types";
 import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
 import { ScaleMode } from "../types";
 import { ImageInstance } from "./image-instance";
-import { LayerInitializer, createLayer } from "src/surface";
 import { ImageRenderLayer } from "./ImageRenderLayer";
 
 const { min, max } = Math;
+
+const iconData = require("../../../test/kitchen-sink/examples/images/leaf.png");
+const icon = new Image();
+icon.src = iconData;
 
 export interface IImageLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
@@ -39,6 +43,16 @@ export class ImageLayer<
   imageProvider = new InstanceProvider<ImageInstance>();
 
   propertyIds: { [key: string]: number } | undefined;
+
+  sourceCount = new Map<
+    string | Image | ImageData | HTMLCanvasElement,
+    number
+  >();
+
+  idToSource = new Map<
+    string,
+    string | Image | ImageData | HTMLCanvasElement
+  >();
 
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
@@ -166,22 +180,81 @@ export class ImageLayer<
         "width",
         "position",
         "scaling",
-        "source"
+        "source",
+        "element"
       ]);
     }
 
-    const { active: activeId } = this.propertyIds;
+    const { active: activeId, source: sourceId } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
       const [instance, diffType, changed] = changes[i];
+      const source = instance.source;
+      const count = this.sourceCount.get(source);
+
       switch (diffType) {
         case InstanceDiffType.CHANGE:
           if (changed[activeId] !== undefined) {
-            if (instance.active) {
-              console.warn("instance active");
-              this.imageProvider.add(instance);
+            // active
+          }
+
+          if (changed[sourceId] !== undefined) {
+            const oldSource = this.idToSource.get(instance.id);
+
+            if (oldSource !== source) {
+              if (oldSource) {
+                const oldCount = this.sourceCount.get(oldSource);
+                if (oldCount) {
+                  if (oldCount === 1) {
+                    console.warn(
+                      `Source changed. Request Resource Removal: <${oldSource}>`
+                    );
+                    this.sourceCount.delete(oldSource);
+                  } else if (oldCount > 1) {
+                    this.sourceCount.set(oldSource, oldCount - 1);
+                  }
+                }
+              }
+
+              if (!count) {
+                console.warn(
+                  `Source changed. Request Resource Load: <${source}>`
+                );
+                this.sourceCount.set(source, 1);
+              } else {
+                this.sourceCount.set(source, count + 1);
+              }
+
+              this.idToSource.set(instance.id, source);
             }
           }
+
+          break;
+
+        case InstanceDiffType.INSERT:
+          if (!count) {
+            console.warn(`Instance added. Request Resource Load: <${source}>`);
+            this.sourceCount.set(source, 1);
+          } else {
+            this.sourceCount.set(source, count + 1);
+          }
+
+          this.idToSource.set(instance.id, source);
+
+          break;
+        case InstanceDiffType.REMOVE:
+          if (count) {
+            if (count === 1) {
+              console.warn(
+                `Instance removed. Request Resource Removal: <${source}>`
+              );
+              this.sourceCount.delete(source);
+            } else if (count > 1) {
+              this.sourceCount.set(source, count - 1);
+            }
+          }
+
+          this.idToSource.delete(instance.id);
           break;
       }
     }

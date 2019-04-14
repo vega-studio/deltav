@@ -32,7 +32,8 @@ export type UniformIOValue =
   | Mat3x3
   | Mat4x4
   | Float32Array
-  | Texture;
+  | Texture
+  | number[];
 
 export enum InstanceBlockIndex {
   ONE = 1,
@@ -65,6 +66,7 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
+  VEC4_ARRAY = 98,
   ATLAS = 99
 }
 

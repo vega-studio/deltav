@@ -33,37 +33,6 @@ export class UniformProcessing {
   }
 
   /**
-   * This is the special case where attributes are packed into a uniform buffer instead of into
-   * attributes. This is to maximize compatibility with hardware and maximize flexibility in creative approaches
-   * to utilizing shaders that need a lot of input.
-   */
-  generateUniformAttributePacking() {
-    let out = "\n// Instance Attributes as a packed Uniform Buffer";
-
-    // Add the uniform buffer to the shader
-    out += `uniform vec4 ${UniformProcessing.uniformPackingBufferName()}[${
-      this.metricsProcessor.totalInstanceUniformBlocks
-    }];\n`;
-    // Add the number of blocks an instance utilizes
-    out += `int instanceSize = ${
-      this.metricsProcessor.totalInstanceUniformBlocks
-    };`;
-    // Add the block retrieval method to aid in the Destructuring process
-    out += `vec4 getBlock(int index, int instanceIndex) { return ${UniformProcessing.uniformPackingBufferName()}[(instanceSize * instanceIndex) + index]; }`;
-
-    // Add our extra uniform to the material uniform output so the system can utilize it as needed.
-    this.materialUniforms.push({
-      name: UniformProcessing.uniformPackingBufferName(),
-      type: MaterialUniformType.VEC4_ARRAY,
-      value: new Array(this.metricsProcessor.totalInstanceUniformBlocks)
-        .fill(0)
-        .map<Vec4>(() => [0, 0, 0, 0])
-    });
-
-    return out;
-  }
-
-  /**
    * Processes a layer and it's requested uniforms and generates the injections needed to declare the
    * uniforms.
    */

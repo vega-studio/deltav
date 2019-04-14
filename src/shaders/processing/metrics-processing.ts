@@ -14,8 +14,8 @@ export class MetricsProcessing {
   maxUniforms: number;
   /** This reflects how many uniform blocks are available for instancing */
   maxUniformsForInstancing: number;
-  /** Get the number of instances the client's system supports */
-  maxInstancesPerBuffer: number;
+  /** Get the number of instances the client's system supports specifically for uniform instancing */
+  maxInstancesPerUniformBuffer: number;
   /** This is the total blocks to be used in our uniform buffer for handling instances */
   totalInstanceUniformBlocks: number;
 
@@ -54,10 +54,10 @@ export class MetricsProcessing {
     this.maxUniformsForInstancing =
       this.maxUniforms -
       MetricsProcessing.calculateUniformBlockUseage(uniforms);
-    this.maxInstancesPerBuffer = Math.floor(
+    this.maxInstancesPerUniformBuffer = Math.floor(
       this.maxUniformsForInstancing / this.blocksPerInstance
     );
     this.totalInstanceUniformBlocks =
-      this.maxInstancesPerBuffer * this.blocksPerInstance;
+      this.maxInstancesPerUniformBuffer * this.blocksPerInstance;
   }
 }

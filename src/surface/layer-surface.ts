@@ -902,6 +902,10 @@ export class LayerSurface {
       preserveDrawingBuffer: true
     });
 
+    if (this.resourceManager) {
+      this.resourceManager.setWebGLRenderer(this.renderer);
+    }
+
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
       buffers: {
@@ -1123,6 +1127,8 @@ export class LayerSurface {
   private async initResources(options: ILayerSurfaceOptions) {
     // Create the controller for handling all resource managers
     this.resourceManager = new ResourceManager();
+    // Set the GL renderer to the
+    this.resourceManager.setWebGLRenderer(this.renderer);
 
     // Get the managers requested by the configuration
     const managers =

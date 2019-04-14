@@ -1,3 +1,8 @@
+import {
+  BaseShaderIOInjection,
+  ShaderIOHeaderInjectionResult
+} from "src/shaders";
+import { MetricsProcessing } from "src/shaders/processing/metrics-processing";
 import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../types";
 import { ILayerProps, Layer } from "../layer";
@@ -18,7 +23,7 @@ export type ShaderIOExpansion<T extends Instance> = {
  * This type of object can be added to the layer surface to provide a means to process special
  * attributes the current system or customized system will want to handle.
  */
-export abstract class BaseIOExpansion {
+export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   /**
    * This is called with the Layer's currently declared Shader IO configuration.
    * The returned IO configuration will be added to the existing IO.
@@ -27,12 +32,18 @@ export abstract class BaseIOExpansion {
    *
    * NOTE: The inputs should NOT be modified in any way
    */
-  abstract expand<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    instanceAttributes: IInstanceAttribute<T>[],
-    vertexAttributes: IVertexAttribute[],
-    uniforms: IUniform[]
-  ): ShaderIOExpansion<T>;
+  expand<T extends Instance, U extends ILayerProps<T>>(
+    _layer: Layer<T, U>,
+    _instanceAttributes: IInstanceAttribute<T>[],
+    _vertexAttributes: IVertexAttribute[],
+    _uniforms: IUniform[]
+  ): ShaderIOExpansion<T> {
+    return {
+      instanceAttributes: [],
+      uniforms: [],
+      vertexAttributes: []
+    };
+  }
 
   /**
    * Every expansion object will be given the opportunity to validate the IO presented to it
@@ -47,10 +58,54 @@ export abstract class BaseIOExpansion {
    *
    * NOTE: The inputs should NOT be modified in any way
    */
-  abstract validate<T extends Instance, U extends ILayerProps<T>>(
+  validate<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     instanceAttributes: IInstanceAttribute<T>[],
     vertexAttributes: IVertexAttribute[],
     uniforms: IUniform[]
-  ): boolean;
+  ): boolean {
+    return true;
+  }
+
+  /**
+   * This allows for injection into the header of the shader.
+   *
+   * The order these controllers are injected
+   * into the system determines the order the contents are written to the header. So dependent injections
+   * must be sorted appropriately.
+   *
+   * @param layer The layer that is currently being processed
+   * @param metrics Some metrics processed that are useful for making decisions about buffering strategies etc.
+   */
+  processHeaderInjection(
+    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    _instanceAttributes: IInstanceAttribute<Instance>[],
+    _uniforms: IUniform[]
+  ): ShaderIOHeaderInjectionResult {
+    return {
+      injection: ""
+    };
+  }
+
+  /**
+   * This allows for injection into the shader AFTER attribute destructuring has taken place.
+   *
+   * The order these controllers are injected
+   * into the system determines the order the contents are written to the header. So dependent injections
+   * must be sorted appropriately.
+   *
+   * @param layer The layer that is currently being processed
+   * @param metrics Some metrics processed that are useful for making decisions about buffering strategies etc.
+   */
+  processAttributeDestructuring(
+    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    _instanceAttributes: IInstanceAttribute<Instance>[],
+    _uniforms: IUniform[]
+  ): string {
+    return "";
+  }
 }

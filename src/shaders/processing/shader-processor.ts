@@ -1,3 +1,4 @@
+import { BaseShaderIOInjection } from "src/shaders/processing/base-shader-io-injection";
 import { Instance } from "../../instance-provider/instance";
 import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -76,6 +77,9 @@ export class ShaderProcessor {
     this.uniformProcessing,
     this.metricsProcessing
   );
+
+  /** These are all of the processors that will contribute to filling out the shader with information */
+  processors: BaseShaderIOInjection[] = [];
 
   /**
    * This processes a layer, it's Shader IO requirements, and it's shaders to produce a fully functional
@@ -186,7 +190,8 @@ export class ShaderProcessor {
       const results = {
         fs: processShaderFS.shader.trim(),
         materialUniforms: this.uniformProcessing.materialUniforms,
-        maxInstancesPerBuffer: this.metricsProcessing.maxInstancesPerBuffer,
+        maxInstancesPerBuffer: this.metricsProcessing
+          .maxInstancesPerUniformBuffer,
         modules: Array.from(shadersWithImports.shaderModuleUnits),
         vs: processedShaderVS.shader.trim(),
         vertexAttributes,

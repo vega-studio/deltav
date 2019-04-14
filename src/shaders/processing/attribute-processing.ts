@@ -1,9 +1,16 @@
+import { MaterialUniformType } from "src/gl/types";
+import {
+  BaseShaderIOInjection,
+  ShaderIOHeaderInjectionResult
+} from "src/shaders/processing/base-shader-io-injection";
+import { Vec4 } from "src/util/vector";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { LayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
+  IUniform,
   IVertexAttribute,
   PickType,
   ResourceType
@@ -52,82 +59,7 @@ function makeVectorSwizzle(start: number, size: number) {
 /**
  * This object is responsible for generating how attributes are declared as input to the shader.
  */
-export class AttributeProcessing {
-  private uniformProcessor: UniformProcessing;
-  private metricsProcessor: MetricsProcessing;
-
-  constructor(
-    uniformProcessor: UniformProcessing,
-    metricsProcessor: MetricsProcessing
-  ) {
-    this.metricsProcessor = metricsProcessor;
-    this.uniformProcessor = uniformProcessor;
-  }
-
-  /**
-   * Produces the chunk of code that establishes how a layer injects information into the shader.
-   */
-  process<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<T>[]
-  ) {
-    return {
-      declarations: this.processDeclarations(
-        layer,
-        vertexAttributes,
-        instanceAttributes
-      ),
-      destructuring: this.processDestructuring(layer, instanceAttributes)
-    };
-  }
-
-  /**
-   * This processes the declarations needed to set up the Input for the shader from the layer.
-   */
-  private processDeclarations<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<T>[]
-  ) {
-    let out = "// Shader input\n";
-
-    // If we are in a uniform buffer type strategy. Then we generate a uniform buffer that will contain
-    // our instance attribute information along with some extras to help dereference from the buffer.
-    if (
-      layer.bufferType === LayerBufferType.UNIFORM &&
-      instanceAttributes.length > 0
-    ) {
-      out += this.uniformProcessor.generateUniformAttributePacking();
-    }
-
-    // Add in the vertex attributes input
-    out += this.processVertexAttributes(vertexAttributes);
-
-    // If we are in an instance attribute Buffer Type strategy, then we simply list out
-    // the attributes listed in our instance attributes as attributes.
-    if (
-      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE &&
-      instanceAttributes.length > 0
-    ) {
-      out += this.processInstanceAttributeBufferStrategy(instanceAttributes);
-    }
-
-    // If we are in an instance attribute "packing" buffer type strategy, then the layer
-    // is expecting to have attributes that are "blocks" instead of explicitally named
-    // attributes. The layer will be utilizing the blocks to efficiently pack in our instance information
-    if (
-      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING &&
-      instanceAttributes.length > 0
-    ) {
-      out += this.processInstanceAttributePackingBufferStrategy(
-        this.metricsProcessor.instanceMaxBlock
-      );
-    }
-
-    return out;
-  }
-
+export class AttributeProcessing extends BaseShaderIOInjection {
   /**
    * This processes the layer and it's attributes to generate a Destructuring chunk that guarantees the attributes
    * and special properties with the attributes are available based on the instance attributes names provided
@@ -136,10 +68,13 @@ export class AttributeProcessing {
    * IE- this guarantees an attribute with auto easing linear to be available by name AND it's value will be properly
    * populated with a linearly eased value based on the system time.
    */
-  private processDestructuring<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    instanceAttributes: IInstanceAttribute<T>[]
-  ) {
+  processAttributeDestructuring(
+    layer: Layer<Instance, ILayerProps<Instance>>,
+    metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    instanceAttributes: IInstanceAttribute<Instance>[],
+    _uniforms: IUniform[]
+  ): string {
     let out = "";
 
     // Order the attributes such that the easing attributes come last so the needed
@@ -161,7 +96,7 @@ export class AttributeProcessing {
       case LayerBufferType.UNIFORM:
         out = this.processDestructuringUniformBuffer(
           orderedAttributes,
-          this.metricsProcessor.blocksPerInstance
+          metrics.blocksPerInstance
         );
         break;
     }
@@ -369,54 +304,6 @@ export class AttributeProcessing {
         break;
       }
     }
-
-    return out;
-  }
-
-  /**
-   * Produces attributes that are explicitally named and set by the attribute itself.
-   */
-  private processInstanceAttributeBufferStrategy<T extends Instance>(
-    instanceAttributes: IInstanceAttribute<T>[]
-  ) {
-    let out = "\n// Instance Attributes\n";
-
-    instanceAttributes.forEach(attribute => {
-      out += `attribute ${
-        sizeToType[attribute.size || 1]
-      } ${attribute.qualifier || ""}${(attribute.qualifier && " ") ||
-        ""} ${getAttributeShaderName(attribute)};\n`;
-    });
-
-    return out;
-  }
-
-  /**
-   * Produces attributes that are blocks instead of individual attributes. The system uses these
-   * blocks to pack attributes tightly together to maximize capabilities.
-   */
-  private processInstanceAttributePackingBufferStrategy(maxBlock: number) {
-    let out = "\n// Instance Attributes\n";
-
-    // Now print out blocks up to that block
-    for (let i = 0, iMax = maxBlock + 1; i < iMax; ++i) {
-      out += `attribute ${sizeToType[InstanceAttributeSize.FOUR]} block${i};\n`;
-    }
-
-    return out;
-  }
-
-  /**
-   * Produces the vertex attributes without any bias or modification.
-   */
-  private processVertexAttributes(vertexAttributes: IVertexAttribute[]) {
-    // No matter what, vertex attributes listed are strictly vertex attributes
-    let out = "// Vertex Attributes\n";
-
-    vertexAttributes.forEach(attribute => {
-      out += `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-        ""}${(attribute.qualifier && " ") || ""}${attribute.name};\n`;
-    });
 
     return out;
   }

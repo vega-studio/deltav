@@ -1,3 +1,4 @@
+import { WebGLRenderer } from "src/gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
@@ -26,6 +27,9 @@ export abstract class BaseResourceManager<
   T extends IResourceType,
   S extends BaseResourceRequest
 > {
+  /** Every resource manager will receive the utilized renderer so the manager can perform basic GL tasks if needed */
+  webGLRenderer?: WebGLRenderer;
+
   /**
    * This is called to initialize a resource that the system has determined needs to be constructed.
    */
@@ -72,15 +76,6 @@ export abstract class BaseResourceManager<
    * This applies an attribute as the current context
    */
   setAttributeContext(_attribute: IResourceInstanceAttribute<Instance>) {
-    // Implemented by sub classes if needed
-  }
-
-  /**
-   * This is a generic interface for sending signals to the resource manager. Some resource managers
-   * may need queues or data for certain operations to change state in efficient ways during buffer
-   * updates etc.
-   */
-  sendMessage(_obj: any) {
     // Implemented by sub classes if needed
   }
 }

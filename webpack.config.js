@@ -1,5 +1,6 @@
 const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // This is an optional path that can be passed into the program. When set, the
 // project will use the source code from the webgl project specified instead of
@@ -50,19 +51,14 @@ if (IS_DEVELOPMENT) {
       failOnError: true,
     }),
   );
+
+  if (process.env.DEBUG_PACKAGE) plugins.push(new BundleAnalyzerPlugin());
 }
 
 if (IS_PRODUCTION) {
   // List our external libs for the library generation so they do
   // not get bundled into ours
-  externals = [
-    'd3-color',
-    'd3-scale',
-    'ramda',
-    'three',
-    'bowser',
-    'mobx',
-  ];
+  externals = [];
 
   // We are bundling a library so set the output targets correctly
   library = 'network-bubble-chart';

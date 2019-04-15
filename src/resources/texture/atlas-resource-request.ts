@@ -19,7 +19,7 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
    */
   rasterizationScale?: number;
   /** This is the requested resource to be loaded into the manager system */
-  source: string | HTMLImageElement | HTMLCanvasElement | ImageData;
+  source: string | TexImageSource;
   /**
    * Once loaded into the texture, this will be populated revealing the informaion needed to sample the image
    * from the atlas.
@@ -32,9 +32,10 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
 /**
  * Simple wrapper to make autocomplete easier for making an atlas request.
  */
-export function atlasRequest(options: Omit<Partial<IAtlasResourceRequest>, 'type'>) {
+export function atlasRequest(options: Omit<Partial<IAtlasResourceRequest>, 'type'>): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
+    source: '',
     ...options
   };
 }

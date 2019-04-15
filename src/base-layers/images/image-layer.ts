@@ -1,25 +1,18 @@
+import { ImageRenderLayer } from "src/base-layers/images/image-render-layer";
+import { createLayer, LayerInitializer } from "src/surface/layer-surface";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds } from "../../primitives";
+import { atlasRequest } from "../../resources";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
-  ILayerMaterialOptions,
-  InstanceAttributeSize,
-  IProjection,
-  IShaderInitialization,
-  ResourceType,
-  UniformSize,
-  VertexAttributeSize
+  ILayerMaterialOptions, InstanceDiffType,
 } from "../../types";
-import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
+import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
-import { ScaleMode } from "../types";
 import { ImageInstance } from "./image-instance";
-
-const { min, max } = Math;
 
 export interface IImageLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
-  atlas?: string;
+  atlas: string;
   animate?: {
     tint?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
@@ -29,227 +22,103 @@ export interface IImageLayerProps<T extends ImageInstance>
 
 /**
  * This layer displays Images and provides as many controls as possible for displaying
- * them in interesting ways.
+ * them in interesting ways. This is the primary handler for image instances.
  */
 export class ImageLayer<
   T extends ImageInstance,
   U extends IImageLayerProps<T>
 > extends Layer<T, U> {
   static defaultProps: IImageLayerProps<any> = {
+    atlas: "default",
     key: "",
     data: new InstanceProvider<ImageInstance>(),
     scene: "default"
   };
 
-  static attributeNames = {
-    location: "location",
-    anchor: "anchor",
-    size: "size",
-    depth: "depth",
-    scaling: "scaling",
-    texture: "texture",
-    tint: "tint"
-  };
+  /** Internal provider for child layers for this layer to hand off to */
+  childProvider = new InstanceProvider<ImageInstance>();
+  /**
+   * This tracks which resource this image is associated with This allows us to know what resource an image
+   * moves on from, thus allowing us to dispatch a disposal request of the resource.
+   */
+  imageToResource = new Map<ImageInstance, ImageInstance['source']>();
+  /** The cached property ids of the instances so they are not processed every draw */
+  propertyIds?: { [key: string]: number; };
 
   /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
+   * The image layer will manage the resources for the images, and the child layer will concern itself
+   * with rendering.
    */
-  getInstancePickingMethods() {
-    return {
-      // Provide the calculated AABB world bounds for a given image
-      boundsAccessor: (image: ImageInstance) => {
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (image.anchor) {
-          anchorEffect[0] = image.anchor.x || 0;
-          anchorEffect[1] = image.anchor.y || 0;
-        }
-
-        const topLeft = subtract2(image.position, anchorEffect);
-
-        return new Bounds({
-          height: image.height,
-          width: image.width,
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-      },
-
-      // Provide a precise hit test for the circle
-      hitTest: (image: ImageInstance, point: Vec2, view: IProjection) => {
-        // The bounds of the image is in world space, but it does not account for the scale mode of the image.
-        // Here, we will apply the scale mode testing to the image
-        const maxScale = max(...view.camera.scale);
-        const minScale = min(...view.camera.scale);
-
-        // If we scale always then the image stays within it's initial world bounds at all times
-        if (image.scaling === ScaleMode.ALWAYS) {
-          return true;
-        } else if (image.scaling === ScaleMode.BOUND_MAX) {
-          // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
-          // Image the same size. If the camera zooms out then the bounds === the world bounds.
-          // We are zooming out. the bounds will stay within the world bounds
-          if (minScale <= 1 && maxScale <= 1) {
-            return true;
-          } else {
-            // We are zooming in. The bounds will shrink to keep the image at max font size
-            // The location is within the world, but we reverse project the anchor spread
-            const anchorEffect: Vec2 = [0, 0];
-
-            if (image.anchor) {
-              anchorEffect[0] = image.anchor.x || 0;
-              anchorEffect[1] = image.anchor.y || 0;
-            }
-
-            const topLeft = subtract2(
-              image.position,
-              divide2(anchorEffect, view.camera.scale)
-            );
-
-            const screenPoint = view.worldToScreen(point);
-
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: image.height,
-              width: image.width,
-              x: topLeft[0],
-              y: topLeft[1]
-            }).containsPoint(screenPoint);
-          }
-        } else if (image.scaling === ScaleMode.NEVER) {
-          // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
-          // Of the camera zoom
-          // The location is within the world, but we reverse project the anchor spread
-          const anchorEffect: Vec2 = [0, 0];
-
-          if (image.anchor) {
-            anchorEffect[0] = image.anchor.x || 0;
-            anchorEffect[1] = image.anchor.y || 0;
-          }
-
-          const topLeft = view.worldToScreen(
-            subtract2(image.position, divide2(anchorEffect, view.camera.scale))
-          );
-
-          const screenPoint = view.worldToScreen(point);
-
-          // Reverse project the size and we should be within the distorted world coordinates
-          const bounds = new Bounds({
-            height: image.height,
-            width: image.width,
-            x: topLeft[0],
-            y: topLeft[1]
-          });
-
-          return bounds.containsPoint(screenPoint);
-        }
-
-        return true;
+  childLayers(): LayerInitializer[] {
+    return [
+      createLayer(ImageRenderLayer, {
+        ...this.props,
+        data: this.childProvider,
+        key: `${this.props.key}.child`,
       }
-    };
+    )];
   }
 
   /**
-   * Define our shader and it's inputs
+   * Hijack the draw method to control changes to the source so we can send the manager dispose requests
+   * of a given image.
    */
-  initShader(): IShaderInitialization<ImageInstance> {
-    const animations = this.props.animate || {};
+  draw() {
+    // Get the changes we need to handle. We make sure the provider's changes remain in tact for
+    // the child layer to process them.
+    const changes = this.resolveChanges(true);
+    // No changes, do nadda
+    if (changes.length <= 0) return;
+
+    if (!this.propertyIds) {
+      this.propertyIds = this.getInstanceObservableIds(changes[0][0], ["source"]);
+    }
+
+    // Destructure the ids to work with
     const {
-      tint: animateTint,
-      location: animateLocation,
-      size: animateSize
-    } = animations;
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      1: 1,
-      2: -1,
-      3: 1,
-      4: -1,
-      5: -1
-    };
+      source: sourceId
+    } = this.propertyIds;
 
-    const vertexToSide: { [key: number]: number } = {
-      0: 0,
-      1: 0,
-      2: 0,
-      3: 1,
-      4: 1,
-      5: 1
-    };
+    for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+      const [instance, diffType, changed] = changes[i];
 
-    return {
-      fs: require("./image-layer.fs"),
-      instanceAttributes: [
-        {
-          easing: animateLocation,
-          name: ImageLayer.attributeNames.location,
-          size: InstanceAttributeSize.TWO,
-          update: o => o.position
-        },
-        {
-          name: ImageLayer.attributeNames.anchor,
-          size: InstanceAttributeSize.TWO,
-          update: o => [o.anchor.x || 0, o.anchor.y || 0]
-        },
-        {
-          easing: animateSize,
-          name: ImageLayer.attributeNames.size,
-          size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height]
-        },
-        {
-          name: ImageLayer.attributeNames.depth,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
-        },
-        {
-          name: ImageLayer.attributeNames.scaling,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.scaling]
-        },
-        {
-          resource: {
-            type: ResourceType.ATLAS,
-            key: this.props.atlas || "",
-            name: "imageAtlas"
-          },
-          name: ImageLayer.attributeNames.texture,
-          update: o => this.resource.request(this, o, o.resource)
-        },
-        {
-          easing: animateTint,
-          name: ImageLayer.attributeNames.tint,
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.tint
-        }
-      ],
-      uniforms: [
-        {
-          name: "scaleFactor",
-          size: UniformSize.ONE,
-          update: _u => [1]
-        }
-      ],
-      vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
-        {
-          name: "position",
-          size: VertexAttributeSize.THREE,
-          update: (vertex: number) => [
-            // Normal
-            vertexToNormal[vertex],
-            // The side of the quad
-            vertexToSide[vertex],
-            0
-          ]
-        }
-      ],
-      vertexCount: 6,
-      vs: require("./image-layer.vs")
-    };
+      switch (diffType) {
+        case InstanceDiffType.CHANGE:
+          // Indicates changes took place
+          if (changed[sourceId] !== undefined) {
+            // We get the previously stored resource
+            const previous = this.imageToResource.get(instance);
+            // We set the new resource
+            this.imageToResource.set(instance, instance.source);
+            // We make a disposal request to the resource manager
+            this.resource.request(this, instance, atlasRequest({
+              disposeResource: true,
+              source: previous,
+            }));
+          }
+          break;
+
+        case InstanceDiffType.INSERT:
+          // We do not need to make a retain request to the resource manager as the child render layer
+          // will be making that request.
+          break;
+
+        case InstanceDiffType.REMOVE:
+          // We make a disposal request here
+          this.resource.request(this, instance, atlasRequest({
+            disposeResource: true,
+            source: instance.source,
+          }));
+          break;
+      }
+    }
+  }
+
+  /**
+   * Parent layer has no rendering needs
+   */
+  initShader() {
+    return null;
   }
 
   getMaterialOptions(): ILayerMaterialOptions {

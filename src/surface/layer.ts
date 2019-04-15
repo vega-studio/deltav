@@ -500,8 +500,11 @@ export class Layer<
   /**
    * Retrieves the changes from the data provider and resolves the provider. This should be
    * used by sub Layer classes that wish to create their own custom draw handlers.
+   *
+   * Set preserverProvider to true to let the system know the provider's changes are still
+   * required.
    */
-  resolveChanges() {
+  resolveChanges(preserveProvider?: boolean) {
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
     // Set needsViewDrawn to be true if there is any change

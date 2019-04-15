@@ -41,7 +41,7 @@ export class Images extends BaseExample {
         const aspect = image.width / image.height;
         image.width = 25 * aspect;
         image.height = 25;
-        image.position = [i * image.width, k * image.height];
+        image.origin = [i * image.width, k * image.height];
 
         imageProvider.add(image);
       }

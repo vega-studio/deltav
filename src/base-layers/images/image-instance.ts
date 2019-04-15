@@ -1,7 +1,7 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { Image } from "../../primitives/image";
-import { ImageAtlasResourceRequest, ImageRasterizer } from "../../resources";
+import { IAtlasResourceRequest, ImageAtlasResourceRequest, ImageRasterizer } from "../../resources";
 import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 
@@ -123,74 +123,50 @@ export class ImageInstance extends Instance implements Image {
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the lable) */
   @observable depth: number = 0;
-  /** The height of the image as it is to be rendered in world space */
+  /**
+   * The height of the image as it is to be rendered in world space.
+   * After onReady: this is immediately populated with the width and height of the image as it
+   * appears in the atlas.
+   */
   @observable height: number = 1;
-  /** The coordinate where the image will be anchored to in world space */
-  @observable position: Vec2 = [0, 0];
+  /** The coordinate where the image will be located in world space */
+  @observable origin: Vec2 = [0, 0];
   /** Sets the way the image scales with the world */
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
-  /** The width of the image as it is to be rendered in world space */
+  /** This is where the source of the image will come from */
+  @observable source: string | TexImageSource;
+  /**
+   * The width of the image as it is to be rendered in world space.
+   * After onReady: this is immediately populated with the width and height of the image as it
+   * appears in the atlas.
+   */
   @observable width: number = 1;
 
-  get size() {
+  /**
+   * This property reflects the maximum size a single dimension of the image will take up.
+   * This means if you set this value to 100 at least the width or the height will be 100
+   * depending on the aspect ratio of the image.
+   */
+  get maxSize() {
     return max(this.width, this.height);
   }
-  set size(value: number) {
+  set maxSize(value: number) {
     const aspect = this.width / this.height;
     this.width = value * aspect;
     this.height = value;
   }
 
-  // The following properties are properties that are locked in after creating this image
-  // As the properties are completely locked into how the image was rasterized and can not
-  // Nor should not be easily adjusted for performance concerns
-
-  private _sourceWidth: number = 0;
-  private _sourceHeight: number = 0;
-  private _isDestroyed: boolean = false;
-  @observable private _rasterization: RasterizationReference;
-  private _path: string;
-  private _element: HTMLImageElement;
-
-  // The following are the getters for the locked in parameters of the image so we can read
-  // The properties but not set any of them.
-
-  /** This is the provided element this image will be rendering */
-  get element() {
-    return this._element;
-  }
-  /** This flag indicates if this image is valid anymore */
-  get isDestroyed() {
-    return this._isDestroyed;
-  }
-  /** This is the path to the image's resource if it's available */
-  get path() {
-    return this._path;
-  }
-  /** This gets the atlas resource that is uniquely idenfied for this image */
-  get resource() {
-    return this._rasterization.resource;
-  }
+  /** This is the request generated for the instance to retrieve the correct resource */
+  request?: IAtlasResourceRequest;
+  /** After oneReady: This is populated with the width of the source image loaded into the Atlas */
+  sourceWidth: number = 0;
+  /** After oneReady: This is populated with the height of the source image loaded into the Atlas */
+  sourceHeight: number = 0;
 
   /**
-   * This is the width in world space of the image. If there is no camera distortion,
-   * this would be the width of the image in pixels on the screen.
+   * This is a position relative to the image. This will align the image such that the anchor point on
+   * the image will be located at the origin in world space.
    */
-  get sourceWidth() {
-    return this._sourceWidth;
-  }
-
-  /**
-   * This is the height in world space of the image. If there is no camera distortion,
-   * this would be the height of the image in pixels on the screen.
-   */
-  get sourceHeight() {
-    return this._sourceHeight;
-  }
-
-  // These are properties that can be altered, but have side effects from being changed
-
-  /** This is the anchor location on the  */
   @observable
   private _anchor: Anchor = {
     padding: 0,
@@ -205,42 +181,10 @@ export class ImageInstance extends Instance implements Image {
     this.depth = options.depth || this.depth;
     this.tint = options.tint || this.tint;
     this.scaling = options.scaling || this.scaling;
-    this.position = options.position || this.position;
+    this.origin = options.position || this.origin;
 
-    // This is the image that is to be rendered
-    this._element = options.element;
-    // Look for other same texts that have been rasterized
-    let rasterization = rasterizationLookUp.get(this._path || this._element);
-
-    // If a rasterization exists, we must increment the use reference
-    if (rasterization) {
-      rasterization.references++;
-    }
-
-    // If we have not found an existing rasterization
-    if (!rasterization) {
-      rasterization = {
-        references: 1,
-        resource: new ImageAtlasResourceRequest(this)
-      };
-
-      // Ensure the sample scale is set. Defaults to 1.0
-      rasterization.resource.sampleScale =
-        rasterization.resource.sampleScale || 1.0;
-      // Rasterize the resource generated for this image. We need it immediately rasterized so
-      // That we can utilize the dimensions for calculations.
-      ImageRasterizer.renderSync(rasterization.resource);
-      // Now that we have an official rasterization for this image, we shall store it
-      // For others to look up
-      rasterizationLookUp.set(this._path || this._element, rasterization);
-    }
-
-    this._rasterization = rasterization;
-    this._sourceWidth = rasterization.resource.rasterization.world.width;
-    this._sourceHeight = rasterization.resource.rasterization.world.height;
-
-    this.width = options.width || this._sourceWidth || 1;
-    this.height = options.height || this._sourceHeight || 1;
+    this.width = options.width || 1;
+    this.height = options.height || 1;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);
@@ -250,33 +194,13 @@ export class ImageInstance extends Instance implements Image {
     return this._anchor;
   }
 
-  /**
-   * Images are a sort of unique case where the use of a image should be destroyed as rasterization
-   * resources are in a way kept alive through reference counting.
-   */
-  destroy() {
-    if (!this._isDestroyed) {
-      this._isDestroyed = true;
-      this._rasterization.references--;
-
-      // If all references are cleared, then the rasterization needs to be eradicated
-      if (this._rasterization.references === 0) {
-        this._rasterization.resource;
-        console.warn("The destroy method still needs completion");
-      }
-    }
-  }
-
   resourceTrigger() {
-    // Trigger the accessed element that the layer utilizes for resource fetching.
-    this._rasterization = this._rasterization;
-
     this.tint = this.tint;
     this.depth = this.depth;
     this.height = this.height;
     this.scaling = this.scaling;
     this.width = this.width;
-    this.position = this.position;
+    this.origin = this.origin;
   }
 
   /**

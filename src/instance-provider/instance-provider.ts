@@ -138,7 +138,7 @@ export class InstanceProvider<T extends Instance>
 
     if (this.resolveContext && this.resolveContext !== context) {
       throw new Error(
-        "An instance provider has been issued to two layers. This is not a suppported feature yet and will cause issues."
+        "An instance provider has been issued to two layers. This is not a suppported feature yet and can cause issues."
       );
     }
 

@@ -53,7 +53,8 @@ export class GlyphLayer<
     key: "",
     data: new InstanceProvider<GlyphInstance>(),
     resourceKey: "No resource specified",
-    scene: "default"
+    scene: "default",
+    scaleMode: ScaleMode.ALWAYS
   };
 
   /**
@@ -208,7 +209,12 @@ export class GlyphLayer<
         }
       ],
       vertexCount: 6,
-      vs: require("./glyph-layer.vs")
+      vs:
+        this.props.scaleMode === ScaleMode.BOUND_MAX
+          ? require("./glyph-layer-bound-max.vs")
+          : this.props.scaleMode === ScaleMode.NEVER
+            ? require("./glyph-layer-never.vs")
+            : require("./glyph-layer-always.vs")
     };
   }
 

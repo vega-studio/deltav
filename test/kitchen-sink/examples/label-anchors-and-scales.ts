@@ -4,7 +4,8 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer
+  LayerInitializer,
+  ScaleMode
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -18,7 +19,8 @@ export class LabelAnchorsAndScales extends BaseExample {
       resourceKey: resource.font,
       data: provider,
       key: "label-anchors-and-scales",
-      scene
+      scene,
+      scaleMode: ScaleMode.ALWAYS
     });
   }
 

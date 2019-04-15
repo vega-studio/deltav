@@ -347,7 +347,6 @@ export class TextAreaLayer<
   hideLabels(instance: T) {
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
-    console.log('hey');
 
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       this.labelProvider.remove(labels[i]);

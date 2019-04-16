@@ -1,23 +1,16 @@
-import { ImageRenderLayer } from "src/base-layers/images/image-render-layer";
+import { IImageRenderLayerProps, ImageRenderLayer } from "src/base-layers/images/image-render-layer";
 import { createLayer, LayerInitializer } from "src/surface/layer-surface";
 import { InstanceProvider } from "../../instance-provider";
-import { atlasRequest } from "../../resources";
-import { ILayerProps, Layer } from "../../surface/layer";
+import { atlasRequest, IAtlasResourceRequest } from "../../resources";
+import { Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions, InstanceDiffType,
 } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ImageInstance } from "./image-instance";
 
 export interface IImageLayerProps<T extends ImageInstance>
-  extends ILayerProps<T> {
-  atlas: string;
-  animate?: {
-    tint?: IAutoEasingMethod<Vec>;
-    location?: IAutoEasingMethod<Vec>;
-    size?: IAutoEasingMethod<Vec>;
-  };
+  extends IImageRenderLayerProps<T> {
 }
 
 /**
@@ -44,6 +37,8 @@ export class ImageLayer<
   imageToResource = new Map<ImageInstance, ImageInstance['source']>();
   /** The cached property ids of the instances so they are not processed every draw */
   propertyIds?: { [key: string]: number; };
+  /** We can consolidate requests at this layer level to reduce memory footprint of requests */
+  sourceToRequest = new Map<ImageInstance['source'], IAtlasResourceRequest>();
 
   /**
    * The image layer will manage the resources for the images, and the child layer will concern itself
@@ -95,12 +90,38 @@ export class ImageLayer<
               disposeResource: true,
               source: previous,
             }));
+
+            // Look for similar requests for resources and consolidate
+            if (instance.source) {
+              let request = this.sourceToRequest.get(instance.source);
+
+              if (!request || (request.texture && !request.texture.isValid)) {
+                request = atlasRequest({
+                  source: instance.source,
+                  rasterizationScale: this.props.rasterizationScale,
+                });
+
+                this.sourceToRequest.set(instance.source, request);
+              }
+            }
           }
           break;
 
         case InstanceDiffType.INSERT:
-          // We do not need to make a retain request to the resource manager as the child render layer
-          // will be making that request.
+          // Look for similar requests for resources and consolidate
+          if (instance.source) {
+            let request = this.sourceToRequest.get(instance.source);
+
+            if (!request || (request.texture && !request.texture.isValid)) {
+              request = atlasRequest({
+                source: instance.source,
+                rasterizationScale: this.props.rasterizationScale,
+              });
+
+              this.sourceToRequest.set(instance.source, request);
+            }
+          }
+
           break;
 
         case InstanceDiffType.REMOVE:

@@ -36,19 +36,6 @@ const sizeToType: { [key: number]: string } = {
 };
 
 /**
- * This sorts attributes specific to how they need to be destructured. For example:
- * easing attributes MUST appear AFTER all of the specially integrated attributes that were generated
- * such as start times and durations.
- */
-function orderByPriority(
-  a: IInstanceAttribute<any>,
-  b: IInstanceAttribute<any>
-) {
-  if (a.easing && !b.easing) return 1;
-  return -1;
-}
-
-/**
  * This method properly provides a vector's chunk of data based on a swizzle. So a size of 2
  * provides vector.xy and a size of 4 provides vector.xyzw.
  */

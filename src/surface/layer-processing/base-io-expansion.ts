@@ -4,7 +4,7 @@ import {
 } from "src/shaders";
 import { MetricsProcessing } from "src/shaders/processing/metrics-processing";
 import { Instance } from "../../instance-provider/instance";
-import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../types";
+import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
 import { ILayerProps, Layer } from "../layer";
 
 export type ShaderIOExpansion<T extends Instance> = {
@@ -74,10 +74,12 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    * into the system determines the order the contents are written to the header. So dependent injections
    * must be sorted appropriately.
    *
+   * @param target The targetted shader object to receive the header. This will be VERTEX or FRAGMENT but never ALL
    * @param layer The layer that is currently being processed
    * @param metrics Some metrics processed that are useful for making decisions about buffering strategies etc.
    */
   processHeaderInjection(
+    _target: ShaderInjectionTarget,
     _layer: Layer<Instance, ILayerProps<Instance>>,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],

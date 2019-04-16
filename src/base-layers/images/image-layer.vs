@@ -26,9 +26,9 @@ void main() {
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
 
-  // Destructure threejs's bug with the position requirement
-  float normal = position.x;
-  float side = position.y;
+  // Destructure the normal information
+  float normal = normals.x;
+  float side = normals.y;
 
   // Get the location of the anchor in world space
   vec2 worldAnchor = location + anchor;

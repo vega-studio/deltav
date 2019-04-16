@@ -1,4 +1,4 @@
-import { BaseShaderIOInjection } from "src/shaders/processing/base-shader-io-injection";
+import { BaseShaderIOInjection, ShaderIOHeaderInjectionResult } from "src/shaders/processing/base-shader-io-injection";
 import { Instance } from "../../instance-provider/instance";
 import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -16,12 +16,9 @@ import {
 } from "../../types";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
-import { AttributeProcessing } from "./attribute-processing";
-import { EasingProcessing } from "./easing-processing";
 import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
 import { ShaderModuleUnit } from "./shader-module-unit";
-import { UniformProcessing } from "./uniform-processing";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.
@@ -64,20 +61,8 @@ export type ProcessShaderImportResults =
  * Swapping out miscellaneous template variables
  */
 export class ShaderProcessor {
-  /** The processor that defines easing methods that are to be injected into the shaders */
-  easingProcessing: EasingProcessing = new EasingProcessing();
   /** Processor that calculates shared metrics across all processors */
   metricsProcessing: MetricsProcessing = new MetricsProcessing();
-  /** The processor that defines how uniforms are written into the shader */
-  uniformProcessing: UniformProcessing = new UniformProcessing(
-    this.metricsProcessing
-  );
-  /** The processor that defines how attributes are packed into the shader */
-  attributeProcessing: AttributeProcessing = new AttributeProcessing(
-    this.uniformProcessing,
-    this.metricsProcessing
-  );
-
   /** These are all of the processors that will contribute to filling out the shader with information */
   processors: BaseShaderIOInjection[] = [];
 
@@ -92,9 +77,6 @@ export class ShaderProcessor {
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
-      // Reset anything state that needs revertting
-      this.uniformProcessing.materialUniforms = [];
-
       // First process imports to retrieve the requested IO the shader modules would be requiring
       const shadersWithImports = this.processImports(layer, shaderIO);
       if (!shadersWithImports) return null;
@@ -122,35 +104,65 @@ export class ShaderProcessor {
       // Calculate needed metrics that may be used by any of the processors
       this.metricsProcessing.process(instanceAttributes, uniforms);
 
-      // Next generate the attribute packing strategy for the layer. The layer will define how it expects
-      // attributes (instance and vertex) to be handled. This will be written as the input to the shader at
-      // the top of the vertex shader file.
-      const attributeDeclarations = this.attributeProcessing.process(
-        layer,
-        vertexAttributes,
-        instanceAttributes
-      );
-      if (attributeDeclarations === null) return null;
+      // We are going to gather headers for both vertex and fragment from our processors
+      let vsHeader = '';
+      let fsHeader = '';
+      // We will also gather the destructuring structure for the attributes from our processor
+      let destructuring = '';
+      // In processing, this may generate changes to the Material to accommodate features required
+      const materialChanges: ShaderIOHeaderInjectionResult['material'] = {
+        uniforms: {}
+      };
 
-      // Next generate any uniform declarations necessary for the vertex shader
-      const vertexUniformDeclarations = this.uniformProcessing.process(
-        uniforms,
-        ShaderInjectionTarget.VERTEX
-      );
-      if (vertexUniformDeclarations === null) return null;
+      // Loop through all of our processors that handle expanding all IO into headers for the shader
+      for (let i = 0, iMax = this.processors.length; i < iMax; ++i) {
+        const processor = this.processors[i];
 
-      // Generate uniform declarations for the fragment shader
-      const fragmentUniformDeclarations = this.uniformProcessing.process(
-        uniforms,
-        ShaderInjectionTarget.FRAGMENT
-      );
-      if (fragmentUniformDeclarations === null) return null;
+        // Generate vertex header declarations
+        const vsHeaderInfo = processor.processHeaderInjection(
+          ShaderInjectionTarget.VERTEX,
+          layer,
+          this.metricsProcessing,
+          vertexAttributes,
+          instanceAttributes,
+          uniforms
+        );
 
-      // Generate the easing methods the layer specified
-      const easingMethodDeclarations = this.easingProcessing.process(
-        instanceAttributes
-      );
-      if (easingMethodDeclarations === null) return null;
+        vsHeader += vsHeaderInfo.injection;
+
+        if (vsHeaderInfo.material) {
+          for (const name in vsHeaderInfo.material.uniforms) {
+            materialChanges.uniforms[name] = vsHeaderInfo.material.uniforms[name];
+          }
+        }
+
+        // Generate fragment header declarations
+        const fsHeaderInfo = processor.processHeaderInjection(
+          ShaderInjectionTarget.FRAGMENT,
+          layer,
+          this.metricsProcessing,
+          vertexAttributes,
+          instanceAttributes,
+          uniforms
+        );
+
+        fsHeader += fsHeaderInfo.injection;
+
+        if (fsHeaderInfo.material) {
+          for (const name in fsHeaderInfo.material.uniforms) {
+            materialChanges.uniforms[name] = fsHeaderInfo.material.uniforms[name];
+          }
+        }
+
+        // Destructure the elements
+        destructuring += processor.processAttributeDestructuring(
+          layer,
+          this.metricsProcessing,
+          vertexAttributes,
+          instanceAttributes,
+          uniforms
+        );
+      }
 
       // Create a default precision modifier for now
       const precision = "precision highp float;\n\n";
@@ -158,17 +170,15 @@ export class ShaderProcessor {
       // Now we concatenate the shader pieces into one glorious shader of compatibility and happiness
       const fullShaderVS =
         precision +
-        attributeDeclarations.declarations +
-        vertexUniformDeclarations +
-        easingMethodDeclarations +
+        vsHeader +
         shadersWithImports.vs;
 
       const fullShaderFS =
-        precision + fragmentUniformDeclarations + shadersWithImports.fs;
+        precision + fsHeader + shadersWithImports.fs;
 
       // Last we replace any templating variables with their relevant values
       let templateOptions: { [key: string]: string } = {
-        [templateVars.attributes]: attributeDeclarations.destructuring
+        [templateVars.attributes]: destructuring
       };
 
       const processedShaderVS = shaderTemplate({

@@ -1,7 +1,6 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Image } from "../../primitives/image";
-import { IAtlasResourceRequest, ImageAtlasResourceRequest, ImageRasterizer } from "../../resources";
+import { IAtlasResourceRequest } from "../../resources";
 import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 
@@ -28,24 +27,6 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** The width of the image as it is to be rendered in world space */
   width?: number;
 }
-
-/**
- * This is a reference for a rasterization that has reference counting. When the references go to zero,
- * the rasterization should be invalidated and resources freed for the rasterization.
- */
-type RasterizationReference = {
-  resource: ImageAtlasResourceRequest;
-  references: number;
-};
-
-/**
- * This is a lookup to find existing rasterizations for a particularly created image so that every
- * new image does not have to go through the rasterization process.
- */
-const rasterizationLookUp = new Map<
-  string | HTMLImageElement,
-  RasterizationReference
->();
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
@@ -110,15 +91,7 @@ const anchorCalculator: {
  * thereafter. The only way to modify them would be to destroy the image, then construct a new image
  * with the modifications. This has to deal with performance regarding rasterizing the image.
  */
-export class ImageInstance extends Instance implements Image {
-  /**
-   * TODO: We should be implementing the destroy on ImageInstances to clean this up
-   * Frees up module scoped data.
-   */
-  static destroy() {
-    rasterizationLookUp.clear();
-  }
-
+export class ImageInstance extends Instance {
   /** This is the rendered color of the image */
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the lable) */
@@ -182,7 +155,6 @@ export class ImageInstance extends Instance implements Image {
     this.tint = options.tint || this.tint;
     this.scaling = options.scaling || this.scaling;
     this.origin = options.position || this.origin;
-
     this.width = options.width || 1;
     this.height = options.height || 1;
 
@@ -194,6 +166,7 @@ export class ImageInstance extends Instance implements Image {
     return this._anchor;
   }
 
+  /** This is triggered after the request has been completed */
   resourceTrigger() {
     this.tint = this.tint;
     this.depth = this.depth;
@@ -201,6 +174,11 @@ export class ImageInstance extends Instance implements Image {
     this.scaling = this.scaling;
     this.width = this.width;
     this.origin = this.origin;
+
+    if (this.request && this.request.texture) {
+      this.sourceWidth = this.request.texture.pixelWidth;
+      this.sourceHeight = this.request.texture.pixelHeight;
+    }
   }
 
   /**

@@ -1,3 +1,4 @@
+import { atlasRequest } from "src/resources/texture/atlas-resource-request";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -19,12 +20,19 @@ const { min, max } = Math;
 
 export interface IImageRenderLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
+  /** The id of the atlas to load resources into */
   atlas?: string;
+  /** The properties we wish to animate for the image */
   animate?: {
     tint?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
     size?: IAutoEasingMethod<Vec>;
   };
+  /**
+   * This is the scale resources for the images will be loaded into the atlas. A value of
+   * 0.5 will cause images to load at 50% their source size to the atlas.
+   */
+  rasterizationScale?: number;
 }
 
 /**
@@ -41,6 +49,7 @@ export class ImageRenderLayer<
     scene: "default"
   };
 
+  /** Easy lookup of attribute names to aid in modifications to be applied to elements */
   static attributeNames = {
     location: "location",
     anchor: "anchor",
@@ -209,13 +218,24 @@ export class ImageRenderLayer<
           update: o => [o.scaling]
         },
         {
+          name: ImageRenderLayer.attributeNames.texture,
           resource: {
             type: ResourceType.ATLAS,
             key: this.props.atlas || "",
             name: "imageAtlas"
           },
-          name: ImageRenderLayer.attributeNames.texture,
-          update: o => this.resource.request(this, o, o.request)
+          update: o => {
+            const source = o.source;
+
+            if (!o.request) {
+              o.request = atlasRequest({
+                rasterizationScale: this.props.rasterizationScale,
+                source,
+              });
+            }
+
+            return this.resource.request(this, o, o.request);
+          }
         },
         {
           easing: animateTint,
@@ -232,18 +252,14 @@ export class ImageRenderLayer<
         }
       ],
       vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
         {
-          name: "position",
-          size: VertexAttributeSize.THREE,
+          name: "normals",
+          size: VertexAttributeSize.TWO,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
             vertexToSide[vertex],
-            0
           ]
         }
       ],

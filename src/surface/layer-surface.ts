@@ -485,9 +485,6 @@ export class LayerSurface {
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
     this.pickingTarget.dispose();
-
-    // TODO: Instances should be implementing destroy for these clean ups.
-    ImageInstance.destroy();
   }
 
   /**

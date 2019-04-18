@@ -535,7 +535,6 @@ export class Layer<
       this._bufferManager = bufferManager;
       this.diffManager = new InstanceDiffManager<T>(this, bufferManager);
       this.diffManager.makeProcessor();
-      this.interactions = new LayerInteractionHandler(this);
     } else {
       console.warn(
         "You can not change a layer's buffer strategy once it has been instantiated."

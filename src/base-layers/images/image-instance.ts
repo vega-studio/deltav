@@ -175,7 +175,6 @@ export class ImageInstance extends Instance {
 
   /** This is triggered after the request has been completed */
   resourceTrigger() {
-    console.log("trigger");
     // Only the source needs to be triggered to get the texture info to update from the request
     this.source = this.source;
 

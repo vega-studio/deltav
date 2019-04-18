@@ -1,3 +1,4 @@
+import { LayerInteractionHandler } from "src/surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "src/surface/layer-processing/base-io-expanders/active-io-expansion";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
@@ -1039,6 +1040,8 @@ export class LayerSurface {
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
     if (!scene) return null;
+    // Ensure the layer has interaction handling applied to it
+    layer.interactions = new LayerInteractionHandler(layer);
     // If no metrics are provided, this layer is merely a shell layer and will not
     // receive any GPU handling objects.
     if (!shaderIO) return layer;

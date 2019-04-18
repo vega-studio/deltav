@@ -117,8 +117,6 @@ export class AtlasManager {
       return true;
     }
 
-    console.log("DRAWING RESOURCE TO ATLAS", request.source);
-
     // Immediately register the resource with a subtexture to prevent duplicate
     // processing.
     request.texture = request.texture || new SubTexture();

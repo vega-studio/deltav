@@ -1,4 +1,9 @@
 import { Instance } from "../../../instance-provider";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult
+} from "../../../shaders/processing/base-shader-io-injection";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import {
   FrameMetrics,
@@ -8,11 +13,18 @@ import {
   InstanceAttributeSize,
   InstanceIOValue,
   IUniform,
-  IVertexAttribute
+  IVertexAttribute,
+  ShaderInjectionTarget
 } from "../../../types";
 import { AutoEasingLoopStyle } from "../../../util/auto-easing-method";
 import { EasingProps } from "../../../util/easing-props";
+import {
+  IShaderTemplateRequirements,
+  shaderTemplate
+} from "../../../util/shader-templating";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
+
+const debugCtx = "EasingIOExpansion";
 
 const { abs, max } = Math;
 
@@ -21,6 +33,26 @@ const BLANK_EASING_PROPS: IEasingProps = {
   start: [0],
   end: [0],
   startTime: 0
+};
+
+/** Converts a size to a shader type */
+const sizeToType: { [key: number]: string } = {
+  1: "float",
+  2: "vec2",
+  3: "vec3",
+  4: "vec4",
+  9: "mat3",
+  16: "mat4",
+  /** This is the special case for instance attributes that want an atlas resource */
+  99: "vec4"
+};
+
+/**
+ * These are the templating names used within Auto Easing gpu methods
+ */
+const templateVars = {
+  easingMethod: "easingMethod",
+  T: "T"
 };
 
 /**
@@ -36,6 +68,9 @@ function isEasingAttribute<T extends Instance>(
  * This is an expansion handler for easing attributes.
  */
 export class EasingIOExpansion extends BaseIOExpansion {
+  /** This is used to make it easy to remember an easing attribute's original name */
+  private baseAttributeName = new Map<IInstanceAttribute<Instance>, string>();
+
   /**
    * Provides expanded IO for attributes with easing properties.
    *
@@ -73,6 +108,12 @@ export class EasingIOExpansion extends BaseIOExpansion {
       const { cpu: easing, loop, uid: providedUID } = attribute.easing;
       const { name, size, update } = attribute;
       const easingUID = providedUID;
+
+      // The attribute that is the primary attribute that declares the easing attribute
+      // will become the "_end" attribute as whenever it is set, it will change the
+      // destination value of the easing method.
+      this.baseAttributeName.set(attribute, attribute.name);
+      attribute.name = `_${attribute.name}_end`;
 
       // Make our easing ID lookup so instances can access their easing information for higher level
       // animation control.
@@ -274,5 +315,201 @@ export class EasingIOExpansion extends BaseIOExpansion {
     });
 
     return !foundError;
+  }
+
+  /**
+   * Easing provides some unique destructuring for the packed in vertex information.
+   */
+  processAttributeDestructuring(
+    _layer: Layer<Instance, ILayerProps<Instance>>,
+    declarations: ShaderDeclarationStatements,
+    _metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    instanceAttributes: IInstanceAttribute<Instance>[],
+    _uniforms: IUniform[]
+  ): string {
+    // We analyze our instance attributes for easing attributes. When we find an attribute with
+    // easing, we can make a quick assumption about the names of attributes provided that we can easily
+    // use to destructure a properly named attribute that contains the correct algorithm to produce
+    // the specified easing for the attribute.
+    const out = "";
+
+    for (let i = 0, iMax = instanceAttributes.length; i < iMax; ++i) {
+      const attribute = instanceAttributes[i];
+
+      // If this is the source easing attribute, we must add it in as an eased method along with a calculation for the
+      // Easing interpolation time value based on the current time and the injected start time of the change.
+      if (!attribute.easing || !attribute.size) continue;
+      // Get the base name of the attribute since the original name gets changed for the expansion process.
+      const baseName = this.baseAttributeName.get(attribute);
+
+      if (!baseName) {
+        console.warn(
+          "Could not determine a base name for an easing attribute."
+        );
+        continue;
+      }
+
+      // Clear the basename out as it's only needed for this operation.
+      this.baseAttributeName.delete(attribute);
+
+      // We first write in the time calculation based on the loop style of the easing method
+      const time = `_${baseName}_time`;
+      const duration = `_${baseName}_duration`;
+      const startTime = `_${baseName}_start_time`;
+
+      switch (attribute.easing.loop) {
+        // Continuous means letting the time go from 0 to infinity
+        case AutoEasingLoopStyle.CONTINUOUS: {
+          this.setDeclaration(
+            declarations,
+            time,
+            `  float ${time} = (currentTime - ${startTime}) / ${duration};\n`,
+            debugCtx
+          );
+          break;
+        }
+
+        // Repeat means going from 0 to 1 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REPEAT: {
+          this.setDeclaration(
+            declarations,
+            time,
+            `  float ${time} = clamp(fract((currentTime - ${startTime}) / ${duration}), 0.0, 1.0);\n`,
+            debugCtx
+          );
+          break;
+        }
+
+        // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
+        case AutoEasingLoopStyle.REFLECT: {
+          const timePassed = `_${baseName}_timePassed`;
+          const pingPong = `_${baseName}_pingPong`;
+
+          // Get the time passed in a linear fashion
+          this.setDeclaration(
+            declarations,
+            timePassed,
+            `  float ${timePassed} = (currentTime - ${startTime}) / ${duration};\n`,
+            debugCtx
+          );
+          // Make a triangle wave from the time passed to ping pong the value
+          this.setDeclaration(
+            declarations,
+            pingPong,
+            `  float ${pingPong} = abs((fract(${timePassed} / 2.0)) - 0.5) * 2.0;\n`,
+            debugCtx
+          );
+          // Ensure we're clamped to the right values
+          this.setDeclaration(
+            declarations,
+            time,
+            `  float ${time} = clamp(${pingPong}, 0.0, 1.0);\n`,
+            debugCtx
+          );
+          break;
+        }
+
+        // No loop means just linear time
+        case AutoEasingLoopStyle.NONE:
+        default: {
+          this.setDeclaration(
+            declarations,
+            time,
+            `  float ${time} = clamp((currentTime - ${startTime}) / ${duration}, 0.0, 1.0);\n`,
+            debugCtx
+          );
+          break;
+        }
+      }
+
+      // After the time calculation we inject the actual easing equation to calculate the value needed
+      // for the attribute in the shader
+      this.setDeclaration(
+        declarations,
+        baseName,
+        `  ${sizeToType[attribute.size]} ${baseName} = ${
+          attribute.easing.methodName
+        }(_${baseName}_start, _${baseName}_end, _${baseName}_time);\n`,
+        debugCtx
+      );
+    }
+
+    return out;
+  }
+
+  /**
+   * For easing, the header must be populated with the easing method
+   */
+  processHeaderInjection(
+    target: ShaderInjectionTarget,
+    declarations: ShaderDeclarationStatements,
+    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    instanceAttributes: IInstanceAttribute<Instance>[],
+    _uniforms: IUniform[]
+  ): ShaderIOHeaderInjectionResult {
+    const out = { injection: "" };
+
+    // Easing equations are only applicable to the vertex shader where attribute destructuring happens
+    if (target !== ShaderInjectionTarget.VERTEX) return out;
+
+    const methods = new Map<string, Map<InstanceAttributeSize, string>>();
+    out.injection = "// Auto Easing Methods specified by the layer\n";
+
+    // First dedupe the methods needed by their method name
+    instanceAttributes.forEach(attribute => {
+      if (attribute.easing && attribute.size) {
+        let methodSizes = methods.get(attribute.easing.methodName);
+
+        if (!methodSizes) {
+          methodSizes = new Map<InstanceAttributeSize, string>();
+          methods.set(attribute.easing.methodName, methodSizes);
+        }
+
+        methodSizes.set(attribute.size, attribute.easing.gpu);
+      }
+    });
+
+    if (methods.size === 0) {
+      out.injection = "";
+      return out;
+    }
+
+    const required: IShaderTemplateRequirements = {
+      name: "Easing Method Generation",
+      values: [templateVars.easingMethod]
+    };
+
+    // Now generate the full blown method for each element. We create overloaded methods for
+    // Each method name for each vector size required
+    methods.forEach(
+      (methodSizes: Map<InstanceAttributeSize, string>, methodName: string) => {
+        methodSizes.forEach((method, size) => {
+          const sizeType = sizeToType[size];
+
+          const templateOptions: { [key: string]: string } = {
+            [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
+            [templateVars.T]: `${sizeType}`
+          };
+
+          const results = shaderTemplate({
+            options: templateOptions,
+            required,
+            shader: method
+          });
+
+          this.setDeclaration(
+            declarations,
+            `${sizeType} ${methodName}`,
+            `${results.shader}\n`,
+            debugCtx
+          );
+        });
+      }
+    );
+
+    return out;
   }
 }

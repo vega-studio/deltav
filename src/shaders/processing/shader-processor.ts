@@ -1,4 +1,4 @@
-import { BaseShaderIOInjection, ShaderIOHeaderInjectionResult } from "src/shaders/processing/base-shader-io-injection";
+import { ShaderIOHeaderInjectionResult } from "src/shaders/processing/base-shader-io-injection";
 import { Instance } from "../../instance-provider/instance";
 import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -63,8 +63,6 @@ export type ProcessShaderImportResults =
 export class ShaderProcessor {
   /** Processor that calculates shared metrics across all processors */
   metricsProcessing: MetricsProcessing = new MetricsProcessing();
-  /** These are all of the processors that will contribute to filling out the shader with information */
-  processors: BaseShaderIOInjection[] = [];
 
   /**
    * This processes a layer, it's Shader IO requirements, and it's shaders to produce a fully functional
@@ -105,22 +103,27 @@ export class ShaderProcessor {
       this.metricsProcessing.process(instanceAttributes, uniforms);
 
       // We are going to gather headers for both vertex and fragment from our processors
-      let vsHeader = '';
-      let fsHeader = '';
+      let vsHeader = "";
+      let fsHeader = "";
       // We will also gather the destructuring structure for the attributes from our processor
-      let destructuring = '';
+      let destructuring = "";
       // In processing, this may generate changes to the Material to accommodate features required
-      const materialChanges: ShaderIOHeaderInjectionResult['material'] = {
-        uniforms: {}
+      const materialChanges: ShaderIOHeaderInjectionResult["material"] = {
+        uniforms: []
       };
 
+      const vsHeaderDeclarations = new Map();
+      const fsHeaderDeclarations = new Map();
+      const destructureDeclarations = new Map();
+
       // Loop through all of our processors that handle expanding all IO into headers for the shader
-      for (let i = 0, iMax = this.processors.length; i < iMax; ++i) {
-        const processor = this.processors[i];
+      for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
+        const processor = ioExpansion[i];
 
         // Generate vertex header declarations
         const vsHeaderInfo = processor.processHeaderInjection(
           ShaderInjectionTarget.VERTEX,
+          vsHeaderDeclarations,
           layer,
           this.metricsProcessing,
           vertexAttributes,
@@ -131,14 +134,15 @@ export class ShaderProcessor {
         vsHeader += vsHeaderInfo.injection;
 
         if (vsHeaderInfo.material) {
-          for (const name in vsHeaderInfo.material.uniforms) {
-            materialChanges.uniforms[name] = vsHeaderInfo.material.uniforms[name];
-          }
+          materialChanges.uniforms = materialChanges.uniforms.concat(
+            vsHeaderInfo.material.uniforms || []
+          );
         }
 
         // Generate fragment header declarations
         const fsHeaderInfo = processor.processHeaderInjection(
           ShaderInjectionTarget.FRAGMENT,
+          fsHeaderDeclarations,
           layer,
           this.metricsProcessing,
           vertexAttributes,
@@ -149,14 +153,15 @@ export class ShaderProcessor {
         fsHeader += fsHeaderInfo.injection;
 
         if (fsHeaderInfo.material) {
-          for (const name in fsHeaderInfo.material.uniforms) {
-            materialChanges.uniforms[name] = fsHeaderInfo.material.uniforms[name];
-          }
+          materialChanges.uniforms = materialChanges.uniforms.concat(
+            fsHeaderInfo.material.uniforms || []
+          );
         }
 
         // Destructure the elements
         destructuring += processor.processAttributeDestructuring(
           layer,
+          destructureDeclarations,
           this.metricsProcessing,
           vertexAttributes,
           instanceAttributes,
@@ -164,17 +169,34 @@ export class ShaderProcessor {
         );
       }
 
+      // After we have aggregated all of our declarations, we now piece them together
+      let declarations = "";
+
+      vsHeaderDeclarations.forEach(declaration => {
+        declarations += declaration;
+      });
+
+      vsHeader = declarations + vsHeader;
+      declarations = "";
+
+      fsHeaderDeclarations.forEach(declaration => {
+        declarations += declaration;
+      });
+
+      fsHeader = declarations + fsHeader;
+      declarations = "";
+
+      destructureDeclarations.forEach(declaration => {
+        declarations += declaration;
+      });
+
+      destructuring = declarations + destructuring;
+
       // Create a default precision modifier for now
       const precision = "precision highp float;\n\n";
-
       // Now we concatenate the shader pieces into one glorious shader of compatibility and happiness
-      const fullShaderVS =
-        precision +
-        vsHeader +
-        shadersWithImports.vs;
-
-      const fullShaderFS =
-        precision + fsHeader + shadersWithImports.fs;
+      const fullShaderVS = precision + vsHeader + shadersWithImports.vs;
+      const fullShaderFS = precision + fsHeader + shadersWithImports.fs;
 
       // Last we replace any templating variables with their relevant values
       let templateOptions: { [key: string]: string } = {
@@ -199,7 +221,7 @@ export class ShaderProcessor {
 
       const results = {
         fs: processShaderFS.shader.trim(),
-        materialUniforms: this.uniformProcessing.materialUniforms,
+        materialUniforms: materialChanges.uniforms,
         maxInstancesPerBuffer: this.metricsProcessing
           .maxInstancesPerUniformBuffer,
         modules: Array.from(shadersWithImports.shaderModuleUnits),

@@ -1,3 +1,4 @@
+import { nextFrame } from "src/util";
 import { Texture } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
@@ -184,10 +185,16 @@ export class FontResourceManager extends BaseResourceManager<
 
               // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
               // applied to the instance's rendering
-              requestAnimationFrame(() => {
+              nextFrame(() => {
+                const triggered = new Set();
+
                 for (let i = 0, iMax = request.length; i < iMax; ++i) {
                   const instance = request[i][1];
-                  instance.resourceTrigger();
+
+                  if (!triggered.has(instance)) {
+                    triggered.add(instance);
+                    instance.resourceTrigger();
+                  }
                 }
               });
             }

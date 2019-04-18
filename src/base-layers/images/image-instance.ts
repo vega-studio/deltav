@@ -15,17 +15,20 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** Depth sorting of the image (or the z value of the lable) */
   depth?: number;
   /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
-  element: HTMLImageElement;
+  source: string | TexImageSource;
   /** The height of the image as it is to be rendered in world space */
   height?: number;
   /** The coordinate where the image will be anchored to in world space */
-  position?: Vec2;
+  origin?: Vec2;
   /** Sets the way the image scales with the world */
   scaling?: ScaleMode;
   /** The color the image should render as */
   tint: [number, number, number, number];
   /** The width of the image as it is to be rendered in world space */
   width?: number;
+
+  /** Triggered when the image has fully loaded it's resources */
+  onReady?(image: ImageInstance): void;
 }
 
 /**
@@ -129,6 +132,8 @@ export class ImageInstance extends Instance {
     this.height = value;
   }
 
+  /** Event called when the instance has it's resource loaded and ready for use */
+  onReady?: (image: ImageInstance) => void;
   /** This is the request generated for the instance to retrieve the correct resource */
   request?: IAtlasResourceRequest;
   /** After oneReady: This is populated with the width of the source image loaded into the Atlas */
@@ -154,9 +159,11 @@ export class ImageInstance extends Instance {
     this.depth = options.depth || this.depth;
     this.tint = options.tint || this.tint;
     this.scaling = options.scaling || this.scaling;
-    this.origin = options.position || this.origin;
+    this.origin = options.origin || this.origin;
     this.width = options.width || 1;
     this.height = options.height || 1;
+    this.source = options.source;
+    this.onReady = options.onReady;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);
@@ -168,17 +175,16 @@ export class ImageInstance extends Instance {
 
   /** This is triggered after the request has been completed */
   resourceTrigger() {
-    this.tint = this.tint;
-    this.depth = this.depth;
-    this.height = this.height;
-    this.scaling = this.scaling;
-    this.width = this.width;
-    this.origin = this.origin;
+    console.log("trigger");
+    // Only the source needs to be triggered to get the texture info to update from the request
+    this.source = this.source;
 
     if (this.request && this.request.texture) {
       this.sourceWidth = this.request.texture.pixelWidth;
       this.sourceHeight = this.request.texture.pixelHeight;
     }
+
+    if (this.onReady) this.onReady(this);
   }
 
   /**

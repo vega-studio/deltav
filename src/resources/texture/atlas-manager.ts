@@ -117,6 +117,17 @@ export class AtlasManager {
       return true;
     }
 
+    console.log("DRAWING RESOURCE TO ATLAS", request.source);
+
+    // Immediately register the resource with a subtexture to prevent duplicate
+    // processing.
+    request.texture = request.texture || new SubTexture();
+    request.texture.isValid = true;
+    atlas.resourceReferences.set(request.source, {
+      subtexture: request.texture,
+      count: 0
+    });
+
     // First we must load the image
     // Make a buffer to hold our new image
     // Load the image into memory, default to keeping the alpha channel
@@ -256,18 +267,21 @@ export class AtlasManager {
         }
       });
 
-      if (image && resource.rasterizationScale !== undefined && resource.rasterizationScale !== 1) {
-        image = await ImageRasterizer.resizeImage(image, resource.rasterizationScale || 1);
+      if (
+        image &&
+        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== 1
+      ) {
+        image = await ImageRasterizer.resizeImage(
+          image,
+          resource.rasterizationScale || 1
+        );
       }
 
       return image;
-    }
-
-    else if (source instanceof HTMLVideoElement) {
-      console.warn('System does not support HTMLVideoElements yet');
-    }
-
-    else if (typeof source === 'string') {
+    } else if (source instanceof HTMLVideoElement) {
+      console.warn("System does not support HTMLVideoElements yet");
+    } else if (typeof source === "string") {
       const dataURL = source;
 
       let image = await new Promise<TexImageSource | null>(resolve => {
@@ -287,16 +301,28 @@ export class AtlasManager {
         image.src = dataURL;
       });
 
-      if (image && resource.rasterizationScale !== undefined && resource.rasterizationScale !== 1) {
-        image = await ImageRasterizer.resizeImage(image, resource.rasterizationScale || 1);
+      if (
+        image &&
+        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== 1
+      ) {
+        image = await ImageRasterizer.resizeImage(
+          image,
+          resource.rasterizationScale || 1
+        );
       }
-    }
-
-    else {
+    } else {
       let image: TexImageSource = source;
 
-      if (image && resource.rasterizationScale !== undefined && resource.rasterizationScale !== 1) {
-        image = await ImageRasterizer.resizeImage(image, resource.rasterizationScale || 1);
+      if (
+        image &&
+        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== 1
+      ) {
+        image = await ImageRasterizer.resizeImage(
+          image,
+          resource.rasterizationScale || 1
+        );
       }
 
       return image;
@@ -313,9 +339,11 @@ export class AtlasManager {
    * to allow for the atlas to redraw it's texture using GPU operations which is much faster than a CPU operation
    * of generating the texture.
    */
-  private repackResources(atlas: Atlas) {
+  private repackResources(_atlas: Atlas) {
     // TODO
-    console.warn('Atlas is attempting repacking, but the method to do so has not been implmented yet.');
+    console.warn(
+      "Atlas is attempting repacking, but the method to do so has not been implmented yet."
+    );
 
     return true;
   }

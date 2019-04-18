@@ -1,4 +1,4 @@
-import { ImageInstance } from "../base-layers/images";
+import { ActiveIOExpansion } from "src/surface/layer-processing/base-io-expanders/active-io-expansion";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -12,8 +12,8 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
-import { FrameMetrics, ResourceType } from "../types";
 import { IResourceType, PickType } from "../types";
+import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
@@ -21,6 +21,7 @@ import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
@@ -36,7 +37,15 @@ import { ClearFlags, View } from "./view";
  * Default IO expansion controllers applied to the system when explicit settings
  * are not provided.
  */
-export const DEFAULT_IO_EXPANSION: ILayerSurfaceOptions["ioExpansion"] = [
+export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
+  // Basic expansion to handle writing attributes and uniforms to the shader
+  new BasicIOExpansion(),
+  // Expansion to write in the active attribute handler. Any expansion injected AFTER
+  // this expander will have it's processes canceled out for the destructuring portion
+  // of the expansion when an instance is not active (if the instance has an active
+  // attribute).
+  new ActiveIOExpansion(),
+  // Expansion to handle easing IO attributes and write AutoEasingMethods to the shaders
   new EasingIOExpansion()
 ];
 
@@ -79,17 +88,18 @@ export interface ILayerSurfaceOptions {
    * Provides additional expansion controllers that will contribute to our Shader IO configuration
    * for the layers. If this is not provided, this defaults to default system behaviors.
    *
-   * To add additional Expansion controllers and keep default system controllers inject:
-   * [
-   *   ...DEFAULT_IO_EXPANSION,
-   *   <your own Expansion controllers>
-   * ]
+   * To add additional Expansion controllers and keep default system controllers utilize a Function
+   * instead:
+   *
+   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders, <your own expanders>]
    *
    * For instance: easing properties on attributes requires the attribute to be expanded to additional
    * attributes + modified behavior of the base attribute. Thus the system by default adds in the
    * EasinggIOExpansion controller when this is not provided to make those property types work.
    */
-  ioExpansion?: BaseIOExpansion[];
+  ioExpansion?:
+    | BaseIOExpansion[]
+    | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
    * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
    * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
@@ -988,11 +998,22 @@ export class LayerSurface {
    * Initializes the expanders that should be applied to the surface for layer processing.
    */
   private initIOExpanders(options: ILayerSurfaceOptions) {
-    // Initialize the Shader IO expansion objects
-    this.ioExpanders =
-      (options.ioExpansion && options.ioExpansion.slice(0)) ||
-      (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
-      [];
+    // Handle expanders passed in as an array or blank
+    if (
+      Array.isArray(options.ioExpansion) ||
+      options.ioExpansion === undefined
+    ) {
+      // Initialize the Shader IO expansion objects
+      this.ioExpanders =
+        (options.ioExpansion && options.ioExpansion.slice(0)) ||
+        (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
+        [];
+    }
+
+    // Handle expanders passed in as a method
+    else if (options.ioExpansion instanceof Function) {
+      this.ioExpanders = options.ioExpansion(DEFAULT_IO_EXPANSION);
+    }
 
     // Retrieve any expansion objects the resource managers may provide
     const managerIOExpanders = this.resourceManager.getIOExpansion();

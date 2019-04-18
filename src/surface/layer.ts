@@ -509,9 +509,13 @@ export class Layer<
     const changeList = this.props.data.changeList;
     // Set needsViewDrawn to be true if there is any change
     if (changeList.length > 0) this.needsViewDrawn = true;
-    // Resolve the changes from the provider so it can start collecting
-    // a new list of changes to apply
-    this.props.data.resolve(this.id);
+
+    // See if we should make the provider not consume it's changes yet
+    if (!preserveProvider) {
+      // Resolve the changes from the provider so it can start collecting
+      // a new list of changes to apply
+      this.props.data.resolve(this.id);
+    }
 
     // Clear the changes from all instances to be ready for next frame
     for (let i = 0, iMax = changeList.length; i < iMax; ++i) {

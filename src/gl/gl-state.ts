@@ -23,6 +23,8 @@ const debug = require("debug")("performance");
  * for the GL context is stored within objects that are generated, such as Texture and Attribute.
  */
 export class GLState {
+  /** Message to include with debug, warns, and errors */
+  debugContext: string = "";
   /** The extensions enabled for the context */
   private extensions: IExtensions;
   /** Stores the gl context this is watching the state over */
@@ -582,6 +584,7 @@ export class GLState {
 
         if (!location) {
           console.warn(
+            this.debugContext,
             `A Material specified a uniform ${name}, but none was found in the current program.`
           );
           success = false;
@@ -675,6 +678,7 @@ export class GLState {
 
       default:
         console.warn(
+          this.debugContext,
           "A uniform specified an unrecognized type. It will not sync with the GPU:",
           uniform
         );
@@ -737,6 +741,7 @@ export class GLState {
         this.glProxy.compileRenderTarget(target);
       } else {
         console.warn(
+          this.debugContext,
           "A RenderTarget can not be used because all of it's textures could not be compiled."
         );
       }
@@ -845,6 +850,7 @@ export class GLState {
     // We should now have all textures able to give up their unit for the next draw call
     if (canGiveUpUnit.length === 0) {
       console.warn(
+        this.debugContext,
         "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
         needsUnit
       );
@@ -882,6 +888,7 @@ export class GLState {
     // If by some voodoo we still have not provided a unit for a texture needing it, then we have a problem
     if (needsUnit.length > 0) {
       console.warn(
+        this.debugContext,
         "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
         needsUnit
       );
@@ -904,6 +911,7 @@ export class GLState {
       );
     } else {
       console.warn(
+        this.debugContext,
         "Attempted to set a Texture Object to a uniform, but the Texture object did not have a valid texture unit.",
         texture
       );
@@ -925,6 +933,7 @@ export class GLState {
       } else if (uniforms instanceof RenderTarget) {
         if (uniforms !== target) {
           console.warn(
+            this.debugContext,
             "A Texture is attempting to be used by two different render targets in a single draw."
           );
         }
@@ -935,6 +944,7 @@ export class GLState {
       } else {
         if (uniforms instanceof RenderTarget) {
           console.warn(
+            this.debugContext,
             "A texture in a single draw is attempting to attach to a uniform AND a render target which is invalid."
           );
         } else {

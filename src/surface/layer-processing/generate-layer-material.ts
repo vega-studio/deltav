@@ -43,6 +43,7 @@ export function generateLayerMaterial<
   const materialParams: MaterialOptions = layer.getMaterialOptions();
   materialParams.vertexShader = vs;
   materialParams.fragmentShader = fs;
+  materialParams.name = layer.id;
 
   // We must convert all of the uniforms to actual Three material initialization uniforms
   materialParams.uniforms = {};

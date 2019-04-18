@@ -1,10 +1,15 @@
+import { Instance } from "../../instance-provider/instance";
 import {
   BaseShaderIOInjection,
   ShaderIOHeaderInjectionResult
-} from "src/shaders";
-import { MetricsProcessing } from "src/shaders/processing/metrics-processing";
-import { Instance } from "../../instance-provider/instance";
-import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
+} from "../../shaders/processing/base-shader-io-injection";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+import {
+  IInstanceAttribute,
+  IUniform,
+  IVertexAttribute,
+  ShaderInjectionTarget
+} from "../../types";
 import { ILayerProps, Layer } from "../layer";
 
 export type ShaderIOExpansion<T extends Instance> = {
@@ -59,10 +64,10 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    * NOTE: The inputs should NOT be modified in any way
    */
   validate<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    instanceAttributes: IInstanceAttribute<T>[],
-    vertexAttributes: IVertexAttribute[],
-    uniforms: IUniform[]
+    _layer: Layer<T, U>,
+    _instanceAttributes: IInstanceAttribute<T>[],
+    _vertexAttributes: IVertexAttribute[],
+    _uniforms: IUniform[]
   ): boolean {
     return true;
   }
@@ -80,6 +85,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    */
   processHeaderInjection(
     _target: ShaderInjectionTarget,
+    _declarations: Map<string, string>,
     _layer: Layer<Instance, ILayerProps<Instance>>,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
@@ -103,6 +109,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    */
   processAttributeDestructuring(
     _layer: Layer<Instance, ILayerProps<Instance>>,
+    _declarations: Map<string, string>,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
     _instanceAttributes: IInstanceAttribute<Instance>[],

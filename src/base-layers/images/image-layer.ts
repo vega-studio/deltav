@@ -1,17 +1,17 @@
-import { IImageRenderLayerProps, ImageRenderLayer } from "src/base-layers/images/image-render-layer";
+import {
+  IImageRenderLayerProps,
+  ImageRenderLayer
+} from "src/base-layers/images/image-render-layer";
 import { createLayer, LayerInitializer } from "src/surface/layer-surface";
 import { InstanceProvider } from "../../instance-provider";
 import { atlasRequest, IAtlasResourceRequest } from "../../resources";
 import { Layer } from "../../surface/layer";
-import {
-  ILayerMaterialOptions, InstanceDiffType,
-} from "../../types";
+import { ILayerMaterialOptions, InstanceDiffType } from "../../types";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ImageInstance } from "./image-instance";
 
 export interface IImageLayerProps<T extends ImageInstance>
-  extends IImageRenderLayerProps<T> {
-}
+  extends IImageRenderLayerProps<T> {}
 
 /**
  * This layer displays Images and provides as many controls as possible for displaying
@@ -34,11 +34,11 @@ export class ImageLayer<
    * This tracks which resource this image is associated with This allows us to know what resource an image
    * moves on from, thus allowing us to dispatch a disposal request of the resource.
    */
-  imageToResource = new Map<ImageInstance, ImageInstance['source']>();
+  imageToResource = new Map<ImageInstance, ImageInstance["source"]>();
   /** The cached property ids of the instances so they are not processed every draw */
-  propertyIds?: { [key: string]: number; };
+  propertyIds?: { [key: string]: number };
   /** We can consolidate requests at this layer level to reduce memory footprint of requests */
-  sourceToRequest = new Map<ImageInstance['source'], IAtlasResourceRequest>();
+  sourceToRequest = new Map<ImageInstance["source"], IAtlasResourceRequest>();
 
   /**
    * The image layer will manage the resources for the images, and the child layer will concern itself
@@ -48,10 +48,9 @@ export class ImageLayer<
     return [
       createLayer(ImageRenderLayer, {
         ...this.props,
-        data: this.childProvider,
-        key: `${this.props.key}.child`,
-      }
-    )];
+        key: `${this.props.key}.child`
+      })
+    ];
   }
 
   /**
@@ -66,13 +65,15 @@ export class ImageLayer<
     if (changes.length <= 0) return;
 
     if (!this.propertyIds) {
-      this.propertyIds = this.getInstanceObservableIds(changes[0][0], ["source"]);
+      this.propertyIds = this.getInstanceObservableIds(changes[0][0], [
+        "source"
+      ]);
     }
 
     // Destructure the ids to work with
-    const {
-      source: sourceId
-    } = this.propertyIds;
+    const { source: sourceId } = this.propertyIds;
+
+    console.log(this.propertyIds);
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
       const [instance, diffType, changed] = changes[i];
@@ -83,13 +84,19 @@ export class ImageLayer<
           if (changed[sourceId] !== undefined) {
             // We get the previously stored resource
             const previous = this.imageToResource.get(instance);
+            // Nothing needs to happen if the resource didn't change
+            if (instance.source === previous) break;
             // We set the new resource
             this.imageToResource.set(instance, instance.source);
             // We make a disposal request to the resource manager
-            this.resource.request(this, instance, atlasRequest({
-              disposeResource: true,
-              source: previous,
-            }));
+            this.resource.request(
+              this,
+              instance,
+              atlasRequest({
+                disposeResource: true,
+                source: previous
+              })
+            );
 
             // Look for similar requests for resources and consolidate
             if (instance.source) {
@@ -98,11 +105,13 @@ export class ImageLayer<
               if (!request || (request.texture && !request.texture.isValid)) {
                 request = atlasRequest({
                   source: instance.source,
-                  rasterizationScale: this.props.rasterizationScale,
+                  rasterizationScale: this.props.rasterizationScale
                 });
 
                 this.sourceToRequest.set(instance.source, request);
               }
+
+              instance.request = request;
             }
           }
           break;
@@ -115,21 +124,27 @@ export class ImageLayer<
             if (!request || (request.texture && !request.texture.isValid)) {
               request = atlasRequest({
                 source: instance.source,
-                rasterizationScale: this.props.rasterizationScale,
+                rasterizationScale: this.props.rasterizationScale
               });
 
               this.sourceToRequest.set(instance.source, request);
             }
+
+            instance.request = request;
           }
 
           break;
 
         case InstanceDiffType.REMOVE:
           // We make a disposal request here
-          this.resource.request(this, instance, atlasRequest({
-            disposeResource: true,
-            source: instance.source,
-          }));
+          this.resource.request(
+            this,
+            instance,
+            atlasRequest({
+              disposeResource: true,
+              source: instance.source
+            })
+          );
           break;
       }
     }

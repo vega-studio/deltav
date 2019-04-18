@@ -32,10 +32,12 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
 /**
  * Simple wrapper to make autocomplete easier for making an atlas request.
  */
-export function atlasRequest(options: Omit<Partial<IAtlasResourceRequest>, 'type'>): IAtlasResourceRequest {
+export function atlasRequest(
+  options: Omit<Partial<IAtlasResourceRequest>, "type">
+): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
-    source: '',
+    source: "",
     ...options
   };
 }

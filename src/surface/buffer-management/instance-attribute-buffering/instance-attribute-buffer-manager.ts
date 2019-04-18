@@ -2,7 +2,6 @@
 
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import { getAttributeShaderName } from "../../../shaders/processing/formatting";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
@@ -347,10 +346,7 @@ export class InstanceAttributeBufferManager<
         const buffer = new Float32Array(size * this.maxInstancedCount);
         const bufferAttribute = new Attribute(buffer, size, true, true);
         bufferAttribute.setDynamic(true);
-        this.geometry.addAttribute(
-          getAttributeShaderName(attribute),
-          bufferAttribute
-        );
+        this.geometry.addAttribute(attribute.name, bufferAttribute);
         let newBufferLocations = attributeToNewBufferLocations.get(
           attribute.name
         );
@@ -440,10 +436,7 @@ export class InstanceAttributeBufferManager<
           // Make sure our attribute is updated with the newly made attribute
           attribute.bufferAttribute = newAttribute;
           // Add the new attribute to our new geometry object
-          this.geometry.addAttribute(
-            getAttributeShaderName(attribute),
-            newAttribute
-          );
+          this.geometry.addAttribute(attribute.name, newAttribute);
           // Get the temp storage for new buffer locations
           let newBufferLocations = attributeToNewBufferLocations.get(
             attribute.name

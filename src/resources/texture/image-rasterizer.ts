@@ -55,10 +55,7 @@ export class ImageRasterizer {
     // This action often 'warms up' images such as images that have a data URL instead of a path
     canvas.drawImage(image, 0, 0, 1, 1);
 
-    return [
-      image.width,
-      image.height
-    ];
+    return [image.width, image.height];
   }
 
   /**
@@ -89,10 +86,16 @@ export class ImageRasterizer {
 
     // Render the image into our canvas with the resizing taking place
     if (image instanceof ImageData) {
-      canvas.putImageData(image, 0, 0, 0, 0, canvas.canvas.width, canvas.canvas.height);
-    }
-
-    else {
+      canvas.putImageData(
+        image,
+        0,
+        0,
+        0,
+        0,
+        canvas.canvas.width,
+        canvas.canvas.height
+      );
+    } else {
       canvas.drawImage(image, 0, 0, canvas.canvas.width, canvas.canvas.height);
     }
 

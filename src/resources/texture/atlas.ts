@@ -7,7 +7,7 @@ import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 
 /**
  * Options required for generating an atlas.
@@ -47,7 +47,7 @@ export function isAtlasResource(val: BaseResourceOptions): val is Atlas {
   return val && val.type === ResourceType.ATLAS;
 }
 
-type ResourceReference = { subtexture: SubTexture, count: number };
+type ResourceReference = { subtexture: SubTexture; count: number };
 
 /**
  * This represents a single Texture on the gpu that is composed of several smaller textures
@@ -63,7 +63,10 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * a count of 1, then the resource is disposed and it's space on the atlas is flagged for freeing up
    * should the atlas need to consolidate resources.
    */
-  resourceReferences = new Map<IAtlasResourceRequest['source'], ResourceReference>();
+  resourceReferences = new Map<
+    IAtlasResourceRequest["source"],
+    ResourceReference
+  >();
   /** This is the actual texture object that represents the atlas on the GPU */
   texture: Texture;
   /** These are the applied settings to our texture */
@@ -170,7 +173,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   useResource(request: IAtlasResourceRequest) {
     const reference = this.resourceReferences.get(request.source) || {
       subtexture: request.texture,
-      count: 0,
+      count: 0
     };
 
     reference.count++;
@@ -182,9 +185,11 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * completely.
    */
   stopUsingResource(request: IAtlasResourceRequest) {
-    const reference: ResourceReference = this.resourceReferences.get(request.source) || {
+    const reference: ResourceReference = this.resourceReferences.get(
+      request.source
+    ) || {
       subtexture: request.texture || new SubTexture(),
-      count: 0,
+      count: 0
     };
 
     reference.count--;
@@ -195,11 +200,14 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * should be removed or not.
    */
   resolveResources() {
-    const toRemove: IAtlasResourceRequest['source'][] = [];
+    const toRemove: IAtlasResourceRequest["source"][] = [];
 
     this.resourceReferences.forEach((ref, source) => {
       if (ref.count <= 0 && ref.subtexture) {
-        debug('A subtexture on an atlas has been invalidated as it is deemed no longer used: %o', ref.subtexture);
+        debug(
+          "A subtexture on an atlas has been invalidated as it is deemed no longer used: %o",
+          ref.subtexture
+        );
         this.invalidateTexture(ref.subtexture);
         toRemove.push(source);
       }

@@ -230,11 +230,12 @@ export class ImageRenderLayer<
             if (!o.request) {
               o.request = atlasRequest({
                 rasterizationScale: this.props.rasterizationScale,
-                source,
+                source
               });
             }
 
-            return this.resource.request(this, o, o.request);
+            const textureInfo = this.resource.request(this, o, o.request);
+            return textureInfo;
           }
         },
         {
@@ -259,7 +260,7 @@ export class ImageRenderLayer<
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
-            vertexToSide[vertex],
+            vertexToSide[vertex]
           ]
         }
       ],

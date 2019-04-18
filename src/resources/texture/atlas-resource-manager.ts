@@ -1,3 +1,4 @@
+import { nextFrame } from "src/util";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
@@ -70,32 +71,30 @@ export class AtlasResourceManager extends BaseResourceManager<
 
     this.requestQueue.clear();
 
-    for (let i = 0, iMax = resourceRequestsWithKey.length; i < iMax; ++i) {
-      const [targetAtlas, resources] = resourceRequestsWithKey[i];
-
-      if (resources.length > 0) {
+    for (const [targetAtlas, requests] of resourceRequestsWithKey) {
+      if (requests.length > 0) {
         // We did dequeue
         didDequeue = true;
         // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
         // New requests while this dequeue is being processed
-        const requests = resources.slice(0);
+        const allRequests = requests.slice(0);
         // Empty the queue to begin taking in new requests as needed
-        resources.length = 0;
+        requests.length = 0;
         // Tell the atlas manager to update with all of the requested resources
-        await this.atlasManager.updateAtlas(targetAtlas, requests);
+        await this.atlasManager.updateAtlas(targetAtlas, allRequests);
         // Get the requests for the given atlas
         const atlasRequests = this.requestLookup.get(targetAtlas);
 
         if (atlasRequests) {
           // Once the manager has been updated, we can now flag all of the instances waiting for the resources
           // As active, which should thus trigger an update to the layers to perform a diff for each instance
-          requests.forEach(resource => {
-            const request = atlasRequests.get(resource);
-            atlasRequests.delete(resource);
+          allRequests.forEach(request => {
+            const requesters = atlasRequests.get(request);
+            atlasRequests.delete(request);
 
-            if (request) {
-              for (let i = 0, iMax = request.length; i < iMax; ++i) {
-                const [layer, instance] = request[i];
+            if (requesters && !request.disposeResource) {
+              for (let i = 0, iMax = requesters.length; i < iMax; ++i) {
+                const [layer, instance] = requesters[i];
                 // If the instance is still associated with buffer locations, then the instance can be activated. Having
                 // A buffer location is indicative the instance has not been deleted.
                 if (layer.managesInstance(instance)) {
@@ -106,10 +105,17 @@ export class AtlasResourceManager extends BaseResourceManager<
 
               // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
               // applied to the instance's rendering
-              requestAnimationFrame(() => {
-                for (let i = 0, iMax = request.length; i < iMax; ++i) {
-                  const instance = request[i][1];
-                  instance.resourceTrigger();
+              nextFrame(() => {
+                const triggered = new Set();
+
+                for (let i = 0, iMax = requesters.length; i < iMax; ++i) {
+                  const instance = requesters[i][1];
+
+                  if (!triggered.has(instance)) {
+                    triggered.add(instance);
+                    instance.active = true;
+                    instance.resourceTrigger();
+                  }
                 }
               });
             }
@@ -174,12 +180,12 @@ export class AtlasResourceManager extends BaseResourceManager<
   request<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     instance: Instance,
-    resource: IAtlasResourceRequest,
+    request: IAtlasResourceRequest,
     context?: IResourceContext
   ): InstanceIOValue {
     const resourceContext =
       this.targetAtlas || (context && context.resource.key) || "";
-    const texture = resource.texture;
+    const texture = request.texture;
 
     // If the texture is ready and available, then we simply return the IO values
     if (texture) {
@@ -191,7 +197,7 @@ export class AtlasResourceManager extends BaseResourceManager<
     let atlasRequests = this.requestLookup.get(resourceContext);
 
     if (atlasRequests) {
-      const existingRequests = atlasRequests.get(resource);
+      const existingRequests = atlasRequests.get(request);
 
       if (existingRequests) {
         existingRequests.push([layer, instance]);
@@ -207,7 +213,10 @@ export class AtlasResourceManager extends BaseResourceManager<
     // If the texture is not available, then we must load the resource, deactivate the instance
     // And wait for the resource to become available. Once the resource is available, the system
     // Must activate the instance to render the resource.
-    instance.active = false;
+    if (!request.disposeResource) {
+      instance.active = false;
+    }
+
     let requests = this.requestQueue.get(resourceContext);
 
     if (!requests) {
@@ -215,8 +224,8 @@ export class AtlasResourceManager extends BaseResourceManager<
       this.requestQueue.set(resourceContext, requests);
     }
 
-    requests.push(resource);
-    atlasRequests.set(resource, [[layer, instance]]);
+    requests.push(request);
+    atlasRequests.set(request, [[layer, instance]]);
 
     // This returns essentially returns blank values for the resource lookup
     return subTextureIOValue(texture);

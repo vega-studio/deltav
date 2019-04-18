@@ -128,7 +128,7 @@ export class MouseInteractionImages extends BaseExample {
     );
 
     images.forEach(image => {
-      image.size = 25;
+      image.maxSize = 25;
     });
 
     return provider;

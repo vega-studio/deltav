@@ -41,8 +41,6 @@ export class Images extends BaseExample {
             image.origin = [image.width * 26 * aspect, image.height * 26];
             image.width = 25 * aspect;
             image.height = 25;
-
-            console.log(image.origin);
           }
         });
 

@@ -73,8 +73,6 @@ export class ImageLayer<
     // Destructure the ids to work with
     const { source: sourceId } = this.propertyIds;
 
-    console.log(this.propertyIds);
-
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
       const [instance, diffType, changed] = changes[i];
 

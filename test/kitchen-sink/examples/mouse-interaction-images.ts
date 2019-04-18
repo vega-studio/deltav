@@ -93,11 +93,10 @@ export class MouseInteractionImages extends BaseExample {
     const images: ImageInstance[] = [];
 
     const image = new ImageInstance({
-      element: icon,
-      id: `image_0`,
+      source: icon,
       scaling: ScaleMode.ALWAYS,
       tint: [1.0, 1.0, 1.0, 1.0],
-      position: [20, 20]
+      origin: [20, 20]
     });
 
     // Left Middle left
@@ -106,11 +105,10 @@ export class MouseInteractionImages extends BaseExample {
     images.push(
       provider.add(
         new ImageInstance({
-          element: icon,
-          id: `image_1`,
+          source: icon,
           scaling: ScaleMode.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
-          position: [20, 50]
+          origin: [20, 50]
         })
       )
     );
@@ -118,11 +116,10 @@ export class MouseInteractionImages extends BaseExample {
     images.push(
       provider.add(
         new ImageInstance({
-          element: icon,
-          id: `image_2`,
+          source: icon,
           scaling: ScaleMode.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
-          position: [20, 80]
+          origin: [20, 80]
         })
       )
     );

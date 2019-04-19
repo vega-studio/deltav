@@ -1042,9 +1042,13 @@ export class LayerSurface {
     if (!scene) return null;
     // Ensure the layer has interaction handling applied to it
     layer.interactions = new LayerInteractionHandler(layer);
+
     // If no metrics are provided, this layer is merely a shell layer and will not
     // receive any GPU handling objects.
-    if (!shaderIO) return layer;
+    if (!shaderIO) {
+      layer.picking.type = PickType.NONE;
+      return layer;
+    }
 
     if (!shaderIO.fs || !shaderIO.vs) {
       console.warn(

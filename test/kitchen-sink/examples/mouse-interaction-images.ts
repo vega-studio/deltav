@@ -1,5 +1,6 @@
 import * as anime from "animejs";
 import {
+  AutoEasingMethod,
   createLayer,
   ImageInstance,
   ImageLayer,
@@ -21,53 +22,19 @@ export class MouseInteractionImages extends BaseExample {
 
   handleImageClick = (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
-      // Anime doesn't seem to do internal array interpolation, so we target the color itself
-      // And then apply the color property to the circle in the update ticks to register the deltas
-      anime({
-        0: 0,
-        1: 1,
-        2: 0,
-        3: 0.1,
-        targets: image.tint,
-        update: () => {
-          image.tint = image.tint;
-        }
-      });
+      image.tint = [0, 1, 0, 1];
     }
   };
 
   handleImageOver = (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
-      if (!this.isOver.get(image)) {
-        const animation = anime({
-          size: 50,
-          targets: image
-        });
-
-        this.isOver.set(image, animation);
-      }
+      image.maxSize = 50;
     }
   };
 
   handleImageOut = async (info: IPickInfo<ImageInstance>) => {
     for (const image of info.instances) {
-      const animation = this.isOver.get(image);
-
-      if (animation) {
-        this.isOver.delete(image);
-
-        const leave = anime({
-          size: 25,
-          targets: image
-        });
-
-        leave.pause();
-        this.hasLeft.set(image, leave);
-
-        await animation.finished;
-
-        leave.play();
-      }
+      image.maxSize = 25;
     }
   };
 
@@ -77,6 +44,10 @@ export class MouseInteractionImages extends BaseExample {
     provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
     return createLayer(ImageLayer, {
+      animate: {
+        size: AutoEasingMethod.easeInOutCubic(500),
+        tint: AutoEasingMethod.easeInOutCubic(500)
+      },
       atlas: resource.atlas,
       data: provider,
       key: "mouse-interaction-images",
@@ -92,15 +63,24 @@ export class MouseInteractionImages extends BaseExample {
     const provider = new InstanceProvider<ImageInstance>();
     const images: ImageInstance[] = [];
 
-    const image = new ImageInstance({
-      source: icon,
-      scaling: ScaleMode.ALWAYS,
-      tint: [1.0, 1.0, 1.0, 1.0],
-      origin: [20, 20]
-    });
+    function sizeImage(image: ImageInstance) {
+      image.width = image.sourceWidth;
+      image.height = image.sourceHeight;
+      image.maxSize = 25;
+    }
 
     // Left Middle left
-    images.push(provider.add(image));
+    images.push(
+      provider.add(
+        new ImageInstance({
+          source: icon,
+          scaling: ScaleMode.ALWAYS,
+          tint: [1.0, 1.0, 1.0, 1.0],
+          origin: [20, 20],
+          onReady: sizeImage
+        })
+      )
+    );
 
     images.push(
       provider.add(
@@ -108,7 +88,8 @@ export class MouseInteractionImages extends BaseExample {
           source: icon,
           scaling: ScaleMode.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
-          origin: [20, 50]
+          origin: [20, 50],
+          onReady: sizeImage
         })
       )
     );
@@ -119,14 +100,11 @@ export class MouseInteractionImages extends BaseExample {
           source: icon,
           scaling: ScaleMode.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
-          origin: [20, 80]
+          origin: [20, 80],
+          onReady: sizeImage
         })
       )
     );
-
-    images.forEach(image => {
-      image.maxSize = 25;
-    });
 
     return provider;
   }

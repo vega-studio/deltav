@@ -159,7 +159,7 @@ export class Layer<
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
   /** This is all of the instance attributes generated for the layer */
-  instanceAttributes: IInstanceAttribute<T>[];
+  instanceAttributes: IInstanceAttribute<T>[] = [];
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
@@ -188,9 +188,9 @@ export class Layer<
   /** This is the surface this layer is generated under */
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
-  uniforms: IUniformInternal[];
+  uniforms: IUniformInternal[] = [];
   /** This is all of the vertex attributes generated for the layer */
-  vertexAttributes: IVertexAttributeInternal[];
+  vertexAttributes: IVertexAttributeInternal[] = [];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */

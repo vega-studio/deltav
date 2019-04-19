@@ -1,5 +1,3 @@
-import { LayerInteractionHandler } from "src/surface/layer-interaction-handler";
-import { ActiveIOExpansion } from "src/surface/layer-processing/base-io-expanders/active-io-expansion";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -13,6 +11,8 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
+import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
+import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import { IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";

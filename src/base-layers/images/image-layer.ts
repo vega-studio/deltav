@@ -1,14 +1,11 @@
-import {
-  IImageRenderLayerProps,
-  ImageRenderLayer
-} from "src/base-layers/images/image-render-layer";
-import { createLayer, LayerInitializer } from "src/surface/layer-surface";
 import { InstanceProvider } from "../../instance-provider";
 import { atlasRequest, IAtlasResourceRequest } from "../../resources";
 import { Layer } from "../../surface/layer";
+import { createLayer, LayerInitializer } from "../../surface/layer-surface";
 import { ILayerMaterialOptions, InstanceDiffType } from "../../types";
 import { CommonMaterialOptions } from "../../util/common-options";
 import { ImageInstance } from "./image-instance";
+import { IImageRenderLayerProps, ImageRenderLayer } from "./image-render-layer";
 
 export interface IImageLayerProps<T extends ImageInstance>
   extends IImageRenderLayerProps<T> {}

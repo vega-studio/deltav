@@ -1,4 +1,3 @@
-import { ShaderIOHeaderInjectionResult } from "src/shaders/processing/base-shader-io-injection";
 import { Instance } from "../../instance-provider/instance";
 import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -16,6 +15,7 @@ import {
 } from "../../types";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
+import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
 import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
 import { ShaderModuleUnit } from "./shader-module-unit";

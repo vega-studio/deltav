@@ -1,6 +1,6 @@
-import { atlasRequest } from "src/resources/texture/atlas-resource-request";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
+import { atlasRequest } from "../../resources/texture/atlas-resource-request";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,

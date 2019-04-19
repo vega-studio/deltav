@@ -1,4 +1,3 @@
-import { nextFrame } from "src/util";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
@@ -9,6 +8,7 @@ import {
   IResourceInstanceAttribute,
   ResourceType
 } from "../../types";
+import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions

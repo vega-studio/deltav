@@ -1,4 +1,4 @@
-import { uniformBufferInstanceBufferName } from "src/constants";
+import { uniformBufferInstanceBufferName } from "../../../constants";
 import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
 import {

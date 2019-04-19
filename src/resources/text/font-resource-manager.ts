@@ -1,4 +1,3 @@
-import { nextFrame } from "src/util";
 import { Texture } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
@@ -14,6 +13,7 @@ import {
   Omit,
   ResourceType
 } from "../../types";
+import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions,

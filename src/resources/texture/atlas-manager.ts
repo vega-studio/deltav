@@ -1,5 +1,5 @@
-import { ImageRasterizer } from "src/resources/texture/image-rasterizer";
 import { Bounds } from "../../primitives/bounds";
+import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { Atlas, IAtlasResource } from "./atlas";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { IPackNodeDimensions, PackNode } from "./pack-node";

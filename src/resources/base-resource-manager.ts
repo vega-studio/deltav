@@ -1,4 +1,4 @@
-import { WebGLRenderer } from "src/gl";
+import { WebGLRenderer } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";

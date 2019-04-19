@@ -151,8 +151,4 @@ export class ImageLayer<
   initShader() {
     return null;
   }
-
-  getMaterialOptions(): ILayerMaterialOptions {
-    return CommonMaterialOptions.transparentImageBlending;
-  }
 }

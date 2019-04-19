@@ -245,11 +245,8 @@ export class EdgeLayer<
         }
       ],
       vertexAttributes: [
-        // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
-        // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
-        // Zero against your wishes.
         {
-          name: "position",
+          name: "vertex",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal

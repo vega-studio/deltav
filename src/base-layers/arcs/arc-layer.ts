@@ -156,7 +156,7 @@ export class ArcLayer<
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: "position",
+          name: "vertex",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal

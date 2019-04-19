@@ -1,0 +1,39 @@
+import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Size } from "../../types";
+import { Vec2 } from "../../util";
+import { Anchor } from "../types";
+import { GlyphInstance } from "./glyph-instance";
+import { TextAreaInstance } from "./text-area-instance";
+export interface ILabelInstanceOptions extends IInstanceOptions {
+    anchor?: Anchor;
+    color: [number, number, number, number];
+    depth?: number;
+    fontSize?: number;
+    maxWidth?: number;
+    maxScale?: number;
+    scale?: number;
+    text: string;
+    origin: Vec2;
+    onReady?(instance: LabelInstance): void;
+}
+export declare class LabelInstance extends Instance {
+    color: [number, number, number, number];
+    depth: number;
+    fontSize: number;
+    maxScale: number;
+    maxWidth: number;
+    origin: Vec2;
+    scale: number;
+    text: string;
+    onReady?: (label: LabelInstance) => void;
+    parentTextArea?: TextAreaInstance;
+    glyphs: GlyphInstance[];
+    size: Size;
+    truncatedText: string;
+    private _anchor;
+    constructor(options: ILabelInstanceOptions);
+    readonly anchor: Anchor;
+    setAnchor(anchor: Anchor): void;
+    subTextGlyphs(text: string): GlyphInstance[];
+    resourceTrigger(): void;
+}

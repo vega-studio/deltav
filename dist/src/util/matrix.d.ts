@@ -1,4 +1,4 @@
-import { Vec3Compat } from "src/util/vector";
+import { Vec3Compat } from "./vector";
 export declare type Mat2x2 = [number, number, number, number];
 export declare type Mat3x3 = [number, number, number, number, number, number, number, number, number];
 export declare type Mat4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];

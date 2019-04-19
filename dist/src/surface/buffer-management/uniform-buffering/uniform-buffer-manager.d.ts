@@ -1,4 +1,4 @@
-import { Geometry, Material, Model } from "src/gl";
+import { Geometry, Material, Model } from "../../../gl";
 import { IMaterialUniform, MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
 import { Vec2 } from "../../../util";
@@ -33,6 +33,7 @@ export declare class UniformBufferManager<T extends Instance> extends BufferMana
     getActiveAttributePropertyId(): number;
     getInstanceCount(): number;
     getUpdateAllPropertyIdList(): never[];
+    managesInstance(instance: T): boolean;
     remove: (instance: T) => T;
     removeFromScene(): void;
     setScene(scene: LayerScene): void;

@@ -1,33 +1,57 @@
+import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
+import { IFontResourceRequest } from "../../resources";
+import { KernedLayout } from "../../resources/text/font-map";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { ILayerMaterialOptions, IProjection, IShaderInitialization } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
+import { ILayerConstructionClass, LayerInitializer } from "../../surface/layer-surface";
+import { IProjection } from "../../types";
+import { IAutoEasingMethod } from "../../util/auto-easing-method";
+import { Vec } from "../../util/vector";
+import { ScaleMode } from "../types";
+import { GlyphInstance } from "./glyph-instance";
+import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
 export interface ILabelLayerProps<T extends LabelInstance> extends ILayerProps<T> {
-    atlas?: string;
     animate?: {
+        anchor?: IAutoEasingMethod<Vec>;
         color?: IAutoEasingMethod<Vec>;
-        location?: IAutoEasingMethod<Vec>;
-        size?: IAutoEasingMethod<Vec>;
+        offset?: IAutoEasingMethod<Vec>;
+        origin?: IAutoEasingMethod<Vec>;
     };
+    customGlyphLayer?: ILayerConstructionClass<GlyphInstance, IGlyphLayerOptions<GlyphInstance>>;
+    resourceKey?: string;
+    scaleMode?: ScaleMode;
+    truncation?: string;
+    whiteSpaceKerning?: number;
 }
 export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerProps<T>> extends Layer<T, U> {
     static defaultProps: ILabelLayerProps<LabelInstance>;
-    static attributeNames: {
-        location: string;
-        anchor: string;
-        size: string;
-        depth: string;
-        scaling: string;
-        texture: string;
-        color: string;
-        scale: string;
-        maxScale: string;
-    };
+    glyphProvider: InstanceProvider<GlyphInstance>;
+    propertyIds: {
+        [key: string]: number;
+    } | undefined;
+    fullUpdate: boolean;
+    labelToGlyphs: Map<LabelInstance, GlyphInstance[]>;
+    labelToKerningRequest: Map<LabelInstance, IFontResourceRequest>;
+    labelWaitingOnGlyph: Map<LabelInstance, Set<GlyphInstance>>;
+    truncationKerningRequest?: IFontResourceRequest;
+    truncationWidth: number;
     getInstancePickingMethods(): {
-        boundsAccessor: (label: LabelInstance) => Bounds;
-        hitTest: (label: LabelInstance, point: [number, number], view: IProjection) => boolean;
+        boundsAccessor: (label: T) => Bounds;
+        hitTest: (label: T, point: [number, number], view: IProjection) => boolean;
     };
-    initShader(): IShaderInitialization<LabelInstance>;
-    getMaterialOptions(): ILayerMaterialOptions;
+    childLayers(): LayerInitializer[];
+    draw(): void;
+    handleGlyphReady: (glyph: GlyphInstance) => void;
+    hideGlyphs(instance: T): void;
+    initShader(): null;
+    invalidateRequest(instance: T): void;
+    layoutGlyphs(instance: T): void;
+    managesInstance(instance: T): boolean;
+    showGlyphs(instance: T): void;
+    updateGlyphs(instance: T, layout: KernedLayout): void;
+    updateGlyphColors(instance: T): void;
+    updateGlyphOrigins(instance: T): void;
+    updateKerning(instance: T): boolean;
+    willUpdateProps(newProps: U): void;
 }

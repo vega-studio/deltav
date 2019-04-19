@@ -1,10 +1,10 @@
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Anchor, ScaleType } from "../types";
+import { Anchor, ScaleMode } from "../types";
 export interface IRectangleInstanceOptions extends IInstanceOptions {
     anchor?: Anchor;
     depth?: number;
     height?: number;
-    scaling?: ScaleType;
+    scaling?: ScaleMode;
     color: [number, number, number, number];
     width?: number;
     x?: number;
@@ -16,7 +16,7 @@ export declare class RectangleInstance extends Instance {
     height: number;
     maxScale: number;
     scale: number;
-    scaling: ScaleType;
+    scaling: ScaleMode;
     width: number;
     x: number;
     y: number;

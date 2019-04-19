@@ -1,5 +1,15 @@
 # Release Notes
 
+## 1.24.0
+
+* `(ADDED)` Attribute expanders. Easily integrate custom attribute modifiers that applies across the entire pipeline.
+* `(ADDED)` Atlas Resource Manager now handles disposing of image resources to make it simpler to create your own layers that utilize resources.
+* `(ADDED)` Fixed naming and sizing conventions in the base layers that were in place to appease threejs.
+* `(ADDED)` Text is now implemented to be a bitmap font with in browser kerning estimation
+* `(ADDED)` Resource Managers, create resource managers to handle resource requests to routines that manage textures.
+* `(ADDED)` Attribute Expanders, create custom attribute expanders to create new and unique attributes that can produce child attributes or modify an input attribute in significant ways that automates complicated processes in the GL layer.
+* `(ADDED)` Removed all run time third party libraries for the project.
+
 ## 1.23.3
 
 * `(FIXED)` Mouse wheel to pan was very sensitive when zoomed in deep

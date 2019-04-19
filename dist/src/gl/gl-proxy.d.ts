@@ -1,4 +1,3 @@
-/// <reference types="webgl2" />
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import { GLState } from "./gl-state";
@@ -8,6 +7,7 @@ import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
 import { GLContext, IExtensions } from "./types";
 export declare class GLProxy {
+    debugContext: string;
     gl: GLContext;
     state: GLState;
     extensions: IExtensions;
@@ -15,15 +15,11 @@ export declare class GLProxy {
     private vertexShaders;
     private programs;
     constructor(gl: GLContext, state: GLState, extensions: IExtensions);
-    static addExtensions(gl: GLContext): {
-        instancing: WebGL2RenderingContext | ANGLE_instanced_arrays | undefined;
-        drawBuffers: WebGL2RenderingContext | WEBGL_draw_buffers | undefined;
-    };
+    static addExtensions(gl: GLContext): IExtensions;
     clear(color?: boolean, depth?: boolean, stencil?: boolean): void;
-    clearColor(): void;
     compileAttribute(attribute: Attribute): true | undefined;
     compileGeometry(geometry: Geometry): boolean;
-    compileMaterial(material: Material): true | undefined;
+    compileMaterial(material: Material): boolean | undefined;
     compileRenderTarget(target: RenderTarget): boolean | undefined;
     private compileDepthBuffer;
     private compileStencilBuffer;
@@ -39,9 +35,11 @@ export declare class GLProxy {
         extensions: IExtensions;
     };
     printError(): void;
+    lineFormatShader(shader: string): string;
     updateTexture(texture: Texture): void;
-    updateTextureData(texture: Texture): void;
-    updateTextureSettings(texture: Texture): void;
+    private updateTextureData;
+    private updateTexturePartialData;
+    private updateTextureSettings;
     updateAttribute(attribute: Attribute): true | undefined;
     useAttribute(name: string, attribute: Attribute): boolean | undefined;
 }

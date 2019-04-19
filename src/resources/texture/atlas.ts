@@ -3,9 +3,11 @@ import { AtlasSize, Omit, ResourceType } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { Vec2 } from "../../util/vector";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { AtlasManager, AtlasResourceRequest } from "./atlas-manager";
+import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
+
+const debug = require("debug")("performance");
 
 /**
  * Options required for generating an atlas.
@@ -45,6 +47,8 @@ export function isAtlasResource(val: BaseResourceOptions): val is Atlas {
   return val && val.type === ResourceType.ATLAS;
 }
 
+type ResourceReference = { subtexture: SubTexture; count: number };
+
 /**
  * This represents a single Texture on the gpu that is composed of several smaller textures
  * as a 'look up'.
@@ -52,10 +56,17 @@ export function isAtlasResource(val: BaseResourceOptions): val is Atlas {
 export class Atlas extends IdentifyByKey implements IAtlasResource {
   /** Stores the size of the atlas texture */
   height: AtlasSize;
-  /** This is the parent manager of the atlas */
-  manager: AtlasManager;
   /** This is the packing of the atlas with images */
   packing: PackNode<SubTexture>;
+  /**
+   * This is storage for handling resource reference counting. When a resource's reference drops below
+   * a count of 1, then the resource is disposed and it's space on the atlas is flagged for freeing up
+   * should the atlas need to consolidate resources.
+   */
+  resourceReferences = new Map<
+    IAtlasResourceRequest["source"],
+    ResourceReference
+  >();
   /** This is the actual texture object that represents the atlas on the GPU */
   texture: Texture;
   /** These are the applied settings to our texture */
@@ -67,7 +78,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
    * the atlas at any given moment.
    */
-  validResources = new Set<AtlasResourceRequest>();
+  validResources = new Set<IAtlasResourceRequest>();
   /** Stores the size of the atlas texture */
   width: AtlasSize;
 
@@ -87,90 +98,20 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   /**
    * This invalidates the SubTexture of an atlas resource.
    */
-  private invalidateResource(resource: AtlasResourceRequest) {
+  private invalidateTexture(texture: SubTexture) {
     const zero: Vec2 = [0, 0];
-    resource.texture.aspectRatio = 1;
-    resource.texture.atlasBL = zero;
-    resource.texture.atlasBR = zero;
-    resource.texture.atlasTL = zero;
-    resource.texture.atlasTR = zero;
-    resource.texture.textureReferenceID = "";
-    resource.texture.pixelWidth = 0;
-    resource.texture.pixelHeight = 0;
-    resource.texture.isValid = false;
-    resource.texture.texture = null;
-  }
+    texture.aspectRatio = 1;
 
-  /**
-   * Adds a resource to this atlas AND ensures the resource is flagged valid for use.
-   *
-   * @return {boolean} True if the resource successfully registered
-   */
-  registerResource(resource: AtlasResourceRequest) {
-    if (!this.validResources.has(resource)) {
-      if (!resource.texture || !resource.texture.isValid) {
-        if (!resource.texture) {
-          resource.texture = new SubTexture();
-        }
-
-        resource.texture.isValid = true;
-        resource.texture.texture = this.texture;
-        this.validResources.add(resource);
-
-        return true;
-      } else {
-        console.warn(
-          "Atlas Error:",
-          this.id,
-          "Attempted to add a resource to an Atlas that is already a valid resource on another atlas.",
-          "Consider Creating a new resource to be loaded into this particular atlas.",
-          "Resource:",
-          resource
-        );
-      }
-    } else {
-      console.warn(
-        "Atlas Error:",
-        this.id,
-        "A resource was trying to be added to the atlas that has already been added before.",
-        "Consider creating a new resource to indicate what you want loaded to the atlas",
-        "Resource:",
-        resource
-      );
-    }
-
-    return false;
-  }
-
-  /**
-   * This flags a resource from removal from an atlas.
-   *
-   * NOTE: This does not immediately clear the resource fromt he atlas, nor does it even guarantee
-   * the resource will be cleared from the atlas for a while. It merely suggests the resource be removed
-   * and makes the SubTexture invalid. It could be a long while before the atlas gets regnerated and repacked
-   * to actually reflect the resource not existing on the atlas.
-   */
-  removeResource(resource: AtlasResourceRequest) {
-    if (this.validResources.has(resource)) {
-      this.validResources.delete(resource);
-      this.invalidateResource(resource);
-    } else {
-      console.warn(
-        "Atlas Error:",
-        this.id,
-        "Attempted to remove a resource that does not exist on this atlas.",
-        "or the resource was already considered invalidated on this atlas.",
-        "Resource:",
-        resource
-      );
-    }
-  }
-
-  /**
-   * Sets the parent manager of this atlas
-   */
-  setManager(manager: AtlasManager) {
-    this.manager = manager;
+    // Make anything trying to render with the image not render much anything useful
+    texture.atlasBL = zero;
+    texture.atlasBR = zero;
+    texture.atlasTL = zero;
+    texture.atlasTR = zero;
+    texture.textureReferenceID = "";
+    texture.isValid = false;
+    texture.texture = null;
+    texture.pixelHeight = 0;
+    texture.pixelWidth = 0;
   }
 
   /**
@@ -216,9 +157,64 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * an artifacted element.
    */
   destroy() {
+    // Delete the GPU's texture object
     this.texture.dispose();
+
+    // Invalidate the Sub textures so they don't start rendering wild colors. Instead
+    // should render a single color at the 0, 0 mark of the texture.
     this.validResources.forEach((_isValid, resource) => {
-      this.invalidateResource(resource);
+      if (resource.texture) this.invalidateTexture(resource.texture);
     });
+  }
+
+  /**
+   * This flags a resource for use and increments it's reference count.
+   */
+  useResource(request: IAtlasResourceRequest) {
+    const reference = this.resourceReferences.get(request.source) || {
+      subtexture: request.texture,
+      count: 0
+    };
+
+    reference.count++;
+  }
+
+  /**
+   * This flags a resource no longeer used and decrements it's reference count.
+   * If the use of the resource drops low enough, this will clear out the resurce
+   * completely.
+   */
+  stopUsingResource(request: IAtlasResourceRequest) {
+    const reference: ResourceReference = this.resourceReferences.get(
+      request.source
+    ) || {
+      subtexture: request.texture || new SubTexture(),
+      count: 0
+    };
+
+    reference.count--;
+  }
+
+  /**
+   * This will look through all resources in this atlas and will determine if the resource
+   * should be removed or not.
+   */
+  resolveResources() {
+    const toRemove: IAtlasResourceRequest["source"][] = [];
+
+    this.resourceReferences.forEach((ref, source) => {
+      if (ref.count <= 0 && ref.subtexture) {
+        debug(
+          "A subtexture on an atlas has been invalidated as it is deemed no longer used: %o",
+          ref.subtexture
+        );
+        this.invalidateTexture(ref.subtexture);
+        toRemove.push(source);
+      }
+    });
+
+    for (let i = 0, iMax = toRemove.length; i < iMax; ++i) {
+      this.resourceReferences.delete(toRemove[i]);
+    }
   }
 }

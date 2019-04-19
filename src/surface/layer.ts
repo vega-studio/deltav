@@ -159,7 +159,7 @@ export class Layer<
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
   /** This is all of the instance attributes generated for the layer */
-  instanceAttributes: IInstanceAttribute<T>[];
+  instanceAttributes: IInstanceAttribute<T>[] = [];
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
@@ -188,9 +188,9 @@ export class Layer<
   /** This is the surface this layer is generated under */
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
-  uniforms: IUniformInternal[];
+  uniforms: IUniformInternal[] = [];
   /** This is all of the vertex attributes generated for the layer */
-  vertexAttributes: IVertexAttributeInternal[];
+  vertexAttributes: IVertexAttributeInternal[] = [];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View;
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
@@ -500,15 +500,22 @@ export class Layer<
   /**
    * Retrieves the changes from the data provider and resolves the provider. This should be
    * used by sub Layer classes that wish to create their own custom draw handlers.
+   *
+   * Set preserverProvider to true to let the system know the provider's changes are still
+   * required.
    */
-  resolveChanges() {
+  resolveChanges(preserveProvider?: boolean) {
     // Consume the diffs for the instances to update each element
     const changeList = this.props.data.changeList;
     // Set needsViewDrawn to be true if there is any change
     if (changeList.length > 0) this.needsViewDrawn = true;
-    // Resolve the changes from the provider so it can start collecting
-    // a new list of changes to apply
-    this.props.data.resolve(this.id);
+
+    // See if we should make the provider not consume it's changes yet
+    if (!preserveProvider) {
+      // Resolve the changes from the provider so it can start collecting
+      // a new list of changes to apply
+      this.props.data.resolve(this.id);
+    }
 
     // Clear the changes from all instances to be ready for next frame
     for (let i = 0, iMax = changeList.length; i < iMax; ++i) {
@@ -528,7 +535,6 @@ export class Layer<
       this._bufferManager = bufferManager;
       this.diffManager = new InstanceDiffManager<T>(this, bufferManager);
       this.diffManager.makeProcessor();
-      this.interactions = new LayerInteractionHandler(this);
     } else {
       console.warn(
         "You can not change a layer's buffer strategy once it has been instantiated."

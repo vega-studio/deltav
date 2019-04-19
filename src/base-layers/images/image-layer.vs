@@ -26,7 +26,7 @@ void main() {
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale.x != cameraScale.y);
 
-  // Destructure threejs's bug with the position requirement
+  // Destructure the normal information
   float normal = normals.x;
   float side = normals.y;
 

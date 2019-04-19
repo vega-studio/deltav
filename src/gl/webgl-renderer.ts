@@ -66,6 +66,12 @@ export interface IWebGLRendererState {
  * to make working with the webgl pipeline as easy as possible.
  */
 export class WebGLRenderer {
+  /** When this is set this creates */
+  set debugContext(val: string) {
+    if (this.glProxy) this.glProxy.debugContext = val;
+    if (this.glState) this.glState.debugContext = val;
+  }
+
   /** The context the renderer is managing */
   private _gl?: WebGLRenderingContext;
   /** The readonly gl context the renderer determined for use */

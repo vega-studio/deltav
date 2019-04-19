@@ -64,9 +64,9 @@ export class LayerMouseEvents extends EventManager {
   }
 
   handleClick(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) =>
-      layer.interactions.handleMouseClick(view, mouse, button)
-    );
+    this.handleInteraction(e, (layer, view, mouse) => {
+      layer.interactions.handleMouseClick(view, mouse, button);
+    });
   }
 
   handleDrag(e: IMouseInteraction, _drag: IDragMetrics) {

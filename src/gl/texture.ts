@@ -237,7 +237,7 @@ export class Texture {
   }
 
   /**
-   * Frees resources associated with this texture
+   * Frees resources associated with this texture.
    */
   dispose() {
     // Clear the gl context

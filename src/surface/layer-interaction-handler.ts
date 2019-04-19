@@ -46,6 +46,7 @@ export class LayerInteractionHandler<
   getColorPickInstance() {
     if (
       this.colorPicking &&
+      this.layer.diffManager &&
       isColorProcessor<T>(this.layer.diffManager.processor)
     ) {
       return this.layer.diffManager.processor.colorPicking.uidToInstance.get(

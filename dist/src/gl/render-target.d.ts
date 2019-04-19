@@ -1,4 +1,4 @@
-import { GLProxy } from "src/gl/gl-proxy";
+import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Texture } from "./texture";
 export interface IRenderTargetOptions {
@@ -11,6 +11,8 @@ export interface IRenderTargetOptions {
     width?: number;
 }
 export declare class RenderTarget {
+    readonly uid: number;
+    private _uid;
     readonly buffers: {
         color: Texture | GLSettings.RenderTarget.ColorBufferFormat | (Texture | GLSettings.RenderTarget.ColorBufferFormat)[] | undefined;
         depth: Texture | GLSettings.RenderTarget.DepthBufferFormat | undefined;

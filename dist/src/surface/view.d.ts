@@ -31,6 +31,7 @@ export declare class View extends IdentifyByKey {
     viewBounds: DataBounds<View>;
     needsDraw: boolean;
     animationEndTime: number;
+    lastFrameTime: number;
     constructor(options: IViewOptions);
     screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
     pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];

@@ -1,31 +1,20 @@
-import { Bounds } from "../../primitives";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { ILayerMaterialOptions, IProjection, IShaderInitialization } from "../../types";
-import { IAutoEasingMethod, Vec } from "../../util";
+import { InstanceProvider } from "../../instance-provider";
+import { IAtlasResourceRequest } from "../../resources";
+import { Layer } from "../../surface/layer";
+import { LayerInitializer } from "../../surface/layer-surface";
 import { ImageInstance } from "./image-instance";
-export interface IImageLayerProps<T extends ImageInstance> extends ILayerProps<T> {
-    atlas?: string;
-    animate?: {
-        tint?: IAutoEasingMethod<Vec>;
-        location?: IAutoEasingMethod<Vec>;
-        size?: IAutoEasingMethod<Vec>;
-    };
+import { IImageRenderLayerProps } from "./image-render-layer";
+export interface IImageLayerProps<T extends ImageInstance> extends IImageRenderLayerProps<T> {
 }
 export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IImageLayerProps<any>;
-    static attributeNames: {
-        location: string;
-        anchor: string;
-        size: string;
-        depth: string;
-        scaling: string;
-        texture: string;
-        tint: string;
+    childProvider: InstanceProvider<ImageInstance>;
+    imageToResource: Map<ImageInstance, string | ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement>;
+    propertyIds?: {
+        [key: string]: number;
     };
-    getInstancePickingMethods(): {
-        boundsAccessor: (image: ImageInstance) => Bounds;
-        hitTest: (image: ImageInstance, point: [number, number], view: IProjection) => boolean;
-    };
-    initShader(): IShaderInitialization<ImageInstance>;
-    getMaterialOptions(): ILayerMaterialOptions;
+    sourceToRequest: Map<string | ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, IAtlasResourceRequest>;
+    childLayers(): LayerInitializer[];
+    draw(): void;
+    initShader(): null;
 }

@@ -1,4 +1,4 @@
-import { Vec3 } from "src/util/vector";
+import { Vec3 } from "./vector";
 export declare enum CameraProjectionType {
     PERSPECTIVE = 0,
     ORTHOGRAPHIC = 1

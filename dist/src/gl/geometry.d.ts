@@ -1,4 +1,4 @@
-import { Attribute } from "src/gl/attribute";
+import { Attribute } from "./attribute";
 export declare class Geometry {
     private _attributes;
     readonly attributes: Map<string, Attribute>;

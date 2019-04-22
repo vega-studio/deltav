@@ -1,4 +1,4 @@
-import { Omit, ResourceType } from "../../types";
+import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { FontMap, FontMapGlyphType } from "../text/font-map";
 import { IFontResourceRequest } from "../text/font-resource-manager";
@@ -40,6 +40,7 @@ export interface IFontResourceOptions extends BaseResourceOptions {
     fontMap?: FontMap;
     fontSource: FontMapSource;
     type: ResourceType.FONT;
+    fontMapSize?: Size;
 }
 export declare function isFontResource(val: BaseResourceOptions): val is IFontResourceOptions;
 export declare function createFont(options: Omit<IFontResourceOptions, "type">): IFontResourceOptions;

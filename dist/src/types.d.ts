@@ -47,7 +47,7 @@ export declare enum VertexAttributeSize {
     THREE = 3,
     FOUR = 4
 }
-export declare enum AtlasSize {
+export declare enum TextureSize {
     _2 = 2,
     _4 = 4,
     _8 = 8,

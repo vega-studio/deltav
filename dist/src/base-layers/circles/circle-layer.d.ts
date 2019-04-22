@@ -7,7 +7,6 @@ import { CircleInstance } from "./circle-instance";
 export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps<T> {
     fadeOutOversized?: number;
     scaleFactor?(): number;
-    disableDepthTest?: boolean;
     opacity?: number;
     animate?: {
         center?: IAutoEasingMethod<Vec>;

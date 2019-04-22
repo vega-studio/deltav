@@ -63,6 +63,11 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
   data: IInstanceProvider<T>;
   /**
+   * Any pipeline declaring a layer cn manipulate a layer's default material settings as every pipeline
+   * can have some specific and significant needs the layer does not provide as a default.
+   */
+  materialOptions?: ILayerMaterialOptions;
+  /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
    */

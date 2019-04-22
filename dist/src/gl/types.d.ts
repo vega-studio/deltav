@@ -30,6 +30,12 @@ export interface IMaterialUniform<T extends MaterialUniformType> {
 }
 export declare type GLContext = WebGLRenderingContext | WebGL2RenderingContext;
 export interface IExtensions {
+    anisotropicFiltering?: {
+        ext: EXT_texture_filter_anisotropic;
+        stat: {
+            maxAnistropicFilter: number;
+        };
+    };
     drawBuffers?: WebGL2RenderingContext | WEBGL_draw_buffers;
     instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
 }

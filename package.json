@@ -4,8 +4,8 @@
     "email": "diniden@outlook.com",
     "url": "http://diniden.com"
   },
-  "name": "@voidrayco/deltav",
-  "version": "1.23.3",
+  "name": "@vega-studio/deltav",
+  "version": "1.24.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",

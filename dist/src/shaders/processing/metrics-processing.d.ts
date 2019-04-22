@@ -5,7 +5,7 @@ export declare class MetricsProcessing {
     blocksPerInstance: number;
     maxUniforms: number;
     maxUniformsForInstancing: number;
-    maxInstancesPerBuffer: number;
+    maxInstancesPerUniformBuffer: number;
     totalInstanceUniformBlocks: number;
     static calculateUniformBlockUseage(uniforms: IUniform[]): number;
     process<T extends Instance>(instanceAttributes: IInstanceAttribute<T>[], uniforms: IUniform[]): void;

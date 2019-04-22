@@ -16,7 +16,7 @@ export declare type Anchor = {
     x?: number;
     y?: number;
 };
-export declare enum ScaleType {
+export declare enum ScaleMode {
     ALWAYS = 1,
     BOUND_MAX = 2,
     NEVER = 3

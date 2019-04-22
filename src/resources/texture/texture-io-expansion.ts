@@ -1,5 +1,10 @@
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult
+} from "../../shaders/processing/base-shader-io-injection";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   BaseIOExpansion,
@@ -16,6 +21,8 @@ import {
   ShaderInjectionTarget,
   UniformSize
 } from "../../types";
+
+const debugCtx = "TextureIOExpansion";
 
 /** Empty texture that will default to the zero texture and unit */
 const emptyTexture = new Texture({
@@ -230,5 +237,39 @@ export class TextureIOExpansion extends BaseIOExpansion {
     });
 
     return !foundError;
+  }
+
+  /**
+   * For texture resources, we need the uniforms with a size of ATLAS to be injected as a sampler2D instead
+   * of a vector sizing which the basic io expansion can only provide.
+   */
+  processHeaderInjection(
+    target: ShaderInjectionTarget,
+    declarations: ShaderDeclarationStatements,
+    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _metrics: MetricsProcessing,
+    _vertexAttributes: IVertexAttribute[],
+    _instanceAttributes: IInstanceAttribute<Instance>[],
+    uniforms: IUniform[]
+  ): ShaderIOHeaderInjectionResult {
+    const out = {
+      injection: ""
+    };
+
+    for (let i = 0, iMax = uniforms.length; i < iMax; ++i) {
+      const uniform = uniforms[i];
+      const injection = uniform.shaderInjection || ShaderInjectionTarget.VERTEX;
+
+      if (uniform.size === UniformSize.ATLAS && injection === target) {
+        this.setDeclaration(
+          declarations,
+          uniform.name,
+          `uniform sampler2D ${uniform.name};\n`,
+          debugCtx
+        );
+      }
+    }
+
+    return out;
   }
 }

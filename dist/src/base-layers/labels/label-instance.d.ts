@@ -1,61 +1,39 @@
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { Label } from "../../primitives/label";
-import { LabelAtlasResource } from "../../surface/texture";
+import { Size } from "../../types";
 import { Vec2 } from "../../util";
-import { Anchor, ScaleType } from "../types";
-export interface ILabelInstanceOptions extends IInstanceOptions, Partial<Label> {
+import { Anchor } from "../types";
+import { GlyphInstance } from "./glyph-instance";
+import { TextAreaInstance } from "./text-area-instance";
+export interface ILabelInstanceOptions extends IInstanceOptions {
     anchor?: Anchor;
     color: [number, number, number, number];
     depth?: number;
-    fontFamily?: string;
     fontSize?: number;
-    fontStyle?: Label["fontStyle"];
-    fontWeight?: Label["fontWeight"];
     maxWidth?: number;
     maxScale?: number;
-    rasterization?: {
-        scale: number;
-    };
-    scaling?: ScaleType;
     scale?: number;
     text: string;
-    position: Vec2;
+    origin: Vec2;
+    onReady?(instance: LabelInstance): void;
 }
-export declare class LabelInstance extends Instance implements Label {
-    static destroy(): void;
+export declare class LabelInstance extends Instance {
     color: [number, number, number, number];
     depth: number;
+    fontSize: number;
     maxScale: number;
-    scaling: ScaleType;
+    maxWidth: number;
+    origin: Vec2;
     scale: number;
-    position: Vec2;
-    private _cssFont;
-    private _fontFamily;
-    private _fontSize;
-    private _fontStyle;
-    private _fontWeight;
-    private _maxWidth;
-    private _text;
-    private _width;
-    private _height;
-    private _isDestroyed;
-    private _rasterization;
-    readonly cssFont: string;
-    readonly isDestroyed: boolean;
-    readonly fontFamily: string;
-    readonly fontSize: number;
-    readonly fontStyle: "normal" | "italic" | "oblique" | "initial" | "inherit";
-    readonly fontWeight: 100 | 300 | 500 | "normal" | "initial" | "inherit" | "bold" | "bolder" | "lighter" | "unset" | 200 | 400 | 600 | 700 | 800 | 900;
-    readonly maxWidth: number;
-    readonly resource: LabelAtlasResource;
-    readonly text: string;
-    readonly truncatedText: string;
-    readonly width: number;
-    readonly height: number;
+    text: string;
+    onReady?: (label: LabelInstance) => void;
+    parentTextArea?: TextAreaInstance;
+    glyphs: GlyphInstance[];
+    size: Size;
+    truncatedText: string;
     private _anchor;
     constructor(options: ILabelInstanceOptions);
     readonly anchor: Anchor;
-    destroy(): void;
-    resourceTrigger(): void;
     setAnchor(anchor: Anchor): void;
+    subTextGlyphs(text: string): GlyphInstance[];
+    resourceTrigger(): void;
 }

@@ -109,7 +109,9 @@ export class Instance implements Identifiable {
    */
   getEasing(attributeName: string): IEasingControl | undefined {
     if (this.easingId) {
-      const easingId = this.easingId[attributeName];
+      // If easing has been applied to an attribute, the attribute that will have it is the name mangled
+      // _{base name}_end format.
+      const easingId = this.easingId[`_${attributeName}_end`];
 
       if (easingId) {
         const easing = this._easing.get(easingId);

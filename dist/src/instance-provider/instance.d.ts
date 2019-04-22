@@ -10,9 +10,6 @@ export declare class Instance implements Identifiable {
     changes: {
         [key: number]: number;
     };
-    property: {
-        [key: string]: number;
-    };
     easingId: {
         [key: string]: number;
     } | undefined;

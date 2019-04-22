@@ -1,3 +1,4 @@
+import { uniformBufferInstanceBufferName } from "../../../constants";
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import {
   IMaterialUniform,
@@ -5,7 +6,6 @@ import {
   MaterialUniformType
 } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
-import { UniformProcessing } from "../../../shaders/processing/uniform-processing";
 import { IInstanceAttribute } from "../../../types";
 import { uid, Vec2, Vec4 } from "../../../util";
 import { Layer } from "../../layer";
@@ -274,7 +274,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // To use to render more instances. We must take the instancing uniforms
     // And divvy them up into clusters for our available buffer.
     let uniformIndex = 0;
-    const uniformName = UniformProcessing.uniformPackingBufferName();
+    const uniformName = uniformBufferInstanceBufferName;
     const instanceData = newMaterial.uniforms[uniformName];
 
     // Type guard this uniform to ensure we're dealing with the correct type

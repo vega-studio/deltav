@@ -1,4 +1,8 @@
-import { Vec2, Vec4 } from "../util";
+import { Size } from "../types";
+import { Vec4 } from "../util";
+import { Attribute } from "./attribute";
+import { GLProxy } from "./gl-proxy";
+import { GLState } from "./gl-state";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
 export interface IWebGLRendererOptions {
@@ -10,22 +14,37 @@ export interface IWebGLRendererOptions {
     onNoContext?(): void;
 }
 export interface IWebGLRendererState {
+    clearMask: [boolean, boolean, boolean];
+    currentRenderTarget: RenderTarget | null;
+    displaySize: Size;
     pixelRatio: number;
+    renderSize: Size;
 }
 export declare class WebGLRenderer {
+    debugContext: string;
     private _gl?;
     readonly gl: WebGLRenderingContext | undefined;
-    private glProxy;
-    private glState;
+    glProxy: GLProxy;
+    glState: GLState;
     options: IWebGLRendererOptions;
     state: IWebGLRendererState;
     constructor(options: IWebGLRendererOptions);
     clear(color?: boolean, depth?: boolean, stencil?: boolean): void;
     clearColor(color?: Vec4): void;
     dispose(): void;
-    getCanvasDimensions(): Vec2;
     getContext(): WebGLRenderingContext | undefined;
+    getDisplaySize(): Size;
+    getPixelRatio(): number;
+    getRenderSize(): Size;
+    getFullViewport(): {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    prepareAttribute(attribute: Attribute, name: string): boolean;
     render(scene: Scene, target?: RenderTarget | null): void;
+    private renderModel;
     readPixels(x: number, y: number, width: number, height: number, out: ArrayBufferView): void;
     setClearColor(color: Vec4): void;
     setPixelRatio(ratio: number): void;
@@ -34,13 +53,13 @@ export declare class WebGLRenderer {
         y: number;
         width: number;
         height: number;
-    }): void;
-    getPixelRatio(): number;
-    getSize(): {
-        width: number;
-        height: number;
-    };
+    }, target?: RenderTarget): void;
     setSize(width: number, height: number): void;
     setRenderTarget(target: RenderTarget | null): void;
-    setViewport(x: number, y: number, width: number, height: number): void;
+    setViewport(bounds: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }): void;
 }

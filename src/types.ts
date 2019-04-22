@@ -84,7 +84,7 @@ export enum VertexAttributeSize {
  * versions may increase this number as GPUs improve and standards allow greater
  * flexibility.
  */
-export enum AtlasSize {
+export enum TextureSize {
   _2 = 0x01 << 1,
   _4 = 0x01 << 2,
   _8 = 0x01 << 3,

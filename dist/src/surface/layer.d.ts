@@ -21,6 +21,7 @@ export interface IInstanceProvider<T extends Instance> {
 }
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     data: IInstanceProvider<T>;
+    materialOptions?: ILayerMaterialOptions;
     picking?: PickType;
     printShader?: boolean;
     scene: string;

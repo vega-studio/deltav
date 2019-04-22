@@ -1,5 +1,5 @@
 import { Texture, TextureOptions } from "../../gl/texture";
-import { AtlasSize, Omit, ResourceType } from "../../types";
+import { Omit, ResourceType, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { Vec2 } from "../../util/vector";
 import { BaseResourceOptions } from "../base-resource-manager";
@@ -16,9 +16,9 @@ export interface IAtlasResource extends BaseResourceOptions {
   /** Set the type of the resource to explicitally be an atlas resource */
   type: ResourceType.ATLAS;
   /** This is the height of the texture */
-  height: AtlasSize;
+  height: TextureSize;
   /** This is the width of the atlas */
-  width: AtlasSize;
+  width: TextureSize;
   /**
    * This applies any desired settings to the Texture.
    * Some noteable defaults this system sets:
@@ -55,7 +55,7 @@ type ResourceReference = { subtexture: SubTexture; count: number };
  */
 export class Atlas extends IdentifyByKey implements IAtlasResource {
   /** Stores the size of the atlas texture */
-  height: AtlasSize;
+  height: TextureSize;
   /** This is the packing of the atlas with images */
   packing: PackNode<SubTexture>;
   /**
@@ -80,7 +80,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    */
   validResources = new Set<IAtlasResourceRequest>();
   /** Stores the size of the atlas texture */
-  width: AtlasSize;
+  width: TextureSize;
 
   constructor(options: IAtlasResource) {
     super(options);

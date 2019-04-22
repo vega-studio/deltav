@@ -1,5 +1,5 @@
-import { GLSettings, Texture, TextureOptions, WebGLStat } from "../../gl";
-import { isWhiteSpace, ResourceType, Size } from "../../types";
+import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { add2, scale2, Vec2 } from "../../util/vector";
 import { PackNode } from "../texture/pack-node";
@@ -111,16 +111,15 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       });
     }
 
+    const fontMapSize: Size = options.fontMapSize
+      ? options.fontMapSize
+      : [TextureSize._1024, TextureSize._1024];
+
     this.makeGlyphTypeTextureSettings(options.glyphType);
-    this.createTexture();
+    this.createTexture(fontMapSize);
 
     // Initialize the packing layout for the texture
-    this.packing = new PackNode(
-      0,
-      0,
-      WebGLStat.MAX_TEXTURE_SIZE,
-      WebGLStat.MAX_TEXTURE_SIZE
-    );
+    this.packing = new PackNode(0, 0, fontMapSize[0], fontMapSize[1]);
   }
 
   /**
@@ -142,7 +141,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * Generates the texture for the font map which makes it ready for utilization and ready
    * for updates.
    */
-  private createTexture() {
+  private createTexture(size: Size) {
     if (this.texture) return;
 
     // Establish the settings to be applied to the Texture
@@ -164,8 +163,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // Generate the texture
     this.texture = new Texture({
       data: {
-        width: WebGLStat.MAX_TEXTURE_SIZE,
-        height: WebGLStat.MAX_TEXTURE_SIZE,
+        width: size[0],
+        height: size[1],
         buffer: null
       },
       ...textureSettings

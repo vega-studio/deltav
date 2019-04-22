@@ -20,8 +20,6 @@ export interface ICircleLayerProps<T extends CircleInstance>
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
   scaleFactor?(): number;
-  /** Flags this layer to draw  */
-  disableDepthTest?: boolean;
   /** Opacity of the layer as a whole */
   opacity?: number;
   /**

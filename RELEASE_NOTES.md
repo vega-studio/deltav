@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.25.0
+
+* `(ADDED)` Control Font Map resource texture sizes
+* `(ADDED)` Material control can now be applied to a layer's props
+
 ## 1.24.0
 
 * `(ADDED)` Attribute expanders. Easily integrate custom attribute modifiers that applies across the entire pipeline.

@@ -10,6 +10,7 @@ import {
 import * as datGUI from "dat.gui";
 import { BaseDemo } from "../common/base-demo";
 
+import { Blending } from "test/kitchen-sink/examples/blending";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
@@ -72,7 +73,8 @@ function makeDemos() {
     new MouseInteractionColorPicking(),
     new Arcs(),
     new VertexAttributePacking(),
-    new VertexAttributePacking(true)
+    new VertexAttributePacking(true),
+    new Blending()
   ];
 }
 

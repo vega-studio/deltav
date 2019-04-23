@@ -98,9 +98,9 @@ export class WebGLRenderer {
     // Assign defaults to our options
     this.options = Object.assign(
       {
-        alpha: true,
-        antialias: true,
-        preserveDrawingBuffer: true
+        alpha: false,
+        antialias: false,
+        preserveDrawingBuffer: false
       },
       options
     );

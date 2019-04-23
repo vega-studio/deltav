@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.25.2
+
+* `(FIXED)` Added blending tests
+
 ## 1.25.1
 
 * `(FIXED)` Blending issues with circles and edges

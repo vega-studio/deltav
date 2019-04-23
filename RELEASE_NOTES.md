@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.25.1
+
+* `(FIXED)` Blending issues with circles and edges
+
 ## 1.25.0
 
 * `(ADDED)` Control Font Map resource texture sizes

@@ -1010,6 +1010,11 @@ export class GLProxy {
         (ctx instanceof WebGLRenderingContext ||
           ctx instanceof WebGL2RenderingContext)
       ) {
+        debug(
+          "Generated GL Context of version %o with attributes %o",
+          name,
+          options
+        );
         context = ctx;
         extensions = GLProxy.addExtensions(context);
         break;

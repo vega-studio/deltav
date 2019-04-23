@@ -902,13 +902,14 @@ export class LayerSurface {
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
-      antialias: true,
+      antialias: false,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: true,
-
+      preserveDrawingBuffer: false,
+      // This indicates if the information written to the canvas is going to be written as premultiplied values
+      // or if they will be standard rgba values. Helps with compositing with the DOM.
       premultipliedAlpha: false
     });
 

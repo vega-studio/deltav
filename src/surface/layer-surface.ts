@@ -907,7 +907,9 @@ export class LayerSurface {
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: true,
+
+      premultipliedAlpha: false
     });
 
     if (this.resourceManager) {

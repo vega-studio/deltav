@@ -210,7 +210,7 @@ export class Surface {
           DEFAULT_RESOURCES.atlas,
           DEFAULT_RESOURCES.font
         ],
-        background: [0.0, 0.0, 0.0, 0.0],
+        background: [0.0, 0.0, 0.0, 1.0],
         context: this.context,
         eventManagers: this.options.eventManagers || [defaultController],
         handlesWheelEvents: true,

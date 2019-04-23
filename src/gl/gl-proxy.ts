@@ -1011,7 +1011,7 @@ export class GLProxy {
           ctx instanceof WebGL2RenderingContext)
       ) {
         debug(
-          "Generated GL Context of version %o with attributes %o",
+          "Generated GL Context of version with attributes:",
           name,
           options
         );

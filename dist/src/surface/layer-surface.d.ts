@@ -17,7 +17,7 @@ export declare const DEFAULT_IO_EXPANSION: BaseIOExpansion[];
 export declare const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers"];
 export interface ILayerSurfaceOptions {
     background: [number, number, number, number];
-    context?: WebGLRenderingContext | HTMLCanvasElement | string;
+    context?: HTMLCanvasElement;
     eventManagers?: EventManager[];
     handlesWheelEvents?: boolean;
     ioExpansion?: BaseIOExpansion[] | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
@@ -72,7 +72,7 @@ export declare class LayerSurface {
     private gatherViewDrawDependencies;
     getViewSize(viewId: string): Bounds | null;
     getViewWorldBounds(viewId: string): Bounds | null;
-    init(options: ILayerSurfaceOptions): Promise<this>;
+    init(options: ILayerSurfaceOptions): Promise<this | undefined>;
     private initGL;
     private initIOExpanders;
     private initLayer;
@@ -86,7 +86,6 @@ export declare class LayerSurface {
     render(layerInitializers: LayerInitializer[]): void;
     fitContainer(_pixelRatio?: number): void;
     resize(width: number, height: number, pixelRatio?: number): void;
-    private setContext;
     private setRendererSize;
     updateColorPickRange(mouse: Vec2, views: View[]): void;
 }

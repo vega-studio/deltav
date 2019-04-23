@@ -73,10 +73,9 @@ export interface ILayerSurfaceOptions {
    */
   background: [number, number, number, number];
   /**
-   * If this is provided, it will use this context for rendering. If a string is provided
-   * it will search for the canvas context by id.
+   * Provides the context the surface will use while rendering
    */
-  context?: WebGLRenderingContext | HTMLCanvasElement | string;
+  context?: HTMLCanvasElement;
   /**
    * This is the event managers to respond to the mouse events.
    */
@@ -138,18 +137,6 @@ export interface ILayerSurfaceOptions {
 }
 
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [1.0, 1.0, 1.0, 1.0];
-
-function isCanvas(val: any): val is HTMLCanvasElement {
-  return Boolean(val.getContext);
-}
-
-function isString(val: any): val is string {
-  return Boolean(val.substr);
-}
-
-function isWebGLContext(val: any): val is WebGLRenderingContext {
-  return Boolean(val.canvas);
-}
 
 /**
  * A type to describe the constructor of a Layer class.
@@ -857,12 +844,12 @@ export class LayerSurface {
       this.pixelRatio = 1.0;
     }
 
-    // Make sure we have a gl context to work with
-    this.setContext(options.context);
+    // Initialize our GL needs that set the basis for rendering
+    const context = this.initGL(options);
+    if (!context) return;
+    this.context = context;
 
     if (this.gl) {
-      // Initialize our GL needs that set the basis for rendering
-      this.initGL(options);
       // Initialize our event manager that handles mouse interactions/gestures with the canvas
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
@@ -883,18 +870,14 @@ export class LayerSurface {
    * This initializes the Canvas GL contexts needed for rendering.
    */
   private initGL(options: ILayerSurfaceOptions) {
-    if (!this.context) {
-      console.error(
-        "Can not initialize Layer Surface as a valid GL context was not established."
-      );
-      return;
-    }
-
     // Get the canvas of our context to set up our Three settings
-    const canvas = this.context.canvas;
+    const canvas = options.context;
+    if (!canvas) return null;
+
     // Get the starting width and height so adjustments don't affect it
     const width = canvas.width;
     const height = canvas.height;
+    let hasContext = true;
 
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
@@ -910,8 +893,16 @@ export class LayerSurface {
       preserveDrawingBuffer: false,
       // This indicates if the information written to the canvas is going to be written as premultiplied values
       // or if they will be standard rgba values. Helps with compositing with the DOM.
-      premultipliedAlpha: false
+      premultipliedAlpha: false,
+
+      // Let's us know if there is no valid webgl context to work with or not
+      onNoContext: () => {
+        hasContext = false;
+      }
     });
+
+    if (!hasContext || !this.renderer.gl) return null;
+    this.context = this.renderer.gl;
 
     if (this.resourceManager) {
       this.resourceManager.setWebGLRenderer(this.renderer);
@@ -956,9 +947,6 @@ export class LayerSurface {
 
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
-    // Turn on the scissor test to keep the rendering clipped within the
-    // Render region of the context
-    this.context.enable(this.context.SCISSOR_TEST);
 
     // Add the requested scenes to the surface and apply the necessary defaults
     if (options.scenes) {
@@ -996,6 +984,8 @@ export class LayerSurface {
 
       this.gatherViewDrawDependencies();
     }
+
+    return this.renderer.gl;
   }
 
   /**
@@ -1453,38 +1443,6 @@ export class LayerSurface {
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
     this.gatherViewDrawDependencies();
-  }
-
-  /**
-   * This establishes the rendering canvas context for the surface.
-   */
-  private setContext(
-    context?: WebGLRenderingContext | HTMLCanvasElement | string
-  ) {
-    if (!context) {
-      return;
-    }
-
-    if (isWebGLContext(context)) {
-      this.context = context;
-    } else if (isCanvas(context)) {
-      const canvasContext =
-        context.getContext("webgl") || context.getContext("experimental-webgl");
-
-      if (!canvasContext) {
-        console.warn(
-          "A valid GL context was not found for the context provided to the surface. This surface will not be able to operate."
-        );
-      } else {
-        this.context = canvasContext;
-      }
-    } else if (isString(context)) {
-      const element = document.getElementById(context);
-
-      if (isCanvas(element)) {
-        this.setContext(element);
-      }
-    }
   }
 
   /**

@@ -20,6 +20,7 @@
   "dependencies": {},
   "devDependencies": {
     "@types/animejs": "2.0.0",
+    "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",
     "@types/html2canvas": "0.0.35",
     "@types/matter-js": "0.10.2",
@@ -36,6 +37,7 @@
     "commander": "2.19.0",
     "copy-webpack-plugin": "4.5.2",
     "css-loader": "0.28.11",
+    "d3-color": "1.2.3",
     "dat.gui": "0.7.5",
     "debug": "3.1.0",
     "dts-bundle": "0.7.3",

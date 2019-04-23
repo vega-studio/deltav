@@ -49,7 +49,6 @@ void main() {
   vec2 vertexPos = currentPosition + currentNormal * (normal * lineThickness);
   // Get the color based on where we are on the line
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
-  vertexColor.a *= layerOpacity;
 
   gl_Position = clipSpace(vec3(vertexPos, depth));
   gl_PointSize = 5.0;

@@ -266,24 +266,14 @@ export class FontResourceManager extends BaseResourceManager<
       }
 
       if (texture) {
-        if (request.fetch) {
+        if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
           return [texture.pixelWidth, texture.pixelHeight];
         }
 
         return subTextureIOValue(texture);
       }
 
-      if (request.fetch) {
-        return [0, 0];
-      }
-
-      return subTextureIOValue(null);
-    }
-
-    // If already requested for this request object. Don't create another as the resource trigger should
-    // handle responses for such needs.
-    if (request.isRequested) {
-      if (request.fetch) {
+      if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
         return [0, 0];
       }
 
@@ -302,6 +292,10 @@ export class FontResourceManager extends BaseResourceManager<
       if (existingRequests) {
         existingRequests.push([layer, instance]);
         instance.active = false;
+
+        if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
+          return [0, 0];
+        }
 
         return subTextureIOValue(texture);
       }

@@ -13,7 +13,7 @@ import { AtlasResourceManager } from "../resources/texture/atlas-resource-manage
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { IResourceType, PickType } from "../types";
+import { IInstanceAttribute, IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
@@ -465,7 +465,58 @@ export class LayerSurface {
       // Output each layer and why it errored
       errors.forEach(err => {
         console.warn(`Layer ${err[0].id} removed for the following error:`);
-        if (err[1]) console.error(err[1].stack || err[1].message);
+
+        if (err[1]) {
+          const message = err[1].stack || err[1].message;
+          console.error(message);
+
+          // This is a specific error to instances updating an attribute but returning a value that is larger
+          // than the attribute size. The only way to debug this is to run every instance in the layer and
+          // retrieve it's update value and compare the return to the expected size.
+          if (
+            message.indexOf("RangeError") > -1 ||
+            message.indexOf("Source is too large") > -1
+          ) {
+            const layer = err[0];
+            const changes = layer.bufferManager.changeListContext;
+            let singleMessage:
+              | [string, Instance, IInstanceAttribute<Instance>]
+              | undefined;
+            let errorCount = 0;
+
+            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+              const [instance] = changes[i];
+              layer.instanceAttributes.forEach(attr => {
+                const check = attr.update(instance);
+                if (check.length !== attr.size) {
+                  if (!singleMessage) {
+                    singleMessage = [
+                      "Example instance returned the wrong sized value for an attribute:",
+                      instance,
+                      attr
+                    ];
+                  }
+
+                  errorCount++;
+                }
+              });
+            }
+
+            if (singleMessage) {
+              console.error(
+                "The following output shows discovered issues related to the specified error"
+              );
+              console.error(
+                "Instances are returning too large IO for an attribute\n",
+                singleMessage[0],
+                singleMessage[1],
+                singleMessage[2],
+                "Total errors for too large IO values",
+                errorCount
+              );
+            }
+          }
+        }
       });
 
       // Re-render but only include non-errored layers

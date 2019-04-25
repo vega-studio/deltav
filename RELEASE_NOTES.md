@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.25.4
+
+* `(FIXED)` Labels onReady event was not firing when the label changed text and in other expected cases.
+* `(FIXED)` Major issue, Source is too large, that caused a crash for a layer when using the font resource manager.
+* `(FIXED)` Source is too large errors now provides some additional helpful feedback showing which attribute is receiving too large of a value.
+
 ## 1.25.3
 
 * `(FIXED)` Key debug statements should log properly now

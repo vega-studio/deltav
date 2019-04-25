@@ -1,8 +1,13 @@
 import * as datGUI from "dat.gui";
 import {
+  AutoEasingMethod,
   BasicCameraController,
   ChartCamera,
   createLayer,
+  EasingUtil,
+  GlyphInstance,
+  GlyphLayer,
+  IEasingControl,
   InstanceProvider,
   ISceneOptions,
   LabelInstance,
@@ -56,14 +61,14 @@ export class TextDemo extends BaseDemo {
 
   /** GUI properties */
   parameters = {
-    count: 200,
+    count: 1,
     fontSize: 14,
-    words: 4,
+    words: 1,
     maxWidth: 0,
     scaleMode: ScaleMode.BOUND_MAX,
 
     previous: {
-      count: 200
+      count: 1
     },
 
     copy: () => {
@@ -159,6 +164,9 @@ export class TextDemo extends BaseDemo {
   getLayers(resources: IDefaultResources): LayerInitializer[] {
     return [
       createLayer(LabelLayer, {
+        animate: {
+          color: AutoEasingMethod.easeInOutCubic(500)
+        },
         data: this.providers.labels,
         key: "labels",
         scene: "default",
@@ -177,6 +185,25 @@ export class TextDemo extends BaseDemo {
     }
   }
 
+  labelReady(label: LabelInstance) {
+    label.color = label.color;
+    label.color[3] = 1;
+
+    EasingUtil.all(
+      true,
+      label.glyphs,
+      [GlyphLayer.attributeNames.color],
+      (
+        easing: IEasingControl,
+        instance: GlyphInstance,
+        _instanceIndex: number,
+        _attrIndex: number
+      ) => {
+        easing.setTiming(1000 + label.origin[1] + instance.offset[0]);
+      }
+    );
+  }
+
   /**
    * Makes a circle and stores it in our circles array and adds it to the rendering
    */
@@ -190,9 +217,10 @@ export class TextDemo extends BaseDemo {
     const label = this.providers.labels.add(
       new LabelInstance({
         origin: [20, this.parameters.fontSize * this.labels.length],
-        color: [0, random(), random(), 1.0],
+        color: [0, random(), random(), 0.0],
         text: words.join(" "),
-        fontSize: this.parameters.fontSize
+        fontSize: this.parameters.fontSize,
+        onReady: this.labelReady
       })
     );
 

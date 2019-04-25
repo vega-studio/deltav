@@ -25,6 +25,7 @@ export declare class TextDemo extends BaseDemo {
     getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null;
     getLayers(resources: IDefaultResources): LayerInitializer[];
     init(): Promise<void>;
+    labelReady(label: LabelInstance): void;
     makeLabel(): void;
     layoutLabels(): void;
     removeLabel(): void;

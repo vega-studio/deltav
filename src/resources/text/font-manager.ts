@@ -282,20 +282,20 @@ export class FontManager {
     const fontMap = this.fontMaps.get(resourceKey);
     if (!fontMap) return;
 
-    let allPairs = "";
+    let allPairs: string[] = [];
     const allCharacters = new Set<string>();
 
     // Aggregate all kerning and character requests and needs
     for (let i = 0, iMax = requests.length; i < iMax; ++i) {
       const req = requests[i];
       if (req.character) allCharacters.add(req.character);
-      if (req.kerningPairs) allPairs += req.kerningPairs;
+      if (req.kerningPairs) allPairs = allPairs.concat(req.kerningPairs);
 
       // We add in truncation characters as well if provided
       if (req.metrics) {
         if (req.metrics.truncation) {
           const truncation = req.metrics.truncation.replace(/\s/g, "");
-          allPairs += truncation;
+          allPairs.push(truncation);
 
           for (let i = 0, iMax = req.metrics.truncation.length; i < iMax; ++i) {
             allCharacters.add(truncation);
@@ -328,7 +328,7 @@ export class FontManager {
   /**
    * This updates the calculated kerning pairs for a given font map.
    */
-  private async updateKerningPairs(pairs: string, fontMap?: FontMap) {
+  private async updateKerningPairs(pairs: string[], fontMap?: FontMap) {
     if (!fontMap) return;
 
     // Calculate the new kerning pair information

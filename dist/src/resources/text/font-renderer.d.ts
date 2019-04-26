@@ -22,6 +22,6 @@ export interface IFontOptions extends IdentifyByKey, IResourceType {
 }
 export declare class FontRenderer {
     makeBitmapGlyphs(glyphs: string, fontString: string, fontSize: number): IGlyphRenderMetrics;
-    estimateKerning(str: string, fontString: string, fontSize: number, existing: KerningPairs, includeSpace: boolean): Promise<KerningInfo>;
+    estimateKerning(str: string[], fontString: string, fontSize: number, existing: KerningPairs, includeSpace: boolean): Promise<KerningInfo>;
 }
 export {};

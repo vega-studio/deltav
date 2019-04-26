@@ -151,18 +151,6 @@ export class LayerMouseEvents extends EventManager {
     const currentSceneViews = new Map<SceneView, boolean>();
     allSceneViews.forEach(v => currentSceneViews.set(v, true));
 
-    // Detect which of the views are newly over
-    currentSceneViews.forEach((_flag, sceneView) => {
-      if (!this.isOver.get(sceneView)) {
-        this.handleSceneView(
-          sceneView,
-          viewMouseByViewId,
-          (layer, view, mouse) =>
-            layer.interactions.handleMouseOver(view, mouse)
-        );
-      }
-    });
-
     // Detect which of the views are no longer over
     this.isOver.forEach((_flag, sceneView) => {
       if (!currentSceneViews.get(sceneView)) {
@@ -176,6 +164,18 @@ export class LayerMouseEvents extends EventManager {
           sceneView,
           viewMouseByViewId,
           (layer, view, mouse) => layer.interactions.handleMouseOut(view, mouse)
+        );
+      }
+    });
+
+    // Detect which of the views are newly over
+    currentSceneViews.forEach((_flag, sceneView) => {
+      if (!this.isOver.get(sceneView)) {
+        this.handleSceneView(
+          sceneView,
+          viewMouseByViewId,
+          (layer, view, mouse) =>
+            layer.interactions.handleMouseOver(view, mouse)
         );
       }
     });

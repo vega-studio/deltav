@@ -27,6 +27,11 @@ export enum FontGlyphRenderSize {
  * Metrics for a font map source specification.
  */
 export interface IFontMapMetrics {
+  /**
+   * EXPERIMENTAL: When enabled, this allows the framework to cache the kerning pair calculations in the local storage.
+   * This can greatly speed up reload times of this chart, but may come with consequences as well.
+   */
+  localKerningCache?: boolean;
   /** A type indicator to help identify which type of font resource is provided */
   type?: FontMapGlyphType;
   /** Size the font is rendered to the font map */

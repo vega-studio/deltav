@@ -46,8 +46,8 @@ export const DEFAULT_RESOURCES = {
     dynamic: true,
     key: "test-font",
     fontSource: {
+      localKerningCache: true,
       size: 32,
-      errorGlyph: " ",
       family: "Calibri",
       type: FontMapGlyphType.BITMAP,
       weight: "normal"

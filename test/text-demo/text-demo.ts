@@ -61,14 +61,14 @@ export class TextDemo extends BaseDemo {
 
   /** GUI properties */
   parameters = {
-    count: 1,
+    count: 100,
     fontSize: 14,
-    words: 1,
+    words: 15,
     maxWidth: 0,
     scaleMode: ScaleMode.BOUND_MAX,
 
     previous: {
-      count: 1
+      count: 100
     },
 
     copy: () => {
@@ -220,7 +220,8 @@ export class TextDemo extends BaseDemo {
         color: [0, random(), random(), 0.0],
         text: words.join(" "),
         fontSize: this.parameters.fontSize,
-        onReady: this.labelReady
+        onReady: this.labelReady,
+        preload: true
       })
     );
 

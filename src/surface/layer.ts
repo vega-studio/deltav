@@ -50,6 +50,8 @@ export interface IInstanceProvider<T extends Instance> {
 
   /** A list of changes to instances */
   changeList: InstanceDiff<T>[];
+  /** Removes an instance from the list */
+  remove(instance: T): void;
   /** Resolves the changes as consumed */
   resolve(context: string): void;
   /** Forces the provider to make a change list that ensures all elements are added */

@@ -298,10 +298,19 @@ export class LabelLayer<
 
         case InstanceDiffType.INSERT:
           // Our management flag is dependent on if the label has glyph storage or not
-          const storage = this.labelToGlyphs.get(instance);
-          if (!storage) this.labelToGlyphs.set(instance, []);
+          if (!instance.preload) {
+            const storage = this.labelToGlyphs.get(instance);
+            if (!storage) this.labelToGlyphs.set(instance, []);
+          }
+
+          // Make sure the instance is removed from the provider for preloads
+          else {
+            this.props.data.remove(instance);
+          }
+
           // Insertions force a full update of all glyphs for the label
           this.layoutGlyphs(instance);
+
           break;
 
         case InstanceDiffType.REMOVE:
@@ -606,8 +615,8 @@ export class LabelLayer<
 
     // If no request is present we must make one
     if (!labelKerningRequest) {
-      // We want the request to return all of the metrics for the text as well
       const metrics: IFontResourceRequest["metrics"] = {
+        // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
         text: instance.text
       };
@@ -629,14 +638,31 @@ export class LabelLayer<
       // So we send out a request to the font manager for the resource.
       // Once the kerning information has been retrieved, the label active property will be triggered
       // to true.
-      this.resource.request(this, instance, labelKerningRequest, {
-        resource: {
-          type: ResourceType.FONT,
-          key: this.props.resourceKey || ""
-        }
-      });
+      if (!instance.preload) {
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
 
-      this.labelToKerningRequest.set(instance, labelKerningRequest);
+        this.labelToKerningRequest.set(instance, labelKerningRequest);
+      }
+
+      // For preload labels, simply make the request, but modify the resource trigger to fire off the ready
+      // event for the label
+      else {
+        instance.resourceTrigger = () => {
+          if (instance.onReady) instance.onReady(instance);
+        };
+
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
+      }
 
       return false;
     }

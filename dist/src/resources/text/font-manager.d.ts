@@ -10,6 +10,7 @@ export declare enum FontGlyphRenderSize {
     _128 = 128
 }
 export interface IFontMapMetrics {
+    localKerningCache?: boolean;
     type?: FontMapGlyphType;
     size: number;
     family: string;

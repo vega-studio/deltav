@@ -16,6 +16,7 @@ import { View } from "./view";
 export interface IInstanceProvider<T extends Instance> {
     resolveContext: string;
     changeList: InstanceDiff<T>[];
+    remove(instance: T): void;
     resolve(context: string): void;
     sync(): void;
 }

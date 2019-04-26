@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.26.0
+
+* `(ADDED)` Font resources can now cache calculated kernings in localstorage to make viewing similar resources much faster.
+* `(ADDED)` Label preloads can be made to warm up the kerning calculations without creating glyphs. Makes initial label viewing much smoother.
+
 ## 1.25.6
 
 * `(FIXED)` Removed kerning calculations across labels causing not needed kerning support for characters that are unrelated. This makes it easier to warm up an environment to a set of labels before the labels are officially used.

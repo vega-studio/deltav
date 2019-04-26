@@ -38,6 +38,8 @@ export declare class FontMap extends IdentifyByKey implements IFontResourceOptio
     private textureSettings;
     type: ResourceType.FONT;
     constructor(options: IFontMapOptions);
+    private getKerningCacheName;
+    private addCachedKerning;
     addKerning(kerning: KerningPairs): void;
     private createTexture;
     destroy(): void;

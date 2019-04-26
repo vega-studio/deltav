@@ -361,7 +361,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           !this.kerning[lastChar][firstTruncChar]
         ) {
           const kerning = await fontRenderer.estimateKerning(
-            lastChar + firstTruncChar,
+            [lastChar + firstTruncChar],
             this.fontString,
             this.fontSource.size,
             this.kerning,

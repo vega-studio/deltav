@@ -579,7 +579,10 @@ export class LabelLayer<
     if (labelKerningRequest) {
       // If the request already embodies the request for the text, we just see if the
       // font map has been provided yet to indicate if the kerning information is ready
-      if (labelKerningRequest.kerningPairs === checkText) {
+      if (
+        labelKerningRequest.kerningPairs &&
+        labelKerningRequest.kerningPairs.indexOf(checkText) > -1
+      ) {
         return Boolean(labelKerningRequest.fontMap);
       }
 
@@ -618,7 +621,7 @@ export class LabelLayer<
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
         character: "",
-        kerningPairs: checkText,
+        kerningPairs: [checkText],
         metrics
       });
 

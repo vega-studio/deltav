@@ -14,7 +14,7 @@ export interface IFontResourceRequest extends BaseResourceRequest {
     character?: string;
     fetch?: FontResourceRequestFetch;
     fontMap?: FontMap;
-    kerningPairs?: string;
+    kerningPairs?: string[];
     metrics?: {
         fontSize: number;
         layout?: KernedLayout;

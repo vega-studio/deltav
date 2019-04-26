@@ -49,8 +49,12 @@ export interface IFontResourceRequest extends BaseResourceRequest {
    * needed for the requester to get the information needed.
    */
   fontMap?: FontMap;
-  /** The characters for which we want to have the kerning information retrieved. */
-  kerningPairs?: string;
+  /**
+   * The characters for which we want to have the kerning information retrieved. This will be applied as a list of words
+   * for which we want the kerning information. We do this to prevent concating the words into a single string which can
+   * make it really difficult to preload all possible label combinations.
+   */
+  kerningPairs?: string[];
   /** When provided, the request will fill in the metrics for the input parameters */
   metrics?: {
     /** The desired font size for the layout */

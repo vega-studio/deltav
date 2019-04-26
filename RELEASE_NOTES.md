@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.25.6
+
+* `(FIXED)` Removed kerning calculations across labels causing not needed kerning support for characters that are unrelated. This makes it easier to warm up an environment to a set of labels before the labels are officially used.
+
 ## 1.25.4
 
 * `(FIXED)` Labels onReady event was not firing when the label changed text and in other expected cases.

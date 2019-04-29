@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.26.1
+
+* `(FIXED)` Easing calculation issues
+
 ## 1.26.0
 
 * `(ADDED)` Font resources can now cache calculated kernings in localstorage to make viewing similar resources much faster.

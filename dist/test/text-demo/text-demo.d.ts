@@ -2,6 +2,7 @@ import * as datGUI from "dat.gui";
 import { BasicCameraController, ChartCamera, InstanceProvider, ISceneOptions, LabelInstance, LayerInitializer, ScaleMode } from "src";
 import { IDefaultResources } from "test/types";
 import { BaseDemo } from "../common/base-demo";
+export declare function wait(t: number): Promise<{}>;
 export declare class TextDemo extends BaseDemo {
     camera: ChartCamera;
     labels: LabelInstance[];
@@ -26,7 +27,7 @@ export declare class TextDemo extends BaseDemo {
     getLayers(resources: IDefaultResources): LayerInitializer[];
     init(): Promise<void>;
     labelReady(label: LabelInstance): void;
-    makeLabel(): void;
+    makeLabel(preload?: boolean, txt?: string): void;
     layoutLabels(): void;
     removeLabel(): void;
     resize(): void;

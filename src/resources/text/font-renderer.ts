@@ -399,9 +399,10 @@ export class FontRenderer {
       spaceWidth: 0
     };
 
+    debug("Estimating Kerning for", str);
+
     for (let i = 0, iMax = str.length; i < iMax; ++i) {
       const s = str[i];
-      debug("Estimating Kerning for", s);
       stringToPairs(s, existing, pairInfo);
     }
 

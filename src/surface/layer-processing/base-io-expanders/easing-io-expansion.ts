@@ -163,17 +163,18 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // If the easing values do not exist yet, make them now
         if (!values) {
+          // Get all of the vector methods that apply to the provided item
+          vecMethods = VecMath(end);
+
           values = new EasingProps({
             duration: attributeDuration,
-            end,
-            start: end,
+            end: vecMethods.copy(end),
+            start: vecMethods.copy(end),
             startTime: currentTime
           });
 
           // Make sure the instance contains the current easing values
           instance.easing.set(easingUID, values);
-          // Get all of the vector methods that apply to the provided item
-          vecMethods = VecMath(end);
         }
 
         // Assign the established values

@@ -22,6 +22,7 @@ import {
   IShaderTemplateRequirements,
   shaderTemplate
 } from "../../../util/shader-templating";
+import { Vec, VecMath, VecMethods } from "../../../util/vector";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
 
 const debugCtx = "EasingIOExpansion";
@@ -144,7 +145,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         end: InstanceIOValue,
         currentTime: number,
         frameMetrics: FrameMetrics,
-        values: IEasingProps | undefined;
+        values: IEasingProps | undefined,
+        vecMethods: VecMethods<Vec>;
 
       // Hijack the update from the attribute to a new update method which will
       // Be able to interact with the values for the easing methodology
@@ -161,10 +163,13 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // If the easing values do not exist yet, make them now
         if (!values) {
+          // Get all of the vector methods that apply to the provided item
+          vecMethods = VecMath(end);
+
           values = new EasingProps({
             duration: attributeDuration,
-            end,
-            start: end,
+            end: vecMethods.copy(end),
+            start: vecMethods.copy(end),
             startTime: currentTime
           });
 
@@ -224,7 +229,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
         // Set the current time as the start time of our animation
         easingValues.startTime = currentTime + delay;
         // Set the provided value as our destination
-        easingValues.end = end;
+        easingValues.end = vecMethods.copy(end);
         // Update the information shared between this attribute and it's children
         attributeDataShare.values = easingValues;
 

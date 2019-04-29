@@ -1,3 +1,5 @@
+import { LayerInitializer } from "src/surface/layer-surface";
+import { ReactiveDiff } from "src/util/reactive-diff";
 import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -9,6 +11,10 @@ import { IViewOptions, View } from "./view";
  * views.
  */
 export interface ISceneOptions extends IdentifyByKeyOptions {
+  /**
+   * This decalres all of the layers that should be applied to this scene.
+   */
+  layers: LayerInitializer[];
   /**
    * This indicates all of the views this scene can be rendered with. For instance: You have a
    * world scene and you want to render it stereoscopically for VR. Then you can specify two
@@ -33,33 +39,59 @@ export class LayerScene extends IdentifyByKey {
 
   /** This is the three scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
-  /** This is all of the layers tracked to the scene */
-  layers: Layer<any, any>[] = [];
+  /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
+  layerDiffs: ReactiveDiff<LayerInitializer, Layer<Instance, ILayerProps<Instance>>>;
   /** This indicates the sort is dirty for a set of layers */
   sortIsDirty = false;
   /** This is the view */
   viewById = new Map<string, View>();
+  /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
+  viewDiffs: ReactiveDiff<IViewOptions, View>;
+
+  /** This is all of the layers attached to the scene */
+  get layers(): Layer<any, any>[] {
+    return this.layerDiffs.items;
+  }
+
+  /** This is all of the views attached to the scene */
+  get views(): View[] {
+    return this.viewDiffs.items;
+  }
 
   constructor(options: ISceneOptions) {
     super(options);
+    this.init();
   }
 
   /**
-   * Adds a layer to the scene with the current view setting the layer contains.
-   * The layer can not jump between views or scenes. You must destroy and reconstruct
-   * the layer.
+   * Initialize all that needs to be initialized
    */
-  addLayer<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>) {
-    // Add the layer to the list of layers under the view
-    this.layers.push(layer);
-    this.sortIsDirty = true;
-  }
+  private init(options: ISceneOptions) {
+    this.layerDiffs = new ReactiveDiff({
 
-  /**
-   * This adds a view to this scene to be used by the scene
-   */
-  addView(view: View) {
-    this.viewById.set(view.id, view);
+    });
+
+    this.viewDiffs = new ReactiveDiff({
+      buildItem: (initializer: IViewOptions) => {
+        const newView = new View(initializer);
+        newView.camera = newView.camera || defaultSceneElement.camera;
+        newView.viewCamera =
+          newView.viewCamera || defaultSceneElement.viewCamera;
+        newView.pixelRatio = this.pixelRatio;
+
+        for (const sceneView of this.sceneViews) {
+          if (sceneView.view.id === newView.id) {
+            console.warn(
+              "You can NOT have two views with the same id. Please use unique identifiers for every view generated."
+            );
+          }
+        }
+
+        return newView;
+      }
+    });
+
+    this.update(options);
   }
 
   /**
@@ -69,31 +101,14 @@ export class LayerScene extends IdentifyByKey {
     delete this.container;
   }
 
-  /**
-   * Removes a layer from the scene. No resort is needed as remove operations
-   * do not adjust the sorting order.
-   */
-  removeLayer(layer: Layer<any, any>) {
-    if (this.layers) {
-      const index = this.layers.indexOf(layer);
-
-      if (index >= 0) {
-        this.layers.splice(index, 1);
-        return;
-      }
-    }
-
-    console.warn(
-      "Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:",
-      this.id,
-      "Layer:",
-      layer.id
-    );
-  }
-
   sortLayers() {
     if (this.sortIsDirty) {
       this.layers.sort(sortByDepth);
     }
+  }
+
+  update(options: ISceneOptions) {
+    this.viewDiffs.diff(options.views);
+    this.layerDiffs.diff(options.layers);
   }
 }

@@ -20,6 +20,8 @@ import {
 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
+import { BaseResourceOptions } from "src/resources/base-resource-manager";
+import { ISceneOptions } from "src/surface/layer-scene";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -704,3 +706,27 @@ export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
  * [width, height, depth]
  */
 export type Size = Vec2 | Vec3;
+
+/**
+ * When creating a surface you must make it declare a pipeline. This makes a centralized easy
+ * entry point for expressively declaring how the application will utilize resources to render
+ * to various scenes and contexts.
+ *
+ * This is also used in a reactive diff manner so elements can be easily updated/added/removed
+ * by providing all of the initializer elements. Thus to add an item call the method including
+ * the element you wish to create. To remove an element, simply exclude the element next time
+ * you call the method.
+ */
+export interface IPipeline {
+  /**
+   * These are the resources we want available that our layers can be provided to utilize
+   * for their internal processes.
+   */
+  resources?: BaseResourceOptions[];
+  /**
+   * This sets up the available scenes the surface will have to work with. Layers then can
+   * reference the scene by it's scene property. The order of the scenes here is the drawing
+   * order of the scenes.
+   */
+  scenes?: ISceneOptions[];
+}

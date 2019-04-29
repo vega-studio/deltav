@@ -1,3 +1,4 @@
+import { IdentifyByKey } from "src/util/identify-by-key";
 import { WebGLRenderer } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
@@ -31,11 +32,6 @@ export abstract class BaseResourceManager<
   webGLRenderer?: WebGLRenderer;
 
   /**
-   * This is called to initialize a resource that the system has determined needs to be constructed.
-   */
-  abstract async initResource(resource: BaseResourceOptions): Promise<void>;
-
-  /**
    * This is called by the system for the manager to dequeue it's requests in an asynchronous
    * manner, thus allowing the system to have it's resources changed and dequeued without hanging up
    * the system.
@@ -46,6 +42,11 @@ export abstract class BaseResourceManager<
    * This expects a resource manager to free all of it's resources it is hanging onto.
    */
   abstract destroy(): void;
+
+  /**
+   * Indicates a resource needs to be freed or destroyed.
+   */
+  abstract destroyResource(resource: BaseResourceOptions): void;
 
   /**
    * Allows a resource manager to provide it's own IO Expansion to handle special attributes
@@ -59,6 +60,11 @@ export abstract class BaseResourceManager<
    * The method to access a resource initialized by this resource manager.
    */
   abstract getResource(resourceKey: string): T | null;
+
+  /**
+   * This is called to initialize a resource that the system has determined needs to be constructed.
+   */
+  abstract async initResource(resource: BaseResourceOptions): Promise<void>;
 
   /**
    * This will trigger a request of a resource to be generated. It will immediately return either a
@@ -78,6 +84,11 @@ export abstract class BaseResourceManager<
   setAttributeContext(_attribute: IResourceInstanceAttribute<Instance>) {
     // Implemented by sub classes if needed
   }
+
+  /**
+   * This indicates the resource should be updated.
+   */
+  abstract updateResource(resource: BaseResourceOptions): void;
 }
 
 /**
@@ -91,10 +102,6 @@ export class InvalidResourceManager extends BaseResourceManager<
 > {
   resources = new Map<string, BaseResourceOptions>();
 
-  async initResource(resource: BaseResourceOptions) {
-    this.resources.set(resource.key, resource);
-  }
-
   async dequeueRequests() {
     return false;
   }
@@ -103,8 +110,16 @@ export class InvalidResourceManager extends BaseResourceManager<
     return;
   }
 
+  destroyResource(resourceKey: string) {
+    this.resources.delete(resourceKey);
+  }
+
   getResource(resourceKey: string) {
     return this.resources.get(resourceKey) || { key: "", type: -1 };
+  }
+
+  async initResource(resource: BaseResourceOptions) {
+    this.resources.set(resource.key, resource);
   }
 
   request<U extends Instance, V extends ILayerProps<U>>(
@@ -113,6 +128,10 @@ export class InvalidResourceManager extends BaseResourceManager<
     _resource: IResourceType
   ): InstanceIOValue {
     return [0, 0, 0, 0];
+  }
+
+  updateResource(_resource: BaseResourceOptions) {
+    // NO-OP
   }
 }
 

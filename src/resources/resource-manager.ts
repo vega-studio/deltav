@@ -49,6 +49,25 @@ export class ResourceManager {
   }
 
   /**
+   * This hands the destruction of a resource to the correct Resource Manager.
+   */
+  async destroyResource<T extends IResourceType>(resource: T & { key: string }) {
+    const manager = this.managers.get(resource.type);
+
+    if (!manager) {
+      console.warn(
+        `A Resource is trying to be destroyed but has no manager to facilitate the operation: ${
+          resource.type
+        }`
+      );
+
+      return;
+    }
+
+    return await manager.destroyResource(resource.key);
+  }
+
+  /**
    * Retrieves the Shader IO Expansion controllers that may be provided by resource managers.
    */
   getIOExpansion() {
@@ -160,5 +179,24 @@ export class ResourceManager {
   setWebGLRenderer(renderer: WebGLRenderer) {
     this.webGLRenderer = renderer;
     this.managers.forEach(manager => (manager.webGLRenderer = renderer));
+  }
+
+  /**
+   * This hands the update of a resource to the correct Resource Manager.
+   */
+  async updateResource<T extends IResourceType>(resource: T & { key: string }) {
+    const manager = this.managers.get(resource.type);
+
+    if (!manager) {
+      console.warn(
+        `A Resource is trying to be updated but has no manager to facilitate the operation: ${
+          resource.type
+        }`
+      );
+
+      return;
+    }
+
+    return await manager.updateResource(resource);
   }
 }

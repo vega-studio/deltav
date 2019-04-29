@@ -1,3 +1,4 @@
+import { ReactiveDiff } from "src/util/reactive-diff";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -13,7 +14,7 @@ import { AtlasResourceManager } from "../resources/texture/atlas-resource-manage
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { IInstanceAttribute, IResourceType, PickType } from "../types";
+import { IInstanceAttribute, IPipeline, IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
@@ -107,11 +108,6 @@ export interface ILayerSurfaceOptions {
    */
   pixelRatio?: number;
   /**
-   * These are the resources we want available that our layers can be provided to utilize
-   * for their internal processes.
-   */
-  resources?: BaseResourceOptions[];
-  /**
    * This specifies the resource managers that will be applied to the surface. If this is not
    * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
    *
@@ -128,12 +124,6 @@ export interface ILayerSurfaceOptions {
     type: number;
     manager: BaseResourceManager<IResourceType, IResourceType>;
   }[];
-  /**
-   * This sets up the available scenes the surface will have to work with. Layers then can
-   * reference the scene by it's scene property. The order of the scenes here is the drawing
-   * order of the scenes.
-   */
-  scenes: ISceneOptions[];
 }
 
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [1.0, 1.0, 1.0, 1.0];
@@ -156,10 +146,13 @@ export type ILayerConstructionClass<
 /**
  * This is a pair of a Class Type and the props to be applied to that class type.
  */
-export type LayerInitializer = [
-  ILayerConstructionClass<Instance, ILayerProps<Instance>>,
-  ILayerProps<Instance>
-];
+export type LayerInitializer = {
+  key: string,
+  init: [
+    ILayerConstructionClass<Instance, ILayerProps<Instance>>,
+    ILayerProps<Instance>
+  ]
+};
 
 /**
  * The internal system layer initializer that hides additional properties the front
@@ -177,7 +170,10 @@ export function createLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
   props: U
 ): LayerInitializer {
-  return [layerClass, props];
+  return {
+    get key() { return props.key; },
+    init: [layerClass, props],
+  };
 }
 
 /**
@@ -245,6 +241,11 @@ export class LayerSurface {
   loadReady: Promise<void> = new Promise(
     resolve => (this.loadReadyResolve = resolve)
   );
+
+  /** Diff manager to handle diffing resource objects for the pipeline */
+  private resourceDiffs: ReactiveDiff<BaseResourceOptions, null>;
+  /** Diff manager to handle diffing scene objects for the pipeline */
+  private sceneDiffs: ReactiveDiff<ISceneOptions, LayerScene>;
 
   /** Read only getter for the gl context */
   get gl() {
@@ -342,7 +343,7 @@ export class LayerSurface {
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
       const scene = scenes[i];
-      const views = Array.from(scene.viewById.values());
+      const views = scene.views;
       const layers = scene.layers;
 
       // Make sure the layers are depth sorted
@@ -434,7 +435,7 @@ export class LayerSurface {
       const scene = scenes[i];
       // Our scene must have a valid container to operate
       if (!scene.container) continue;
-      const views = Array.from(scene.viewById.values());
+      const views = scene.views;
 
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
@@ -1396,6 +1397,62 @@ export class LayerSurface {
     // Add in the children of the layer
     if (!preventChildren) {
       this.expandLayerChildren(initializers, layer, index);
+    }
+  }
+
+  /**
+   * Use this to establish the
+   */
+  pipeline(pipeline: IPipeline) {
+    // Make the diff manager for handling resources
+    if (!this.resourceDiffs) {
+      this.resourceDiffs = new ReactiveDiff({
+        buildItem: async (initializer: BaseResourceOptions) => {
+          await this.resourceManager.initResource(initializer);
+          return null;
+        },
+
+        destroyItem: async (initializer: BaseResourceOptions, _item: null) => {
+          await this.resourceManager.destroyResource(initializer);
+          return true;
+        },
+
+        updateItem: async (initializer: BaseResourceOptions, _item: null) => {
+          await this.resourceManager.updateResource(initializer);
+        }
+      });
+    }
+
+    // Make the diff manager for handling scenes
+    if (!this.sceneDiffs) {
+      this.sceneDiffs = new ReactiveDiff({
+        buildItem: async (initializer: ISceneOptions) => {
+          const scene = new LayerScene({
+            key: initializer.key,
+            views: initializer.views,
+            layers: initializer.layers
+          });
+
+          return scene;
+        },
+
+        destroyItem: async (_initializer: ISceneOptions, item: LayerScene) => {
+          item.destroy();
+          return true;
+        },
+
+        updateItem: async (initializer: ISceneOptions, item: LayerScene) => {
+          item.update(initializer);
+        }
+      });
+    }
+
+    if (pipeline.resources) {
+      this.resourceDiffs.diff(pipeline.resources);
+    }
+
+    if (pipeline.scenes) {
+      this.sceneDiffs.diff(pipeline.scenes);
     }
   }
 

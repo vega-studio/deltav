@@ -71,6 +71,8 @@ function isOrthographic(val: Camera): val is Camera {
 export class View extends IdentifyByKey {
   static DEFAULT_VIEW_ID = "__default__";
 
+  /** End time of animation */
+  animationEndTime: number = 0;
   /** If present, is the cleared color before this view renders */
   background: Color;
   /** Camera that defines the individual components of each axis with simpler concepts */
@@ -82,6 +84,15 @@ export class View extends IdentifyByKey {
    * Zero always represents the default view.
    */
   depth: number = 0;
+  /** Last frame time this view was rendered under */
+  lastFrameTime: number = 0;
+  /** This is the flag to see if a view needs draw */
+  needsDraw: boolean = false;
+  /**
+   * This is a flag for various processes to indicate the view is demanding optimal rendering performance over other processes.
+   * This is merely a hinting device and does not guarantee better performance at any given moment.
+   */
+  optimizeRendering: boolean = false;
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the rendering bounds within screen space */
@@ -92,12 +103,6 @@ export class View extends IdentifyByKey {
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: DataBounds<View>;
-  /** This is the flag to see if a view needs draw */
-  needsDraw: boolean = false;
-  /** End time of animation */
-  animationEndTime: number = 0;
-  /** Last frame time this view was rendered under */
-  lastFrameTime: number = 0;
 
   constructor(options: IViewOptions) {
     super(options);

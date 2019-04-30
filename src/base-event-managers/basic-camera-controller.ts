@@ -130,6 +130,8 @@ export class BasicCameraController extends EventManager {
   startViews: string[] = [];
   /** Whether a view can be scrolled by wheel */
   wheelShouldScroll: boolean;
+  /** Stores the views this controller has flagged for optimizing */
+  private optimizedViews = new Set<View>();
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -426,6 +428,8 @@ export class BasicCameraController extends EventManager {
   handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;
     this.isPanning = false;
+    this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+    this.optimizedViews.clear();
   }
 
   private doPan(e: IMouseInteraction, view: View, delta: [number, number]) {
@@ -454,6 +458,11 @@ export class BasicCameraController extends EventManager {
   handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
+        e.viewsUnderMouse.forEach(view => {
+          view.view.optimizeRendering = true;
+          this.optimizedViews.add(view.view);
+        });
+
         this.doPan(e, e.start.view, drag.screen.delta);
       }
     }

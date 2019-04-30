@@ -536,6 +536,59 @@ export class LayerSurface {
     this.pickingTarget.dispose();
   }
 
+  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
+
+  /**
+   * This processes what is rendered into the picking render target to see if the mouse interacted with
+   * any elements.
+   */
+  private analyzePickRendering() {
+    if (!this.queuedPicking) return;
+
+    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
+      const [, view, pickingPass, mouse] = this.queuedPicking[i];
+
+      // Optimized rendering of the view will make the view discard picking rendering
+      if (view.optimizeRendering) {
+        continue;
+      }
+
+      // Make our metrics for how much of the image we wish to analyze
+      const pickWidth = 5;
+      const pickHeight = 5;
+      const numBytesPerColor = 4;
+      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+      // Read the pixels out
+      this.renderer.readPixels(
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
+        pickWidth,
+        pickHeight,
+        out
+      );
+
+      // Analyze the rendered color data for the picking routine
+      const pickingData = analyzeColorPickingRendering(
+        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
+        out,
+        pickWidth,
+        pickHeight
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+
+        if (layer.picking.type === PickType.SINGLE) {
+          layer.interactions.colorPicking = pickingData;
+        }
+      }
+    }
+
+    delete this.queuedPicking;
+  }
+
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
@@ -544,6 +597,16 @@ export class LayerSurface {
    */
   async draw(time?: number) {
     if (!this.gl) return;
+
+    // The theoretically least blocking moment for pixels to be read is the beginning of the next frame
+    // right before next frame is rendered. This will have given optimal time for the GPU to have finished
+    // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
+    // GPU intensive operation.
+    this.analyzePickRendering();
+
+    // Gather all of our picking calls to call at the end to prevent readPixels from
+    // becoming a major blocking operation
+    const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
@@ -559,7 +622,7 @@ export class LayerSurface {
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
-        this.drawPicking(scene, view, pickingPass);
+        toPick.push([scene, view, pickingPass]);
       }
     });
 
@@ -593,10 +656,6 @@ export class LayerSurface {
       }
     }
 
-    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
-    // another requested from mouse interactions
-    delete this.updateColorPick;
-
     // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
     // be considered resolved for the current set of changes.
     // Set draw needs of cameras and views back to false
@@ -612,6 +671,31 @@ export class LayerSurface {
       layer.props.data.resolveContext = "";
     });
 
+    // Run the picking operation as the final action to put the readPixels at the tail
+    for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
+      const picking = toPick[i];
+      const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
+
+      if (
+        didDraw &&
+        picking.length > 0 &&
+        !picking[1].optimizeRendering &&
+        this.updateColorPick
+      ) {
+        if (!this.queuedPicking) this.queuedPicking = [];
+        this.queuedPicking.push([
+          picking[0],
+          picking[1],
+          picking[2],
+          this.updateColorPick.mouse
+        ]);
+      }
+    }
+
+    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
+    // another requested from mouse interactions
+    delete this.updateColorPick;
+
     // Dequeue rendering debugs
     flushDebug();
   }
@@ -626,11 +710,12 @@ export class LayerSurface {
     view: View,
     pickingPass: Layer<any, any>[]
   ) {
-    if (!this.updateColorPick) return;
-    if (!scene.container) return;
+    if (!this.updateColorPick) return false;
+    if (!scene.container) return false;
+    // Optimized rendering of the view will make the view discard picking rendering
+    if (view.optimizeRendering) return false;
 
     // Get the requested metrics for the pick
-    const mouse = this.updateColorPick.mouse;
     const views = this.updateColorPick.views;
 
     // Ensure the view provided is a view that is registered with this surface
@@ -683,40 +768,6 @@ export class LayerSurface {
         this.pickingTarget
       );
 
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-      // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-      this.renderer.readPixels(
-        mouse[0] - pickWidth / 2,
-        mouse[1] - pickHeight / 2,
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
-      }
-
       // Return the pixel ratio back to the rendered ratio
       view.pixelRatio = this.pixelRatio;
       // Return the view's clear flags
@@ -734,7 +785,11 @@ export class LayerSurface {
           y: 0
         })
       );
+
+      return true;
     }
+
+    return false;
   }
 
   /**

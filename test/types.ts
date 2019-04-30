@@ -48,7 +48,7 @@ export const DEFAULT_RESOURCES = {
     fontSource: {
       localKerningCache: true,
       size: 32,
-      family: "Calibri",
+      family: "Lucida Grande",
       type: FontMapGlyphType.BITMAP,
       weight: "normal"
     },

@@ -96,8 +96,6 @@ export interface ILabelLayerProps<T extends LabelInstance>
    * defaults to ellipses or three periods '...'
    */
   truncation?: string;
-  /** This number represents how much space each whitespace characters represents */
-  whiteSpaceKerning?: number;
 }
 
 /**

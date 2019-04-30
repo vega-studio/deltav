@@ -269,7 +269,7 @@ export class LabelLayer<
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
           } else if (changed[activeId] !== undefined) {
-            if (instance.active) {
+            if (instance.active && instance.toShow) {
               this.layoutGlyphs(instance);
               this.showGlyphs(instance);
             } else {
@@ -408,6 +408,8 @@ export class LabelLayer<
     const glyphs = instance.glyphs;
     // Store the calculated size of the label
     instance.size = layout.size;
+    // Store the widths of glyphs
+    instance.glyphWidths = layout.glyphWidths || [];
     // Update the calculated anchor for the label now that size is determined
     anchorCalculator[instance.anchor.type](instance.anchor, instance);
     const anchor = instance.anchor;
@@ -420,7 +422,6 @@ export class LabelLayer<
     ) {
       const offset = layout.positions[i];
       const glyph = glyphs[i];
-
       glyph.offset = offset;
       glyph.fontScale = layout.fontScale;
       glyph.anchor = [anchor.x || 0, anchor.y || 0];

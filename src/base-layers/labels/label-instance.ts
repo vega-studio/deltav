@@ -81,6 +81,10 @@ export class LabelInstance extends Instance {
    * label.
    */
   size: Size = [0, 0];
+  /** This stores widths of substring(0, i) (i = 1 ~ length - 1) */
+  glyphWidths: number[];
+  /** This decides whether a label to show */
+  toShow: boolean = true;
 
   /**
    * If a maxWidth is specified, there is a chance the text will be truncated.
@@ -117,6 +121,19 @@ export class LabelInstance extends Instance {
 
   get anchor() {
     return this._anchor;
+  }
+
+  getWidth(): number {
+    return this.size[0];
+  }
+
+  getOffset(): number {
+    const glyphs = this.glyphs;
+    console.warn(this.text, this.origin);
+    glyphs.forEach(glyph => {
+      console.warn(glyph.offset);
+    });
+    return 0;
   }
 
   /**

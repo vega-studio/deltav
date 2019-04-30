@@ -35,6 +35,8 @@ export class GlyphInstance extends Instance {
   @observable offset: Vec2 = [0, 0];
   /** This is the anchor point of the glyph to which the glyph scales and rotates about and is positioned */
   @observable origin: Vec2 = [0, 0];
+  /** This is the amount of padding from the origin position to the anchor position */
+  @observable padding: Vec2 = [0, 0];
 
   /** The label this glyph is associated with (may NOT be associated at all) */
   parentLabel?: LabelInstance;

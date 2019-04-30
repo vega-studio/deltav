@@ -548,6 +548,11 @@ export class LayerSurface {
     for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
       const [, view, pickingPass, mouse] = this.queuedPicking[i];
 
+      // Optimized rendering of the view will make the view discard picking rendering
+      if (view.optimizeRendering) {
+        continue;
+      }
+
       // Make our metrics for how much of the image we wish to analyze
       const pickWidth = 5;
       const pickHeight = 5;
@@ -555,11 +560,9 @@ export class LayerSurface {
       const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
       // Read the pixels out
-      // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-      // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
       this.renderer.readPixels(
-        mouse[0] - pickWidth / 2,
-        mouse[1] - pickHeight / 2,
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
         pickWidth,
         pickHeight,
         out
@@ -671,9 +674,14 @@ export class LayerSurface {
     // Run the picking operation as the final action to put the readPixels at the tail
     for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
       const picking = toPick[i];
-      this.drawPicking(picking[0], picking[1], picking[2]);
+      const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
 
-      if (picking.length > 0 && this.updateColorPick) {
+      if (
+        didDraw &&
+        picking.length > 0 &&
+        !picking[1].optimizeRendering &&
+        this.updateColorPick
+      ) {
         if (!this.queuedPicking) this.queuedPicking = [];
         this.queuedPicking.push([
           picking[0],
@@ -702,8 +710,10 @@ export class LayerSurface {
     view: View,
     pickingPass: Layer<any, any>[]
   ) {
-    if (!this.updateColorPick) return;
-    if (!scene.container) return;
+    if (!this.updateColorPick) return false;
+    if (!scene.container) return false;
+    // Optimized rendering of the view will make the view discard picking rendering
+    if (view.optimizeRendering) return false;
 
     // Get the requested metrics for the pick
     const views = this.updateColorPick.views;
@@ -775,7 +785,11 @@ export class LayerSurface {
           y: 0
         })
       );
+
+      return true;
     }
+
+    return false;
   }
 
   /**

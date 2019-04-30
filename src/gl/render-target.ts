@@ -72,6 +72,13 @@ export class RenderTarget {
     return this._width;
   }
   private _width: number;
+  /**
+   * This is a flag indicating if the render target passed it's frame buffer status check
+   */
+  get validFramebuffer() {
+    return this._validFramebuffer;
+  }
+  private _validFramebuffer: boolean = false;
 
   /**
    * Split buffers occur to handle compatibility problems with MRT (multi render targeting)
@@ -257,5 +264,12 @@ export class RenderTarget {
         width
       };
     });
+  }
+
+  /**
+   * Flags this render target as having a valid framebuffer for rendering.
+   */
+  setAsValid() {
+    this._validFramebuffer = true;
   }
 }

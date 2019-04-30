@@ -1,7 +1,7 @@
 import { Instance } from "../../instance-provider/instance";
+import { ResourceManager } from "../../resources";
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics } from "../../types";
 import { LayerBufferType } from "../layer-processing/layer-buffer-type";
-import { AtlasResourceManager } from "../texture/atlas-resource-manager";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
@@ -14,7 +14,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
     };
     instanceAttributes: IInstanceAttribute<T>[];
     picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
-    resource: AtlasResourceManager;
+    resource: ResourceManager;
     bufferManager: BufferManagerBase<T, IBufferLocation>;
     bufferType: LayerBufferType;
 }

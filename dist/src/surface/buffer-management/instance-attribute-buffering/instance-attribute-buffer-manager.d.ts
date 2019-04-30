@@ -15,7 +15,6 @@ export declare class InstanceAttributeBufferManager<T extends Instance> extends 
     private availableLocations;
     currentInstancedCount: number;
     private instanceToBufferLocation;
-    private growthCount;
     private maxInstancedCount;
     private geometry?;
     private material?;
@@ -31,6 +30,7 @@ export declare class InstanceAttributeBufferManager<T extends Instance> extends 
     getBufferLocations(instance: T): IBufferLocationGroup<IInstanceAttributeBufferLocation>;
     getActiveAttributePropertyId(): number;
     getUpdateAllPropertyIdList(): number[];
+    managesInstance(instance: T): boolean;
     private makeUpdateAllPropertyIdList;
     remove: (instance: T) => T;
     removeFromScene(): void;

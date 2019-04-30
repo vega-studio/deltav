@@ -1,4 +1,5 @@
 import { Instance } from "../../instance-provider/instance";
+import { InstanceDiff } from "../../instance-provider/instance-provider";
 import { IInstanceAttributeInternal } from "../../types";
 import { Vec2, Vec4 } from "../../util";
 import { Layer } from "../layer";
@@ -22,15 +23,19 @@ export interface IBufferLocationGroup<T extends IBufferLocation> {
     };
 }
 export declare abstract class BufferManagerBase<T extends Instance, U extends IBufferLocation> {
+    changeListContext: InstanceDiff<T>[];
     layer: Layer<T, any>;
     scene: LayerScene;
     constructor(layer: Layer<T, any>, scene: LayerScene);
-    abstract destroy(): void;
     add: (instance: T) => U | IBufferLocationGroup<U> | undefined;
+    changesProcessed(): void;
+    abstract destroy(): void;
     abstract getBufferLocations(instance: T): U | IBufferLocationGroup<U> | undefined;
     abstract getActiveAttributePropertyId(): number;
     abstract getInstanceCount(): number;
     abstract getUpdateAllPropertyIdList(): number[];
+    incomingChangeList(changes: InstanceDiff<T>[]): void;
+    abstract managesInstance(instance: T): boolean;
     remove: (instance: T) => T;
     abstract removeFromScene(): void;
 }

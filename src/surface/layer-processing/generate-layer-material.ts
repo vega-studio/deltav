@@ -41,8 +41,14 @@ export function generateLayerMaterial<
 ): Material {
   // We now need to establish the material for the layer
   const materialParams: MaterialOptions = layer.getMaterialOptions();
+
+  // The props applied to the layer has a material option declaration as well
+  // these settings take priority over all settings
+  Object.assign(materialParams, layer.props.materialOptions || {});
+
   materialParams.vertexShader = vs;
   materialParams.fragmentShader = fs;
+  materialParams.name = layer.id;
 
   // We must convert all of the uniforms to actual Three material initialization uniforms
   materialParams.uniforms = {};

@@ -1,11 +1,11 @@
 import {
-  AtlasSize,
   BaseResourceOptions,
   ClearFlags,
   createAtlas,
   createFont,
   FontMapGlyphType,
   ISceneOptions,
+  TextureSize,
   WebGLStat
 } from "src";
 
@@ -38,20 +38,21 @@ export type IDefaultResources = {
 
 export const DEFAULT_RESOURCES = {
   atlas: createAtlas({
-    height: Math.min(WebGLStat.MAX_TEXTURE_SIZE, AtlasSize._4096),
+    height: Math.min(WebGLStat.MAX_TEXTURE_SIZE, TextureSize._4096),
     key: "atlas",
-    width: Math.min(WebGLStat.MAX_TEXTURE_SIZE, AtlasSize._4096)
+    width: Math.min(WebGLStat.MAX_TEXTURE_SIZE, TextureSize._4096)
   }),
   font: createFont({
     dynamic: true,
     key: "test-font",
     fontSource: {
+      localKerningCache: true,
       size: 32,
-      errorGlyph: " ",
       family: "Calibri",
       type: FontMapGlyphType.BITMAP,
       weight: "normal"
-    }
+    },
+    fontMapSize: [TextureSize._2048, TextureSize._2048]
   })
 };
 

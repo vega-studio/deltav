@@ -66,6 +66,12 @@ export interface IWebGLRendererState {
  * to make working with the webgl pipeline as easy as possible.
  */
 export class WebGLRenderer {
+  /** When this is set this creates */
+  set debugContext(val: string) {
+    if (this.glProxy) this.glProxy.debugContext = val;
+    if (this.glState) this.glState.debugContext = val;
+  }
+
   /** The context the renderer is managing */
   private _gl?: WebGLRenderingContext;
   /** The readonly gl context the renderer determined for use */
@@ -92,9 +98,9 @@ export class WebGLRenderer {
     // Assign defaults to our options
     this.options = Object.assign(
       {
-        alpha: true,
-        antialias: true,
-        preserveDrawingBuffer: true
+        alpha: false,
+        antialias: false,
+        preserveDrawingBuffer: false
       },
       options
     );
@@ -340,13 +346,8 @@ export class WebGLRenderer {
   ) {
     if (!this.gl) return;
     const target = this.state.currentRenderTarget;
-
-    x = Math.max(0, x);
-    y = Math.max(0, y);
-
-    const canRead =
-      this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) ===
-      this.gl.FRAMEBUFFER_COMPLETE;
+    let canRead = true;
+    if (target) canRead = target.validFramebuffer;
 
     if (!canRead) {
       console.warn(
@@ -354,6 +355,9 @@ export class WebGLRenderer {
       );
       return;
     }
+
+    x = Math.max(0, x);
+    y = Math.max(0, y);
 
     if (target) {
       if (x + width > target.width) width = target.width - x;

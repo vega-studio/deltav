@@ -1,4 +1,3 @@
-import { ImageInstance } from "../base-layers/images";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -12,8 +11,10 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
+import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
+import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { IInstanceAttribute, IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
-import { IResourceType, PickType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
@@ -21,6 +22,7 @@ import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
@@ -36,7 +38,15 @@ import { ClearFlags, View } from "./view";
  * Default IO expansion controllers applied to the system when explicit settings
  * are not provided.
  */
-export const DEFAULT_IO_EXPANSION: ILayerSurfaceOptions["ioExpansion"] = [
+export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
+  // Basic expansion to handle writing attributes and uniforms to the shader
+  new BasicIOExpansion(),
+  // Expansion to write in the active attribute handler. Any expansion injected AFTER
+  // this expander will have it's processes canceled out for the destructuring portion
+  // of the expansion when an instance is not active (if the instance has an active
+  // attribute).
+  new ActiveIOExpansion(),
+  // Expansion to handle easing IO attributes and write AutoEasingMethods to the shaders
   new EasingIOExpansion()
 ];
 
@@ -63,10 +73,9 @@ export interface ILayerSurfaceOptions {
    */
   background: [number, number, number, number];
   /**
-   * If this is provided, it will use this context for rendering. If a string is provided
-   * it will search for the canvas context by id.
+   * Provides the context the surface will use while rendering
    */
-  context?: WebGLRenderingContext | HTMLCanvasElement | string;
+  context?: HTMLCanvasElement;
   /**
    * This is the event managers to respond to the mouse events.
    */
@@ -79,17 +88,18 @@ export interface ILayerSurfaceOptions {
    * Provides additional expansion controllers that will contribute to our Shader IO configuration
    * for the layers. If this is not provided, this defaults to default system behaviors.
    *
-   * To add additional Expansion controllers and keep default system controllers inject:
-   * [
-   *   ...DEFAULT_IO_EXPANSION,
-   *   <your own Expansion controllers>
-   * ]
+   * To add additional Expansion controllers and keep default system controllers utilize a Function
+   * instead:
+   *
+   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders, <your own expanders>]
    *
    * For instance: easing properties on attributes requires the attribute to be expanded to additional
    * attributes + modified behavior of the base attribute. Thus the system by default adds in the
    * EasinggIOExpansion controller when this is not provided to make those property types work.
    */
-  ioExpansion?: BaseIOExpansion[];
+  ioExpansion?:
+    | BaseIOExpansion[]
+    | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
    * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
    * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
@@ -127,18 +137,6 @@ export interface ILayerSurfaceOptions {
 }
 
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [1.0, 1.0, 1.0, 1.0];
-
-function isCanvas(val: any): val is HTMLCanvasElement {
-  return Boolean(val.getContext);
-}
-
-function isString(val: any): val is string {
-  return Boolean(val.substr);
-}
-
-function isWebGLContext(val: any): val is WebGLRenderingContext {
-  return Boolean(val.canvas);
-}
 
 /**
  * A type to describe the constructor of a Layer class.
@@ -467,7 +465,58 @@ export class LayerSurface {
       // Output each layer and why it errored
       errors.forEach(err => {
         console.warn(`Layer ${err[0].id} removed for the following error:`);
-        if (err[1]) console.error(err[1].stack || err[1].message);
+
+        if (err[1]) {
+          const message = err[1].stack || err[1].message;
+          console.error(message);
+
+          // This is a specific error to instances updating an attribute but returning a value that is larger
+          // than the attribute size. The only way to debug this is to run every instance in the layer and
+          // retrieve it's update value and compare the return to the expected size.
+          if (
+            message.indexOf("RangeError") > -1 ||
+            message.indexOf("Source is too large") > -1
+          ) {
+            const layer = err[0];
+            const changes = layer.bufferManager.changeListContext;
+            let singleMessage:
+              | [string, Instance, IInstanceAttribute<Instance>]
+              | undefined;
+            let errorCount = 0;
+
+            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+              const [instance] = changes[i];
+              layer.instanceAttributes.forEach(attr => {
+                const check = attr.update(instance);
+                if (check.length !== attr.size) {
+                  if (!singleMessage) {
+                    singleMessage = [
+                      "Example instance returned the wrong sized value for an attribute:",
+                      instance,
+                      attr
+                    ];
+                  }
+
+                  errorCount++;
+                }
+              });
+            }
+
+            if (singleMessage) {
+              console.error(
+                "The following output shows discovered issues related to the specified error"
+              );
+              console.error(
+                "Instances are returning too large IO for an attribute\n",
+                singleMessage[0],
+                singleMessage[1],
+                singleMessage[2],
+                "Total errors for too large IO values",
+                errorCount
+              );
+            }
+          }
+        }
       });
 
       // Re-render but only include non-errored layers
@@ -485,9 +534,59 @@ export class LayerSurface {
     this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
     this.renderer.dispose();
     this.pickingTarget.dispose();
+  }
 
-    // TODO: Instances should be implementing destroy for these clean ups.
-    ImageInstance.destroy();
+  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
+
+  /**
+   * This processes what is rendered into the picking render target to see if the mouse interacted with
+   * any elements.
+   */
+  private analyzePickRendering() {
+    if (!this.queuedPicking) return;
+
+    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
+      const [, view, pickingPass, mouse] = this.queuedPicking[i];
+
+      // Optimized rendering of the view will make the view discard picking rendering
+      if (view.optimizeRendering) {
+        continue;
+      }
+
+      // Make our metrics for how much of the image we wish to analyze
+      const pickWidth = 5;
+      const pickHeight = 5;
+      const numBytesPerColor = 4;
+      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+      // Read the pixels out
+      this.renderer.readPixels(
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
+        pickWidth,
+        pickHeight,
+        out
+      );
+
+      // Analyze the rendered color data for the picking routine
+      const pickingData = analyzeColorPickingRendering(
+        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
+        out,
+        pickWidth,
+        pickHeight
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+
+        if (layer.picking.type === PickType.SINGLE) {
+          layer.interactions.colorPicking = pickingData;
+        }
+      }
+    }
+
+    delete this.queuedPicking;
   }
 
   /**
@@ -498,6 +597,16 @@ export class LayerSurface {
    */
   async draw(time?: number) {
     if (!this.gl) return;
+
+    // The theoretically least blocking moment for pixels to be read is the beginning of the next frame
+    // right before next frame is rendered. This will have given optimal time for the GPU to have finished
+    // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
+    // GPU intensive operation.
+    this.analyzePickRendering();
+
+    // Gather all of our picking calls to call at the end to prevent readPixels from
+    // becoming a major blocking operation
+    const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
@@ -513,7 +622,7 @@ export class LayerSurface {
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
-        this.drawPicking(scene, view, pickingPass);
+        toPick.push([scene, view, pickingPass]);
       }
     });
 
@@ -547,10 +656,6 @@ export class LayerSurface {
       }
     }
 
-    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
-    // another requested from mouse interactions
-    delete this.updateColorPick;
-
     // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
     // be considered resolved for the current set of changes.
     // Set draw needs of cameras and views back to false
@@ -566,6 +671,31 @@ export class LayerSurface {
       layer.props.data.resolveContext = "";
     });
 
+    // Run the picking operation as the final action to put the readPixels at the tail
+    for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
+      const picking = toPick[i];
+      const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
+
+      if (
+        didDraw &&
+        picking.length > 0 &&
+        !picking[1].optimizeRendering &&
+        this.updateColorPick
+      ) {
+        if (!this.queuedPicking) this.queuedPicking = [];
+        this.queuedPicking.push([
+          picking[0],
+          picking[1],
+          picking[2],
+          this.updateColorPick.mouse
+        ]);
+      }
+    }
+
+    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
+    // another requested from mouse interactions
+    delete this.updateColorPick;
+
     // Dequeue rendering debugs
     flushDebug();
   }
@@ -580,11 +710,12 @@ export class LayerSurface {
     view: View,
     pickingPass: Layer<any, any>[]
   ) {
-    if (!this.updateColorPick) return;
-    if (!scene.container) return;
+    if (!this.updateColorPick) return false;
+    if (!scene.container) return false;
+    // Optimized rendering of the view will make the view discard picking rendering
+    if (view.optimizeRendering) return false;
 
     // Get the requested metrics for the pick
-    const mouse = this.updateColorPick.mouse;
     const views = this.updateColorPick.views;
 
     // Ensure the view provided is a view that is registered with this surface
@@ -637,40 +768,6 @@ export class LayerSurface {
         this.pickingTarget
       );
 
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-      // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-      this.renderer.readPixels(
-        mouse[0] - pickWidth / 2,
-        mouse[1] - pickHeight / 2,
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
-      }
-
       // Return the pixel ratio back to the rendered ratio
       view.pixelRatio = this.pixelRatio;
       // Return the view's clear flags
@@ -688,7 +785,11 @@ export class LayerSurface {
           y: 0
         })
       );
+
+      return true;
     }
+
+    return false;
   }
 
   /**
@@ -849,12 +950,12 @@ export class LayerSurface {
       this.pixelRatio = 1.0;
     }
 
-    // Make sure we have a gl context to work with
-    this.setContext(options.context);
+    // Initialize our GL needs that set the basis for rendering
+    const context = this.initGL(options);
+    if (!context) return;
+    this.context = context;
 
     if (this.gl) {
-      // Initialize our GL needs that set the basis for rendering
-      this.initGL(options);
       // Initialize our event manager that handles mouse interactions/gestures with the canvas
       this.initMouseManager(options);
       // Initialize any resources requested or needed, such as textures or rendering surfaces
@@ -875,18 +976,14 @@ export class LayerSurface {
    * This initializes the Canvas GL contexts needed for rendering.
    */
   private initGL(options: ILayerSurfaceOptions) {
-    if (!this.context) {
-      console.error(
-        "Can not initialize Layer Surface as a valid GL context was not established."
-      );
-      return;
-    }
-
     // Get the canvas of our context to set up our Three settings
-    const canvas = this.context.canvas;
+    const canvas = options.context;
+    if (!canvas) return null;
+
     // Get the starting width and height so adjustments don't affect it
     const width = canvas.width;
     const height = canvas.height;
+    let hasContext = true;
 
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
@@ -894,13 +991,28 @@ export class LayerSurface {
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
-      antialias: true,
+      antialias: false,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: false,
+      // This indicates if the information written to the canvas is going to be written as premultiplied values
+      // or if they will be standard rgba values. Helps with compositing with the DOM.
+      premultipliedAlpha: false,
+
+      // Let's us know if there is no valid webgl context to work with or not
+      onNoContext: () => {
+        hasContext = false;
+      }
     });
+
+    if (!hasContext || !this.renderer.gl) return null;
+    this.context = this.renderer.gl;
+
+    if (this.resourceManager) {
+      this.resourceManager.setWebGLRenderer(this.renderer);
+    }
 
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
@@ -941,9 +1053,6 @@ export class LayerSurface {
 
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
-    // Turn on the scissor test to keep the rendering clipped within the
-    // Render region of the context
-    this.context.enable(this.context.SCISSOR_TEST);
 
     // Add the requested scenes to the surface and apply the necessary defaults
     if (options.scenes) {
@@ -981,17 +1090,30 @@ export class LayerSurface {
 
       this.gatherViewDrawDependencies();
     }
+
+    return this.renderer.gl;
   }
 
   /**
    * Initializes the expanders that should be applied to the surface for layer processing.
    */
   private initIOExpanders(options: ILayerSurfaceOptions) {
-    // Initialize the Shader IO expansion objects
-    this.ioExpanders =
-      (options.ioExpansion && options.ioExpansion.slice(0)) ||
-      (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
-      [];
+    // Handle expanders passed in as an array or blank
+    if (
+      Array.isArray(options.ioExpansion) ||
+      options.ioExpansion === undefined
+    ) {
+      // Initialize the Shader IO expansion objects
+      this.ioExpanders =
+        (options.ioExpansion && options.ioExpansion.slice(0)) ||
+        (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
+        [];
+    }
+
+    // Handle expanders passed in as a method
+    else if (options.ioExpansion instanceof Function) {
+      this.ioExpanders = options.ioExpansion(DEFAULT_IO_EXPANSION);
+    }
 
     // Retrieve any expansion objects the resource managers may provide
     const managerIOExpanders = this.resourceManager.getIOExpansion();
@@ -1017,9 +1139,15 @@ export class LayerSurface {
     // Scene so that the necessary values will be in place for the sahder IO
     const scene = this.addLayerToScene(layer);
     if (!scene) return null;
+    // Ensure the layer has interaction handling applied to it
+    layer.interactions = new LayerInteractionHandler(layer);
+
     // If no metrics are provided, this layer is merely a shell layer and will not
     // receive any GPU handling objects.
-    if (!shaderIO) return layer;
+    if (!shaderIO) {
+      layer.picking.type = PickType.NONE;
+      return layer;
+    }
 
     if (!shaderIO.fs || !shaderIO.vs) {
       console.warn(
@@ -1123,6 +1251,8 @@ export class LayerSurface {
   private async initResources(options: ILayerSurfaceOptions) {
     // Create the controller for handling all resource managers
     this.resourceManager = new ResourceManager();
+    // Set the GL renderer to the
+    this.resourceManager.setWebGLRenderer(this.renderer);
 
     // Get the managers requested by the configuration
     const managers =
@@ -1419,38 +1549,6 @@ export class LayerSurface {
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
     this.gatherViewDrawDependencies();
-  }
-
-  /**
-   * This establishes the rendering canvas context for the surface.
-   */
-  private setContext(
-    context?: WebGLRenderingContext | HTMLCanvasElement | string
-  ) {
-    if (!context) {
-      return;
-    }
-
-    if (isWebGLContext(context)) {
-      this.context = context;
-    } else if (isCanvas(context)) {
-      const canvasContext =
-        context.getContext("webgl") || context.getContext("experimental-webgl");
-
-      if (!canvasContext) {
-        console.warn(
-          "A valid GL context was not found for the context provided to the surface. This surface will not be able to operate."
-        );
-      } else {
-        this.context = canvasContext;
-      }
-    } else if (isString(context)) {
-      const element = document.getElementById(context);
-
-      if (isCanvas(element)) {
-        this.setContext(element);
-      }
-    }
   }
 
   /**

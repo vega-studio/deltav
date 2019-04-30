@@ -4,14 +4,10 @@
     "email": "diniden@outlook.com",
     "url": "http://diniden.com"
   },
-  "name": "@voidrayco/voidgl",
-  "version": "1.23.3",
+  "name": "@vega-studio/deltav",
+  "version": "1.26.2",
   "main": "index.js",
   "types": "src/index.d.ts",
   "license": "Apache-2.0",
-  "dependencies": {
-    "@types/three": "^0.92.23",
-    "bowser": "^1.7.3",
-    "three": "^0.94.0"
-  }
+  "dependencies": {}
 }

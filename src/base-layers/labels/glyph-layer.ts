@@ -114,6 +114,11 @@ export class GlyphLayer<
 
             this.glyphRequests[o.character] = o.request;
           }
+
+          // Do a check to see if the request has been resolved. If so, the glyph is ready.
+          if (o.request.fontMap) {
+            if (o.onReady) o.onReady(o);
+          }
         }
 
         o.request.fetch = FontResourceRequestFetch.TEXCOORDS;
@@ -147,6 +152,11 @@ export class GlyphLayer<
             });
 
             this.glyphRequests[o.character] = o.request;
+          }
+
+          // Do a check to see if the request has been resolved. If so, the glyph is ready.
+          if (o.request.fontMap) {
+            if (o.onReady) o.onReady(o);
           }
         }
 

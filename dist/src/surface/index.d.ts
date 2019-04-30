@@ -8,5 +8,4 @@ export * from "./layer-processing/inject-shader-io";
 export * from "./layer";
 export * from "./mouse-event-manager";
 export * from "./layer-scene";
-export * from "./texture";
 export * from "./view";

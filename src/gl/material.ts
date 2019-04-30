@@ -60,6 +60,8 @@ export class Material {
     programId: WebGLProgram;
     proxy: GLProxy;
   };
+  /** A name for the  */
+  name: string = "";
   /**
    * TODO: This is NOT IN USE YET
    * GL Polygon offset settings. When set, enables polygon offset modes within the gl state. See:

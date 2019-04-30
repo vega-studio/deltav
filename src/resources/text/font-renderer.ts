@@ -299,11 +299,15 @@ async function renderEachPair(
 /**
  * This function takes a string to return a map with next letters of each letter
  */
-function stringToPairs(str: string, existing: KerningPairs): KerningInfo {
+function stringToPairs(
+  str: string,
+  existing: KerningPairs,
+  out?: KerningInfo
+): KerningInfo {
   // Remove all the whitespace
   str = str.replace(/\s/g, "");
-  const all: string[] = [];
-  const pairs: KerningPairs = {};
+  const all: string[] = (out && out.all) || [];
+  const pairs: KerningPairs = (out && out.pairs) || {};
 
   for (let i = 0; i < str.length - 1; i++) {
     const left = str[i];
@@ -382,15 +386,25 @@ export class FontRenderer {
    * the distance from a 'left' letter's top left  corner to the 'right' letter's topleft corner.
    */
   async estimateKerning(
-    str: string,
+    str: string[],
     fontString: string,
     fontSize: number,
     existing: KerningPairs,
     includeSpace: boolean
   ) {
     // Get all of the new pairs of letters that need kerning infoz
-    const pairInfo = stringToPairs(str, existing);
+    const pairInfo: KerningInfo = {
+      all: [],
+      pairs: {},
+      spaceWidth: 0
+    };
+
     debug("Estimating Kerning for", str);
+
+    for (let i = 0, iMax = str.length; i < iMax; ++i) {
+      const s = str[i];
+      stringToPairs(s, existing, pairInfo);
+    }
 
     // Only if there are new kerning needs do we actually need to run this method
     if (pairInfo.all.length > 0) {

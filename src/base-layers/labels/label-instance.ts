@@ -28,6 +28,11 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
   text: string;
   /** The x coordinate where the label will be anchored to in world space */
   origin: Vec2;
+  /**
+   * Special flag for the instance that will cause the instance to not render any glyphs but will ensure the label's
+   * Kerning is calculated.
+   */
+  preload?: boolean;
 
   /** Event when the label is completely ready to render all of it's glyphs */
   onReady?(instance: LabelInstance): void;
@@ -69,6 +74,11 @@ export class LabelInstance extends Instance {
   onReady?: (label: LabelInstance) => void;
   /** The text area this label is associated with (may NOT be associated at all) */
   parentTextArea?: TextAreaInstance;
+  /**
+   * Special flag for the instance that will cause the instance to not render any glyphs but will ensure the label's
+   * Kerning is calculated.
+   */
+  preload: boolean = false;
   /**
    * After the label has been rendered, this will be populated with all of the glyphs that
    * have been created for the label. Using this you can manipulate each character very easily.
@@ -114,6 +124,7 @@ export class LabelInstance extends Instance {
     this.text = options.text || this.text;
     this.origin = options.origin;
     this.onReady = options.onReady;
+    this.preload = options.preload || false;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);

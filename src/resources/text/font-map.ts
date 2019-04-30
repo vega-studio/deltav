@@ -1,5 +1,5 @@
-import { GLSettings, Texture, TextureOptions, WebGLStat } from "../../gl";
-import { isWhiteSpace, ResourceType, Size } from "../../types";
+import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { add2, scale2, Vec2 } from "../../util/vector";
 import { PackNode } from "../texture/pack-node";
@@ -10,6 +10,8 @@ import {
   IFontResourceOptions
 } from "./font-manager";
 import { FontRenderer, KerningPairs } from "./font-renderer";
+
+const debug = require("debug")("performance");
 
 export enum FontMapGlyphType {
   /** Straight images for each glyph */
@@ -113,29 +115,93 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       });
     }
 
+    const fontMapSize: Size = options.fontMapSize
+      ? options.fontMapSize
+      : [TextureSize._1024, TextureSize._1024];
+
     this.makeGlyphTypeTextureSettings(options.glyphType);
-    this.createTexture();
+    this.createTexture(fontMapSize);
 
     // Initialize the packing layout for the texture
-    this.packing = new PackNode(
-      0,
-      0,
-      WebGLStat.MAX_TEXTURE_SIZE,
-      WebGLStat.MAX_TEXTURE_SIZE
-    );
+    this.packing = new PackNode(0, 0, fontMapSize[0], fontMapSize[1]);
+    // If allowed, load the cached kerning from the system
+    this.addCachedKerning();
+  }
+
+  private getKerningCacheName() {
+    return `__deltav_kerning_cache_${this.fontSource.family}__`;
+  }
+
+  /**
+   * Loads the stored cached kerning if it's available.
+   */
+  private addCachedKerning() {
+    if (this.fontSource.localKerningCache) {
+      const cachedKerningStr = localStorage.getItem(this.getKerningCacheName());
+
+      if (cachedKerningStr) {
+        debug("Loading cached kerning items:", this.getKerningCacheName());
+
+        try {
+          const cachedKerning = JSON.parse(cachedKerningStr);
+          let totalKernsLoaded = 0;
+
+          for (const left in cachedKerning) {
+            let isValid: boolean =
+              typeof left === "string" && left.length === 1;
+            if (!isValid) continue;
+
+            const rights = cachedKerning[left];
+            const rightKerning = this.kerning[left] || {};
+            this.kerning[left] = rightKerning;
+
+            for (const right in rights) {
+              isValid = typeof left === "string" && left.length === 1;
+              if (!isValid) continue;
+              rightKerning[right] = rights[right];
+              totalKernsLoaded++;
+            }
+          }
+
+          debug(
+            "Found kerning items in the cache!",
+            "Count:",
+            totalKernsLoaded
+          );
+        } catch (err) {
+          /** do nothing as the kerning info is not valid */
+        }
+      }
+    }
   }
 
   /**
    * Applies additional kerning pair information to the map.
    */
   addKerning(kerning: KerningPairs) {
+    let hasNew = false;
+
     for (const left in kerning) {
       const rights = kerning[left];
       const rightKerning = this.kerning[left] || {};
+      if (!this.kerning[left]) hasNew = true;
       this.kerning[left] = rightKerning;
 
       for (const right in rights) {
+        if (!rightKerning[right]) hasNew = true;
         rightKerning[right] = rights[right];
+      }
+    }
+
+    // If new kerning pairs applied, then we should update the cache
+    if (hasNew && this.fontSource.localKerningCache) {
+      try {
+        debug("Storing kerning info in cache...");
+        const kerningCache = JSON.stringify(this.kerning);
+        localStorage.setItem(this.getKerningCacheName(), kerningCache);
+      } catch (err) {
+        // Failures just silently fail
+        debug("Could not cache kerning info");
       }
     }
   }
@@ -144,7 +210,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * Generates the texture for the font map which makes it ready for utilization and ready
    * for updates.
    */
-  private createTexture() {
+  private createTexture(size: Size) {
     if (this.texture) return;
 
     // Establish the settings to be applied to the Texture
@@ -166,8 +232,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // Generate the texture
     this.texture = new Texture({
       data: {
-        width: WebGLStat.MAX_TEXTURE_SIZE,
-        height: WebGLStat.MAX_TEXTURE_SIZE,
+        width: size[0],
+        height: size[1],
         buffer: null
       },
       ...textureSettings
@@ -364,7 +430,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           !this.kerning[lastChar][firstTruncChar]
         ) {
           const kerning = await fontRenderer.estimateKerning(
-            lastChar + firstTruncChar,
+            [lastChar + firstTruncChar],
             this.fontString,
             this.fontSource.size,
             this.kerning,

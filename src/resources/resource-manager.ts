@@ -1,3 +1,4 @@
+import { WebGLRenderer } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
@@ -21,6 +22,8 @@ const debug = require("debug")("performance");
 export class ResourceManager {
   /** This is the list of managers for handling resource requests */
   managers = new Map<number, BaseResourceManager<any, any>>();
+  /** This is the webgl renderer that is passed to the resource managers */
+  webGLRenderer?: WebGLRenderer;
 
   /**
    * This is called by the system to cause the managers to dequeue their requests in an asynchronous fashion
@@ -148,5 +151,14 @@ export class ResourceManager {
     }
 
     this.managers.set(resourceType, manager);
+    manager.webGLRenderer = this.webGLRenderer;
+  }
+
+  /**
+   * This sets the current gl renderer used for handling GL operations.
+   */
+  setWebGLRenderer(renderer: WebGLRenderer) {
+    this.webGLRenderer = renderer;
+    this.managers.forEach(manager => (manager.webGLRenderer = renderer));
   }
 }

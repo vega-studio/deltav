@@ -1,11 +1,11 @@
 import { Bounds } from "../../primitives";
 import { PackNode } from "../../resources/texture/pack-node";
-import { Omit, ResourceType } from "../../types";
+import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { FontMap, FontMapGlyphType } from "../text/font-map";
-import { IFontResourceRequest } from "../text/font-resource-manager";
 import { SubTexture } from "../texture/sub-texture";
+import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
+import { IFontResourceRequest } from "./font-resource-request";
 
 const debug = require("debug")("performance");
 
@@ -27,6 +27,11 @@ export enum FontGlyphRenderSize {
  * Metrics for a font map source specification.
  */
 export interface IFontMapMetrics {
+  /**
+   * EXPERIMENTAL: When enabled, this allows the framework to cache the kerning pair calculations in the local storage.
+   * This can greatly speed up reload times of this chart, but may come with consequences as well.
+   */
+  localKerningCache?: boolean;
   /** A type indicator to help identify which type of font resource is provided */
   type?: FontMapGlyphType;
   /** Size the font is rendered to the font map */
@@ -116,6 +121,8 @@ export interface IFontResourceOptions extends BaseResourceOptions {
   fontSource: FontMapSource;
   /** Enforce the resource to be a FONT type */
   type: ResourceType.FONT;
+  /** If provided will constrain the texture to the provided size */
+  fontMapSize?: Size;
 }
 
 /**
@@ -280,20 +287,20 @@ export class FontManager {
     const fontMap = this.fontMaps.get(resourceKey);
     if (!fontMap) return;
 
-    let allPairs = "";
+    let allPairs: string[] = [];
     const allCharacters = new Set<string>();
 
     // Aggregate all kerning and character requests and needs
     for (let i = 0, iMax = requests.length; i < iMax; ++i) {
       const req = requests[i];
       if (req.character) allCharacters.add(req.character);
-      if (req.kerningPairs) allPairs += req.kerningPairs;
+      if (req.kerningPairs) allPairs = allPairs.concat(req.kerningPairs);
 
       // We add in truncation characters as well if provided
       if (req.metrics) {
         if (req.metrics.truncation) {
           const truncation = req.metrics.truncation.replace(/\s/g, "");
-          allPairs += truncation;
+          allPairs.push(truncation);
 
           for (let i = 0, iMax = req.metrics.truncation.length; i < iMax; ++i) {
             allCharacters.add(truncation);
@@ -326,7 +333,7 @@ export class FontManager {
   /**
    * This updates the calculated kerning pairs for a given font map.
    */
-  private async updateKerningPairs(pairs: string, fontMap?: FontMap) {
+  private async updateKerningPairs(pairs: string[], fontMap?: FontMap) {
     if (!fontMap) return;
 
     // Calculate the new kerning pair information

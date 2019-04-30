@@ -96,8 +96,6 @@ export interface ILabelLayerProps<T extends LabelInstance>
    * defaults to ellipses or three periods '...'
    */
   truncation?: string;
-  /** This number represents how much space each whitespace characters represents */
-  whiteSpaceKerning?: number;
 }
 
 /**
@@ -263,6 +261,12 @@ export class LabelLayer<
 
       switch (diffType) {
         case InstanceDiffType.CHANGE:
+          // Perform the insert action instead of the change if the label has never been registered
+          if (!this.labelToGlyphs.get(instance)) {
+            this.insert(instance);
+            continue;
+          }
+
           // If text was changed, the glyphs all need updating of their characters and
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
@@ -297,11 +301,7 @@ export class LabelLayer<
           break;
 
         case InstanceDiffType.INSERT:
-          // Our management flag is dependent on if the label has glyph storage or not
-          const storage = this.labelToGlyphs.get(instance);
-          if (!storage) this.labelToGlyphs.set(instance, []);
-          // Insertions force a full update of all glyphs for the label
-          this.layoutGlyphs(instance);
+          this.insert(instance);
           break;
 
         case InstanceDiffType.REMOVE:
@@ -319,6 +319,25 @@ export class LabelLayer<
           break;
       }
     }
+  }
+
+  /**
+   * Handles first insertion operation for the label
+   */
+  private insert(instance: T) {
+    // Our management flag is dependent on if the label has glyph storage or not
+    if (!instance.preload) {
+      const storage = this.labelToGlyphs.get(instance);
+      if (!storage) this.labelToGlyphs.set(instance, []);
+    }
+
+    // Make sure the instance is removed from the provider for preloads
+    else {
+      this.props.data.remove(instance);
+    }
+
+    // Insertions force a full update of all glyphs for the label
+    this.layoutGlyphs(instance);
   }
 
   /**
@@ -580,7 +599,10 @@ export class LabelLayer<
     if (labelKerningRequest) {
       // If the request already embodies the request for the text, we just see if the
       // font map has been provided yet to indicate if the kerning information is ready
-      if (labelKerningRequest.kerningPairs === checkText) {
+      if (
+        labelKerningRequest.kerningPairs &&
+        labelKerningRequest.kerningPairs.indexOf(checkText) > -1
+      ) {
         return Boolean(labelKerningRequest.fontMap);
       }
 
@@ -604,8 +626,8 @@ export class LabelLayer<
 
     // If no request is present we must make one
     if (!labelKerningRequest) {
-      // We want the request to return all of the metrics for the text as well
       const metrics: IFontResourceRequest["metrics"] = {
+        // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
         text: instance.text
       };
@@ -619,7 +641,7 @@ export class LabelLayer<
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
         character: "",
-        kerningPairs: checkText,
+        kerningPairs: [checkText],
         metrics
       });
 
@@ -627,14 +649,31 @@ export class LabelLayer<
       // So we send out a request to the font manager for the resource.
       // Once the kerning information has been retrieved, the label active property will be triggered
       // to true.
-      this.resource.request(this, instance, labelKerningRequest, {
-        resource: {
-          type: ResourceType.FONT,
-          key: this.props.resourceKey || ""
-        }
-      });
+      if (!instance.preload) {
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
 
-      this.labelToKerningRequest.set(instance, labelKerningRequest);
+        this.labelToKerningRequest.set(instance, labelKerningRequest);
+      }
+
+      // For preload labels, simply make the request, but modify the resource trigger to fire off the ready
+      // event for the label
+      else {
+        instance.resourceTrigger = () => {
+          if (instance.onReady) instance.onReady(instance);
+        };
+
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
+      }
 
       return false;
     }

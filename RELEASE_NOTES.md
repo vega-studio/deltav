@@ -1,5 +1,57 @@
 # Release Notes
 
+## 1.26.2
+
+* `(FIXED)` Improved picking performance for many scenarios
+* `(FIXED)` Label instance provider handling was missing some cases causing labels to not show up when needed.
+
+## 1.26.1
+
+* `(FIXED)` Easing calculation issues
+
+## 1.26.0
+
+* `(ADDED)` Font resources can now cache calculated kernings in localstorage to make viewing similar resources much faster.
+* `(ADDED)` Label preloads can be made to warm up the kerning calculations without creating glyphs. Makes initial label viewing much smoother.
+
+## 1.25.6
+
+* `(FIXED)` Removed kerning calculations across labels causing not needed kerning support for characters that are unrelated. This makes it easier to warm up an environment to a set of labels before the labels are officially used.
+
+## 1.25.4
+
+* `(FIXED)` Labels onReady event was not firing when the label changed text and in other expected cases.
+* `(FIXED)` Major issue, Source is too large, that caused a crash for a layer when using the font resource manager.
+* `(FIXED)` Source is too large errors now provides some additional helpful feedback showing which attribute is receiving too large of a value.
+
+## 1.25.3
+
+* `(FIXED)` Key debug statements should log properly now
+* `(FIXED)` Reduced GL context retrieval when producing a LayerSurface
+
+## 1.25.2
+
+* `(FIXED)` Added blending tests
+
+## 1.25.1
+
+* `(FIXED)` Blending issues with circles and edges
+
+## 1.25.0
+
+* `(ADDED)` Control Font Map resource texture sizes
+* `(ADDED)` Material control can now be applied to a layer's props
+
+## 1.24.0
+
+* `(ADDED)` Attribute expanders. Easily integrate custom attribute modifiers that applies across the entire pipeline.
+* `(ADDED)` Atlas Resource Manager now handles disposing of image resources to make it simpler to create your own layers that utilize resources.
+* `(ADDED)` Fixed naming and sizing conventions in the base layers that were in place to appease threejs.
+* `(ADDED)` Text is now implemented to be a bitmap font with in browser kerning estimation
+* `(ADDED)` Resource Managers, create resource managers to handle resource requests to routines that manage textures.
+* `(ADDED)` Attribute Expanders, create custom attribute expanders to create new and unique attributes that can produce child attributes or modify an input attribute in significant ways that automates complicated processes in the GL layer.
+* `(ADDED)` Removed all run time third party libraries for the project.
+
 ## 1.23.3
 
 * `(FIXED)` Mouse wheel to pan was very sensitive when zoomed in deep

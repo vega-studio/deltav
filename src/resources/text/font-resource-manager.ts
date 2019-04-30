@@ -1,4 +1,3 @@
-import { Texture } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
@@ -13,10 +12,10 @@ import {
   Omit,
   ResourceType
 } from "../../types";
+import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
-  BaseResourceOptions,
-  BaseResourceRequest
+  BaseResourceOptions
 } from "../base-resource-manager";
 import { TextureIOExpansion } from "../texture/texture-io-expansion";
 import {
@@ -24,58 +23,13 @@ import {
   IFontResourceOptions,
   isFontResource
 } from "./font-manager";
-import { FontMap, KernedLayout } from "./font-map";
-
-export enum FontResourceRequestFetch {
-  /** Retrieves the tex coordinates on the font map of the specified character glyph. Defaults to [0, 0, 0, 0] */
-  TEXCOORDS = 0,
-  /** Retrieves the pixel size of the character glyph on the font map */
-  IMAGE_SIZE = 1
-}
+import { FontMap } from "./font-map";
+import {
+  FontResourceRequestFetch,
+  IFontResourceRequest
+} from "./font-resource-request";
 
 const debug = require("debug")("performance");
-
-/**
- * Properties needed to make a font resource request
- */
-export interface IFontResourceRequest extends BaseResourceRequest {
-  /** The character being requested from the fontmap */
-  character?: string;
-  /** This changes the information retrieved as a result of the request method. */
-  fetch?: FontResourceRequestFetch;
-  /**
-   * When the request has been processed and results become available, this is populated with the FontMap object that has everything
-   * needed for the requester to get the information needed.
-   */
-  fontMap?: FontMap;
-  /** The characters for which we want to have the kerning information retrieved. */
-  kerningPairs?: string;
-  /** When provided, the request will fill in the metrics for the input parameters */
-  metrics?: {
-    /** The desired font size for the layout */
-    fontSize: number;
-    /**
-     * The system will populate this for you with the layout (top left is at 0,0) of the text.
-     * If maxWidth is provided, this will be the layout of the truncated text.
-     */
-    layout?: KernedLayout;
-    /** When provided, this will cause the system to see if the text should be truncated or not */
-    maxWidth?: number;
-    /** This is the source text that we wish to receive the metrics for. */
-    text: string;
-    /** These are the characters to use to indicate truncation in the event truncation takes place */
-    truncation?: string;
-    /**
-     * If maxWidth is provided, this will provide the calculated truncated text. This will be the full
-     * text if no truncation is provided.
-     */
-    truncatedText?: string;
-  };
-  /** This is to satisfy the use of the TextureIOExpansion. This is the texture within the fontmap */
-  texture?: Texture;
-  /** Establish the only type that this request shall be is a FONT type */
-  type: ResourceType.FONT;
-}
 
 export interface IFontResourceRequestInternal extends IFontResourceRequest {
   /**
@@ -184,10 +138,16 @@ export class FontResourceManager extends BaseResourceManager<
 
               // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
               // applied to the instance's rendering
-              requestAnimationFrame(() => {
+              nextFrame(() => {
+                const triggered = new Set();
+
                 for (let i = 0, iMax = request.length; i < iMax; ++i) {
                   const instance = request[i][1];
-                  instance.resourceTrigger();
+
+                  if (!triggered.has(instance)) {
+                    triggered.add(instance);
+                    instance.resourceTrigger();
+                  }
                 }
               });
             }
@@ -259,24 +219,14 @@ export class FontResourceManager extends BaseResourceManager<
       }
 
       if (texture) {
-        if (request.fetch) {
+        if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
           return [texture.pixelWidth, texture.pixelHeight];
         }
 
         return subTextureIOValue(texture);
       }
 
-      if (request.fetch) {
-        return [0, 0];
-      }
-
-      return subTextureIOValue(null);
-    }
-
-    // If already requested for this request object. Don't create another as the resource trigger should
-    // handle responses for such needs.
-    if (request.isRequested) {
-      if (request.fetch) {
+      if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
         return [0, 0];
       }
 
@@ -295,6 +245,10 @@ export class FontResourceManager extends BaseResourceManager<
       if (existingRequests) {
         existingRequests.push([layer, instance]);
         instance.active = false;
+
+        if (request.fetch === FontResourceRequestFetch.IMAGE_SIZE) {
+          return [0, 0];
+        }
 
         return subTextureIOValue(texture);
       }

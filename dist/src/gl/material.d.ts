@@ -22,6 +22,7 @@ export declare class Material {
         programId: WebGLProgram;
         proxy: GLProxy;
     };
+    name: string;
     polygonOffset?: {
         polygonOffsetFactor?: number;
         polygonOffsetUnits?: number;

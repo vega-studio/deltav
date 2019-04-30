@@ -62,6 +62,8 @@ function isTextureReady(
  * This is where all objects go to be processed and updated with webgl calls. Such as textures, geometries, etc
  */
 export class GLProxy {
+  /** Message to include with debugging statements, warnings and errors */
+  debugContext: string = "";
   /** This is the gl context we're manipulating. */
   gl: GLContext;
   /** This is the state tracker of the GL context */
@@ -170,6 +172,7 @@ export class GLProxy {
 
     if (!buffer) {
       console.warn(
+        this.debugContext,
         "Could bot create WebGLBuffer. Printing any existing gl errors:"
       );
       this.printError();
@@ -228,6 +231,7 @@ export class GLProxy {
 
       if (!fs) {
         console.warn(
+          this.debugContext,
           "Could not create a Fragment WebGLShader. Printing GL Errors:"
         );
         this.printError();
@@ -238,7 +242,11 @@ export class GLProxy {
       this.gl.compileShader(fs);
 
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
-        console.error("FRAGMENT SHADER COMPILER ERROR");
+        console.error(
+          this.debugContext,
+          "FRAGMENT SHADER COMPILER ERROR:",
+          material.name
+        );
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
@@ -261,6 +269,7 @@ export class GLProxy {
 
       if (!vs) {
         console.warn(
+          this.debugContext,
           "Could not create a Vertex WebGLShader. Printing GL Errors:"
         );
         this.printError();
@@ -271,7 +280,11 @@ export class GLProxy {
       this.gl.compileShader(vs);
 
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
-        console.error("VERTEX SHADER COMPILER ERROR");
+        console.error(
+          this.debugContext,
+          "VERTEX SHADER COMPILER ERROR",
+          material.name
+        );
         console.warn(
           "Could not compile provided shader. Printing logs and errors:"
         );
@@ -298,7 +311,10 @@ export class GLProxy {
       const program = this.gl.createProgram();
 
       if (!program) {
-        console.warn("Could not create a WebGLProgram. Printing GL Errors:");
+        console.warn(
+          this.debugContext,
+          "Could not create a WebGLProgram. Printing GL Errors:"
+        );
         this.printError();
 
         return;
@@ -321,7 +337,11 @@ export class GLProxy {
         !this.gl.getProgramParameter(program, this.gl.VALIDATE_STATUS)
       ) {
         const info = this.gl.getProgramInfoLog(program);
-        console.warn("Could not compile WebGL program. \n\n", info);
+        console.warn(
+          this.debugContext,
+          "Could not compile WebGL program. \n\n",
+          info
+        );
         this.gl.deleteProgram(program);
 
         return;
@@ -383,6 +403,7 @@ export class GLProxy {
     // Now we validate we have all of the uniforms the program requested
     if (Object.keys(material.uniforms).length !== usedUniforms.size) {
       console.warn(
+        this.debugContext,
         "A program is requesting a set of uniforms:",
         Array.from(usedUniforms.values()),
         "but our material only provides",
@@ -414,6 +435,7 @@ export class GLProxy {
 
     if (!fbo) {
       console.warn(
+        this.debugContext,
         "Could not generate a frame buffer object. Printing GL errors:"
       );
       this.printError();
@@ -450,6 +472,7 @@ export class GLProxy {
             );
           } else {
             console.warn(
+              this.debugContext,
               "Attempted to compile render target whose target texture was not ready for use."
             );
             isReady = false;
@@ -492,6 +515,7 @@ export class GLProxy {
           );
         } else {
           console.warn(
+            this.debugContext,
             "Attempted to compile render target whose target texture was not ready for use."
           );
           return false;
@@ -596,7 +620,8 @@ export class GLProxy {
 
     switch (frameBufferCheckResult) {
       case gl.FRAMEBUFFER_COMPLETE:
-        /** no-op */ break;
+        target.setAsValid();
+        break;
 
       case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
         message = "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
@@ -638,6 +663,7 @@ export class GLProxy {
 
     if (unidentifiedResult && stillUnidentifiedResult) {
       console.warn(
+        this.debugContext,
         "A framebuffer check failed to return a known result. This FBO for render target will be assumed failed"
       );
       console.warn("Result:", frameBufferCheckResult, "Render Target:", target);
@@ -646,6 +672,7 @@ export class GLProxy {
 
     if (message) {
       console.warn(
+        this.debugContext,
         "When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:"
       );
       console.warn(message);
@@ -671,6 +698,7 @@ export class GLProxy {
 
     if (!rbo) {
       console.warn(
+        this.debugContext,
         "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
       );
       this.printError();
@@ -703,6 +731,7 @@ export class GLProxy {
 
     if (!rbo) {
       console.warn(
+        this.debugContext,
         "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
       );
       this.printError();
@@ -735,6 +764,7 @@ export class GLProxy {
 
     if (!rbo) {
       console.warn(
+        this.debugContext,
         "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
       );
       this.printError();
@@ -766,6 +796,7 @@ export class GLProxy {
     // The texture must have a unit established in order to be compiled
     if (texture.gl.textureUnit < 0) {
       console.warn(
+        this.debugContext,
         "A Texture object attempted to be compiled without an established Texture Unit.",
         texture
       );
@@ -780,6 +811,7 @@ export class GLProxy {
 
     if (!textureId) {
       console.warn(
+        this.debugContext,
         "Could not generate a texture object on the GPU. Printing any gl errors:"
       );
       this.printError();
@@ -979,6 +1011,11 @@ export class GLProxy {
         (ctx instanceof WebGLRenderingContext ||
           ctx instanceof WebGL2RenderingContext)
       ) {
+        debug(
+          "Generated GL Context of version with attributes:",
+          name,
+          options
+        );
         context = ctx;
         extensions = GLProxy.addExtensions(context);
         break;
@@ -1056,6 +1093,7 @@ export class GLProxy {
   updateTexture(texture: Texture) {
     if (!texture.gl || texture.gl.textureUnit < 0) {
       console.warn(
+        this.debugContext,
         "Can not update or compile a texture that does not have an established texture unit.",
         texture
       );
@@ -1086,6 +1124,7 @@ export class GLProxy {
     // The texture must have a unit established in order to have it's data updated
     if (texture.gl.textureUnit < 0) {
       console.warn(
+        this.debugContext,
         "A Texture object attempted to update it's data without an established Texture Unit.",
         texture
       );
@@ -1181,6 +1220,7 @@ export class GLProxy {
     // The texture must have a unit established in order to have it's data updated
     if (texture.gl.textureUnit < 0) {
       console.warn(
+        this.debugContext,
         "A Texture object attempted to update it's data without an established Texture Unit.",
         texture
       );
@@ -1252,6 +1292,7 @@ export class GLProxy {
     // The texture must have a unit established in order to be compiled
     if (texture.gl.textureUnit < 0) {
       console.warn(
+        this.debugContext,
         "A Texture object attempted to update it's settings without an established Texture Unit.",
         texture
       );

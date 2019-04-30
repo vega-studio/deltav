@@ -32,10 +32,6 @@ export function subTextureIOValue(
 export class SubTexture {
   /** Stores the aspect ratio of the image for quick reference */
   aspectRatio: number = 1.0;
-  /** The id of the texture this resource is located within */
-  textureReferenceID: string = "";
-  /** This is the actual texture this resource is located within */
-  texture: Texture | null = null;
   /** This is the top left UV coordinate of the sub texture on the atlas */
   atlasTL: Vec2 = [0, 0];
   /** This is the top right UV coordinate of the sub texture on the atlas */
@@ -44,8 +40,6 @@ export class SubTexture {
   atlasBL: Vec2 = [0, 0];
   /** This is the bottom right UV coordinate of the sub texture on the atlas */
   atlasBR: Vec2 = [0, 0];
-  /** This is the normalized width of the sub texture on the atlas */
-  widthOnAtlas: number = 0;
   /** This is the normalized height of the sub texture on the atlas */
   heightOnAtlas: number = 0;
   /** This flag is set to false when the underlying texture is no longer valid */
@@ -54,6 +48,12 @@ export class SubTexture {
   pixelWidth: number = 0;
   /** Height in pixels of the image on the atlas */
   pixelHeight: number = 0;
+  /** The id of the texture this resource is located within */
+  textureReferenceID: string = "";
+  /** This is the actual texture this resource is located within */
+  texture: Texture | null = null;
+  /** This is the normalized width of the sub texture on the atlas */
+  widthOnAtlas: number = 0;
 
   /**
    * Generates a SubTexture object based on the texture and region provided.

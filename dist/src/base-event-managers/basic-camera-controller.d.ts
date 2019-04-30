@@ -49,6 +49,7 @@ export declare class BasicCameraController extends EventManager {
     private scaleFilter;
     startViews: string[];
     wheelShouldScroll: boolean;
+    private optimizedViews;
     private coveredStartView;
     private onRangeChanged;
     private startViewDidStart;

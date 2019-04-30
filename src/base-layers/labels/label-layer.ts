@@ -240,6 +240,7 @@ export class LabelLayer<
       this.propertyIds = this.getInstanceObservableIds(instance, [
         "text",
         "active",
+        "anchor",
         "color",
         "origin",
         "fontSize",
@@ -250,6 +251,7 @@ export class LabelLayer<
     const {
       text: textId,
       active: activeId,
+      anchor: anchorId,
       color: colorId,
       origin: originId,
       fontSize: fontSizeId,
@@ -279,6 +281,10 @@ export class LabelLayer<
             } else {
               this.hideGlyphs(instance);
             }
+          }
+
+          if (changed[anchorId]) {
+            this.updateAnchor(instance);
           }
 
           if (changed[colorId] !== undefined) {
@@ -464,6 +470,21 @@ export class LabelLayer<
 
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       this.glyphProvider.add(glyphs[i]);
+    }
+  }
+
+  /**
+   * Updates the anchor position of the instance when set
+   */
+  updateAnchor(instance: T) {
+    const glyphs = instance.glyphs;
+    if (!glyphs) return;
+
+    anchorCalculator[instance.anchor.type](instance.anchor, instance);
+    const anchor = instance.anchor;
+
+    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
+      glyphs[i].anchor = [anchor.x || 0, anchor.y || 0];
     }
   }
 

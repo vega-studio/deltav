@@ -20,18 +20,19 @@ export interface IViewOptions extends IdentifyByKeyOptions {
 }
 export declare class View extends IdentifyByKey {
     static DEFAULT_VIEW_ID: string;
+    animationEndTime: number;
     background: Color;
     camera: ChartCamera;
     clearFlags: ClearFlags[];
     depth: number;
+    lastFrameTime: number;
+    needsDraw: boolean;
+    optimizeRendering: boolean;
     pixelRatio: number;
     screenBounds: Bounds;
     viewCamera: ViewCamera;
     viewport: AbsolutePosition;
     viewBounds: DataBounds<View>;
-    needsDraw: boolean;
-    animationEndTime: number;
-    lastFrameTime: number;
     constructor(options: IViewOptions);
     screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
     pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];

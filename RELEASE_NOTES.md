@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.26.2
+
+* `(FIXED)` Improved picking performance for many scenarios
+* `(FIXED)` Label instance provider handling was missing some cases causing labels to not show up when needed.
+
 ## 1.26.1
 
 * `(FIXED)` Easing calculation issues

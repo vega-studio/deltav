@@ -66,6 +66,8 @@ export declare class LayerSurface {
     private addLayer;
     commit(time?: number, frameIncrement?: boolean, onViewReady?: (needsDraw: boolean, scene: LayerScene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;
     destroy(): void;
+    private queuedPicking?;
+    private analyzePickRendering;
     draw(time?: number): Promise<void>;
     private drawPicking;
     private drawSceneView;

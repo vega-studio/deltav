@@ -263,6 +263,12 @@ export class LabelLayer<
 
       switch (diffType) {
         case InstanceDiffType.CHANGE:
+          // Perform the insert action instead of the change if the label has never been registered
+          if (!this.labelToGlyphs.get(instance)) {
+            this.insert(instance);
+            continue;
+          }
+
           // If text was changed, the glyphs all need updating of their characters and
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
@@ -297,20 +303,7 @@ export class LabelLayer<
           break;
 
         case InstanceDiffType.INSERT:
-          // Our management flag is dependent on if the label has glyph storage or not
-          if (!instance.preload) {
-            const storage = this.labelToGlyphs.get(instance);
-            if (!storage) this.labelToGlyphs.set(instance, []);
-          }
-
-          // Make sure the instance is removed from the provider for preloads
-          else {
-            this.props.data.remove(instance);
-          }
-
-          // Insertions force a full update of all glyphs for the label
-          this.layoutGlyphs(instance);
-
+          this.insert(instance);
           break;
 
         case InstanceDiffType.REMOVE:
@@ -328,6 +321,25 @@ export class LabelLayer<
           break;
       }
     }
+  }
+
+  /**
+   * Handles first insertion operation for the label
+   */
+  private insert(instance: T) {
+    // Our management flag is dependent on if the label has glyph storage or not
+    if (!instance.preload) {
+      const storage = this.labelToGlyphs.get(instance);
+      if (!storage) this.labelToGlyphs.set(instance, []);
+    }
+
+    // Make sure the instance is removed from the provider for preloads
+    else {
+      this.props.data.remove(instance);
+    }
+
+    // Insertions force a full update of all glyphs for the label
+    this.layoutGlyphs(instance);
   }
 
   /**

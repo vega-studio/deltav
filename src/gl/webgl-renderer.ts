@@ -346,13 +346,8 @@ export class WebGLRenderer {
   ) {
     if (!this.gl) return;
     const target = this.state.currentRenderTarget;
-
-    x = Math.max(0, x);
-    y = Math.max(0, y);
-
-    const canRead =
-      this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) ===
-      this.gl.FRAMEBUFFER_COMPLETE;
+    let canRead = true;
+    if (target) canRead = target.validFramebuffer;
 
     if (!canRead) {
       console.warn(
@@ -360,6 +355,9 @@ export class WebGLRenderer {
       );
       return;
     }
+
+    x = Math.max(0, x);
+    y = Math.max(0, y);
 
     if (target) {
       if (x + width > target.width) width = target.width - x;

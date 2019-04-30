@@ -545,6 +545,10 @@ export class LayerSurface {
   async draw(time?: number) {
     if (!this.gl) return;
 
+    // Gather all of our picking calls to call at the end to prevent readPixels from
+    // becoming a major blocking operation
+    const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
+
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
     await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
@@ -559,7 +563,7 @@ export class LayerSurface {
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
-        this.drawPicking(scene, view, pickingPass);
+        toPick.push([scene, view, pickingPass]);
       }
     });
 
@@ -593,10 +597,6 @@ export class LayerSurface {
       }
     }
 
-    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
-    // another requested from mouse interactions
-    delete this.updateColorPick;
-
     // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
     // be considered resolved for the current set of changes.
     // Set draw needs of cameras and views back to false
@@ -611,6 +611,16 @@ export class LayerSurface {
       layer.needsViewDrawn = false;
       layer.props.data.resolveContext = "";
     });
+
+    // Run the picking operation as the final action to put the readPixels at the tail
+    for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
+      const picking = toPick[i];
+      this.drawPicking(picking[0], picking[1], picking[2]);
+    }
+
+    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
+    // another requested from mouse interactions
+    delete this.updateColorPick;
 
     // Dequeue rendering debugs
     flushDebug();

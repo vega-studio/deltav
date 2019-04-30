@@ -42,6 +42,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     };
     childLayers(): LayerInitializer[];
     draw(): void;
+    private insert;
     handleGlyphReady: (glyph: GlyphInstance) => void;
     hideGlyphs(instance: T): void;
     initShader(): null;

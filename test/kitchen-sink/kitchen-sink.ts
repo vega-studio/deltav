@@ -21,7 +21,6 @@ import { BoxOfCircles } from "./examples/box-of-circles";
 import { BoxOfRings } from "./examples/box-of-rings";
 import { ChangingAnchorLabels } from "./examples/changing-anchor-labels";
 import { Images } from "./examples/images";
-import { LabelAnchorsAndScales } from "./examples/label-anchors-and-scales";
 import { LabelAnimatedScale } from "./examples/label-animated-scale";
 import { LabelSizingCorrected } from "./examples/label-sizing-corrected";
 import { Lines } from "./examples/lines";
@@ -54,11 +53,11 @@ function makeDemos() {
     new BoxOfCircles(),
     new ScreenSpaceEdges(),
     new ChangingAnchorLabels(),
-    new LabelAnchorsAndScales(),
     new Images(),
     new BendyEdge(),
     new Lines(),
     new MouseInteraction(),
+    new SingleAxisLabelScaling(),
     new SingleAxisLabelScaling(true),
     new SingleAxisLabelScaling(false),
     new MouseInteractionLabels(),

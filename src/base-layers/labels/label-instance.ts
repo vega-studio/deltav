@@ -103,6 +103,7 @@ export class LabelInstance extends Instance {
   @observable
   anchor: Anchor = {
     padding: 0,
+    paddingDirection: [0, 0],
     type: AnchorType.TopLeft,
     x: 0,
     y: 0

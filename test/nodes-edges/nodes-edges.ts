@@ -19,14 +19,17 @@ import {
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
+  IPickInfo,
   ISceneOptions,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
   nextFrame,
+  PickType,
   RectangleInstance,
   RectangleLayer,
-  ScaleMode
+  ScaleMode,
+  Vec4
 } from "src";
 import { IDefaultResources, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
@@ -156,7 +159,24 @@ export class NodesEdges extends BaseDemo {
         data: this.providers.circles,
         key: "circles",
         scene: "default",
-        scaleFactor: () => this.camera.scale[0]
+        scaleFactor: () => this.camera.scale[0],
+        picking: PickType.SINGLE,
+
+        onMouseOver: (info: IPickInfo<CircleInstance>) => {
+          const over = new Set();
+          info.instances.forEach(circle => over.add(circle));
+
+          this.circles.forEach(circle => {
+            if (over.has(circle)) return;
+            circle.color = [0.2, 0.2, 0.2, 1];
+          });
+        },
+
+        onMouseOut: (_info: IPickInfo<CircleInstance>) => {
+          this.circles.forEach((circle, i) => {
+            circle.color = this.makeColor(i);
+          });
+        }
       }),
       createLayer(RectangleLayer, {
         data: this.providers.rectangles,
@@ -281,6 +301,11 @@ export class NodesEdges extends BaseDemo {
     this.labels.push(label);
   }
 
+  makeColor(i: number): Vec4 {
+    const c = hsl(360 * i / this.circles.length, 100, 0.5).rgb();
+    return [c.r / 255, c.g / 255, c.b / 255, 1.0];
+  }
+
   layout() {
     const distance = 200;
 
@@ -294,8 +319,7 @@ export class NodesEdges extends BaseDemo {
           this.center.center
         );
 
-        const c = hsl(360 * i / this.circles.length, 100, 0.5).rgb();
-        circle.color = [c.r / 255, c.g / 255, c.b / 255, 1.0];
+        circle.color = this.makeColor(i);
       });
 
       this.edges.forEach((edge, i) => {

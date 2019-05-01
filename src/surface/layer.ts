@@ -26,7 +26,7 @@ import {
   UniformIOValue,
   UniformSize
 } from "../types";
-import { BoundsAccessor, TrackedQuadTree } from "../util";
+import { BoundsAccessor, TrackedQuadTree, uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import {
   BufferManagerBase,
@@ -47,6 +47,8 @@ export interface IInstanceProvider<T extends Instance> {
    * so we use this to detect when multiple contexts have attempted use of this provider.
    */
   resolveContext: string;
+  /** A unique number making it easier to identify this object */
+  uid: number;
 
   /** A list of changes to instances */
   changeList: InstanceDiff<T>[];
@@ -196,6 +198,11 @@ export class Layer<
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[] = [];
+  /** A uid provided to the layer to give it some uniqueness as an object */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[] = [];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */

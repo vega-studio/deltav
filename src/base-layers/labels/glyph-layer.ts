@@ -233,6 +233,11 @@ export class GlyphLayer<
           size: InstanceAttributeSize.TWO,
           update: o => o.padding
         },
+        {
+          name: "maxScale",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.maxScale]
+        },
         glyphSizeAttr,
         glyphTextureAttr
       ],

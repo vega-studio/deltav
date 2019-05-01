@@ -610,7 +610,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // We can now get a width and height of the total label
     const height = maxY - minY;
     // Update the instance with the calculated width of the label
-    const size: Size = [currentWidth, height];
+    const size: Size = [currentWidth, height / window.devicePixelRatio];
 
     // Move all of the glyphs by -minY. This will effectively frame the label where the
     // top left is 0,0 relative to all of the contents of the label.

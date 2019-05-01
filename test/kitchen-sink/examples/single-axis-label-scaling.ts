@@ -8,20 +8,42 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ReferenceCamera
+  ReferenceCamera,
+  ScaleMode,
+  uid
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class SingleAxisLabelScaling extends BaseExample {
-  isYAxis: boolean = true;
+  providers = {
+    always: new InstanceProvider<LabelInstance>(),
+    never: new InstanceProvider<LabelInstance>(),
+    bound: new InstanceProvider<LabelInstance>()
+  };
+  isYAxis: boolean | undefined = true;
+  layers: LayerInitializer[];
 
-  constructor(yAxis: boolean = true) {
+  constructor(yAxis?: boolean) {
     super();
     this.isYAxis = yAxis;
   }
 
   makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    if (this.isYAxis) {
+    if (this.isYAxis === undefined) {
+      return new ReferenceCamera({
+        base: defaultCamera,
+        offsetFilter: (offset: [number, number, number]) => [
+          offset[0],
+          offset[1],
+          0
+        ],
+        scaleFilter: (scale: [number, number, number]) => [
+          scale[0],
+          scale[1],
+          1
+        ]
+      });
+    } else if (this.isYAxis) {
       return new ReferenceCamera({
         base: defaultCamera,
         offsetFilter: (offset: [number, number, number]) => [0, offset[1], 0],
@@ -39,26 +61,59 @@ export class SingleAxisLabelScaling extends BaseExample {
   makeLayer(
     scene: string,
     resource: TestResourceKeys,
-    provider: InstanceProvider<LabelInstance>
-  ): LayerInitializer {
-    return createLayer(LabelLayer, {
-      animate: {
-        offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
-        color: AutoEasingMethod.easeInOutCubic(2000, 1000)
-      },
-      resourceKey: resource.font,
-      data: provider,
-      key: this.isYAxis ? "vertical-label-scaling" : "horizontal-label-scaling",
-      scene
-    });
+    _provider: InstanceProvider<LabelInstance>
+  ): LayerInitializer[] {
+    if (!this.layers) {
+      this.layers = [
+        createLayer(LabelLayer, {
+          animate: {
+            offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+          },
+          resourceKey: resource.font,
+          data: this.providers.always,
+          key: this.isYAxis
+            ? `vertical-label-scaling-${uid()}`
+            : `horizontal-label-scaling-${uid()}`,
+          scene,
+          scaleMode: ScaleMode.ALWAYS
+        }),
+        createLayer(LabelLayer, {
+          animate: {
+            offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+          },
+          resourceKey: resource.font,
+          data: this.providers.never,
+          key: this.isYAxis
+            ? `vertical-label-scaling-${uid()}`
+            : `horizontal-label-scaling-${uid()}`,
+          scene,
+          scaleMode: ScaleMode.NEVER
+        }),
+        createLayer(LabelLayer, {
+          animate: {
+            offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+          },
+          resourceKey: resource.font,
+          data: this.providers.bound,
+          key: this.isYAxis
+            ? `vertical-label-scaling-${uid()}`
+            : `horizontal-label-scaling-${uid()}`,
+          scene,
+          scaleMode: ScaleMode.BOUND_MAX
+        })
+      ];
+    }
+
+    return this.layers;
   }
 
   makeProvider(): InstanceProvider<LabelInstance> {
-    const provider = new InstanceProvider<LabelInstance>();
-
     let count = 1;
 
-    provider.add(
+    this.providers.never.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -85,9 +140,9 @@ export class SingleAxisLabelScaling extends BaseExample {
     });
 
     // Left Middle left
-    provider.add(label);
+    this.providers.never.add(label);
 
-    provider.add(
+    this.providers.always.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -101,7 +156,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    provider.add(
+    this.providers.bound.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -118,7 +173,7 @@ export class SingleAxisLabelScaling extends BaseExample {
     // MIDDLE RIGHT ANCHORS
     count++;
 
-    provider.add(
+    this.providers.never.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -136,7 +191,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    provider.add(
+    this.providers.never.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -154,7 +209,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    provider.add(
+    this.providers.always.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -172,7 +227,7 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    provider.add(
+    this.providers.bound.add(
       new LabelInstance({
         anchor: {
           padding: 0,
@@ -190,6 +245,6 @@ export class SingleAxisLabelScaling extends BaseExample {
       })
     );
 
-    return provider;
+    return this.providers.always;
   }
 }

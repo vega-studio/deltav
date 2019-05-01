@@ -1319,6 +1319,19 @@ export class LayerSurface {
 
     layer.destroy();
     this.layers.delete(layer.id);
+    this.willDisposeLayer.delete(layer.id);
+    const scene = this.scenes.get(layer.props.scene);
+
+    if (scene) {
+      scene.removeLayer(layer);
+    }
+
+    if (layer.children && layer.children.length > 0) {
+      for (let i = 0, iMax = layer.children.length; i < iMax; ++i) {
+        const child = layer.children[i];
+        this.removeLayer(child);
+      }
+    }
 
     return layer;
   }
@@ -1399,7 +1412,7 @@ export class LayerSurface {
     // the layer completely then generating the layer anew.
     if (layer.willRebuildLayer) {
       this.removeLayer(layer);
-      this.generateLayer(initializers, layer.initializer, index, true);
+      this.generateLayer(initializers, layer.initializer, index);
     }
 
     // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.

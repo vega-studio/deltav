@@ -105,8 +105,9 @@ export class LabelInstance extends Instance {
 
   /** This is the anchor location relative to the label's render space */
   @observable
-  private _anchor: Anchor = {
+  anchor: Anchor = {
     padding: 0,
+    paddingDirection: [0, 0],
     type: AnchorType.TopLeft,
     x: 0,
     y: 0
@@ -115,23 +116,20 @@ export class LabelInstance extends Instance {
   constructor(options: ILabelInstanceOptions) {
     super(options);
 
+    this.anchor = options.anchor || this.anchor;
+    this.color = options.color || this.color;
     this.depth = options.depth || this.depth;
     this.fontSize = options.fontSize || this.fontSize;
-    this.color = options.color || this.color;
     this.maxScale = options.maxScale || this.maxScale;
-    this.scale = options.scale || this.scale;
     this.maxWidth = options.maxWidth || 0;
-    this.text = options.text || this.text;
-    this.origin = options.origin;
     this.onReady = options.onReady;
+    this.origin = options.origin;
     this.preload = options.preload || false;
+    this.scale = options.scale || this.scale;
+    this.text = options.text || this.text;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);
-  }
-
-  get anchor() {
-    return this._anchor;
   }
 
   getWidth(): number {
@@ -159,7 +157,7 @@ export class LabelInstance extends Instance {
     };
 
     // Apply the anchor
-    this._anchor = newAnchor;
+    this.anchor = newAnchor;
   }
 
   /**

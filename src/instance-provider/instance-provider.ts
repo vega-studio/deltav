@@ -1,5 +1,6 @@
 import { IInstanceProvider } from "../surface/layer";
 import { InstanceDiffType } from "../types";
+import { uid } from "../util/uid";
 import { Instance } from "./instance";
 
 /**
@@ -20,6 +21,11 @@ type InstanceDisposer<T extends Instance> = [T, Function];
  */
 export class InstanceProvider<T extends Instance>
   implements IInstanceProvider<T> {
+  /** A uid provided to this object to give it some easy to identify uniqueness */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
   /** Stores the disposers that are called when the instance is no longer listened to */
   private cleanObservation = new Map<number, InstanceDisposer<T>>();
   /** This stores the changes to the instances themselves */

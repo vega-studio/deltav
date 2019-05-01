@@ -297,6 +297,8 @@ export class TextAreaLayer<
           // If text was changed, the glyphs all need updating of their characters and
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
+            this.clear(instance);
+            instance.generateLabels();
             this.updateLabels(instance);
             this.layout(instance);
           } else if (changed[activeId] !== undefined) {
@@ -419,6 +421,37 @@ export class TextAreaLayer<
     return null;
   }
 
+  clear(instance: T) {
+    const labels = instance.labels;
+    for (let i = 0, iMax = labels.length; i < iMax; i++) {
+      const label = labels[i];
+      if (label instanceof LabelInstance) {
+        this.labelProvider.remove(label);
+      }
+    }
+
+    instance.labels = [];
+
+    const newLabels = instance.newLabels;
+    for (let i = 0, iMax = newLabels.length; i < iMax; i++) {
+      const label = newLabels[i];
+      if (label instanceof LabelInstance) {
+        this.labelProvider.remove(label);
+      }
+    }
+
+    instance.newLabels = [];
+    instance.labelsToLayout = [];
+    this.areaToLabels.delete(instance);
+    this.areaWaitingOnLabel.delete(instance);
+    if (instance.labelForMap) {
+      this.labelProvider.remove(instance.labelForMap);
+      instance.labelForMap = null;
+    }
+
+    this.areaToGlyphHeights.delete(instance);
+  }
+
   seperateLabel(
     instance: TextAreaInstance,
     label: LabelInstance,
@@ -450,9 +483,6 @@ export class TextAreaLayer<
     const widths: number[] = [];
     for (let i = 0; i <= index; i++) widths.push(glyphWidths[i]);
     label1.glyphWidths = widths;
-    console.warn(
-      `label1 ${label1.text} size ${label1.size}, widths ${label1.glyphWidths}`
-    );
     this.labelProvider.add(label1);
     instance.newLabels.push(label1);
 
@@ -694,6 +724,7 @@ export class TextAreaLayer<
     let currentX = 0;
     let currentY = 0;
 
+    // Layout labels
     for (let i = 0, endi = instance.labels.length; i < endi; ++i) {
       const label = instance.labels[i];
 
@@ -725,16 +756,11 @@ export class TextAreaLayer<
             let index = glyphWidths.length - 1;
             const word = label.text;
 
+            // Find the index to retrieve the part of word that stay in this line
             while (glyphWidths[index] > spaceLeft) {
               index--;
             }
-            if (index === -1) {
-              console.warn(
-                `text ${
-                  label.text
-                }, index ${index} glyphWidths ${glyphWidths} spaceLeft ${spaceLeft}`
-              );
-            }
+
             // Some part of label stay in this line
             if (index >= 0) {
               const sizes = this.seperateLabel(
@@ -750,137 +776,16 @@ export class TextAreaLayer<
 
               currentX = sizes[0];
               currentY = sizes[1];
-              /*
-              label.active = false;
-              label.toShow = false;
-              // Label1
-              const text1 = word.substring(0, index + 1);
-              const offsetY1 = getOffsetY(text1, glyphToHeight);
-
-              const label1 = new LabelInstance({
-                color: instance.color,
-                fontSize: instance.fontSize,
-                origin: [
-                  instance.origin[0] + currentX,
-                  instance.origin[1] + currentY + offsetY1
-                ],
-                text: text1
-              });
-
-              label1.size = [glyphWidths[index], label.size[1]];
-              const widths: number[] = [];
-              for (let i = 0; i <= index; i++) widths.push(glyphWidths[i]);
-              label1.glyphWidths = widths;
-              console.warn(
-                `label1 ${label1.text} size ${label1.size}, widths ${
-                  label1.glyphWidths
-                }`
-              );
-              this.labelProvider.add(label1);
-              instance.newLabels.push(label1);
-
-              // New Line if word wrap mode is normal
-              if (instance.lineWrap === WordWrap.NORMAL) {
-                currentY += instance.lineHeight;
-                currentX = 0;
-
-                // Label2
-                if (currentY + instance.lineHeight <= instance.maxHeight) {
-                  let widthLeft =
-                    glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
-
-                  while (
-                    widthLeft > instance.maxWidth &&
-                    currentY + instance.lineHeight <= instance.maxHeight
-                  ) {
-                    let j = glyphWidths.length - 1;
-                    while (
-                      glyphWidths[j] - glyphWidths[index] >
-                      instance.maxWidth
-                    ) {
-                      j--;
-                    }
-                    const text = word.substring(index + 1, j + 1);
-                    const offsetY = getOffsetY(text, glyphToHeight);
-                    const label3 = new LabelInstance({
-                      color: instance.color,
-                      fontSize: instance.fontSize,
-                      origin: [
-                        instance.origin[0] + currentX,
-                        instance.origin[1] + currentY + offsetY
-                      ],
-                      text
-                    });
-
-                    label3.size = [
-                      glyphWidths[j] - glyphWidths[index],
-                      label.size[1]
-                    ];
-
-                    this.labelProvider.add(label3);
-                    instance.newLabels.push(label3);
-                    currentY += instance.lineHeight;
-
-                    index = j;
-                    widthLeft =
-                      glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
-                  }
-
-                  if (currentY + instance.lineHeight <= instance.maxHeight) {
-                    const text2 = word.substring(index + 1);
-                    const offsetY2 = getOffsetY(text2, glyphToHeight);
-                    const label2 = new LabelInstance({
-                      color: instance.color,
-                      fontSize: instance.fontSize,
-                      origin: [
-                        instance.origin[0] + currentX,
-                        instance.origin[1] + currentY + offsetY2
-                      ],
-                      text: text2
-                    });
-
-                    // set size
-                    label2.size = [
-                      glyphWidths[glyphWidths.length - 1] - glyphWidths[index],
-                      label.size[1]
-                    ];
-
-                    // set glyphs width
-                    const widths: number[] = [];
-                    for (let i = index + 1; i < glyphWidths.length; i++) {
-                      widths.push(glyphWidths[i] - glyphWidths[index]);
-                    }
-
-                    label2.glyphWidths = widths;
-
-                    console.warn(
-                      `label2 ${label2.text} size ${label2.size}, widths ${
-                        label2.glyphWidths
-                      }`
-                    );
-
-                    this.labelProvider.add(label2);
-                    instance.newLabels.push(label2);
-
-                    currentX += label2.getWidth() + spaceWidth;
-                  }
-                }
-              }
-              // If wordWrap is NONE, stay in the line
-              else if (instance.lineWrap === WordWrap.NONE) {
-                currentX += label1.getWidth() + spaceWidth;
-              }
-            */
             }
-            // The whole word should move to next line or set active false
+            // The whole word moves to next line or set active false if index < 0
             else {
               if (instance.lineWrap === WordWrap.NORMAL) {
                 // New Line
                 currentY += instance.lineHeight;
                 currentX = 0;
 
-                console.warn(`text ${label.text} here?`);
                 if (currentY + instance.lineHeight < instance.maxHeight) {
+                  // Put label with in the line
                   if (currentX + label.getWidth() <= instance.maxWidth) {
                     const offsetY = getOffsetY(label.text, glyphToHeight);
                     label.origin = [
@@ -893,7 +798,9 @@ export class TextAreaLayer<
                       currentX = 0;
                       currentY += instance.lineHeight;
                     }
-                  } else {
+                  }
+                  // Put part of label in this line, move other part to following lines
+                  else {
                     const spaceLeft = instance.maxWidth - currentX;
                     const glyphWidths = label.glyphWidths;
                     let index = glyphWidths.length - 1;
@@ -917,151 +824,25 @@ export class TextAreaLayer<
 
                       currentX = sizes[0];
                       currentY = sizes[1];
-                      /*
-                      label.active = false;
-                      label.toShow = false;
-                      // Label1
-                      const text1 = word.substring(0, index + 1);
-                      const offsetY1 = getOffsetY(text1, glyphToHeight);
-
-                      const label1 = new LabelInstance({
-                        color: instance.color,
-                        fontSize: instance.fontSize,
-                        origin: [
-                          instance.origin[0] + currentX,
-                          instance.origin[1] + currentY + offsetY1
-                        ],
-                        text: text1
-                      });
-
-                      label1.size = [glyphWidths[index], label.size[1]];
-                      const widths: number[] = [];
-                      for (let i = 0; i <= index; i++) {
-                        widths.push(glyphWidths[i]);
-                      }
-
-                      label1.glyphWidths = widths;
-                      this.labelProvider.add(label1);
-                      instance.newLabels.push(label1);
-
-                      // New Line if word wrap mode is normal
-                      if (instance.lineWrap === WordWrap.NORMAL) {
-                        currentY += instance.lineHeight;
-                        currentX = 0;
-
-                        // Label2
-                        if (
-                          currentY + instance.lineHeight <=
-                          instance.maxHeight
-                        ) {
-                          let widthLeft =
-                            glyphWidths[glyphWidths.length - 1] -
-                            glyphWidths[index];
-
-                          while (
-                            widthLeft > instance.maxWidth &&
-                            currentY + instance.lineHeight <= instance.maxHeight
-                          ) {
-                            let j = glyphWidths.length - 1;
-                            while (
-                              glyphWidths[j] - glyphWidths[index] >
-                              instance.maxWidth
-                            ) {
-                              j--;
-                            }
-                            const text = word.substring(index + 1, j + 1);
-                            const offsetY = getOffsetY(text, glyphToHeight);
-                            const label3 = new LabelInstance({
-                              color: instance.color,
-                              fontSize: instance.fontSize,
-                              origin: [
-                                instance.origin[0] + currentX,
-                                instance.origin[1] + currentY + offsetY
-                              ],
-                              text
-                            });
-
-                            label3.size = [
-                              glyphWidths[j] - glyphWidths[index],
-                              label.size[1]
-                            ];
-
-                            this.labelProvider.add(label3);
-                            instance.newLabels.push(label3);
-                            currentY += instance.lineHeight;
-
-                            index = j;
-                            widthLeft =
-                              glyphWidths[glyphWidths.length - 1] -
-                              glyphWidths[index];
-                          }
-
-                          if (
-                            currentY + instance.lineHeight <=
-                            instance.maxHeight
-                          ) {
-                            const text2 = word.substring(index + 1);
-                            const offsetY2 = getOffsetY(text2, glyphToHeight);
-                            const label2 = new LabelInstance({
-                              color: instance.color,
-                              fontSize: instance.fontSize,
-                              origin: [
-                                instance.origin[0] + currentX,
-                                instance.origin[1] + currentY + offsetY2
-                              ],
-                              text: text2
-                            });
-
-                            // set size
-                            label2.size = [
-                              glyphWidths[glyphWidths.length - 1] -
-                                glyphWidths[index],
-                              label.size[1]
-                            ];
-
-                            // set glyphs width
-                            const widths: number[] = [];
-                            for (
-                              let i = index + 1;
-                              i < glyphWidths.length;
-                              i++
-                            ) {
-                              widths.push(glyphWidths[i] - glyphWidths[index]);
-                            }
-
-                            label2.glyphWidths = widths;
-
-                            console.warn(
-                              `label2 ${label2.text} size ${
-                                label2.size
-                              }, widths ${label2.glyphWidths}`
-                            );
-
-                            this.labelProvider.add(label2);
-                            instance.newLabels.push(label2);
-
-                            currentX += label2.getWidth() + spaceWidth;
-                          }
-                        }
-                      }
-                      // If wordWrap is NONE, stay in the line
-                      else if (instance.lineWrap === WordWrap.NONE) {
-                        currentX += label1.getWidth() + spaceWidth;
-                      }
-                    */
                     }
                   }
-                } else {
+                }
+                // Exceeds maxHeight
+                else {
                   label.active = false;
                   label.toShow = false;
                 }
-              } else if (instance.lineWrap === WordWrap.NONE) {
+              }
+              // Word which is supposed to put to next line set false when lineWrap is none
+              else if (instance.lineWrap === WordWrap.NONE) {
                 label.active = false;
                 label.toShow = false;
               }
             }
           }
-        } else {
+        }
+        // Exceeds maxHeight
+        else {
           label.active = false;
           label.toShow = false;
         }

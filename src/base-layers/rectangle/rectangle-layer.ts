@@ -29,6 +29,8 @@ export interface IRectangleLayerProps<T extends RectangleInstance>
     location?: IAutoEasingMethod<Vec>;
   };
   atlas?: string;
+  /** Scale factor determining the scale size of the rectangle */
+  scaleFactor?(): number;
 }
 
 /**
@@ -181,6 +183,8 @@ export class RectangleLayer<
       5: 1
     };
 
+    const { scaleFactor = () => 1 } = this.props;
+
     return {
       fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
@@ -231,7 +235,7 @@ export class RectangleLayer<
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: _u => [1]
+          update: _u => [scaleFactor()]
         }
       ],
       vertexAttributes: [

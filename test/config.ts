@@ -1,5 +1,6 @@
 import { BaseDemo } from "./common/base-demo";
 import { KitchenSink } from "./kitchen-sink";
+import { NodesEdges } from "./nodes-edges";
 import { PhysicsDemo } from "./physics-demo";
 import { TextAreaDemo } from "./text-area";
 import { TextDemo } from "./text-demo";
@@ -10,6 +11,7 @@ export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";
 
 demos.set("text-area", new TextAreaDemo());
 demos.set("text-demo", new TextDemo());
+demos.set("nodes-edges", new NodesEdges());
 demos.set("word-sand", new WordSandDemo());
 demos.set("physics-demo", new PhysicsDemo());
 demos.set("kitchen-sink", new KitchenSink());

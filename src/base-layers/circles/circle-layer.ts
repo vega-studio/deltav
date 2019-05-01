@@ -54,9 +54,9 @@ export class CircleLayer<
 
   static attributeNames = {
     center: "center",
-    radius: "radius",
+    color: "color",
     depth: "depth",
-    color: "color"
+    radius: "radius"
   };
 
   /**

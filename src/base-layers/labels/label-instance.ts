@@ -48,13 +48,13 @@ export class LabelInstance extends Instance {
   /** Depth sorting of the label (or the z value of the label) */
   @observable depth: number = 0;
   /**
-   * Font size in pixels. This causes scaling relative to the base font resource available.
+   * Font size in world coordinates. This causes scaling relative to the base font resource available.
    * IE- If the font resource is rendered at 32 and this is 16, then the output rendering will
    *     be glyphs that are 50% the size of the rendered glyph in the font map. This can cause
    *     artefacts based on the rendering strategy used.
    */
   @observable fontSize: number = 12;
-  /** When in BOUND_MAX mode, this allows the label to scale up beyond it's max size */
+  /** When in BOUND_MAX mode, this controls how much scaling is allowed up to the base font size */
   @observable maxScale: number = 1;
   /**
    * This is the maximum width the label can take up. If this is exceeded the label gets truncated.

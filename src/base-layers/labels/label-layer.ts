@@ -306,7 +306,8 @@ export class LabelLayer<
         "color",
         "origin",
         "fontSize",
-        "maxWidth"
+        "maxWidth",
+        "maxScale"
       ]);
     }
 
@@ -317,7 +318,8 @@ export class LabelLayer<
       color: colorId,
       origin: originId,
       fontSize: fontSizeId,
-      maxWidth: maxWidthId
+      maxWidth: maxWidthId,
+      maxScale: maxScaleId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -355,6 +357,10 @@ export class LabelLayer<
 
           if (changed[originId] !== undefined) {
             this.updateGlyphOrigins(instance);
+          }
+
+          if (changed[maxScaleId] !== undefined) {
+            this.updateGlyphMaxScales(instance);
           }
 
           if (changed[fontSizeId] !== undefined) {
@@ -516,6 +522,7 @@ export class LabelLayer<
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
       glyph.origin = copy2(instance.origin);
       glyph.padding = padding || [0, 0];
+      glyph.maxScale = instance.maxScale;
     }
   }
 
@@ -614,6 +621,7 @@ export class LabelLayer<
           character: char,
           color: instance.color,
           origin: instance.origin,
+          maxScale: instance.maxScale,
           onReady: this.handleGlyphReady
         });
 
@@ -670,6 +678,20 @@ export class LabelLayer<
 
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       glyphs[i].origin = [origin[0], origin[1]];
+    }
+  }
+
+  /**
+   * This updates all of the glyphs for the label to have the same position
+   * as the label.
+   */
+  updateGlyphMaxScales(instance: T) {
+    const glyphs = instance.glyphs;
+    if (!glyphs) return;
+    const maxScale = instance.maxScale;
+
+    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
+      glyphs[i].maxScale = maxScale;
     }
   }
 

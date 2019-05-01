@@ -591,7 +591,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       image = this.glyphMap[char];
       // Use the offset and the rendering height to determine the top and bottom of the glyph
       minY = Math.min(offset[1], minY);
-      maxY = Math.max(offset[1] + image.pixelHeight, maxY);
+      maxY = Math.max(offset[1] + image.pixelHeight * fontScale, maxY);
       // Make this processed glyph the next glyph that is 'to the left' for the next glyph
       leftChar = char;
       // Calculate the width of the label as we lay out
@@ -604,7 +604,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // We can now get a width and height of the total label
     const height = maxY - minY;
     // Update the instance with the calculated width of the label
-    const size: Size = [currentWidth, height / window.devicePixelRatio];
+    const size: Size = [currentWidth, height];
 
     // Move all of the glyphs by -minY. This will effectively frame the label where the
     // top left is 0,0 relative to all of the contents of the label.

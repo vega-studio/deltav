@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.26.4
+
+* `(FIXED)` Anchors calculate their positions accurately now
+
 ## 1.26.3
 
 * `(FIXED)` Layers can rebuild properly now

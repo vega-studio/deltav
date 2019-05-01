@@ -53,6 +53,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     updateGlyphs(instance: T, layout: KernedLayout): void;
     updateGlyphColors(instance: T): void;
     updateGlyphOrigins(instance: T): void;
+    updateGlyphMaxScales(instance: T): void;
     updateKerning(instance: T): boolean;
     willUpdateProps(newProps: U): void;
 }

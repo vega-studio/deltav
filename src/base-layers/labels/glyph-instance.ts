@@ -31,6 +31,8 @@ export class GlyphInstance extends Instance {
    * is rendered at 32px, then this needs to be 20 / 32 to render the glyph at a font size of 20.
    */
   @observable fontScale: number = 1;
+  /** When in BOUND_MAX mode, this controls how much scaling is allowed up to the base font size */
+  @observable maxScale: number = 1;
   /** The top left location of this glyph's offset from it's origin */
   @observable offset: Vec2 = [0, 0];
   /** This is the anchor point of the glyph to which the glyph scales and rotates about and is positioned */
@@ -52,6 +54,9 @@ export class GlyphInstance extends Instance {
     this.offset = options.offset || this.offset;
     this.character = options.character || this.character;
     this.color = options.color || this.color;
+    this.maxScale = options.maxScale || this.maxScale;
+    this.padding = options.padding || this.padding;
+    this.anchor = options.anchor || this.anchor;
     this.onReady = options.onReady;
   }
 

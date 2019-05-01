@@ -1,5 +1,13 @@
 # Release Notes
 
+## 1.26.5
+
+* `(FIXED)` maxScale capabilities added back in for BOUND_MAX scale mode which allows for better controls to prevent a font from scaling up too much to keep it crisp.
+
+## 1.26.4
+
+* `(FIXED)` Anchors calculate their positions accurately now
+
 ## 1.26.3
 
 * `(FIXED)` Layers can rebuild properly now

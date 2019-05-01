@@ -21,6 +21,8 @@ export declare class NodesEdges extends BaseDemo {
         count: number;
         fontSize: number;
         scaleMode: ScaleMode;
+        circleRadius: number;
+        nodeRadius: number;
         previous: {
             count: number;
         };

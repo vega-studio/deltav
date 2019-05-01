@@ -47,7 +47,7 @@ export const DEFAULT_RESOURCES = {
     key: "test-font",
     fontSource: {
       localKerningCache: true,
-      size: 32,
+      size: 64,
       family: "Lucida Grande",
       type: FontMapGlyphType.BITMAP,
       weight: "normal"

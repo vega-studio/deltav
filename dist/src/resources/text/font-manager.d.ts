@@ -1,8 +1,8 @@
 import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { FontMap, FontMapGlyphType } from "../text/font-map";
-import { IFontResourceRequest } from "../text/font-resource-manager";
+import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
+import { IFontResourceRequest } from "./font-resource-request";
 export declare enum FontGlyphRenderSize {
     _16 = 16,
     _32 = 32,

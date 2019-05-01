@@ -1,31 +1,11 @@
-import { Texture } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, IResourceInstanceAttribute, Omit, ResourceType } from "../../types";
-import { BaseResourceManager, BaseResourceOptions, BaseResourceRequest } from "../base-resource-manager";
+import { InstanceIOValue, IResourceContext, IResourceInstanceAttribute, Omit } from "../../types";
+import { BaseResourceManager, BaseResourceOptions } from "../base-resource-manager";
 import { IFontResourceOptions } from "./font-manager";
-import { FontMap, KernedLayout } from "./font-map";
-export declare enum FontResourceRequestFetch {
-    TEXCOORDS = 0,
-    IMAGE_SIZE = 1
-}
-export interface IFontResourceRequest extends BaseResourceRequest {
-    character?: string;
-    fetch?: FontResourceRequestFetch;
-    fontMap?: FontMap;
-    kerningPairs?: string[];
-    metrics?: {
-        fontSize: number;
-        layout?: KernedLayout;
-        maxWidth?: number;
-        text: string;
-        truncation?: string;
-        truncatedText?: string;
-    };
-    texture?: Texture;
-    type: ResourceType.FONT;
-}
+import { FontMap } from "./font-map";
+import { IFontResourceRequest } from "./font-resource-request";
 export interface IFontResourceRequestInternal extends IFontResourceRequest {
     isRequested?: boolean;
 }

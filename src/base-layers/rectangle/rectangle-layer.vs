@@ -9,7 +9,7 @@ void main() {
   ${attributes}
 
   // Determine final screen size of label
-  vec3 screenSize = cameraSpaceSize(vec3(size * scale / maxScale, 1.0));
+  vec3 screenSize = cameraSpaceSize(vec3(size * scale / scaleFactor / maxScale, 1.0));
 
   // Test whether the label is larger on the screen than the font size
   bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;

@@ -5,6 +5,8 @@ export declare type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {
     [key: number]: number;
 }];
 export declare class InstanceProvider<T extends Instance> implements IInstanceProvider<T> {
+    readonly uid: number;
+    private _uid;
     private cleanObservation;
     private instanceChanges;
     private allowChanges;

@@ -309,6 +309,7 @@ export class NodesEdges extends BaseDemo {
       text: txt !== undefined ? txt : words.join(" "),
       fontSize: this.parameters.fontSize,
       onReady: this.labelReady,
+      maxScale: 0.5,
       preload
     });
 

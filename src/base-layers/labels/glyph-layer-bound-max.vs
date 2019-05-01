@@ -7,19 +7,19 @@ void main() {
   ${attributes}
 
   vec2 scale = fontScale * cameraScale.xy;
-  float maxScale = max(scale.x, scale.y);
+  float scaleBy = max(scale.x, scale.y) / maxScale;
   vec2 pushOut = normals * glyphSize * fontScale;
 
   float vx = mix(
     (-anchor.x + offset.x + pushOut.x),
-    (-anchor.x + offset.x + pushOut.x) / maxScale,
-    float(scale.x >= 1.0)
+    (-anchor.x + offset.x + pushOut.x) / scaleBy,
+    float(scale.x >= maxScale)
   );
 
   float vy = mix(
     (-anchor.y + offset.y + pushOut.y),
-    (-anchor.y + offset.y + pushOut.y) / maxScale,
-    float(scale.y >= 1.0)
+    (-anchor.y + offset.y + pushOut.y) / scaleBy,
+    float(scale.y >= maxScale)
   );
 
   // Calculate in the anchor, the origin, glyph offset, and the quad pushout to make our quad geometry

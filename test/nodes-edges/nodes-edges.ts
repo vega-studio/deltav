@@ -192,7 +192,7 @@ export class NodesEdges extends BaseDemo {
         key: "labels",
         scene: "default",
         resourceKey: resources.font.key,
-        scaleMode: this.parameters.scaleMode
+        scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
       })
     ];
   }

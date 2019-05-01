@@ -23,6 +23,8 @@ export declare class RenderTarget {
     private _height;
     readonly width: number;
     private _width;
+    readonly validFramebuffer: boolean;
+    private _validFramebuffer;
     readonly splitRenderBuffers: RenderTarget[] | null;
     private _splitRenderBuffers;
     gl?: {
@@ -38,4 +40,5 @@ export declare class RenderTarget {
     getTextures(): Texture[];
     private removeTextureFromBuffer;
     setSize(width: number, height: number): void;
+    setAsValid(): void;
 }

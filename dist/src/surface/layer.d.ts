@@ -15,6 +15,7 @@ import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
 export interface IInstanceProvider<T extends Instance> {
     resolveContext: string;
+    uid: number;
     changeList: InstanceDiff<T>[];
     remove(instance: T): void;
     resolve(context: string): void;
@@ -70,6 +71,8 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     resource: ResourceManager;
     surface: LayerSurface;
     uniforms: IUniformInternal[];
+    readonly uid: number;
+    private _uid;
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
     willRebuildLayer: boolean;

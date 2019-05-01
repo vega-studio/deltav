@@ -32,10 +32,8 @@ export declare class LabelInstance extends Instance {
     glyphs: GlyphInstance[];
     size: Size;
     truncatedText: string;
-    private _anchor;
+    anchor: Anchor;
     constructor(options: ILabelInstanceOptions);
-    readonly anchor: Anchor;
-    setAnchor(anchor: Anchor): void;
     subTextGlyphs(text: string): GlyphInstance[];
     resourceTrigger(): void;
 }

@@ -22,7 +22,6 @@ export interface ILabelLayerProps<T extends LabelInstance> extends ILayerProps<T
     resourceKey?: string;
     scaleMode?: ScaleMode;
     truncation?: string;
-    whiteSpaceKerning?: number;
 }
 export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerProps<T>> extends Layer<T, U> {
     static defaultProps: ILabelLayerProps<LabelInstance>;
@@ -50,6 +49,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     layoutGlyphs(instance: T): void;
     managesInstance(instance: T): boolean;
     showGlyphs(instance: T): void;
+    updateAnchor(instance: T): void;
     updateGlyphs(instance: T, layout: KernedLayout): void;
     updateGlyphColors(instance: T): void;
     updateGlyphOrigins(instance: T): void;

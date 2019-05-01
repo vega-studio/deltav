@@ -20,7 +20,7 @@ declare type ResourceReference = {
 export declare class Atlas extends IdentifyByKey implements IAtlasResource {
     height: TextureSize;
     packing: PackNode<SubTexture>;
-    resourceReferences: Map<string | ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, ResourceReference>;
+    resourceReferences: Map<string | HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement, ResourceReference>;
     texture: Texture;
     textureSettings?: TextureOptions;
     type: number;

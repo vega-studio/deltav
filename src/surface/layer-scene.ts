@@ -70,8 +70,7 @@ export class LayerScene extends IdentifyByKey {
   }
 
   /**
-   * Removes a layer from the scene. No resort is needed as remove operations
-   * do not adjust the sorting order.
+   * Ensures a layer is removed from the scene
    */
   removeLayer(layer: Layer<any, any>) {
     if (this.layers) {
@@ -82,13 +81,6 @@ export class LayerScene extends IdentifyByKey {
         return;
       }
     }
-
-    console.warn(
-      "Could not remove a layer from the scene as the layer was not a part of the scene to start. Scene:",
-      this.id,
-      "Layer:",
-      layer.id
-    );
   }
 
   sortLayers() {

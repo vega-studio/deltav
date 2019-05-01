@@ -69,6 +69,9 @@ export class NodesEdges extends BaseDemo {
     fontSize: 14,
     scaleMode: ScaleMode.BOUND_MAX,
 
+    circleRadius: 200,
+    nodeRadius: 10,
+
     previous: {
       count: 10
     }
@@ -105,6 +108,18 @@ export class NodesEdges extends BaseDemo {
     parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
+      }, 250)
+    );
+
+    parameters.add(this.parameters, "nodeRadius", 4, 500, 1).onChange(
+      debounce(async (_value: number) => {
+        this.layout();
+      }, 250)
+    );
+
+    parameters.add(this.parameters, "circleRadius", 4, 5000, 1).onChange(
+      debounce(async (_value: number) => {
+        this.layout();
       }, 250)
     );
 
@@ -256,7 +271,7 @@ export class NodesEdges extends BaseDemo {
 
     const node = new CircleInstance({
       center: [0, 0],
-      radius: 10,
+      radius: this.parameters.nodeRadius,
       color: [1, 1, 1, 1]
     });
 
@@ -307,7 +322,7 @@ export class NodesEdges extends BaseDemo {
   }
 
   layout() {
-    const distance = 200;
+    const distance = this.parameters.circleRadius;
 
     nextFrame(() => {
       this.circles.forEach((circle, i) => {
@@ -320,6 +335,7 @@ export class NodesEdges extends BaseDemo {
         );
 
         circle.color = this.makeColor(i);
+        circle.radius = this.parameters.nodeRadius;
       });
 
       this.edges.forEach((edge, i) => {
@@ -345,17 +361,13 @@ export class NodesEdges extends BaseDemo {
 
         if (angle > Math.PI / 2 && angle < Math.PI * 3 / 2) {
           lbl.anchor = {
-            // type: AnchorType.TopLeft,
-            // padding: 0
             type: AnchorType.MiddleRight,
-            padding: this.circles[i].radius + 2
+            padding: this.circles[i].radius
           };
         } else {
           lbl.anchor = {
-            // type: AnchorType.TopLeft,
-            // padding: 0
             type: AnchorType.MiddleLeft,
-            padding: this.circles[i].radius + 2
+            padding: this.circles[i].radius
           };
         }
       });

@@ -1,3 +1,4 @@
+import { Vec2 } from "../util/vector";
 export declare enum AnchorType {
     BottomLeft = 0,
     BottomMiddle = 1,
@@ -12,6 +13,7 @@ export declare enum AnchorType {
 }
 export declare type Anchor = {
     padding: number;
+    paddingDirection?: Vec2;
     type: AnchorType;
     x?: number;
     y?: number;

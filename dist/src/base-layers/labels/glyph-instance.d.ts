@@ -12,6 +12,7 @@ export declare class GlyphInstance extends Instance {
     fontScale: number;
     offset: Vec2;
     origin: Vec2;
+    padding: Vec2;
     parentLabel?: LabelInstance;
     onReady?: (glyph: GlyphInstance) => void;
     request: IFontResourceRequest;

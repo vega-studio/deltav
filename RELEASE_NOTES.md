@@ -1,5 +1,14 @@
 # Release Notes
 
+## 1.26.3
+
+* `(FIXED)` Layers can rebuild properly now
+* `(FIXED)` Node edge demo added
+* `(FIXED)` Added back scale modes for the labels
+* `(FIXED)` Label anchors now properly position the label relative to its origin.
+* `(FIXED)` Reduced overhead for readPixels by removing a frame buffer check
+* `(FIXED)` Organized the font request code to make the requests easier to find as its own file
+
 ## 1.26.2
 
 * `(FIXED)` Improved picking performance for many scenarios

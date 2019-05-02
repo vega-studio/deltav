@@ -18,7 +18,12 @@ export class Instance implements Identifiable {
   }
 
   /** This indicates when the instance is active / rendering */
-  @observable active: boolean;
+  get active() { return this._active; }
+  set active(val: boolean) {
+    this._active = val;
+    this.reactivate = true;
+  }
+  @observable _active: boolean;
   /** The property changes on the instance */
   changes: { [key: number]: number } = {};
   /**
@@ -38,6 +43,8 @@ export class Instance implements Identifiable {
   observableStorage: any[] = [];
   /** A numerical look up for the instance. Numerical identifiers run faster than objects or strings */
   @observable private _uid = Instance.newUID;
+  /** This is the flag indicating this instance was reactivated. When true, this performs a full update of all properties on the instance */
+  reactivate: boolean = false;
 
   /**
    * Retrieves a method for disposing the link between observables and observer.

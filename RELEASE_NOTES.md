@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.26.8
+
+* `(FIXED)` Improved easy blending with circles
+
 ## 1.26.7
 
 * `(FIXED)` Instances reactivate flag is now unset after reactivation

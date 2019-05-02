@@ -7,6 +7,7 @@ export interface IInstanceOptions {
 export declare class Instance implements Identifiable {
     static readonly newUID: number;
     active: boolean;
+    _active: boolean;
     changes: {
         [key: number]: number;
     };
@@ -18,6 +19,7 @@ export declare class Instance implements Identifiable {
     private _observer;
     observableStorage: any[];
     private _uid;
+    reactivate: boolean;
     readonly observableDisposer: () => void;
     observer: InstanceProvider<this> | null;
     clearEasing(): void;

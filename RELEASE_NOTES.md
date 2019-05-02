@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.26.6
+
+* `(FIXED)` Reactivating an instance (without removing and adding to a provider) now properly syncs all attributes upon reactivation. This ensures changes made while inactive are properly synced with the buffer after made active again.
+
 ## 1.26.5
 
 * `(FIXED)` maxScale capabilities added back in for BOUND_MAX scale mode which allows for better controls to prevent a font from scaling up too much to keep it crisp.

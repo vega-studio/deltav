@@ -1,5 +1,5 @@
 import * as datGUI from "dat.gui";
-import { BasicCameraController, ChartCamera, CircleInstance, EdgeInstance, InstanceProvider, ISceneOptions, LabelInstance, LayerInitializer, RectangleInstance, ScaleMode, Vec4 } from "src";
+import { ArcInstance, BasicCameraController, ChartCamera, CircleInstance, EdgeInstance, InstanceProvider, ISceneOptions, LabelInstance, LayerInitializer, RectangleInstance, ScaleMode, Vec4 } from "src";
 import { IDefaultResources } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 export declare function wait(t: number): Promise<{}>;
@@ -12,11 +12,13 @@ export declare class NodesEdges extends BaseDemo {
     lblToRect: Map<LabelInstance, RectangleInstance>;
     center: CircleInstance;
     providers: {
+        arcs: InstanceProvider<ArcInstance>;
         circles: InstanceProvider<CircleInstance>;
         edges: InstanceProvider<EdgeInstance>;
         rectangles: InstanceProvider<RectangleInstance>;
         labels: InstanceProvider<LabelInstance>;
     };
+    arcs: ArcInstance[];
     parameters: {
         count: number;
         fontSize: number;

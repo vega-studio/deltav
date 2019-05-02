@@ -18,7 +18,9 @@ export class Instance implements Identifiable {
   }
 
   /** This indicates when the instance is active / rendering */
-  get active() { return this._active; }
+  get active() {
+    return this._active;
+  }
   set active(val: boolean) {
     this._active = val;
     this.reactivate = true;

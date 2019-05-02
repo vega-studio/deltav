@@ -150,6 +150,7 @@ export class InstanceAttributeDiffProcessor<
       // If no prop ids provided, then we perform a complete instance property update
       if (propIds.length === 0 || instance.reactivate) {
         propIds = this.bufferManager.getUpdateAllPropertyIdList();
+        instance.reactivate = false;
       }
 
       for (let i = 0, end = propIds.length; i < end; ++i) {
@@ -239,6 +240,7 @@ export class InstanceAttributeDiffProcessor<
       // If no prop ids provided, then we perform a complete instance property update
       if (propIds.length === 0 || instance.reactivate) {
         propIds = this.bufferManager.getUpdateAllPropertyIdList();
+        instance.reactivate = false;
       }
 
       for (let i = 0, end = propIds.length; i < end; ++i) {

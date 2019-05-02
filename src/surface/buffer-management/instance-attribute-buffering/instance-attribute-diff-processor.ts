@@ -214,6 +214,9 @@ export class InstanceAttributeDiffProcessor<
       updateRange[2] = max(location.range[1], updateRange[2]);
       bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
     }
+
+    // Make sure the instance reactivation process is not executed again
+    instance.reactivate = false;
   }
 
   /**
@@ -282,6 +285,9 @@ export class InstanceAttributeDiffProcessor<
       location.buffer.value.set(updateValue, location.range[0]);
       bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;
     }
+
+    // Make sure the instance reactivation process is not executed again
+    instance.reactivate = false;
   }
 
   /**

@@ -177,6 +177,13 @@ export class EasingIOExpansion extends BaseIOExpansion {
           instance.easing.set(easingUID, values);
         }
 
+        // On instance reactivation we want the easing to just be at it's end value
+        else if (instance.reactivate) {
+          values.end = vecMethods.copy(end);
+          values.start = vecMethods.copy(end);
+          values.startTime = currentTime;
+        }
+
         // Assign the established values
         easingValues = values;
         duration = attributeDuration;

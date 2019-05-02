@@ -8,15 +8,15 @@ export interface IArcInstanceOptions extends IInstanceOptions {
   /** The center point where the arc wraps around */
   center: Vec2;
   /** This is the end color of the arc */
-  colorEnd: Vec4;
+  colorEnd?: Vec4;
   /** This is the start color of the arc */
-  colorStart: Vec4;
+  colorStart?: Vec4;
   /** Depth sorting of the arc (or the z value of the lable) */
-  depth: number;
+  depth?: number;
   /** The radius of how far the middle of the arc is from the center point */
   radius: number;
   /** The start to end thickness of the arc */
-  thickness: Vec2;
+  thickness?: Vec2;
 }
 
 /**
@@ -28,17 +28,19 @@ export class ArcInstance extends Instance {
   /** The start and end angle of the arc */
   @observable angle: Vec2 = [0, Math.PI];
   /** This is the end color of the arc */
-  @observable colorEnd: Vec4 = [0, 0, 0, 1];
+  @observable colorEnd: Vec4 = [1, 1, 1, 1];
   /** This is the start color of the arc */
-  @observable colorStart: Vec4 = [0, 0, 0, 1];
+  @observable colorStart: Vec4 = [1, 1, 1, 1];
   /** The center point where the arc wraps around */
   @observable center: Vec2 = [0, 0];
   /** Depth sorting of the arc (or the z value of the lable) */
   @observable depth: number = 0;
+  /** An offset to apply to the angle. This makes it easy to animate the arc or set a point of reference for angle 0 */
+  @observable angleOffset: number = 0;
   /** The radius of how far the middle of the arc is from the center point */
   @observable radius: number = 1;
   /** The start to end thickness of the arc */
-  @observable thickness: Vec2 = [1, 1];
+  @observable thickness: Vec2 = [5, 5];
 
   constructor(options: IArcInstanceOptions) {
     super(options);

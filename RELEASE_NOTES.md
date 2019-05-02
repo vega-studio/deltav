@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.26.7
+
+* `(FIXED)` Instances reactivate flag is now unset after reactivation
+* `(FIXED)` Auto easing methods start at their end values upon reactivation. Thus preventing unintended initialized animations on reactivation
+
 ## 1.26.6
 
 * `(FIXED)` Reactivating an instance (without removing and adding to a provider) now properly syncs all attributes upon reactivation. This ensures changes made while inactive are properly synced with the buffer after made active again.

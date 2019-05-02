@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.27.0
+
+* `(ADDED)` Arcs have an offset for angle now. Makes animating rotations easier and makes it easier to set the orientation of angle 0.
+* `(FIXED)` Improved precision issues with arcs
+
 ## 1.26.8
 
 * `(FIXED)` Improved easy blending with circles

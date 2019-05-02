@@ -25,6 +25,7 @@ export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
   scaleType?: ArcScaleType;
   animate?: {
     angle?: IAutoEasingMethod<Vec>;
+    angleOffset?: IAutoEasingMethod<Vec>;
     center?: IAutoEasingMethod<Vec>;
     colorEnd?: IAutoEasingMethod<Vec>;
     colorStart?: IAutoEasingMethod<Vec>;
@@ -51,6 +52,7 @@ export class ArcLayer<
   /** Easy lookup of all attribute names for the layer */
   static attributeNames = {
     angle: "angle",
+    angleOffset: "angleOffset",
     center: "center",
     colorEnd: "colorEnd",
     colorStart: "colorStart",
@@ -67,6 +69,7 @@ export class ArcLayer<
     const animations = this.props.animate || {};
     const {
       angle: animateAngle,
+      angleOffset: animateAngleOffset,
       center: animateCenter,
       radius: animateRadius,
       thickness: animateThickness,
@@ -130,6 +133,12 @@ export class ArcLayer<
           name: ArcLayer.attributeNames.angle,
           size: InstanceAttributeSize.TWO,
           update: o => o.angle
+        },
+        {
+          easing: animateAngleOffset,
+          name: ArcLayer.attributeNames.angleOffset,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.angleOffset]
         },
         {
           easing: animateColorStart,

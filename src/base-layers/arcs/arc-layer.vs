@@ -13,8 +13,8 @@ void main() {
   ${attributes}
 
   // Destructure some of the vec injections
-  float startAngle = angle.x;
-  float endAngle = angle.y;
+  float startAngle = angle.x + angleOffset;
+  float endAngle = angle.y + angleOffset;
   float widthStart = thickness.x;
   float widthEnd = thickness.y;
   // Destructure threejs's bug with the position requirement

@@ -4,6 +4,16 @@ import { ShaderModule } from "../processing";
 // All of the constants fragments
 const constants = [
   {
+    moduleId: "PI_INV",
+    content: require("./shader-fragments/constants/pi_inv.vs"),
+    compatibility: ShaderInjectionTarget.ALL
+  },
+  {
+    moduleId: "PI2_INV",
+    content: require("./shader-fragments/constants/pi2_inv.vs"),
+    compatibility: ShaderInjectionTarget.ALL
+  },
+  {
     moduleId: "PI_2",
     content: require("./shader-fragments/constants/pi_2.vs"),
     compatibility: ShaderInjectionTarget.ALL
@@ -57,6 +67,16 @@ const methods = [
   {
     moduleId: "arc",
     content: require("./shader-fragments/arc.vs"),
+    compatibility: ShaderInjectionTarget.ALL
+  },
+  {
+    moduleId: "fmod",
+    content: require("./shader-fragments/fmod.vs"),
+    compatibility: ShaderInjectionTarget.ALL
+  },
+  {
+    moduleId: "wrap",
+    content: require("./shader-fragments/wrap.vs"),
     compatibility: ShaderInjectionTarget.ALL
   },
   {

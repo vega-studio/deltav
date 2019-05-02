@@ -3,6 +3,9 @@ import * as datGUI from "dat.gui";
 import {
   add2,
   AnchorType,
+  ArcInstance,
+  ArcLayer,
+  AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
   ChartCamera,
@@ -57,11 +60,32 @@ export class NodesEdges extends BaseDemo {
 
   /** Surface providers */
   providers = {
+    arcs: new InstanceProvider<ArcInstance>(),
     circles: new InstanceProvider<CircleInstance>(),
     edges: new InstanceProvider<EdgeInstance>(),
     rectangles: new InstanceProvider<RectangleInstance>(),
     labels: new InstanceProvider<LabelInstance>()
   };
+
+  /** Arcs used to animate hover */
+  arcs: ArcInstance[] = [
+    new ArcInstance({
+      angle: [0, Math.PI / 2],
+      colorEnd: [1, 1, 1, 1],
+      colorStart: [1, 1, 1, 1],
+      center: [0, 0],
+      thickness: [2, 2],
+      radius: 15
+    }),
+    new ArcInstance({
+      angle: [-Math.PI, -Math.PI / 2],
+      colorEnd: [1, 1, 1, 1],
+      colorStart: [1, 1, 1, 1],
+      center: [0, 0],
+      thickness: [2, 2],
+      radius: 15
+    })
+  ];
 
   /** GUI properties */
   parameters = {
@@ -157,6 +181,18 @@ export class NodesEdges extends BaseDemo {
    */
   getLayers(resources: IDefaultResources): LayerInitializer[] {
     return [
+      createLayer(ArcLayer, {
+        animate: {
+          angleOffset: AutoEasingMethod.linear(
+            1000,
+            0,
+            AutoEasingLoopStyle.REPEAT
+          )
+        },
+        data: this.providers.arcs,
+        key: "arcs",
+        scene: "default"
+      }),
       createLayer(EdgeLayer, {
         animate: {
           colorStart: AutoEasingMethod.easeInOutCubic(500),
@@ -179,7 +215,21 @@ export class NodesEdges extends BaseDemo {
 
         onMouseOver: (info: IPickInfo<CircleInstance>) => {
           const over = new Set();
-          info.instances.forEach(circle => over.add(circle));
+          info.instances.forEach(circle => {
+            over.add(circle);
+
+            this.arcs.forEach(arc => {
+              arc.center = copy2(circle.center);
+              arc.radius = circle.radius + 4;
+              arc.angleOffset = 0;
+
+              nextFrame(() => {
+                arc.angleOffset = Math.PI * 2;
+              });
+
+              this.providers.arcs.add(arc);
+            });
+          });
 
           this.circles.forEach(circle => {
             if (over.has(circle)) return;
@@ -190,6 +240,10 @@ export class NodesEdges extends BaseDemo {
         onMouseOut: (_info: IPickInfo<CircleInstance>) => {
           this.circles.forEach((circle, i) => {
             circle.color = this.makeColor(i);
+          });
+
+          this.arcs.forEach(arc => {
+            this.providers.arcs.remove(arc);
           });
         }
       }),

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.27.2
+
+* `(FIXED)` Layers now respond to their pick type changing by rebuilding the layer
+
 ## 1.27.1
 
 * `(FIXED)` Mouse interactions now broadcast in the proper order, Out then Over then move

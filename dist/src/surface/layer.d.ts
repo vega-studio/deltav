@@ -108,5 +108,5 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     shouldDrawView(oldProps: U, newProps: U): boolean;
     updateUniforms(): void;
     willUpdateInstances(_changes: [T, InstanceDiffType]): void;
-    willUpdateProps(_newProps: ILayerProps<T>): void;
+    willUpdateProps(newProps: ILayerProps<T>): void;
 }

@@ -4,8 +4,8 @@ import { Vec2 } from "../util";
 import { ILayerProps, Layer } from "./layer";
 export declare class LayerInteractionHandler<T extends Instance, U extends ILayerProps<T>> {
     colorPicking?: IColorPickingData;
-    isMouseOver: Map<T, boolean>;
-    isMouseDown: Map<T, boolean>;
+    isMouseOver: Set<T>;
+    isMouseDown: Set<T>;
     layer: Layer<T, U>;
     constructor(layer: Layer<T, U>);
     getColorPickInstance(): T | null | undefined;

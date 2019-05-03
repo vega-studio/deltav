@@ -94,7 +94,7 @@ export class NodesEdges extends BaseDemo {
     scaleMode: ScaleMode.BOUND_MAX,
 
     circleRadius: 200,
-    nodeRadius: 10,
+    nodeRadius: 65,
 
     previous: {
       count: 10

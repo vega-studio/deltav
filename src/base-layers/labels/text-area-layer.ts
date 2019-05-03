@@ -273,7 +273,9 @@ export class TextAreaLayer<
         "maxWidth",
         "maxHeight",
         "origin",
-        "text"
+        "text",
+        "paddings",
+        "borderWidth"
       ]);
     }
 
@@ -286,7 +288,9 @@ export class TextAreaLayer<
       lineWrap: lineWrapId,
       lineHeight: lineHeightId,
       maxWidth: maxWidthId,
-      maxHeight: maxHeightId
+      maxHeight: maxHeightId,
+      paddings: paddingsId,
+      borderWidth: borderWidthId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -337,6 +341,15 @@ export class TextAreaLayer<
           if (changed[maxHeightId] !== undefined) {
             this.updateTextAreaSize(instance);
           }
+
+          if (changed[paddingsId] !== undefined) {
+            this.updateTextAreaSize(instance);
+          }
+
+          if (changed[borderWidthId] !== undefined) {
+            this.updateBorderWidth(instance);
+          }
+
           break;
 
         case InstanceDiffType.INSERT:
@@ -462,6 +475,15 @@ export class TextAreaLayer<
     currentY: number,
     spaceWidth: number
   ): [number, number] {
+    const topPadding = instance.paddings[0];
+    const rightPadding = instance.paddings[1] || 0;
+    const bottomPadding = instance.paddings[2] || 0;
+    const leftPadding = instance.paddings[3] || 0;
+    const maxWidth = instance.maxWidth - leftPadding - rightPadding;
+    const maxHeight = instance.maxHeight - topPadding - bottomPadding;
+    const originX = instance.origin[0] + leftPadding;
+    const originY = instance.origin[1] + topPadding;
+
     const glyphWidths = label.glyphWidths;
     label.active = false;
     label.toShow = false;
@@ -472,10 +494,7 @@ export class TextAreaLayer<
     const label1 = new LabelInstance({
       color: instance.color,
       fontSize: instance.fontSize,
-      origin: [
-        instance.origin[0] + currentX,
-        instance.origin[1] + currentY + offsetY1
-      ],
+      origin: [originX + currentX, originY + currentY + offsetY1],
       text: text1
     });
 
@@ -492,16 +511,16 @@ export class TextAreaLayer<
       currentX = 0;
 
       // Label2
-      if (currentY + instance.lineHeight <= instance.maxHeight) {
+      if (currentY + instance.lineHeight <= maxHeight) {
         let widthLeft =
           glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
 
         while (
-          widthLeft > instance.maxWidth &&
-          currentY + instance.lineHeight <= instance.maxHeight
+          widthLeft > maxWidth &&
+          currentY + instance.lineHeight <= maxHeight
         ) {
           let j = glyphWidths.length - 1;
-          while (glyphWidths[j] - glyphWidths[index] > instance.maxWidth) {
+          while (glyphWidths[j] - glyphWidths[index] > maxWidth) {
             j--;
           }
           const text = word.substring(index + 1, j + 1);
@@ -509,10 +528,7 @@ export class TextAreaLayer<
           const label3 = new LabelInstance({
             color: instance.color,
             fontSize: instance.fontSize,
-            origin: [
-              instance.origin[0] + currentX,
-              instance.origin[1] + currentY + offsetY
-            ],
+            origin: [originX + currentX, originY + currentY + offsetY],
             text
           });
 
@@ -526,16 +542,13 @@ export class TextAreaLayer<
           widthLeft = glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
         }
 
-        if (currentY + instance.lineHeight <= instance.maxHeight) {
+        if (currentY + instance.lineHeight <= maxHeight) {
           const text2 = word.substring(index + 1);
           const offsetY2 = getOffsetY(text2, glyphToHeight);
           const label2 = new LabelInstance({
             color: instance.color,
             fontSize: instance.fontSize,
-            origin: [
-              instance.origin[0] + currentX,
-              instance.origin[1] + currentY + offsetY2
-            ],
+            origin: [originX + currentX, originY + currentY + offsetY2],
             text: text2
           });
 
@@ -649,37 +662,49 @@ export class TextAreaLayer<
     this.layoutLabels(instance);
   }
 
+  updateBorderWidth(instance: T) {
+    // Clear all borders
+    for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
+      const border = instance.borders[i];
+      this.recProvider.remove(border);
+    }
+
+    instance.borders = [];
+    this.layoutBorder(instance);
+  }
+
   /** Layout the border of textAreaInstance */
   layoutBorder(instance: T) {
+    const borderWidth = instance.borderWidth;
     const topBorder: RectangleInstance = new RectangleInstance({
       color: instance.color,
-      height: 1,
-      width: instance.maxWidth,
-      x: instance.origin[0],
-      y: instance.origin[1]
+      height: borderWidth,
+      width: instance.maxWidth + 2 * borderWidth,
+      x: instance.origin[0] - borderWidth,
+      y: instance.origin[1] - borderWidth
     });
 
     const leftBorder: RectangleInstance = new RectangleInstance({
       color: instance.color,
-      height: instance.maxHeight,
-      width: 1,
-      x: instance.origin[0],
-      y: instance.origin[1]
+      height: instance.maxHeight + 2 * borderWidth,
+      width: borderWidth,
+      x: instance.origin[0] - borderWidth,
+      y: instance.origin[1] - borderWidth
     });
 
     const rightBorder: RectangleInstance = new RectangleInstance({
       color: instance.color,
-      height: instance.maxHeight,
-      width: 1,
+      height: instance.maxHeight + 2 * borderWidth,
+      width: borderWidth,
       x: instance.origin[0] + instance.maxWidth,
-      y: instance.origin[1]
+      y: instance.origin[1] - borderWidth
     });
 
     const bottomBorder: RectangleInstance = new RectangleInstance({
       color: instance.color,
-      height: 1,
-      width: instance.maxWidth,
-      x: instance.origin[0],
+      height: borderWidth,
+      width: instance.maxWidth + 2 * borderWidth,
+      x: instance.origin[0] - borderWidth,
       y: instance.origin[1] + instance.maxHeight
     });
 
@@ -696,6 +721,15 @@ export class TextAreaLayer<
 
   /** Calculate the positions of labels */
   layoutLabels(instance: T) {
+    const topPadding = instance.paddings[0];
+    const rightPadding = instance.paddings[1] || 0;
+    const bottomPadding = instance.paddings[2] || 0;
+    const leftPadding = instance.paddings[3] || 0;
+    const maxWidth = instance.maxWidth - leftPadding - rightPadding;
+    const maxHeight = instance.maxHeight - topPadding - bottomPadding;
+    const originX = instance.origin[0] + leftPadding;
+    const originY = instance.origin[1] + topPadding;
+
     const spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
 
     let glyphToHeight = this.areaToGlyphHeights.get(instance);
@@ -733,17 +767,20 @@ export class TextAreaLayer<
         const width = label.getWidth();
 
         // Make sure all the labels are within maxHeight
-        if (currentY + instance.lineHeight <= instance.maxHeight) {
+        if (currentY + instance.lineHeight <= maxHeight) {
           // Whole label can be put within maxWidth
-          if (currentX + width <= instance.maxWidth) {
+          if (currentX + width <= maxWidth) {
             const offsetY = getOffsetY(label.text, glyphToHeight);
-            label.origin = [
-              instance.origin[0] + currentX,
-              instance.origin[1] + currentY + offsetY
-            ];
+            label.origin = [originX + currentX, originY + currentY + offsetY];
             currentX += width + spaceWidth;
-            if (currentX >= instance.maxWidth) {
-              if (instance.lineWrap === WordWrap.NORMAL) {
+
+            if (currentX >= maxWidth) {
+              // If next label is not NEWLINE, no need to move to next line
+              if (
+                instance.lineWrap === WordWrap.NORMAL &&
+                i + 1 < endi &&
+                instance.labels[i + 1] !== SpecialLetter.NEWLINE
+              ) {
                 currentX = 0;
                 currentY += instance.lineHeight;
               }
@@ -751,7 +788,7 @@ export class TextAreaLayer<
           }
           // A label will be cut into two parts if label's width exceeds maxwidth
           else {
-            const spaceLeft = instance.maxWidth - currentX;
+            const spaceLeft = maxWidth - currentX;
             const glyphWidths = label.glyphWidths;
             let index = glyphWidths.length - 1;
             const word = label.text;
@@ -784,24 +821,28 @@ export class TextAreaLayer<
                 currentY += instance.lineHeight;
                 currentX = 0;
 
-                if (currentY + instance.lineHeight < instance.maxHeight) {
+                if (currentY + instance.lineHeight < maxHeight) {
                   // Put label with in the line
-                  if (currentX + label.getWidth() <= instance.maxWidth) {
+                  if (currentX + label.getWidth() <= maxWidth) {
                     const offsetY = getOffsetY(label.text, glyphToHeight);
                     label.origin = [
-                      instance.origin[0] + currentX,
-                      instance.origin[1] + currentY + offsetY
+                      originX + currentX,
+                      originY + currentY + offsetY
                     ];
 
                     currentX += label.getWidth() + spaceWidth;
-                    if (currentX >= instance.maxWidth) {
+                    if (
+                      currentX >= maxWidth &&
+                      i + 1 < endi &&
+                      instance.labels[i + 1] !== SpecialLetter.NEWLINE
+                    ) {
                       currentX = 0;
                       currentY += instance.lineHeight;
                     }
                   }
                   // Put part of label in this line, move other part to following lines
                   else {
-                    const spaceLeft = instance.maxWidth - currentX;
+                    const spaceLeft = maxWidth - currentX;
                     const glyphWidths = label.glyphWidths;
                     let index = glyphWidths.length - 1;
                     const word = label.text;

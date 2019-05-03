@@ -5,7 +5,8 @@ import {
   createLayer,
   InstanceProvider,
   ISceneOptions,
-  LayerInitializer
+  LayerInitializer,
+  Vec1Compat
 } from "src";
 import {
   TextAreaInstance,
@@ -23,12 +24,17 @@ export class TextAreaDemo extends BaseDemo {
     are you`,
     fontSize: 24,
     maxHeight: 510,
-    maxWidth: 400,
+    maxWidth: 375,
     color: [0, 1, 0, 1],
     x: 0,
     y: 0,
     lineHeight: 30,
-    lineWrap: 1
+    lineWrap: 1,
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+    borderWidth: 1
   };
 
   providers = {
@@ -53,7 +59,6 @@ export class TextAreaDemo extends BaseDemo {
     parameters
       .addColor(this.parameters, "color")
       .onChange((value: [number, number, number, number]) => {
-        console.warn(value);
         if (value[0] > 1 || value[1] > 1 || value[2] > 1) {
           this.textArea.color = [
             value[0] / 255,
@@ -79,7 +84,7 @@ export class TextAreaDemo extends BaseDemo {
       });
 
     parameters
-      .add(this.parameters, "maxWidth", 20, 500, 1)
+      .add(this.parameters, "maxWidth", 20, 1000, 1)
       .onChange((value: number) => {
         this.textArea.maxWidth = value;
       });
@@ -107,6 +112,64 @@ export class TextAreaDemo extends BaseDemo {
         } else if (value === "1") {
           this.textArea.lineWrap = WordWrap.NORMAL;
         }
+      });
+
+    parameters
+      .add(this.parameters, "paddingTop", 0, 20, 1)
+      .onChange((value: number) => {
+        const newPaddings: Vec1Compat = [
+          value,
+          this.textArea.paddings[1] || 0,
+          this.textArea.paddings[2] || 0,
+          this.textArea.paddings[3] || 0
+        ];
+
+        this.textArea.paddings = newPaddings;
+      });
+
+    parameters
+      .add(this.parameters, "paddingRight", 0, 20, 1)
+      .onChange((value: number) => {
+        const newPaddings: Vec1Compat = [
+          this.textArea.paddings[0],
+          value,
+          this.textArea.paddings[2] || 0,
+          this.textArea.paddings[3] || 0
+        ];
+
+        this.textArea.paddings = newPaddings;
+      });
+
+    parameters
+      .add(this.parameters, "paddingBottom", 0, 20, 1)
+      .onChange((value: number) => {
+        const newPaddings: Vec1Compat = [
+          this.textArea.paddings[0],
+          this.textArea.paddings[1] || 0,
+          value,
+          this.textArea.paddings[3] || 0
+        ];
+
+        this.textArea.paddings = newPaddings;
+      });
+
+    parameters
+      .add(this.parameters, "paddingLeft", 0, 20, 1)
+      .onChange((value: number) => {
+        const newPaddings: Vec1Compat = [
+          this.textArea.paddings[0],
+          this.textArea.paddings[1] || 0,
+          this.textArea.paddings[2] || 0,
+          value
+        ];
+
+        this.textArea.paddings = newPaddings;
+      });
+
+    parameters
+      .add(this.parameters, "borderWidth", 0, 30, 1)
+      .onChange((value: number) => {
+        this.textArea.borderWidth = value;
       });
   }
 
@@ -148,7 +211,15 @@ export class TextAreaDemo extends BaseDemo {
       maxWidth: this.parameters.maxWidth,
       maxHeight: this.parameters.maxHeight,
       lineHeight: this.parameters.lineHeight,
-      lineWrap: this.parameters.lineWrap === 1 ? WordWrap.NORMAL : WordWrap.NONE
+      lineWrap:
+        this.parameters.lineWrap === 1 ? WordWrap.NORMAL : WordWrap.NONE,
+      paddings: [
+        this.parameters.paddingTop,
+        this.parameters.paddingRight,
+        this.parameters.paddingBottom,
+        this.parameters.paddingLeft
+      ],
+      borderWidth: this.parameters.borderWidth
     });
 
     this.textArea = textArea;

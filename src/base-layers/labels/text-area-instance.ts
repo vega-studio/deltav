@@ -1,4 +1,4 @@
-import { Vec2 } from "src/util";
+import { Vec1Compat, Vec2 } from "src/util";
 import { observable } from "../../instance-provider/observable";
 import { RectangleInstance } from "../rectangle";
 import { GlyphInstance } from "./glyph-instance";
@@ -35,6 +35,8 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   lineHeight?: number;
   lineWrap?: WordWrap;
   alignment?: TextAlignment;
+  paddings?: Vec1Compat;
+  borderWidth?: number;
 }
 
 /** Use to create new labelInstance */
@@ -82,6 +84,10 @@ export class TextAreaInstance extends LabelInstance {
   oldOrigin: [number, number];
   /** This stores old Font size which is used to calculate new font metrics */
   oldFontSize: number;
+  /** Stores paddings for the text area, [top, right, bottom, left] */
+  @observable paddings: Vec1Compat = [0, 0, 0, 0];
+  /** Border width */
+  @observable borderWidth: number = 6;
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);
@@ -90,15 +96,15 @@ export class TextAreaInstance extends LabelInstance {
     this.origin = options.origin;
     this.oldOrigin = options.origin;
     this.text = options.text;
-
     this.fontSize = options.fontSize || this.fontSize;
     this.oldFontSize = this.fontSize;
     this.maxWidth = options.maxWidth || this.maxWidth;
-
     this.maxHeight = options.maxHeight || this.maxHeight;
     this.lineHeight = options.lineHeight || this.lineHeight;
     this.lineWrap = options.lineWrap || this.lineWrap;
     this.alignment = options.alignment || this.alignment;
+    this.paddings = options.paddings || this.paddings;
+    this.borderWidth = options.borderWidth || this.borderWidth;
 
     this.generateLabels();
   }

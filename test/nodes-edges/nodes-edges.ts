@@ -94,7 +94,7 @@ export class NodesEdges extends BaseDemo {
     scaleMode: ScaleMode.BOUND_MAX,
 
     circleRadius: 200,
-    nodeRadius: 65,
+    nodeRadius: 10,
 
     previous: {
       count: 10
@@ -224,7 +224,15 @@ export class NodesEdges extends BaseDemo {
               arc.angleOffset = 0;
 
               nextFrame(() => {
-                arc.angleOffset = Math.PI * 2;
+                EasingUtil.all(
+                  true,
+                  [arc],
+                  [ArcLayer.attributeNames.angleOffset],
+                  easing => {
+                    easing.setStart([0]);
+                    arc.angleOffset = Math.PI * 2;
+                  }
+                );
               });
 
               this.providers.arcs.add(arc);

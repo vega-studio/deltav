@@ -106,6 +106,23 @@ export interface ILayerSurfaceOptions {
    * have better performance if needed.
    */
   pixelRatio?: number;
+  /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
+  rendererOptions?: {
+    /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
+    antialias?: boolean;
+    /**
+     * This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing
+     * the canvas with the rest of the DOM will be accomplished. This should match the color values being written to
+     * the final FBO target (render target null). If incorrect, bizarre color blending with the DOM can occur.
+     */
+    premultipliedAlpha?: boolean;
+    /**
+     * This sets what the browser will do with the target frame buffer object after it's done using it for compositing.
+     * If you wish to take a snap shot of the canvas being rendered into, this must be true. This has the potential
+     * to hurt performance, thus it is disabled by default.
+     */
+    preserveDrawingBuffer?: boolean;
+  };
   /**
    * These are the resources we want available that our layers can be provided to utilize
    * for their internal processes.
@@ -985,21 +1002,30 @@ export class LayerSurface {
     const height = canvas.height;
     let hasContext = true;
 
+    const rendererOptions: ILayerSurfaceOptions["rendererOptions"] = Object.assign(
+      {
+        antialias: false,
+        preserveDrawingBuffer: false,
+        premultiplyAlpha: false
+      },
+      options.rendererOptions
+    );
+
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
-      antialias: false,
+      antialias: rendererOptions.antialias,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
       // This indicates if the information written to the canvas is going to be written as premultiplied values
       // or if they will be standard rgba values. Helps with compositing with the DOM.
-      premultipliedAlpha: false,
+      premultipliedAlpha: rendererOptions.premultipliedAlpha,
 
       // Let's us know if there is no valid webgl context to work with or not
       onNoContext: () => {

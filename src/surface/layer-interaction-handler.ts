@@ -30,9 +30,9 @@ export class LayerInteractionHandler<
   /** This is the color picking information most recently rendered */
   colorPicking?: IColorPickingData;
   /** This tracks the elements that have the mouse currently over them */
-  isMouseOver = new Map<T, boolean>();
+  isMouseOver = new Set<T>();
   /** This tracks the elements the mouse was down on */
-  isMouseDown = new Map<T, boolean>();
+  isMouseDown = new Set<T>();
   /** This is the layer the interaction handler manages events for */
   layer: Layer<T, U>;
 
@@ -112,7 +112,7 @@ export class LayerInteractionHandler<
 
         // We track all the elements the mouse is currently down on
         this.isMouseDown.clear();
-        instances.forEach(o => this.isMouseDown.set(o, true));
+        instances.forEach(o => this.isMouseDown.add(o));
       }
     }
   }
@@ -243,46 +243,15 @@ export class LayerInteractionHandler<
           }
         }
 
-        // Broadcast the picking info for newly over instances to any of the layers listeners if needed
-        if (onMouseOver) {
-          const notOverInstances = instances.filter(
-            o => !this.isMouseOver.get(o)
-          );
-          info = {
-            instances: notOverInstances,
-            layer: this.layer.id,
-            projection: view,
-            querySpace,
-            screen: mouse,
-            world
-          };
-
-          if (notOverInstances.length > 0) onMouseOver(info);
-        }
-
-        // Broadcast the the picking info for all instances that the mouse moved on
-        if (onMouseMove) {
-          // This is the pick info object we will broadcast from the layer
-          info = {
-            instances,
-            layer: this.layer.id,
-            projection: view,
-            querySpace,
-            screen: mouse,
-            world
-          };
-
-          onMouseMove(info);
-        }
-
-        // We take the hovered instances
-        const isCurrentlyOver = new Map<T, boolean>();
-        instances.forEach(o => isCurrentlyOver.set(o, true));
+        // MOUSE OUT
+        // First broadcast Mouse out events
+        const isCurrentlyOver = new Set<T>();
+        instances.forEach(o => isCurrentlyOver.add(o));
 
         // Broadcast the the picking info for all instances that the mouse moved off of
         if (onMouseOut) {
           const noLongerOver = Array.from(this.isMouseOver.keys()).filter(
-            o => !isCurrentlyOver.get(o)
+            o => !isCurrentlyOver.has(o)
           );
 
           // This is the pick info object we will broadcast from the layer
@@ -296,6 +265,40 @@ export class LayerInteractionHandler<
           };
 
           if (noLongerOver.length > 0) onMouseOut(info);
+        }
+
+        // MOUSE OVER
+        // Broadcast the picking info for newly over instances to any of the layers listeners if needed
+        if (onMouseOver) {
+          const notOverInstances = instances.filter(
+            o => !this.isMouseOver.has(o)
+          );
+          info = {
+            instances: notOverInstances,
+            layer: this.layer.id,
+            projection: view,
+            querySpace,
+            screen: mouse,
+            world
+          };
+
+          if (notOverInstances.length > 0) onMouseOver(info);
+        }
+
+        // MOUSE MOVE
+        // Broadcast the the picking info for all instances that the mouse moved on
+        if (onMouseMove) {
+          // This is the pick info object we will broadcast from the layer
+          info = {
+            instances,
+            layer: this.layer.id,
+            projection: view,
+            querySpace,
+            screen: mouse,
+            world
+          };
+
+          onMouseMove(info);
         }
 
         // We store the current hovered over items as our over item list for next interaction

@@ -22,6 +22,11 @@ export interface ILayerSurfaceOptions {
     handlesWheelEvents?: boolean;
     ioExpansion?: BaseIOExpansion[] | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
     pixelRatio?: number;
+    rendererOptions?: {
+        antialias?: boolean;
+        premultipliedAlpha?: boolean;
+        preserveDrawingBuffer?: boolean;
+    };
     resources?: BaseResourceOptions[];
     resourceManagers?: {
         type: number;

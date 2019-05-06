@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.27.3
+
+* `(FIXED)` Basic Camera Controller setBounds works correctly now for the vertical axis
+
 ## 1.27.2
 
 * `(FIXED)` Layers now respond to their pick type changing by rebuilding the layer

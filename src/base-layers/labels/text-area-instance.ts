@@ -1,5 +1,5 @@
-import { Vec1Compat, Vec2 } from "src/util";
 import { observable } from "../../instance-provider/observable";
+import { Vec1Compat, Vec2 } from "../../util";
 import { RectangleInstance } from "../rectangle";
 import { GlyphInstance } from "./glyph-instance";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";

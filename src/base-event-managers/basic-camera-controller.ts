@@ -253,18 +253,20 @@ export class BasicCameraController extends EventManager {
       case CameraBoundsAnchor.TOP_LEFT:
       case CameraBoundsAnchor.TOP_MIDDLE:
       case CameraBoundsAnchor.TOP_RIGHT:
-        return (
-          -bounds.worldBounds.top - -bounds.screenPadding.top / this.scale[1]
+        return -(
+          bounds.worldBounds.top -
+          bounds.screenPadding.top / this.camera.scale[1]
         );
 
       case CameraBoundsAnchor.MIDDLE_LEFT:
       case CameraBoundsAnchor.MIDDLE:
       case CameraBoundsAnchor.MIDDLE_RIGHT:
-        return (
-          -(bounds.worldBounds.bottom - bounds.worldBounds.height / 2) +
+        return -(
+          bounds.worldBounds.bottom -
+          bounds.worldBounds.height / 2 -
           0.5 *
-            (targetView.screenBounds.height - bounds.screenPadding.bottom) /
-            this.scale[1]
+            ((targetView.screenBounds.height + bounds.screenPadding.bottom) /
+              this.camera.scale[1])
         );
 
       case CameraBoundsAnchor.BOTTOM_LEFT:
@@ -273,7 +275,7 @@ export class BasicCameraController extends EventManager {
         return -(
           bounds.worldBounds.bottom -
           (targetView.screenBounds.height - bounds.screenPadding.bottom) /
-            this.scale[1]
+            this.camera.scale[1]
         );
     }
   }
@@ -355,23 +357,23 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldTLinScreenSpace[1] >
-      targetView.screenBounds.top - bounds.screenPadding.top
+      worldBRinScreenSpace[1] <
+      targetView.screenBounds.bottom - bounds.screenPadding.bottom
     ) {
-      return -(
-        bounds.worldBounds.top -
-        bounds.screenPadding.top / this.camera.scale[1]
+      return (
+        -bounds.worldBounds.bottom +
+        (targetView.screenBounds.height - bounds.screenPadding.bottom) /
+          this.camera.scale[1]
       );
     }
 
     if (
-      worldBRinScreenSpace[1] <
-      targetView.screenBounds.bottom + bounds.screenPadding.bottom
+      worldTLinScreenSpace[1] >
+      targetView.screenBounds.top + bounds.screenPadding.top
     ) {
-      return -(
-        bounds.worldBounds.bottom +
-        (-targetView.screenBounds.height + bounds.screenPadding.bottom) /
-          this.camera.scale[1]
+      return (
+        -bounds.worldBounds.top +
+        bounds.screenPadding.top / this.camera.scale[0]
       );
     }
 

@@ -8,6 +8,8 @@ import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
+  Bounds,
+  CameraBoundsAnchor,
   ChartCamera,
   CircleInstance,
   CircleLayer,
@@ -32,6 +34,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   ScaleMode,
+  Size,
   Vec4
 } from "src";
 import { IDefaultResources, WORDS } from "test/types";
@@ -57,6 +60,8 @@ export class NodesEdges extends BaseDemo {
   rectangles: RectangleInstance[] = [];
   lblToRect = new Map<LabelInstance, RectangleInstance>();
   center: CircleInstance;
+  controller: BasicCameraController;
+  boundsView: RectangleInstance;
 
   /** Surface providers */
   providers = {
@@ -100,6 +105,8 @@ export class NodesEdges extends BaseDemo {
       count: 10
     }
   };
+
+  viewSize: Size;
 
   /**
    * Dat gui construction
@@ -160,11 +167,54 @@ export class NodesEdges extends BaseDemo {
       );
   }
 
+  adjustBounds() {
+    const worldBounds = new Bounds({
+      x:
+        -this.parameters.circleRadius -
+        this.parameters.nodeRadius +
+        this.center.center[0],
+      y:
+        -this.parameters.circleRadius -
+        this.parameters.nodeRadius +
+        this.center.center[1],
+      width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
+      height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
+    });
+
+    const minScale = Math.min(
+      this.viewSize[0] / worldBounds.width,
+      this.viewSize[1] / worldBounds.height
+    );
+
+    this.controller.setBounds({
+      anchor: CameraBoundsAnchor.MIDDLE,
+      scaleMax: [9999, 9999, 9999],
+      scaleMin: [minScale, minScale, minScale],
+      screenPadding: {
+        bottom: 40,
+        left: 40,
+        right: 40,
+        top: 40
+      },
+      view: "default-view",
+      worldBounds
+    });
+
+    if (this.controller.bounds && this.boundsView) {
+      this.boundsView.x = this.controller.bounds.worldBounds.x;
+      this.boundsView.y = this.controller.bounds.worldBounds.y;
+      this.boundsView.width = this.controller.bounds.worldBounds.width;
+      this.boundsView.height = this.controller.bounds.worldBounds.height;
+    }
+  }
+
   getEventManagers(
     defaultController: BasicCameraController,
     _defaultCamera: ChartCamera
   ) {
+    this.controller = defaultController;
     defaultController.wheelShouldScroll = false;
+
     return null;
   }
 
@@ -280,6 +330,7 @@ export class NodesEdges extends BaseDemo {
   async init() {
     const bounds = await this.getViewScreenBounds();
     if (!bounds) return;
+    this.viewSize = [bounds.width, bounds.height];
 
     this.center = new CircleInstance({
       center: [bounds.width / 2, bounds.height / 2],
@@ -287,6 +338,20 @@ export class NodesEdges extends BaseDemo {
       color: [1, 1, 1, 1]
     });
 
+    this.boundsView = new RectangleInstance({
+      anchor: {
+        type: AnchorType.TopLeft,
+        padding: 0
+      },
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+      color: [1, 1, 1, 0.2],
+      depth: -200
+    });
+
+    // this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
@@ -435,6 +500,8 @@ export class NodesEdges extends BaseDemo {
         }
       });
     });
+
+    this.adjustBounds();
   }
 
   /**

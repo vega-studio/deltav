@@ -1,5 +1,5 @@
 import * as datGUI from "dat.gui";
-import { ArcInstance, BasicCameraController, ChartCamera, CircleInstance, EdgeInstance, InstanceProvider, ISceneOptions, LabelInstance, LayerInitializer, RectangleInstance, ScaleMode, Vec4 } from "src";
+import { ArcInstance, BasicCameraController, ChartCamera, CircleInstance, EdgeInstance, InstanceProvider, ISceneOptions, LabelInstance, LayerInitializer, RectangleInstance, ScaleMode, Size, Vec4 } from "src";
 import { IDefaultResources } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 export declare function wait(t: number): Promise<{}>;
@@ -11,6 +11,8 @@ export declare class NodesEdges extends BaseDemo {
     rectangles: RectangleInstance[];
     lblToRect: Map<LabelInstance, RectangleInstance>;
     center: CircleInstance;
+    controller: BasicCameraController;
+    boundsView: RectangleInstance;
     providers: {
         arcs: InstanceProvider<ArcInstance>;
         circles: InstanceProvider<CircleInstance>;
@@ -29,7 +31,9 @@ export declare class NodesEdges extends BaseDemo {
             count: number;
         };
     };
+    viewSize: Size;
     buildConsole(gui: datGUI.GUI): void;
+    adjustBounds(): void;
     getEventManagers(defaultController: BasicCameraController, _defaultCamera: ChartCamera): null;
     getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null;
     getLayers(resources: IDefaultResources): LayerInitializer[];

@@ -37,6 +37,7 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   alignment?: TextAlignment;
   paddings?: Vec1Compat;
   borderWidth?: number;
+  hasBorder?: boolean;
 }
 
 /** Use to create new labelInstance */
@@ -88,6 +89,8 @@ export class TextAreaInstance extends LabelInstance {
   @observable paddings: Vec1Compat = [0, 0, 0, 0];
   /** Border width */
   @observable borderWidth: number = 6;
+  /** Whether the textArea has border */
+  @observable hasBorder: boolean = true;
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);
@@ -105,6 +108,8 @@ export class TextAreaInstance extends LabelInstance {
     this.alignment = options.alignment || this.alignment;
     this.paddings = options.paddings || this.paddings;
     this.borderWidth = options.borderWidth || this.borderWidth;
+    this.hasBorder =
+      options.hasBorder !== undefined ? options.hasBorder : this.hasBorder;
 
     this.generateLabels();
   }

@@ -25,55 +25,6 @@ import {
   WordWrap
 } from "./text-area-instance";
 
-/**
- * This is a lookup to quickly find the proper calculation for setting the correct anchor
- * position based on the anchor type.
- */
-// const anchorCalculator: {
-//   [key: number]: (anchor: Anchor, label: TextAreaInstance) => void;
-// } = {
-//   [AnchorType.TopLeft]: (anchor: Anchor, _label: TextAreaInstance) => {
-//     anchor.x = -anchor.padding;
-//     anchor.y = -anchor.padding;
-//   },
-//   [AnchorType.TopMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth / 2.0;
-//     anchor.y = -anchor.padding;
-//   },
-//   [AnchorType.TopRight]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth + anchor.padding;
-//     anchor.y = -anchor.padding;
-//   },
-//   [AnchorType.MiddleLeft]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = -anchor.padding;
-//     anchor.y = label.maxHeight / 2;
-//   },
-//   [AnchorType.Middle]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth / 2.0;
-//     anchor.y = label.maxHeight / 2.0;
-//   },
-//   [AnchorType.MiddleRight]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth + anchor.padding;
-//     anchor.y = label.maxHeight / 2.0;
-//   },
-//   [AnchorType.BottomLeft]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = -anchor.padding;
-//     anchor.y = label.maxHeight + anchor.padding;
-//   },
-//   [AnchorType.BottomMiddle]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth / 2.0;
-//     anchor.y = label.maxHeight + anchor.padding;
-//   },
-//   [AnchorType.BottomRight]: (anchor: Anchor, label: TextAreaInstance) => {
-//     anchor.x = label.maxWidth + anchor.padding;
-//     anchor.y = label.maxHeight + anchor.padding;
-//   },
-//   [AnchorType.Custom]: (anchor: Anchor, _label: TextAreaInstance) => {
-//     anchor.x = anchor.x || 0;
-//     anchor.y = anchor.y || 0;
-//   }
-// };
-
 function getOffsetY(text: string, map: Map<string, number>) {
   let offsetY = Number.MAX_SAFE_INTEGER;
   for (let i = 0, endi = text.length; i < endi; i++) {
@@ -275,7 +226,8 @@ export class TextAreaLayer<
         "origin",
         "text",
         "paddings",
-        "borderWidth"
+        "borderWidth",
+        "hasBorder"
       ]);
     }
 
@@ -290,7 +242,8 @@ export class TextAreaLayer<
       maxWidth: maxWidthId,
       maxHeight: maxHeightId,
       paddings: paddingsId,
-      borderWidth: borderWidthId
+      borderWidth: borderWidthId,
+      hasBorder: hasBorderId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -348,6 +301,10 @@ export class TextAreaLayer<
 
           if (changed[borderWidthId] !== undefined) {
             this.updateBorderWidth(instance);
+          }
+
+          if (changed[hasBorderId] !== undefined) {
+            this.updateBorder(instance);
           }
 
           break;
@@ -434,6 +391,7 @@ export class TextAreaLayer<
     return null;
   }
 
+  /** Clear labels from array and map */
   clear(instance: T) {
     const labels = instance.labels;
     for (let i = 0, iMax = labels.length; i < iMax; i++) {
@@ -465,6 +423,7 @@ export class TextAreaLayer<
     this.areaToGlyphHeights.delete(instance);
   }
 
+  /** When a label exceeds the maxWidth of a textArea, sperate it into several parts */
   seperateLabel(
     instance: TextAreaInstance,
     label: LabelInstance,
@@ -583,7 +542,8 @@ export class TextAreaLayer<
 
   /** This updates textAreaInstance after lineWrap is changed */
   updateLabelLineWrap(instance: T) {
-    const labels = instance.labels;
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
 
     // Set active and toShow of all labels to be true
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
@@ -606,7 +566,9 @@ export class TextAreaLayer<
 
   /** This updates textAreaInstance after lineHeight is changed */
   updateLabelLineHeight(instance: T) {
-    const labels = instance.labels;
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
+    // const labels = instance.labels;
 
     // Set active and toShow of all labels to be true
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
@@ -630,7 +592,7 @@ export class TextAreaLayer<
 
   /** This updates textAreaInstance after textArea width or height is changed */
   updateTextAreaSize(instance: T) {
-    const labels = instance.labels;
+    const labels = this.areaToLabels.get(instance);
     if (!labels) return;
 
     // Set active and toShow of all labels to be true
@@ -673,50 +635,65 @@ export class TextAreaLayer<
     this.layoutBorder(instance);
   }
 
+  updateBorder(instance: T) {
+    if (instance.hasBorder) {
+      this.layoutBorder(instance);
+    } else {
+      for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
+        const border = instance.borders[i];
+        this.recProvider.remove(border);
+      }
+
+      instance.borders = [];
+    }
+  }
+
   /** Layout the border of textAreaInstance */
   layoutBorder(instance: T) {
-    const borderWidth = instance.borderWidth;
-    const topBorder: RectangleInstance = new RectangleInstance({
-      color: instance.color,
-      height: borderWidth,
-      width: instance.maxWidth + 2 * borderWidth,
-      x: instance.origin[0] - borderWidth,
-      y: instance.origin[1] - borderWidth
-    });
+    if (instance.hasBorder) {
+      const borderWidth = instance.borderWidth;
+      const topBorder: RectangleInstance = new RectangleInstance({
+        color: instance.color,
+        height: borderWidth,
+        width: instance.maxWidth + 2 * borderWidth,
+        x: instance.origin[0] - borderWidth,
+        y: instance.origin[1] - borderWidth
+      });
 
-    const leftBorder: RectangleInstance = new RectangleInstance({
-      color: instance.color,
-      height: instance.maxHeight + 2 * borderWidth,
-      width: borderWidth,
-      x: instance.origin[0] - borderWidth,
-      y: instance.origin[1] - borderWidth
-    });
+      const leftBorder: RectangleInstance = new RectangleInstance({
+        color: instance.color,
+        height: instance.maxHeight + 2 * borderWidth,
+        width: borderWidth,
+        x: instance.origin[0] - borderWidth,
+        y: instance.origin[1] - borderWidth
+      });
 
-    const rightBorder: RectangleInstance = new RectangleInstance({
-      color: instance.color,
-      height: instance.maxHeight + 2 * borderWidth,
-      width: borderWidth,
-      x: instance.origin[0] + instance.maxWidth,
-      y: instance.origin[1] - borderWidth
-    });
+      const rightBorder: RectangleInstance = new RectangleInstance({
+        color: instance.color,
+        height: instance.maxHeight + 2 * borderWidth,
+        width: borderWidth,
+        x: instance.origin[0] + instance.maxWidth,
+        y: instance.origin[1] - borderWidth
+      });
 
-    const bottomBorder: RectangleInstance = new RectangleInstance({
-      color: instance.color,
-      height: borderWidth,
-      width: instance.maxWidth + 2 * borderWidth,
-      x: instance.origin[0] - borderWidth,
-      y: instance.origin[1] + instance.maxHeight
-    });
+      const bottomBorder: RectangleInstance = new RectangleInstance({
+        color: instance.color,
+        height: borderWidth,
+        width: instance.maxWidth + 2 * borderWidth,
+        x: instance.origin[0] - borderWidth,
+        y: instance.origin[1] + instance.maxHeight
+      });
 
-    this.recProvider.add(topBorder);
-    this.recProvider.add(leftBorder);
-    this.recProvider.add(rightBorder);
-    this.recProvider.add(bottomBorder);
+      this.recProvider.add(topBorder);
+      this.recProvider.add(leftBorder);
+      this.recProvider.add(rightBorder);
+      this.recProvider.add(bottomBorder);
 
-    instance.borders.push(topBorder);
-    instance.borders.push(leftBorder);
-    instance.borders.push(rightBorder);
-    instance.borders.push(bottomBorder);
+      instance.borders.push(topBorder);
+      instance.borders.push(leftBorder);
+      instance.borders.push(rightBorder);
+      instance.borders.push(bottomBorder);
+    }
   }
 
   /** Calculate the positions of labels */
@@ -766,8 +743,11 @@ export class TextAreaLayer<
         label.toShow = true;
         const width = label.getWidth();
 
-        // Make sure all the labels are within maxHeight
-        if (currentY + instance.lineHeight <= maxHeight) {
+        // Make sure all the labels are within maxHeight and first letter is not bigger than maxWidth
+        if (
+          currentY + instance.lineHeight <= maxHeight &&
+          label.glyphWidths[0] <= maxWidth
+        ) {
           // Whole label can be put within maxWidth
           if (currentX + width <= maxWidth) {
             const offsetY = getOffsetY(label.text, glyphToHeight);
@@ -1049,7 +1029,8 @@ export class TextAreaLayer<
    * Updates fontsize of all labels
    */
   updateLabelFontSizes(instance: T) {
-    const labels = instance.labels;
+    const labels = this.areaToLabels.get(instance);
+    if (!labels) return;
 
     // Set fontSize of all labels
     if (instance.labelForMap) {

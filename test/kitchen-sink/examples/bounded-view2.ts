@@ -4,7 +4,7 @@ import { BaseExample, TestResourceKeys } from './base-example';
 export class BoundedView2 extends BaseExample {
   view: string;
   manager: BasicCameraController;
-  originalRange: Bounds;
+  originalRange: Bounds<never>;
 
   makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager {
     const bounds: ICameraBoundsOptions = {

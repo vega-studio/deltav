@@ -136,7 +136,7 @@ export class AtlasManager {
     // Only a non-null image means the image loaded correctly
     if (loadedImage && isValidImage(texture)) {
       // Now we create a Rectangle to store the image dimensions
-      const rect: Bounds = new Bounds({
+      const rect: Bounds<never> = new Bounds({
         bottom: texture.pixelHeight,
         left: 0,
         right: texture.pixelWidth,

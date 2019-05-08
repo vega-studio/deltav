@@ -252,7 +252,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
       // The attribute is going to generate some child attributes
       // Making the additional attributes children of this attribute
       // will force them to update when the parent attribute is updated.
-      attribute.childAttributes = [];
+      attribute.childAttributes = attribute.childAttributes || [];
 
       // Attribute for the start value of the animation
       const startAttr: IInstanceAttribute<T> = {

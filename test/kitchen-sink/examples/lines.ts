@@ -39,13 +39,12 @@ export class Lines extends BaseExample {
 
       for (let k = 0; k < countWide; ++k) {
         const edge = new EdgeInstance({
-          colorEnd: [Math.random(), Math.random(), 1.0, 1.0],
-          colorStart: [Math.random(), Math.random(), 1.0, 1.0],
+          startColor: [Math.random(), Math.random(), 1.0, 1.0],
+          endColor: [Math.random(), Math.random(), 1.0, 1.0],
           end: [0, 0],
           id: `line-${index}-${k}`,
           start: [k * 20, index * LINE_HEIGHT + LINE_HEIGHT],
-          widthEnd: 10,
-          widthStart: 10
+          thickness: [10, 10]
         });
 
         edges.push(edgeProvider.add(edge));

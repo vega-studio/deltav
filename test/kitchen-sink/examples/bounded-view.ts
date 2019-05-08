@@ -18,7 +18,7 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 export class BoundedView extends BaseExample {
   view: string;
   manager: BasicCameraController;
-  originalRange: Bounds;
+  originalRange: Bounds<never>;
 
   makeController(
     defaultCamera: ChartCamera,

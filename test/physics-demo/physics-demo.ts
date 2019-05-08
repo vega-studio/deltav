@@ -175,7 +175,7 @@ export class PhysicsDemo extends BaseDemo {
     this.animationTimer = window.setInterval(loop, PHYSICS_FRAME);
   }
 
-  makeCircle(bounds: Bounds): [CircleInstance, Matter.Body] {
+  makeCircle(bounds: Bounds<any>): [CircleInstance, Matter.Body] {
     const circle = this.providers.circles.add(
       new CircleInstance({
         center: [random() * bounds.width, random() * bounds.height],

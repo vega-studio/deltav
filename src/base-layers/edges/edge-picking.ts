@@ -89,23 +89,23 @@ export function edgePicking<T extends EdgeInstance>(
   const interpolate = interpolation[props.type];
 
   const boundsAccessor = (edge: EdgeInstance) => {
-    const edgeWidthStart = edge.widthStart / 2 + minPickDistance;
-    const edgeWidthEnd = edge.widthEnd / 2 + minPickDistance;
+    const edgeStart = edge.thickness[0] / 2 + minPickDistance;
+    const edgeEnd = edge.thickness[1] / 2 + minPickDistance;
     // Encapsulate the endpoints as they are guaranteed to be included in the shape
     // Each endpoint will be a box that includes the endpoint thickness
     const bounds = new Bounds({
-      height: edge.widthStart,
-      width: edge.widthStart,
-      x: edge.start[0] - edgeWidthStart,
-      y: edge.start[1] - edgeWidthStart
+      height: edge.thickness[0],
+      width: edge.thickness[0],
+      x: edge.start[0] - edgeStart,
+      y: edge.start[1] - edgeStart
     });
 
     bounds.encapsulate(
       new Bounds({
-        height: edge.widthEnd,
-        width: edge.widthEnd,
-        x: edge.end[0] - edgeWidthEnd,
-        y: edge.end[1] - edgeWidthEnd
+        height: edge.thickness[1],
+        width: edge.thickness[1],
+        x: edge.end[0] - edgeEnd,
+        y: edge.end[1] - edgeEnd
       })
     );
 
@@ -188,7 +188,7 @@ export function edgePicking<T extends EdgeInstance>(
 
         const t = closestIndex / TEST_RESOLUTION;
         const lineWidth =
-          (edge.widthEnd - edge.widthStart) * t + edge.widthStart;
+          (edge.thickness[1] - edge.thickness[0]) * t + edge.thickness[0];
 
         if (closestIndex === secondClosestIndex) {
           return false;
@@ -257,7 +257,8 @@ export function edgePicking<T extends EdgeInstance>(
       }
 
       const t = closestIndex / TEST_RESOLUTION;
-      const lineWidth = (edge.widthEnd - edge.widthStart) * t + edge.widthStart;
+      const lineWidth =
+        (edge.thickness[1] - edge.thickness[0]) * t + edge.thickness[0];
 
       return closestDistance < lineWidth / 2.0;
     }

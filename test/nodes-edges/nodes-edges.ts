@@ -245,8 +245,8 @@ export class NodesEdges extends BaseDemo {
       }),
       createLayer(EdgeLayer, {
         animate: {
-          colorStart: AutoEasingMethod.easeInOutCubic(500),
-          colorEnd: AutoEasingMethod.easeInOutCubic(500)
+          startColor: AutoEasingMethod.easeInOutCubic(500),
+          endColor: AutoEasingMethod.easeInOutCubic(500)
         },
         data: this.providers.edges,
         key: "edges",
@@ -406,8 +406,7 @@ export class NodesEdges extends BaseDemo {
     this.circles.push(node);
 
     const edge = new EdgeInstance({
-      widthStart: 8,
-      widthEnd: 1,
+      thickness: [8, 1],
       start: [0, 0],
       end: [0, 0]
     });
@@ -469,10 +468,10 @@ export class NodesEdges extends BaseDemo {
       this.edges.forEach((edge, i) => {
         edge.start = copy2(this.center.center);
         edge.end = copy2(this.circles[i].center);
-        edge.colorStart = copy4(this.center.color);
-        edge.colorStart[3] = 0.2;
-        edge.colorEnd = copy4(this.circles[i].color);
-        edge.colorEnd[3] = 0.2;
+        edge.startColor = copy4(this.center.color);
+        edge.endColor = copy4(this.circles[i].color);
+        edge.startColor[3] = 0.2;
+        edge.endColor[3] = 0.2;
       });
 
       this.rectangles.forEach((rect, i) => {

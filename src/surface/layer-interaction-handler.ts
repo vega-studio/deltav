@@ -86,7 +86,7 @@ export class LayerInteractionHandler<
           query = this.layer.picking.quadTree.query.bind(
             this.layer.picking.quadTree
           );
-          querySpace = (check: Bounds | Vec2) =>
+          querySpace = (check: Bounds<T> | Vec2) =>
             query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
         } else if (this.layer.picking.type === PickType.SINGLE) {
@@ -137,7 +137,7 @@ export class LayerInteractionHandler<
           query = this.layer.picking.quadTree.query.bind(
             this.layer.picking.quadTree
           );
-          querySpace = (check: Bounds | Vec2) =>
+          querySpace = (check: Bounds<T> | Vec2) =>
             query(check).filter(o => hitTest(o, world, view));
         }
 
@@ -182,7 +182,7 @@ export class LayerInteractionHandler<
           query = this.layer.picking.quadTree.query.bind(
             this.layer.picking.quadTree
           );
-          querySpace = (check: Bounds | Vec2) =>
+          querySpace = (check: Bounds<T> | Vec2) =>
             query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
         } else if (this.layer.picking.type === PickType.SINGLE) {
@@ -231,7 +231,7 @@ export class LayerInteractionHandler<
           query = this.layer.picking.quadTree.query.bind(
             this.layer.picking.quadTree
           );
-          querySpace = (check: Bounds | Vec2) =>
+          querySpace = (check: Bounds<T> | Vec2) =>
             query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
         } else if (this.layer.picking.type === PickType.SINGLE) {
@@ -328,7 +328,7 @@ export class LayerInteractionHandler<
           query = this.layer.picking.quadTree.query.bind(
             this.layer.picking.quadTree
           );
-          querySpace = (check: Bounds | Vec2) =>
+          querySpace = (check: Bounds<T> | Vec2) =>
             query(check).filter(o => hitTest(o, world, view));
           instances = query(world).filter(o => hitTest(o, world, view));
         } else if (this.layer.picking.type === PickType.SINGLE) {

@@ -40,7 +40,7 @@ export abstract class EventManager {
   /**
    * This retrieves the screen bounds for the view specified by the provided viewId.
    */
-  getViewScreenBounds(viewId: string): Bounds | null {
+  getViewScreenBounds(viewId: string): Bounds<never> | null {
     const view = this.mouseManager.getView(viewId);
 
     if (view) {

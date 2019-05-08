@@ -35,14 +35,13 @@ export class BendyEdge extends BaseExample {
 
       for (let i = 0; i < TOTAL_EDGES; ++i) {
         const edge = new EdgeInstance({
-          colorEnd: [1.0, 0.0, 1.0, 1.0],
-          colorStart: [0.0, 1.0, 1.0, 1.0],
+          startColor: [0.0, 1.0, 1.0, 1.0],
+          endColor: [1.0, 0.0, 1.0, 1.0],
           control: [[bounds.width / 2, bounds.height / 2]],
           end: [200, bounds.height - 10],
           id: `edge-bendy`,
           start: [200, 5],
-          widthEnd: 5,
-          widthStart: 5
+          thickness: [5, 5]
         });
 
         edges.push(edge);

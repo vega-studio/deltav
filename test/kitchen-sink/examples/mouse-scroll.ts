@@ -44,13 +44,12 @@ export class MouseScroll extends BaseExample {
     const edgeProvider = new InstanceProvider<EdgeInstance>();
     for (let i = 0; i < 10; i++) {
       const edge = new EdgeInstance({
-        colorEnd: [Math.random(), Math.random(), Math.random(), 1.0],
-        colorStart: [Math.random(), Math.random(), Math.random(), 1.0],
+        startColor: [Math.random(), Math.random(), Math.random(), 1.0],
+        endColor: [Math.random(), Math.random(), Math.random(), 1.0],
         end: [200, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
-        widthEnd: 10,
-        widthStart: 10
+        thickness: [10, 10]
       });
 
       edgeProvider.add(edge);

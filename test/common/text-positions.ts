@@ -3,7 +3,7 @@ import { Bounds, Vec2 } from "src";
 const { min, max } = Math;
 
 export function textPositions(
-  bounds: Bounds,
+  bounds: Bounds<never>,
   text: string,
   fontSize: number = 40
 ) {

@@ -21,17 +21,13 @@ export class Blending extends BaseExample {
     return [
       createLayer(EdgeLayer, {
         animate: {
-          colorEnd: AutoEasingMethod.easeInOutCubic(500),
-          colorStart: AutoEasingMethod.easeInOutCubic(500)
+          endColor: AutoEasingMethod.easeInOutCubic(3000),
+          startColor: AutoEasingMethod.easeInOutCubic(3000)
         },
         data: provider,
         key: "blending",
         scene: scene,
-        type: EdgeType.LINE,
-
-        materialOptions: {
-          depthTest: true
-        }
+        type: EdgeType.LINE
       }),
       createLayer(LabelLayer, {
         data: new InstanceProvider(),
@@ -44,7 +40,7 @@ export class Blending extends BaseExample {
 
   makeProvider(): InstanceProvider<EdgeInstance> {
     const edgeProvider = new InstanceProvider<EdgeInstance>();
-    const sections = 1000;
+    const sections = 100;
     const edges = [];
 
     for (let i = 0; i < sections; ++i) {
@@ -58,11 +54,10 @@ export class Blending extends BaseExample {
 
       edges.push(
         new EdgeInstance({
-          colorEnd: color,
-          colorStart: color,
+          startColor: color,
+          endColor: color,
           depth: -i,
-          widthStart: 5,
-          widthEnd: 5,
+          thickness: [5, 5],
           start: [sx, sy],
           end: [ex, ey]
         })
@@ -71,11 +66,10 @@ export class Blending extends BaseExample {
 
     edgeProvider.add(
       new EdgeInstance({
-        colorEnd: [1, 0, 0, 0.333333],
-        colorStart: [1, 0, 0, 0.3],
+        startColor: [1, 0, 0, 0.333333],
+        endColor: [1, 0, 0, 0.333333],
         depth: 0,
-        widthStart: 10,
-        widthEnd: 10,
+        thickness: [10, 10],
         start: [10, 0],
         end: [10, 100]
       })
@@ -83,11 +77,10 @@ export class Blending extends BaseExample {
 
     edgeProvider.add(
       new EdgeInstance({
-        colorEnd: [0, 1, 0, 0.333333],
-        colorStart: [0, 1, 0, 0.333333],
+        startColor: [0, 1, 0, 0.333333],
+        endColor: [0, 1, 0, 0.333333],
         depth: 1,
-        widthStart: 10,
-        widthEnd: 10,
+        thickness: [10, 10],
         start: [10, 20],
         end: [10, 120]
       })
@@ -95,11 +88,10 @@ export class Blending extends BaseExample {
 
     edgeProvider.add(
       new EdgeInstance({
-        colorEnd: [0, 0, 1, 0.333333],
-        colorStart: [0, 0, 1, 0.333333],
+        startColor: [0, 0, 1, 0.333333],
+        endColor: [0, 0, 1, 0.333333],
         depth: 1,
-        widthStart: 10,
-        widthEnd: 10,
+        thickness: [10, 10],
         start: [10, 40],
         end: [10, 140]
       })

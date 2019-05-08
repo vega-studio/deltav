@@ -7,7 +7,7 @@ import { SubTexture } from "./sub-texture";
  */
 export interface IPackNodeDimensions<T> {
   data: T;
-  bounds: Bounds;
+  bounds: Bounds<any>;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface IPackNodeDimensions<T> {
 export class PackNode<T> {
   child: [PackNode<T> | null, PackNode<T> | null] = [null, null];
   isLeaf: boolean = true;
-  bounds: Bounds;
+  bounds: Bounds<any>;
   data: T | null = null;
 
   constructor(x: number, y: number, width: number, height: number) {
@@ -193,7 +193,7 @@ export class PackNode<T> {
     const uh =
       (node.bounds.height - padding.top - padding.bottom) / root.bounds.height;
 
-    let atlasDimensions: Bounds;
+    let atlasDimensions: Bounds<never>;
 
     if (flipY) {
       atlasDimensions = new Bounds({

@@ -46,7 +46,7 @@ export interface ICameraBoundsOptions {
   /** This is the view for which the bounds applies towards */
   view: string;
   /** The area the camera is bound inside */
-  worldBounds: Bounds;
+  worldBounds: Bounds<any>;
 }
 
 export interface IBasicCameraControllerOptions {
@@ -548,7 +548,7 @@ export class BasicCameraController extends EventManager {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  getRange(viewId: string): Bounds {
+  getRange(viewId: string): Bounds<never> {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
@@ -606,7 +606,7 @@ export class BasicCameraController extends EventManager {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  setRange(newWorld: Bounds, viewId: string) {
+  setRange(newWorld: Bounds<{}>, viewId: string) {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */

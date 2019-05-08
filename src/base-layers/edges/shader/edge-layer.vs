@@ -44,11 +44,11 @@ void main() {
   );
 
   // Get the thickness based on the side we're on
-  float lineThickness = mix(widthStart, widthEnd, interpolationTime) / 2.0;
+  float lineThickness = mix(thickness.x, thickness.y, interpolationTime) / 2.0;
   // Start on the calculated line and push out by the normal's value
   vec2 vertexPos = currentPosition + currentNormal * (normal * lineThickness);
   // Get the color based on where we are on the line
-  vertexColor = mix(colorStart, colorEnd, interpolationTime);
+  vertexColor = mix(startColor, endColor, interpolationTime);
 
   gl_Position = clipSpace(vec3(vertexPos, depth));
   gl_PointSize = 5.0;

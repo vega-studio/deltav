@@ -25,9 +25,10 @@ export interface IEdgeLayerProps<T extends EdgeInstance>
   animate?: {
     end?: IAutoEasingMethod<Vec>;
     start?: IAutoEasingMethod<Vec>;
-    colorStart?: IAutoEasingMethod<Vec>;
-    colorEnd?: IAutoEasingMethod<Vec>;
+    startColor?: IAutoEasingMethod<Vec>;
+    endColor?: IAutoEasingMethod<Vec>;
     control?: IAutoEasingMethod<Vec>;
+    thickness?: IAutoEasingMethod<Vec>;
   };
   /** Allows adjustments for broadphase interactions for an edge */
   broadphase?: EdgeBroadphase;
@@ -84,14 +85,13 @@ export class EdgeLayer<
   };
 
   static attributeNames = {
-    start: "start",
-    end: "end",
-    widthStart: "widthStart",
-    widthEnd: "widthEnd",
+    control: "control",
     depth: "depth",
-    colorStart: "colorStart",
-    colorEnd: "colorEnd",
-    control: "control"
+    end: "end",
+    endColor: "endColor",
+    start: "start",
+    startColor: "startColor",
+    thickness: "thickness"
   };
 
   /**
@@ -116,9 +116,10 @@ export class EdgeLayer<
     const {
       end: animateEnd,
       start: animateStart,
-      colorStart: animateColorStart,
-      colorEnd: animateColorEnd,
-      control: animateControl
+      startColor: animateColorStart,
+      endColor: animateColorEnd,
+      control: animateControl,
+      thickness: animateThickness
     } = animate;
 
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
@@ -167,6 +168,18 @@ export class EdgeLayer<
       fs: edgeFS,
       instanceAttributes: [
         {
+          easing: animateColorStart,
+          name: EdgeLayer.attributeNames.startColor,
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.startColor
+        },
+        {
+          easing: animateColorEnd,
+          name: EdgeLayer.attributeNames.endColor,
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.endColor
+        },
+        {
           easing: animateStart,
           name: EdgeLayer.attributeNames.start,
           size: InstanceAttributeSize.TWO,
@@ -179,31 +192,15 @@ export class EdgeLayer<
           update: o => o.end
         },
         {
-          name: EdgeLayer.attributeNames.widthStart,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.widthStart]
-        },
-        {
-          name: EdgeLayer.attributeNames.widthEnd,
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.widthEnd]
+          easing: animateThickness,
+          name: EdgeLayer.attributeNames.thickness,
+          size: InstanceAttributeSize.TWO,
+          update: o => o.thickness
         },
         {
           name: EdgeLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
           update: o => [o.depth]
-        },
-        {
-          easing: animateColorStart,
-          name: EdgeLayer.attributeNames.colorStart,
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.colorStart
-        },
-        {
-          easing: animateColorEnd,
-          name: EdgeLayer.attributeNames.colorEnd,
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.colorEnd
         },
         type === EdgeType.LINE
           ? {

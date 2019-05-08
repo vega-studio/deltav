@@ -1,36 +1,32 @@
+import { copy4, Vec2, Vec4 } from "src/util";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
 import { observable } from "../../instance-provider/observable";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
-  /** The color of this edge at the start point. */
-  colorStart?: [number, number, number, number];
-  /** The color of this edge at the end point. */
-  colorEnd?: [number, number, number, number];
   /** This is the list of control points  */
-  control?: [number, number][];
+  control?: Vec2[];
   /** The z depth of the edge (for draw ordering) */
   depth?: number;
   /** End point of the edge. */
-  end: [number, number];
+  end: Vec2;
+  /** End color of the edge */
+  endColor?: Vec4;
   /** Beginning point of the edge. */
-  start: [number, number];
+  start: Vec2;
+  /** Start color of the edge */
+  startColor?: Vec4;
   /** Start width of the edge. */
-  widthStart?: number;
-  /** End width of the edge */
-  widthEnd?: number;
+  thickness?: Vec2;
 }
 
-export type EdgeColor = [number, number, number, number];
-
 export class EdgeInstance extends Instance {
-  @observable colorStart: EdgeColor = [1.0, 1.0, 1.0, 1.0];
-  @observable colorEnd: EdgeColor = [1.0, 1.0, 1.0, 1.0];
-  @observable control: [number, number][] = [[0, 0], [0, 0]];
+  @observable control: Vec2[] = [[0, 0], [0, 0]];
   @observable depth: number = 0;
-  @observable end: [number, number] = [0, 0];
-  @observable start: [number, number] = [0, 0];
-  @observable widthStart: number = 1.0;
-  @observable widthEnd: number = 1.0;
+  @observable end: Vec2 = [0, 0];
+  @observable endColor: Vec4 = [1.0, 1.0, 1.0, 1.0];
+  @observable start: Vec2 = [0, 0];
+  @observable startColor: Vec4 = [1.0, 1.0, 1.0, 1.0];
+  @observable thickness: Vec2 = [1.0, 1.0];
 
   get length() {
     const delta = [this.end[0] - this.start[0], this.end[1] - this.start[1]];
@@ -48,7 +44,7 @@ export class EdgeInstance extends Instance {
   /**
    * Calculates a perpendicular direction vector to the edge
    */
-  get perpendicular(): [number, number] {
+  get perpendicular(): Vec2 {
     const length = this.length;
 
     return [
@@ -60,30 +56,26 @@ export class EdgeInstance extends Instance {
   /**
    * Applies the edge width to the start and end
    */
-  setEdgeWidth(width: number) {
-    if (width) {
-      this.widthEnd = width;
-      this.widthStart = width;
-    }
+  setEdgeThickness(thickness: number) {
+    this.thickness = [thickness, thickness];
   }
 
   /**
    * Applies the color to the start and end
    */
-  setColor(color: EdgeColor) {
-    this.colorStart = color;
-    this.colorEnd = color;
+  setColor(color: Vec4) {
+    this.startColor = copy4(color);
+    this.endColor = copy4(color);
   }
 
   constructor(options: IEdgeInstanceOptions) {
     super(options);
-    this.colorStart = options.colorStart || this.colorStart;
-    this.colorEnd = options.colorEnd || this.colorEnd;
+    this.startColor = options.startColor || this.startColor;
+    this.endColor = options.endColor || this.endColor;
     this.control = options.control || this.control;
     this.depth = options.depth || this.depth;
     this.end = options.end || this.end;
-    this.widthStart = options.widthStart || this.widthStart;
-    this.widthEnd = options.widthEnd || this.widthEnd;
+    this.thickness = options.thickness || this.thickness;
     this.start = options.start || this.start;
   }
 }

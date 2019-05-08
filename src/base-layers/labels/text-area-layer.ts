@@ -1,7 +1,4 @@
-/**
- * TODO: This layer is still a WIP!
- */
-
+import { fontRequest, IFontResourceRequest } from "src/resources";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -10,9 +7,17 @@ import {
   ILayerConstructionClass,
   LayerInitializer
 } from "../../surface/layer-surface";
-import { InstanceDiffType, IProjection } from "../../types";
+import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
-import { copy4, divide2, subtract2, Vec, Vec2 } from "../../util/vector";
+import {
+  add2,
+  copy4,
+  divide2,
+  scale2,
+  subtract2,
+  Vec,
+  Vec2
+} from "../../util/vector";
 import { RectangleInstance, RectangleLayer } from "../rectangle";
 import { ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
@@ -107,9 +112,9 @@ export class TextAreaLayer<
    */
   areaWaitingOnLabel = new Map<TextAreaInstance, Set<LabelInstance>>();
   /**
-   * This stores the glyph to y offset map of each TextAreaInstance
+   * This stores kerningRequest of TextAreaInstance
    */
-  areaToGlyphHeights = new Map<TextAreaInstance, Map<string, number>>();
+  areaTokerningRequest = new Map<TextAreaInstance, IFontResourceRequest>();
 
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
@@ -415,12 +420,6 @@ export class TextAreaLayer<
     instance.labelsToLayout = [];
     this.areaToLabels.delete(instance);
     this.areaWaitingOnLabel.delete(instance);
-    if (instance.labelForMap) {
-      this.labelProvider.remove(instance.labelForMap);
-      instance.labelForMap = null;
-    }
-
-    this.areaToGlyphHeights.delete(instance);
   }
 
   /** When a label exceeds the maxWidth of a textArea, sperate it into several parts */
@@ -432,7 +431,8 @@ export class TextAreaLayer<
     index: number,
     currentX: number,
     currentY: number,
-    spaceWidth: number
+    spaceWidth: number,
+    glyphWidths: number[]
   ): [number, number] {
     const topPadding = instance.paddings[0];
     const rightPadding = instance.paddings[1] || 0;
@@ -443,7 +443,6 @@ export class TextAreaLayer<
     const originX = instance.origin[0] + leftPadding;
     const originY = instance.origin[1] + topPadding;
 
-    const glyphWidths = label.glyphWidths;
     label.active = false;
     label.toShow = false;
     // Label1
@@ -458,9 +457,6 @@ export class TextAreaLayer<
     });
 
     label1.size = [glyphWidths[index], label.size[1]];
-    const widths: number[] = [];
-    for (let i = 0; i <= index; i++) widths.push(glyphWidths[i]);
-    label1.glyphWidths = widths;
     this.labelProvider.add(label1);
     instance.newLabels.push(label1);
 
@@ -522,8 +518,6 @@ export class TextAreaLayer<
           for (let i = index + 1; i < glyphWidths.length; i++) {
             widths.push(glyphWidths[i] - glyphWidths[index]);
           }
-
-          label2.glyphWidths = widths;
 
           this.labelProvider.add(label2);
           instance.newLabels.push(label2);
@@ -698,6 +692,9 @@ export class TextAreaLayer<
 
   /** Calculate the positions of labels */
   layoutLabels(instance: T) {
+    const kerningRequest = this.areaTokerningRequest.get(instance);
+    if (!kerningRequest) return;
+
     const topPadding = instance.paddings[0];
     const rightPadding = instance.paddings[1] || 0;
     const bottomPadding = instance.paddings[2] || 0;
@@ -709,27 +706,42 @@ export class TextAreaLayer<
 
     const spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
 
-    let glyphToHeight = this.areaToGlyphHeights.get(instance);
-    const heights: number[] = [];
+    const glyphToHeight = new Map<string, number>();
 
-    // set the glyph height map
-    if (!glyphToHeight) {
-      const charToHeight = new Map<string, number>();
-      if (instance.labelForMap) {
-        const glyphs = instance.labelForMap.glyphs;
-        glyphs.forEach(glyph => {
-          if (!charToHeight.has(glyph.character)) {
-            const height = glyph.offset[1];
-            charToHeight.set(glyph.character, height);
-            heights.push(height);
-          }
-        });
+    if (kerningRequest.fontMap) {
+      const sourceFontSize = kerningRequest.fontMap.fontSource.size;
 
-        instance.labelForMap.active = false;
-        instance.labelForMap.toShow = false;
+      const fontScale = instance.fontSize / sourceFontSize;
+
+      const fontMap = kerningRequest.fontMap;
+      const checkText = instance.text.replace(/\s/g, "");
+
+      let minY = Number.MAX_SAFE_INTEGER;
+      let offsetY = 0;
+      let kernY;
+      let leftChar = "";
+
+      for (let i = 0, iMax = checkText.length; i < iMax; ++i) {
+        const char = checkText[i];
+
+        kernY = 0;
+
+        if (leftChar) {
+          kernY = fontMap.kerning[leftChar][char][1] || 0;
+        }
+
+        offsetY = offsetY + kernY * fontScale;
+
+        glyphToHeight.set(char, offsetY);
+
+        minY = Math.min(offsetY, minY);
+
+        leftChar = char;
       }
-      glyphToHeight = charToHeight;
-      this.areaToGlyphHeights.set(instance, charToHeight);
+
+      glyphToHeight.forEach((value, key) => {
+        glyphToHeight.set(key, value - minY);
+      });
     }
 
     let currentX = 0;
@@ -743,14 +755,46 @@ export class TextAreaLayer<
         label.toShow = true;
         const width = label.getWidth();
 
+        const sourceFontSize = kerningRequest.fontMap
+          ? kerningRequest.fontMap.fontSource.size
+          : instance.fontSize;
+
+        const fontScale = instance.fontSize / sourceFontSize;
+
+        const glyphWidths = [];
+
+        let leftChar = "";
+        let currentWidth = 0;
+        let offset: Vec2 = [0, 0];
+
+        for (let i = 0; i < label.text.length; i++) {
+          const char = label.text[i];
+
+          if (kerningRequest.fontMap) {
+            let kern: Vec2 = [0, 0];
+
+            if (leftChar) {
+              kern = kerningRequest.fontMap.kerning[leftChar][char] || [0, 0];
+            }
+
+            offset = add2(offset, scale2(kern, fontScale));
+
+            const image = kerningRequest.fontMap.glyphMap[char];
+            currentWidth = offset[0] + image.pixelWidth * fontScale;
+            glyphWidths.push(currentWidth);
+            leftChar = char;
+          }
+        }
+
         // Make sure all the labels are within maxHeight and first letter is not bigger than maxWidth
         if (
           currentY + instance.lineHeight <= maxHeight &&
-          label.glyphWidths[0] <= maxWidth
+          glyphWidths[0] <= maxWidth
         ) {
           // Whole label can be put within maxWidth
           if (currentX + width <= maxWidth) {
             const offsetY = getOffsetY(label.text, glyphToHeight);
+
             label.origin = [originX + currentX, originY + currentY + offsetY];
             currentX += width + spaceWidth;
 
@@ -769,7 +813,7 @@ export class TextAreaLayer<
           // A label will be cut into two parts if label's width exceeds maxwidth
           else {
             const spaceLeft = maxWidth - currentX;
-            const glyphWidths = label.glyphWidths;
+            // const glyphWidths = label.glyphWidths;
             let index = glyphWidths.length - 1;
             const word = label.text;
 
@@ -788,7 +832,8 @@ export class TextAreaLayer<
                 index,
                 currentX,
                 currentY,
-                spaceWidth
+                spaceWidth,
+                glyphWidths
               );
 
               currentX = sizes[0];
@@ -823,7 +868,7 @@ export class TextAreaLayer<
                   // Put part of label in this line, move other part to following lines
                   else {
                     const spaceLeft = maxWidth - currentX;
-                    const glyphWidths = label.glyphWidths;
+                    // const glyphWidths = label.glyphWidths;
                     let index = glyphWidths.length - 1;
                     const word = label.text;
 
@@ -840,7 +885,8 @@ export class TextAreaLayer<
                         index,
                         currentX,
                         currentY,
-                        spaceWidth
+                        spaceWidth,
+                        glyphWidths
                       );
 
                       currentX = sizes[0];
@@ -882,6 +928,10 @@ export class TextAreaLayer<
    * will be placed.
    */
   layout(instance: T) {
+    this.updateKerning(instance);
+    const kerningRequest = this.areaTokerningRequest.get(instance);
+    if (!kerningRequest || !kerningRequest.fontMap) return;
+
     // Make sure the labels are all rendered
     const waiting = this.areaWaitingOnLabel.get(instance);
     if (waiting && waiting.size > 0) return;
@@ -894,6 +944,70 @@ export class TextAreaLayer<
     this.updateLabels(instance);
     this.layoutBorder(instance);
     this.layoutLabels(instance);
+  }
+
+  updateKerning(instance: T) {
+    let labelKerningRequest = this.areaTokerningRequest.get(instance);
+
+    const checkText = instance.text;
+
+    if (labelKerningRequest) {
+      if (
+        labelKerningRequest.kerningPairs &&
+        labelKerningRequest.kerningPairs.indexOf(checkText) > -1
+      ) {
+        return Boolean(labelKerningRequest.fontMap);
+      }
+
+      if (
+        labelKerningRequest.fontMap &&
+        !labelKerningRequest.fontMap.supportsKerning(
+          checkText.replace(/\s/g, "")
+        )
+      ) {
+        this.areaTokerningRequest.delete(instance);
+        labelKerningRequest = undefined;
+      } else {
+        return false;
+      }
+    } else {
+      const metrics: IFontResourceRequest["metrics"] = {
+        fontSize: instance.fontSize,
+        text: instance.text
+      };
+
+      labelKerningRequest = fontRequest({
+        character: "",
+        kerningPairs: [checkText],
+        metrics
+      });
+
+      if (!instance.preload) {
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
+
+        this.areaTokerningRequest.set(instance, labelKerningRequest);
+      } else {
+        instance.resourceTrigger = () => {
+          if (instance.onReady) instance.onReady(instance);
+        };
+
+        this.resource.request(this, instance, labelKerningRequest, {
+          resource: {
+            type: ResourceType.FONT,
+            key: this.props.resourceKey || ""
+          }
+        });
+      }
+
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -935,32 +1049,6 @@ export class TextAreaLayer<
     if (!waiting) {
       waiting = new Set();
       this.areaWaitingOnLabel.set(instance, waiting);
-    }
-
-    // Create labelForMap
-    if (!instance.labelForMap) {
-      // Generate the text for the label
-      let mapText = "";
-      const set: Set<string> = new Set<string>();
-      for (let i = 0; i < instance.text.length; i++) {
-        const c = instance.text[i];
-        if (!set.has(c)) {
-          mapText += c;
-          set.add(c);
-        }
-      }
-      set.clear();
-
-      const label = new LabelInstance({
-        color: instance.color,
-        fontSize: instance.fontSize,
-        origin: [0, 0],
-        text: mapText,
-        onReady: this.handleLabelReady
-      });
-
-      this.labelProvider.add(label);
-      instance.labelForMap = label;
     }
 
     const labelsToLayout = instance.labelsToLayout;
@@ -1032,11 +1120,6 @@ export class TextAreaLayer<
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
 
-    // Set fontSize of all labels
-    if (instance.labelForMap) {
-      instance.labelForMap.fontSize = instance.fontSize;
-    }
-
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
@@ -1068,23 +1151,8 @@ export class TextAreaLayer<
           label.size[0] * newFontSize / oldFontSize,
           label.size[1] * newFontSize / oldFontSize
         ];
-
-        // glyphWidths update
-        for (let i = 0, endi = label.glyphWidths.length; i < endi; ++i) {
-          label.glyphWidths[i] *= newFontSize / oldFontSize;
-        }
       }
     });
-
-    // Map Update
-    const glyphToHeights = this.areaToGlyphHeights.get(instance);
-    if (glyphToHeights) {
-      glyphToHeights.forEach((value, key) => {
-        const newValue = value * newFontSize / oldFontSize;
-        glyphToHeights.set(key, newValue);
-      });
-      this.areaToGlyphHeights.set(instance, glyphToHeights);
-    }
 
     instance.oldFontSize = instance.fontSize;
 

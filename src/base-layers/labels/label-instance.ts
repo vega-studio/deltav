@@ -91,8 +91,6 @@ export class LabelInstance extends Instance {
    * label.
    */
   size: Size = [0, 0];
-  /** This stores widths of substring(0, i) (i = 1 ~ length - 1) */
-  glyphWidths: number[];
   /** This decides whether a label to show */
   toShow: boolean = true;
 

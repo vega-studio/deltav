@@ -501,8 +501,6 @@ export class LabelLayer<
     const glyphs = instance.glyphs;
     // Store the calculated size of the label
     instance.size = layout.size;
-    // Store the widths of glyphs
-    instance.glyphWidths = layout.glyphWidths || [];
     // Update the calculated anchor for the label now that size is determined
     anchorCalculator[instance.anchor.type](instance.anchor, instance);
     paddingCalculator[instance.anchor.type](instance.anchor);

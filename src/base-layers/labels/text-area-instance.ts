@@ -79,8 +79,6 @@ export class TextAreaInstance extends LabelInstance {
   borders: RectangleInstance[] = [];
   /** This holds labelmetrics that will be used to create new labelinstance */
   labelsToLayout: LabelMetrics[] = [];
-  /** This creates a labelInstance with all distinct letters in the textArea */
-  labelForMap: LabelInstance | null;
   /** This stores the old origin which is used to calculate the new positions of labels */
   oldOrigin: [number, number];
   /** This stores old Font size which is used to calculate new font metrics */

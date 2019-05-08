@@ -50,8 +50,6 @@ export type KernedLayout = {
   positions: Vec2[];
   /** The width and height of the entire rendered string */
   size: Size;
-
-  glyphWidths?: number[];
   /** The text used in calculating this layout */
   text: string;
 };
@@ -564,8 +562,6 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // The image of the glyph that was rendered
     let image: SubTexture;
 
-    const glyphWidths: number[] = [];
-
     // Loop through the text and calculate the offsets of each non-whitespace character
     for (let i = 0, iMax = text.length; i < iMax; ++i) {
       const char = text[i];
@@ -600,8 +596,6 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       leftChar = char;
       // Calculate the width of the label as we lay out
       currentWidth = offset[0] + image.pixelWidth * fontScale;
-
-      glyphWidths.push(currentWidth);
       // Reset the whitespace count so we can see whitespaces to next character
       whiteSpaceCount = 0;
     }
@@ -625,7 +619,6 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       glyphs,
       positions,
       size,
-      glyphWidths,
       text
     };
   }

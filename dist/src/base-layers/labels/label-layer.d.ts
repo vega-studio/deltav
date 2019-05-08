@@ -36,7 +36,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     truncationKerningRequest?: IFontResourceRequest;
     truncationWidth: number;
     getInstancePickingMethods(): {
-        boundsAccessor: (label: T) => Bounds;
+        boundsAccessor: (label: T) => Bounds<{}>;
         hitTest: (label: T, point: [number, number], view: IProjection) => boolean;
     };
     childLayers(): LayerInitializer[];

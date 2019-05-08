@@ -31,7 +31,7 @@ export declare class Quadrants<T extends IQuadItem> {
     constructor(bounds: IQuadItem, depth: number);
 }
 export declare class Node<T extends IQuadItem> {
-    bounds: Bounds;
+    bounds: Bounds<never>;
     children: T[];
     depth: number;
     nodes: Quadrants<T>;

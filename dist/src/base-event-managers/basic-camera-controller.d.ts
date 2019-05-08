@@ -26,7 +26,7 @@ export interface ICameraBoundsOptions {
         bottom: number;
     };
     view: string;
-    worldBounds: Bounds;
+    worldBounds: Bounds<any>;
 }
 export interface IBasicCameraControllerOptions {
     bounds?: ICameraBoundsOptions;
@@ -72,9 +72,9 @@ export declare class BasicCameraController extends EventManager {
     handleClick(_e: IMouseInteraction): void;
     handleMouseMove(_e: IMouseInteraction): void;
     handleMouseOver(_e: IMouseInteraction): void;
-    getRange(viewId: string): Bounds;
+    getRange(viewId: string): Bounds<never>;
     readonly pan: Vec3;
     setBounds(bounds: ICameraBoundsOptions): void;
     readonly scale: Vec3;
-    setRange(newWorld: Bounds, viewId: string): void;
+    setRange(newWorld: Bounds<{}>, viewId: string): void;
 }

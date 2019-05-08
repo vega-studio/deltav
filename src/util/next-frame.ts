@@ -1,4 +1,4 @@
-import { PromiseResolver } from "src/util/promise-resolver";
+import { PromiseResolver } from "./promise-resolver";
 
 /**
  * This utility makes an operation occur in a render frame after the current render frame.

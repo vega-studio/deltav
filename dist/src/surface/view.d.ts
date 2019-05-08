@@ -3,7 +3,6 @@ import { Bounds } from "../primitives/bounds";
 import { Color } from "../types";
 import { Vec2 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
-import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera } from "../util/view-camera";
 export declare enum ClearFlags {
@@ -29,10 +28,10 @@ export declare class View extends IdentifyByKey {
     needsDraw: boolean;
     optimizeRendering: boolean;
     pixelRatio: number;
-    screenBounds: Bounds;
+    screenBounds: Bounds<never>;
     viewCamera: ViewCamera;
     viewport: AbsolutePosition;
-    viewBounds: DataBounds<View>;
+    viewBounds: Bounds<View>;
     constructor(options: IViewOptions);
     screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
     pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];
@@ -42,5 +41,5 @@ export declare class View extends IdentifyByKey {
     worldToScreen(point: Vec2, out?: Vec2): [number, number];
     viewToWorld(point: Vec2, out?: Vec2): [number, number];
     worldToView(point: Vec2, out?: Vec2): [number, number];
-    fitViewtoViewport(surfaceDimensions: Bounds): void;
+    fitViewtoViewport(surfaceDimensions: Bounds<never>): void;
 }

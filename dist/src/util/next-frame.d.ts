@@ -1,1 +1,1 @@
-export declare function nextFrame(command: Function): void;
+export declare function nextFrame(command: Function): Promise<{}>;

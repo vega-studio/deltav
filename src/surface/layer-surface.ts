@@ -16,7 +16,6 @@ import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders
 import { IInstanceAttribute, IResourceType, PickType } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
-import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
@@ -647,8 +646,8 @@ export class LayerSurface {
     // Are updated in the interactions and flag our interactions ready for mouse input
     if (this.mouseManager.waitingForRender) {
       this.sceneViews.forEach(sceneView => {
-        sceneView.bounds = new DataBounds(sceneView.view.screenBounds);
-        sceneView.bounds.data = sceneView;
+        sceneView.bounds = new Bounds(sceneView.view.screenBounds);
+        sceneView.bounds.d = sceneView;
       });
 
       this.mouseManager.waitingForRender = false;
@@ -915,7 +914,7 @@ export class LayerSurface {
    * This allows for querying a view's screen bounds. Null is returned if the view id
    * specified does not exist.
    */
-  getViewSize(viewId: string): Bounds | null {
+  getViewSize(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         return sceneView.view.screenBounds;
@@ -928,7 +927,7 @@ export class LayerSurface {
   /**
    * This queries a view's window into a world's space.
    */
-  getViewWorldBounds(viewId: string): Bounds | null {
+  getViewWorldBounds(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         const view = sceneView.view;

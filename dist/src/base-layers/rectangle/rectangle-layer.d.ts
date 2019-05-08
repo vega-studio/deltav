@@ -18,7 +18,7 @@ export declare class RectangleLayer<T extends RectangleInstance, U extends IRect
         size: string;
     };
     getInstancePickingMethods(): {
-        boundsAccessor: (rectangle: RectangleInstance) => Bounds;
+        boundsAccessor: (rectangle: RectangleInstance) => Bounds<{}>;
         hitTest: (rectangle: RectangleInstance, point: [number, number], projection: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<RectangleInstance>;

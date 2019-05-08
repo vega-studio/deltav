@@ -1,5 +1,5 @@
-import * as anime from "animejs";
 import {
+  AutoEasingMethod,
   createLayer,
   EdgeInstance,
   EdgeLayer,
@@ -16,13 +16,7 @@ export class MouseInteractionEdges extends BaseExample {
 
   handleMouseOut = (info: IPickInfo<EdgeInstance>) => {
     this.side = 0;
-
-    anime.remove(info.instances);
-    anime({
-      targets: info.instances,
-      widthEnd: 10,
-      widthStart: 10
-    });
+    info.instances.forEach(edge => (edge.thickness = [10, 10]));
   };
 
   handleMouseMove = (info: IPickInfo<EdgeInstance>) => {
@@ -33,22 +27,12 @@ export class MouseInteractionEdges extends BaseExample {
 
     if (info.world[0] < 100 && this.side !== -1) {
       this.side = -1;
-      anime.remove(info.instances);
-      anime({
-        targets: info.instances,
-        widthEnd: 10,
-        widthStart: 20
-      });
+      info.instances.forEach(edge => (edge.thickness = [20, 10]));
     }
 
     if (info.world[0] >= 100 && this.side !== 1) {
       this.side = 1;
-      anime.remove(info.instances);
-      anime({
-        targets: info.instances,
-        widthEnd: 20,
-        widthStart: 10
-      });
+      info.instances.forEach(edge => (edge.thickness = [10, 20]));
     }
   };
 
@@ -58,6 +42,9 @@ export class MouseInteractionEdges extends BaseExample {
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
+      animate: {
+        thickness: AutoEasingMethod.easeOutElastic(500)
+      },
       data: provider,
       key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
@@ -75,14 +62,12 @@ export class MouseInteractionEdges extends BaseExample {
 
     for (let i = 0; i < TOTAL_EDGES; ++i) {
       const edge = new EdgeInstance({
-        colorEnd: [Math.random(), 1.0, Math.random(), 0.01],
-        colorStart: [Math.random(), 1.0, Math.random(), 1.0],
+        startColor: [Math.random(), 1.0, Math.random(), 1.0],
+        endColor: [Math.random(), 1.0, Math.random(), 0.01],
         control: [[60, 20 * i - 40], [160, 20 * i - 40]],
         end: [200, 20 * i + 20],
-        id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
-        widthEnd: 10,
-        widthStart: 10
+        thickness: [10, 10]
       });
 
       edgeProvider.add(edge);

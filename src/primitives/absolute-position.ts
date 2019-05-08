@@ -1,4 +1,3 @@
-import { DataBounds } from "../util/data-bounds";
 import { Bounds } from "./bounds";
 
 /**
@@ -43,9 +42,9 @@ function value(val: number | string, ref: number, scaleRatio: number) {
  */
 export function getAbsolutePositionBounds<T>(
   item: AbsolutePosition,
-  reference: Bounds,
+  reference: Bounds<any>,
   scaleRatio: number
-): DataBounds<T> {
+): Bounds<T> {
   if (reference.width === 0 || reference.height === 0) {
     console.warn(
       "An AbsolutePosition evaluated to invalid dimensions.",
@@ -58,7 +57,7 @@ export function getAbsolutePositionBounds<T>(
     );
   }
 
-  const bounds = DataBounds.emptyBounds<T>();
+  const bounds = Bounds.emptyBounds<T>();
   let width;
   let height;
 

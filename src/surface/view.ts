@@ -7,7 +7,6 @@ import { Color } from "../types";
 import { Vec2 } from "../util";
 import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
-import { DataBounds } from "../util/data-bounds";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera, ViewCameraType } from "../util/view-camera";
 
@@ -96,13 +95,13 @@ export class View extends IdentifyByKey {
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the rendering bounds within screen space */
-  screenBounds: Bounds;
+  screenBounds: Bounds<never>;
   /** Camera that defines the view projection matrix */
   viewCamera: ViewCamera;
   /** The size positioning of the view */
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
-  viewBounds: DataBounds<View>;
+  viewBounds: Bounds<View>;
 
   constructor(options: IViewOptions) {
     super(options);
@@ -231,7 +230,7 @@ export class View extends IdentifyByKey {
    * For default behavior this ensures that the coordinate system has no distortion, orthographic,
    * top left as 0,0 with +y axis pointing down.
    */
-  fitViewtoViewport(surfaceDimensions: Bounds) {
+  fitViewtoViewport(surfaceDimensions: Bounds<never>) {
     if (
       this.viewCamera.type === ViewCameraType.CONTROLLED &&
       isOrthographic(this.viewCamera.baseCamera)
@@ -271,8 +270,8 @@ export class View extends IdentifyByKey {
       camera.update();
 
       this.viewBounds = viewBounds;
-      this.viewBounds.data = this;
-      this.screenBounds = new Bounds({
+      this.viewBounds.d = this;
+      this.screenBounds = new Bounds<never>({
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,

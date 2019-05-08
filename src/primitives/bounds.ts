@@ -26,11 +26,12 @@ export interface IBoundsOptions {
  * @template T This specifies the data type associated with this shape and is accessible
  *             via the property 'd'
  */
-export class Bounds {
+export class Bounds<T> {
   x: number = 0;
   y: number = 0;
   width: number = 0;
   height: number = 0;
+  d?: T;
 
   get area() {
     return this.width * this.height;
@@ -56,8 +57,8 @@ export class Bounds {
     return this.y;
   }
 
-  static emptyBounds() {
-    return new Bounds({
+  static emptyBounds<T>() {
+    return new Bounds<T>({
       height: 0,
       width: 0,
       x: 0,
@@ -99,7 +100,7 @@ export class Bounds {
    *
    * @param item
    */
-  encapsulate(item: Bounds | Vec2) {
+  encapsulate(item: Bounds<T> | Vec2) {
     if (item instanceof Bounds) {
       if (item.x < this.x) {
         this.width += Math.abs(item.x - this.x);
@@ -151,7 +152,7 @@ export class Bounds {
    *
    * @return {number} 0 if it doesn't fit. 1 if it fits perfectly. 2 if it just fits.
    */
-  fits(bounds: Bounds): 0 | 1 | 2 {
+  fits(bounds: Bounds<T>): 0 | 1 | 2 {
     // If the same, the bounds fits exactly into this bounds
     if (this.width === bounds.width && this.height === bounds.height) {
       return 1;
@@ -171,7 +172,7 @@ export class Bounds {
    *
    * @param bounds
    */
-  hitBounds(bounds: Bounds) {
+  hitBounds(bounds: Bounds<T>) {
     return !(
       this.right < bounds.x ||
       this.x > bounds.right ||
@@ -186,7 +187,7 @@ export class Bounds {
    *
    * @param bounds
    */
-  isInside(bounds: Bounds): boolean {
+  isInside(bounds: Bounds<T>): boolean {
     return (
       this.x >= bounds.x &&
       this.right <= bounds.right &&

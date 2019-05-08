@@ -1,5 +1,5 @@
+import { Bounds } from "../primitives";
 import { Vec2 } from "../util";
-import { DataBounds } from "../util/data-bounds";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import { LayerScene } from "./layer-scene";
@@ -8,7 +8,7 @@ export declare type SceneView = {
     depth: number;
     scene: LayerScene;
     view: View;
-    bounds?: DataBounds<SceneView>;
+    bounds?: Bounds<SceneView>;
 };
 export interface IMouseInteraction {
     button?: number;
@@ -57,7 +57,7 @@ export interface ITouchMetrics {
 export declare class MouseEventManager {
     context: HTMLCanvasElement;
     controllers: EventManager[];
-    quadTree: QuadTree<DataBounds<SceneView>>;
+    quadTree: QuadTree<Bounds<SceneView>>;
     views: SceneView[];
     eventCleanup: [string, EventListenerOrEventListenerObject][];
     private _waitingForRender;
@@ -66,7 +66,7 @@ export declare class MouseEventManager {
     addContextListeners(handlesWheelEvents?: boolean): void;
     addTouchContextListeners(): void;
     getView(viewId: string): View | null;
-    getViewsUnderMouse: (mouse: [number, number]) => DataBounds<SceneView>[];
+    getViewsUnderMouse: (mouse: [number, number]) => Bounds<SceneView>[];
     makeDrag(mouse: Vec2, start: Vec2, previous: Vec2, delta: Vec2): IDragMetrics;
     makeInteraction(mouse: Vec2, start?: Vec2, startView?: SceneView): IMouseInteraction;
     makeWheel(event: MouseWheelEvent): IWheelMetrics;

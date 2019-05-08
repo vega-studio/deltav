@@ -93,7 +93,7 @@ export class BoxOfCircles extends BaseExample {
   animationHelper: AnimationHelper;
   camera: ChartCamera;
   manager: BasicCameraController;
-  originalRange: Bounds;
+  originalRange: Bounds<never>;
   scene: string;
   textPositions: Vec2[];
   textCache: {

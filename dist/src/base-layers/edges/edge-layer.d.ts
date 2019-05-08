@@ -7,9 +7,10 @@ export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayerProps<T> 
     animate?: {
         end?: IAutoEasingMethod<Vec>;
         start?: IAutoEasingMethod<Vec>;
-        colorStart?: IAutoEasingMethod<Vec>;
-        colorEnd?: IAutoEasingMethod<Vec>;
+        startColor?: IAutoEasingMethod<Vec>;
+        endColor?: IAutoEasingMethod<Vec>;
         control?: IAutoEasingMethod<Vec>;
+        thickness?: IAutoEasingMethod<Vec>;
     };
     broadphase?: EdgeBroadphase;
     minPickDistance?: number;
@@ -23,14 +24,13 @@ export interface IEdgeLayerState {
 export declare class EdgeLayer<T extends EdgeInstance, U extends IEdgeLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IEdgeLayerProps<EdgeInstance>;
     static attributeNames: {
-        start: string;
-        end: string;
-        widthStart: string;
-        widthEnd: string;
-        depth: string;
-        colorStart: string;
-        colorEnd: string;
         control: string;
+        depth: string;
+        end: string;
+        endColor: string;
+        start: string;
+        startColor: string;
+        thickness: string;
     };
     getInstancePickingMethods(): IPickingMethods<EdgeInstance>;
     initShader(): IShaderInitialization<EdgeInstance>;

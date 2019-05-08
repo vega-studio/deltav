@@ -2,12 +2,12 @@ import { Bounds } from "../../primitives/bounds";
 import { SubTexture } from "./sub-texture";
 export interface IPackNodeDimensions<T> {
     data: T;
-    bounds: Bounds;
+    bounds: Bounds<any>;
 }
 export declare class PackNode<T> {
     child: [PackNode<T> | null, PackNode<T> | null];
     isLeaf: boolean;
-    bounds: Bounds;
+    bounds: Bounds<any>;
     data: T | null;
     constructor(x: number, y: number, width: number, height: number);
     destroy(): void;

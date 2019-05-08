@@ -1,28 +1,26 @@
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Vec2, Vec4 } from "../../util";
 export interface IEdgeInstanceOptions extends IInstanceOptions {
-    colorStart?: [number, number, number, number];
-    colorEnd?: [number, number, number, number];
-    control?: [number, number][];
+    control?: Vec2[];
     depth?: number;
-    end: [number, number];
-    start: [number, number];
-    widthStart?: number;
-    widthEnd?: number;
+    end: Vec2;
+    endColor?: Vec4;
+    start: Vec2;
+    startColor?: Vec4;
+    thickness?: Vec2;
 }
-export declare type EdgeColor = [number, number, number, number];
 export declare class EdgeInstance extends Instance {
-    colorStart: EdgeColor;
-    colorEnd: EdgeColor;
-    control: [number, number][];
+    control: Vec2[];
     depth: number;
-    end: [number, number];
-    start: [number, number];
-    widthStart: number;
-    widthEnd: number;
+    end: Vec2;
+    endColor: Vec4;
+    start: Vec2;
+    startColor: Vec4;
+    thickness: Vec2;
     readonly length: number;
     readonly midpoint: number;
-    readonly perpendicular: [number, number];
-    setEdgeWidth(width: number): void;
-    setColor(color: EdgeColor): void;
+    readonly perpendicular: Vec2;
+    setEdgeThickness(thickness: number): void;
+    setColor(color: Vec4): void;
     constructor(options: IEdgeInstanceOptions);
 }

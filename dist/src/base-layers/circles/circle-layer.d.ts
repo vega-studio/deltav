@@ -23,7 +23,7 @@ export declare class CircleLayer<T extends CircleInstance, U extends ICircleLaye
         radius: string;
     };
     getInstancePickingMethods(): {
-        boundsAccessor: (circle: CircleInstance) => Bounds;
+        boundsAccessor: (circle: CircleInstance) => Bounds<{}>;
         hitTest: (circle: CircleInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<CircleInstance>;

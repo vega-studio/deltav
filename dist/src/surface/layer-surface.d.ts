@@ -77,8 +77,8 @@ export declare class LayerSurface {
     private drawPicking;
     private drawSceneView;
     private gatherViewDrawDependencies;
-    getViewSize(viewId: string): Bounds | null;
-    getViewWorldBounds(viewId: string): Bounds | null;
+    getViewSize(viewId: string): Bounds<never> | null;
+    getViewWorldBounds(viewId: string): Bounds<never> | null;
     init(options: ILayerSurfaceOptions): Promise<this | undefined>;
     private initGL;
     private initIOExpanders;

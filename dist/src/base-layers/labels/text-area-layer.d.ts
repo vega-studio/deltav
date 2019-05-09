@@ -31,7 +31,7 @@ export declare class TextAreaLayer<T extends TextAreaInstance, U extends ITextAr
     areaToLines: Map<TextAreaInstance, LabelInstance[][]>;
     areaWaitingOnLabel: Map<TextAreaInstance, Set<LabelInstance>>;
     getInstancePickingMethods(): {
-        boundsAccessor: (label: T) => Bounds;
+        boundsAccessor: (label: T) => Bounds<{}>;
         hitTest: (label: T, point: [number, number], view: IProjection) => boolean;
     };
     childLayers(): LayerInitializer[];

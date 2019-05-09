@@ -1,5 +1,15 @@
 # Release Notes
 
+## 1.28.1
+
+* `(FIXED)` Rectangles use more vectorized properties now for consistency across base shapes
+
+## 1.28.0
+
+* `(ADDED)` Edges use Vecs more consistently
+* `(FIXED)` Easing expansion erased child attributes unintentionally
+* `(FIXED)` DataBounds and Bounds are the same thing now
+
 ## 1.27.3
 
 * `(FIXED)` Basic Camera Controller setBounds works correctly now for the vertical axis

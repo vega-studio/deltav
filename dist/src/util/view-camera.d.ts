@@ -6,4 +6,5 @@ export declare enum ViewCameraType {
 export declare class ViewCamera {
     type: ViewCameraType;
     baseCamera: Camera;
+    constructor(baseCamera?: Camera);
 }

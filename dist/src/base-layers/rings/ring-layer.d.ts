@@ -21,7 +21,7 @@ export declare class RingLayer<T extends RingInstance, U extends IRingLayerProps
         thickness: string;
     };
     getInstancePickingMethods(): {
-        boundsAccessor: (ring: RingInstance) => Bounds;
+        boundsAccessor: (ring: RingInstance) => Bounds<{}>;
         hitTest: (ring: RingInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<RingInstance>;

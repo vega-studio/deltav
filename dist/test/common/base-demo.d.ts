@@ -14,7 +14,7 @@ export declare abstract class BaseDemo {
         font: BaseResourceOptions;
     }): BaseResourceOptions[];
     getScenes(_defaultCamera: ChartCamera): ISceneOptions[] | null;
-    getViewScreenBounds(viewId?: string): Promise<Bounds | null>;
+    getViewScreenBounds(viewId?: string): Promise<Bounds<never> | null>;
     abstract init(): Promise<void>;
     makeInterval(f: Function, time: number): number;
     refreshDemo(): void;

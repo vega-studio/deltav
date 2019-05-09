@@ -24,7 +24,7 @@ export declare class ImageRenderLayer<T extends ImageInstance, U extends IImageR
         tint: string;
     };
     getInstancePickingMethods(): {
-        boundsAccessor: (image: ImageInstance) => Bounds;
+        boundsAccessor: (image: ImageInstance) => Bounds<{}>;
         hitTest: (image: ImageInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<ImageInstance>;

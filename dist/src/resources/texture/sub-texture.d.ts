@@ -16,5 +16,5 @@ export declare class SubTexture {
     textureReferenceID: string;
     texture: Texture | null;
     widthOnAtlas: number;
-    static fromRegion(source: Texture, region: Bounds): SubTexture | null;
+    static fromRegion(source: Texture, region: Bounds<any>): SubTexture | null;
 }

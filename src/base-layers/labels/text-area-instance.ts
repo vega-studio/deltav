@@ -1,5 +1,5 @@
 import { observable } from "../../instance-provider/observable";
-import { Vec1Compat, Vec2 } from "../../util";
+import { Vec1Compat } from "../../util";
 import { RectangleInstance } from "../rectangle";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 
@@ -45,12 +45,6 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   hasBorder?: boolean;
 }
 
-/** Use to create new labelInstance */
-export type LabelMetrics = {
-  position: Vec2;
-  text: string;
-};
-
 /**
  * This defines a multi-line area that renders text. This is essentially a label
  * with added properties to handle multi-lining.
@@ -85,8 +79,6 @@ export class TextAreaInstance extends LabelInstance {
   newLabels: LabelInstance[] = [];
   /** This holds the border of textArea */
   borders: RectangleInstance[] = [];
-  /** This holds labelmetrics that will be used to create new labelinstance */
-  labelsToLayout: LabelMetrics[] = [];
   /** This stores the old origin which is used to calculate the new positions of labels */
   oldOrigin: [number, number];
   /** This stores old Font size which is used to calculate new font metrics */
@@ -116,68 +108,5 @@ export class TextAreaInstance extends LabelInstance {
     this.borderWidth = options.borderWidth || this.borderWidth;
     this.hasBorder =
       options.hasBorder !== undefined ? options.hasBorder : this.hasBorder;
-
-    this.generateLabels();
   }
-
-  /** Populated the labelToLayout */
-  generateLabels() {
-    const lines: string[] = this.text.split(/\n|\r|\r\n/);
-    const endi = lines.length - 1;
-
-    for (let i = 0; i < endi; i++) {
-      const line = lines[i];
-      const wordsInLine = line.split(" ");
-
-      for (const w of wordsInLine) {
-        if (w !== "") {
-          this.labelsToLayout.push({
-            position: [0, 0],
-            text: w
-          });
-        }
-      }
-
-      // Create an element with text "/n" to indicate a new line will be created
-      this.labelsToLayout.push({
-        position: [0, 0],
-        text: "/n"
-      });
-    }
-
-    const lastLine = lines[endi];
-    const wordsInLine = lastLine.split(" ");
-
-    for (const w of wordsInLine) {
-      if (w !== "") {
-        this.labelsToLayout.push({
-          position: [0, 0],
-          text: w
-        });
-      }
-    }
-  }
-
-  /**
-   * When onReady is called and the labels property is populated. This returns the glyphs that are rendered
-   * for this text area.
-   *
-   * NOTE: This is pretty expensive for large amounts of text.
-   */
-  /*get glyphs() {
-    let glyphs: GlyphInstance[] = [];
-
-    for (let i = 0, iMax = this.labels.length; i < iMax; ++i) {
-      const label = this.labels[i];
-      if (label instanceof LabelInstance) {
-        glyphs = glyphs.concat(label.glyphs);
-      }
-    }
-
-    return glyphs;
-  }
-
-  set glyphs(_glyphs: GlyphInstance[]) {
-    //
-  }*/
 }

@@ -49,6 +49,38 @@ function getOffsetY(text: string, map: Map<string, number>) {
   return offsetY === Number.MAX_SAFE_INTEGER ? 0 : offsetY;
 }
 
+/** Split words from a text by space and new line sign */
+function generateWords(text: string): string[] {
+  const wordsToLayout: string[] = [];
+  const lines: string[] = text.split(/\n|\r|\r\n/);
+  const endi = lines.length - 1;
+
+  for (let i = 0; i < endi; i++) {
+    const line = lines[i];
+    const wordsInLine = line.split(" ");
+
+    for (const word of wordsInLine) {
+      if (word !== "") {
+        wordsToLayout.push(word);
+      }
+    }
+
+    // Create an element with text "/n" to indicate a new line will be created
+    wordsToLayout.push("/n");
+  }
+
+  const lastLine = lines[endi];
+  const wordsInLine = lastLine.split(" ");
+
+  for (const word of wordsInLine) {
+    if (word !== "") {
+      wordsToLayout.push(word);
+    }
+  }
+
+  return wordsToLayout;
+}
+
 /**
  * Constructor props for making a new label layer
  */
@@ -125,6 +157,8 @@ export class TextAreaLayer<
    * This stores kerningRequest of TextAreaInstance
    */
   areaTokerningRequest = new Map<TextAreaInstance, IFontResourceRequest>();
+
+  areaToWords = new Map<TextAreaInstance, string[]>();
 
   /**
    * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
@@ -270,7 +304,7 @@ export class TextAreaLayer<
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
             this.clear(instance);
-            instance.generateLabels();
+            // instance.generateLabels();
             this.updateLabels(instance);
             this.layout(instance);
           } else if (changed[activeId] !== undefined) {
@@ -429,9 +463,9 @@ export class TextAreaLayer<
     }
 
     instance.newLabels = [];
-    instance.labelsToLayout = [];
     this.areaToLabels.delete(instance);
     this.areaWaitingOnLabel.delete(instance);
+    this.areaToWords.delete(instance);
   }
 
   /** When a label exceeds the maxWidth of a textArea, sperate it into several parts */
@@ -701,7 +735,6 @@ export class TextAreaLayer<
 
   /** Calculate the positions of labels */
   layoutLabels(instance: T) {
-    console.warn("layout labels");
     const kerningRequest = this.areaTokerningRequest.get(instance);
     if (!kerningRequest) return;
 
@@ -1057,21 +1090,24 @@ export class TextAreaLayer<
       this.areaWaitingOnLabel.set(instance, waiting);
     }
 
-    const labelsToLayout = instance.labelsToLayout;
+    let wordsToLayout = this.areaToWords.get(instance);
 
-    console.warn("CURRENT", currentLabels);
-    console.warn("labelsToLayout", labelsToLayout);
-    if (currentLabels.length < labelsToLayout.length) {
+    if (!wordsToLayout) {
+      wordsToLayout = generateWords(instance.text);
+    }
+
+    if (currentLabels.length < wordsToLayout.length) {
       for (
-        let i = currentLabels.length, iMax = labelsToLayout.length;
+        let i = currentLabels.length, iMax = wordsToLayout.length;
         i < iMax;
         ++i
       ) {
-        const word = labelsToLayout[i].text;
+        const word = wordsToLayout[i];
 
         if (word === "/n") {
           currentLabels.push(SpecialLetter.NEWLINE);
         } else {
+          // Initial position for labelInstance
           const position: [number, number] = [
             Number.MIN_SAFE_INTEGER,
             Number.MIN_SAFE_INTEGER
@@ -1168,7 +1204,7 @@ export class TextAreaLayer<
 
   updateLabelFontSizes2(instance: T) {
     this.clear(instance);
-    instance.generateLabels();
+    // instance.generateLabels();
     this.updateLabels(instance);
     this.layout(instance);
   }

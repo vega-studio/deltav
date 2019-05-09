@@ -1,4 +1,4 @@
-import { fontRequest, IFontResourceRequest } from "src/resources";
+import { fontRequest, IFontResourceRequest } from "../../../src/resources";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";

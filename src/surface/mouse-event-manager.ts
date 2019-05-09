@@ -1,5 +1,6 @@
 import { Bounds } from "../primitives";
-import { subtract2, Vec2 } from "../util";
+import { ChartCamera, subtract2, Vec2, ViewCamera } from "../util";
+import { Camera } from "../util/camera";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
@@ -27,8 +28,17 @@ export type SceneView = {
 const emptySceneView = {
   depth: 0,
   scene: new LayerScene({ key: "error", views: [] }),
-  view: new View({ key: "error", viewport: {} })
+  view: new View({
+    key: "error",
+    viewport: {},
+    viewCamera: new ViewCamera(Camera.defaultCamera()),
+    camera: new ChartCamera()
+  })
 };
+
+emptySceneView.view.fitViewtoViewport(
+  new Bounds({ x: 0, y: 0, width: 100, height: 100 })
+);
 
 /**
  * This represents an interaction with the Layer Surface. It provides mouse metrics with how the mouse

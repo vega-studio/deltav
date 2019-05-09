@@ -87,6 +87,21 @@ export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
  * This class is present to simplify the concepts of Matrix math down to simpler camera concepts.
  */
 export class Camera {
+  /**
+   * Quick generation of a camera with properties. None of any make sense.
+   */
+  static defaultCamera() {
+    return new Camera({
+      left: -100,
+      right: 100,
+      top: -100,
+      bottom: 100,
+      near: -100,
+      far: 100000,
+      type: CameraProjectionType.ORTHOGRAPHIC
+    });
+  }
+
   /** The expected projection style of the Camera. */
   get projectionType() {
     return this._projectionOptions.type;

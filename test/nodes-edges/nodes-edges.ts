@@ -201,10 +201,14 @@ export class NodesEdges extends BaseDemo {
     });
 
     if (this.controller.bounds && this.boundsView) {
-      this.boundsView.x = this.controller.bounds.worldBounds.x;
-      this.boundsView.y = this.controller.bounds.worldBounds.y;
-      this.boundsView.width = this.controller.bounds.worldBounds.width;
-      this.boundsView.height = this.controller.bounds.worldBounds.height;
+      this.boundsView.position = [
+        this.controller.bounds.worldBounds.x,
+        this.controller.bounds.worldBounds.y
+      ];
+      this.boundsView.size = [
+        this.controller.bounds.worldBounds.width,
+        this.controller.bounds.worldBounds.height
+      ];
     }
   }
 
@@ -343,14 +347,13 @@ export class NodesEdges extends BaseDemo {
         type: AnchorType.TopLeft,
         padding: 0
       },
-      x: 0,
-      y: 0,
-      width: 1,
-      height: 1,
+      position: [0, 0],
+      size: [1, 1],
       color: [1, 1, 1, 0.2],
       depth: -200
     });
 
+    // Uncomment this to see the bounds used for the camera
     // this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
@@ -383,8 +386,7 @@ export class NodesEdges extends BaseDemo {
       const rect = this.lblToRect.get(label);
 
       if (rect) {
-        rect.width = label.size[0];
-        rect.height = label.size[1];
+        rect.size = [label.size[0], label.size[1]];
       }
     });
   };
@@ -420,10 +422,8 @@ export class NodesEdges extends BaseDemo {
         padding: 0
       },
       color: [0.5, 0.5, 0.5, 1],
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0
+      position: [0, 0],
+      size: [0, 0]
     });
 
     // this.providers.rectangles.add(rect);
@@ -475,10 +475,8 @@ export class NodesEdges extends BaseDemo {
       });
 
       this.rectangles.forEach((rect, i) => {
-        rect.x = this.circles[i].center[0];
-        rect.y = this.circles[i].center[1];
-        rect.width = this.labels[i].size[0];
-        rect.height = this.labels[i].size[1];
+        rect.position = [this.circles[i].center[0], this.circles[i].center[1]];
+        rect.size = [this.labels[i].size[0], this.labels[i].size[1]];
         this.lblToRect.set(this.labels[i], rect);
       });
 

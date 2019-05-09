@@ -24,4 +24,8 @@ export enum ViewCameraType {
 export class ViewCamera {
   type: ViewCameraType = ViewCameraType.CONTROLLED;
   baseCamera: Camera;
+
+  constructor(baseCamera?: Camera) {
+    if (baseCamera) this.baseCamera = baseCamera;
+  }
 }

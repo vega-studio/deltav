@@ -72,10 +72,8 @@ export class VertexAttributePacking extends BaseExample {
       for (let i = 0; i < boxWidth; ++i) {
         for (let k = 0; k < boxHeight; ++k) {
           const circle = new RectangleInstance({
-            width: 10,
-            height: 10,
-            x: i * 10,
-            y: k * 10,
+            size: [10, 10],
+            position: [i * 10, k * 10],
             color: scale4([random(), 1.0, random(), 1.0], 0.5),
             scaling: ScaleMode.ALWAYS
           });

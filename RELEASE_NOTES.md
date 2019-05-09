@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.28.2
+
+* `(FIXED)` Cleaned up unused items in the utility folder
+* `(FIXED)` Added an encapsulateAll method for the bounds class
+
 ## 1.28.1
 
 * `(FIXED)` Rectangles use more vectorized properties now for consistency across base shapes

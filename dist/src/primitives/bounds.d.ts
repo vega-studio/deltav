@@ -25,6 +25,7 @@ export declare class Bounds<T> {
     constructor(options: IBoundsOptions);
     containsPoint(point: Vec2): boolean;
     encapsulate(item: Bounds<T> | Vec2): boolean;
+    encapsulateAll(all: Bounds<T>[] | Vec2[]): void;
     fits(bounds: Bounds<T>): 0 | 1 | 2;
     hitBounds(bounds: Bounds<T>): boolean;
     isInside(bounds: Bounds<T>): boolean;

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.28.3
+
+* `(FIXED)` The method nextFrame passes the time to the commands again
+
 ## 1.28.2
 
 * `(FIXED)` Cleaned up unused items in the utility folder

@@ -120,7 +120,8 @@ export class TextAreaDemo extends BaseDemo {
     parameters
       .add(this.parameters, "wordWrap", {
         None: 0,
-        CHARACTER: 1
+        CHARACTER: 1,
+        WORD: 2
       })
       .onChange((value: string) => {
         this.textAreas.forEach(textArea => {
@@ -128,6 +129,8 @@ export class TextAreaDemo extends BaseDemo {
             textArea.wordWrap = WordWrap.NONE;
           } else if (value === "1") {
             textArea.wordWrap = WordWrap.CHARACTER;
+          } else if (value === "2") {
+            textArea.wordWrap = WordWrap.WORD;
           }
         });
       });
@@ -228,6 +231,7 @@ export class TextAreaDemo extends BaseDemo {
   }
 
   async init() {
+    const wordWraps = [WordWrap.NONE, WordWrap.CHARACTER, WordWrap.WORD];
     for (let i = 0; i < 1; i++) {
       const x = i % 4;
       const y = Math.floor(i / 4);
@@ -244,8 +248,7 @@ export class TextAreaDemo extends BaseDemo {
         maxWidth: this.parameters.maxWidth,
         maxHeight: this.parameters.maxHeight,
         lineHeight: this.parameters.lineHeight,
-        wordWrap:
-          this.parameters.wordWrap === 1 ? WordWrap.CHARACTER : WordWrap.NONE,
+        wordWrap: wordWraps[this.parameters.wordWrap],
         padding: [
           this.parameters.paddingTop,
           this.parameters.paddingRight,

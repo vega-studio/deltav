@@ -81,6 +81,90 @@ function generateWords(text: string): string[] {
   return wordsToLayout;
 }
 
+/** Generate the map for every glyph to offsetY */
+function generateGlyphOffsetYMap(
+  instance: TextAreaInstance,
+  kerningRequest: IFontResourceRequest
+) {
+  const glyphToOffsetY = new Map<string, number>();
+
+  if (kerningRequest.fontMap) {
+    const sourceFontSize = kerningRequest.fontMap.fontSource.size;
+
+    const fontScale = instance.fontSize / sourceFontSize;
+
+    const fontMap = kerningRequest.fontMap;
+    const checkText = instance.text.replace(/\s/g, "");
+
+    let minY = Number.MAX_SAFE_INTEGER;
+    let offsetY = 0;
+    let kernY;
+    let leftChar = "";
+
+    for (let i = 0, iMax = checkText.length; i < iMax; ++i) {
+      const char = checkText[i];
+
+      kernY = 0;
+
+      if (leftChar) {
+        kernY = fontMap.kerning[leftChar][char][1] || 0;
+      }
+
+      offsetY = offsetY + kernY * fontScale;
+
+      glyphToOffsetY.set(char, offsetY);
+
+      minY = Math.min(offsetY, minY);
+
+      leftChar = char;
+    }
+
+    glyphToOffsetY.forEach((value, key) => {
+      glyphToOffsetY.set(key, value - minY);
+    });
+  }
+
+  return glyphToOffsetY;
+}
+
+/** Generate glyphWidths for a label in a TextAreaInstance */
+function getGlyphWidths(
+  label: LabelInstance,
+  instance: TextAreaInstance,
+  kerningRequest: IFontResourceRequest
+) {
+  const glyphWidths = [];
+  const sourceFontSize = kerningRequest.fontMap
+    ? kerningRequest.fontMap.fontSource.size
+    : instance.fontSize;
+
+  const fontScale = instance.fontSize / sourceFontSize;
+
+  let leftChar = "";
+  let currentWidth = 0;
+  let offset: Vec2 = [0, 0];
+
+  for (let i = 0; i < label.text.length; i++) {
+    const char = label.text[i];
+
+    if (kerningRequest.fontMap) {
+      let kern: Vec2 = [0, 0];
+
+      if (leftChar) {
+        kern = kerningRequest.fontMap.kerning[leftChar][char] || [0, 0];
+      }
+
+      offset = add2(offset, scale2(kern, fontScale));
+      const image = kerningRequest.fontMap.glyphMap[char];
+      currentWidth = offset[0] + image.pixelWidth * fontScale;
+      glyphWidths.push(currentWidth);
+      leftChar = char;
+    }
+  }
+
+  return glyphWidths;
+}
+
 /**
  * Constructor props for making a new label layer
  */
@@ -507,7 +591,10 @@ export class TextAreaLayer<
     instance.newLabels.push(label1);
 
     // New Line if word wrap mode is normal
-    if (instance.wordWrap === WordWrap.CHARACTER) {
+    if (
+      instance.wordWrap === WordWrap.CHARACTER ||
+      instance.wordWrap === WordWrap.WORD
+    ) {
       currentY += instance.lineHeight;
       currentX = 0;
 
@@ -749,43 +836,7 @@ export class TextAreaLayer<
 
     const spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
 
-    const glyphToHeight = new Map<string, number>();
-
-    if (kerningRequest.fontMap) {
-      const sourceFontSize = kerningRequest.fontMap.fontSource.size;
-
-      const fontScale = instance.fontSize / sourceFontSize;
-
-      const fontMap = kerningRequest.fontMap;
-      const checkText = instance.text.replace(/\s/g, "");
-
-      let minY = Number.MAX_SAFE_INTEGER;
-      let offsetY = 0;
-      let kernY;
-      let leftChar = "";
-
-      for (let i = 0, iMax = checkText.length; i < iMax; ++i) {
-        const char = checkText[i];
-
-        kernY = 0;
-
-        if (leftChar) {
-          kernY = fontMap.kerning[leftChar][char][1] || 0;
-        }
-
-        offsetY = offsetY + kernY * fontScale;
-
-        glyphToHeight.set(char, offsetY);
-
-        minY = Math.min(offsetY, minY);
-
-        leftChar = char;
-      }
-
-      glyphToHeight.forEach((value, key) => {
-        glyphToHeight.set(key, value - minY);
-      });
-    }
+    const glyphToOffsetY = generateGlyphOffsetYMap(instance, kerningRequest);
 
     let currentX = 0;
     let currentY = 0;
@@ -796,37 +847,8 @@ export class TextAreaLayer<
 
       if (label instanceof LabelInstance) {
         const width = label.getWidth();
-
-        const sourceFontSize = kerningRequest.fontMap
-          ? kerningRequest.fontMap.fontSource.size
-          : instance.fontSize;
-
-        const fontScale = instance.fontSize / sourceFontSize;
-
-        const glyphWidths = [];
-
-        let leftChar = "";
-        let currentWidth = 0;
-        let offset: Vec2 = [0, 0];
-
-        for (let i = 0; i < label.text.length; i++) {
-          const char = label.text[i];
-
-          if (kerningRequest.fontMap) {
-            let kern: Vec2 = [0, 0];
-
-            if (leftChar) {
-              kern = kerningRequest.fontMap.kerning[leftChar][char] || [0, 0];
-            }
-
-            offset = add2(offset, scale2(kern, fontScale));
-
-            const image = kerningRequest.fontMap.glyphMap[char];
-            currentWidth = offset[0] + image.pixelWidth * fontScale;
-            glyphWidths.push(currentWidth);
-            leftChar = char;
-          }
-        }
+        const offsetY = getOffsetY(label.text, glyphToOffsetY);
+        const glyphWidths = getGlyphWidths(label, instance, kerningRequest);
 
         // Make sure all the labels are within maxHeight and first letter is not bigger than maxWidth
         if (
@@ -835,8 +857,6 @@ export class TextAreaLayer<
         ) {
           // Whole label can be put within maxWidth
           if (currentX + width <= maxWidth) {
-            const offsetY = getOffsetY(label.text, glyphToHeight);
-
             label.origin = [originX + currentX, originY + currentY + offsetY];
             currentX += width + spaceWidth;
 
@@ -851,99 +871,122 @@ export class TextAreaLayer<
                 currentY += instance.lineHeight;
               }
             }
-          }
-          // A label will be cut into two parts if label's width exceeds maxwidth
-          else {
-            const spaceLeft = maxWidth - currentX;
-            // const glyphWidths = label.glyphWidths;
-            let index = glyphWidths.length - 1;
-            const word = label.text;
+          } else {
+            // A label which will just put to next line if it exceeds the maxWidth when in WORD mode
+            // The label's width should be smaller than maxWidth
+            if (
+              instance.wordWrap === WordWrap.WORD &&
+              label.getWidth() <= instance.maxWidth
+            ) {
+              currentX = 0;
+              currentY += instance.lineHeight;
 
-            // Find the index to retrieve the part of word that stay in this line
-            while (glyphWidths[index] > spaceLeft) {
-              index--;
+              if (currentY + instance.lineHeight <= instance.maxHeight) {
+                label.origin = [
+                  originX + currentX,
+                  originY + currentY + offsetY
+                ];
+                currentX += label.getWidth() + spaceWidth;
+              } else {
+                label.active = false;
+              }
             }
-
-            // Some part of label stay in this line
-            if (index >= 0) {
-              const sizes = this.seperateLabel(
-                instance,
-                label,
-                glyphToHeight,
-                word,
-                index,
-                currentX,
-                currentY,
-                spaceWidth,
-                glyphWidths
-              );
-
-              currentX = sizes[0];
-              currentY = sizes[1];
-            }
-            // The whole word moves to next line or set active false if index < 0
+            // A label will be cut into two parts if label's width exceeds maxwidth
             else {
-              if (instance.wordWrap === WordWrap.CHARACTER) {
-                // New Line
-                currentY += instance.lineHeight;
-                currentX = 0;
+              const spaceLeft = maxWidth - currentX;
+              let index = glyphWidths.length - 1;
+              const word = label.text;
 
-                if (currentY + instance.lineHeight < maxHeight) {
-                  // Put label with in the line
-                  if (currentX + label.getWidth() <= maxWidth) {
-                    const offsetY = getOffsetY(label.text, glyphToHeight);
-                    label.origin = [
-                      originX + currentX,
-                      originY + currentY + offsetY
-                    ];
+              // Find the index to retrieve the part of word that stay in this line
+              while (glyphWidths[index] > spaceLeft) {
+                index--;
+              }
 
-                    currentX += label.getWidth() + spaceWidth;
-                    if (
-                      currentX >= maxWidth &&
-                      i + 1 < endi &&
-                      instance.labels[i + 1] !== SpecialLetter.NEWLINE
-                    ) {
-                      currentX = 0;
-                      currentY += instance.lineHeight;
+              // Some part of label stay in this line
+              if (index >= 0) {
+                const sizes = this.seperateLabel(
+                  instance,
+                  label,
+                  glyphToOffsetY,
+                  word,
+                  index,
+                  currentX,
+                  currentY,
+                  spaceWidth,
+                  glyphWidths
+                );
+
+                currentX = sizes[0];
+                currentY = sizes[1];
+              }
+              // The whole word moves to next line or set active false if index < 0
+              else {
+                if (
+                  instance.wordWrap === WordWrap.CHARACTER ||
+                  instance.wordWrap === WordWrap.WORD
+                ) {
+                  // New Line
+                  currentY += instance.lineHeight;
+                  currentX = 0;
+
+                  if (currentY + instance.lineHeight < maxHeight) {
+                    // Put label with in the line
+                    if (currentX + label.getWidth() <= maxWidth) {
+                      // const offsetY = getOffsetY(label.text, glyphToHeight);
+                      label.origin = [
+                        originX + currentX,
+                        originY + currentY + offsetY
+                      ];
+
+                      currentX += label.getWidth() + spaceWidth;
+
+                      if (
+                        currentX >= maxWidth &&
+                        i + 1 < endi &&
+                        instance.labels[i + 1] !== SpecialLetter.NEWLINE
+                      ) {
+                        currentX = 0;
+                        currentY += instance.lineHeight;
+                      }
+                    }
+                    // Put part of label in this line, move other part to following lines
+                    else {
+                      const spaceLeft = maxWidth - currentX;
+                      // const glyphWidths = label.glyphWidths;
+                      let index = glyphWidths.length - 1;
+                      const word = label.text;
+
+                      while (glyphWidths[index] > spaceLeft) {
+                        index--;
+                      }
+
+                      if (index >= 0) {
+                        const sizes = this.seperateLabel(
+                          instance,
+                          label,
+                          glyphToOffsetY,
+                          word,
+                          index,
+                          currentX,
+                          currentY,
+                          spaceWidth,
+                          glyphWidths
+                        );
+
+                        currentX = sizes[0];
+                        currentY = sizes[1];
+                      }
                     }
                   }
-                  // Put part of label in this line, move other part to following lines
+                  // Exceeds maxHeight
                   else {
-                    const spaceLeft = maxWidth - currentX;
-                    // const glyphWidths = label.glyphWidths;
-                    let index = glyphWidths.length - 1;
-                    const word = label.text;
-
-                    while (glyphWidths[index] > spaceLeft) {
-                      index--;
-                    }
-
-                    if (index >= 0) {
-                      const sizes = this.seperateLabel(
-                        instance,
-                        label,
-                        glyphToHeight,
-                        word,
-                        index,
-                        currentX,
-                        currentY,
-                        spaceWidth,
-                        glyphWidths
-                      );
-
-                      currentX = sizes[0];
-                      currentY = sizes[1];
-                    }
+                    label.active = false;
                   }
                 }
-                // Exceeds maxHeight
-                else {
+                // Word which is supposed to put to next line set false when lineWrap is none
+                else if (instance.wordWrap === WordWrap.NONE) {
                   label.active = false;
                 }
-              }
-              // Word which is supposed to put to next line set false when lineWrap is none
-              else if (instance.wordWrap === WordWrap.NONE) {
-                label.active = false;
               }
             }
           }
@@ -1125,7 +1168,6 @@ export class TextAreaLayer<
           label.parentTextArea = instance;
           currentLabels.push(label);
 
-          /* Right now, I just added it */
           this.providers.labelProvider.add(label);
 
           waiting.add(label);

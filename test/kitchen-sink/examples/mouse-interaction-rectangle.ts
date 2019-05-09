@@ -107,12 +107,10 @@ export class MouseInteractionRectangle extends BaseExample {
             type: AnchorType.Middle
           },
           color: [Math.random(), Math.random(), 1.0, Math.random() * 0.8 + 0.2],
-          height: 10,
           id: `rectangle${i * 100 + k}`,
           scaling: ScaleMode.ALWAYS,
-          width: 10,
-          x: i * 10,
-          y: k * 10
+          size: [10, 10],
+          position: [i * 10, k * 10]
         });
 
         rectangleProvider.add(rectangle);

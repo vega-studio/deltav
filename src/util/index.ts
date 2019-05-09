@@ -13,3 +13,4 @@ export * from "./matrix";
 export * from "./view-camera";
 export * from "./next-frame";
 export * from "./easing-util";
+export * from "./promise-resolver";

@@ -1,5 +1,7 @@
 import { Vec2 } from "../util";
 
+const { min, max } = Math;
+
 export interface IBoundsOptions {
   /** Top left x position */
   x?: number;
@@ -142,6 +144,51 @@ export class Bounds<T> {
 
       return true;
     }
+  }
+
+  /**
+   * Grows the bounds (if needed) to encompass all bounds or points provided. This
+   * performs much better than running encapsulate one by one.
+   */
+  encapsulateAll(all: Bounds<T>[] | Vec2[]) {
+    // Nothing provided, nothing to do
+    if (all.length <= 0) return;
+    // Stores max boundaries found
+    let minX = Number.MAX_SAFE_INTEGER,
+      maxX = Number.MIN_SAFE_INTEGER,
+      minY = Number.MAX_SAFE_INTEGER,
+      maxY = Number.MIN_SAFE_INTEGER;
+
+    // Handle list of bounds
+    if (all[0] instanceof Bounds) {
+      const boundsList = all as Bounds<T>[];
+
+      for (let i = 0, iMax = boundsList.length; i < iMax; ++i) {
+        const bounds = boundsList[i];
+        minX = min(minX, bounds.left);
+        maxX = max(maxX, bounds.right);
+        minY = min(minY, bounds.top);
+        maxY = max(maxY, bounds.bottom);
+      }
+    }
+
+    // Handle list of points
+    else {
+      const pointsList = all as Vec2[];
+
+      for (let i = 0, iMax = pointsList.length; i < iMax; ++i) {
+        const [x, y] = pointsList[i];
+        minX = min(minX, x);
+        maxX = max(maxX, x);
+        minY = min(minY, y);
+        maxY = max(maxY, y);
+      }
+    }
+
+    this.x = Math.min(this.x, minX);
+    this.y = Math.min(this.y, minY);
+    this.width = Math.max(this.width, maxX - minX);
+    this.height = Math.max(this.height, maxY - minY);
   }
 
   /**

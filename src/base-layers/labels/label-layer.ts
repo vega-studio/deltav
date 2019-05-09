@@ -339,7 +339,7 @@ export class LabelLayer<
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
           } else if (changed[activeId] !== undefined) {
-            if (instance.active && instance.toShow) {
+            if (instance.active) {
               this.layoutGlyphs(instance);
               this.showGlyphs(instance);
             } else {

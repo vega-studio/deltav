@@ -40,7 +40,7 @@ export class TextAreaDemo extends BaseDemo {
     x: 0,
     y: 0,
     lineHeight: 30,
-    lineWrap: 1,
+    wordWrap: 1,
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 0,
@@ -118,16 +118,16 @@ export class TextAreaDemo extends BaseDemo {
       });
 
     parameters
-      .add(this.parameters, "lineWrap", {
+      .add(this.parameters, "wordWrap", {
         None: 0,
-        Normal: 1
+        CHARACTER: 1
       })
       .onChange((value: string) => {
         this.textAreas.forEach(textArea => {
           if (value === "0") {
-            textArea.lineWrap = WordWrap.NONE;
+            textArea.wordWrap = WordWrap.NONE;
           } else if (value === "1") {
-            textArea.lineWrap = WordWrap.NORMAL;
+            textArea.wordWrap = WordWrap.CHARACTER;
           }
         });
       });
@@ -136,14 +136,14 @@ export class TextAreaDemo extends BaseDemo {
       .add(this.parameters, "paddingTop", 0, 20, 1)
       .onChange((value: number) => {
         this.textAreas.forEach(textArea => {
-          const newPaddings: Vec1Compat = [
+          const newPadding: Vec1Compat = [
             value,
-            textArea.paddings[1] || 0,
-            textArea.paddings[2] || 0,
-            textArea.paddings[3] || 0
+            textArea.padding[1] || 0,
+            textArea.padding[2] || 0,
+            textArea.padding[3] || 0
           ];
 
-          textArea.paddings = newPaddings;
+          textArea.padding = newPadding;
         });
       });
 
@@ -151,14 +151,14 @@ export class TextAreaDemo extends BaseDemo {
       .add(this.parameters, "paddingRight", 0, 20, 1)
       .onChange((value: number) => {
         this.textAreas.forEach(textArea => {
-          const newPaddings: Vec1Compat = [
-            textArea.paddings[0],
+          const newPadding: Vec1Compat = [
+            textArea.padding[0],
             value,
-            textArea.paddings[2] || 0,
-            textArea.paddings[3] || 0
+            textArea.padding[2] || 0,
+            textArea.padding[3] || 0
           ];
 
-          textArea.paddings = newPaddings;
+          textArea.padding = newPadding;
         });
       });
 
@@ -166,14 +166,14 @@ export class TextAreaDemo extends BaseDemo {
       .add(this.parameters, "paddingBottom", 0, 20, 1)
       .onChange((value: number) => {
         this.textAreas.forEach(textArea => {
-          const newPaddings: Vec1Compat = [
-            textArea.paddings[0],
-            textArea.paddings[1] || 0,
+          const newPadding: Vec1Compat = [
+            textArea.padding[0],
+            textArea.padding[1] || 0,
             value,
-            textArea.paddings[3] || 0
+            textArea.padding[3] || 0
           ];
 
-          textArea.paddings = newPaddings;
+          textArea.padding = newPadding;
         });
       });
 
@@ -181,14 +181,14 @@ export class TextAreaDemo extends BaseDemo {
       .add(this.parameters, "paddingLeft", 0, 20, 1)
       .onChange((value: number) => {
         this.textAreas.forEach(textArea => {
-          const newPaddings: Vec1Compat = [
-            textArea.paddings[0],
-            textArea.paddings[1] || 0,
-            textArea.paddings[2] || 0,
+          const newPadding: Vec1Compat = [
+            textArea.padding[0],
+            textArea.padding[1] || 0,
+            textArea.padding[2] || 0,
             value
           ];
 
-          textArea.paddings = newPaddings;
+          textArea.padding = newPadding;
         });
       });
 
@@ -228,7 +228,7 @@ export class TextAreaDemo extends BaseDemo {
   }
 
   async init() {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 1; i++) {
       const x = i % 4;
       const y = Math.floor(i / 4);
       const textArea = new TextAreaInstance({
@@ -244,9 +244,9 @@ export class TextAreaDemo extends BaseDemo {
         maxWidth: this.parameters.maxWidth,
         maxHeight: this.parameters.maxHeight,
         lineHeight: this.parameters.lineHeight,
-        lineWrap:
-          this.parameters.lineWrap === 1 ? WordWrap.NORMAL : WordWrap.NONE,
-        paddings: [
+        wordWrap:
+          this.parameters.wordWrap === 1 ? WordWrap.CHARACTER : WordWrap.NONE,
+        padding: [
           this.parameters.paddingTop,
           this.parameters.paddingRight,
           this.parameters.paddingBottom,

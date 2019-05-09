@@ -91,8 +91,6 @@ export class LabelInstance extends Instance {
    * label.
    */
   size: Size = [0, 0];
-  /** This decides whether a label to show */
-  toShow: boolean = true;
 
   /**
    * If a maxWidth is specified, there is a chance the text will be truncated.

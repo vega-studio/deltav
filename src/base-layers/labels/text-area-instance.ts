@@ -1,7 +1,6 @@
 import { observable } from "../../instance-provider/observable";
 import { Vec1Compat, Vec2 } from "../../util";
 import { RectangleInstance } from "../rectangle";
-import { GlyphInstance } from "./glyph-instance";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 
 /**
@@ -17,25 +16,31 @@ export enum TextAlignment {
  * WordWrap mode
  * NONE: New lines ONLY happen when an explicit newline character ('\n', '\r', '\n\r') occurs.
  *       Lines that exceed the maxWidth will be truncated.
- * NORMAL: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
- *         and thus continue on the next line
+ * CHARACTER: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
+ *         and some characters stay in this line while the rest continue on the next line
+ * WORD: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
+ *         and the whole word continues on the next line
  */
 export enum WordWrap {
   NONE,
-  NORMAL
+  CHARACTER,
+  WORD
 }
 
-/** SpecialLetter such as NEWLINE */
+/** This is used to mark the specialLetter when divide the textArea into several labels */
 export enum SpecialLetter {
+  /** When the scanner meets a new line sign ("/n", "/r", "/n/r") */
   NEWLINE
 }
+
+export type TextAreaLabel = LabelInstance | SpecialLetter;
 
 export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   maxHeight?: number;
   lineHeight?: number;
-  lineWrap?: WordWrap;
+  wordWrap?: WordWrap;
   alignment?: TextAlignment;
-  paddings?: Vec1Compat;
+  padding?: Vec1Compat;
   borderWidth?: number;
   hasBorder?: boolean;
 }
@@ -64,15 +69,18 @@ export class TextAreaInstance extends LabelInstance {
   /**
    * This indicates if a single line of text should wrap or not. If not, the first word that goes
    * out of bounds will be removed and replaced with ellipses. If true, excess words in a single line
-   * will wrap down to the next line to stay within the space allotted.
+   * will wrap down to the next line to stay within the space allowed.
    */
-  @observable lineWrap: WordWrap = WordWrap.NONE;
+  @observable wordWrap: WordWrap = WordWrap.NONE;
   /**
    * This changes how the alignment for the text within the region will appear.
    */
   @observable alignment: TextAlignment = TextAlignment.LEFT;
-  /** When onReady is called, this will be populated with all of the labels used to compose this text area */
-  labels: (LabelInstance | SpecialLetter)[] = [];
+  /**
+   * When onReady is called, this will be populated with all of the labels used to compose this text area
+   * SpecialLetter will be used when layoutint labels, it may indicates a new line
+   */
+  labels: TextAreaLabel[] = [];
   /** This will be used to hold new labels when a label should be divided into two labels because label is at the end a line */
   newLabels: LabelInstance[] = [];
   /** This holds the border of textArea */
@@ -84,7 +92,7 @@ export class TextAreaInstance extends LabelInstance {
   /** This stores old Font size which is used to calculate new font metrics */
   oldFontSize: number;
   /** Stores paddings for the text area, [top, right, bottom, left] */
-  @observable paddings: Vec1Compat = [0, 0, 0, 0];
+  @observable padding: Vec1Compat = [0, 0, 0, 0];
   /** Border width */
   @observable borderWidth: number = 6;
   /** Whether the textArea has border */
@@ -102,9 +110,9 @@ export class TextAreaInstance extends LabelInstance {
     this.maxWidth = options.maxWidth || this.maxWidth;
     this.maxHeight = options.maxHeight || this.maxHeight;
     this.lineHeight = options.lineHeight || this.lineHeight;
-    this.lineWrap = options.lineWrap || this.lineWrap;
+    this.wordWrap = options.wordWrap || this.wordWrap;
     this.alignment = options.alignment || this.alignment;
-    this.paddings = options.paddings || this.paddings;
+    this.padding = options.padding || this.padding;
     this.borderWidth = options.borderWidth || this.borderWidth;
     this.hasBorder =
       options.hasBorder !== undefined ? options.hasBorder : this.hasBorder;
@@ -116,6 +124,7 @@ export class TextAreaInstance extends LabelInstance {
   generateLabels() {
     const lines: string[] = this.text.split(/\n|\r|\r\n/);
     const endi = lines.length - 1;
+
     for (let i = 0; i < endi; i++) {
       const line = lines[i];
       const wordsInLine = line.split(" ");
@@ -129,7 +138,7 @@ export class TextAreaInstance extends LabelInstance {
         }
       }
 
-      // new line sign
+      // Create an element with text "/n" to indicate a new line will be created
       this.labelsToLayout.push({
         position: [0, 0],
         text: "/n"
@@ -155,7 +164,7 @@ export class TextAreaInstance extends LabelInstance {
    *
    * NOTE: This is pretty expensive for large amounts of text.
    */
-  get glyphs() {
+  /*get glyphs() {
     let glyphs: GlyphInstance[] = [];
 
     for (let i = 0, iMax = this.labels.length; i < iMax; ++i) {
@@ -170,5 +179,5 @@ export class TextAreaInstance extends LabelInstance {
 
   set glyphs(_glyphs: GlyphInstance[]) {
     //
-  }
+  }*/
 }

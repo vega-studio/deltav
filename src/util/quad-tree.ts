@@ -7,25 +7,7 @@ import { isVec2, Vec2 } from "./vector";
 const maxPopulation: number = 5;
 const maxDepth: number = 10;
 
-export interface IQuadItem {
-  area: number;
-  bottom: number;
-  height: number;
-  left: number;
-  location: Vec2;
-  mid: Vec2;
-  right: number;
-  top: number;
-  width: number;
-  x: number;
-  y: number;
-
-  containsPoint(point: Vec2): boolean;
-  encapsulate(item: IQuadItem): boolean;
-  fits(item: IQuadItem): 0 | 1 | 2;
-  hitBounds(item: IQuadItem): boolean;
-  isInside(item: IQuadItem): boolean;
-}
+export type IQuadItem = Bounds<any>;
 
 /**
  * This filters a quad tree query by type

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.28.1
+
+* `(FIXED)` Rectangles use more vectorized properties now for consistency across base shapes
+
 ## 1.28.0
 
 * `(ADDED)` Edges use Vecs more consistently

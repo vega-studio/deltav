@@ -1,23 +1,6 @@
 import { Bounds } from "../primitives/bounds";
 import { Vec2 } from "./vector";
-export interface IQuadItem {
-    area: number;
-    bottom: number;
-    height: number;
-    left: number;
-    location: Vec2;
-    mid: Vec2;
-    right: number;
-    top: number;
-    width: number;
-    x: number;
-    y: number;
-    containsPoint(point: Vec2): boolean;
-    encapsulate(item: IQuadItem): boolean;
-    fits(item: IQuadItem): 0 | 1 | 2;
-    hitBounds(item: IQuadItem): boolean;
-    isInside(item: IQuadItem): boolean;
-}
+export declare type IQuadItem = Bounds<any>;
 export declare function filterQuery<T extends IQuadItem>(type: Function[], queryValues: IQuadItem[]): T[];
 export interface IVisitFunction<T extends IQuadItem> {
     (node: Node<T>, child?: IQuadItem): void;

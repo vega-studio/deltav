@@ -163,6 +163,7 @@ export interface IShaders {
     vs: string;
 }
 export interface IProjection {
+    id: string;
     camera: ChartCamera;
     pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
     screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;

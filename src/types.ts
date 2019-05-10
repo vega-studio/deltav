@@ -431,6 +431,8 @@ export interface IShaders {
  * Represents an element that has a full list of projection methods
  */
 export interface IProjection {
+  /** SInce projections are the views (just interface stripping functionality) we should provide the id for added flexibility to events */
+  id: string;
   /** This is the chart camera utilized in the projection of elements */
   camera: ChartCamera;
   /** Converts from the pixel density layer to the screen space */

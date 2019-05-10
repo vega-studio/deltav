@@ -3,7 +3,7 @@ import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceManager, BaseResourceOptions, ResourceManager } from "../resources";
-import { IResourceType } from "../types";
+import { IProjection, IResourceType } from "../types";
 import { FrameMetrics } from "../types";
 import { Vec2 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
@@ -79,6 +79,7 @@ export declare class LayerSurface {
     private gatherViewDrawDependencies;
     getViewSize(viewId: string): Bounds<never> | null;
     getViewWorldBounds(viewId: string): Bounds<never> | null;
+    getProjections(viewId: string): IProjection | null;
     init(options: ILayerSurfaceOptions): Promise<this | undefined>;
     private initGL;
     private initIOExpanders;

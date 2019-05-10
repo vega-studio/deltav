@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.29.0
+
+* `(ADDED)` Camera offset and scale can now be animated
+
 ## 1.28.3
 
 * `(FIXED)` The method nextFrame passes the time to the commands again

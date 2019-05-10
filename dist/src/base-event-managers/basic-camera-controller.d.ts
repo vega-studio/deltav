@@ -50,6 +50,7 @@ export declare class BasicCameraController extends EventManager {
     startViews: string[];
     wheelShouldScroll: boolean;
     private optimizedViews;
+    private cameraImmediateAnimation;
     private coveredStartView;
     private onRangeChanged;
     private startViewDidStart;
@@ -66,6 +67,8 @@ export declare class BasicCameraController extends EventManager {
     handleMouseDown(e: IMouseInteraction, _button: number): void;
     handleMouseUp(_e: IMouseInteraction): void;
     private doPan;
+    setOffset(viewId: string, offset: Vec3): void;
+    centerOn(viewId: string, position: Vec3): void;
     handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
     handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics): void;
     handleMouseOut(_e: IMouseInteraction): void;

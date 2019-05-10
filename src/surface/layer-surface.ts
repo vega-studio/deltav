@@ -13,7 +13,12 @@ import { AtlasResourceManager } from "../resources/texture/atlas-resource-manage
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { IInstanceAttribute, IResourceType, PickType } from "../types";
+import {
+  IInstanceAttribute,
+  IProjection,
+  IResourceType,
+  PickType
+} from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { copy4, Vec2, Vec4 } from "../util/vector";
@@ -401,7 +406,8 @@ export class LayerSurface {
             // The view's animationEndTime is the largest end time found on one of the view's child layers.
             view.animationEndTime = Math.max(
               view.animationEndTime,
-              layer.animationEndTime
+              layer.animationEndTime,
+              view.camera.animationEndTime
             );
             // Indicate this layer is being rendered at the current time frame
             layer.lastFrameTime = time;
@@ -955,6 +961,20 @@ export class LayerSurface {
   }
 
   /**
+   * Retrieves the projection methods for a given view, null if the view id does not exist
+   * in the surface
+   */
+  getProjections(viewId: string): IProjection | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        return sceneView.view;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * This is the beginning of the system. This should be called immediately after the surface is constructed.
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */
@@ -1093,6 +1113,7 @@ export class LayerSurface {
           newView.viewCamera =
             newView.viewCamera || defaultSceneElement.viewCamera;
           newView.pixelRatio = this.pixelRatio;
+          newView.camera.surface = this;
           newScene.addView(newView);
 
           for (const sceneView of this.sceneViews) {

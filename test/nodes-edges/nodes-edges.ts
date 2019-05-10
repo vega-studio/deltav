@@ -24,7 +24,6 @@ import {
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  IPickInfo,
   ISceneOptions,
   LabelInstance,
   LabelLayer,
@@ -180,12 +179,10 @@ export class NodesEdges extends BaseDemo {
       width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
       height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
     });
-
     const minScale = Math.min(
       this.viewSize[0] / worldBounds.width,
       this.viewSize[1] / worldBounds.height
     );
-
     this.controller.setBounds({
       anchor: CameraBoundsAnchor.MIDDLE,
       scaleMax: [9999, 9999, 9999],
@@ -199,7 +196,6 @@ export class NodesEdges extends BaseDemo {
       view: "default-view",
       worldBounds
     });
-
     if (this.controller.bounds && this.boundsView) {
       this.boundsView.position = [
         this.controller.bounds.worldBounds.x,
@@ -267,7 +263,7 @@ export class NodesEdges extends BaseDemo {
         scaleFactor: () => this.camera.scale[0],
         picking: PickType.SINGLE,
 
-        onMouseOver: (info: IPickInfo<CircleInstance>) => {
+        onMouseOver: info => {
           const over = new Set();
           info.instances.forEach(circle => {
             over.add(circle);
@@ -299,7 +295,7 @@ export class NodesEdges extends BaseDemo {
           });
         },
 
-        onMouseOut: (_info: IPickInfo<CircleInstance>) => {
+        onMouseOut: _info => {
           this.circles.forEach((circle, i) => {
             circle.color = this.makeColor(i);
           });
@@ -307,6 +303,17 @@ export class NodesEdges extends BaseDemo {
           this.arcs.forEach(arc => {
             this.providers.arcs.remove(arc);
           });
+        },
+
+        onMouseClick: info => {
+          const focus = info.instances.find(circle => Boolean(circle.center));
+          if (!focus) return;
+          this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
+          this.controller.centerOn(info.projection.id, [
+            focus.center[0],
+            focus.center[1],
+            0
+          ]);
         }
       }),
       createLayer(RectangleLayer, {

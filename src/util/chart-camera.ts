@@ -81,6 +81,13 @@ export class ChartCamera {
   }
 
   /**
+   * Gets the source scale value
+   */
+  getScale() {
+    return this._scale;
+  }
+
+  /**
    * Sets the location of the camera by adjusting the offsets to match.
    */
   setOffset(offset: Vec3) {

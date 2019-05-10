@@ -1,8 +1,8 @@
-import { LayerSurface } from "src/surface";
+import { LayerSurface } from "../surface";
 import {
   AutoEasingMethod,
   IAutoEasingMethod
-} from "src/util/auto-easing-method";
+} from "../util/auto-easing-method";
 import { copy3, divide3, scale3, subtract3, Vec3 } from "./vector";
 
 let chartCameraUID = 0;

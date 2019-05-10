@@ -1,4 +1,3 @@
-import { IProjection } from "src/types";
 import { Bounds } from "../primitives/bounds";
 import { EventManager } from "../surface/event-manager";
 import {
@@ -7,6 +6,7 @@ import {
   IWheelMetrics
 } from "../surface/mouse-event-manager";
 import { View } from "../surface/view";
+import { IProjection } from "../types";
 import {
   add3,
   AutoEasingMethod,

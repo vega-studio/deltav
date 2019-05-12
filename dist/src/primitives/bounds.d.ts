@@ -9,24 +9,26 @@ export interface IBoundsOptions {
     top?: number;
     bottom?: number;
 }
-export declare class Bounds {
+export declare class Bounds<T> {
     x: number;
     y: number;
     width: number;
     height: number;
+    d?: T;
     readonly area: number;
     readonly bottom: number;
     readonly left: number;
     readonly mid: Vec2;
     readonly right: number;
     readonly top: number;
-    static emptyBounds(): Bounds;
+    static emptyBounds<T>(): Bounds<T>;
     constructor(options: IBoundsOptions);
     containsPoint(point: Vec2): boolean;
-    encapsulate(item: Bounds | Vec2): boolean;
-    fits(bounds: Bounds): 0 | 1 | 2;
-    hitBounds(bounds: Bounds): boolean;
-    isInside(bounds: Bounds): boolean;
+    encapsulate(item: Bounds<T> | Vec2): boolean;
+    encapsulateAll(all: Bounds<T>[] | Vec2[]): void;
+    fits(bounds: Bounds<T>): 0 | 1 | 2;
+    hitBounds(bounds: Bounds<T>): boolean;
+    isInside(bounds: Bounds<T>): boolean;
     readonly location: Vec2;
     toString(): string;
 }

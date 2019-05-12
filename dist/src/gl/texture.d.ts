@@ -32,7 +32,7 @@ export declare class Texture {
     private _type;
     unpackAlignment: Texture["_unpackAlignment"];
     private _unpackAlignment;
-    readonly updateRegions: [ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | {
+    readonly updateRegions: [HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | {
         width: number;
         height: number;
         buffer: ArrayBufferView | null;

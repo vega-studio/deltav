@@ -5,7 +5,8 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer
+  LayerInitializer,
+  nextFrame
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -25,50 +26,52 @@ export class ChangingAnchorLabels extends BaseExample {
 
   makeProvider(): InstanceProvider<LabelInstance> {
     const labelProvider = new InstanceProvider<LabelInstance>();
-    const labels: LabelInstance[] = [];
 
-    for (let i = 0; i < 625; ++i) {
-      const label = labelProvider.add(
-        new LabelInstance({
-          anchor: {
-            padding: 0,
-            type: AnchorType.Middle
-          },
-          color: [
-            Math.random(),
-            Math.random(),
-            Math.random(),
-            Math.random() * 0.8 + 0.2
-          ],
-          fontSize: 20,
-          id: `label-test-${i}`,
-          text: "Changing Anchor Point",
-          origin: [Math.random() * 1500, Math.random() * 1500]
-        })
-      );
+    nextFrame(() => {
+      const bounds = this.surface.getViewSize(this.view);
+      if (!bounds) return;
 
-      labels.push(label);
-    }
+      const labels: LabelInstance[] = [];
 
-    setInterval(() => {
-      for (const label of labels) {
-        const anchor: Anchor = {
-          padding: 0,
-          type: [
-            AnchorType.TopLeft,
-            AnchorType.TopMiddle,
-            AnchorType.TopRight,
-            AnchorType.MiddleLeft,
-            AnchorType.Middle,
-            AnchorType.MiddleRight,
-            AnchorType.BottomLeft,
-            AnchorType.BottomMiddle,
-            AnchorType.BottomRight
-          ][Math.floor(Math.random() * 9)]
-        };
-        label.setAnchor(anchor);
+      for (let i = 0; i < 1; ++i) {
+        const label = labelProvider.add(
+          new LabelInstance({
+            anchor: {
+              padding: 0,
+              type: AnchorType.Middle
+            },
+            color: [1, 1, 1, 1],
+            fontSize: 20,
+            id: `label-test-${i}`,
+            text: "Changing Anchor Point",
+            origin: [bounds.width / 2, bounds.height / 2]
+          })
+        );
+
+        labels.push(label);
       }
-    }, 100);
+
+      let index = 0;
+      setInterval(() => {
+        for (const label of labels) {
+          const anchor: Anchor = {
+            padding: 0,
+            type: [
+              AnchorType.TopLeft,
+              AnchorType.TopMiddle,
+              AnchorType.TopRight,
+              AnchorType.MiddleLeft,
+              AnchorType.Middle,
+              AnchorType.MiddleRight,
+              AnchorType.BottomLeft,
+              AnchorType.BottomMiddle,
+              AnchorType.BottomRight
+            ][index++ % 9]
+          };
+          label.anchor = anchor;
+        }
+      }, 500);
+    });
 
     return labelProvider;
   }

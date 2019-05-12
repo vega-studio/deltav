@@ -14,10 +14,14 @@ import { AtlasResourceManager } from "../resources/texture/atlas-resource-manage
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { IInstanceAttribute, IPipeline, IResourceType, PickType } from "../types";
+import {
+  IInstanceAttribute,
+  IProjection,
+  IResourceType,
+  PickType
+} from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
-import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
@@ -107,6 +111,23 @@ export interface ILayerSurfaceOptions {
    * have better performance if needed.
    */
   pixelRatio?: number;
+  /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
+  rendererOptions?: {
+    /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
+    antialias?: boolean;
+    /**
+     * This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing
+     * the canvas with the rest of the DOM will be accomplished. This should match the color values being written to
+     * the final FBO target (render target null). If incorrect, bizarre color blending with the DOM can occur.
+     */
+    premultipliedAlpha?: boolean;
+    /**
+     * This sets what the browser will do with the target frame buffer object after it's done using it for compositing.
+     * If you wish to take a snap shot of the canvas being rendered into, this must be true. This has the potential
+     * to hurt performance, thus it is disabled by default.
+     */
+    preserveDrawingBuffer?: boolean;
+  };
   /**
    * This specifies the resource managers that will be applied to the surface. If this is not
    * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
@@ -386,7 +407,8 @@ export class LayerSurface {
             // The view's animationEndTime is the largest end time found on one of the view's child layers.
             view.animationEndTime = Math.max(
               view.animationEndTime,
-              layer.animationEndTime
+              layer.animationEndTime,
+              view.camera.animationEndTime
             );
             // Indicate this layer is being rendered at the current time frame
             layer.lastFrameTime = time;
@@ -537,6 +559,59 @@ export class LayerSurface {
     this.pickingTarget.dispose();
   }
 
+  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
+
+  /**
+   * This processes what is rendered into the picking render target to see if the mouse interacted with
+   * any elements.
+   */
+  private analyzePickRendering() {
+    if (!this.queuedPicking) return;
+
+    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
+      const [, view, pickingPass, mouse] = this.queuedPicking[i];
+
+      // Optimized rendering of the view will make the view discard picking rendering
+      if (view.optimizeRendering) {
+        continue;
+      }
+
+      // Make our metrics for how much of the image we wish to analyze
+      const pickWidth = 5;
+      const pickHeight = 5;
+      const numBytesPerColor = 4;
+      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+      // Read the pixels out
+      this.renderer.readPixels(
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
+        pickWidth,
+        pickHeight,
+        out
+      );
+
+      // Analyze the rendered color data for the picking routine
+      const pickingData = analyzeColorPickingRendering(
+        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
+        out,
+        pickWidth,
+        pickHeight
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+
+        if (layer.picking.type === PickType.SINGLE) {
+          layer.interactions.colorPicking = pickingData;
+        }
+      }
+    }
+
+    delete this.queuedPicking;
+  }
+
   /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
@@ -545,6 +620,16 @@ export class LayerSurface {
    */
   async draw(time?: number) {
     if (!this.gl) return;
+
+    // The theoretically least blocking moment for pixels to be read is the beginning of the next frame
+    // right before next frame is rendered. This will have given optimal time for the GPU to have finished
+    // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
+    // GPU intensive operation.
+    this.analyzePickRendering();
+
+    // Gather all of our picking calls to call at the end to prevent readPixels from
+    // becoming a major blocking operation
+    const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
@@ -560,7 +645,7 @@ export class LayerSurface {
       // If a layer needs a picking pass, then perform a picking draw pass only
       // if a request for the color pick has been made, then we query the pixels rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
-        this.drawPicking(scene, view, pickingPass);
+        toPick.push([scene, view, pickingPass]);
       }
     });
 
@@ -568,8 +653,8 @@ export class LayerSurface {
     // Are updated in the interactions and flag our interactions ready for mouse input
     if (this.mouseManager.waitingForRender) {
       this.sceneViews.forEach(sceneView => {
-        sceneView.bounds = new DataBounds(sceneView.view.screenBounds);
-        sceneView.bounds.data = sceneView;
+        sceneView.bounds = new Bounds(sceneView.view.screenBounds);
+        sceneView.bounds.d = sceneView;
       });
 
       this.mouseManager.waitingForRender = false;
@@ -594,10 +679,6 @@ export class LayerSurface {
       }
     }
 
-    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
-    // another requested from mouse interactions
-    delete this.updateColorPick;
-
     // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
     // be considered resolved for the current set of changes.
     // Set draw needs of cameras and views back to false
@@ -613,6 +694,31 @@ export class LayerSurface {
       layer.props.data.resolveContext = "";
     });
 
+    // Run the picking operation as the final action to put the readPixels at the tail
+    for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
+      const picking = toPick[i];
+      const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
+
+      if (
+        didDraw &&
+        picking.length > 0 &&
+        !picking[1].optimizeRendering &&
+        this.updateColorPick
+      ) {
+        if (!this.queuedPicking) this.queuedPicking = [];
+        this.queuedPicking.push([
+          picking[0],
+          picking[1],
+          picking[2],
+          this.updateColorPick.mouse
+        ]);
+      }
+    }
+
+    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
+    // another requested from mouse interactions
+    delete this.updateColorPick;
+
     // Dequeue rendering debugs
     flushDebug();
   }
@@ -627,11 +733,12 @@ export class LayerSurface {
     view: View,
     pickingPass: Layer<any, any>[]
   ) {
-    if (!this.updateColorPick) return;
-    if (!scene.container) return;
+    if (!this.updateColorPick) return false;
+    if (!scene.container) return false;
+    // Optimized rendering of the view will make the view discard picking rendering
+    if (view.optimizeRendering) return false;
 
     // Get the requested metrics for the pick
-    const mouse = this.updateColorPick.mouse;
     const views = this.updateColorPick.views;
 
     // Ensure the view provided is a view that is registered with this surface
@@ -684,40 +791,6 @@ export class LayerSurface {
         this.pickingTarget
       );
 
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      // TODO: We need to defer this reading to next frame as the rendering MUST be completed before a readPixels
-      // operation can complete. Thus in complex rendering situations that pushes the GPU, this could be a MAJOR bottleneck.
-      this.renderer.readPixels(
-        mouse[0] - pickWidth / 2,
-        mouse[1] - pickHeight / 2,
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
-      }
-
       // Return the pixel ratio back to the rendered ratio
       view.pixelRatio = this.pixelRatio;
       // Return the view's clear flags
@@ -735,7 +808,11 @@ export class LayerSurface {
           y: 0
         })
       );
+
+      return true;
     }
+
+    return false;
   }
 
   /**
@@ -844,7 +921,7 @@ export class LayerSurface {
    * This allows for querying a view's screen bounds. Null is returned if the view id
    * specified does not exist.
    */
-  getViewSize(viewId: string): Bounds | null {
+  getViewSize(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         return sceneView.view.screenBounds;
@@ -857,7 +934,7 @@ export class LayerSurface {
   /**
    * This queries a view's window into a world's space.
    */
-  getViewWorldBounds(viewId: string): Bounds | null {
+  getViewWorldBounds(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         const view = sceneView.view;
@@ -878,6 +955,20 @@ export class LayerSurface {
         } else {
           return null;
         }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Retrieves the projection methods for a given view, null if the view id does not exist
+   * in the surface
+   */
+  getProjections(viewId: string): IProjection | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        return sceneView.view;
       }
     }
 
@@ -931,21 +1022,30 @@ export class LayerSurface {
     const height = canvas.height;
     let hasContext = true;
 
+    const rendererOptions: ILayerSurfaceOptions["rendererOptions"] = Object.assign(
+      {
+        antialias: false,
+        preserveDrawingBuffer: false,
+        premultiplyAlpha: false
+      },
+      options.rendererOptions
+    );
+
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
-      antialias: false,
+      antialias: rendererOptions.antialias,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
       // This indicates if the information written to the canvas is going to be written as premultiplied values
       // or if they will be standard rgba values. Helps with compositing with the DOM.
-      premultipliedAlpha: false,
+      premultipliedAlpha: rendererOptions.premultipliedAlpha,
 
       // Let's us know if there is no valid webgl context to work with or not
       onNoContext: () => {
@@ -1014,6 +1114,7 @@ export class LayerSurface {
           newView.viewCamera =
             newView.viewCamera || defaultSceneElement.viewCamera;
           newView.pixelRatio = this.pixelRatio;
+          newView.camera.surface = this;
           newScene.addView(newView);
 
           for (const sceneView of this.sceneViews) {
@@ -1265,6 +1366,19 @@ export class LayerSurface {
 
     layer.destroy();
     this.layers.delete(layer.id);
+    this.willDisposeLayer.delete(layer.id);
+    const scene = this.scenes.get(layer.props.scene);
+
+    if (scene) {
+      scene.removeLayer(layer);
+    }
+
+    if (layer.children && layer.children.length > 0) {
+      for (let i = 0, iMax = layer.children.length; i < iMax; ++i) {
+        const child = layer.children[i];
+        this.removeLayer(child);
+      }
+    }
 
     return layer;
   }
@@ -1345,7 +1459,7 @@ export class LayerSurface {
     // the layer completely then generating the layer anew.
     if (layer.willRebuildLayer) {
       this.removeLayer(layer);
-      this.generateLayer(initializers, layer.initializer, index, true);
+      this.generateLayer(initializers, layer.initializer, index);
     }
 
     // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.

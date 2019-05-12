@@ -13,6 +13,7 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer,
+  nextFrame,
   ScaleMode
 } from "src";
 import { IDefaultResources, WORDS } from "test/types";
@@ -42,6 +43,13 @@ const copyToClipboard = (str: string) => {
     }
   }
 };
+
+/**
+ * Promise based wait timer function
+ */
+export async function wait(t: number) {
+  return new Promise(resolve => setTimeout(resolve, t));
+}
 
 /**
  * A demo demonstrating particles collecting within the bounds of text.
@@ -180,51 +188,66 @@ export class TextDemo extends BaseDemo {
    * Initialize the demo with beginning setup and layouts
    */
   async init() {
+    let resolver: Function;
+    const promise = new Promise(resolve => (resolver = resolve));
+
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
-      this.makeLabel();
+      this.makeLabel(true);
     }
+
+    const labels = this.labels.map(lbl => lbl.text);
+    this.labels = [];
+
+    nextFrame(async () => {
+      await wait(100);
+      labels.forEach(lbl => this.makeLabel(false, lbl));
+      resolver();
+    });
+
+    await promise;
   }
 
   labelReady(label: LabelInstance) {
-    label.color = label.color;
-    label.color[3] = 1;
+    nextFrame(() => {
+      label.color = label.color;
+      label.color[3] = 1;
 
-    EasingUtil.all(
-      true,
-      label.glyphs,
-      [GlyphLayer.attributeNames.color],
-      (
-        easing: IEasingControl,
-        instance: GlyphInstance,
-        _instanceIndex: number,
-        _attrIndex: number
-      ) => {
-        easing.setTiming(1000 + label.origin[1] + instance.offset[0]);
-      }
-    );
+      EasingUtil.all(
+        true,
+        label.glyphs,
+        [GlyphLayer.attributeNames.color],
+        (
+          easing: IEasingControl,
+          instance: GlyphInstance,
+          _instanceIndex: number,
+          _attrIndex: number
+        ) => {
+          easing.setTiming(1000 + label.origin[1] + instance.offset[0]);
+        }
+      );
+    });
   }
 
   /**
    * Makes a circle and stores it in our circles array and adds it to the rendering
    */
-  makeLabel() {
+  makeLabel(preload?: boolean, txt?: string) {
     const words = [];
 
     for (let i = 0, iMax = this.parameters.words; i < iMax; ++i) {
       words.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
     }
 
-    const label = this.providers.labels.add(
-      new LabelInstance({
-        origin: [20, this.parameters.fontSize * this.labels.length],
-        color: [0, random(), random(), 0.0],
-        text: words.join(" "),
-        fontSize: this.parameters.fontSize,
-        onReady: this.labelReady,
-        preload: true
-      })
-    );
+    const label = new LabelInstance({
+      origin: [20, this.parameters.fontSize * this.labels.length],
+      color: [0, random(), random(), 0.0],
+      text: txt !== undefined ? txt : words.join(" "),
+      fontSize: this.parameters.fontSize,
+      onReady: this.labelReady,
+      preload
+    });
 
+    this.providers.labels.add(label);
     this.labels.push(label);
   }
 

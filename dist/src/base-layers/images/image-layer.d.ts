@@ -9,11 +9,11 @@ export interface IImageLayerProps<T extends ImageInstance> extends IImageRenderL
 export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerProps<T>> extends Layer<T, U> {
     static defaultProps: IImageLayerProps<any>;
     childProvider: InstanceProvider<ImageInstance>;
-    imageToResource: Map<ImageInstance, string | ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement>;
+    imageToResource: Map<ImageInstance, string | HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement>;
     propertyIds?: {
         [key: string]: number;
     };
-    sourceToRequest: Map<string | ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, IAtlasResourceRequest>;
+    sourceToRequest: Map<string | HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement, IAtlasResourceRequest>;
     childLayers(): LayerInitializer[];
     draw(): void;
     initShader(): null;

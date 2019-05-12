@@ -4,7 +4,7 @@ const { min, max } = Math;
 
 export type ImagePosition = [Vec2, Vec4];
 
-export async function imagePositions(bounds: Bounds, image: string) {
+export async function imagePositions(bounds: Bounds<any>, image: string) {
   const img = new Image();
   img.src = image;
   const canvas = document.createElement("canvas").getContext("2d");

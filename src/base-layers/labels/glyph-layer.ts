@@ -167,8 +167,32 @@ export class GlyphLayer<
 
     glyphTextureAttr.childAttributes = [glyphSizeAttr];
 
+    let fs: string, vs: string;
+    const scaleMode = this.props.scaleMode || ScaleMode.ALWAYS;
+
+    switch (scaleMode) {
+      case ScaleMode.BOUND_MAX: {
+        fs = require("./glyph-layer-bound-max.fs");
+        vs = require("./glyph-layer-bound-max.vs");
+        break;
+      }
+
+      case ScaleMode.NEVER: {
+        fs = require("./glyph-layer-never.fs");
+        vs = require("./glyph-layer-never.vs");
+        break;
+      }
+
+      case ScaleMode.ALWAYS:
+      default: {
+        fs = require("./glyph-layer-always.fs");
+        vs = require("./glyph-layer-always.vs");
+        break;
+      }
+    }
+
     return {
-      fs: require("./glyph-layer.fs"),
+      fs,
       instanceAttributes: [
         {
           easing: animateColor,
@@ -204,6 +228,16 @@ export class GlyphLayer<
           size: InstanceAttributeSize.TWO,
           update: o => o.offset
         },
+        {
+          name: "padding",
+          size: InstanceAttributeSize.TWO,
+          update: o => o.padding
+        },
+        {
+          name: "maxScale",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.maxScale]
+        },
         glyphSizeAttr,
         glyphTextureAttr
       ],
@@ -218,7 +252,7 @@ export class GlyphLayer<
         }
       ],
       vertexCount: 6,
-      vs: require("./glyph-layer.vs")
+      vs
     };
   }
 

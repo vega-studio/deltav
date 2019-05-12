@@ -620,7 +620,8 @@ export class GLProxy {
 
     switch (frameBufferCheckResult) {
       case gl.FRAMEBUFFER_COMPLETE:
-        /** no-op */ break;
+        target.setAsValid();
+        break;
 
       case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
         message = "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";

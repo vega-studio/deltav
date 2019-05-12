@@ -208,7 +208,8 @@ async function renderEachPair(
 
   // Config for html2canvas
   const config: Html2Canvas.Html2CanvasOptions = {
-    backgroundColor: null
+    backgroundColor: null,
+    logging: debug.enabled
   };
 
   debug("Rendering table for font kerning analysis", pairs, table);
@@ -399,9 +400,10 @@ export class FontRenderer {
       spaceWidth: 0
     };
 
+    debug("Estimating Kerning for", str);
+
     for (let i = 0, iMax = str.length; i < iMax; ++i) {
       const s = str[i];
-      debug("Estimating Kerning for", s);
       stringToPairs(s, existing, pairInfo);
     }
 

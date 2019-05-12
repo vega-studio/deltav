@@ -18,12 +18,12 @@ export declare class CircleLayer<T extends CircleInstance, U extends ICircleLaye
     static defaultProps: ICircleLayerProps<CircleInstance>;
     static attributeNames: {
         center: string;
-        radius: string;
-        depth: string;
         color: string;
+        depth: string;
+        radius: string;
     };
     getInstancePickingMethods(): {
-        boundsAccessor: (circle: CircleInstance) => Bounds;
+        boundsAccessor: (circle: CircleInstance) => Bounds<{}>;
         hitTest: (circle: CircleInstance, point: [number, number], view: IProjection) => boolean;
     };
     initShader(): IShaderInitialization<CircleInstance>;

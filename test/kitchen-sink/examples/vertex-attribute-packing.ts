@@ -72,10 +72,8 @@ export class VertexAttributePacking extends BaseExample {
       for (let i = 0; i < boxWidth; ++i) {
         for (let k = 0; k < boxHeight; ++k) {
           const circle = new RectangleInstance({
-            width: 10,
-            height: 10,
-            x: i * 10,
-            y: k * 10,
+            size: [10, 10],
+            position: [i * 10, k * 10],
             color: scale4([random(), 1.0, random(), 1.0], 0.5),
             scaling: ScaleMode.ALWAYS
           });
@@ -86,8 +84,8 @@ export class VertexAttributePacking extends BaseExample {
 
       for (let i = 0; i < TOTAL_EDGES; ++i) {
         const edge = new EdgeInstance({
-          colorEnd: [1.0, 0.0, 1.0, 1.0],
-          colorStart: [0.0, 1.0, 1.0, 0.1],
+          startColor: [1.0, 0.0, 1.0, 1.0],
+          endColor: [0.0, 1.0, 1.0, 0.1],
           control: [[bounds.width / 2, bounds.height / 2]],
           end: [
             Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
@@ -99,8 +97,7 @@ export class VertexAttributePacking extends BaseExample {
               bounds.width / 2,
             5
           ],
-          widthEnd: 5,
-          widthStart: 5
+          thickness: [5, 5]
         });
 
         edges.push(edge);
@@ -109,18 +106,10 @@ export class VertexAttributePacking extends BaseExample {
 
       setInterval(() => {
         const totalWidth = bounds.width / 4 + bounds.width / 2;
+
         for (let i = 0; i < TOTAL_EDGES; ++i) {
           const edge = edges[i];
-          edge.colorEnd = [
-            (Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
-              (bounds.width / 4) +
-              bounds.width / 2) /
-              totalWidth,
-            0.0,
-            1.0,
-            1.0
-          ];
-          edge.colorStart = [
+          edge.startColor = [
             0.0,
             1.0,
             (Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
@@ -129,7 +118,15 @@ export class VertexAttributePacking extends BaseExample {
               totalWidth,
             0.01
           ];
-
+          edge.endColor = [
+            (Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+              (bounds.width / 4) +
+              bounds.width / 2) /
+              totalWidth,
+            0.0,
+            1.0,
+            1.0
+          ];
           edge.start = [
             Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
               (bounds.width / 4) +

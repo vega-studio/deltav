@@ -3,7 +3,7 @@ import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceManager, BaseResourceOptions, ResourceManager } from "../resources";
-import { IResourceType } from "../types";
+import { IProjection, IResourceType } from "../types";
 import { FrameMetrics } from "../types";
 import { Vec2 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
@@ -22,6 +22,11 @@ export interface ILayerSurfaceOptions {
     handlesWheelEvents?: boolean;
     ioExpansion?: BaseIOExpansion[] | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
     pixelRatio?: number;
+    rendererOptions?: {
+        antialias?: boolean;
+        premultipliedAlpha?: boolean;
+        preserveDrawingBuffer?: boolean;
+    };
     resources?: BaseResourceOptions[];
     resourceManagers?: {
         type: number;
@@ -66,12 +71,15 @@ export declare class LayerSurface {
     private addLayer;
     commit(time?: number, frameIncrement?: boolean, onViewReady?: (needsDraw: boolean, scene: LayerScene, view: View, pickingPass: Layer<any, any>[]) => void): Promise<void>;
     destroy(): void;
+    private queuedPicking?;
+    private analyzePickRendering;
     draw(time?: number): Promise<void>;
     private drawPicking;
     private drawSceneView;
     private gatherViewDrawDependencies;
-    getViewSize(viewId: string): Bounds | null;
-    getViewWorldBounds(viewId: string): Bounds | null;
+    getViewSize(viewId: string): Bounds<never> | null;
+    getViewWorldBounds(viewId: string): Bounds<never> | null;
+    getProjections(viewId: string): IProjection | null;
     init(options: ILayerSurfaceOptions): Promise<this | undefined>;
     private initGL;
     private initIOExpanders;

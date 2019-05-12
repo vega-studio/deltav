@@ -101,6 +101,20 @@ export class LayerScene extends IdentifyByKey {
     delete this.container;
   }
 
+  /**
+   * Ensures a layer is removed from the scene
+   */
+  removeLayer(layer: Layer<any, any>) {
+    if (this.layers) {
+      const index = this.layers.indexOf(layer);
+
+      if (index >= 0) {
+        this.layers.splice(index, 1);
+        return;
+      }
+    }
+  }
+
   sortLayers() {
     if (this.sortIsDirty) {
       this.layers.sort(sortByDepth);

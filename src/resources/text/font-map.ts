@@ -591,7 +591,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       image = this.glyphMap[char];
       // Use the offset and the rendering height to determine the top and bottom of the glyph
       minY = Math.min(offset[1], minY);
-      maxY = Math.max(offset[1] + image.pixelHeight, maxY);
+      maxY = Math.max(offset[1] + image.pixelHeight * fontScale, maxY);
       // Make this processed glyph the next glyph that is 'to the left' for the next glyph
       leftChar = char;
       // Calculate the width of the label as we lay out

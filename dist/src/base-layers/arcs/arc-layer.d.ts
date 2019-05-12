@@ -10,6 +10,7 @@ export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
     scaleType?: ArcScaleType;
     animate?: {
         angle?: IAutoEasingMethod<Vec>;
+        angleOffset?: IAutoEasingMethod<Vec>;
         center?: IAutoEasingMethod<Vec>;
         colorEnd?: IAutoEasingMethod<Vec>;
         colorStart?: IAutoEasingMethod<Vec>;
@@ -21,6 +22,7 @@ export declare class ArcLayer<T extends ArcInstance, U extends IArcLayerProps<T>
     static defaultProps: IArcLayerProps<ArcInstance>;
     static attributeNames: {
         angle: string;
+        angleOffset: string;
         center: string;
         colorEnd: string;
         colorStart: string;

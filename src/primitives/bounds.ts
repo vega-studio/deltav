@@ -1,5 +1,7 @@
 import { Vec2 } from "../util";
 
+const { min, max } = Math;
+
 export interface IBoundsOptions {
   /** Top left x position */
   x?: number;
@@ -26,11 +28,12 @@ export interface IBoundsOptions {
  * @template T This specifies the data type associated with this shape and is accessible
  *             via the property 'd'
  */
-export class Bounds {
+export class Bounds<T> {
   x: number = 0;
   y: number = 0;
   width: number = 0;
   height: number = 0;
+  d?: T;
 
   get area() {
     return this.width * this.height;
@@ -56,8 +59,8 @@ export class Bounds {
     return this.y;
   }
 
-  static emptyBounds() {
-    return new Bounds({
+  static emptyBounds<T>() {
+    return new Bounds<T>({
       height: 0,
       width: 0,
       x: 0,
@@ -99,7 +102,7 @@ export class Bounds {
    *
    * @param item
    */
-  encapsulate(item: Bounds | Vec2) {
+  encapsulate(item: Bounds<T> | Vec2) {
     if (item instanceof Bounds) {
       if (item.x < this.x) {
         this.width += Math.abs(item.x - this.x);
@@ -144,6 +147,51 @@ export class Bounds {
   }
 
   /**
+   * Grows the bounds (if needed) to encompass all bounds or points provided. This
+   * performs much better than running encapsulate one by one.
+   */
+  encapsulateAll(all: Bounds<T>[] | Vec2[]) {
+    // Nothing provided, nothing to do
+    if (all.length <= 0) return;
+    // Stores max boundaries found
+    let minX = Number.MAX_SAFE_INTEGER,
+      maxX = Number.MIN_SAFE_INTEGER,
+      minY = Number.MAX_SAFE_INTEGER,
+      maxY = Number.MIN_SAFE_INTEGER;
+
+    // Handle list of bounds
+    if (all[0] instanceof Bounds) {
+      const boundsList = all as Bounds<T>[];
+
+      for (let i = 0, iMax = boundsList.length; i < iMax; ++i) {
+        const bounds = boundsList[i];
+        minX = min(minX, bounds.left);
+        maxX = max(maxX, bounds.right);
+        minY = min(minY, bounds.top);
+        maxY = max(maxY, bounds.bottom);
+      }
+    }
+
+    // Handle list of points
+    else {
+      const pointsList = all as Vec2[];
+
+      for (let i = 0, iMax = pointsList.length; i < iMax; ++i) {
+        const [x, y] = pointsList[i];
+        minX = min(minX, x);
+        maxX = max(maxX, x);
+        minY = min(minY, y);
+        maxY = max(maxY, y);
+      }
+    }
+
+    this.x = Math.min(this.x, minX);
+    this.y = Math.min(this.y, minY);
+    this.width = Math.max(this.width, maxX - minX);
+    this.height = Math.max(this.height, maxY - minY);
+  }
+
+  /**
    * Checks to see if the provided bounds object could fit within the dimensions of this bounds object
    * This ignores position and just checks width and height.
    *
@@ -151,7 +199,7 @@ export class Bounds {
    *
    * @return {number} 0 if it doesn't fit. 1 if it fits perfectly. 2 if it just fits.
    */
-  fits(bounds: Bounds): 0 | 1 | 2 {
+  fits(bounds: Bounds<T>): 0 | 1 | 2 {
     // If the same, the bounds fits exactly into this bounds
     if (this.width === bounds.width && this.height === bounds.height) {
       return 1;
@@ -171,7 +219,7 @@ export class Bounds {
    *
    * @param bounds
    */
-  hitBounds(bounds: Bounds) {
+  hitBounds(bounds: Bounds<T>) {
     return !(
       this.right < bounds.x ||
       this.x > bounds.right ||
@@ -186,7 +234,7 @@ export class Bounds {
    *
    * @param bounds
    */
-  isInside(bounds: Bounds): boolean {
+  isInside(bounds: Bounds<T>): boolean {
     return (
       this.x >= bounds.x &&
       this.right <= bounds.right &&

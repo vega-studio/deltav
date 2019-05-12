@@ -10,7 +10,16 @@ import {
 } from "../../surface/layer-surface";
 import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
-import { copy2, copy4, divide2, subtract2, Vec, Vec2 } from "../../util/vector";
+import {
+  copy2,
+  copy4,
+  divide2,
+  dot2,
+  scale2,
+  subtract2,
+  Vec,
+  Vec2
+} from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
 import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
@@ -29,19 +38,19 @@ const anchorCalculator: {
   [key: number]: (anchor: Anchor, label: LabelInstance) => void;
 } = {
   [AnchorType.TopLeft]: (anchor: Anchor, _label: LabelInstance) => {
-    anchor.x = -anchor.padding;
-    anchor.y = -anchor.padding;
+    anchor.x = 0;
+    anchor.y = 0;
   },
   [AnchorType.TopMiddle]: (anchor: Anchor, label: LabelInstance) => {
     anchor.x = label.size[0] / 2.0;
-    anchor.y = -anchor.padding;
+    anchor.y = 0;
   },
   [AnchorType.TopRight]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
-    anchor.y = -anchor.padding;
+    anchor.x = label.size[0];
+    anchor.y = 0;
   },
   [AnchorType.MiddleLeft]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = -anchor.padding;
+    anchor.x = 0;
     anchor.y = label.size[1] / 2;
   },
   [AnchorType.Middle]: (anchor: Anchor, label: LabelInstance) => {
@@ -49,24 +58,77 @@ const anchorCalculator: {
     anchor.y = label.size[1] / 2.0;
   },
   [AnchorType.MiddleRight]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
+    anchor.x = label.size[0];
     anchor.y = label.size[1] / 2.0;
   },
   [AnchorType.BottomLeft]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = -anchor.padding;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.x = 0;
+    anchor.y = label.size[1];
   },
   [AnchorType.BottomMiddle]: (anchor: Anchor, label: LabelInstance) => {
     anchor.x = label.size[0] / 2.0;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.y = label.size[1];
   },
   [AnchorType.BottomRight]: (anchor: Anchor, label: LabelInstance) => {
-    anchor.x = label.size[0] + anchor.padding;
-    anchor.y = label.size[1] + anchor.padding;
+    anchor.x = label.size[0];
+    anchor.y = label.size[1];
   },
   [AnchorType.Custom]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
+  }
+};
+
+const directions: Vec2[] = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [0, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
+].map((dir: Vec2) => {
+  const mag = Math.sqrt(dot2(dir, dir));
+  return scale2(dir, 1 / -mag);
+});
+
+/**
+ * Lookup to quickly calculate the padding direction based on the the provided anchor type.
+ */
+const paddingCalculator: {
+  [key: number]: (anchor: Anchor) => void;
+} = {
+  [AnchorType.TopLeft]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[0], anchor.padding);
+  },
+  [AnchorType.TopMiddle]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[1], anchor.padding);
+  },
+  [AnchorType.TopRight]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[2], anchor.padding);
+  },
+  [AnchorType.MiddleLeft]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[3], anchor.padding);
+  },
+  [AnchorType.Middle]: (anchor: Anchor) => {
+    anchor.paddingDirection = [0, 0];
+  },
+  [AnchorType.MiddleRight]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[5], anchor.padding);
+  },
+  [AnchorType.BottomLeft]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[6], anchor.padding);
+  },
+  [AnchorType.BottomMiddle]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[7], anchor.padding);
+  },
+  [AnchorType.BottomRight]: (anchor: Anchor) => {
+    anchor.paddingDirection = scale2(directions[8], anchor.padding);
+  },
+  [AnchorType.Custom]: (anchor: Anchor) => {
+    anchor.paddingDirection = anchor.paddingDirection;
   }
 };
 
@@ -96,8 +158,6 @@ export interface ILabelLayerProps<T extends LabelInstance>
    * defaults to ellipses or three periods '...'
    */
   truncation?: string;
-  /** This number represents how much space each whitespace characters represents */
-  whiteSpaceKerning?: number;
 }
 
 /**
@@ -242,20 +302,24 @@ export class LabelLayer<
       this.propertyIds = this.getInstanceObservableIds(instance, [
         "text",
         "active",
+        "anchor",
         "color",
         "origin",
         "fontSize",
-        "maxWidth"
+        "maxWidth",
+        "maxScale"
       ]);
     }
 
     const {
       text: textId,
       active: activeId,
+      anchor: anchorId,
       color: colorId,
       origin: originId,
       fontSize: fontSizeId,
-      maxWidth: maxWidthId
+      maxWidth: maxWidthId,
+      maxScale: maxScaleId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -263,6 +327,12 @@ export class LabelLayer<
 
       switch (diffType) {
         case InstanceDiffType.CHANGE:
+          // Perform the insert action instead of the change if the label has never been registered
+          if (!this.labelToGlyphs.get(instance)) {
+            this.insert(instance);
+            continue;
+          }
+
           // If text was changed, the glyphs all need updating of their characters and
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
@@ -277,12 +347,20 @@ export class LabelLayer<
             }
           }
 
+          if (changed[anchorId]) {
+            this.updateAnchor(instance);
+          }
+
           if (changed[colorId] !== undefined) {
             this.updateGlyphColors(instance);
           }
 
           if (changed[originId] !== undefined) {
             this.updateGlyphOrigins(instance);
+          }
+
+          if (changed[maxScaleId] !== undefined) {
+            this.updateGlyphMaxScales(instance);
           }
 
           if (changed[fontSizeId] !== undefined) {
@@ -297,20 +375,7 @@ export class LabelLayer<
           break;
 
         case InstanceDiffType.INSERT:
-          // Our management flag is dependent on if the label has glyph storage or not
-          if (!instance.preload) {
-            const storage = this.labelToGlyphs.get(instance);
-            if (!storage) this.labelToGlyphs.set(instance, []);
-          }
-
-          // Make sure the instance is removed from the provider for preloads
-          else {
-            this.props.data.remove(instance);
-          }
-
-          // Insertions force a full update of all glyphs for the label
-          this.layoutGlyphs(instance);
-
+          this.insert(instance);
           break;
 
         case InstanceDiffType.REMOVE:
@@ -328,6 +393,25 @@ export class LabelLayer<
           break;
       }
     }
+  }
+
+  /**
+   * Handles first insertion operation for the label
+   */
+  private insert(instance: T) {
+    // Our management flag is dependent on if the label has glyph storage or not
+    if (!instance.preload) {
+      const storage = this.labelToGlyphs.get(instance);
+      if (!storage) this.labelToGlyphs.set(instance, []);
+    }
+
+    // Make sure the instance is removed from the provider for preloads
+    else {
+      this.props.data.remove(instance);
+    }
+
+    // Insertions force a full update of all glyphs for the label
+    this.layoutGlyphs(instance);
   }
 
   /**
@@ -419,7 +503,10 @@ export class LabelLayer<
     instance.size = layout.size;
     // Update the calculated anchor for the label now that size is determined
     anchorCalculator[instance.anchor.type](instance.anchor, instance);
+    paddingCalculator[instance.anchor.type](instance.anchor);
+
     const anchor = instance.anchor;
+    const padding = instance.anchor.paddingDirection;
 
     // Apply the offsets calculated to each glyph
     for (
@@ -434,6 +521,8 @@ export class LabelLayer<
       glyph.fontScale = layout.fontScale;
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
       glyph.origin = copy2(instance.origin);
+      glyph.padding = padding || [0, 0];
+      glyph.maxScale = instance.maxScale;
     }
   }
 
@@ -454,6 +543,25 @@ export class LabelLayer<
 
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       this.glyphProvider.add(glyphs[i]);
+    }
+  }
+
+  /**
+   * Updates the anchor position of the instance when set
+   */
+  updateAnchor(instance: T) {
+    const glyphs = instance.glyphs;
+    if (!glyphs) return;
+
+    anchorCalculator[instance.anchor.type](instance.anchor, instance);
+    paddingCalculator[instance.anchor.type](instance.anchor);
+
+    const anchor = instance.anchor;
+    const padding = instance.anchor.paddingDirection;
+
+    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
+      glyphs[i].anchor = [anchor.x || 0, anchor.y || 0];
+      glyphs[i].padding = padding || [0, 0];
     }
   }
 
@@ -513,6 +621,7 @@ export class LabelLayer<
           character: char,
           color: instance.color,
           origin: instance.origin,
+          maxScale: instance.maxScale,
           onReady: this.handleGlyphReady
         });
 
@@ -569,6 +678,20 @@ export class LabelLayer<
 
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       glyphs[i].origin = [origin[0], origin[1]];
+    }
+  }
+
+  /**
+   * This updates all of the glyphs for the label to have the same position
+   * as the label.
+   */
+  updateGlyphMaxScales(instance: T) {
+    const glyphs = instance.glyphs;
+    if (!glyphs) return;
+    const maxScale = instance.maxScale;
+
+    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
+      glyphs[i].maxScale = maxScale;
     }
   }
 

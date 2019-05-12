@@ -2,10 +2,10 @@ import { Bounds } from "../../primitives";
 import { PackNode } from "../../resources/texture/pack-node";
 import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { FontMap, FontMapGlyphType } from "../text/font-map";
-import { IFontResourceRequest } from "../text/font-resource-manager";
 import { SubTexture } from "../texture/sub-texture";
+import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
+import { IFontResourceRequest } from "./font-resource-request";
 
 const debug = require("debug")("performance");
 

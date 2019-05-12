@@ -76,7 +76,7 @@ export interface IPickInfo<T extends Instance> {
     button?: number;
     layer: string;
     instances: T[];
-    querySpace?(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[];
+    querySpace?(bounds: Bounds<T> | Vec2, visit?: IVisitFunction<T>): T[];
     screen: [number, number];
     world: [number, number];
     projection: IProjection;
@@ -163,6 +163,7 @@ export interface IShaders {
     vs: string;
 }
 export interface IProjection {
+    id: string;
     camera: ChartCamera;
     pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
     screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;

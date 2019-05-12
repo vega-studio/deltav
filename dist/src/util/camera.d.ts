@@ -30,6 +30,7 @@ export interface IPerspectiveCamera extends Camera {
 export declare function isOrthographic(camera: Camera): camera is IOrthoGraphicCamera;
 export declare function isPerspective(camera: Camera): camera is IPerspectiveCamera;
 export declare class Camera {
+    static defaultCamera(): Camera;
     readonly projectionType: CameraProjectionType;
     readonly projection: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
     private _projection;

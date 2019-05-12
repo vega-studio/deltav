@@ -17,7 +17,8 @@ const { min, max } = Math;
 
 export interface IRectangleLayerProps<T extends RectangleInstance>
   extends ILayerProps<T> {
-  atlas?: string;
+  /** Scale factor determining the scale size of the rectangle */
+  scaleFactor?(): number;
 }
 
 /**
@@ -60,13 +61,13 @@ export class RectangleLayer<
           anchorEffect[1] = rectangle.anchor.y || 0;
         }
         const topLeft = [
-          rectangle.x - anchorEffect[0],
-          rectangle.y - anchorEffect[1]
+          rectangle.position[0] - anchorEffect[0],
+          rectangle.position[1] - anchorEffect[1]
         ];
 
         return new Bounds({
-          height: rectangle.height,
-          width: rectangle.width,
+          height: rectangle.size[1],
+          width: rectangle.size[0],
           x: topLeft[0],
           y: topLeft[1]
         });
@@ -103,14 +104,14 @@ export class RectangleLayer<
             }
 
             const topLeft = [
-              rectangle.x - anchorEffect[0] / maxScale,
-              rectangle.y - anchorEffect[1] / maxScale
+              rectangle.position[0] - anchorEffect[0] / maxScale,
+              rectangle.position[1] - anchorEffect[1] / maxScale
             ];
 
             // Reverse project the size and we should be within the distorted world coordinates
             return new Bounds({
-              height: rectangle.height / maxScale,
-              width: rectangle.width / maxScale,
+              height: rectangle.size[1] / maxScale,
+              width: rectangle.size[0] / maxScale,
               x: topLeft[0],
               y: topLeft[1]
             }).containsPoint(point);
@@ -127,7 +128,7 @@ export class RectangleLayer<
           }
 
           const topLeft = subtract2(
-            [rectangle.x, rectangle.y],
+            [rectangle.position[0], rectangle.position[1]],
             divide2(anchorEffect, projection.camera.scale)
           );
 
@@ -135,8 +136,8 @@ export class RectangleLayer<
 
           // Reverse project the size and we should be within the distorted world coordinates
           return new Bounds({
-            height: rectangle.height,
-            width: rectangle.width,
+            height: rectangle.size[1],
+            width: rectangle.size[0],
             x: topLeft[0],
             y: topLeft[1]
           }).containsPoint(screenPoint);
@@ -169,13 +170,15 @@ export class RectangleLayer<
       5: 1
     };
 
+    const { scaleFactor = () => 1 } = this.props;
+
     return {
       fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
         {
           name: RectangleLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.x, o.y]
+          update: o => o.position
         },
         {
           name: RectangleLayer.attributeNames.anchor,
@@ -185,7 +188,7 @@ export class RectangleLayer<
         {
           name: RectangleLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height]
+          update: o => o.size
         },
         {
           name: RectangleLayer.attributeNames.depth,
@@ -217,7 +220,7 @@ export class RectangleLayer<
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: _u => [1]
+          update: _u => [scaleFactor()]
         }
       ],
       vertexAttributes: [

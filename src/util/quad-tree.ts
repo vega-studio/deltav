@@ -7,25 +7,7 @@ import { isVec2, Vec2 } from "./vector";
 const maxPopulation: number = 5;
 const maxDepth: number = 10;
 
-export interface IQuadItem {
-  area: number;
-  bottom: number;
-  height: number;
-  left: number;
-  location: Vec2;
-  mid: Vec2;
-  right: number;
-  top: number;
-  width: number;
-  x: number;
-  y: number;
-
-  containsPoint(point: Vec2): boolean;
-  encapsulate(item: IQuadItem): boolean;
-  fits(item: IQuadItem): 0 | 1 | 2;
-  hitBounds(item: IQuadItem): boolean;
-  isInside(item: IQuadItem): boolean;
-}
+export type IQuadItem = Bounds<any>;
 
 /**
  * This filters a quad tree query by type
@@ -119,7 +101,7 @@ export class Quadrants<T extends IQuadItem> {
  * @class Node
  */
 export class Node<T extends IQuadItem> {
-  bounds: Bounds;
+  bounds: Bounds<never>;
   children: T[] = [];
   depth: number = 0;
   nodes: Quadrants<T>;
@@ -363,7 +345,9 @@ export class Node<T extends IQuadItem> {
    * @return The list specified as the list parameter
    */
   gatherChildren(list: T[]): T[] {
-    list = list.concat(this.children);
+    for (let i = 0, iMax = this.children.length; i < iMax; ++i) {
+      list.push(this.children[i]);
+    }
 
     if (this.nodes) {
       this.nodes.TL.gatherChildren(list);
@@ -415,6 +399,15 @@ export class Node<T extends IQuadItem> {
    * @return     Returns the exact same list that was input as the list param
    */
   queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[] {
+    // As an optimization for querying by bounds, if the bounds engulfs these bounds,
+    // we can assume all of the contents of this node and child nodes are hit by the bounds
+    // So simply gather the child items and don't do extra tests
+    if (this.bounds.isInside(b)) {
+      this.gatherChildren(list);
+      return list;
+    }
+
+    // Gather the children as hit at this point
     this.children.forEach(c => {
       if (c.hitBounds(b)) {
         list.push(c);

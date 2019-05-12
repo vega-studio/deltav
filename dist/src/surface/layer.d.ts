@@ -15,7 +15,9 @@ import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
 export interface IInstanceProvider<T extends Instance> {
     resolveContext: string;
+    uid: number;
     changeList: InstanceDiff<T>[];
+    remove(instance: T): void;
     resolve(context: string): void;
     sync(): void;
 }
@@ -69,6 +71,8 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     resource: ResourceManager;
     surface: LayerSurface;
     uniforms: IUniformInternal[];
+    readonly uid: number;
+    private _uid;
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
     willRebuildLayer: boolean;
@@ -104,5 +108,5 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     shouldDrawView(oldProps: U, newProps: U): boolean;
     updateUniforms(): void;
     willUpdateInstances(_changes: [T, InstanceDiffType]): void;
-    willUpdateProps(_newProps: ILayerProps<T>): void;
+    willUpdateProps(newProps: ILayerProps<T>): void;
 }

@@ -32,7 +32,7 @@ const texts = [
 export class TextAreaDemo extends BaseDemo {
   camera: ChartCamera;
   parameters = {
-    text: texts[Math.floor(Math.random() * texts.length)],
+    text: texts[0],
     fontSize: 24,
     maxHeight: 510,
     maxWidth: 375,

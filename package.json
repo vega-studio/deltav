@@ -33,7 +33,7 @@
     "base64-image-loader": "1.2.1",
     "circular-dependency-plugin": "5.0.2",
     "copy-webpack-plugin": "4.5.2",
-    "css-loader": "^2.1.1",
+    "css-loader": "2.1.1",
     "debug": "3.1.0",
     "dts-bundle": "0.7.3",
     "eslint": "4.19.1",

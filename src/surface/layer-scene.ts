@@ -1,9 +1,10 @@
-import { LayerInitializer } from "src/surface/layer-surface";
+import { generateDefaultElements } from "src/surface/layer-processing/generate-default-scene";
+import { LayerInitializer, LayerInitializerInternal, LayerSurface } from "src/surface/layer-surface";
 import { ReactiveDiff } from "src/util/reactive-diff";
 import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { ILayerProps, Layer } from "./layer";
+import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { IViewOptions, View } from "./view";
 
 /**
@@ -26,10 +27,6 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
   views: IViewOptions[];
 }
 
-function sortByDepth(a: Layer<any, any>, b: Layer<any, any>) {
-  return a.depth - b.depth;
-}
-
 /**
  * This defines a scene to which layers are added to. It also tracks the views that this scene
  * is rendered with.
@@ -40,13 +37,11 @@ export class LayerScene extends IdentifyByKey {
   /** This is the three scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
   /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
-  layerDiffs: ReactiveDiff<LayerInitializer, Layer<Instance, ILayerProps<Instance>>>;
-  /** This indicates the sort is dirty for a set of layers */
-  sortIsDirty = false;
-  /** This is the view */
-  viewById = new Map<string, View>();
+  layerDiffs: ReactiveDiff<Layer<Instance, ILayerProps<Instance>>, LayerInitializer>;
+  /** The presiding surface over this scene */
+  surface: LayerSurface;
   /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
-  viewDiffs: ReactiveDiff<IViewOptions, View>;
+  viewDiffs: ReactiveDiff<View, IViewOptions>;
 
   /** This is all of the layers attached to the scene */
   get layers(): Layer<any, any>[] {
@@ -58,39 +53,145 @@ export class LayerScene extends IdentifyByKey {
     return this.viewDiffs.items;
   }
 
-  constructor(options: ISceneOptions) {
+  constructor(surface: LayerSurface, options: ISceneOptions) {
     super(options);
-    this.init();
+    this.init(options);
+    this.surface = surface;
   }
 
   /**
    * Initialize all that needs to be initialized
    */
   private init(options: ISceneOptions) {
+    // Make sure there is a rendering context set up
+    if (!this.surface.gl) return;
+    // Make a Scene for the GL layer to accept and render objects from
+    this.container = new Scene();
+    // Make default scene elements
+    const defaultElements = generateDefaultElements(this.surface.gl);
+
+    // Create the diff manager to handle the layers coming in.
     this.layerDiffs = new ReactiveDiff({
+      buildItem: async (initializer: LayerInitializerInternal) => {
+        const layerClass = initializer.init[0];
+        const props = initializer.init[1];
+        // Generate the new layer and provide it it's initial props
+        const layer = new layerClass(
+          Object.assign({}, layerClass.defaultProps, props)
+        );
+        // Keep the initializer object that generated the layer for reference and debugging
+        layer.initializer = initializer;
+        // Sync the data provider applied to the layer in case the provider has existing data
+        // before being applied tot he layer
+        layer.props.data.sync();
+        // Look in the props of the layer for the parent of the layer
+        layer.parent = props.parent;
 
-    });
+        // If the parent is present, the parent should have the child added
+        if (props.parent) {
+          if (props.parent.children) props.parent.children.push(layer);
+          else props.parent.children = [layer];
+        }
 
-    this.viewDiffs = new ReactiveDiff({
-      buildItem: (initializer: IViewOptions) => {
-        const newView = new View(initializer);
-        newView.camera = newView.camera || defaultSceneElement.camera;
-        newView.viewCamera =
-          newView.viewCamera || defaultSceneElement.viewCamera;
-        newView.pixelRatio = this.pixelRatio;
+        // Add the layer to this surface
+        if (!layer.init()) {
+          console.warn(
+            "Error initializing layer:",
+            props.key,
+            "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+          );
 
-        for (const sceneView of this.sceneViews) {
-          if (sceneView.view.id === newView.id) {
-            console.warn(
-              "You can NOT have two views with the same id. Please use unique identifiers for every view generated."
-            );
+          return null;
+        }
+
+        // Add in the children of the layer
+        this.layerDiffs.inline(layer.childLayers());
+
+        return layer;
+      },
+
+      destroyItem: async (_initializer: LayerInitializer, layer: Layer<Instance, ILayerProps<Instance>>) => {
+        layer.destroy();
+        return true;
+      },
+
+      updateItem: async (initializer: LayerInitializer, layer: Layer<Instance, ILayerProps<Instance>>) => {
+        const props: ILayerPropsInternal<Instance> = initializer.init[1];
+        // Execute lifecycle method
+        layer.willUpdateProps(props);
+
+        // If we have a provider that is about to be newly set to the layer, then the provider
+        // needs to do a full sync in order to have existing elements in the provider
+        if (props.data !== layer.props.data) {
+          props.data.sync();
+        }
+
+        // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
+        // or by custom logic of the layer.
+        if (layer.shouldDrawView(layer.props, props)) {
+          layer.needsViewDrawn = true;
+        }
+
+        // Make sure the layer has the current props applied to it
+        Object.assign(layer.props, props);
+        // Keep the initializer up to date with the injected props
+        layer.initializer.init[1] = layer.props;
+        // Lifecycle hook
+        layer.didUpdateProps();
+
+        // If we are having a parent swap, we need to make sure the previous parent does not
+        // register this layer as a child anymore
+        if (props.parent) {
+          if (layer.parent && layer.parent !== props.parent) {
+            // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
+            // updated properly.
+            const children = layer.parent.children || [];
+            const index = children.indexOf(layer) || -1;
+
+            if (index > -1) {
+              children.splice(index, 1);
+            }
           }
         }
 
-        return newView;
-      }
+        // Always make sure the layer's parent is set properly by the props
+        layer.parent = props.parent;
+
+        // A layer may flag itself as needing to be rebuilt. This is handled here and is completed by deleting
+        // the layer completely then generating the layer anew.
+        if (layer.willRebuildLayer) {
+          this.layerDiffs.rebuild();
+        }
+
+        // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
+        else {
+          this.layerDiffs.inline(layer.childLayers());
+        }
+      },
     });
 
+    // Create the diff manager to handle the views coming in.
+    this.viewDiffs = new ReactiveDiff({
+      buildItem: async (initializer: IViewOptions) => {
+        const newView = new View(initializer);
+        newView.camera = newView.camera || defaultElements.camera;
+        newView.viewCamera =
+          newView.viewCamera || defaultElements.viewCamera;
+        newView.pixelRatio = this.surface.pixelRatio;
+
+        return newView;
+      },
+
+      // No special needs for destroying/removing a view
+      destroyItem: async (_initializer: IViewOptions, _view: View) => true,
+
+      // Hand off the initializer to the update of the view
+      updateItem: async (initializer: IViewOptions, view: View) => {
+        view.update(initializer);
+      },
+    });
+
+    // Now add in the initial data into our diff objects
     this.update(options);
   }
 
@@ -99,6 +200,8 @@ export class LayerScene extends IdentifyByKey {
    */
   destroy() {
     delete this.container;
+    this.layerDiffs.destroy();
+    this.viewDiffs.destroy();
   }
 
   /**
@@ -115,12 +218,9 @@ export class LayerScene extends IdentifyByKey {
     }
   }
 
-  sortLayers() {
-    if (this.sortIsDirty) {
-      this.layers.sort(sortByDepth);
-    }
-  }
-
+  /**
+   * Hand off the diff objects to our view and layer diffs
+   */
   update(options: ISceneOptions) {
     this.viewDiffs.diff(options.views);
     this.layerDiffs.diff(options.layers);

@@ -105,6 +105,13 @@ export class View extends IdentifyByKey {
 
   constructor(options: IViewOptions) {
     super(options);
+    this.update(options);
+  }
+
+  /**
+   * Takes in options for the view and updates according to the incoming information
+   */
+  update(options: IViewOptions) {
     const toAssign = Object.assign({}, options);
     delete toAssign.key;
     Object.assign(this, toAssign);

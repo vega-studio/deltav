@@ -16,6 +16,7 @@ import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import {
   IInstanceAttribute,
+  IPipeline,
   IProjection,
   IResourceType,
   PickType
@@ -30,7 +31,7 @@ import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
-import { generateDefaultScene } from "./layer-processing/generate-default-scene";
+import { generateDefaultElements } from "./layer-processing/generate-default-scene";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
@@ -179,10 +180,13 @@ export type LayerInitializer = {
  * The internal system layer initializer that hides additional properties the front
  * facing API should not be concerned with.
  */
-export type LayerInitializerInternal = [
-  ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
-  ILayerPropsInternal<Instance>
-];
+export type LayerInitializerInternal = {
+  key: string,
+  init: [
+    ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
+    ILayerPropsInternal<Instance>
+  ]
+};
 
 /**
  * Used for reactive layer generation and updates.
@@ -264,9 +268,9 @@ export class LayerSurface {
   );
 
   /** Diff manager to handle diffing resource objects for the pipeline */
-  private resourceDiffs: ReactiveDiff<BaseResourceOptions, null>;
+  private resourceDiffs: ReactiveDiff<null, BaseResourceOptions>;
   /** Diff manager to handle diffing scene objects for the pipeline */
-  private sceneDiffs: ReactiveDiff<ISceneOptions, LayerScene>;
+  private sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
 
   /** Read only getter for the gl context */
   get gl() {
@@ -274,34 +278,17 @@ export class LayerSurface {
   }
 
   /**
-   * This adds a layer to the manager which will manage all of the resource lifecycles of the layer
-   * as well as additional helper injections to aid in instancing and shader i/o.
+   * Retrieves all IO Expanders applied to this surface
    */
-  private addLayer<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): Layer<T, U> | null {
-    if (!layer.id) {
-      console.warn("All layers must have an id");
-      return layer;
-    }
+  getIOExpanders() {
+    return this.ioExpanders;
+  }
 
-    if (this.layers.get(layer.id)) {
-      console.warn("All layer's ids must be unique per layer manager");
-      return layer;
-    }
-
-    // We add the layer to our management
-    this.layers.set(layer.id, layer);
-    // Now we initialize the layer's gl components
-    const layerId = layer.id;
-
-    // Init the layer and see if the initialization is successful
-    if (!this.initLayer(layer)) {
-      this.layers.delete(layerId);
-      return null;
-    }
-
-    return layer;
+  /**
+   * Retrieves the controller for sorting the IO for the layers.
+   */
+  getIOSorting() {
+    return this.ioSorting;
   }
 
   /**
@@ -366,9 +353,6 @@ export class LayerSurface {
       const scene = scenes[i];
       const views = scene.views;
       const layers = scene.layers;
-
-      // Make sure the layers are depth sorted
-      scene.sortLayers();
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
@@ -543,7 +527,7 @@ export class LayerSurface {
       });
 
       // Re-render but only include non-errored layers
-      this.render(passed.map(layer => layer.initializer));
+      scene.render(passed.map(layer => layer.initializer));
     }
   }
 
@@ -1040,8 +1024,8 @@ export class LayerSurface {
       antialias: rendererOptions.antialias,
       // Make three use an existing canvas rather than generate another
       canvas,
-      // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
-      //       But we dont' always want it as it makes performance drop a bit.
+      // If it's true it allows us to snapshot the rendering in the canvas
+      // But we dont' always want it as it makes performance drop a bit.
       preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
       // This indicates if the information written to the canvas is going to be written as premultiplied values
       // or if they will be standard rgba values. Helps with compositing with the DOM.
@@ -1097,47 +1081,6 @@ export class LayerSurface {
       this.renderer.setClearColor(DEFAULT_BACKGROUND_COLOR);
     }
 
-    // Make a scene view depth tracker so we can track the order each scene view combo is drawn
-    let sceneViewDepth = 0;
-
-    // Add the requested scenes to the surface and apply the necessary defaults
-    if (options.scenes) {
-      options.scenes.forEach(sceneOptions => {
-        // Make us a new scene based on the requested options
-        const newScene = new LayerScene(sceneOptions);
-        // Use defaultSceneElement to set cameras
-        const defaultSceneElement = generateDefaultScene(this.context);
-        // Generate the views requested for the scene
-        sceneOptions.views.forEach(viewOptions => {
-          const newView = new View(viewOptions);
-          newView.camera = newView.camera || defaultSceneElement.camera;
-          newView.viewCamera =
-            newView.viewCamera || defaultSceneElement.viewCamera;
-          newView.pixelRatio = this.pixelRatio;
-          newView.camera.surface = this;
-          newScene.addView(newView);
-
-          for (const sceneView of this.sceneViews) {
-            if (sceneView.view.id === newView.id) {
-              console.warn(
-                "You can NOT have two views with the same id. Please use unique identifiers for every view generated."
-              );
-            }
-          }
-
-          this.sceneViews.push({
-            depth: ++sceneViewDepth,
-            scene: newScene,
-            view: newView
-          });
-        });
-
-        this.scenes.set(sceneOptions.key, newScene);
-      });
-
-      this.gatherViewDrawDependencies();
-    }
-
     return this.renderer.gl;
   }
 
@@ -1166,112 +1109,6 @@ export class LayerSurface {
     const managerIOExpanders = this.resourceManager.getIOExpansion();
     // Add the expanders to our current handled list.
     this.ioExpanders = this.ioExpanders.concat(managerIOExpanders);
-  }
-
-  /**
-   * This does special initialization by gathering the layers shader IO, generates a material
-   * and injects special automated uniforms and attributes to make instancing work for the
-   * shader.
-   */
-  private initLayer<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): Layer<T, U> | null {
-    // Set the layer's parent surface here
-    layer.surface = this;
-    // Set the resource manager this surface utilizes to the layer
-    layer.resource = this.resourceManager;
-    // Get the shader metrics the layer desires
-    const shaderIO = layer.initShader();
-    // For the sake of initializing uniforms to the correct values, we must first add the layer to it's appropriate
-    // Scene so that the necessary values will be in place for the sahder IO
-    const scene = this.addLayerToScene(layer);
-    if (!scene) return null;
-    // Ensure the layer has interaction handling applied to it
-    layer.interactions = new LayerInteractionHandler(layer);
-
-    // If no metrics are provided, this layer is merely a shell layer and will not
-    // receive any GPU handling objects.
-    if (!shaderIO) {
-      layer.picking.type = PickType.NONE;
-      return layer;
-    }
-
-    if (!shaderIO.fs || !shaderIO.vs) {
-      console.warn(
-        "Layer needs to specify the fragment and vertex shaders:",
-        layer.id
-      );
-      return null;
-    }
-
-    // Clean out nulls provided as a convenience to the layer
-    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
-      Boolean
-    );
-    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
-      Boolean
-    );
-    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
-
-    // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
-    // Instancing fragments
-    const shaderMetrics = new ShaderProcessor().process(
-      layer,
-      shaderIO,
-      this.ioExpanders,
-      this.ioSorting
-    );
-
-    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
-    if (!shaderMetrics) return null;
-    // Retrieve all of the attributes created as a result of layer input and module processing.
-    const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
-
-    // Generate the geometry this layer will be utilizing
-    const geometry = generateLayerGeometry(
-      layer,
-      shaderMetrics.maxInstancesPerBuffer,
-      vertexAttributes,
-      shaderIO.vertexCount
-    );
-    // This is the material that is generated for the layer that utilizes all of the generated and
-    // Injected shader IO and shader fragments
-    const material = generateLayerMaterial(
-      layer,
-      shaderMetrics.vs,
-      shaderMetrics.fs,
-      uniforms,
-      shaderMetrics.materialUniforms
-    );
-    // And now we can now generate the mesh that will be added to the scene
-    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
-
-    // Now that all of the elements of the layer are complete, let us apply them to the layer
-    layer.geometry = geometry;
-    layer.instanceAttributes = instanceAttributes;
-    layer.instanceVertexCount = shaderIO.vertexCount;
-    layer.material = material;
-    layer.maxInstancesPerBuffer = shaderMetrics.maxInstancesPerBuffer;
-    layer.model = model;
-    layer.uniforms = uniforms;
-    layer.vertexAttributes = vertexAttributes;
-
-    // Generate the correct buffering strategy for the layer
-    makeLayerBufferManager(this.gl, layer, scene);
-
-    if (layer.props.printShader) {
-      console.warn(
-        "A Layer requested its shader be debugged. Do not leave this active for production:",
-        "Layer:",
-        layer.props.key,
-        "Shader Metrics",
-        shaderMetrics
-      );
-      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
-      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
-    }
-
-    return layer;
   }
 
   /**
@@ -1311,207 +1148,6 @@ export class LayerSurface {
     managers.forEach(manager => {
       this.resourceManager.setManager(manager.type, manager.manager);
     });
-
-    // Tell our managers to handle all of the requested resources injected into the
-    // configuration
-    if (options.resources) {
-      for (const resource of options.resources) {
-        await this.resourceManager.initResource(resource);
-      }
-    }
-  }
-
-  /**
-   * This finds the scene and view the layer belongs to based on the layer's props. For invalid or not provided
-   * props, the layer gets added to default scenes and views.
-   */
-  private addLayerToScene<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): LayerScene | undefined {
-    // Get the scene the layer will add itself to
-    const scene = this.scenes.get(layer.props.scene || "");
-
-    if (!scene) {
-      console.warn(
-        "No scene is specified by the layer, or the scene identifier is invalid"
-      );
-    } else {
-      // Add the layer to the scene for rendering
-      scene.addLayer(layer);
-    }
-
-    return scene;
-  }
-
-  /**
-   * Discontinues a layer's management by this surface. This will invalidate any resources
-   * the layer was using in association with the context. If the layer is re-insertted, it will
-   * be revaluated as though it were a new layer.
-   */
-  private removeLayer<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U> | null
-  ): Layer<T, U> | null {
-    // Make sure we are removing a layer that exists in the system
-    if (!layer) {
-      return null;
-    }
-
-    if (!this.layers.get(layer && layer.id)) {
-      console.warn(
-        "Tried to remove a layer that is not in the manager.",
-        layer
-      );
-      return layer;
-    }
-
-    layer.destroy();
-    this.layers.delete(layer.id);
-    this.willDisposeLayer.delete(layer.id);
-    const scene = this.scenes.get(layer.props.scene);
-
-    if (scene) {
-      scene.removeLayer(layer);
-    }
-
-    if (layer.children && layer.children.length > 0) {
-      for (let i = 0, iMax = layer.children.length; i < iMax; ++i) {
-        const child = layer.children[i];
-        this.removeLayer(child);
-      }
-    }
-
-    return layer;
-  }
-
-  /**
-   * This expands a layer's children within the initializer list
-   */
-  private expandLayerChildren(
-    initializers: LayerInitializerInternal[],
-    layer: Layer<Instance, ILayerProps<Instance>>,
-    index: number
-  ) {
-    // Merge in the child layers this layer may request as the immediate next layers in the sequence
-    const childLayers: LayerInitializerInternal[] = layer.childLayers();
-    // No children, no need to do anything
-    if (childLayers.length <= 0) return;
-
-    // Make sure each child layer knows their parent
-    for (let i = 0, iMax = childLayers.length; i < iMax; ++i) {
-      const init = childLayers[i];
-      init[1].parent = layer;
-    }
-
-    // Add in the initializers of the children to be immediately updated or generated
-    initializers.splice(index + 1, 0, ...childLayers);
-  }
-
-  /**
-   * This handles a layer's update lifecycle during the layer rendering phase.
-   */
-  private updateLayer(
-    initializers: LayerInitializerInternal[],
-    layer: Layer<Instance, ILayerPropsInternal<Instance>>,
-    props: ILayerPropsInternal<Instance>,
-    index: number
-  ) {
-    // Execute lifecycle method
-    layer.willUpdateProps(props);
-
-    // If we have a provider that is about to be newly set to the layer, then the provider
-    // needs to do a full sync in order to have existing elements in the provider
-    if (props.data !== layer.props.data) {
-      props.data.sync();
-    }
-
-    // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
-    // or by custom logic of the layer.
-    if (layer.shouldDrawView(layer.props, props)) {
-      layer.needsViewDrawn = true;
-    }
-
-    // Make sure the layer has the current props applied to it
-    Object.assign(layer.props, props);
-    // Keep the initializer up to date with the injected props
-    layer.initializer[1] = layer.props;
-    // Lifecycle hook
-    layer.didUpdateProps();
-
-    // If we are having a parent swap, we need to make sure the previous parent does not
-    // register this layer as a child anymore
-    if (props.parent) {
-      if (layer.parent && layer.parent !== props.parent) {
-        // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
-        // updated properly.
-        const children = layer.parent.children || [];
-        const index = children.indexOf(layer) || -1;
-
-        if (index > -1) {
-          children.splice(index, 1);
-        }
-      }
-    }
-
-    // Always make sure the layer's parent is set properly by the props
-    layer.parent = props.parent;
-
-    // A layer may flag itself as needing to be rebuilt. This is handled here and is completed by deleting
-    // the layer completely then generating the layer anew.
-    if (layer.willRebuildLayer) {
-      this.removeLayer(layer);
-      this.generateLayer(initializers, layer.initializer, index);
-    }
-
-    // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
-    else {
-      this.expandLayerChildren(initializers, layer, index);
-    }
-  }
-
-  /**
-   * This handles a layer's creation during the rendering of layers.
-   */
-  private generateLayer(
-    initializers: LayerInitializerInternal[],
-    init: LayerInitializerInternal,
-    index: number,
-    preventChildren?: boolean
-  ) {
-    const layerClass = init[0];
-    const props = init[1];
-    // Generate the new layer and provide it it's initial props
-    const layer = new layerClass(
-      Object.assign({}, layerClass.defaultProps, props)
-    );
-    // Keep the initializer object that generated the layer for reference and debugging
-    layer.initializer = init;
-    // Sync the data provider applied to the layer in case the provider has existing data
-    // before being applied tot he layer
-    layer.props.data.sync();
-    // Look in the props of the layer for the parent of the layer
-    layer.parent = props.parent;
-
-    // If the parent is present, the parent should have the child added
-    if (props.parent) {
-      if (props.parent.children) props.parent.children.push(layer);
-      else props.parent.children = [layer];
-    }
-
-    // Add the layer to this surface
-    if (!this.addLayer(layer)) {
-      console.warn(
-        "Error initializing layer:",
-        props.key,
-        "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
-      );
-
-      return;
-    }
-
-    // Add in the children of the layer
-    if (!preventChildren) {
-      this.expandLayerChildren(initializers, layer, index);
-    }
   }
 
   /**
@@ -1541,7 +1177,7 @@ export class LayerSurface {
     if (!this.sceneDiffs) {
       this.sceneDiffs = new ReactiveDiff({
         buildItem: async (initializer: ISceneOptions) => {
-          const scene = new LayerScene({
+          const scene = new LayerScene(this, {
             key: initializer.key,
             views: initializer.views,
             layers: initializer.layers
@@ -1568,58 +1204,11 @@ export class LayerSurface {
     if (pipeline.scenes) {
       this.sceneDiffs.diff(pipeline.scenes);
     }
-  }
 
-  /**
-   * Used for reactive rendering and diffs out the layers for changed layers.
-   */
-  render(layerInitializers: LayerInitializer[]) {
-    if (!this.gl) return;
-
-    // Prevent mutations of the input
-    const initializers: LayerInitializerInternal[] = layerInitializers.slice(0);
-
-    // Loop through all of the initializers and properly add and remove layers as needed
-    if (initializers && initializers.length > 0) {
-      // This loop is VERY specifically putting the length check in the conditional of the loop
-      // The list CAN add additional initializers to account for the children being added
-      for (let i = 0; i < initializers.length; ++i) {
-        const init = initializers[i];
-        const props = init[1];
-        const existingLayer = this.layers.get(props.key);
-
-        if (existingLayer) {
-          this.updateLayer(initializers, existingLayer, props, i);
-        } else {
-          this.generateLayer(initializers, init, i);
-        }
-
-        this.willDisposeLayer.set(props.key, false);
-      }
-    }
-
-    // Take any layer that retained it's disposal flag and trash it
-    this.willDisposeLayer.forEach((dispose, layerId) => {
-      if (dispose) {
-        const layer = this.layers.get(layerId);
-        if (layer) {
-          this.removeLayer(layer);
-        } else {
-          console.warn(
-            "this.willDisposeLayer applied to a layer that does not exist in the existing layer check."
-          );
-        }
-      }
-    });
-
-    // Resolve that all disposals occurred
-    this.willDisposeLayer.clear();
-
-    // Reflag every layer for removal again so creation of layers will determine
-    // Which layers remain for a reactive pattern
-    this.layers.forEach((_layer, id) => {
-      this.willDisposeLayer.set(id, true);
-    });
+    // This gathers the draw dependencies of the views (which views overlap other views.)
+    // This will let the system know when a view is needing re-rendering how it can preserve other views
+    // and prevent them from needing a redraw
+    this.gatherViewDrawDependencies();
   }
 
   /**

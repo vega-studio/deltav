@@ -1,3 +1,8 @@
+import { ShaderProcessor } from "src/shaders/processing/shader-processor";
+import { generateLayerGeometry } from "src/surface/layer-processing/generate-layer-geometry";
+import { generateLayerMaterial } from "src/surface/layer-processing/generate-layer-material";
+import { generateLayerModel } from "src/surface/layer-processing/generate-layer-model";
+import { LayerScene } from "src/surface/layer-scene";
 import { Geometry } from "../gl/geometry";
 import { Material } from "../gl/material";
 import { Model } from "../gl/model";
@@ -34,7 +39,7 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerBufferType } from "./layer-processing/layer-buffer-type";
+import { LayerBufferType, makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
 import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
 
@@ -194,6 +199,8 @@ export class Layer<
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: ResourceManager;
+  /** This is the layer scene this layer feeds into */
+  scene: LayerScene;
   /** This is the surface this layer is generated under */
   surface: LayerSurface;
   /** This is all of the uniforms generated for the layer */
@@ -210,12 +217,24 @@ export class Layer<
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
   willRebuildLayer: boolean = false;
 
-  constructor(props: ILayerProps<T>) {
+  constructor(surface: LayerSurface, scene: LayerScene, props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
     // After associating the layer with the view it is a part of.
     super(props);
+    // Keep track of the surface this layer resides beneath
+    this.surface = surface;
+    // Track the parent Layer Scene this layer is under
+    this.scene = scene;
     // Keep our props within the layer
     this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
+  }
+
+  /**
+   * This does special initialization by gathering the layers shader IO, generates a material
+   * and injects special automated uniforms and attributes to make instancing work for the
+   * shader.
+   */
+  init() {
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 
@@ -247,6 +266,97 @@ export class Layer<
         type: PickType.NONE
       };
     }
+
+    // Set the resource manager this surface utilizes to the layer
+    this.resource = this.surface.resourceManager;
+    // Get the shader metrics the layer desires
+    const shaderIO = this.initShader();
+    // Ensure the layer has interaction handling applied to it
+    this.interactions = new LayerInteractionHandler(this);
+
+    // If no metrics are provided, this layer is merely a shell layer and will not
+    // receive any GPU handling objects.
+    if (!shaderIO) {
+      this.picking.type = PickType.NONE;
+      return false;
+    }
+
+    if (!shaderIO.fs || !shaderIO.vs) {
+      console.warn(
+        "Layer needs to specify the fragment and vertex shaders:",
+        this.id
+      );
+      return false;
+    }
+
+    // Clean out nulls provided as a convenience to the layer
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
+
+    // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
+    // Instancing fragments
+    const shaderMetrics = new ShaderProcessor().process(
+      this,
+      shaderIO,
+      this.surface.getIOExpanders(),
+      this.surface.getIOSorting()
+    );
+
+    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    if (!shaderMetrics) return false;
+    // Retrieve all of the attributes created as a result of layer input and module processing.
+    const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
+
+    // Generate the geometry this layer will be utilizing
+    const geometry = generateLayerGeometry(
+      this,
+      shaderMetrics.maxInstancesPerBuffer,
+      vertexAttributes,
+      shaderIO.vertexCount
+    );
+    // This is the material that is generated for the layer that utilizes all of the generated and
+    // Injected shader IO and shader fragments
+    const material = generateLayerMaterial(
+      this,
+      shaderMetrics.vs,
+      shaderMetrics.fs,
+      uniforms,
+      shaderMetrics.materialUniforms
+    );
+    // And now we can now generate the mesh that will be added to the scene
+    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
+
+    // Now that all of the elements of the layer are complete, let us apply them to the layer
+    this.geometry = geometry;
+    this.instanceAttributes = instanceAttributes;
+    this.instanceVertexCount = shaderIO.vertexCount;
+    this.material = material;
+    this.maxInstancesPerBuffer = shaderMetrics.maxInstancesPerBuffer;
+    this.model = model;
+    this.uniforms = uniforms;
+    this.vertexAttributes = vertexAttributes;
+
+    // Generate the correct buffering strategy for the layer
+    makeLayerBufferManager(this.surface.gl, this, this.scene);
+
+    if (this.props.printShader) {
+      console.warn(
+        "A Layer requested its shader be debugged. Do not leave this active for production:",
+        "Layer:",
+        this.props.key,
+        "Shader Metrics",
+        shaderMetrics
+      );
+      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
+      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+    }
+
+    return true;
   }
 
   /**

@@ -1,5 +1,5 @@
-import { GLSettings } from "src/gl";
 import * as objLoader from "webgl-obj-loader";
+import { GLSettings } from "../../gl";
 import { InstanceProvider } from "../../instance-provider";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {

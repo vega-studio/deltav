@@ -881,7 +881,7 @@ export class TextAreaLayer<
               currentX = 0;
               currentY += instance.lineHeight;
 
-              if (currentY + instance.lineHeight <= instance.maxHeight) {
+              if (currentY + instance.lineHeight <= maxHeight) {
                 label.origin = [
                   originX + currentX,
                   originY + currentY + offsetY

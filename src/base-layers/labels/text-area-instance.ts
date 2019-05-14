@@ -89,6 +89,8 @@ export class TextAreaInstance extends LabelInstance {
   @observable borderWidth: number = 6;
   /** Whether the textArea has border */
   @observable hasBorder: boolean = true;
+  /** Width of space in a textArea */
+  spaceWidth: number = 0;
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);

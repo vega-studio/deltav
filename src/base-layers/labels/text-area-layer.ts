@@ -834,7 +834,20 @@ export class TextAreaLayer<
     const originX = instance.origin[0] + leftPadding;
     const originY = instance.origin[1] + topPadding;
 
-    const spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
+    let spaceWidth = 0;
+    if (instance.spaceWidth) {
+      spaceWidth = instance.spaceWidth;
+    } else {
+      if (kerningRequest.fontMap) {
+        spaceWidth = kerningRequest.fontMap.spaceWidth;
+      } else {
+        spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
+      }
+
+      instance.spaceWidth = spaceWidth;
+    }
+
+    console.warn("FOR MOST", spaceWidth);
 
     const glyphToOffsetY = generateGlyphOffsetYMap(instance, kerningRequest);
 
@@ -1043,9 +1056,7 @@ export class TextAreaLayer<
 
       if (
         labelKerningRequest.fontMap &&
-        !labelKerningRequest.fontMap.supportsKerning(
-          checkText.replace(/\s/g, "")
-        )
+        !labelKerningRequest.fontMap.supportsKerning(checkText)
       ) {
         this.areaTokerningRequest.delete(instance);
         labelKerningRequest = undefined;
@@ -1239,14 +1250,20 @@ export class TextAreaLayer<
       }
     });
 
+    instance.spaceWidth *= newFontSize / oldFontSize;
+
     instance.oldFontSize = instance.fontSize;
 
     this.layoutLabels(instance);
   }
 
   updateLabelFontSizes2(instance: T) {
+    const oldFontSize = instance.oldFontSize;
+    const newFontSize = instance.fontSize;
+
+    instance.spaceWidth *= newFontSize / oldFontSize;
+    instance.oldFontSize = instance.fontSize;
     this.clear(instance);
-    // instance.generateLabels();
     this.updateLabels(instance);
     this.layout(instance);
   }

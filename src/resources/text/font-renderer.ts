@@ -260,15 +260,14 @@ async function renderEachPair(
         }
       }
     }
-
     // Before letter processing, remove and analyze processing for the 'space' character
     if (doSpaceCheck) {
       const min = mins.pop();
-
       if (min) {
         const vec: Vec2 = [min[2] - min[0], 0];
         const exact = scale2(vec, 1 / window.devicePixelRatio);
         pairs.spaceWidth = Math.ceil(exact[0]) - testSpaceCharacterWidth;
+        localStorage.setItem(fontString, pairs.spaceWidth.toString());
       }
     }
 
@@ -410,6 +409,9 @@ export class FontRenderer {
     // Only if there are new kerning needs do we actually need to run this method
     if (pairInfo.all.length > 0) {
       await renderEachPair(fontString, fontSize, pairInfo, includeSpace);
+    } else {
+      const width = localStorage.getItem(fontString);
+      if (width) pairInfo.spaceWidth = Number.parseInt(width);
     }
 
     return pairInfo;

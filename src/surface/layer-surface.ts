@@ -13,10 +13,14 @@ import { AtlasResourceManager } from "../resources/texture/atlas-resource-manage
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import { LayerInteractionHandler } from "../surface/layer-interaction-handler";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { IInstanceAttribute, IResourceType, PickType } from "../types";
+import {
+  IInstanceAttribute,
+  IProjection,
+  IResourceType,
+  PickType
+} from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
-import { DataBounds } from "../util/data-bounds";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
@@ -106,6 +110,23 @@ export interface ILayerSurfaceOptions {
    * have better performance if needed.
    */
   pixelRatio?: number;
+  /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
+  rendererOptions?: {
+    /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
+    antialias?: boolean;
+    /**
+     * This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing
+     * the canvas with the rest of the DOM will be accomplished. This should match the color values being written to
+     * the final FBO target (render target null). If incorrect, bizarre color blending with the DOM can occur.
+     */
+    premultipliedAlpha?: boolean;
+    /**
+     * This sets what the browser will do with the target frame buffer object after it's done using it for compositing.
+     * If you wish to take a snap shot of the canvas being rendered into, this must be true. This has the potential
+     * to hurt performance, thus it is disabled by default.
+     */
+    preserveDrawingBuffer?: boolean;
+  };
   /**
    * These are the resources we want available that our layers can be provided to utilize
    * for their internal processes.
@@ -385,7 +406,8 @@ export class LayerSurface {
             // The view's animationEndTime is the largest end time found on one of the view's child layers.
             view.animationEndTime = Math.max(
               view.animationEndTime,
-              layer.animationEndTime
+              layer.animationEndTime,
+              view.camera.animationEndTime
             );
             // Indicate this layer is being rendered at the current time frame
             layer.lastFrameTime = time;
@@ -630,8 +652,8 @@ export class LayerSurface {
     // Are updated in the interactions and flag our interactions ready for mouse input
     if (this.mouseManager.waitingForRender) {
       this.sceneViews.forEach(sceneView => {
-        sceneView.bounds = new DataBounds(sceneView.view.screenBounds);
-        sceneView.bounds.data = sceneView;
+        sceneView.bounds = new Bounds(sceneView.view.screenBounds);
+        sceneView.bounds.d = sceneView;
       });
 
       this.mouseManager.waitingForRender = false;
@@ -898,7 +920,7 @@ export class LayerSurface {
    * This allows for querying a view's screen bounds. Null is returned if the view id
    * specified does not exist.
    */
-  getViewSize(viewId: string): Bounds | null {
+  getViewSize(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         return sceneView.view.screenBounds;
@@ -911,7 +933,7 @@ export class LayerSurface {
   /**
    * This queries a view's window into a world's space.
    */
-  getViewWorldBounds(viewId: string): Bounds | null {
+  getViewWorldBounds(viewId: string): Bounds<never> | null {
     for (const sceneView of this.sceneViews) {
       if (sceneView.view.id === viewId) {
         const view = sceneView.view;
@@ -932,6 +954,20 @@ export class LayerSurface {
         } else {
           return null;
         }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Retrieves the projection methods for a given view, null if the view id does not exist
+   * in the surface
+   */
+  getProjections(viewId: string): IProjection | null {
+    for (const sceneView of this.sceneViews) {
+      if (sceneView.view.id === viewId) {
+        return sceneView.view;
       }
     }
 
@@ -985,21 +1021,30 @@ export class LayerSurface {
     const height = canvas.height;
     let hasContext = true;
 
+    const rendererOptions: ILayerSurfaceOptions["rendererOptions"] = Object.assign(
+      {
+        antialias: false,
+        preserveDrawingBuffer: false,
+        premultiplyAlpha: false
+      },
+      options.rendererOptions
+    );
+
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
       alpha: options.background && options.background[3] < 1.0,
       // Yes to antialias! Make it preeeeetty!
-      antialias: false,
+      antialias: rendererOptions.antialias,
       // Make three use an existing canvas rather than generate another
       canvas,
       // TODO: This should be toggleable. If it's true it allows us to snapshot the rendering in the canvas
       //       But we dont' always want it as it makes performance drop a bit.
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
       // This indicates if the information written to the canvas is going to be written as premultiplied values
       // or if they will be standard rgba values. Helps with compositing with the DOM.
-      premultipliedAlpha: false,
+      premultipliedAlpha: rendererOptions.premultipliedAlpha,
 
       // Let's us know if there is no valid webgl context to work with or not
       onNoContext: () => {
@@ -1068,6 +1113,7 @@ export class LayerSurface {
           newView.viewCamera =
             newView.viewCamera || defaultSceneElement.viewCamera;
           newView.pixelRatio = this.pixelRatio;
+          newView.camera.surface = this;
           newScene.addView(newView);
 
           for (const sceneView of this.sceneViews) {

@@ -4,7 +4,7 @@ import { BaseExample, TestResourceKeys } from './base-example';
 export class BoundedView2 extends BaseExample {
   view: string;
   manager: BasicCameraController;
-  originalRange: Bounds;
+  originalRange: Bounds<never>;
 
   makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager {
     const bounds: ICameraBoundsOptions = {
@@ -55,12 +55,10 @@ export class BoundedView2 extends BaseExample {
           type: anchor[i],
         },
         color: [color[i][0], color[i][1], color[i][2], color[i][3]],
-        height: height[i],
         id: `rectangle${i}`,
         scaling: ScaleMode.ALWAYS,
-        width: width[i],
-        x: x[i],
-        y: y[i],
+        size: [width[i], height[i]],
+        position: [x[i], y[i]],
       });
 
       rectangleProvider.add(rectangle);

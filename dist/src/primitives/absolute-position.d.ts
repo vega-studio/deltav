@@ -1,4 +1,3 @@
-import { DataBounds } from "../util/data-bounds";
 import { Bounds } from "./bounds";
 export declare type AbsolutePosition = {
     bottom?: number | string;
@@ -8,4 +7,4 @@ export declare type AbsolutePosition = {
     top?: number | string;
     width?: number | string;
 };
-export declare function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds, scaleRatio: number): DataBounds<T>;
+export declare function getAbsolutePositionBounds<T>(item: AbsolutePosition, reference: Bounds<any>, scaleRatio: number): Bounds<T>;

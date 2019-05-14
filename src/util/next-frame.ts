@@ -1,3 +1,5 @@
+import { PromiseResolver } from "./promise-resolver";
+
 /**
  * This utility makes an operation occur in a render frame after the current render frame.
  */
@@ -34,6 +36,13 @@ requestAnimationFrame(loop);
 /**
  * Method that queues up a command to be executed not on this animation frame, but the next one
  */
-export function nextFrame(command: Function) {
-  queuedCommands.push(command);
+export function nextFrame(command?: Function) {
+  const resolver = new PromiseResolver();
+
+  queuedCommands.push((t: number) => {
+    if (command) command(t);
+    resolver.resolve();
+  });
+
+  return resolver.promise;
 }

@@ -214,6 +214,9 @@ export class Surface {
         context: this.context,
         eventManagers: this.options.eventManagers || [defaultController],
         handlesWheelEvents: true,
+        rendererOptions: {
+          antialias: true
+        },
         scenes
       })
       .then(() => {

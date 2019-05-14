@@ -81,6 +81,8 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   }
 
   /**
+   * TODO: We should be updating based on prop ids instead of always updating all props for every change.
+   *
    * This performs the actual updating of buffers the instance needs to update
    */
   updateInstance(
@@ -95,7 +97,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
       let instanceUniform, value, block, start;
       let k: number, endk;
 
-      // Loop through the instance attributes and update the uniform cluster with the valaues
+      // Loop through the instance attributes and update the uniform cluster with the values
       // Calculated for the instance
       for (let i = 0, end = layer.instanceAttributes.length; i < end; ++i) {
         instanceUniform = layer.instanceAttributes[i];

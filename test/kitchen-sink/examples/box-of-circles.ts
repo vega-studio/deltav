@@ -1,5 +1,4 @@
 import {
-  AnimationHelper,
   AutoEasingMethod,
   BasicCameraController,
   Bounds,
@@ -90,10 +89,9 @@ export class BoxOfCircles extends BaseExample {
     color: IAutoEasingMethod<Vec>;
     radius: IAutoEasingMethod<Vec>;
   };
-  animationHelper: AnimationHelper;
   camera: ChartCamera;
   manager: BasicCameraController;
-  originalRange: Bounds;
+  originalRange: Bounds<never>;
   scene: string;
   textPositions: Vec2[];
   textCache: {
@@ -147,8 +145,6 @@ export class BoxOfCircles extends BaseExample {
       color: AutoEasingMethod.linear(500, 1500),
       radius: AutoEasingMethod.linear(500, 1500)
     };
-
-    this.animationHelper = new AnimationHelper(this.surface);
 
     return createLayer(CircleLayer, {
       animate: this.animationControl,

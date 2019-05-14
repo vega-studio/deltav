@@ -3,8 +3,13 @@ import * as datGUI from "dat.gui";
 import {
   add2,
   AnchorType,
+  ArcInstance,
+  ArcLayer,
+  AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
+  Bounds,
+  CameraBoundsAnchor,
   ChartCamera,
   CircleInstance,
   CircleLayer,
@@ -19,7 +24,6 @@ import {
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  IPickInfo,
   ISceneOptions,
   LabelInstance,
   LabelLayer,
@@ -29,6 +33,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   ScaleMode,
+  Size,
   Vec4
 } from "src";
 import { IDefaultResources, WORDS } from "test/types";
@@ -54,14 +59,37 @@ export class NodesEdges extends BaseDemo {
   rectangles: RectangleInstance[] = [];
   lblToRect = new Map<LabelInstance, RectangleInstance>();
   center: CircleInstance;
+  controller: BasicCameraController;
+  boundsView: RectangleInstance;
 
   /** Surface providers */
   providers = {
+    arcs: new InstanceProvider<ArcInstance>(),
     circles: new InstanceProvider<CircleInstance>(),
     edges: new InstanceProvider<EdgeInstance>(),
     rectangles: new InstanceProvider<RectangleInstance>(),
     labels: new InstanceProvider<LabelInstance>()
   };
+
+  /** Arcs used to animate hover */
+  arcs: ArcInstance[] = [
+    new ArcInstance({
+      angle: [0, Math.PI / 2],
+      colorEnd: [1, 1, 1, 1],
+      colorStart: [1, 1, 1, 1],
+      center: [0, 0],
+      thickness: [2, 2],
+      radius: 15
+    }),
+    new ArcInstance({
+      angle: [-Math.PI, -Math.PI / 2],
+      colorEnd: [1, 1, 1, 1],
+      colorStart: [1, 1, 1, 1],
+      center: [0, 0],
+      thickness: [2, 2],
+      radius: 15
+    })
+  ];
 
   /** GUI properties */
   parameters = {
@@ -76,6 +104,8 @@ export class NodesEdges extends BaseDemo {
       count: 10
     }
   };
+
+  viewSize: Size;
 
   /**
    * Dat gui construction
@@ -136,11 +166,55 @@ export class NodesEdges extends BaseDemo {
       );
   }
 
+  adjustBounds() {
+    const worldBounds = new Bounds({
+      x:
+        -this.parameters.circleRadius -
+        this.parameters.nodeRadius +
+        this.center.center[0],
+      y:
+        -this.parameters.circleRadius -
+        this.parameters.nodeRadius +
+        this.center.center[1],
+      width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
+      height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
+    });
+    const minScale = Math.min(
+      this.viewSize[0] / worldBounds.width,
+      this.viewSize[1] / worldBounds.height
+    );
+    this.controller.setBounds({
+      anchor: CameraBoundsAnchor.MIDDLE,
+      scaleMax: [9999, 9999, 9999],
+      scaleMin: [minScale, minScale, minScale],
+      screenPadding: {
+        bottom: 40,
+        left: 40,
+        right: 40,
+        top: 40
+      },
+      view: "default-view",
+      worldBounds
+    });
+    if (this.controller.bounds && this.boundsView) {
+      this.boundsView.position = [
+        this.controller.bounds.worldBounds.x,
+        this.controller.bounds.worldBounds.y
+      ];
+      this.boundsView.size = [
+        this.controller.bounds.worldBounds.width,
+        this.controller.bounds.worldBounds.height
+      ];
+    }
+  }
+
   getEventManagers(
     defaultController: BasicCameraController,
     _defaultCamera: ChartCamera
   ) {
+    this.controller = defaultController;
     defaultController.wheelShouldScroll = false;
+
     return null;
   }
 
@@ -157,10 +231,22 @@ export class NodesEdges extends BaseDemo {
    */
   getLayers(resources: IDefaultResources): LayerInitializer[] {
     return [
+      createLayer(ArcLayer, {
+        animate: {
+          angleOffset: AutoEasingMethod.linear(
+            1000,
+            0,
+            AutoEasingLoopStyle.REPEAT
+          )
+        },
+        data: this.providers.arcs,
+        key: "arcs",
+        scene: "default"
+      }),
       createLayer(EdgeLayer, {
         animate: {
-          colorStart: AutoEasingMethod.easeInOutCubic(500),
-          colorEnd: AutoEasingMethod.easeInOutCubic(500)
+          startColor: AutoEasingMethod.easeInOutCubic(500),
+          endColor: AutoEasingMethod.easeInOutCubic(500)
         },
         data: this.providers.edges,
         key: "edges",
@@ -177,9 +263,31 @@ export class NodesEdges extends BaseDemo {
         scaleFactor: () => this.camera.scale[0],
         picking: PickType.SINGLE,
 
-        onMouseOver: (info: IPickInfo<CircleInstance>) => {
+        onMouseOver: info => {
           const over = new Set();
-          info.instances.forEach(circle => over.add(circle));
+          info.instances.forEach(circle => {
+            over.add(circle);
+
+            this.arcs.forEach(arc => {
+              arc.center = copy2(circle.center);
+              arc.radius = circle.radius + 4;
+              arc.angleOffset = 0;
+
+              nextFrame(() => {
+                EasingUtil.all(
+                  true,
+                  [arc],
+                  [ArcLayer.attributeNames.angleOffset],
+                  easing => {
+                    easing.setStart([0]);
+                    arc.angleOffset = Math.PI * 2;
+                  }
+                );
+              });
+
+              this.providers.arcs.add(arc);
+            });
+          });
 
           this.circles.forEach(circle => {
             if (over.has(circle)) return;
@@ -187,10 +295,25 @@ export class NodesEdges extends BaseDemo {
           });
         },
 
-        onMouseOut: (_info: IPickInfo<CircleInstance>) => {
+        onMouseOut: _info => {
           this.circles.forEach((circle, i) => {
             circle.color = this.makeColor(i);
           });
+
+          this.arcs.forEach(arc => {
+            this.providers.arcs.remove(arc);
+          });
+        },
+
+        onMouseClick: info => {
+          const focus = info.instances.find(circle => Boolean(circle.center));
+          if (!focus) return;
+          this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
+          this.controller.centerOn(info.projection.id, [
+            focus.center[0],
+            focus.center[1],
+            0
+          ]);
         }
       }),
       createLayer(RectangleLayer, {
@@ -218,6 +341,7 @@ export class NodesEdges extends BaseDemo {
   async init() {
     const bounds = await this.getViewScreenBounds();
     if (!bounds) return;
+    this.viewSize = [bounds.width, bounds.height];
 
     this.center = new CircleInstance({
       center: [bounds.width / 2, bounds.height / 2],
@@ -225,6 +349,19 @@ export class NodesEdges extends BaseDemo {
       color: [1, 1, 1, 1]
     });
 
+    this.boundsView = new RectangleInstance({
+      anchor: {
+        type: AnchorType.TopLeft,
+        padding: 0
+      },
+      position: [0, 0],
+      size: [1, 1],
+      color: [1, 1, 1, 0.2],
+      depth: -200
+    });
+
+    // Uncomment this to see the bounds used for the camera
+    // this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
@@ -256,8 +393,7 @@ export class NodesEdges extends BaseDemo {
       const rect = this.lblToRect.get(label);
 
       if (rect) {
-        rect.width = label.size[0];
-        rect.height = label.size[1];
+        rect.size = [label.size[0], label.size[1]];
       }
     });
   };
@@ -279,8 +415,7 @@ export class NodesEdges extends BaseDemo {
     this.circles.push(node);
 
     const edge = new EdgeInstance({
-      widthStart: 8,
-      widthEnd: 1,
+      thickness: [8, 1],
       start: [0, 0],
       end: [0, 0]
     });
@@ -294,10 +429,8 @@ export class NodesEdges extends BaseDemo {
         padding: 0
       },
       color: [0.5, 0.5, 0.5, 1],
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0
+      position: [0, 0],
+      size: [0, 0]
     });
 
     // this.providers.rectangles.add(rect);
@@ -342,17 +475,15 @@ export class NodesEdges extends BaseDemo {
       this.edges.forEach((edge, i) => {
         edge.start = copy2(this.center.center);
         edge.end = copy2(this.circles[i].center);
-        edge.colorStart = copy4(this.center.color);
-        edge.colorStart[3] = 0.2;
-        edge.colorEnd = copy4(this.circles[i].color);
-        edge.colorEnd[3] = 0.2;
+        edge.startColor = copy4(this.center.color);
+        edge.endColor = copy4(this.circles[i].color);
+        edge.startColor[3] = 0.2;
+        edge.endColor[3] = 0.2;
       });
 
       this.rectangles.forEach((rect, i) => {
-        rect.x = this.circles[i].center[0];
-        rect.y = this.circles[i].center[1];
-        rect.width = this.labels[i].size[0];
-        rect.height = this.labels[i].size[1];
+        rect.position = [this.circles[i].center[0], this.circles[i].center[1]];
+        rect.size = [this.labels[i].size[0], this.labels[i].size[1]];
         this.lblToRect.set(this.labels[i], rect);
       });
 
@@ -373,6 +504,8 @@ export class NodesEdges extends BaseDemo {
         }
       });
     });
+
+    this.adjustBounds();
   }
 
   /**

@@ -1,4 +1,4 @@
-import { AnimationHelper, BasicCameraController, Bounds, ChartCamera, CircleInstance, EventManager, IAutoEasingMethod, IInstanceProvider, InstanceProvider, LayerInitializer, Vec, Vec2 } from "src";
+import { BasicCameraController, Bounds, ChartCamera, CircleInstance, EventManager, IAutoEasingMethod, IInstanceProvider, InstanceProvider, LayerInitializer, Vec, Vec2 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 export declare class BoxOfCircles extends BaseExample {
     animationControl: {
@@ -6,10 +6,9 @@ export declare class BoxOfCircles extends BaseExample {
         color: IAutoEasingMethod<Vec>;
         radius: IAutoEasingMethod<Vec>;
     };
-    animationHelper: AnimationHelper;
     camera: ChartCamera;
     manager: BasicCameraController;
-    originalRange: Bounds;
+    originalRange: Bounds<never>;
     scene: string;
     textPositions: Vec2[];
     textCache: {

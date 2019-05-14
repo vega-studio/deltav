@@ -1,5 +1,6 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
+import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
@@ -8,20 +9,16 @@ export interface IRectangleInstanceOptions extends IInstanceOptions {
    * which the rectangle will be scaled around.
    */
   anchor?: Anchor;
-  /** Depth sorting of the rectangle (or the z value of the lable) */
+  /** Depth sorting of the rectangle (or the z value of the box) */
   depth?: number;
-  /** The height of the rectangle as it is to be rendered in world space */
-  height?: number;
   /** Sets the way the rectangle scales with the world */
   scaling?: ScaleMode;
   /** The color the rectangle should render as */
-  color: [number, number, number, number];
-  /** The width of the rectangle as it is to be rendered in world space */
-  width?: number;
-  /** The x coordinate where the rectangle will be anchored to in world space */
-  x?: number;
-  /** The y coordinate where the rectangle will be anchored to in world space */
-  y?: number;
+  color?: [number, number, number, number];
+  /** The coordinate where the rectangle will be anchored to in world space */
+  position?: Vec2;
+  /** The size of the rectangle as it is to be rendered in world space */
+  size?: Vec2;
 }
 
 /**
@@ -36,36 +33,36 @@ const anchorCalculator: {
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopMiddle]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width / 2.0;
+    anchor.x = rectangle.size[0] / 2.0;
     anchor.y = -anchor.padding;
   },
   [AnchorType.TopRight]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width + anchor.padding;
+    anchor.x = rectangle.size[0] + anchor.padding;
     anchor.y = -anchor.padding;
   },
   [AnchorType.MiddleLeft]: (anchor: Anchor, rectangle: RectangleInstance) => {
     anchor.x = -anchor.padding;
-    anchor.y = rectangle.height / 2;
+    anchor.y = rectangle.size[1] / 2;
   },
   [AnchorType.Middle]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width / 2.0;
-    anchor.y = rectangle.height / 2.0;
+    anchor.x = rectangle.size[0] / 2.0;
+    anchor.y = rectangle.size[1] / 2.0;
   },
   [AnchorType.MiddleRight]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width + anchor.padding;
-    anchor.y = rectangle.height / 2.0;
+    anchor.x = rectangle.size[0] + anchor.padding;
+    anchor.y = rectangle.size[1] / 2.0;
   },
   [AnchorType.BottomLeft]: (anchor: Anchor, rectangle: RectangleInstance) => {
     anchor.x = -anchor.padding;
-    anchor.y = rectangle.height + anchor.padding;
+    anchor.y = rectangle.size[1] + anchor.padding;
   },
   [AnchorType.BottomMiddle]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width / 2.0;
-    anchor.y = rectangle.height + anchor.padding;
+    anchor.x = rectangle.size[0] / 2.0;
+    anchor.y = rectangle.size[1] + anchor.padding;
   },
   [AnchorType.BottomRight]: (anchor: Anchor, rectangle: RectangleInstance) => {
-    anchor.x = rectangle.width + anchor.padding;
-    anchor.y = rectangle.height + anchor.padding;
+    anchor.x = rectangle.size[0] + anchor.padding;
+    anchor.y = rectangle.size[1] + anchor.padding;
   },
   [AnchorType.Custom]: (anchor: Anchor, _rectangle: RectangleInstance) => {
     anchor.x = anchor.x || 0;
@@ -93,20 +90,16 @@ export class RectangleInstance extends Instance {
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the rectangle (or the z value of the lable) */
   @observable depth: number = 0;
-  /** The height of the rectangle as it is to be rendered in world space */
-  @observable height: number = 1;
   /** When in BOUND_MAX mode, this allows the rectangle to scale up beyond it's max size */
   @observable maxScale: number = 1;
   /** Scales the rectangle uniformly */
   @observable scale: number = 1;
   /** Sets the way the rectangle scales with the world */
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
-  /** The width of the rectangle as it is to be rendered in world space */
-  @observable width: number = 1;
-  /** The x coordinate where the rectangle will be anchored to in world space */
-  @observable x: number = 0;
-  /** The y coordinate where the rectangle will be anchored to in world space */
-  @observable y: number = 0;
+  /** The size of the rectangle as it is to be rendered in world space */
+  @observable size: Vec2 = [1, 1];
+  /** The coordinate where the rectangle will be anchored to in world space */
+  @observable position: Vec2 = [0, 0];
 
   // These are properties that can be altered, but have side effects from being changed
 
@@ -125,10 +118,8 @@ export class RectangleInstance extends Instance {
     this.depth = options.depth || this.depth;
     this.color = options.color || this.color;
     this.scaling = options.scaling || this.scaling;
-    this.x = options.x || this.x;
-    this.y = options.y || this.y;
-    this.width = options.width || 1;
-    this.height = options.height || 1;
+    this.position = options.position || this.position;
+    this.size = options.size || this.size;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);

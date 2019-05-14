@@ -177,6 +177,13 @@ export class EasingIOExpansion extends BaseIOExpansion {
           instance.easing.set(easingUID, values);
         }
 
+        // On instance reactivation we want the easing to just be at it's end value
+        else if (instance.reactivate) {
+          values.end = vecMethods.copy(end);
+          values.start = vecMethods.copy(end);
+          values.startTime = currentTime;
+        }
+
         // Assign the established values
         easingValues = values;
         duration = attributeDuration;
@@ -245,7 +252,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
       // The attribute is going to generate some child attributes
       // Making the additional attributes children of this attribute
       // will force them to update when the parent attribute is updated.
-      attribute.childAttributes = [];
+      attribute.childAttributes = attribute.childAttributes || [];
 
       // Attribute for the start value of the animation
       const startAttr: IInstanceAttribute<T> = {

@@ -6,11 +6,16 @@ import {
   IWheelMetrics
 } from "../surface/mouse-event-manager";
 import { View } from "../surface/view";
+import { IProjection } from "../types";
 import {
   add3,
+  AutoEasingMethod,
+  copy3,
   divide2,
+  divide3,
   max3,
   min3,
+  scale3,
   subtract2,
   subtract3,
   Vec3,
@@ -46,7 +51,7 @@ export interface ICameraBoundsOptions {
   /** This is the view for which the bounds applies towards */
   view: string;
   /** The area the camera is bound inside */
-  worldBounds: Bounds;
+  worldBounds: Bounds<any>;
 }
 
 export interface IBasicCameraControllerOptions {
@@ -132,6 +137,8 @@ export class BasicCameraController extends EventManager {
   wheelShouldScroll: boolean;
   /** Stores the views this controller has flagged for optimizing */
   private optimizedViews = new Set<View>();
+  /** The animation used to immediately position the camera */
+  private cameraImmediateAnimation = AutoEasingMethod.immediate<Vec3>(0);
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -140,7 +147,7 @@ export class BasicCameraController extends EventManager {
   /**
    * Callback for when the range has changed for the camera in a view
    */
-  private onRangeChanged = (_camera: ChartCamera, _targetView: View) => {
+  private onRangeChanged = (_camera: ChartCamera, _targetView: IProjection) => {
     /* no-op */
   };
 
@@ -184,12 +191,12 @@ export class BasicCameraController extends EventManager {
 
       // Next bound the positioning
       if (targetView) {
-        this.camera.offset[0] = this.boundsHorizontalOffset(
+        this.camera.getOffset()[0] = this.boundsHorizontalOffset(
           targetView,
           this.bounds
         );
 
-        this.camera.offset[1] = this.boundsVerticalOffset(
+        this.camera.getOffset()[1] = this.boundsVerticalOffset(
           targetView,
           this.bounds
         );
@@ -201,11 +208,15 @@ export class BasicCameraController extends EventManager {
     if (this.camera && this.bounds) {
       // First bound the scaling
       if (this.bounds.scaleMin) {
-        this.camera.setScale(max3(this.camera.scale, this.bounds.scaleMin));
+        this.camera.setScale(
+          max3(this.camera.getScale(), this.bounds.scaleMin)
+        );
       }
 
       if (this.bounds.scaleMax) {
-        this.camera.setScale(min3(this.camera.scale, this.bounds.scaleMax));
+        this.camera.setScale(
+          min3(this.camera.getScale(), this.bounds.scaleMax)
+        );
       }
     }
   };
@@ -220,7 +231,7 @@ export class BasicCameraController extends EventManager {
       case CameraBoundsAnchor.BOTTOM_LEFT:
         return -(
           bounds.worldBounds.left -
-          bounds.screenPadding.left / this.camera.scale[0]
+          bounds.screenPadding.left / this.camera.getScale()[0]
         );
 
       case CameraBoundsAnchor.TOP_MIDDLE:
@@ -231,7 +242,7 @@ export class BasicCameraController extends EventManager {
           bounds.worldBounds.width / 2 -
           0.5 *
             ((targetView.screenBounds.width + bounds.screenPadding.right) /
-              this.camera.scale[0])
+              this.camera.getScale()[0])
         );
 
       case CameraBoundsAnchor.TOP_RIGHT:
@@ -240,7 +251,7 @@ export class BasicCameraController extends EventManager {
         return -(
           bounds.worldBounds.right -
           (targetView.screenBounds.width - bounds.screenPadding.right) /
-            this.camera.scale[0]
+            this.camera.getScale()[0]
         );
     }
   }
@@ -253,18 +264,20 @@ export class BasicCameraController extends EventManager {
       case CameraBoundsAnchor.TOP_LEFT:
       case CameraBoundsAnchor.TOP_MIDDLE:
       case CameraBoundsAnchor.TOP_RIGHT:
-        return (
-          -bounds.worldBounds.top - -bounds.screenPadding.top / this.scale[1]
+        return -(
+          bounds.worldBounds.top -
+          bounds.screenPadding.top / this.camera.getScale()[1]
         );
 
       case CameraBoundsAnchor.MIDDLE_LEFT:
       case CameraBoundsAnchor.MIDDLE:
       case CameraBoundsAnchor.MIDDLE_RIGHT:
-        return (
-          -(bounds.worldBounds.bottom - bounds.worldBounds.height / 2) +
+        return -(
+          bounds.worldBounds.bottom -
+          bounds.worldBounds.height / 2 -
           0.5 *
-            (targetView.screenBounds.height - bounds.screenPadding.bottom) /
-            this.scale[1]
+            ((targetView.screenBounds.height + bounds.screenPadding.bottom) /
+              this.camera.getScale()[1])
         );
 
       case CameraBoundsAnchor.BOTTOM_LEFT:
@@ -273,7 +286,7 @@ export class BasicCameraController extends EventManager {
         return -(
           bounds.worldBounds.bottom -
           (targetView.screenBounds.height - bounds.screenPadding.bottom) /
-            this.scale[1]
+            this.camera.getScale()[1]
         );
     }
   }
@@ -311,7 +324,7 @@ export class BasicCameraController extends EventManager {
       return (
         -bounds.worldBounds.right +
         (targetView.screenBounds.width - bounds.screenPadding.right) /
-          this.camera.scale[0]
+          this.camera.getScale()[0]
       );
     }
 
@@ -321,11 +334,11 @@ export class BasicCameraController extends EventManager {
     ) {
       return (
         -bounds.worldBounds.left +
-        bounds.screenPadding.left / this.camera.scale[0]
+        bounds.screenPadding.left / this.camera.getScale()[0]
       );
     }
 
-    return this.camera.offset[0];
+    return this.camera.getOffset()[0];
   }
 
   /**
@@ -355,27 +368,27 @@ export class BasicCameraController extends EventManager {
     }
 
     if (
-      worldTLinScreenSpace[1] >
-      targetView.screenBounds.top - bounds.screenPadding.top
+      worldBRinScreenSpace[1] <
+      targetView.screenBounds.bottom - bounds.screenPadding.bottom
     ) {
-      return -(
-        bounds.worldBounds.top -
-        bounds.screenPadding.top / this.camera.scale[1]
+      return (
+        -bounds.worldBounds.bottom +
+        (targetView.screenBounds.height - bounds.screenPadding.bottom) /
+          this.camera.getScale()[1]
       );
     }
 
     if (
-      worldBRinScreenSpace[1] <
-      targetView.screenBounds.bottom + bounds.screenPadding.bottom
+      worldTLinScreenSpace[1] >
+      targetView.screenBounds.top + bounds.screenPadding.top
     ) {
-      return -(
-        bounds.worldBounds.bottom +
-        (-targetView.screenBounds.height + bounds.screenPadding.bottom) /
-          this.camera.scale[1]
+      return (
+        -bounds.worldBounds.top +
+        bounds.screenPadding.top / this.camera.getScale()[0]
       );
     }
 
-    return this.camera.offset[1];
+    return this.camera.getOffset()[1];
   }
 
   private canStart(viewId: string) {
@@ -433,14 +446,14 @@ export class BasicCameraController extends EventManager {
   }
 
   private doPan(e: IMouseInteraction, view: View, delta: [number, number]) {
-    let pan: Vec3 = vec3(divide2(delta, this.camera.scale), 0);
+    let pan: Vec3 = vec3(divide2(delta, this.camera.getScale()), 0);
 
     if (this.panFilter) {
       pan = this.panFilter(pan, view, e.viewsUnderMouse.map(v => v.view));
     }
 
-    this.camera.offset[0] += pan[0];
-    this.camera.offset[1] += pan[1];
+    this.camera.getOffset()[0] += pan[0];
+    this.camera.getOffset()[1] += pan[1];
 
     // Add additional correction for bounds
     this.applyBounds();
@@ -450,6 +463,56 @@ export class BasicCameraController extends EventManager {
     this.applyBounds();
     // Indicate the camera needs a refresh
     this.camera.update();
+  }
+
+  /**
+   * Tells the controller to set an explicit offset for the camera.
+   * Must provide a reference view.
+   */
+  setOffset(viewId: string, offset: Vec3) {
+    const startOffset = copy3(this.camera.offset);
+
+    this.camera.getOffset()[0] = offset[0];
+    this.camera.getOffset()[1] = offset[1];
+    this.camera.getOffset()[2] = offset[2];
+
+    // Add additional correction for bounds
+    this.applyBounds();
+
+    // Broadcast the change occurred
+    if (this.camera.surface) {
+      const projections = this.camera.surface.getProjections(viewId);
+
+      if (projections) {
+        this.onRangeChanged(this.camera, projections);
+      }
+    }
+
+    // Add additional correction for bounds
+    this.applyBounds();
+    const newOffset = copy3(this.camera.getOffset());
+
+    this.camera.setOffset(startOffset);
+    this.camera.setOffset(newOffset);
+  }
+
+  /**
+   * Centers the camera on a position. Must provide a reference view.
+   */
+  centerOn(viewId: string, position: Vec3) {
+    if (!this.camera.surface) return;
+
+    const viewBounds = this.camera.surface.getViewSize(viewId);
+    if (!viewBounds) return;
+    const midScreen: Vec3 = [viewBounds.width / 2, viewBounds.height / 2, 0];
+    const fromScreenCenter: Vec3 = subtract3(
+      position,
+      divide3(midScreen, this.camera.getScale())
+    );
+
+    const newOffset = scale3(fromScreenCenter, -1);
+
+    this.setOffset(viewId, newOffset);
   }
 
   /**
@@ -463,7 +526,11 @@ export class BasicCameraController extends EventManager {
           this.optimizedViews.add(view.view);
         });
 
+        // Panning the camera will always be immediate
         this.doPan(e, e.start.view, drag.screen.delta);
+        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
+        // to the end
+        this.camera.animation = this.cameraImmediateAnimation;
       }
     }
   }
@@ -486,8 +553,8 @@ export class BasicCameraController extends EventManager {
       } else {
         const targetView = this.getTargetView(e);
         const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-        const currentZoomX = this.camera.scale[0] || 1.0;
-        const currentZoomY = this.camera.scale[1] || 1.0;
+        const currentZoomX = this.camera.getScale()[0] || 1.0;
+        const currentZoomY = this.camera.getScale()[1] || 1.0;
 
         let deltaScale: [number, number, number] = [
           wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
@@ -503,16 +570,16 @@ export class BasicCameraController extends EventManager {
           );
         }
 
-        this.camera.scale[0] = currentZoomX + deltaScale[0];
-        this.camera.scale[1] = currentZoomY + deltaScale[1];
+        this.camera.getScale()[0] = currentZoomX + deltaScale[0];
+        this.camera.getScale()[1] = currentZoomY + deltaScale[1];
 
         // Ensure the new scale values are within bounds before attempting to correct offsets
         this.applyScaleBounds();
 
         const afterZoom = targetView.screenToWorld(e.screen.mouse);
         const deltaZoom = subtract2(beforeZoom, afterZoom);
-        this.camera.offset[0] -= deltaZoom[0];
-        this.camera.offset[1] -= deltaZoom[1];
+        this.camera.getOffset()[0] -= deltaZoom[0];
+        this.camera.getOffset()[1] -= deltaZoom[1];
 
         // Add additional correction for bounds
         this.applyBounds();
@@ -546,7 +613,7 @@ export class BasicCameraController extends EventManager {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  getRange(viewId: string): Bounds {
+  getRange(viewId: string): Bounds<never> {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
@@ -595,7 +662,7 @@ export class BasicCameraController extends EventManager {
    * Retrieves the current scale of the camera
    */
   get scale(): Vec3 {
-    return this.camera.scale;
+    return this.camera.getScale();
   }
 
   /**
@@ -604,7 +671,7 @@ export class BasicCameraController extends EventManager {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  setRange(newWorld: Bounds, viewId: string) {
+  setRange(newWorld: Bounds<{}>, viewId: string) {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */
@@ -620,11 +687,11 @@ export class BasicCameraController extends EventManager {
           screenBounds.height / newWorld.height,
           1
         ],
-        this.camera.scale
+        this.camera.getScale()
       );
 
       this.camera.setScale(
-        add3(this.camera.scale, this.scaleFilter(deltaScale, view, [view]))
+        add3(this.camera.getScale(), this.scaleFilter(deltaScale, view, [view]))
       );
 
       const deltaPan = subtract3(

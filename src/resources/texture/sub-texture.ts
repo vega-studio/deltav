@@ -58,7 +58,7 @@ export class SubTexture {
   /**
    * Generates a SubTexture object based on the texture and region provided.
    */
-  static fromRegion(source: Texture, region: Bounds) {
+  static fromRegion(source: Texture, region: Bounds<any>) {
     if (!source.data) return null;
 
     const ux = region.x / source.data.width;
@@ -66,7 +66,7 @@ export class SubTexture {
     const uw = region.width / source.data.width;
     const uh = region.height / source.data.height;
 
-    const atlasDimensions: Bounds = new Bounds({
+    const atlasDimensions: Bounds<never> = new Bounds({
       bottom: uy + uh,
       left: ux,
       right: ux + uw,

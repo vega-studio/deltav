@@ -610,7 +610,14 @@ export class Layer<
     //       Getting applied to the Shader IO
   }
 
-  willUpdateProps(_newProps: ILayerProps<T>) {
-    /** LIFECYCLE */
+  /**
+   * Lifecycle: Fires before the props object is updated with the newProps. Allows layer to
+   * respond to diff changes.
+   */
+  willUpdateProps(newProps: ILayerProps<T>) {
+    // Pick type changes needs to trigger layer rebuilds currently for how color picking is handled.
+    if (newProps.picking !== this.props.picking) {
+      this.rebuildLayer();
+    }
   }
 }

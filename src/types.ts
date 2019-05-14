@@ -139,7 +139,7 @@ export interface IPickInfo<T extends Instance> {
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
   /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
-  querySpace?(bounds: Bounds | Vec2, visit?: IVisitFunction<T>): T[];
+  querySpace?(bounds: Bounds<T> | Vec2, visit?: IVisitFunction<T>): T[];
   /** This is the screen coordinates of the mouse point that interacted with the instances */
   screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */
@@ -431,6 +431,8 @@ export interface IShaders {
  * Represents an element that has a full list of projection methods
  */
 export interface IProjection {
+  /** SInce projections are the views (just interface stripping functionality) we should provide the id for added flexibility to events */
+  id: string;
   /** This is the chart camera utilized in the projection of elements */
   camera: ChartCamera;
   /** Converts from the pixel density layer to the screen space */

@@ -148,7 +148,7 @@ export class InstanceAttributeDiffProcessor<
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property update
-      if (propIds.length === 0) {
+      if (propIds.length === 0 || instance.reactivate) {
         propIds = this.bufferManager.getUpdateAllPropertyIdList();
       }
 
@@ -214,6 +214,9 @@ export class InstanceAttributeDiffProcessor<
       updateRange[2] = max(location.range[1], updateRange[2]);
       bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
     }
+
+    // Make sure the instance reactivation process is not executed again
+    instance.reactivate = false;
   }
 
   /**
@@ -237,7 +240,7 @@ export class InstanceAttributeDiffProcessor<
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property update
-      if (propIds.length === 0) {
+      if (propIds.length === 0 || instance.reactivate) {
         propIds = this.bufferManager.getUpdateAllPropertyIdList();
       }
 
@@ -282,6 +285,9 @@ export class InstanceAttributeDiffProcessor<
       location.buffer.value.set(updateValue, location.range[0]);
       bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;
     }
+
+    // Make sure the instance reactivation process is not executed again
+    instance.reactivate = false;
   }
 
   /**

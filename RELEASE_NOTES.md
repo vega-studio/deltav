@@ -1,5 +1,60 @@
 # Release Notes
 
+## 1.29.0
+
+* `(ADDED)` Camera offset and scale can now be animated
+
+## 1.28.3
+
+* `(FIXED)` The method nextFrame passes the time to the commands again
+
+## 1.28.2
+
+* `(FIXED)` Cleaned up unused items in the utility folder
+* `(FIXED)` Added an encapsulateAll method for the bounds class
+
+## 1.28.1
+
+* `(FIXED)` Rectangles use more vectorized properties now for consistency across base shapes
+
+## 1.28.0
+
+* `(ADDED)` Edges use Vecs more consistently
+* `(FIXED)` Easing expansion erased child attributes unintentionally
+* `(FIXED)` DataBounds and Bounds are the same thing now
+
+## 1.27.3
+
+* `(FIXED)` Basic Camera Controller setBounds works correctly now for the vertical axis
+
+## 1.27.2
+
+* `(FIXED)` Layers now respond to their pick type changing by rebuilding the layer
+
+## 1.27.1
+
+* `(FIXED)` Mouse interactions now broadcast in the proper order, Out then Over then move
+* `(FIXED)` Mouse interactions now properly broadcasts interactions for instances that are close to each other or overlapping
+* `(FIXED)` Renderer options are now a part of the layer surface options
+
+## 1.27.0
+
+* `(ADDED)` Arcs have an offset for angle now. Makes animating rotations easier and makes it easier to set the orientation of angle 0.
+* `(FIXED)` Improved precision issues with arcs
+
+## 1.26.8
+
+* `(FIXED)` Improved easy blending with circles
+
+## 1.26.7
+
+* `(FIXED)` Instances reactivate flag is now unset after reactivation
+* `(FIXED)` Auto easing methods start at their end values upon reactivation. Thus preventing unintended initialized animations on reactivation
+
+## 1.26.6
+
+* `(FIXED)` Reactivating an instance (without removing and adding to a provider) now properly syncs all attributes upon reactivation. This ensures changes made while inactive are properly synced with the buffer after made active again.
+
 ## 1.26.5
 
 * `(FIXED)` maxScale capabilities added back in for BOUND_MAX scale mode which allows for better controls to prevent a font from scaling up too much to keep it crisp.

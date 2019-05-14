@@ -1,5 +1,6 @@
-import { subtract2, Vec2 } from "../util";
-import { DataBounds } from "../util/data-bounds";
+import { Bounds } from "../primitives";
+import { ChartCamera, subtract2, Vec2, ViewCamera } from "../util";
+import { Camera } from "../util/camera";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
@@ -21,8 +22,23 @@ export type SceneView = {
   /** This is the view itself that our mouse will interact with */
   view: View;
   /** Gets the bounds of this view for this particular scene */
-  bounds?: DataBounds<SceneView>;
+  bounds?: Bounds<SceneView>;
 };
+
+const emptySceneView = {
+  depth: 0,
+  scene: new LayerScene({ key: "error", views: [] }),
+  view: new View({
+    key: "error",
+    viewport: {},
+    viewCamera: new ViewCamera(Camera.defaultCamera()),
+    camera: new ChartCamera()
+  })
+};
+
+emptySceneView.view.fitViewtoViewport(
+  new Bounds({ x: 0, y: 0, width: 100, height: 100 })
+);
 
 /**
  * This represents an interaction with the Layer Surface. It provides mouse metrics with how the mouse
@@ -105,8 +121,9 @@ export interface ITouchMetrics {
   current: ITouchFrame;
 }
 
-function sortByDepth(a: DataBounds<SceneView>, b: DataBounds<SceneView>) {
-  return b.data.depth - a.data.depth;
+function sortByDepth(a: Bounds<SceneView>, b: Bounds<SceneView>) {
+  if (b.d && a.d) return b.d.depth - a.d.depth;
+  return 0;
 }
 
 function isDefined<T>(val: T | null | undefined): val is T {
@@ -123,7 +140,7 @@ export class MouseEventManager {
   /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
   controllers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
-  quadTree: QuadTree<DataBounds<SceneView>>;
+  quadTree: QuadTree<Bounds<SceneView>>;
   /** This is the current list of views being managed */
   views: SceneView[];
 
@@ -238,7 +255,7 @@ export class MouseEventManager {
         return;
       }
 
-      startView = downViews[0].data;
+      startView = downViews[0].d;
       if (!startView) return;
 
       const interaction = this.makeInteraction(
@@ -417,6 +434,8 @@ export class MouseEventManager {
   ): IMouseInteraction {
     // Find the views the mouse has interacted with
     const hitViews = this.getViewsUnderMouse(mouse);
+    let targetSceneView = hitViews[0] && hitViews[0].d && hitViews[0].d;
+    if (!targetSceneView) targetSceneView = emptySceneView;
 
     return {
       screen: {
@@ -428,13 +447,17 @@ export class MouseEventManager {
           view: startView.view
         },
       target: {
-        mouse: hitViews[0] && hitViews[0].data.view.screenToView(mouse),
-        view: hitViews[0] && hitViews[0].data.view
+        mouse: targetSceneView.view.screenToView(mouse),
+        view: targetSceneView.view
       },
-      viewsUnderMouse: hitViews.map(v => ({
-        mouse: v.data.view.screenToView(mouse),
-        view: v.data.view
-      }))
+      viewsUnderMouse: hitViews.map(v => {
+        if (!v.d) v.d = emptySceneView;
+
+        return {
+          mouse: v.d.view.screenToView(mouse),
+          view: v.d.view
+        };
+      })
     };
   }
 

@@ -26,6 +26,6 @@ export declare class PhysicsDemo extends BaseDemo {
     getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null;
     getLayers(): LayerInitializer[];
     init(): Promise<void>;
-    makeCircle(bounds: Bounds): [CircleInstance, Matter.Body];
+    makeCircle(bounds: Bounds<any>): [CircleInstance, Matter.Body];
     removeCircle(): void;
 }

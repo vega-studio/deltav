@@ -1,9 +1,6 @@
-import * as anime from "animejs";
 import { CircleInstance, EdgeInstance, InstanceProvider, IPickInfo, LayerInitializer } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 export declare class MouseInteractionColorPicking extends BaseExample {
-    isOver: Map<CircleInstance, anime.AnimeInstance>;
-    hasLeft: Map<CircleInstance, anime.AnimeInstance>;
     edgeProvider: InstanceProvider<EdgeInstance>;
     side: number;
     handleCircleClick: (info: IPickInfo<CircleInstance>) => void;

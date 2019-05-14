@@ -3,7 +3,7 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   ChartCamera,
-  debugLayer,
+  createLayer,
   EasingUtil,
   GlyphInstance,
   GlyphLayer,
@@ -171,7 +171,7 @@ export class TextDemo extends BaseDemo {
    */
   getLayers(resources: IDefaultResources): LayerInitializer[] {
     return [
-      debugLayer(LabelLayer, {
+      createLayer(LabelLayer, {
         animate: {
           color: AutoEasingMethod.easeInOutCubic(500)
         },

@@ -839,11 +839,14 @@ export class TextAreaLayer<
     const originY = instance.origin[1] + topPadding;
 
     let spaceWidth = 0;
+
     if (instance.spaceWidth) {
       spaceWidth = instance.spaceWidth;
     } else {
       if (kerningRequest.fontMap) {
-        spaceWidth = kerningRequest.fontMap.spaceWidth;
+        const fontSourceSize = kerningRequest.fontMap.fontSource.size;
+        const fontScale = instance.fontSize / fontSourceSize;
+        spaceWidth = kerningRequest.fontMap.spaceWidth * fontScale;
       } else {
         spaceWidth = this.props.whiteSpaceKerning || instance.fontSize / 2;
       }

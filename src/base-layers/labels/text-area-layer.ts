@@ -854,8 +854,6 @@ export class TextAreaLayer<
       instance.spaceWidth = spaceWidth;
     }
 
-    console.warn("FOR MOST", spaceWidth);
-
     const glyphToOffsetY = generateGlyphOffsetYMap(instance, kerningRequest);
 
     let currentX = 0;

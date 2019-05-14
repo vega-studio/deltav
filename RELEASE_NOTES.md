@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.30.0
+
+* `(ADDED)` debugLayer is added. This can replace a createLayer call and will output useful information about the layer indicated.
+
 ## 1.29.0
 
 * `(ADDED)` Camera offset and scale can now be animated

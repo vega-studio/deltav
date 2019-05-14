@@ -778,34 +778,38 @@ export class TextAreaLayer<
       const borderWidth = instance.borderWidth;
       const topBorder: RectangleInstance = new RectangleInstance({
         color: instance.color,
-        height: borderWidth,
-        width: instance.maxWidth + 2 * borderWidth,
-        x: instance.origin[0] - borderWidth,
-        y: instance.origin[1] - borderWidth
+        size: [instance.maxWidth + 2 * borderWidth, borderWidth],
+        position: [
+          instance.origin[0] - borderWidth,
+          instance.origin[1] - borderWidth
+        ]
       });
 
       const leftBorder: RectangleInstance = new RectangleInstance({
         color: instance.color,
-        height: instance.maxHeight + 2 * borderWidth,
-        width: borderWidth,
-        x: instance.origin[0] - borderWidth,
-        y: instance.origin[1] - borderWidth
+        size: [borderWidth, instance.maxHeight + 2 * borderWidth],
+        position: [
+          instance.origin[0] - borderWidth,
+          instance.origin[1] - borderWidth
+        ]
       });
 
       const rightBorder: RectangleInstance = new RectangleInstance({
         color: instance.color,
-        height: instance.maxHeight + 2 * borderWidth,
-        width: borderWidth,
-        x: instance.origin[0] + instance.maxWidth,
-        y: instance.origin[1] - borderWidth
+        size: [borderWidth, instance.maxHeight + 2 * borderWidth],
+        position: [
+          instance.origin[0] + instance.maxWidth,
+          instance.origin[1] - borderWidth
+        ]
       });
 
       const bottomBorder: RectangleInstance = new RectangleInstance({
         color: instance.color,
-        height: borderWidth,
-        width: instance.maxWidth + 2 * borderWidth,
-        x: instance.origin[0] - borderWidth,
-        y: instance.origin[1] + instance.maxHeight
+        size: [instance.maxWidth + 2 * borderWidth, borderWidth],
+        position: [
+          instance.origin[0] - borderWidth,
+          instance.origin[1] + instance.maxHeight
+        ]
       });
 
       this.providers.recProvider.add(topBorder);
@@ -1305,8 +1309,10 @@ export class TextAreaLayer<
     // Update all borders new location
     for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
       const border = instance.borders[i];
-      border.x += origin[0] - oldOrigin[0];
-      border.y += origin[1] - oldOrigin[1];
+      border.position = [
+        border.position[0] + origin[0] - oldOrigin[0],
+        border.position[1] + origin[1] - oldOrigin[1]
+      ];
     }
 
     instance.oldOrigin = instance.origin;

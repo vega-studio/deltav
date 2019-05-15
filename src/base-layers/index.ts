@@ -6,3 +6,4 @@ export * from "./labels";
 export * from "./rectangle";
 export * from "./rings";
 export * from "./types";
+export * from "./log-changes-layer";

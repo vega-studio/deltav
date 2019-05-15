@@ -1,3 +1,4 @@
+import { waitForFrame } from "src/util/waitForFrame";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -679,7 +680,7 @@ export class LayerSurface {
         this.loadReady = new Promise(
           resolve => (this.loadReadyResolve = resolve)
         );
-        this.draw();
+        this.draw(await waitForFrame());
       }
     }
 

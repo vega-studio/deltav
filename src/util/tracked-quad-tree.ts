@@ -8,12 +8,14 @@ import { isVec2, Vec2 } from "../util/vector";
 const maxPopulation: number = 5;
 const maxDepth: number = 10;
 
-export type BoundsAccessor<T extends Instance> = (o: T) => Bounds<any> | null;
+export type TrackedQuadTreeBoundsAccessor<T extends Instance> = (
+  o: T
+) => Bounds<any> | null;
 
 /**
  * Allows typing of a callback argument
  */
-export interface IVisitFunction<T extends Instance> {
+export interface ITrackedQuadTreeVisitFunction<T extends Instance> {
   /**
    * A callback to use during add or query
    *
@@ -23,18 +25,18 @@ export interface IVisitFunction<T extends Instance> {
    * @param node  The node to effect the function upon
    * @param child The child to add to the node
    */
-  (node: Node<T>, child?: Bounds<any>): void;
+  (node: TrackedQuadtreeNode<T>, child?: Bounds<any>): void;
 }
 
 /**
  * This is a class used specifically by the quad tree nodes to indicate split space
  * within the quad tree.
  */
-export class Quadrants<T extends Instance> {
-  TL: Node<T>;
-  TR: Node<T>;
-  BL: Node<T>;
-  BR: Node<T>;
+export class TrackedQuadTreeQuadrants<T extends Instance> {
+  TL: TrackedQuadtreeNode<T>;
+  TR: TrackedQuadtreeNode<T>;
+  BL: TrackedQuadtreeNode<T>;
+  BR: TrackedQuadtreeNode<T>;
 
   /**
    * Ensures all memory is released for all nodes and all references are removed
@@ -60,13 +62,20 @@ export class Quadrants<T extends Instance> {
   constructor(
     bounds: Bounds<any>,
     depth: number,
-    getBounds: BoundsAccessor<T>,
-    childToNode: Map<T, Node<T>>,
+    getBounds: TrackedQuadTreeBoundsAccessor<T>,
+    childToNode: Map<T, TrackedQuadtreeNode<T>>,
     childToBounds: Map<T, Bounds<any> | null>
   ) {
     const mid = bounds.mid;
-    this.TL = new Node<T>(bounds.x, mid[0], bounds.y, mid[1], getBounds, depth);
-    this.TR = new Node<T>(
+    this.TL = new TrackedQuadtreeNode<T>(
+      bounds.x,
+      mid[0],
+      bounds.y,
+      mid[1],
+      getBounds,
+      depth
+    );
+    this.TR = new TrackedQuadtreeNode<T>(
       mid[0],
       bounds.right,
       bounds.y,
@@ -74,7 +83,7 @@ export class Quadrants<T extends Instance> {
       getBounds,
       depth
     );
-    this.BL = new Node<T>(
+    this.BL = new TrackedQuadtreeNode<T>(
       bounds.x,
       mid[0],
       mid[1],
@@ -82,7 +91,7 @@ export class Quadrants<T extends Instance> {
       getBounds,
       depth
     );
-    this.BR = new Node<T>(
+    this.BR = new TrackedQuadtreeNode<T>(
       mid[0],
       bounds.right,
       mid[1],
@@ -106,7 +115,7 @@ export class Quadrants<T extends Instance> {
  * 4 quadrants which it will attempt to inject it's population into. If a member of the population
  * does not completely get injected into one of the quadrants it remains as a member of this node.
  */
-export class Node<T extends Instance> {
+export class TrackedQuadtreeNode<T extends Instance> {
   /** This is the amount of space this node covers */
   bounds: Bounds<any>;
   /** These are the child Instances of the node. */
@@ -115,15 +124,15 @@ export class Node<T extends Instance> {
    * This tracks a quick lookup of a child to it's parent node. This is used so the child can
    * be removed with ease and not require a traversal of the tree.
    */
-  childToNode: Map<T, Node<T>>;
+  childToNode: Map<T, TrackedQuadtreeNode<T>>;
   /** This tracks the bounds calcuated for the given instance */
   childToBounds: Map<T, Bounds<any> | null>;
   /** This is how deep the node is within the tree */
   depth: number = 0;
   /** This is the accessor method that retrieves the bounds for an injected instance */
-  getBounds: BoundsAccessor<T>;
+  getBounds: TrackedQuadTreeBoundsAccessor<T>;
   /** These are the child nodes of this quad node when this node is split. It is null if the node is not split yet */
-  nodes: Quadrants<T> | null = null;
+  nodes: TrackedQuadTreeQuadrants<T> | null = null;
   /**
    * These are children with null bounds that do not affect the splitting and ALWAYS get checked every query.
    * They should only reside on the top node.
@@ -151,7 +160,7 @@ export class Node<T extends Instance> {
     right: number,
     top: number,
     bottom: number,
-    getBounds: BoundsAccessor<T>,
+    getBounds: TrackedQuadTreeBoundsAccessor<T>,
     depth: number = 0
   ) {
     // If params insertted
@@ -171,7 +180,7 @@ export class Node<T extends Instance> {
     // Across all nodes.
     if (this.depth === 0) {
       this.nullBounded = [];
-      this.childToNode = new Map<T, Node<T>>();
+      this.childToNode = new Map<T, TrackedQuadtreeNode<T>>();
       this.childToBounds = new Map<T, Bounds<any>>();
     }
   }
@@ -441,7 +450,10 @@ export class Node<T extends Instance> {
    *
    * @return An array of children that intersects with the query
    */
-  query(bounds: Bounds<any> | Vec2, visit?: IVisitFunction<T>): T[] {
+  query(
+    bounds: Bounds<T> | Vec2,
+    visit?: ITrackedQuadTreeVisitFunction<T>
+  ): T[] {
     // This stores all of the found Instances when querying by bounds or point
     let found: T[] = [];
 
@@ -478,7 +490,11 @@ export class Node<T extends Instance> {
    *
    * @return     Returns the exact same list that was input as the list param
    */
-  queryBounds(b: Bounds<any>, list: T[], visit?: IVisitFunction<T>): T[] {
+  queryBounds(
+    b: Bounds<any>,
+    list: T[],
+    visit?: ITrackedQuadTreeVisitFunction<T>
+  ): T[] {
     this.children.forEach(c => {
       const bounds = this.childToBounds.get(c);
 
@@ -522,7 +538,7 @@ export class Node<T extends Instance> {
    *
    * @return      Returns the exact same list that was input as the list param
    */
-  queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
+  queryPoint(p: any, list: T[], visit?: ITrackedQuadTreeVisitFunction<T>): T[] {
     this.children.forEach(c => {
       const bounds = this.childToBounds.get(c);
 
@@ -591,7 +607,7 @@ export class Node<T extends Instance> {
     // Gather all items to be handed down
     const allChildren = this.gatherChildren([]);
     // Gather all props for the children to be handed down as well
-    this.nodes = new Quadrants<T>(
+    this.nodes = new TrackedQuadTreeQuadrants<T>(
       this.bounds,
       this.depth + 1,
       this.getBounds,
@@ -612,7 +628,7 @@ export class Node<T extends Instance> {
    *
    * @param cb A callback that has the parameter (node) which is a quadrant in the tree
    */
-  visit(cb: IVisitFunction<T>): void {
+  visit(cb: ITrackedQuadTreeVisitFunction<T>): void {
     const finished = Boolean(cb(this));
 
     if (this.nodes && !finished) {
@@ -624,4 +640,6 @@ export class Node<T extends Instance> {
   }
 }
 
-export class TrackedQuadTree<T extends Instance> extends Node<T> {}
+export class TrackedQuadTree<T extends Instance> extends TrackedQuadtreeNode<
+  T
+> {}

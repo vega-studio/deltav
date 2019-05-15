@@ -7,7 +7,7 @@ import { isVec2, Vec2 } from "./vector";
 const maxPopulation: number = 5;
 const maxDepth: number = 10;
 
-export type IQuadItem = Bounds<any>;
+export type IQuadTreeItem = Bounds<any>;
 
 /**
  * This filters a quad tree query by type
@@ -15,13 +15,13 @@ export type IQuadItem = Bounds<any>;
  * @export
  * @template T
  */
-export function filterQuery<T extends IQuadItem>(
+export function filterQuery<T extends IQuadTreeItem>(
   type: Function[],
-  queryValues: IQuadItem[]
+  queryValues: IQuadTreeItem[]
 ): T[] {
   const filtered: T[] = [];
 
-  queryValues.forEach((obj: IQuadItem) => {
+  queryValues.forEach((obj: IQuadTreeItem) => {
     if (type.find(t => obj instanceof t)) {
       filtered.push(obj as T);
     }
@@ -33,7 +33,7 @@ export function filterQuery<T extends IQuadItem>(
 /**
  * Allows typing of a callback argument
  */
-export interface IVisitFunction<T extends IQuadItem> {
+export interface IQuadTreeVisitFunction<T extends IQuadTreeItem> {
   /**
    * A callback to use during add or query
    *
@@ -43,7 +43,7 @@ export interface IVisitFunction<T extends IQuadItem> {
    * @param node  The node to effect the function upon
    * @param child The child to add to the node
    */
-  (node: Node<T>, child?: IQuadItem): void;
+  (node: QuadTreeNode<T>, child?: IQuadTreeItem): void;
 }
 
 /**
@@ -52,11 +52,11 @@ export interface IVisitFunction<T extends IQuadItem> {
  *
  * @class Quadrants
  */
-export class Quadrants<T extends IQuadItem> {
-  TL: Node<T>;
-  TR: Node<T>;
-  BL: Node<T>;
-  BR: Node<T>;
+export class QuadTreeQuadrants<T extends IQuadTreeItem> {
+  TL: QuadTreeNode<T>;
+  TR: QuadTreeNode<T>;
+  BL: QuadTreeNode<T>;
+  BR: QuadTreeNode<T>;
 
   /**
    * Ensures all memory is released for all nodes and all references are removed
@@ -83,12 +83,30 @@ export class Quadrants<T extends IQuadItem> {
    *
    * @memberOf Quadrants
    */
-  constructor(bounds: IQuadItem, depth: number) {
+  constructor(bounds: IQuadTreeItem, depth: number) {
     const mid = bounds.mid;
-    this.TL = new Node<T>(bounds.x, mid[0], bounds.y, mid[1], depth);
-    this.TR = new Node<T>(mid[0], bounds.right, bounds.y, mid[1], depth);
-    this.BL = new Node<T>(bounds.x, mid[0], mid[1], bounds.bottom, depth);
-    this.BR = new Node<T>(mid[0], bounds.right, mid[1], bounds.bottom, depth);
+    this.TL = new QuadTreeNode<T>(bounds.x, mid[0], bounds.y, mid[1], depth);
+    this.TR = new QuadTreeNode<T>(
+      mid[0],
+      bounds.right,
+      bounds.y,
+      mid[1],
+      depth
+    );
+    this.BL = new QuadTreeNode<T>(
+      bounds.x,
+      mid[0],
+      mid[1],
+      bounds.bottom,
+      depth
+    );
+    this.BR = new QuadTreeNode<T>(
+      mid[0],
+      bounds.right,
+      mid[1],
+      bounds.bottom,
+      depth
+    );
   }
 }
 
@@ -100,11 +118,11 @@ export class Quadrants<T extends IQuadItem> {
  * @export
  * @class Node
  */
-export class Node<T extends IQuadItem> {
+export class QuadTreeNode<T extends IQuadTreeItem> {
   bounds: Bounds<never>;
   children: T[] = [];
   depth: number = 0;
-  nodes: Quadrants<T>;
+  nodes: QuadTreeQuadrants<T>;
 
   /**
    * Destroys this node and ensures all child nodes are destroyed as well.
@@ -141,20 +159,10 @@ export class Node<T extends IQuadItem> {
   ) {
     // If params insertted
     if (arguments.length >= 4) {
-      this.bounds = new Bounds({
-        height: top - bottom,
-        width: right - left,
-        x: left,
-        y: top
-      });
+      this.bounds = new Bounds({ left, right, top, bottom });
     } else {
       // Otherwise, make tiny start area
-      this.bounds = new Bounds({
-        height: 1,
-        width: 1,
-        x: 0,
-        y: 0
-      });
+      this.bounds = new Bounds({ left: 0, right: 1, top: 0, bottom: 1 });
     }
 
     // Ensure the depth is set
@@ -193,47 +201,31 @@ export class Node<T extends IQuadItem> {
    * bounds necessary to cover the area the children cover.
    *
    * @param children      List of Bounds objects to inject
-   * @param childrenProps List of props to associate with each element
-   *
-   * @memberOf Node
    */
-  addAll(children: T[], childrenProps?: any[]) {
-    // Ensure the properties are at least defined
-    childrenProps = childrenProps || [];
-
+  addAll(children: T[]) {
     // Make sure we cover the entire area of all the children.
     // We can speed this up a lot if we first calculate the total bounds the new children covers
-    let minX = Number.MAX_VALUE;
-    let minY = Number.MAX_VALUE;
-    let maxX = -Number.MAX_VALUE;
-    let maxY = -Number.MAX_VALUE;
+    let minX = Number.MAX_SAFE_INTEGER,
+      minY = Number.MAX_SAFE_INTEGER,
+      maxX = Number.MIN_SAFE_INTEGER,
+      maxY = Number.MIN_SAFE_INTEGER;
+
+    const { min, max } = Math;
 
     // Get the dimensions of the new bounds
-    children.forEach(child => {
-      if (child.x < minX) {
-        minX = child.x;
-      }
-      if (child.right > maxX) {
-        maxX = child.right;
-      }
-      if (child.bottom > maxY) {
-        maxY = child.bottom;
-      }
-      if (child.y < minY) {
-        minY = child.y;
-      }
-    });
+    for (let i = 0, iMax = children.length; i < iMax; ++i) {
+      const child = children[i];
+
+      minX = min(minX, child.x);
+      maxX = max(child.right, maxX);
+      minY = min(minY, child.y);
+      maxY = max(maxY, child.bottom);
+    }
 
     // Make sure our bounds includes the specified bounds
     this.cover(
-      new Bounds({
-        height: maxY - minY,
-        width: maxX - minX,
-        x: minX,
-        y: minY
-      })
+      new Bounds({ left: minX, right: maxX, top: minY, bottom: maxY })
     );
-
     // Add all of the children into the tree
     children.forEach(child => this.doAdd(child));
   }
@@ -243,10 +235,8 @@ export class Node<T extends IQuadItem> {
    * This will cause all children to be re-injected into the tree.
    *
    * @param bounds The bounds to include in the tree's coverage
-   *
-   * @memberOf Node
    */
-  cover(bounds: IQuadItem) {
+  cover(bounds: IQuadTreeItem) {
     // If we are already covering the area: abort
     if (bounds.isInside(this.bounds)) {
       return;
@@ -257,13 +247,13 @@ export class Node<T extends IQuadItem> {
     this.bounds.x -= 1;
     this.bounds.y -= 1;
     this.bounds.width += 2;
-    this.bounds.height += 4;
+    this.bounds.height += 2;
     // Get all of the children underneath this node
     const allChildren = this.gatherChildren([]);
 
     // Destroy the split nodes
     if (this.nodes) {
-      // Completely...destroy...
+      // completely...destroy...
       this.nodes.destroy();
       delete this.nodes;
     }
@@ -277,11 +267,8 @@ export class Node<T extends IQuadItem> {
    * without the process of seeing if the tree needs a spatial adjustment to account for the child.
    *
    * @param child The Bounds item to inject into the tree
-   * @param props The props to remain associated with the child
    *
    * @returns True if the injection was successful
-   *
-   * @memberOf Node
    */
   doAdd(child: T): boolean {
     // If nodes are present, then we have already exceeded the population of this node
@@ -344,7 +331,7 @@ export class Node<T extends IQuadItem> {
    *
    * @return The list specified as the list parameter
    */
-  gatherChildren(list: T[], visit?: IVisitFunction<T>): T[] {
+  gatherChildren(list: T[], visit?: IQuadTreeVisitFunction<T>): T[] {
     if (visit) visit(this);
 
     for (let i = 0, iMax = this.children.length; i < iMax; ++i) {
@@ -352,10 +339,10 @@ export class Node<T extends IQuadItem> {
     }
 
     if (this.nodes) {
-      this.nodes.TL.gatherChildren(list);
-      this.nodes.TR.gatherChildren(list);
-      this.nodes.BL.gatherChildren(list);
-      this.nodes.BR.gatherChildren(list);
+      this.nodes.TL.gatherChildren(list, visit);
+      this.nodes.TR.gatherChildren(list, visit);
+      this.nodes.BL.gatherChildren(list, visit);
+      this.nodes.BR.gatherChildren(list, visit);
     }
 
     return list;
@@ -370,7 +357,7 @@ export class Node<T extends IQuadItem> {
    *
    * @return An array of children that intersects with the query
    */
-  query(bounds: IQuadItem | Vec2, visit?: IVisitFunction<T>): T[] {
+  query(bounds: IQuadTreeItem | Vec2, visit?: IQuadTreeVisitFunction<T>): T[] {
     // Query a rectangle
     if (bounds instanceof Bounds) {
       if (bounds.hitBounds(this.bounds)) {
@@ -400,7 +387,11 @@ export class Node<T extends IQuadItem> {
    *
    * @return     Returns the exact same list that was input as the list param
    */
-  queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[] {
+  queryBounds(
+    b: IQuadTreeItem,
+    list: T[],
+    visit?: IQuadTreeVisitFunction<T>
+  ): T[] {
     // As an optimization for querying by bounds, if the bounds engulfs these bounds,
     // we can assume all of the contents of this node and child nodes are hit by the bounds
     // So simply gather the child items and don't do extra tests
@@ -451,7 +442,7 @@ export class Node<T extends IQuadItem> {
    *
    * @return      Returns the exact same list that was input as the list param
    */
-  queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[] {
+  queryPoint(p: any, list: T[], visit?: IQuadTreeVisitFunction<T>): T[] {
     this.children.forEach(c => {
       if (c.containsPoint(p)) {
         list.push(c);
@@ -488,14 +479,16 @@ export class Node<T extends IQuadItem> {
    */
   split() {
     // Gather all items to be handed down
-    const allChildren = this.gatherChildren([]);
+    const allChildren: T[] = [];
+    this.gatherChildren(allChildren);
     // Gather all props for the children to be handed down as well
-    this.nodes = new Quadrants<T>(this.bounds, this.depth + 1);
-
+    this.nodes = new QuadTreeQuadrants<T>(this.bounds, this.depth + 1);
+    // Clear the children from our node to be reinjected to re-assess where they belong
+    // within the split nodes
     this.children = [];
 
-    while (allChildren.length > 0) {
-      const child = allChildren.pop();
+    for (let i = 0, iMax = allChildren.length; i < iMax; ++i) {
+      const child = allChildren[i];
       if (child) this.doAdd(child);
     }
   }
@@ -505,7 +498,7 @@ export class Node<T extends IQuadItem> {
    *
    * @param cb A callback that has the parameter (node) which is a quadrant in the tree
    */
-  visit(cb: IVisitFunction<T>): void {
+  visit(cb: IQuadTreeVisitFunction<T>): void {
     const finished = Boolean(cb(this));
 
     if (this.nodes && !finished) {
@@ -517,4 +510,4 @@ export class Node<T extends IQuadItem> {
   }
 }
 
-export class QuadTree<T extends IQuadItem> extends Node<T> {}
+export class QuadTree<T extends IQuadTreeItem> extends QuadTreeNode<T> {}

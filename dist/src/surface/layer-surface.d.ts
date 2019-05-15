@@ -16,13 +16,13 @@ import { View } from "./view";
 export declare const DEFAULT_IO_EXPANSION: BaseIOExpansion[];
 export declare const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers"];
 export interface ILayerSurfaceOptions {
-    background: [number, number, number, number];
     context?: HTMLCanvasElement;
     eventManagers?: EventManager[];
     handlesWheelEvents?: boolean;
     ioExpansion?: BaseIOExpansion[] | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
     pixelRatio?: number;
     rendererOptions?: {
+        alpha?: boolean;
         antialias?: boolean;
         premultipliedAlpha?: boolean;
         preserveDrawingBuffer?: boolean;

@@ -344,7 +344,9 @@ export class Node<T extends IQuadItem> {
    *
    * @return The list specified as the list parameter
    */
-  gatherChildren(list: T[]): T[] {
+  gatherChildren(list: T[], visit?: IVisitFunction<T>): T[] {
+    if (visit) visit(this);
+
     for (let i = 0, iMax = this.children.length; i < iMax; ++i) {
       list.push(this.children[i]);
     }
@@ -403,7 +405,7 @@ export class Node<T extends IQuadItem> {
     // we can assume all of the contents of this node and child nodes are hit by the bounds
     // So simply gather the child items and don't do extra tests
     if (this.bounds.isInside(b)) {
-      this.gatherChildren(list);
+      this.gatherChildren(list, visit);
       return list;
     }
 

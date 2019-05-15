@@ -1,4 +1,3 @@
-import { waitForFrame } from "src/util/waitForFrame";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -23,6 +22,7 @@ import {
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { copy4, Vec2, Vec4 } from "../util/vector";
+import { waitForFrame } from "../util/waitForFrame";
 import { BaseIOSorting } from "./base-io-sorting";
 import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";

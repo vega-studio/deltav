@@ -43,6 +43,7 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   padding?: Vec1Compat;
   borderWidth?: number;
   hasBorder?: boolean;
+  letterSpacing?: number;
 }
 
 /**
@@ -91,6 +92,8 @@ export class TextAreaInstance extends LabelInstance {
   @observable hasBorder: boolean = true;
   /** Width of space in a textArea */
   spaceWidth: number = 0;
+  /** Spacing between letters in a word */
+  @observable letterSpacing: number = 0;
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);
@@ -110,5 +113,6 @@ export class TextAreaInstance extends LabelInstance {
     this.borderWidth = options.borderWidth || this.borderWidth;
     this.hasBorder =
       options.hasBorder !== undefined ? options.hasBorder : this.hasBorder;
+    this.letterSpacing = options.letterSpacing || this.letterSpacing;
   }
 }

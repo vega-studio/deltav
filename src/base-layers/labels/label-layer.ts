@@ -307,7 +307,8 @@ export class LabelLayer<
         "origin",
         "fontSize",
         "maxWidth",
-        "maxScale"
+        "maxScale",
+        "letterSpacing"
       ]);
     }
 
@@ -319,7 +320,8 @@ export class LabelLayer<
       origin: originId,
       fontSize: fontSizeId,
       maxWidth: maxWidthId,
-      maxScale: maxScaleId
+      maxScale: maxScaleId,
+      letterSpacing: letterSpacingId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -371,6 +373,10 @@ export class LabelLayer<
           if (changed[maxWidthId] !== undefined) {
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
+          }
+
+          if (changed[letterSpacingId] !== undefined) {
+            this.updateLetterSpacing(instance);
           }
           break;
 
@@ -695,6 +701,29 @@ export class LabelLayer<
   }
 
   /**
+   * This updates layout of glyphs of a label
+   */
+  updateLetterSpacing(instance: T) {
+    const glyphs = instance.glyphs;
+    if (!glyphs) return;
+    const spacingDifference =
+      instance.letterSpacing - instance.oldLetterSpacing;
+
+    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
+      const offset = glyphs[i].offset;
+      glyphs[i].offset = [offset[0] + spacingDifference * i, offset[1]];
+    }
+
+    const size = instance.size;
+    instance.size = [
+      size[0] + spacingDifference * (glyphs.length - 1),
+      size[1]
+    ];
+
+    instance.oldLetterSpacing = instance.letterSpacing;
+  }
+
+  /**
    * Checks the label to ensure calculated kerning supports the text specified.
    *
    * Returns true when the kerning information is already available
@@ -740,7 +769,8 @@ export class LabelLayer<
       const metrics: IFontResourceRequest["metrics"] = {
         // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
-        text: instance.text
+        text: instance.text,
+        letterSpacing: instance.letterSpacing
       };
 
       // Include truncation metrics if the text needs it

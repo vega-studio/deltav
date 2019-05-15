@@ -38,6 +38,8 @@ export interface IFontResourceRequest extends BaseResourceRequest {
      * If maxWidth is provided, this will be the layout of the truncated text.
      */
     layout?: KernedLayout;
+    /** Spacing between letters in a label */
+    letterSpacing: number;
     /** When provided, this will cause the system to see if the text should be truncated or not */
     maxWidth?: number;
     /** This is the source text that we wish to receive the metrics for. */

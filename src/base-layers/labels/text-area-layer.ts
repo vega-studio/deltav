@@ -144,7 +144,7 @@ function getGlyphWidths(
   let currentWidth = 0;
   let offset: Vec2 = [0, 0];
 
-  for (let i = 0; i < label.text.length; i++) {
+  for (let i = 0, iMax = label.text.length; i < iMax; i++) {
     const char = label.text[i];
 
     if (kerningRequest.fontMap) {
@@ -155,6 +155,7 @@ function getGlyphWidths(
       }
 
       offset = add2(offset, scale2(kern, fontScale));
+      if (i !== 0) offset = add2(offset, [instance.letterSpacing, 0]);
       const image = kerningRequest.fontMap.glyphMap[char];
       currentWidth = offset[0] + image.pixelWidth * fontScale;
       glyphWidths.push(currentWidth);
@@ -360,7 +361,8 @@ export class TextAreaLayer<
         "text",
         "padding",
         "borderWidth",
-        "hasBorder"
+        "hasBorder",
+        "letterSpacing"
       ]);
     }
 
@@ -376,7 +378,8 @@ export class TextAreaLayer<
       maxHeight: maxHeightId,
       padding: paddingId,
       borderWidth: borderWidthId,
-      hasBorder: hasBorderId
+      hasBorder: hasBorderId,
+      letterSpacing: letterSpacingId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -409,8 +412,7 @@ export class TextAreaLayer<
           }
 
           if (changed[fontSizeId] !== undefined) {
-            this.updateLabelFontSizes2(instance);
-            // this.updateTextAreaSize(instance);
+            this.updateLabelFontSizes(instance);
           }
 
           if (changed[wordWrapId] !== undefined) {
@@ -439,6 +441,10 @@ export class TextAreaLayer<
 
           if (changed[hasBorderId] !== undefined) {
             this.updateBorder(instance);
+          }
+
+          if (changed[letterSpacingId] !== undefined) {
+            this.updateLetterSpacing(instance);
           }
 
           break;
@@ -582,6 +588,7 @@ export class TextAreaLayer<
     const label1 = new LabelInstance({
       color: instance.color,
       fontSize: instance.fontSize,
+      letterSpacing: instance.letterSpacing,
       origin: [originX + currentX, originY + currentY + offsetY1],
       text: text1
     });
@@ -616,6 +623,7 @@ export class TextAreaLayer<
           const label3 = new LabelInstance({
             color: instance.color,
             fontSize: instance.fontSize,
+            letterSpacing: instance.letterSpacing,
             origin: [originX + currentX, originY + currentY + offsetY],
             text
           });
@@ -636,6 +644,7 @@ export class TextAreaLayer<
           const label2 = new LabelInstance({
             color: instance.color,
             fontSize: instance.fontSize,
+            letterSpacing: instance.letterSpacing,
             origin: [originX + currentX, originY + currentY + offsetY2],
             text: text2
           });
@@ -770,6 +779,12 @@ export class TextAreaLayer<
 
       instance.borders = [];
     }
+  }
+
+  updateLetterSpacing(instance: T) {
+    this.clear(instance);
+    this.updateLabels(instance);
+    this.layout(instance);
   }
 
   /** Layout the border of textAreaInstance */
@@ -1071,7 +1086,8 @@ export class TextAreaLayer<
     } else {
       const metrics: IFontResourceRequest["metrics"] = {
         fontSize: instance.fontSize,
-        text: instance.text
+        text: instance.text,
+        letterSpacing: instance.letterSpacing
       };
 
       labelKerningRequest = fontRequest({
@@ -1176,6 +1192,7 @@ export class TextAreaLayer<
             active: false,
             color: instance.color,
             fontSize: instance.fontSize,
+            letterSpacing: instance.letterSpacing,
             origin: position,
             text: word,
             onReady: this.handleLabelReady
@@ -1221,48 +1238,6 @@ export class TextAreaLayer<
    * Updates fontsize of all labels
    */
   updateLabelFontSizes(instance: T) {
-    const labels = this.areaToLabels.get(instance);
-    if (!labels) return;
-
-    for (let i = 0, iMax = labels.length; i < iMax; ++i) {
-      const label = labels[i];
-      if (label instanceof LabelInstance) {
-        label.fontSize = instance.fontSize;
-      }
-    }
-
-    this.areaToLabels.set(instance, labels);
-    instance.labels = labels;
-
-    // Clear new labels
-    for (let i = 0, iMax = instance.newLabels.length; i < iMax; ++i) {
-      const label = instance.newLabels[i];
-      this.providers.labelProvider.remove(label);
-    }
-
-    instance.newLabels = [];
-
-    const oldFontSize = instance.oldFontSize;
-    const newFontSize = instance.fontSize;
-
-    // Calculate size of all labels
-    instance.labels.forEach(label => {
-      if (label instanceof LabelInstance) {
-        label.size = [
-          label.size[0] * newFontSize / oldFontSize,
-          label.size[1] * newFontSize / oldFontSize
-        ];
-      }
-    });
-
-    instance.spaceWidth *= newFontSize / oldFontSize;
-
-    instance.oldFontSize = instance.fontSize;
-
-    this.layoutLabels(instance);
-  }
-
-  updateLabelFontSizes2(instance: T) {
     const oldFontSize = instance.oldFontSize;
     const newFontSize = instance.fontSize;
 

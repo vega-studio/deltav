@@ -17,7 +17,7 @@ import { IDefaultResources, STORY } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 
 const texts = [
-  `ohello imaginationabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg, a girl is no one
+  `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg, a girl is no one
   how check it now, Valar Morghulis, Valar Dohaeris, mother of dragons7 blue, brown, green
   are you`,
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz,.()*&^%$#@!<>?":"[]`,
@@ -46,7 +46,8 @@ export class TextAreaDemo extends BaseDemo {
     paddingBottom: 0,
     paddingLeft: 0,
     borderWidth: 1,
-    hasBorder: true
+    hasBorder: true,
+    letterSpacing: 10
   };
 
   providers = {
@@ -204,6 +205,12 @@ export class TextAreaDemo extends BaseDemo {
     parameters.add(this.parameters, "hasBorder").onChange((value: boolean) => {
       this.textAreas.forEach(textArea => (textArea.hasBorder = value));
     });
+
+    parameters
+      .add(this.parameters, "letterSpacing", -2, 10, 1)
+      .onChange((value: number) => {
+        this.textAreas.forEach(textArea => (textArea.letterSpacing = value));
+      });
   }
 
   getEventManagers(
@@ -248,6 +255,7 @@ export class TextAreaDemo extends BaseDemo {
         maxWidth: this.parameters.maxWidth,
         maxHeight: this.parameters.maxHeight,
         lineHeight: this.parameters.lineHeight,
+        letterSpacing: this.parameters.letterSpacing,
         wordWrap: wordWraps[this.parameters.wordWrap],
         padding: [
           this.parameters.paddingTop,

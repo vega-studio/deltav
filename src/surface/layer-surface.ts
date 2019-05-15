@@ -73,10 +73,6 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers
  */
 export interface ILayerSurfaceOptions {
   /**
-   * This is the color the canvas will be set to.
-   */
-  background: [number, number, number, number];
-  /**
    * Provides the context the surface will use while rendering
    */
   context?: HTMLCanvasElement;
@@ -112,6 +108,11 @@ export interface ILayerSurfaceOptions {
   pixelRatio?: number;
   /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
   rendererOptions?: {
+    /**
+     * This indicates the back buffer for the webgl context will have an alpha channel. This affects performance some, but is mainly
+     * for the DOM compositing the canvas with the other DOM elements.
+     */
+    alpha?: boolean;
     /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
     antialias?: boolean;
     /**
@@ -157,7 +158,11 @@ export interface ILayerSurfaceOptions {
   scenes: ISceneOptions[];
 }
 
-const DEFAULT_BACKGROUND_COLOR: Vec4 = [1.0, 1.0, 1.0, 1.0];
+/**
+ * If a view does not specify a background color, this is the color that will be cleared to
+ * when the color buffer is cleared for the view
+ */
+const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
 
 /**
  * A type to describe the constructor of a Layer class.
@@ -747,7 +752,7 @@ export class LayerSurface {
       // Get the current flags for the view
       const flags = view.clearFlags.slice(0);
       // Store the current background of the view
-      const background = copy4(view.background);
+      const background = view.background && copy4(view.background);
       // Set color rendering flag
       view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
       // Set the view's background to a solid black so we don't interfere with color encoding
@@ -827,7 +832,8 @@ export class LayerSurface {
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
     const pixelRatio = view.pixelRatio;
-    const background = view.background;
+    const background = view.background || DEFAULT_BACKGROUND_COLOR;
+    const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
 
     // Make sure the correct render target is applied
     renderer.setRenderTarget(target || null);
@@ -844,7 +850,7 @@ export class LayerSurface {
     );
     // If a background is established, we should clear the background color
     // Specified for this context
-    if (view.background) {
+    if (willClearColorBuffer) {
       // Clear the rect of color and depth so the region is totally it's own
       renderer.clearColor([
         background[0],
@@ -865,12 +871,12 @@ export class LayerSurface {
     // Get the view's clearing preferences
     if (view.clearFlags) {
       renderer.clear(
-        view.clearFlags.indexOf(ClearFlags.COLOR) > -1,
+        willClearColorBuffer,
         view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
         view.clearFlags.indexOf(ClearFlags.STENCIL) > -1
       );
     } else {
-      renderer.clear(true, true);
+      renderer.clear(false);
     }
 
     // Render the scene with the provided view metrics
@@ -1023,6 +1029,7 @@ export class LayerSurface {
 
     const rendererOptions: ILayerSurfaceOptions["rendererOptions"] = Object.assign(
       {
+        alpha: false,
         antialias: false,
         preserveDrawingBuffer: false,
         premultiplyAlpha: false
@@ -1034,7 +1041,7 @@ export class LayerSurface {
     this.renderer = new WebGLRenderer({
       // Context supports rendering to an alpha canvas only if the background color has a transparent
       // Alpha value.
-      alpha: options.background && options.background[3] < 1.0,
+      alpha: rendererOptions.alpha,
       // Yes to antialias! Make it preeeeetty!
       antialias: rendererOptions.antialias,
       // Make three use an existing canvas rather than generate another
@@ -1081,21 +1088,6 @@ export class LayerSurface {
     this.setRendererSize(width, height);
     // Set the pixel ratio to match the pixel density of the monitor in use
     this.renderer.setPixelRatio(this.pixelRatio);
-
-    // Applies the background color and establishes whether or not the context supports
-    // Alpha or not
-    if (options.background) {
-      this.renderer.setClearColor([
-        options.background[0],
-        options.background[1],
-        options.background[2],
-        options.background[3]
-      ]);
-    } else {
-      // If a background color was not established, then we set a default background color
-      this.renderer.setClearColor(DEFAULT_BACKGROUND_COLOR);
-    }
-
     // Make a scene view depth tracker so we can track the order each scene view combo is drawn
     let sceneViewDepth = 0;
 

@@ -46,7 +46,7 @@ export const DEFAULT_RESOURCES = {
     dynamic: true,
     key: "test-font",
     fontSource: {
-      localKerningCache: true,
+      localKerningCache: false,
       size: 64,
       family: "Lucida Grande",
       type: FontMapGlyphType.BITMAP,

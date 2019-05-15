@@ -101,8 +101,10 @@ function _populate() {
   //
   // Opera/9.80 (foo) Presto/2.2.15 Version/10.10
   var uas = navigator.userAgent;
-  var agent = /(?:MSIE.(\d+\.\d+))|(?:(?:Firefox|GranParadiso|Iceweasel).(\d+\.\d+))|(?:Opera(?:.+Version.|.)(\d+\.\d+))|(?:AppleWebKit.(\d+(?:\.\d+)?))|(?:Trident\/\d+\.\d+.*rv:(\d+\.\d+))/.exec(uas);
-  var os    = /(Mac OS X)|(Windows)|(Linux)/.exec(uas);
+  var agent = /(?:MSIE.(\d+\.\d+))|(?:(?:Firefox|GranParadiso|Iceweasel).(\d+\.\d+))|(?:Opera(?:.+Version.|.)(\d+\.\d+))|(?:AppleWebKit.(\d+(?:\.\d+)?))|(?:Trident\/\d+\.\d+.*rv:(\d+\.\d+))/.exec(
+    uas
+  );
+  var os = /(Mac OS X)|(Windows)|(Linux)/.exec(uas);
 
   _iphone = /\b(iPhone|iP[ao]d)/.exec(uas);
   _ipad = /\b(iP[ao]d)/.exec(uas);
@@ -115,11 +117,14 @@ function _populate() {
   // from either x64 or ia64;  so ultimately, you should just check for Win64
   // as in indicator of whether you're in 64-bit IE.  32-bit IE on 64-bit
   // Windows will send 'WOW64' instead.
-  _win64 = !!(/Win64/.exec(uas));
+  _win64 = !!/Win64/.exec(uas);
 
   if (agent) {
-    _ie = agent[1] ? parseFloat(agent[1]) : (
-          agent[5] ? parseFloat(agent[5]) : NaN);
+    _ie = agent[1]
+      ? parseFloat(agent[1])
+      : agent[5]
+        ? parseFloat(agent[5])
+        : NaN;
     // IE compatibility mode
     if (_ie && document && document.documentMode) {
       _ie = document.documentMode;
@@ -129,8 +134,8 @@ function _populate() {
     _ie_real_version = trident ? parseFloat(trident[1]) + 4 : _ie;
 
     _firefox = agent[2] ? parseFloat(agent[2]) : NaN;
-    _opera   = agent[3] ? parseFloat(agent[3]) : NaN;
-    _webkit  = agent[4] ? parseFloat(agent[4]) : NaN;
+    _opera = agent[3] ? parseFloat(agent[3]) : NaN;
+    _webkit = agent[4] ? parseFloat(agent[4]) : NaN;
     if (_webkit) {
       // We do not add the regexp to the above test, because it will always
       // match 'safari' only since 'AppleWebKit' appears before 'Chrome' in
@@ -158,14 +163,13 @@ function _populate() {
       _osx = false;
     }
     _windows = !!os[2];
-    _linux   = !!os[3];
+    _linux = !!os[3];
   } else {
     _osx = _windows = _linux = false;
   }
 }
 
 var UserAgent_DEPRECATED = {
-
   /**
    *  Check if the UA is Internet Explorer.
    *
@@ -183,9 +187,8 @@ var UserAgent_DEPRECATED = {
    * not compatibility mode or not ie
    */
   ieCompatibilityMode: function() {
-    return _populate() || (_ie_real_version > _ie);
+    return _populate() || _ie_real_version > _ie;
   },
-
 
   /**
    * Whether the browser is 64-bit IE.  Really, this is kind of weak sauce;  we
@@ -206,7 +209,6 @@ var UserAgent_DEPRECATED = {
     return _populate() || _firefox;
   },
 
-
   /**
    *  Check if the UA is Opera.
    *
@@ -216,7 +218,6 @@ var UserAgent_DEPRECATED = {
   opera: function() {
     return _populate() || _opera;
   },
-
 
   /**
    *  Check if the UA is WebKit.
@@ -242,10 +243,9 @@ var UserAgent_DEPRECATED = {
    *
    *  @return float|NaN Version number (if match) or NaN.
    */
-  chrome : function() {
+  chrome: function() {
     return _populate() || _chrome;
   },
-
 
   /**
    *  Check if the user is running Windows.
@@ -255,7 +255,6 @@ var UserAgent_DEPRECATED = {
   windows: function() {
     return _populate() || _windows;
   },
-
 
   /**
    *  Check if the user is running Mac OS X.
@@ -301,7 +300,7 @@ var UserAgent_DEPRECATED = {
 
   ipad: function() {
     return _populate() || _ipad;
-  }
+  },
 };
 
 module.exports = UserAgent_DEPRECATED;

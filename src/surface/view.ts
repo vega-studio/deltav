@@ -73,7 +73,7 @@ export class View extends IdentifyByKey {
   /** End time of animation */
   animationEndTime: number = 0;
   /** If present, is the cleared color before this view renders */
-  background: Color;
+  background?: Color;
   /** Camera that defines the individual components of each axis with simpler concepts */
   camera: ChartCamera;
   /** These are the clear flags set for this view */

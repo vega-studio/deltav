@@ -73,10 +73,6 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers
  */
 export interface ILayerSurfaceOptions {
   /**
-   * This is the color the canvas will be set to.
-   */
-  background: [number, number, number, number];
-  /**
    * Provides the context the surface will use while rendering
    */
   context?: HTMLCanvasElement;

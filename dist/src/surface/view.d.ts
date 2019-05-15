@@ -20,7 +20,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
 export declare class View extends IdentifyByKey {
     static DEFAULT_VIEW_ID: string;
     animationEndTime: number;
-    background: Color;
+    background?: Color;
     camera: ChartCamera;
     clearFlags: ClearFlags[];
     depth: number;

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.30.1
+
+* `(FIXED)` Timer would go negative when injected into the shaders.
+
 ## 1.30.0
 
 * `(ADDED)` debugLayer is added. This can replace a createLayer call and will output useful information about the layer indicated.

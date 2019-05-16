@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.30.5
+
+* `(FIXED)` Completely fixed camera infinite loop
+
 ## 1.30.4
 
 * `(FIXED)` ChartCamera caused an infinite loop in its event loop

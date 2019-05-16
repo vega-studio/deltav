@@ -102,7 +102,7 @@ export class Bounds<T> {
    *
    * @param item
    */
-  encapsulate(item: Bounds<T> | Vec2) {
+  encapsulate(item: Bounds<any> | Vec2) {
     if (item instanceof Bounds) {
       if (item.x < this.x) {
         this.width += Math.abs(item.x - this.x);
@@ -150,7 +150,7 @@ export class Bounds<T> {
    * Grows the bounds (if needed) to encompass all bounds or points provided. This
    * performs much better than running encapsulate one by one.
    */
-  encapsulateAll(all: Bounds<T>[] | Vec2[]) {
+  encapsulateAll(all: Bounds<any>[] | Vec2[]) {
     // Nothing provided, nothing to do
     if (all.length <= 0) return;
     // Stores max boundaries found
@@ -219,12 +219,12 @@ export class Bounds<T> {
    *
    * @param bounds
    */
-  hitBounds(bounds: Bounds<T>) {
+  hitBounds(bounds: Bounds<any>) {
     return !(
       this.right < bounds.x ||
       this.x > bounds.right ||
       this.bottom < bounds.y ||
-      this.y > bounds.height
+      this.y > bounds.bottom
     );
   }
 
@@ -234,7 +234,7 @@ export class Bounds<T> {
    *
    * @param bounds
    */
-  isInside(bounds: Bounds<T>): boolean {
+  isInside(bounds: Bounds<any>): boolean {
     return (
       this.x >= bounds.x &&
       this.right <= bounds.right &&

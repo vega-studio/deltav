@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.30.2
+
+* `(FIXED)` Bounds and quad trees operate properly now
+
 ## 1.30.1
 
 * `(FIXED)` Timer would go negative when injected into the shaders.

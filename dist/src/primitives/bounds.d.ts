@@ -24,11 +24,11 @@ export declare class Bounds<T> {
     static emptyBounds<T>(): Bounds<T>;
     constructor(options: IBoundsOptions);
     containsPoint(point: Vec2): boolean;
-    encapsulate(item: Bounds<T> | Vec2): boolean;
-    encapsulateAll(all: Bounds<T>[] | Vec2[]): void;
+    encapsulate(item: Bounds<any> | Vec2): boolean;
+    encapsulateAll(all: Bounds<any>[] | Vec2[]): void;
     fits(bounds: Bounds<T>): 0 | 1 | 2;
-    hitBounds(bounds: Bounds<T>): boolean;
-    isInside(bounds: Bounds<T>): boolean;
+    hitBounds(bounds: Bounds<any>): boolean;
+    isInside(bounds: Bounds<any>): boolean;
     readonly location: Vec2;
     toString(): string;
 }

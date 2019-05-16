@@ -32,7 +32,10 @@ class LogChangesLayer<
     key: "default",
     messageHeader: "",
     scene: "default",
-    wrap: createLayer(Layer, { data: new InstanceProvider(), scene: "default" })
+    wrap: createLayer(Layer, {
+      data: new InstanceProvider(),
+      scene: "default"
+    })
   };
 
   constructor(props: U) {

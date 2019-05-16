@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.30.4
+
+* `(FIXED)` ChartCamera caused an infinite loop in its event loop
+
 ## 1.30.3
 
 * `(FIXED)` When the camera animates automatically, the camera now broadcasts the animated changes. The BasicCameraController responds to those changes as well and properly broadcasts the onRangeChange event for those changes.

@@ -186,7 +186,7 @@ export class ChartCamera {
     if (this.onViewChange) {
       if (this.scaleBroadcastTime < this.scaleEndTime) {
         this.scaleBroadcastTime = currentTime;
-        this.onViewChange(this, this.viewChangeViewId);
+        this.needsBroadcast = true;
       }
     }
 

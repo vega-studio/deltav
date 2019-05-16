@@ -3,7 +3,7 @@ import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
 import { ChartCamera, Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
+import { ITrackedQuadTreeVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
 export declare type Diff<T extends string, U extends string> = ({
     [P in T]: P;
 } & {
@@ -76,7 +76,7 @@ export interface IPickInfo<T extends Instance> {
     button?: number;
     layer: string;
     instances: T[];
-    querySpace?(bounds: Bounds<T> | Vec2, visit?: IVisitFunction<T>): T[];
+    querySpace?(bounds: Bounds<T> | Vec2, visit?: ITrackedQuadTreeVisitFunction<T>): T[];
     screen: [number, number];
     world: [number, number];
     projection: IProjection;

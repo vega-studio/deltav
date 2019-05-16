@@ -1,35 +1,35 @@
 import { Bounds } from "../primitives/bounds";
 import { Vec2 } from "./vector";
-export declare type IQuadItem = Bounds<any>;
-export declare function filterQuery<T extends IQuadItem>(type: Function[], queryValues: IQuadItem[]): T[];
-export interface IVisitFunction<T extends IQuadItem> {
-    (node: Node<T>, child?: IQuadItem): void;
+export declare type IQuadTreeItem = Bounds<any>;
+export declare function filterQuery<T extends IQuadTreeItem>(type: Function[], queryValues: IQuadTreeItem[]): T[];
+export interface IQuadTreeVisitFunction<T extends IQuadTreeItem> {
+    (node: QuadTreeNode<T>, child?: IQuadTreeItem): void;
 }
-export declare class Quadrants<T extends IQuadItem> {
-    TL: Node<T>;
-    TR: Node<T>;
-    BL: Node<T>;
-    BR: Node<T>;
+export declare class QuadTreeQuadrants<T extends IQuadTreeItem> {
+    TL: QuadTreeNode<T>;
+    TR: QuadTreeNode<T>;
+    BL: QuadTreeNode<T>;
+    BR: QuadTreeNode<T>;
     destroy(): void;
-    constructor(bounds: IQuadItem, depth: number);
+    constructor(bounds: IQuadTreeItem, depth: number);
 }
-export declare class Node<T extends IQuadItem> {
+export declare class QuadTreeNode<T extends IQuadTreeItem> {
     bounds: Bounds<never>;
     children: T[];
     depth: number;
-    nodes: Quadrants<T>;
+    nodes: QuadTreeQuadrants<T>;
     destroy(): void;
     constructor(left: number, right: number, top: number, bottom: number, depth?: number);
     add(child: T, props: any): boolean;
-    addAll(children: T[], childrenProps?: any[]): void;
-    cover(bounds: IQuadItem): void;
+    addAll(children: T[]): void;
+    cover(bounds: IQuadTreeItem): void;
     doAdd(child: T): boolean;
-    gatherChildren(list: T[]): T[];
-    query(bounds: IQuadItem | Vec2, visit?: IVisitFunction<T>): T[];
-    queryBounds(b: IQuadItem, list: T[], visit?: IVisitFunction<T>): T[];
-    queryPoint(p: any, list: T[], visit?: IVisitFunction<T>): T[];
+    gatherChildren(list: T[], visit?: IQuadTreeVisitFunction<T>): T[];
+    query(bounds: IQuadTreeItem | Vec2, visit?: IQuadTreeVisitFunction<T>): T[];
+    queryBounds(b: IQuadTreeItem, list: T[], visit?: IQuadTreeVisitFunction<T>): T[];
+    queryPoint(p: any, list: T[], visit?: IQuadTreeVisitFunction<T>): T[];
     split(): void;
-    visit(cb: IVisitFunction<T>): void;
+    visit(cb: IQuadTreeVisitFunction<T>): void;
 }
-export declare class QuadTree<T extends IQuadItem> extends Node<T> {
+export declare class QuadTree<T extends IQuadTreeItem> extends QuadTreeNode<T> {
 }

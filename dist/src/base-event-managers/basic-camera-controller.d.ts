@@ -41,7 +41,8 @@ export interface IBasicCameraControllerOptions {
 }
 export declare class BasicCameraController extends EventManager {
     bounds?: ICameraBoundsOptions;
-    camera: ChartCamera;
+    readonly camera: ChartCamera;
+    private _camera;
     ignoreCoverViews?: boolean;
     isPanning: boolean;
     private panFilter;
@@ -62,13 +63,14 @@ export declare class BasicCameraController extends EventManager {
     boundsHorizontalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
     boundsVerticalOffset(targetView: View, bounds: ICameraBoundsOptions): number;
     private canStart;
+    centerOn(viewId: string, position: Vec3): void;
     private findCoveredStartView;
     private getTargetView;
     handleMouseDown(e: IMouseInteraction, _button: number): void;
     handleMouseUp(_e: IMouseInteraction): void;
     private doPan;
+    private handleCameraViewChange;
     setOffset(viewId: string, offset: Vec3): void;
-    centerOn(viewId: string, position: Vec3): void;
     handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
     handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics): void;
     handleMouseOut(_e: IMouseInteraction): void;
@@ -80,4 +82,5 @@ export declare class BasicCameraController extends EventManager {
     setBounds(bounds: ICameraBoundsOptions): void;
     readonly scale: Vec3;
     setRange(newWorld: Bounds<{}>, viewId: string): void;
+    setRangeChangeHandler(handler: BasicCameraController["onRangeChanged"]): void;
 }

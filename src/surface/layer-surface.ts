@@ -636,6 +636,12 @@ export class LayerSurface {
     // becoming a major blocking operation
     const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
 
+    // Before we draw the frame, we must have every camera resolve broadcasting changes so everything can respond
+    // to the change before all of the drawing operations take place.
+    this.sceneViews.forEach(sceneView => {
+      sceneView.view.camera.broadcast();
+    });
+
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
     await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
@@ -924,7 +930,7 @@ export class LayerSurface {
   }
 
   /**
-   * This allows for querying a view's screen bounds. Null is returned if the view id
+   * This allws for querying a view's screen bounds. Null i;s returned if the view id
    * specified does not exist.
    */
   getViewSize(viewId: string): Bounds<never> | null {

@@ -85,7 +85,8 @@ export interface IBasicCameraControllerOptions {
   ): [number, number, number];
   /**
    * This is the view that MUST be the start view from the events.
-   * If not provided, then dragging anywhere will adjust the camera
+   * If not provided, then dragging anywhere will adjust the camera.
+   * This MUST be set for onRangeChange to broadcast animated camera movements.
    */
   startView?: string | string[];
 
@@ -112,7 +113,10 @@ export class BasicCameraController extends EventManager {
    */
   bounds?: ICameraBoundsOptions;
   /** This is the camera that this controller will manipulate */
-  camera: ChartCamera;
+  get camera() {
+    return this._camera;
+  }
+  private _camera: ChartCamera;
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
   /** Informative property indicating the controller is panning the chart or not */
@@ -162,14 +166,24 @@ export class BasicCameraController extends EventManager {
     if (options.bounds) {
       this.setBounds(options.bounds);
     }
-    this.camera = options.camera;
+    this._camera = options.camera;
     this.scaleFactor = options.scaleFactor || 1000.0;
     this.ignoreCoverViews = options.ignoreCoverViews || false;
 
     if (options.startView) {
-      this.startViews = Array.isArray(options.startView)
-        ? options.startView
-        : [options.startView];
+      if (Array.isArray(options.startView)) {
+        this.startViews = options.startView;
+        this._camera.setViewChangeHandler(
+          options.startView[0],
+          this.handleCameraViewChange
+        );
+      } else {
+        this.startViews = [options.startView];
+        this._camera.setViewChangeHandler(
+          options.startView,
+          this.handleCameraViewChange
+        );
+      }
     }
 
     this.panFilter = options.panFilter || this.panFilter;
@@ -399,6 +413,25 @@ export class BasicCameraController extends EventManager {
     );
   }
 
+  /**
+   * Centers the camera on a position. Must provide a reference view.
+   */
+  centerOn(viewId: string, position: Vec3) {
+    if (!this.camera.surface) return;
+
+    const viewBounds = this.camera.surface.getViewSize(viewId);
+    if (!viewBounds) return;
+    const midScreen: Vec3 = [viewBounds.width / 2, viewBounds.height / 2, 0];
+    const fromScreenCenter: Vec3 = subtract3(
+      position,
+      divide3(midScreen, this.camera.getScale())
+    );
+
+    const newOffset = scale3(fromScreenCenter, -1);
+
+    this.setOffset(viewId, newOffset);
+  }
+
   private findCoveredStartView(e: IMouseInteraction) {
     const found = e.viewsUnderMouse.find(
       under => this.startViews.indexOf(under.view.id) > -1
@@ -466,6 +499,15 @@ export class BasicCameraController extends EventManager {
   }
 
   /**
+   * Handles changes broadcasted by the camera
+   */
+  private handleCameraViewChange = (cam: ChartCamera, viewId: string) => {
+    const projections = cam.surface.getProjections(viewId);
+    if (!projections) return;
+    this.onRangeChanged(cam, projections);
+  };
+
+  /**
    * Tells the controller to set an explicit offset for the camera.
    * Must provide a reference view.
    */
@@ -492,27 +534,11 @@ export class BasicCameraController extends EventManager {
     this.applyBounds();
     const newOffset = copy3(this.camera.getOffset());
 
+    const currentAnimation = this.camera.animation;
     this.camera.setOffset(startOffset);
+    this.camera.animation = this.cameraImmediateAnimation;
     this.camera.setOffset(newOffset);
-  }
-
-  /**
-   * Centers the camera on a position. Must provide a reference view.
-   */
-  centerOn(viewId: string, position: Vec3) {
-    if (!this.camera.surface) return;
-
-    const viewBounds = this.camera.surface.getViewSize(viewId);
-    if (!viewBounds) return;
-    const midScreen: Vec3 = [viewBounds.width / 2, viewBounds.height / 2, 0];
-    const fromScreenCenter: Vec3 = subtract3(
-      position,
-      divide3(midScreen, this.camera.getScale())
-    );
-
-    const newOffset = scale3(fromScreenCenter, -1);
-
-    this.setOffset(viewId, newOffset);
+    this.camera.animation = currentAnimation;
   }
 
   /**
@@ -590,6 +616,9 @@ export class BasicCameraController extends EventManager {
 
         // Make sure the camera updates
         this.camera.update();
+        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
+        // to the end
+        this.camera.animation = this.cameraImmediateAnimation;
       }
     }
   }
@@ -710,5 +739,12 @@ export class BasicCameraController extends EventManager {
       // Bound the camera to the specified bounding range
       this.applyBounds();
     }
+  }
+
+  /**
+   * Applies a handler for the range changing.
+   */
+  setRangeChangeHandler(handler: BasicCameraController["onRangeChanged"]) {
+    this.onRangeChanged = handler;
   }
 }

@@ -89,18 +89,21 @@ $\{easingMethod} {
   return (end - start) * time + start;
 }
 `;
+
 const easeInOutQuadGPU = `
 $\{easingMethod} {
   float time = t < 0.5 ? 2.0 * t * t : -1.0 + (4.0 - 2.0 * t) * t;
   return (end - start) * time + start;
 }
 `;
+
 const easeInCubicGPU = `
 $\{easingMethod} {
   float time = t * t * t;
   return (end - start) * time + start;
 }
 `;
+
 const easeOutCubicGPU = `
 $\{easingMethod} {
   float t1 = t - 1.0;
@@ -108,18 +111,21 @@ $\{easingMethod} {
   return (end - start) * time + start;
 }
 `;
+
 const easeInOutCubicGPU = `
 $\{easingMethod} {
   float time = t < 0.5 ? 4.0 * t * t * t : (t - 1.0) * (2.0 * t - 2.0) * (2.0 * t - 2.0) + 1.0;
   return (end - start) * time + start;
 }
 `;
+
 const easeInQuartGPU = `
 $\{easingMethod} {
   float time = t * t * t * t;
   return (end - start) * time + start;
 }
 `;
+
 const easeOutQuartGPU = `
 $\{easingMethod} {
   float t1 = t - 1.0;
@@ -127,6 +133,7 @@ $\{easingMethod} {
   return (end - start) * time + start;
 }
 `;
+
 const easeInOutQuartGPU = `
 $\{easingMethod} {
   float t1 = t - 1.0;
@@ -134,12 +141,14 @@ $\{easingMethod} {
   return (end - start) * time + start;
 }
 `;
+
 const easeInQuintGPU = `
 $\{easingMethod} {
   float time = t * t * t * t * t;
   return (end - start) * time + start;
 }
 `;
+
 const easeOutQuintGPU = `
 $\{easingMethod} {
   float t1 = t - 1.0;
@@ -147,6 +156,7 @@ $\{easingMethod} {
   return (end - start) * time + start;
 }
 `;
+
 const easeInOutQuintGPU = `
 $\{easingMethod} {
   float t1 = t - 1.0;

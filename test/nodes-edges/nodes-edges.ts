@@ -214,6 +214,11 @@ export class NodesEdges extends BaseDemo {
   ) {
     this.controller = defaultController;
     defaultController.wheelShouldScroll = false;
+    defaultController.setRangeChangeHandler(() => {
+      if (this.surface.surface) {
+        this.surface.surface.getViewWorldBounds("default-view");
+      }
+    });
 
     return null;
   }

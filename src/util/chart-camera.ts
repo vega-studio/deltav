@@ -133,7 +133,7 @@ export class ChartCamera {
     if (this.onViewChange) {
       if (this.offsetBroadcastTime < this.offsetEndTime) {
         this.offsetBroadcastTime = currentTime;
-        this.onViewChange(this, this.viewChangeViewId);
+        this.needsBroadcast = true;
       }
     }
 

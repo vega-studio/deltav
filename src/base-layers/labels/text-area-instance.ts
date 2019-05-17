@@ -12,38 +12,52 @@ export enum TextAlignment {
   CENTERED
 }
 
-/**
- * WordWrap mode
- * NONE: New lines ONLY happen when an explicit newline character ('\n', '\r', '\n\r') occurs.
- *       Lines that exceed the maxWidth will be truncated.
- * CHARACTER: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
- *         and some characters stay in this line while the rest continue on the next line
- * WORD: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
- *         and the whole word continues on the next line
- */
+/** WordWrap mode */
 export enum WordWrap {
+  /**
+   * NONE: New lines ONLY happen when an explicit newline character ('\n', '\r', '\n\r') occurs.
+   * Lines that exceed the maxWidth will be truncated.
+   */
   NONE,
+  /**
+   * CHARACTER: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
+   * and some characters stay in this line while the rest continue on the next line.
+   */
   CHARACTER,
+  /**
+   * WORD: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
+   * and the whole word continues on the next line.
+   */
   WORD
 }
 
 /** This is used to mark the specialLetter when divide the textArea into several labels */
-export enum SpecialLetter {
+export enum NewLineCharacterMode {
   /** When the scanner meets a new line sign ("/n", "/r", "/n/r") */
   NEWLINE
 }
 
-export type TextAreaLabel = LabelInstance | SpecialLetter;
+export type TextAreaLabel = LabelInstance | NewLineCharacterMode;
 
+/** Options for customaizing a TextAreaInstance */
 export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
-  maxHeight?: number;
-  lineHeight?: number;
-  wordWrap?: WordWrap;
+  /* This sets the alignment of TextArea */
   alignment?: TextAlignment;
-  padding?: Vec1Compat;
+  /* This sets thickness of border if included */
   borderWidth?: number;
+  /* This decides whehter the border of textArea is included */
   hasBorder?: boolean;
+  /* This sets the distance between letters in a word */
   letterSpacing?: number;
+  /* This sets the distance from line to next line of text */
+  lineHeight?: number;
+  /* This sets how tall the text area can render. Any text beyond this point will not be rendered
+   This also establishes the borders' height to be rendered if included */
+  maxHeight?: number;
+  /* This sets distance from top, left, right, bottom of border to content of text */
+  padding?: Vec1Compat;
+  /* This decides the way to wrap a word whether this word exceeds maxWidth */
+  wordWrap?: WordWrap;
 }
 
 /**
@@ -82,8 +96,6 @@ export class TextAreaInstance extends LabelInstance {
   borders: RectangleInstance[] = [];
   /** This stores the old origin which is used to calculate the new positions of labels */
   oldOrigin: [number, number];
-  /** This stores old Font size which is used to calculate new font metrics */
-  oldFontSize: number;
   /** Stores paddings for the text area, [top, right, bottom, left] */
   @observable padding: Vec1Compat = [0, 0, 0, 0];
   /** Border width */
@@ -101,7 +113,6 @@ export class TextAreaInstance extends LabelInstance {
     this.oldOrigin = options.origin;
     this.text = options.text;
     this.fontSize = options.fontSize || this.fontSize;
-    this.oldFontSize = this.fontSize;
     this.maxWidth = options.maxWidth || this.maxWidth;
     this.maxHeight = options.maxHeight || this.maxHeight;
     this.lineHeight = options.lineHeight || this.lineHeight;

@@ -7,7 +7,12 @@ import {
   ILayerConstructionClass,
   LayerInitializer
 } from "../../surface/layer-surface";
-import { InstanceDiffType, IProjection, ResourceType } from "../../types";
+import {
+  InstanceDiffType,
+  IProjection,
+  newLineRegEx,
+  ResourceType
+} from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
   add2,
@@ -25,13 +30,15 @@ import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
 import { LabelLayer } from "./label-layer";
 import {
-  SpecialLetter,
+  NewLineCharacterMode,
   TextAreaInstance,
   TextAreaLabel,
   WordWrap
 } from "./text-area-instance";
 
-/** Get the offsetY of a word by comparing offsetYs of all its letters */
+/**
+ * Get the offsetY of a word by comparing offsetYs of all its letters
+ */
 function getOffsetY(text: string, map: Map<string, number>) {
   let offsetY = Number.MAX_SAFE_INTEGER;
 
@@ -49,39 +56,42 @@ function getOffsetY(text: string, map: Map<string, number>) {
   return offsetY === Number.MAX_SAFE_INTEGER ? 0 : offsetY;
 }
 
-/** Split words from a text by space and new line sign */
+/**
+ * Split words from a text by space and new line sign
+ */
 function generateWords(text: string): string[] {
   const wordsToLayout: string[] = [];
-  const lines: string[] = text.split(/\n|\r|\r\n/);
-  const endi = lines.length - 1;
+  const lines: string[] = text.split(newLineRegEx);
 
-  for (let i = 0; i < endi; i++) {
+  for (let i = 0, endi = lines.length - 1; i < endi; i++) {
     const line = lines[i];
     const wordsInLine = line.split(" ");
 
-    for (const word of wordsInLine) {
+    wordsInLine.forEach(word => {
       if (word !== "") {
         wordsToLayout.push(word);
       }
-    }
+    });
 
     // Create an element with text "/n" to indicate a new line will be created
     wordsToLayout.push("/n");
   }
 
-  const lastLine = lines[endi];
+  const lastLine = lines[lines.length - 1];
   const wordsInLine = lastLine.split(" ");
 
-  for (const word of wordsInLine) {
+  wordsInLine.forEach(word => {
     if (word !== "") {
       wordsToLayout.push(word);
     }
-  }
+  });
 
   return wordsToLayout;
 }
 
-/** Generate the map for every glyph to offsetY */
+/**
+ * Generate the map for every glyph to offsetY
+ */
 function generateGlyphOffsetYMap(
   instance: TextAreaInstance,
   kerningRequest: IFontResourceRequest
@@ -90,12 +100,9 @@ function generateGlyphOffsetYMap(
 
   if (kerningRequest.fontMap) {
     const sourceFontSize = kerningRequest.fontMap.fontSource.size;
-
     const fontScale = instance.fontSize / sourceFontSize;
-
     const fontMap = kerningRequest.fontMap;
     const checkText = instance.text.replace(/\s/g, "");
-
     let minY = Number.MAX_SAFE_INTEGER;
     let offsetY = 0;
     let kernY;
@@ -103,7 +110,6 @@ function generateGlyphOffsetYMap(
 
     for (let i = 0, iMax = checkText.length; i < iMax; ++i) {
       const char = checkText[i];
-
       kernY = 0;
 
       if (leftChar) {
@@ -111,11 +117,8 @@ function generateGlyphOffsetYMap(
       }
 
       offsetY = offsetY + kernY * fontScale;
-
       glyphToOffsetY.set(char, offsetY);
-
       minY = Math.min(offsetY, minY);
-
       leftChar = char;
     }
 
@@ -127,7 +130,9 @@ function generateGlyphOffsetYMap(
   return glyphToOffsetY;
 }
 
-/** Generate glyphWidths for a label in a TextAreaInstance */
+/**
+ * Generate glyphWidths for a label in a TextAreaInstance
+ */
 function getGlyphWidths(
   label: LabelInstance,
   instance: TextAreaInstance,
@@ -178,6 +183,7 @@ export interface ITextAreaLayerProps<T extends LabelInstance>
     offset?: IAutoEasingMethod<Vec>;
     origin?: IAutoEasingMethod<Vec>;
   };
+  /** Animation methods fro various properties of the borders */
   animateBorder?: {
     color?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
@@ -211,9 +217,9 @@ export class TextAreaLayer<
 
   providers = {
     /** Provider for the glyph layer this layer manages */
-    labelProvider: new InstanceProvider<LabelInstance>(),
+    labels: new InstanceProvider<LabelInstance>(),
     /** Provider for the rectangle layer that renders the border of text area */
-    recProvider: new InstanceProvider<RectangleInstance>()
+    rectangles: new InstanceProvider<RectangleInstance>()
   };
 
   /**
@@ -226,23 +232,15 @@ export class TextAreaLayer<
    * This event really only takes place when the font resource changes.
    */
   fullUpdate: boolean = false;
-  /**
-   * Tracks all assigned labels to the text area
-   */
+  /** Tracks all assigned labels to the text area */
   areaToLabels = new Map<TextAreaInstance, TextAreaLabel[]>();
-  /**
-   * Tracks the labels assigned to an area and are grouped by the line they appear within,
-   */
+  /** Tracks the labels assigned to an area and are grouped by the line they appear within */
   areaToLines = new Map<TextAreaInstance, LabelInstance[][]>();
-  /**
-   * This stores all of the glyphs the label is waiting on to fire the onReady event.
-   */
+  /** This stores all of the glyphs the label is waiting on to fire the onReady event. */
   areaWaitingOnLabel = new Map<TextAreaInstance, Set<LabelInstance>>();
-  /**
-   * This stores kerningRequest of TextAreaInstance
-   */
+  /** This stores kerningRequest of TextAreaInstance */
   areaTokerningRequest = new Map<TextAreaInstance, IFontResourceRequest>();
-
+  /** This stores splited words of a textArea */
   areaToWords = new Map<TextAreaInstance, string[]>();
 
   /**
@@ -316,8 +314,8 @@ export class TextAreaLayer<
       createLayer(LabelLayer, {
         animate: animateLabel,
         customGlyphLayer: this.props.customGlyphLayer,
-        data: this.providers.labelProvider,
-        key: `${this.id}_labels`,
+        data: this.providers.labels,
+        key: `${this.id}.labels`,
         resourceKey: this.props.resourceKey,
         scene: this.props.scene,
         scaleMode: ScaleMode.BOUND_MAX
@@ -327,8 +325,8 @@ export class TextAreaLayer<
           color: animateBorder.color,
           location: animateBorder.location
         },
-        data: this.providers.recProvider,
-        key: `${this.id}_border`,
+        data: this.providers.rectangles,
+        key: `${this.id}.border`,
         scene: this.props.scene
       })
     ];
@@ -351,35 +349,35 @@ export class TextAreaLayer<
       this.propertyIds = this.getInstanceObservableIds(instance, [
         "active",
         "alignment",
+        "borderWidth",
         "color",
         "fontSize",
-        "lineHeight",
-        "wordWrap",
-        "maxWidth",
-        "maxHeight",
-        "origin",
-        "text",
-        "padding",
-        "borderWidth",
         "hasBorder",
-        "letterSpacing"
+        "letterSpacing",
+        "lineHeight",
+        "maxHeight",
+        "maxWidth",
+        "origin",
+        "padding",
+        "text",
+        "wordWrap"
       ]);
     }
 
     const {
-      text: textId,
       active: activeId,
-      color: colorId,
-      origin: originId,
-      fontSize: fontSizeId,
-      wordWrap: wordWrapId,
-      lineHeight: lineHeightId,
-      maxWidth: maxWidthId,
-      maxHeight: maxHeightId,
-      padding: paddingId,
       borderWidth: borderWidthId,
+      color: colorId,
+      fontSize: fontSizeId,
       hasBorder: hasBorderId,
-      letterSpacing: letterSpacingId
+      letterSpacing: letterSpacingId,
+      lineHeight: lineHeightId,
+      maxHeight: maxHeightId,
+      maxWidth: maxWidthId,
+      origin: originId,
+      padding: paddingId,
+      text: textId,
+      wordWrap: wordWrapId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -387,6 +385,11 @@ export class TextAreaLayer<
 
       switch (diffType) {
         case InstanceDiffType.CHANGE:
+          // Perform the insert action instead of the change if the textArea has never been registered
+          if (!this.areaToLabels.get(instance)) {
+            this.insert(instance);
+            continue;
+          }
           // If text was changed, the glyphs all need updating of their characters and
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
@@ -451,8 +454,7 @@ export class TextAreaLayer<
 
         case InstanceDiffType.INSERT:
           // Insertions force a full update of all labels for the text-area
-          this.layout(instance);
-          this.updateLabels(instance);
+          this.insert(instance);
           break;
 
         case InstanceDiffType.REMOVE:
@@ -462,7 +464,7 @@ export class TextAreaLayer<
             for (let i = 0, iMax = labels.length; i < iMax; ++i) {
               const label = labels[i];
               if (label instanceof LabelInstance) {
-                this.providers.labelProvider.remove(label);
+                this.providers.labels.remove(label);
               }
             }
 
@@ -472,6 +474,14 @@ export class TextAreaLayer<
           break;
       }
     }
+  }
+
+  /**
+   * Handles insertion operation for the textArea
+   */
+  private insert(instance: T) {
+    this.layout(instance);
+    this.updateLabels(instance);
   }
 
   /**
@@ -519,7 +529,7 @@ export class TextAreaLayer<
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
-        this.providers.labelProvider.remove(label);
+        this.providers.labels.remove(label);
       }
     }
   }
@@ -538,7 +548,7 @@ export class TextAreaLayer<
     for (let i = 0, iMax = labels.length; i < iMax; i++) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
-        this.providers.labelProvider.remove(label);
+        this.providers.labels.remove(label);
       }
     }
 
@@ -548,7 +558,7 @@ export class TextAreaLayer<
     for (let i = 0, iMax = newLabels.length; i < iMax; i++) {
       const label = newLabels[i];
       if (label instanceof LabelInstance) {
-        this.providers.labelProvider.remove(label);
+        this.providers.labels.remove(label);
       }
     }
 
@@ -594,7 +604,7 @@ export class TextAreaLayer<
     });
 
     label1.size = [glyphWidths[index], label.size[1]];
-    this.providers.labelProvider.add(label1);
+    this.providers.labels.add(label1);
     instance.newLabels.push(label1);
 
     // New Line if word wrap mode is normal
@@ -614,11 +624,14 @@ export class TextAreaLayer<
           widthLeft > maxWidth &&
           currentY + instance.lineHeight <= maxHeight
         ) {
-          let j = glyphWidths.length - 1;
-          while (glyphWidths[j] - glyphWidths[index] > maxWidth) {
-            j--;
+          let lastIndexOfLine = glyphWidths.length - 1;
+
+          // Get the lastIndex in a label that stay in current line
+          while (glyphWidths[lastIndexOfLine] - glyphWidths[index] > maxWidth) {
+            lastIndexOfLine--;
           }
-          const text = word.substring(index + 1, j + 1);
+
+          const text = word.substring(index + 1, lastIndexOfLine + 1);
           const offsetY = getOffsetY(text, glyphToHeight);
           const label3 = new LabelInstance({
             color: instance.color,
@@ -628,13 +641,15 @@ export class TextAreaLayer<
             text
           });
 
-          label3.size = [glyphWidths[j] - glyphWidths[index], label.size[1]];
+          label3.size = [
+            glyphWidths[lastIndexOfLine] - glyphWidths[index],
+            label.size[1]
+          ];
 
-          this.providers.labelProvider.add(label3);
+          this.providers.labels.add(label3);
           instance.newLabels.push(label3);
           currentY += instance.lineHeight;
-
-          index = j;
+          index = lastIndexOfLine;
           widthLeft = glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
         }
 
@@ -649,25 +664,25 @@ export class TextAreaLayer<
             text: text2
           });
 
-          // set size
           label2.size = [
             glyphWidths[glyphWidths.length - 1] - glyphWidths[index],
             label.size[1]
           ];
 
-          // set glyphs width
           const widths: number[] = [];
+
           for (let i = index + 1; i < glyphWidths.length; i++) {
             widths.push(glyphWidths[i] - glyphWidths[index]);
           }
 
-          this.providers.labelProvider.add(label2);
+          this.providers.labels.add(label2);
           instance.newLabels.push(label2);
 
           currentX += label2.getWidth() + spaceWidth;
         }
       }
     }
+
     // If wordWrap is NONE, stay in the line
     else if (instance.wordWrap === WordWrap.NONE) {
       currentX += label1.getWidth() + spaceWidth;
@@ -676,12 +691,14 @@ export class TextAreaLayer<
     return [currentX, currentY];
   }
 
-  /** This updates textAreaInstance after lineWrap is changed */
+  /**
+   * This updates textAreaInstance after lineWrap is changed
+   */
   updateLabelLineWrap(instance: T) {
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
 
-    // Set active of all labels to be true
+    // Set active of all labels to be true in order to awake those hidden labels when wrapping word
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
@@ -692,20 +709,21 @@ export class TextAreaLayer<
     // Clear all new labels
     for (let i = 0, iMax = instance.newLabels.length; i < iMax; ++i) {
       const label = instance.newLabels[i];
-      this.providers.labelProvider.remove(label);
+      this.providers.labels.remove(label);
     }
 
     instance.newLabels = [];
     this.layoutLabels(instance);
   }
 
-  /** This updates textAreaInstance after lineHeight is changed */
+  /**
+   * This updates textAreaInstance after lineHeight is changed
+   */
   updateLabelLineHeight(instance: T) {
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
-    // const labels = instance.labels;
 
-    // Set active of all labels to be true
+    // Set active of all labels to be true in order to awake those hidden labels when wrapping word
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
@@ -716,20 +734,21 @@ export class TextAreaLayer<
     // Clear all new labels
     for (let i = 0, iMax = instance.newLabels.length; i < iMax; ++i) {
       const label = instance.newLabels[i];
-      this.providers.labelProvider.remove(label);
+      this.providers.labels.remove(label);
     }
 
     instance.newLabels = [];
-
     this.layoutLabels(instance);
   }
 
-  /** This updates textAreaInstance after textArea width or height is changed */
+  /**
+   * This updates textAreaInstance after textArea width or height is changed
+   */
   updateTextAreaSize(instance: T) {
     const labels = this.areaToLabels.get(instance);
     if (!labels) return;
 
-    // Set active of all labels to be true
+    // Set active of all labels to be true in order to awake those hidden labels when wrapping word
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
@@ -740,7 +759,7 @@ export class TextAreaLayer<
     // Clear all new labels
     for (let i = 0, iMax = instance.newLabels.length; i < iMax; ++i) {
       const label = instance.newLabels[i];
-      this.providers.labelProvider.remove(label);
+      this.providers.labels.remove(label);
     }
 
     instance.newLabels = [];
@@ -748,46 +767,56 @@ export class TextAreaLayer<
     // Clear all borders
     for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
       const border = instance.borders[i];
-      this.providers.recProvider.remove(border);
+      this.providers.rectangles.remove(border);
     }
 
     instance.borders = [];
-
     this.layoutBorder(instance);
     this.layoutLabels(instance);
   }
 
+  /**
+   * Update thickness of border
+   */
   updateBorderWidth(instance: T) {
     // Clear all borders
     for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
       const border = instance.borders[i];
-      this.providers.recProvider.remove(border);
+      this.providers.rectangles.remove(border);
     }
 
     instance.borders = [];
     this.layoutBorder(instance);
   }
 
+  /**
+   * Update the border of textArea to remove border or add border
+   */
   updateBorder(instance: T) {
     if (instance.hasBorder) {
       this.layoutBorder(instance);
     } else {
       for (let i = 0, iMax = instance.borders.length; i < iMax; ++i) {
         const border = instance.borders[i];
-        this.providers.recProvider.remove(border);
+        this.providers.rectangles.remove(border);
       }
 
       instance.borders = [];
     }
   }
 
+  /**
+   * Update letterSpacing of all labels in textArea
+   */
   updateLetterSpacing(instance: T) {
     this.clear(instance);
     this.updateLabels(instance);
     this.layout(instance);
   }
 
-  /** Layout the border of textAreaInstance */
+  /**
+   * Layout the border of textAreaInstance
+   */
   layoutBorder(instance: T) {
     if (instance.hasBorder) {
       const borderWidth = instance.borderWidth;
@@ -827,10 +856,10 @@ export class TextAreaLayer<
         ]
       });
 
-      this.providers.recProvider.add(topBorder);
-      this.providers.recProvider.add(leftBorder);
-      this.providers.recProvider.add(rightBorder);
-      this.providers.recProvider.add(bottomBorder);
+      this.providers.rectangles.add(topBorder);
+      this.providers.rectangles.add(leftBorder);
+      this.providers.rectangles.add(rightBorder);
+      this.providers.rectangles.add(bottomBorder);
 
       instance.borders.push(topBorder);
       instance.borders.push(leftBorder);
@@ -839,7 +868,9 @@ export class TextAreaLayer<
     }
   }
 
-  /** Calculate the positions of labels */
+  /**
+   * Calculate the positions of labels
+   */
   layoutLabels(instance: T) {
     const kerningRequest = this.areaTokerningRequest.get(instance);
     if (!kerningRequest) return;
@@ -852,7 +883,6 @@ export class TextAreaLayer<
     const maxHeight = instance.maxHeight - topPadding - bottomPadding;
     const originX = instance.origin[0] + leftPadding;
     const originY = instance.origin[1] + topPadding;
-
     let spaceWidth = 0;
 
     if (instance.spaceWidth) {
@@ -870,11 +900,12 @@ export class TextAreaLayer<
     }
 
     const glyphToOffsetY = generateGlyphOffsetYMap(instance, kerningRequest);
-
     let currentX = 0;
     let currentY = 0;
 
-    // Layout labels
+    // Layout labels within maxWidth and maxHeight one after one, line after line.
+    // Labels which exceed maxHeight will be hidden, labels which exceed maxWidth will be wrap,
+    // hidden to move to next line based on wordWrap mode.
     for (let i = 0, endi = instance.labels.length; i < endi; ++i) {
       const label = instance.labels[i];
 
@@ -898,7 +929,7 @@ export class TextAreaLayer<
               if (
                 instance.wordWrap === WordWrap.CHARACTER &&
                 i + 1 < endi &&
-                instance.labels[i + 1] !== SpecialLetter.NEWLINE
+                instance.labels[i + 1] !== NewLineCharacterMode.NEWLINE
               ) {
                 currentX = 0;
                 currentY += instance.lineHeight;
@@ -958,7 +989,7 @@ export class TextAreaLayer<
                   instance.wordWrap === WordWrap.CHARACTER ||
                   instance.wordWrap === WordWrap.WORD
                 ) {
-                  // New Line
+                  // Move position to next line
                   currentY += instance.lineHeight;
                   currentX = 0;
 
@@ -976,7 +1007,7 @@ export class TextAreaLayer<
                       if (
                         currentX >= maxWidth &&
                         i + 1 < endi &&
-                        instance.labels[i + 1] !== SpecialLetter.NEWLINE
+                        instance.labels[i + 1] !== NewLineCharacterMode.NEWLINE
                       ) {
                         currentX = 0;
                         currentY += instance.lineHeight;
@@ -1024,13 +1055,15 @@ export class TextAreaLayer<
             }
           }
         }
+
         // Exceeds maxHeight
         else {
           label.active = false;
         }
       }
+
       // New line
-      else if (label === SpecialLetter.NEWLINE) {
+      else if (label === NewLineCharacterMode.NEWLINE) {
         currentX = 0;
         currentY += instance.lineHeight;
       }
@@ -1061,9 +1094,11 @@ export class TextAreaLayer<
     this.layoutLabels(instance);
   }
 
+  /**
+   * Update kerning of textArea Instance, retrieve kerning request from map or create a new one
+   */
   updateKerning(instance: T) {
     let labelKerningRequest = this.areaTokerningRequest.get(instance);
-
     const checkText = instance.text;
 
     if (labelKerningRequest) {
@@ -1142,7 +1177,7 @@ export class TextAreaLayer<
     for (let i = 0, iMax = labels.length; i < iMax; ++i) {
       const label = labels[i];
       if (label instanceof LabelInstance) {
-        this.providers.labelProvider.add(label);
+        this.providers.labels.add(label);
       }
     }
   }
@@ -1180,7 +1215,7 @@ export class TextAreaLayer<
         const word = wordsToLayout[i];
 
         if (word === "/n") {
-          currentLabels.push(SpecialLetter.NEWLINE);
+          currentLabels.push(NewLineCharacterMode.NEWLINE);
         } else {
           // Initial position for labelInstance
           const position: [number, number] = [
@@ -1200,9 +1235,7 @@ export class TextAreaLayer<
 
           label.parentTextArea = instance;
           currentLabels.push(label);
-
-          this.providers.labelProvider.add(label);
-
+          this.providers.labels.add(label);
           waiting.add(label);
         }
       }
@@ -1238,13 +1271,9 @@ export class TextAreaLayer<
    * Updates fontsize of all labels
    */
   updateLabelFontSizes(instance: T) {
-    const oldFontSize = instance.oldFontSize;
-    const newFontSize = instance.fontSize;
-
-    instance.spaceWidth *= newFontSize / oldFontSize;
-    instance.oldFontSize = instance.fontSize;
     this.clear(instance);
     this.updateLabels(instance);
+    this.areaTokerningRequest.delete(instance);
     this.layout(instance);
   }
 

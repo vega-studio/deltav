@@ -72,8 +72,6 @@ export class LabelInstance extends Instance {
   @observable text: string = "";
   /** Spacing between letters in a label */
   @observable letterSpacing: number = 0;
-  /** Previous letterSpacing */
-  oldLetterSpacing: number = 0;
 
   /** This executes when the label is finished waiting for it's glyphs to be ready to render */
   onReady?: (label: LabelInstance) => void;
@@ -129,7 +127,6 @@ export class LabelInstance extends Instance {
     this.scale = options.scale || this.scale;
     this.text = options.text || this.text;
     this.letterSpacing = options.letterSpacing || this.letterSpacing;
-    this.oldLetterSpacing = this.letterSpacing;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);
@@ -137,15 +134,6 @@ export class LabelInstance extends Instance {
 
   getWidth(): number {
     return this.size[0];
-  }
-
-  getOffset(): number {
-    const glyphs = this.glyphs;
-    console.warn(this.text, this.origin);
-    glyphs.forEach(glyph => {
-      console.warn(glyph.offset);
-    });
-    return 0;
   }
 
   /**

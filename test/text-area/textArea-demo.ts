@@ -270,5 +270,36 @@ export class TextAreaDemo extends BaseDemo {
       this.textAreas.push(textArea);
       this.providers.textAreas.add(textArea);
     }
+
+    this.textAreas[0].maxWidth = 420;
+
+    const textArea = new TextAreaInstance({
+      origin: [this.parameters.maxWidth * 2, this.parameters.maxHeight * 1],
+      color: [
+        this.parameters.color[0],
+        this.parameters.color[1],
+        this.parameters.color[2],
+        this.parameters.color[3]
+      ],
+      fontSize: this.parameters.fontSize,
+      text: texts[2],
+      maxWidth: this.parameters.maxWidth,
+      maxHeight: this.parameters.maxHeight,
+      lineHeight: this.parameters.lineHeight,
+      letterSpacing: this.parameters.letterSpacing,
+      wordWrap: wordWraps[this.parameters.wordWrap],
+      padding: [
+        this.parameters.paddingTop,
+        this.parameters.paddingRight,
+        this.parameters.paddingBottom,
+        this.parameters.paddingLeft
+      ],
+      borderWidth: this.parameters.borderWidth,
+      hasBorder: this.parameters.hasBorder
+    });
+
+    this.providers.textAreas.add(textArea);
+
+    textArea.maxHeight = 800;
   }
 }

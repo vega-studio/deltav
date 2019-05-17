@@ -376,7 +376,9 @@ export class LabelLayer<
           }
 
           if (changed[letterSpacingId] !== undefined) {
-            this.updateLetterSpacing(instance);
+            this.invalidateRequest(instance);
+            this.layoutGlyphs(instance);
+            // this.updateLetterSpacing(instance);
           }
           break;
 
@@ -698,29 +700,6 @@ export class LabelLayer<
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       glyphs[i].maxScale = maxScale;
     }
-  }
-
-  /**
-   * This updates layout of glyphs of a label
-   */
-  updateLetterSpacing(instance: T) {
-    const glyphs = instance.glyphs;
-    if (!glyphs) return;
-    const spacingDifference =
-      instance.letterSpacing - instance.oldLetterSpacing;
-
-    for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
-      const offset = glyphs[i].offset;
-      glyphs[i].offset = [offset[0] + spacingDifference * i, offset[1]];
-    }
-
-    const size = instance.size;
-    instance.size = [
-      size[0] + spacingDifference * (glyphs.length - 1),
-      size[1]
-    ];
-
-    instance.oldLetterSpacing = instance.letterSpacing;
   }
 
   /**

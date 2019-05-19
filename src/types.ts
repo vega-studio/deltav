@@ -1,3 +1,5 @@
+import { BaseResourceOptions } from "src/resources/base-resource-manager";
+import { ISceneOptions } from "src/surface/layer-scene";
 import {
   Attribute,
   GLSettings,
@@ -19,9 +21,10 @@ import {
   Vec4
 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import { IVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
-import { BaseResourceOptions } from "src/resources/base-resource-manager";
-import { ISceneOptions } from "src/surface/layer-scene";
+import {
+  ITrackedQuadTreeVisitFunction,
+  TrackedQuadTree
+} from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -141,7 +144,10 @@ export interface IPickInfo<T extends Instance> {
   /** This is the list of instances that were detected in the interaction */
   instances: T[];
   /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
-  querySpace?(bounds: Bounds<T> | Vec2, visit?: IVisitFunction<T>): T[];
+  querySpace?(
+    bounds: Bounds<T> | Vec2,
+    visit?: ITrackedQuadTreeVisitFunction<T>
+  ): T[];
   /** This is the screen coordinates of the mouse point that interacted with the instances */
   screen: [number, number];
   /** This is the world coordinates of the mouse point that interacted with the instances */

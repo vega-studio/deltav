@@ -31,7 +31,7 @@ import {
   UniformIOValue,
   UniformSize
 } from "../types";
-import { BoundsAccessor, TrackedQuadTree, uid } from "../util";
+import { TrackedQuadTree, TrackedQuadTreeBoundsAccessor, uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import {
   BufferManagerBase,
@@ -122,7 +122,7 @@ export interface ILayerPropsInternal<T extends Instance>
 
 export interface IPickingMethods<T extends Instance> {
   /** This provides a way to calculate bounds of an Instance */
-  boundsAccessor: BoundsAccessor<T>;
+  boundsAccessor: TrackedQuadTreeBoundsAccessor<T>;
   /** This is the way the system tests hitting an intsance */
   hitTest: InstanceHitTest<T>;
 }

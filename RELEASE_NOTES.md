@@ -1,5 +1,29 @@
 # Release Notes
 
+## 1.30.5
+
+* `(FIXED)` Completely fixed camera infinite loop
+
+## 1.30.4
+
+* `(FIXED)` ChartCamera caused an infinite loop in its event loop
+
+## 1.30.3
+
+* `(FIXED)` When the camera animates automatically, the camera now broadcasts the animated changes. The BasicCameraController responds to those changes as well and properly broadcasts the onRangeChange event for those changes.
+
+## 1.30.2
+
+* `(FIXED)` Bounds and quad trees operate properly now
+
+## 1.30.1
+
+* `(FIXED)` Timer would go negative when injected into the shaders.
+
+## 1.30.0
+
+* `(ADDED)` debugLayer is added. This can replace a createLayer call and will output useful information about the layer indicated.
+
 ## 1.29.0
 
 * `(ADDED)` Camera offset and scale can now be animated

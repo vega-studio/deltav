@@ -5,7 +5,7 @@ import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ResourceManager } from "../resources";
 import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
-import { BoundsAccessor } from "../util";
+import { TrackedQuadTreeBoundsAccessor } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
@@ -38,7 +38,7 @@ export interface ILayerPropsInternal<T extends Instance> extends ILayerProps<T> 
     parent?: Layer<Instance, ILayerProps<Instance>>;
 }
 export interface IPickingMethods<T extends Instance> {
-    boundsAccessor: BoundsAccessor<T>;
+    boundsAccessor: TrackedQuadTreeBoundsAccessor<T>;
     hitTest: InstanceHitTest<T>;
 }
 export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends IdentifyByKey {

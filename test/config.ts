@@ -2,7 +2,7 @@ import { BaseDemo } from "./common/base-demo";
 import { KitchenSink } from "./kitchen-sink";
 import { NodesEdges } from "./nodes-edges";
 import { PhysicsDemo } from "./physics-demo";
-import { TextAreaDemo } from "./text-area";
+import { TextAreaDemo } from "./text-area-demo";
 import { TextDemo } from "./text-demo";
 import { WordSandDemo } from "./word-sand";
 

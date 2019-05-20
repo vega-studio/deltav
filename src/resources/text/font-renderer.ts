@@ -41,7 +41,7 @@ async function renderEachPair(
   // Create the table
   const table = document.createElement("div");
   const maxColumns = floor(contextWidth / (fontSize * 2));
-  const cellWidth = fontSize * 2;
+  const cellWidth = fontSize * 2.5;
   const cellHeight = fontSize * 2;
 
   table.style.display = "table";
@@ -137,7 +137,7 @@ async function renderEachPair(
 
   // If the distance of a space is required, then we add in one more additional cell
   if (calculateSpace) {
-    const testChar = pairs.all[0][0];
+    const testChar = "M";
     const td = document.createElement("div");
     td.style.display = "table-cell";
     td.style.width = `${cellWidth}px`;
@@ -292,6 +292,7 @@ async function renderEachPair(
     );
   }
 
+  table.remove();
   debug("Kerning rendering analysis complete", pairs.pairs);
 }
 
@@ -406,7 +407,7 @@ export class FontRenderer {
     }
 
     // Only if there are new kerning needs do we actually need to run this method
-    if (pairInfo.all.length > 0) {
+    if (pairInfo.all.length > 0 || includeSpace) {
       await renderEachPair(fontString, fontSize, pairInfo, includeSpace);
     }
 

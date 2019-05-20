@@ -12,7 +12,9 @@ export enum TextAlignment {
   CENTERED
 }
 
-/** WordWrap mode */
+/**
+ * WordWrap mode
+ * */
 export enum WordWrap {
   /**
    * NONE: New lines ONLY happen when an explicit newline character ('\n', '\r', '\n\r') occurs.
@@ -39,7 +41,9 @@ export enum NewLineCharacterMode {
 
 export type TextAreaLabel = LabelInstance | NewLineCharacterMode;
 
-/** Options for customaizing a TextAreaInstance */
+/**
+ * Options for customaizing a TextAreaInstance
+ * */
 export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   /* This sets the alignment of TextArea */
   alignment?: TextAlignment;
@@ -51,8 +55,10 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   letterSpacing?: number;
   /* This sets the distance from line to next line of text */
   lineHeight?: number;
-  /* This sets how tall the text area can render. Any text beyond this point will not be rendered
-   This also establishes the borders' height to be rendered if included */
+  /**
+   * This sets how tall the text area can render. Any text beyond this point will not be rendered
+   * This also establishes the borders' height to be rendered if included
+   */
   maxHeight?: number;
   /* This sets distance from top, left, right, bottom of border to content of text */
   padding?: Vec1Compat;

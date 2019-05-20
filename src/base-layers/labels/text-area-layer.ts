@@ -37,7 +37,8 @@ import {
 } from "./text-area-instance";
 
 /**
- * Get the offsetY of a word by comparing offsetYs of all its letters
+ * Get the offsetY of a word by comparing offsetYs of all its letters. So we can put the word to the
+ * the right position.
  */
 function getOffsetY(text: string, map: Map<string, number>) {
   let offsetY = Number.MAX_SAFE_INTEGER;
@@ -90,7 +91,8 @@ function generateWords(text: string): string[] {
 }
 
 /**
- * Generate the map for every glyph to offsetY
+ * Generate the map for every glyph to offsetY, then we can use info to get correct offsetY for
+ * every label by checking all the letters' offsetY of a label.
  */
 function generateGlyphOffsetYMap(
   instance: TextAreaInstance,
@@ -131,7 +133,9 @@ function generateGlyphOffsetYMap(
 }
 
 /**
- * Generate glyphWidths for a label in a TextAreaInstance
+ * Generate glyphWidths for a label in a TextAreaInstance. It stores the widths of the first letter,
+ * width of the first two letters, width of the first three letters untill the width of the label.
+ * It will help to know where to wrap a word in character wordwrap mode.
  */
 function getGlyphWidths(
   label: LabelInstance,
@@ -216,7 +220,7 @@ export class TextAreaLayer<
   };
 
   providers = {
-    /** Provider for the glyph layer this layer manages */
+    /** Provider for the label layer this layer manages */
     labels: new InstanceProvider<LabelInstance>(),
     /** Provider for the rectangle layer that renders the border of text area */
     rectangles: new InstanceProvider<RectangleInstance>()

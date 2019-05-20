@@ -378,7 +378,6 @@ export class LabelLayer<
           if (changed[letterSpacingId] !== undefined) {
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
-            // this.updateLetterSpacing(instance);
           }
           break;
 

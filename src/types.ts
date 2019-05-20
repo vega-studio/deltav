@@ -476,8 +476,8 @@ export const isWhiteSpace = whiteSpaceCharRegEx.test.bind(whiteSpaceCharRegEx);
 /**
  * Newline character test
  */
-export const newLineRegEx = /(\r\n|\n|\r)/g;
-export const newLineCharRegEx = /(\r\n|\n|\r)/;
+export const newLineRegEx = /\r\n|\n|\r/g;
+export const newLineCharRegEx = /\r\n|\n|\r/;
 export const isNewline = newLineCharRegEx.test.bind(newLineCharRegEx);
 
 /**

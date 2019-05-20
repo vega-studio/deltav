@@ -72,6 +72,7 @@ export class TextDemo extends BaseDemo {
     count: 100,
     fontSize: 14,
     words: 15,
+    letterSpacing: 0,
     maxWidth: 0,
     scaleMode: ScaleMode.BOUND_MAX,
 
@@ -148,6 +149,12 @@ export class TextDemo extends BaseDemo {
       );
 
     parameters.add(this.parameters, "copy");
+
+    parameters.add(this.parameters, "letterSpacing", -5, 20, 1).onChange(
+      debounce(async (value: number) => {
+        this.labels.forEach(lbl => (lbl.letterSpacing = value));
+      }, 250)
+    );
   }
 
   getEventManagers(
@@ -243,6 +250,7 @@ export class TextDemo extends BaseDemo {
       color: [0, random(), random(), 0.0],
       text: txt !== undefined ? txt : words.join(" "),
       fontSize: this.parameters.fontSize,
+      letterSpacing: this.parameters.letterSpacing,
       onReady: this.labelReady,
       preload
     });

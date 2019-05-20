@@ -26,7 +26,6 @@ export class MouseScroll extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
@@ -35,7 +34,6 @@ export class MouseScroll extends BaseExample {
       key: "mouse-scroll-lines",
       opacity: 1.0,
       picking: PickType.SINGLE,
-      scene: scene,
       type: EdgeType.LINE
     });
   }

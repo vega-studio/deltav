@@ -53,7 +53,6 @@ export class MouseInteraction extends BaseExample {
   };
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
@@ -67,8 +66,7 @@ export class MouseInteraction extends BaseExample {
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.SINGLE,
-      scaleFactor: () => 1,
-      scene: scene
+      scaleFactor: () => 1
     });
   }
 

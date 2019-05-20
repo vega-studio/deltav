@@ -1,3 +1,4 @@
+import { debug } from "util";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
@@ -135,6 +136,16 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
+   * System requests a resource get's destroyed here
+   */
+  destroyResource(init: BaseResourceOptions) {
+    const resource = this.resources.get(init.key);
+    if (!resource) return;
+    this.atlasManager.destroyAtlas(init.key);
+    this.resources.delete(init.key);
+  }
+
+  /**
    * This retrieves the actual atlas texture that should be applied to a uniform's
    * value.
    */
@@ -236,5 +247,14 @@ export class AtlasResourceManager extends BaseResourceManager<
    */
   setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
     this.targetAtlas = attribute.resource.key;
+  }
+
+  /**
+   * System is requesting properties for a resource should be updated.
+   */
+  updateResource(_init: BaseResourceOptions) {
+    debug(
+      "System does not support updating atlas resources yet. To update, destroy the atlas then recreate it."
+    );
   }
 }

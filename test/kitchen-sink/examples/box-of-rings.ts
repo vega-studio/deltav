@@ -18,7 +18,6 @@ export class BoxOfRings extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<RingInstance>
   ): LayerInitializer {
@@ -26,7 +25,6 @@ export class BoxOfRings extends BaseExample {
       data: provider,
       key: "box-of-rings",
       scaleFactor: () => this.camera.scale[0],
-      scene: scene,
       picking: PickType.SINGLE
     });
   }

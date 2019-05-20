@@ -59,7 +59,6 @@ export class SingleAxisLabelScaling extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     _provider: InstanceProvider<LabelInstance>
   ): LayerInitializer[] {
@@ -75,7 +74,6 @@ export class SingleAxisLabelScaling extends BaseExample {
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scene,
           scaleMode: ScaleMode.ALWAYS
         }),
         createLayer(LabelLayer, {
@@ -88,7 +86,6 @@ export class SingleAxisLabelScaling extends BaseExample {
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scene,
           scaleMode: ScaleMode.NEVER
         }),
         createLayer(LabelLayer, {
@@ -101,7 +98,6 @@ export class SingleAxisLabelScaling extends BaseExample {
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scene,
           scaleMode: ScaleMode.BOUND_MAX
         })
       ];

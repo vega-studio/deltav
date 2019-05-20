@@ -172,8 +172,7 @@ export class LabelLayer<
 > extends Layer<T, U> {
   static defaultProps: ILabelLayerProps<LabelInstance> = {
     key: "",
-    data: new InstanceProvider<LabelInstance>(),
-    scene: "default"
+    data: new InstanceProvider<LabelInstance>()
   };
 
   /** Provider for the glyph layer this layer manages */
@@ -279,7 +278,6 @@ export class LabelLayer<
         data: this.glyphProvider,
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
       })
     ];

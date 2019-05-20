@@ -113,7 +113,6 @@ export class TextAreaLayer<
   static defaultProps: ITextAreaLayerProps<TextAreaInstance> = {
     key: "",
     data: new InstanceProvider<TextAreaInstance>(),
-    scene: "default"
   };
 
   /** Provider for the glyph layer this layer manages */
@@ -212,7 +211,6 @@ export class TextAreaLayer<
         data: this.labelProvider,
         key: `${this.id}_labels`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene
       })
     ];
   }

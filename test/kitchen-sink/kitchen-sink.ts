@@ -3,6 +3,7 @@ import {
   ClearFlags,
   EventManager,
   IInstanceProvider,
+  IPipeline,
   ISceneOptions,
   LayerInitializer
 } from "src";
@@ -11,6 +12,7 @@ import * as datGUI from "dat.gui";
 import { BaseDemo } from "../common/base-demo";
 
 import { Blending } from "test/kitchen-sink/examples/blending";
+import { DEFAULT_RESOURCES } from "test/types";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
@@ -128,11 +130,29 @@ export class KitchenSink extends BaseDemo {
     return this.makeSceneControls().map(init => init.control);
   }
 
-  getScenes() {
+  /**
+   * Establish the render pipeline
+   */
+  pipeline(): IPipeline {
+    this.getLayers();
+
+    return {
+      resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
+      scenes: this.getScenes()
+    };
+  }
+
+  /**
+   * Generate the scenes to be used by the kitchen sink
+   */
+  private getScenes() {
     return this.makeSceneControls().map(init => init.scene);
   }
 
-  getLayers(): LayerInitializer[] {
+  /**
+   * Populate the scenes with the
+   */
+  private getLayers(): LayerInitializer[] {
     this.makeSceneControls();
     layers = [];
 
@@ -141,12 +161,12 @@ export class KitchenSink extends BaseDemo {
       const controls = this.testControls.get(test);
       if (!controls) return;
 
+      const scene = this.allScenes[i];
       const sceneName = this.allScenes[i].name;
       // test.surface = this.surface.surface;
       test.view = sceneName;
 
       const layer = test.makeLayer(
-        sceneName,
         { atlas: "atlas", font: "test-font" },
         controls.provider
       );
@@ -156,6 +176,8 @@ export class KitchenSink extends BaseDemo {
       } else {
         layers.push(layer);
       }
+
+      scene.scene.layers = layers;
     });
 
     return layers;
@@ -213,7 +235,8 @@ export class KitchenSink extends BaseDemo {
                     width: `${viewSize}%`
                   }
                 }
-              ]
+              ],
+              layers: []
             }
           };
 

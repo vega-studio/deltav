@@ -45,8 +45,7 @@ export class ArcLayer<
   static defaultProps: IArcLayerProps<ArcInstance> = {
     data: new InstanceProvider<ArcInstance>(),
     key: "",
-    scaleType: ArcScaleType.NONE,
-    scene: "default"
+    scaleType: ArcScaleType.NONE
   };
 
   /** Easy lookup of all attribute names for the layer */

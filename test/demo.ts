@@ -1,6 +1,5 @@
 import * as datGUI from "dat.gui";
 import { BasicCameraController, ChartCamera } from "src";
-import { DEFAULT_RESOURCES } from "test/types";
 import { BaseDemo } from "./common/base-demo";
 import { demoKeys, demos, startDemoKey } from "./config";
 import { Surface } from "./gl/surface";
@@ -94,13 +93,11 @@ export class Demo {
         if (!demo) return {};
 
         return {
-          resources: demo.getResources(DEFAULT_RESOURCES),
           eventManagers: demo.getEventManagers(
             defaultController,
             defaultCamera
           ),
-          layers: () => demo.getLayers(DEFAULT_RESOURCES),
-          scenes: demo.getScenes(defaultCamera)
+          pipeline: demo.pipeline.bind(demo)
         };
       }
     });
@@ -149,7 +146,8 @@ export class Demo {
     // request of scenes and layers.
     this.surface = new Surface({
       background: [0, 0, 0, 1],
-      container: this.options.container
+      container: this.options.container,
+      pipeline: () => ({})
     });
 
     // Make the system boot up the specified demo

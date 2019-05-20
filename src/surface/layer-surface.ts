@@ -153,7 +153,10 @@ const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
  * A type to describe the constructor of a Layer class.
  */
 export interface ILayerConstructable<T extends Instance> {
-  new (props: ILayerProps<T>): Layer<any, any>;
+  new (surface: LayerSurface, scene: LayerScene, props: ILayerProps<T>): Layer<
+    any,
+    any
+  >;
 }
 
 /**
@@ -168,11 +171,11 @@ export type ILayerConstructionClass<
  * This is a pair of a Class Type and the props to be applied to that class type.
  */
 export type LayerInitializer = {
-  key: string,
+  key: string;
   init: [
     ILayerConstructionClass<Instance, ILayerProps<Instance>>,
     ILayerProps<Instance>
-  ]
+  ];
 };
 
 /**
@@ -180,11 +183,11 @@ export type LayerInitializer = {
  * facing API should not be concerned with.
  */
 export type LayerInitializerInternal = {
-  key: string,
+  key: string;
   init: [
     ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
     ILayerPropsInternal<Instance>
-  ]
+  ];
 };
 
 /**
@@ -195,8 +198,10 @@ export function createLayer<T extends Instance, U extends ILayerProps<T>>(
   props: U
 ): LayerInitializer {
   return {
-    get key() { return props.key; },
-    init: [layerClass, props],
+    get key() {
+      return props.key;
+    },
+    init: [layerClass, props]
   };
 }
 
@@ -266,6 +271,11 @@ export class LayerSurface {
     resolve => (this.loadReadyResolve = resolve)
   );
 
+  /**
+   * Picking gets deferred to the beginning of next draw. Thus picking operations get queued till next
+   * frame using this store here.
+   */
+  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
   /** Diff manager to handle diffing resource objects for the pipeline */
   private resourceDiffs: ReactiveDiff<null, BaseResourceOptions>;
   /** Diff manager to handle diffing scene objects for the pipeline */
@@ -343,7 +353,6 @@ export class LayerSurface {
 
     // Get the scenes in their added order
     const scenes = Array.from(this.scenes.values());
-    const validLayers: { [key: string]: Layer<any, any> } = {};
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
     const pickingPassByView = new Map<View, Layer<any, any>[]>();
 
@@ -352,6 +361,7 @@ export class LayerSurface {
       const scene = scenes[i];
       const views = scene.views;
       const layers = scene.layers;
+      const validLayers: { [key: string]: Layer<any, any> } = {};
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
@@ -433,6 +443,11 @@ export class LayerSurface {
         // Store the picking pass for the view to use when the view is ready to draw
         pickingPassByView.set(view, pickingPass);
       }
+
+      // Re-render but only include non-errored layers
+      scene.layerDiffs.diff(
+        Object.values(validLayers).map(layer => layer.initializer)
+      );
     }
 
     // If any draw need was detected, redraw the surface
@@ -461,8 +476,6 @@ export class LayerSurface {
     const errors = Object.values(erroredLayers);
 
     if (errors.length > 0) {
-      const passed = Object.values(validLayers);
-
       console.warn(
         "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
         errors.map(err => err[0].id)
@@ -524,9 +537,6 @@ export class LayerSurface {
           }
         }
       });
-
-      // Re-render but only include non-errored layers
-      scene.render(passed.map(layer => layer.initializer));
     }
   }
 
@@ -541,8 +551,6 @@ export class LayerSurface {
     this.renderer.dispose();
     this.pickingTarget.dispose();
   }
-
-  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
 
   /**
    * This processes what is rendered into the picking render target to see if the mouse interacted with

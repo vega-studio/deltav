@@ -27,7 +27,6 @@ export class FontEngineGlyphControl extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
@@ -40,7 +39,6 @@ export class FontEngineGlyphControl extends BaseExample {
       resourceKey: resource.font,
       data: provider,
       key: "font-engine-glyph-control",
-      scene
     });
   }
 

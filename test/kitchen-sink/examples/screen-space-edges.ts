@@ -63,7 +63,6 @@ export class ScreenSpaceEdges extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
@@ -78,7 +77,6 @@ export class ScreenSpaceEdges extends BaseExample {
       picking: PickType.SINGLE,
       scaleFactor: () => this.camera.scale[1],
       scaleType: EdgeScaleType.SCREEN_CURVE,
-      scene: scene,
       type: EdgeType.BEZIER2
     });
   }

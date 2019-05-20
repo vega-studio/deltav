@@ -39,7 +39,10 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerBufferType, makeLayerBufferManager } from "./layer-processing/layer-buffer-type";
+import {
+  LayerBufferType,
+  makeLayerBufferManager
+} from "./layer-processing/layer-buffer-type";
 import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
 
@@ -85,16 +88,6 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * Used for debugging. Logs the generated shader for the layer in the console.
    */
   printShader?: boolean;
-  /**
-   * This identifies the scene we want the layer to be a part of.
-   * Layer's with the same identifiers will render their buffers in the same scene.
-   * This only applies to the layer when the layer is initialized in a layer surface. You shouldn't
-   * be swapping layers from scene to scene.
-   *
-   * The scene identifier must be an identifier used when constructing the layer surface that this layer
-   * is added to.
-   */
-  scene: string;
 
   // ---- EVENTS ----
   /** Executes when the mouse is down on instances and a picking type is set */

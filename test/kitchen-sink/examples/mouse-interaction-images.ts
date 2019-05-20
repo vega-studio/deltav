@@ -39,7 +39,6 @@ export class MouseInteractionImages extends BaseExample {
   };
 
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
@@ -54,8 +53,7 @@ export class MouseInteractionImages extends BaseExample {
       onMouseClick: this.handleImageClick,
       onMouseOut: this.handleImageOut,
       onMouseOver: this.handleImageOver,
-      picking: PickType.SINGLE,
-      scene: scene
+      picking: PickType.SINGLE
     });
   }
 

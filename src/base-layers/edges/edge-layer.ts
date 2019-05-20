@@ -80,7 +80,6 @@ export class EdgeLayer<
     data: new InstanceProvider<EdgeInstance>(),
     key: "none",
     scaleType: EdgeScaleType.NONE,
-    scene: "default",
     type: EdgeType.LINE
   };
 

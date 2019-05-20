@@ -168,6 +168,16 @@ export class FontResourceManager extends BaseResourceManager<
   }
 
   /**
+   * Destroy a single resource if the system deems it's time for it to go
+   */
+  destroyResource(init: BaseResourceOptions) {
+    const resource = this.resourceLookup.get(init.key);
+    if (!resource) return;
+    this.fontManager.destroyFontMap(resource.id);
+    this.resourceLookup.delete(init.key);
+  }
+
+  /**
    * This will provide the resource generated from the initResource operation.
    */
   getResource(resourceKey: string) {
@@ -284,5 +294,14 @@ export class FontResourceManager extends BaseResourceManager<
    */
   setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
     this.currentAttribute = attribute;
+  }
+
+  /**
+   * Responds to the system detecting properties for a resource need updating.
+   */
+  updateResource(_init: BaseResourceOptions) {
+    debug(
+      "Font resources currently do not update. To update their properties simply destroy and recreate for now."
+    );
   }
 }

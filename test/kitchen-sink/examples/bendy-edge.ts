@@ -11,14 +11,12 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BendyEdge extends BaseExample {
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
       key: "bendy-edge",
-      scene: scene,
       type: EdgeType.BEZIER
     });
   }

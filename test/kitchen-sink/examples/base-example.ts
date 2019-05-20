@@ -41,7 +41,6 @@ export abstract class BaseExample {
   }
 
   makeLayer(
-    _scene: string,
     _resources: TestResourceKeys,
     _provider: IInstanceProvider<Instance>
   ): LayerInitializer | LayerInitializer[] {

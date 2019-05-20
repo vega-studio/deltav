@@ -14,7 +14,6 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Blending extends BaseExample {
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer[] {
@@ -26,13 +25,11 @@ export class Blending extends BaseExample {
         },
         data: provider,
         key: "blending",
-        scene: scene,
         type: EdgeType.LINE
       }),
       createLayer(LabelLayer, {
         data: new InstanceProvider(),
         key: "blending-labels",
-        scene: scene,
         resourceKey: resource.font
       })
     ];

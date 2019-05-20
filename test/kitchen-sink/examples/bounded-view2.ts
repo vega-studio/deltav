@@ -20,11 +20,10 @@ export class BoundedView2 extends BaseExample {
     });
   }
 
-  makeLayer(scene: string, _resource: TestResourceKeys, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
+  makeLayer(_resource: TestResourceKeys, provider: InstanceProvider<RectangleInstance>): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
       key: 'bounded-view2',
-      scene: scene,
     });
   }
 

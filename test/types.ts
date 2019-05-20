@@ -1,13 +1,31 @@
 import {
   BaseResourceOptions,
+  ChartCamera,
   ClearFlags,
   createAtlas,
   createFont,
   FontMapGlyphType,
   ISceneOptions,
+  IViewOptions,
   TextureSize,
   WebGLStat
 } from "src";
+
+/**
+ * A default view that covers the full canvas
+ */
+export const DEFAULT_FULLSCREEN_VIEW: IViewOptions = {
+  key: "default-view",
+  background: [0, 0, 0, 1],
+  camera: new ChartCamera(),
+  clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR],
+  viewport: {
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0
+  }
+};
 
 /**
  * Scenes to generate when no specialized scenes are specified.
@@ -15,19 +33,8 @@ import {
 export const DEFAULT_SCENES: ISceneOptions[] = [
   {
     key: "default",
-    views: [
-      {
-        key: "default-view",
-        background: [0, 0, 0, 1],
-        clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR],
-        viewport: {
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0
-        }
-      }
-    ]
+    views: [DEFAULT_FULLSCREEN_VIEW],
+    layers: []
   }
 ];
 

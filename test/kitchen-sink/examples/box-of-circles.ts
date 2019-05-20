@@ -136,7 +136,6 @@ export class BoxOfCircles extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
@@ -150,8 +149,7 @@ export class BoxOfCircles extends BaseExample {
       animate: this.animationControl,
       data: provider,
       key: "box-of-circles",
-      scaleFactor: () => this.camera.scale[0],
-      scene: scene
+      scaleFactor: () => this.camera.scale[0]
     });
   }
 

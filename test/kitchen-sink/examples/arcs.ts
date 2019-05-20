@@ -14,7 +14,6 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Arcs extends BaseExample {
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<ArcInstance>
   ): LayerInitializer {
@@ -25,7 +24,6 @@ export class Arcs extends BaseExample {
       },
       data: provider,
       key: "arcs",
-      scene: scene,
       scaleType: ArcScaleType.NONE
     });
   }

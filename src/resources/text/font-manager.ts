@@ -280,6 +280,15 @@ export class FontManager {
   }
 
   /**
+   * Destroy a single font map
+   */
+  destroyFontMap(key: string) {
+    const fontMap = this.fontMaps.get(key);
+    if (!fontMap) return;
+    fontMap.destroy();
+  }
+
+  /**
    * This updates a font map with requests made. After the font map is updated, the
    * requests should be populated with the appropriate sub texture information.
    */

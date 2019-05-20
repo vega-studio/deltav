@@ -12,7 +12,6 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Lines extends BaseExample {
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
@@ -22,7 +21,6 @@ export class Lines extends BaseExample {
       },
       data: provider,
       key: "lines",
-      scene: scene,
       type: EdgeType.LINE
     });
   }

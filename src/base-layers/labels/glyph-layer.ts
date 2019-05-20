@@ -52,8 +52,7 @@ export class GlyphLayer<
   static defaultProps: IGlyphLayerOptions<GlyphInstance> = {
     key: "",
     data: new InstanceProvider<GlyphInstance>(),
-    resourceKey: "No resource specified",
-    scene: "default"
+    resourceKey: "No resource specified"
   };
 
   /**

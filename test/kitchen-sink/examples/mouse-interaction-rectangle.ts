@@ -81,7 +81,6 @@ export class MouseInteractionRectangle extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<RectangleInstance>
   ): LayerInitializer {
@@ -91,8 +90,7 @@ export class MouseInteractionRectangle extends BaseExample {
       onMouseClick: this.handleRectangleClick,
       onMouseOut: this.handleRectangleOut,
       onMouseOver: this.handleRectangleOver,
-      picking: PickType.SINGLE,
-      scene: scene
+      picking: PickType.SINGLE
     });
   }
 

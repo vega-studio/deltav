@@ -26,7 +26,6 @@ export class VertexAttributePacking extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ) {
@@ -43,14 +42,12 @@ export class VertexAttributePacking extends BaseExample {
     return [
       createLayer(RectangleLayer, {
         data: this.rectangleProvider,
-        key: `vertex-attribute-packing-circles-${this.uid}`,
-        scene: scene
+        key: `vertex-attribute-packing-circles-${this.uid}`
       }),
       createLayer(EdgeLayer, {
         animate,
         data: provider,
         key: `vertex-attribute-packing-${this.uid}`,
-        scene: scene,
         type: EdgeType.LINE
       })
     ];

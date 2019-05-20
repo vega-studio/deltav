@@ -20,8 +20,7 @@ export class ImageLayer<
   static defaultProps: IImageLayerProps<any> = {
     atlas: "default",
     key: "",
-    data: new InstanceProvider<ImageInstance>(),
-    scene: "default"
+    data: new InstanceProvider<ImageInstance>()
   };
 
   /** Internal provider for child layers for this layer to hand off to */

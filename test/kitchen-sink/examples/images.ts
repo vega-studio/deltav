@@ -14,15 +14,13 @@ icon.src = iconData;
 
 export class Images extends BaseExample {
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<ImageInstance>
   ): LayerInitializer {
     return createLayer(ImageLayer, {
       atlas: resource.atlas,
       data: provider,
-      key: "images",
-      scene
+      key: "images"
     });
   }
 

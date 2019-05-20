@@ -45,8 +45,7 @@ export class ImageRenderLayer<
 > extends Layer<T, U> {
   static defaultProps: IImageRenderLayerProps<any> = {
     key: "",
-    data: new InstanceProvider<ImageInstance>(),
-    scene: "default"
+    data: new InstanceProvider<ImageInstance>()
   };
 
   /** Easy lookup of attribute names to aid in modifications to be applied to elements */

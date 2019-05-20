@@ -27,7 +27,7 @@ export type SceneView = {
 
 const emptySceneView = {
   depth: 0,
-  scene: new LayerScene({ key: "error", views: [] }),
+  scene: new LayerScene(undefined, { key: "error", views: [], layers: [] }),
   view: new View({
     key: "error",
     viewport: {},

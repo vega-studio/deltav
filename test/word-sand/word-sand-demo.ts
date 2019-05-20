@@ -2,13 +2,15 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
+  BasicCameraController,
   ChartCamera,
   CircleInstance,
   CircleLayer,
+  ClearFlags,
   createLayer,
+  createView,
   InstanceProvider,
-  ISceneOptions,
-  LayerInitializer
+  IPipeline
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
@@ -90,33 +92,42 @@ export class WordSandDemo extends BaseDemo {
       });
   }
 
-  /**
-   * Construct scenes or get default properties.
-   */
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
+  getEventManagers(
+    defaultController: BasicCameraController,
+    defaultCamera: ChartCamera
+  ) {
     this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
+    return [defaultController];
   }
 
-  /**
-   * Construct the layers needed. This is on a loop so we keep it very simple.
-   */
-  getLayers(): LayerInitializer[] {
-    return [
-      createLayer(CustomCircleLayer, {
-        animate: {
-          center: AutoEasingMethod.easeInOutQuad(
-            250,
-            100,
-            AutoEasingLoopStyle.NONE
-          )
-        },
-        data: this.providers.circles,
-        key: "circles",
-        scaleFactor: () => this.camera.scale[0],
-        scene: "default"
-      })
-    ];
+  pipeline(): IPipeline {
+    return {
+      scenes: [
+        {
+          key: "default",
+          views: [
+            createView({
+              camera: this.camera,
+              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
+            })
+          ],
+          layers: [
+            createLayer(CustomCircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutQuad(
+                  250,
+                  100,
+                  AutoEasingLoopStyle.NONE
+                )
+              },
+              data: this.providers.circles,
+              key: "circles",
+              scaleFactor: () => this.camera.scale[0]
+            })
+          ]
+        }
+      ]
+    };
   }
 
   /**

@@ -1,15 +1,13 @@
 import * as datGUI from "dat.gui";
 import {
-  BaseResourceOptions,
   BasicCameraController,
   Bounds,
   ChartCamera,
   EventManager,
-  ISceneOptions,
-  LayerInitializer
+  IPipeline
 } from "src";
 import { Surface } from "../gl/surface";
-import { DEFAULT_SCENES, IDefaultResources } from "../types";
+import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
 
 /**
  * This is the functionality a Demo should provide that the system will call to
@@ -44,28 +42,13 @@ export abstract class BaseDemo {
   }
 
   /**
-   * Provides the layers the demo will need to operate.
+   * Provides the rendering pipeline from the demo
    */
-  getLayers(_resources: IDefaultResources): LayerInitializer[] {
-    return [];
-  }
-
-  /**
-   * Provides a means to construct custom resources for the demo.
-   */
-  getResources(defaultResources: {
-    atlas: BaseResourceOptions;
-    font: BaseResourceOptions;
-  }) {
-    return [defaultResources.atlas, defaultResources.font];
-  }
-
-  /**
-   * Provides an opportunity to reconstruct the scenes of the chart. If this provides scenes
-   * the Surface will get destroyed and rebuilt to accommodate the scenes.
-   */
-  getScenes(_defaultCamera: ChartCamera): ISceneOptions[] | null {
-    return DEFAULT_SCENES;
+  pipeline(): IPipeline {
+    return {
+      resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
+      scenes: DEFAULT_SCENES
+    };
   }
 
   /**
@@ -119,6 +102,6 @@ export abstract class BaseDemo {
    * Causes all layers to be updated.
    */
   updateLayer() {
-    this.surface.updateLayers();
+    this.surface.updatePipeline();
   }
 }

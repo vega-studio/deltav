@@ -1,5 +1,9 @@
 import { generateDefaultElements } from "src/surface/layer-processing/generate-default-scene";
-import { LayerInitializer, LayerInitializerInternal, LayerSurface } from "src/surface/layer-surface";
+import {
+  LayerInitializer,
+  LayerInitializerInternal,
+  LayerSurface
+} from "src/surface/layer-surface";
 import { ReactiveDiff } from "src/util/reactive-diff";
 import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
@@ -37,9 +41,12 @@ export class LayerScene extends IdentifyByKey {
   /** This is the three scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
   /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
-  layerDiffs: ReactiveDiff<Layer<Instance, ILayerProps<Instance>>, LayerInitializer>;
+  layerDiffs: ReactiveDiff<
+    Layer<Instance, ILayerProps<Instance>>,
+    LayerInitializer
+  >;
   /** The presiding surface over this scene */
-  surface: LayerSurface;
+  surface?: LayerSurface;
   /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
   viewDiffs: ReactiveDiff<View, IViewOptions>;
 
@@ -53,10 +60,10 @@ export class LayerScene extends IdentifyByKey {
     return this.viewDiffs.items;
   }
 
-  constructor(surface: LayerSurface, options: ISceneOptions) {
+  constructor(surface: LayerSurface | undefined, options: ISceneOptions) {
     super(options);
-    this.init(options);
     this.surface = surface;
+    this.init(options);
   }
 
   /**
@@ -64,7 +71,7 @@ export class LayerScene extends IdentifyByKey {
    */
   private init(options: ISceneOptions) {
     // Make sure there is a rendering context set up
-    if (!this.surface.gl) return;
+    if (!this.surface || !this.surface.gl) return;
     // Make a Scene for the GL layer to accept and render objects from
     this.container = new Scene();
     // Make default scene elements
@@ -73,10 +80,13 @@ export class LayerScene extends IdentifyByKey {
     // Create the diff manager to handle the layers coming in.
     this.layerDiffs = new ReactiveDiff({
       buildItem: async (initializer: LayerInitializerInternal) => {
+        if (!this.surface) return null;
         const layerClass = initializer.init[0];
         const props = initializer.init[1];
         // Generate the new layer and provide it it's initial props
         const layer = new layerClass(
+          this.surface,
+          this,
           Object.assign({}, layerClass.defaultProps, props)
         );
         // Keep the initializer object that generated the layer for reference and debugging
@@ -110,12 +120,18 @@ export class LayerScene extends IdentifyByKey {
         return layer;
       },
 
-      destroyItem: async (_initializer: LayerInitializer, layer: Layer<Instance, ILayerProps<Instance>>) => {
+      destroyItem: async (
+        _initializer: LayerInitializer,
+        layer: Layer<Instance, ILayerProps<Instance>>
+      ) => {
         layer.destroy();
         return true;
       },
 
-      updateItem: async (initializer: LayerInitializer, layer: Layer<Instance, ILayerProps<Instance>>) => {
+      updateItem: async (
+        initializer: LayerInitializer,
+        layer: Layer<Instance, ILayerProps<Instance>>
+      ) => {
         const props: ILayerPropsInternal<Instance> = initializer.init[1];
         // Execute lifecycle method
         layer.willUpdateProps(props);
@@ -167,16 +183,16 @@ export class LayerScene extends IdentifyByKey {
         else {
           this.layerDiffs.inline(layer.childLayers());
         }
-      },
+      }
     });
 
     // Create the diff manager to handle the views coming in.
     this.viewDiffs = new ReactiveDiff({
       buildItem: async (initializer: IViewOptions) => {
+        if (!this.surface) return null;
         const newView = new View(initializer);
         newView.camera = newView.camera || defaultElements.camera;
-        newView.viewCamera =
-          newView.viewCamera || defaultElements.viewCamera;
+        newView.viewCamera = newView.viewCamera || defaultElements.viewCamera;
         newView.pixelRatio = this.surface.pixelRatio;
 
         return newView;
@@ -188,7 +204,7 @@ export class LayerScene extends IdentifyByKey {
       // Hand off the initializer to the update of the view
       updateItem: async (initializer: IViewOptions, view: View) => {
         view.update(initializer);
-      },
+      }
     });
 
     // Now add in the initial data into our diff objects

@@ -37,7 +37,6 @@ export class MouseInteractionEdges extends BaseExample {
   };
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ): LayerInitializer {
@@ -51,7 +50,6 @@ export class MouseInteractionEdges extends BaseExample {
       onMouseOut: this.handleMouseOut,
       opacity: 1.0,
       picking: PickType.SINGLE,
-      scene: scene,
       type: EdgeType.BEZIER2
     });
   }

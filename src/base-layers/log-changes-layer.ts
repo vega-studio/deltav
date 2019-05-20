@@ -4,7 +4,9 @@ import {
   ILayerConstructable,
   ILayerProps,
   Layer,
-  LayerInitializer
+  LayerInitializer,
+  LayerScene,
+  LayerSurface
 } from "../surface";
 
 /**
@@ -31,15 +33,14 @@ class LogChangesLayer<
     data: new InstanceProvider(),
     key: "default",
     messageHeader: "",
-    scene: "default",
     wrap: createLayer(Layer, {
       data: new InstanceProvider(),
       scene: "default"
     })
   };
 
-  constructor(props: U) {
-    super(props);
+  constructor(surface: LayerSurface, scene: LayerScene, props: U) {
+    super(surface, scene, props);
 
     console.warn(
       "Please ensure all debugLayer calls are removed for production:",
@@ -50,7 +51,7 @@ class LogChangesLayer<
   /**
    * Hand the wrapped layer as a child layer to this layer
    */
-  childLayers() {
+  childLayers(): LayerInitializer[] {
     if (!this.props.wrap) return [];
     return [this.props.wrap];
   }
@@ -76,14 +77,22 @@ class LogChangesLayer<
   initShader() {
     if (!this.props.wrap) return null;
 
-    const layer = new this.props.wrap[0](this.props.wrap[1]);
+    const layer = new this.props.wrap.init[0](
+      this.surface,
+      this.scene,
+      this.props.wrap.init[1]
+    );
     const toProcess = layer.childLayers();
     const childLayers: { [key: string]: {} } = {};
 
     while (toProcess.length > 0) {
       const child = toProcess.pop();
       if (!child) continue;
-      const childLayer = new child[0](child[1]);
+      const childLayer = new child.init[0](
+        this.surface,
+        this.scene,
+        child.init[1]
+      );
 
       childLayers[childLayer.id] = {
         shaderIO: childLayer.initShader()
@@ -111,7 +120,6 @@ export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
   return createLayer(LogChangesLayer, {
     messageHeader: `CHANGES FOR: ${props.key}`,
     wrap: createLayer(layerClass, props),
-    scene: props.scene,
     data: props.data,
     key: `debug-wrapper.${props.key}`
   });

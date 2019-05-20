@@ -6,11 +6,12 @@ import {
   ChartCamera,
   CircleInstance,
   CircleLayer,
+  ClearFlags,
   createLayer,
+  createView,
   IMouseInteraction,
   InstanceProvider,
-  ISceneOptions,
-  LayerInitializer
+  IPipeline
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { EventHandler } from "../common/event-handler";
@@ -89,8 +90,9 @@ export class PhysicsDemo extends BaseDemo {
 
   getEventManagers(
     defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
+    defaultCamera: ChartCamera
   ) {
+    this.camera = defaultCamera;
     return [
       defaultController,
       new EventHandler({
@@ -102,25 +104,38 @@ export class PhysicsDemo extends BaseDemo {
     ];
   }
 
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
+  /**
+   * Render pipeline for the demo
+   */
+  pipeline(): IPipeline {
+    return {
+      scenes: [
+        {
+          key: "default",
+          views: [
+            createView({
+              camera: this.camera,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          ],
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.linear(PHYSICS_FRAME)
+              },
+              data: this.providers.circles,
+              key: `circles`,
+              scaleFactor: () => this.camera.scale[0]
+            })
+          ]
+        }
+      ]
+    };
   }
 
-  getLayers(): LayerInitializer[] {
-    return [
-      createLayer(CircleLayer, {
-        animate: {
-          center: AutoEasingMethod.linear(PHYSICS_FRAME)
-        },
-        data: this.providers.circles,
-        key: `circles`,
-        scaleFactor: () => this.camera.scale[0],
-        scene: "default"
-      })
-    ];
-  }
-
+  /**
+   * Initialize the demo
+   */
   async init() {
     const bounds = await this.getViewScreenBounds();
     if (!bounds) return;

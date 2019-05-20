@@ -13,9 +13,11 @@ import {
   ChartCamera,
   CircleInstance,
   CircleLayer,
+  ClearFlags,
   copy2,
   copy4,
   createLayer,
+  createView,
   EasingUtil,
   EdgeInstance,
   EdgeLayer,
@@ -24,10 +26,9 @@ import {
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  ISceneOptions,
+  IPickInfo,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
   nextFrame,
   PickType,
   RectangleInstance,
@@ -36,9 +37,9 @@ import {
   Size,
   Vec4
 } from "src";
-import { IDefaultResources, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
+import { DEFAULT_RESOURCES, WORDS } from "../types";
 
 /**
  * Promise based wait timer function
@@ -210,8 +211,9 @@ export class NodesEdges extends BaseDemo {
 
   getEventManagers(
     defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
+    defaultCamera: ChartCamera
   ) {
+    this.camera = defaultCamera;
     this.controller = defaultController;
     defaultController.wheelShouldScroll = false;
     defaultController.setRangeChangeHandler(() => {
@@ -223,121 +225,126 @@ export class NodesEdges extends BaseDemo {
     return null;
   }
 
-  /**
-   * Construct scenes or get default properties.
-   */
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
+  handleCircleOver = (info: IPickInfo<CircleInstance>) => {
+    const over = new Set();
+    info.instances.forEach(circle => {
+      over.add(circle);
+
+      this.arcs.forEach(arc => {
+        arc.center = copy2(circle.center);
+        arc.radius = circle.radius + 4;
+        arc.angleOffset = 0;
+
+        nextFrame(() => {
+          EasingUtil.all(
+            true,
+            [arc],
+            [ArcLayer.attributeNames.angleOffset],
+            easing => {
+              easing.setStart([0]);
+              arc.angleOffset = Math.PI * 2;
+            }
+          );
+        });
+
+        this.providers.arcs.add(arc);
+      });
+    });
+
+    this.circles.forEach(circle => {
+      if (over.has(circle)) return;
+      circle.color = [0.2, 0.2, 0.2, 1];
+    });
+  };
+
+  handleCircleOut = (_info: IPickInfo<CircleInstance>) => {
+    this.circles.forEach((circle, i) => {
+      circle.color = this.makeColor(i);
+    });
+
+    this.arcs.forEach(arc => {
+      this.providers.arcs.remove(arc);
+    });
+  };
+
+  handleCircleClick(info: IPickInfo<CircleInstance>) {
+    const focus = info.instances.find(circle => Boolean(circle.center));
+    if (!focus) return;
+    this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
+    this.controller.centerOn(info.projection.id, [
+      focus.center[0],
+      focus.center[1],
+      0
+    ]);
   }
 
   /**
-   * Construct the layers needed. This is on a loop so we keep it very simple.
+   * Establishes the render pipeline
    */
-  getLayers(resources: IDefaultResources): LayerInitializer[] {
-    return [
-      createLayer(ArcLayer, {
-        animate: {
-          angleOffset: AutoEasingMethod.linear(
-            1000,
-            0,
-            AutoEasingLoopStyle.REPEAT
-          )
-        },
-        data: this.providers.arcs,
-        key: "arcs",
-        scene: "default"
-      }),
-      createLayer(EdgeLayer, {
-        animate: {
-          startColor: AutoEasingMethod.easeInOutCubic(500),
-          endColor: AutoEasingMethod.easeInOutCubic(500)
-        },
-        data: this.providers.edges,
-        key: "edges",
-        scene: "default",
-        type: EdgeType.LINE
-      }),
-      createLayer(CircleLayer, {
-        animate: {
-          color: AutoEasingMethod.easeInOutCubic(500)
-        },
-        data: this.providers.circles,
-        key: "circles",
-        scene: "default",
-        scaleFactor: () => this.camera.scale[0],
-        picking: PickType.SINGLE,
+  pipeline() {
+    return {
+      resources: [DEFAULT_RESOURCES.font],
+      scenes: [
+        {
+          key: "default",
+          views: [
+            createView({
+              camera: this.camera,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          ],
+          layers: [
+            createLayer(ArcLayer, {
+              animate: {
+                angleOffset: AutoEasingMethod.linear(
+                  1000,
+                  0,
+                  AutoEasingLoopStyle.REPEAT
+                )
+              },
+              data: this.providers.arcs,
+              key: "arcs"
+            }),
+            createLayer(EdgeLayer, {
+              animate: {
+                startColor: AutoEasingMethod.easeInOutCubic(500),
+                endColor: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: this.providers.edges,
+              key: "edges",
+              type: EdgeType.LINE
+            }),
+            createLayer(CircleLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: this.providers.circles,
+              key: "circles",
+              scaleFactor: () => this.camera.scale[0],
+              picking: PickType.SINGLE,
 
-        onMouseOver: info => {
-          const over = new Set();
-          info.instances.forEach(circle => {
-            over.add(circle);
-
-            this.arcs.forEach(arc => {
-              arc.center = copy2(circle.center);
-              arc.radius = circle.radius + 4;
-              arc.angleOffset = 0;
-
-              nextFrame(() => {
-                EasingUtil.all(
-                  true,
-                  [arc],
-                  [ArcLayer.attributeNames.angleOffset],
-                  easing => {
-                    easing.setStart([0]);
-                    arc.angleOffset = Math.PI * 2;
-                  }
-                );
-              });
-
-              this.providers.arcs.add(arc);
-            });
-          });
-
-          this.circles.forEach(circle => {
-            if (over.has(circle)) return;
-            circle.color = [0.2, 0.2, 0.2, 1];
-          });
-        },
-
-        onMouseOut: _info => {
-          this.circles.forEach((circle, i) => {
-            circle.color = this.makeColor(i);
-          });
-
-          this.arcs.forEach(arc => {
-            this.providers.arcs.remove(arc);
-          });
-        },
-
-        onMouseClick: info => {
-          const focus = info.instances.find(circle => Boolean(circle.center));
-          if (!focus) return;
-          this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
-          this.controller.centerOn(info.projection.id, [
-            focus.center[0],
-            focus.center[1],
-            0
-          ]);
+              onMouseOver: this.handleCircleOver,
+              onMouseOut: this.handleCircleOut,
+              onMouseClick: this.handleCircleClick
+            }),
+            createLayer(RectangleLayer, {
+              data: this.providers.rectangles,
+              key: "rects",
+              scaleFactor: () => this.camera.scale[0]
+            }),
+            createLayer(LabelLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: this.providers.labels,
+              key: "labels",
+              resourceKey: DEFAULT_RESOURCES.font.key,
+              scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
+            })
+          ]
         }
-      }),
-      createLayer(RectangleLayer, {
-        data: this.providers.rectangles,
-        key: "rects",
-        scene: "default",
-        scaleFactor: () => this.camera.scale[0]
-      }),
-      createLayer(LabelLayer, {
-        animate: {
-          color: AutoEasingMethod.easeInOutCubic(500)
-        },
-        data: this.providers.labels,
-        key: "labels",
-        scene: "default",
-        resourceKey: resources.font.key,
-        scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
-      })
-    ];
+      ]
+    };
   }
 
   /**

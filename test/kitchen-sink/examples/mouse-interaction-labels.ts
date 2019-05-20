@@ -80,7 +80,6 @@ export class MouseInteractionLabels extends BaseExample {
   }
 
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
@@ -91,8 +90,7 @@ export class MouseInteractionLabels extends BaseExample {
       onMouseClick: this.handleLabelClick,
       onMouseOut: this.handleLabelOut,
       onMouseOver: this.handleLabelOver,
-      picking: PickType.ALL,
-      scene: scene
+      picking: PickType.ALL
     });
   }
 

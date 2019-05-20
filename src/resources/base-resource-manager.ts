@@ -1,4 +1,3 @@
-import { IdentifyByKey } from "src/util/identify-by-key";
 import { WebGLRenderer } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
@@ -110,8 +109,8 @@ export class InvalidResourceManager extends BaseResourceManager<
     return;
   }
 
-  destroyResource(resourceKey: string) {
-    this.resources.delete(resourceKey);
+  destroyResource(resourceKey: BaseResourceOptions) {
+    this.resources.delete(resourceKey.key);
   }
 
   getResource(resourceKey: string) {

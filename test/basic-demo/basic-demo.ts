@@ -10,14 +10,14 @@ import {
   createLayer,
   IMouseInteraction,
   InstanceProvider,
-  ISceneOptions,
-  LayerInitializer,
+  IPipeline,
   length2,
   scale2,
   Vec2
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { EventHandler } from "../common/event-handler";
+import { DEFAULT_SCENES } from "../types";
 
 const { random } = Math;
 
@@ -88,8 +88,10 @@ export class BasicDemo extends BaseDemo {
 
   getEventManagers(
     defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
+    defaultCamera: ChartCamera
   ) {
+    this.camera = defaultCamera;
+
     return [
       defaultController,
       new EventHandler({
@@ -101,27 +103,63 @@ export class BasicDemo extends BaseDemo {
     ];
   }
 
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
-  }
+  /**
+   * I wanted to see what a JSX version of this config would look like to see if it was more
+   * readable than JS objects or if it was too verbose:
 
-  getLayers(): LayerInitializer[] {
-    return [
-      createLayer(CircleLayer, {
-        animate: {
-          center: AutoEasingMethod.easeInOutQuad(
-            1000,
-            100,
-            AutoEasingLoopStyle.NONE
-          )
-        },
-        data: this.providers.circles,
-        key: `circles`,
-        scaleFactor: () => this.camera.scale[0],
-        scene: "default"
-      })
-    ];
+    <Scene key='default'>
+      <Views>
+        <View key='default' camera={this.camera} background={[0, 0, 0, 1]} viewPort={{left: 0, right: '100%', top: 0, bottom: '100%'}} />
+      </Views>
+      <Layers>
+        <Layer
+          type={CircleLayer}
+          key='circles'
+          animate={{center: AutoEasingMethod.easeInOutQuad(1000, 100, AutoEasingLoopStyle.NONE)}}
+          data={{this.providers.circle}}
+          scaleFactor={() => this.camera.scale[0]}
+        />
+      </Layers>
+    </Scene>
+
+  */
+  pipeline(): IPipeline {
+    const scenes = DEFAULT_SCENES;
+    scenes.forEach(s => s.views.forEach(v => v.camera = this.camera));
+
+    return {
+      resources: [],
+      scenes: [
+        {
+          key: 'default',
+          views: [{
+            key: 'default-view',
+            camera: this.camera,
+            background: [0, 0, 0, 1],
+            viewport: {
+              left: 0,
+              right: '100%',
+              top: 0,
+              bottom: '100%',
+            }
+          }],
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutQuad(
+                  1000,
+                  100,
+                  AutoEasingLoopStyle.NONE
+                )
+              },
+              data: this.providers.circles,
+              key: `circles`,
+              scaleFactor: () => this.camera.scale[0],
+            })
+          ]
+        }
+      ]
+    };
   }
 
   async init() {

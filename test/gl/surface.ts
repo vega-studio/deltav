@@ -2,13 +2,10 @@ import {
   BasicCameraController,
   ChartCamera,
   EventManager,
-  ILayerSurfaceOptions,
-  ISceneOptions,
-  LayerInitializer,
+  IPipeline,
   LayerSurface,
   Vec4
 } from "src";
-import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
 
 /**
  * The options for the surface.
@@ -20,12 +17,8 @@ export interface ISurfaceOptions {
   container: HTMLElement;
   /** The event managers to provide for the surface. If not provided the default manager for the default camera will be used */
   eventManagers?: EventManager[] | null;
-  /** The layers to render for this set up */
-  layers?(): LayerInitializer[];
-  /** Defines the exact resources to be present for the surface */
-  resources?: ILayerSurfaceOptions["resources"];
-  /** The optional scenes to establish */
-  scenes?: ISceneOptions[] | null;
+  /** The rendering pipeline for this  */
+  pipeline(): IPipeline;
 
   /** Callback used to generate the extra elements */
   makeElements?(
@@ -34,10 +27,8 @@ export interface ISurfaceOptions {
   ): {
     /** The event managers to provide for the surface. If not provided the default manager for the default camera will be used */
     eventManagers?: EventManager[] | null;
-    /** The layers to render for this set up */
-    layers?(): LayerInitializer[];
-    /** The optional scenes to establish */
-    scenes?: ISceneOptions[] | null;
+    /** The pipeline to use for rendering with this set up */
+    pipeline?(): IPipeline;
   };
 }
 
@@ -49,9 +40,8 @@ export interface ISurfaceOptions {
  * Object.
  */
 export class Surface {
-  /** Governs panning, zooming, and bounding, as well as pan/zoom api */
-  cameraControl: BasicCameraController;
-  /** The containing element of this component */
+  /** Governs panning, zooming, and bounding, as well as pan/zoom api : BasicCameraController;
+   /** The containing element of this component */
   container: HTMLElement;
   /** The rendering context we will draw into */
   context: HTMLCanvasElement;
@@ -75,6 +65,8 @@ export class Surface {
   private animationFrameId: number;
   /** Flagged to true when a layer update should happen */
   needsLayerUpdate: boolean = false;
+  /** This is the event managers specified to be in use for the demo */
+  private eventManagers: EventManager[] = [];
 
   constructor(options: ISurfaceOptions) {
     this.container = options.container;
@@ -134,12 +126,12 @@ export class Surface {
   /**
    * Generates all of the layers necessary for the surface
    */
-  updateLayers() {
+  updatePipeline() {
     if (!this.surface) return;
-    const makeLayers = this.options.layers;
+    const getPipeline = this.options.pipeline;
 
-    if (makeLayers) {
-      this.surface.render(makeLayers() || []);
+    if (getPipeline) {
+      this.surface.pipeline(getPipeline() || []);
     }
   }
 
@@ -182,8 +174,6 @@ export class Surface {
 
     // Feedback holds precedence
     this.options = Object.assign({}, this.options, feedback);
-    // Determine what scenes are being requested for this surface
-    const scenes: ISceneOptions[] = this.options.scenes || DEFAULT_SCENES;
 
     // Destroy the previous surface before creating a new one
     if (this.surface) {
@@ -192,35 +182,24 @@ export class Surface {
 
     // Make our canvas context
     this.makeContext();
-
-    // Adjust the camera of the default scene
-    scenes.forEach(scene => {
-      if (DEFAULT_SCENES.indexOf(scene) > -1) {
-        scene.views[0].camera = defaultController.camera;
-      }
-    });
-
     // Make the surface with all of the needed scenes
     this.surface = new LayerSurface();
+    // Set up the event managers to be in use for this surface
+    this.eventManagers = this.options.eventManagers || [defaultController];
 
     // Initialize the surface with the specified properties
     await this.surface
       .init({
-        resources: this.options.resources || [
-          DEFAULT_RESOURCES.atlas,
-          DEFAULT_RESOURCES.font
-        ],
         context: this.context,
-        eventManagers: this.options.eventManagers || [defaultController],
+        eventManagers: this.eventManagers,
         handlesWheelEvents: true,
         rendererOptions: {
           antialias: true
-        },
-        scenes
+        }
       })
       .then(() => {
         if (!this.surface) return;
-        this.updateLayers();
+        this.updatePipeline();
         this.surfaceReadyResolver(this.surface);
       });
 
@@ -265,7 +244,7 @@ export class Surface {
 
         if (this.needsLayerUpdate || true) {
           this.needsLayerUpdate = false;
-          this.updateLayers();
+          this.updatePipeline();
         }
 
         this.surface.draw(time);

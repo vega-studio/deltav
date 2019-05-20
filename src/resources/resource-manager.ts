@@ -51,7 +51,9 @@ export class ResourceManager {
   /**
    * This hands the destruction of a resource to the correct Resource Manager.
    */
-  async destroyResource<T extends IResourceType>(resource: T & { key: string }) {
+  async destroyResource<T extends IResourceType>(
+    resource: T & { key: string }
+  ) {
     const manager = this.managers.get(resource.type);
 
     if (!manager) {
@@ -64,7 +66,7 @@ export class ResourceManager {
       return;
     }
 
-    return await manager.destroyResource(resource.key);
+    return await manager.destroyResource(resource);
   }
 
   /**

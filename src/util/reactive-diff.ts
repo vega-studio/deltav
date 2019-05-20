@@ -25,15 +25,18 @@ export interface IReactiveDiffOptions<U, T extends ReactiveDiffObject<U>> {
 /**
  * This is a helper object to monitor a set of objects
  */
-export class ReactiveDiff<U extends IdentifyByKey | null, T extends ReactiveDiffObject<U>> {
+export class ReactiveDiff<
+  U extends IdentifyByKey | null,
+  T extends ReactiveDiffObject<U>
+> {
   /** The options used to construct this controller */
   private options: IReactiveDiffOptions<U, T>;
   /** All items flagged for disposing */
-  private willDispose = new Set<T['key']>();
+  private willDispose = new Set<T["key"]>();
   /** We track all items by their key for quicker processing */
-  private keyToItem = new Map<T['key'], U>();
+  private keyToItem = new Map<T["key"], U>();
   /** We track all initializers by their key for quicker processing */
-  private keyToInitializer = new Map<T['key'], T>();
+  private keyToInitializer = new Map<T["key"], T>();
   /** Used to faciliate and enable the inline() ability */
   private currentInitalizerIndex = 0;
   /**
@@ -102,9 +105,7 @@ export class ReactiveDiff<U extends IdentifyByKey | null, T extends ReactiveDiff
         if (item) {
           this.currentItem = item;
           await this.options.updateItem(initializer, item);
-        }
-
-        else item = await this.options.buildItem(initializer);
+        } else item = await this.options.buildItem(initializer);
 
         if (item) {
           this.keyToInitializer.set(initializer.key, initializer);
@@ -166,7 +167,11 @@ export class ReactiveDiff<U extends IdentifyByKey | null, T extends ReactiveDiff
    */
   inline(newInitializers: T[]) {
     if (this.currentInitializers && this.currentItem) {
-      this.currentInitializers.splice(this.currentInitalizerIndex + 1, 0, ...newInitializers);
+      this.currentInitializers.splice(
+        this.currentInitalizerIndex + 1,
+        0,
+        ...newInitializers
+      );
 
       for (let i = 0, iMax = newInitializers.length; i < iMax; ++i) {
         const init = newInitializers[i];

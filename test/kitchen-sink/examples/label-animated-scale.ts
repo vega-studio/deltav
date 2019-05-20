@@ -14,15 +14,13 @@ export class LabelAnimatedScale extends BaseExample {
   scaleStep: number = 0.05;
 
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       resourceKey: resource.font,
       data: provider,
-      key: "label-animated-scale",
-      scene
+      key: "label-animated-scale"
     });
   }
 

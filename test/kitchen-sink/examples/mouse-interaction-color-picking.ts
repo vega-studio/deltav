@@ -71,7 +71,6 @@ export class MouseInteractionColorPicking extends BaseExample {
   };
 
   makeLayer(
-    scene: string,
     _resource: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer | LayerInitializer[] {
@@ -88,8 +87,7 @@ export class MouseInteractionColorPicking extends BaseExample {
         onMouseOver: this.handleCircleOver,
         opacity: 0.5,
         picking: PickType.SINGLE,
-        scaleFactor: () => 1,
-        scene
+        scaleFactor: () => 1
       }),
       createLayer(EdgeLayer, {
         animate: {
@@ -100,7 +98,6 @@ export class MouseInteractionColorPicking extends BaseExample {
         onMouseMove: this.handleEdgeMouseMove,
         onMouseOut: this.handleEdgeMouseOut,
         picking: PickType.SINGLE,
-        scene,
         type: EdgeType.BEZIER2
       })
     ];

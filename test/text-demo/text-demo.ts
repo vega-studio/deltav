@@ -3,20 +3,21 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   ChartCamera,
+  ClearFlags,
   createLayer,
+  createView,
   EasingUtil,
   GlyphInstance,
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  ISceneOptions,
+  IPipeline,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
   nextFrame,
   ScaleMode
 } from "src";
-import { IDefaultResources, WORDS } from "test/types";
+import { DEFAULT_RESOURCES, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
 
@@ -152,36 +153,42 @@ export class TextDemo extends BaseDemo {
 
   getEventManagers(
     defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
+    defaultCamera: ChartCamera
   ) {
+    this.camera = defaultCamera;
     defaultController.wheelShouldScroll = true;
     return null;
   }
 
   /**
-   * Construct scenes or get default properties.
+   * Render pipeline for this demo
    */
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
-  }
-
-  /**
-   * Construct the layers needed. This is on a loop so we keep it very simple.
-   */
-  getLayers(resources: IDefaultResources): LayerInitializer[] {
-    return [
-      createLayer(LabelLayer, {
-        animate: {
-          color: AutoEasingMethod.easeInOutCubic(500)
-        },
-        data: this.providers.labels,
-        key: "labels",
-        scene: "default",
-        resourceKey: resources.font.key,
-        scaleMode: this.parameters.scaleMode
-      })
-    ];
+  pipeline(): IPipeline {
+    return {
+      resources: [DEFAULT_RESOURCES.font],
+      scenes: [
+        {
+          key: "default",
+          views: [
+            createView({
+              camera: this.camera,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          ],
+          layers: [
+            createLayer(LabelLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: this.providers.labels,
+              key: "labels",
+              resourceKey: DEFAULT_RESOURCES.font.key,
+              scaleMode: this.parameters.scaleMode
+            })
+          ]
+        }
+      ]
+    };
   }
 
   /**

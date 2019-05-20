@@ -17,7 +17,6 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
-    scene: string,
     _resources: TestResourceKeys,
     provider: InstanceProvider<CircleInstance>
   ): LayerInitializer {
@@ -26,8 +25,7 @@ export class AnimateDeleteAdd extends BaseExample {
         center: AutoEasingMethod.linear(1000)
       },
       data: provider,
-      key: "animate-delete-add",
-      scene: scene
+      key: "animate-delete-add"
     });
   }
 

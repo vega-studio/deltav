@@ -3,8 +3,8 @@ import {
   getAbsolutePositionBounds
 } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
-import { Color } from "../types";
-import { Vec2 } from "../util";
+import { Color, Omit } from "../types";
+import { uid, Vec2 } from "../util";
 import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -14,6 +14,27 @@ export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
   STENCIL = 0b0100
+}
+
+/**
+ * Helper method to make a fullscreen view quickly
+ */
+export function createView(
+  options: Pick<IViewOptions, "camera"> &
+    Omit<Partial<IViewOptions>, "viewport">
+): IViewOptions {
+  return Object.assign(
+    {
+      key: `view.${uid()}`,
+      viewport: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      }
+    },
+    options
+  );
 }
 
 /**
@@ -35,7 +56,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If not provided, then this camera will use a default ChartCamera for this camera slot. This
    * will also cause a normal camera handler to be utilized.
    */
-  camera?: ChartCamera;
+  camera: ChartCamera;
   /**
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */

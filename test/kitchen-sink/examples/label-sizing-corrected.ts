@@ -12,15 +12,13 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelSizingCorrected extends BaseExample {
   makeLayer(
-    scene: string,
     resource: TestResourceKeys,
     provider: InstanceProvider<LabelInstance>
   ): LayerInitializer {
     return createLayer(LabelLayer, {
       resourceKey: resource.font,
       data: provider,
-      key: "label-sizing-corrected",
-      scene
+      key: "label-sizing-corrected"
     });
   }
 

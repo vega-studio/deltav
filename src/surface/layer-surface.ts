@@ -931,7 +931,7 @@ export class LayerSurface {
    * This allws for querying a view's screen bounds. Null i;s returned if the view id
    * specified does not exist.
    */
-  getViewSize(viewId: string): Bounds<never> | null {
+  getViewSize(viewId: string): Bounds<View> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
       const view = scene.viewDiffs.getByKey(viewId);

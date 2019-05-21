@@ -116,7 +116,7 @@ export class View extends IdentifyByKey {
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the rendering bounds within screen space */
-  screenBounds: Bounds<never>;
+  screenBounds: Bounds<View>;
   /** Camera that defines the view projection matrix */
   viewCamera: ViewCamera;
   /** The size positioning of the view */
@@ -299,12 +299,13 @@ export class View extends IdentifyByKey {
 
       this.viewBounds = viewBounds;
       this.viewBounds.d = this;
-      this.screenBounds = new Bounds<never>({
+      this.screenBounds = new Bounds<View>({
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,
         y: this.viewBounds.y / this.pixelRatio
       });
+      this.screenBounds.d = this;
     } else if (!isOrthographic(this.viewCamera.baseCamera)) {
       console.warn(
         "Fit to viewport does not support non-orthographic cameras as a default behavior."

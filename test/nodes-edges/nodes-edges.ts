@@ -316,7 +316,7 @@ export class NodesEdges extends BaseDemo {
               key: "edges",
               type: EdgeType.LINE
             }),
-            debugLayer(CircleLayer, {
+            createLayer(CircleLayer, {
               animate: {
                 color: AutoEasingMethod.easeInOutCubic(500)
               },

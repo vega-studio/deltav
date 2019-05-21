@@ -151,6 +151,8 @@ export class MouseEventManager {
           bounds.push(view.screenBounds);
         }
       }
+
+      this.quadTree.addAll(bounds);
     }
   }
 
@@ -429,7 +431,7 @@ export class MouseEventManager {
   ): IMouseInteraction {
     // Find the views the mouse has interacted with
     const hitViews = this.getViewsUnderMouse(mouse);
-    let targetSceneView = hitViews[0] && hitViews[0].d && hitViews[0].d;
+    let targetSceneView = hitViews[0] && hitViews[0].d;
     if (!targetSceneView) targetSceneView = emptyView;
 
     return {

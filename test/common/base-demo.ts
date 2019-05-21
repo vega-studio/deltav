@@ -4,7 +4,8 @@ import {
   Bounds,
   ChartCamera,
   EventManager,
-  IPipeline
+  IPipeline,
+  View
 } from "src";
 import { Surface } from "../gl/surface";
 import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
@@ -55,7 +56,7 @@ export abstract class BaseDemo {
    * An assurred way to get the screen bounds of a view. If no id is provided it attempts
    * to retrieve the default view's bounds.
    */
-  async getViewScreenBounds(viewId?: string): Promise<Bounds<never> | null> {
+  async getViewScreenBounds(viewId?: string): Promise<Bounds<View> | null> {
     const layerSurface = await this.surface.surfaceReady;
     const bounds = layerSurface.getViewSize(viewId || "default-view");
 

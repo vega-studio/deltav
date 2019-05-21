@@ -244,10 +244,10 @@ export class Surface {
 
         if (this.needsLayerUpdate || true) {
           this.needsLayerUpdate = false;
-          await this.updatePipeline();
+          this.updatePipeline();
         }
 
-        await this.surface.draw(time);
+        this.surface.draw(time);
       } catch (err) {
         /* Absorb any errors the draw loop may emit */
       }

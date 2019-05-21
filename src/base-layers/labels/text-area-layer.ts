@@ -9,7 +9,7 @@ import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
-} from "../../surface/layer-surface";
+} from "../../surface/surface";
 import {
   InstanceDiffType,
   IProjection,

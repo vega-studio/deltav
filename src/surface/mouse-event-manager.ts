@@ -5,18 +5,21 @@ import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import { LayerScene } from "./layer-scene";
-import { LayerSurface } from "./layer-surface";
+import { Surface } from "./surface";
 import { View } from "./view";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
 
-const emptyView: View = new View({
-  key: "error",
-  viewport: {},
-  viewCamera: new ViewCamera(Camera.defaultCamera()),
-  camera: new ChartCamera()
-});
+const emptyView: View = new View(
+  new LayerScene(undefined, { key: "error", layers: [], views: [] }),
+  {
+    key: "error",
+    viewport: {},
+    viewCamera: new ViewCamera(Camera.defaultCamera()),
+    camera: new ChartCamera()
+  }
+);
 
 emptyView.fitViewtoViewport(
   new Bounds({ x: 0, y: 0, width: 100, height: 100 })
@@ -120,7 +123,7 @@ export class MouseEventManager {
   /** This is the quad tree for finding intersections with the mouse */
   quadTree: QuadTree<Bounds<View>>;
   /** The parent layer surface this event manager is beneath */
-  surface: LayerSurface;
+  surface: Surface;
   /** The events created that need to be removed */
   eventCleanup: [string, EventListenerOrEventListenerObject][] = [];
 
@@ -163,7 +166,7 @@ export class MouseEventManager {
 
   constructor(
     canvas: HTMLCanvasElement,
-    surface: LayerSurface,
+    surface: Surface,
     controllers: EventManager[],
     handlesWheelEvents?: boolean
   ) {

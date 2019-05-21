@@ -155,7 +155,7 @@ export class ReactiveDiff<
     });
 
     // Don't hang onto the mutated list of initializers
-    delete this.currentInitializers;
+    this.currentInitializers = [];
     delete this.currentItem;
     delete this.currentInitializer;
   }

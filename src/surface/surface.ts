@@ -54,7 +54,7 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
 /**
  * Default resource managers the system will utilize to handle default / basic resources.
  */
-export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers"] = [
+export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = [
   {
     type: ResourceType.ATLAS,
     manager: new AtlasResourceManager({})
@@ -68,7 +68,7 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ILayerSurfaceOptions["resourceManagers
 /**
  * Options for generating a new layer surface.
  */
-export interface ILayerSurfaceOptions {
+export interface ISurfaceOptions {
   /**
    * Provides the context the surface will use while rendering
    */
@@ -154,7 +154,7 @@ const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
  * A type to describe the constructor of a Layer class.
  */
 export interface ILayerConstructable<T extends Instance> {
-  new (surface: LayerSurface, scene: LayerScene, props: ILayerProps<T>): Layer<
+  new (surface: Surface, scene: LayerScene, props: ILayerProps<T>): Layer<
     any,
     any
   >;
@@ -207,11 +207,10 @@ export function createLayer<T extends Instance, U extends ILayerProps<T>>(
 }
 
 /**
- * This is a manager for layers. It will use voidgl layers to intelligently render resources
- * as efficiently as possible. Layers will be rendered in the order they are provided and this
- * surface will provide some basic camera controls by default.
+ * This is a render controller for managing GPU rendering techniques via a layering system. This is the entry object
+ * that contains and monitors all resources for performing the GPU actions.
  */
-export class LayerSurface {
+export class Surface {
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
   /**
@@ -991,7 +990,7 @@ export class LayerSurface {
    * This is the beginning of the system. This should be called immediately after the surface is constructed.
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */
-  async init(options: ILayerSurfaceOptions) {
+  async init(options: ISurfaceOptions) {
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
 
@@ -1024,7 +1023,7 @@ export class LayerSurface {
   /**
    * This initializes the Canvas GL contexts needed for rendering.
    */
-  private initGL(options: ILayerSurfaceOptions) {
+  private initGL(options: ISurfaceOptions) {
     // Get the canvas of our context to set up our Three settings
     const canvas = options.context;
     if (!canvas) return null;
@@ -1034,7 +1033,7 @@ export class LayerSurface {
     const height = canvas.height;
     let hasContext = true;
 
-    const rendererOptions: ILayerSurfaceOptions["rendererOptions"] = Object.assign(
+    const rendererOptions: ISurfaceOptions["rendererOptions"] = Object.assign(
       {
         alpha: false,
         antialias: false,
@@ -1102,7 +1101,7 @@ export class LayerSurface {
   /**
    * Initializes the expanders that should be applied to the surface for layer processing.
    */
-  private initIOExpanders(options: ILayerSurfaceOptions) {
+  private initIOExpanders(options: ISurfaceOptions) {
     // Handle expanders passed in as an array or blank
     if (
       Array.isArray(options.ioExpansion) ||
@@ -1129,7 +1128,7 @@ export class LayerSurface {
   /**
    * Initializes elements for handling mouse interactions with the canvas.
    */
-  private initMouseManager(options: ILayerSurfaceOptions) {
+  private initMouseManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers themselves
     const eventManagers: EventManager[] = ([
       new LayerMouseEvents(this)
@@ -1147,7 +1146,7 @@ export class LayerSurface {
   /**
    * This initializes resources needed or requested such as textures or render surfaces.
    */
-  private async initResources(options: ILayerSurfaceOptions) {
+  private async initResources(options: ISurfaceOptions) {
     // Create the controller for handling all resource managers
     this.resourceManager = new ResourceManager();
     // Set the GL renderer to the

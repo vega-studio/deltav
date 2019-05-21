@@ -38,7 +38,7 @@ import {
   LayerBufferType,
   makeLayerBufferManager
 } from "./layer-processing/layer-buffer-type";
-import { LayerInitializer, LayerSurface } from "./layer-surface";
+import { LayerInitializer, Surface } from "./surface";
 import { View } from "./view";
 
 const debug = require("debug")("performance");
@@ -188,14 +188,14 @@ export class Layer<
     | IQuadTreePickingMetrics<T>
     | ISinglePickingMetrics<T>
     | INonePickingMetrics;
-  /** Properties handed to the Layer during a LayerSurface render */
+  /** Properties handed to the Layer during a Surface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
   resource: ResourceManager;
   /** This is the layer scene this layer feeds into */
   scene: LayerScene;
   /** This is the surface this layer is generated under */
-  surface: LayerSurface;
+  surface: Surface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[] = [];
   /** A uid provided to the layer to give it some uniqueness as an object */
@@ -210,7 +210,7 @@ export class Layer<
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
   willRebuildLayer: boolean = false;
 
-  constructor(surface: LayerSurface, scene: LayerScene, props: ILayerProps<T>) {
+  constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
     // After associating the layer with the view it is a part of.
     super(props);

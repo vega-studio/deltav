@@ -6,7 +6,7 @@ import {
   Layer,
   LayerInitializer,
   LayerScene,
-  LayerSurface
+  Surface
 } from "../surface";
 
 /**
@@ -39,7 +39,7 @@ class LogChangesLayer<
     })
   };
 
-  constructor(surface: LayerSurface, scene: LayerScene, props: U) {
+  constructor(surface: Surface, scene: LayerScene, props: U) {
     super(surface, scene, props);
 
     console.warn(

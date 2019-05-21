@@ -107,6 +107,7 @@ export class WordSandDemo extends BaseDemo {
           key: "default",
           views: [
             createView({
+              key: "default-view",
               camera: this.camera,
               clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
             })

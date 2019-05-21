@@ -1,3 +1,4 @@
+import { LayerScene } from "src/surface/layer-scene";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
@@ -20,7 +21,7 @@ export enum ClearFlags {
  * Helper method to make a fullscreen view quickly
  */
 export function createView(
-  options: Pick<IViewOptions, "camera"> &
+  options: Pick<IViewOptions, "camera" | "key"> &
     Omit<Partial<IViewOptions>, "viewport">
 ): IViewOptions {
   return Object.assign(
@@ -115,6 +116,8 @@ export class View extends IdentifyByKey {
   optimizeRendering: boolean = false;
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
+  /** The scene this view is displaying */
+  scene: LayerScene;
   /** This is the rendering bounds within screen space */
   screenBounds: Bounds<View>;
   /** Camera that defines the view projection matrix */
@@ -124,8 +127,9 @@ export class View extends IdentifyByKey {
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: Bounds<View>;
 
-  constructor(options: IViewOptions) {
+  constructor(scene: LayerScene, options: IViewOptions) {
     super(options);
+    this.scene = scene;
     this.update(options);
   }
 

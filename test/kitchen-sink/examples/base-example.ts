@@ -5,7 +5,7 @@ import {
   IInstanceProvider,
   Instance,
   LayerInitializer,
-  LayerSurface
+  Surface
 } from "src";
 
 export type TestResourceKeys = {
@@ -14,7 +14,7 @@ export type TestResourceKeys = {
 };
 
 export abstract class BaseExample {
-  surface: LayerSurface;
+  surface: Surface;
   view: string;
 
   destroy() {

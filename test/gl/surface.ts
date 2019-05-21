@@ -3,7 +3,7 @@ import {
   ChartCamera,
   EventManager,
   IPipeline,
-  LayerSurface,
+  Surface,
   Vec4
 } from "src";
 
@@ -39,7 +39,7 @@ export interface ISurfaceOptions {
  * The providers and queries into the world space are really the only items external objects should use from this
  * Object.
  */
-export class Surface {
+export class DemoSurface {
   /** Governs panning, zooming, and bounding, as well as pan/zoom api : BasicCameraController;
    /** The containing element of this component */
   container: HTMLElement;
@@ -48,12 +48,12 @@ export class Surface {
   /** The options this Surface is constructed/updated with */
   options: ISurfaceOptions;
   /** The layer manager that draws our GL elements */
-  surface?: LayerSurface;
+  surface?: Surface;
 
   // Resolver that resolves the surfaceReady promise that indicates the  surface has been created
-  private surfaceReadyResolver: (surface: LayerSurface) => void;
+  private surfaceReadyResolver: (surface: Surface) => void;
   // This is the Promise one can await to see if the surface has been created yet
-  surfaceReady: Promise<LayerSurface> = new Promise(resolve => {
+  surfaceReady: Promise<Surface> = new Promise(resolve => {
     this.surfaceReadyResolver = resolve;
   });
 
@@ -183,7 +183,7 @@ export class Surface {
     // Make our canvas context
     this.makeContext();
     // Make the surface with all of the needed scenes
-    this.surface = new LayerSurface();
+    this.surface = new Surface();
     // Set up the event managers to be in use for this surface
     this.eventManagers = this.options.eventManagers || [defaultController];
 

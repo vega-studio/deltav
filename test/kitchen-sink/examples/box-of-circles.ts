@@ -11,7 +11,7 @@ import {
   IInstanceProvider,
   InstanceProvider,
   LayerInitializer,
-  LayerSurface,
+  Surface,
   Vec,
   Vec2
 } from "src";
@@ -24,7 +24,7 @@ function getColorIndicesForCoord(x: number, y: number, width: number) {
   return [red, red + 1, red + 2, red + 3];
 }
 
-function makeTextPositions(surface: LayerSurface, view: string) {
+function makeTextPositions(surface: Surface, view: string) {
   const viewBounds = surface.getViewSize(view);
   if (!viewBounds) return [];
   const canvas = document.createElement("canvas").getContext("2d");

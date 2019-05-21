@@ -1,14 +1,14 @@
-import { generateDefaultElements } from "src/surface/layer-processing/generate-default-scene";
 import {
   LayerInitializer,
   LayerInitializerInternal,
-  LayerSurface
-} from "src/surface/layer-surface";
+  Surface
+} from "src/surface/surface";
 import { ReactiveDiff } from "src/util/reactive-diff";
 import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import { generateDefaultElements } from "./layer-processing/generate-default-scene";
 import { IViewOptions, View } from "./view";
 
 /**
@@ -46,7 +46,7 @@ export class LayerScene extends IdentifyByKey {
     LayerInitializer
   >;
   /** The presiding surface over this scene */
-  surface?: LayerSurface;
+  surface?: Surface;
   /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
   viewDiffs: ReactiveDiff<View, IViewOptions>;
 
@@ -60,7 +60,7 @@ export class LayerScene extends IdentifyByKey {
     return this.viewDiffs.items;
   }
 
-  constructor(surface: LayerSurface | undefined, options: ISceneOptions) {
+  constructor(surface: Surface | undefined, options: ISceneOptions) {
     super(options);
     this.surface = surface;
     this.init(options);
@@ -191,10 +191,11 @@ export class LayerScene extends IdentifyByKey {
     this.viewDiffs = new ReactiveDiff({
       buildItem: async (initializer: IViewOptions) => {
         if (!this.surface) return null;
-        const newView = new View(initializer);
+        const newView = new View(this, initializer);
         newView.camera = newView.camera || defaultElements.camera;
         newView.viewCamera = newView.viewCamera || defaultElements.viewCamera;
         newView.pixelRatio = this.surface.pixelRatio;
+        newView.camera.surface = this.surface;
 
         return newView;
       },

@@ -7,7 +7,7 @@ import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
-} from "../../surface/layer-surface";
+} from "../../surface/surface";
 import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {

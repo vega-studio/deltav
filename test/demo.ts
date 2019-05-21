@@ -2,7 +2,7 @@ import * as datGUI from "dat.gui";
 import { BasicCameraController, ChartCamera } from "src";
 import { BaseDemo } from "./common/base-demo";
 import { demoKeys, demos, startDemoKey } from "./config";
-import { Surface } from "./gl/surface";
+import { DemoSurface } from "./gl/surface";
 
 export interface IDemoOptions {
   container: HTMLElement;
@@ -20,7 +20,7 @@ export class Demo {
   /** The options that started up the demo */
   options: IDemoOptions;
   /** The GL surface that manages our graphics pipeline */
-  surface: Surface;
+  surface: DemoSurface;
 
   /** A storage object for the GUI to operate with */
   guiStore = {
@@ -144,7 +144,7 @@ export class Demo {
 
     // After the demo has been determined, let's create our first surface to handle the demo's
     // request of scenes and layers.
-    this.surface = new Surface({
+    this.surface = new DemoSurface({
       background: [0, 0, 0, 1],
       container: this.options.container,
       pipeline: () => ({})

@@ -114,6 +114,7 @@ export class PhysicsDemo extends BaseDemo {
           key: "default",
           views: [
             createView({
+              key: "default-view",
               camera: this.camera,
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
             })

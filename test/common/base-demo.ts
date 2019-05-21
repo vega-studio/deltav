@@ -7,7 +7,7 @@ import {
   IPipeline,
   View
 } from "src";
-import { Surface } from "../gl/surface";
+import { DemoSurface } from "../gl/surface";
 import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
 
 /**
@@ -16,7 +16,7 @@ import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
  */
 export abstract class BaseDemo {
   /** Holds the surface currently rendering everything */
-  surface: Surface;
+  surface: DemoSurface;
   /** Contains interval timers created by the demo for easy cleaning */
   private timers: number[] = [];
 
@@ -95,7 +95,7 @@ export abstract class BaseDemo {
   /**
    * Applies the surface being used that renders the elements for the demo.
    */
-  setSurface(surface: Surface) {
+  setSurface(surface: DemoSurface) {
     this.surface = surface;
   }
 

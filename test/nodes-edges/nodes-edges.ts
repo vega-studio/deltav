@@ -14,11 +14,11 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  compare4,
   copy2,
   copy4,
   createLayer,
   createView,
-  debugLayer,
   EasingUtil,
   EdgeInstance,
   EdgeLayer,
@@ -254,7 +254,10 @@ export class NodesEdges extends BaseDemo {
 
     this.circles.forEach(circle => {
       if (over.has(circle)) return;
-      circle.color = [0.2, 0.2, 0.2, 1];
+
+      if (!compare4(circle.color, [0.2, 0.2, 0.2, 1])) {
+        circle.color = [0.2, 0.2, 0.2, 1];
+      }
     });
   };
 
@@ -268,7 +271,7 @@ export class NodesEdges extends BaseDemo {
     });
   };
 
-  handleCircleClick(info: IPickInfo<CircleInstance>) {
+  handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     const focus = info.instances.find(circle => Boolean(circle.center));
     if (!focus) return;
     this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
@@ -277,7 +280,7 @@ export class NodesEdges extends BaseDemo {
       focus.center[1],
       0
     ]);
-  }
+  };
 
   /**
    * Establishes the render pipeline
@@ -318,7 +321,7 @@ export class NodesEdges extends BaseDemo {
             }),
             createLayer(CircleLayer, {
               animate: {
-                color: AutoEasingMethod.easeInOutCubic(500)
+                color: AutoEasingMethod.easeInOutCubic(1000, 0)
               },
               data: this.providers.circles,
               key: "circles",
@@ -508,12 +511,12 @@ export class NodesEdges extends BaseDemo {
         if (angle > Math.PI / 2 && angle < Math.PI * 3 / 2) {
           lbl.anchor = {
             type: AnchorType.MiddleRight,
-            padding: this.circles[i].radius
+            padding: this.circles[i].radius + 4
           };
         } else {
           lbl.anchor = {
             type: AnchorType.MiddleLeft,
-            padding: this.circles[i].radius
+            padding: this.circles[i].radius + 4
           };
         }
       });

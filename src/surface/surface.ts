@@ -1166,6 +1166,10 @@ export class Surface {
 
   /**
    * Use this to establish the rendering pipeline the application should be using at the current time.
+   *
+   * NOTE: If you update the pipeline on a loop of any sort, you will want to await the pipeline to complete
+   * it's diff before you issue a draw command. Failure to do so invites undefined behavior which often causes
+   * elements tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
     // Make the diff manager for handling resources

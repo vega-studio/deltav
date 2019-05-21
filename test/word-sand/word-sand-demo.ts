@@ -1,6 +1,5 @@
 import * as datGUI from "dat.gui";
 import {
-  AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
   ChartCamera,
@@ -15,7 +14,6 @@ import {
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
 import { textPositions } from "../common/text-positions";
-import { CustomCircleLayer } from "./custom-circle-layer";
 
 const { random } = Math;
 
@@ -100,6 +98,9 @@ export class WordSandDemo extends BaseDemo {
     return [defaultController];
   }
 
+  /**
+   * The pipeline used to render our providers
+   */
   pipeline(): IPipeline {
     return {
       scenes: [
@@ -113,13 +114,9 @@ export class WordSandDemo extends BaseDemo {
             })
           ],
           layers: [
-            createLayer(CustomCircleLayer, {
+            createLayer(CircleLayer, {
               animate: {
-                center: AutoEasingMethod.easeInOutQuad(
-                  250,
-                  100,
-                  AutoEasingLoopStyle.NONE
-                )
+                center: AutoEasingMethod.easeInOutQuad(250)
               },
               data: this.providers.circles,
               key: "circles",
@@ -135,6 +132,9 @@ export class WordSandDemo extends BaseDemo {
    * Initialize the demo with beginning setup and layouts
    */
   async init() {
+    this.providers.circles.clear();
+    this.circles = [];
+
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeCircle();
     }
@@ -208,7 +208,7 @@ export class WordSandDemo extends BaseDemo {
   }
 
   /**
-   * Remove a circle fromt he rendering
+   * Remove a circle from the rendering
    */
   removeCircle() {
     const circle = this.circles.pop();

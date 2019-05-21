@@ -2,7 +2,7 @@ import * as datGUI from "dat.gui";
 import { BasicCameraController, ChartCamera } from "src";
 import { BaseDemo } from "./common/base-demo";
 import { demoKeys, demos, startDemoKey } from "./config";
-import { DemoSurface } from "./gl/surface";
+import { DemoSurface } from "./gl/demo-surface";
 
 export interface IDemoOptions {
   container: HTMLElement;

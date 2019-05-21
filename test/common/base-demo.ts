@@ -7,7 +7,7 @@ import {
   IPipeline,
   View
 } from "src";
-import { DemoSurface } from "../gl/surface";
+import { DemoSurface } from "../gl/demo-surface";
 import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
 
 /**

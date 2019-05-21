@@ -244,7 +244,7 @@ export class DemoSurface {
 
         if (this.needsLayerUpdate || true) {
           this.needsLayerUpdate = false;
-          this.updatePipeline();
+          await this.updatePipeline();
         }
 
         this.surface.draw(time);

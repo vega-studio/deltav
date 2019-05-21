@@ -1,4 +1,3 @@
-import { debug } from "util";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
@@ -252,9 +251,7 @@ export class AtlasResourceManager extends BaseResourceManager<
   /**
    * System is requesting properties for a resource should be updated.
    */
-  updateResource(_init: BaseResourceOptions) {
-    debug(
-      "System does not support updating atlas resources yet. To update, destroy the atlas then recreate it."
-    );
+  updateResource(options: BaseResourceOptions) {
+    if (!isAtlasResource(options)) return;
   }
 }

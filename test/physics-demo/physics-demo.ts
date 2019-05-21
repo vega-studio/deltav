@@ -11,7 +11,8 @@ import {
   createView,
   IMouseInteraction,
   InstanceProvider,
-  IPipeline
+  IPipeline,
+  LabelInstance
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { EventHandler } from "../common/event-handler";
@@ -31,7 +32,8 @@ export class PhysicsDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    circles: new InstanceProvider<CircleInstance>()
+    circles: new InstanceProvider<CircleInstance>(),
+    labels: new InstanceProvider<LabelInstance>()
   };
 
   /** GUI properties */

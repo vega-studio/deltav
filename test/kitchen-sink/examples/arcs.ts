@@ -68,7 +68,8 @@ export class Arcs extends BaseExample {
     }
 
     // Wait a tick to get the easing properties available
-    nextFrame(() => {
+    nextFrame(async () => {
+      await nextFrame();
       for (let i = 0; i < arcCount; ++i) {
         const arc = arcs[i];
         arc.angle = [-Math.PI / 2, Math.PI / 2];

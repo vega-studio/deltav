@@ -85,7 +85,7 @@ let tests: BaseExample[] = makeDemos();
 let layers: LayerInitializer[] = [];
 
 function isLayerInitializerList(val: any): val is LayerInitializer[] {
-  return Array.isArray(val) && Array.isArray(val[0]);
+  return Array.isArray(val);
 }
 
 /**
@@ -134,11 +134,12 @@ export class KitchenSink extends BaseDemo {
    * Establish the render pipeline
    */
   pipeline(): IPipeline {
+    const scenes = this.getScenes();
     this.getLayers();
 
     return {
       resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
-      scenes: this.getScenes()
+      scenes
     };
   }
 
@@ -152,12 +153,12 @@ export class KitchenSink extends BaseDemo {
   /**
    * Populate the scenes with the
    */
-  private getLayers(): LayerInitializer[] {
+  private getLayers() {
     this.makeSceneControls();
-    layers = [];
 
     // Generate the Layers for the tests now that the scenes are established
     tests.forEach((test, i) => {
+      layers = [];
       const controls = this.testControls.get(test);
       if (!controls) return;
 
@@ -179,8 +180,6 @@ export class KitchenSink extends BaseDemo {
 
       scene.scene.layers = layers;
     });
-
-    return layers;
   }
 
   handleKeyDown = (e: KeyboardEvent) => {

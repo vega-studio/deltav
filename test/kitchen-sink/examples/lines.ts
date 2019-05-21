@@ -51,7 +51,9 @@ export class Lines extends BaseExample {
 
     // Wait a tick for the instances to be committed to the GPU so we can adjust their animation
     // to fit a nice wavey pattern
-    nextFrame(() => {
+    nextFrame(async () => {
+      await nextFrame();
+
       let count = 0;
       for (let i = 0; i < countHigh; ++i) {
         for (let k = 0; k < countWide; ++k) {

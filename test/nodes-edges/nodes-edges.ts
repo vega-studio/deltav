@@ -18,6 +18,7 @@ import {
   copy4,
   createLayer,
   createView,
+  debugLayer,
   EasingUtil,
   EdgeInstance,
   EdgeLayer,
@@ -286,9 +287,10 @@ export class NodesEdges extends BaseDemo {
       resources: [DEFAULT_RESOURCES.font],
       scenes: [
         {
-          key: "default",
+          key: "default-scene",
           views: [
             createView({
+              key: "default-view",
               camera: this.camera,
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
             })
@@ -314,7 +316,7 @@ export class NodesEdges extends BaseDemo {
               key: "edges",
               type: EdgeType.LINE
             }),
-            createLayer(CircleLayer, {
+            debugLayer(CircleLayer, {
               animate: {
                 color: AutoEasingMethod.easeInOutCubic(500)
               },

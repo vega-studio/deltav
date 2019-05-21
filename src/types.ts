@@ -127,9 +127,17 @@ export type Color = [number, number, number, number];
 /**
  * Represents something with a unique id
  */
-export interface Identifiable {
+export interface IdentifiableById {
   /** A unique identifier */
-  id: string;
+  id: string | number;
+}
+
+/**
+ * Represents something with a unique key
+ */
+export interface IdentifiableByKey {
+  /** A unique identifier */
+  key: string | number;
 }
 
 /**

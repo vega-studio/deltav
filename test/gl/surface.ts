@@ -126,12 +126,12 @@ export class Surface {
   /**
    * Generates all of the layers necessary for the surface
    */
-  updatePipeline() {
+  async updatePipeline() {
     if (!this.surface) return;
     const getPipeline = this.options.pipeline;
 
     if (getPipeline) {
-      this.surface.pipeline(getPipeline() || []);
+      await this.surface.pipeline(getPipeline() || []);
     }
   }
 
@@ -197,17 +197,17 @@ export class Surface {
           antialias: true
         }
       })
-      .then(() => {
+      .then(async () => {
         if (!this.surface) return;
-        this.updatePipeline();
+        await this.updatePipeline();
         this.surfaceReadyResolver(this.surface);
-      });
 
-    // Start up the draw loop
-    this.animationFrameId = requestAnimationFrame((time: number) => {
-      this.draw(time);
-      this.needsLayerUpdate = true;
-    });
+        // Start up the draw loop
+        this.animationFrameId = requestAnimationFrame((time: number) => {
+          this.draw(time);
+          this.needsLayerUpdate = true;
+        });
+      });
   }
 
   /**
@@ -237,23 +237,23 @@ export class Surface {
   /**
    * Trigger the draw of the surface
    */
-  draw(time: number) {
+  draw = async (time: number) => {
     if (this.surface) {
       try {
         this.currentTime = time;
 
         if (this.needsLayerUpdate || true) {
           this.needsLayerUpdate = false;
-          this.updatePipeline();
+          await this.updatePipeline();
         }
 
-        this.surface.draw(time);
+        await this.surface.draw(time);
       } catch (err) {
         /* Absorb any errors the draw loop may emit */
       }
     }
-    this.animationFrameId = requestAnimationFrame(time => this.draw(time));
-  }
+    this.animationFrameId = requestAnimationFrame(this.draw);
+  };
 
   /**
    * Sets up some polling to watch the container. Returns true if execution AFTER this method is still

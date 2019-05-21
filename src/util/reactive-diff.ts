@@ -1,4 +1,4 @@
-import { IdentifyByKey } from "src/util/identify-by-key";
+import { IdentifiableById } from "src/types";
 
 /**
  * These are the minimum properties required for a ReactiveDiff to monitor a set of objects.
@@ -26,7 +26,7 @@ export interface IReactiveDiffOptions<U, T extends ReactiveDiffObject<U>> {
  * This is a helper object to monitor a set of objects
  */
 export class ReactiveDiff<
-  U extends IdentifyByKey | null,
+  U extends IdentifiableById | null,
   T extends ReactiveDiffObject<U>
 > {
   /** The options used to construct this controller */
@@ -91,8 +91,10 @@ export class ReactiveDiff<
     this._items = [];
 
     // We loop through all items injected to see who is new, who exists already, and who no longer
-    // exists in our input list.
-    for (let i = 0, iMax = processing.length; i < iMax; ++i) {
+    // exists in our input list. We MUST analyze the length on the loop as this list can be expanded.
+    // We use a while loop to ensure the async pattern is honored.
+    let i = 0;
+    while (i < processing.length) {
       const initializer = processing[i];
       this.currentInitalizerIndex = i;
       this.currentInitializer = initializer;
@@ -105,12 +107,14 @@ export class ReactiveDiff<
         if (item) {
           this.currentItem = item;
           await this.options.updateItem(initializer, item);
-        } else item = await this.options.buildItem(initializer);
+        } else {
+          item = await this.options.buildItem(initializer);
+        }
 
         if (item) {
           this.keyToInitializer.set(initializer.key, initializer);
           this.willDispose.delete(initializer.key);
-          this.items.push(item);
+          this._items.push(item);
         }
       }
 
@@ -121,11 +125,12 @@ export class ReactiveDiff<
         if (item) {
           this.keyToItem.set(initializer.key, item);
           this.keyToInitializer.set(initializer.key, initializer);
-          this.items.push(item);
+          this._items.push(item);
         }
       }
 
       delete this.currentItem;
+      i++;
     }
 
     // Now that we have processed all incoming items, the remaining items in our disposal list
@@ -166,7 +171,11 @@ export class ReactiveDiff<
    * This method is used to inline new elements at the time an update/creation occurs
    */
   inline(newInitializers: T[]) {
-    if (this.currentInitializers && this.currentItem) {
+    if (
+      newInitializers.length > 0 &&
+      this.currentInitializers &&
+      this.currentItem
+    ) {
       this.currentInitializers.splice(
         this.currentInitalizerIndex + 1,
         0,

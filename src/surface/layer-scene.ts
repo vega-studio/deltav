@@ -177,6 +177,7 @@ export class LayerScene extends IdentifyByKey {
         // the layer completely then generating the layer anew.
         if (layer.willRebuildLayer) {
           this.layerDiffs.rebuild();
+          layer.willRebuildLayer = false;
         }
 
         // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
@@ -237,8 +238,8 @@ export class LayerScene extends IdentifyByKey {
   /**
    * Hand off the diff objects to our view and layer diffs
    */
-  update(options: ISceneOptions) {
-    this.viewDiffs.diff(options.views);
-    this.layerDiffs.diff(options.layers);
+  async update(options: ISceneOptions) {
+    await this.viewDiffs.diff(options.views);
+    await this.layerDiffs.diff(options.layers);
   }
 }

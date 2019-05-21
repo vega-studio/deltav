@@ -2,16 +2,25 @@ import { IProjection, PickType } from "../../types";
 import { Vec2 } from "../../util";
 import { EventManager } from "../event-manager";
 import { Layer } from "../layer";
+import { LayerScene } from "../layer-scene";
 import { LayerSurface } from "../layer-surface";
-import {
-  IDragMetrics,
-  IMouseInteraction,
-  SceneView
-} from "../mouse-event-manager";
+import { IDragMetrics, IMouseInteraction } from "../mouse-event-manager";
+import { View } from "../view";
 
 function isDefined<T>(val: T | null | undefined): val is T {
   return Boolean(val);
 }
+
+/**
+ * Theoretically we can have a view be applied to multiple scenes. So to properly qualify a view
+ * it must be paired with the scene it is rendering for.
+ */
+type SceneView = {
+  /** This is the scene the view is rendering for */
+  scene: LayerScene;
+  /** This is the view itself that our mouse will interact with */
+  view: View;
+};
 
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions
@@ -25,7 +34,10 @@ export class LayerMouseEvents extends EventManager {
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
   isOver = new Map<SceneView, boolean>();
   /** This is the surface this manager is aiding with broadcasting events to layers */
-  sceneViews: SceneView[];
+  get scenes(): LayerScene[] {
+    if (!this.surface || !this.surface.sceneDiffs) return [];
+    return this.surface.sceneDiffs.items;
+  }
   /**
    * This is the surface this LayerMouseEvent Controller is operating on behalf of. We use this to trigger,
    * pre-layer processing items, such as color pick narrowing prior to the Layers receiving the event.
@@ -35,15 +47,22 @@ export class LayerMouseEvents extends EventManager {
   constructor(surface: LayerSurface) {
     super();
     this.surface = surface;
-    this.sceneViews = surface.sceneViews;
   }
 
   getSceneViewsUnderMouse(e: IMouseInteraction) {
     const sceneViewByViewId = new Map<string, SceneView>();
 
-    // Map the scene views by the view's identifiers
-    for (const sceneView of this.sceneViews) {
-      sceneViewByViewId.set(sceneView.view.id, sceneView);
+    // Map the scenes to SceneViews
+    for (let i = 0, iMax = this.scenes.length; i < iMax; ++i) {
+      const scene = this.scenes[i];
+
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const view = scene.views[k];
+        sceneViewByViewId.set(view.id, {
+          scene,
+          view
+        });
+      }
     }
 
     // Now retrieve and convert each view under the mouse to the scene view it coincides with

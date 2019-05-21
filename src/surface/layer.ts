@@ -14,11 +14,8 @@ import {
   IInstanceAttribute,
   ILayerMaterialOptions,
   INonePickingMetrics,
-  InstanceAttributeSize,
-  InstanceBlockIndex,
   InstanceDiffType,
   InstanceHitTest,
-  InstanceIOValue,
   IPickInfo,
   IQuadTreePickingMetrics,
   IShaderInitialization,
@@ -27,9 +24,7 @@ import {
   IUniformInternal,
   IVertexAttributeInternal,
   PickType,
-  ShaderInjectionTarget,
-  UniformIOValue,
-  UniformSize
+  UniformIOValue
 } from "../types";
 import { TrackedQuadTree, TrackedQuadTreeBoundsAccessor, uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -46,6 +41,12 @@ import {
 import { LayerInitializer, LayerSurface } from "./layer-surface";
 import { View } from "./view";
 
+const debug = require("debug")("performance");
+
+export function createUniform(options: IUniform) {
+  return options;
+}
+
 /**
  * Bare minimum required features a provider must provide to be the data for the layer.
  */
@@ -57,7 +58,6 @@ export interface IInstanceProvider<T extends Instance> {
   resolveContext: string;
   /** A unique number making it easier to identify this object */
   uid: number;
-
   /** A list of changes to instances */
   changeList: InstanceDiff<T>[];
   /** Removes an instance from the list */
@@ -271,7 +271,11 @@ export class Layer<
     // receive any GPU handling objects.
     if (!shaderIO) {
       this.picking.type = PickType.NONE;
-      return false;
+      debug(
+        "Shell layer initialized. Nothing will be rendered for this layer",
+        this.id
+      );
+      return true;
     }
 
     if (!shaderIO.fs || !shaderIO.vs) {
@@ -301,7 +305,13 @@ export class Layer<
     );
 
     // Check to see if the Shader Processing failed. If so, return null as a failure flag.
-    if (!shaderMetrics) return false;
+    if (!shaderMetrics) {
+      console.warn(
+        "The shader processor did not produce metrics for the layer."
+      );
+      return false;
+    }
+
     // Retrieve all of the attributes created as a result of layer input and module processing.
     const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
 
@@ -539,53 +549,6 @@ export class Layer<
       vertexAttributes: [],
       vertexCount: 0,
       vs: "${import: no-op}"
-    };
-  }
-
-  /**
-   * Helper method for making an instance attribute. Depending on set up, this makes creating elements
-   * have better documentation when typing out the elements.
-   */
-  makeInstanceAttribute(
-    block: number,
-    blockIndex: InstanceBlockIndex,
-    name: string,
-    size: InstanceAttributeSize,
-    update: (o: T) => InstanceIOValue,
-    resource?: {
-      type: number;
-      key: string;
-      name: string;
-      shaderInjection?: ShaderInjectionTarget;
-    }
-  ): IInstanceAttribute<T> {
-    return {
-      resource,
-      block,
-      blockIndex,
-      name,
-      size,
-      update
-    };
-  }
-
-  /**
-   * Helper method for making a uniform type. Depending on set up, this makes creating elements
-   * have better documentation when typing out the elements.
-   */
-  makeUniform(
-    name: string,
-    size: UniformSize,
-    update: (o: IUniform) => UniformIOValue,
-    shaderInjection?: ShaderInjectionTarget,
-    qualifier?: string
-  ): IUniform {
-    return {
-      name,
-      qualifier,
-      shaderInjection,
-      size,
-      update
     };
   }
 

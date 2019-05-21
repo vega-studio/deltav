@@ -1,4 +1,3 @@
-import { ReactiveDiff } from "src/util/reactive-diff";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -13,6 +12,7 @@ import {
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import {
+  IdentifiableById,
   IInstanceAttribute,
   IPipeline,
   IProjection,
@@ -21,6 +21,7 @@ import {
 } from "../types";
 import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
+import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { waitForFrame } from "../util/waitForFrame";
 import { BaseIOSorting } from "./base-io-sorting";
@@ -31,7 +32,7 @@ import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { ISceneOptions, LayerScene } from "./layer-scene";
-import { MouseEventManager, SceneView } from "./mouse-event-manager";
+import { MouseEventManager } from "./mouse-event-manager";
 import { ClearFlags, View } from "./view";
 
 /**
@@ -240,26 +241,11 @@ export class LayerSurface {
   renderer: WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
   resourceManager: ResourceManager;
-  /**
-   * This is all of the available scenes and their views for this surface. Layers reference the IDs
-   * of the scenes and the views to be a part of their rendering state.
-   */
-  scenes = new Map<string, LayerScene>();
-  /**
-   * This is all of the views currently generated for this surface paired with the scene they render.
-   */
-  sceneViews: SceneView[] = [];
   /** When set to true, the next render will make sure color picking is updated for layer interactions */
   updateColorPick?: {
     mouse: Vec2;
     views: View[];
   };
-  /**
-   * This flags all layers by id for disposal at the end of every render. A Layer must be recreated
-   * after each render in order to clear it's disposal flag. This is the trick to making this a
-   * reactive system.
-   */
-  willDisposeLayer = new Map<string, boolean>();
   /**
    * This map is a quick look up for a view to determine other views that
    * would need to be redrawn as a consequence of the key view needing a redraw.
@@ -277,13 +263,18 @@ export class LayerSurface {
    */
   private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
   /** Diff manager to handle diffing resource objects for the pipeline */
-  private resourceDiffs: ReactiveDiff<null, BaseResourceOptions>;
+  resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions>;
   /** Diff manager to handle diffing scene objects for the pipeline */
-  private sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
+  sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
 
   /** Read only getter for the gl context */
   get gl() {
     return this.context;
+  }
+
+  /** Get all of the scenes for this surface */
+  get scenes() {
+    return this.sceneDiffs.items;
   }
 
   /**
@@ -352,7 +343,7 @@ export class LayerSurface {
     time = this.frameMetrics.currentTime;
 
     // Get the scenes in their added order
-    const scenes = Array.from(this.scenes.values());
+    const scenes = this.sceneDiffs.items;
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
     const pickingPassByView = new Map<View, Layer<any, any>[]>();
 
@@ -445,9 +436,10 @@ export class LayerSurface {
       }
 
       // Re-render but only include non-errored layers
-      scene.layerDiffs.diff(
-        Object.values(validLayers).map(layer => layer.initializer)
-      );
+      const keepLayers = Object.values(validLayers);
+      if (layers.length !== keepLayers.length) {
+        scene.layerDiffs.diff(keepLayers.map(layer => layer.initializer));
+      }
     }
 
     // If any draw need was detected, redraw the surface
@@ -547,7 +539,7 @@ export class LayerSurface {
     this.layers.forEach(layer => layer.destroy());
     this.resourceManager.destroy();
     this.mouseManager.destroy();
-    this.sceneViews.forEach(sceneView => sceneView.scene.destroy());
+    this.sceneDiffs.destroy();
     this.renderer.dispose();
     this.pickingTarget.dispose();
   }
@@ -624,9 +616,14 @@ export class LayerSurface {
 
     // Before we draw the frame, we must have every camera resolve broadcasting changes so everything can respond
     // to the change before all of the drawing operations take place.
-    this.sceneViews.forEach(sceneView => {
-      sceneView.view.camera.broadcast();
-    });
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const scene = this.sceneDiffs.items[i];
+
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const view = scene.views[k];
+        view.camera.broadcast();
+      }
+    }
 
     // Make the layers commit their changes to the buffers then draw each scene view on
     // Completion.
@@ -649,11 +646,6 @@ export class LayerSurface {
     // After we have drawn our views of our scenes, we can now ensure all of the bounds
     // Are updated in the interactions and flag our interactions ready for mouse input
     if (this.mouseManager.waitingForRender) {
-      this.sceneViews.forEach(sceneView => {
-        sceneView.bounds = new Bounds(sceneView.view.screenBounds);
-        sceneView.bounds.d = sceneView;
-      });
-
       this.mouseManager.waitingForRender = false;
     }
 
@@ -679,10 +671,15 @@ export class LayerSurface {
     // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
     // be considered resolved for the current set of changes.
     // Set draw needs of cameras and views back to false
-    this.sceneViews.forEach(sceneView => {
-      sceneView.view.needsDraw = false;
-      sceneView.view.camera.resolve();
-    });
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const scene = this.sceneDiffs.items[i];
+
+      for (let i = 0, iMax = scene.views.length; i < iMax; ++i) {
+        const view = scene.views[i];
+        view.needsDraw = false;
+        view.camera.resolve();
+      }
+    }
 
     // Set all layers draw needs back to false, also, resolve all of the data providers
     // so their changelists are considered consumed.
@@ -883,35 +880,50 @@ export class LayerSurface {
    */
   private gatherViewDrawDependencies() {
     this.viewDrawDependencies.clear();
+    const scenes = this.sceneDiffs.items;
 
     // Fit all views to viewport
-    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
-      this.sceneViews[i].view.fitViewtoViewport(
-        new Bounds({
-          height: this.context.canvas.height,
-          width: this.context.canvas.width,
-          x: 0,
-          y: 0
-        })
-      );
+    for (let i = 0, endi = scenes.length; i < endi; i++) {
+      const scene = scenes[i];
+
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const view = scene.views[k];
+
+        view.fitViewtoViewport(
+          new Bounds({
+            height: this.context.canvas.height,
+            width: this.context.canvas.width,
+            x: 0,
+            y: 0
+          })
+        );
+      }
     }
 
     // Set viewDrawDependencies
-    for (let i = 0, endi = this.sceneViews.length; i < endi; i++) {
-      const sourceView = this.sceneViews[i].view;
-      const overlapViews: View[] = [];
+    for (let i = 0, endi = scenes.length; i < endi; i++) {
+      const scene = scenes[i];
 
-      for (let j = 0, endj = this.sceneViews.length; j < endj; j++) {
-        if (j !== i) {
-          const targetView = this.sceneViews[j].view;
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const sourceView = scene.views[k];
+        const overlapViews: View[] = [];
 
-          if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
-            overlapViews.push(targetView);
+        for (let j = 0, endj = scenes.length; j < endj; j++) {
+          if (j !== i) {
+            const scene = scenes[j];
+
+            for (let l = 0, lMax = scene.views.length; l < lMax; ++l) {
+              const targetView = scene.views[l];
+
+              if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
+                overlapViews.push(targetView);
+              }
+            }
           }
         }
-      }
 
-      this.viewDrawDependencies.set(sourceView, overlapViews);
+        this.viewDrawDependencies.set(sourceView, overlapViews);
+      }
     }
   }
 
@@ -920,10 +932,10 @@ export class LayerSurface {
    * specified does not exist.
    */
   getViewSize(viewId: string): Bounds<never> | null {
-    for (const sceneView of this.sceneViews) {
-      if (sceneView.view.id === viewId) {
-        return sceneView.view.screenBounds;
-      }
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const scene = this.sceneDiffs.items[i];
+      const view = scene.viewDiffs.getByKey(viewId);
+      if (view) return view.screenBounds;
     }
 
     return null;
@@ -933,10 +945,11 @@ export class LayerSurface {
    * This queries a view's window into a world's space.
    */
   getViewWorldBounds(viewId: string): Bounds<never> | null {
-    for (const sceneView of this.sceneViews) {
-      if (sceneView.view.id === viewId) {
-        const view = sceneView.view;
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const scene = this.sceneDiffs.items[i];
+      const view = scene.viewDiffs.getByKey(viewId);
 
+      if (view) {
         if (view.screenBounds) {
           const topLeft = view.viewToWorld([0, 0]);
           const bottomRight = view.screenToWorld([
@@ -964,10 +977,11 @@ export class LayerSurface {
    * in the surface
    */
   getProjections(viewId: string): IProjection | null {
-    for (const sceneView of this.sceneViews) {
-      if (sceneView.view.id === viewId) {
-        return sceneView.view;
-      }
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const scene = this.sceneDiffs.items[i];
+      const view = scene.viewDiffs.getByKey(viewId);
+
+      if (view) return view;
     }
 
     return null;
@@ -1124,7 +1138,7 @@ export class LayerSurface {
     // Generate the mouse manager for the layer
     this.mouseManager = new MouseEventManager(
       this.context.canvas,
-      this.sceneViews,
+      this,
       eventManagers,
       options.handlesWheelEvents
     );
@@ -1154,21 +1168,33 @@ export class LayerSurface {
   /**
    * Use this to establish the
    */
-  pipeline(pipeline: IPipeline) {
+  async pipeline(pipeline: IPipeline) {
     // Make the diff manager for handling resources
     if (!this.resourceDiffs) {
       this.resourceDiffs = new ReactiveDiff({
         buildItem: async (initializer: BaseResourceOptions) => {
+          console.warn("RESOURCE MADE", initializer.key);
           await this.resourceManager.initResource(initializer);
-          return null;
+
+          return {
+            id: initializer.key
+          };
         },
 
-        destroyItem: async (initializer: BaseResourceOptions, _item: null) => {
+        destroyItem: async (
+          initializer: BaseResourceOptions,
+          _item: IdentifiableById
+        ) => {
+          console.warn("RESOURCE DESTROYED");
           await this.resourceManager.destroyResource(initializer);
+
           return true;
         },
 
-        updateItem: async (initializer: BaseResourceOptions, _item: null) => {
+        updateItem: async (
+          initializer: BaseResourceOptions,
+          _item: IdentifiableById
+        ) => {
           await this.resourceManager.updateResource(initializer);
         }
       });
@@ -1193,17 +1219,17 @@ export class LayerSurface {
         },
 
         updateItem: async (initializer: ISceneOptions, item: LayerScene) => {
-          item.update(initializer);
+          await item.update(initializer);
         }
       });
     }
 
     if (pipeline.resources) {
-      this.resourceDiffs.diff(pipeline.resources);
+      await this.resourceDiffs.diff(pipeline.resources);
     }
 
     if (pipeline.scenes) {
-      this.sceneDiffs.diff(pipeline.scenes);
+      await this.sceneDiffs.diff(pipeline.scenes);
     }
 
     // This gathers the draw dependencies of the views (which views overlap other views.)
@@ -1248,9 +1274,16 @@ export class LayerSurface {
       this.pixelRatio = 1.0;
     }
 
-    this.sceneViews.forEach(
-      sceneView => (sceneView.view.pixelRatio = this.pixelRatio)
-    );
+    const scenes = this.sceneDiffs.items;
+    for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
+      const scene = scenes[i];
+
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const view = scene.views[k];
+        view.pixelRatio = this.pixelRatio;
+      }
+    }
+
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();

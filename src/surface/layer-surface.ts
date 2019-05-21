@@ -1166,14 +1166,13 @@ export class LayerSurface {
   }
 
   /**
-   * Use this to establish the
+   * Use this to establish the rendering pipeline the application should be using at the current time.
    */
   async pipeline(pipeline: IPipeline) {
     // Make the diff manager for handling resources
     if (!this.resourceDiffs) {
       this.resourceDiffs = new ReactiveDiff({
         buildItem: async (initializer: BaseResourceOptions) => {
-          console.warn("RESOURCE MADE", initializer.key);
           await this.resourceManager.initResource(initializer);
 
           return {
@@ -1185,7 +1184,6 @@ export class LayerSurface {
           initializer: BaseResourceOptions,
           _item: IdentifiableById
         ) => {
-          console.warn("RESOURCE DESTROYED");
           await this.resourceManager.destroyResource(initializer);
 
           return true;

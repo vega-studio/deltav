@@ -9,6 +9,7 @@ import {
   Vec1Compat
 } from "src";
 import {
+  TextAlignment,
   TextAreaInstance,
   WordWrap
 } from "src/base-layers/labels/text-area-instance";
@@ -32,6 +33,7 @@ const texts = [
 export class TextAreaDemo extends BaseDemo {
   camera: ChartCamera;
   parameters = {
+    alignment: TextAlignment.LEFT,
     text: texts[0],
     fontSize: 24,
     maxHeight: 510,
@@ -47,7 +49,7 @@ export class TextAreaDemo extends BaseDemo {
     paddingLeft: 0,
     borderWidth: 1,
     hasBorder: true,
-    letterSpacing: 10
+    letterSpacing: 1
   };
 
   providers = {
@@ -120,7 +122,7 @@ export class TextAreaDemo extends BaseDemo {
 
     parameters
       .add(this.parameters, "wordWrap", {
-        None: 0,
+        NONE: 0,
         CHARACTER: 1,
         WORD: 2
       })
@@ -132,6 +134,24 @@ export class TextAreaDemo extends BaseDemo {
             textArea.wordWrap = WordWrap.CHARACTER;
           } else if (value === "2") {
             textArea.wordWrap = WordWrap.WORD;
+          }
+        });
+      });
+
+    parameters
+      .add(this.parameters, "alignment", {
+        LEFT: 0,
+        RIGHT: 1,
+        CENTER: 2
+      })
+      .onChange((value: string) => {
+        this.textAreas.forEach(textArea => {
+          if (value === "0") {
+            textArea.alignment = TextAlignment.LEFT;
+          } else if (value === "1") {
+            textArea.alignment = TextAlignment.RIGHT;
+          } else if (value === "2") {
+            textArea.alignment = TextAlignment.CENTERED;
           }
         });
       });
@@ -243,6 +263,7 @@ export class TextAreaDemo extends BaseDemo {
       const x = i % 4;
       const y = Math.floor(i / 4);
       const textArea = new TextAreaInstance({
+        alignment: this.parameters.alignment,
         origin: [this.parameters.maxWidth * x, this.parameters.maxHeight * y],
         color: [
           this.parameters.color[0],
@@ -274,6 +295,7 @@ export class TextAreaDemo extends BaseDemo {
     this.textAreas[0].maxWidth = 420;
 
     const textArea = new TextAreaInstance({
+      alignment: TextAlignment.CENTERED,
       origin: [this.parameters.maxWidth * 2, this.parameters.maxHeight * 1],
       color: [
         this.parameters.color[0],

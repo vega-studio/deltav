@@ -1,3 +1,4 @@
+import { BasicDemo } from "./basic-demo";
 import { BaseDemo } from "./common/base-demo";
 import { KitchenSink } from "./kitchen-sink";
 import { NodesEdges } from "./nodes-edges";
@@ -8,6 +9,7 @@ import { WordSandDemo } from "./word-sand";
 export const demos = new Map<string, BaseDemo>();
 export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";
 
+demos.set("basic-demo", new BasicDemo());
 demos.set("text-demo", new TextDemo());
 demos.set("nodes-edges", new NodesEdges());
 demos.set("word-sand", new WordSandDemo());

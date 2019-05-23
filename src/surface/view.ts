@@ -99,7 +99,7 @@ export class View extends IdentifyByKey {
   /** Camera that defines the individual components of each axis with simpler concepts */
   camera: ChartCamera;
   /** These are the clear flags set for this view */
-  clearFlags: ClearFlags[];
+  clearFlags: ClearFlags[] = [];
   /**
    * This is the depth of the view. The higher the depth represents which layer is on top.
    * Zero always represents the default view.

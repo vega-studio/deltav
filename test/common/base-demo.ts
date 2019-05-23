@@ -1,24 +1,46 @@
 import * as datGUI from "dat.gui";
 import {
-  BasicCameraController,
+  BaseResourceOptions,
+  BasicSurface,
   Bounds,
   ChartCamera,
   EventManager,
-  IPipeline,
+  IBasicSurfaceOptions,
+  Instance,
+  InstanceProvider,
+  Lookup,
+  Omit,
   View
 } from "src";
-import { DemoSurface } from "../gl/demo-surface";
-import { DEFAULT_RESOURCES, DEFAULT_SCENES } from "../types";
+
+export type DemoPipeline<
+  T extends Lookup<InstanceProvider<Instance>>,
+  U extends Lookup<ChartCamera>,
+  V extends Lookup<EventManager>,
+  W extends Lookup<BaseResourceOptions>
+> = Omit<
+  IBasicSurfaceOptions<T, U, V, W>,
+  "container" | "onNoWebGL" | "handlesWheelEvents" | "rendererOptions"
+>;
+
+export interface ITest<T> {
+  method(): T;
+}
 
 /**
  * This is the functionality a Demo should provide that the system will call to
  * control the lufecycle of the demo.
  */
 export abstract class BaseDemo {
-  /** Holds the surface currently rendering everything */
-  surface: DemoSurface;
   /** Contains interval timers created by the demo for easy cleaning */
   private timers: number[] = [];
+  /** This helps ensure the demo called it's super.destroy during it's destroy routine */
+  private _isDestroyed = false;
+  get isDestroyed() {
+    return this._isDestroyed;
+  }
+  /** The surface being used to render this demo */
+  surface?: ReturnType<this["makeSurface"]>;
 
   /**
    * Hook for when the console for the demo should be set up
@@ -30,35 +52,25 @@ export abstract class BaseDemo {
    */
   destroy() {
     this.timers.forEach(window.clearInterval);
+    if (this.surface) this.surface.destroy();
+    this._isDestroyed = true;
   }
 
   /**
-   * Get the event managers to be provided to the surface
+   * Lets the demo produce a surface that will render it's application
    */
-  getEventManagers(
-    _defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
-  ): EventManager[] | null {
-    return null;
-  }
-
-  /**
-   * Provides the rendering pipeline from the demo
-   */
-  pipeline(): IPipeline {
-    return {
-      resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
-      scenes: DEFAULT_SCENES
-    };
-  }
+  abstract makeSurface(
+    container: HTMLElement
+  ): BasicSurface<any, any, any, any>;
 
   /**
    * An assurred way to get the screen bounds of a view. If no id is provided it attempts
    * to retrieve the default view's bounds.
    */
   async getViewScreenBounds(viewId?: string): Promise<Bounds<View> | null> {
-    const layerSurface = await this.surface.surfaceReady;
-    const bounds = layerSurface.getViewSize(viewId || "default-view");
+    if (!this.surface) return null;
+    const layerSurface = await this.surface.ready;
+    const bounds = layerSurface.getViewScreenBounds(viewId || "default-view");
 
     return bounds;
   }
@@ -95,14 +107,7 @@ export abstract class BaseDemo {
   /**
    * Applies the surface being used that renders the elements for the demo.
    */
-  setSurface(surface: DemoSurface) {
+  setSurface(surface: ReturnType<this["makeSurface"]>) {
     this.surface = surface;
-  }
-
-  /**
-   * Causes all layers to be updated.
-   */
-  updateLayer() {
-    this.surface.updatePipeline();
   }
 }

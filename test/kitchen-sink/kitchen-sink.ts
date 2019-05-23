@@ -1,11 +1,13 @@
 import {
+  BasicSurface,
   ChartCamera,
   ClearFlags,
   EventManager,
   IInstanceProvider,
-  IPipeline,
+  InstanceProvider,
   ISceneOptions,
-  LayerInitializer
+  LayerInitializer,
+  nextFrame
 } from "src";
 
 import * as datGUI from "dat.gui";
@@ -107,6 +109,7 @@ export class KitchenSink extends BaseDemo {
   }
 
   destroy() {
+    super.destroy();
     tests.forEach(test => test.destroy());
     tests = makeDemos();
     layers = [];
@@ -114,7 +117,7 @@ export class KitchenSink extends BaseDemo {
     delete this.allScenes;
   }
 
-  makeSceneControls() {
+  private makeSceneControls() {
     if (!this.allScenes) {
       let blockSize = 1;
       while (blockSize * blockSize < tests.length) blockSize++;
@@ -126,21 +129,34 @@ export class KitchenSink extends BaseDemo {
     return this.allScenes;
   }
 
-  getEventManagers() {
+  private getEventManagers() {
     return this.makeSceneControls().map(init => init.control);
   }
 
   /**
    * Establish the render pipeline
    */
-  pipeline(): IPipeline {
+  makeSurface(container: HTMLElement) {
     const scenes = this.getScenes();
-    this.getLayers();
+    this.getLayers(true);
 
-    return {
+    nextFrame(async () => {
+      await nextFrame();
+      this.getLayers(false);
+      if (this.surface) this.surface.updatePipeline();
+    });
+
+    return new BasicSurface({
+      container,
+      providers: {},
       resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
-      scenes
-    };
+      cameras: {},
+      eventManagers: () => this.getEventManagers(),
+      pipeline: resources => ({
+        resources,
+        scenes
+      })
+    });
   }
 
   /**
@@ -151,17 +167,15 @@ export class KitchenSink extends BaseDemo {
   }
 
   /**
-   * Populate the scenes with the
+   * Populate the scenes with the layers the tests provide
    */
-  private getLayers() {
+  private getLayers(fakeProvider: boolean) {
     this.makeSceneControls();
 
     // Generate the Layers for the tests now that the scenes are established
     tests.forEach((test, i) => {
       layers = [];
       const controls = this.testControls.get(test);
-      if (!controls) return;
-
       const scene = this.allScenes[i];
       const sceneName = this.allScenes[i].name;
       // test.surface = this.surface.surface;
@@ -169,7 +183,7 @@ export class KitchenSink extends BaseDemo {
 
       const layer = test.makeLayer(
         { atlas: "atlas", font: "test-font" },
-        controls.provider
+        fakeProvider || !controls ? new InstanceProvider() : controls.provider
       );
 
       if (isLayerInitializerList(layer)) {
@@ -248,10 +262,12 @@ export class KitchenSink extends BaseDemo {
   }
 
   async init() {
-    const surface = await this.surface.surfaceReady;
+    if (!this.surface) return;
+    const surface = await this.surface.ready;
 
     tests.forEach(test => {
-      test.surface = surface;
+      if (!surface.base) return;
+      test.surface = surface.base;
       this.testControls.set(test, {
         provider: test.makeProvider()
       });

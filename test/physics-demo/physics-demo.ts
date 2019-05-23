@@ -2,6 +2,7 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   Bounds,
   ChartCamera,
   CircleInstance,
@@ -9,13 +10,10 @@ import {
   ClearFlags,
   createLayer,
   createView,
-  IMouseInteraction,
   InstanceProvider,
-  IPipeline,
   LabelInstance
 } from "src";
 import { BaseDemo } from "../common/base-demo";
-import { EventHandler } from "../common/event-handler";
 
 import * as Matter from "matter-js";
 
@@ -23,8 +21,6 @@ const { random } = Math;
 const PHYSICS_FRAME = 1000 / 60;
 
 export class PhysicsDemo extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   /** All circles created for this demo */
   circles: [CircleInstance, Matter.Body][] = [];
   /** Timer used to debounce the shake circle operation */
@@ -86,54 +82,52 @@ export class PhysicsDemo extends BaseDemo {
   }
 
   destroy(): void {
+    super.destroy();
     this.providers.circles.clear();
     clearInterval(this.animationTimer);
-  }
-
-  getEventManagers(
-    defaultController: BasicCameraController,
-    defaultCamera: ChartCamera
-  ) {
-    this.camera = defaultCamera;
-    return [
-      defaultController,
-      new EventHandler({
-        handleMouseUp: (_e: IMouseInteraction, _button: number) => {
-          // const target = e.target;
-          // this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
-        }
-      })
-    ];
   }
 
   /**
    * Render pipeline for the demo
    */
-  pipeline(): IPipeline {
-    return {
-      scenes: [
-        {
-          key: "default",
-          views: [
-            createView({
-              key: "default-view",
-              camera: this.camera,
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-            })
-          ],
-          layers: [
-            createLayer(CircleLayer, {
-              animate: {
-                center: AutoEasingMethod.linear(PHYSICS_FRAME)
-              },
-              data: this.providers.circles,
-              key: `circles`,
-              scaleFactor: () => this.camera.scale[0]
-            })
-          ]
-        }
-      ]
-    };
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {},
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main
+        })
+      }),
+      pipeline: (_resources, providers, cameras) => ({
+        scenes: [
+          {
+            key: "default",
+            views: [
+              createView({
+                key: "default-view",
+                camera: cameras.main,
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            ],
+            layers: [
+              createLayer(CircleLayer, {
+                animate: {
+                  center: AutoEasingMethod.linear(PHYSICS_FRAME)
+                },
+                data: providers.circles,
+                key: `circles`,
+                scaleFactor: () => cameras.main.scale[0]
+              })
+            ]
+          }
+        ]
+      })
+    });
   }
 
   /**

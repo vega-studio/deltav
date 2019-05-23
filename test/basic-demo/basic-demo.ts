@@ -4,20 +4,23 @@ import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   ChartCamera,
   CircleInstance,
   CircleLayer,
+  ClearFlags,
   createLayer,
+  createView,
+  EasingUtil,
   IMouseInteraction,
   InstanceProvider,
-  IPipeline,
   length2,
+  nextFrame,
   scale2,
   Vec2
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { EventHandler } from "../common/event-handler";
-import { DEFAULT_SCENES } from "../types";
 
 const { random } = Math;
 
@@ -25,8 +28,6 @@ const { random } = Math;
  * A very basic demo proving the system is operating as expected
  */
 export class BasicDemo extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   /** All circles created for this demo */
   circles: CircleInstance[] = [];
   /** Timer used to debounce the shake circle operation */
@@ -41,6 +42,8 @@ export class BasicDemo extends BaseDemo {
   parameters = {
     count: 1000,
     radius: 100,
+    moveAtOnce: 10000,
+    addAtOnce: 10000,
 
     previous: {
       count: 1000
@@ -54,53 +57,47 @@ export class BasicDemo extends BaseDemo {
 
     // Controller causes the number of circles rendered to change
     parameters
-      .add(this.parameters, "count", 0, 100000, 1)
-      .onChange(async (value: number) => {
-        const delta = value - this.parameters.previous.count;
-
-        if (delta > 0) {
-          for (let i = 0; i < delta; ++i) {
+      .add(this.parameters, "count", 0, 500000, 1)
+      .onFinishChange(async () => {
+        while (this.circles.length < this.parameters.count) {
+          for (
+            let i = 0;
+            i < this.parameters.addAtOnce &&
+            this.circles.length < this.parameters.count;
+            ++i
+          ) {
             this.makeCircle();
           }
+          await nextFrame();
         }
 
-        if (delta < 0) {
-          for (let i = 0; i > delta; --i) {
+        while (this.circles.length > this.parameters.count) {
+          for (
+            let i = 0;
+            i < this.parameters.addAtOnce &&
+            this.circles.length > this.parameters.count;
+            ++i
+          ) {
             this.removeCircle();
           }
+          await nextFrame();
         }
-
-        this.parameters.previous.count = value;
-
-        this.shakeCircles();
       });
 
+    parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
+
+    parameters.add(this.parameters, "moveAtOnce", 0, 100000, 1);
+
     parameters
-      .add(this.parameters, "radius", 0, 2000, 1)
+      .add(this.parameters, "radius", 0, 10000, 1)
       .onChange(async (_value: number) => {
         this.moveToLocation(this.currentLocation);
       });
   }
 
   destroy(): void {
+    super.destroy();
     this.providers.circles.clear();
-  }
-
-  getEventManagers(
-    defaultController: BasicCameraController,
-    defaultCamera: ChartCamera
-  ) {
-    this.camera = defaultCamera;
-
-    return [
-      defaultController,
-      new EventHandler({
-        handleMouseUp: (e: IMouseInteraction, _button: number) => {
-          const target = e.target;
-          this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
-        }
-      })
-    ];
   }
 
   /**
@@ -123,43 +120,57 @@ export class BasicDemo extends BaseDemo {
     </Scene>
 
   */
-  pipeline(): IPipeline {
-    const scenes = DEFAULT_SCENES;
-    scenes.forEach(s => s.views.forEach(v => v.camera = this.camera));
-
-    return {
-      resources: [],
-      scenes: [
-        {
-          key: 'default',
-          views: [{
-            key: 'default-view',
-            camera: this.camera,
-            background: [0, 0, 0, 1],
-            viewport: {
-              left: 0,
-              right: '100%',
-              top: 0,
-              bottom: '100%',
-            }
-          }],
-          layers: [
-            createLayer(CircleLayer, {
-              animate: {
-                center: AutoEasingMethod.easeInOutQuad(
-                  1000,
-                  100,
-                  AutoEasingLoopStyle.NONE
-                )
-              },
-              data: this.providers.circles,
-              key: `circles`,
-              scaleFactor: () => this.camera.scale[0],
-            })
-          ]
-        }
-      ]
-    };
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {},
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"]
+        }),
+        clickScreen: new EventHandler({
+          handleMouseUp: (e: IMouseInteraction, _button: number) => {
+            const target = e.target;
+            this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
+          }
+        })
+      }),
+      pipeline: (_resources, providers, cameras) => ({
+        resources: [],
+        scenes: [
+          {
+            key: "default",
+            views: [
+              createView({
+                key: "default-view",
+                camera: cameras.main,
+                background: [0, 0, 0, 1],
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            ],
+            layers: [
+              createLayer(CircleLayer, {
+                animate: {
+                  center: AutoEasingMethod.easeInOutCubic(
+                    2000,
+                    0,
+                    AutoEasingLoopStyle.NONE
+                  )
+                },
+                data: providers.circles,
+                key: `circles`,
+                scaleFactor: () => cameras.main.scale[0]
+              })
+            ]
+          }
+        ]
+      })
+    });
   }
 
   async init() {
@@ -182,33 +193,40 @@ export class BasicDemo extends BaseDemo {
     this.circles.push(circle);
   }
 
-  moveToLocation(location: Vec2) {
-    const easingId = CircleLayer.attributeNames.center;
+  async moveToLocation(location: Vec2) {
+    this.currentLocation = location;
 
-    this.circles.forEach(circle => {
-      let direction: Vec2 = [random() - 0.5, random() - 0.5];
-      const mag = length2(direction);
-      direction = scale2(direction, 1 / mag);
-      circle.center = add2(
-        location,
-        scale2(direction, random() * this.parameters.radius)
+    let index = 0;
+    while (index < this.circles.length) {
+      const moved = [];
+      for (
+        let i = 0;
+        i < this.parameters.moveAtOnce && index < this.circles.length;
+        ++i, ++index
+      ) {
+        const circle = this.circles[index];
+        let direction: Vec2 = [random() - 0.5, random() - 0.5];
+        const mag = length2(direction);
+        direction = scale2(direction, 1 / mag);
+        circle.center = add2(
+          location,
+          scale2(direction, random() * this.parameters.radius)
+        );
+        moved.push(circle);
+      }
+
+      // Randomize their start times to make the stream more fluid
+      EasingUtil.all(
+        false,
+        moved,
+        [CircleLayer.attributeNames.center],
+        easing => {
+          easing.setTiming(Math.random() * 2000);
+        }
       );
 
-      // Give the system more time to buffer the changes in when there are a lot of dots
-      if (this.circles.length > 50000) {
-        const easing = circle.getEasing(easingId);
-
-        if (easing) {
-          easing.setTiming(500);
-        }
-      } else if (this.circles.length <= 50000) {
-        const easing = circle.getEasing(easingId);
-
-        if (easing) {
-          easing.setTiming(100);
-        }
-      }
-    });
+      await nextFrame();
+    }
 
     this.currentLocation = location;
   }

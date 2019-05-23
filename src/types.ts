@@ -746,3 +746,52 @@ export interface IPipeline {
    */
   scenes?: ISceneOptions[];
 }
+
+/**
+ * Errors emitted by the surface
+ */
+export enum SurfaceErrorType {
+  /** Error is thrown when no web gl context can be established for the canvas */
+  NO_WEBGL_CONTEXT
+}
+
+/**
+ * Errors emitted by the surface
+ */
+export type SurfaceError = {
+  error: SurfaceErrorType;
+  message: string;
+};
+
+/**
+ * A numerical or string identifier. Use this type to make your intent a little clearer when you want a resource
+ * identified.
+ */
+export type SimpleId = string | number;
+
+/**
+ * An alias for a string. Use this type to make your intent a little clearer when you want a string specifically for
+ * identifying a resource.
+ */
+export type StringId = string;
+
+/**
+ * An alias for a number. Use this type to make your intent a little clearer when you want a number specifically for
+ * identifying a resource.
+ */
+export type NumberId = number;
+
+/**
+ * This is a massively useful type to express an object that can have numeric or sttring identifiers in recursive
+ * amounts to define an object with many pathways to various items of the same type (that can be varied by generic)
+ *
+ * const o: Lookup<InstanceProvider<Instance>> = {
+ *   circles: new InstanceProvider<CircleInstance>(),
+ *   category: {
+ *     special: new InstanceProvider<LabelInstance>(),
+ *   }
+ * }
+ */
+export type Lookup<T> =
+  | { [key: number]: T | Lookup<T> }
+  | { [key: string]: T | Lookup<T> };

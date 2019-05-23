@@ -2,14 +2,14 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   ChartCamera,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   createLayer,
   createView,
-  InstanceProvider,
-  IPipeline
+  InstanceProvider
 } from "src";
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
@@ -21,8 +21,6 @@ const { random } = Math;
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class WordSandDemo extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   /** All circles created for this demo */
   circles: CircleInstance[] = [];
   /** Timer used to debounce the shake circle operation */
@@ -90,42 +88,48 @@ export class WordSandDemo extends BaseDemo {
       });
   }
 
-  getEventManagers(
-    defaultController: BasicCameraController,
-    defaultCamera: ChartCamera
-  ) {
-    this.camera = defaultCamera;
-    return [defaultController];
-  }
-
   /**
    * The pipeline used to render our providers
    */
-  pipeline(): IPipeline {
-    return {
-      scenes: [
-        {
-          key: "default",
-          views: [
-            createView({
-              key: "default-view",
-              camera: this.camera,
-              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
-            })
-          ],
-          layers: [
-            createLayer(CircleLayer, {
-              animate: {
-                center: AutoEasingMethod.easeInOutQuad(250)
-              },
-              data: this.providers.circles,
-              key: "circles",
-              scaleFactor: () => this.camera.scale[0]
-            })
-          ]
-        }
-      ]
-    };
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      cameras: {
+        main: new ChartCamera()
+      },
+      providers: this.providers,
+      resources: {},
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"]
+        })
+      }),
+      pipeline: (_resources, providers, cameras) => ({
+        scenes: [
+          {
+            key: "default",
+            views: [
+              createView({
+                key: "default-view",
+                camera: cameras.main,
+                clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
+              })
+            ],
+            layers: [
+              createLayer(CircleLayer, {
+                animate: {
+                  center: AutoEasingMethod.easeInOutQuad(250)
+                },
+                data: providers.circles,
+                key: "circles",
+                scaleFactor: () => cameras.main.scale[0]
+              })
+            ]
+          }
+        ]
+      })
+    });
   }
 
   /**

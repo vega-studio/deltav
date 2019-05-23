@@ -1,3 +1,4 @@
+import { PromiseResolver } from "src/util";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -11,6 +12,7 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
@@ -19,7 +21,6 @@ import {
   IResourceType,
   PickType
 } from "../types";
-import { FrameMetrics, ResourceType } from "../types";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";
@@ -226,7 +227,10 @@ export class Surface {
   private isBufferingResources = false;
   /** These are the registered expanders of Shader IO configuration */
   private ioExpanders: BaseIOExpansion[] = [];
-  /** This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been generated that are needed */
+  /**
+   * This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been
+   * generated that are needed
+   */
   ioSorting = new BaseIOSorting();
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
@@ -250,11 +254,13 @@ export class Surface {
    * would need to be redrawn as a consequence of the key view needing a redraw.
    */
   private viewDrawDependencies = new Map<View, View[]>();
-  /** This is used to indicate whether the loading is completed */
-  private loadReadyResolve: () => void;
-  loadReady: Promise<void> = new Promise(
-    resolve => (this.loadReadyResolve = resolve)
-  );
+  /**
+   * This is used to indicate the surface has loaded it's initial systems. This is complete after init has executed
+   * successfully for this surface.
+   */
+  ready: Promise<Surface>;
+  /** This is used to reolve this surface as ready */
+  private readyResolver: PromiseResolver<Surface>;
 
   /**
    * Picking gets deferred to the beginning of next draw. Thus picking operations get queued till next
@@ -265,6 +271,15 @@ export class Surface {
   resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions>;
   /** Diff manager to handle diffing scene objects for the pipeline */
   sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
+
+  constructor(options?: ISurfaceOptions) {
+    this.readyResolver = new PromiseResolver();
+    this.ready = this.readyResolver.promise;
+
+    if (options) {
+      this.init(options);
+    }
+  }
 
   /** Read only getter for the gl context */
   get gl() {
@@ -541,6 +556,7 @@ export class Surface {
     this.sceneDiffs.destroy();
     this.renderer.dispose();
     this.pickingTarget.dispose();
+    delete this.context;
   }
 
   /**
@@ -659,10 +675,6 @@ export class Surface {
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
       if (didBuffer) {
-        this.loadReadyResolve();
-        this.loadReady = new Promise(
-          resolve => (this.loadReadyResolve = resolve)
-        );
         this.draw(await waitForFrame());
       }
     }
@@ -858,7 +870,7 @@ export class Surface {
     });
 
     // Get the view's clearing preferences
-    if (view.clearFlags) {
+    if (view.clearFlags && view.clearFlags.length > 0) {
       renderer.clear(
         willClearColorBuffer,
         view.clearFlags.indexOf(ClearFlags.DEPTH) > -1,
@@ -878,6 +890,7 @@ export class Surface {
    * This gathers all the overlap views of every view
    */
   private gatherViewDrawDependencies() {
+    if (!this.sceneDiffs) return;
     this.viewDrawDependencies.clear();
     const scenes = this.sceneDiffs.items;
 
@@ -991,6 +1004,8 @@ export class Surface {
    * We make this mandatory outside of the constructor so we can make it follow an async pattern.
    */
   async init(options: ISurfaceOptions) {
+    // If this already has initialized it's context, then there's nothing to be done
+    if (this.context) return this;
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
 
@@ -1000,7 +1015,17 @@ export class Surface {
 
     // Initialize our GL needs that set the basis for rendering
     const context = this.initGL(options);
-    if (!context) return;
+
+    if (!context) {
+      this.readyResolver.reject({
+        error: SurfaceErrorType.NO_WEBGL_CONTEXT,
+        message:
+          "Could not establish a webgl context. Surface is being destroyed to free resources."
+      });
+      this.destroy();
+      return this;
+    }
+
     this.context = context;
 
     if (this.gl) {
@@ -1016,6 +1041,8 @@ export class Surface {
         "Could not establish a GL context. Layer Surface will be unable to render"
       );
     }
+
+    this.readyResolver.resolve(this);
 
     return this;
   }
@@ -1275,19 +1302,23 @@ export class Surface {
       this.pixelRatio = 1.0;
     }
 
-    const scenes = this.sceneDiffs.items;
-    for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
-      const scene = scenes[i];
+    if (this.sceneDiffs) {
+      const scenes = this.sceneDiffs.items;
+      for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
+        const scene = scenes[i];
 
-      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-        const view = scene.views[k];
-        view.pixelRatio = this.pixelRatio;
+        for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+          const view = scene.views[k];
+          view.pixelRatio = this.pixelRatio;
+        }
       }
     }
 
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
+
+    // After the resize happens, the view draw dependencies may change as the views will cover different region sizes
     this.gatherViewDrawDependencies();
   }
 

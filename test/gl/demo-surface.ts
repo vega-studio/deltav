@@ -10,7 +10,7 @@ import {
 /**
  * The options for the surface.
  */
-export interface ISurfaceOptions {
+export interface IDemoSurfaceOptions {
   /** Sets the background color of the surface */
   background?: Vec4;
   /** The container to place our rendering context within */
@@ -46,7 +46,7 @@ export class DemoSurface {
   /** The rendering context we will draw into */
   context: HTMLCanvasElement;
   /** The options this Surface is constructed/updated with */
-  options: ISurfaceOptions;
+  options: IDemoSurfaceOptions;
   /** The layer manager that draws our GL elements */
   surface?: Surface;
 
@@ -68,7 +68,7 @@ export class DemoSurface {
   /** This is the event managers specified to be in use for the demo */
   private eventManagers: EventManager[] = [];
 
-  constructor(options: ISurfaceOptions) {
+  constructor(options: IDemoSurfaceOptions) {
     this.container = options.container;
   }
 
@@ -139,7 +139,7 @@ export class DemoSurface {
    * creates the fiesta GL scenes and layers if they don't yet exist.
    * Must be called after the initial sections are in the data.
    */
-  async init(options: Partial<ISurfaceOptions>) {
+  async init(options: Partial<IDemoSurfaceOptions>) {
     // Stop previous draw loop
     cancelAnimationFrame(this.animationFrameId);
 

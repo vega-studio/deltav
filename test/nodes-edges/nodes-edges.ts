@@ -8,6 +8,7 @@ import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   Bounds,
   CameraBoundsAnchor,
   ChartCamera,
@@ -53,15 +54,12 @@ export async function wait(t: number) {
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class NodesEdges extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   circles: CircleInstance[] = [];
   edges: EdgeInstance[] = [];
   labels: LabelInstance[] = [];
   rectangles: RectangleInstance[] = [];
   lblToRect = new Map<LabelInstance, RectangleInstance>();
   center: CircleInstance;
-  controller: BasicCameraController;
   boundsView: RectangleInstance;
 
   /** Surface providers */
@@ -161,14 +159,13 @@ export class NodesEdges extends BaseDemo {
         BoundMax: ScaleMode.BOUND_MAX,
         Never: ScaleMode.NEVER
       })
-      .onChange(
-        debounce(async () => {
-          this.updateLayer();
-        }, 250)
-      );
+      .onChange();
   }
 
   adjustBounds() {
+    if (!this.surface) return;
+    const controller = this.surface.eventManagers.main;
+
     const worldBounds = new Bounds({
       x:
         -this.parameters.circleRadius -
@@ -181,11 +178,13 @@ export class NodesEdges extends BaseDemo {
       width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
       height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
     });
+
     const minScale = Math.min(
       this.viewSize[0] / worldBounds.width,
       this.viewSize[1] / worldBounds.height
     );
-    this.controller.setBounds({
+
+    controller.setBounds({
       anchor: CameraBoundsAnchor.MIDDLE,
       scaleMax: [9999, 9999, 9999],
       scaleMin: [minScale, minScale, minScale],
@@ -198,32 +197,17 @@ export class NodesEdges extends BaseDemo {
       view: "default-view",
       worldBounds
     });
-    if (this.controller.bounds && this.boundsView) {
+
+    if (controller.bounds && this.boundsView) {
       this.boundsView.position = [
-        this.controller.bounds.worldBounds.x,
-        this.controller.bounds.worldBounds.y
+        controller.bounds.worldBounds.x,
+        controller.bounds.worldBounds.y
       ];
       this.boundsView.size = [
-        this.controller.bounds.worldBounds.width,
-        this.controller.bounds.worldBounds.height
+        controller.bounds.worldBounds.width,
+        controller.bounds.worldBounds.height
       ];
     }
-  }
-
-  getEventManagers(
-    defaultController: BasicCameraController,
-    defaultCamera: ChartCamera
-  ) {
-    this.camera = defaultCamera;
-    this.controller = defaultController;
-    defaultController.wheelShouldScroll = false;
-    defaultController.setRangeChangeHandler(() => {
-      if (this.surface.surface) {
-        this.surface.surface.getViewWorldBounds("default-view");
-      }
-    });
-
-    return null;
   }
 
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
@@ -273,9 +257,9 @@ export class NodesEdges extends BaseDemo {
 
   handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     const focus = info.instances.find(circle => Boolean(circle.center));
-    if (!focus) return;
-    this.camera.animation = AutoEasingMethod.easeInOutCubic(1000);
-    this.controller.centerOn(info.projection.id, [
+    if (!focus || !this.surface) return;
+    this.surface.cameras.main.animation = AutoEasingMethod.easeInOutCubic(1000);
+    this.surface.eventManagers.main.centerOn(info.projection.id, [
       focus.center[0],
       focus.center[1],
       0
@@ -285,71 +269,89 @@ export class NodesEdges extends BaseDemo {
   /**
    * Establishes the render pipeline
    */
-  pipeline() {
-    return {
-      resources: [DEFAULT_RESOURCES.font],
-      scenes: [
-        {
-          key: "default-scene",
-          views: [
-            createView({
-              key: "default-view",
-              camera: this.camera,
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-            })
-          ],
-          layers: [
-            createLayer(ArcLayer, {
-              animate: {
-                angleOffset: AutoEasingMethod.linear(
-                  1000,
-                  0,
-                  AutoEasingLoopStyle.REPEAT
-                )
-              },
-              data: this.providers.arcs,
-              key: "arcs"
-            }),
-            createLayer(EdgeLayer, {
-              animate: {
-                startColor: AutoEasingMethod.easeInOutCubic(500),
-                endColor: AutoEasingMethod.easeInOutCubic(500)
-              },
-              data: this.providers.edges,
-              key: "edges",
-              type: EdgeType.LINE
-            }),
-            createLayer(CircleLayer, {
-              animate: {
-                color: AutoEasingMethod.easeInOutCubic(1000, 0)
-              },
-              data: this.providers.circles,
-              key: "circles",
-              scaleFactor: () => this.camera.scale[0],
-              picking: PickType.SINGLE,
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {
+        font: DEFAULT_RESOURCES.font
+      },
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"],
+          wheelShouldScroll: false
+        })
+      }),
+      pipeline: (resources, providers, cameras) => ({
+        resources: [resources.font],
+        scenes: [
+          {
+            key: "default-scene",
+            views: [
+              createView({
+                key: "default-view",
+                camera: cameras.main,
+                background: [0, 0, 0, 1],
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            ],
+            layers: [
+              createLayer(ArcLayer, {
+                animate: {
+                  angleOffset: AutoEasingMethod.linear(
+                    1000,
+                    0,
+                    AutoEasingLoopStyle.REPEAT
+                  )
+                },
+                data: providers.arcs,
+                key: "arcs"
+              }),
+              createLayer(EdgeLayer, {
+                animate: {
+                  startColor: AutoEasingMethod.easeInOutCubic(500),
+                  endColor: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: providers.edges,
+                key: "edges",
+                type: EdgeType.LINE
+              }),
+              createLayer(CircleLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(1000, 0)
+                },
+                data: providers.circles,
+                key: "circles",
+                scaleFactor: () => cameras.main.scale[0],
+                picking: PickType.SINGLE,
 
-              onMouseOver: this.handleCircleOver,
-              onMouseOut: this.handleCircleOut,
-              onMouseClick: this.handleCircleClick
-            }),
-            createLayer(RectangleLayer, {
-              data: this.providers.rectangles,
-              key: "rects",
-              scaleFactor: () => this.camera.scale[0]
-            }),
-            createLayer(LabelLayer, {
-              animate: {
-                color: AutoEasingMethod.easeInOutCubic(500)
-              },
-              data: this.providers.labels,
-              key: "labels",
-              resourceKey: DEFAULT_RESOURCES.font.key,
-              scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
-            })
-          ]
-        }
-      ]
-    };
+                onMouseOver: this.handleCircleOver,
+                onMouseOut: this.handleCircleOut,
+                onMouseClick: this.handleCircleClick
+              }),
+              createLayer(RectangleLayer, {
+                data: providers.rectangles,
+                key: "rects",
+                scaleFactor: () => cameras.main.scale[0]
+              }),
+              createLayer(LabelLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: providers.labels,
+                key: "labels",
+                resourceKey: DEFAULT_RESOURCES.font.key,
+                scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
+              })
+            ]
+          }
+        ]
+      })
+    });
   }
 
   /**
@@ -378,7 +380,7 @@ export class NodesEdges extends BaseDemo {
     });
 
     // Uncomment this to see the bounds used for the camera
-    // this.providers.rectangles.add(this.boundsView);
+    this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {

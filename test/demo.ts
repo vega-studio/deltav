@@ -1,8 +1,6 @@
 import * as datGUI from "dat.gui";
-import { BasicCameraController, ChartCamera } from "src";
 import { BaseDemo } from "./common/base-demo";
 import { demoKeys, demos, startDemoKey } from "./config";
-import { DemoSurface } from "./gl/demo-surface";
 
 export interface IDemoOptions {
   container: HTMLElement;
@@ -19,20 +17,14 @@ export class Demo {
   gui: datGUI.GUI;
   /** The options that started up the demo */
   options: IDemoOptions;
-  /** The GL surface that manages our graphics pipeline */
-  surface: DemoSurface;
 
   /** A storage object for the GUI to operate with */
   guiStore = {
     currentDemo: startDemoKey
   };
 
-  /** Debounce the resizing events */
-  private resizeTimer: number;
-
   constructor(options: IDemoOptions) {
     this.options = options;
-    window.addEventListener("resize", this.resize);
   }
 
   /**
@@ -72,6 +64,12 @@ export class Demo {
     // If a demo is already established, make sure it frees up any resources it may be hanging onto
     if (this.currentDemo) {
       this.currentDemo.destroy();
+
+      if (!this.currentDemo.isDestroyed) {
+        console.error(
+          "A demo did NOT call super.destroy() in it's destroy method!"
+        );
+      }
     }
 
     // See if there is a demo available
@@ -84,26 +82,12 @@ export class Demo {
     // Our current demo is officially the new demo found
     this.currentDemo = demo;
 
-    // Initialize the surface and pass the demo's specifications to it
-    await this.surface.init({
-      makeElements: (
-        defaultController: BasicCameraController,
-        defaultCamera: ChartCamera
-      ) => {
-        if (!demo) return {};
-
-        return {
-          eventManagers: demo.getEventManagers(
-            defaultController,
-            defaultCamera
-          ),
-          pipeline: demo.pipeline.bind(demo)
-        };
-      }
-    });
-
+    // Make the demo produce it's surface.
+    const surface = demo.makeSurface(this.options.container);
     // Set the created surface to the demo
-    demo.setSurface(this.surface);
+    demo.setSurface(surface);
+    // Wait for the surface to be prepped
+    await surface.ready;
     // Build a new console for the demo
     this.buildConsole();
     // Let the demo modify the console
@@ -111,7 +95,7 @@ export class Demo {
 
     // Let the demo know everything is done and ready for the demo to operate
     await demo.init();
-
+    // Set this demo as the current demo so page refreshes return here
     localStorage.setItem("deltaV_currentDemo", demoKey);
   }
 
@@ -119,9 +103,7 @@ export class Demo {
    * Frees all resources this demo holds
    */
   destroy() {
-    this.surface.destroySurface();
     if (this.currentDemo) this.currentDemo.destroy();
-    window.removeEventListener("resize", this.resize);
   }
 
   /**
@@ -131,7 +113,7 @@ export class Demo {
     // First determine which demo we'll be showing
     let demoKey = startDemoKey;
 
-    if (!demoKey) {
+    if (!demos.get(demoKey)) {
       demoKey = demos.keys().next().value;
       if (!demoKey) return;
       this.guiStore.currentDemo = demoKey;
@@ -142,28 +124,7 @@ export class Demo {
       return;
     }
 
-    // After the demo has been determined, let's create our first surface to handle the demo's
-    // request of scenes and layers.
-    this.surface = new DemoSurface({
-      background: [0, 0, 0, 1],
-      container: this.options.container,
-      pipeline: () => ({})
-    });
-
     // Make the system boot up the specified demo
     this.changeDemo(demoKey);
   }
-
-  /**
-   * Responds to window resizing events
-   */
-  resize = () => {
-    clearTimeout(this.resizeTimer);
-    this.resizeTimer = window.setTimeout(() => {
-      if (this.currentDemo) {
-        this.surface.resize();
-        this.currentDemo.resize();
-      }
-    }, 100);
-  };
 }

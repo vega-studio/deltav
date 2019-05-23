@@ -2,6 +2,7 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   ChartCamera,
   ClearFlags,
   createLayer,
@@ -11,7 +12,6 @@ import {
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  IPipeline,
   LabelInstance,
   LabelLayer,
   nextFrame,
@@ -56,8 +56,6 @@ export async function wait(t: number) {
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class TextDemo extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   /** All circles created for this demo */
   labels: LabelInstance[] = [];
   /** Timer used to debounce the shake circle operation */
@@ -142,54 +140,59 @@ export class TextDemo extends BaseDemo {
         BoundMax: ScaleMode.BOUND_MAX,
         Never: ScaleMode.NEVER
       })
-      .onChange(
-        debounce(async () => {
-          this.updateLayer();
-        }, 250)
-      );
+      .onChange();
 
     parameters.add(this.parameters, "copy");
-  }
-
-  getEventManagers(
-    defaultController: BasicCameraController,
-    defaultCamera: ChartCamera
-  ) {
-    this.camera = defaultCamera;
-    defaultController.wheelShouldScroll = true;
-    return null;
   }
 
   /**
    * Render pipeline for this demo
    */
-  pipeline(): IPipeline {
-    return {
-      resources: [DEFAULT_RESOURCES.font],
-      scenes: [
-        {
-          key: "default",
-          views: [
-            createView({
-              key: "default-view",
-              camera: this.camera,
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-            })
-          ],
-          layers: [
-            createLayer(LabelLayer, {
-              animate: {
-                color: AutoEasingMethod.easeInOutCubic(500)
-              },
-              data: this.providers.labels,
-              key: "labels",
-              resourceKey: DEFAULT_RESOURCES.font.key,
-              scaleMode: this.parameters.scaleMode
-            })
-          ]
-        }
-      ]
-    };
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {
+        font: DEFAULT_RESOURCES.font
+      },
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"],
+          wheelShouldScroll: true
+        })
+      }),
+      pipeline: (resources, providers, cameras) => ({
+        resources: [resources.font],
+        scenes: [
+          {
+            key: "default",
+            views: [
+              createView({
+                key: "default-view",
+                background: [0, 0, 0, 1],
+                camera: cameras.main,
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            ],
+            layers: [
+              createLayer(LabelLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: providers.labels,
+                key: "labels",
+                resourceKey: resources.font.key,
+                scaleMode: this.parameters.scaleMode
+              })
+            ]
+          }
+        ]
+      })
+    });
   }
 
   /**

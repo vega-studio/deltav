@@ -190,7 +190,8 @@ export class FontManager {
         // Get the layout of the request
         metrics.layout = fontMap.getStringLayout(
           metrics.text,
-          metrics.fontSize
+          metrics.fontSize,
+          metrics.letterSpacing
         );
 
         // If a max width is present, we need to calculate the truncation of the label
@@ -202,6 +203,7 @@ export class FontManager {
             metrics.truncation || "",
             metrics.maxWidth,
             metrics.fontSize,
+            metrics.letterSpacing,
             this.fontRenderer
           );
 

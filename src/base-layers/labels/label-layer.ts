@@ -305,7 +305,8 @@ export class LabelLayer<
         "origin",
         "fontSize",
         "maxWidth",
-        "maxScale"
+        "maxScale",
+        "letterSpacing"
       ]);
     }
 
@@ -317,7 +318,8 @@ export class LabelLayer<
       origin: originId,
       fontSize: fontSizeId,
       maxWidth: maxWidthId,
-      maxScale: maxScaleId
+      maxScale: maxScaleId,
+      letterSpacing: letterSpacingId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -367,6 +369,11 @@ export class LabelLayer<
           }
 
           if (changed[maxWidthId] !== undefined) {
+            this.invalidateRequest(instance);
+            this.layoutGlyphs(instance);
+          }
+
+          if (changed[letterSpacingId] !== undefined) {
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
           }
@@ -514,7 +521,6 @@ export class LabelLayer<
     ) {
       const offset = layout.positions[i];
       const glyph = glyphs[i];
-
       glyph.offset = offset;
       glyph.fontScale = layout.fontScale;
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
@@ -739,7 +745,8 @@ export class LabelLayer<
       const metrics: IFontResourceRequest["metrics"] = {
         // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
-        text: instance.text
+        text: instance.text,
+        letterSpacing: instance.letterSpacing
       };
 
       // Include truncation metrics if the text needs it

@@ -1,11 +1,12 @@
 import * as datGUI from "dat.gui";
 import {
   BasicCameraController,
+  BasicSurface,
   ChartCamera,
+  ClearFlags,
   createLayer,
+  createView,
   InstanceProvider,
-  ISceneOptions,
-  LayerInitializer,
   Vec1Compat
 } from "src";
 import {
@@ -13,7 +14,7 @@ import {
   WordWrap
 } from "src/base-layers/labels/text-area-instance";
 import { TextAreaLayer } from "src/base-layers/labels/text-area-layer";
-import { IDefaultResources, STORY } from "test/types";
+import { DEFAULT_RESOURCES, STORY } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 
 const texts = [
@@ -30,7 +31,6 @@ const texts = [
 ];
 
 export class TextAreaDemo extends BaseDemo {
-  camera: ChartCamera;
   parameters = {
     text: texts[0],
     fontSize: 24,
@@ -213,28 +213,47 @@ export class TextAreaDemo extends BaseDemo {
       });
   }
 
-  getEventManagers(
-    defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
-  ) {
-    defaultController.wheelShouldScroll = true;
-    return null;
-  }
-
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
-  }
-
-  getLayers(resources: IDefaultResources): LayerInitializer[] {
-    return [
-      createLayer(TextAreaLayer, {
-        data: this.providers.textAreas,
-        key: "textArea",
-        scene: "default",
-        resourceKey: resources.font.key
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {
+        font: DEFAULT_RESOURCES.font
+      },
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"],
+          wheelShouldScroll: true
+        })
+      }),
+      pipeline: (resources, providers, cameras) => ({
+        resources: [resources.font],
+        scenes: [
+          {
+            key: "default",
+            views: [
+              createView({
+                key: "default-view",
+                camera: cameras.main,
+                background: [0, 0, 0, 1],
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            ],
+            layers: [
+              createLayer(TextAreaLayer, {
+                data: providers.textAreas,
+                key: "textArea",
+                resourceKey: resources.font.key
+              })
+            ]
+          }
+        ]
       })
-    ];
+    });
   }
 
   async init() {

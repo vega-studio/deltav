@@ -239,8 +239,8 @@ export class TextAreaDemo extends BaseDemo {
               createView({
                 key: "default-view",
                 camera: cameras.main,
-                background: [0, 0, 0, 1]
-                // clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+                background: [0, 0, 0, 1],
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
             ],
             layers: [

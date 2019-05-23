@@ -1,10 +1,18 @@
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
-import { EventManager, ISurfaceOptions, Surface, View } from "../surface";
-import { IPipeline, Lookup, Size, SurfaceErrorType } from "../types";
+import {
+  EventManager,
+  ISurfaceOptions,
+  Surface,
+  View,
+  ISceneOptions,
+  IViewOptions
+} from "../surface";
+import { Lookup, Size, SurfaceErrorType, Omit } from "../types";
 import { ChartCamera, nextFrame, PromiseResolver } from "../util";
 import { waitForFrame } from "../util/waitForFrame";
+import { LayerInitializer } from "src/surface/surface";
 
 /**
  * This gets all of the values of a Lookup
@@ -24,6 +32,35 @@ function lookupValues<T>(check: Function, lookup: Lookup<T>): T[] {
   }
 
   return out;
+}
+
+/** Non-keyed View options */
+export type BasicSurfaceView = Omit<IViewOptions, "key">;
+/** Non-keyed layer initializer */
+export type BasicSurfaceLayer = Omit<LayerInitializer, "key">;
+
+/**
+ * Defines a scene that elements are injected to. Each scene can be viewed with multiple views
+ * and have several layers of injection into it.
+ *
+ * These are scene options without elements needing to specify keys. Instead, the keys will be
+ * generated via Lookup definition keys.
+ */
+export type BasicSurfaceSceneOptions = Omit<
+  ISceneOptions,
+  "key" | "views" | "layers"
+> & {
+  /** Layers to inject elements into the scene */
+  layers: Lookup<BasicSurfaceLayer>;
+  /** Views for rendering a perspective of the scene to a surface */
+  views: Lookup<BasicSurfaceView>;
+};
+
+export interface IBasicSurfacePipeline {
+  /** The resources picked to use in the render pipeline */
+  resources: Lookup<BaseResourceOptions>;
+  /** Easy define the scenes to be used for the render pipeline */
+  scenes: Lookup<BasicSurfaceSceneOptions>;
 }
 
 /**
@@ -67,7 +104,12 @@ export interface IBasicSurfaceOptions<
    */
   eventManagers(cameras: U): V;
   /** A callback that provides the pipeline to use in the surface */
-  pipeline(resources: W, providers: T, cameras: U, managers: V): IPipeline;
+  pipeline(
+    resources: W,
+    providers: T,
+    cameras: U,
+    managers: V
+  ): IBasicSurfacePipeline;
   /** This will be called if no webgl context is detected */
   onNoWebGL?(): void;
 }

@@ -558,7 +558,6 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     let offset: Vec2 = [0, 0];
     // The amount each white space moves the text forward
     const whiteSpacing = this.spaceWidth;
-    console.error(whiteSpacing);
     // Number of found whitespace characters since last character
     let whiteSpaceCount = 0;
     // The current character found to the left of the current one being processed

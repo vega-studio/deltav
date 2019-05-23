@@ -39,9 +39,9 @@ import {
   Size,
   Vec4
 } from "src";
-import { BaseDemo } from "../common/base-demo";
-import { debounce } from "../common/debounce";
-import { DEFAULT_RESOURCES, WORDS } from "../types";
+import { BaseDemo } from "../../common/base-demo";
+import { debounce } from "../../common/debounce";
+import { DEFAULT_RESOURCES, WORDS } from "../../types";
 
 /**
  * Promise based wait timer function

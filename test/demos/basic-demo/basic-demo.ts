@@ -19,8 +19,8 @@ import {
   scale2,
   Vec2
 } from "src";
-import { BaseDemo } from "../common/base-demo";
-import { EventHandler } from "../common/event-handler";
+import { BaseDemo } from "../../common/base-demo";
+import { EventHandler } from "../../common/event-handler";
 
 const { random } = Math;
 

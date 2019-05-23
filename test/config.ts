@@ -1,11 +1,11 @@
-import { BasicDemo } from "./basic-demo";
 import { BaseDemo } from "./common/base-demo";
-import { KitchenSink } from "./kitchen-sink";
-import { NodesEdges } from "./nodes-edges";
-import { PhysicsDemo } from "./physics-demo";
-import { TextAreaDemo } from "./text-area-demo";
-import { TextDemo } from "./text-demo";
-import { WordSandDemo } from "./word-sand";
+import { BasicDemo } from "./demos/basic-demo";
+import { KitchenSink } from "./demos/kitchen-sink";
+import { NodesEdges } from "./demos/nodes-edges";
+import { PhysicsDemo } from "./demos/physics-demo";
+import { TextAreaDemo } from "./demos/text-area-demo";
+import { TextDemo } from "./demos/text-demo";
+import { WordSandDemo } from "./demos/word-sand";
 
 export const demos = new Map<string, BaseDemo>();
 export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";

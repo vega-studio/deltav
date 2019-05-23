@@ -10,7 +10,7 @@ import {
   LabelLayer,
   LayerInitializer
 } from "src";
-import { STORY, WORDS } from "../../types";
+import { STORY, WORDS } from "../../../types";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class FontEngineGlyphControl extends BaseExample {

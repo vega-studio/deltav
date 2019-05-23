@@ -11,9 +11,9 @@ import {
 } from "src";
 
 import * as datGUI from "dat.gui";
-import { BaseDemo } from "../common/base-demo";
+import { BaseDemo } from "../../common/base-demo";
 
-import { Blending } from "test/kitchen-sink/examples/blending";
+import { Blending } from "test/demos/kitchen-sink/examples/blending";
 import { DEFAULT_RESOURCES } from "test/types";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";

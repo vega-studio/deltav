@@ -18,8 +18,8 @@ import {
   ScaleMode
 } from "src";
 import { DEFAULT_RESOURCES, WORDS } from "test/types";
-import { BaseDemo } from "../common/base-demo";
-import { debounce } from "../common/debounce";
+import { BaseDemo } from "../../common/base-demo";
+import { debounce } from "../../common/debounce";
 
 const { random } = Math;
 

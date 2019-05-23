@@ -13,7 +13,7 @@ import {
   InstanceProvider,
   LabelInstance
 } from "src";
-import { BaseDemo } from "../common/base-demo";
+import { BaseDemo } from "../../common/base-demo";
 
 import * as Matter from "matter-js";
 

@@ -11,9 +11,9 @@ import {
   createView,
   InstanceProvider
 } from "src";
-import { BaseDemo } from "../common/base-demo";
-import { debounce } from "../common/debounce";
-import { textPositions } from "../common/text-positions";
+import { BaseDemo } from "../../common/base-demo";
+import { debounce } from "../../common/debounce";
+import { textPositions } from "../../common/text-positions";
 
 const { random } = Math;
 

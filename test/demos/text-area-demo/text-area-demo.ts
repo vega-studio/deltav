@@ -15,7 +15,7 @@ import {
 } from "src/base-layers/labels/text-area-instance";
 import { TextAreaLayer } from "src/base-layers/labels/text-area-layer";
 import { DEFAULT_RESOURCES, STORY } from "test/types";
-import { BaseDemo } from "../common/base-demo";
+import { BaseDemo } from "../../common/base-demo";
 
 const texts = [
   `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg, a girl is no one

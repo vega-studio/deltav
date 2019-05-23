@@ -146,7 +146,6 @@ export class BasicSurface<
     }
 
     if (this.context) {
-      console.error("REMOVE CONTEXT");
       this.context.remove();
       delete this.context;
     }

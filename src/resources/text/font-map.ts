@@ -584,9 +584,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       }
 
       offset = add2(add2(offset, scale2(kern, fontScale)), [
-        whiteSpaceCount * whiteSpacing * fontScale + i === 0
-          ? 0
-          : letterSpacing,
+        whiteSpaceCount * whiteSpacing * fontScale +
+          (i === 0 ? 0 : letterSpacing),
         0
       ]);
 

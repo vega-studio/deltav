@@ -1,18 +1,18 @@
+import { LayerInitializer } from "src/surface/surface";
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
 import {
   EventManager,
-  ISurfaceOptions,
-  Surface,
-  View,
   ISceneOptions,
-  IViewOptions
+  ISurfaceOptions,
+  IViewOptions,
+  Surface,
+  View
 } from "../surface";
-import { Lookup, Size, SurfaceErrorType, Omit } from "../types";
+import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
 import { ChartCamera, nextFrame, PromiseResolver } from "../util";
 import { waitForFrame } from "../util/waitForFrame";
-import { LayerInitializer } from "src/surface/surface";
 
 /**
  * This gets all of the values of a Lookup
@@ -34,10 +34,42 @@ function lookupValues<T>(check: Function, lookup: Lookup<T>): T[] {
   return out;
 }
 
-/** Non-keyed View options */
-export type BasicSurfaceView = Omit<IViewOptions, "key">;
-/** Non-keyed layer initializer */
-export type BasicSurfaceLayer = Omit<LayerInitializer, "key">;
+/**
+ * This gets all of the values of a Lookup
+ */
+function mapLookupValues<T, U>(
+  check: (value: T | Lookup<T>) => boolean,
+  lookup: Lookup<T>,
+  callback: (key: string, value: T) => U
+): U[] {
+  const out: U[] = [];
+  const toProcess = Object.keys(lookup).map<[string, T | Lookup<T>]>(key => [
+    key,
+    (lookup as any)[key]
+  ]);
+
+  for (let index = 0; index < toProcess.length; ++index) {
+    const next = toProcess[index];
+
+    if (check(next[1])) {
+      out.push(callback(next[0], next[1] as T));
+    } else {
+      Object.keys(next[1]).forEach(key => {
+        const value = (next[1] as any)[key];
+        toProcess.push([`${next[0]}.${key}`, value]);
+      });
+    }
+  }
+
+  return out;
+}
+
+/** Non-keyed View options with ordering property to specify rendering order */
+export type BasicSurfaceView = Omit<IViewOptions, "key"> &
+  Partial<Pick<IViewOptions, "key">>;
+/** Non-keyed layer initializer with ordering property to specify rendering order */
+export type BasicSurfaceLayer = Omit<LayerInitializer, "key"> &
+  Partial<Pick<IViewOptions, "key">>;
 
 /**
  * Defines a scene that elements are injected to. Each scene can be viewed with multiple views
@@ -56,9 +88,11 @@ export type BasicSurfaceSceneOptions = Omit<
   views: Lookup<BasicSurfaceView>;
 };
 
+export type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, "key"> & {
+  key?: string;
+};
+
 export interface IBasicSurfacePipeline {
-  /** The resources picked to use in the render pipeline */
-  resources: Lookup<BaseResourceOptions>;
   /** Easy define the scenes to be used for the render pipeline */
   scenes: Lookup<BasicSurfaceSceneOptions>;
 }
@@ -429,14 +463,79 @@ export class BasicSurface<
    */
   async updatePipeline() {
     if (!this.base) return;
-    return await this.base.pipeline(
-      this.options.pipeline(
-        this.resources,
-        this.providers,
-        this.cameras,
-        this.eventManagers
-      )
+
+    // We must convert all look ups of scenes and layers etc into a list of items that contain keys
+    const pipelineWithLookups = this.options.pipeline(
+      this.resources,
+      this.providers,
+      this.cameras,
+      this.eventManagers
     );
+
+    // Take the resource lookup and flatten it's values to a list. Each value will be given a key based on whether the
+    // value expressed an explicit key or will be a key made from the properties leading up to the value in the lookup.
+    const resources = mapLookupValues(
+      (val: any) => val && val.type !== undefined,
+      this.resources || [],
+      (key: string, val: BaseResourceOptions) => {
+        const resource: BaseResourceOptions = {
+          ...val,
+          key: val.key || key
+        };
+
+        val.key = resource.key;
+        return resource;
+      }
+    );
+
+    const scenes = mapLookupValues(
+      (val: any) => val && val.views !== undefined && val.layers !== undefined,
+      pipelineWithLookups.scenes,
+      (key: string, val: BasicSurfaceSceneOptions) => {
+        const views = mapLookupValues(
+          (val: any) => val.camera !== undefined && val.viewport !== undefined,
+          val.views,
+          (key: string, val: BasicSurfaceView) => {
+            const view: IViewOptions = {
+              ...val,
+              key: val.key || key
+            };
+
+            return view;
+          }
+        );
+
+        const layers = mapLookupValues(
+          (val: any) => val && val.init !== undefined,
+          val.layers,
+          (key: string, val: BasicSurfaceLayer) => {
+            const layer: LayerInitializer = {
+              init: val.init,
+              key: val.key || key
+            };
+
+            val.init[1].key = layer.key;
+            return layer;
+          }
+        );
+
+        const scene: ISceneOptions = {
+          key,
+          order: val.order || 0,
+          views,
+          layers
+        };
+
+        return scene;
+      }
+    );
+
+    const pipeline: IPipeline = {
+      resources,
+      scenes
+    };
+
+    return await this.base.pipeline(pipeline);
   }
 
   /**
@@ -491,70 +590,3 @@ export class BasicSurface<
     return await resolver.promise;
   }
 }
-
-// const t = new BasicSurface({
-//   container: document.createElement("div"),
-//   providers: {
-//     circles: new InstanceProvider<CircleInstance>(),
-//     labels: new InstanceProvider<LabelInstance>(),
-//     something: {
-//       awesome: new InstanceProvider<CircleInstance>()
-//     }
-//   },
-//   cameras: {
-//     main: new ChartCamera()
-//   },
-//   resources: {
-//     atlas: createAtlas({
-//       key: "main-atlas",
-//       width: TextureSize._4096,
-//       height: TextureSize._4096
-//     }),
-//     font: createFont({
-//       key: "base-font",
-//       fontSource: {
-//         family: "Calibri",
-//         size: 64,
-//         errorGlyph: "",
-//         glyphs: "",
-//         weight: 400
-//       }
-//     })
-//   },
-//   eventManagers: cameras => ({
-//     base: new BasicCameraController({
-//       camera: cameras.main
-//     })
-//   }),
-//   pipeline: (resources, providers, cameras): IPipeline => ({
-//     resources: [resources.atlas, resources.font],
-//     scenes: [
-//       {
-//         key: "default",
-//         views: [
-//           createView({
-//             key: "main",
-//             camera: cameras.main
-//           })
-//         ],
-//         layers: [
-//           createLayer(CircleLayer, {
-//             data: providers.circles,
-//             key: "circles"
-//           }),
-//           createLayer(CircleLayer, {
-//             data: providers.something.awesome,
-//             key: "awesome"
-//           }),
-//           createLayer(LabelLayer, {
-//             data: providers.labels,
-//             resourceKey: resources.font.key,
-//             key: "labels"
-//           })
-//         ]
-//       }
-//     ]
-//   })
-// });
-
-// t.providers.something.awesome;

@@ -146,9 +146,11 @@ function isSimpleFontMetrics(val: any): val is ISimpleFontMapMetrics {
  * an IFontResourceOptions object. Excludes the need to specify the type.
  */
 export function createFont(
-  options: Omit<IFontResourceOptions, "type">
+  options: Omit<IFontResourceOptions, "type" | "key"> &
+    Partial<Pick<IFontResourceOptions, "key">>
 ): IFontResourceOptions {
   return {
+    key: "",
     type: ResourceType.FONT,
     ...options
   };

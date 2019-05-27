@@ -173,31 +173,35 @@ export class TextDemo extends BaseDemo {
         })
       }),
       pipeline: (resources, providers, cameras) => ({
-        resources: [resources.font],
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          default: {
+            views: {
+              "default-view": createView({
                 background: [0, 0, 0, 1],
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
-            layers: [
-              createLayer(LabelLayer, {
+            },
+            layers: {
+              hey: createLayer(LabelLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: new InstanceProvider(),
+                resourceKey: resources.font.key,
+                scaleMode: this.parameters.scaleMode
+              }),
+              labels: createLayer(LabelLayer, {
                 animate: {
                   color: AutoEasingMethod.easeInOutCubic(500)
                 },
                 data: providers.labels,
-                key: "labels",
                 resourceKey: resources.font.key,
                 scaleMode: this.parameters.scaleMode
               })
-            ]
+            }
           }
-        ]
+        }
       })
     });
   }

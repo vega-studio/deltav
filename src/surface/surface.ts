@@ -12,7 +12,7 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
+import { FrameMetrics, Omit, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
@@ -193,17 +193,28 @@ export type LayerInitializerInternal = {
 };
 
 /**
+ * Sort method for any object with an 'order' property
+ */
+function sortByOrder<T extends { order?: number }>(a: T, b: T) {
+  return (
+    (a.order || Number.MAX_SAFE_INTEGER) - (b.order || Number.MAX_SAFE_INTEGER)
+  );
+}
+
+/**
  * Used for reactive layer generation and updates.
  */
 export function createLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: U
+  props: Omit<U, "key"> & Partial<Pick<U, "key">>
 ): LayerInitializer {
+  const keyedProps = Object.assign(props, { key: props.key || "" });
+
   return {
     get key() {
-      return props.key;
+      return props.key || "";
     },
-    init: [layerClass, props]
+    init: [layerClass, keyedProps]
   };
 }
 
@@ -358,6 +369,7 @@ export class Surface {
 
     // Get the scenes in their added order
     const scenes = this.sceneDiffs.items;
+    scenes.sort(sortByOrder);
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
     const pickingPassByView = new Map<View, Layer<any, any>[]>();
 
@@ -367,6 +379,10 @@ export class Surface {
       const views = scene.views;
       const layers = scene.layers;
       const validLayers: { [key: string]: Layer<any, any> } = {};
+
+      // Make sure the views and layers are ordered such that they render in the appropriate order
+      views.sort(sortByOrder);
+      layers.sort(sortByOrder);
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {

@@ -51,7 +51,6 @@ export const DEFAULT_RESOURCES = {
   }),
   font: createFont({
     dynamic: true,
-    key: "test-font",
     fontSource: {
       localKerningCache: false,
       size: 64,

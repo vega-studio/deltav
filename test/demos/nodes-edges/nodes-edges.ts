@@ -287,20 +287,17 @@ export class NodesEdges extends BaseDemo {
         })
       }),
       pipeline: (resources, providers, cameras) => ({
-        resources: [resources.font],
-        scenes: [
-          {
-            key: "default-scene",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          "default-scene": {
+            views: {
+              "default-view": createView({
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
-            layers: [
-              createLayer(ArcLayer, {
+            },
+            layers: {
+              arcs: createLayer(ArcLayer, {
                 animate: {
                   angleOffset: AutoEasingMethod.linear(
                     1000,
@@ -308,24 +305,21 @@ export class NodesEdges extends BaseDemo {
                     AutoEasingLoopStyle.REPEAT
                   )
                 },
-                data: providers.arcs,
-                key: "arcs"
+                data: providers.arcs
               }),
-              createLayer(EdgeLayer, {
+              edges: createLayer(EdgeLayer, {
                 animate: {
                   startColor: AutoEasingMethod.easeInOutCubic(500),
                   endColor: AutoEasingMethod.easeInOutCubic(500)
                 },
                 data: providers.edges,
-                key: "edges",
                 type: EdgeType.LINE
               }),
-              createLayer(CircleLayer, {
+              circles: createLayer(CircleLayer, {
                 animate: {
                   color: AutoEasingMethod.easeInOutCubic(1000, 0)
                 },
                 data: providers.circles,
-                key: "circles",
                 scaleFactor: () => cameras.main.scale[0],
                 picking: PickType.SINGLE,
 
@@ -333,23 +327,21 @@ export class NodesEdges extends BaseDemo {
                 onMouseOut: this.handleCircleOut,
                 onMouseClick: this.handleCircleClick
               }),
-              createLayer(RectangleLayer, {
+              rects: createLayer(RectangleLayer, {
                 data: providers.rectangles,
-                key: "rects",
                 scaleFactor: () => cameras.main.scale[0]
               }),
-              createLayer(LabelLayer, {
+              labels: createLayer(LabelLayer, {
                 animate: {
                   color: AutoEasingMethod.easeInOutCubic(500)
                 },
                 data: providers.labels,
-                key: "labels",
-                resourceKey: DEFAULT_RESOURCES.font.key,
+                resourceKey: resources.font.key,
                 scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
               })
-            ]
+            }
           }
-        ]
+        }
       })
     });
   }

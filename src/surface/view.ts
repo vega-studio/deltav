@@ -5,7 +5,7 @@ import {
 } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
-import { uid, Vec2 } from "../util";
+import { Vec2 } from "../util";
 import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -21,12 +21,12 @@ export enum ClearFlags {
  * Helper method to make a fullscreen view quickly
  */
 export function createView(
-  options: Pick<IViewOptions, "camera" | "key"> &
+  options: Pick<IViewOptions, "camera"> &
     Omit<Partial<IViewOptions>, "viewport">
 ): IViewOptions {
   return Object.assign(
     {
-      key: `view.${uid()}`,
+      key: "",
       viewport: {
         left: 0,
         right: 0,
@@ -62,6 +62,8 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
   clearFlags?: ClearFlags[];
+  /** Helps assert a guaranteed rendering order if needed. Lower numbers render first. */
+  order?: number;
   /**
    * If this is provided, the layer can be rendered with a traditional camera that utilizes
    * matrix transforms to provide orientation/projection for the view.
@@ -87,7 +89,7 @@ function isOrthographic(val: Camera): val is Camera {
 }
 
 /**
- * This defines a view of a scene
+ * A View renders a perspective of a scene to a given surface or surfaces.
  */
 export class View extends IdentifyByKey {
   static DEFAULT_VIEW_ID = "__default__";
@@ -114,6 +116,8 @@ export class View extends IdentifyByKey {
    * This is merely a hinting device and does not guarantee better performance at any given moment.
    */
   optimizeRendering: boolean = false;
+  /** Helps assert rendering order for views. Lower numbers render first. */
+  order?: number;
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
   /** The scene this view is displaying */

@@ -11,6 +11,8 @@ import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { generateDefaultElements } from "./layer-processing/generate-default-scene";
 import { IViewOptions, View } from "./view";
 
+const debug = require("debug")("performance");
+
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
  * views.
@@ -20,6 +22,8 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
    * This decalres all of the layers that should be applied to this scene.
    */
   layers: LayerInitializer[];
+  /** Helps assert a guaranteed rendering order for scenes. Lower numbers reender first. */
+  order?: number;
   /**
    * This indicates all of the views this scene can be rendered with. For instance: You have a
    * world scene and you want to render it stereoscopically for VR. Then you can specify two
@@ -45,6 +49,8 @@ export class LayerScene extends IdentifyByKey {
     Layer<Instance, ILayerProps<Instance>>,
     LayerInitializer
   >;
+  /** Helps assert a guaranteed render order for scenes. Lower numbers render first. */
+  order?: number;
   /** The presiding surface over this scene */
   surface?: Surface;
   /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
@@ -80,6 +86,7 @@ export class LayerScene extends IdentifyByKey {
     // Create the diff manager to handle the layers coming in.
     this.layerDiffs = new ReactiveDiff({
       buildItem: async (initializer: LayerInitializerInternal) => {
+        debug("Building layer", initializer.key);
         if (!this.surface) return null;
         const layerClass = initializer.init[0];
         const props = initializer.init[1];
@@ -89,6 +96,8 @@ export class LayerScene extends IdentifyByKey {
           this,
           Object.assign({}, layerClass.defaultProps, props)
         );
+        // Set the ordering value
+        layer.order = initializer.init[1].order || Number.MAX_SAFE_INTEGER;
         // Keep the initializer object that generated the layer for reference and debugging
         layer.initializer = initializer;
         // Sync the data provider applied to the layer in case the provider has existing data
@@ -114,16 +123,26 @@ export class LayerScene extends IdentifyByKey {
           return null;
         }
 
+        // Get the children for the layer
+        const children = layer.childLayers();
+
+        // Make the child layer be just slightly larger than the parent layer to keep it nearby in the render order
+        for (let i = 0, iMax = children.length; i < iMax; ++i) {
+          const child = children[i];
+          child.init[1].order = layer.order + 0.01 * i;
+        }
+
         // Add in the children of the layer
-        this.layerDiffs.inline(layer.childLayers());
+        this.layerDiffs.inline(children);
 
         return layer;
       },
 
       destroyItem: async (
-        _initializer: LayerInitializer,
+        initializer: LayerInitializer,
         layer: Layer<Instance, ILayerProps<Instance>>
       ) => {
+        debug("Destroying layer", initializer.key);
         layer.destroy();
         return true;
       },
@@ -135,6 +154,8 @@ export class LayerScene extends IdentifyByKey {
         const props: ILayerPropsInternal<Instance> = initializer.init[1];
         // Execute lifecycle method
         layer.willUpdateProps(props);
+        // Apply the potential new ordering.
+        layer.order = props.order;
 
         // If we have a provider that is about to be newly set to the layer, then the provider
         // needs to do a full sync in order to have existing elements in the provider
@@ -240,6 +261,7 @@ export class LayerScene extends IdentifyByKey {
    * Hand off the diff objects to our view and layer diffs
    */
   async update(options: ISceneOptions) {
+    this.order = options.order;
     await this.viewDiffs.diff(options.views);
     await this.layerDiffs.diff(options.layers);
   }

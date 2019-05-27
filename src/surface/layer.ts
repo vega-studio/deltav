@@ -79,6 +79,8 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * can have some specific and significant needs the layer does not provide as a default.
    */
   materialOptions?: ILayerMaterialOptions;
+  /** Helps guarantee a rendering order for the layers. Lower numbers render first */
+  order?: number;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -181,6 +183,8 @@ export class Layer<
   model: Model;
   /** This indicates whether this layer needs to draw */
   needsViewDrawn: boolean = false;
+  /** Helps assert rendering order. Lower numbers render first. */
+  order?: number;
   /** If this is populated, then this layer is the product of a parent producing this layer. */
   parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */

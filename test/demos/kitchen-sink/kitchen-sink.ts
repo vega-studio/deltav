@@ -152,8 +152,7 @@ export class KitchenSink extends BaseDemo {
       resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
       cameras: {},
       eventManagers: () => this.getEventManagers(),
-      pipeline: resources => ({
-        resources,
+      pipeline: () => ({
         scenes
       })
     });

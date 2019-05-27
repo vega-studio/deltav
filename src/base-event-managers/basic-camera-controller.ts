@@ -19,7 +19,8 @@ import {
   subtract2,
   subtract3,
   Vec3,
-  vec3
+  vec3,
+  uid
 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
 export enum CameraBoundsAnchor {
@@ -104,9 +105,14 @@ export interface IBasicCameraControllerOptions {
 
 /**
  * This provides some very basic common needs for a camera control system. This is not a total solution
- * very every scenario. This should just often handle most basic needs.
+ * for every scenario. This should just often handle most basic needs.
  */
 export class BasicCameraController extends EventManager {
+  /** Unique identifier of this controller */
+  get uid() {
+    return this._uid;
+  }
+  private _uid = uid();
   /**
    * If total bounds of worldbounds + screenpadding is smaller
    * than width or height of view, anchor dictates placement.
@@ -199,9 +205,12 @@ export class BasicCameraController extends EventManager {
    * Corrects camera offset to respect current bounds and anchor.
    */
   applyBounds = () => {
+    console.log("Apply Bounds", this.bounds, this.camera);
     if (this.bounds && this.camera) {
       const targetView = this.getView(this.bounds.view);
       this.applyScaleBounds();
+
+      console.log("GET VIEW", this, targetView);
 
       // Next bound the positioning
       if (targetView) {

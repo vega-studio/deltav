@@ -198,6 +198,8 @@ export class NodesEdges extends BaseDemo {
       worldBounds
     });
 
+    console.log("BOUNDS", worldBounds);
+
     if (controller.bounds && this.boundsView) {
       this.boundsView.position = [
         controller.bounds.worldBounds.x,

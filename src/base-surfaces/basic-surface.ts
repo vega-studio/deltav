@@ -269,6 +269,15 @@ export class BasicSurface<
     // the state of the client's browser. Some errors are system failures that should be handled gracefully and logged
     // appropriately for debugging.
     try {
+      // Establish the providers this surface will track
+      this.providers = this.options.providers;
+      // Establish the cameras desired to be used in the surface
+      this.cameras = this.options.cameras;
+      // Establish the resources desired to be used in the surface
+      this.resources = this.options.resources;
+      // Establish the event managers to be used in the surface
+      this.eventManagers = this.options.eventManagers(this.cameras);
+
       // Create the surface to work with
       this.base = await new Surface({
         context: this.context,
@@ -279,7 +288,7 @@ export class BasicSurface<
         pixelRatio: window.devicePixelRatio,
         eventManagers: lookupValues<EventManager>(
           EventManager,
-          this.options.eventManagers(this.options.cameras)
+          this.eventManagers
         ),
         rendererOptions: Object.assign(
           {
@@ -292,14 +301,6 @@ export class BasicSurface<
 
       // Make sure the context fits the container
       this.fitContainer(true);
-      // Establish the providers this surface will track
-      this.providers = this.options.providers;
-      // Establish the cameras desired to be used in the surface
-      this.cameras = this.options.cameras;
-      // Establish the resources desired to be used in the surface
-      this.resources = this.options.resources;
-      // Establish the event managers to be used in the surface
-      this.eventManagers = this.options.eventManagers(this.cameras);
       // Use the established cameras and managers to establish the initial pipeline for the surface
       await this.updatePipeline();
       // Begin the draw loop

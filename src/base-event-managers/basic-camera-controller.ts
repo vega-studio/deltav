@@ -18,9 +18,9 @@ import {
   scale3,
   subtract2,
   subtract3,
+  uid,
   Vec3,
-  vec3,
-  uid
+  vec3
 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
 export enum CameraBoundsAnchor {
@@ -205,12 +205,9 @@ export class BasicCameraController extends EventManager {
    * Corrects camera offset to respect current bounds and anchor.
    */
   applyBounds = () => {
-    console.log("Apply Bounds", this.bounds, this.camera);
     if (this.bounds && this.camera) {
       const targetView = this.getView(this.bounds.view);
       this.applyScaleBounds();
-
-      console.log("GET VIEW", this, targetView);
 
       // Next bound the positioning
       if (targetView) {

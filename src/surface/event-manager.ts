@@ -34,7 +34,6 @@ export abstract class EventManager {
    * This retrieves the actual view for the view specified by the provided viewId.
    */
   getView(viewId: string): View | null {
-    console.log("GET VIEW INTERNAL", this.mouseManager, viewId);
     return (this.mouseManager && this.mouseManager.getView(viewId)) || null;
   }
 
@@ -56,7 +55,6 @@ export abstract class EventManager {
    * EventManager.
    */
   setMouseManager(mouseManager: MouseEventManager) {
-    console.log("SET MANAGER", mouseManager);
     this.mouseManager = mouseManager;
   }
 }

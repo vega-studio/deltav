@@ -1177,8 +1177,6 @@ export class Surface {
       new LayerMouseEvents(this)
     ] as EventManager[]).concat(options.eventManagers || []);
 
-    console.log(eventManagers);
-
     // Generate the mouse manager for the layer
     this.mouseManager = new MouseEventManager(
       this.context.canvas,

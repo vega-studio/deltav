@@ -1,4 +1,3 @@
-import { PromiseResolver } from "src/util";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -22,6 +21,7 @@ import {
   IResourceType,
   PickType
 } from "../types";
+import { PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";

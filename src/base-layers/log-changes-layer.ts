@@ -1,4 +1,3 @@
-import { Omit } from "src";
 import { Instance, InstanceProvider } from "../instance-provider";
 import {
   createLayer,
@@ -9,6 +8,7 @@ import {
   LayerScene,
   Surface
 } from "../surface";
+import { Omit } from "../types";
 
 /**
  * Options for generating a Logging layer

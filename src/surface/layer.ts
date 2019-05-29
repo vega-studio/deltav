@@ -1,8 +1,3 @@
-import { ShaderProcessor } from "src/shaders/processing/shader-processor";
-import { generateLayerGeometry } from "src/surface/layer-processing/generate-layer-geometry";
-import { generateLayerMaterial } from "src/surface/layer-processing/generate-layer-material";
-import { generateLayerModel } from "src/surface/layer-processing/generate-layer-model";
-import { LayerScene } from "src/surface/layer-scene";
 import { Geometry } from "../gl/geometry";
 import { Material } from "../gl/material";
 import { Model } from "../gl/model";
@@ -10,6 +5,7 @@ import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ObservableMonitoring } from "../instance-provider/observable";
 import { ResourceRouter } from "../resources";
+import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
   ILayerMaterialOptions,
@@ -34,10 +30,14 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
+import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
+import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
+import { generateLayerModel } from "./layer-processing/generate-layer-model";
 import {
   LayerBufferType,
   makeLayerBufferManager
 } from "./layer-processing/layer-buffer-type";
+import { LayerScene } from "./layer-scene";
 import { LayerInitializer, Surface } from "./surface";
 import { View } from "./view";
 

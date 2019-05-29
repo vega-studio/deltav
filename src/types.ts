@@ -1,5 +1,3 @@
-import { BaseResourceOptions } from "src/resources/base-resource-manager";
-import { ISceneOptions } from "src/surface/layer-scene";
 import {
   Attribute,
   GLSettings,
@@ -10,6 +8,8 @@ import {
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { ISceneOptions } from "./surface/layer-scene";
 import {
   ChartCamera,
   Mat3x3,

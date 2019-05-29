@@ -1,4 +1,3 @@
-import { LayerScene } from "src/surface/layer-scene";
 import {
   AbsolutePosition,
   getAbsolutePositionBounds
@@ -10,6 +9,7 @@ import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera, ViewCameraType } from "../util/view-camera";
+import { LayerScene } from "./layer-scene";
 
 export enum ClearFlags {
   COLOR = 0b0001,

@@ -1,4 +1,3 @@
-import { ResourceRouter } from "src/resources/resource-router";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import {
@@ -22,6 +21,7 @@ import {
   ShaderInjectionTarget,
   UniformSize
 } from "../../types";
+import { ResourceRouter } from "../resource-router";
 
 const debugCtx = "TextureIOExpansion";
 

@@ -1,14 +1,10 @@
-import {
-  LayerInitializer,
-  LayerInitializerInternal,
-  Surface
-} from "src/surface/surface";
-import { ReactiveDiff } from "src/util/reactive-diff";
 import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { ReactiveDiff } from "../util/reactive-diff";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { generateDefaultElements } from "./layer-processing/generate-default-scene";
+import { LayerInitializer, LayerInitializerInternal, Surface } from "./surface";
 import { IViewOptions, View } from "./view";
 
 const debug = require("debug")("performance");

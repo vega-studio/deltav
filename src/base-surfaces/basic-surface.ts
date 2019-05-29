@@ -1,4 +1,3 @@
-import { LayerInitializer } from "src/surface/surface";
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
@@ -10,6 +9,7 @@ import {
   Surface,
   View
 } from "../surface";
+import { LayerInitializer } from "../surface/surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
 import { ChartCamera, nextFrame, PromiseResolver } from "../util";
 import { waitForFrame } from "../util/waitForFrame";

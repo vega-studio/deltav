@@ -1,4 +1,4 @@
-import { IdentifiableById } from "src/types";
+import { IdentifiableById } from "../types";
 
 /**
  * These are the minimum properties required for a ReactiveDiff to monitor a set of objects.

@@ -229,7 +229,6 @@ export class MouseEventManager {
     element.onmousemove = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
-
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
 

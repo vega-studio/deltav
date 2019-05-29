@@ -217,6 +217,7 @@ export class LayerScene extends IdentifyByKey {
         newView.viewCamera = newView.viewCamera || defaultElements.viewCamera;
         newView.pixelRatio = this.surface.pixelRatio;
         newView.camera.surface = this.surface;
+        this.surface.mouseManager.waitingForRender = true;
 
         return newView;
       },
@@ -227,6 +228,10 @@ export class LayerScene extends IdentifyByKey {
       // Hand off the initializer to the update of the view
       updateItem: async (initializer: IViewOptions, view: View) => {
         view.update(initializer);
+
+        if (this.surface) {
+          this.surface.mouseManager.waitingForRender = true;
+        }
       }
     });
 

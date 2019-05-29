@@ -7,12 +7,7 @@ import {
   ILayerConstructionClass,
   LayerInitializer
 } from "../../surface/surface";
-import {
-  InstanceDiffType,
-  IProjection,
-  newLineRegEx,
-  ResourceType
-} from "../../types";
+import { InstanceDiffType, IProjection, newLineRegEx } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
   add2,
@@ -1128,30 +1123,20 @@ export class TextAreaLayer<
 
       labelKerningRequest = fontRequest({
         character: "",
+        key: this.props.resourceKey || "",
         kerningPairs: [checkText],
         metrics
       });
 
       if (!instance.preload) {
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
-
+        this.resource.request(this, instance, labelKerningRequest);
         this.areaTokerningRequest.set(instance, labelKerningRequest);
       } else {
         instance.resourceTrigger = () => {
           if (instance.onReady) instance.onReady(instance);
         };
 
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
+        this.resource.request(this, instance, labelKerningRequest);
       }
 
       return false;

@@ -135,7 +135,7 @@ export class BasicCameraController extends EventManager {
   ) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
-  /** THis is the filter applied to tscaling operations */
+  /** This is the filter applied to tscaling operations */
   private scaleFilter = (
     scale: [number, number, number],
     _view: View,

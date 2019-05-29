@@ -2,12 +2,7 @@ import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import {
-  InstanceIOValue,
-  IResourceContext,
-  IResourceInstanceAttribute,
-  ResourceType
-} from "../../types";
+import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
 import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
@@ -38,8 +33,6 @@ export class AtlasResourceManager extends BaseResourceManager<
   resources = new Map<string, Atlas>();
   /** This is the atlas manager that handles operations with our atlas' */
   atlasManager: AtlasManager;
-  /** This is the atlas currently targetted by requests */
-  targetAtlas: string = "";
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, IAtlasResourceRequest[]>();
   /**
@@ -191,10 +184,9 @@ export class AtlasResourceManager extends BaseResourceManager<
     layer: Layer<T, U>,
     instance: Instance,
     request: IAtlasResourceRequest,
-    context?: IResourceContext
+    _context?: IResourceContext
   ): InstanceIOValue {
-    const resourceContext =
-      this.targetAtlas || (context && context.resource.key) || "";
+    const resourceContext = request.key || "";
     const texture = request.texture;
 
     // If the texture is ready and available, then we simply return the IO values
@@ -239,13 +231,6 @@ export class AtlasResourceManager extends BaseResourceManager<
 
     // This returns essentially returns blank values for the resource lookup
     return subTextureIOValue(texture);
-  }
-
-  /**
-   * Sets the context attribute during attribute updates from the layers
-   */
-  setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
-    this.targetAtlas = attribute.resource.key;
   }
 
   /**

@@ -2,12 +2,7 @@ import { WebGLRenderer } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
-import {
-  InstanceIOValue,
-  IResourceContext,
-  IResourceInstanceAttribute,
-  IResourceType
-} from "../types";
+import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
 import {
   BaseResourceManager,
   INVALID_RESOURCE_MANAGER
@@ -19,9 +14,14 @@ const debug = require("debug")("performance");
  * This is the manager of all Resource Managers. This handles registering managers for various resource types
  * and delegates resource requests to the appropriate manager.
  */
-export class ResourceManager {
+export class ResourceRouter {
   /** This is the list of managers for handling resource requests */
   managers = new Map<number, BaseResourceManager<any, any>>();
+  /**
+   * This tracks a resource's identifier to the type of resource it is. This allows for less information to be
+   * required of Layer attributes by making the resource key the identifier of the resource.s
+   */
+  resourceKeyToType = new Map<string, number>();
   /** This is the webgl renderer that is passed to the resource managers */
   webGLRenderer?: WebGLRenderer;
 
@@ -46,6 +46,9 @@ export class ResourceManager {
    */
   destroy() {
     this.managers.forEach(manager => manager.destroy());
+    this.resourceKeyToType.clear();
+    this.managers.clear();
+    delete this.webGLRenderer;
   }
 
   /**
@@ -65,6 +68,9 @@ export class ResourceManager {
 
       return;
     }
+
+    // Clear the key of the resource from it's registered type
+    this.resourceKeyToType.delete(resource.key);
 
     return await manager.destroyResource(resource);
   }
@@ -99,6 +105,14 @@ export class ResourceManager {
   }
 
   /**
+   * Retrieves the resource type that a resource key is associated with. This is undefined if the key does
+   * not exist.
+   */
+  getResourceType(resourceKey: string): number | undefined {
+    return this.resourceKeyToType.get(resourceKey);
+  }
+
+  /**
    * This hands the initialization of a resource to the correct Resource Manager.
    */
   async initResource<T extends IResourceType>(resource: T & { key: string }) {
@@ -113,6 +127,18 @@ export class ResourceManager {
 
       return;
     }
+
+    if (this.resourceKeyToType.has(resource.key)) {
+      console.warn(
+        "Detected two resources with identical keys. The duplicate resource will not be generated:",
+        resource.key
+      );
+
+      return;
+    }
+
+    // Store the key of the resource to the type it is.
+    this.resourceKeyToType.set(resource.key, resource.type);
 
     return await manager.initResource(resource);
   }
@@ -145,20 +171,6 @@ export class ResourceManager {
   }
 
   /**
-   * This places an attribute as the current context for the managers to operate within.
-   * This will cause the attributes requested resource (if existing) to set the attribute
-   * as it's current context while performing tasks.
-   */
-  setAttributeContext(
-    attribute: IResourceInstanceAttribute<Instance>,
-    resourceType: number
-  ) {
-    (
-      this.managers.get(resourceType) || INVALID_RESOURCE_MANAGER
-    ).setAttributeContext(attribute);
-  }
-
-  /**
    * Every resource type needs a manager associated with it so it can have requests processed. This
    * allows a manager to be set for a resource type.
    */
@@ -171,6 +183,7 @@ export class ResourceManager {
       );
     }
 
+    manager.router = this;
     this.managers.set(resourceType, manager);
     manager.webGLRenderer = this.webGLRenderer;
   }

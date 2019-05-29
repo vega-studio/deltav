@@ -6,8 +6,7 @@ import {
   IInstanceProvider,
   InstanceProvider,
   ISceneOptions,
-  LayerInitializer,
-  nextFrame
+  LayerInitializer
 } from "src";
 
 import * as datGUI from "dat.gui";
@@ -138,18 +137,17 @@ export class KitchenSink extends BaseDemo {
    */
   makeSurface(container: HTMLElement) {
     const scenes = this.getScenes();
-    this.getLayers(true);
-
-    nextFrame(async () => {
-      await nextFrame();
-      this.getLayers(false);
-      if (this.surface) this.surface.updatePipeline();
-    });
 
     return new BasicSurface({
       container,
+      rendererOptions: {
+        antialias: true
+      },
       providers: {},
-      resources: [DEFAULT_RESOURCES.atlas, DEFAULT_RESOURCES.font],
+      resources: {
+        atlas: DEFAULT_RESOURCES.atlas,
+        font: DEFAULT_RESOURCES.font
+      },
       cameras: {},
       eventManagers: () => this.getEventManagers(),
       pipeline: () => ({
@@ -168,11 +166,12 @@ export class KitchenSink extends BaseDemo {
   /**
    * Populate the scenes with the layers the tests provide
    */
-  private getLayers(fakeProvider: boolean) {
+  private getLayers(fakeProvider?: boolean) {
     this.makeSceneControls();
 
     // Generate the Layers for the tests now that the scenes are established
     tests.forEach((test, i) => {
+      if (!this.surface) return;
       layers = [];
       const controls = this.testControls.get(test);
       const scene = this.allScenes[i];
@@ -181,7 +180,10 @@ export class KitchenSink extends BaseDemo {
       test.view = sceneName;
 
       const layer = test.makeLayer(
-        { atlas: "atlas", font: "test-font" },
+        {
+          atlas: this.surface.resources.atlas.key,
+          font: this.surface.resources.font.key
+        },
         fakeProvider || !controls ? new InstanceProvider() : controls.provider
       );
 
@@ -271,5 +273,8 @@ export class KitchenSink extends BaseDemo {
         provider: test.makeProvider()
       });
     });
+
+    this.getLayers();
+    this.surface.updatePipeline();
   }
 }

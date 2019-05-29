@@ -7,8 +7,9 @@ import { Bounds } from "../primitives/bounds";
 import {
   BaseResourceManager,
   BaseResourceOptions,
+  BaseResourceRequest,
   FontResourceManager,
-  ResourceManager
+  ResourceRouter
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
@@ -141,7 +142,7 @@ export interface ISurfaceOptions {
    */
   resourceManagers?: {
     type: number;
-    manager: BaseResourceManager<IResourceType, IResourceType>;
+    manager: BaseResourceManager<IResourceType, BaseResourceRequest>;
   }[];
 }
 
@@ -246,7 +247,7 @@ export class Surface {
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
-  private mouseManager: MouseEventManager;
+  mouseManager: MouseEventManager;
   /** This is a target used to perform rendering our picking pass */
   pickingTarget: RenderTarget;
   /** This is the density the rendering renders for the surface */
@@ -254,7 +255,7 @@ export class Surface {
   /** This is the THREE render system we use to render scenes with views */
   renderer: WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
-  resourceManager: ResourceManager;
+  resourceManager: ResourceRouter;
   /** When set to true, the next render will make sure color picking is updated for layer interactions */
   updateColorPick?: {
     mouse: Vec2;
@@ -278,10 +279,58 @@ export class Surface {
    * frame using this store here.
    */
   private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
+
   /** Diff manager to handle diffing resource objects for the pipeline */
-  resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions>;
+  resourceDiffs: ReactiveDiff<
+    IdentifiableById,
+    BaseResourceOptions
+  > = new ReactiveDiff({
+    buildItem: async (initializer: BaseResourceOptions) => {
+      await this.resourceManager.initResource(initializer);
+
+      return {
+        id: initializer.key
+      };
+    },
+
+    destroyItem: async (
+      initializer: BaseResourceOptions,
+      _item: IdentifiableById
+    ) => {
+      await this.resourceManager.destroyResource(initializer);
+
+      return true;
+    },
+
+    updateItem: async (
+      initializer: BaseResourceOptions,
+      _item: IdentifiableById
+    ) => {
+      await this.resourceManager.updateResource(initializer);
+    }
+  });
+
   /** Diff manager to handle diffing scene objects for the pipeline */
-  sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
+  sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions> = new ReactiveDiff({
+    buildItem: async (initializer: ISceneOptions) => {
+      const scene = new LayerScene(this, {
+        key: initializer.key,
+        views: initializer.views,
+        layers: initializer.layers
+      });
+
+      return scene;
+    },
+
+    destroyItem: async (_initializer: ISceneOptions, item: LayerScene) => {
+      item.destroy();
+      return true;
+    },
+
+    updateItem: async (initializer: ISceneOptions, item: LayerScene) => {
+      await item.update(initializer);
+    }
+  });
 
   constructor(options?: ISurfaceOptions) {
     this.readyResolver = new PromiseResolver();
@@ -640,7 +689,6 @@ export class Surface {
     // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
     // GPU intensive operation.
     this.analyzePickRendering();
-
     // Gather all of our picking calls to call at the end to prevent readPixels from
     // becoming a major blocking operation
     const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
@@ -1191,7 +1239,7 @@ export class Surface {
    */
   private async initResources(options: ISurfaceOptions) {
     // Create the controller for handling all resource managers
-    this.resourceManager = new ResourceManager();
+    this.resourceManager = new ResourceRouter();
     // Set the GL renderer to the
     this.resourceManager.setWebGLRenderer(this.renderer);
 
@@ -1215,59 +1263,6 @@ export class Surface {
    * elements tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
-    // Make the diff manager for handling resources
-    if (!this.resourceDiffs) {
-      this.resourceDiffs = new ReactiveDiff({
-        buildItem: async (initializer: BaseResourceOptions) => {
-          await this.resourceManager.initResource(initializer);
-
-          return {
-            id: initializer.key
-          };
-        },
-
-        destroyItem: async (
-          initializer: BaseResourceOptions,
-          _item: IdentifiableById
-        ) => {
-          await this.resourceManager.destroyResource(initializer);
-
-          return true;
-        },
-
-        updateItem: async (
-          initializer: BaseResourceOptions,
-          _item: IdentifiableById
-        ) => {
-          await this.resourceManager.updateResource(initializer);
-        }
-      });
-    }
-
-    // Make the diff manager for handling scenes
-    if (!this.sceneDiffs) {
-      this.sceneDiffs = new ReactiveDiff({
-        buildItem: async (initializer: ISceneOptions) => {
-          const scene = new LayerScene(this, {
-            key: initializer.key,
-            views: initializer.views,
-            layers: initializer.layers
-          });
-
-          return scene;
-        },
-
-        destroyItem: async (_initializer: ISceneOptions, item: LayerScene) => {
-          item.destroy();
-          return true;
-        },
-
-        updateItem: async (initializer: ISceneOptions, item: LayerScene) => {
-          await item.update(initializer);
-        }
-      });
-    }
-
     if (pipeline.resources) {
       await this.resourceDiffs.diff(pipeline.resources);
     }

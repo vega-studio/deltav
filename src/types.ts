@@ -209,10 +209,8 @@ export interface IInstanceAttribute<T extends Instance> {
    * The value provided for this property should be the name of the atlas that is created.
    */
   resource?: {
-    /** This is the resource type that the attribute will be requesting (ie ResourceType.ATLAS, ResourceType.FONT, or custom resource type values) */
-    type: number;
-    /** Specify which generated resource to target for the resource */
-    key: string;
+    /** This is a method that should return the string key identifier of the resource to be used */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**
@@ -309,14 +307,12 @@ export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading atlas resources.
-   * The value provided for this property should be the name of the atlas that is created.
+   * 0. This makes this attribute and layer become compatible with reading resources.
+   * The value provided for this property should be the name of the resource that is created.
    */
   resource: {
-    /** This is the resource type targeted which can be provided by managers */
-    type: number;
-    /** Specify which generated resource to target */
-    key: string;
+    /** This retrieves the key of the resource that is to be used by the attribute */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**

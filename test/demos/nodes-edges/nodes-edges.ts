@@ -372,7 +372,7 @@ export class NodesEdges extends BaseDemo {
     });
 
     // Uncomment this to see the bounds used for the camera
-    this.providers.rectangles.add(this.boundsView);
+    // this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {

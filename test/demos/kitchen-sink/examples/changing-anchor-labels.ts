@@ -25,7 +25,7 @@ export class ChangingAnchorLabels extends BaseExample {
   makeProvider(): InstanceProvider<LabelInstance> {
     const labelProvider = new InstanceProvider<LabelInstance>();
 
-    nextFrame(() => {
+    nextFrame(async () => {
       const bounds = this.surface.getViewSize(this.view);
       if (!bounds) return;
 

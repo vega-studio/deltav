@@ -63,7 +63,7 @@ export class FontResourceManager extends BaseResourceManager<
   IFontResourceRequest
 > {
   /** The current attribute that is making request calls */
-  private currentAttribute: IResourceInstanceAttribute<Instance>;
+  currentAttribute: IResourceInstanceAttribute<Instance>;
   /**
    * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
    */
@@ -116,8 +116,6 @@ export class FontResourceManager extends BaseResourceManager<
         // Get the requests for the given font
         const glyphRequests = this.requestLookup.get(fontResource);
 
-        debug("All requests for resource '%s' are processed", fontResource);
-
         if (glyphRequests) {
           // Once the manager has been updated, we can now flag all of the instances waiting for the resources
           // As active, which should thus trigger an update to the layers to perform a diff for each instance
@@ -152,6 +150,13 @@ export class FontResourceManager extends BaseResourceManager<
               });
             }
           });
+
+          debug("All requests for resource '%s' are processed", fontResource);
+        } else {
+          debug(
+            "There were no Font requests waiting for completion for resource",
+            fontResource
+          );
         }
       }
     }
@@ -202,6 +207,8 @@ export class FontResourceManager extends BaseResourceManager<
       if (fontMap) {
         this.resourceLookup.set(options.key, fontMap);
       }
+
+      debug("Font map created->", fontMap);
     }
   }
 
@@ -213,10 +220,9 @@ export class FontResourceManager extends BaseResourceManager<
     layer: Layer<U, V>,
     instance: Instance,
     req: IFontResourceRequest,
-    context?: IResourceContext
+    _context?: IResourceContext
   ): InstanceIOValue {
     const request: IFontResourceRequestInternal = req;
-    const resourceContex = this.currentAttribute || context;
     const fontMap = request.fontMap;
     let texture: SubTexture | null = null;
 
@@ -244,7 +250,7 @@ export class FontResourceManager extends BaseResourceManager<
     }
 
     // This is the attributes resource key being requested
-    const resourceKey = resourceContex.resource.key;
+    const resourceKey = req.key;
     // If a request is already made, then we must save the instance making the request for deactivation and
     // Reactivation but without any additional atlas loading
     let fontRequests = this.requestLookup.get(resourceKey);
@@ -287,13 +293,6 @@ export class FontResourceManager extends BaseResourceManager<
     }
 
     return subTextureIOValue(texture);
-  }
-
-  /**
-   * Sets the attribute that is currently making requests.
-   */
-  setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
-    this.currentAttribute = attribute;
   }
 
   /**

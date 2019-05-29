@@ -54,6 +54,10 @@ export class ReactiveDiff<
    */
   private currentInitializer?: T;
   private currentItem?: U;
+  /**
+   * This stores deferred inlined elements that are waiting for their parent to be completely created
+   */
+  private deferredInlining?: T[];
 
   /** A list of all the items currently alive and managed by this diff */
   get items(): U[] {
@@ -120,9 +124,19 @@ export class ReactiveDiff<
 
       // Items that are not existing already will not be in the dispose queue
       else {
+        this.inline = this.inlineDeferred;
         const item = await this.options.buildItem(initializer);
+        this.inline = this.inlineImmediate;
 
+        // Check to see if we successfully generated an item
         if (item) {
+          this.currentItem = item;
+
+          if (this.deferredInlining) {
+            this.inline(this.deferredInlining);
+            delete this.deferredInlining;
+          }
+
           this.keyToItem.set(initializer.key, item);
           this.keyToInitializer.set(initializer.key, initializer);
           this._items.push(item);
@@ -168,9 +182,16 @@ export class ReactiveDiff<
   }
 
   /**
-   * This method is used to inline new elements at the time an update/creation occurs
+   * This method is used to inline new elements at the time a creation occurs
    */
-  inline(newInitializers: T[]) {
+  private inlineDeferred = (newInitializers: T[]) => {
+    this.deferredInlining = newInitializers;
+  };
+
+  /**
+   * This method is used to inline new elements at the time an update occurs
+   */
+  private inlineImmediate = (newInitializers: T[]) => {
     if (
       newInitializers.length > 0 &&
       this.currentInitializers &&
@@ -187,7 +208,13 @@ export class ReactiveDiff<
         init.parent = this.currentItem;
       }
     }
-  }
+  };
+
+  /**
+   * Inlining new items takes on two different modes: immediate inlining for during update cycles
+   * and inlining during creation cycles which requires deferring the inline until the creation of the item has been completed.
+   */
+  inline = this.inlineImmediate;
 
   /**
    * Only during the updateItem phase of an item can this be called. This will cause the item

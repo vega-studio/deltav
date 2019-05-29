@@ -11,7 +11,6 @@ import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
-  ResourceType,
   VertexAttributeSize
 } from "../../types";
 import {
@@ -96,9 +95,8 @@ export class GlyphLayer<
     const glyphTextureAttr: IInstanceAttribute<T> = {
       name: "texture",
       resource: {
-        key: this.props.resourceKey || "",
-        name: "fontMap",
-        type: ResourceType.FONT
+        key: () => this.props.resourceKey || "",
+        name: "fontMap"
       },
       update: o => {
         const char = o.character;
@@ -108,6 +106,7 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
+              key: this.props.resourceKey || "",
               character: char
             });
 
@@ -134,9 +133,8 @@ export class GlyphLayer<
       name: "glyphSize",
       parentAttribute: glyphTextureAttr,
       resource: {
-        key: this.props.resourceKey || "",
-        name: "fontMap",
-        type: ResourceType.FONT
+        key: () => this.props.resourceKey || "",
+        name: "fontMap"
       },
       size: InstanceAttributeSize.TWO,
       update: o => {
@@ -147,6 +145,7 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
+              key: this.props.resourceKey || "",
               character: char
             });
 
@@ -255,6 +254,10 @@ export class GlyphLayer<
     };
   }
 
+  draw() {
+    super.draw();
+  }
+
   /**
    * Set up material options for the layer
    */
@@ -266,5 +269,20 @@ export class GlyphLayer<
         depthTest: false
       })
     );
+  }
+
+  /**
+   * Handle changes that need special handling
+   */
+  willUpdateProps(nextProps: U) {
+    // If the target resource changes, then we must make all of the requests re-process their requests for the new
+    // resource.
+    if (nextProps.resourceKey !== this.props.resourceKey) {
+      Object.values(this.glyphRequests).forEach(req => {
+        delete req.fontMap;
+        req.key = nextProps.resourceKey || "";
+      });
+      this.rebuildLayer();
+    }
   }
 }

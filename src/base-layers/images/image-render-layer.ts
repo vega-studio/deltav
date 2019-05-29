@@ -7,7 +7,6 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
-  ResourceType,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -219,8 +218,7 @@ export class ImageRenderLayer<
         {
           name: ImageRenderLayer.attributeNames.texture,
           resource: {
-            type: ResourceType.ATLAS,
-            key: this.props.atlas || "",
+            key: () => this.props.atlas || "",
             name: "imageAtlas"
           },
           update: o => {
@@ -228,6 +226,7 @@ export class ImageRenderLayer<
 
             if (!o.request) {
               o.request = atlasRequest({
+                key: this.props.atlas || "",
                 rasterizationScale: this.props.rasterizationScale,
                 source
               });

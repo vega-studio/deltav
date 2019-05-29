@@ -757,6 +757,7 @@ export class LabelLayer<
 
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
+        key: this.props.resourceKey || "",
         character: "",
         kerningPairs: [checkText],
         metrics
@@ -784,12 +785,7 @@ export class LabelLayer<
           if (instance.onReady) instance.onReady(instance);
         };
 
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
+        this.resource.request(this, instance, labelKerningRequest);
       }
 
       return false;

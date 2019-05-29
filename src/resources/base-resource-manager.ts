@@ -8,6 +8,7 @@ import {
   IResourceInstanceAttribute,
   IResourceType
 } from "../types";
+import { ResourceRouter } from "./resource-router";
 
 /**
  * The Base Options for initializing a resource.
@@ -17,7 +18,7 @@ export type BaseResourceOptions = IResourceType & { key: string };
 /**
  * The base needs for making a resource request.
  */
-export type BaseResourceRequest = IResourceType;
+export type BaseResourceRequest = IResourceType & { key: string };
 
 /**
  * This represents a manager that is capable of handling requests for resources that come from Layers
@@ -27,6 +28,11 @@ export abstract class BaseResourceManager<
   T extends IResourceType,
   S extends BaseResourceRequest
 > {
+  /**
+   * Every resource manager will have access to the parent ResourceManager system that pipes resources and requests
+   * to the proper location.
+   */
+  router: ResourceRouter;
   /** Every resource manager will receive the utilized renderer so the manager can perform basic GL tasks if needed */
   webGLRenderer?: WebGLRenderer;
 
@@ -97,7 +103,7 @@ export abstract class BaseResourceManager<
  */
 export class InvalidResourceManager extends BaseResourceManager<
   IResourceType,
-  IResourceType
+  BaseResourceRequest
 > {
   resources = new Map<string, BaseResourceOptions>();
 

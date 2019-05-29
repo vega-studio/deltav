@@ -1,3 +1,4 @@
+import { Omit } from "src";
 import { Instance, InstanceProvider } from "../instance-provider";
 import {
   createLayer,
@@ -12,9 +13,12 @@ import {
 /**
  * Options for generating a Logging layer
  */
-interface ILogChangesLayerProps<T extends Instance> extends ILayerProps<T> {
+interface ILogChangesLayerProps<T extends Instance>
+  extends Omit<ILayerProps<T>, "key"> {
+  /** Gets the key for the layer. */
+  key: string;
   /** Provides a header to the log output to make the logs easier to understand */
-  messageHeader?: string;
+  messageHeader?(): string;
   /** This is the wrapped layer initializer */
   wrap?: LayerInitializer;
 }
@@ -32,7 +36,7 @@ class LogChangesLayer<
   static defaultProps: ILogChangesLayerProps<any> = {
     data: new InstanceProvider(),
     key: "default",
-    messageHeader: "",
+    messageHeader: () => "",
     wrap: createLayer(Layer, {
       data: new InstanceProvider(),
       scene: "default"
@@ -53,6 +57,7 @@ class LogChangesLayer<
    */
   childLayers(): LayerInitializer[] {
     if (!this.props.wrap) return [];
+    this.props.wrap.init[1].key = `debug-wrapper.${this.props.key}`;
     return [this.props.wrap];
   }
 
@@ -64,8 +69,9 @@ class LogChangesLayer<
     if (!this.props.wrap) return;
     const changes = this.resolveChanges(true);
     if (changes.length === 0) return;
+    const { messageHeader = () => "" } = this.props;
 
-    console.warn(`${this.props.messageHeader}\n`, {
+    console.warn(`${messageHeader()}\n`, {
       totalChanges: changes.length,
       changes
     });
@@ -115,12 +121,13 @@ class LogChangesLayer<
  */
 export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: U
+  props: Omit<U, "key"> & Partial<Pick<U, "key">>
 ): LayerInitializer {
-  return createLayer(LogChangesLayer, {
-    messageHeader: `CHANGES FOR: ${props.key}`,
+  const initializer: LayerInitializer = createLayer(LogChangesLayer, {
+    messageHeader: () => `CHANGES FOR: ${initializer.init[1].key}`,
     wrap: createLayer(layerClass, props),
-    data: props.data,
-    key: `debug-wrapper.${props.key}`
+    data: props.data
   });
+
+  return initializer;
 }

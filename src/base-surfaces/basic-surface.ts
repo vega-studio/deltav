@@ -302,7 +302,7 @@ export class BasicSurface<
       // Make sure the context fits the container
       this.fitContainer(true);
       // Use the established cameras and managers to establish the initial pipeline for the surface
-      await this.updatePipeline();
+      // await this.updatePipeline();
       // Begin the draw loop
       this.draw(await waitForFrame());
       // Use the established cameras and managers to establish the initial pipeline for the surface
@@ -465,14 +465,9 @@ export class BasicSurface<
   async updatePipeline() {
     if (!this.base) return;
 
-    // We must convert all look ups of scenes and layers etc into a list of items that contain keys
-    const pipelineWithLookups = this.options.pipeline(
-      this.resources,
-      this.providers,
-      this.cameras,
-      this.eventManagers
-    );
-
+    // NOTE: This chunk establishes the potentially undeclared keys of the resource declaration objects. Thus it needs
+    //       to execute before blocks that require the key to be established.
+    //
     // Take the resource lookup and flatten it's values to a list. Each value will be given a key based on whether the
     // value expressed an explicit key or will be a key made from the properties leading up to the value in the lookup.
     const resources = mapLookupValues(
@@ -487,6 +482,14 @@ export class BasicSurface<
         val.key = resource.key;
         return resource;
       }
+    );
+
+    // We must convert all look ups of scenes and layers etc into a list of items that contain keys
+    const pipelineWithLookups = this.options.pipeline(
+      this.resources,
+      this.providers,
+      this.cameras,
+      this.eventManagers
     );
 
     const scenes = mapLookupValues(
@@ -522,10 +525,14 @@ export class BasicSurface<
 
         const scene: ISceneOptions = {
           key,
-          order: val.order || 0,
+          order: val.order,
           views,
           layers
         };
+
+        if (val.order === undefined) {
+          delete scene.order;
+        }
 
         return scene;
       }

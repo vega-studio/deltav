@@ -86,6 +86,7 @@ export class ImageLayer<
               this,
               instance,
               atlasRequest({
+                key: this.props.atlas || "",
                 disposeResource: true,
                 source: previous
               })
@@ -97,6 +98,7 @@ export class ImageLayer<
 
               if (!request || (request.texture && !request.texture.isValid)) {
                 request = atlasRequest({
+                  key: this.props.atlas || "",
                   source: instance.source,
                   rasterizationScale: this.props.rasterizationScale
                 });
@@ -116,6 +118,7 @@ export class ImageLayer<
 
             if (!request || (request.texture && !request.texture.isValid)) {
               request = atlasRequest({
+                key: this.props.atlas || "",
                 source: instance.source,
                 rasterizationScale: this.props.rasterizationScale
               });
@@ -134,6 +137,7 @@ export class ImageLayer<
             this,
             instance,
             atlasRequest({
+              key: this.props.atlas || "",
               disposeResource: true,
               source: instance.source
             })

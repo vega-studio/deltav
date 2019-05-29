@@ -1,3 +1,4 @@
+import { ResourceRouter } from "src/resources/resource-router";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import {
@@ -36,12 +37,13 @@ const emptyTexture = new Texture({
 /** Resource Attribute typeguard */
 function isTextureAttribute<T extends Instance>(
   attr: any,
+  router: ResourceRouter,
   resourceType: number
 ): attr is IResourceInstanceAttribute<T> {
   return (
     attr &&
     attr.resource &&
-    attr.resource.type === resourceType &&
+    router.getResourceType(attr.resource.key()) === resourceType &&
     attr.resource.name !== undefined &&
     attr.resource.key !== undefined
   );
@@ -58,6 +60,9 @@ interface ITextureIOExpansionResource extends IResourceType {
  * Minimal manager requirements for being applied to this expanded.
  */
 interface ITextureResourceManager {
+  /** The router all resources flow through */
+  router: ResourceRouter;
+  /** A method for retrieving the resource by the resources key id */
   getResource(key: string): ITextureIOExpansionResource | null;
 }
 
@@ -100,7 +105,9 @@ export class TextureIOExpansion extends BaseIOExpansion {
       (
         attribute: IValueInstanceAttribute<T> | IResourceInstanceAttribute<T>
       ) => {
-        if (isTextureAttribute(attribute, this.resourceType)) {
+        if (
+          isTextureAttribute(attribute, this.manager.router, this.resourceType)
+        ) {
           // Auto set the size of the attribute. Attribute's that are a resource automatically
           // Consume a size of four unless otherwise stated by the attribute
           if (attribute.size === undefined) {
@@ -163,13 +170,14 @@ export class TextureIOExpansion extends BaseIOExpansion {
         }
 
         return [
+          // This injects the sampler that the shader will use for sampling texels
           {
             name: instanceAttribute.resource.name,
             shaderInjection: injection,
             size: UniformSize.ATLAS,
             update: () => {
               const resource = manager.getResource(
-                instanceAttribute.resource.key
+                instanceAttribute.resource.key()
               );
 
               if (resource) {
@@ -179,13 +187,14 @@ export class TextureIOExpansion extends BaseIOExpansion {
               return emptyTexture;
             }
           },
+          // This provides the size of the texture that is applied to the sampler.
           {
             name: `${instanceAttribute.resource.name}_size`,
             shaderInjection: injection,
             size: UniformSize.TWO,
             update: () => {
               const resource = manager.getResource(
-                instanceAttribute.resource.key
+                instanceAttribute.resource.key()
               );
 
               if (resource) {

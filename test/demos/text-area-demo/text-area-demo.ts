@@ -231,27 +231,23 @@ export class TextAreaDemo extends BaseDemo {
         })
       }),
       pipeline: (resources, providers, cameras) => ({
-        resources: [resources.font],
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          default: {
+            views: {
+              "default-view": createView({
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
-            layers: [
-              createLayer(TextAreaLayer, {
+            },
+            layers: {
+              textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
-                key: "textArea",
                 resourceKey: resources.font.key
               })
-            ]
+            }
           }
-        ]
+        }
       })
     });
   }

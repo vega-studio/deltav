@@ -9,7 +9,7 @@ import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ObservableMonitoring } from "../instance-provider/observable";
-import { ResourceManager } from "../resources";
+import { ResourceRouter } from "../resources";
 import {
   IInstanceAttribute,
   ILayerMaterialOptions,
@@ -195,7 +195,7 @@ export class Layer<
   /** Properties handed to the Layer during a Surface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
-  resource: ResourceManager;
+  resource: ResourceRouter;
   /** This is the layer scene this layer feeds into */
   scene: LayerScene;
   /** This is the surface this layer is generated under */

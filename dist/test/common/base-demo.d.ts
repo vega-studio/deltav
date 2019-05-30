@@ -1,24 +1,21 @@
 import * as datGUI from "dat.gui";
-import { BaseResourceOptions, BasicCameraController, Bounds, ChartCamera, EventManager, ISceneOptions, LayerInitializer } from "src";
-import { Surface } from "../gl/surface";
-import { IDefaultResources } from "../types";
+import { BaseResourceOptions, BasicSurface, Bounds, ChartCamera, EventManager, IBasicSurfaceOptions, Instance, InstanceProvider, Lookup, Omit, View } from "src";
+export declare type DemoPipeline<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<ChartCamera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> = Omit<IBasicSurfaceOptions<T, U, V, W>, "container" | "onNoWebGL" | "handlesWheelEvents" | "rendererOptions">;
+export interface ITest<T> {
+    method(): T;
+}
 export declare abstract class BaseDemo {
-    surface: Surface;
     private timers;
+    private _isDestroyed;
+    readonly isDestroyed: boolean;
+    surface?: ReturnType<this["makeSurface"]>;
     abstract buildConsole(gui: datGUI.GUI): void;
     destroy(): void;
-    getEventManagers(_defaultController: BasicCameraController, _defaultCamera: ChartCamera): EventManager[] | null;
-    getLayers(_resources: IDefaultResources): LayerInitializer[];
-    getResources(defaultResources: {
-        atlas: BaseResourceOptions;
-        font: BaseResourceOptions;
-    }): BaseResourceOptions[];
-    getScenes(_defaultCamera: ChartCamera): ISceneOptions[] | null;
-    getViewScreenBounds(viewId?: string): Promise<Bounds<never> | null>;
+    abstract makeSurface(container: HTMLElement): BasicSurface<any, any, any, any>;
+    getViewScreenBounds(viewId?: string): Promise<Bounds<View> | null>;
     abstract init(): Promise<void>;
     makeInterval(f: Function, time: number): number;
     refreshDemo(): void;
     resize(): void;
-    setSurface(surface: Surface): void;
-    updateLayer(): void;
+    setSurface(surface: ReturnType<this["makeSurface"]>): void;
 }

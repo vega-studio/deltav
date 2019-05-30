@@ -17,8 +17,8 @@ export declare class InstanceAttributeDiffProcessor<T extends Instance> extends 
     addInstance(manager: this, instance: T, _propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup): void;
     changeInstance(manager: this, instance: T, propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup): void;
     removeInstance(manager: this, instance: T, _propIds: number[], bufferLocations?: IInstanceAttributeBufferLocationGroup): void;
-    updateInstancePartial(layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>): void;
-    updateInstanceFull(layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>): void;
+    updateInstancePartial(_layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>): void;
+    updateInstanceFull(_layer: IInstanceDiffManagerTarget<T>, instance: T, propIds: number[], bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>): void;
     commit(): void;
     incomingChangeList(changes: InstanceDiff<T>[]): void;
 }

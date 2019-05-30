@@ -3,7 +3,7 @@ import { Bounds } from "../../primitives";
 import { IFontResourceRequest } from "../../resources";
 import { KernedLayout } from "../../resources/text/font-map";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { ILayerConstructionClass, LayerInitializer } from "../../surface/layer-surface";
+import { ILayerConstructionClass, LayerInitializer } from "../../surface/surface";
 import { IProjection } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { Vec } from "../../util/vector";

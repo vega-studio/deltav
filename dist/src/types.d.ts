@@ -1,6 +1,8 @@
 import { Attribute, GLSettings, IMaterialUniform, MaterialOptions, MaterialUniformType, Texture } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { ISceneOptions } from "./surface/layer-scene";
 import { ChartCamera, Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 import { ITrackedQuadTreeVisitFunction, TrackedQuadTree } from "./util/tracked-quad-tree";
@@ -69,8 +71,11 @@ export interface IResourceType {
     type: number;
 }
 export declare type Color = [number, number, number, number];
-export interface Identifiable {
-    id: string;
+export interface IdentifiableById {
+    id: string | number;
+}
+export interface IdentifiableByKey {
+    key: string | number;
 }
 export interface IPickInfo<T extends Instance> {
     button?: number;
@@ -94,8 +99,7 @@ export interface IVertexAttributeInternal extends IVertexAttribute {
 }
 export interface IInstanceAttribute<T extends Instance> {
     resource?: {
-        type: number;
-        key: string;
+        key(): string;
         name: string;
         shaderInjection?: ShaderInjectionTarget;
     };
@@ -116,8 +120,7 @@ export interface IInstanceAttributeInternal<T extends Instance> extends IInstanc
 }
 export interface IResourceInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
     resource: {
-        type: number;
-        key: string;
+        key(): string;
         name: string;
         shaderInjection?: ShaderInjectionTarget;
     };
@@ -262,3 +265,22 @@ export declare type IShaderIOExtension<T extends Instance> = Partial<IShaderInpu
 };
 export declare type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
 export declare type Size = Vec2 | Vec3;
+export interface IPipeline {
+    resources?: BaseResourceOptions[];
+    scenes?: ISceneOptions[];
+}
+export declare enum SurfaceErrorType {
+    NO_WEBGL_CONTEXT = 0
+}
+export declare type SurfaceError = {
+    error: SurfaceErrorType;
+    message: string;
+};
+export declare type SimpleId = string | number;
+export declare type StringId = string;
+export declare type NumberId = number;
+export declare type Lookup<T> = {
+    [key: number]: T | Lookup<T>;
+} | {
+    [key: string]: T | Lookup<T>;
+};

@@ -1,10 +1,10 @@
-import { Identifiable, IEasingControl, IEasingProps } from "../types";
+import { IdentifiableById, IEasingControl, IEasingProps } from "../types";
 import { InstanceProvider } from "./instance-provider";
 export interface IInstanceOptions {
     active?: boolean;
     id?: string;
 }
-export declare class Instance implements Identifiable {
+export declare class Instance implements IdentifiableById {
     static readonly newUID: number;
     active: boolean;
     _active: boolean;

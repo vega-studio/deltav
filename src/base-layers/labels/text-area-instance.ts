@@ -1,6 +1,6 @@
 import { observable } from "../../instance-provider/observable";
 import { Vec1Compat } from "../../util";
-import { RectangleInstance } from "../rectangle";
+import { BorderInstance } from "../rectangle";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 
 /**
@@ -99,7 +99,7 @@ export class TextAreaInstance extends LabelInstance {
   /** This will be used to hold new labels when a label should be divided into two labels because label is at the end a line */
   newLabels: LabelInstance[] = [];
   /** This holds the border of textArea */
-  borders: RectangleInstance[] = [];
+  borders: BorderInstance[] = [];
   /** This stores the old origin which is used to calculate the new positions of labels */
   oldOrigin: [number, number];
   /** Stores paddings for the text area, [top, right, bottom, left] */

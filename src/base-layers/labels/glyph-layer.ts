@@ -177,9 +177,21 @@ export class GlyphLayer<
         break;
       }
 
+      case ScaleMode.TEXT_AREA_BOUND_MAX: {
+        fs = require("./text-area-layer-bound-max.fs");
+        vs = require("./text-area-layer-bound-max.vs");
+        break;
+      }
+
       case ScaleMode.NEVER: {
         fs = require("./glyph-layer-never.fs");
         vs = require("./glyph-layer-never.vs");
+        break;
+      }
+
+      case ScaleMode.TEXT_AREA_NEVER: {
+        fs = require("./text-area-layer-never.fs");
+        vs = require("./text-area-layer-never.vs");
         break;
       }
 

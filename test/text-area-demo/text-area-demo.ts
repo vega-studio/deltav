@@ -6,6 +6,7 @@ import {
   InstanceProvider,
   ISceneOptions,
   LayerInitializer,
+  ScaleMode,
   Vec1Compat
 } from "src";
 import {
@@ -217,7 +218,7 @@ export class TextAreaDemo extends BaseDemo {
     defaultController: BasicCameraController,
     _defaultCamera: ChartCamera
   ) {
-    defaultController.wheelShouldScroll = true;
+    defaultController.wheelShouldScroll = false;
     return null;
   }
 
@@ -232,7 +233,8 @@ export class TextAreaDemo extends BaseDemo {
         data: this.providers.textAreas,
         key: "textArea",
         scene: "default",
-        resourceKey: resources.font.key
+        resourceKey: resources.font.key,
+        scaling: ScaleMode.BOUND_MAX
       })
     ];
   }

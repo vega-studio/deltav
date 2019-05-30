@@ -3,13 +3,8 @@ import { Vec2 } from "../util";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import { LayerScene } from "./layer-scene";
+import { Surface } from "./surface";
 import { View } from "./view";
-export declare type SceneView = {
-    depth: number;
-    scene: LayerScene;
-    view: View;
-    bounds?: Bounds<SceneView>;
-};
 export interface IMouseInteraction {
     button?: number;
     screen: {
@@ -57,21 +52,21 @@ export interface ITouchMetrics {
 export declare class MouseEventManager {
     context: HTMLCanvasElement;
     controllers: EventManager[];
-    quadTree: QuadTree<Bounds<SceneView>>;
-    views: SceneView[];
+    quadTree: QuadTree<Bounds<View>>;
+    surface: Surface;
     eventCleanup: [string, EventListenerOrEventListenerObject][];
     private _waitingForRender;
     waitingForRender: boolean;
-    constructor(canvas: HTMLCanvasElement, views: SceneView[], controllers: EventManager[], handlesWheelEvents?: boolean);
+    readonly scenes: LayerScene[];
+    constructor(canvas: HTMLCanvasElement, surface: Surface, controllers: EventManager[], handlesWheelEvents?: boolean);
     addContextListeners(handlesWheelEvents?: boolean): void;
     addTouchContextListeners(): void;
     getView(viewId: string): View | null;
-    getViewsUnderMouse: (mouse: [number, number]) => Bounds<SceneView>[];
+    getViewsUnderMouse: (mouse: [number, number]) => Bounds<View>[];
     makeDrag(mouse: Vec2, start: Vec2, previous: Vec2, delta: Vec2): IDragMetrics;
-    makeInteraction(mouse: Vec2, start?: Vec2, startView?: SceneView): IMouseInteraction;
+    makeInteraction(mouse: Vec2, start?: Vec2, startView?: View): IMouseInteraction;
     makeWheel(event: MouseWheelEvent): IWheelMetrics;
     resize: () => void;
     setControllers(controllers: EventManager[]): void;
-    setViews(views: SceneView[]): void;
     destroy(): void;
 }

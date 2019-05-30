@@ -40,6 +40,8 @@ export interface IBasicCameraControllerOptions {
     wheelShouldScroll?: boolean;
 }
 export declare class BasicCameraController extends EventManager {
+    readonly uid: number;
+    private _uid;
     bounds?: ICameraBoundsOptions;
     readonly camera: ChartCamera;
     private _camera;

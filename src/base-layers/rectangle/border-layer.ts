@@ -43,8 +43,7 @@ export class BorderLayer<
 > extends Layer<T, U> {
   static defaultProps: IBorderLayerProps<BorderInstance> = {
     key: "",
-    data: new InstanceProvider<BorderInstance>(),
-    scene: "default"
+    data: new InstanceProvider<BorderInstance>()
   };
 
   static attributeNames = {

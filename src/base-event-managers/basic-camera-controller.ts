@@ -18,6 +18,7 @@ import {
   scale3,
   subtract2,
   subtract3,
+  uid,
   Vec3,
   vec3
 } from "../util";
@@ -104,9 +105,14 @@ export interface IBasicCameraControllerOptions {
 
 /**
  * This provides some very basic common needs for a camera control system. This is not a total solution
- * very every scenario. This should just often handle most basic needs.
+ * for every scenario. This should just often handle most basic needs.
  */
 export class BasicCameraController extends EventManager {
+  /** Unique identifier of this controller */
+  get uid() {
+    return this._uid;
+  }
+  private _uid = uid();
   /**
    * If total bounds of worldbounds + screenpadding is smaller
    * than width or height of view, anchor dictates placement.
@@ -129,7 +135,7 @@ export class BasicCameraController extends EventManager {
   ) => offset;
   /** The rate scale is adjusted with the mouse wheel */
   scaleFactor: number;
-  /** THis is the filter applied to tscaling operations */
+  /** This is the filter applied to tscaling operations */
   private scaleFilter = (
     scale: [number, number, number],
     _view: View,

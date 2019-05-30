@@ -15,6 +15,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
     text: string;
     origin: Vec2;
     preload?: boolean;
+    letterSpacing?: number;
     onReady?(instance: LabelInstance): void;
 }
 export declare class LabelInstance extends Instance {
@@ -26,6 +27,7 @@ export declare class LabelInstance extends Instance {
     origin: Vec2;
     scale: number;
     text: string;
+    letterSpacing: number;
     onReady?: (label: LabelInstance) => void;
     parentTextArea?: TextAreaInstance;
     preload: boolean;
@@ -34,6 +36,8 @@ export declare class LabelInstance extends Instance {
     truncatedText: string;
     anchor: Anchor;
     constructor(options: ILabelInstanceOptions);
+    getWidth(): number;
+    setAnchor(anchor: Anchor): void;
     subTextGlyphs(text: string): GlyphInstance[];
     resourceTrigger(): void;
 }

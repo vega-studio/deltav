@@ -1,4 +1,4 @@
-import { LayerSurface } from "../surface";
+import { Surface } from "../surface";
 import { IAutoEasingMethod } from "../util/auto-easing-method";
 import { Vec3 } from "./vector";
 export interface IChartCameraOptions {
@@ -20,7 +20,7 @@ export declare class ChartCamera {
     private startScaleTime;
     private scaleEndTime;
     private _needsViewDrawn;
-    surface: LayerSurface;
+    surface: Surface;
     private onViewChange?;
     private viewChangeViewId;
     private needsBroadcast;

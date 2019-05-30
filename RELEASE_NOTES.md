@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.31.0
+
+* `(ADDED)` pipeline method implemented. This allows a diffing approach to the rendering pipeline and allows for easy view dimension manipulation.
+* `(ADDED)` BasicSurface added. This allows for extremely easy starting of a new rendering pipeline with providers and camera controls. This also helps with necessary guarantees required like reducing duplication of keys.
+* `(ADDED)` TextArea is now available with many common text area properties for rendering multiline text such as lineSpacing, padding, and word wrap modes.
+* `(FIXED)` The space for words in a label have been fixed and addressed.
+
 ## 1.30.5
 
 * `(FIXED)` Completely fixed camera infinite loop
@@ -123,7 +130,7 @@
 ## 1.25.3
 
 * `(FIXED)` Key debug statements should log properly now
-* `(FIXED)` Reduced GL context retrieval when producing a LayerSurface
+* `(FIXED)` Reduced GL context retrieval when producing a Surface
 
 ## 1.25.2
 

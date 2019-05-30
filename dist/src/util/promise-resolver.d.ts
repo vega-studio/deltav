@@ -4,5 +4,5 @@ export declare class PromiseResolver<T> {
     promise: Promise<T>;
     constructor();
     resolve(val?: T): void;
-    reject(): void;
+    reject<U>(reason: U): void;
 }

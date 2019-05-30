@@ -7,7 +7,7 @@ import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
-} from "../../surface/layer-surface";
+} from "../../surface/surface";
 import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
@@ -172,8 +172,7 @@ export class LabelLayer<
 > extends Layer<T, U> {
   static defaultProps: ILabelLayerProps<LabelInstance> = {
     key: "",
-    data: new InstanceProvider<LabelInstance>(),
-    scene: "default"
+    data: new InstanceProvider<LabelInstance>()
   };
 
   /** Provider for the glyph layer this layer manages */
@@ -279,7 +278,6 @@ export class LabelLayer<
         data: this.glyphProvider,
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
       })
     ];
@@ -759,6 +757,7 @@ export class LabelLayer<
 
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
+        key: this.props.resourceKey || "",
         character: "",
         kerningPairs: [checkText],
         metrics
@@ -786,12 +785,7 @@ export class LabelLayer<
           if (instance.onReady) instance.onReady(instance);
         };
 
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
+        this.resource.request(this, instance, labelKerningRequest);
       }
 
       return false;

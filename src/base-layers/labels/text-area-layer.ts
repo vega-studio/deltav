@@ -6,13 +6,8 @@ import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
-} from "../../surface/layer-surface";
-import {
-  InstanceDiffType,
-  IProjection,
-  newLineRegEx,
-  ResourceType
-} from "../../types";
+} from "../../surface/surface";
+import { InstanceDiffType, IProjection, newLineRegEx } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
   add2,
@@ -218,7 +213,6 @@ export class TextAreaLayer<
   static defaultProps: ITextAreaLayerProps<TextAreaInstance> = {
     key: "",
     data: new InstanceProvider<TextAreaInstance>(),
-    scene: "default",
     scaling: ScaleMode.ALWAYS
   };
 
@@ -331,7 +325,6 @@ export class TextAreaLayer<
         data: this.providers.labels,
         key: `${this.id}.labels`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene,
         scaleMode: labelScaling
       }),
       createLayer(BorderLayer, {
@@ -340,8 +333,7 @@ export class TextAreaLayer<
           location: animateBorder.location
         },
         data: this.providers.borders,
-        key: `${this.id}.border`,
-        scene: this.props.scene
+        key: `${this.id}.border`
       })
     ];
   }
@@ -1162,30 +1154,20 @@ export class TextAreaLayer<
 
       labelKerningRequest = fontRequest({
         character: "",
+        key: this.props.resourceKey || "",
         kerningPairs: [checkText],
         metrics
       });
 
       if (!instance.preload) {
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
-
+        this.resource.request(this, instance, labelKerningRequest);
         this.areaTokerningRequest.set(instance, labelKerningRequest);
       } else {
         instance.resourceTrigger = () => {
           if (instance.onReady) instance.onReady(instance);
         };
 
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
+        this.resource.request(this, instance, labelKerningRequest);
       }
 
       return false;

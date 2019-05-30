@@ -14,6 +14,7 @@ export interface IFontResourceRequest extends BaseResourceRequest {
     metrics?: {
         fontSize: number;
         layout?: KernedLayout;
+        letterSpacing: number;
         maxWidth?: number;
         text: string;
         truncation?: string;

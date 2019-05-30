@@ -17,7 +17,7 @@ export class PromiseResolver<T> {
     this.resolver(val);
   }
 
-  reject() {
-    this.rejector;
+  reject<U>(reason: U) {
+    this.rejector(reason);
   }
 }

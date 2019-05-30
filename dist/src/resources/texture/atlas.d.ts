@@ -11,7 +11,7 @@ export interface IAtlasResource extends BaseResourceOptions {
     width: TextureSize;
     textureSettings?: TextureOptions;
 }
-export declare function createAtlas(options: Omit<IAtlasResource, "type">): IAtlasResource;
+export declare function createAtlas(options: Omit<IAtlasResource, "type"> & Partial<Pick<IAtlasResource, "key">>): IAtlasResource;
 export declare function isAtlasResource(val: BaseResourceOptions): val is Atlas;
 declare type ResourceReference = {
     subtexture: SubTexture;

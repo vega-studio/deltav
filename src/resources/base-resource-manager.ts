@@ -8,6 +8,7 @@ import {
   IResourceInstanceAttribute,
   IResourceType
 } from "../types";
+import { ResourceRouter } from "./resource-router";
 
 /**
  * The Base Options for initializing a resource.
@@ -17,7 +18,7 @@ export type BaseResourceOptions = IResourceType & { key: string };
 /**
  * The base needs for making a resource request.
  */
-export type BaseResourceRequest = IResourceType;
+export type BaseResourceRequest = IResourceType & { key: string };
 
 /**
  * This represents a manager that is capable of handling requests for resources that come from Layers
@@ -27,13 +28,13 @@ export abstract class BaseResourceManager<
   T extends IResourceType,
   S extends BaseResourceRequest
 > {
+  /**
+   * Every resource manager will have access to the parent ResourceManager system that pipes resources and requests
+   * to the proper location.
+   */
+  router: ResourceRouter;
   /** Every resource manager will receive the utilized renderer so the manager can perform basic GL tasks if needed */
   webGLRenderer?: WebGLRenderer;
-
-  /**
-   * This is called to initialize a resource that the system has determined needs to be constructed.
-   */
-  abstract async initResource(resource: BaseResourceOptions): Promise<void>;
 
   /**
    * This is called by the system for the manager to dequeue it's requests in an asynchronous
@@ -48,6 +49,11 @@ export abstract class BaseResourceManager<
   abstract destroy(): void;
 
   /**
+   * Indicates a resource needs to be freed or destroyed.
+   */
+  abstract destroyResource(resource: BaseResourceOptions): void;
+
+  /**
    * Allows a resource manager to provide it's own IO Expansion to handle special attributes
    * the layer may have for handling.
    */
@@ -59,6 +65,11 @@ export abstract class BaseResourceManager<
    * The method to access a resource initialized by this resource manager.
    */
   abstract getResource(resourceKey: string): T | null;
+
+  /**
+   * This is called to initialize a resource that the system has determined needs to be constructed.
+   */
+  abstract async initResource(resource: BaseResourceOptions): Promise<void>;
 
   /**
    * This will trigger a request of a resource to be generated. It will immediately return either a
@@ -78,6 +89,11 @@ export abstract class BaseResourceManager<
   setAttributeContext(_attribute: IResourceInstanceAttribute<Instance>) {
     // Implemented by sub classes if needed
   }
+
+  /**
+   * This indicates the resource should be updated.
+   */
+  abstract updateResource(resource: BaseResourceOptions): void;
 }
 
 /**
@@ -87,13 +103,9 @@ export abstract class BaseResourceManager<
  */
 export class InvalidResourceManager extends BaseResourceManager<
   IResourceType,
-  IResourceType
+  BaseResourceRequest
 > {
   resources = new Map<string, BaseResourceOptions>();
-
-  async initResource(resource: BaseResourceOptions) {
-    this.resources.set(resource.key, resource);
-  }
 
   async dequeueRequests() {
     return false;
@@ -103,8 +115,16 @@ export class InvalidResourceManager extends BaseResourceManager<
     return;
   }
 
+  destroyResource(resourceKey: BaseResourceOptions) {
+    this.resources.delete(resourceKey.key);
+  }
+
   getResource(resourceKey: string) {
     return this.resources.get(resourceKey) || { key: "", type: -1 };
+  }
+
+  async initResource(resource: BaseResourceOptions) {
+    this.resources.set(resource.key, resource);
   }
 
   request<U extends Instance, V extends ILayerProps<U>>(
@@ -113,6 +133,10 @@ export class InvalidResourceManager extends BaseResourceManager<
     _resource: IResourceType
   ): InstanceIOValue {
     return [0, 0, 0, 0];
+  }
+
+  updateResource(_resource: BaseResourceOptions) {
+    // NO-OP
   }
 }
 

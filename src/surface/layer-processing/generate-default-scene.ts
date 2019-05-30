@@ -2,16 +2,10 @@ import { AbsolutePosition } from "../../primitives/absolute-position";
 import { Camera, CameraProjectionType } from "../../util/camera";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";
-import { LayerScene } from "../layer-scene";
-import { View } from "../view";
 
-export interface IDefaultSceneElements {
+export interface IDefaultElements {
   /** Default chartting camera */
   camera: ChartCamera;
-  /** Default scene for elements to be added into */
-  scene: LayerScene;
-  /** Default view scenes are rendered with when no other views are specified by the layer or the surface */
-  view: View;
   /**
    * The default view projection. Defaults to being an orthographic rendering with the origin at the
    * top left of the canvas and the y-axis as +y going downward.
@@ -31,9 +25,9 @@ export interface IDefaultSceneElements {
  * - y axis is +y downward
  * - entire canvas is the viewport.
  */
-export function generateDefaultScene(
+export function generateDefaultElements(
   context: WebGLRenderingContext
-): IDefaultSceneElements {
+): IDefaultElements {
   // Generate a default view camera that is
   // - Orthographic
   // - (0, 0) is the top left of the canvas
@@ -79,27 +73,8 @@ export function generateDefaultScene(
     top: 0
   };
 
-  // Make a view using our defaults
-  const defaultView = new View({
-    camera: defaultChartCamera,
-    key: View.DEFAULT_VIEW_ID,
-    viewCamera: defaultCamera,
-    viewport: defaultViewport
-  });
-
-  // Make a scene with our defaults
-  const defaultScene = new LayerScene({
-    key: LayerScene.DEFAULT_SCENE_ID,
-    views: []
-  });
-
-  // Make sure the default view is a part of the default scene
-  defaultScene.addView(defaultView);
-
   return {
     camera: defaultChartCamera,
-    scene: defaultScene,
-    view: defaultView,
     viewCamera: defaultCamera,
     viewport: defaultViewport
   };

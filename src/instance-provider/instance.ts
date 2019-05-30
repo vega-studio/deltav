@@ -1,4 +1,4 @@
-import { Identifiable, IEasingControl, IEasingProps } from "../types";
+import { IdentifiableById, IEasingControl, IEasingProps } from "../types";
 import { EasingProps } from "../util/easing-props";
 import { InstanceProvider } from "./instance-provider";
 import { observable } from "./observable";
@@ -12,7 +12,7 @@ export interface IInstanceOptions {
   id?: string;
 }
 
-export class Instance implements Identifiable {
+export class Instance implements IdentifiableById {
   static get newUID() {
     return (instanceUID = ++instanceUID % 0xffffff);
   }

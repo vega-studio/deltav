@@ -48,10 +48,10 @@ export declare class FontMap extends IdentifyByKey implements IFontResourceOptio
     getGlyphTexture(char: string): SubTexture | null;
     getGlyphKerning(leftChar: string, rightChar: string): Vec2;
     getGlyphWidth(stringLayout: KernedLayout, start: number, end: number): number;
-    getTruncatedLayout(layout: KernedLayout, truncation: string, maxWidth: number, fontSize: number, fontRenderer: FontRenderer): Promise<KernedLayout>;
+    getTruncatedLayout(layout: KernedLayout, truncation: string, maxWidth: number, fontSize: number, letterSpacing: number, fontRenderer: FontRenderer): Promise<KernedLayout>;
     getStringWidth(stringLayout: KernedLayout, start: number, end: number): number;
     getStringWidth(stringLayout: KernedLayout, substr: string): number;
-    getStringLayout(text: string, fontSize: number): KernedLayout;
+    getStringLayout(text: string, fontSize: number, letterSpacing: number): KernedLayout;
     private makeGlyphTypeTextureSettings;
     registerGlyph(char: string, tex: SubTexture): void;
     supportsKerning(text: string): boolean;

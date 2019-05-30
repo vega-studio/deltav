@@ -1,19 +1,22 @@
 import { AbsolutePosition } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
-import { Color } from "../types";
+import { Color, Omit } from "../types";
 import { Vec2 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera } from "../util/view-camera";
+import { LayerScene } from "./layer-scene";
 export declare enum ClearFlags {
     COLOR = 1,
     DEPTH = 2,
     STENCIL = 4
 }
+export declare function createView(options: Pick<IViewOptions, "camera"> & Omit<Partial<IViewOptions>, "viewport">): IViewOptions;
 export interface IViewOptions extends IdentifyByKeyOptions {
     background?: Color;
-    camera?: ChartCamera;
+    camera: ChartCamera;
     clearFlags?: ClearFlags[];
+    order?: number;
     viewCamera?: ViewCamera;
     viewport: AbsolutePosition;
 }
@@ -27,12 +30,15 @@ export declare class View extends IdentifyByKey {
     lastFrameTime: number;
     needsDraw: boolean;
     optimizeRendering: boolean;
+    order?: number;
     pixelRatio: number;
-    screenBounds: Bounds<never>;
+    scene: LayerScene;
+    screenBounds: Bounds<View>;
     viewCamera: ViewCamera;
     viewport: AbsolutePosition;
     viewBounds: Bounds<View>;
-    constructor(options: IViewOptions);
+    constructor(scene: LayerScene, options: IViewOptions);
+    update(options: IViewOptions): void;
     screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
     pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];
     screenToView(point: Vec2, out?: Vec2): [number, number];

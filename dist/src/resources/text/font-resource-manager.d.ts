@@ -11,16 +11,17 @@ export interface IFontResourceRequestInternal extends IFontResourceRequest {
 }
 export declare function fontRequest(options: Omit<IFontResourceRequest, "type">): IFontResourceRequest;
 export declare class FontResourceManager extends BaseResourceManager<IFontResourceOptions, IFontResourceRequest> {
-    private currentAttribute;
+    currentAttribute: IResourceInstanceAttribute<Instance>;
     private requestLookup;
     private requestQueue;
     private resourceLookup;
     private fontManager;
     dequeueRequests(): Promise<boolean>;
     destroy(): void;
+    destroyResource(init: BaseResourceOptions): void;
     getResource(resourceKey: string): FontMap | null;
     getIOExpansion(): BaseIOExpansion[];
     initResource(options: BaseResourceOptions): Promise<void>;
-    request<U extends Instance, V extends ILayerProps<U>>(layer: Layer<U, V>, instance: Instance, req: IFontResourceRequest, context?: IResourceContext): InstanceIOValue;
-    setAttributeContext(attribute: IResourceInstanceAttribute<Instance>): void;
+    request<U extends Instance, V extends ILayerProps<U>>(layer: Layer<U, V>, instance: Instance, req: IFontResourceRequest, _context?: IResourceContext): InstanceIOValue;
+    updateResource(options: BaseResourceOptions): void;
 }

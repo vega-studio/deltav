@@ -44,7 +44,7 @@ export interface IFontResourceOptions extends BaseResourceOptions {
     fontMapSize?: Size;
 }
 export declare function isFontResource(val: BaseResourceOptions): val is IFontResourceOptions;
-export declare function createFont(options: Omit<IFontResourceOptions, "type">): IFontResourceOptions;
+export declare function createFont(options: Omit<IFontResourceOptions, "type" | "key"> & Partial<Pick<IFontResourceOptions, "key">>): IFontResourceOptions;
 export declare class FontManager {
     fontMaps: Map<string, FontMap>;
     fontRenderer: FontRenderer;
@@ -52,6 +52,7 @@ export declare class FontManager {
     private characterFilterToCharacters;
     createFontMap(resourceOptions: IFontResourceOptions): Promise<FontMap>;
     destroy(): void;
+    destroyFontMap(key: string): void;
     updateFontMap(resourceKey: string, requests: IFontResourceRequest[]): Promise<void>;
     private updateKerningPairs;
     private updateFontMapCharacters;

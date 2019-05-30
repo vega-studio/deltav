@@ -250,9 +250,13 @@ export class LayerInteractionHandler<
 
         // Broadcast the the picking info for all instances that the mouse moved off of
         if (onMouseOut) {
-          const noLongerOver = Array.from(this.isMouseOver.keys()).filter(
-            o => !isCurrentlyOver.has(o)
-          );
+          const noLongerOver: T[] = [];
+
+          this.isMouseOver.forEach(o => {
+            if (!isCurrentlyOver.has(o)) {
+              noLongerOver.push(o);
+            }
+          });
 
           // This is the pick info object we will broadcast from the layer
           info = {

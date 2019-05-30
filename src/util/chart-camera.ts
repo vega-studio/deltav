@@ -1,4 +1,4 @@
-import { LayerSurface } from "../surface";
+import { Surface } from "../surface";
 import {
   AutoEasingMethod,
   IAutoEasingMethod
@@ -40,7 +40,7 @@ export class ChartCamera {
   /** This indicates whether the view where the camera is in needs drawn */
   private _needsViewDrawn: boolean = true;
   /** This is the surface the camera is controlled by */
-  surface: LayerSurface;
+  surface: Surface;
   /** When set, this will broadcast any change in the camera that will affect the view range */
   private onViewChange?: (camera: ChartCamera, view: string) => void;
   /** This is the manually set view id that is broadcasted for camera view changes */

@@ -32,9 +32,10 @@ export interface IAtlasResource extends BaseResourceOptions {
  * Use this in the property creation of atlas'.
  */
 export function createAtlas(
-  options: Omit<IAtlasResource, "type">
+  options: Omit<IAtlasResource, "type"> & Partial<Pick<IAtlasResource, "key">>
 ): IAtlasResource {
   return {
+    key: "",
     type: ResourceType.ATLAS,
     ...options
   };

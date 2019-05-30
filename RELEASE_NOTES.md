@@ -123,7 +123,7 @@
 ## 1.25.3
 
 * `(FIXED)` Key debug statements should log properly now
-* `(FIXED)` Reduced GL context retrieval when producing a LayerSurface
+* `(FIXED)` Reduced GL context retrieval when producing a Surface
 
 ## 1.25.2
 

@@ -26,3 +26,12 @@ export class IdentifyByKey {
     this._key = options.key;
   }
 }
+
+export class IdentifiableData<T> extends IdentifyByKey {
+  data: T;
+
+  constructor(options: IdentifyByKeyOptions & { data: T }) {
+    super(options);
+    this.data = options.data;
+  }
+}

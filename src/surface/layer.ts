@@ -4,16 +4,14 @@ import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ObservableMonitoring } from "../instance-provider/observable";
-import { ResourceManager } from "../resources";
+import { ResourceRouter } from "../resources";
+import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
   ILayerMaterialOptions,
   INonePickingMetrics,
-  InstanceAttributeSize,
-  InstanceBlockIndex,
   InstanceDiffType,
   InstanceHitTest,
-  InstanceIOValue,
   IPickInfo,
   IQuadTreePickingMetrics,
   IShaderInitialization,
@@ -22,9 +20,7 @@ import {
   IUniformInternal,
   IVertexAttributeInternal,
   PickType,
-  ShaderInjectionTarget,
-  UniformIOValue,
-  UniformSize
+  UniformIOValue
 } from "../types";
 import { TrackedQuadTree, TrackedQuadTreeBoundsAccessor, uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -34,9 +30,22 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerBufferType } from "./layer-processing/layer-buffer-type";
-import { LayerInitializer, LayerSurface } from "./layer-surface";
+import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
+import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
+import { generateLayerModel } from "./layer-processing/generate-layer-model";
+import {
+  LayerBufferType,
+  makeLayerBufferManager
+} from "./layer-processing/layer-buffer-type";
+import { LayerScene } from "./layer-scene";
+import { LayerInitializer, Surface } from "./surface";
 import { View } from "./view";
+
+const debug = require("debug")("performance");
+
+export function createUniform(options: IUniform) {
+  return options;
+}
 
 /**
  * Bare minimum required features a provider must provide to be the data for the layer.
@@ -49,7 +58,6 @@ export interface IInstanceProvider<T extends Instance> {
   resolveContext: string;
   /** A unique number making it easier to identify this object */
   uid: number;
-
   /** A list of changes to instances */
   changeList: InstanceDiff<T>[];
   /** Removes an instance from the list */
@@ -71,6 +79,8 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * can have some specific and significant needs the layer does not provide as a default.
    */
   materialOptions?: ILayerMaterialOptions;
+  /** Helps guarantee a rendering order for the layers. Lower numbers render first */
+  order?: number;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -80,16 +90,6 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * Used for debugging. Logs the generated shader for the layer in the console.
    */
   printShader?: boolean;
-  /**
-   * This identifies the scene we want the layer to be a part of.
-   * Layer's with the same identifiers will render their buffers in the same scene.
-   * This only applies to the layer when the layer is initialized in a layer surface. You shouldn't
-   * be swapping layers from scene to scene.
-   *
-   * The scene identifier must be an identifier used when constructing the layer surface that this layer
-   * is added to.
-   */
-  scene: string;
 
   // ---- EVENTS ----
   /** Executes when the mouse is down on instances and a picking type is set */
@@ -183,6 +183,8 @@ export class Layer<
   model: Model;
   /** This indicates whether this layer needs to draw */
   needsViewDrawn: boolean = false;
+  /** Helps assert rendering order. Lower numbers render first. */
+  order?: number;
   /** If this is populated, then this layer is the product of a parent producing this layer. */
   parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */
@@ -190,12 +192,14 @@ export class Layer<
     | IQuadTreePickingMetrics<T>
     | ISinglePickingMetrics<T>
     | INonePickingMetrics;
-  /** Properties handed to the Layer during a LayerSurface render */
+  /** Properties handed to the Layer during a Surface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
-  resource: ResourceManager;
+  resource: ResourceRouter;
+  /** This is the layer scene this layer feeds into */
+  scene: LayerScene;
   /** This is the surface this layer is generated under */
-  surface: LayerSurface;
+  surface: Surface;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[] = [];
   /** A uid provided to the layer to give it some uniqueness as an object */
@@ -210,12 +214,24 @@ export class Layer<
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
   willRebuildLayer: boolean = false;
 
-  constructor(props: ILayerProps<T>) {
+  constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
     // After associating the layer with the view it is a part of.
     super(props);
+    // Keep track of the surface this layer resides beneath
+    this.surface = surface;
+    // Track the parent Layer Scene this layer is under
+    this.scene = scene;
     // Keep our props within the layer
     this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
+  }
+
+  /**
+   * This does special initialization by gathering the layers shader IO, generates a material
+   * and injects special automated uniforms and attributes to make instancing work for the
+   * shader.
+   */
+  init() {
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 
@@ -247,6 +263,109 @@ export class Layer<
         type: PickType.NONE
       };
     }
+
+    // Set the resource manager this surface utilizes to the layer
+    this.resource = this.surface.resourceManager;
+    // Get the shader metrics the layer desires
+    const shaderIO = this.initShader();
+    // Ensure the layer has interaction handling applied to it
+    this.interactions = new LayerInteractionHandler(this);
+
+    // If no metrics are provided, this layer is merely a shell layer and will not
+    // receive any GPU handling objects.
+    if (!shaderIO) {
+      this.picking.type = PickType.NONE;
+      debug(
+        "Shell layer initialized. Nothing will be rendered for this layer",
+        this.id
+      );
+      return true;
+    }
+
+    if (!shaderIO.fs || !shaderIO.vs) {
+      console.warn(
+        "Layer needs to specify the fragment and vertex shaders:",
+        this.id
+      );
+      return false;
+    }
+
+    // Clean out nulls provided as a convenience to the layer
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
+      Boolean
+    );
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
+
+    // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
+    // Instancing fragments
+    const shaderMetrics = new ShaderProcessor().process(
+      this,
+      shaderIO,
+      this.surface.getIOExpanders(),
+      this.surface.getIOSorting()
+    );
+
+    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    if (!shaderMetrics) {
+      console.warn(
+        "The shader processor did not produce metrics for the layer."
+      );
+      return false;
+    }
+
+    // Retrieve all of the attributes created as a result of layer input and module processing.
+    const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
+
+    // Generate the geometry this layer will be utilizing
+    const geometry = generateLayerGeometry(
+      this,
+      shaderMetrics.maxInstancesPerBuffer,
+      vertexAttributes,
+      shaderIO.vertexCount
+    );
+
+    // This is the material that is generated for the layer that utilizes all of the generated and
+    // Injected shader IO and shader fragments
+    const material = generateLayerMaterial(
+      this,
+      shaderMetrics.vs,
+      shaderMetrics.fs,
+      uniforms,
+      shaderMetrics.materialUniforms
+    );
+
+    // And now we can now generate the mesh that will be added to the scene
+    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
+
+    // Now that all of the elements of the layer are complete, let us apply them to the layer
+    this.geometry = geometry;
+    this.instanceAttributes = instanceAttributes;
+    this.instanceVertexCount = shaderIO.vertexCount;
+    this.material = material;
+    this.maxInstancesPerBuffer = shaderMetrics.maxInstancesPerBuffer;
+    this.model = model;
+    this.uniforms = uniforms;
+    this.vertexAttributes = vertexAttributes;
+
+    // Generate the correct buffering strategy for the layer
+    makeLayerBufferManager(this.surface.gl, this, this.scene);
+
+    if (this.props.printShader) {
+      console.warn(
+        "A Layer requested its shader be debugged. Do not leave this active for production:",
+        "Layer:",
+        this.props.key,
+        "Shader Metrics",
+        shaderMetrics
+      );
+      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
+      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+    }
+
+    return true;
   }
 
   /**
@@ -436,53 +555,6 @@ export class Layer<
       vertexAttributes: [],
       vertexCount: 0,
       vs: "${import: no-op}"
-    };
-  }
-
-  /**
-   * Helper method for making an instance attribute. Depending on set up, this makes creating elements
-   * have better documentation when typing out the elements.
-   */
-  makeInstanceAttribute(
-    block: number,
-    blockIndex: InstanceBlockIndex,
-    name: string,
-    size: InstanceAttributeSize,
-    update: (o: T) => InstanceIOValue,
-    resource?: {
-      type: number;
-      key: string;
-      name: string;
-      shaderInjection?: ShaderInjectionTarget;
-    }
-  ): IInstanceAttribute<T> {
-    return {
-      resource,
-      block,
-      blockIndex,
-      name,
-      size,
-      update
-    };
-  }
-
-  /**
-   * Helper method for making a uniform type. Depending on set up, this makes creating elements
-   * have better documentation when typing out the elements.
-   */
-  makeUniform(
-    name: string,
-    size: UniformSize,
-    update: (o: IUniform) => UniformIOValue,
-    shaderInjection?: ShaderInjectionTarget,
-    qualifier?: string
-  ): IUniform {
-    return {
-      name,
-      qualifier,
-      shaderInjection,
-      size,
-      update
     };
   }
 

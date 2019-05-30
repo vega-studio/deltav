@@ -1,5 +1,5 @@
 import { Instance } from "../../instance-provider/instance";
-import { ResourceManager } from "../../resources";
+import { ResourceRouter } from "../../resources";
 import {
   IInstanceAttribute,
   INonePickingMetrics,
@@ -45,7 +45,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
     | ISinglePickingMetrics<T>
     | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
-  resource: ResourceManager;
+  resource: ResourceRouter;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
   bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** This is the buffering strategy being used */

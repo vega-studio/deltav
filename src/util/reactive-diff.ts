@@ -161,6 +161,7 @@ export class ReactiveDiff<
       }
     });
 
+    // Clear the disposal list so we can make it anew
     this.willDispose.clear();
 
     // Now we take all existing items and flag them anew for disposal
@@ -226,7 +227,6 @@ export class ReactiveDiff<
     // Clear the item from any look ups
     this.keyToItem.delete(this.currentItem.id);
     this.keyToInitializer.delete(this.currentItem.id);
-
     // Perform the destruction of the item
     this.options.destroyItem(this.currentInitializer, this.currentItem);
     // Rebuild the item

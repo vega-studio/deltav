@@ -326,6 +326,7 @@ export class Layer<
       vertexAttributes,
       shaderIO.vertexCount
     );
+
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
     const material = generateLayerMaterial(
@@ -335,6 +336,7 @@ export class Layer<
       uniforms,
       shaderMetrics.materialUniforms
     );
+
     // And now we can now generate the mesh that will be added to the scene
     const model = generateLayerModel(geometry, material, shaderIO.drawMode);
 

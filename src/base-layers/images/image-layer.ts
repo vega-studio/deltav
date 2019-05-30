@@ -1,7 +1,7 @@
 import { InstanceProvider } from "../../instance-provider";
 import { atlasRequest, IAtlasResourceRequest } from "../../resources";
 import { Layer } from "../../surface/layer";
-import { createLayer, LayerInitializer } from "../../surface/layer-surface";
+import { createLayer, LayerInitializer } from "../../surface/surface";
 import { InstanceDiffType } from "../../types";
 import { ImageInstance } from "./image-instance";
 import { IImageRenderLayerProps, ImageRenderLayer } from "./image-render-layer";
@@ -20,8 +20,7 @@ export class ImageLayer<
   static defaultProps: IImageLayerProps<any> = {
     atlas: "default",
     key: "",
-    data: new InstanceProvider<ImageInstance>(),
-    scene: "default"
+    data: new InstanceProvider<ImageInstance>()
   };
 
   /** Internal provider for child layers for this layer to hand off to */
@@ -87,6 +86,7 @@ export class ImageLayer<
               this,
               instance,
               atlasRequest({
+                key: this.props.atlas || "",
                 disposeResource: true,
                 source: previous
               })
@@ -98,6 +98,7 @@ export class ImageLayer<
 
               if (!request || (request.texture && !request.texture.isValid)) {
                 request = atlasRequest({
+                  key: this.props.atlas || "",
                   source: instance.source,
                   rasterizationScale: this.props.rasterizationScale
                 });
@@ -117,6 +118,7 @@ export class ImageLayer<
 
             if (!request || (request.texture && !request.texture.isValid)) {
               request = atlasRequest({
+                key: this.props.atlas || "",
                 source: instance.source,
                 rasterizationScale: this.props.rasterizationScale
               });
@@ -135,6 +137,7 @@ export class ImageLayer<
             this,
             instance,
             atlasRequest({
+              key: this.props.atlas || "",
               disposeResource: true,
               source: instance.source
             })

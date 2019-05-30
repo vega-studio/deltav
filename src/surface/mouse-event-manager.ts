@@ -5,38 +5,23 @@ import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import { LayerScene } from "./layer-scene";
+import { Surface } from "./surface";
 import { View } from "./view";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
 
-/**
- * Theorectically we can have a view be applied to multiple scenes. So to properly qualify a view
- * it must be paired with the scene it is rendering for.
- */
-export type SceneView = {
-  /** This specifies the order the view is rendered in so we can pick the top most item when needed */
-  depth: number;
-  /** This is the scene the view is rendering for */
-  scene: LayerScene;
-  /** This is the view itself that our mouse will interact with */
-  view: View;
-  /** Gets the bounds of this view for this particular scene */
-  bounds?: Bounds<SceneView>;
-};
-
-const emptySceneView = {
-  depth: 0,
-  scene: new LayerScene({ key: "error", views: [] }),
-  view: new View({
+const emptyView: View = new View(
+  new LayerScene(undefined, { key: "error", layers: [], views: [] }),
+  {
     key: "error",
     viewport: {},
     viewCamera: new ViewCamera(Camera.defaultCamera()),
     camera: new ChartCamera()
-  })
-};
+  }
+);
 
-emptySceneView.view.fitViewtoViewport(
+emptyView.fitViewtoViewport(
   new Bounds({ x: 0, y: 0, width: 100, height: 100 })
 );
 
@@ -121,13 +106,9 @@ export interface ITouchMetrics {
   current: ITouchFrame;
 }
 
-function sortByDepth(a: Bounds<SceneView>, b: Bounds<SceneView>) {
+function sortByDepth(a: Bounds<View>, b: Bounds<View>) {
   if (b.d && a.d) return b.d.depth - a.d.depth;
   return 0;
-}
-
-function isDefined<T>(val: T | null | undefined): val is T {
-  return Boolean(val);
 }
 
 /**
@@ -140,10 +121,10 @@ export class MouseEventManager {
   /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
   controllers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
-  quadTree: QuadTree<Bounds<SceneView>>;
-  /** This is the current list of views being managed */
-  views: SceneView[];
-
+  quadTree: QuadTree<Bounds<View>>;
+  /** The parent layer surface this event manager is beneath */
+  surface: Surface;
+  /** The events created that need to be removed */
   eventCleanup: [string, EventListenerOrEventListenerObject][] = [];
 
   /**
@@ -162,18 +143,35 @@ export class MouseEventManager {
     // When we're no longer waiting for render to occur we update all of our views in the quad tree
     if (!val) {
       this.quadTree = new QuadTree(0, 0, 0, 0);
-      this.quadTree.addAll(this.views.map(v => v.bounds).filter(isDefined));
+      const scenes = this.scenes;
+      const bounds = [];
+
+      for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
+        const scene = scenes[i];
+
+        for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+          const view = scene.views[k];
+          bounds.push(view.screenBounds);
+        }
+      }
+
+      this.quadTree.addAll(bounds);
     }
+  }
+
+  get scenes(): LayerScene[] {
+    if (!this.surface || !this.surface.sceneDiffs) return [];
+    return this.surface.sceneDiffs.items;
   }
 
   constructor(
     canvas: HTMLCanvasElement,
-    views: SceneView[],
+    surface: Surface,
     controllers: EventManager[],
     handlesWheelEvents?: boolean
   ) {
     this.context = canvas;
-    this.setViews(views);
+    this.surface = surface;
     this.setControllers(controllers);
     this.addContextListeners(handlesWheelEvents);
   }
@@ -185,7 +183,7 @@ export class MouseEventManager {
    */
   addContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
-    let startView: SceneView | undefined;
+    let startView: View | undefined;
     let startPosition: Vec2 = [0, 0];
 
     if (handlesWheelEvents) {
@@ -231,7 +229,6 @@ export class MouseEventManager {
     element.onmousemove = event => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
-
       const mouse = eventElementPosition(event, element);
       const interaction = this.makeInteraction(mouse, startPosition, startView);
 
@@ -383,10 +380,12 @@ export class MouseEventManager {
    * Retrieves the view for the provided id
    */
   getView(viewId: string): View | null {
-    for (const view of this.views) {
-      if (view.view.id === viewId) {
-        return view.view;
-      }
+    const scenes = this.scenes;
+
+    for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
+      const scene = scenes[i];
+      const view = scene.viewDiffs.getByKey(viewId);
+      if (view) return view;
     }
 
     return null;
@@ -430,12 +429,12 @@ export class MouseEventManager {
   makeInteraction(
     mouse: Vec2,
     start?: Vec2,
-    startView?: SceneView
+    startView?: View
   ): IMouseInteraction {
     // Find the views the mouse has interacted with
     const hitViews = this.getViewsUnderMouse(mouse);
-    let targetSceneView = hitViews[0] && hitViews[0].d && hitViews[0].d;
-    if (!targetSceneView) targetSceneView = emptySceneView;
+    let targetSceneView = hitViews[0] && hitViews[0].d;
+    if (!targetSceneView) targetSceneView = emptyView;
 
     return {
       screen: {
@@ -443,19 +442,19 @@ export class MouseEventManager {
       },
       start: start &&
         startView && {
-          mouse: startView.view.screenToView(mouse),
-          view: startView.view
+          mouse: startView.screenToView(mouse),
+          view: startView
         },
       target: {
-        mouse: targetSceneView.view.screenToView(mouse),
-        view: targetSceneView.view
+        mouse: targetSceneView.screenToView(mouse),
+        view: targetSceneView
       },
       viewsUnderMouse: hitViews.map(v => {
-        if (!v.d) v.d = emptySceneView;
+        if (!v.d) v.d = emptyView;
 
         return {
-          mouse: v.d.view.screenToView(mouse),
-          view: v.d.view
+          mouse: v.d.screenToView(mouse),
+          view: v.d
         };
       })
     };
@@ -485,13 +484,6 @@ export class MouseEventManager {
     for (const controller of this.controllers) {
       controller.setMouseManager(this);
     }
-  }
-
-  /**
-   * Sets the views that gets queried for interactions.
-   */
-  setViews(views: SceneView[]) {
-    this.views = views;
   }
 
   destroy() {

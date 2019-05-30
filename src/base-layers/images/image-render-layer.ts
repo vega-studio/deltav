@@ -7,7 +7,6 @@ import {
   InstanceAttributeSize,
   IProjection,
   IShaderInitialization,
-  ResourceType,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
@@ -45,8 +44,7 @@ export class ImageRenderLayer<
 > extends Layer<T, U> {
   static defaultProps: IImageRenderLayerProps<any> = {
     key: "",
-    data: new InstanceProvider<ImageInstance>(),
-    scene: "default"
+    data: new InstanceProvider<ImageInstance>()
   };
 
   /** Easy lookup of attribute names to aid in modifications to be applied to elements */
@@ -220,8 +218,7 @@ export class ImageRenderLayer<
         {
           name: ImageRenderLayer.attributeNames.texture,
           resource: {
-            type: ResourceType.ATLAS,
-            key: this.props.atlas || "",
+            key: () => this.props.atlas || "",
             name: "imageAtlas"
           },
           update: o => {
@@ -229,6 +226,7 @@ export class ImageRenderLayer<
 
             if (!o.request) {
               o.request = atlasRequest({
+                key: this.props.atlas || "",
                 rasterizationScale: this.props.rasterizationScale,
                 source
               });

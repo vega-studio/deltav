@@ -14,3 +14,5 @@ export * from "./easing-util";
 export * from "./promise-resolver";
 export * from "./quad-tree";
 export * from "./tracked-quad-tree";
+export * from "./reactive-diff";
+export * from "./shallow-compare";

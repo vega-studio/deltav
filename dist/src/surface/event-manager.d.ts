@@ -14,6 +14,6 @@ export declare abstract class EventManager {
     abstract handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
     getProjection(viewId: string): IProjection | null;
     getView(viewId: string): View | null;
-    getViewScreenBounds(viewId: string): Bounds<never> | null;
+    getViewScreenBounds(viewId: string): Bounds<View> | null;
     setMouseManager(mouseManager: MouseEventManager): void;
 }

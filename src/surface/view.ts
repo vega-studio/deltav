@@ -3,17 +3,39 @@ import {
   getAbsolutePositionBounds
 } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
-import { Color } from "../types";
+import { Color, Omit } from "../types";
 import { Vec2 } from "../util";
 import { Camera, CameraProjectionType } from "../util/camera";
 import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ViewCamera, ViewCameraType } from "../util/view-camera";
+import { LayerScene } from "./layer-scene";
 
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
   STENCIL = 0b0100
+}
+
+/**
+ * Helper method to make a fullscreen view quickly
+ */
+export function createView(
+  options: Pick<IViewOptions, "camera"> &
+    Omit<Partial<IViewOptions>, "viewport">
+): IViewOptions {
+  return Object.assign(
+    {
+      key: "",
+      viewport: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      }
+    },
+    options
+  );
 }
 
 /**
@@ -35,11 +57,13 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If not provided, then this camera will use a default ChartCamera for this camera slot. This
    * will also cause a normal camera handler to be utilized.
    */
-  camera?: ChartCamera;
+  camera: ChartCamera;
   /**
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
   clearFlags?: ClearFlags[];
+  /** Helps assert a guaranteed rendering order if needed. Lower numbers render first. */
+  order?: number;
   /**
    * If this is provided, the layer can be rendered with a traditional camera that utilizes
    * matrix transforms to provide orientation/projection for the view.
@@ -65,7 +89,7 @@ function isOrthographic(val: Camera): val is Camera {
 }
 
 /**
- * This defines a view of a scene
+ * A View renders a perspective of a scene to a given surface or surfaces.
  */
 export class View extends IdentifyByKey {
   static DEFAULT_VIEW_ID = "__default__";
@@ -77,7 +101,7 @@ export class View extends IdentifyByKey {
   /** Camera that defines the individual components of each axis with simpler concepts */
   camera: ChartCamera;
   /** These are the clear flags set for this view */
-  clearFlags: ClearFlags[];
+  clearFlags: ClearFlags[] = [];
   /**
    * This is the depth of the view. The higher the depth represents which layer is on top.
    * Zero always represents the default view.
@@ -92,10 +116,14 @@ export class View extends IdentifyByKey {
    * This is merely a hinting device and does not guarantee better performance at any given moment.
    */
   optimizeRendering: boolean = false;
+  /** Helps assert rendering order for views. Lower numbers render first. */
+  order?: number;
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = window.devicePixelRatio;
+  /** The scene this view is displaying */
+  scene: LayerScene;
   /** This is the rendering bounds within screen space */
-  screenBounds: Bounds<never>;
+  screenBounds: Bounds<View>;
   /** Camera that defines the view projection matrix */
   viewCamera: ViewCamera;
   /** The size positioning of the view */
@@ -103,8 +131,16 @@ export class View extends IdentifyByKey {
   /** The bounds of the render space on the canvas this view will render on */
   viewBounds: Bounds<View>;
 
-  constructor(options: IViewOptions) {
+  constructor(scene: LayerScene, options: IViewOptions) {
     super(options);
+    this.scene = scene;
+    this.update(options);
+  }
+
+  /**
+   * Takes in options for the view and updates according to the incoming information
+   */
+  update(options: IViewOptions) {
     const toAssign = Object.assign({}, options);
     delete toAssign.key;
     Object.assign(this, toAssign);
@@ -271,12 +307,13 @@ export class View extends IdentifyByKey {
 
       this.viewBounds = viewBounds;
       this.viewBounds.d = this;
-      this.screenBounds = new Bounds<never>({
+      this.screenBounds = new Bounds<View>({
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,
         y: this.viewBounds.y / this.pixelRatio
       });
+      this.screenBounds.d = this;
     } else if (!isOrthographic(this.viewCamera.baseCamera)) {
       console.warn(
         "Fit to viewport does not support non-orthographic cameras as a default behavior."

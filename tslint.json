@@ -35,7 +35,7 @@
     "no-irregular-whitespace": true,
     "no-trailing-whitespace": true,
     "no-unnecessary-callback-wrapper": true,
-    "object-literal-key-quotes": [true, "consistent-as-needed"],
+    "object-literal-key-quotes": [false, "consistent-as-needed"],
     "ordered-imports": [true],
     "prefer-method-signature": true,
     "prefer-template": true,

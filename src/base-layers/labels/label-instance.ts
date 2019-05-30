@@ -33,7 +33,8 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
    * Kerning is calculated.
    */
   preload?: boolean;
-
+  /** Spacing width between letters in a label */
+  letterSpacing?: number;
   /** Event when the label is completely ready to render all of it's glyphs */
   onReady?(instance: LabelInstance): void;
 }
@@ -69,6 +70,8 @@ export class LabelInstance extends Instance {
   @observable scale: number = 1.0;
   /** The rendered text for the label. */
   @observable text: string = "";
+  /** Spacing between letters in a label */
+  @observable letterSpacing: number = 0;
 
   /** This executes when the label is finished waiting for it's glyphs to be ready to render */
   onReady?: (label: LabelInstance) => void;
@@ -123,6 +126,29 @@ export class LabelInstance extends Instance {
     this.preload = options.preload || false;
     this.scale = options.scale || this.scale;
     this.text = options.text || this.text;
+    this.letterSpacing = options.letterSpacing || this.letterSpacing;
+
+    // Make sure the anchor is set to the appropriate location
+    options.anchor && this.setAnchor(options.anchor);
+  }
+
+  getWidth(): number {
+    return this.size[0];
+  }
+
+  /**
+   * This applies a new anchor to this label and properly determines it's anchor position on the label
+   */
+  setAnchor(anchor: Anchor) {
+    const newAnchor = {
+      padding: anchor.padding || 0,
+      type: anchor.type,
+      x: anchor.x || 0,
+      y: anchor.y || 0
+    };
+
+    // Apply the anchor
+    this.anchor = newAnchor;
   }
 
   /**

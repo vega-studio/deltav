@@ -1,5 +1,5 @@
 import { Instance } from "../../instance-provider/instance";
-import { ResourceManager } from "../../resources";
+import { ResourceRouter } from "../../resources";
 import { IInstanceAttribute, INonePickingMetrics, IQuadTreePickingMetrics, ISinglePickingMetrics } from "../../types";
 import { LayerBufferType } from "../layer-processing/layer-buffer-type";
 import { BaseDiffProcessor } from "./base-diff-processor";
@@ -14,7 +14,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
     };
     instanceAttributes: IInstanceAttribute<T>[];
     picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
-    resource: ResourceManager;
+    resource: ResourceRouter;
     bufferManager: BufferManagerBase<T, IBufferLocation>;
     bufferType: LayerBufferType;
 }

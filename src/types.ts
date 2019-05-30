@@ -8,6 +8,8 @@ import {
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { Bounds } from "./primitives/bounds";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { ISceneOptions } from "./surface/layer-scene";
 import {
   ChartCamera,
   Mat3x3,
@@ -125,9 +127,17 @@ export type Color = [number, number, number, number];
 /**
  * Represents something with a unique id
  */
-export interface Identifiable {
+export interface IdentifiableById {
   /** A unique identifier */
-  id: string;
+  id: string | number;
+}
+
+/**
+ * Represents something with a unique key
+ */
+export interface IdentifiableByKey {
+  /** A unique identifier */
+  key: string | number;
 }
 
 /**
@@ -199,10 +209,8 @@ export interface IInstanceAttribute<T extends Instance> {
    * The value provided for this property should be the name of the atlas that is created.
    */
   resource?: {
-    /** This is the resource type that the attribute will be requesting (ie ResourceType.ATLAS, ResourceType.FONT, or custom resource type values) */
-    type: number;
-    /** Specify which generated resource to target for the resource */
-    key: string;
+    /** This is a method that should return the string key identifier of the resource to be used */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**
@@ -299,14 +307,12 @@ export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading atlas resources.
-   * The value provided for this property should be the name of the atlas that is created.
+   * 0. This makes this attribute and layer become compatible with reading resources.
+   * The value provided for this property should be the name of the resource that is created.
    */
   resource: {
-    /** This is the resource type targeted which can be provided by managers */
-    type: number;
-    /** Specify which generated resource to target */
-    key: string;
+    /** This retrieves the key of the resource that is to be used by the attribute */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**
@@ -476,8 +482,8 @@ export const isWhiteSpace = whiteSpaceCharRegEx.test.bind(whiteSpaceCharRegEx);
 /**
  * Newline character test
  */
-export const newLineRegEx = /(\r\n|\n|\r)/g;
-export const newLineCharRegEx = /(\r\n|\n|\r)/;
+export const newLineRegEx = /\r\n|\n|\r/g;
+export const newLineCharRegEx = /\r\n|\n|\r/;
 export const isNewline = newLineCharRegEx.test.bind(newLineCharRegEx);
 
 /**
@@ -712,3 +718,76 @@ export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
  * [width, height, depth]
  */
 export type Size = Vec2 | Vec3;
+
+/**
+ * When creating a surface you must make it declare a pipeline. This makes a centralized easy
+ * entry point for expressively declaring how the application will utilize resources to render
+ * to various scenes and contexts.
+ *
+ * This is also used in a reactive diff manner so elements can be easily updated/added/removed
+ * by providing all of the initializer elements. Thus to add an item call the method including
+ * the element you wish to create. To remove an element, simply exclude the element next time
+ * you call the method.
+ */
+export interface IPipeline {
+  /**
+   * These are the resources we want available that our layers can be provided to utilize
+   * for their internal processes.
+   */
+  resources?: BaseResourceOptions[];
+  /**
+   * This sets up the available scenes the surface will have to work with. Layers then can
+   * reference the scene by it's scene property. The order of the scenes here is the drawing
+   * order of the scenes.
+   */
+  scenes?: ISceneOptions[];
+}
+
+/**
+ * Errors emitted by the surface
+ */
+export enum SurfaceErrorType {
+  /** Error is thrown when no web gl context can be established for the canvas */
+  NO_WEBGL_CONTEXT
+}
+
+/**
+ * Errors emitted by the surface
+ */
+export type SurfaceError = {
+  error: SurfaceErrorType;
+  message: string;
+};
+
+/**
+ * A numerical or string identifier. Use this type to make your intent a little clearer when you want a resource
+ * identified.
+ */
+export type SimpleId = string | number;
+
+/**
+ * An alias for a string. Use this type to make your intent a little clearer when you want a string specifically for
+ * identifying a resource.
+ */
+export type StringId = string;
+
+/**
+ * An alias for a number. Use this type to make your intent a little clearer when you want a number specifically for
+ * identifying a resource.
+ */
+export type NumberId = number;
+
+/**
+ * This is a massively useful type to express an object that can have numeric or sttring identifiers in recursive
+ * amounts to define an object with many pathways to various items of the same type (that can be varied by generic)
+ *
+ * const o: Lookup<InstanceProvider<Instance>> = {
+ *   circles: new InstanceProvider<CircleInstance>(),
+ *   category: {
+ *     special: new InstanceProvider<LabelInstance>(),
+ *   }
+ * }
+ */
+export type Lookup<T> =
+  | { [key: number]: T | Lookup<T> }
+  | { [key: string]: T | Lookup<T> };

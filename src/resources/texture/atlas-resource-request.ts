@@ -13,6 +13,10 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
    */
   disposeResource?: boolean;
   /**
+   * This is the key of the resource to be used for the request. Resources are defined in the pipeline.
+   */
+  key: string;
+  /**
    * This scales the image to be rendered to the texture. A value of 1 means the image will be
    * rendered full size to the texture. A value of .5 means it will be rendered half size to
    * the texture.
@@ -33,7 +37,8 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
  * Simple wrapper to make autocomplete easier for making an atlas request.
  */
 export function atlasRequest(
-  options: Omit<Partial<IAtlasResourceRequest>, "type">
+  options: Omit<Partial<IAtlasResourceRequest>, "type"> &
+    Pick<IAtlasResourceRequest, "key">
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,

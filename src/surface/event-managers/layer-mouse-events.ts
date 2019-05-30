@@ -2,12 +2,10 @@ import { IProjection, PickType } from "../../types";
 import { Vec2 } from "../../util";
 import { EventManager } from "../event-manager";
 import { Layer } from "../layer";
-import { LayerSurface } from "../layer-surface";
-import {
-  IDragMetrics,
-  IMouseInteraction,
-  SceneView
-} from "../mouse-event-manager";
+import { LayerScene } from "../layer-scene";
+import { IDragMetrics, IMouseInteraction } from "../mouse-event-manager";
+import { Surface } from "../surface";
+import { View } from "../view";
 
 function isDefined<T>(val: T | null | undefined): val is T {
   return Boolean(val);
@@ -23,32 +21,39 @@ function isDefined<T>(val: T | null | undefined): val is T {
  */
 export class LayerMouseEvents extends EventManager {
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
-  isOver = new Map<SceneView, boolean>();
+  isOver = new Set<View>();
   /** This is the surface this manager is aiding with broadcasting events to layers */
-  sceneViews: SceneView[];
+  get scenes(): LayerScene[] {
+    if (!this.surface || !this.surface.sceneDiffs) return [];
+    return this.surface.sceneDiffs.items;
+  }
   /**
    * This is the surface this LayerMouseEvent Controller is operating on behalf of. We use this to trigger,
    * pre-layer processing items, such as color pick narrowing prior to the Layers receiving the event.
    */
-  surface: LayerSurface;
+  surface: Surface;
 
-  constructor(surface: LayerSurface) {
+  constructor(surface: Surface) {
     super();
     this.surface = surface;
-    this.sceneViews = surface.sceneViews;
   }
 
   getSceneViewsUnderMouse(e: IMouseInteraction) {
-    const sceneViewByViewId = new Map<string, SceneView>();
+    const viewByViewId = new Map<string, View>();
 
-    // Map the scene views by the view's identifiers
-    for (const sceneView of this.sceneViews) {
-      sceneViewByViewId.set(sceneView.view.id, sceneView);
+    // Map the scenes to SceneViews
+    for (let i = 0, iMax = this.scenes.length; i < iMax; ++i) {
+      const scene = this.scenes[i];
+
+      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
+        const view = scene.views[k];
+        viewByViewId.set(view.id, view);
+      }
     }
 
     // Now retrieve and convert each view under the mouse to the scene view it coincides with
     return e.viewsUnderMouse
-      .map(viewItem => sceneViewByViewId.get(viewItem.view.id))
+      .map(viewItem => viewByViewId.get(viewItem.view.id))
       .filter(isDefined);
   }
 
@@ -80,16 +85,17 @@ export class LayerMouseEvents extends EventManager {
     callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
   ) {
     // Get all of the scenes under the mouse
-    const sceneViews = this.getSceneViewsUnderMouse(e);
+    const views = this.getSceneViewsUnderMouse(e);
     // Get a lookup of a view id to the mouse position in the view
     const viewMouseByViewId = this.getMouseByViewId(e);
 
     // For every view of every scene, we must tell it's layers it's world space is receiving mouse interactions
-    for (const sceneView of sceneViews) {
-      this.handleSceneView(sceneView, viewMouseByViewId, callback);
+    for (let i = 0, iMax = views.length; i < iMax; ++i) {
+      const view = views[i];
+      this.handleView(view, viewMouseByViewId, callback);
     }
 
-    return sceneViews;
+    return views;
   }
 
   handleMouseDown(e: IMouseInteraction, button: number) {
@@ -114,14 +120,11 @@ export class LayerMouseEvents extends EventManager {
     const screen = e.screen.mouse;
 
     // All views that are moused over should no longer be considered over and broadcast a mouse out
-    this.isOver.forEach((_flag, sceneView) => {
+    this.isOver.forEach(view => {
       // Since we are leaving the view we must make the view relative cooridinates fromt he screen space coords
-      viewMouseByViewId.set(
-        sceneView.view.id,
-        sceneView.view.screenToView(screen)
-      );
+      viewMouseByViewId.set(view.id, view.screenToView(screen));
 
-      this.handleSceneView(sceneView, viewMouseByViewId, (layer, view, mouse) =>
+      this.handleView(view, viewMouseByViewId, (layer, view, mouse) =>
         layer.interactions.handleMouseOut(view, mouse)
       );
     });
@@ -148,34 +151,26 @@ export class LayerMouseEvents extends EventManager {
     const screen = e.screen.mouse;
 
     // For quick lookups map all of the current SceneViews that are over
-    const currentSceneViews = new Map<SceneView, boolean>();
-    allSceneViews.forEach(v => currentSceneViews.set(v, true));
+    const currentSceneViews = new Set<View>();
+    allSceneViews.forEach(v => currentSceneViews.add(v));
 
     // Detect which of the views are no longer over
-    this.isOver.forEach((_flag, sceneView) => {
-      if (!currentSceneViews.get(sceneView)) {
+    this.isOver.forEach(view => {
+      if (!currentSceneViews.has(view)) {
         // Since these views were not interacted with, we must create the mouse interaction position
-        viewMouseByViewId.set(
-          sceneView.view.id,
-          sceneView.view.screenToView(screen)
-        );
+        viewMouseByViewId.set(view.id, view.screenToView(screen));
 
-        this.handleSceneView(
-          sceneView,
-          viewMouseByViewId,
-          (layer, view, mouse) => layer.interactions.handleMouseOut(view, mouse)
+        this.handleView(view, viewMouseByViewId, (layer, view, mouse) =>
+          layer.interactions.handleMouseOut(view, mouse)
         );
       }
     });
 
     // Detect which of the views are newly over
-    currentSceneViews.forEach((_flag, sceneView) => {
-      if (!this.isOver.get(sceneView)) {
-        this.handleSceneView(
-          sceneView,
-          viewMouseByViewId,
-          (layer, view, mouse) =>
-            layer.interactions.handleMouseOver(view, mouse)
+    currentSceneViews.forEach(sceneView => {
+      if (!this.isOver.has(sceneView)) {
+        this.handleView(sceneView, viewMouseByViewId, (layer, view, mouse) =>
+          layer.interactions.handleMouseOver(view, mouse)
         );
       }
     });
@@ -184,16 +179,17 @@ export class LayerMouseEvents extends EventManager {
     this.isOver = currentSceneViews;
   }
 
-  handleSceneView(
-    sceneView: SceneView,
+  handleView(
+    view: View,
     viewMouseByViewId: Map<string, Vec2>,
     callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
   ) {
-    const view = sceneView.view;
     const mouse = viewMouseByViewId.get(view.id);
 
     if (mouse) {
-      for (const layer of sceneView.scene.layers) {
+      for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {
+        const layer = view.scene.layers[i];
+
         if (layer.picking && layer.picking.type !== PickType.NONE) {
           callback(layer, view, mouse);
         }

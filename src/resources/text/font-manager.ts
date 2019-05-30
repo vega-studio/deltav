@@ -146,9 +146,11 @@ function isSimpleFontMetrics(val: any): val is ISimpleFontMapMetrics {
  * an IFontResourceOptions object. Excludes the need to specify the type.
  */
 export function createFont(
-  options: Omit<IFontResourceOptions, "type">
+  options: Omit<IFontResourceOptions, "type" | "key"> &
+    Partial<Pick<IFontResourceOptions, "key">>
 ): IFontResourceOptions {
   return {
+    key: "",
     type: ResourceType.FONT,
     ...options
   };
@@ -190,7 +192,8 @@ export class FontManager {
         // Get the layout of the request
         metrics.layout = fontMap.getStringLayout(
           metrics.text,
-          metrics.fontSize
+          metrics.fontSize,
+          metrics.letterSpacing
         );
 
         // If a max width is present, we need to calculate the truncation of the label
@@ -202,6 +205,7 @@ export class FontManager {
             metrics.truncation || "",
             metrics.maxWidth,
             metrics.fontSize,
+            metrics.letterSpacing,
             this.fontRenderer
           );
 
@@ -277,6 +281,15 @@ export class FontManager {
   destroy() {
     // Clears up resources
     this.fontMaps.forEach(font => font.destroy());
+  }
+
+  /**
+   * Destroy a single font map
+   */
+  destroyFontMap(key: string) {
+    const fontMap = this.fontMaps.get(key);
+    if (!fontMap) return;
+    fontMap.destroy();
   }
 
   /**

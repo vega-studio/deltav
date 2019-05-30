@@ -1,4 +1,4 @@
-export * from "./layer-surface";
+export * from "./surface";
 export * from "./event-manager";
 export * from "./layer-processing/generate-default-scene";
 export * from "./layer-processing/generate-layer-geometry";

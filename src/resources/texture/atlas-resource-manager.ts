@@ -2,12 +2,7 @@ import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import {
-  InstanceIOValue,
-  IResourceContext,
-  IResourceInstanceAttribute,
-  ResourceType
-} from "../../types";
+import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
 import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
@@ -38,8 +33,6 @@ export class AtlasResourceManager extends BaseResourceManager<
   resources = new Map<string, Atlas>();
   /** This is the atlas manager that handles operations with our atlas' */
   atlasManager: AtlasManager;
-  /** This is the atlas currently targetted by requests */
-  targetAtlas: string = "";
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, IAtlasResourceRequest[]>();
   /**
@@ -135,6 +128,16 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
+   * System requests a resource get's destroyed here
+   */
+  destroyResource(init: BaseResourceOptions) {
+    const resource = this.resources.get(init.key);
+    if (!resource) return;
+    this.atlasManager.destroyAtlas(init.key);
+    this.resources.delete(init.key);
+  }
+
+  /**
    * This retrieves the actual atlas texture that should be applied to a uniform's
    * value.
    */
@@ -181,10 +184,9 @@ export class AtlasResourceManager extends BaseResourceManager<
     layer: Layer<T, U>,
     instance: Instance,
     request: IAtlasResourceRequest,
-    context?: IResourceContext
+    _context?: IResourceContext
   ): InstanceIOValue {
-    const resourceContext =
-      this.targetAtlas || (context && context.resource.key) || "";
+    const resourceContext = request.key || "";
     const texture = request.texture;
 
     // If the texture is ready and available, then we simply return the IO values
@@ -232,9 +234,9 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * Sets the context attribute during attribute updates from the layers
+   * System is requesting properties for a resource should be updated.
    */
-  setAttributeContext(attribute: IResourceInstanceAttribute<Instance>) {
-    this.targetAtlas = attribute.resource.key;
+  updateResource(options: BaseResourceOptions) {
+    if (!isAtlasResource(options)) return;
   }
 }

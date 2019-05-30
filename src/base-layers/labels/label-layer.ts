@@ -7,7 +7,7 @@ import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
-} from "../../surface/layer-surface";
+} from "../../surface/surface";
 import { InstanceDiffType, IProjection, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import {
@@ -172,8 +172,7 @@ export class LabelLayer<
 > extends Layer<T, U> {
   static defaultProps: ILabelLayerProps<LabelInstance> = {
     key: "",
-    data: new InstanceProvider<LabelInstance>(),
-    scene: "default"
+    data: new InstanceProvider<LabelInstance>()
   };
 
   /** Provider for the glyph layer this layer manages */
@@ -279,7 +278,6 @@ export class LabelLayer<
         data: this.glyphProvider,
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
-        scene: this.props.scene,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
       })
     ];
@@ -307,7 +305,8 @@ export class LabelLayer<
         "origin",
         "fontSize",
         "maxWidth",
-        "maxScale"
+        "maxScale",
+        "letterSpacing"
       ]);
     }
 
@@ -319,7 +318,8 @@ export class LabelLayer<
       origin: originId,
       fontSize: fontSizeId,
       maxWidth: maxWidthId,
-      maxScale: maxScaleId
+      maxScale: maxScaleId,
+      letterSpacing: letterSpacingId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -369,6 +369,11 @@ export class LabelLayer<
           }
 
           if (changed[maxWidthId] !== undefined) {
+            this.invalidateRequest(instance);
+            this.layoutGlyphs(instance);
+          }
+
+          if (changed[letterSpacingId] !== undefined) {
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
           }
@@ -516,7 +521,6 @@ export class LabelLayer<
     ) {
       const offset = layout.positions[i];
       const glyph = glyphs[i];
-
       glyph.offset = offset;
       glyph.fontScale = layout.fontScale;
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
@@ -741,7 +745,8 @@ export class LabelLayer<
       const metrics: IFontResourceRequest["metrics"] = {
         // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
-        text: instance.text
+        text: instance.text,
+        letterSpacing: instance.letterSpacing
       };
 
       // Include truncation metrics if the text needs it
@@ -752,6 +757,7 @@ export class LabelLayer<
 
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
+        key: this.props.resourceKey || "",
         character: "",
         kerningPairs: [checkText],
         metrics
@@ -779,12 +785,7 @@ export class LabelLayer<
           if (instance.onReady) instance.onReady(instance);
         };
 
-        this.resource.request(this, instance, labelKerningRequest, {
-          resource: {
-            type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
-        });
+        this.resource.request(this, instance, labelKerningRequest);
       }
 
       return false;

@@ -9,7 +9,14 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, divide2, subtract2, Vec2 } from "../../util";
+import {
+  CommonMaterialOptions,
+  divide2,
+  IAutoEasingMethod,
+  subtract2,
+  Vec,
+  Vec2
+} from "../../util";
 import { ScaleMode } from "../types";
 import { RectangleInstance } from "./rectangle-instance";
 
@@ -17,6 +24,11 @@ const { min, max } = Math;
 
 export interface IRectangleLayerProps<T extends RectangleInstance>
   extends ILayerProps<T> {
+  animate?: {
+    color?: IAutoEasingMethod<Vec>;
+    location?: IAutoEasingMethod<Vec>;
+  };
+  atlas?: string;
   /** Scale factor determining the scale size of the rectangle */
   scaleFactor?(): number;
 }
@@ -31,8 +43,7 @@ export class RectangleLayer<
 > extends Layer<T, U> {
   static defaultProps: IRectangleLayerProps<RectangleInstance> = {
     key: "",
-    data: new InstanceProvider<RectangleInstance>(),
-    scene: "default"
+    data: new InstanceProvider<RectangleInstance>()
   };
 
   static attributeNames = {
@@ -152,6 +163,7 @@ export class RectangleLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<RectangleInstance> {
+    const animate = this.props.animate || {};
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
       1: 1,
@@ -176,6 +188,7 @@ export class RectangleLayer<
       fs: require("./rectangle-layer.fs"),
       instanceAttributes: [
         {
+          easing: animate.location,
           name: RectangleLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
           update: o => o.position
@@ -201,6 +214,7 @@ export class RectangleLayer<
           update: o => [o.scaling]
         },
         {
+          easing: animate.color,
           name: RectangleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
           update: o => o.color

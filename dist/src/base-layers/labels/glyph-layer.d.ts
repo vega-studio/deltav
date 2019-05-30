@@ -27,5 +27,7 @@ export declare class GlyphLayer<T extends GlyphInstance, U extends IGlyphLayerOp
         [key: string]: IFontResourceRequest;
     };
     initShader(): IShaderInitialization<T>;
+    draw(): void;
     getMaterialOptions(): ILayerMaterialOptions;
+    willUpdateProps(nextProps: U): void;
 }

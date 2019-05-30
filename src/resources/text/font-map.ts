@@ -327,6 +327,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     truncation: string,
     maxWidth: number,
     fontSize: number,
+    letterSpacing: number,
     fontRenderer: FontRenderer
   ) {
     // If the label exceeds the specified maxWidth then truncation must take places
@@ -444,7 +445,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       }
 
       // Caculate the layout of the truncated text
-      return this.getStringLayout(truncatedText, fontSize);
+      return this.getStringLayout(truncatedText, fontSize, letterSpacing);
     }
 
     return layout;
@@ -536,7 +537,11 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * NOTE: This ONLY processes a SINGLE LINE!! ALL whitespace characters will be considered a single
    * space.
    */
-  getStringLayout(text: string, fontSize: number): KernedLayout {
+  getStringLayout(
+    text: string,
+    fontSize: number,
+    letterSpacing: number
+  ): KernedLayout {
     // The output positions for each letter in the text
     const positions: Vec2[] = [];
     // The output of each character found that is provided a position (the string without the whitespace)
@@ -579,7 +584,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       }
 
       offset = add2(add2(offset, scale2(kern, fontScale)), [
-        whiteSpaceCount * whiteSpacing * fontScale,
+        whiteSpaceCount * whiteSpacing * fontScale +
+          (i === 0 ? 0 : letterSpacing),
         0
       ]);
 

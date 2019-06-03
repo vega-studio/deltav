@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.31.1
+
+* `(FIXED)` Added checks for lookup deconstruction to detect when naming has gone awry.
+
 ## 1.31.0
 
 * `(ADDED)` pipeline method implemented. This allows a diffing approach to the rendering pipeline and allows for easy view dimension manipulation.

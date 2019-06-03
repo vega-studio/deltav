@@ -38,10 +38,12 @@ function lookupValues<T>(check: Function, lookup: Lookup<T>): T[] {
  * This gets all of the values of a Lookup
  */
 function mapLookupValues<T, U>(
+  label: string,
   check: (value: T | Lookup<T>) => boolean,
   lookup: Lookup<T>,
   callback: (key: string, value: T) => U
 ): U[] {
+  const added = new Set();
   const out: U[] = [];
   const toProcess = Object.keys(lookup).map<[string, T | Lookup<T>]>(key => [
     key,
@@ -54,10 +56,21 @@ function mapLookupValues<T, U>(
     if (check(next[1])) {
       out.push(callback(next[0], next[1] as T));
     } else {
+      let error = false;
+
       Object.keys(next[1]).forEach(key => {
         const value = (next[1] as any)[key];
-        toProcess.push([`${next[0]}.${key}`, value]);
+
+        if (!added.has(value)) {
+          toProcess.push([`${next[0]}.${key}`, value]);
+          added.add(value);
+        } else {
+          error = true;
+          console.warn("Invalid lookup for BasicSurface detected:", label);
+        }
       });
+
+      if (error) break;
     }
   }
 
@@ -471,6 +484,7 @@ export class BasicSurface<
     // Take the resource lookup and flatten it's values to a list. Each value will be given a key based on whether the
     // value expressed an explicit key or will be a key made from the properties leading up to the value in the lookup.
     const resources = mapLookupValues(
+      "resources",
       (val: any) => val && val.type !== undefined,
       this.resources || [],
       (key: string, val: BaseResourceOptions) => {
@@ -493,10 +507,12 @@ export class BasicSurface<
     );
 
     const scenes = mapLookupValues(
+      "scenes",
       (val: any) => val && val.views !== undefined && val.layers !== undefined,
       pipelineWithLookups.scenes,
       (key: string, val: BasicSurfaceSceneOptions) => {
         const views = mapLookupValues(
+          "views",
           (val: any) => val.camera !== undefined && val.viewport !== undefined,
           val.views,
           (key: string, val: BasicSurfaceView) => {
@@ -510,6 +526,7 @@ export class BasicSurface<
         );
 
         const layers = mapLookupValues(
+          "layers",
           (val: any) => val && val.init !== undefined,
           val.layers,
           (key: string, val: BasicSurfaceLayer) => {

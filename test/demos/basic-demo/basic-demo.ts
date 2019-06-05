@@ -134,7 +134,7 @@ export class BasicDemo extends BaseDemo {
           startView: ["default-view"]
         }),
         clickScreen: new EventHandler({
-          handleMouseUp: (e: IMouseInteraction, _button: number) => {
+          handleClick: (e: IMouseInteraction, _button: number) => {
             const target = e.target;
             this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
           }

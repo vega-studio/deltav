@@ -8,8 +8,7 @@ import {
   IProjection,
   IShaderInitialization,
   IUniform,
-  UniformSize,
-  VertexAttributeSize
+  UniformSize
 } from "../../types";
 import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
@@ -142,17 +141,7 @@ export class CircleLayer<
           ]
         }
       ],
-      vertexAttributes: [
-        {
-          name: "vertex",
-          size: VertexAttributeSize.ONE,
-          update: (_vertex: number) => [
-            // Filler info to have a vertex for now since the lower gl layer requires this
-            1
-          ]
-        }
-      ],
-      vertexCount: 1,
+      vertexCount: 0,
       vs: require("./circle-layer.vs")
     };
   }

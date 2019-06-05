@@ -853,8 +853,8 @@ export class GLProxy {
       drawRange = [0, model.vertexCount];
     }
 
-    // Only if this geomxetry has instances requested will it attempt to render instances
-    if (model.drawInstances >= 0) {
+    // Only if this geometry has instances requested will it attempt to render instances
+    if (model.drawInstances >= 0 && model.geometry.isInstanced) {
       instancing = this.extensions.instancing;
     }
 
@@ -1411,7 +1411,7 @@ export class GLProxy {
    * This performs all necessary functions to use the attribute utilizing
    * the current program in use.
    */
-  useAttribute(name: string, attribute: Attribute) {
+  useAttribute(name: string, attribute: Attribute, geometry: Geometry) {
     // We need a valid program in use.
     if (!this.state.currentProgram) return false;
     // Must have it's gl context established
@@ -1453,7 +1453,11 @@ export class GLProxy {
       0
     );
 
-    if (attribute.isInstanced && this.extensions.instancing) {
+    if (
+      geometry.isInstanced &&
+      attribute.isInstanced &&
+      this.extensions.instancing
+    ) {
       this.state.setVertexAttributeArrayDivisor(location, 1);
     } else {
       this.state.setVertexAttributeArrayDivisor(location, 0);

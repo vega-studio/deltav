@@ -18,7 +18,7 @@ void main() {
 
   // NOTE: for now we keep depth * vertex where vertex is always one since our gl layer does not
   // support drawing non-instanced data yet.
-  gl_Position = clipSpace(vec3(center, depth * vertex));
+  gl_Position = clipSpace(vec3(center, depth));
   gl_PointSize = size * 2.0 * pixelRatio;
 
   ${extend}

@@ -683,7 +683,10 @@ export interface IShaderInputs<T extends Instance> {
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
   vertexAttributes?: (IVertexAttribute | null)[];
-  /** Specify how many vertices there are per instance */
+  /**
+   * Specify how many vertices there are per instance. If vertex count is 0, then the layer will render without
+   * instancing and draw the buffers straight.
+   */
   vertexCount: number;
   /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
   uniforms?: (IUniform | null)[];

@@ -4,6 +4,7 @@ export declare class Geometry {
     readonly attributes: Map<string, Attribute>;
     gl: {};
     maxInstancedCount: number;
+    isInstanced: boolean;
     addAttribute(name: string, attribute: Attribute): void;
     removeAttribute(name: string): void;
     dispose(): void;

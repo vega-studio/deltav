@@ -1,6 +1,7 @@
 import { Size } from "../types";
 import { Vec4 } from "../util";
 import { Attribute } from "./attribute";
+import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
 import { GLState } from "./gl-state";
 import { Model } from "./model";
@@ -230,10 +231,10 @@ export class WebGLRenderer {
   /**
    * Prepares the specified attribute
    */
-  prepareAttribute(attribute: Attribute, name: string) {
+  prepareAttribute(geometry: Geometry, attribute: Attribute, name: string) {
     // If we successfully update/compile the attribute, then we enable it's vertex array
     if (this.glProxy.updateAttribute(attribute)) {
-      this.glProxy.useAttribute(name, attribute);
+      this.glProxy.useAttribute(name, attribute, geometry);
     }
 
     // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
@@ -300,7 +301,7 @@ export class WebGLRenderer {
       // Faster to use defined functions rather than closures for loops
       const attributeLoop = function(attribute: Attribute, name: string) {
         geometryIsValid =
-          this.prepareAttribute(attribute, name) && geometryIsValid;
+          this.prepareAttribute(geometry, attribute, name) && geometryIsValid;
       };
 
       // First update/compile all aspects of the geometry

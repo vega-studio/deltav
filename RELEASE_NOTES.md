@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.31.2
+
+* `(FIXED)` Circles renders as POINTS now, thus improving performance a bit.
+* `(FIXED)` POINTS can now be rendered non-instanced by setting vertex count to 0. This improves points rendering further.
+
 ## 1.31.1
 
 * `(FIXED)` Added checks for lookup deconstruction to detect when naming has gone awry.

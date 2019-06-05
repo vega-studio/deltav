@@ -173,6 +173,10 @@ export class InstanceAttributeBufferManager<
       if (this.model) {
         this.model.vertexDrawRange = [0, this.layer.instanceVertexCount];
         this.model.drawInstances = this.currentInstancedCount;
+
+        if (this.layer.instanceVertexCount === 0) {
+          this.model.vertexDrawRange[1] = this.model.drawInstances;
+        }
       }
     } else {
       console.error(

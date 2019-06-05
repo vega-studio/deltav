@@ -1,3 +1,4 @@
+import { GLSettings } from "../../gl";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -7,8 +8,7 @@ import {
   IProjection,
   IShaderInitialization,
   IUniform,
-  UniformSize,
-  VertexAttributeSize
+  UniformSize
 } from "../../types";
 import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
@@ -99,25 +99,8 @@ export class CircleLayer<
       color: animateColor
     } = animations;
 
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      1: 1,
-      2: -1,
-      3: 1,
-      4: -1,
-      5: -1
-    };
-
-    const vertexToSide: { [key: number]: number } = {
-      0: -1,
-      1: -1,
-      2: -1,
-      3: 1,
-      4: 1,
-      5: 1
-    };
-
     return {
+      drawMode: GLSettings.Model.DrawMode.POINTS,
       fs: require("./circle-layer.fs"),
       instanceAttributes: [
         {
@@ -158,19 +141,7 @@ export class CircleLayer<
           ]
         }
       ],
-      vertexAttributes: [
-        {
-          name: "normals",
-          size: VertexAttributeSize.TWO,
-          update: (vertex: number) => [
-            // Normal
-            vertexToNormal[vertex],
-            // The side of the quad
-            vertexToSide[vertex]
-          ]
-        }
-      ],
-      vertexCount: 6,
+      vertexCount: 0,
       vs: require("./circle-layer.vs")
     };
   }

@@ -4,6 +4,8 @@ import {
   BasicCameraController,
   BasicSurface,
   ChartCamera,
+  CircleInstance,
+  CircleLayer,
   ClearFlags,
   createLayer,
   createView,
@@ -53,6 +55,7 @@ export class TextAreaDemo extends BaseDemo {
   };
 
   providers = {
+    circles: new InstanceProvider<CircleInstance>(),
     textAreas: new InstanceProvider<TextAreaInstance>()
   };
 
@@ -249,7 +252,10 @@ export class TextAreaDemo extends BaseDemo {
               textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
                 resourceKey: resources.font.key,
-                scaling: ScaleMode.ALWAYS
+                scaling: ScaleMode.TEXT_AREA_NEVER
+              }),
+              circles: createLayer(CircleLayer, {
+                data: providers.circles
               })
             }
           }
@@ -334,5 +340,24 @@ export class TextAreaDemo extends BaseDemo {
     this.providers.textAreas.add(textArea);
 
     textArea.maxHeight = 800;
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [
+          this.parameters.maxWidth * 2,
+          this.parameters.maxHeight * 1 + 400
+        ],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [420, 0],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
   }
 }

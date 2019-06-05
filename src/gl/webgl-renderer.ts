@@ -1,7 +1,7 @@
-import { Geometry } from "src/gl/geometry";
 import { Size } from "../types";
 import { Vec4 } from "../util";
 import { Attribute } from "./attribute";
+import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
 import { GLState } from "./gl-state";
 import { Model } from "./model";

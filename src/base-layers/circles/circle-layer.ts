@@ -1,4 +1,4 @@
-import { GLSettings } from "src/gl";
+import { GLSettings } from "../../gl";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";

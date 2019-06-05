@@ -234,6 +234,16 @@ export class BorderLayer<
           name: BorderLayer.attributeNames.fontScale,
           size: InstanceAttributeSize.ONE,
           update: o => [o.fontScale]
+        },
+        {
+          name: "textAreaOrigin",
+          size: InstanceAttributeSize.TWO,
+          update: o => o.textAreaOrigin
+        },
+        {
+          name: "textAreaAnchor",
+          size: InstanceAttributeSize.TWO,
+          update: o => o.textAreaAnchor
         }
       ],
       uniforms: [

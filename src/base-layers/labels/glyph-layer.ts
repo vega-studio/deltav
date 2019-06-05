@@ -248,6 +248,16 @@ export class GlyphLayer<
           size: InstanceAttributeSize.ONE,
           update: o => [o.maxScale]
         },
+        {
+          name: "textAreaOrigin",
+          size: InstanceAttributeSize.TWO,
+          update: o => o.textAreaOrigin
+        },
+        {
+          name: "textAreaAnchor",
+          size: InstanceAttributeSize.TWO,
+          update: o => o.textAreaAnchor
+        },
         glyphSizeAttr,
         glyphTextureAttr
       ],

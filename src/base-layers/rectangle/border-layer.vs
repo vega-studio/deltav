@@ -16,14 +16,16 @@ void main() {
   bool largerOnScreen = screenSize.y > size.y || screenSize.x > size.x;
 
   // Determines if a scale mode should be used or not for the vertex
-  float useScaleMode = float(
-    (
-      scaling == 3.0 ||                  // NEVER mode - keep the image the same size always
-      (largerOnScreen && scaling == 2.0) // BOUND_MAX mode - only if we're larger than the font size do we scale down
-    ) &&
-    scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
+  float useScaleMode = mix(
+    mix(
+      3.0, // NEVER mode - keep the image the same size always
+      2.0, // BOUND_MAX mode - only if we're larger than the font size do we scale down
+      float(scaling == 2.0)
+    ), 
+    1.0, // ALWAYS mode - the image stays completely in world space allowing it to scale freely
+    float(scaling == 1.0 || (!largerOnScreen && scaling == 2.0))
   );
-
+  
   // Correct aspect ratio. Sufficient fix for most applications.
   // Will need another solution in the case of:
   // (cameraScale y != cameraScale.x) && (cameraScale.x != 1 && cameraScale.y != 1)
@@ -71,11 +73,17 @@ void main() {
   // We now choose between keeping the same image size or keeping it in world space
   vertex = mix(
     // This option keeps the image size in world space
-    vertex,
+    vertex + textAreaOrigin,
     // This option counters the scaling of the image on the screen keeping it a static size
-    (anchorToVertex + location) / labelScreenScale,
+    mix(
+      // NEVER mode
+      (anchorToVertex + location - textAreaAnchor) / labelScreenScale + textAreaOrigin + textAreaAnchor,
+      // BOUND_MAX mode
+      (anchorToVertex + location + textAreaOrigin) / labelScreenScale,
+      float(useScaleMode == 2.0)
+    ),
     // This is the flag determining if a scale mode should be applied to the vertex
-    useScaleMode
+    float(useScaleMode != 1.0)
   );
 
   // --Texture and Color

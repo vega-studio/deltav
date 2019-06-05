@@ -19,7 +19,7 @@ import {
   Vec2
 } from "../../util/vector";
 import { BorderInstance, BorderLayer } from "../rectangle";
-import { ScaleMode } from "../types";
+import { AnchorType, ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
 import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
@@ -30,6 +30,49 @@ import {
   TextAreaLabel,
   WordWrap
 } from "./text-area-instance";
+
+/** CalculatesanchorCalulater the ancho position of a textArea based on AnchorType */
+const anchorCalulater: {
+  [key: number]: (textArea: TextAreaInstance) => Vec2;
+} = {
+  [AnchorType.TopLeft]: (_textArea: TextAreaInstance) => [0, 0],
+  [AnchorType.TopMiddle]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth / 2.0,
+    0.0
+  ],
+  [AnchorType.TopRight]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth,
+    0.0
+  ],
+  [AnchorType.MiddleLeft]: (textArea: TextAreaInstance) => [
+    0.0,
+    textArea.maxHeight / 2.0
+  ],
+  [AnchorType.Middle]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth / 2.0,
+    textArea.maxHeight / 2.0
+  ],
+  [AnchorType.MiddleRight]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth,
+    textArea.maxHeight / 2.0
+  ],
+  [AnchorType.BottomLeft]: (textArea: TextAreaInstance) => [
+    0.0,
+    textArea.maxHeight
+  ],
+  [AnchorType.BottomMiddle]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth / 2.0,
+    textArea.maxHeight
+  ],
+  [AnchorType.BottomRight]: (textArea: TextAreaInstance) => [
+    textArea.maxWidth,
+    textArea.maxHeight
+  ],
+  [AnchorType.Custom]: (textArea: TextAreaInstance) => [
+    textArea.anchor.x || 0.0,
+    textArea.anchor.y || 0.0
+  ]
+};
 
 /**
  * Get the offsetY of a word by comparing offsetYs of all its letters. So we can put the word to the
@@ -365,7 +408,8 @@ export class TextAreaLayer<
         "origin",
         "padding",
         "text",
-        "wordWrap"
+        "wordWrap",
+        "textAreaOrigin"
       ]);
     }
 
@@ -382,7 +426,8 @@ export class TextAreaLayer<
       origin: originId,
       padding: paddingId,
       text: textId,
-      wordWrap: wordWrapId
+      wordWrap: wordWrapId,
+      textAreaOrigin: textAreaOriginId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -453,6 +498,21 @@ export class TextAreaLayer<
 
           if (changed[letterSpacingId] !== undefined) {
             this.updateLetterSpacing(instance);
+          }
+
+          if (changed[textAreaOriginId] !== undefined) {
+            const topPadding = instance.padding[0];
+            const leftPadding = instance.padding[3] || 0;
+            instance.labels.forEach(label => {
+              if (label instanceof LabelInstance) {
+                label.textAreaOrigin = [
+                  instance.origin[0] + leftPadding,
+                  instance.origin[1] + topPadding
+                ];
+              }
+            });
+
+            this.layoutLabels(instance);
           }
 
           break;
@@ -591,8 +651,8 @@ export class TextAreaLayer<
     const leftPadding = instance.padding[3] || 0;
     const maxWidth = instance.maxWidth - leftPadding - rightPadding;
     const maxHeight = instance.maxHeight - topPadding - bottomPadding;
-    const originX = instance.origin[0] + leftPadding;
-    const originY = instance.origin[1] + topPadding;
+    const originX = instance.origin[0];
+    const originY = instance.origin[1];
 
     label.active = false;
 
@@ -604,8 +664,10 @@ export class TextAreaLayer<
       color: instance.color,
       fontSize: instance.fontSize,
       letterSpacing: instance.letterSpacing,
-      origin: [originX + currentX, originY + currentY + offsetY1],
-      text: text1
+      origin: [currentX + leftPadding, currentY + topPadding + offsetY1],
+      text: text1,
+      textAreaOrigin: [originX, originY],
+      textAreaAnchor: anchorCalulater[instance.anchor.type](instance)
     });
 
     label1.size = [glyphWidths[index], label.size[1]];
@@ -642,8 +704,10 @@ export class TextAreaLayer<
             color: instance.color,
             fontSize: instance.fontSize,
             letterSpacing: instance.letterSpacing,
-            origin: [originX + currentX, originY + currentY + offsetY],
-            text
+            origin: [currentX + leftPadding, currentY + topPadding + offsetY],
+            text,
+            textAreaOrigin: [originX, originY],
+            textAreaAnchor: anchorCalulater[instance.anchor.type](instance)
           });
 
           label3.size = [
@@ -665,8 +729,10 @@ export class TextAreaLayer<
             color: instance.color,
             fontSize: instance.fontSize,
             letterSpacing: instance.letterSpacing,
-            origin: [originX + currentX, originY + currentY + offsetY2],
-            text: text2
+            origin: [currentX + leftPadding, currentY + topPadding + offsetY2],
+            text: text2,
+            textAreaOrigin: [originX, originY],
+            textAreaAnchor: anchorCalulater[instance.anchor.type](instance)
           });
 
           label2.size = [
@@ -845,10 +911,9 @@ export class TextAreaLayer<
         fontScale,
         scaling,
         size: [instance.maxWidth + 2 * borderWidth, borderWidth],
-        position: [
-          instance.origin[0] - borderWidth,
-          instance.origin[1] - borderWidth
-        ]
+        textAreaOrigin: instance.origin,
+        textAreaAnchor: anchorCalulater[instance.anchor.type](instance),
+        position: [-borderWidth, -borderWidth]
       });
 
       const leftBorder: BorderInstance = new BorderInstance({
@@ -856,10 +921,9 @@ export class TextAreaLayer<
         fontScale,
         scaling,
         size: [borderWidth, instance.maxHeight + 2 * borderWidth],
-        position: [
-          instance.origin[0] - borderWidth,
-          instance.origin[1] - borderWidth
-        ]
+        textAreaOrigin: instance.origin,
+        textAreaAnchor: anchorCalulater[instance.anchor.type](instance),
+        position: [-borderWidth, -borderWidth]
       });
 
       const rightBorder: BorderInstance = new BorderInstance({
@@ -867,10 +931,9 @@ export class TextAreaLayer<
         fontScale,
         scaling,
         size: [borderWidth, instance.maxHeight + 2 * borderWidth],
-        position: [
-          instance.origin[0] + instance.maxWidth,
-          instance.origin[1] - borderWidth
-        ]
+        textAreaOrigin: instance.origin,
+        textAreaAnchor: anchorCalulater[instance.anchor.type](instance),
+        position: [instance.maxWidth, -borderWidth]
       });
 
       const bottomBorder: BorderInstance = new BorderInstance({
@@ -878,10 +941,9 @@ export class TextAreaLayer<
         fontScale,
         scaling,
         size: [instance.maxWidth + 2 * borderWidth, borderWidth],
-        position: [
-          instance.origin[0] - borderWidth,
-          instance.origin[1] + instance.maxHeight
-        ]
+        textAreaOrigin: instance.origin,
+        textAreaAnchor: anchorCalulater[instance.anchor.type](instance),
+        position: [-borderWidth, instance.maxHeight]
       });
 
       this.providers.borders.add(topBorder);
@@ -909,8 +971,10 @@ export class TextAreaLayer<
     const leftPadding = instance.padding[3] || 0;
     const maxWidth = instance.maxWidth - leftPadding - rightPadding;
     const maxHeight = instance.maxHeight - topPadding - bottomPadding;
-    const originX = instance.origin[0] + leftPadding;
-    const originY = instance.origin[1] + topPadding;
+
+    const originX = instance.origin[0];
+    const originY = instance.origin[1];
+
     let spaceWidth = 0;
 
     if (instance.spaceWidth) {
@@ -942,6 +1006,7 @@ export class TextAreaLayer<
         const offsetY = getOffsetY(label.text, glyphToOffsetY);
         const glyphWidths = getGlyphWidths(label, instance, kerningRequest);
 
+        // label.textAreaOrigin = [originX, originY];
         // Make sure all the labels are within maxHeight and first letter is not bigger than maxWidth
         if (
           currentY + instance.lineHeight <= maxHeight &&
@@ -949,7 +1014,14 @@ export class TextAreaLayer<
         ) {
           // Whole label can be put within maxWidth
           if (currentX + width <= maxWidth) {
-            label.origin = [originX + currentX, originY + currentY + offsetY];
+            label.textAreaOrigin = [originX, originY];
+            label.textAreaAnchor = anchorCalulater[instance.anchor.type](
+              instance
+            );
+            label.origin = [
+              currentX + leftPadding,
+              currentY + topPadding + offsetY
+            ];
             currentX += width + spaceWidth;
 
             if (currentX >= maxWidth) {
@@ -974,9 +1046,13 @@ export class TextAreaLayer<
               currentY += instance.lineHeight;
 
               if (currentY + instance.lineHeight <= maxHeight) {
+                label.textAreaOrigin = [originX, originY];
+                label.textAreaAnchor = anchorCalulater[instance.anchor.type](
+                  instance
+                );
                 label.origin = [
-                  originX + currentX,
-                  originY + currentY + offsetY
+                  currentX + leftPadding,
+                  currentY + topPadding + offsetY
                 ];
                 currentX += label.getWidth() + spaceWidth;
               } else {
@@ -1024,9 +1100,13 @@ export class TextAreaLayer<
                   if (currentY + instance.lineHeight < maxHeight) {
                     // Put label with in the line
                     if (currentX + label.getWidth() <= maxWidth) {
+                      label.textAreaOrigin = [originX, originY];
+                      label.textAreaAnchor = anchorCalulater[
+                        instance.anchor.type
+                      ](instance);
                       label.origin = [
-                        originX + currentX,
-                        originY + currentY + offsetY
+                        currentX + leftPadding,
+                        currentY + topPadding + offsetY
                       ];
 
                       currentX += label.getWidth() + spaceWidth;
@@ -1204,6 +1284,10 @@ export class TextAreaLayer<
    */
   updateLabels(instance: T) {
     let currentLabels = this.areaToLabels.get(instance);
+    const topPadding = instance.padding[0];
+    const leftPadding = instance.padding[3] || 0;
+    const originX = instance.origin[0] + leftPadding;
+    const originY = instance.origin[1] + topPadding;
 
     if (!currentLabels) {
       currentLabels = [];
@@ -1247,6 +1331,8 @@ export class TextAreaLayer<
             letterSpacing: instance.letterSpacing,
             origin: position,
             text: word,
+            textAreaOrigin: [originX, originY],
+            textAreaAnchor: anchorCalulater[instance.anchor.type](instance),
             onReady: this.handleLabelReady
           });
 

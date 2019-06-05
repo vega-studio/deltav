@@ -11,14 +11,14 @@ void main() {
   vec2 pushOut = normals * glyphSize * fontScale;
 
   float vx = mix(
-    (origin.x + padding.x - anchor.x + offset.x + pushOut.x),
-    (origin.x + padding.x - anchor.x + offset.x + pushOut.x) / scaleBy,
+    (textAreaOrigin.x + origin.x + padding.x - anchor.x + offset.x + pushOut.x),
+    (textAreaOrigin.x + origin.x + padding.x - anchor.x + offset.x + pushOut.x) / scaleBy,
     float(scale.x >= maxScale)
   );
 
   float vy = mix(
-    (origin.y + padding.y - anchor.y + offset.y + pushOut.y),
-    (origin.y + padding.y - anchor.y + offset.y + pushOut.y) / scaleBy,
+    (textAreaOrigin.y + origin.y + padding.y - anchor.y + offset.y + pushOut.y),
+    (textAreaOrigin.y + origin.y + padding.y - anchor.y + offset.y + pushOut.y) / scaleBy,
     float(scale.y >= maxScale)
   );
 

@@ -1,5 +1,6 @@
 import * as datGUI from "dat.gui";
 import {
+  AnchorType,
   BasicCameraController,
   BasicSurface,
   ChartCamera,
@@ -263,6 +264,12 @@ export class TextAreaDemo extends BaseDemo {
       const x = i % 4;
       const y = Math.floor(i / 4);
       const textArea = new TextAreaInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.TopRight,
+          x: 0,
+          y: 0
+        },
         origin: [this.parameters.maxWidth * x, this.parameters.maxHeight * y],
         color: [
           this.parameters.color[0],
@@ -294,6 +301,12 @@ export class TextAreaDemo extends BaseDemo {
     this.textAreas[0].maxWidth = 420;
 
     const textArea = new TextAreaInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.MiddleLeft,
+        x: 0,
+        y: 0
+      },
       origin: [this.parameters.maxWidth * 2, this.parameters.maxHeight * 1],
       color: [
         this.parameters.color[0],

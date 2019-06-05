@@ -1,5 +1,5 @@
-import { Vec2 } from "src/util";
 import { observable } from "../../instance-provider";
+import { Vec2 } from "../../util";
 import {
   IRectangleInstanceOptions,
   RectangleInstance

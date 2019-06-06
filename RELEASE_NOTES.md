@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.31.3
+
+* `(FIXED)` Circles can now render as quads or points. Points perform way better in many cases but have rendering limitations. For this reason, the points mode will be the optional mode rather than the default.
+
 ## 1.31.2
 
 * `(FIXED)` Circles renders as POINTS now, thus improving performance a bit.

@@ -8,7 +8,9 @@ import {
   IProjection,
   IShaderInitialization,
   IUniform,
-  UniformSize
+  IVertexAttribute,
+  UniformSize,
+  VertexAttributeSize
 } from "../../types";
 import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
@@ -16,12 +18,6 @@ import { CircleInstance } from "./circle-instance";
 
 export interface ICircleLayerProps<T extends CircleInstance>
   extends ILayerProps<T> {
-  /** This sets the  */
-  fadeOutOversized?: number;
-  /** This sets a scaling factor for the circle's radius */
-  scaleFactor?(): number;
-  /** Opacity of the layer as a whole */
-  opacity?: number;
   /**
    * This is the properties that can toggle on animations.
    *
@@ -34,6 +30,20 @@ export interface ICircleLayerProps<T extends CircleInstance>
     radius?: IAutoEasingMethod<Vec>;
     color?: IAutoEasingMethod<Vec>;
   };
+  /** This sets a scaling factor for the circle's radius */
+  scaleFactor?(): number;
+  /** Opacity of the layer as a whole */
+  opacity?(): number;
+  /**
+   * When set, this causes the circles to be rendered utilizing the hardware POINTS mode. POINTS mode has limitations:
+   * Different GPUs have different MAX POINT SIZE values, so the points can only be rendered up to a certain size. Also
+   * points can have unexpected culling that occurs at the edge of the viewport.
+   *
+   * However, this mode has GREATLY improved performance when utilized correctly. So use for the correct situation, but
+   * beware it's weak 'points' <- this is a pun in the comments of this code base. <- this is me being over zealous in
+   * clarifying so the apostraphes don't lead to unecessary conclusions.
+   */
+  usePoints?: boolean;
 }
 
 /**
@@ -46,7 +56,6 @@ export class CircleLayer<
 > extends Layer<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
-    fadeOutOversized: -1,
     key: "",
     scaleFactor: () => 1
   };
@@ -91,17 +100,59 @@ export class CircleLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<CircleInstance> {
-    const scaleFactor = this.props.scaleFactor || (() => 1);
-    const animations = this.props.animate || {};
+    const {
+      animate = {},
+      scaleFactor = () => 1,
+      usePoints = false,
+      opacity = () => 1
+    } = this.props;
+
     const {
       center: animateCenter,
       radius: animateRadius,
       color: animateColor
-    } = animations;
+    } = animate;
+
+    const vertexToNormal: { [key: number]: number } = {
+      0: 1,
+      1: 1,
+      2: -1,
+      3: 1,
+      4: -1,
+      5: -1
+    };
+
+    const vertexToSide: { [key: number]: number } = {
+      0: -1,
+      1: -1,
+      2: -1,
+      3: 1,
+      4: 1,
+      5: 1
+    };
+
+    const vertexAttributes: IVertexAttribute[] = [
+      {
+        name: "normals",
+        size: VertexAttributeSize.TWO,
+        update: (vertex: number) => [
+          // Normal
+          vertexToNormal[vertex],
+          // The side of the quad
+          vertexToSide[vertex]
+        ]
+      }
+    ];
+
+    const vertexCount = 6;
 
     return {
-      drawMode: GLSettings.Model.DrawMode.POINTS,
-      fs: require("./circle-layer.fs"),
+      drawMode: usePoints
+        ? GLSettings.Model.DrawMode.POINTS
+        : GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+      fs: usePoints
+        ? require("./circle-layer-points.fs")
+        : require("./circle-layer.fs"),
       instanceAttributes: [
         {
           easing: animateCenter,
@@ -136,13 +187,14 @@ export class CircleLayer<
         {
           name: "layerOpacity",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [
-            this.props.opacity === undefined ? 1.0 : this.props.opacity
-          ]
+          update: (_uniform: IUniform) => [opacity()]
         }
       ],
-      vertexCount: 0,
-      vs: require("./circle-layer.vs")
+      vertexAttributes: usePoints ? undefined : vertexAttributes,
+      vertexCount: usePoints ? 0 : vertexCount,
+      vs: usePoints
+        ? require("./circle-layer-points.vs")
+        : require("./circle-layer.vs")
     };
   }
 

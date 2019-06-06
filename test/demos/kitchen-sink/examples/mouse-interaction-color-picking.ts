@@ -85,7 +85,7 @@ export class MouseInteractionColorPicking extends BaseExample {
         onMouseClick: this.handleCircleClick,
         onMouseOut: this.handleCircleOut,
         onMouseOver: this.handleCircleOver,
-        opacity: 0.5,
+        opacity: () => 0.5,
         picking: PickType.SINGLE,
         scaleFactor: () => 1
       }),

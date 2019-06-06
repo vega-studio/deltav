@@ -19,8 +19,8 @@ import {
   scale2,
   Vec2
 } from "src";
+import { SimpleEventHandler } from "../../../src/base-event-managers/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
-import { EventHandler } from "../../common/event-handler";
 
 const { random } = Math;
 
@@ -133,7 +133,7 @@ export class BasicDemo extends BaseDemo {
           camera: cameras.main,
           startView: ["default-view"]
         }),
-        clickScreen: new EventHandler({
+        clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction, _button: number) => {
             const target = e.target;
             this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
@@ -164,7 +164,8 @@ export class BasicDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0]
+                scaleFactor: () => cameras.main.scale[0],
+                usePoints: true
               })
             ]
           }

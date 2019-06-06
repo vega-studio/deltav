@@ -8,7 +8,7 @@ import {
 /**
  * This is a simple way to access the events executing on the chart.
  */
-export class EventHandler extends EventManager {
+export class SimpleEventHandler extends EventManager {
   constructor(handlers: Partial<EventManager>) {
     super();
     Object.assign(this, handlers);

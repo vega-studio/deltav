@@ -38,6 +38,8 @@ export interface IGlyphLayerOptions<T extends GlyphInstance>
   resourceKey?: string;
   /** This is the scaling strategy the glyph will use when text is involved. */
   scaleMode?: ScaleMode;
+  /** This indicates whether a glyph is in a textArea */
+  inTextArea?: boolean;
 }
 
 /**
@@ -170,26 +172,22 @@ export class GlyphLayer<
 
     switch (scaleMode) {
       case ScaleMode.BOUND_MAX: {
-        fs = require("./glyph-layer-bound-max.fs");
-        vs = require("./glyph-layer-bound-max.vs");
-        break;
-      }
-
-      case ScaleMode.TEXT_AREA_BOUND_MAX: {
-        fs = require("./text-area-layer-bound-max.fs");
-        vs = require("./text-area-layer-bound-max.vs");
+        fs = this.props.inTextArea
+          ? require("./text-area-layer-bound-max.fs")
+          : require("./glyph-layer-bound-max.fs");
+        vs = this.props.inTextArea
+          ? require("./text-area-layer-bound-max.vs")
+          : require("./glyph-layer-bound-max.vs");
         break;
       }
 
       case ScaleMode.NEVER: {
-        fs = require("./glyph-layer-never.fs");
-        vs = require("./glyph-layer-never.vs");
-        break;
-      }
-
-      case ScaleMode.TEXT_AREA_NEVER: {
-        fs = require("./text-area-layer-never.fs");
-        vs = require("./text-area-layer-never.vs");
+        fs = this.props.inTextArea
+          ? require("./glyph-layer-never.fs")
+          : require("./text-area-layer-never.fs");
+        vs = this.props.inTextArea
+          ? require("./text-area-layer-never.vs")
+          : require("./glyph-layer-never.vs");
         break;
       }
 

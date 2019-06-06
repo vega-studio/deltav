@@ -36,9 +36,5 @@ export enum ScaleMode {
   /** The image will scale to it's font size then stop growing */
   BOUND_MAX = 2,
   /** The image will alwyas retain it's font size on screen */
-  NEVER = 3,
-  /** The textArea will scale to max scale and then stop growing */
-  TEXT_AREA_BOUND_MAX = 4,
-  /** The textArea will always stay the same size */
-  TEXT_AREA_NEVER = 5
+  NEVER = 3
 }

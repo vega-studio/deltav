@@ -252,7 +252,7 @@ export class TextAreaDemo extends BaseDemo {
               textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
                 resourceKey: resources.font.key,
-                scaling: ScaleMode.TEXT_AREA_NEVER
+                scaling: ScaleMode.BOUND_MAX
               }),
               circles: createLayer(CircleLayer, {
                 data: providers.circles

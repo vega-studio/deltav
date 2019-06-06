@@ -12,13 +12,13 @@ void main() {
 
   float vx = mix(
     (textAreaOrigin.x + origin.x + padding.x - anchor.x + offset.x + pushOut.x),
-    (textAreaOrigin.x + origin.x + padding.x - anchor.x + offset.x + pushOut.x) / scaleBy,
+    textAreaAnchor.x + textAreaOrigin.x + (-textAreaAnchor.x + origin.x + padding.x - anchor.x + offset.x + pushOut.x) / scaleBy,
     float(scale.x >= maxScale)
   );
 
   float vy = mix(
     (textAreaOrigin.y + origin.y + padding.y - anchor.y + offset.y + pushOut.y),
-    (textAreaOrigin.y + origin.y + padding.y - anchor.y + offset.y + pushOut.y) / scaleBy,
+    textAreaAnchor.y + textAreaOrigin.y + (-textAreaAnchor.y + origin.y + padding.y - anchor.y + offset.y + pushOut.y) / scaleBy,
     float(scale.y >= maxScale)
   );
 

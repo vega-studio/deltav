@@ -353,13 +353,7 @@ export class TextAreaLayer<
   childLayers(): LayerInitializer[] {
     const animateLabel = this.props.animateLabel || {};
     const animateBorder = this.props.animateBorder || {};
-    let labelScaling = this.props.scaling;
-
-    if (this.props.scaling === ScaleMode.BOUND_MAX) {
-      labelScaling = ScaleMode.TEXT_AREA_BOUND_MAX;
-    } else if (this.props.scaling === ScaleMode.NEVER) {
-      labelScaling = ScaleMode.TEXT_AREA_NEVER;
-    }
+    const labelScaling = this.props.scaling;
 
     return [
       createLayer(LabelLayer, {
@@ -368,7 +362,8 @@ export class TextAreaLayer<
         data: this.providers.labels,
         key: `${this.id}.labels`,
         resourceKey: this.props.resourceKey,
-        scaleMode: labelScaling
+        scaleMode: labelScaling,
+        inTextArea: true
       }),
       createLayer(BorderLayer, {
         animate: {
@@ -897,15 +892,9 @@ export class TextAreaLayer<
         ? kerningRequest.fontMap.fontSource.size
         : instance.fontSize;
       const fontScale = instance.fontSize / fontSourceSize;
-
-      let scaling = this.props.scaling;
-      if (this.props.scaling === ScaleMode.TEXT_AREA_BOUND_MAX) {
-        scaling = ScaleMode.BOUND_MAX;
-      } else if (this.props.scaling === ScaleMode.TEXT_AREA_NEVER) {
-        scaling = ScaleMode.NEVER;
-      }
-
+      const scaling = this.props.scaling;
       const borderWidth = instance.borderWidth;
+
       const topBorder: BorderInstance = new BorderInstance({
         color: instance.color,
         fontScale,

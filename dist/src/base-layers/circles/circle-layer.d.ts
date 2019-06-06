@@ -5,14 +5,14 @@ import { Vec } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
 export interface ICircleLayerProps<T extends CircleInstance> extends ILayerProps<T> {
-    fadeOutOversized?: number;
-    scaleFactor?(): number;
-    opacity?: number;
     animate?: {
         center?: IAutoEasingMethod<Vec>;
         radius?: IAutoEasingMethod<Vec>;
         color?: IAutoEasingMethod<Vec>;
     };
+    scaleFactor?(): number;
+    opacity?(): number;
+    usePoints?: boolean;
 }
 export declare class CircleLayer<T extends CircleInstance, U extends ICircleLayerProps<T>> extends Layer<T, U> {
     static defaultProps: ICircleLayerProps<CircleInstance>;

@@ -1,5 +1,5 @@
 import { EventManager, IDragMetrics, IMouseInteraction, IWheelMetrics } from "src";
-export declare class EventHandler extends EventManager {
+export declare class SimpleEventHandler extends EventManager {
     constructor(handlers: Partial<EventManager>);
     handleMouseDown(_e: IMouseInteraction, _button: number): void;
     handleMouseUp(_e: IMouseInteraction, _button: number): void;

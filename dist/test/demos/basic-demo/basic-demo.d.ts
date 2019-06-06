@@ -1,7 +1,7 @@
 import * as datGUI from "dat.gui";
 import { BasicCameraController, BasicSurface, ChartCamera, CircleInstance, InstanceProvider, Vec2 } from "src";
+import { SimpleEventHandler } from "../../../src/base-event-managers/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
-import { EventHandler } from "../../common/event-handler";
 export declare class BasicDemo extends BaseDemo {
     circles: CircleInstance[];
     shakeTimer: number;
@@ -26,7 +26,7 @@ export declare class BasicDemo extends BaseDemo {
         main: ChartCamera;
     }, {
         main: BasicCameraController;
-        clickScreen: EventHandler;
+        clickScreen: SimpleEventHandler;
     }, {}>;
     init(): Promise<void>;
     makeCircle(): void;

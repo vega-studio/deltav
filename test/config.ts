@@ -3,6 +3,7 @@ import { BasicDemo } from "./demos/basic-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
+import { SandDanceDemo } from "./demos/sand-dance";
 import { TextAreaDemo } from "./demos/text-area-demo";
 import { TextDemo } from "./demos/text-demo";
 import { WordSandDemo } from "./demos/word-sand";
@@ -17,5 +18,6 @@ demos.set("nodes-edges", new NodesEdges());
 demos.set("word-sand", new WordSandDemo());
 demos.set("physics-demo", new PhysicsDemo());
 demos.set("kitchen-sink", new KitchenSink());
+demos.set("SandDance-demo", new SandDanceDemo());
 
 export const demoKeys = Array.from(demos.keys());

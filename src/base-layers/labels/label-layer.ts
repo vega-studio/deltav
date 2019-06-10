@@ -309,9 +309,7 @@ export class LabelLayer<
         "fontSize",
         "maxWidth",
         "maxScale",
-        "letterSpacing",
-        "textAreaOrigin",
-        "textAreaAnchor"
+        "letterSpacing"
       ]);
     }
 
@@ -324,9 +322,7 @@ export class LabelLayer<
       fontSize: fontSizeId,
       maxWidth: maxWidthId,
       maxScale: maxScaleId,
-      letterSpacing: letterSpacingId,
-      textAreaOrigin: textAreaOriginId,
-      textAreaAnchor: textAreaAnchorId
+      letterSpacing: letterSpacingId
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -384,17 +380,6 @@ export class LabelLayer<
             this.invalidateRequest(instance);
             this.layoutGlyphs(instance);
           }
-
-          if (changed[textAreaOriginId] !== undefined) {
-            this.invalidateRequest(instance);
-            this.layoutGlyphs(instance);
-          }
-
-          if (changed[textAreaAnchorId] !== undefined) {
-            this.invalidateRequest(instance);
-            this.layoutGlyphs(instance);
-          }
-
           break;
 
         case InstanceDiffType.INSERT:
@@ -544,9 +529,8 @@ export class LabelLayer<
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
       glyph.origin = copy2(instance.origin);
       glyph.padding = padding || [0, 0];
+
       glyph.maxScale = instance.maxScale;
-      glyph.textAreaOrigin = instance.textAreaOrigin;
-      glyph.textAreaAnchor = instance.textAreaAnchor;
     }
   }
 
@@ -646,9 +630,7 @@ export class LabelLayer<
           color: instance.color,
           origin: instance.origin,
           maxScale: instance.maxScale,
-          onReady: this.handleGlyphReady,
-          textAreaOrigin: instance.textAreaOrigin,
-          textAreaAnchor: instance.textAreaAnchor
+          onReady: this.handleGlyphReady
         });
 
         glyph.parentLabel = instance;

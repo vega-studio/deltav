@@ -46,10 +46,6 @@ export class GlyphInstance extends Instance {
   onReady?: (glyph: GlyphInstance) => void;
   /** This is populated as a result of character updates */
   request: IFontResourceRequest;
-  /** The origin of textArea where the glyph locates */
-  @observable textAreaOrigin: Vec2 = [0, 0];
-  /** The anchor of textArea where the glyph locates */
-  @observable textAreaAnchor: Vec2 = [0, 0];
 
   constructor(options: GlyphInstanceOptions) {
     super(options);
@@ -62,8 +58,6 @@ export class GlyphInstance extends Instance {
     this.padding = options.padding || this.padding;
     this.anchor = options.anchor || this.anchor;
     this.onReady = options.onReady;
-    this.textAreaOrigin = options.textAreaOrigin || this.textAreaOrigin;
-    this.textAreaAnchor = options.textAreaAnchor || this.textAreaAnchor;
   }
 
   /**

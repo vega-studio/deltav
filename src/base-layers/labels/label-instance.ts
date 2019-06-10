@@ -37,10 +37,6 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
   letterSpacing?: number;
   /** Event when the label is completely ready to render all of it's glyphs */
   onReady?(instance: LabelInstance): void;
-  /** Sets origin of textArea where the label is in */
-  textAreaOrigin?: Vec2;
-  /** Sets anchor of textArea where the label is in */
-  textAreaAnchor?: Vec2;
 }
 
 /**
@@ -105,10 +101,6 @@ export class LabelInstance extends Instance {
    * has happened.
    */
   truncatedText: string = "";
-  /** The origin of textArea where the label locates */
-  @observable textAreaOrigin: Vec2 = [0, 0];
-  /** The anchor of textArea where the label locates */
-  @observable textAreaAnchor: Vec2 = [0, 0];
 
   /** This is the anchor location relative to the label's render space */
   @observable
@@ -135,8 +127,6 @@ export class LabelInstance extends Instance {
     this.scale = options.scale || this.scale;
     this.text = options.text || this.text;
     this.letterSpacing = options.letterSpacing || this.letterSpacing;
-    this.textAreaOrigin = options.textAreaOrigin || this.textAreaOrigin;
-    this.textAreaAnchor = options.textAreaAnchor || this.textAreaAnchor;
 
     // Make sure the anchor is set to the appropriate location
     options.anchor && this.setAnchor(options.anchor);
@@ -152,6 +142,7 @@ export class LabelInstance extends Instance {
   setAnchor(anchor: Anchor) {
     const newAnchor = {
       padding: anchor.padding || 0,
+      paddingDirection: anchor.paddingDirection,
       type: anchor.type,
       x: anchor.x || 0,
       y: anchor.y || 0

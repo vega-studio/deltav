@@ -34,7 +34,7 @@ import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { ISceneOptions, LayerScene } from "./layer-scene";
-import { MouseEventManager } from "./mouse-event-manager";
+import { UserInputEventManager } from "./user-input-event-manager";
 import { ClearFlags, View } from "./view";
 
 /**
@@ -247,7 +247,7 @@ export class Surface {
   /** This is all of the layers in this manager by their id */
   layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
-  mouseManager: MouseEventManager;
+  mouseManager: UserInputEventManager;
   /** This is a target used to perform rendering our picking pass */
   pickingTarget: RenderTarget;
   /** This is the density the rendering renders for the surface */
@@ -1226,7 +1226,7 @@ export class Surface {
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer
-    this.mouseManager = new MouseEventManager(
+    this.mouseManager = new UserInputEventManager(
       this.context.canvas,
       this,
       eventManagers,

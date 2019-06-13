@@ -6,6 +6,6 @@ export * from "./layer-processing/generate-layer-material";
 export * from "./layer-processing/generate-layer-model";
 export * from "./layer-processing/inject-shader-io";
 export * from "./layer";
-export * from "./mouse-event-manager";
+export * from "./user-input-event-manager";
 export * from "./layer-scene";
 export * from "./view";

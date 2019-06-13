@@ -5,6 +5,7 @@ import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";
 import { TextDemo } from "./demos/text-demo";
+import { TouchDemo } from "./demos/touch-demo";
 import { WordSandDemo } from "./demos/word-sand";
 
 export const demos = new Map<string, BaseDemo>();
@@ -17,5 +18,6 @@ demos.set("nodes-edges", new NodesEdges());
 demos.set("word-sand", new WordSandDemo());
 demos.set("physics-demo", new PhysicsDemo());
 demos.set("kitchen-sink", new KitchenSink());
+demos.set("touch-demo", new TouchDemo());
 
 export const demoKeys = Array.from(demos.keys());

@@ -1,10 +1,10 @@
+import { SimpleEventHandler } from "src/base-event-managers/simple-event-handler";
 import { Bounds } from "../primitives/bounds";
-import { EventManager } from "../surface/event-manager";
 import {
   IDragMetrics,
   IMouseInteraction,
   IWheelMetrics
-} from "../surface/mouse-event-manager";
+} from "../surface/user-input-event-manager";
 import { View } from "../surface/view";
 import { IProjection } from "../types";
 import {
@@ -107,7 +107,7 @@ export interface IBasicCameraControllerOptions {
  * This provides some very basic common needs for a camera control system. This is not a total solution
  * for every scenario. This should just often handle most basic needs.
  */
-export class BasicCameraController extends EventManager {
+export class BasicCameraController extends SimpleEventHandler {
   /** Unique identifier of this controller */
   get uid() {
     return this._uid;
@@ -168,7 +168,7 @@ export class BasicCameraController extends EventManager {
   private startViewDidStart: boolean = false;
 
   constructor(options: IBasicCameraControllerOptions) {
-    super();
+    super({});
     if (options.bounds) {
       this.setBounds(options.bounds);
     }
@@ -627,20 +627,6 @@ export class BasicCameraController extends EventManager {
         this.camera.animation = this.cameraImmediateAnimation;
       }
     }
-  }
-
-  // These are the currently Unused responses for this controller
-  handleMouseOut(_e: IMouseInteraction) {
-    /*no-op*/
-  }
-  handleClick(_e: IMouseInteraction) {
-    /*no-op*/
-  }
-  handleMouseMove(_e: IMouseInteraction) {
-    /*no-op*/
-  }
-  handleMouseOver(_e: IMouseInteraction) {
-    /*no-op*/
   }
 
   /**

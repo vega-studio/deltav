@@ -1,15 +1,11 @@
+import { SimpleEventHandler } from "../../base-event-managers/simple-event-handler";
 import { IProjection, PickType } from "../../types";
-import { Vec2 } from "../../util";
-import { EventManager } from "../event-manager";
+import { isDefined, Vec2 } from "../../util";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
-import { IDragMetrics, IMouseInteraction } from "../mouse-event-manager";
 import { Surface } from "../surface";
+import { IDragMetrics, IMouseInteraction } from "../user-input-event-manager";
 import { View } from "../view";
-
-function isDefined<T>(val: T | null | undefined): val is T {
-  return Boolean(val);
-}
 
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions
@@ -19,7 +15,7 @@ function isDefined<T>(val: T | null | undefined): val is T {
  * In Summary: This is an adapter that takes in interactions to the views and injects those events into the layers associated with
  * the views so that the layers can translate the events to gestures.
  */
-export class LayerMouseEvents extends EventManager {
+export class LayerMouseEvents extends SimpleEventHandler {
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
   isOver = new Set<View>();
   /** This is the surface this manager is aiding with broadcasting events to layers */
@@ -34,7 +30,7 @@ export class LayerMouseEvents extends EventManager {
   surface: Surface;
 
   constructor(surface: Surface) {
-    super();
+    super({});
     this.surface = surface;
   }
 

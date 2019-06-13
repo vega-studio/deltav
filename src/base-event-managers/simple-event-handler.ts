@@ -1,9 +1,10 @@
+import { EventManager } from "../surface/event-manager";
 import {
-  EventManager,
   IDragMetrics,
   IMouseInteraction,
+  ITouchInteraction,
   IWheelMetrics
-} from "src";
+} from "../surface/user-input-event-manager";
 
 /**
  * This is a simple way to access the events executing on the chart.
@@ -43,6 +44,54 @@ export class SimpleEventHandler extends EventManager {
   }
 
   handleWheel(_e: IMouseInteraction, _wheel: IWheelMetrics): void {
+    /* No op */
+  }
+
+  handleTouchDown(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleTouchUp(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleTouchOut(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleTouchDrag(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleTap(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleDoubleTap(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleLongTouch(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleLongTap(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handlePinch(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleSpread(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleTouchRotate(_e: ITouchInteraction): void {
+    /* No op */
+  }
+
+  handleSwipe(_e: ITouchInteraction): void {
     /* No op */
   }
 }

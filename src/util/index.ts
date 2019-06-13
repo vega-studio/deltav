@@ -16,3 +16,4 @@ export * from "./quad-tree";
 export * from "./tracked-quad-tree";
 export * from "./reactive-diff";
 export * from "./shallow-compare";
+export * from "./common-filters";

@@ -23,6 +23,8 @@ import {
 import { BaseDemo } from "test/common/base-demo";
 import { DEFAULT_RESOURCES } from "test/types";
 
+import { Bin, BinType, BinValueType } from "./bin";
+
 export class SandDanceDemo extends BaseDemo {
   camera: ChartCamera;
 
@@ -173,19 +175,124 @@ export class SandDanceDemo extends BaseDemo {
     });
   }
 
+  getBinValues(numberValues: Set<number>, stringValues: Set<string>) {
+    const maxBinNumber = 6;
+    let binNum = 0;
+    let binValueType: string = "";
+
+    if (numberValues.size > 0) {
+      binNum = numberValues.size;
+      binValueType = "number";
+    } else if (stringValues.size > 0) {
+      binNum = stringValues.size;
+      binValueType = "string";
+    }
+
+    const bins: Bin[] = [];
+
+    if (binNum > 0 && binNum <= maxBinNumber) {
+      if (binValueType === "number") {
+        const valueArray = Array.from(numberValues);
+        valueArray.sort((a, b) => a - b);
+        for (let i = 0; i < valueArray.length; i++) {
+          const value = valueArray[i];
+          bins.push(
+            new Bin({
+              type: BinType.SINGLE,
+              valueType: BinValueType.NUMBER,
+              value
+            })
+          );
+        }
+      } else if (binValueType === "string") {
+        const valueArray = Array.from(stringValues);
+        valueArray.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < valueArray.length; i++) {
+          const value = valueArray[i];
+          bins.push(
+            new Bin({
+              type: BinType.SINGLE,
+              valueType: BinValueType.STRING,
+              value
+            })
+          );
+        }
+      }
+    } else {
+      if (binValueType === "number") {
+        const valueArray = Array.from(numberValues);
+        let minValue = valueArray[0];
+        let maxValue = valueArray[0];
+        numberValues.forEach(value => {
+          if (value > maxValue) maxValue = value;
+          if (value < minValue) minValue = value;
+        });
+
+        console.warn(`${minValue}  ${maxValue}`);
+
+        const binBasicWidth = Math.floor(
+          (maxValue + 1 - minValue) / maxBinNumber
+        );
+        const rest = maxValue + 1 - minValue - maxBinNumber * binBasicWidth;
+        let start = minValue;
+        for (let i = 0; i < maxBinNumber; i++) {
+          let binWidth = binBasicWidth;
+          if (i < rest) binWidth++;
+          bins.push(
+            new Bin({
+              type: BinType.RANGE,
+              valueType: BinValueType.NUMBER,
+              value: [start, start + binWidth - 1]
+            })
+          );
+          start += binWidth;
+        }
+      } else if (binValueType === "string") {
+        const valueArray = Array.from(stringValues);
+        let minValue = valueArray[0][0].toLocaleLowerCase().charCodeAt(0);
+        let maxValue = valueArray[0][0].toLocaleLowerCase().charCodeAt(0);
+        stringValues.forEach(value => {
+          const c = value[0].toLocaleLowerCase();
+          const cValue = c.charCodeAt(0);
+          if (cValue > maxValue) {
+            maxValue = cValue;
+          }
+          if (cValue < minValue) {
+            minValue = cValue;
+          }
+        });
+
+        const binBasicWidth = Math.floor(
+          (maxValue + 1 - minValue) / maxBinNumber
+        );
+        const rest = maxValue + 1 - minValue - maxBinNumber * binBasicWidth;
+        let start = minValue;
+        for (let i = 0; i < maxBinNumber; i++) {
+          let binWidth = binBasicWidth;
+          if (i < rest) binWidth++;
+
+          bins.push(
+            new Bin({
+              type: BinType.RANGE,
+              valueType: BinValueType.STRING,
+              value: [
+                String.fromCharCode(start),
+                String.fromCharCode(start + binWidth - 1)
+              ]
+            })
+          );
+          start += binWidth;
+        }
+      }
+    }
+
+    return bins;
+  }
+
   buildGraph() {
     const file = require("./data.json");
     const totalNum = file.length;
     const keys: string[] = [];
-
-    // get keys
-    if (totalNum > 0) {
-      for (const key in file[0]) {
-        keys.push(key);
-      }
-    }
-
-    console.warn("keys", keys);
 
     // getKeys value and create Instance
     const array = [];
@@ -199,8 +306,16 @@ export class SandDanceDemo extends BaseDemo {
     const numberValues: Set<number> = new Set<number>();
     const stringValues: Set<string> = new Set<string>();
 
-    const key = keys[2];
+    // get keys
+    if (totalNum > 0) {
+      for (const key in file[0]) {
+        keys.push(key);
+      }
+    }
 
+    const key = keys[0];
+
+    // Create the rectangleInstances
     for (let i = 0; i < file.length; i++) {
       const element = file[i];
       array.push(element);
@@ -213,63 +328,124 @@ export class SandDanceDemo extends BaseDemo {
 
       const rec = new RectangleInstance({
         depth: 0,
-        // position: [0, 0],
         size: [10, 10],
         scaling: ScaleMode.ALWAYS,
         color: this.parameters.color
       });
 
       this.providers.rectangles.add(rec);
+      this.rectangles.push(rec);
 
       idToRectangle.set(element.id, rec);
     }
 
-    const origin: Vec2 = [100, 800];
-    const chartWidth: number = 800;
+    const origin: Vec2 = [10, 800];
+    const chartWidth: number = 1200;
     const chartHeight: number = 600;
 
-    // NEED a way to determine binNum
-    const binNum = stringValues.size;
-
+    const bins = this.getBinValues(numberValues, stringValues);
+    const binNum = bins.length;
     const binWidth = chartWidth / binNum;
-    const rowNum: number = 8;
+    const rowNum: number = Math.floor(binWidth / 11);
 
-    const valueToBinIndex: Map<string, number> = new Map<string, number>();
-    const values: string[] = [];
-    stringValues.forEach(value => values.push(value));
-    values.forEach((element, i) => {
-      valueToBinIndex.set(element, i);
-    });
+    // Sorting based on value type
+    if (stringValues.size > 0) {
+      array.sort((a, b) => a[key].localeCompare(b[key]));
+    }
 
-    array.sort((a, b) => a[key].localeCompare(b[key]));
+    if (numberValues.size > 0) {
+      array.sort((a, b) => a[key] - b[key]);
+    }
 
-    let preBin: string = "";
-    let binIndex = -1;
+    // bins
+    this.layoutBins(binNum, binWidth, origin);
+
+    // Rectangles
+    this.layoutRectangles(
+      bins,
+      array,
+      key,
+      binWidth,
+      rowNum,
+      origin,
+      idToRectangle
+    );
+
+    // lines
+    this.layoutLines(origin, chartWidth, chartHeight);
+
+    // labels
+    this.layoutLabels(bins, origin, binWidth);
+  }
+
+  layoutBins(binNum: number, binWidth: number, origin: [number, number]) {
+    for (let i = 0; i < binNum; i++) {
+      const binRec = new RectangleInstance({
+        depth: 0,
+        position: [origin[0] + binWidth * i, origin[1] + 20],
+        size: [binWidth - 5, 20],
+        scaling: ScaleMode.ALWAYS,
+        color: [0.5, 0.5, 0.5, 1]
+      });
+
+      this.binToRectangles.set(binRec, []);
+
+      this.providers.bins.add(binRec);
+
+      this.binRectangles.push(binRec);
+    }
+  }
+
+  layoutRectangles(
+    bins: Bin[],
+    array: any[],
+    key: number | string,
+    binWidth: number,
+    rowNum: number,
+    origin: [number, number],
+    idToRectangle: Map<number, RectangleInstance>
+  ) {
+    let curIndex = 0;
+    let currentBin = bins[curIndex];
+    let currentBinRec = this.binRectangles[curIndex];
+
     let currentX = 0;
     let currentY = 0;
     let rowIndex = 0;
 
+    // layout Rectangles
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
       const rec = idToRectangle.get(element.id);
 
       if (rec) {
-        if (element[key] !== preBin) {
-          preBin = element[key];
-          binIndex++;
+        const keyValue = element[key];
+
+        while (curIndex < bins.length && !currentBin.containsValue(keyValue)) {
+          curIndex++;
+          currentBin = bins[curIndex];
+          currentBinRec = this.binRectangles[curIndex];
 
           rowIndex = 0;
-          currentX = binWidth * binIndex;
+          currentX = binWidth * curIndex;
           currentY = 0;
+
+          // console.warn(currentBin.value);
         }
 
         rec.position = [origin[0] + currentX, origin[1] - currentY];
+
+        const list = this.binToRectangles.get(currentBinRec);
+        if (list) {
+          list.push(rec);
+          this.binToRectangles.set(currentBinRec, list);
+        }
 
         rowIndex++;
 
         if (rowIndex >= rowNum) {
           rowIndex = 0;
-          currentX = binWidth * binIndex;
+          currentX = binWidth * curIndex;
           currentY += 11;
         } else {
           currentX += 11;
@@ -278,7 +454,49 @@ export class SandDanceDemo extends BaseDemo {
     }
   }
 
+  layoutLines(
+    origin: [number, number],
+    chartWidth: number,
+    chartHeight: number
+  ) {
+    this.providers.lines.add(
+      new EdgeInstance({
+        start: [origin[0], origin[1] + 10],
+        end: [origin[0] + chartWidth, origin[1] + 10]
+      })
+    );
+
+    this.providers.lines.add(
+      new EdgeInstance({
+        start: [origin[0], origin[1] + 10],
+        end: [origin[0], origin[1] - chartHeight + 10]
+      })
+    );
+  }
+
+  layoutLabels(bins: Bin[], origin: [number, number], binWidth: number) {
+    for (let i = 0; i < bins.length; i++) {
+      const bin = bins[i];
+      let labelText = "";
+      if (bin.type === BinType.SINGLE) {
+        labelText = bin.value.toString();
+      } else {
+        if (typeof bin.value === "object") {
+          labelText = `${bin.value[0]} - ${bin.value[1]}`;
+        }
+      }
+      const label = new LabelInstance({
+        text: labelText,
+        color: [1, 1, 1, 1],
+        origin: [origin[0] + binWidth * i, origin[1] + 40],
+        fontSize: 24
+      });
+      this.providers.labels.add(label);
+    }
+  }
+
   async init() {
+    console.warn(typeof [1, 1]);
     this.buildGraph();
     /*const totalNum = 1000;
 

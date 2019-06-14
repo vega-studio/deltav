@@ -14,12 +14,13 @@ import {
   EasingUtil,
   IMouseInteraction,
   InstanceProvider,
+  ITouchInteraction,
   length2,
   nextFrame,
   scale2,
   Vec2
 } from "src";
-import { SimpleEventHandler } from "../../../src/base-event-managers/simple-event-handler";
+import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
 
 const { random } = Math;
@@ -136,7 +137,13 @@ export class BasicDemo extends BaseDemo {
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction, _button: number) => {
             const target = e.target;
-            this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
+            this.moveToLocation(target.view.screenToWorld(e.screen.position));
+          },
+          handleTap: (e: ITouchInteraction) => {
+            const touch = e.touches[0];
+            this.moveToLocation(
+              touch.target.view.screenToWorld(touch.screen.position)
+            );
           }
         })
       }),

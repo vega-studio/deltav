@@ -388,7 +388,7 @@ export class GLProxy {
 
     // We now delete any uniforms that are not matched between material and program as they are not needed
     // and will just be lingering unused clutter.
-    const uniformToRemove = new Set();
+    const uniformToRemove = new Set<string>();
 
     Object.keys(material.uniforms).forEach(name => {
       if (!usedUniforms.has(name)) {

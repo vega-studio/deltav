@@ -1,10 +1,10 @@
-import { SimpleEventHandler } from "../../base-event-managers/simple-event-handler";
+import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { IMouseInteraction } from "../../event-management/types";
 import { IProjection, PickType } from "../../types";
 import { isDefined, Vec2 } from "../../util";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
 import { Surface } from "../surface";
-import { IDragMetrics, IMouseInteraction } from "../user-input-event-manager";
 import { View } from "../view";
 
 /**
@@ -48,7 +48,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
     }
 
     // Now retrieve and convert each view under the mouse to the scene view it coincides with
-    return e.viewsUnderMouse
+    return e.target.views
       .map(viewItem => viewByViewId.get(viewItem.view.id))
       .filter(isDefined);
   }
@@ -57,8 +57,8 @@ export class LayerMouseEvents extends SimpleEventHandler {
     // This is the mouse position for the provided view in view space
     const viewMouseByViewId = new Map<string, Vec2>();
 
-    for (const viewItem of e.viewsUnderMouse) {
-      viewMouseByViewId.set(viewItem.view.id, viewItem.mouse);
+    for (const viewItem of e.target.views) {
+      viewMouseByViewId.set(viewItem.view.id, viewItem.position);
     }
 
     return viewMouseByViewId;
@@ -70,7 +70,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
     });
   }
 
-  handleDrag(e: IMouseInteraction, _drag: IDragMetrics) {
+  handleDrag(e: IMouseInteraction) {
     this.handleInteraction(e, (layer, view, mouse) =>
       layer.interactions.handleMouseDrag(view, mouse)
     );
@@ -113,7 +113,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
   handleMouseOut(e: IMouseInteraction) {
     // Get a lookup of a view id to the mouse position in the view
     const viewMouseByViewId = this.getMouseByViewId(e);
-    const screen = e.screen.mouse;
+    const screen = e.screen.position;
 
     // All views that are moused over should no longer be considered over and broadcast a mouse out
     this.isOver.forEach(view => {
@@ -132,8 +132,8 @@ export class LayerMouseEvents extends SimpleEventHandler {
   handleMouseMove(e: IMouseInteraction) {
     if (this.surface) {
       this.surface.updateColorPickRange(
-        e.screen.mouse,
-        e.viewsUnderMouse.map(v => v.view)
+        e.screen.position,
+        e.target.views.map(v => v.view)
       );
     }
 
@@ -144,7 +144,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
     // Get a lookup of a view id to the mouse position in the view
     const viewMouseByViewId = this.getMouseByViewId(e);
     // Get the position of the mouse on the screen
-    const screen = e.screen.mouse;
+    const screen = e.screen.position;
 
     // For quick lookups map all of the current SceneViews that are over
     const currentSceneViews = new Set<View>();

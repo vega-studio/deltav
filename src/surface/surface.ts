@@ -1,3 +1,5 @@
+import { EventManager } from "../event-management/event-manager";
+import { UserInputEventManager } from "../event-management/user-input-event-manager";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
@@ -27,14 +29,12 @@ import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { waitForFrame } from "../util/waitForFrame";
 import { BaseIOSorting } from "./base-io-sorting";
-import { EventManager } from "./event-manager";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { ISceneOptions, LayerScene } from "./layer-scene";
-import { UserInputEventManager } from "./user-input-event-manager";
 import { ClearFlags, View } from "./view";
 
 /**

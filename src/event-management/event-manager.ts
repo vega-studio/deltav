@@ -1,19 +1,14 @@
 import { Bounds } from "../primitives";
+import { View } from "../surface/view";
 import { IProjection } from "../types";
-import {
-  IDragMetrics,
-  IMouseInteraction,
-  ITouchInteraction,
-  IWheelMetrics,
-  UserInputEventManager
-} from "./user-input-event-manager";
-import { View } from "./view";
+import { IMouseInteraction, ITouchInteraction, IWheelMetrics } from "./types";
+import { UserInputEventManager } from "./user-input-event-manager";
 
 /**
  * Classes can extend this and override the methods to respond to events.
  */
 export abstract class EventManager {
-  private mouseManager: UserInputEventManager;
+  private userInputManager: UserInputEventManager;
 
   // MOUSE EVENTS
 
@@ -23,7 +18,7 @@ export abstract class EventManager {
   abstract handleMouseOut(e: IMouseInteraction): void;
   abstract handleMouseMove(e: IMouseInteraction): void;
   abstract handleClick(e: IMouseInteraction, button: number): void;
-  abstract handleDrag(e: IMouseInteraction, drag: IDragMetrics): void;
+  abstract handleDrag(e: IMouseInteraction): void;
   abstract handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
 
   // TOUCH EVENTS
@@ -32,8 +27,15 @@ export abstract class EventManager {
   abstract handleTouchDown(e: ITouchInteraction): void;
   /** Handles when a touch is no longer interacting with the screen */
   abstract handleTouchUp(e: ITouchInteraction): void;
-  /** Handles when an existing touch starts dragging across the screen */
+  /** Handles when an existing touch slides off of it's start view. */
   abstract handleTouchOut(e: ITouchInteraction): void;
+  /**
+   * Handles when the system nukes your touch whether you like it or not. Some examples of when this 'might' happen:
+   * Hand gestures in iOS Safari that causes the window to be closed or open up multitasking in some fashion.
+   * Basically, more and more convenience gestures in the OS has more and more potential to kill your touches.
+   * So make sure you are using this.
+   */
+  abstract handleTouchCancelled(e: ITouchInteraction): void;
 
   /** Handles when a touch is dragged across the screen */
   abstract handleTouchDrag(e: ITouchInteraction): void;
@@ -58,21 +60,23 @@ export abstract class EventManager {
    * This retrieves the projections for the view specified by the provided viewId.
    */
   getProjection(viewId: string): IProjection | null {
-    return this.mouseManager.getView(viewId);
+    return this.userInputManager.getView(viewId);
   }
 
   /**
    * This retrieves the actual view for the view specified by the provided viewId.
    */
   getView(viewId: string): View | null {
-    return (this.mouseManager && this.mouseManager.getView(viewId)) || null;
+    return (
+      (this.userInputManager && this.userInputManager.getView(viewId)) || null
+    );
   }
 
   /**
    * This retrieves the screen bounds for the view specified by the provided viewId.
    */
   getViewScreenBounds(viewId: string): Bounds<View> | null {
-    const view = this.mouseManager.getView(viewId);
+    const view = this.userInputManager.getView(viewId);
 
     if (view) {
       return view.screenBounds;
@@ -85,7 +89,7 @@ export abstract class EventManager {
    * This is used internally which provides the parent MouseEventManager via the param mouseManager for this
    * EventManager.
    */
-  setMouseManager(mouseManager: UserInputEventManager) {
-    this.mouseManager = mouseManager;
+  setUserInputManager(mouseManager: UserInputEventManager) {
+    this.userInputManager = mouseManager;
   }
 }

@@ -1,4 +1,7 @@
 import { Bounds } from "../primitives";
+import { LayerScene } from "../surface/layer-scene";
+import { Surface } from "../surface/surface";
+import { View } from "../surface/view";
 import {
   add2,
   ChartCamera,
@@ -13,12 +16,20 @@ import { Camera } from "../util/camera";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
-import { LayerScene } from "./layer-scene";
-import { Surface } from "./surface";
-import { View } from "./view";
+import {
+  IMouseInteraction,
+  IMouseMetrics,
+  IMultiTouchInteraction,
+  IMultiTouchMetrics,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+  ITouchMetrics,
+  IWheelMetrics
+} from "./types";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
+const VALID_TAP_DELAY = 200;
 
 const emptyView: View = new View(
   new LayerScene(undefined, { key: "error", layers: [], views: [] }),
@@ -33,214 +44,6 @@ const emptyView: View = new View(
 emptyView.fitViewtoViewport(
   new Bounds({ x: 0, y: 0, width: 100, height: 100 })
 );
-
-/**
- * This represents an interaction with the Layer Surface. It provides mouse metrics with how the mouse
- * interacts with the views below it.
- */
-export interface IMouseInteraction {
-  /** When present indicates any relevant button codes used during a click event */
-  button?: number;
-  /** Metrics of the interaction in screen space */
-  screen: {
-    mouse: Vec2;
-  };
-  /** The View the mouse was 'down' on */
-  start?: {
-    mouse: Vec2;
-    view: View;
-  };
-  /** The View Immediately underneath the mouse */
-  target: {
-    mouse: Vec2;
-    view: View;
-  };
-  /** This is populated with ALL of the views underneath the mouse */
-  viewsUnderMouse: {
-    /** The mouse's location in the views coordinate space */
-    mouse: Vec2;
-    /** The view that is interacted with */
-    view: View;
-  }[];
-}
-
-export interface IDragMetrics {
-  /** Drag metrics in screen space */
-  screen: {
-    /** The start position of the drag where the mouse down first occurred */
-    start: Vec2;
-    /** The previous position of the mouse last frame */
-    previous: Vec2;
-    /** The current position the mouse is located for this frame */
-    current: Vec2;
-    /** The change in position from last frame to this frame */
-    delta: Vec2;
-  };
-}
-
-export interface IWheelMetrics {
-  wheel: [number, number];
-}
-
-/**
- * This is metrics measured between two touches
- */
-export interface ITouchRelation {
-  /** The direction to the other touch */
-  direction: Vec2;
-  /** The current distance to the other touch */
-  distance: number;
-  /** The id of the other touch */
-  id: number;
-}
-
-/**
- * This is the information of a touch for a given frame.
- */
-export interface ITouchFrame {
-  /** This is the location or delta location of the touch for this frame */
-  location: Vec2;
-  /** This is the direction from the start touch frame */
-  direction: Vec2;
-  /** This is the metrics or delta metrics of the touch relative to the other touches for the frame */
-  relations: Map<number, ITouchRelation>;
-}
-
-/**
- * Metrics calculated and stored per touch
- */
-export interface ITouchMetrics {
-  /** Flag storing whether a touch is still eligible to register a tap event */
-  canTap: boolean;
-  /** The current position of the touch on the screen */
-  currentPosition: Vec2;
-  /** The change in position the touch has experienced from last event to this event */
-  deltaPosition: Vec2;
-  /** The location of the touch from it's previous event */
-  previousPosition: Vec2;
-  /** The time stamp this touch began */
-  startTime: number;
-  /** The position this touch started */
-  start: Vec2;
-  /**
-   * The start position of the touch relative to other touches. When a new touch is down, all of the other touches
-   * register their current position as a new starting position relative to when that touch was down.
-   */
-  startRelative: Map<ITouchMetrics, Vec2>;
-  /** The beginning view of the touch */
-  startView: View | undefined;
-  /** The base touch object making this metric */
-  touch: Touch;
-}
-
-/**
- * Metrics calculated for multitouch information
- */
-export interface IMultiTouchMetrics {
-  /**
-   * The average distance increase/decrease all touches are from the center present from spreading or pinching gesture
-   * from previous event to this event.
-   */
-  averageSpreadDelta: number;
-  /**
-   * The change in the central point as all fingers migrate from one location to another from previous event to
-   * this event.
-   */
-  centerDelta: Vec2;
-  /** The central point between all current touches for the current event */
-  currentCenter: Vec2;
-  /** Stores the current rotation the touches have on average exhibited around the central point */
-  currentRotation: number;
-  /**
-   * The change in rotation of the touches around the central point as the touches move from previous event to
-   * this event.
-   */
-  rotationDelta: number;
-  /** The central point between all current touches when all of the touches began */
-  startCenter: Vec2;
-  /** All of the touch metrics that makes this multitouch information */
-  touches: ITouchMetrics[];
-}
-
-/**
- * Metrics calculated for all touches to be broadcasted to the event managers
- */
-export interface ITouchInteraction {
-  /** Contains ALL of the touch interactions with the screen that currently exists */
-  allTouches: ISingleTouchInteraction[];
-  /**
-   * Stores multitouch interaction information. All multitouch information is query based
-   */
-  multitouch: IMultiTouchInteraction;
-  /** Contains all of the touch interactions with the screen for the given event */
-  touches: ISingleTouchInteraction[];
-}
-
-/**
- * Metrics calculated for a single touch on the screen
- */
-export interface ISingleTouchInteraction {
-  /** The source touch metrics for the touch */
-  touch: ITouchMetrics;
-
-  /** Metrics of the interaction in screen space */
-  screen: {
-    position: Vec2;
-  };
-  /**
-   * The View the touch was 'down' on. The position stored is the screen position relative to the view.
-   */
-  start: {
-    position: Vec2;
-    view: View;
-  };
-  /** The View Immediately underneath the touch. The position stored is the screen position relative to the view. */
-  target: {
-    position: Vec2;
-    view: View;
-  };
-  /** All of the views underneath the touch. The position stored is the screen position relative to the view. */
-  views: {
-    position: Vec2;
-    view: View;
-  }[];
-}
-
-/**
- * This is multitouch information. This stores multitouch metrics between every touch and every permutation of every
- * touch. This means if you have four touches on the screen, you can query multitouch information between any of the
- * touches.
- */
-export interface IMultiTouchInteraction {
-  /**
-   * Produces an identifier for the set of touches that will always be the same identifier for the same touches.
-   */
-  id(touches: ISingleTouchInteraction[]): string;
-  /**
-   * The average distance all touches are from the center for the current event.
-   */
-  spread(touches: ISingleTouchInteraction[]): number;
-  /**
-   * The average distance increase/decrease all touches are from the center present from spreading or pinching gesture.
-   */
-  spreadDelta(touches: ISingleTouchInteraction[]): number;
-  /**
-   * The average distance all touches are from the center when the touches first became present on the context.
-   */
-  spreadStart(touches: ISingleTouchInteraction[]): number;
-  /** This is the calculated center of all the touches queried */
-  center(touches: ISingleTouchInteraction[]): Vec2;
-  /** This is the position change of the center of the touches */
-  centerDelta(touches: ISingleTouchInteraction[]): Vec2;
-  /** Gets the starting center point of the touches */
-  centerStart(touches: ISingleTouchInteraction[]): Vec2;
-  /** Gets the current rotation orientation of the touches around their center point */
-  rotation(touches: ISingleTouchInteraction[]): number;
-  /** This is the change in rotation of the touches around their perceived center. */
-  rotationDelta(touches: ISingleTouchInteraction[]): number;
-  /** Gets the starting touch rotation orientation */
-  rotationStart(touches: ISingleTouchInteraction[]): number;
-}
 
 function sortByDepth(a: Bounds<View>, b: Bounds<View>) {
   if (b.d && a.d) return b.d.depth - a.d.depth;
@@ -336,19 +139,31 @@ export class UserInputEventManager {
    */
   private addMouseContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
-    let startView: View | undefined;
-    let startPosition: Vec2 = [0, 0];
+    // This will store the metrics calculated and found for the mouse
+    let mouseMetrics: IMouseMetrics | undefined;
+    // This is a special flag that aids in managing when the mouse is moving over a document AND the element. Both can
+    // not calculate the movements of the mouse at the same time, lest they fry the delta information before both events
+    // get processed by the managers.
+    let elementMovedBeforeDocMoved = false;
 
     if (handlesWheelEvents) {
       const wheelHandler = (event: MouseWheelEvent) => {
         const mouse = eventElementPosition(event, element);
         const viewsUnderMouse = this.getViewsUnderPosition(mouse);
+        if (viewsUnderMouse.length <= 0) return;
 
-        const interaction = this.makeInteraction(
-          mouse,
-          mouse,
-          viewsUnderMouse[0].d
-        );
+        mouseMetrics = {
+          canClick: false,
+          currentPosition: mouse,
+          deltaPosition: [0, 0],
+          previousPosition: mouse,
+          start: mouse,
+          startTime: Date.now(),
+          startView: viewsUnderMouse[0].d,
+          event
+        };
+
+        const interaction = this.makeMouseInteraction(mouseMetrics);
         const wheel = this.makeWheel(event);
 
         this.controllers.forEach(controller => {
@@ -371,10 +186,16 @@ export class UserInputEventManager {
 
     element.onmouseleave = (event: any) => {
       // No interactions while waiting for the render to update
-      if (this.waitingForRender) return;
+      if (this.waitingForRender || !mouseMetrics) return;
 
       const mouse = eventElementPosition(event, element);
-      const interaction = this.makeInteraction(mouse, startPosition, startView);
+      mouseMetrics.deltaPosition = subtract2(
+        mouse,
+        mouseMetrics.currentPosition
+      );
+      mouseMetrics.previousPosition = mouseMetrics.currentPosition;
+      mouseMetrics.currentPosition = mouse;
+      const interaction = this.makeMouseInteraction(mouseMetrics);
 
       this.controllers.forEach(controller => {
         controller.handleMouseOut(interaction);
@@ -383,39 +204,48 @@ export class UserInputEventManager {
 
     element.onmousemove = (event: any) => {
       // No interactions while waiting for the render to update
-      if (this.waitingForRender) return;
+      if (this.waitingForRender || !mouseMetrics) return;
       const mouse = eventElementPosition(event, element);
-      const interaction = this.makeInteraction(mouse, startPosition, startView);
+      mouseMetrics.deltaPosition = subtract2(
+        mouse,
+        mouseMetrics.currentPosition
+      );
+      mouseMetrics.previousPosition = mouseMetrics.currentPosition;
+      mouseMetrics.currentPosition = mouse;
+      mouseMetrics.canClick = false;
+      const interaction = this.makeMouseInteraction(mouseMetrics);
 
       this.controllers.forEach(controller => {
         controller.handleMouseMove(interaction);
       });
+
+      elementMovedBeforeDocMoved = true;
     };
 
     element.onmousedown = (event: any) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
 
-      startPosition = eventElementPosition(event, element);
+      const startPosition = eventElementPosition(event, element);
       const downViews = this.getViewsUnderPosition(startPosition);
-      // While this is true, when mouse up happens, the click gesture will execute
-      let canClick = true;
-      const clickStartTime = Date.now();
 
       // If no views under this view, then we just quick exit with no interactions
       if (downViews.length <= 0) {
         return;
       }
 
-      startView = downViews[0].d;
-      if (!startView) return;
+      mouseMetrics = {
+        canClick: true,
+        currentPosition: startPosition,
+        deltaPosition: [0, 0],
+        previousPosition: startPosition,
+        start: startPosition,
+        startTime: Date.now(),
+        startView: downViews[0].d,
+        event
+      };
 
-      const interaction = this.makeInteraction(
-        startPosition,
-        startPosition,
-        startView
-      );
-      let currentPosition = startPosition;
+      const interaction = this.makeMouseInteraction(mouseMetrics);
 
       this.controllers.forEach(controller => {
         controller.handleMouseDown(interaction, event.button);
@@ -424,46 +254,50 @@ export class UserInputEventManager {
       event.stopPropagation();
 
       document.onmousemove = (event: any) => {
-        const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(
-          mouse,
-          startPosition,
-          startView
-        );
-        const delta: Vec2 = subtract2(mouse, currentPosition);
+        if (!mouseMetrics) return;
 
-        const drag = this.makeDrag(
-          mouse,
-          startPosition || { x: 0, y: 0 },
-          currentPosition,
-          delta
-        );
-        currentPosition = mouse;
+        if (!elementMovedBeforeDocMoved) {
+          const mouse = eventElementPosition(event, element);
+          mouseMetrics.deltaPosition = subtract2(
+            mouse,
+            mouseMetrics.currentPosition
+          );
+          mouseMetrics.previousPosition = mouseMetrics.currentPosition;
+          mouseMetrics.currentPosition = mouse;
+          mouseMetrics.canClick = false;
+        }
+
+        const interaction = this.makeMouseInteraction(mouseMetrics);
 
         this.controllers.forEach(controller => {
-          controller.handleDrag(interaction, drag);
+          controller.handleDrag(interaction);
         });
-
-        // If we move after a mouse down, it's no longer a click
-        canClick = false;
 
         event.preventDefault();
         event.stopPropagation();
+
+        // Reset the element moved flag so we can see if the doc movement needs to handle the mouse metrics
+        elementMovedBeforeDocMoved = false;
       };
 
       document.onmouseup = (_event: any) => {
         document.onmousemove = null;
         document.onmouseup = null;
         document.onmouseover = null;
+        mouseMetrics = undefined;
       };
 
       document.onmouseover = (event: any) => {
+        if (!mouseMetrics) return;
+
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(
+        mouseMetrics.deltaPosition = subtract2(
           mouse,
-          startPosition,
-          startView
+          mouseMetrics.currentPosition
         );
+        mouseMetrics.previousPosition = mouseMetrics.currentPosition;
+        mouseMetrics.currentPosition = mouse;
+        const interaction = this.makeMouseInteraction(mouseMetrics);
 
         this.controllers.forEach(controller => {
           controller.handleMouseOver(interaction);
@@ -473,29 +307,37 @@ export class UserInputEventManager {
       };
 
       element.onmouseup = (event: any) => {
+        if (!mouseMetrics) return;
         const mouse = eventElementPosition(event, element);
-        const interaction = this.makeInteraction(
+        mouseMetrics.deltaPosition = subtract2(
           mouse,
-          startPosition,
-          startView
+          mouseMetrics.currentPosition
         );
+        mouseMetrics.previousPosition = mouseMetrics.currentPosition;
+        mouseMetrics.currentPosition = mouse;
+        const interaction = this.makeMouseInteraction(mouseMetrics);
 
         this.controllers.forEach(controller => {
           controller.handleMouseUp(interaction, event.button);
         });
 
         // If we release the mouse before the valid click delay
-        if (canClick && Date.now() - clickStartTime < VALID_CLICK_DELAY) {
+        if (
+          mouseMetrics.canClick &&
+          Date.now() - mouseMetrics.startTime < VALID_CLICK_DELAY
+        ) {
           this.controllers.forEach(controller => {
             controller.handleClick(interaction, event.button);
           });
         }
+
+        mouseMetrics = undefined;
       };
 
       // Text will not be selected when it is being dragged
-      const experiemental = element as any;
-      if (experiemental.onselectstart !== undefined) {
-        experiemental.onselectstart = function() {
+      const experimental = element as any;
+      if (experimental.onselectstart !== undefined) {
+        experimental.onselectstart = function() {
           return false;
         };
       } else {
@@ -692,12 +534,6 @@ export class UserInputEventManager {
       }
     };
 
-    // const documentTouchMove = _event => {};
-
-    // const documentTouchUp = _event => {};
-
-    // const documentTouchCancel = _event => {};
-
     element.ontouchstart = event => {
       event.preventDefault();
       event.stopPropagation();
@@ -773,26 +609,86 @@ export class UserInputEventManager {
           controller.handleTouchDown(downEvent);
         });
       }
+
+      // Add all of the document events
+      document.ontouchend = event => {
+        documenttouchend.call(document, event);
+        document.ontouchend = null;
+        document.ontouchcancel = null;
+        document.ontouchmove = null;
+      };
+
+      document.ontouchcancel = event => {
+        documenttouchcancel.call(document, event);
+        document.ontouchend = null;
+        document.ontouchcancel = null;
+        document.ontouchmove = null;
+      };
+
+      document.ontouchmove = documenttouchmove;
     };
 
-    element.ontouchend = event => {
-      const touches = this.getTouches(event);
+    const documenttouchend = (element.ontouchend = event => {
+      // Prevent document events from handling twice
+      event.stopPropagation();
+
+      // The touches actually ended are in the changed list in the event
+      const touches = this.getTouches(event, "changed");
+      const allTouches = Array.from(currentTouchInteractions.values());
+      const upTouches: ITouchMetrics[] = [];
 
       for (let i = 0, iMax = touches.length; i < iMax; ++i) {
         const touch = touches[i];
         const touchMetrics = trackedTouches.get(touch.identifier);
         if (!touchMetrics) continue;
 
+        // Detect a tap gesture
         if (
           touchMetrics.canTap &&
-          Date.now() - touchMetrics.startTime < VALID_CLICK_DELAY
+          Date.now() - touchMetrics.startTime < VALID_TAP_DELAY
         ) {
-          // TODO
-        }
-      }
-    };
+          const interactions = [this.makeSingleTouchInteraction(touchMetrics)];
 
-    element.ontouchmove = event => {
+          const tapEvent: ITouchInteraction = {
+            touches: interactions,
+            allTouches,
+            multitouch: multiTouchInteraction
+          };
+
+          // Broadcast to the controllers
+          this.controllers.forEach(controller => {
+            controller.handleTap(tapEvent);
+          });
+        }
+
+        // Always touch up as the touch is ended
+        upTouches.push(touchMetrics);
+        trackedTouches.delete(touch.identifier);
+        currentTouchInteractions.delete(touch.identifier);
+      }
+
+      if (upTouches.length > 0) {
+        const interactions = upTouches.map(metrics =>
+          this.makeSingleTouchInteraction(metrics)
+        );
+
+        const moveEvent: ITouchInteraction = {
+          touches: interactions,
+          allTouches,
+          multitouch: multiTouchInteraction
+        };
+
+        // Broadcast to the controllers
+        this.controllers.forEach(controller => {
+          controller.handleTouchUp(moveEvent);
+        });
+      }
+    });
+
+    const documenttouchmove = (element.ontouchmove = event => {
+      // We do not want the move events bubbling to the document to have repeat events broadcasted
+      event.stopPropagation();
+
       const touches = this.getTouches(event);
       const moved = [];
       const unmoved = [];
@@ -810,6 +706,12 @@ export class UserInputEventManager {
 
           if (length2(deltaPosition) <= 0) {
             unmoved.push(trackedTouch);
+            Object.assign(trackedTouch, {
+              currentPosition: position,
+              deltaPosition,
+              previousPosition: trackedTouch.currentPosition,
+              touch
+            });
             continue;
           }
 
@@ -844,15 +746,44 @@ export class UserInputEventManager {
           controller.handleTouchDrag(moveEvent);
         });
       }
-    };
+    });
 
-    element.ontouchcancel = event => {
-      const touches = this.getTouches(event);
+    const documenttouchcancel = (element.ontouchcancel = event => {
+      // Prevent the document events from firing twice
+      event.stopPropagation();
+
+      // The touches actually ended are in the changed list in the event
+      const touches = this.getTouches(event, "changed");
+      const allTouches = Array.from(currentTouchInteractions.values());
+      const upTouches: ITouchMetrics[] = [];
 
       for (let i = 0, iMax = touches.length; i < iMax; ++i) {
-        // const touch = touches[i];
+        const touch = touches[i];
+        const touchMetrics = trackedTouches.get(touch.identifier);
+        if (!touchMetrics) continue;
+        // Always touch up as the touch is ended
+        upTouches.push(touchMetrics);
+        trackedTouches.delete(touch.identifier);
+        currentTouchInteractions.delete(touch.identifier);
       }
-    };
+
+      if (upTouches.length > 0) {
+        const interactions = upTouches.map(metrics =>
+          this.makeSingleTouchInteraction(metrics)
+        );
+
+        const moveEvent: ITouchInteraction = {
+          touches: interactions,
+          allTouches,
+          multitouch: multiTouchInteraction
+        };
+
+        // Broadcast to the controllers
+        this.controllers.forEach(controller => {
+          controller.handleTouchCancelled(moveEvent);
+        });
+      }
+    });
   }
 
   /**
@@ -922,10 +853,14 @@ export class UserInputEventManager {
    * Retrieves all touches from a touch event. This normalizes the touch information across: touches, changedTouches,
    * and targetTouches
    */
-  getTouches(event: TouchEvent) {
+  getTouches(event: TouchEvent, category?: "touches" | "changed" | "target") {
     const touches = new Map<number, Touch>();
 
-    if (event.touches && event.touches.length > 0) {
+    if (
+      event.touches &&
+      event.touches.length > 0 &&
+      (!category || category === "touches")
+    ) {
       for (let i = 0, iMax = event.touches.length; i < iMax; ++i) {
         const touch = event.touches.item(i);
         if (!touch) continue;
@@ -933,7 +868,11 @@ export class UserInputEventManager {
       }
     }
 
-    if (event.changedTouches && event.changedTouches.length > 0) {
+    if (
+      event.changedTouches &&
+      event.changedTouches.length > 0 &&
+      (!category || category === "changed")
+    ) {
       for (let i = 0, iMax = event.changedTouches.length; i < iMax; ++i) {
         const touch = event.changedTouches.item(i);
         if (!touch) continue;
@@ -941,7 +880,11 @@ export class UserInputEventManager {
       }
     }
 
-    if (event.targetTouches && event.targetTouches.length > 0) {
+    if (
+      event.targetTouches &&
+      event.targetTouches.length > 0 &&
+      (!category || category === "target")
+    ) {
       for (let i = 0, iMax = event.targetTouches.length; i < iMax; ++i) {
         const touch = event.targetTouches.item(i);
         if (!touch) continue;
@@ -981,58 +924,46 @@ export class UserInputEventManager {
   };
 
   /**
-   * This generates the metrics for a drag gesture.
-   */
-  makeDrag(
-    mouse: Vec2,
-    start: Vec2,
-    previous: Vec2,
-    delta: Vec2
-  ): IDragMetrics {
-    return {
-      screen: {
-        current: mouse,
-        delta,
-        previous,
-        start
-      }
-    };
-  }
-
-  /**
    * This makes the metrics for interactions with the views.
    */
-  makeInteraction(
-    mouse: Vec2,
-    start?: Vec2,
-    startView?: View
-  ): IMouseInteraction {
+  makeMouseInteraction(mouse: IMouseMetrics): IMouseInteraction {
     // Find the views the mouse has interacted with
-    const hitViews = this.getViewsUnderPosition(mouse);
+    const hitViews = this.getViewsUnderPosition(mouse.currentPosition);
     let targetSceneView = hitViews[0] && hitViews[0].d;
     if (!targetSceneView) targetSceneView = emptyView;
+    const startViews = this.getViewsUnderPosition(mouse.start);
+    let startView = mouse.startView;
+    if (!startView) startView = emptyView;
 
     return {
+      mouse,
       screen: {
-        mouse
+        position: mouse.currentPosition
       },
-      start: start &&
-        startView && {
-          mouse: startView.screenToView(mouse),
-          view: startView
-        },
-      target: {
-        mouse: targetSceneView.screenToView(mouse),
-        view: targetSceneView
-      },
-      viewsUnderMouse: hitViews.map(v => {
-        if (!v.d) v.d = emptyView;
+      start: {
+        position: startView.screenToView(mouse.start),
+        view: startView,
+        views: startViews.map(v => {
+          if (!v.d) v.d = emptyView;
 
-        return {
-          mouse: v.d.screenToView(mouse),
-          view: v.d
-        };
-      })
+          return {
+            position: v.d.screenToView(mouse.start),
+            view: v.d
+          };
+        })
+      },
+      target: {
+        position: targetSceneView.screenToView(mouse.currentPosition),
+        view: targetSceneView,
+        views: hitViews.map(v => {
+          if (!v.d) v.d = emptyView;
+
+          return {
+            position: v.d.screenToView(mouse.currentPosition),
+            view: v.d
+          };
+        })
+      }
     };
   }
 
@@ -1053,21 +984,29 @@ export class UserInputEventManager {
         position
       },
       start: {
-        position: startView.screenToView(position),
-        view: startView
+        position: startView.screenToView(touch.start),
+        view: startView,
+        views: this.getViewsUnderPosition(touch.start).map(v => {
+          if (!v.d) v.d = emptyView;
+
+          return {
+            position: v.d.screenToView(touch.start),
+            view: v.d
+          };
+        })
       },
       target: {
         position: targetSceneView.screenToView(position),
-        view: targetSceneView
-      },
-      views: hitViews.map(v => {
-        if (!v.d) v.d = emptyView;
+        view: targetSceneView,
+        views: hitViews.map(v => {
+          if (!v.d) v.d = emptyView;
 
-        return {
-          position: v.d.screenToView(position),
-          view: v.d
-        };
-      })
+          return {
+            position: v.d.screenToView(position),
+            view: v.d
+          };
+        })
+      }
     };
   }
 
@@ -1182,7 +1121,7 @@ export class UserInputEventManager {
     this.controllers = controllers;
 
     for (const controller of this.controllers) {
-      controller.setMouseManager(this);
+      controller.setUserInputManager(this);
     }
   }
 

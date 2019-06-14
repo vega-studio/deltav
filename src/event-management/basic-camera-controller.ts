@@ -1,10 +1,5 @@
-import { SimpleEventHandler } from "src/base-event-managers/simple-event-handler";
+import { SimpleEventHandler } from "src/event-management/simple-event-handler";
 import { Bounds } from "../primitives/bounds";
-import {
-  IDragMetrics,
-  IMouseInteraction,
-  IWheelMetrics
-} from "../surface/user-input-event-manager";
 import { View } from "../surface/view";
 import { IProjection } from "../types";
 import {
@@ -13,16 +8,26 @@ import {
   copy3,
   divide2,
   divide3,
+  length2,
   max3,
   min3,
   scale3,
   subtract2,
   subtract3,
+  touchesContainsStartView,
+  touchesHasStartView,
   uid,
+  Vec2,
   Vec3,
   vec3
 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
+import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+  IWheelMetrics
+} from "./types";
 export enum CameraBoundsAnchor {
   TOP_LEFT,
   TOP_MIDDLE,
@@ -127,6 +132,8 @@ export class BasicCameraController extends SimpleEventHandler {
   ignoreCoverViews?: boolean;
   /** Informative property indicating the controller is panning the chart or not */
   isPanning: boolean = false;
+  /** Informative property indicationt he controller is scaling via touch gesture */
+  isScaling: boolean = false;
   /** This is the filter applied to panning operations */
   private panFilter = (
     offset: [number, number, number],
@@ -149,6 +156,8 @@ export class BasicCameraController extends SimpleEventHandler {
   private optimizedViews = new Set<View>();
   /** The animation used to immediately position the camera */
   private cameraImmediateAnimation = AutoEasingMethod.immediate<Vec3>(0);
+  /** This is the identifier of the primary touch controlling panning */
+  private targetTouches = new Set<number>();
 
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
@@ -439,7 +448,7 @@ export class BasicCameraController extends SimpleEventHandler {
   }
 
   private findCoveredStartView(e: IMouseInteraction) {
-    const found = e.viewsUnderMouse.find(
+    const found = e.target.views.find(
       under => this.startViews.indexOf(under.view.id) > -1
     );
     this.startViewDidStart = Boolean(found);
@@ -467,6 +476,7 @@ export class BasicCameraController extends SimpleEventHandler {
     if (this.startViews) {
       // We look for valid covered views on mouse down so dragging will work
       this.findCoveredStartView(e);
+
       // If this is a valid start view, then we enter a panning state with the mouse down
       if (e.start) {
         this.isPanning = this.canStart(e.start.view.id) || this.isPanning;
@@ -475,7 +485,45 @@ export class BasicCameraController extends SimpleEventHandler {
   }
 
   /**
-   * Used to aid in handling the pan effect
+   * This filters a set of touches to be touches that had a valid starting view interaction.
+   */
+  filterTouchesByValidStart(touches: ISingleTouchInteraction[]) {
+    // If we ignore cover views, then the touches only have to contain a start view upon touch down
+    if (this.ignoreCoverViews) {
+      return touches.filter(touchesContainsStartView(this.startViews));
+    }
+
+    // Otherwise, the start touch has to be the primary start view
+    else {
+      return touches.filter(touchesHasStartView(this.startViews));
+    }
+  }
+
+  /**
+   * Aids in understanding how the user is interacting with the views. If a single touch is present, we're panning.
+   * If multiple touches are present, we're panning and we're zooming
+   */
+  handleTouchDown(e: ITouchInteraction) {
+    if (this.startViews) {
+      const validTouches = this.filterTouchesByValidStart(e.allTouches);
+
+      if (validTouches.length > 0) {
+        this.isPanning = true;
+      }
+
+      if (validTouches.length > 1) {
+        this.isScaling = true;
+      }
+
+      for (let i = 0, iMax = validTouches.length; i < iMax; ++i) {
+        const touch = validTouches[i];
+        this.targetTouches.add(touch.touch.touch.identifier);
+      }
+    }
+  }
+
+  /**
+   * Used to aid in handling the pan effect. Stops panning operations for the
    */
   handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;
@@ -484,11 +532,229 @@ export class BasicCameraController extends SimpleEventHandler {
     this.optimizedViews.clear();
   }
 
-  private doPan(e: IMouseInteraction, view: View, delta: [number, number]) {
+  /**
+   * Used to stop panning and scaling effects
+   */
+  handleTouchUp(e: ITouchInteraction) {
+    e.touches.forEach(touch => {
+      this.targetTouches.delete(touch.touch.touch.identifier);
+
+      if (this.targetTouches.size <= 0) {
+        this.startViewDidStart = false;
+        this.isPanning = false;
+        this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+        this.optimizedViews.clear();
+      }
+    });
+
+    this.isPanning = false;
+    this.isScaling = false;
+
+    if (this.targetTouches.size > 0) {
+      this.isPanning = true;
+    }
+
+    if (this.targetTouches.size > 1) {
+      this.isScaling = true;
+    }
+  }
+
+  /**
+   * Used to stop panning and scaling effects when touches are forcibly ejected from existence.
+   */
+  handleTouchCancelled(e: ITouchInteraction) {
+    e.touches.forEach(touch => {
+      this.targetTouches.delete(touch.touch.touch.identifier);
+
+      if (this.targetTouches.size <= 0) {
+        this.startViewDidStart = false;
+        this.isPanning = false;
+        this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+        this.optimizedViews.clear();
+      }
+    });
+
+    this.isPanning = false;
+    this.isScaling = false;
+
+    if (this.targetTouches.size > 0) {
+      this.isPanning = true;
+    }
+
+    if (this.targetTouches.size > 1) {
+      this.isScaling = true;
+    }
+  }
+
+  /**
+   * Applies a panning effect by adjusting the camera's offset.
+   */
+  handleDrag(e: IMouseInteraction) {
+    if (e.start) {
+      if (this.canStart(e.start.view.id)) {
+        e.target.views.forEach(view => {
+          view.view.optimizeRendering = true;
+          this.optimizedViews.add(view.view);
+        });
+
+        // Panning the camera will always be immediate
+        this.doPan(
+          e.target.views.map(v => v.view),
+          e.start.view,
+          e.mouse.deltaPosition
+        );
+        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
+        // to the end
+        this.camera.animation = this.cameraImmediateAnimation;
+      }
+    }
+  }
+
+  /**
+   * Applies panning effect from single or multitouch interaction.
+   */
+  handleTouchDrag(e: ITouchInteraction) {
+    const validTouches = this.filterTouchesByValidStart(e.allTouches);
+
+    if (validTouches.length > 0 && this.isPanning) {
+      for (let i = 0, iMax = validTouches.length; i < iMax; ++i) {
+        const targetTouch = validTouches[i];
+
+        targetTouch.target.views.forEach(view => {
+          view.view.optimizeRendering = true;
+          this.optimizedViews.add(view.view);
+        });
+      }
+
+      // The relative view will be the view that was touched first.
+      // We also gather all relatedviews during this search.
+      const allViews = new Set<View>();
+      const firstTouch = validTouches.reduce((p, n) => {
+        for (let i = 0, iMax = n.target.views.length; i < iMax; ++i) {
+          const v = n.target.views[i];
+          allViews.add(v.view);
+        }
+
+        return n.touch.startTime < p.touch.startTime ? n : p;
+      }, validTouches[0]);
+
+      const relativeView = firstTouch.start.view;
+
+      if (this.isPanning) {
+        // Panning the camera will always be immediate
+        this.doPan(
+          Array.from(allViews.values()),
+          relativeView,
+          e.multitouch.centerDelta(validTouches)
+        );
+        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
+        // to the end
+        this.camera.animation = this.cameraImmediateAnimation;
+      }
+
+      // Now we handle the magic of pinch to zoom. To make this 'feel' right the gesture needs to scale the surface so
+      // that (in the case of two fingers) the fingers will remain on the world coordinates of what they were touching
+      // throughout the scaling experience.
+      if (this.isScaling) {
+        // We must get the centroid of the touches for the current event
+        const currentWorldCenter = e.multitouch.center(validTouches);
+
+        // We must also calculate the current frame's distance from the centroid to compare against the previous frame's
+        const currentCenterToTouch = subtract2(
+          validTouches[0].touch.currentPosition,
+          currentWorldCenter
+        );
+
+        // We must get the centroid of the touches for the previous known event
+        const previousWorldCenter = subtract2(
+          currentWorldCenter,
+          e.multitouch.centerDelta(validTouches)
+        );
+
+        // We must now calculate how far our touch in the previous frame was from our current frame
+        const previousCenterToTouch = subtract2(
+          validTouches[0].touch.previousPosition,
+          previousWorldCenter
+        );
+
+        // This is how much scaling it takes to get from the previous touch to the current touch relative to the vectors
+        // per axis
+        const scaleToCurrentTouch =
+          length2(currentCenterToTouch) / length2(previousCenterToTouch);
+
+        const deltaScale: Vec3 = [
+          scaleToCurrentTouch * this.camera.scale[0] - this.camera.scale[0],
+          scaleToCurrentTouch * this.camera.scale[1] - this.camera.scale[1],
+          0
+        ];
+
+        if (scaleToCurrentTouch !== 1) {
+          this.doScale(
+            currentWorldCenter,
+            relativeView,
+            Array.from(allViews.values()),
+            deltaScale
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Applies a scaling effect to the camera for mouse wheel events
+   */
+  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
+    // Every mouse wheel event must look to see if it's over a valid covered start view
+    this.findCoveredStartView(e);
+
+    if (this.canStart(e.target.view.id)) {
+      if (this.wheelShouldScroll) {
+        const deltaPosition: [number, number] = [
+          -wheelMetrics.wheel[0],
+          wheelMetrics.wheel[1]
+        ];
+
+        if (e.start) {
+          this.doPan(
+            e.target.views.map(v => v.view),
+            e.start.view,
+            deltaPosition
+          );
+        }
+      } else {
+        const currentZoomX = this.camera.getScale()[0] || 1.0;
+        const currentZoomY = this.camera.getScale()[1] || 1.0;
+        const targetView = this.getTargetView(e);
+
+        const deltaScale: [number, number, number] = [
+          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
+          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
+          1
+        ];
+
+        this.doScale(
+          e.screen.position,
+          targetView,
+          e.target.views.map(v => v.view),
+          deltaScale
+        );
+      }
+    }
+  }
+
+  /**
+   * Performs the panning operation for the camera
+   *
+   * @param allViews This is all of the related views under the event interactions
+   * @param relativeView This is the view that performs the projections related to the operation
+   * @param allViews All the views associated with the operation or event interaction
+   * @param delta This is the amount of panning being requested to happen
+   */
+  private doPan(allViews: View[], relativeView: View, delta: [number, number]) {
     let pan: Vec3 = vec3(divide2(delta, this.camera.getScale()), 0);
 
     if (this.panFilter) {
-      pan = this.panFilter(pan, view, e.viewsUnderMouse.map(v => v.view));
+      pan = this.panFilter(pan, relativeView, allViews);
     }
 
     this.camera.getOffset()[0] += pan[0];
@@ -497,11 +763,57 @@ export class BasicCameraController extends SimpleEventHandler {
     // Add additional correction for bounds
     this.applyBounds();
     // Broadcast the change occurred
-    if (e.start) this.onRangeChanged(this.camera, e.start.view);
+    this.onRangeChanged(this.camera, relativeView);
     // Add additional correction for bounds
     this.applyBounds();
     // Indicate the camera needs a refresh
     this.camera.update();
+  }
+
+  /**
+   * Scales the camera relative to a point and a view.
+   *
+   * @param focalPoint The point the scaling happens around
+   * @param targetView The relative view this operation happens in relation to
+   * @param deltaScale The amount of scaling per axis that should happen
+   */
+  private doScale(
+    focalPoint: Vec2,
+    targetView: View,
+    allViews: View[],
+    deltaScale: Vec3
+  ) {
+    const beforeZoom = targetView.screenToWorld(focalPoint);
+    const currentZoomX = this.camera.getScale()[0] || 1.0;
+    const currentZoomY = this.camera.getScale()[1] || 1.0;
+
+    if (this.scaleFilter) {
+      deltaScale = this.scaleFilter(deltaScale, targetView, allViews);
+    }
+
+    this.camera.getScale()[0] = currentZoomX + deltaScale[0];
+    this.camera.getScale()[1] = currentZoomY + deltaScale[1];
+
+    // Ensure the new scale values are within bounds before attempting to correct offsets
+    this.applyScaleBounds();
+
+    const afterZoom = targetView.screenToWorld(focalPoint);
+    const deltaZoom = subtract2(beforeZoom, afterZoom);
+    this.camera.getOffset()[0] -= deltaZoom[0];
+    this.camera.getOffset()[1] -= deltaZoom[1];
+
+    // Add additional correction for bounds
+    this.applyBounds();
+    // Broadcast the change occurred
+    this.onRangeChanged(this.camera, targetView);
+    // Add additional correction for bounds
+    this.applyBounds();
+
+    // Make sure the camera updates
+    this.camera.update();
+    // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
+    // to the end
+    this.camera.animation = this.cameraImmediateAnimation;
   }
 
   /**
@@ -545,88 +857,6 @@ export class BasicCameraController extends SimpleEventHandler {
     this.camera.animation = this.cameraImmediateAnimation;
     this.camera.setOffset(newOffset);
     this.camera.animation = currentAnimation;
-  }
-
-  /**
-   * Applies a panning effect by adjusting the camera's offset.
-   */
-  handleDrag(e: IMouseInteraction, drag: IDragMetrics) {
-    if (e.start) {
-      if (this.canStart(e.start.view.id)) {
-        e.viewsUnderMouse.forEach(view => {
-          view.view.optimizeRendering = true;
-          this.optimizedViews.add(view.view);
-        });
-
-        // Panning the camera will always be immediate
-        this.doPan(e, e.start.view, drag.screen.delta);
-        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
-        // to the end
-        this.camera.animation = this.cameraImmediateAnimation;
-      }
-    }
-  }
-
-  /**
-   * Applies a scaling effect to the camera for mouse wheel events
-   */
-  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
-    // Every mouse wheel event must look to see if it's over a valid covered start view
-    this.findCoveredStartView(e);
-
-    if (this.canStart(e.target.view.id)) {
-      if (this.wheelShouldScroll) {
-        const deltaPosition: [number, number] = [
-          -wheelMetrics.wheel[0],
-          wheelMetrics.wheel[1]
-        ];
-
-        if (e.start) this.doPan(e, e.start.view, deltaPosition);
-      } else {
-        const targetView = this.getTargetView(e);
-        const beforeZoom = targetView.screenToWorld(e.screen.mouse);
-        const currentZoomX = this.camera.getScale()[0] || 1.0;
-        const currentZoomY = this.camera.getScale()[1] || 1.0;
-
-        let deltaScale: [number, number, number] = [
-          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
-          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
-          1
-        ];
-
-        if (this.scaleFilter) {
-          deltaScale = this.scaleFilter(
-            deltaScale,
-            targetView,
-            e.viewsUnderMouse.map(v => v.view)
-          );
-        }
-
-        this.camera.getScale()[0] = currentZoomX + deltaScale[0];
-        this.camera.getScale()[1] = currentZoomY + deltaScale[1];
-
-        // Ensure the new scale values are within bounds before attempting to correct offsets
-        this.applyScaleBounds();
-
-        const afterZoom = targetView.screenToWorld(e.screen.mouse);
-        const deltaZoom = subtract2(beforeZoom, afterZoom);
-        this.camera.getOffset()[0] -= deltaZoom[0];
-        this.camera.getOffset()[1] -= deltaZoom[1];
-
-        // Add additional correction for bounds
-        this.applyBounds();
-        // Broadcast the change occurred
-        this.onRangeChanged(this.camera, targetView);
-        // Add additional correction for bounds
-        this.applyBounds();
-
-        // Make sure the camera updates
-        this.camera.update();
-        // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
-        // to the end
-        this.camera.animation = this.cameraImmediateAnimation;
-      }
-    }
   }
 
   /**

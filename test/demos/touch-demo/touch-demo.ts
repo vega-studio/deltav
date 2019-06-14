@@ -8,15 +8,18 @@ import {
   ClearFlags,
   createLayer,
   createView,
+  EasingUtil,
   InstanceProvider,
   ITouchInteraction,
+  nextFrame,
   SimpleEventHandler
 } from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 
 export class TouchDemo extends BaseDemo {
   providers = {
-    circles: new InstanceProvider<CircleInstance>()
+    circles: new InstanceProvider<CircleInstance>(),
+    center: new InstanceProvider<CircleInstance>()
   };
 
   touchCircles = new Map<number | string, CircleInstance>();
@@ -61,8 +64,22 @@ export class TouchDemo extends BaseDemo {
             this.multitouchIndicator.radius = 50;
           },
 
-          handleTouchUp: (_event: ITouchInteraction) => {
-            // TODO
+          handleTouchCancelled: (event: ITouchInteraction) => {
+            event.touches.forEach(touch => {
+              const circle = this.touchCircles.get(
+                touch.touch.touch.identifier
+              );
+              if (circle) this.providers.circles.remove(circle);
+            });
+          },
+
+          handleTouchUp: (event: ITouchInteraction) => {
+            event.touches.forEach(touch => {
+              const circle = this.touchCircles.get(
+                touch.touch.touch.identifier
+              );
+              if (circle) this.providers.circles.remove(circle);
+            });
           },
 
           handleTouchDrag: (event: ITouchInteraction) => {
@@ -83,6 +100,28 @@ export class TouchDemo extends BaseDemo {
             this.multitouchIndicator.radius += event.multitouch.spreadDelta(
               event.allTouches
             );
+          },
+
+          handleTap: async (event: ITouchInteraction) => {
+            const circle = new CircleInstance({
+              center: event.touches[0].target.position,
+              radius: 0,
+              color: [0.0, 1.0, 0.0, 0.5]
+            });
+
+            this.providers.circles.add(circle);
+
+            await nextFrame();
+            circle.radius = 100;
+            circle.color = [0.0, 1.0, 0.0, 0.0];
+
+            await EasingUtil.all(
+              true,
+              [circle],
+              [CircleLayer.attributeNames.radius]
+            );
+
+            this.providers.circles.remove(circle);
           }
         })
       }),
@@ -99,9 +138,17 @@ export class TouchDemo extends BaseDemo {
             layers: {
               circles: createLayer(CircleLayer, {
                 animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
+                  color: AutoEasingMethod.linear(500),
+                  radius: AutoEasingMethod.linear(500)
                 },
                 data: providers.circles,
+                scaleFactor: () => cameras.main.scale[0]
+              }),
+              center: createLayer(CircleLayer, {
+                animate: {
+                  color: AutoEasingMethod.linear(500)
+                },
+                data: providers.center,
                 scaleFactor: () => cameras.main.scale[0]
               })
             }
@@ -112,6 +159,6 @@ export class TouchDemo extends BaseDemo {
   }
 
   async init() {
-    this.providers.circles.add(this.multitouchIndicator);
+    this.providers.center.add(this.multitouchIndicator);
   }
 }

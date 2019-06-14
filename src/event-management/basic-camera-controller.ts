@@ -1,4 +1,3 @@
-import { SimpleEventHandler } from "src/event-management/simple-event-handler";
 import { Bounds } from "../primitives/bounds";
 import { View } from "../surface/view";
 import { IProjection } from "../types";
@@ -22,6 +21,7 @@ import {
   vec3
 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
+import { SimpleEventHandler } from "./simple-event-handler";
 import {
   IMouseInteraction,
   ISingleTouchInteraction,

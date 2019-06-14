@@ -631,6 +631,7 @@ export class UserInputEventManager {
     const documenttouchend = (element.ontouchend = event => {
       // Prevent document events from handling twice
       event.stopPropagation();
+      event.preventDefault();
 
       // The touches actually ended are in the changed list in the event
       const touches = this.getTouches(event, "changed");
@@ -688,6 +689,7 @@ export class UserInputEventManager {
     const documenttouchmove = (element.ontouchmove = event => {
       // We do not want the move events bubbling to the document to have repeat events broadcasted
       event.stopPropagation();
+      event.preventDefault();
 
       const touches = this.getTouches(event);
       const moved = [];
@@ -751,6 +753,7 @@ export class UserInputEventManager {
     const documenttouchcancel = (element.ontouchcancel = event => {
       // Prevent the document events from firing twice
       event.stopPropagation();
+      event.preventDefault();
 
       // The touches actually ended are in the changed list in the event
       const touches = this.getTouches(event, "changed");

@@ -436,17 +436,16 @@ export class WebGLRenderer {
         this.glState.setScissor(null);
       }
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
-      const _height = size[1];
+      const { renderSize } = this.state;
+      const _height = renderSize[1];
 
       if (bounds) {
         const { x, y, width, height } = bounds;
         this.glState.setScissor({
-          x: x * pixelRatio,
-          y: (_height - y - height) * pixelRatio,
-          width: width * pixelRatio,
-          height: height * pixelRatio
+          x: x,
+          y: _height - y - height,
+          width: width,
+          height: height
         });
       } else {
         this.glState.setScissor(null);
@@ -520,17 +519,11 @@ export class WebGLRenderer {
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
       this.glState.setViewport(x, _height - y - height, width, height);
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
-      const _height = size[1];
+      const { renderSize } = this.state;
+      const _height = renderSize[1];
 
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
-      this.glState.setViewport(
-        x * pixelRatio,
-        (_height - y - height) * pixelRatio,
-        width * pixelRatio,
-        height * pixelRatio
-      );
+      this.glState.setViewport(x, _height - y - height, width, height);
     }
   }
 }

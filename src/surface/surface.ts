@@ -763,7 +763,11 @@ export class Surface {
       layer.props.data.resolveContext = "";
     });
 
-    // Run the picking operation as the final action to put the readPixels at the tail
+    // We render color picking to our color picking render target, but we save it's result for the beginning of next
+    // frame. The longest delay picking can cause is from the readPixels operation being CPU blocking. Additionally, the
+    // block will cause a full GPU sync to happen before the picels are read which means the CPU and GPU  are blocked
+    // from adiditional operations UNTIL ALL of the current operations are completed first. Thus, readPixels at the
+    // beginning of next frame makes the most sense as all operations should be assurred to be completed before then.
     for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
       const picking = toPick[i];
       const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
@@ -896,7 +900,6 @@ export class Surface {
     renderer = renderer || this.renderer;
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
-    const pixelRatio = view.pixelRatio;
     const background = view.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
 
@@ -906,10 +909,10 @@ export class Surface {
     // Set the scissor rectangle.
     renderer.setScissor(
       {
-        x: offset.x / pixelRatio,
-        y: offset.y / pixelRatio,
-        width: size.width / pixelRatio,
-        height: size.height / pixelRatio
+        x: offset.x,
+        y: offset.y,
+        width: size.width,
+        height: size.height
       },
       target
     );
@@ -927,8 +930,8 @@ export class Surface {
 
     // Make sure the viewport is set properly for the next render
     renderer.setViewport({
-      x: offset.x / pixelRatio,
-      y: offset.y / pixelRatio,
+      x: offset.x,
+      y: offset.y,
       width: size.width,
       height: size.height
     });
@@ -1351,7 +1354,7 @@ export class Surface {
    * This triggers an update to all of the layers that perform picking, the pixel data
    * within the specified mouse range.
    */
-  updateColorPickRange(mouse: Vec2, views: View[]) {
+  updateColorPickPosition(mouse: Vec2, views: View[]) {
     // We will flag the color range as needing an update
     this.updateColorPick = {
       mouse,

@@ -15,7 +15,7 @@ void main() {
 
   vertexColor = color;
   vertexColor.a *= layerOpacity;
-  float size = radius * scaleFactor;
+  float size = radius * scaleFactor * pixelRatio;
   edgeSharpness = mix(0.8, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   edgeSharpnessBase = mix(0.1, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   pointCoord = (normals.xy + vec2(1.0, 1.0)) / 2.0;

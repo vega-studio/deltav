@@ -204,8 +204,24 @@ export class UserInputEventManager {
 
     element.onmousemove = (event: any) => {
       // No interactions while waiting for the render to update
-      if (this.waitingForRender || !mouseMetrics) return;
+      if (this.waitingForRender) return;
       const mouse = eventElementPosition(event, element);
+
+      if (!mouseMetrics) {
+        const viewsUnderMouse = this.getViewsUnderPosition(mouse);
+
+        mouseMetrics = {
+          canClick: false,
+          currentPosition: mouse,
+          deltaPosition: [0, 0],
+          previousPosition: mouse,
+          start: mouse,
+          startTime: Date.now(),
+          startView: viewsUnderMouse[0].d,
+          event
+        };
+      }
+
       mouseMetrics.deltaPosition = subtract2(
         mouse,
         mouseMetrics.currentPosition

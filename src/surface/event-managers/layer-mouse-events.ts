@@ -131,7 +131,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleMouseMove(e: IMouseInteraction) {
     if (this.surface) {
-      this.surface.updateColorPickRange(
+      this.surface.updateColorPickPosition(
         e.screen.position,
         e.target.views.map(v => v.view)
       );

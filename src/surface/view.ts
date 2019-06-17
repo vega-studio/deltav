@@ -289,8 +289,8 @@ export class View extends IdentifyByKey {
         top: height / 2
       };
 
-      const scaleX = 1;
-      const scaleY = 1;
+      const scaleX = this.pixelRatio;
+      const scaleY = this.pixelRatio;
       const camera = this.viewCamera.baseCamera;
 
       camera.projectionOptions = Object.assign(
@@ -298,8 +298,8 @@ export class View extends IdentifyByKey {
         viewport
       );
       camera.position = [
-        -viewBounds.width / 2.0 * scaleX,
-        viewBounds.height / 2.0 * scaleY,
+        -viewBounds.width / 2.0,
+        viewBounds.height / 2.0,
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];

@@ -470,8 +470,8 @@ export class Surface {
             // The view's animationEndTime is the largest end time found on one of the view's child layers.
             view.animationEndTime = Math.max(
               view.animationEndTime,
-              layer.animationEndTime,
-              view.camera.animationEndTime
+              layer.animationEndTime
+              // view.camera.animationEndTime
             );
             // Indicate this layer is being rendered at the current time frame
             layer.lastFrameTime = time;
@@ -493,7 +493,7 @@ export class Surface {
         if (
           view.needsDraw ||
           (time && time < view.lastFrameTime) ||
-          view.camera.needsViewDrawn ||
+          // view.camera.needsViewDrawn ||
           true
         ) {
           view.needsDraw = true;
@@ -699,8 +699,8 @@ export class Surface {
       const scene = this.sceneDiffs.items[i];
 
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-        const view = scene.views[k];
-        view.camera.broadcast();
+        // const view = scene.views[k];
+        // view.camera.broadcast();
       }
     }
 
@@ -752,7 +752,7 @@ export class Surface {
       for (let i = 0, iMax = scene.views.length; i < iMax; ++i) {
         const view = scene.views[i];
         view.needsDraw = false;
-        view.camera.resolve();
+        // view.camera.resolve();
       }
     }
 

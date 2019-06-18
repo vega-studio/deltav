@@ -1,16 +1,16 @@
-import { Layer } from "../../surface/layer";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
+// import { Layer2D } from "src/surface/layer2D";
+import { ShaderInjectionTarget } from "../../types";
 import { ShaderModule } from "../processing";
 
 /**
  * This module provides uniforms for retrieving camera propeerties within the shader.
  */
 ShaderModule.register([
-  {
-    moduleId: "camera",
+  /*{
+    moduleId: "controller2D",
     content: "",
     compatibility: ShaderInjectionTarget.ALL,
-    uniforms: (layer: Layer<any, any>) => [
+    uniforms: (layer: Layer2D<any, any>) => [
       // This injects the projection matrix from the view camera
       {
         name: "projection",
@@ -55,10 +55,10 @@ ShaderModule.register([
         update: () => [layer.view.pixelRatio]
       }
     ]
-  },
+  },*/
   {
-    moduleId: "projection",
-    content: require("./shader-fragments/projection.vs"),
+    moduleId: "world2D",
+    content: require("./shader-fragments/world-2d.vs"),
     compatibility: ShaderInjectionTarget.ALL
   }
 ]);

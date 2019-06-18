@@ -3,7 +3,6 @@ import {
   BasicCameraController,
   Bounds,
   CameraBoundsAnchor,
-  ChartCamera,
   createLayer,
   EventManager,
   ICameraBoundsOptions,
@@ -13,6 +12,7 @@ import {
   RectangleLayer,
   ScaleMode
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView extends BaseExample {
@@ -21,8 +21,8 @@ export class BoundedView extends BaseExample {
   originalRange: Bounds<never>;
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera,
+    _testCamera: Camera,
     viewName: string
   ): EventManager {
     const bounds: ICameraBoundsOptions = {

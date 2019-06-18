@@ -3,7 +3,6 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   BasicSurface,
-  ChartCamera,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -11,6 +10,7 @@ import {
   createView,
   InstanceProvider
 } from "src";
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
 import { textPositions } from "../../common/text-positions";
@@ -95,7 +95,15 @@ export class WordSandDemo extends BaseDemo {
     return new BasicSurface({
       container,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       providers: this.providers,
       resources: {},

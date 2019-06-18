@@ -1,8 +1,8 @@
-import { ChartCamera } from "./chart-camera";
+import { Controller2D } from "./controller2D";
 
 export interface IReferenceCameraOptions {
   /** This is the base camera to monitor */
-  base: ChartCamera;
+  base: Controller2D;
   /**
    * This is a filter applied to the offset that comes from the chart camera.
    */
@@ -25,8 +25,8 @@ export interface IReferenceCameraOptions {
  * chart and only manipulate a single camera instead of managing many cameras and
  * tie them together with lots of events.
  */
-export class ReferenceCamera extends ChartCamera {
-  private base: ChartCamera;
+export class ReferenceCamera extends Controller2D {
+  private base: Controller2D;
   private offsetFilter = (offset: [number, number, number]) => offset;
   private scaleFilter = (scale: [number, number, number]) => scale;
 

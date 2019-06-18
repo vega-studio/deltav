@@ -2,7 +2,6 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   Bounds,
-  ChartCamera,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -15,6 +14,7 @@ import {
   Vec,
   Vec2
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 const { min, max, random } = Math;
@@ -89,7 +89,7 @@ export class BoxOfCircles extends BaseExample {
     color: IAutoEasingMethod<Vec>;
     radius: IAutoEasingMethod<Vec>;
   };
-  camera: ChartCamera;
+  camera: Camera;
   manager: BasicCameraController;
   originalRange: Bounds<never>;
   scene: string;
@@ -115,14 +115,14 @@ export class BoxOfCircles extends BaseExample {
     }
   }
 
-  makeCamera(defaultCamera: ChartCamera) {
+  makeCamera(defaultCamera: Camera) {
     this.camera = defaultCamera;
     return defaultCamera;
   }
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera,
+    _testCamera: Camera,
     viewName: string
   ): EventManager {
     this.scene = viewName;

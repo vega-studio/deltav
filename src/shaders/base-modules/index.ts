@@ -4,3 +4,4 @@ import "./instancing";
 import "./math-modules";
 import "./picking";
 import "./util-modules";
+import "./world2D";

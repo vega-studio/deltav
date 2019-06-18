@@ -5,6 +5,7 @@ import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
   Bounds,
+  Controller2D,
   createLayer,
   InstanceProvider,
   LayerInitializer
@@ -24,7 +25,8 @@ export class Arcs extends BaseExample {
       },
       data: provider,
       key: "arcs",
-      scaleType: ArcScaleType.NONE
+      scaleType: ArcScaleType.NONE,
+      world2D: new Controller2D()
     });
   }
 

@@ -1,6 +1,7 @@
+import { ILayer2DProps, Layer2D } from "src/surface/layer2D";
 import { InstanceProvider } from "../../instance-provider";
 import { Bounds } from "../../primitives";
-import { ILayerProps, Layer } from "../../surface/layer";
+// import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -10,12 +11,18 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
+import {
+  CommonMaterialOptions,
+  Controller2D,
+  subtract2,
+  Vec,
+  Vec2
+} from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
 
 export interface ICircleLayerProps<T extends CircleInstance>
-  extends ILayerProps<T> {
+  extends ILayer2DProps<T> {
   /** This sets the  */
   fadeOutOversized?: number;
   /** This sets a scaling factor for the circle's radius */
@@ -43,12 +50,13 @@ export interface ICircleLayerProps<T extends CircleInstance>
 export class CircleLayer<
   T extends CircleInstance,
   U extends ICircleLayerProps<T>
-> extends Layer<T, U> {
+> extends Layer2D<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
     fadeOutOversized: -1,
     key: "",
-    scaleFactor: () => 1
+    scaleFactor: () => 1,
+    world2D: new Controller2D()
   };
 
   static attributeNames = {

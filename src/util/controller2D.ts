@@ -1,13 +1,10 @@
 import { Surface } from "../surface";
-import {
-  AutoEasingMethod,
-  IAutoEasingMethod
-} from "../util/auto-easing-method";
+import { AutoEasingMethod, IAutoEasingMethod } from "./auto-easing-method";
 import { copy3, divide3, scale3, subtract3, Vec3 } from "./vector";
 
-let chartCameraUID = 0;
+let controller2DUID = 0;
 
-export interface IChartCameraOptions {
+export interface IController2DOptions {
   /** The world space offset of elements in the chart */
   offset?: Vec3;
   /** The world space scaling present in the chart */
@@ -16,17 +13,17 @@ export interface IChartCameraOptions {
 
 const immediateAnimation = AutoEasingMethod.immediate<Vec3>(0);
 
-export class ChartCamera {
-  /** The animation set to this camera to animate it's scale and offset */
+export class Controller2D {
+  /** The animation set to this controller to animate it's scale and offset */
   animation: IAutoEasingMethod<Vec3> = AutoEasingMethod.immediate(0);
-  /** This records when the end of the animation for the camera will be completed */
+  /** This records when the end of the animation for the controller will be completed */
   animationEndTime: number = 0;
   /** Indicates which time frame the offset was retrieved so it will only broadcast a change event once for that timeframe */
   private offsetBroadcastTime: number = 0;
   /** Indicates which time frame the scale was retrieved so it will only broadcast a change event once for that timeframe */
   private scaleBroadcastTime: number = 0;
   /** Internally set id */
-  private _id: number = chartCameraUID++;
+  private _id: number = controller2DUID++;
   /** Represents how much an element should be offset in world space */
   private _offset: Vec3 = [0, 0, 0];
   private startOffset: Vec3 = [0, 0, 0];
@@ -37,22 +34,22 @@ export class ChartCamera {
   private startScale: Vec3 = [1, 1, 1];
   private startScaleTime: number = 0;
   private scaleEndTime: number = 0;
-  /** This indicates whether the view where the camera is in needs drawn */
+  /** This indicates whether the view where the controller is in needs drawn */
   private _needsViewDrawn: boolean = true;
-  /** This is the surface the camera is controlled by */
+  /** This is the surface the controller is controlled by */
   surface: Surface;
-  /** When set, this will broadcast any change in the camera that will affect the view range */
-  private onViewChange?: (camera: ChartCamera, view: string) => void;
-  /** This is the manually set view id that is broadcasted for camera view changes */
+  /** When set, this will broadcast any change in the controller that will affect the view range */
+  private onViewChange?: (controller: Controller2D, view: string) => void;
+  /** This is the manually set view id that is broadcasted for controller view changes */
   private viewChangeViewId: string;
-  /** Flag indicating the camera needs to broadcast it's changes */
+  /** Flag indicating the controller needs to broadcast it's changes */
   private needsBroadcast = false;
-  /** Identifier of the camera */
+  /** Identifier of the controller */
   get id() {
     return this._id;
   }
 
-  constructor(options?: IChartCameraOptions) {
+  constructor(options?: IController2DOptions) {
     if (options) {
       this._offset = copy3(options.offset || this._offset);
       this._scale = copy3(options.scale || this._scale);
@@ -60,7 +57,7 @@ export class ChartCamera {
   }
 
   /**
-   * Performs the broadcast of changes for the camera if the camera needed a broadcast.
+   * Performs the broadcast of changes for the controller if the controller needed a broadcast.
    */
   broadcast() {
     // First we do a simple get of the animated properties. This will cause the broadcast flag to
@@ -95,7 +92,7 @@ export class ChartCamera {
   }
 
   /**
-   * Retrieves the current frame's time from the surface this camera is managed under.
+   * Retrieves the current frame's time from the surface this controller is managed under.
    */
   private getCurrentTime() {
     if (this.surface) {
@@ -124,7 +121,7 @@ export class ChartCamera {
   }
 
   /**
-   * Retrieves the animated value of the offset of the camera.
+   * Retrieves the animated value of the offset of the controller.
    * To get a non-animated version of the offset use getOffset()
    */
   get offset() {
@@ -145,7 +142,7 @@ export class ChartCamera {
   }
 
   /**
-   * Sets the id of this camera
+   * Sets the id of this controller
    */
   setId(id: number) {
     this._id = id;
@@ -153,11 +150,11 @@ export class ChartCamera {
   }
 
   /**
-   * Sets the location of the camera by adjusting the offsets to match.
+   * Sets the location of the controller by adjusting the offsets to match.
    * Whatever is set for the "animation" property determines the animation.
    */
   setOffset(offset: Vec3) {
-    // Start offset is the offset of the camera at the current evaluated time
+    // Start offset is the offset of the controller at the current evaluated time
     this.startOffset = copy3(this.offset);
     // Copy the new end offset value
     this._offset = copy3(offset);
@@ -198,19 +195,19 @@ export class ChartCamera {
   }
 
   /**
-   * Applies the handler for broadcasting view changes from the camera.
+   * Applies the handler for broadcasting view changes from the controller.
    */
-  setViewChangeHandler(viewId: string, handler: ChartCamera["onViewChange"]) {
+  setViewChangeHandler(viewId: string, handler: Controller2D["onViewChange"]) {
     this.onViewChange = handler;
     this.viewChangeViewId = viewId;
   }
 
   /**
-   * Sets and animates the scale of the camera.
+   * Sets and animates the scale of the controller.
    * Whatever is set for the "animation" property determines the animation.
    */
   setScale(scale: Vec3) {
-    // Start scale is the scale of the camera at the current evaluated time
+    // Start scale is the scale of the controller at the current evaluated time
     this.startScale = copy3(this.scale);
     // Store the destination value of the scale
     this._scale = copy3(scale);

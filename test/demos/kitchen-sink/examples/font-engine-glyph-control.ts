@@ -2,7 +2,6 @@ import {
   AnchorType,
   AutoEasingMethod,
   BasicCameraController,
-  ChartCamera,
   createLayer,
   EventManager,
   InstanceProvider,
@@ -10,13 +9,14 @@ import {
   LabelLayer,
   LayerInitializer
 } from "src";
+import { Camera } from "src/util/camera";
 import { STORY, WORDS } from "../../../types";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class FontEngineGlyphControl extends BaseExample {
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera,
+    _testCamera: Camera,
     viewName: string
   ): EventManager {
     return new BasicCameraController({

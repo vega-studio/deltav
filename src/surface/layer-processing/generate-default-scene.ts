@@ -1,11 +1,11 @@
 import { AbsolutePosition } from "../../primitives/absolute-position";
 import { Camera, CameraProjectionType } from "../../util/camera";
-import { ChartCamera } from "../../util/chart-camera";
+import { Controller2D } from "../../util/controller2D";
 import { ViewCamera } from "../../util/view-camera";
 
 export interface IDefaultElements {
   /** Default chartting camera */
-  camera: ChartCamera;
+  camera: Controller2D;
   /**
    * The default view projection. Defaults to being an orthographic rendering with the origin at the
    * top left of the canvas and the y-axis as +y going downward.
@@ -63,7 +63,7 @@ export function generateDefaultElements(
   defaultCamera.baseCamera.update();
 
   // Generate a charting camera with all scales set to 1 and no offsets in any direction
-  const defaultChartCamera: ChartCamera = new ChartCamera();
+  const defaultChartCamera: Controller2D = new Controller2D();
 
   // This is a viewport that covers the entire context
   const defaultViewport = {

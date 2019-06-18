@@ -1,16 +1,16 @@
 import * as anime from "animejs";
 import {
   AnchorType,
-  ChartCamera,
   createLayer,
   InstanceProvider,
   IPickInfo,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  PickType,
-  ReferenceCamera
+  PickType
+  // ReferenceCamera
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionLabels extends BaseExample {
@@ -71,12 +71,14 @@ export class MouseInteractionLabels extends BaseExample {
     }
   };
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    return new ReferenceCamera({
+  makeCamera(defaultCamera: Camera): Camera {
+    /*return new ReferenceCamera({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
-    });
+    });*/
+
+    return defaultCamera;
   }
 
   makeLayer(

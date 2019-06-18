@@ -5,10 +5,10 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   BasicSurface,
-  ChartCamera,
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  Controller2D,
   createLayer,
   createView,
   EasingUtil,
@@ -19,6 +19,7 @@ import {
   scale2,
   Vec2
 } from "src";
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { EventHandler } from "../../common/event-handler";
 
@@ -125,7 +126,15 @@ export class BasicDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       resources: {},
       eventManagers: cameras => ({
@@ -164,7 +173,8 @@ export class BasicDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0]
+                scaleFactor: () => cameras.main.scale[0],
+                world2D: new Controller2D()
               })
             ]
           }

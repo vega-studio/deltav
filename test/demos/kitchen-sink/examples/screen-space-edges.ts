@@ -1,6 +1,5 @@
 import {
   AutoEasingMethod,
-  ChartCamera,
   createLayer,
   EdgeInstance,
   EdgeLayer,
@@ -12,6 +11,7 @@ import {
   PickType,
   ReferenceCamera
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 /**
@@ -48,8 +48,8 @@ export class ScreenSpaceEdges extends BaseExample {
     this.shiftIsDown = e.shiftKey;
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    this.camera = new ReferenceCamera({
+  makeCamera(defaultCamera: Camera): Camera {
+    /*this.camera = new ReferenceCamera({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [
@@ -57,9 +57,9 @@ export class ScreenSpaceEdges extends BaseExample {
         this.shiftIsDown ? scale[1] : 1,
         1
       ]
-    });
+    });*/
 
-    return this.camera;
+    return defaultCamera;
   }
 
   makeLayer(

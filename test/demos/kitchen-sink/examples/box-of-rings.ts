@@ -1,5 +1,4 @@
 import {
-  ChartCamera,
   createLayer,
   InstanceProvider,
   LayerInitializer,
@@ -7,12 +6,13 @@ import {
   RingInstance,
   RingLayer
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoxOfRings extends BaseExample {
-  camera: ChartCamera;
+  camera: Camera;
 
-  makeCamera(defaultCamera: ChartCamera) {
+  makeCamera(defaultCamera: Camera) {
     this.camera = defaultCamera;
     return defaultCamera;
   }

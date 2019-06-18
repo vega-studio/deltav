@@ -3,7 +3,6 @@ import {
   BaseResourceOptions,
   BasicSurface,
   Bounds,
-  ChartCamera,
   EventManager,
   IBasicSurfaceOptions,
   Instance,
@@ -12,10 +11,11 @@ import {
   Omit,
   View
 } from "src";
+import { Camera } from "src/util/camera";
 
 export type DemoPipeline<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > = Omit<

@@ -1,6 +1,5 @@
 import {
   BaseResourceOptions,
-  ChartCamera,
   ClearFlags,
   createAtlas,
   createFont,
@@ -10,6 +9,7 @@ import {
   TextureSize,
   WebGLStat
 } from "src";
+import { Camera, CameraProjectionType } from "src/util/camera";
 
 /**
  * A default view that covers the full canvas
@@ -17,7 +17,15 @@ import {
 export const DEFAULT_FULLSCREEN_VIEW: IViewOptions = {
   key: "default-view",
   background: [0, 0, 0, 1],
-  camera: new ChartCamera(),
+  camera: new Camera({
+    type: CameraProjectionType.ORTHOGRAPHIC,
+    left: -100,
+    right: 100,
+    bottom: -100,
+    top: 100,
+    near: -100,
+    far: 100
+  }),
   clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR],
   viewport: {
     left: 0,

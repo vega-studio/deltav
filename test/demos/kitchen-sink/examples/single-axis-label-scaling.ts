@@ -2,16 +2,15 @@ import {
   add2,
   AnchorType,
   AutoEasingMethod,
-  ChartCamera,
   createLayer,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ReferenceCamera,
   ScaleMode,
   uid
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class SingleAxisLabelScaling extends BaseExample {
@@ -28,8 +27,8 @@ export class SingleAxisLabelScaling extends BaseExample {
     this.isYAxis = yAxis;
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    if (this.isYAxis === undefined) {
+  makeCamera(defaultCamera: Camera): Camera {
+    /*if (this.isYAxis === undefined) {
       return new ReferenceCamera({
         base: defaultCamera,
         offsetFilter: (offset: [number, number, number]) => [
@@ -55,7 +54,8 @@ export class SingleAxisLabelScaling extends BaseExample {
         offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
         scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
       });
-    }
+    }*/
+    return defaultCamera;
   }
 
   makeLayer(

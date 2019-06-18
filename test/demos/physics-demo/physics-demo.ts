@@ -4,7 +4,6 @@ import {
   BasicCameraController,
   BasicSurface,
   Bounds,
-  ChartCamera,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -16,6 +15,7 @@ import {
 import { BaseDemo } from "../../common/base-demo";
 
 import * as Matter from "matter-js";
+import { Camera, CameraProjectionType } from "src/util/camera";
 
 const { random } = Math;
 const PHYSICS_FRAME = 1000 / 60;
@@ -95,7 +95,15 @@ export class PhysicsDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       resources: {},
       eventManagers: cameras => ({

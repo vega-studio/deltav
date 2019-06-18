@@ -1,7 +1,6 @@
 import * as anime from "animejs";
 import {
   AnchorType,
-  ChartCamera,
   createLayer,
   InstanceProvider,
   IPickInfo,
@@ -9,9 +8,10 @@ import {
   PickType,
   RectangleInstance,
   RectangleLayer,
-  ReferenceCamera,
+  // ReferenceCamera,
   ScaleMode
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionRectangle extends BaseExample {
@@ -72,12 +72,13 @@ export class MouseInteractionRectangle extends BaseExample {
     }
   };
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    return new ReferenceCamera({
+  makeCamera(defaultCamera: Camera): Camera {
+    return defaultCamera;
+    /*return new ReferenceCamera({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
-    });
+    });*/
   }
 
   makeLayer(

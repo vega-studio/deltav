@@ -1,6 +1,7 @@
+import { ILayer2DProps, Layer2D } from "src/surface/layer2D";
 import { GLSettings } from "../../gl";
 import { InstanceProvider } from "../../instance-provider";
-import { ILayerProps, Layer } from "../../surface/layer";
+// import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -8,7 +9,12 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../util";
+import {
+  CommonMaterialOptions,
+  Controller2D,
+  IAutoEasingMethod,
+  Vec
+} from "../../util";
 import { ArcInstance } from "./arc-instance";
 
 export enum ArcScaleType {
@@ -21,7 +27,8 @@ export enum ArcScaleType {
   SCREEN_CURVE
 }
 
-export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
+export interface IArcLayerProps<T extends ArcInstance>
+  extends ILayer2DProps<T> {
   scaleType?: ArcScaleType;
   animate?: {
     angle?: IAutoEasingMethod<Vec>;
@@ -41,11 +48,12 @@ export interface IArcLayerProps<T extends ArcInstance> extends ILayerProps<T> {
 export class ArcLayer<
   T extends ArcInstance,
   U extends IArcLayerProps<T>
-> extends Layer<T, U> {
+> extends Layer2D<T, U> {
   static defaultProps: IArcLayerProps<ArcInstance> = {
     data: new InstanceProvider<ArcInstance>(),
     key: "",
-    scaleType: ArcScaleType.NONE
+    scaleType: ArcScaleType.NONE,
+    world2D: new Controller2D()
   };
 
   /** Easy lookup of all attribute names for the layer */

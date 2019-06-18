@@ -1,6 +1,6 @@
 precision highp float;
 
-${import: projection}
+${import: world2D}
 
 varying vec4 vertexColor;
 varying float edgeSharpness;

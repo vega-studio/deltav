@@ -6,9 +6,7 @@ import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
 import { Vec2 } from "../util";
 import { Camera, CameraProjectionType } from "../util/camera";
-import { ChartCamera } from "../util/chart-camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { ViewCamera, ViewCameraType } from "../util/view-camera";
 import { LayerScene } from "./layer-scene";
 
 export enum ClearFlags {
@@ -57,7 +55,8 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If not provided, then this camera will use a default ChartCamera for this camera slot. This
    * will also cause a normal camera handler to be utilized.
    */
-  camera: ChartCamera;
+  // camera: ChartCamera;
+  camera: Camera;
   /**
    * This sets what buffers get cleared by webgl before the view is drawn in it's space.
    */
@@ -71,7 +70,7 @@ export interface IViewOptions extends IdentifyByKeyOptions {
    * If this is NOT provided, the camera will be a special orthographic camera for 2d spaces
    * with a y-axis of +y points down with (0, 0) at the top left of the viewport.
    */
-  viewCamera?: ViewCamera;
+  // viewCamera?: ViewCamera;
   /**
    * This specifies the bounds on the canvas this camera will render to. This let's you render
    * say a little square in the bottom right showing a minimap.
@@ -99,7 +98,8 @@ export class View extends IdentifyByKey {
   /** If present, is the cleared color before this view renders */
   background?: Color;
   /** Camera that defines the individual components of each axis with simpler concepts */
-  camera: ChartCamera;
+  // camera: ChartCamera;
+  camera: Camera;
   /** These are the clear flags set for this view */
   clearFlags: ClearFlags[] = [];
   /**
@@ -125,7 +125,7 @@ export class View extends IdentifyByKey {
   /** This is the rendering bounds within screen space */
   screenBounds: Bounds<View>;
   /** Camera that defines the view projection matrix */
-  viewCamera: ViewCamera;
+  // viewCamera: ViewCamera;
   /** The size positioning of the view */
   viewport: AbsolutePosition;
   /** The bounds of the render space on the canvas this view will render on */
@@ -182,11 +182,12 @@ export class View extends IdentifyByKey {
     return this.pixelSpaceToScreen(p, out);
   }
 
-  screenToWorld(point: Vec2, out?: Vec2) {
-    const view = this.pixelSpaceToScreen(this.screenToView(point));
+  screenToWorld(_point: Vec2, out?: Vec2) {
+    // const view = this.pixelSpaceToScreen(this.screenToView(point));
 
     const world = out || [0, 0];
-    world[0] =
+
+    /*world[0] =
       (view[0] - this.camera.offset[0] * this.camera.scale[0]) /
       this.camera.scale[0];
     world[1] =
@@ -196,16 +197,16 @@ export class View extends IdentifyByKey {
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
       console.warn("Custom View Camera projections not supported yet");
-    }
+    }*/
 
     return world;
   }
 
-  worldToScreen(point: Vec2, out?: Vec2) {
+  worldToScreen(_point: Vec2, out?: Vec2) {
     const screen: Vec2 = [0, 0];
 
     // Calculate from the camera to view space
-    screen[0] =
+    /*screen[0] =
       (point[0] * this.camera.scale[0] +
         this.camera.offset[0] * this.camera.scale[0]) *
       this.pixelRatio;
@@ -217,16 +218,16 @@ export class View extends IdentifyByKey {
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
       console.warn("Custom View Camera projections not supported yet");
-    }
+    }*/
 
     // Convert from view to screen space
     return this.viewToScreen(screen, out);
   }
 
-  viewToWorld(point: Vec2, out?: Vec2) {
+  viewToWorld(_point: Vec2, out?: Vec2) {
     const world = out || [0, 0];
 
-    const screen = this.pixelSpaceToScreen(point);
+    /*const screen = this.pixelSpaceToScreen(point);
     world[0] =
       (screen[0] - this.camera.offset[0] * this.camera.scale[0]) /
       this.camera.scale[0];
@@ -237,16 +238,16 @@ export class View extends IdentifyByKey {
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
       console.warn("Custom View Camera projections not supported yet");
-    }
+    }*/
 
     return world;
   }
 
-  worldToView(point: Vec2, out?: Vec2) {
+  worldToView(_point: Vec2, out?: Vec2) {
     const screen = out || [0, 0];
 
     // Calculate from the camera to view space
-    screen[0] =
+    /*screen[0] =
       point[0] * this.camera.scale[0] +
       this.camera.offset[0] * this.camera.scale[0];
     screen[1] =
@@ -256,7 +257,7 @@ export class View extends IdentifyByKey {
     // If this is a custom camera, we must actually project our world point to the screen
     if (this.viewCamera.type === ViewCameraType.CUSTOM) {
       console.warn("Custom View Camera projections not supported yet");
-    }
+    }*/
 
     return screen;
   }
@@ -268,8 +269,8 @@ export class View extends IdentifyByKey {
    */
   fitViewtoViewport(surfaceDimensions: Bounds<never>) {
     if (
-      this.viewCamera.type === ViewCameraType.CONTROLLED &&
-      isOrthographic(this.viewCamera.baseCamera)
+      // this.viewCamera.type === ViewCameraType.CONTROLLED &&
+      isOrthographic(this.camera)
     ) {
       const viewBounds = getAbsolutePositionBounds<View>(
         this.viewport,
@@ -291,7 +292,7 @@ export class View extends IdentifyByKey {
 
       const scaleX = 1;
       const scaleY = 1;
-      const camera = this.viewCamera.baseCamera;
+      const camera = this.camera;
 
       camera.projectionOptions = Object.assign(
         camera.projectionOptions,
@@ -314,7 +315,7 @@ export class View extends IdentifyByKey {
         y: this.viewBounds.y / this.pixelRatio
       });
       this.screenBounds.d = this;
-    } else if (!isOrthographic(this.viewCamera.baseCamera)) {
+    } else if (!isOrthographic(this.camera)) {
       console.warn(
         "Fit to viewport does not support non-orthographic cameras as a default behavior."
       );

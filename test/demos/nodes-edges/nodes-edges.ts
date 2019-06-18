@@ -11,11 +11,11 @@ import {
   BasicSurface,
   Bounds,
   CameraBoundsAnchor,
-  ChartCamera,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   compare4,
+  Controller2D,
   copy2,
   copy4,
   createLayer,
@@ -39,6 +39,7 @@ import {
   Size,
   Vec4
 } from "src";
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
 import { DEFAULT_RESOURCES, WORDS } from "../../types";
@@ -258,7 +259,7 @@ export class NodesEdges extends BaseDemo {
   handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     const focus = info.instances.find(circle => Boolean(circle.center));
     if (!focus || !this.surface) return;
-    this.surface.cameras.main.animation = AutoEasingMethod.easeInOutCubic(1000);
+    // this.surface.cameras.main.animation = AutoEasingMethod.easeInOutCubic(1000);
     this.surface.eventManagers.main.centerOn(info.projection.id, [
       focus.center[0],
       focus.center[1],
@@ -274,7 +275,15 @@ export class NodesEdges extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       resources: {
         font: DEFAULT_RESOURCES.font
@@ -305,7 +314,8 @@ export class NodesEdges extends BaseDemo {
                     AutoEasingLoopStyle.REPEAT
                   )
                 },
-                data: providers.arcs
+                data: providers.arcs,
+                world2D: new Controller2D()
               }),
               edges: createLayer(EdgeLayer, {
                 animate: {

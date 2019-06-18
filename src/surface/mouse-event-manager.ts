@@ -1,6 +1,6 @@
 import { Bounds } from "../primitives";
-import { ChartCamera, subtract2, Vec2, ViewCamera } from "../util";
-import { Camera } from "../util/camera";
+import { subtract2, Vec2 } from "../util";
+import { Camera, CameraProjectionType } from "../util/camera";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
@@ -16,8 +16,16 @@ const emptyView: View = new View(
   {
     key: "error",
     viewport: {},
-    viewCamera: new ViewCamera(Camera.defaultCamera()),
-    camera: new ChartCamera()
+    // viewCamera: new ViewCamera(Camera.defaultCamera()),
+    camera: new Camera({
+      type: CameraProjectionType.ORTHOGRAPHIC,
+      left: -100,
+      right: 100,
+      bottom: -100,
+      top: 100,
+      near: -100,
+      far: 100
+    })
   }
 );
 

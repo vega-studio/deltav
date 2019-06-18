@@ -1,6 +1,5 @@
 import {
   BasicSurface,
-  ChartCamera,
   ClearFlags,
   EventManager,
   IInstanceProvider,
@@ -12,6 +11,7 @@ import {
 import * as datGUI from "dat.gui";
 import { BaseDemo } from "../../common/base-demo";
 
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { Blending } from "test/demos/kitchen-sink/examples/blending";
 import { DEFAULT_RESOURCES } from "test/types";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
@@ -224,7 +224,15 @@ export class KitchenSink extends BaseDemo {
     for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
       for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
-        const camera = new ChartCamera();
+        const camera = new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        });
         const test = tests[++testIndex];
 
         if (test) {

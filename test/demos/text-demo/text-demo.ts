@@ -3,7 +3,6 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   BasicSurface,
-  ChartCamera,
   ClearFlags,
   createLayer,
   createView,
@@ -17,6 +16,7 @@ import {
   nextFrame,
   ScaleMode
 } from "src";
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { DEFAULT_RESOURCES, WORDS } from "test/types";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -160,7 +160,15 @@ export class TextDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       resources: {
         font: DEFAULT_RESOURCES.font

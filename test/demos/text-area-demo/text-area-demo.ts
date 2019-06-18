@@ -2,7 +2,6 @@ import * as datGUI from "dat.gui";
 import {
   BasicCameraController,
   BasicSurface,
-  ChartCamera,
   ClearFlags,
   createLayer,
   createView,
@@ -14,6 +13,7 @@ import {
   WordWrap
 } from "src/base-layers/labels/text-area-instance";
 import { TextAreaLayer } from "src/base-layers/labels/text-area-layer";
+import { Camera, CameraProjectionType } from "src/util/camera";
 import { DEFAULT_RESOURCES, STORY } from "test/types";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -218,7 +218,15 @@ export class TextAreaDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera({
+          type: CameraProjectionType.ORTHOGRAPHIC,
+          left: -100,
+          right: 100,
+          bottom: -100,
+          top: 100,
+          near: -100,
+          far: 100
+        })
       },
       resources: {
         font: DEFAULT_RESOURCES.font

@@ -1,6 +1,6 @@
 export * from "./common-options";
 export * from "./auto-easing-method";
-export * from "./chart-camera";
+export * from "./controller2D";
 export * from "./extend-shader-io";
 export * from "./mouse";
 export * from "./reference-camera";

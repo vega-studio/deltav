@@ -1,3 +1,4 @@
+import { Camera } from "src/util/camera";
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
@@ -11,7 +12,7 @@ import {
 } from "../surface";
 import { LayerInitializer } from "../surface/surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
-import { ChartCamera, nextFrame, PromiseResolver } from "../util";
+import { nextFrame, PromiseResolver } from "../util";
 import { waitForFrame } from "../util/waitForFrame";
 
 /**
@@ -102,7 +103,7 @@ export interface IBasicSurfacePipeline {
  */
 export interface IBasicSurfaceOptions<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > {
@@ -159,7 +160,7 @@ export interface IBasicSurfaceOptions<
  */
 export class BasicSurface<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > {

@@ -1,13 +1,13 @@
 import {
   AnchorType,
-  ChartCamera,
   createLayer,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
-  ReferenceCamera
+  LayerInitializer
+  // ReferenceCamera
 } from "src";
+import { Camera } from "src/util/camera";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelSizingCorrected extends BaseExample {
@@ -22,11 +22,12 @@ export class LabelSizingCorrected extends BaseExample {
     });
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    return new ReferenceCamera({
+  makeCamera(defaultCamera: Camera): Camera {
+    return defaultCamera;
+    /*return new ReferenceCamera({
       base: defaultCamera,
       scaleFilter: (scale: [number, number, number]) => [scale[0], scale[1], 1]
-    });
+    });*/
   }
 
   makeProvider(): InstanceProvider<LabelInstance> {

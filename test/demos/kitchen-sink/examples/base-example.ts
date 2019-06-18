@@ -1,12 +1,12 @@
 import {
   BasicCameraController,
-  ChartCamera,
   EventManager,
   IInstanceProvider,
   Instance,
   LayerInitializer,
   Surface
 } from "src";
+import { Camera } from "src/util/camera";
 
 export type TestResourceKeys = {
   atlas: string;
@@ -26,8 +26,8 @@ export abstract class BaseExample {
   }
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera,
+    _testCamera: Camera,
     viewName: string
   ): EventManager {
     return new BasicCameraController({
@@ -36,7 +36,7 @@ export abstract class BaseExample {
     });
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
+  makeCamera(defaultCamera: Camera): Camera {
     return defaultCamera;
   }
 

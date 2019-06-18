@@ -20,7 +20,6 @@ export enum CameraProjectionType {
 export interface ICameraOrthographicOptions {
   /** Forced type requirement, indicates orthographic projection */
   type: CameraProjectionType.ORTHOGRAPHIC;
-
   /** Left border of the view range */
   left: number;
   /** Right border of the view range */
@@ -41,7 +40,6 @@ export interface ICameraOrthographicOptions {
 export interface ICameraPerspectiveOptions {
   /** Forced type requirement, indicates perspective projection */
   type: CameraProjectionType.PERSPECTIVE;
-
   /** Field of view in radians */
   fov: number;
   /** Width of the render space */

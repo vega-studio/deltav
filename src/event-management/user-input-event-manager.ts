@@ -160,14 +160,15 @@ export class UserInputEventManager {
           start: mouse,
           startTime: Date.now(),
           startView: viewsUnderMouse[0].d,
-          event
+          event,
+          wheel: this.makeWheel(event),
+          button: -1
         };
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
-        const wheel = this.makeWheel(event);
 
         this.controllers.forEach(controller => {
-          controller.handleWheel(interaction, wheel);
+          controller.handleWheel(interaction);
         });
 
         event.stopPropagation();
@@ -218,7 +219,9 @@ export class UserInputEventManager {
           start: mouse,
           startTime: Date.now(),
           startView: viewsUnderMouse[0].d,
-          event
+          event,
+          wheel: this.makeWheel(),
+          button: -1
         };
       }
 
@@ -258,13 +261,15 @@ export class UserInputEventManager {
         start: startPosition,
         startTime: Date.now(),
         startView: downViews[0].d,
-        event
+        event,
+        wheel: this.makeWheel(),
+        button: event.button
       };
 
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
       this.controllers.forEach(controller => {
-        controller.handleMouseDown(interaction, event.button);
+        controller.handleMouseDown(interaction);
       });
 
       event.stopPropagation();
@@ -296,14 +301,14 @@ export class UserInputEventManager {
         elementMovedBeforeDocMoved = false;
       };
 
-      document.onmouseup = (_event: any) => {
+      document.onmouseup = _event => {
         document.onmousemove = null;
         document.onmouseup = null;
         document.onmouseover = null;
         mouseMetrics = undefined;
       };
 
-      document.onmouseover = (event: any) => {
+      document.onmouseover = event => {
         if (!mouseMetrics) return;
 
         const mouse = eventElementPosition(event, element);
@@ -322,7 +327,7 @@ export class UserInputEventManager {
         event.stopPropagation();
       };
 
-      element.onmouseup = (event: any) => {
+      element.onmouseup = event => {
         if (!mouseMetrics) return;
         const mouse = eventElementPosition(event, element);
         mouseMetrics.deltaPosition = subtract2(
@@ -331,10 +336,11 @@ export class UserInputEventManager {
         );
         mouseMetrics.previousPosition = mouseMetrics.currentPosition;
         mouseMetrics.currentPosition = mouse;
+        mouseMetrics.button = event.button;
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
         this.controllers.forEach(controller => {
-          controller.handleMouseUp(interaction, event.button);
+          controller.handleMouseUp(interaction);
         });
 
         // If we release the mouse before the valid click delay
@@ -343,7 +349,7 @@ export class UserInputEventManager {
           Date.now() - mouseMetrics.startTime < VALID_CLICK_DELAY
         ) {
           this.controllers.forEach(controller => {
-            controller.handleClick(interaction, event.button);
+            controller.handleClick(interaction);
           });
         }
 
@@ -1118,11 +1124,17 @@ export class UserInputEventManager {
     return allCombinations;
   }
 
-  makeWheel(event: MouseWheelEvent): IWheelMetrics {
+  makeWheel(event?: MouseWheelEvent): IWheelMetrics {
+    if (!event) {
+      return {
+        delta: [0, 0]
+      };
+    }
+
     const wheel = normalizeWheel(event);
 
     return {
-      wheel: [wheel.pixelX, wheel.pixelY]
+      delta: [wheel.pixelX, wheel.pixelY]
     };
   }
 

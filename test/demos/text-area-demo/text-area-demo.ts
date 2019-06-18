@@ -216,6 +216,9 @@ export class TextAreaDemo extends BaseDemo {
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
+      rendererOptions: {
+        antialias: true
+      },
       providers: this.providers,
       cameras: {
         main: new ChartCamera()

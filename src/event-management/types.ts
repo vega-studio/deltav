@@ -1,6 +1,21 @@
 import { View } from "../surface/view";
 import { Vec2 } from "../util/vector";
 
+export enum MouseButton {
+  /** No button detected */
+  NONE = -1,
+  /** Mouse click left */
+  LEFT = 0,
+  /** Usually mouse wheel click */
+  AUX = 1,
+  /** Mosue right click */
+  RIGHT = 2,
+  /** Usually side left mouse button (will cause 'browser back' in some cases) */
+  FOURTH = 3,
+  /** Usually side right mouse button (will cause 'browser forward' in some cases) */
+  FIFTH = 4
+}
+
 export interface IEventInteraction {
   /** Metrics of the interaction in screen space */
   screen: {
@@ -43,14 +58,12 @@ export interface IEventInteraction {
  * interacts with the views below it.
  */
 export interface IMouseInteraction extends IEventInteraction {
-  /** When present indicates any relevant button codes used during a click event */
-  button?: number;
   /** The metrics associated with the mouse during this interaction */
   mouse: IMouseMetrics;
 }
 
 export interface IWheelMetrics {
-  wheel: [number, number];
+  delta: [number, number];
 }
 
 /**
@@ -96,10 +109,14 @@ export interface IInteractionMetrics {
  * Metrics calculated and stored for the mouse
  */
 export interface IMouseMetrics extends IInteractionMetrics {
+  /** The mouse button pressed */
+  button: MouseButton;
   /** Flag for storing whether a mouse event is still eligible to register a click event */
   canClick: boolean;
   /** The latest event object associated with this mouse event */
   event: MouseEvent;
+  /** Information derived for the wheel */
+  wheel: IWheelMetrics;
 }
 
 /**

@@ -138,7 +138,7 @@ export class BasicDemo extends BaseDemo {
           startView: ["main"]
         }),
         clickScreen: new SimpleEventHandler({
-          handleClick: (e: IMouseInteraction, _button: number) => {
+          handleClick: (e: IMouseInteraction) => {
             const target = e.target;
             this.moveToLocation(target.view.screenToWorld(e.screen.position));
           },

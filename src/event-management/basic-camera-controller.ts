@@ -25,8 +25,7 @@ import { SimpleEventHandler } from "./simple-event-handler";
 import {
   IMouseInteraction,
   ISingleTouchInteraction,
-  ITouchInteraction,
-  IWheelMetrics
+  ITouchInteraction
 } from "./types";
 export enum CameraBoundsAnchor {
   TOP_LEFT,
@@ -68,6 +67,11 @@ export interface IBasicCameraControllerOptions {
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
   /**
+   * This is a handler for when the camera has applied changes to the visible range of what is seen.
+   * Which most likely means offset or scale has been altered.
+   */
+  onRangeChanged?(camera: ChartCamera, targetView: View): void;
+  /**
    * This provides a control to filter panning that will be applied to the camera. The input and
    * output of this will be the delta value to be applied.
    */
@@ -95,12 +99,8 @@ export interface IBasicCameraControllerOptions {
    * This MUST be set for onRangeChange to broadcast animated camera movements.
    */
   startView?: string | string[];
-
-  /**
-   * This is a handler for when the camera has applied changes to the visible range of what is seen.
-   * Which most likely means offset or scale has been altered.
-   */
-  onRangeChanged?(camera: ChartCamera, targetView: View): void;
+  /** When this is set, it will require two fingers to be down at minimum to pan the camera */
+  twoFingerPan?: boolean;
   /**
    * This specifies whether a view can be scrolled by wheel
    * If this is not specified or set false, the view can be zoomed by wheel
@@ -152,6 +152,8 @@ export class BasicCameraController extends SimpleEventHandler {
   startViews: string[] = [];
   /** Whether a view can be scrolled by wheel */
   wheelShouldScroll: boolean;
+  /** Indicates if panning will happen with two or more fingers down instead of one */
+  twoFingerPan: boolean;
   /** Stores the views this controller has flagged for optimizing */
   private optimizedViews = new Set<View>();
   /** The animation used to immediately position the camera */
@@ -178,12 +180,15 @@ export class BasicCameraController extends SimpleEventHandler {
 
   constructor(options: IBasicCameraControllerOptions) {
     super({});
+
     if (options.bounds) {
       this.setBounds(options.bounds);
     }
+
     this._camera = options.camera;
     this.scaleFactor = options.scaleFactor || 1000.0;
     this.ignoreCoverViews = options.ignoreCoverViews || false;
+    this.twoFingerPan = options.twoFingerPan || false;
 
     if (options.startView) {
       if (Array.isArray(options.startView)) {
@@ -472,7 +477,7 @@ export class BasicCameraController extends SimpleEventHandler {
   /**
    * Used to aid in handling the pan effect and determine the contextual view targetted.
    */
-  handleMouseDown(e: IMouseInteraction, _button: number) {
+  handleMouseDown(e: IMouseInteraction) {
     if (this.startViews) {
       // We look for valid covered views on mouse down so dragging will work
       this.findCoveredStartView(e);
@@ -507,8 +512,14 @@ export class BasicCameraController extends SimpleEventHandler {
     if (this.startViews) {
       const validTouches = this.filterTouchesByValidStart(e.allTouches);
 
-      if (validTouches.length > 0) {
-        this.isPanning = true;
+      if (this.twoFingerPan) {
+        if (validTouches.length > 1) {
+          this.isPanning = true;
+        }
+      } else {
+        if (validTouches.length > 0) {
+          this.isPanning = true;
+        }
       }
 
       if (validTouches.length > 1) {
@@ -703,15 +714,15 @@ export class BasicCameraController extends SimpleEventHandler {
   /**
    * Applies a scaling effect to the camera for mouse wheel events
    */
-  handleWheel(e: IMouseInteraction, wheelMetrics: IWheelMetrics) {
+  handleWheel(e: IMouseInteraction) {
     // Every mouse wheel event must look to see if it's over a valid covered start view
     this.findCoveredStartView(e);
 
     if (this.canStart(e.target.view.id)) {
       if (this.wheelShouldScroll) {
         const deltaPosition: [number, number] = [
-          -wheelMetrics.wheel[0],
-          wheelMetrics.wheel[1]
+          -e.mouse.wheel.delta[0],
+          e.mouse.wheel.delta[1]
         ];
 
         if (e.start) {
@@ -727,8 +738,8 @@ export class BasicCameraController extends SimpleEventHandler {
         const targetView = this.getTargetView(e);
 
         const deltaScale: [number, number, number] = [
-          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomX,
-          wheelMetrics.wheel[1] / this.scaleFactor * currentZoomY,
+          e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomX,
+          e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomY,
           1
         ];
 

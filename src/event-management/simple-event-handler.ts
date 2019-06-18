@@ -1,5 +1,5 @@
 import { EventManager } from "./event-manager";
-import { IMouseInteraction, ITouchInteraction, IWheelMetrics } from "./types";
+import { IMouseInteraction, ITouchInteraction } from "./types";
 
 /**
  * This is a simple way to access the events executing on the chart.
@@ -10,11 +10,11 @@ export class SimpleEventHandler extends EventManager {
     Object.assign(this, handlers);
   }
 
-  handleMouseDown(_e: IMouseInteraction, _button: number): void {
+  handleMouseDown(_e: IMouseInteraction): void {
     /* No op */
   }
 
-  handleMouseUp(_e: IMouseInteraction, _button: number): void {
+  handleMouseUp(_e: IMouseInteraction): void {
     /* No op */
   }
 
@@ -30,7 +30,7 @@ export class SimpleEventHandler extends EventManager {
     /* No op */
   }
 
-  handleClick(_e: IMouseInteraction, _button: number): void {
+  handleClick(_e: IMouseInteraction): void {
     /* No op */
   }
 
@@ -38,7 +38,7 @@ export class SimpleEventHandler extends EventManager {
     /* No op */
   }
 
-  handleWheel(_e: IMouseInteraction, _wheel: IWheelMetrics): void {
+  handleWheel(_e: IMouseInteraction): void {
     /* No op */
   }
 

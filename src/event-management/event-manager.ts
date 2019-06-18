@@ -1,7 +1,7 @@
 import { Bounds } from "../primitives";
 import { View } from "../surface/view";
 import { IProjection } from "../types";
-import { IMouseInteraction, ITouchInteraction, IWheelMetrics } from "./types";
+import { IMouseInteraction, ITouchInteraction } from "./types";
 import { UserInputEventManager } from "./user-input-event-manager";
 
 /**
@@ -12,14 +12,14 @@ export abstract class EventManager {
 
   // MOUSE EVENTS
 
-  abstract handleMouseDown(e: IMouseInteraction, button: number): void;
-  abstract handleMouseUp(e: IMouseInteraction, button: number): void;
+  abstract handleMouseDown(e: IMouseInteraction): void;
+  abstract handleMouseUp(e: IMouseInteraction): void;
   abstract handleMouseOver(e: IMouseInteraction): void;
   abstract handleMouseOut(e: IMouseInteraction): void;
   abstract handleMouseMove(e: IMouseInteraction): void;
-  abstract handleClick(e: IMouseInteraction, button: number): void;
+  abstract handleClick(e: IMouseInteraction): void;
   abstract handleDrag(e: IMouseInteraction): void;
-  abstract handleWheel(e: IMouseInteraction, wheel: IWheelMetrics): void;
+  abstract handleWheel(e: IMouseInteraction): void;
 
   // TOUCH EVENTS
 

@@ -1,7 +1,11 @@
 import { SimpleEventHandler } from "../../event-management/simple-event-handler";
-import { IMouseInteraction } from "../../event-management/types";
+import {
+  IEventInteraction,
+  IMouseInteraction,
+  ITouchInteraction
+} from "../../event-management/types";
 import { IProjection, PickType } from "../../types";
-import { isDefined, Vec2 } from "../../util";
+import { isDefined } from "../../util";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
 import { Surface } from "../surface";
@@ -18,6 +22,8 @@ import { View } from "../view";
 export class LayerMouseEvents extends SimpleEventHandler {
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
   isOver = new Set<View>();
+  /** This tracks which views have touches over them */
+  isTouchOver = new Map<number, View>();
   /** This is the surface this manager is aiding with broadcasting events to layers */
   get scenes(): LayerScene[] {
     if (!this.surface || !this.surface.sceneDiffs) return [];
@@ -34,7 +40,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
     this.surface = surface;
   }
 
-  getSceneViewsUnderMouse(e: IMouseInteraction) {
+  getSceneViewsUnderMouse(e: IEventInteraction) {
     const viewByViewId = new Map<string, View>();
 
     // Map the scenes to SceneViews
@@ -53,80 +59,94 @@ export class LayerMouseEvents extends SimpleEventHandler {
       .filter(isDefined);
   }
 
-  getMouseByViewId(e: IMouseInteraction) {
-    // This is the mouse position for the provided view in view space
-    const viewMouseByViewId = new Map<string, Vec2>();
-
-    for (const viewItem of e.target.views) {
-      viewMouseByViewId.set(viewItem.view.id, viewItem.position);
-    }
-
-    return viewMouseByViewId;
+  handleClick(e: IMouseInteraction) {
+    this.handleInteraction(e, (layer, view) => {
+      layer.interactions.handleMouseClick(view, e);
+    });
   }
 
-  handleClick(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) => {
-      layer.interactions.handleMouseClick(view, mouse, button);
+  handleTap(e: ITouchInteraction) {
+    e.touches.forEach(interaction => {
+      this.handleInteraction(interaction, (layer, view) => {
+        layer.interactions.handleTap(view, interaction);
+      });
     });
   }
 
   handleDrag(e: IMouseInteraction) {
-    this.handleInteraction(e, (layer, view, mouse) =>
-      layer.interactions.handleMouseDrag(view, mouse)
-    );
+    this.handleInteraction(e, (layer, view) => {
+      layer.interactions.handleMouseDrag(view, e);
+    });
+  }
+
+  handleTouchDrag(e: ITouchInteraction) {
+    e.touches.forEach(interaction => {});
   }
 
   handleInteraction(
-    e: IMouseInteraction,
-    callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
+    e: IEventInteraction,
+    callback: (layer: Layer<any, any>, view: IProjection) => void
   ) {
     // Get all of the scenes under the mouse
     const views = this.getSceneViewsUnderMouse(e);
-    // Get a lookup of a view id to the mouse position in the view
-    const viewMouseByViewId = this.getMouseByViewId(e);
 
     // For every view of every scene, we must tell it's layers it's world space is receiving mouse interactions
     for (let i = 0, iMax = views.length; i < iMax; ++i) {
       const view = views[i];
-      this.handleView(view, viewMouseByViewId, callback);
+      this.handleView(view, callback);
     }
 
     return views;
   }
 
-  handleMouseDown(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) =>
-      layer.interactions.handleMouseDown(view, mouse, button)
+  handleMouseDown(e: IMouseInteraction) {
+    this.handleInteraction(e, (layer, view) =>
+      layer.interactions.handleMouseDown(view, e)
     );
   }
 
-  handleMouseUp(e: IMouseInteraction, button: number) {
-    this.handleInteraction(e, (layer, view, mouse) =>
-      layer.interactions.handleMouseUp(view, mouse, button)
+  handleTouchDown(e: ITouchInteraction) {
+    e.touches.forEach(interaction => {});
+  }
+
+  handleMouseUp(e: IMouseInteraction) {
+    this.handleInteraction(e, (layer, view) =>
+      layer.interactions.handleMouseUp(view, e)
     );
   }
 
-  handleMouseOver(_e: IMouseInteraction) {
-    // We let the mouse move event handle the registration of moused over views
+  handleTouchUp(e: ITouchInteraction) {
+    e.touches.forEach(interaction => {});
   }
 
   handleMouseOut(e: IMouseInteraction) {
-    // Get a lookup of a view id to the mouse position in the view
-    const viewMouseByViewId = this.getMouseByViewId(e);
-    const screen = e.screen.position;
-
     // All views that are moused over should no longer be considered over and broadcast a mouse out
     this.isOver.forEach(view => {
-      // Since we are leaving the view we must make the view relative cooridinates fromt he screen space coords
-      viewMouseByViewId.set(view.id, view.screenToView(screen));
-
-      this.handleView(view, viewMouseByViewId, (layer, view, mouse) =>
-        layer.interactions.handleMouseOut(view, mouse)
+      this.handleView(view, (layer, view) =>
+        layer.interactions.handleMouseOut(view, e)
       );
     });
 
     // Nothing is over anymore
     this.isOver.clear();
+  }
+
+  handleTouchOut(e: ITouchInteraction) {
+    // e.touches.forEach(interaction => {
+    //   // Get a lookup of a view id to the mouse position in the view
+    //   const viewMouseByViewId = this.getMouseByViewId(e);
+    //   const screen = e.screen.position;
+    //   // All views that are moused over should no longer be considered over and broadcast a mouse out
+    //   this.isOver.forEach(view => {
+    //     // Since we are leaving the view we must make the view relative cooridinates fromt he screen space coords
+    //     viewMouseByViewId.set(view.id, view.screenToView(screen));
+    //     this.handleView(view, viewMouseByViewId, (layer, view, mouse) =>
+    //       layer.interactions.handleMouseOut(view, mouse)
+    //     );
+    //   });
+    //   // Nothing is over anymore
+    //   this.isOver.clear();
+    // });
   }
 
   handleMouseMove(e: IMouseInteraction) {
@@ -138,13 +158,9 @@ export class LayerMouseEvents extends SimpleEventHandler {
     }
 
     // Get all of the scenes we have interacted with, and broadcast a move event for each
-    const allSceneViews = this.handleInteraction(e, (layer, view, mouse) =>
-      layer.interactions.handleMouseMove(view, mouse)
+    const allSceneViews = this.handleInteraction(e, (layer, view) =>
+      layer.interactions.handleMouseMove(view, e)
     );
-    // Get a lookup of a view id to the mouse position in the view
-    const viewMouseByViewId = this.getMouseByViewId(e);
-    // Get the position of the mouse on the screen
-    const screen = e.screen.position;
 
     // For quick lookups map all of the current SceneViews that are over
     const currentSceneViews = new Set<View>();
@@ -153,11 +169,8 @@ export class LayerMouseEvents extends SimpleEventHandler {
     // Detect which of the views are no longer over
     this.isOver.forEach(view => {
       if (!currentSceneViews.has(view)) {
-        // Since these views were not interacted with, we must create the mouse interaction position
-        viewMouseByViewId.set(view.id, view.screenToView(screen));
-
-        this.handleView(view, viewMouseByViewId, (layer, view, mouse) =>
-          layer.interactions.handleMouseOut(view, mouse)
+        this.handleView(view, (layer, view) =>
+          layer.interactions.handleMouseOut(view, e)
         );
       }
     });
@@ -165,8 +178,8 @@ export class LayerMouseEvents extends SimpleEventHandler {
     // Detect which of the views are newly over
     currentSceneViews.forEach(sceneView => {
       if (!this.isOver.has(sceneView)) {
-        this.handleView(sceneView, viewMouseByViewId, (layer, view, mouse) =>
-          layer.interactions.handleMouseOver(view, mouse)
+        this.handleView(sceneView, (layer, view) =>
+          layer.interactions.handleMouseOver(view, e)
         );
       }
     });
@@ -177,23 +190,14 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleView(
     view: View,
-    viewMouseByViewId: Map<string, Vec2>,
-    callback: (layer: Layer<any, any>, view: IProjection, mouse: Vec2) => void
+    callback: (layer: Layer<any, any>, view: IProjection) => void
   ) {
-    const mouse = viewMouseByViewId.get(view.id);
+    for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {
+      const layer = view.scene.layers[i];
 
-    if (mouse) {
-      for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {
-        const layer = view.scene.layers[i];
-
-        if (layer.picking && layer.picking.type !== PickType.NONE) {
-          callback(layer, view, mouse);
-        }
+      if (layer.picking && layer.picking.type !== PickType.NONE) {
+        callback(layer, view);
       }
     }
-  }
-
-  handleWheel(_e: IMouseInteraction) {
-    // TODO: This may need to be implemented. As of right now, there is no particular benefit
   }
 }

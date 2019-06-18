@@ -11,9 +11,7 @@ import {
   ILayerMaterialOptions,
   INonePickingMetrics,
   InstanceDiffType,
-  InstanceHitTest,
   IPickInfo,
-  IQuadTreePickingMetrics,
   IShaderInitialization,
   ISinglePickingMetrics,
   IUniform,
@@ -22,7 +20,7 @@ import {
   PickType,
   UniformIOValue
 } from "../types";
-import { TrackedQuadTree, TrackedQuadTreeBoundsAccessor, uid } from "../util";
+import { uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import {
   BufferManagerBase,
@@ -92,18 +90,43 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   printShader?: boolean;
 
   // ---- EVENTS ----
-  /** Executes when the mouse is down on instances and a picking type is set */
+  /** Executes when the mouse is down on instances (Picking type must be set) */
   onMouseDown?(info: IPickInfo<T>): void;
-  /** Executes when the mouse moves on instances and a picking type is set */
+  /** Executes when the mouse moves on instances (Picking type must be set) */
   onMouseMove?(info: IPickInfo<T>): void;
-  /** Executes when the mouse no longer over instances and a picking type is set */
+  /** Executes when the mouse no longer over instances (Picking type must be set) */
   onMouseOut?(info: IPickInfo<T>): void;
-  /** Executes when the mouse is newly over instances and a picking type is set */
+  /** Executes when the mouse is newly over instances (Picking type must be set) */
   onMouseOver?(info: IPickInfo<T>): void;
-  /** Executes when the mouse button is release when over instances and a picking type is set */
+  /** Executes when the mouse button is released when over instances (Picking type must be set) */
   onMouseUp?(info: IPickInfo<T>): void;
-  /** Executes when the mouse click gesture is executed over instances and a picking type is set */
+  /** Executes when the mouse was down on an instance but is released up outside of that instance (Picking type must be set) */
+  onMouseUpOutside?(info: IPickInfo<T>): void;
+  /** Executes when the mouse click gesture is executed over instances (Picking type must be set) */
   onMouseClick?(info: IPickInfo<T>): void;
+
+  /**
+   * Executes when there are no longer any touches that are down for the layer (Picking type must be set).
+   *
+   * NOTE: This executes for touches being released inside and outside their respective instance.
+   */
+  onTouchAllEnd?(info: IPickInfo<T>): void;
+  /** Executes when a touch is down on instances. Each touch will produce it's own event (Picking type must be set) */
+  onTouchDown?(info: IPickInfo<T>): void;
+  /** Executes when a touch is up when over on instances. Each touch will produce it's own event (Picking type must be set) */
+  onTouchUp?(info: IPickInfo<T>): void;
+  /** Executes when a touch was down on an instance but is released up outside of that instance (Picking type must be set) */
+  onTouchUpOutside?(info: IPickInfo<T>): void;
+  /** Executes when a touch is moving atop of instances. Each touch will produce it's own event (Picking type must be set) */
+  onTouchMove?(info: IPickInfo<T>): void;
+  /** Executes when a touch is moves off of an instance. Each touch will produce it's own event (Picking type must be set) */
+  onTouchOut?(info: IPickInfo<T>): void;
+  /** Executes when a touch moves over instances while the touch is dragged around the screen. (Picking type must be set) */
+  onTouchOver?(info: IPickInfo<T>): void;
+  /** Executes when a touch moves off of an instance and there is no longer ANY touches over the instance (Picking type must be set) */
+  onTouchAllOut?(info: IPickInfo<T>): void;
+  /** Executes when a touch taps on instances. (Picking type must be set) */
+  onTap?(info: IPickInfo<T>): void;
 }
 
 /**
@@ -113,13 +136,6 @@ export interface ILayerPropsInternal<T extends Instance>
   extends ILayerProps<T> {
   /** The system provides this for the layer when the layer is being produced as a child of another layer */
   parent?: Layer<Instance, ILayerProps<Instance>>;
-}
-
-export interface IPickingMethods<T extends Instance> {
-  /** This provides a way to calculate bounds of an Instance */
-  boundsAccessor: TrackedQuadTreeBoundsAccessor<T>;
-  /** This is the way the system tests hitting an intsance */
-  hitTest: InstanceHitTest<T>;
 }
 
 /**
@@ -188,10 +204,7 @@ export class Layer<
   /** If this is populated, then this layer is the product of a parent producing this layer. */
   parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking:
-    | IQuadTreePickingMetrics<T>
-    | ISinglePickingMetrics<T>
-    | INonePickingMetrics;
+  picking: ISinglePickingMetrics<T> | INonePickingMetrics;
   /** Properties handed to the Layer during a Surface render */
   props: U;
   /** This is the system provided resource manager that lets a layer request Atlas resources */
@@ -235,23 +248,7 @@ export class Layer<
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 
-    // If ALL is specified we set up QUAD tree picking for our instances
-    if (picking === PickType.ALL) {
-      const pickingMethods = this.getInstancePickingMethods();
-
-      this.picking = {
-        currentPickMode: PickType.NONE,
-        hitTest: pickingMethods.hitTest,
-        quadTree: new TrackedQuadTree<T>(
-          0,
-          1,
-          0,
-          1,
-          pickingMethods.boundsAccessor
-        ),
-        type: PickType.ALL
-      };
-    } else if (picking === PickType.SINGLE) {
+    if (picking === PickType.SINGLE) {
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.SINGLE,
@@ -515,16 +512,6 @@ export class Layer<
     ObservableMonitoring.setObservableMonitor(false);
 
     return out;
-  }
-
-  /**
-   * This method is for layers to implement to specify how the bounds for an instance are retrieved or
-   * calculated and how the Instance interacts with a point. This is REQUIRED to support PickType.ALL on the layer.
-   */
-  getInstancePickingMethods(): IPickingMethods<T> {
-    throw new Error(
-      "When picking is set to PickType.ALL, the layer MUST have this method implemented; otherwise, the layer is incompatible with this picking mode."
-    );
   }
 
   /**

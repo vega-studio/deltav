@@ -28,6 +28,8 @@ import { Bin, BinType, BinValueType } from "./bin";
 export class SandDanceDemo extends BaseDemo {
   camera: ChartCamera;
 
+  gui: datGUI.GUI;
+
   parameters = {
     color: [0, 0, 255, 1] as [number, number, number, number],
     width: 6,
@@ -45,7 +47,8 @@ export class SandDanceDemo extends BaseDemo {
       array.sort((a, b) => a.eyeColor.localeCompare(b.eyeColor));
 
       console.warn(array);
-    }
+    },
+    sortBy: "null"
   };
 
   providers = {
@@ -58,6 +61,10 @@ export class SandDanceDemo extends BaseDemo {
   rectangles: RectangleInstance[] = [];
   binToRectangles: Map<RectangleInstance, RectangleInstance[]> = new Map();
   binRectangles: RectangleInstance[] = [];
+  idToRectangle: Map<number, RectangleInstance> = new Map<
+    number,
+    RectangleInstance
+  >();
 
   selectedRectangle: RectangleInstance | null = null;
   selectedBin: RectangleInstance | null = null;
@@ -110,6 +117,8 @@ export class SandDanceDemo extends BaseDemo {
       });
 
     parameters.add(this.parameters, "changeLocations");
+
+    this.gui = gui;
   }
 
   makeSurface(container: HTMLElement) {
@@ -154,7 +163,7 @@ export class SandDanceDemo extends BaseDemo {
               rectangles: createLayer(RectangleLayer, {
                 animate: {
                   color: AutoEasingMethod.linear(300),
-                  location: AutoEasingMethod.linear(400)
+                  location: AutoEasingMethod.linear(1000)
                 },
                 data: providers.rectangles,
                 onMouseClick: this.mouseClick,
@@ -228,8 +237,6 @@ export class SandDanceDemo extends BaseDemo {
           if (value < minValue) minValue = value;
         });
 
-        console.warn(`${minValue}  ${maxValue}`);
-
         const binBasicWidth = Math.floor(
           (maxValue + 1 - minValue) / maxBinNumber
         );
@@ -289,54 +296,47 @@ export class SandDanceDemo extends BaseDemo {
     return bins;
   }
 
-  buildGraph() {
-    const file = require("./data.json");
-    const totalNum = file.length;
-    const keys: string[] = [];
+  initGraph() {
+    this.providers.labels.clear();
+    this.providers.bins.clear();
+    this.binToRectangles.clear();
+    this.selectedBin = null;
+    this.selectedRectangle = null;
+    this.binRectangles = [];
+  }
 
-    // getKeys value and create Instance
+  sortByKey(file: any, key: string) {
     const array = [];
-    const idToRectangle: Map<number, RectangleInstance> = new Map<
-      number,
-      RectangleInstance
-    >();
-
-    // get values of keys[1]
-    // use different kind of set
     const numberValues: Set<number> = new Set<number>();
     const stringValues: Set<string> = new Set<string>();
 
-    // get keys
-    if (totalNum > 0) {
-      for (const key in file[0]) {
-        keys.push(key);
-      }
-    }
-
-    const key = keys[0];
+    this.initGraph();
 
     // Create the rectangleInstances
     for (let i = 0; i < file.length; i++) {
       const element = file[i];
       array.push(element);
       const value = element[key];
+
       if (typeof value === "string") {
         stringValues.add(element[key]);
       } else if (typeof value === "number") {
         numberValues.add(element[key]);
       }
 
-      const rec = new RectangleInstance({
-        depth: 0,
-        size: [10, 10],
-        scaling: ScaleMode.ALWAYS,
-        color: this.parameters.color
-      });
+      if (!this.idToRectangle.has(element.id)) {
+        const rec = new RectangleInstance({
+          depth: 0,
+          size: [10, 10],
+          scaling: ScaleMode.ALWAYS,
+          color: this.parameters.color
+        });
 
-      this.providers.rectangles.add(rec);
-      this.rectangles.push(rec);
+        this.providers.rectangles.add(rec);
+        this.rectangles.push(rec);
 
-      idToRectangle.set(element.id, rec);
+        this.idToRectangle.set(element.id, rec);
+      }
     }
 
     const origin: Vec2 = [10, 800];
@@ -361,21 +361,35 @@ export class SandDanceDemo extends BaseDemo {
     this.layoutBins(binNum, binWidth, origin);
 
     // Rectangles
-    this.layoutRectangles(
-      bins,
-      array,
-      key,
-      binWidth,
-      rowNum,
-      origin,
-      idToRectangle
-    );
+    this.layoutRectangles(bins, array, key, binWidth, rowNum, origin);
 
     // lines
     this.layoutLines(origin, chartWidth, chartHeight);
 
     // labels
     this.layoutLabels(bins, origin, binWidth);
+  }
+
+  buildGraph() {
+    const file = require("./data.json");
+    const totalNum = file.length;
+    const keys: string[] = [];
+
+    // get keys
+    if (totalNum > 0) {
+      for (const key in file[0]) {
+        keys.push(key);
+      }
+    }
+
+    this.sortByKey(file, keys[0]);
+
+    this.gui
+      .add(this.parameters, "sortBy", keys)
+      .setValue(keys[0])
+      .onChange((key: string) => {
+        this.sortByKey(file, key);
+      });
   }
 
   layoutBins(binNum: number, binWidth: number, origin: [number, number]) {
@@ -402,8 +416,7 @@ export class SandDanceDemo extends BaseDemo {
     key: number | string,
     binWidth: number,
     rowNum: number,
-    origin: [number, number],
-    idToRectangle: Map<number, RectangleInstance>
+    origin: [number, number]
   ) {
     let curIndex = 0;
     let currentBin = bins[curIndex];
@@ -416,7 +429,7 @@ export class SandDanceDemo extends BaseDemo {
     // layout Rectangles
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
-      const rec = idToRectangle.get(element.id);
+      const rec = this.idToRectangle.get(element.id);
 
       if (rec) {
         const keyValue = element[key];
@@ -429,8 +442,6 @@ export class SandDanceDemo extends BaseDemo {
           rowIndex = 0;
           currentX = binWidth * curIndex;
           currentY = 0;
-
-          // console.warn(currentBin.value);
         }
 
         rec.position = [origin[0] + currentX, origin[1] - currentY];
@@ -496,87 +507,6 @@ export class SandDanceDemo extends BaseDemo {
   }
 
   async init() {
-    console.warn(typeof [1, 1]);
     this.buildGraph();
-    /*const totalNum = 1000;
-
-    const bins = [0, 0, 0, 0, 0, 0, 0, 0];
-    for (let i = 0; i < totalNum; i++) {
-      const index = Math.floor(Math.random() * 8);
-      bins[index]++;
-    }
-
-    const origin: Vec2 = [100, 800];
-    const chartWidth: number = 800;
-    const chartHeight: number = 600;
-    const binNum = 8;
-    const binWidth = chartWidth / binNum;
-    const rowNum: number = 8;
-
-    for (let i = 0; i < bins.length; i++) {
-      const rec = new RectangleInstance({
-        depth: 0,
-        position: [origin[0] + binWidth * i, origin[1] + 20],
-        size: [binWidth - 5, 20],
-        scaling: ScaleMode.ALWAYS,
-        color: [0.5, 0.5, 0.5, 1]
-      });
-
-      this.providers.bins.add(rec);
-
-      this.binRectangles.push(rec);
-    }
-
-    // Rectangles
-    for (let i = 0; i < bins.length; i++) {
-      const binOrigin = [origin[0] + binWidth * i, origin[1]];
-
-      const list = [];
-
-      for (let j = 0; j < bins[i]; j++) {
-        const row = j % 8;
-        const col = Math.floor(j / rowNum);
-        const rec = new RectangleInstance({
-          depth: 0,
-          position: [binOrigin[0] + row * 11, binOrigin[1] - col * 11],
-          size: [10, 10],
-          scaling: ScaleMode.ALWAYS,
-          color: this.parameters.color
-        });
-
-        list.push(rec);
-
-        this.providers.rectangles.add(rec);
-
-        this.rectangles.push(rec);
-      }
-
-      this.binToRectangles.set(this.binRectangles[i], list);
-    }
-
-    // Lines
-    this.providers.lines.add(
-      new EdgeInstance({
-        start: [origin[0], origin[1] + 10],
-        end: [origin[0] + chartWidth, origin[1] + 10]
-      })
-    );
-
-    this.providers.lines.add(
-      new EdgeInstance({
-        start: [origin[0], origin[1] + 10],
-        end: [origin[0], origin[1] - chartHeight + 10]
-      })
-    );
-
-    // Labels
-    this.providers.labels.add(
-      new LabelInstance({
-        text: "Test",
-        color: [1, 1, 1, 1],
-        origin: [100, 100],
-        fontSize: 24
-      })
-    );*/
   }
 }

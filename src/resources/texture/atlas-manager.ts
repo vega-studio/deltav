@@ -1,13 +1,18 @@
+import { VideoTextureMonitor } from "src/resources/texture/video-texture-monitor";
+import { PromiseResolver } from "src/util";
 import { Bounds } from "../../primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { Atlas, IAtlasResource } from "./atlas";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
+import {
+  IAtlasResourceRequest,
+  isAtlasVideoResource
+} from "./atlas-resource-request";
 import { IPackNodeDimensions, PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
 
 const debug = require("debug")("performance");
 
-const ZERO_IMAGE: SubTexture = {
+const ZERO_IMAGE: SubTexture = new SubTexture({
   aspectRatio: 0,
   atlasBL: [0, 0],
   atlasBR: [0, 0],
@@ -20,7 +25,7 @@ const ZERO_IMAGE: SubTexture = {
   pixelHeight: 0,
   pixelWidth: 0,
   widthOnAtlas: 0
-};
+});
 
 /**
  * Determines if a SubTexture is a valid SubTexture for rendering
@@ -113,6 +118,7 @@ export class AtlasManager {
     // First ensure the atlas does not have this resource referenced yet
     const existing = atlas.resourceReferences.get(request.source);
 
+    // If the resource still has it's reference, we exit immediately to prevent drawing the resource into the atlas twice
     if (existing) {
       return true;
     }
@@ -164,12 +170,12 @@ export class AtlasManager {
       if (!insertedNode) {
         // Repack the atlas
         this.repackResources(atlas);
-        // Attempt to inset the item again
+        // Attempt to insert the item again
         packing = atlas.packing;
         insertedNode = packing.insert(dimensions);
       }
 
-      // If the result was NULL we did not successfully insert the image into any map
+      // If the result was NULL we did not successfully insert the image into any atlas
       if (insertedNode) {
         // Apply the image to the node
         insertedNode.data = texture;
@@ -182,11 +188,24 @@ export class AtlasManager {
           bottom: 1
         });
 
-        // Now specify the update region to be applied to the texture
-        atlas.texture.update(loadedImage, {
+        // Track the subtexture with the source that created it.
+        texture.texture = atlas.texture;
+        texture.source = loadedImage;
+        texture.atlasRegion = {
           ...insertedNode.bounds,
           y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height
-        });
+        };
+
+        // Now specify the update region to be applied to the texture
+        atlas.texture.update(loadedImage, texture.atlasRegion);
+
+        // If this is a video element, we must make a monitor for it to keep the texture in sync with the videos time
+        // location
+        if (loadedImage instanceof HTMLVideoElement) {
+          texture.video = {
+            monitor: new VideoTextureMonitor(loadedImage, texture)
+          };
+        }
 
         // We have finished inserting
         return true;
@@ -254,10 +273,14 @@ export class AtlasManager {
             subTexture.pixelWidth = image.width;
             subTexture.pixelHeight = image.height;
             subTexture.aspectRatio = image.width / image.height;
+            image.onload = null;
+            image.onerror = null;
             resolve(image);
           };
 
           image.onerror = function() {
+            image.onload = null;
+            image.onerror = null;
             resolve(null);
           };
         } else {
@@ -277,8 +300,90 @@ export class AtlasManager {
       }
 
       return image;
-    } else if (source instanceof HTMLVideoElement) {
-      console.warn("System does not support HTMLVideoElements yet");
+    } else if (isAtlasVideoResource(source)) {
+      let hasError = false;
+      const video = document.createElement("video");
+
+      // We must load the video properly to make it compatible with the texture and have all of it's properties
+      // set in an appropriate fashion to not violate current video playback standards.
+      const metaResolver = new PromiseResolver<void>();
+      const dataResolver = new PromiseResolver<void>();
+
+      const removeListeners = () => {
+        video.removeEventListener("loadedmetadata", waitForMetaData);
+        video.removeEventListener("loadeddata", waitForData);
+        video.removeEventListener("error", waitForError);
+      };
+
+      const waitForData = () => {
+        console.log("DATA DONE");
+        dataResolver.resolve();
+      };
+
+      const waitForMetaData = () => {
+        console.log("META DONE");
+        metaResolver.resolve();
+      };
+
+      const waitForError = (event: any) => {
+        let error;
+        hasError = true;
+
+        // Chrome v60
+        if (event.path && event.path[0]) {
+          error = event.path[0].error;
+        }
+
+        // Firefox v55
+        if (event.originalTarget) {
+          error = event.originalTarget.error;
+        }
+
+        // Broadcast the error
+        console.warn(
+          "There was an error loading the video resource to the atlas texture context"
+        );
+        console.warn(error);
+
+        // Clean listeners
+        removeListeners();
+        // Ensure all blockers are resolved
+        metaResolver.resolve();
+        dataResolver.resolve();
+      };
+
+      // We must ensure the source has it's meta data and first frame available. The meta data ensures a
+      // videoWidth and height are available and the first frame ensures WebGL does not throw an error in some
+      // browsers that says something like:
+      video.addEventListener("loadedmetadata", waitForMetaData);
+      video.addEventListener("loadeddata", waitForData);
+      video.addEventListener("error", waitForError);
+
+      // Current standard declares unmuted videos CAN NOT be auto played via javascript and must play in the context of
+      // a user event
+      video.muted = true;
+      // Se the video source after the events have been assigned so we can wait for the video to begin playback
+      video.src = source.videoSrc;
+      video.load();
+
+      console.log("WAIT");
+      await metaResolver.promise;
+      await dataResolver.promise;
+      console.log("DONE");
+
+      removeListeners();
+
+      // If an error occurred during processing, we no longer to process the source and texture beyond this point.
+      // Return null to indicate failure to load
+      if (hasError) return null;
+
+      // At this point, the video width and height should definitely be established and can be applied to the texture
+      subTexture.pixelWidth = video.videoWidth;
+      subTexture.pixelHeight = video.videoHeight;
+      subTexture.aspectRatio = video.videoWidth / video.videoHeight;
+
+      // Return the video here to indicate a successful load
+      return video;
     } else if (typeof source === "string") {
       const dataURL = source;
 

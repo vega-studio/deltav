@@ -9,7 +9,7 @@ import {
   InstanceProvider,
   LayerInitializer
 } from "src";
-import { nextFrame } from "src/util/next-frame";
+import { nextFrame } from "src/util/frame";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Arcs extends BaseExample {

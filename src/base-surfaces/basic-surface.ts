@@ -510,7 +510,7 @@ export class BasicSurface<
       "scenes",
       (val: any) => val && val.views !== undefined && val.layers !== undefined,
       pipelineWithLookups.scenes,
-      (key: string, val: BasicSurfaceSceneOptions) => {
+      (sceneKey: string, val: BasicSurfaceSceneOptions) => {
         const views = mapLookupValues(
           "views",
           (val: any) => val.camera !== undefined && val.viewport !== undefined,
@@ -518,7 +518,7 @@ export class BasicSurface<
           (key: string, val: BasicSurfaceView) => {
             const view: IViewOptions = {
               ...val,
-              key: val.key || key
+              key: `${sceneKey}.${val.key || key}`
             };
 
             return view;
@@ -541,7 +541,7 @@ export class BasicSurface<
         );
 
         const scene: ISceneOptions = {
-          key,
+          key: sceneKey,
           order: val.order,
           views,
           layers

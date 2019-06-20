@@ -135,7 +135,7 @@ export class BasicDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["main"]
+          startView: ["main.main"]
         }),
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction) => {
@@ -152,9 +152,8 @@ export class BasicDemo extends BaseDemo {
       }),
       pipeline: (_resources, providers, cameras) => ({
         resources: [],
-        scenes: [
-          {
-            key: "default",
+        scenes: {
+          main: {
             views: {
               main: createView({
                 camera: cameras.main,
@@ -178,7 +177,7 @@ export class BasicDemo extends BaseDemo {
               })
             ]
           }
-        ]
+        }
       })
     });
   }
@@ -187,7 +186,7 @@ export class BasicDemo extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    this.screen = this.surface.getViewScreenSize("main");
+    this.screen = this.surface.getViewScreenSize("main.main");
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeCircle();

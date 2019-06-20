@@ -78,6 +78,18 @@ export class LayerInteractionHandler<
   }
 
   /**
+   * Handles touch down gestures for a layer within a view
+   */
+  handleTouchOver(
+    _view: IProjection,
+    _interaction: ITouchInteraction,
+    _touch: ISingleTouchInteraction
+  ) {
+    // This is the touch over for the view itself. We should probably just let the touch over events handle the interactions
+    // With the instances
+  }
+
+  /**
    * Handles mouse down gestures for a layer within a view
    */
   handleMouseDown(view: IProjection, interaction: IMouseInteraction) {
@@ -353,7 +365,9 @@ export class LayerInteractionHandler<
     };
 
     // Broadcast the touch up event to the layers
+    if (onTouchOut) onTouchOut(info);
     if (onTouchUp) onTouchUp(info);
+
     // If this is touch down
     const isTouchDown = mapGetWithDefault(
       this.isTouchDown,
@@ -492,6 +506,111 @@ export class LayerInteractionHandler<
   }
 
   /**
+   * Handles touches that are moving along the screen
+   */
+  handleTouchMove(
+    view: IProjection,
+    interaction: ITouchInteraction,
+    touch: ISingleTouchInteraction
+  ) {
+    // This handles interactions for PickType ALL layers
+    const { onTouchOver, onTouchMove, onTouchOut } = this.layer.props;
+
+    console.log(view.id);
+
+    if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
+      // If we have a listener for either event we should continue to process the event in more detail
+      if (onTouchOver || onTouchMove || onTouchOut) {
+        let info: ITouchPickInfo<T>;
+        const world = view.screenToWorld(touch.screen.position);
+        const instances: T[] = [];
+
+        if (this.layer.picking.type === PickType.SINGLE) {
+          // Get the instance for the nearest color
+          const instanceForColor = this.getColorPickInstance();
+
+          if (instanceForColor) {
+            instances.push(instanceForColor);
+          }
+        }
+
+        // Get the current touch over state for the given touch.
+        const isTouchOver = mapGetWithDefault(
+          this.isTouchOver,
+          touch.touch.touch.identifier,
+          new Set()
+        );
+
+        // TOUCH OUT
+        // First broadcast touch out events
+        const isCurrentlyOver = new Set<T>();
+        instances.forEach(o => isCurrentlyOver.add(o));
+
+        // Broadcast the the picking info for all instances that the touch moved off of
+        if (onTouchOut) {
+          const noLongerOver: T[] = [];
+
+          isTouchOver.forEach(o => {
+            if (!isCurrentlyOver.has(o)) {
+              noLongerOver.push(o);
+            }
+          });
+
+          // This is the pick info object we will broadcast from the layer
+          info = {
+            interaction,
+            touch,
+            instances: noLongerOver,
+            layer: this.layer.id,
+            projection: view,
+            screen: touch.screen.position,
+            world
+          };
+
+          if (noLongerOver.length > 0) onTouchOut(info);
+        }
+
+        // TOUCH OVER
+        // Broadcast the picking info for newly over instances to any of the layers listeners if needed
+        if (onTouchOver) {
+          const notOverInstances = instances.filter(o => !isTouchOver.has(o));
+          info = {
+            interaction,
+            touch,
+            instances: notOverInstances,
+            layer: this.layer.id,
+            projection: view,
+            screen: touch.screen.position,
+            world
+          };
+
+          if (notOverInstances.length > 0) onTouchOver(info);
+        }
+
+        // TOUCH MOVE
+        // Broadcast the the picking info for all instances that the touch moved on
+        if (onTouchMove) {
+          // This is the pick info object we will broadcast from the layer
+          info = {
+            interaction,
+            touch,
+            instances,
+            layer: this.layer.id,
+            projection: view,
+            screen: touch.screen.position,
+            world
+          };
+
+          onTouchMove(info);
+        }
+
+        // We store the current hovered over items as our over item list for next interaction
+        this.isMouseOver = isCurrentlyOver;
+      }
+    }
+  }
+
+  /**
    * Handles click gestures on the layer within a view
    */
   handleMouseClick(view: IProjection, interaction: IMouseInteraction) {
@@ -523,6 +642,47 @@ export class LayerInteractionHandler<
         };
 
         onMouseClick(info);
+      }
+    }
+  }
+
+  /**
+   * Handles tap interactions with the view
+   */
+  handleTap(
+    view: IProjection,
+    interaction: ITouchInteraction,
+    touch: ISingleTouchInteraction
+  ) {
+    // This handles interactions for PickType ALL layers
+    if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
+      const { onTap } = this.layer.props;
+
+      // If we have a listener for either event we should continue to process the event in more detail
+      if (onTap) {
+        const world = view.screenToWorld(touch.screen.position);
+        const instances: T[] = [];
+
+        if (this.layer.picking.type === PickType.SINGLE) {
+          // Get the instance for the nearest color
+          const instanceForColor = this.getColorPickInstance();
+
+          if (instanceForColor) {
+            instances.push(instanceForColor);
+          }
+        }
+
+        const info: ITouchPickInfo<T> = {
+          interaction,
+          touch,
+          instances,
+          layer: this.layer.id,
+          projection: view,
+          screen: touch.screen.position,
+          world
+        };
+
+        onTap(info);
       }
     }
   }

@@ -229,7 +229,7 @@ export class TextAreaDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["default-view"],
+          startView: ["default.default-view"],
           wheelShouldScroll: true
         })
       }),

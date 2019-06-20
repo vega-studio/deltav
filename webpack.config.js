@@ -1,4 +1,4 @@
-const { resolve } = require('path');
+const { resolve, join } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -84,15 +84,21 @@ module.exports = {
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
       { test: /\.png$/, loader: 'base64-image-loader' },
       { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
+      {
+        test: /\.(mp4)$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+        }
+      }
     ],
   },
 
   output: {
     library,
     libraryTarget,
-    path: IS_PRODUCTION ? resolve(__dirname, 'dist') : resolve('build'),
-    filename: 'index.js',
-    publicPath: '/',
+    path: IS_PRODUCTION ? resolve(__dirname, 'dist') : resolve(__dirname, 'build'),
+    filename: 'index.js'
   },
 
   plugins,

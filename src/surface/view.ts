@@ -22,9 +22,10 @@ export enum ClearFlags {
  */
 export function createView(
   options: Pick<IViewOptions, "camera"> &
-    Omit<Partial<IViewOptions>, "viewport">
+    Omit<Partial<IViewOptions>, "viewport"> &
+    Pick<Partial<IViewOptions>, "viewport">
 ): IViewOptions {
-  return Object.assign(
+  const view = Object.assign(
     {
       key: "",
       viewport: {
@@ -36,6 +37,10 @@ export function createView(
     },
     options
   );
+
+  console.log(view.viewport);
+
+  return view;
 }
 
 /**

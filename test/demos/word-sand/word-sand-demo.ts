@@ -102,20 +102,18 @@ export class WordSandDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["default-view"]
+          startView: ["default.default-view"]
         })
       }),
       pipeline: (_resources, providers, cameras) => ({
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          main: {
+            views: {
+              view: createView({
                 camera: cameras.main,
                 clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
               })
-            ],
+            },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
@@ -127,7 +125,7 @@ export class WordSandDemo extends BaseDemo {
               })
             ]
           }
-        ]
+        }
       })
     });
   }
@@ -165,8 +163,9 @@ export class WordSandDemo extends BaseDemo {
    * Moves all specified circles to the text specified
    */
   private async moveToText(circles: CircleInstance[]) {
-    const bounds = await this.getViewScreenBounds();
-    if (!bounds) return;
+    if (!this.surface) return;
+    await this.surface.ready;
+    const bounds = this.surface.getViewScreenBounds("main.view");
 
     const xy = textPositions(
       bounds,

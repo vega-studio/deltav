@@ -9,8 +9,6 @@ import {
   AutoEasingMethod,
   BasicCameraController,
   BasicSurface,
-  Bounds,
-  CameraBoundsAnchor,
   ChartCamera,
   CircleInstance,
   CircleLayer,
@@ -163,51 +161,48 @@ export class NodesEdges extends BaseDemo {
   }
 
   adjustBounds() {
-    if (!this.surface) return;
-    const controller = this.surface.eventManagers.main;
-
-    const worldBounds = new Bounds({
-      x:
-        -this.parameters.circleRadius -
-        this.parameters.nodeRadius +
-        this.center.center[0],
-      y:
-        -this.parameters.circleRadius -
-        this.parameters.nodeRadius +
-        this.center.center[1],
-      width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
-      height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
-    });
-
-    const minScale = Math.min(
-      this.viewSize[0] / worldBounds.width,
-      this.viewSize[1] / worldBounds.height
-    );
-
-    controller.setBounds({
-      anchor: CameraBoundsAnchor.MIDDLE,
-      scaleMax: [9999, 9999, 9999],
-      scaleMin: [minScale, minScale, minScale],
-      screenPadding: {
-        bottom: 40,
-        left: 40,
-        right: 40,
-        top: 40
-      },
-      view: "default-view",
-      worldBounds
-    });
-
-    if (controller.bounds && this.boundsView) {
-      this.boundsView.position = [
-        controller.bounds.worldBounds.x,
-        controller.bounds.worldBounds.y
-      ];
-      this.boundsView.size = [
-        controller.bounds.worldBounds.width,
-        controller.bounds.worldBounds.height
-      ];
-    }
+    // TODO: Bounds have gotten screwy with all of the  recent fixes that have taken place
+    // if (!this.surface) return;
+    // const controller = this.surface.eventManagers.main;
+    // const worldBounds = new Bounds({
+    //   x:
+    //     -this.parameters.circleRadius -
+    //     this.parameters.nodeRadius +
+    //     this.center.center[0],
+    //   y:
+    //     -this.parameters.circleRadius -
+    //     this.parameters.nodeRadius +
+    //     this.center.center[1],
+    //   width: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2,
+    //   height: this.parameters.circleRadius * 2 + this.parameters.nodeRadius * 2
+    // });
+    // const minScale = Math.min(
+    //   this.viewSize[0] / worldBounds.width,
+    //   this.viewSize[1] / worldBounds.height
+    // );
+    // controller.setBounds({
+    //   anchor: CameraBoundsAnchor.MIDDLE,
+    //   scaleMax: [9999, 9999, 9999],
+    //   scaleMin: [minScale, minScale, minScale],
+    //   screenPadding: {
+    //     bottom: 40,
+    //     left: 40,
+    //     right: 40,
+    //     top: 40
+    //   },
+    //   view: "default-view",
+    //   worldBounds
+    // });
+    // if (controller.bounds && this.boundsView) {
+    //   this.boundsView.position = [
+    //     controller.bounds.worldBounds.x,
+    //     controller.bounds.worldBounds.y
+    //   ];
+    //   this.boundsView.size = [
+    //     controller.bounds.worldBounds.width,
+    //     controller.bounds.worldBounds.height
+    //   ];
+    // }
   }
 
   handleCircleOver = (info: IPickInfo<CircleInstance>) => {
@@ -282,15 +277,15 @@ export class NodesEdges extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["default-view"],
+          startView: ["main.view"],
           wheelShouldScroll: false
         })
       }),
       pipeline: (resources, providers, cameras) => ({
         scenes: {
-          "default-scene": {
+          main: {
             views: {
-              "default-view": createView({
+              view: createView({
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
@@ -350,8 +345,11 @@ export class NodesEdges extends BaseDemo {
    * Initialize the demo with beginning setup and layouts
    */
   async init() {
-    const bounds = await this.getViewScreenBounds();
-    if (!bounds) return;
+    if (!this.surface) return;
+    await this.surface.ready;
+    const bounds = this.surface.getViewScreenBounds("main.view");
+    console.log(bounds);
+
     this.viewSize = [bounds.width, bounds.height];
 
     this.center = new CircleInstance({
@@ -372,7 +370,7 @@ export class NodesEdges extends BaseDemo {
     });
 
     // Uncomment this to see the bounds used for the camera
-    // this.providers.rectangles.add(this.boundsView);
+    this.providers.rectangles.add(this.boundsView);
     this.providers.circles.add(this.center);
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {

@@ -1,6 +1,6 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { IAtlasResourceRequest } from "../../resources";
+import { AtlasResouce, IAtlasResourceRequest } from "../../resources";
 import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 
@@ -15,7 +15,7 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** Depth sorting of the image (or the z value of the lable) */
   depth?: number;
   /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
-  source: string | TexImageSource;
+  source: AtlasResouce;
   /** The height of the image as it is to be rendered in world space */
   height?: number;
   /** The coordinate where the image will be anchored to in world space */
@@ -80,6 +80,12 @@ const anchorCalculator: {
   }
 };
 
+export type ImageInstanceSource =
+  | ImageBitmap
+  | ImageData
+  | HTMLImageElement
+  | HTMLCanvasElement;
+
 /**
  * This generates a new image instance.
  * There are restrictions surrounding images due to texture sizes and rendering limitations.
@@ -110,7 +116,7 @@ export class ImageInstance extends Instance {
   /** Sets the way the image scales with the world */
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
   /** This is where the source of the image will come from */
-  @observable source: string | TexImageSource;
+  @observable source: AtlasResouce;
   /**
    * The width of the image as it is to be rendered in world space.
    * After onReady: this is immediately populated with the width and height of the image as it
@@ -136,9 +142,9 @@ export class ImageInstance extends Instance {
   onReady?: (image: ImageInstance) => void;
   /** This is the request generated for the instance to retrieve the correct resource */
   request?: IAtlasResourceRequest;
-  /** After oneReady: This is populated with the width of the source image loaded into the Atlas */
+  /** After onReady: This is populated with the width of the source image loaded into the Atlas */
   sourceWidth: number = 0;
-  /** After oneReady: This is populated with the height of the source image loaded into the Atlas */
+  /** After onReady: This is populated with the height of the source image loaded into the Atlas */
   sourceHeight: number = 0;
 
   /**

@@ -16,7 +16,6 @@ export interface IRectangleLayerProps<T extends RectangleInstance>
     color?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
   };
-  atlas?: string;
   /** Scale factor determining the scale size of the rectangle */
   scaleFactor?(): number;
 }

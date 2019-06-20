@@ -1,7 +1,6 @@
 import { EventManager } from "../event-management/event-manager";
 import { UserInputEventManager } from "../event-management/user-input-event-manager";
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
-import { flushDebug } from "../gl/debug-resources";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { Bounds } from "../primitives/bounds";
@@ -258,7 +257,7 @@ export class Surface {
   resourceManager: ResourceRouter;
   /** When set to true, the next render will make sure color picking is updated for layer interactions */
   updateColorPick?: {
-    mouse: Vec2;
+    position: Vec2;
     views: View[];
   };
   /**
@@ -363,6 +362,65 @@ export class Surface {
    */
   getIOSorting() {
     return this.ioSorting;
+  }
+
+  /**
+   * This processes what is rendered into the picking render target to see if the mouse interacted with
+   * any elements.
+   */
+  private analyzePickRendering() {
+    if (!this.queuedPicking) return;
+
+    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
+      const [, view, pickingPass, mouse] = this.queuedPicking[i];
+
+      // Optimized rendering of the view will make the view discard picking rendering
+      if (view.optimizeRendering) {
+        continue;
+      }
+
+      // Make our metrics for how much of the image we wish to analyze
+      const pickWidth = 5;
+      const pickHeight = 5;
+      const numBytesPerColor = 4;
+      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
+
+      console.log(
+        numBytesPerColor,
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
+        pickWidth,
+        pickHeight
+      );
+
+      // Read the pixels out
+      this.renderer.readPixels(
+        Math.floor(mouse[0] - pickWidth / 2),
+        Math.floor(mouse[1] - pickHeight / 2),
+        pickWidth,
+        pickHeight,
+        out
+      );
+
+      // Analyze the rendered color data for the picking routine
+      const pickingData = analyzeColorPickingRendering(
+        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
+        out,
+        pickWidth,
+        pickHeight
+      );
+
+      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
+      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
+        const layer = pickingPass[j];
+
+        if (layer.picking.type === PickType.SINGLE) {
+          layer.interactions.colorPicking = pickingData;
+        }
+      }
+    }
+
+    delete this.queuedPicking;
   }
 
   /**
@@ -625,57 +683,6 @@ export class Surface {
   }
 
   /**
-   * This processes what is rendered into the picking render target to see if the mouse interacted with
-   * any elements.
-   */
-  private analyzePickRendering() {
-    if (!this.queuedPicking) return;
-
-    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
-      const [, view, pickingPass, mouse] = this.queuedPicking[i];
-
-      // Optimized rendering of the view will make the view discard picking rendering
-      if (view.optimizeRendering) {
-        continue;
-      }
-
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      this.renderer.readPixels(
-        Math.floor(mouse[0] - pickWidth / 2),
-        Math.floor(mouse[1] - pickHeight / 2),
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
-      }
-    }
-
-    delete this.queuedPicking;
-  }
-
-  /**
    * This is the draw loop that must be called per frame for updates to take effect and display.
    *
    * @param time This is an optional time flag so one can manually control the time flag for the frame.
@@ -783,7 +790,7 @@ export class Surface {
           picking[0],
           picking[1],
           picking[2],
-          this.updateColorPick.mouse
+          this.updateColorPick.position
         ]);
       }
     }
@@ -792,8 +799,10 @@ export class Surface {
     // another requested from mouse interactions
     delete this.updateColorPick;
 
+    // debugRenderTarget(this.renderer, this.pickingTarget);
+
     // Dequeue rendering debugs
-    flushDebug();
+    // flushDebug();
   }
 
   /**
@@ -810,6 +819,8 @@ export class Surface {
     if (!scene.container) return false;
     // Optimized rendering of the view will make the view discard picking rendering
     if (view.optimizeRendering) return false;
+
+    console.log("DRAW PICKING");
 
     // Get the requested metrics for the pick
     const views = this.updateColorPick.views;
@@ -1354,10 +1365,10 @@ export class Surface {
    * This triggers an update to all of the layers that perform picking, the pixel data
    * within the specified mouse range.
    */
-  updateColorPickPosition(mouse: Vec2, views: View[]) {
+  updateColorPickPosition(position: Vec2, views: View[]) {
     // We will flag the color range as needing an update
     this.updateColorPick = {
-      mouse,
+      position,
       views
     };
   }

@@ -217,7 +217,7 @@ export class WebGLRenderer {
         height: target.height
       };
     } else {
-      const size = this.getDisplaySize();
+      const size = this.getRenderSize();
 
       return {
         x: 0,
@@ -375,18 +375,19 @@ export class WebGLRenderer {
         out
       );
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
+      const size = this.getRenderSize();
       const _height = size[1];
 
       if (x + width > size[0]) width = size[0] - x;
       if (y + height > size[1]) height = size[1] - y;
 
+      console.log(x, _height - y - height, width, height);
+
       this.gl.readPixels(
-        x * pixelRatio,
-        (_height - y - height) * pixelRatio,
-        width * pixelRatio,
-        height * pixelRatio,
+        x,
+        _height - y - height,
+        width,
+        height,
         this.gl.RGBA,
         this.gl.UNSIGNED_BYTE,
         out

@@ -1,4 +1,3 @@
-import { VideoTextureMonitor } from "src/resources/texture/video-texture-monitor";
 import { Texture, TextureOptions } from "../../gl/texture";
 import { Omit, ResourceType, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
@@ -7,6 +6,7 @@ import { BaseResourceOptions } from "../base-resource-manager";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
+import { VideoTextureMonitor } from "./video-texture-monitor";
 
 const debug = require("debug")("performance");
 

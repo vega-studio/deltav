@@ -1,7 +1,7 @@
-import { VideoTextureMonitor } from "src/resources/texture/video-texture-monitor";
-import { PromiseResolver } from "src/util";
 import { Bounds } from "../../primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
+import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
+import { PromiseResolver } from "../../util";
 import { Atlas, IAtlasResource } from "./atlas";
 import {
   IAtlasResourceRequest,

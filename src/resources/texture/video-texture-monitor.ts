@@ -1,5 +1,5 @@
-import { waitForFrame } from "src/util/waitForFrame";
 import { onFrame } from "../../util";
+import { waitForFrame } from "../../util/waitForFrame";
 import { SubTexture } from "./sub-texture";
 
 /**

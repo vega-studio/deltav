@@ -316,12 +316,10 @@ export class AtlasManager {
       };
 
       const waitForData = () => {
-        console.log("DATA DONE");
         dataResolver.resolve();
       };
 
       const waitForMetaData = () => {
-        console.log("META DONE");
         metaResolver.resolve();
       };
 
@@ -366,10 +364,8 @@ export class AtlasManager {
       video.src = source.videoSrc;
       video.load();
 
-      console.log("WAIT");
       await metaResolver.promise;
       await dataResolver.promise;
-      console.log("DONE");
 
       removeListeners();
 

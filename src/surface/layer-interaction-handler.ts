@@ -516,8 +516,6 @@ export class LayerInteractionHandler<
     // This handles interactions for PickType ALL layers
     const { onTouchOver, onTouchMove, onTouchOut } = this.layer.props;
 
-    console.log(view.id);
-
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       // If we have a listener for either event we should continue to process the event in more detail
       if (onTouchOver || onTouchMove || onTouchOut) {

@@ -381,8 +381,6 @@ export class WebGLRenderer {
       if (x + width > size[0]) width = size[0] - x;
       if (y + height > size[1]) height = size[1] - y;
 
-      console.log(x, _height - y - height, width, height);
-
       this.gl.readPixels(
         x,
         _height - y - height,

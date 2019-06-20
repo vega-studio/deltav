@@ -101,9 +101,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
       this.surface.updateColorPickPosition(e.touches[0].screen.position, views);
     }
 
-    console.log("DOWN");
     await nextFrame();
-    console.log("PROCESS DOWN");
 
     e.touches.forEach(interaction => {
       this.handleInteraction(interaction, (layer, view) =>
@@ -170,7 +168,6 @@ export class LayerMouseEvents extends SimpleEventHandler {
     const allSceneViews = this.handleInteraction(e, (layer, view) =>
       layer.interactions.handleMouseMove(view, e)
     );
-    console.log(allSceneViews);
 
     // For quick lookups map all of the current SceneViews that are over
     const currentSceneViews = new Set<View>();

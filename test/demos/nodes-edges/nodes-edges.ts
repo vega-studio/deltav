@@ -348,8 +348,6 @@ export class NodesEdges extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
     const bounds = this.surface.getViewScreenBounds("main.view");
-    console.log(bounds);
-
     this.viewSize = [bounds.width, bounds.height];
 
     this.center = new CircleInstance({

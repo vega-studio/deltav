@@ -385,14 +385,6 @@ export class Surface {
       const numBytesPerColor = 4;
       const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
 
-      console.log(
-        numBytesPerColor,
-        Math.floor(mouse[0] - pickWidth / 2),
-        Math.floor(mouse[1] - pickHeight / 2),
-        pickWidth,
-        pickHeight
-      );
-
       // Read the pixels out
       this.renderer.readPixels(
         Math.floor(mouse[0] - pickWidth / 2),
@@ -819,8 +811,6 @@ export class Surface {
     if (!scene.container) return false;
     // Optimized rendering of the view will make the view discard picking rendering
     if (view.optimizeRendering) return false;
-
-    console.log("DRAW PICKING");
 
     // Get the requested metrics for the pick
     const views = this.updateColorPick.views;

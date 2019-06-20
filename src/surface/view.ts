@@ -38,8 +38,6 @@ export function createView(
     options
   );
 
-  console.log(view.viewport);
-
   return view;
 }
 

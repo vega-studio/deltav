@@ -171,10 +171,10 @@ export class VideoDemo extends BaseDemo {
             image.origin[1] = image.origin[1] - image.height / 2;
 
             if (this.video.paused) {
-              this.video.play().catch(err => console.log("SHALL NOT PLAY"));
+              this.video.play();
               this.video.loop = true;
               await nextFrame();
-              console.log("IS PAUSED", this.video.paused);
+              // console.log("IS PAUSED", this.video.paused);
             }
           }
         })

@@ -1,21 +1,16 @@
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds } from "../../primitives";
 import { atlasRequest } from "../../resources/texture/atlas-resource-request";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
-  IProjection,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { divide2, IAutoEasingMethod, subtract2, Vec, Vec2 } from "../../util";
+import { IAutoEasingMethod, Vec } from "../../util";
 import { CommonMaterialOptions } from "../../util/common-options";
-import { ScaleMode } from "../types";
 import { ImageInstance } from "./image-instance";
-
-const { min, max } = Math;
 
 export interface IImageRenderLayerProps<T extends ImageInstance>
   extends ILayerProps<T> {
@@ -57,105 +52,6 @@ export class ImageRenderLayer<
     texture: "texture",
     tint: "tint"
   };
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods() {
-    return {
-      // Provide the calculated AABB world bounds for a given image
-      boundsAccessor: (image: ImageInstance) => {
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (image.anchor) {
-          anchorEffect[0] = image.anchor.x || 0;
-          anchorEffect[1] = image.anchor.y || 0;
-        }
-
-        const topLeft = subtract2(image.origin, anchorEffect);
-
-        return new Bounds({
-          height: image.height,
-          width: image.width,
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-      },
-
-      // Provide a precise hit test for the circle
-      hitTest: (image: ImageInstance, point: Vec2, view: IProjection) => {
-        // The bounds of the image is in world space, but it does not account for the scale mode of the image.
-        // Here, we will apply the scale mode testing to the image
-        const maxScale = max(...view.camera.scale);
-        const minScale = min(...view.camera.scale);
-
-        // If we scale always then the image stays within it's initial world bounds at all times
-        if (image.scaling === ScaleMode.ALWAYS) {
-          return true;
-        } else if (image.scaling === ScaleMode.BOUND_MAX) {
-          // If we scale with bound max, then when the camera zooms in, the bounds will shrink to keep the
-          // Image the same size. If the camera zooms out then the bounds === the world bounds.
-          // We are zooming out. the bounds will stay within the world bounds
-          if (minScale <= 1 && maxScale <= 1) {
-            return true;
-          } else {
-            // We are zooming in. The bounds will shrink to keep the image at max font size
-            // The location is within the world, but we reverse project the anchor spread
-            const anchorEffect: Vec2 = [0, 0];
-
-            if (image.anchor) {
-              anchorEffect[0] = image.anchor.x || 0;
-              anchorEffect[1] = image.anchor.y || 0;
-            }
-
-            const topLeft = subtract2(
-              image.origin,
-              divide2(anchorEffect, view.camera.scale)
-            );
-
-            const screenPoint = view.worldToScreen(point);
-
-            // Reverse project the size and we should be within the distorted world coordinates
-            return new Bounds({
-              height: image.height,
-              width: image.width,
-              x: topLeft[0],
-              y: topLeft[1]
-            }).containsPoint(screenPoint);
-          }
-        } else if (image.scaling === ScaleMode.NEVER) {
-          // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
-          // Of the camera zoom
-          // The location is within the world, but we reverse project the anchor spread
-          const anchorEffect: Vec2 = [0, 0];
-
-          if (image.anchor) {
-            anchorEffect[0] = image.anchor.x || 0;
-            anchorEffect[1] = image.anchor.y || 0;
-          }
-
-          const topLeft = view.worldToScreen(
-            subtract2(image.origin, divide2(anchorEffect, view.camera.scale))
-          );
-
-          const screenPoint = view.worldToScreen(point);
-
-          // Reverse project the size and we should be within the distorted world coordinates
-          const bounds = new Bounds({
-            height: image.height,
-            width: image.width,
-            x: topLeft[0],
-            y: topLeft[1]
-          });
-
-          return bounds.containsPoint(screenPoint);
-        }
-
-        return true;
-      }
-    };
-  }
 
   /**
    * Define our shader and it's inputs

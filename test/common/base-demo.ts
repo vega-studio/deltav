@@ -2,15 +2,13 @@ import * as datGUI from "dat.gui";
 import {
   BaseResourceOptions,
   BasicSurface,
-  Bounds,
   ChartCamera,
   EventManager,
   IBasicSurfaceOptions,
   Instance,
   InstanceProvider,
   Lookup,
-  Omit,
-  View
+  Omit
 } from "src";
 
 export type DemoPipeline<
@@ -62,18 +60,6 @@ export abstract class BaseDemo {
   abstract makeSurface(
     container: HTMLElement
   ): BasicSurface<any, any, any, any>;
-
-  /**
-   * An assurred way to get the screen bounds of a view. If no id is provided it attempts
-   * to retrieve the default view's bounds.
-   */
-  async getViewScreenBounds(viewId?: string): Promise<Bounds<View> | null> {
-    if (!this.surface) return null;
-    const layerSurface = await this.surface.ready;
-    const bounds = layerSurface.getViewScreenBounds(viewId || "default-view");
-
-    return bounds;
-  }
 
   /**
    * This is called when everything for the demo should be ready.

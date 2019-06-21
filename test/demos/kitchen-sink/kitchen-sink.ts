@@ -231,8 +231,12 @@ export class KitchenSink extends BaseDemo {
           const testCamera = test.makeCamera(camera);
 
           const init: SceneInitializer = {
-            control: test.makeController(camera, testCamera, name),
-            name,
+            control: test.makeController(
+              camera,
+              testCamera,
+              `${testIndex}.${name}`
+            ),
+            name: `${testIndex}.${name}`,
             scene: {
               key: name,
               views: [

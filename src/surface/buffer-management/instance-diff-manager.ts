@@ -3,7 +3,6 @@ import { ResourceRouter } from "../../resources";
 import {
   IInstanceAttribute,
   INonePickingMetrics,
-  IQuadTreePickingMetrics,
   ISinglePickingMetrics,
   PickType
 } from "../../types";
@@ -13,10 +12,8 @@ import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
 import { InstanceAttributeColorDiffProcessor } from "./instance-attribute-buffering/instance-attribute-color-diff-processor";
 import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor";
-import { InstanceAttributeQuadDiffProcessor } from "./instance-attribute-buffering/instance-attribute-quad-diff-processor";
 import { UniformColorDiffProcessor } from "./uniform-buffering/uniform-color-diff-processor";
 import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
-import { UniformQuadDiffProcessor } from "./uniform-buffering/uniform-quad-diff-processor";
 
 /** Signature of a method that handles a diff */
 export type DiffHandler<T extends Instance> = (
@@ -40,10 +37,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
   /** This is all of the instance attributes applied to the target */
   instanceAttributes: IInstanceAttribute<T>[];
   /** This is the picking metrics for how Instances are picked with the mouse */
-  picking:
-    | IQuadTreePickingMetrics<T>
-    | ISinglePickingMetrics<T>
-    | INonePickingMetrics;
+  picking: ISinglePickingMetrics<T> | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
   resource: ResourceRouter;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
@@ -88,11 +82,6 @@ export class InstanceDiffManager<T extends Instance> {
             this.layer,
             this.bufferManager
           );
-        } else if (this.layer.picking.type === PickType.ALL) {
-          this.processor = new InstanceAttributeQuadDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
         }
       }
 
@@ -105,12 +94,7 @@ export class InstanceDiffManager<T extends Instance> {
     } else {
       // Now we look at the state of the layer to determine the best diff processor strategy
       if (this.layer.picking) {
-        if (this.layer.picking.type === PickType.ALL) {
-          this.processor = new UniformQuadDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
-        } else if (this.layer.picking.type === PickType.SINGLE) {
+        if (this.layer.picking.type === PickType.SINGLE) {
           this.processor = new UniformColorDiffProcessor(
             this.layer,
             this.bufferManager

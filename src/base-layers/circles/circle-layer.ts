@@ -1,18 +1,16 @@
 import { GLSettings } from "../../gl";
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
-  IProjection,
   IShaderInitialization,
   IUniform,
   IVertexAttribute,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions, subtract2, Vec, Vec2 } from "../../util";
+import { CommonMaterialOptions, Vec } from "../../util";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
 import { CircleInstance } from "./circle-instance";
 
@@ -66,35 +64,6 @@ export class CircleLayer<
     depth: "depth",
     radius: "radius"
   };
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods() {
-    const noScaleFactor = () => 1;
-
-    return {
-      // Provide the calculated AABB world bounds for a given circle
-      boundsAccessor: (circle: CircleInstance) =>
-        new Bounds({
-          height: circle.radius * 2,
-          width: circle.radius * 2,
-          x: circle.center[0] - circle.radius,
-          y: circle.center[1] - circle.radius
-        }),
-
-      // Provide a precise hit test for the circle
-      hitTest: (circle: CircleInstance, point: Vec2, view: IProjection) => {
-        const circleScreenCenter = view.worldToScreen(circle.center);
-        const mouseScreen = view.worldToScreen(point);
-        const r = circle.radius * (this.props.scaleFactor || noScaleFactor)();
-        const delta = subtract2(mouseScreen, circleScreenCenter);
-
-        return delta[0] * delta[0] + delta[1] * delta[1] < r * r;
-      }
-    };
-  }
 
   /**
    * Define our shader and it's inputs

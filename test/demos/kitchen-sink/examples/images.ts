@@ -8,7 +8,7 @@ import {
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
-const iconData = require("./images/leaf.png");
+const iconData = require("../../../assets/leaf.png");
 const icon = new Image();
 icon.src = iconData;
 

@@ -216,6 +216,9 @@ export class TextAreaDemo extends BaseDemo {
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
+      rendererOptions: {
+        antialias: true
+      },
       providers: this.providers,
       cameras: {
         main: new ChartCamera()
@@ -226,7 +229,7 @@ export class TextAreaDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["default-view"],
+          startView: ["default.default-view"],
           wheelShouldScroll: true
         })
       }),

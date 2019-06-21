@@ -54,8 +54,8 @@ export class PhysicsDemo extends BaseDemo {
     parameters
       .add(this.parameters, "count", 0, 500, 1)
       .onChange(async (value: number) => {
-        const bounds = await this.getViewScreenBounds();
-        if (!bounds) return;
+        if (!this.surface) return;
+        const bounds = this.surface.getViewScreenBounds("main.view");
         const delta = value - this.parameters.previous.count;
 
         if (delta > 0) {
@@ -104,16 +104,14 @@ export class PhysicsDemo extends BaseDemo {
         })
       }),
       pipeline: (_resources, providers, cameras) => ({
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          main: {
+            views: {
+              view: createView({
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
+            },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
@@ -125,7 +123,7 @@ export class PhysicsDemo extends BaseDemo {
               })
             ]
           }
-        ]
+        }
       })
     });
   }
@@ -134,8 +132,9 @@ export class PhysicsDemo extends BaseDemo {
    * Initialize the demo
    */
   async init() {
-    const bounds = await this.getViewScreenBounds();
-    if (!bounds) return;
+    if (!this.surface) return;
+    await this.surface.ready;
+    const bounds = this.surface.getViewScreenBounds("main.view");
 
     const engine = (this.engine = Matter.Engine.create());
     const allObjects: Matter.Body[] = [];

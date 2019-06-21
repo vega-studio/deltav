@@ -24,7 +24,12 @@ if (program.debugPackage) process.env.DEBUG_PACKAGE = true;
 process.env.NODE_ENV = 'development';
 
 const compiler = webpack(require(resolve('webpack.config.js')));
-const server = new DevServer(compiler, {});
+
+const server = new DevServer(compiler, {
+  contentBase: resolve('test/assets'),
+  compress: true,
+  port: process.env.PORT || 8080
+});
 
 server.listen(process.env.PORT || 8080, process.env.HOST || '0.0.0.0', () => {
   console.log(`Starting server on ${process.env.HOST || '0.0.0.0'}:${process.env.PORT || 8080}`);

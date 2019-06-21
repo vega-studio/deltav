@@ -9,11 +9,8 @@ import {
   InstanceProvider,
   Vec1Compat
 } from "src";
-import {
-  TextAreaInstance,
-  WordWrap
-} from "src/base-layers/labels/text-area-instance";
-import { TextAreaLayer } from "src/base-layers/labels/text-area-layer";
+import { TextAreaInstance, WordWrap } from "src/2d/labels/text-area-instance";
+import { TextAreaLayer } from "src/2d/labels/text-area-layer";
 import { DEFAULT_RESOURCES, STORY } from "test/types";
 import { BaseDemo } from "../../common/base-demo";
 

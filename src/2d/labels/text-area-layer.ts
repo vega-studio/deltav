@@ -1,5 +1,5 @@
-import { fontRequest, IFontResourceRequest } from "../../../src/resources";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
+import { fontRequest, IFontResourceRequest } from "../../resources";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   createLayer,

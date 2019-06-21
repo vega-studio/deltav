@@ -1,3 +1,9 @@
+import { SimpleEventHandler } from "../event-management/simple-event-handler";
+import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction
+} from "../event-management/types";
 import { Bounds } from "../primitives/bounds";
 import { View } from "../surface/view";
 import { IProjection } from "../types";
@@ -21,12 +27,10 @@ import {
   vec3
 } from "../util";
 import { ChartCamera } from "../util/chart-camera";
-import { SimpleEventHandler } from "./simple-event-handler";
-import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction
-} from "./types";
+
+/**
+ * Anchor options for the controller
+ */
 export enum CameraBoundsAnchor {
   TOP_LEFT,
   TOP_MIDDLE,

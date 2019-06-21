@@ -1,7 +1,7 @@
 import "./util/webgl2-type-shim";
 
 export * from "./event-management";
-export * from "./base-layers";
+export * from "./2d";
 export * from "./instance-provider";
 export * from "./primitives";
 export * from "./surface";

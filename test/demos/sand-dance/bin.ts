@@ -1,3 +1,5 @@
+import { LabelInstance, RectangleInstance } from "src";
+
 export enum BinType {
   SINGLE,
   RANGE
@@ -20,6 +22,9 @@ export class Bin {
   type: BinType;
   value: BinValue | [BinValue, BinValue];
   valueType: BinValueType;
+
+  binRectangle: RectangleInstance;
+  label: LabelInstance;
 
   constructor(options: IBinOptions) {
     this.type = options.type;

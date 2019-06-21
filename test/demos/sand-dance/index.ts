@@ -1,1 +1,1 @@
-export * from "./sand-dance";
+export * from "./sand-dance-demo";

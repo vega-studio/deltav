@@ -1,208 +1,403 @@
-import * as datGUI from "dat.gui";
 import {
-  AutoEasingMethod,
-  BasicCameraController,
-  BasicSurface,
-  ChartCamera,
-  ClearFlags,
-  createLayer,
-  createView,
   EdgeInstance,
-  EdgeLayer,
-  EdgeType,
   InstanceProvider,
-  IPickInfo,
   LabelInstance,
-  LabelLayer,
-  PickType,
   RectangleInstance,
-  RectangleLayer,
   ScaleMode,
-  Vec2
+  Vec2,
+  Vec4
 } from "src";
-import { BaseDemo } from "test/common/base-demo";
-import { DEFAULT_RESOURCES } from "test/types";
-
 import { Bin, BinType, BinValueType } from "./bin";
+import { Person } from "./person";
 
-export class SandDanceDemo extends BaseDemo {
-  camera: ChartCamera;
-
-  gui: datGUI.GUI;
-
-  parameters = {
-    color: [0, 0, 255, 1] as [number, number, number, number],
-    width: 6,
-    changeLocations: () => {
-      const file = require("./data.json");
-
-      console.warn("file", file.length);
-
-      const array = [];
-
-      for (let i = 0; i < file.length; i++) {
-        array.push(file[i]);
-      }
-
-      array.sort((a, b) => a.eyeColor.localeCompare(b.eyeColor));
-
-      console.warn(array);
-    },
-    sortBy: "null"
+export interface ISandDanceOptions {
+  origin?: Vec2;
+  chartWidth?: number;
+  chartHeight?: number;
+  maxBinNum?: number;
+  rectangleCount?: number;
+  rectangleWidth?: number;
+  rectangleHeight?: number;
+  gapBetweenRectangles?: number;
+  providers: {
+    bins: InstanceProvider<RectangleInstance>;
+    rectangles: InstanceProvider<RectangleInstance>;
+    lines: InstanceProvider<EdgeInstance>;
+    labels: InstanceProvider<LabelInstance>;
   };
+}
 
-  providers = {
-    bins: new InstanceProvider<RectangleInstance>(),
-    rectangles: new InstanceProvider<RectangleInstance>(),
-    lines: new InstanceProvider<EdgeInstance>(),
-    labels: new InstanceProvider<LabelInstance>()
-  };
+export class SandDance {
+  origin: Vec2 = [10, 800];
+  chartWidth: number = 1200;
+  chartHeight: number = 600;
 
+  maxBinNum: number = 6;
+  binNum: number;
+  numOfRecsPerRow: number; // TBD
+  binRectangleColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+  binRectangleWidth: number; // will be determined later by calculation
+  binRectangleHeight: number = 20;
+
+  rectangleCount: number = 1000;
+  rectangleColor: Vec4 = [0, 0, 1, 1];
+  rectangleWidth: number = 10;
+  rectangleHeight: number = 10;
+  gapBetweenRectangles: number = 1;
+
+  keys: string[];
+  currentKey: string;
+
+  id: number = 0;
+
+  bins: Bin[];
+  persons: Person[] = [];
   rectangles: RectangleInstance[] = [];
-  binToRectangles: Map<RectangleInstance, RectangleInstance[]> = new Map();
-  binRectangles: RectangleInstance[] = [];
-  idToRectangle: Map<number, RectangleInstance> = new Map<
-    number,
-    RectangleInstance
-  >();
 
+  // Maps
+  binToRectangles: Map<RectangleInstance, RectangleInstance[]> = new Map();
+  idToRectangle: Map<number, RectangleInstance> = new Map();
+  binToLocation: Map<Bin, [number, number]> = new Map();
+
+  // Select
   selectedRectangle: RectangleInstance | null = null;
   selectedBin: RectangleInstance | null = null;
 
-  // I need an map element to rectangle
-
-  mouseClick = (info: IPickInfo<RectangleInstance>) => {
-    info.instances.forEach(instance => {
-      if (!this.selectedRectangle || this.selectedRectangle !== instance) {
-        this.selectedRectangle = instance;
-        this.rectangles.forEach(
-          instance => (instance.color = [0.1, 0.1, 0.1, 1])
-        );
-        instance.color = [1, 1, 1, 1];
-      } else {
-        this.selectedRectangle = null;
-        this.rectangles.forEach(instance => (instance.color = [0, 0, 1, 1]));
-      }
-    });
+  providers: {
+    bins: InstanceProvider<RectangleInstance>;
+    rectangles: InstanceProvider<RectangleInstance>;
+    lines: InstanceProvider<EdgeInstance>;
+    labels: InstanceProvider<LabelInstance>;
   };
 
-  mouseClickBin = (info: IPickInfo<RectangleInstance>) => {
-    info.instances.forEach(instance => {
-      if (!this.selectedBin || this.selectedBin !== instance) {
-        this.selectedBin = instance;
-        const rectangles = this.binToRectangles.get(instance);
-        if (rectangles) {
-          this.rectangles.forEach(
-            instance => (instance.color = [0.1, 0.1, 0.1, 1])
-          );
-          rectangles.forEach(rect => (rect.color = [1, 1, 1, 1]));
-        }
-      } else {
-        this.selectedBin = null;
-        this.rectangles.forEach(instance => (instance.color = [0, 0, 1, 1]));
-      }
-    });
-  };
+  constructor(options: ISandDanceOptions) {
+    this.origin = options.origin || this.origin;
+    this.chartWidth = options.chartWidth || this.chartWidth;
+    this.chartHeight = options.chartHeight || this.chartHeight;
+    this.maxBinNum = options.maxBinNum || this.maxBinNum;
+    this.rectangleCount = options.rectangleCount || this.rectangleCount;
+    this.rectangleWidth = options.rectangleWidth || this.rectangleWidth;
+    this.rectangleHeight = options.rectangleHeight || this.rectangleHeight;
+    this.gapBetweenRectangles =
+      options.gapBetweenRectangles || this.gapBetweenRectangles;
 
-  buildConsole(gui: datGUI.GUI) {
-    const parameters = gui.addFolder("Parameters");
+    this.providers = options.providers;
 
-    parameters
-      .addColor(this.parameters, "color")
-      .onChange((value: [number, number, number, number]) => {
-        this.rectangles.forEach(
-          rec =>
-            (rec.color = [value[0] / 255, value[1] / 255, value[2] / 255, 1])
-        );
-      });
-
-    parameters.add(this.parameters, "changeLocations");
-
-    this.gui = gui;
+    // Generate Persons
+    this.generatePersons();
   }
 
-  makeSurface(container: HTMLElement) {
-    return new BasicSurface({
-      container,
-      providers: this.providers,
-      cameras: {
-        main: new ChartCamera()
-      },
-      resources: {
-        font: DEFAULT_RESOURCES.font
-      },
-      rendererOptions: {
-        antialias: true
-      },
-      eventManagers: cameras => ({
-        main: new BasicCameraController({
-          camera: cameras.main,
-          startView: ["default-view"],
-          wheelShouldScroll: false
-        })
-      }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          default: {
-            views: {
-              "default-view": createView({
-                background: [0, 0, 0, 1],
-                camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              labels: createLayer(LabelLayer, {
-                data: providers.labels,
-                resourceKey: resources.font.key
-              }),
-              lines: createLayer(EdgeLayer, {
-                data: providers.lines,
-                type: EdgeType.LINE
-              }),
-              rectangles: createLayer(RectangleLayer, {
-                animate: {
-                  color: AutoEasingMethod.linear(300),
-                  location: AutoEasingMethod.linear(1000)
-                },
-                data: providers.rectangles,
-                onMouseClick: this.mouseClick,
-                picking: PickType.SINGLE
-              }),
-              bins: createLayer(RectangleLayer, {
-                animate: {
-                  color: AutoEasingMethod.linear(300)
-                },
-                data: providers.bins,
-                onMouseClick: this.mouseClickBin,
-                picking: PickType.SINGLE
-              })
+  initGraph() {
+    this.providers.labels.clear();
+    this.providers.bins.clear();
+    this.binToRectangles.clear();
+    this.selectedBin = null;
+    this.selectedRectangle = null;
+    this.bins = [];
+  }
+
+  setColorForAllRectangles(color: Vec4) {
+    this.rectangles.forEach(rec => {
+      rec.color = color;
+    });
+  }
+
+  generatePersons() {
+    const eyeColors = ["blue", "black", "brown", "green"];
+
+    for (let i = 0; i < this.rectangleCount; i++) {
+      const person = new Person({
+        id: this.id++,
+        age: 20 + Math.floor(20 * Math.random()),
+        eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
+        name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
+        gender: Math.random() >= 0.5 ? "male" : "female",
+        group: Math.floor(6 * Math.random()) + 1
+      });
+
+      this.persons.push(person);
+
+      // generate the rectangle the person represents
+      const rec = new RectangleInstance({
+        depth: 0,
+        size: [10, 10],
+        scaling: ScaleMode.ALWAYS,
+        color: this.rectangleColor
+      });
+
+      this.providers.rectangles.add(rec);
+      this.rectangles.push(rec);
+
+      this.idToRectangle.set(person.id, rec);
+    }
+
+    const keys: string[] = [];
+
+    if (this.persons.length > 0) {
+      for (const key in this.persons[0]) {
+        keys.push(key);
+      }
+    }
+
+    this.keys = keys;
+
+    this.sortByKey(keys[0]);
+  }
+
+  addPersons(toAdd: number) {
+    const eyeColors = ["blue", "black", "brown", "green"];
+
+    // Create new person
+    for (let i = 0; i < 0; i++) {
+      const person = new Person({
+        id: this.id++, // temp
+        age: 20 + Math.floor(20 * Math.random()),
+        eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
+        name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
+        gender: Math.random() >= 0.5 ? "male" : "female",
+        group: Math.floor(6 * Math.random()) + 1
+      });
+
+      this.persons.push(person);
+
+      // generate the rectangle the person represents
+      const rec = new RectangleInstance({
+        depth: 0,
+        size: [10, 10],
+        scaling: ScaleMode.ALWAYS,
+        color: [0, 0, 1, 1]
+      });
+
+      this.providers.rectangles.add(rec);
+      this.rectangles.push(rec);
+
+      this.idToRectangle.set(person.id, rec);
+
+      const key = this.keys[1];
+
+      for (let i = 0; i < this.bins.length; i++) {
+        const bin = this.bins[i];
+        const binRec = bin.binRectangle;
+        if (bin.containsValue(person[key])) {
+          const index = this.binToLocation.get(bin);
+          const step = this.rectangleWidth + this.gapBetweenRectangles;
+
+          if (index) {
+            let rowIndex = index[0] + 1;
+            let colIndex = index[1];
+
+            if (rowIndex >= this.numOfRecsPerRow) {
+              rowIndex = 0;
+              colIndex++;
             }
+
+            rec.position = [
+              this.origin[0] + this.binRectangleWidth * i + rowIndex * step,
+              this.origin[1] - colIndex * step // + this.gapBetweenRectangles
+            ];
+
+            this.binToLocation.set(bin, [rowIndex, colIndex]);
+          }
+
+          const list = this.binToRectangles.get(binRec);
+
+          if (list) {
+            list.push(rec);
+            this.binToRectangles.set(binRec, list);
           }
         }
+      }
+    }
+
+    for (let i = 0; i < toAdd; i++) {
+      const person = new Person({
+        id: this.id++, // temp
+        age: 20 + Math.floor(20 * Math.random()),
+        eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
+        name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
+        gender: Math.random() >= 0.5 ? "male" : "female",
+        group: Math.floor(6 * Math.random()) + 1
+      });
+
+      this.persons.push(person);
+
+      // generate the rectangle the person represents
+      const rec = new RectangleInstance({
+        depth: 0,
+        size: [10, 10],
+        scaling: ScaleMode.ALWAYS,
+        color: [0, 0, 1, 1]
+      });
+
+      this.providers.rectangles.add(rec);
+      this.rectangles.push(rec);
+
+      this.idToRectangle.set(person.id, rec);
+    }
+
+    this.sortByKey(this.currentKey);
+  }
+
+  reducePersons(toRduce: number) {
+    for (let i = 0; i < toRduce; i++) {
+      const index = Math.floor(Math.random() * this.persons.length);
+      const person = this.persons[index];
+      this.persons.splice(index, 1);
+
+      const rec = this.idToRectangle.get(person.id);
+      if (rec) {
+        const indexOfRec = this.rectangles.indexOf(rec);
+        this.rectangles.splice(indexOfRec, 1);
+        this.providers.rectangles.remove(rec);
+      }
+
+      this.idToRectangle.delete(person.id);
+    }
+
+    this.sortByKey(this.currentKey);
+  }
+
+  moveRectangels() {
+    //
+  }
+
+  layoutBins() {
+    for (let i = 0; i < this.binNum; i++) {
+      const binRec = new RectangleInstance({
+        depth: 0,
+        position: [
+          this.origin[0] + this.binRectangleWidth * i,
+          this.origin[1] + 20
+        ],
+        size: [this.binRectangleWidth - 5, this.binRectangleHeight],
+        scaling: ScaleMode.ALWAYS,
+        color: [0.5, 0.5, 0.5, 1]
+      });
+
+      this.providers.bins.add(binRec);
+
+      this.bins[i].binRectangle = binRec;
+
+      this.binToRectangles.set(binRec, []);
+    }
+  }
+
+  layoutLines() {
+    this.providers.lines.add(
+      new EdgeInstance({
+        start: [this.origin[0], this.origin[1] + 10],
+        end: [this.origin[0] + this.chartWidth, this.origin[1] + 10]
       })
-    });
+    );
+
+    this.providers.lines.add(
+      new EdgeInstance({
+        start: [this.origin[0], this.origin[1] + 10],
+        end: [this.origin[0], this.origin[1] - this.chartHeight + 10]
+      })
+    );
+  }
+
+  layoutRectangles(key: string) {
+    let curIndex = 0;
+    let currentBin = this.bins[curIndex];
+    let currentX = 0;
+    let currentY = 0;
+
+    let rowIndex = 0;
+    let colIndex = 0;
+
+    // layout Rectangles
+    for (let i = 0; i < this.persons.length; i++) {
+      const element = this.persons[i];
+      const rec = this.idToRectangle.get(element.id);
+
+      if (rec) {
+        const keyValue = element[key];
+
+        while (
+          curIndex < this.bins.length &&
+          !currentBin.containsValue(keyValue)
+        ) {
+          curIndex++;
+          currentBin = this.bins[curIndex];
+
+          rowIndex = 0;
+          colIndex = 0;
+
+          currentX = this.binRectangleWidth * curIndex;
+          currentY = 0;
+        }
+
+        rec.position = [this.origin[0] + currentX, this.origin[1] - currentY];
+        this.binToLocation.set(currentBin, [rowIndex, colIndex]);
+
+        const list = this.binToRectangles.get(currentBin.binRectangle);
+        if (list) {
+          list.push(rec);
+          this.binToRectangles.set(currentBin.binRectangle, list);
+        }
+
+        rowIndex++;
+
+        if (rowIndex >= this.numOfRecsPerRow) {
+          rowIndex = 0;
+          colIndex++;
+          currentX = this.binRectangleWidth * curIndex;
+          currentY += this.rectangleHeight + this.gapBetweenRectangles;
+        } else {
+          currentX += this.rectangleWidth + this.gapBetweenRectangles;
+        }
+      }
+    }
+  }
+
+  layoutLabels() {
+    for (let i = 0; i < this.binNum; i++) {
+      const bin = this.bins[i];
+      let labelText = "";
+
+      if (bin.type === BinType.SINGLE) {
+        labelText = bin.value.toString();
+      } else {
+        if (typeof bin.value === "object") {
+          labelText = `${bin.value[0]} - ${bin.value[1]}`;
+        }
+      }
+
+      const label = new LabelInstance({
+        text: labelText,
+        color: [1, 1, 1, 1],
+        origin: [
+          this.origin[0] + this.binRectangleWidth * i,
+          this.origin[1] + 40
+        ],
+        fontSize: 24
+      });
+      this.providers.labels.add(label);
+    }
   }
 
   getBinValues(numberValues: Set<number>, stringValues: Set<string>) {
-    const maxBinNumber = 6;
-    let binNum = 0;
+    // const maxBinNumber = 6;
+    let valueNum = 0;
     let binValueType: string = "";
 
     if (numberValues.size > 0) {
-      binNum = numberValues.size;
+      valueNum = numberValues.size;
       binValueType = "number";
     } else if (stringValues.size > 0) {
-      binNum = stringValues.size;
+      valueNum = stringValues.size;
       binValueType = "string";
     }
 
     const bins: Bin[] = [];
 
-    if (binNum > 0 && binNum <= maxBinNumber) {
+    if (valueNum > 0 && valueNum <= this.maxBinNum) {
       if (binValueType === "number") {
         const valueArray = Array.from(numberValues);
         valueArray.sort((a, b) => a - b);
+
         for (let i = 0; i < valueArray.length; i++) {
           const value = valueArray[i];
           bins.push(
@@ -216,6 +411,7 @@ export class SandDanceDemo extends BaseDemo {
       } else if (binValueType === "string") {
         const valueArray = Array.from(stringValues);
         valueArray.sort((a, b) => a.localeCompare(b));
+
         for (let i = 0; i < valueArray.length; i++) {
           const value = valueArray[i];
           bins.push(
@@ -238,11 +434,12 @@ export class SandDanceDemo extends BaseDemo {
         });
 
         const binBasicWidth = Math.floor(
-          (maxValue + 1 - minValue) / maxBinNumber
+          (maxValue + 1 - minValue) / this.maxBinNum
         );
-        const rest = maxValue + 1 - minValue - maxBinNumber * binBasicWidth;
+        const rest = maxValue + 1 - minValue - this.maxBinNum * binBasicWidth;
         let start = minValue;
-        for (let i = 0; i < maxBinNumber; i++) {
+
+        for (let i = 0; i < this.maxBinNum; i++) {
           let binWidth = binBasicWidth;
           if (i < rest) binWidth++;
           bins.push(
@@ -270,11 +467,12 @@ export class SandDanceDemo extends BaseDemo {
         });
 
         const binBasicWidth = Math.floor(
-          (maxValue + 1 - minValue) / maxBinNumber
+          (maxValue + 1 - minValue) / this.maxBinNum
         );
-        const rest = maxValue + 1 - minValue - maxBinNumber * binBasicWidth;
+        const rest = maxValue + 1 - minValue - this.maxBinNum * binBasicWidth;
         let start = minValue;
-        for (let i = 0; i < maxBinNumber; i++) {
+
+        for (let i = 0; i < this.maxBinNum; i++) {
           let binWidth = binBasicWidth;
           if (i < rest) binWidth++;
 
@@ -296,217 +494,65 @@ export class SandDanceDemo extends BaseDemo {
     return bins;
   }
 
-  initGraph() {
-    this.providers.labels.clear();
-    this.providers.bins.clear();
-    this.binToRectangles.clear();
-    this.selectedBin = null;
-    this.selectedRectangle = null;
-    this.binRectangles = [];
-  }
+  sortByKey(key: string) {
+    this.currentKey = key;
+    this.initGraph();
 
-  sortByKey(file: any, key: string) {
-    const array = [];
     const numberValues: Set<number> = new Set<number>();
     const stringValues: Set<string> = new Set<string>();
 
-    this.initGraph();
-
-    // Create the rectangleInstances
-    for (let i = 0; i < file.length; i++) {
-      const element = file[i];
-      array.push(element);
+    for (let i = 0; i < this.persons.length; i++) {
+      const element: Person = this.persons[i];
       const value = element[key];
 
       if (typeof value === "string") {
-        stringValues.add(element[key]);
+        stringValues.add(value);
       } else if (typeof value === "number") {
-        numberValues.add(element[key]);
-      }
-
-      if (!this.idToRectangle.has(element.id)) {
-        const rec = new RectangleInstance({
-          depth: 0,
-          size: [10, 10],
-          scaling: ScaleMode.ALWAYS,
-          color: this.parameters.color
-        });
-
-        this.providers.rectangles.add(rec);
-        this.rectangles.push(rec);
-
-        this.idToRectangle.set(element.id, rec);
+        numberValues.add(value);
       }
     }
 
-    const origin: Vec2 = [10, 800];
-    const chartWidth: number = 1200;
-    const chartHeight: number = 600;
+    this.bins = this.getBinValues(numberValues, stringValues);
+    this.binNum = this.bins.length;
 
-    const bins = this.getBinValues(numberValues, stringValues);
-    const binNum = bins.length;
-    const binWidth = chartWidth / binNum;
-    const rowNum: number = Math.floor(binWidth / 11);
+    this.binRectangleWidth = this.chartWidth / this.binNum;
+    this.numOfRecsPerRow = Math.floor(
+      this.binRectangleWidth / (this.rectangleWidth + this.gapBetweenRectangles)
+    );
 
     // Sorting based on value type
     if (stringValues.size > 0) {
-      array.sort((a, b) => a[key].localeCompare(b[key]));
+      this.persons.sort((a, b) => {
+        const aValue = a[key];
+        const bValue = b[key];
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return aValue.localeCompare(bValue);
+        }
+        return 0;
+      });
     }
 
     if (numberValues.size > 0) {
-      array.sort((a, b) => a[key] - b[key]);
+      this.persons.sort((a, b) => {
+        const aValue = a[key];
+        const bValue = b[key];
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return aValue - bValue;
+        }
+        return 0;
+      });
     }
 
     // bins
-    this.layoutBins(binNum, binWidth, origin);
+    this.layoutBins();
 
     // Rectangles
-    this.layoutRectangles(bins, array, key, binWidth, rowNum, origin);
+    this.layoutRectangles(key);
 
     // lines
-    this.layoutLines(origin, chartWidth, chartHeight);
+    this.layoutLines();
 
     // labels
-    this.layoutLabels(bins, origin, binWidth);
-  }
-
-  buildGraph() {
-    const file = require("./data.json");
-    const totalNum = file.length;
-    const keys: string[] = [];
-
-    // get keys
-    if (totalNum > 0) {
-      for (const key in file[0]) {
-        keys.push(key);
-      }
-    }
-
-    this.sortByKey(file, keys[0]);
-
-    this.gui
-      .add(this.parameters, "sortBy", keys)
-      .setValue(keys[0])
-      .onChange((key: string) => {
-        this.sortByKey(file, key);
-      });
-  }
-
-  layoutBins(binNum: number, binWidth: number, origin: [number, number]) {
-    for (let i = 0; i < binNum; i++) {
-      const binRec = new RectangleInstance({
-        depth: 0,
-        position: [origin[0] + binWidth * i, origin[1] + 20],
-        size: [binWidth - 5, 20],
-        scaling: ScaleMode.ALWAYS,
-        color: [0.5, 0.5, 0.5, 1]
-      });
-
-      this.binToRectangles.set(binRec, []);
-
-      this.providers.bins.add(binRec);
-
-      this.binRectangles.push(binRec);
-    }
-  }
-
-  layoutRectangles(
-    bins: Bin[],
-    array: any[],
-    key: number | string,
-    binWidth: number,
-    rowNum: number,
-    origin: [number, number]
-  ) {
-    let curIndex = 0;
-    let currentBin = bins[curIndex];
-    let currentBinRec = this.binRectangles[curIndex];
-
-    let currentX = 0;
-    let currentY = 0;
-    let rowIndex = 0;
-
-    // layout Rectangles
-    for (let i = 0; i < array.length; i++) {
-      const element = array[i];
-      const rec = this.idToRectangle.get(element.id);
-
-      if (rec) {
-        const keyValue = element[key];
-
-        while (curIndex < bins.length && !currentBin.containsValue(keyValue)) {
-          curIndex++;
-          currentBin = bins[curIndex];
-          currentBinRec = this.binRectangles[curIndex];
-
-          rowIndex = 0;
-          currentX = binWidth * curIndex;
-          currentY = 0;
-        }
-
-        rec.position = [origin[0] + currentX, origin[1] - currentY];
-
-        const list = this.binToRectangles.get(currentBinRec);
-        if (list) {
-          list.push(rec);
-          this.binToRectangles.set(currentBinRec, list);
-        }
-
-        rowIndex++;
-
-        if (rowIndex >= rowNum) {
-          rowIndex = 0;
-          currentX = binWidth * curIndex;
-          currentY += 11;
-        } else {
-          currentX += 11;
-        }
-      }
-    }
-  }
-
-  layoutLines(
-    origin: [number, number],
-    chartWidth: number,
-    chartHeight: number
-  ) {
-    this.providers.lines.add(
-      new EdgeInstance({
-        start: [origin[0], origin[1] + 10],
-        end: [origin[0] + chartWidth, origin[1] + 10]
-      })
-    );
-
-    this.providers.lines.add(
-      new EdgeInstance({
-        start: [origin[0], origin[1] + 10],
-        end: [origin[0], origin[1] - chartHeight + 10]
-      })
-    );
-  }
-
-  layoutLabels(bins: Bin[], origin: [number, number], binWidth: number) {
-    for (let i = 0; i < bins.length; i++) {
-      const bin = bins[i];
-      let labelText = "";
-      if (bin.type === BinType.SINGLE) {
-        labelText = bin.value.toString();
-      } else {
-        if (typeof bin.value === "object") {
-          labelText = `${bin.value[0]} - ${bin.value[1]}`;
-        }
-      }
-      const label = new LabelInstance({
-        text: labelText,
-        color: [1, 1, 1, 1],
-        origin: [origin[0] + binWidth * i, origin[1] + 40],
-        fontSize: 24
-      });
-      this.providers.labels.add(label);
-    }
-  }
-
-  async init() {
-    this.buildGraph();
+    this.layoutLabels();
   }
 }

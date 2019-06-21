@@ -274,13 +274,11 @@ export class AtlasManager {
             subTexture.pixelHeight = image.height;
             subTexture.aspectRatio = image.width / image.height;
             image.onload = null;
-            image.onerror = null;
             resolve(image);
           };
 
           image.onerror = function() {
             image.onload = null;
-            image.onerror = null;
             resolve(null);
           };
         } else {

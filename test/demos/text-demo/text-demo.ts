@@ -18,6 +18,7 @@ import {
   ScaleMode
 } from "src";
 import { DEFAULT_RESOURCES, WORDS } from "test/types";
+import { wait } from "../../../src/util/wait";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
 
@@ -44,13 +45,6 @@ const copyToClipboard = (str: string) => {
     }
   }
 };
-
-/**
- * Promise based wait timer function
- */
-export async function wait(t: number) {
-  return new Promise(resolve => setTimeout(resolve, t));
-}
 
 /**
  * A demo demonstrating particles collecting within the bounds of text.

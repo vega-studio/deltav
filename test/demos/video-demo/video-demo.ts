@@ -10,7 +10,6 @@ import {
   ImageInstance,
   ImageLayer,
   InstanceProvider,
-  nextFrame,
   PickType,
   RectangleInstance,
   RectangleLayer,
@@ -18,6 +17,7 @@ import {
   TextureSize,
   Vec2
 } from "src";
+import { wait } from "../../../src/util/wait";
 import { BaseDemo } from "../../common/base-demo";
 
 function rand() {
@@ -34,21 +34,18 @@ export class VideoDemo extends BaseDemo {
     boxes: new InstanceProvider<RectangleInstance>()
   };
 
+  /** All images produced */
+  images: ImageInstance[] = [];
+
   /** GUI properties */
   parameters = {
-    count: 1000,
-    radius: 100,
-    moveAtOnce: 10000,
-    addAtOnce: 10000,
-
-    previous: {
-      count: 1000
-    }
+    source: require("../../assets/Wildlife.mp4")
   };
 
   currentLocation: Vec2 = [0, 0];
 
   video?: HTMLVideoElement;
+  videoInstance: ImageInstance;
 
   controls = {
     mute: new RectangleInstance({
@@ -61,13 +58,21 @@ export class VideoDemo extends BaseDemo {
     })
   };
 
-  buildConsole(_gui: datGUI.GUI): void {
-    // const parameters = gui.addFolder("Parameters");
-    // parameters
-    //   .add(this.parameters, "radius", 0, 10000, 1)
-    //   .onChange(async (_value: number) => {
-    //     this.moveToLocation(this.currentLocation);
-    //   });
+  buildConsole(gui: datGUI.GUI): void {
+    const parameters = gui.addFolder("Parameters");
+    parameters
+      .add(this.parameters, "source", {
+        WildLife: require("../../assets/Wildlife.mp4"),
+        HamRadio: require("../../assets/Waterfall.mp4")
+      })
+      .onChange(async (value: string) => {
+        this.images.forEach(image => {
+          image.source = {
+            videoSrc: value,
+            autoPlay: true
+          };
+        });
+      });
   }
 
   makeSurface(container: HTMLElement) {
@@ -79,8 +84,8 @@ export class VideoDemo extends BaseDemo {
       },
       resources: {
         atlas: createAtlas({
-          width: TextureSize._2048,
-          height: TextureSize._2048
+          width: TextureSize._1024,
+          height: TextureSize._1024
         })
       },
       eventManagers: cameras => ({
@@ -120,14 +125,19 @@ export class VideoDemo extends BaseDemo {
                 picking: PickType.SINGLE,
 
                 onMouseClick: info => {
-                  if (this.video && info.instances.length > 0) {
+                  const instance = info.instances[0];
+
+                  if (this.video && instance === this.controls.mute) {
                     this.video.muted = !this.video.muted;
 
                     if (this.video.muted) {
-                      info.instances.forEach(box => (box.color = [1, 0, 0, 1]));
+                      instance.color = [1, 0, 0, 1];
                     } else {
-                      info.instances.forEach(box => (box.color = [0, 1, 0, 1]));
+                      instance.color = [0, 1, 0, 1];
                     }
+                  } else if (instance === this.controls.play) {
+                    if (this.video) this.video.play();
+                    else this.videoInstance.videoLoad();
                   }
                 }
               })
@@ -139,46 +149,46 @@ export class VideoDemo extends BaseDemo {
   }
 
   async init() {
+    await wait(1000);
     if (!this.surface) return;
     await this.surface.ready;
     const screen = this.surface.getViewScreenSize("main.main");
 
     const videoSrc = {
-      videoSrc: require("../../assets/Wildlife.mp4")
+      videoSrc: this.parameters.source,
+      autoPlay: true
     };
 
-    for (let i = 0; i < 100; ++i) {
-      this.providers.images.add(
+    for (let i = 0; i < 10; ++i) {
+      this.videoInstance = this.providers.images.add(
         new ImageInstance({
           source: videoSrc,
           tint: [rand(), rand(), rand(), 1],
           origin: [rand() * screen[0], rand() * screen[1]],
           scaling: ScaleMode.ALWAYS,
 
-          onReady: async (image: ImageInstance) => {
-            if (
-              !image.request ||
-              !image.request.texture ||
-              !(image.request.texture.source instanceof HTMLVideoElement)
-            ) {
+          onReady: async (image: ImageInstance, video?: HTMLVideoElement) => {
+            if (!video) {
               return;
             }
-            this.video = image.request.texture.source;
-            const scale = Math.random() * 0.8 + 0.2;
+
+            this.videoInstance = image;
+            this.video = video;
+            let scale = Math.random() * 0.8 + 0.2;
+
+            const max = Math.max(this.video.videoWidth, this.video.videoHeight);
+            scale = Math.min(500 / max, scale);
+
             image.width = this.video.videoWidth * scale;
             image.height = this.video.videoHeight * scale;
+
             image.origin[0] = image.origin[0] - image.width / 2;
             image.origin[1] = image.origin[1] - image.height / 2;
-
-            if (this.video.paused) {
-              this.video.play();
-              this.video.loop = true;
-              await nextFrame();
-              // console.log("IS PAUSED", this.video.paused);
-            }
           }
         })
       );
+
+      this.images.push(this.videoInstance);
     }
 
     Object.values(this.controls).forEach((box, i) => {

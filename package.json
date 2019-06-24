@@ -22,6 +22,7 @@
     "@types/animejs": "2.0.0",
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",
+    "@types/debug": "4.1.4",
     "@types/html2canvas": "0.0.35",
     "@types/matter-js": "0.10.2",
     "@types/node": "8.0.58",

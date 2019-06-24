@@ -6,20 +6,7 @@ export type AtlasVideoResource = {
   videoSrc: string;
 };
 
-export type AtlasResouce =
-  | string
-  | ImageBitmap
-  | ImageData
-  | HTMLImageElement
-  | HTMLCanvasElement
-  | AtlasVideoResource;
-
-/**
- * Typeguard for video resource requests
- */
-export function isAtlasVideoResource(val: any): val is AtlasVideoResource {
-  return val && val.videoSrc;
-}
+export type AtlasResource = string | TexImageSource;
 
 /**
  * Base information an atlas resource can provide
@@ -42,7 +29,7 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
    */
   rasterizationScale?: number;
   /** This is the requested resource to be loaded into the manager system */
-  source: AtlasResouce;
+  source: AtlasResource;
   /**
    * Once loaded into the texture, this will be populated revealing the informaion needed to sample the image
    * from the atlas.

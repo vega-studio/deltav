@@ -1,12 +1,8 @@
 import { Bounds } from "../../primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
-import { PromiseResolver } from "../../util";
 import { Atlas, IAtlasResource } from "./atlas";
-import {
-  IAtlasResourceRequest,
-  isAtlasVideoResource
-} from "./atlas-resource-request";
+import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { IPackNodeDimensions, PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
 
@@ -298,86 +294,24 @@ export class AtlasManager {
       }
 
       return image;
-    } else if (isAtlasVideoResource(source)) {
-      let hasError = false;
-      const video = document.createElement("video");
-
-      // We must load the video properly to make it compatible with the texture and have all of it's properties
-      // set in an appropriate fashion to not violate current video playback standards.
-      const metaResolver = new PromiseResolver<void>();
-      const dataResolver = new PromiseResolver<void>();
-
-      const removeListeners = () => {
-        video.removeEventListener("loadedmetadata", waitForMetaData);
-        video.removeEventListener("loadeddata", waitForData);
-        video.removeEventListener("error", waitForError);
-      };
-
-      const waitForData = () => {
-        dataResolver.resolve();
-      };
-
-      const waitForMetaData = () => {
-        metaResolver.resolve();
-      };
-
-      const waitForError = (event: any) => {
-        let error;
-        hasError = true;
-
-        // Chrome v60
-        if (event.path && event.path[0]) {
-          error = event.path[0].error;
-        }
-
-        // Firefox v55
-        if (event.originalTarget) {
-          error = event.originalTarget.error;
-        }
-
-        // Broadcast the error
+    } else if (source instanceof HTMLVideoElement) {
+      if (source.videoHeight === 0 || source.videoWidth === 0) {
         console.warn(
-          "There was an error loading the video resource to the atlas texture context"
+          "Video requests to the atlas manager MUST have the video completely loaded and ready for loading",
+          "There are too many caveats to automate video loading at this low of a level to have it prepped properly for",
+          "use in the texture for all browsers. Consider handling video resources at the layer level to have them",
+          "prepped for use."
         );
-        console.warn(error);
-
-        // Clean listeners
-        removeListeners();
-        // Ensure all blockers are resolved
-        metaResolver.resolve();
-        dataResolver.resolve();
-      };
-
-      // We must ensure the source has it's meta data and first frame available. The meta data ensures a
-      // videoWidth and height are available and the first frame ensures WebGL does not throw an error in some
-      // browsers that says something like:
-      video.addEventListener("loadedmetadata", waitForMetaData);
-      video.addEventListener("loadeddata", waitForData);
-      video.addEventListener("error", waitForError);
-
-      // Current standard declares unmuted videos CAN NOT be auto played via javascript and must play in the context of
-      // a user event
-      video.muted = true;
-      // Se the video source after the events have been assigned so we can wait for the video to begin playback
-      video.src = source.videoSrc;
-      video.load();
-
-      await metaResolver.promise;
-      await dataResolver.promise;
-
-      removeListeners();
-
-      // If an error occurred during processing, we no longer to process the source and texture beyond this point.
-      // Return null to indicate failure to load
-      if (hasError) return null;
+        return null;
+      }
 
       // At this point, the video width and height should definitely be established and can be applied to the texture
-      subTexture.pixelWidth = video.videoWidth;
-      subTexture.pixelHeight = video.videoHeight;
-      subTexture.aspectRatio = video.videoWidth / video.videoHeight;
+      subTexture.pixelWidth = source.videoWidth;
+      subTexture.pixelHeight = source.videoHeight;
+      subTexture.aspectRatio = source.videoWidth / source.videoHeight;
 
       // Return the video here to indicate a successful load
-      return video;
+      return source;
     } else if (typeof source === "string") {
       const dataURL = source;
 

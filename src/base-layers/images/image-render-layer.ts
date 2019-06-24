@@ -1,5 +1,4 @@
 import { InstanceProvider } from "../../instance-provider";
-import { atlasRequest } from "../../resources/texture/atlas-resource-request";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
@@ -118,18 +117,18 @@ export class ImageRenderLayer<
             name: "imageAtlas"
           },
           update: o => {
-            const source = o.source;
+            o.source;
 
             if (!o.request) {
-              o.request = atlasRequest({
-                key: this.props.atlas || "",
-                rasterizationScale: this.props.rasterizationScale,
-                source
-              });
+              console.warn(
+                "An image utilizing the image-render-layer does not have its request specified yet.",
+                "The image-render-layer does NOT manage requests and should be handled before this layer deals with the instance"
+              );
+
+              return [0, 0, 0, 0];
             }
 
-            const textureInfo = this.resource.request(this, o, o.request);
-            return textureInfo;
+            return this.resource.request(this, o, o.request);
           }
         },
         {

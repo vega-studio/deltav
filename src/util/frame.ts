@@ -50,11 +50,11 @@ requestAnimationFrame(loop);
  * Method that queues up a command to be executed not on this animation frame, but the next one
  */
 export function nextFrame(command?: Function) {
-  const resolver = new PromiseResolver();
+  const resolver = new PromiseResolver<number>();
 
   nextQueuedCommands.push((t: number) => {
     if (command) command(t);
-    resolver.resolve();
+    resolver.resolve(t);
   });
 
   return resolver.promise;
@@ -64,11 +64,11 @@ export function nextFrame(command?: Function) {
  * Method that queues up a command to be executed on the upcoming animation frame
  */
 export function onFrame(command?: Function) {
-  const resolver = new PromiseResolver();
+  const resolver = new PromiseResolver<number>();
 
   immediateQueuedCommands.push((t: number) => {
     if (command) command(t);
-    resolver.resolve();
+    resolver.resolve(t);
   });
 
   return resolver.promise;

@@ -21,9 +21,9 @@ void main() {
     scaling != 1.0                       // ALWAYS mode - the image stays completely in world space allowing it to scale freely
   );
 
-  // Correct aspect ratio. Sufficient fix for most applications.
+  // TODO: Correct aspect ratio. Sufficient fix for most applications.
   // Will need another solution in the case of:
-  // (cameraScale y != cameraScale2D.x) && (cameraScale2D.x != 1 && cameraScale2D.y != 1)
+  // (cameraScale2D.y != cameraScale2D.x) && (cameraScale2D.x != 1 && cameraScale2D.y != 1)
 
   // If zooms are unequal, assume one is filtered to be 1.0
   float unequalZooms = float(cameraScale2D.x != cameraScale2D.y);

@@ -2,7 +2,7 @@ import * as datGUI from "dat.gui";
 import {
   BaseResourceOptions,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   EventManager,
   IBasicSurfaceOptions,
   Instance,
@@ -13,7 +13,7 @@ import {
 
 export type DemoPipeline<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera2D>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > = Omit<

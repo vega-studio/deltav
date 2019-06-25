@@ -1,10 +1,6 @@
-export * from "./arcs";
-export * from "./basic-camera-controller";
-export * from "./circles";
-export * from "./edges";
-export * from "./images";
-export * from "./labels";
-export * from "./log-changes-layer";
-export * from "./rectangle";
-export * from "./rings";
+// Shader mdoules have no exports and should simply be imported to execute
+import "./shader-modules";
+
 export * from "./types";
+export * from "./view";
+export * from "./layers";

@@ -1,8 +1,8 @@
 import * as datGUI from "dat.gui";
 import {
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   ClearFlags,
   createAtlas,
   createLayer,
@@ -16,7 +16,8 @@ import {
   RectangleLayer,
   ScaleMode,
   TextureSize,
-  Vec2
+  Vec2,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -75,7 +76,7 @@ export class VideoDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {
         atlas: createAtlas({
@@ -84,7 +85,7 @@ export class VideoDemo extends BaseDemo {
         })
       },
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["main.main"]
         })
@@ -94,7 +95,7 @@ export class VideoDemo extends BaseDemo {
         scenes: {
           main: {
             views: {
-              main: createView({
+              main: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
@@ -109,8 +110,8 @@ export class VideoDemo extends BaseDemo {
           },
           screen: {
             views: {
-              main: createView({
-                camera: new ChartCamera(),
+              main: createView(View2D, {
+                camera: new Camera2D(),
                 clearFlags: [ClearFlags.DEPTH]
               })
             },

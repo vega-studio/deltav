@@ -14,9 +14,9 @@ import {
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
-  IUniform,
   IUniformInternal,
   IVertexAttributeInternal,
+  Omit,
   PickType,
   UniformIOValue
 } from "../types";
@@ -36,13 +36,67 @@ import {
   makeLayerBufferManager
 } from "./layer-processing/layer-buffer-type";
 import { LayerScene } from "./layer-scene";
-import { LayerInitializer, Surface } from "./surface";
-import { View } from "./view";
+import { Surface } from "./surface";
+import { IViewProps, View } from "./view";
 
 const debug = require("debug")("performance");
 
-export function createUniform(options: IUniform) {
-  return options;
+/**
+ * A type to describe the constructor of a Layer class.
+ */
+export interface ILayerConstructable<T extends Instance> {
+  new (surface: Surface, scene: LayerScene, props: ILayerProps<T>): Layer<
+    any,
+    any
+  >;
+}
+
+/**
+ * This specifies a class type that can be used in creating a layer with createLayer
+ */
+export type ILayerConstructionClass<
+  T extends Instance,
+  U extends ILayerProps<T>
+> = ILayerConstructable<T> & { defaultProps: U };
+
+/**
+ * This is a pair of a Class Type and the props to be applied to that class type.
+ */
+export type LayerInitializer = {
+  key: string;
+  init: [
+    ILayerConstructionClass<Instance, ILayerProps<Instance>>,
+    ILayerProps<Instance>
+  ];
+};
+
+/**
+ * The internal system layer initializer that hides additional properties the front
+ * facing API should not be concerned with.
+ */
+export type LayerInitializerInternal = {
+  key: string;
+  init: [
+    ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
+    ILayerPropsInternal<Instance>
+  ];
+};
+
+/**
+ * Used for reactive layer generation and updates.
+ */
+export function createLayer<T extends Instance, U extends ILayerProps<T>>(
+  layerClass: ILayerConstructable<T> & { defaultProps: U },
+  props: Omit<U, "key"> & Partial<Pick<U, "key">>
+): LayerInitializer {
+  const keyedProps = Object.assign(props, { key: props.key || "" });
+
+  return {
+    get key() {
+      return props.key || "";
+    },
+    init: [layerClass, keyedProps]
+  };
 }
 
 /**
@@ -223,7 +277,7 @@ export class Layer<
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[] = [];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
-  view: View;
+  view: View<IViewProps>;
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
   willRebuildLayer: boolean = false;
 

@@ -1,8 +1,8 @@
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   Bounds,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -89,8 +89,8 @@ export class BoxOfCircles extends BaseExample {
     color: IAutoEasingMethod<Vec>;
     radius: IAutoEasingMethod<Vec>;
   };
-  camera: ChartCamera;
-  manager: BasicCameraController;
+  camera: Camera2D;
+  manager: BasicCamera2DController;
   originalRange: Bounds<never>;
   scene: string;
   textPositions: Vec2[];
@@ -115,19 +115,19 @@ export class BoxOfCircles extends BaseExample {
     }
   }
 
-  makeCamera(defaultCamera: ChartCamera) {
+  makeCamera(defaultCamera: Camera2D) {
     this.camera = defaultCamera;
     return defaultCamera;
   }
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ): EventManager {
     this.scene = viewName;
 
-    this.manager = new BasicCameraController({
+    this.manager = new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName
     });
@@ -149,7 +149,7 @@ export class BoxOfCircles extends BaseExample {
       animate: this.animationControl,
       data: provider,
       key: "box-of-circles",
-      scaleFactor: () => this.camera.scale[0]
+      scaleFactor: () => this.camera.scale2D[0]
     });
   }
 

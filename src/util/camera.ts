@@ -1,3 +1,4 @@
+import { Surface } from "../surface";
 import {
   identity4,
   Mat4x4,
@@ -7,6 +8,7 @@ import {
   scale4x4by3,
   translation4x4by3
 } from "./matrix";
+import { uid } from "./uid";
 import { copy3, Vec3 } from "./vector";
 
 export enum CameraProjectionType {
@@ -57,9 +59,11 @@ export interface ICameraPerspectiveOptions {
 /**
  * Base options for camera construction
  */
-export type ICameraOptions =
+export type ICameraOptions = (
   | ICameraOrthographicOptions
-  | ICameraPerspectiveOptions;
+  | ICameraPerspectiveOptions) & {
+  onViewChange?(camera: Camera, viewId: string): void;
+};
 
 export interface IOrthoGraphicCamera extends Camera {
   projectionOptions: ICameraOrthographicOptions;
@@ -87,10 +91,38 @@ export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
  * This class is present to simplify the concepts of Matrix math down to simpler camera concepts.
  */
 export class Camera {
+  /** Provide an identifier for the camera to follow the pattern of most everything in this framework. */
+  get id() {
+    return this._id;
+  }
+  private _id: number = uid();
+
+  /** This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates */
+  animationEndTime: number = 0;
+  /** Indicates the view's associated with this camera should be redrawn */
+  needsViewDrawn: boolean = true;
+  /** Flag indicating the camera needs to broadcast changes applied to it */
+  needsBroadcast: boolean = false;
+  /** The governing surface this camera is utilized beneath */
+  surface: Surface;
+  /** The id of the view to be broadcasted for the sake of a change */
+  viewChangeViewId: string = "";
+
+  /** Handler  */
+  onViewChange?(camera: Camera, viewId: string): void;
+
+  /**
+   * Performs the broadcast of changes for the camera if the camera needed a broadcast.
+   */
+  broadcast(viewId: string) {
+    // Emit changes for the view indicated that this camera affects
+    if (this.onViewChange) this.onViewChange(this, viewId);
+  }
+
   /**
    * Quick generation of a camera with properties. None of any make sense.
    */
-  static defaultCamera() {
+  static makeOrthographic() {
     return new Camera({
       left: -100,
       right: 100,
@@ -169,7 +201,14 @@ export class Camera {
   constructor(options: ICameraOptions) {
     this._projectionOptions = options;
     this._needsUpdate = true;
+    this.onViewChange = options.onViewChange;
     this.update();
+  }
+
+  resolve() {
+    this._needsUpdate = false;
+    this.needsViewDrawn = false;
+    this.needsBroadcast = false;
   }
 
   /**

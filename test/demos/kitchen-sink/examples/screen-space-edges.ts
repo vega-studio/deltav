@@ -1,6 +1,6 @@
 import {
   AutoEasingMethod,
-  ChartCamera,
+  Camera2D,
   createLayer,
   EdgeInstance,
   EdgeLayer,
@@ -10,7 +10,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-  ReferenceCamera
+  ReferenceCamera2D
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -19,7 +19,7 @@ import { BaseExample, TestResourceKeys } from "./base-example";
  */
 export class ScreenSpaceEdges extends BaseExample {
   side = 0;
-  camera: ReferenceCamera;
+  camera: ReferenceCamera2D;
   shiftIsDown: boolean = false;
 
   handleMouseOut = (info: IPickInfo<EdgeInstance>) => {
@@ -48,8 +48,8 @@ export class ScreenSpaceEdges extends BaseExample {
     this.shiftIsDown = e.shiftKey;
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    this.camera = new ReferenceCamera({
+  makeCamera(defaultCamera: Camera2D): Camera2D {
+    this.camera = new ReferenceCamera2D({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [
@@ -75,7 +75,7 @@ export class ScreenSpaceEdges extends BaseExample {
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.SINGLE,
-      scaleFactor: () => this.camera.scale[1],
+      scaleFactor: () => this.camera.scale2D[1],
       scaleType: EdgeScaleType.SCREEN_CURVE,
       type: EdgeType.BEZIER2
     });

@@ -1,5 +1,5 @@
 import { TypeVec } from "../types";
-import { compare4, copy4, flatten4, Vec4 } from "../util";
+import { compare4, copy4, flatten4, Vec4 } from "../util/vector";
 import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";

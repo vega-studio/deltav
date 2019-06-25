@@ -7,9 +7,9 @@ import {
   ArcLayer,
   AutoEasingLoopStyle,
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -35,7 +35,8 @@ import {
   RectangleLayer,
   ScaleMode,
   Size,
-  Vec4
+  Vec4,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -253,7 +254,9 @@ export class NodesEdges extends BaseDemo {
   handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     const focus = info.instances.find(circle => Boolean(circle.center));
     if (!focus || !this.surface) return;
-    this.surface.cameras.main.animation = AutoEasingMethod.easeInOutCubic(1000);
+    this.surface.cameras.main.control2D.animation = AutoEasingMethod.easeInOutCubic(
+      1000
+    );
     this.surface.eventManagers.main.centerOn(info.projection.id, [
       focus.center[0],
       focus.center[1],
@@ -269,13 +272,13 @@ export class NodesEdges extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {
         font: DEFAULT_RESOURCES.font
       },
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["main.view"],
           wheelShouldScroll: false
@@ -285,7 +288,7 @@ export class NodesEdges extends BaseDemo {
         scenes: {
           main: {
             views: {
-              view: createView({
+              view: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
@@ -315,7 +318,7 @@ export class NodesEdges extends BaseDemo {
                   color: AutoEasingMethod.easeInOutCubic(1000, 0)
                 },
                 data: providers.circles,
-                scaleFactor: () => cameras.main.scale[0],
+                scaleFactor: () => cameras.main.scale2D[0],
                 picking: PickType.SINGLE,
 
                 onMouseOver: this.handleCircleOver,

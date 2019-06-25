@@ -1,8 +1,8 @@
 import * as anime from "animejs";
 import {
   AutoEasingMethod,
-  BasicCameraController,
-  ChartCamera,
+  BasicCamera2DController,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -18,11 +18,11 @@ export class MouseInteraction extends BaseExample {
   hasLeft = new Map<CircleInstance, boolean>();
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ) {
-    return new BasicCameraController({
+    return new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName,
       twoFingerPan: true

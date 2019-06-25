@@ -1,4 +1,4 @@
-import { uid } from "../util";
+import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Texture } from "./texture";

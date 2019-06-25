@@ -1,16 +1,9 @@
 import { AbsolutePosition } from "../../primitives/absolute-position";
 import { Camera, CameraProjectionType } from "../../util/camera";
-import { ChartCamera } from "../../util/chart-camera";
-import { ViewCamera } from "../../util/view-camera";
 
 export interface IDefaultElements {
   /** Default chartting camera */
-  camera: ChartCamera;
-  /**
-   * The default view projection. Defaults to being an orthographic rendering with the origin at the
-   * top left of the canvas and the y-axis as +y going downward.
-   */
-  viewCamera: ViewCamera;
+  camera: Camera;
   /** The default viewport that encompasses the entire canvas */
   viewport: AbsolutePosition;
 }
@@ -47,8 +40,7 @@ export function generateDefaultElements(
     viewSize: height
   };
 
-  const defaultCamera: ViewCamera = new ViewCamera();
-  defaultCamera.baseCamera = new Camera({
+  const defaultCamera = new Camera({
     type: CameraProjectionType.ORTHOGRAPHIC,
     left: viewport.left,
     right: viewport.right,
@@ -58,12 +50,9 @@ export function generateDefaultElements(
     far: viewport.far
   });
 
-  defaultCamera.baseCamera.scale = [1.0, -1.0, 1.0];
-  defaultCamera.baseCamera.position = [0.0, 0.0, -300.0];
-  defaultCamera.baseCamera.update();
-
-  // Generate a charting camera with all scales set to 1 and no offsets in any direction
-  const defaultChartCamera: ChartCamera = new ChartCamera();
+  defaultCamera.scale = [1.0, -1.0, 1.0];
+  defaultCamera.position = [0.0, 0.0, -300.0];
+  defaultCamera.update();
 
   // This is a viewport that covers the entire context
   const defaultViewport = {
@@ -74,8 +63,7 @@ export function generateDefaultElements(
   };
 
   return {
-    camera: defaultChartCamera,
-    viewCamera: defaultCamera,
+    camera: defaultCamera,
     viewport: defaultViewport
   };
 }

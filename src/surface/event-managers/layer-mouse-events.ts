@@ -14,7 +14,7 @@ import {
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
 import { Surface } from "../surface";
-import { View } from "../view";
+import { IViewProps, View } from "../view";
 
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions
@@ -26,9 +26,9 @@ import { View } from "../view";
  */
 export class LayerMouseEvents extends SimpleEventHandler {
   /** This tracks which views have the mouse over them so we can properly broadcast view is out events */
-  isOver = new Set<View>();
+  isOver = new Set<View<IViewProps>>();
   /** This tracks which views have touches over them */
-  isTouchOver = new Map<number, Set<View>>();
+  isTouchOver = new Map<number, Set<View<IViewProps>>>();
   /** This is the surface this manager is aiding with broadcasting events to layers */
   get scenes(): LayerScene[] {
     if (!this.surface || !this.surface.sceneDiffs) return [];
@@ -46,7 +46,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
   }
 
   getSceneViewsUnderMouse(e: IEventInteraction) {
-    const viewByViewId = new Map<string, View>();
+    const viewByViewId = new Map<string, View<IViewProps>>();
 
     // Map the scenes to SceneViews
     for (let i = 0, iMax = this.scenes.length; i < iMax; ++i) {
@@ -91,7 +91,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
   }
 
   async handleTouchDown(e: ITouchInteraction) {
-    const views: View[] = [];
+    const views: View<IViewProps>[] = [];
 
     e.touches.forEach(interaction => {
       interaction.target.views.forEach(target => views.push(target.view));
@@ -170,7 +170,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
     );
 
     // For quick lookups map all of the current SceneViews that are over
-    const currentSceneViews = new Set<View>();
+    const currentSceneViews = new Set<View<IViewProps>>();
     allSceneViews.forEach(v => currentSceneViews.add(v));
 
     // Detect which of the views are no longer over
@@ -213,7 +213,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
       );
 
       // For quick lookups map all of the current SceneViews that are over
-      const currentSceneViews = new Set<View>();
+      const currentSceneViews = new Set<View<IViewProps>>();
       allSceneViews.forEach(v => currentSceneViews.add(v));
       const isTouchOver = mapInjectDefault(
         this.isTouchOver,
@@ -264,7 +264,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
   }
 
   handleView(
-    view: View,
+    view: View<IViewProps>,
     callback: (layer: Layer<any, any>, view: IProjection) => void
   ) {
     for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {

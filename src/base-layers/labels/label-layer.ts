@@ -1,5 +1,4 @@
 import { InstanceProvider } from "../../instance-provider/instance-provider";
-import { Bounds } from "../../primitives";
 import { fontRequest, IFontResourceRequest } from "../../resources";
 import { KernedLayout } from "../../resources/text/font-map";
 import { ILayerProps, Layer } from "../../surface/layer";
@@ -8,18 +7,9 @@ import {
   ILayerConstructionClass,
   LayerInitializer
 } from "../../surface/surface";
-import { InstanceDiffType, IProjection, ResourceType } from "../../types";
+import { InstanceDiffType, ResourceType } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
-import {
-  copy2,
-  copy4,
-  divide2,
-  dot2,
-  scale2,
-  subtract2,
-  Vec,
-  Vec2
-} from "../../util/vector";
+import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
 import { GlyphInstance } from "./glyph-instance";
 import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
@@ -177,18 +167,13 @@ export class LabelLayer<
     data: new InstanceProvider<LabelInstance>()
   };
 
-  /** Provider for the glyph layer this layer manages */
-  glyphProvider = new InstanceProvider<GlyphInstance>();
-  /**
-   * These are the property ids for the instances that we need to know when they changed so we can adjust
-   * the underlying glyphs.
-   */
-  propertyIds: { [key: string]: number } | undefined;
   /**
    * When this is flagged, we must do a complete recomputation of all our label's glyphs positions and kernings.
    * This event really only takes place when the font resource changes.
    */
   fullUpdate: boolean = false;
+  /** Provider for the glyph layer this layer manages */
+  glyphProvider = new InstanceProvider<GlyphInstance>();
   /**
    * Tracks all assigned glyphs for the given label.
    */
@@ -202,6 +187,11 @@ export class LabelLayer<
    */
   labelWaitingOnGlyph = new Map<LabelInstance, Set<GlyphInstance>>();
   /**
+   * These are the property ids for the instances that we need to know when they changed so we can adjust
+   * the underlying glyphs.
+   */
+  propertyIds: { [key: string]: number } | undefined;
+  /**
    * This stores the kerning request for the truncation characters.
    */
   truncationKerningRequest?: IFontResourceRequest;
@@ -209,62 +199,6 @@ export class LabelLayer<
    * This is the width of the truncation glyphs.
    */
   truncationWidth: number = -1;
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods() {
-    return {
-      // Provide the calculated AABB world bounds for a given image
-      boundsAccessor: (label: T) => {
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (label.anchor) {
-          anchorEffect[0] = label.anchor.x || 0;
-          anchorEffect[1] = label.anchor.y || 0;
-        }
-
-        const topLeft = subtract2(label.origin, anchorEffect);
-
-        return new Bounds({
-          height: label.size[1],
-          width: label.size[0],
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-      },
-
-      // Provide a precise hit test for the circle
-      hitTest: (label: T, point: Vec2, view: IProjection) => {
-        // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
-        // Of the camera zoom
-        // The location is within the world, but we reverse project the anchor spread
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (label.anchor) {
-          anchorEffect[0] = label.anchor.x || 0;
-          anchorEffect[1] = label.anchor.y || 0;
-        }
-
-        const topLeft = view.worldToScreen(
-          subtract2(label.origin, divide2(anchorEffect, view.camera.scale))
-        );
-
-        const screenPoint = view.worldToScreen(point);
-
-        // Reverse project the size and we should be within the distorted world coordinates
-        const bounds = new Bounds({
-          height: label.size[1],
-          width: label.size[0],
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-
-        return bounds.containsPoint(screenPoint);
-      }
-    };
-  }
 
   /**
    * This provides the child layers that will render on behalf of this layer.

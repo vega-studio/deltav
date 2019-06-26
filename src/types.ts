@@ -1,4 +1,9 @@
 import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction
+} from "src/event-management";
+import {
   Attribute,
   GLSettings,
   IMaterialUniform,
@@ -7,7 +12,6 @@ import {
   Texture
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
-import { Bounds } from "./primitives/bounds";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
 import { ISceneOptions } from "./surface/layer-scene";
 import {
@@ -21,10 +25,6 @@ import {
   Vec4
 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import {
-  ITrackedQuadTreeVisitFunction,
-  TrackedQuadTree
-} from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -141,27 +141,40 @@ export interface IdentifiableByKey {
 }
 
 /**
- * Information provided in mouse events interacting with instances and
+ * Information provided in user interaction events interacting with instances and
  * layers.
  */
 export interface IPickInfo<T extends Instance> {
-  /** If a mouse button is involved in the pick, this will be populated */
-  button?: number;
+  /** The interaction that created this picking information */
+  readonly interaction?: IMouseInteraction | ITouchInteraction;
   /** This is the parent layer id of the instances interacted with */
-  layer: string;
+  readonly layer: string;
   /** This is the list of instances that were detected in the interaction */
-  instances: T[];
-  /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
-  querySpace?(
-    bounds: Bounds<T> | Vec2,
-    visit?: ITrackedQuadTreeVisitFunction<T>
-  ): T[];
-  /** This is the screen coordinates of the mouse point that interacted with the instances */
-  screen: [number, number];
-  /** This is the world coordinates of the mouse point that interacted with the instances */
-  world: [number, number];
+  readonly instances: T[];
+  /** This is the screen coordinates of the interaction point that interacted with the instances */
+  readonly screen: [number, number];
+  /** This is the world coordinates of the ineraction point that interacted with the instances */
+  readonly world: [number, number];
   /** Projection methods to easily go between coordinate spaces */
-  projection: IProjection;
+  readonly projection: IProjection;
+}
+
+/**
+ * Picking info associated with mouse events
+ */
+export interface IMousePickInfo<T extends Instance> extends IPickInfo<T> {
+  /** The mouse interaction that created this picking information */
+  readonly interaction: IMouseInteraction;
+}
+
+/**
+ * Picking info associated with touch events
+ */
+export interface ITouchPickInfo<T extends Instance> extends IPickInfo<T> {
+  /** The touch interaction that created this picking information. Contains all touch interactive information for the event */
+  readonly interaction: ITouchInteraction;
+  /** The specific touch that caused the event to occur */
+  readonly touch: ISingleTouchInteraction;
 }
 
 export interface IVertexAttribute {
@@ -510,8 +523,6 @@ export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 export enum PickType {
   /** Disable any picking methodology */
   NONE,
-  /** Pick all instances found underneath the mouse. The Layer must explicitly support this feature. */
-  ALL,
   /**
    * NOTE: NOT IMPLEMENTED YET
    *
@@ -532,20 +543,6 @@ export interface IPickingMetrics {
   currentPickMode: PickType;
   /** This is the picking style to be used */
   type: PickType;
-}
-
-/**
- * This is the picking settings and objects to facilitate PickType.ALL so we can get
- * all instances underneath the mouse.
- */
-export interface IQuadTreePickingMetrics<T extends Instance>
-  extends IPickingMetrics {
-  /** This handles the ALL type only */
-  type: PickType.ALL;
-  /** This stores all of our instances in a quad tree to spatially track our instances */
-  quadTree: TrackedQuadTree<T>;
-  /** This is the method for performing a hit test with the provided instance */
-  hitTest: InstanceHitTest<T>;
 }
 
 /**
@@ -683,7 +680,10 @@ export interface IShaderInputs<T extends Instance> {
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
   vertexAttributes?: (IVertexAttribute | null)[];
-  /** Specify how many vertices there are per instance */
+  /**
+   * Specify how many vertices there are per instance. If vertex count is 0, then the layer will render without
+   * instancing and draw the buffers straight.
+   */
   vertexCount: number;
   /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
   uniforms?: (IUniform | null)[];

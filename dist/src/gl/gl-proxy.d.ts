@@ -41,5 +41,5 @@ export declare class GLProxy {
     private updateTexturePartialData;
     private updateTextureSettings;
     updateAttribute(attribute: Attribute): true | undefined;
-    useAttribute(name: string, attribute: Attribute): boolean | undefined;
+    useAttribute(name: string, attribute: Attribute, geometry: Geometry): boolean | undefined;
 }

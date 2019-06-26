@@ -4,7 +4,8 @@ import { PromiseResolver } from "./promise-resolver";
  * This utility makes an operation occur in a render frame after the current render frame.
  */
 
-let queuedCommands: Function[] = [];
+let nextQueuedCommands: Function[] = [];
+let immediateQueuedCommands: Function[] = [];
 let nextFrameCommands: Function[] = [];
 
 /**
@@ -14,6 +15,18 @@ let nextFrameCommands: Function[] = [];
 const loop = (time: number) => {
   // Get next loop iteration queued up
   requestAnimationFrame(loop);
+  // Instant dump the commands into a separate list in case the commands have more onFrame commands called within
+  const immediate = immediateQueuedCommands.slice();
+  immediateQueuedCommands = [];
+
+  // Execute all imeediately queued commands
+  for (let i = 0, iMax = immediate.length; i < iMax; ++i) {
+    const command = immediate[i];
+
+    if (command) {
+      command(time);
+    }
+  }
 
   // Empty and execute all next frame commands
   for (let i = 0, iMax = nextFrameCommands.length; i < iMax; ++i) {
@@ -26,8 +39,8 @@ const loop = (time: number) => {
 
   // Currently queued commands get put into the nextFrameCommand buffer to be
   // executed next animation frame instead of the current frame.
-  nextFrameCommands = queuedCommands.slice(0);
-  queuedCommands = [];
+  nextFrameCommands = nextQueuedCommands.slice(0);
+  nextQueuedCommands = [];
 };
 
 // Start the next frame command loop
@@ -39,7 +52,21 @@ requestAnimationFrame(loop);
 export function nextFrame(command?: Function) {
   const resolver = new PromiseResolver();
 
-  queuedCommands.push((t: number) => {
+  nextQueuedCommands.push((t: number) => {
+    if (command) command(t);
+    resolver.resolve();
+  });
+
+  return resolver.promise;
+}
+
+/**
+ * Method that queues up a command to be executed on the upcoming animation frame
+ */
+export function onFrame(command?: Function) {
+  const resolver = new PromiseResolver();
+
+  immediateQueuedCommands.push((t: number) => {
     if (command) command(t);
     resolver.resolve();
   });

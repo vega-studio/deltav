@@ -1,6 +1,6 @@
 import { Instance } from "../instance-provider";
 import { IEasingControl, NOOP } from "../types";
-import { nextFrame } from "./next-frame";
+import { nextFrame } from "./frame";
 
 /** Handler type for discovered easing controls using the all() method */
 export type EasingUtilAllHandler<T extends Instance> = (

@@ -90,7 +90,7 @@ export class MouseInteractionLabels extends BaseExample {
       onMouseClick: this.handleLabelClick,
       onMouseOut: this.handleLabelOut,
       onMouseOver: this.handleLabelOver,
-      picking: PickType.ALL
+      picking: PickType.SINGLE
     });
   }
 

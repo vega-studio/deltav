@@ -5,7 +5,7 @@
     "url": "http://diniden.com"
   },
   "name": "@vega-studio/deltav",
-  "version": "1.31.0",
+  "version": "1.31.3",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
@@ -61,9 +61,9 @@
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
     "typescript": "3.3.1",
-    "webpack": "4.6.0",
+    "webpack": "4.33.0",
     "webpack-bundle-analyzer": "3.1.0",
-    "webpack-dev-server": "3.2.1"
+    "webpack-dev-server": "3.7.2"
   },
   "greenkeeper": {
     "ignore": []

@@ -1,25 +1,17 @@
 import { fontRequest, IFontResourceRequest } from "../../../src/resources";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
-import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   createLayer,
   ILayerConstructionClass,
   LayerInitializer
 } from "../../surface/surface";
-import { InstanceDiffType, IProjection, newLineRegEx } from "../../types";
+import { InstanceDiffType, newLineRegEx } from "../../types";
 import { IAutoEasingMethod } from "../../util/auto-easing-method";
-import {
-  add2,
-  copy4,
-  divide2,
-  scale2,
-  subtract2,
-  Vec,
-  Vec2
-} from "../../util/vector";
-import { BorderInstance, BorderLayer } from "../rectangle";
+import { add2, copy4, scale2, Vec, Vec2 } from "../../util/vector";
 import { AnchorType, ScaleMode } from "../types";
+import { BorderInstance } from "./border-instance";
+import { BorderLayer } from "./border-layer";
 import { GlyphInstance } from "./glyph-instance";
 import { IGlyphLayerOptions } from "./glyph-layer";
 import { LabelInstance } from "./label-instance";
@@ -286,62 +278,6 @@ export class TextAreaLayer<
   areaTokerningRequest = new Map<TextAreaInstance, IFontResourceRequest>();
   /** This stores splited words of a textArea */
   areaToWords = new Map<TextAreaInstance, string[]>();
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods() {
-    return {
-      // Provide the calculated AABB world bounds for a given image
-      boundsAccessor: (TextArea: T) => {
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (TextArea.anchor) {
-          anchorEffect[0] = TextArea.anchor.x || 0;
-          anchorEffect[1] = TextArea.anchor.y || 0;
-        }
-
-        const topLeft = subtract2(TextArea.origin, anchorEffect);
-
-        return new Bounds({
-          height: TextArea.maxHeight,
-          width: TextArea.maxWidth,
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-      },
-
-      // Provide a precise hit test for the circle
-      hitTest: (TextArea: T, point: Vec2, view: IProjection) => {
-        // If we never allow the image to scale, then the bounds will grow and shrink to counter the effects
-        // Of the camera zoom
-        // The location is within the world, but we reverse project the anchor spread
-        const anchorEffect: Vec2 = [0, 0];
-
-        if (TextArea.anchor) {
-          anchorEffect[0] = TextArea.anchor.x || 0;
-          anchorEffect[1] = TextArea.anchor.y || 0;
-        }
-
-        const topLeft = view.worldToScreen(
-          subtract2(TextArea.origin, divide2(anchorEffect, view.camera.scale))
-        );
-
-        const screenPoint = view.worldToScreen(point);
-
-        // Reverse project the size and we should be within the distorted world coordinates
-        const bounds = new Bounds({
-          height: TextArea.maxHeight,
-          width: TextArea.maxWidth,
-          x: topLeft[0],
-          y: topLeft[1]
-        });
-
-        return bounds.containsPoint(screenPoint);
-      }
-    };
-  }
 
   /**
    * This provides the child layers that will render on behalf of this layer.

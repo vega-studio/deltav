@@ -38,6 +38,15 @@ export class InstanceProvider<T extends Instance>
    */
   resolveContext: string = "";
 
+  constructor(instances?: T[]) {
+    if (instances) {
+      for (let i = 0, iMax = instances.length; i < iMax; ++i) {
+        const instance = instances[i];
+        this.add(instance);
+      }
+    }
+  }
+
   /**
    * Retrieve all of the changes applied to instances
    */

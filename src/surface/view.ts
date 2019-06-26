@@ -22,9 +22,10 @@ export enum ClearFlags {
  */
 export function createView(
   options: Pick<IViewOptions, "camera"> &
-    Omit<Partial<IViewOptions>, "viewport">
+    Omit<Partial<IViewOptions>, "viewport"> &
+    Pick<Partial<IViewOptions>, "viewport">
 ): IViewOptions {
-  return Object.assign(
+  const view = Object.assign(
     {
       key: "",
       viewport: {
@@ -36,6 +37,8 @@ export function createView(
     },
     options
   );
+
+  return view;
 }
 
 /**
@@ -165,10 +168,10 @@ export class View extends IdentifyByKey {
   }
 
   screenToView(point: Vec2, out?: Vec2) {
-    const p = this.screenToPixelSpace(point, out);
+    const p = out || [0, 0];
 
-    p[0] = p[0] - this.viewBounds.x;
-    p[1] = p[1] - this.viewBounds.y;
+    p[0] = point[0] - this.screenBounds.x;
+    p[1] = point[1] - this.screenBounds.y;
 
     return p;
   }
@@ -176,14 +179,14 @@ export class View extends IdentifyByKey {
   viewToScreen(point: Vec2, out?: Vec2) {
     const p: Vec2 = [0, 0];
 
-    p[0] = point[0] + this.viewBounds.x;
-    p[1] = point[1] + this.viewBounds.y;
+    p[0] = point[0] + this.screenBounds.x;
+    p[1] = point[1] + this.screenBounds.y;
 
     return this.pixelSpaceToScreen(p, out);
   }
 
   screenToWorld(point: Vec2, out?: Vec2) {
-    const view = this.pixelSpaceToScreen(this.screenToView(point));
+    const view = this.screenToView(point);
 
     const world = out || [0, 0];
     world[0] =
@@ -226,7 +229,7 @@ export class View extends IdentifyByKey {
   viewToWorld(point: Vec2, out?: Vec2) {
     const world = out || [0, 0];
 
-    const screen = this.pixelSpaceToScreen(point);
+    const screen = point;
     world[0] =
       (screen[0] - this.camera.offset[0] * this.camera.scale[0]) /
       this.camera.scale[0];
@@ -289,8 +292,8 @@ export class View extends IdentifyByKey {
         top: height / 2
       };
 
-      const scaleX = 1;
-      const scaleY = 1;
+      const scaleX = this.pixelRatio;
+      const scaleY = this.pixelRatio;
       const camera = this.viewCamera.baseCamera;
 
       camera.projectionOptions = Object.assign(
@@ -298,8 +301,8 @@ export class View extends IdentifyByKey {
         viewport
       );
       camera.position = [
-        -viewBounds.width / 2.0 * scaleX,
-        viewBounds.height / 2.0 * scaleY,
+        -viewBounds.width / 2.0,
+        viewBounds.height / 2.0,
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];

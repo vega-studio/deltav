@@ -14,13 +14,15 @@ import {
   EasingUtil,
   IMouseInteraction,
   InstanceProvider,
+  ITouchInteraction,
   length2,
   nextFrame,
   scale2,
+  Size,
   Vec2
 } from "src";
+import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
-import { EventHandler } from "../../common/event-handler";
 
 const { random } = Math;
 
@@ -30,6 +32,8 @@ const { random } = Math;
 export class BasicDemo extends BaseDemo {
   /** All circles created for this demo */
   circles: CircleInstance[] = [];
+  /** Stores the size of the screen */
+  screen: Size;
   /** Timer used to debounce the shake circle operation */
   shakeTimer: number;
 
@@ -131,28 +135,32 @@ export class BasicDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCameraController({
           camera: cameras.main,
-          startView: ["default-view"]
+          startView: ["main.main"]
         }),
-        clickScreen: new EventHandler({
-          handleMouseUp: (e: IMouseInteraction, _button: number) => {
+        clickScreen: new SimpleEventHandler({
+          handleClick: (e: IMouseInteraction) => {
             const target = e.target;
-            this.moveToLocation(target.view.screenToWorld(e.screen.mouse));
+            this.moveToLocation(target.view.screenToWorld(e.screen.position));
+          },
+          handleTap: (e: ITouchInteraction) => {
+            const touch = e.touches[0];
+            this.moveToLocation(
+              touch.target.view.screenToWorld(touch.screen.position)
+            );
           }
         })
       }),
       pipeline: (_resources, providers, cameras) => ({
         resources: [],
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          main: {
+            views: {
+              main: createView({
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
+            },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
@@ -164,16 +172,22 @@ export class BasicDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0]
+                scaleFactor: () => cameras.main.scale[0],
+                usePoints: true
               })
             ]
           }
-        ]
+        }
       })
     });
   }
 
   async init() {
+    if (!this.surface) return;
+    await this.surface.ready;
+
+    this.screen = this.surface.getViewScreenSize("main.main");
+
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeCircle();
     }
@@ -184,7 +198,7 @@ export class BasicDemo extends BaseDemo {
   makeCircle() {
     const circle = this.providers.circles.add(
       new CircleInstance({
-        center: [random() * 2000, random() * 2000],
+        center: [random() * this.screen[0], random() * this.screen[1]],
         radius: random() * 10 + 2,
         color: [0, random(), random(), 1.0]
       })

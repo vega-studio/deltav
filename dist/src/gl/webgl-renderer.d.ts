@@ -1,6 +1,7 @@
 import { Size } from "../types";
 import { Vec4 } from "../util";
 import { Attribute } from "./attribute";
+import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
 import { GLState } from "./gl-state";
 import { RenderTarget } from "./render-target";
@@ -42,7 +43,7 @@ export declare class WebGLRenderer {
         width: number;
         height: number;
     };
-    prepareAttribute(attribute: Attribute, name: string): boolean;
+    prepareAttribute(geometry: Geometry, attribute: Attribute, name: string): boolean;
     render(scene: Scene, target?: RenderTarget | null): void;
     private renderModel;
     readPixels(x: number, y: number, width: number, height: number, out: ArrayBufferView): void;

@@ -1,6 +1,6 @@
 import { observable } from "../../instance-provider/observable";
 import { Vec1Compat } from "../../util";
-import { BorderInstance } from "../rectangle";
+import { BorderInstance } from "./border-instance";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 
 /**

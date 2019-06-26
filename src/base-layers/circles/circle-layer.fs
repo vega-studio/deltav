@@ -18,7 +18,7 @@ float circle(vec2 coord, float radius){
 ${extendHeader}
 
 void main() {
-  float step_factor = circle(pointCoord.xy, 1.0);
+  float step_factor = circle(pointCoord, 1.0);
 
   setColor(mix(
     vec4(0.0, 0.0, 0.0, 0.0),

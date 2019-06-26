@@ -3,7 +3,7 @@ import { Vec2 } from "../../util";
 import {
   IRectangleInstanceOptions,
   RectangleInstance
-} from "./rectangle-instance";
+} from "../rectangle/rectangle-instance";
 
 export interface IBorderInstanceOptions extends IRectangleInstanceOptions {
   /** Sets the fontScale of textArea the border locates */

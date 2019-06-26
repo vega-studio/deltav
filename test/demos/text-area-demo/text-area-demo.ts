@@ -1,12 +1,16 @@
 import * as datGUI from "dat.gui";
 import {
+  AnchorType,
   BasicCameraController,
   BasicSurface,
   ChartCamera,
+  CircleInstance,
+  CircleLayer,
   ClearFlags,
   createLayer,
   createView,
   InstanceProvider,
+  ScaleMode,
   Vec1Compat
 } from "src";
 import {
@@ -51,6 +55,7 @@ export class TextAreaDemo extends BaseDemo {
   };
 
   providers = {
+    circles: new InstanceProvider<CircleInstance>(),
     textAreas: new InstanceProvider<TextAreaInstance>()
   };
 
@@ -230,7 +235,7 @@ export class TextAreaDemo extends BaseDemo {
         main: new BasicCameraController({
           camera: cameras.main,
           startView: ["default.default-view"],
-          wheelShouldScroll: true
+          wheelShouldScroll: false
         })
       }),
       pipeline: (resources, providers, cameras) => ({
@@ -246,7 +251,11 @@ export class TextAreaDemo extends BaseDemo {
             layers: {
               textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
-                resourceKey: resources.font.key
+                resourceKey: resources.font.key,
+                scaling: ScaleMode.NEVER
+              }),
+              circles: createLayer(CircleLayer, {
+                data: providers.circles
               })
             }
           }
@@ -261,6 +270,12 @@ export class TextAreaDemo extends BaseDemo {
       const x = i % 4;
       const y = Math.floor(i / 4);
       const textArea = new TextAreaInstance({
+        anchor: {
+          padding: 0,
+          type: AnchorType.TopRight,
+          x: 0,
+          y: 0
+        },
         origin: [this.parameters.maxWidth * x, this.parameters.maxHeight * y],
         color: [
           this.parameters.color[0],
@@ -292,6 +307,12 @@ export class TextAreaDemo extends BaseDemo {
     this.textAreas[0].maxWidth = 420;
 
     const textArea = new TextAreaInstance({
+      anchor: {
+        padding: 0,
+        type: AnchorType.MiddleLeft,
+        x: 0,
+        y: 0
+      },
       origin: [this.parameters.maxWidth * 2, this.parameters.maxHeight * 1],
       color: [
         this.parameters.color[0],
@@ -319,5 +340,24 @@ export class TextAreaDemo extends BaseDemo {
     this.providers.textAreas.add(textArea);
 
     textArea.maxHeight = 800;
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [
+          this.parameters.maxWidth * 2,
+          this.parameters.maxHeight * 1 + 400
+        ],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [420, 0],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
   }
 }

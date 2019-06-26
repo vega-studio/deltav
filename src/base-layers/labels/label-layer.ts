@@ -148,6 +148,8 @@ export interface ILabelLayerProps<T extends LabelInstance>
    * defaults to ellipses or three periods '...'
    */
   truncation?: string;
+  /** This indicates whether a label is in a textarea */
+  inTextArea?: boolean;
 }
 
 /**
@@ -212,7 +214,8 @@ export class LabelLayer<
         data: this.glyphProvider,
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
-        scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX
+        scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX,
+        inTextArea: this.props.inTextArea
       })
     ];
   }
@@ -460,6 +463,7 @@ export class LabelLayer<
       glyph.anchor = [anchor.x || 0, anchor.y || 0];
       glyph.origin = copy2(instance.origin);
       glyph.padding = padding || [0, 0];
+
       glyph.maxScale = instance.maxScale;
     }
   }

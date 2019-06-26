@@ -1063,10 +1063,6 @@ export class TextAreaLayer<
               }
             }
           } else {
-            /*labelsInLine.forEach(label => {
-              label.origin = [label.origin[0] + 500, label.origin[1]];
-            });
-            labelsInLine = [];*/
             // A label which will just put to next line if it exceeds the maxWidth when in WORD mode
             // The label's width should be smaller than maxWidth
             if (
@@ -1099,6 +1095,8 @@ export class TextAreaLayer<
                   x: textAreaAnchor[0],
                   y: textAreaAnchor[1]
                 };
+
+                this.labelsInLine.push(label);
 
                 currentX += label.getWidth() + spaceWidth;
               } else {

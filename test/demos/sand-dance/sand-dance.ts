@@ -1,70 +1,105 @@
 import {
+  EasingUtil,
   EdgeInstance,
   InstanceProvider,
   LabelInstance,
+  nextFrame,
   RectangleInstance,
+  RectangleLayer,
   ScaleMode,
   Vec2,
   Vec4
 } from "src";
-import { Bin, BinType, BinValueType } from "./bin";
+import { Bucket, BucketType, BucketValueType } from "./bucket";
 import { Person } from "./person";
 
 export interface ISandDanceOptions {
+  /** Sets the origin point of the chart */
   origin?: Vec2;
+  /** Sets the width of the chart */
   chartWidth?: number;
+  /** Sets the height of the chart */
   chartHeight?: number;
-  maxBinNum?: number;
+  /** Sets the max number of buckets */
+  maxBucketNum?: number;
+  /** Sets the number of rectangles */
   rectangleCount?: number;
+  /** Sets the width of single rectangle */
   rectangleWidth?: number;
+  /** Sets the height of single rectangle */
   rectangleHeight?: number;
+  /** Sets the gap between rectangles in chart */
   gapBetweenRectangles?: number;
+  /** Provides for shapes in chart */
   providers: {
-    bins: InstanceProvider<RectangleInstance>;
+    buckets: InstanceProvider<RectangleInstance>;
     rectangles: InstanceProvider<RectangleInstance>;
     lines: InstanceProvider<EdgeInstance>;
     labels: InstanceProvider<LabelInstance>;
   };
+  /** Sets the number of elements to add at a time */
+  addAtOnce?: number;
+  /** Sets the number of elements to move at a time */
+  moveAtOnce?: number;
 }
 
 export class SandDance {
+  /** Origin point of chart */
   origin: Vec2 = [10, 800];
+  /** Width of chart */
   chartWidth: number = 1200;
+  /** Height of chart */
   chartHeight: number = 600;
-
-  maxBinNum: number = 6;
-  binNum: number;
-  numOfRecsPerRow: number; // TBD
-  binRectangleColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
-  binRectangleWidth: number; // will be determined later by calculation
-  binRectangleHeight: number = 20;
-
+  /** Number of elements to add at once */
+  addAtOnce: number = 30;
+  /** Number of elements to move at once */
+  moveAtOnce: number = 30;
+  /** Max number of buckets */
+  maxBucketNum: number = 6;
+  /** Actuall number of bucket, will be determined by number of values */
+  bucketNum: number;
+  /** Color of rectangles that represent buckets */
+  bucketRectangleColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+  /** Width of buckets' rectangles , will be determined by bucketNum and chartWidth */
+  bucketRectangleWidth: number;
+  /** Height of buckets' rectangles */
+  bucketRectangleHeight: number = 20;
+  /** Number of rectangles in a row, will be determined by bucketRectangleWidtha and rectangelWidth */
+  numOfRecsPerRow: number;
+  /** Number of rectangles */
   rectangleCount: number = 1000;
+  /** Color of rectangle */
   rectangleColor: Vec4 = [0, 0, 1, 1];
+  /** Width of rectangles */
   rectangleWidth: number = 10;
+  /** Height of rectangles */
   rectangleHeight: number = 10;
+  /** Gap between rectangles in horizon and vertical direction */
   gapBetweenRectangles: number = 1;
 
-  keys: string[];
-  currentKey: string;
-
-  id: number = 0;
-
-  bins: Bin[];
+  // Arrays
+  buckets: Bucket[];
   persons: Person[] = [];
   rectangles: RectangleInstance[] = [];
 
+  /** Keys used to sorts all the elements */
+  private _keys: string[];
+  /** Key in use currently */
+  private currentKey: string;
+  /** Used to generate id for new elements */
+  private id: number = 0;
+
   // Maps
-  binToRectangles: Map<RectangleInstance, RectangleInstance[]> = new Map();
+  /** Records rectangles that belong to each bucket */
+  bucketToRectangles: Map<RectangleInstance, RectangleInstance[]> = new Map();
+  /** Maps from person's id to rectangle that represents that person */
   idToRectangle: Map<number, RectangleInstance> = new Map();
-  binToLocation: Map<Bin, [number, number]> = new Map();
+  /** Records the current location of each bucket which is used to put next possible rectangle */
+  bucketToLocation: Map<Bucket, [number, number]> = new Map();
 
-  // Select
-  selectedRectangle: RectangleInstance | null = null;
-  selectedBin: RectangleInstance | null = null;
-
+  // Providers
   providers: {
-    bins: InstanceProvider<RectangleInstance>;
+    buckets: InstanceProvider<RectangleInstance>;
     rectangles: InstanceProvider<RectangleInstance>;
     lines: InstanceProvider<EdgeInstance>;
     labels: InstanceProvider<LabelInstance>;
@@ -74,34 +109,127 @@ export class SandDance {
     this.origin = options.origin || this.origin;
     this.chartWidth = options.chartWidth || this.chartWidth;
     this.chartHeight = options.chartHeight || this.chartHeight;
-    this.maxBinNum = options.maxBinNum || this.maxBinNum;
+    this.maxBucketNum = options.maxBucketNum || this.maxBucketNum;
     this.rectangleCount = options.rectangleCount || this.rectangleCount;
     this.rectangleWidth = options.rectangleWidth || this.rectangleWidth;
     this.rectangleHeight = options.rectangleHeight || this.rectangleHeight;
     this.gapBetweenRectangles =
       options.gapBetweenRectangles || this.gapBetweenRectangles;
-
+    this.addAtOnce = options.addAtOnce || this.addAtOnce;
+    this.moveAtOnce = options.moveAtOnce || this.moveAtOnce;
     this.providers = options.providers;
 
     // Generate Persons
     this.generatePersons();
   }
 
+  get keys() {
+    return this._keys;
+  }
+
+  /** Init graph for sorting*/
   initGraph() {
     this.providers.labels.clear();
-    this.providers.bins.clear();
-    this.binToRectangles.clear();
-    this.selectedBin = null;
-    this.selectedRectangle = null;
-    this.bins = [];
+    this.providers.buckets.clear();
+    this.bucketToRectangles.clear();
+    this.buckets = [];
   }
 
-  setColorForAllRectangles(color: Vec4) {
-    this.rectangles.forEach(rec => {
-      rec.color = color;
+  /** Set color for all rectangles */
+  async setColorForAllRectangles(color: Vec4) {
+    let index = 0;
+
+    while (index < this.rectangles.length) {
+      const toChange = [];
+
+      for (let i = 0; i < 50 && index < this.rectangles.length; ++index, ++i) {
+        const rec = this.rectangles[index];
+        rec.color = color;
+        toChange.push(rec);
+      }
+
+      EasingUtil.all(
+        false,
+        toChange,
+        [RectangleLayer.attributeNames.color],
+        easing => {
+          easing.setTiming(11);
+        }
+      );
+
+      await nextFrame();
+    }
+  }
+
+  /** Highlight single rectangle and dim the others */
+  async highLightSingleRectangle(
+    dimColor: Vec4,
+    highLightInstance: RectangleInstance,
+    highlightColor: Vec4
+  ) {
+    highLightInstance.color = highlightColor;
+
+    let index = 0;
+
+    while (index < this.rectangles.length) {
+      const toChange = [];
+
+      for (let i = 0; i < 30 && index < this.rectangles.length; ++index, ++i) {
+        const rec = this.rectangles[index];
+        if (rec !== highLightInstance) rec.color = dimColor;
+        toChange.push(rec);
+      }
+
+      EasingUtil.all(
+        false,
+        toChange,
+        [RectangleLayer.attributeNames.color],
+        easing => {
+          easing.setTiming(11);
+        }
+      );
+
+      await nextFrame();
+    }
+  }
+
+  /** Hightlight all rectangles in a bucket and dim the others */
+  async highLightRectangles(
+    dimColor: Vec4,
+    rectangles: RectangleInstance[],
+    highLightColor: Vec4
+  ) {
+    const tempSet: Set<RectangleInstance> = new Set();
+    rectangles.forEach(rec => {
+      rec.color = highLightColor;
+      tempSet.add(rec);
     });
+
+    let index = 0;
+
+    while (index < this.rectangles.length) {
+      const toChange = [];
+
+      for (let i = 0; i < 50 && index < this.rectangles.length; ++index, ++i) {
+        const rec = this.rectangles[index];
+        if (!tempSet.has(rec)) rec.color = dimColor;
+        toChange.push(rec);
+      }
+
+      EasingUtil.all(
+        false,
+        toChange,
+        [RectangleLayer.attributeNames.color],
+        easing => {
+          easing.setTiming(1000 * Math.random());
+        }
+      );
+
+      await nextFrame();
+    }
   }
 
+  /** Generate each person , related rectangle and get keys for sorting*/
   generatePersons() {
     const eyeColors = ["blue", "black", "brown", "green"];
 
@@ -127,7 +255,6 @@ export class SandDance {
 
       this.providers.rectangles.add(rec);
       this.rectangles.push(rec);
-
       this.idToRectangle.set(person.id, rec);
     }
 
@@ -139,149 +266,120 @@ export class SandDance {
       }
     }
 
-    this.keys = keys;
-
+    this._keys = keys;
     this.sortByKey(keys[0]);
   }
 
-  addPersons(toAdd: number) {
+  /** Add persons */
+  async addPersons(toAdd: number) {
     const eyeColors = ["blue", "black", "brown", "green"];
 
-    // Create new person
-    for (let i = 0; i < 0; i++) {
-      const person = new Person({
-        id: this.id++, // temp
-        age: 20 + Math.floor(20 * Math.random()),
-        eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
-        name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
-        gender: Math.random() >= 0.5 ? "male" : "female",
-        group: Math.floor(6 * Math.random()) + 1
-      });
+    let index = 0;
+    while (index < toAdd) {
+      for (let i = 0; i < this.addAtOnce && index < toAdd; ++index, ++i) {
+        const person = new Person({
+          id: this.id++, // temp
+          age: 20 + Math.floor(20 * Math.random()),
+          eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
+          name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
+          gender: Math.random() >= 0.5 ? "male" : "female",
+          group: Math.floor(6 * Math.random()) + 1
+        });
 
-      this.persons.push(person);
+        this.persons.push(person);
 
-      // generate the rectangle the person represents
-      const rec = new RectangleInstance({
-        depth: 0,
-        size: [10, 10],
-        scaling: ScaleMode.ALWAYS,
-        color: [0, 0, 1, 1]
-      });
+        // generate the rectangle the person represents
+        const rec = new RectangleInstance({
+          depth: 0,
+          size: [10, 10],
+          scaling: ScaleMode.ALWAYS,
+          color: [0, 0, 1, 1]
+        });
 
-      this.providers.rectangles.add(rec);
-      this.rectangles.push(rec);
+        this.providers.rectangles.add(rec);
+        this.rectangles.push(rec);
+        this.idToRectangle.set(person.id, rec);
+      }
 
-      this.idToRectangle.set(person.id, rec);
+      await nextFrame();
+    }
 
-      const key = this.keys[1];
+    this.sortByKey(this.currentKey);
+  }
 
-      for (let i = 0; i < this.bins.length; i++) {
-        const bin = this.bins[i];
-        const binRec = bin.binRectangle;
-        if (bin.containsValue(person[key])) {
-          const index = this.binToLocation.get(bin);
-          const step = this.rectangleWidth + this.gapBetweenRectangles;
+  /** Reduce persons */
+  async reducePersons(toRduce: number) {
+    let length = this.persons.length;
 
-          if (index) {
-            let rowIndex = index[0] + 1;
-            let colIndex = index[1];
+    const personToReduce = [];
 
-            if (rowIndex >= this.numOfRecsPerRow) {
-              rowIndex = 0;
-              colIndex++;
-            }
+    for (let i = 0; i < toRduce; i++) {
+      const randomIndex = Math.floor(Math.random() * length);
 
-            rec.position = [
-              this.origin[0] + this.binRectangleWidth * i + rowIndex * step,
-              this.origin[1] - colIndex * step // + this.gapBetweenRectangles
-            ];
+      // Swap the person with the last person
+      const person = this.persons[randomIndex];
+      this.persons[randomIndex] = this.persons[length - 1];
+      this.persons[length - 1] = person;
 
-            this.binToLocation.set(bin, [rowIndex, colIndex]);
+      personToReduce.push(person);
+
+      length--;
+
+      const rec = this.idToRectangle.get(person.id);
+      if (rec) {
+        rec.color = [0, 0, 0, 0];
+      }
+    }
+
+    await nextFrame();
+
+    let index = 0;
+    while (index < toRduce) {
+      const recsToRemove = [];
+      for (let i = 0; i < this.addAtOnce && index < toRduce; ++index, ++i) {
+        const person = personToReduce[index];
+        this.persons.pop();
+
+        if (person) {
+          const rec = this.idToRectangle.get(person.id);
+
+          if (rec) {
+            recsToRemove.push(rec);
+            const indexOfRec = this.rectangles.indexOf(rec);
+            this.rectangles.splice(indexOfRec, 1);
+            this.providers.rectangles.remove(rec);
           }
-
-          const list = this.binToRectangles.get(binRec);
-
-          if (list) {
-            list.push(rec);
-            this.binToRectangles.set(binRec, list);
-          }
+          this.idToRectangle.delete(person.id);
         }
       }
     }
 
-    for (let i = 0; i < toAdd; i++) {
-      const person = new Person({
-        id: this.id++, // temp
-        age: 20 + Math.floor(20 * Math.random()),
-        eyeColor: eyeColors[Math.floor(eyeColors.length * Math.random())],
-        name: String.fromCharCode(97 + Math.floor(26 * Math.random())),
-        gender: Math.random() >= 0.5 ? "male" : "female",
-        group: Math.floor(6 * Math.random()) + 1
-      });
-
-      this.persons.push(person);
-
-      // generate the rectangle the person represents
-      const rec = new RectangleInstance({
-        depth: 0,
-        size: [10, 10],
-        scaling: ScaleMode.ALWAYS,
-        color: [0, 0, 1, 1]
-      });
-
-      this.providers.rectangles.add(rec);
-      this.rectangles.push(rec);
-
-      this.idToRectangle.set(person.id, rec);
-    }
-
     this.sortByKey(this.currentKey);
   }
 
-  reducePersons(toRduce: number) {
-    for (let i = 0; i < toRduce; i++) {
-      const index = Math.floor(Math.random() * this.persons.length);
-      const person = this.persons[index];
-      this.persons.splice(index, 1);
-
-      const rec = this.idToRectangle.get(person.id);
-      if (rec) {
-        const indexOfRec = this.rectangles.indexOf(rec);
-        this.rectangles.splice(indexOfRec, 1);
-        this.providers.rectangles.remove(rec);
-      }
-
-      this.idToRectangle.delete(person.id);
-    }
-
-    this.sortByKey(this.currentKey);
-  }
-
-  moveRectangels() {
-    //
-  }
-
-  layoutBins() {
-    for (let i = 0; i < this.binNum; i++) {
-      const binRec = new RectangleInstance({
+  /** Layout the buckets' rectangles */
+  layoutBuckets() {
+    for (let i = 0; i < this.bucketNum; i++) {
+      const bucketRec = new RectangleInstance({
         depth: 0,
         position: [
-          this.origin[0] + this.binRectangleWidth * i,
+          this.origin[0] + this.bucketRectangleWidth * i,
           this.origin[1] + 20
         ],
-        size: [this.binRectangleWidth - 5, this.binRectangleHeight],
+        size: [this.bucketRectangleWidth - 5, this.bucketRectangleHeight],
         scaling: ScaleMode.ALWAYS,
         color: [0.5, 0.5, 0.5, 1]
       });
 
-      this.providers.bins.add(binRec);
+      this.providers.buckets.add(bucketRec);
 
-      this.bins[i].binRectangle = binRec;
+      this.buckets[i].bucketRectangle = bucketRec;
 
-      this.binToRectangles.set(binRec, []);
+      this.bucketToRectangles.set(bucketRec, []);
     }
   }
 
+  /** Layout the lines for chart */
   layoutLines() {
     this.providers.lines.add(
       new EdgeInstance({
@@ -298,70 +396,90 @@ export class SandDance {
     );
   }
 
-  layoutRectangles(key: string) {
+  /** Layout all the rectangles */
+  async layoutRectangles(key: string) {
     let curIndex = 0;
-    let currentBin = this.bins[curIndex];
+    let currentBucket = this.buckets[curIndex];
     let currentX = 0;
     let currentY = 0;
-
     let rowIndex = 0;
     let colIndex = 0;
 
-    // layout Rectangles
-    for (let i = 0; i < this.persons.length; i++) {
-      const element = this.persons[i];
-      const rec = this.idToRectangle.get(element.id);
+    let index = 0;
+    while (index < this.persons.length) {
+      await nextFrame();
+      const toMove: RectangleInstance[] = [];
+      for (
+        let i = 0;
+        i < this.moveAtOnce && index < this.persons.length;
+        ++i, ++index
+      ) {
+        const element = this.persons[index];
+        const rec = this.idToRectangle.get(element.id);
 
-      if (rec) {
-        const keyValue = element[key];
+        if (rec) {
+          toMove.push(rec);
 
-        while (
-          curIndex < this.bins.length &&
-          !currentBin.containsValue(keyValue)
-        ) {
-          curIndex++;
-          currentBin = this.bins[curIndex];
+          const keyValue = element[key];
 
-          rowIndex = 0;
-          colIndex = 0;
+          while (
+            curIndex < this.buckets.length &&
+            !currentBucket.containsValue(keyValue)
+          ) {
+            curIndex++;
+            currentBucket = this.buckets[curIndex];
+            rowIndex = 0;
+            colIndex = 0;
+            currentX = this.bucketRectangleWidth * curIndex;
+            currentY = 0;
+          }
 
-          currentX = this.binRectangleWidth * curIndex;
-          currentY = 0;
-        }
+          rec.position = [this.origin[0] + currentX, this.origin[1] - currentY];
+          this.bucketToLocation.set(currentBucket, [rowIndex, colIndex]);
 
-        rec.position = [this.origin[0] + currentX, this.origin[1] - currentY];
-        this.binToLocation.set(currentBin, [rowIndex, colIndex]);
+          const list = this.bucketToRectangles.get(
+            currentBucket.bucketRectangle
+          );
+          if (list) {
+            list.push(rec);
+            this.bucketToRectangles.set(currentBucket.bucketRectangle, list);
+          }
 
-        const list = this.binToRectangles.get(currentBin.binRectangle);
-        if (list) {
-          list.push(rec);
-          this.binToRectangles.set(currentBin.binRectangle, list);
-        }
+          rowIndex++;
 
-        rowIndex++;
-
-        if (rowIndex >= this.numOfRecsPerRow) {
-          rowIndex = 0;
-          colIndex++;
-          currentX = this.binRectangleWidth * curIndex;
-          currentY += this.rectangleHeight + this.gapBetweenRectangles;
-        } else {
-          currentX += this.rectangleWidth + this.gapBetweenRectangles;
+          if (rowIndex >= this.numOfRecsPerRow) {
+            rowIndex = 0;
+            colIndex++;
+            currentX = this.bucketRectangleWidth * curIndex;
+            currentY += this.rectangleHeight + this.gapBetweenRectangles;
+          } else {
+            currentX += this.rectangleWidth + this.gapBetweenRectangles;
+          }
         }
       }
+
+      EasingUtil.all(
+        false,
+        toMove,
+        [RectangleLayer.attributeNames.location],
+        easing => {
+          easing.setTiming(200 * Math.random());
+        }
+      );
     }
   }
 
+  /** Layout all the labels that represent buckets */
   layoutLabels() {
-    for (let i = 0; i < this.binNum; i++) {
-      const bin = this.bins[i];
+    for (let i = 0; i < this.bucketNum; i++) {
+      const bucket = this.buckets[i];
       let labelText = "";
 
-      if (bin.type === BinType.SINGLE) {
-        labelText = bin.value.toString();
+      if (bucket.type === BucketType.SINGLE) {
+        labelText = bucket.value.toString();
       } else {
-        if (typeof bin.value === "object") {
-          labelText = `${bin.value[0]} - ${bin.value[1]}`;
+        if (typeof bucket.value === "object") {
+          labelText = `${bucket.value[0]} - ${bucket.value[1]}`;
         }
       }
 
@@ -369,7 +487,7 @@ export class SandDance {
         text: labelText,
         color: [1, 1, 1, 1],
         origin: [
-          this.origin[0] + this.binRectangleWidth * i,
+          this.origin[0] + this.bucketRectangleWidth * i,
           this.origin[1] + 40
         ],
         fontSize: 24
@@ -378,80 +496,82 @@ export class SandDance {
     }
   }
 
-  getBinValues(numberValues: Set<number>, stringValues: Set<string>) {
-    // const maxBinNumber = 6;
+  /** Take all the values of elements to generate buckets'value */
+  getBucketValues(numberValues: Set<number>, stringValues: Set<string>) {
     let valueNum = 0;
-    let binValueType: string = "";
+    let bucketValueType: string = "";
 
     if (numberValues.size > 0) {
       valueNum = numberValues.size;
-      binValueType = "number";
+      bucketValueType = "number";
     } else if (stringValues.size > 0) {
       valueNum = stringValues.size;
-      binValueType = "string";
+      bucketValueType = "string";
     }
 
-    const bins: Bin[] = [];
+    const buckets: Bucket[] = [];
 
-    if (valueNum > 0 && valueNum <= this.maxBinNum) {
-      if (binValueType === "number") {
+    if (valueNum > 0 && valueNum <= this.maxBucketNum) {
+      if (bucketValueType === "number") {
         const valueArray = Array.from(numberValues);
         valueArray.sort((a, b) => a - b);
 
         for (let i = 0; i < valueArray.length; i++) {
           const value = valueArray[i];
-          bins.push(
-            new Bin({
-              type: BinType.SINGLE,
-              valueType: BinValueType.NUMBER,
+          buckets.push(
+            new Bucket({
+              type: BucketType.SINGLE,
+              valueType: BucketValueType.NUMBER,
               value
             })
           );
         }
-      } else if (binValueType === "string") {
+      } else if (bucketValueType === "string") {
         const valueArray = Array.from(stringValues);
         valueArray.sort((a, b) => a.localeCompare(b));
 
         for (let i = 0; i < valueArray.length; i++) {
           const value = valueArray[i];
-          bins.push(
-            new Bin({
-              type: BinType.SINGLE,
-              valueType: BinValueType.STRING,
+          buckets.push(
+            new Bucket({
+              type: BucketType.SINGLE,
+              valueType: BucketValueType.STRING,
               value
             })
           );
         }
       }
     } else {
-      if (binValueType === "number") {
+      if (bucketValueType === "number") {
         const valueArray = Array.from(numberValues);
         let minValue = valueArray[0];
         let maxValue = valueArray[0];
+
         numberValues.forEach(value => {
           if (value > maxValue) maxValue = value;
           if (value < minValue) minValue = value;
         });
 
-        const binBasicWidth = Math.floor(
-          (maxValue + 1 - minValue) / this.maxBinNum
+        const bucketBasicWidth = Math.floor(
+          (maxValue + 1 - minValue) / this.maxBucketNum
         );
-        const rest = maxValue + 1 - minValue - this.maxBinNum * binBasicWidth;
+        const rest =
+          maxValue + 1 - minValue - this.maxBucketNum * bucketBasicWidth;
         let start = minValue;
 
-        for (let i = 0; i < this.maxBinNum; i++) {
-          let binWidth = binBasicWidth;
-          if (i < rest) binWidth++;
-          bins.push(
-            new Bin({
-              type: BinType.RANGE,
-              valueType: BinValueType.NUMBER,
-              value: [start, start + binWidth - 1]
+        for (let i = 0; i < this.maxBucketNum; i++) {
+          let bucketWidth = bucketBasicWidth;
+          if (i < rest) bucketWidth++;
+          buckets.push(
+            new Bucket({
+              type: BucketType.RANGE,
+              valueType: BucketValueType.NUMBER,
+              value: [start, start + bucketWidth - 1]
             })
           );
-          start += binWidth;
+          start += bucketWidth;
         }
-      } else if (binValueType === "string") {
+      } else if (bucketValueType === "string") {
         const valueArray = Array.from(stringValues);
         let minValue = valueArray[0][0].toLocaleLowerCase().charCodeAt(0);
         let maxValue = valueArray[0][0].toLocaleLowerCase().charCodeAt(0);
@@ -466,34 +586,36 @@ export class SandDance {
           }
         });
 
-        const binBasicWidth = Math.floor(
-          (maxValue + 1 - minValue) / this.maxBinNum
+        const bucketBasicWidth = Math.floor(
+          (maxValue + 1 - minValue) / this.maxBucketNum
         );
-        const rest = maxValue + 1 - minValue - this.maxBinNum * binBasicWidth;
+        const rest =
+          maxValue + 1 - minValue - this.maxBucketNum * bucketBasicWidth;
         let start = minValue;
 
-        for (let i = 0; i < this.maxBinNum; i++) {
-          let binWidth = binBasicWidth;
-          if (i < rest) binWidth++;
+        for (let i = 0; i < this.maxBucketNum; i++) {
+          let bucketWidth = bucketBasicWidth;
+          if (i < rest) bucketWidth++;
 
-          bins.push(
-            new Bin({
-              type: BinType.RANGE,
-              valueType: BinValueType.STRING,
+          buckets.push(
+            new Bucket({
+              type: BucketType.RANGE,
+              valueType: BucketValueType.STRING,
               value: [
                 String.fromCharCode(start),
-                String.fromCharCode(start + binWidth - 1)
+                String.fromCharCode(start + bucketWidth - 1)
               ]
             })
           );
-          start += binWidth;
+          start += bucketWidth;
         }
       }
     }
 
-    return bins;
+    return buckets;
   }
 
+  /** Sort all the elements based on key */
   sortByKey(key: string) {
     this.currentKey = key;
     this.initGraph();
@@ -512,12 +634,12 @@ export class SandDance {
       }
     }
 
-    this.bins = this.getBinValues(numberValues, stringValues);
-    this.binNum = this.bins.length;
-
-    this.binRectangleWidth = this.chartWidth / this.binNum;
+    this.buckets = this.getBucketValues(numberValues, stringValues);
+    this.bucketNum = this.buckets.length;
+    this.bucketRectangleWidth = this.chartWidth / this.bucketNum;
     this.numOfRecsPerRow = Math.floor(
-      this.binRectangleWidth / (this.rectangleWidth + this.gapBetweenRectangles)
+      this.bucketRectangleWidth /
+        (this.rectangleWidth + this.gapBetweenRectangles)
     );
 
     // Sorting based on value type
@@ -543,8 +665,8 @@ export class SandDance {
       });
     }
 
-    // bins
-    this.layoutBins();
+    // buckets
+    this.layoutBuckets();
 
     // Rectangles
     this.layoutRectangles(key);

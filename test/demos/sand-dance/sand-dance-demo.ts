@@ -16,7 +16,8 @@ import {
   LabelLayer,
   PickType,
   RectangleInstance,
-  RectangleLayer
+  RectangleLayer,
+  Vec4
 } from "src";
 import { BaseDemo } from "test/common/base-demo";
 import { DEFAULT_RESOURCES } from "test/types";
@@ -30,12 +31,14 @@ export class SandDanceDemo extends BaseDemo {
 
   parameters = {
     count: 1000,
+    moveAtOnce: 100,
+    addAtOnce: 30,
     color: [0, 0, 255, 1] as [number, number, number, number],
     width: 6,
     sortBy: "null"
   };
   providers = {
-    bins: new InstanceProvider<RectangleInstance>(),
+    buckets: new InstanceProvider<RectangleInstance>(),
     rectangles: new InstanceProvider<RectangleInstance>(),
     lines: new InstanceProvider<EdgeInstance>(),
     labels: new InstanceProvider<LabelInstance>()
@@ -44,15 +47,19 @@ export class SandDanceDemo extends BaseDemo {
   sandDance: SandDance;
 
   selectedRectangle: RectangleInstance | null = null;
-  selectedBin: RectangleInstance | null = null;
+  selectedbucket: RectangleInstance | null = null;
 
   mouseClick = (info: IPickInfo<RectangleInstance>) => {
     if (info.instances.length > 0) {
       const instance = info.instances[0];
+
       if (!this.selectedRectangle || this.selectedRectangle !== instance) {
         this.selectedRectangle = instance;
-        this.sandDance.setColorForAllRectangles([0.1, 0.1, 0.1, 1]);
-        instance.color = [1, 1, 1, 1];
+
+        const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+        const highLight: Vec4 = [1, 1, 1, 1];
+
+        this.sandDance.highLightSingleRectangle(dimColor, instance, highLight);
       } else {
         this.selectedRectangle = null;
         this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
@@ -60,18 +67,23 @@ export class SandDanceDemo extends BaseDemo {
     }
   };
 
-  mouseClickBin = (info: IPickInfo<RectangleInstance>) => {
+  mouseClickbucket = (info: IPickInfo<RectangleInstance>) => {
     if (info.instances.length > 0) {
-      const binInstance = info.instances[0];
-      if (!this.selectedBin || this.selectedBin !== binInstance) {
-        this.selectedBin = binInstance;
-        const rectangles = this.sandDance.binToRectangles.get(binInstance);
+      const bucketInstance = info.instances[0];
+      if (!this.selectedbucket || this.selectedbucket !== bucketInstance) {
+        this.selectedbucket = bucketInstance;
+        const rectangles = this.sandDance.bucketToRectangles.get(
+          bucketInstance
+        );
         if (rectangles) {
-          this.sandDance.setColorForAllRectangles([0.1, 0.1, 0.1, 1]);
-          rectangles.forEach(instance => (instance.color = [1, 1, 1, 1]));
+          // this.sandDance.setColorForAllRectangles([0.1, 0.1, 0.1, 1]);
+          // rectangles.forEach(instance => (instance.color = [1, 1, 1, 1]));
+          const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+          const highLight: Vec4 = [1, 1, 1, 1];
+          this.sandDance.highLightRectangles(dimColor, rectangles, highLight);
         }
       } else {
-        this.selectedBin = null;
+        this.selectedbucket = null;
         this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
       }
     }
@@ -82,19 +94,33 @@ export class SandDanceDemo extends BaseDemo {
 
     parameters
       .addColor(this.parameters, "color")
-      .onChange((_value: [number, number, number, number]) => {
-        //
+      .onChange((value: [number, number, number, number]) => {
+        this.sandDance.rectangles.forEach(
+          rec =>
+            (rec.color = [value[0] / 255, value[1] / 255, value[2] / 255, 1])
+        );
       });
 
     parameters
       .add(this.parameters, "count", 0, 10000, 1)
       .onFinishChange((value: number) => {
         if (value > this.sandDance.persons.length) {
-          console.warn("add");
           this.sandDance.addPersons(value - this.sandDance.persons.length);
         } else if (value < this.sandDance.persons.length) {
           this.sandDance.reducePersons(this.sandDance.persons.length - value);
         }
+      });
+
+    parameters
+      .add(this.parameters, "moveAtOnce", 1, 200)
+      .onFinishChange((value: number) => {
+        this.sandDance.moveAtOnce = value;
+      });
+
+    parameters
+      .add(this.parameters, "addAtOnce", 1, 200)
+      .onFinishChange((value: number) => {
+        this.sandDance.addAtOnce = value;
       });
 
     this.gui = gui;
@@ -141,19 +167,19 @@ export class SandDanceDemo extends BaseDemo {
               }),
               rectangles: createLayer(RectangleLayer, {
                 animate: {
-                  color: AutoEasingMethod.linear(300),
+                  color: AutoEasingMethod.linear(1000),
                   location: AutoEasingMethod.easeInOutCubic(3000)
                 },
                 data: providers.rectangles,
                 onMouseClick: this.mouseClick,
                 picking: PickType.SINGLE
               }),
-              bins: createLayer(RectangleLayer, {
+              buckets: createLayer(RectangleLayer, {
                 animate: {
                   color: AutoEasingMethod.linear(300)
                 },
-                data: providers.bins,
-                onMouseClick: this.mouseClickBin,
+                data: providers.buckets,
+                onMouseClick: this.mouseClickbucket,
                 picking: PickType.SINGLE
               })
             }
@@ -164,7 +190,12 @@ export class SandDanceDemo extends BaseDemo {
   }
 
   async init() {
-    this.sandDance = new SandDance({ providers: this.providers });
+    this.sandDance = new SandDance({
+      addAtOnce: this.parameters.addAtOnce,
+      moveAtOnce: this.parameters.moveAtOnce,
+      rectangleCount: this.parameters.count,
+      providers: this.providers
+    });
 
     this.gui
       .add(this.parameters, "sortBy", this.sandDance.keys)

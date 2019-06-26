@@ -17,8 +17,6 @@ export class Person {
   gender: string;
   group: number;
 
-  // rectangle: RectangleInstance;
-
   constructor(options: IPersonOptions) {
     this.id = options.id;
     this.age = options.age;

@@ -3,16 +3,18 @@ import { Material } from "../gl/material";
 import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
-import { ResourceManager } from "../resources";
-import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceAttributeSize, InstanceBlockIndex, InstanceDiffType, InstanceHitTest, InstanceIOValue, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType, ShaderInjectionTarget, UniformIOValue, UniformSize } from "../types";
+import { ResourceRouter } from "../resources";
+import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceDiffType, InstanceHitTest, IPickInfo, IQuadTreePickingMetrics, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttributeInternal, PickType } from "../types";
 import { TrackedQuadTreeBoundsAccessor } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { LayerBufferType } from "./layer-processing/layer-buffer-type";
-import { LayerInitializer, LayerSurface } from "./layer-surface";
+import { LayerScene } from "./layer-scene";
+import { LayerInitializer, Surface } from "./surface";
 import { View } from "./view";
+export declare function createUniform(options: IUniform): IUniform;
 export interface IInstanceProvider<T extends Instance> {
     resolveContext: string;
     uid: number;
@@ -24,9 +26,9 @@ export interface IInstanceProvider<T extends Instance> {
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
     data: IInstanceProvider<T>;
     materialOptions?: ILayerMaterialOptions;
+    order?: number;
     picking?: PickType;
     printShader?: boolean;
-    scene: string;
     onMouseDown?(info: IPickInfo<T>): void;
     onMouseMove?(info: IPickInfo<T>): void;
     onMouseOut?(info: IPickInfo<T>): void;
@@ -65,18 +67,21 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     maxInstancesPerBuffer: number;
     model: Model;
     needsViewDrawn: boolean;
+    order?: number;
     parent?: Layer<Instance, ILayerProps<Instance>>;
     picking: IQuadTreePickingMetrics<T> | ISinglePickingMetrics<T> | INonePickingMetrics;
     props: U;
-    resource: ResourceManager;
-    surface: LayerSurface;
+    resource: ResourceRouter;
+    scene: LayerScene;
+    surface: Surface;
     uniforms: IUniformInternal[];
     readonly uid: number;
     private _uid;
     vertexAttributes: IVertexAttributeInternal[];
     view: View;
     willRebuildLayer: boolean;
-    constructor(props: ILayerProps<T>);
+    constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>);
+    init(): boolean;
     baseShaderModules(shaderIO: IShaderInitialization<T>): {
         fs: string[];
         vs: string[];
@@ -91,13 +96,6 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     getInstancePickingMethods(): IPickingMethods<T>;
     getMaterialOptions(): ILayerMaterialOptions;
     initShader(): IShaderInitialization<T> | null;
-    makeInstanceAttribute(block: number, blockIndex: InstanceBlockIndex, name: string, size: InstanceAttributeSize, update: (o: T) => InstanceIOValue, resource?: {
-        type: number;
-        key: string;
-        name: string;
-        shaderInjection?: ShaderInjectionTarget;
-    }): IInstanceAttribute<T>;
-    makeUniform(name: string, size: UniformSize, update: (o: IUniform) => UniformIOValue, shaderInjection?: ShaderInjectionTarget, qualifier?: string): IUniform;
     managesInstance(instance: T): boolean;
     rebuildLayer(): void;
     resolveChanges(preserveProvider?: boolean): [T, InstanceDiffType, {

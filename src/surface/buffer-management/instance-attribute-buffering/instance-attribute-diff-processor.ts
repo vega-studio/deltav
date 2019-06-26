@@ -1,9 +1,6 @@
 import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
-import {
-  IInstanceAttributeInternal,
-  isResourceAttribute
-} from "../../../types";
+import { IInstanceAttributeInternal } from "../../../types";
 import { Vec } from "../../../util";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import {
@@ -130,14 +127,13 @@ export class InstanceAttributeDiffProcessor<
    * This performs the actual updating of buffers the instance needs to update
    */
   updateInstancePartial(
-    layer: IInstanceDiffManagerTarget<T>,
+    _layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
     bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
-    const resourceManager = layer.resource;
 
     let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
@@ -157,11 +153,6 @@ export class InstanceAttributeDiffProcessor<
         location = propertyToLocation[propIds[i]];
         attribute = location.attribute;
         attributeChangeUID = attribute.packUID || attribute.uid;
-        isResourceAttribute(attribute) &&
-          resourceManager.setAttributeContext(
-            attribute,
-            attribute.resource.type
-          );
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
         updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
@@ -224,14 +215,13 @@ export class InstanceAttributeDiffProcessor<
    * rather than a chunk of it.
    */
   updateInstanceFull(
-    layer: IInstanceDiffManagerTarget<T>,
+    _layer: IInstanceDiffManagerTarget<T>,
     instance: T,
     propIds: number[],
     bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
-    const resourceManager = layer.resource;
 
     let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec;
@@ -248,11 +238,6 @@ export class InstanceAttributeDiffProcessor<
         // First update for the instance attribute itself
         location = propertyToLocation[propIds[i]];
         attribute = location.attribute;
-        isResourceAttribute(attribute) &&
-          resourceManager.setAttributeContext(
-            attribute,
-            attribute.resource.type
-          );
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
         bufferAttributeWillUpdate[
@@ -279,8 +264,6 @@ export class InstanceAttributeDiffProcessor<
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
-      isResourceAttribute(attribute) &&
-        resourceManager.setAttributeContext(attribute, attribute.resource.type);
       updateValue = attribute.update(instance);
       location.buffer.value.set(updateValue, location.range[0]);
       bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;

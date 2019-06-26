@@ -1,5 +1,5 @@
 import { InstanceProvider } from "../../instance-provider";
-import { ILayerProps, IPickingMethods, Layer } from "../../surface/layer";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -16,7 +16,6 @@ import {
   Vec
 } from "../../util";
 import { EdgeInstance } from "./edge-instance";
-import { edgePicking } from "./edge-picking";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
@@ -80,7 +79,6 @@ export class EdgeLayer<
     data: new InstanceProvider<EdgeInstance>(),
     key: "none",
     scaleType: EdgeScaleType.NONE,
-    scene: "default",
     type: EdgeType.LINE
   };
 
@@ -93,14 +91,6 @@ export class EdgeLayer<
     startColor: "startColor",
     thickness: "thickness"
   };
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods(): IPickingMethods<EdgeInstance> {
-    return edgePicking(this.props);
-  }
 
   /**
    * Define our shader and it's inputs

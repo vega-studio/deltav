@@ -162,7 +162,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
         values = instance.easing.get(easingUID);
 
         // If the easing values do not exist yet, make them now
-        if (!values) {
+        if (!vecMethods || !values) {
           // Get all of the vector methods that apply to the provided item
           vecMethods = VecMath(end);
 

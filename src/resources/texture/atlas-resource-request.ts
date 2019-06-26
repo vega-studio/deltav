@@ -2,6 +2,25 @@ import { Omit, ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
 import { SubTexture } from "./sub-texture";
 
+export type AtlasVideoResource = {
+  videoSrc: string;
+};
+
+export type AtlasResouce =
+  | string
+  | ImageBitmap
+  | ImageData
+  | HTMLImageElement
+  | HTMLCanvasElement
+  | AtlasVideoResource;
+
+/**
+ * Typeguard for video resource requests
+ */
+export function isAtlasVideoResource(val: any): val is AtlasVideoResource {
+  return val && val.videoSrc;
+}
+
 /**
  * Base information an atlas resource can provide
  */
@@ -13,13 +32,17 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
    */
   disposeResource?: boolean;
   /**
+   * This is the key of the resource to be used for the request. Resources are defined in the pipeline.
+   */
+  key: string;
+  /**
    * This scales the image to be rendered to the texture. A value of 1 means the image will be
    * rendered full size to the texture. A value of .5 means it will be rendered half size to
    * the texture.
    */
   rasterizationScale?: number;
   /** This is the requested resource to be loaded into the manager system */
-  source: string | TexImageSource;
+  source: AtlasResouce;
   /**
    * Once loaded into the texture, this will be populated revealing the informaion needed to sample the image
    * from the atlas.
@@ -33,7 +56,8 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
  * Simple wrapper to make autocomplete easier for making an atlas request.
  */
 export function atlasRequest(
-  options: Omit<Partial<IAtlasResourceRequest>, "type">
+  options: Omit<Partial<IAtlasResourceRequest>, "type"> &
+    Pick<IAtlasResourceRequest, "key">
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,

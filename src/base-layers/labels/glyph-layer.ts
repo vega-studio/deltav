@@ -11,7 +11,6 @@ import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
-  ResourceType,
   VertexAttributeSize
 } from "../../types";
 import {
@@ -39,6 +38,8 @@ export interface IGlyphLayerOptions<T extends GlyphInstance>
   resourceKey?: string;
   /** This is the scaling strategy the glyph will use when text is involved. */
   scaleMode?: ScaleMode;
+  /** This indicates whether a glyph is in a textArea */
+  inTextArea?: boolean;
 }
 
 /**
@@ -52,8 +53,7 @@ export class GlyphLayer<
   static defaultProps: IGlyphLayerOptions<GlyphInstance> = {
     key: "",
     data: new InstanceProvider<GlyphInstance>(),
-    resourceKey: "No resource specified",
-    scene: "default"
+    resourceKey: "No resource specified"
   };
 
   /**
@@ -97,9 +97,8 @@ export class GlyphLayer<
     const glyphTextureAttr: IInstanceAttribute<T> = {
       name: "texture",
       resource: {
-        key: this.props.resourceKey || "",
-        name: "fontMap",
-        type: ResourceType.FONT
+        key: () => this.props.resourceKey || "",
+        name: "fontMap"
       },
       update: o => {
         const char = o.character;
@@ -109,6 +108,7 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
+              key: this.props.resourceKey || "",
               character: char
             });
 
@@ -135,9 +135,8 @@ export class GlyphLayer<
       name: "glyphSize",
       parentAttribute: glyphTextureAttr,
       resource: {
-        key: this.props.resourceKey || "",
-        name: "fontMap",
-        type: ResourceType.FONT
+        key: () => this.props.resourceKey || "",
+        name: "fontMap"
       },
       size: InstanceAttributeSize.TWO,
       update: o => {
@@ -148,6 +147,7 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
+              key: this.props.resourceKey || "",
               character: char
             });
 
@@ -172,14 +172,22 @@ export class GlyphLayer<
 
     switch (scaleMode) {
       case ScaleMode.BOUND_MAX: {
-        fs = require("./glyph-layer-bound-max.fs");
-        vs = require("./glyph-layer-bound-max.vs");
+        fs = this.props.inTextArea
+          ? require("./text-area-layer-bound-max.fs")
+          : require("./glyph-layer-bound-max.fs");
+        vs = this.props.inTextArea
+          ? require("./text-area-layer-bound-max.vs")
+          : require("./glyph-layer-bound-max.vs");
         break;
       }
 
       case ScaleMode.NEVER: {
-        fs = require("./glyph-layer-never.fs");
-        vs = require("./glyph-layer-never.vs");
+        fs = this.props.inTextArea
+          ? require("./glyph-layer-never.fs")
+          : require("./text-area-layer-never.fs");
+        vs = this.props.inTextArea
+          ? require("./text-area-layer-never.vs")
+          : require("./glyph-layer-never.vs");
         break;
       }
 
@@ -256,6 +264,10 @@ export class GlyphLayer<
     };
   }
 
+  draw() {
+    super.draw();
+  }
+
   /**
    * Set up material options for the layer
    */
@@ -267,5 +279,20 @@ export class GlyphLayer<
         depthTest: false
       })
     );
+  }
+
+  /**
+   * Handle changes that need special handling
+   */
+  willUpdateProps(nextProps: U) {
+    // If the target resource changes, then we must make all of the requests re-process their requests for the new
+    // resource.
+    if (nextProps.resourceKey !== this.props.resourceKey) {
+      Object.values(this.glyphRequests).forEach(req => {
+        delete req.fontMap;
+        req.key = nextProps.resourceKey || "";
+      });
+      this.rebuildLayer();
+    }
   }
 }

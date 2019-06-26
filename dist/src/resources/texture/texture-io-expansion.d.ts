@@ -5,10 +5,12 @@ import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion, ShaderIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { IInstanceAttribute, IResourceType, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
+import { ResourceRouter } from "../resource-router";
 interface ITextureIOExpansionResource extends IResourceType {
     texture: Texture;
 }
 interface ITextureResourceManager {
+    router: ResourceRouter;
     getResource(key: string): ITextureIOExpansionResource | null;
 }
 export declare class TextureIOExpansion extends BaseIOExpansion {

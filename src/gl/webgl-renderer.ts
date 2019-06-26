@@ -1,6 +1,7 @@
 import { Size } from "../types";
 import { Vec4 } from "../util";
 import { Attribute } from "./attribute";
+import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
 import { GLState } from "./gl-state";
 import { Model } from "./model";
@@ -216,7 +217,7 @@ export class WebGLRenderer {
         height: target.height
       };
     } else {
-      const size = this.getDisplaySize();
+      const size = this.getRenderSize();
 
       return {
         x: 0,
@@ -230,10 +231,10 @@ export class WebGLRenderer {
   /**
    * Prepares the specified attribute
    */
-  prepareAttribute(attribute: Attribute, name: string) {
+  prepareAttribute(geometry: Geometry, attribute: Attribute, name: string) {
     // If we successfully update/compile the attribute, then we enable it's vertex array
     if (this.glProxy.updateAttribute(attribute)) {
-      this.glProxy.useAttribute(name, attribute);
+      this.glProxy.useAttribute(name, attribute, geometry);
     }
 
     // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
@@ -300,7 +301,7 @@ export class WebGLRenderer {
       // Faster to use defined functions rather than closures for loops
       const attributeLoop = function(attribute: Attribute, name: string) {
         geometryIsValid =
-          this.prepareAttribute(attribute, name) && geometryIsValid;
+          this.prepareAttribute(geometry, attribute, name) && geometryIsValid;
       };
 
       // First update/compile all aspects of the geometry
@@ -374,18 +375,17 @@ export class WebGLRenderer {
         out
       );
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
+      const size = this.getRenderSize();
       const _height = size[1];
 
       if (x + width > size[0]) width = size[0] - x;
       if (y + height > size[1]) height = size[1] - y;
 
       this.gl.readPixels(
-        x * pixelRatio,
-        (_height - y - height) * pixelRatio,
-        width * pixelRatio,
-        height * pixelRatio,
+        x,
+        _height - y - height,
+        width,
+        height,
         this.gl.RGBA,
         this.gl.UNSIGNED_BYTE,
         out
@@ -435,17 +435,16 @@ export class WebGLRenderer {
         this.glState.setScissor(null);
       }
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
-      const _height = size[1];
+      const { renderSize } = this.state;
+      const _height = renderSize[1];
 
       if (bounds) {
         const { x, y, width, height } = bounds;
         this.glState.setScissor({
-          x: x * pixelRatio,
-          y: (_height - y - height) * pixelRatio,
-          width: width * pixelRatio,
-          height: height * pixelRatio
+          x: x,
+          y: _height - y - height,
+          width: width,
+          height: height
         });
       } else {
         this.glState.setScissor(null);
@@ -519,17 +518,11 @@ export class WebGLRenderer {
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
       this.glState.setViewport(x, _height - y - height, width, height);
     } else {
-      const { pixelRatio } = this.state;
-      const size = this.getDisplaySize();
-      const _height = size[1];
+      const { renderSize } = this.state;
+      const _height = renderSize[1];
 
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
-      this.glState.setViewport(
-        x * pixelRatio,
-        (_height - y - height) * pixelRatio,
-        width * pixelRatio,
-        height * pixelRatio
-      );
+      this.glState.setViewport(x, _height - y - height, width, height);
     }
   }
 }

@@ -1,3 +1,4 @@
+// Shader for rendering simple circles on a quad, using the fragment shader to create the 'roundness' of the shape.
 precision highp float;
 
 ${import: projection}
@@ -13,7 +14,8 @@ void main() {
   ${attributes}
 
   vertexColor = color;
-  float size = radius * scaleFactor;
+  vertexColor.a *= layerOpacity;
+  float size = radius * scaleFactor * pixelRatio;
   edgeSharpness = mix(0.8, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   edgeSharpnessBase = mix(0.1, 0.0, min((size * 6.0 * pixelRatio) / (45.0 * pixelRatio), 1.0));
   pointCoord = (normals.xy + vec2(1.0, 1.0)) / 2.0;

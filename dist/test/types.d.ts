@@ -1,4 +1,5 @@
-import { BaseResourceOptions, ISceneOptions } from "src";
+import { BaseResourceOptions, ISceneOptions, IViewOptions } from "src";
+export declare const DEFAULT_FULLSCREEN_VIEW: IViewOptions;
 export declare const DEFAULT_SCENES: ISceneOptions[];
 export declare type IDefaultResources = {
     atlas: BaseResourceOptions;

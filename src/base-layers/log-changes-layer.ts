@@ -4,15 +4,21 @@ import {
   ILayerConstructable,
   ILayerProps,
   Layer,
-  LayerInitializer
+  LayerInitializer,
+  LayerScene,
+  Surface
 } from "../surface";
+import { Omit } from "../types";
 
 /**
  * Options for generating a Logging layer
  */
-interface ILogChangesLayerProps<T extends Instance> extends ILayerProps<T> {
+interface ILogChangesLayerProps<T extends Instance>
+  extends Omit<ILayerProps<T>, "key"> {
+  /** Gets the key for the layer. */
+  key: string;
   /** Provides a header to the log output to make the logs easier to understand */
-  messageHeader?: string;
+  messageHeader?(): string;
   /** This is the wrapped layer initializer */
   wrap?: LayerInitializer;
 }
@@ -30,16 +36,15 @@ class LogChangesLayer<
   static defaultProps: ILogChangesLayerProps<any> = {
     data: new InstanceProvider(),
     key: "default",
-    messageHeader: "",
-    scene: "default",
+    messageHeader: () => "",
     wrap: createLayer(Layer, {
       data: new InstanceProvider(),
       scene: "default"
     })
   };
 
-  constructor(props: U) {
-    super(props);
+  constructor(surface: Surface, scene: LayerScene, props: U) {
+    super(surface, scene, props);
 
     console.warn(
       "Please ensure all debugLayer calls are removed for production:",
@@ -50,8 +55,9 @@ class LogChangesLayer<
   /**
    * Hand the wrapped layer as a child layer to this layer
    */
-  childLayers() {
+  childLayers(): LayerInitializer[] {
     if (!this.props.wrap) return [];
+    this.props.wrap.init[1].key = `debug-wrapper.${this.props.key}`;
     return [this.props.wrap];
   }
 
@@ -63,8 +69,9 @@ class LogChangesLayer<
     if (!this.props.wrap) return;
     const changes = this.resolveChanges(true);
     if (changes.length === 0) return;
+    const { messageHeader = () => "" } = this.props;
 
-    console.warn(`${this.props.messageHeader}\n`, {
+    console.warn(`${messageHeader()}\n`, {
       totalChanges: changes.length,
       changes
     });
@@ -76,14 +83,22 @@ class LogChangesLayer<
   initShader() {
     if (!this.props.wrap) return null;
 
-    const layer = new this.props.wrap[0](this.props.wrap[1]);
+    const layer = new this.props.wrap.init[0](
+      this.surface,
+      this.scene,
+      this.props.wrap.init[1]
+    );
     const toProcess = layer.childLayers();
     const childLayers: { [key: string]: {} } = {};
 
     while (toProcess.length > 0) {
       const child = toProcess.pop();
       if (!child) continue;
-      const childLayer = new child[0](child[1]);
+      const childLayer = new child.init[0](
+        this.surface,
+        this.scene,
+        child.init[1]
+      );
 
       childLayers[childLayer.id] = {
         shaderIO: childLayer.initShader()
@@ -106,13 +121,13 @@ class LogChangesLayer<
  */
 export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: U
+  props: Omit<U, "key"> & Partial<Pick<U, "key">>
 ): LayerInitializer {
-  return createLayer(LogChangesLayer, {
-    messageHeader: `CHANGES FOR: ${props.key}`,
+  const initializer: LayerInitializer = createLayer(LogChangesLayer, {
+    messageHeader: () => `CHANGES FOR: ${initializer.init[1].key}`,
     wrap: createLayer(layerClass, props),
-    scene: props.scene,
-    data: props.data,
-    key: `debug-wrapper.${props.key}`
+    data: props.data
   });
+
+  return initializer;
 }

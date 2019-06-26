@@ -1,4 +1,9 @@
 import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction
+} from "src/event-management";
+import {
   Attribute,
   GLSettings,
   IMaterialUniform,
@@ -7,7 +12,8 @@ import {
   Texture
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
-import { Bounds } from "./primitives/bounds";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { ISceneOptions } from "./surface/layer-scene";
 import {
   ChartCamera,
   Mat3x3,
@@ -19,10 +25,6 @@ import {
   Vec4
 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
-import {
-  ITrackedQuadTreeVisitFunction,
-  TrackedQuadTree
-} from "./util/tracked-quad-tree";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -125,33 +127,54 @@ export type Color = [number, number, number, number];
 /**
  * Represents something with a unique id
  */
-export interface Identifiable {
+export interface IdentifiableById {
   /** A unique identifier */
-  id: string;
+  id: string | number;
 }
 
 /**
- * Information provided in mouse events interacting with instances and
+ * Represents something with a unique key
+ */
+export interface IdentifiableByKey {
+  /** A unique identifier */
+  key: string | number;
+}
+
+/**
+ * Information provided in user interaction events interacting with instances and
  * layers.
  */
 export interface IPickInfo<T extends Instance> {
-  /** If a mouse button is involved in the pick, this will be populated */
-  button?: number;
+  /** The interaction that created this picking information */
+  readonly interaction?: IMouseInteraction | ITouchInteraction;
   /** This is the parent layer id of the instances interacted with */
-  layer: string;
+  readonly layer: string;
   /** This is the list of instances that were detected in the interaction */
-  instances: T[];
-  /** If picking is set to ALL then this will be provided which can be used to make additional spatial queries */
-  querySpace?(
-    bounds: Bounds<T> | Vec2,
-    visit?: ITrackedQuadTreeVisitFunction<T>
-  ): T[];
-  /** This is the screen coordinates of the mouse point that interacted with the instances */
-  screen: [number, number];
-  /** This is the world coordinates of the mouse point that interacted with the instances */
-  world: [number, number];
+  readonly instances: T[];
+  /** This is the screen coordinates of the interaction point that interacted with the instances */
+  readonly screen: [number, number];
+  /** This is the world coordinates of the ineraction point that interacted with the instances */
+  readonly world: [number, number];
   /** Projection methods to easily go between coordinate spaces */
-  projection: IProjection;
+  readonly projection: IProjection;
+}
+
+/**
+ * Picking info associated with mouse events
+ */
+export interface IMousePickInfo<T extends Instance> extends IPickInfo<T> {
+  /** The mouse interaction that created this picking information */
+  readonly interaction: IMouseInteraction;
+}
+
+/**
+ * Picking info associated with touch events
+ */
+export interface ITouchPickInfo<T extends Instance> extends IPickInfo<T> {
+  /** The touch interaction that created this picking information. Contains all touch interactive information for the event */
+  readonly interaction: ITouchInteraction;
+  /** The specific touch that caused the event to occur */
+  readonly touch: ISingleTouchInteraction;
 }
 
 export interface IVertexAttribute {
@@ -199,10 +222,8 @@ export interface IInstanceAttribute<T extends Instance> {
    * The value provided for this property should be the name of the atlas that is created.
    */
   resource?: {
-    /** This is the resource type that the attribute will be requesting (ie ResourceType.ATLAS, ResourceType.FONT, or custom resource type values) */
-    type: number;
-    /** Specify which generated resource to target for the resource */
-    key: string;
+    /** This is a method that should return the string key identifier of the resource to be used */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**
@@ -299,14 +320,12 @@ export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
    * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading atlas resources.
-   * The value provided for this property should be the name of the atlas that is created.
+   * 0. This makes this attribute and layer become compatible with reading resources.
+   * The value provided for this property should be the name of the resource that is created.
    */
   resource: {
-    /** This is the resource type targeted which can be provided by managers */
-    type: number;
-    /** Specify which generated resource to target */
-    key: string;
+    /** This retrieves the key of the resource that is to be used by the attribute */
+    key(): string;
     /** Specify the name that will be injected that will be the sampler2D in the shader */
     name: string;
     /**
@@ -504,8 +523,6 @@ export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 export enum PickType {
   /** Disable any picking methodology */
   NONE,
-  /** Pick all instances found underneath the mouse. The Layer must explicitly support this feature. */
-  ALL,
   /**
    * NOTE: NOT IMPLEMENTED YET
    *
@@ -526,20 +543,6 @@ export interface IPickingMetrics {
   currentPickMode: PickType;
   /** This is the picking style to be used */
   type: PickType;
-}
-
-/**
- * This is the picking settings and objects to facilitate PickType.ALL so we can get
- * all instances underneath the mouse.
- */
-export interface IQuadTreePickingMetrics<T extends Instance>
-  extends IPickingMetrics {
-  /** This handles the ALL type only */
-  type: PickType.ALL;
-  /** This stores all of our instances in a quad tree to spatially track our instances */
-  quadTree: TrackedQuadTree<T>;
-  /** This is the method for performing a hit test with the provided instance */
-  hitTest: InstanceHitTest<T>;
 }
 
 /**
@@ -677,7 +680,10 @@ export interface IShaderInputs<T extends Instance> {
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
   /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
   vertexAttributes?: (IVertexAttribute | null)[];
-  /** Specify how many vertices there are per instance */
+  /**
+   * Specify how many vertices there are per instance. If vertex count is 0, then the layer will render without
+   * instancing and draw the buffers straight.
+   */
   vertexCount: number;
   /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
   uniforms?: (IUniform | null)[];
@@ -712,3 +718,76 @@ export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
  * [width, height, depth]
  */
 export type Size = Vec2 | Vec3;
+
+/**
+ * When creating a surface you must make it declare a pipeline. This makes a centralized easy
+ * entry point for expressively declaring how the application will utilize resources to render
+ * to various scenes and contexts.
+ *
+ * This is also used in a reactive diff manner so elements can be easily updated/added/removed
+ * by providing all of the initializer elements. Thus to add an item call the method including
+ * the element you wish to create. To remove an element, simply exclude the element next time
+ * you call the method.
+ */
+export interface IPipeline {
+  /**
+   * These are the resources we want available that our layers can be provided to utilize
+   * for their internal processes.
+   */
+  resources?: BaseResourceOptions[];
+  /**
+   * This sets up the available scenes the surface will have to work with. Layers then can
+   * reference the scene by it's scene property. The order of the scenes here is the drawing
+   * order of the scenes.
+   */
+  scenes?: ISceneOptions[];
+}
+
+/**
+ * Errors emitted by the surface
+ */
+export enum SurfaceErrorType {
+  /** Error is thrown when no web gl context can be established for the canvas */
+  NO_WEBGL_CONTEXT
+}
+
+/**
+ * Errors emitted by the surface
+ */
+export type SurfaceError = {
+  error: SurfaceErrorType;
+  message: string;
+};
+
+/**
+ * A numerical or string identifier. Use this type to make your intent a little clearer when you want a resource
+ * identified.
+ */
+export type SimpleId = string | number;
+
+/**
+ * An alias for a string. Use this type to make your intent a little clearer when you want a string specifically for
+ * identifying a resource.
+ */
+export type StringId = string;
+
+/**
+ * An alias for a number. Use this type to make your intent a little clearer when you want a number specifically for
+ * identifying a resource.
+ */
+export type NumberId = number;
+
+/**
+ * This is a massively useful type to express an object that can have numeric or sttring identifiers in recursive
+ * amounts to define an object with many pathways to various items of the same type (that can be varied by generic)
+ *
+ * const o: Lookup<InstanceProvider<Instance>> = {
+ *   circles: new InstanceProvider<CircleInstance>(),
+ *   category: {
+ *     special: new InstanceProvider<LabelInstance>(),
+ *   }
+ * }
+ */
+export type Lookup<T> =
+  | { [key: number]: T | Lookup<T> }
+  | { [key: string]: T | Lookup<T> };

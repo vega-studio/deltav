@@ -2,21 +2,22 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
   BasicCameraController,
+  BasicSurface,
   ChartCamera,
+  ClearFlags,
   createLayer,
+  createView,
   EasingUtil,
   GlyphInstance,
   GlyphLayer,
   IEasingControl,
   InstanceProvider,
-  ISceneOptions,
   LabelInstance,
   LabelLayer,
-  LayerInitializer,
   nextFrame,
   ScaleMode
 } from "src";
-import { IDefaultResources, WORDS } from "test/types";
+import { DEFAULT_RESOURCES, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
 import { debounce } from "../common/debounce";
 
@@ -55,8 +56,6 @@ export async function wait(t: number) {
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class TextDemo extends BaseDemo {
-  /** The camera in use */
-  camera: ChartCamera;
   /** All circles created for this demo */
   labels: LabelInstance[] = [];
   /** Timer used to debounce the shake circle operation */
@@ -142,11 +141,7 @@ export class TextDemo extends BaseDemo {
         BoundMax: ScaleMode.BOUND_MAX,
         Never: ScaleMode.NEVER
       })
-      .onChange(
-        debounce(async () => {
-          this.updateLayer();
-        }, 250)
-      );
+      .onChange();
 
     parameters.add(this.parameters, "copy");
 
@@ -157,38 +152,58 @@ export class TextDemo extends BaseDemo {
     );
   }
 
-  getEventManagers(
-    defaultController: BasicCameraController,
-    _defaultCamera: ChartCamera
-  ) {
-    defaultController.wheelShouldScroll = true;
-    return null;
-  }
-
   /**
-   * Construct scenes or get default properties.
+   * Render pipeline for this demo
    */
-  getScenes(defaultCamera: ChartCamera): ISceneOptions[] | null {
-    this.camera = defaultCamera;
-    return super.getScenes(defaultCamera);
-  }
-
-  /**
-   * Construct the layers needed. This is on a loop so we keep it very simple.
-   */
-  getLayers(resources: IDefaultResources): LayerInitializer[] {
-    return [
-      createLayer(LabelLayer, {
-        animate: {
-          color: AutoEasingMethod.easeInOutCubic(500)
-        },
-        data: this.providers.labels,
-        key: "labels",
-        scene: "default",
-        resourceKey: resources.font.key,
-        scaleMode: this.parameters.scaleMode
+  makeSurface(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      providers: this.providers,
+      cameras: {
+        main: new ChartCamera()
+      },
+      resources: {
+        font: DEFAULT_RESOURCES.font
+      },
+      eventManagers: cameras => ({
+        main: new BasicCameraController({
+          camera: cameras.main,
+          startView: ["default-view"],
+          wheelShouldScroll: false
+        })
+      }),
+      pipeline: (resources, providers, cameras) => ({
+        scenes: {
+          default: {
+            views: {
+              "default-view": createView({
+                background: [0, 0, 0, 1],
+                camera: cameras.main,
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
+            },
+            layers: {
+              hey: createLayer(LabelLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: new InstanceProvider(),
+                resourceKey: resources.font.key,
+                scaleMode: this.parameters.scaleMode
+              }),
+              labels: createLayer(LabelLayer, {
+                animate: {
+                  color: AutoEasingMethod.easeInOutCubic(500)
+                },
+                data: providers.labels,
+                resourceKey: resources.font.key,
+                scaleMode: this.parameters.scaleMode
+              })
+            }
+          }
+        }
       })
-    ];
+    });
   }
 
   /**

@@ -7,3 +7,9 @@ export declare class IdentifyByKey {
     readonly key: string;
     constructor(options: IdentifyByKeyOptions);
 }
+export declare class IdentifiableData<T> extends IdentifyByKey {
+    data: T;
+    constructor(options: IdentifyByKeyOptions & {
+        data: T;
+    });
+}

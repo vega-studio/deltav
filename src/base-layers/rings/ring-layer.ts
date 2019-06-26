@@ -1,25 +1,15 @@
 import { InstanceProvider } from "../../instance-provider";
-import { Bounds } from "../../primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
-  IProjection,
   IShaderInitialization,
   IUniform,
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import {
-  CommonMaterialOptions,
-  dot2,
-  IAutoEasingMethod,
-  subtract2,
-  Vec,
-  Vec2
-} from "../../util";
+import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../util";
 import { RingInstance } from "./ring-instance";
-const { max } = Math;
 
 export interface IRingLayerProps<T extends RingInstance>
   extends ILayerProps<T> {
@@ -42,8 +32,7 @@ export class RingLayer<
 > extends Layer<T, U> {
   static defaultProps: IRingLayerProps<RingInstance> = {
     key: "",
-    data: new InstanceProvider<RingInstance>(),
-    scene: "default"
+    data: new InstanceProvider<RingInstance>()
   };
 
   static attributeNames = {
@@ -53,31 +42,6 @@ export class RingLayer<
     color: "color",
     thickness: "thickness"
   };
-
-  /**
-   * We provide bounds and hit test information for the instances for this layer to allow for mouse picking
-   * of elements
-   */
-  getInstancePickingMethods() {
-    return {
-      // Provide the calculated AABB world bounds for a given circle
-      boundsAccessor: (ring: RingInstance) =>
-        new Bounds({
-          height: ring.radius * 2,
-          width: ring.radius * 2,
-          x: ring.center[0] - ring.radius,
-          y: ring.center[1] - ring.radius
-        }),
-
-      // Provide a precise hit test for the ring
-      hitTest: (ring: RingInstance, point: Vec2, view: IProjection) => {
-        const r = ring.radius / max(...view.camera.scale);
-        const delta = subtract2(point, ring.center);
-
-        return dot2(delta, delta) < r * r;
-      }
-    };
-  }
 
   /**
    * Define our shader and it's inputs

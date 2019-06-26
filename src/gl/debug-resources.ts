@@ -200,6 +200,7 @@ export function debugRenderTarget(
   }
 
   if (!renderer.glState.useRenderTarget(target)) return;
+
   const debugId = `__debug_read_pixels__${target.uid}`;
   let colorBuffer;
 
@@ -226,6 +227,7 @@ export function debugRenderTarget(
     const dataWidth = Math.floor(target.width);
     const dataHeight = Math.floor(target.height);
     const data = new Uint8Array(dataWidth * dataHeight * 4);
+    console.log(dataWidth, dataHeight);
     renderer.readPixels(0, 0, dataWidth, dataHeight, data);
     renderer.setRenderTarget(null);
     renderer.clear(false, true);

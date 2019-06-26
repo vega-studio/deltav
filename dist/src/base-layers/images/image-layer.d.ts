@@ -1,7 +1,7 @@
 import { InstanceProvider } from "../../instance-provider";
 import { IAtlasResourceRequest } from "../../resources";
 import { Layer } from "../../surface/layer";
-import { LayerInitializer } from "../../surface/layer-surface";
+import { LayerInitializer } from "../../surface/surface";
 import { ImageInstance } from "./image-instance";
 import { IImageRenderLayerProps } from "./image-render-layer";
 export interface IImageLayerProps<T extends ImageInstance> extends IImageRenderLayerProps<T> {

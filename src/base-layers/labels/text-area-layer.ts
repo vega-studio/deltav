@@ -567,7 +567,6 @@ export class TextAreaLayer<
     currentY: number,
     spaceWidth: number,
     glyphWidths: number[]
-    // labelsInLine: LabelInstance[]
   ): [number, number] {
     const topPadding = instance.padding[0];
     const rightPadding = instance.padding[1] || 0;
@@ -615,7 +614,13 @@ export class TextAreaLayer<
       instance.wordWrap === WordWrap.CHARACTER ||
       instance.wordWrap === WordWrap.WORD
     ) {
-      this.setTextAlignment(currentX, spaceWidth, maxWidth, instance.alignment);
+      this.setTextAlignment(
+        currentX,
+        currentY,
+        spaceWidth,
+        maxWidth,
+        instance.alignment
+      );
 
       currentX = 0;
       currentY += instance.lineHeight;
@@ -629,7 +634,6 @@ export class TextAreaLayer<
           widthLeft > maxWidth &&
           currentY + instance.lineHeight <= maxHeight
         ) {
-          // currentX = 0;
           let lastIndexOfLine = glyphWidths.length - 1;
 
           // Get the lastIndex in a label that stay in current line
@@ -671,6 +675,7 @@ export class TextAreaLayer<
 
           this.setTextAlignment(
             currentX,
+            currentY,
             spaceWidth,
             maxWidth,
             instance.alignment
@@ -860,6 +865,7 @@ export class TextAreaLayer<
    */
   setTextAlignment(
     currentX: number,
+    currentY: number,
     spaceWidth: number,
     maxWidth: number,
     alignment: TextAlignment
@@ -870,7 +876,21 @@ export class TextAreaLayer<
         const toMove = alignment === TextAlignment.RIGHT ? offset : offset / 2;
 
         this.labelsInLine.forEach(label => {
-          label.origin = [label.origin[0] + toMove, label.origin[1]];
+          const oldAnchor = label.anchor;
+
+          label.anchor = {
+            padding: oldAnchor.padding,
+            type: AnchorType.Custom,
+            paddingDirection: [
+              (oldAnchor.paddingDirection ? oldAnchor.paddingDirection[0] : 0) +
+                toMove,
+              oldAnchor.paddingDirection
+                ? oldAnchor.paddingDirection[1]
+                : currentY
+            ],
+            x: oldAnchor.x,
+            y: oldAnchor.y
+          };
         });
       }
     }
@@ -1032,6 +1052,7 @@ export class TextAreaLayer<
               ) {
                 this.setTextAlignment(
                   currentX,
+                  currentY,
                   spaceWidth,
                   maxWidth,
                   instance.alignment
@@ -1054,6 +1075,7 @@ export class TextAreaLayer<
             ) {
               this.setTextAlignment(
                 currentX,
+                currentY,
                 spaceWidth,
                 maxWidth,
                 instance.alignment
@@ -1119,6 +1141,7 @@ export class TextAreaLayer<
                 ) {
                   this.setTextAlignment(
                     currentX,
+                    currentY,
                     spaceWidth,
                     maxWidth,
                     instance.alignment
@@ -1158,6 +1181,7 @@ export class TextAreaLayer<
                       ) {
                         this.setTextAlignment(
                           currentX,
+                          currentY,
                           spaceWidth,
                           maxWidth,
                           instance.alignment
@@ -1219,6 +1243,7 @@ export class TextAreaLayer<
       else if (label === NewLineCharacterMode.NEWLINE) {
         this.setTextAlignment(
           currentX,
+          currentY,
           spaceWidth,
           maxWidth,
           instance.alignment
@@ -1229,7 +1254,13 @@ export class TextAreaLayer<
       }
     }
 
-    this.setTextAlignment(currentX, spaceWidth, maxWidth, instance.alignment);
+    this.setTextAlignment(
+      currentX,
+      currentY,
+      spaceWidth,
+      maxWidth,
+      instance.alignment
+    );
   }
 
   /**

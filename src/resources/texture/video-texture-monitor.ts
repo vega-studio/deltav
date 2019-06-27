@@ -17,7 +17,6 @@ export class VideoTextureMonitor {
   timeFrame: number = 0;
 
   constructor(public video: HTMLVideoElement, public subTexture: SubTexture) {
-    console.log("MONITORING");
     this.addEventListeners();
   }
 
@@ -26,7 +25,6 @@ export class VideoTextureMonitor {
    */
   private async addEventListeners() {
     if (this.isDestroyed) return;
-    this.video.addEventListener("timeupdate", this.getFrame);
     this.loop(await onFrame());
   }
 
@@ -34,7 +32,6 @@ export class VideoTextureMonitor {
    * Allows all resources to be freed.
    */
   destroy() {
-    console.log("DESTROY VIDEO");
     this.video.pause();
     this.isDestroyed = true;
     this.removeEventListeners();
@@ -44,30 +41,10 @@ export class VideoTextureMonitor {
    * Performs the update operation no matter which event it  comes from
    */
   private doUpdate = () => {
-    // if (this.previousTime >= 0) {
-    //   console.log(this.video.currentTime - this.previousTime);
-    // }
-
-    // this.previousTime = this.video.currentTime;
-
-    this.playedFrames++;
-    if (this.playedFrames % 60 === 0) {
-      window.vid = this.video;
-      console.log(
-        this.caughtFrames,
-        this.video
-        // this.video.webkitDecodedFrameCount,
-        // this.video.webkitDecodedFrameCount / this.video.currentTime
-      );
-      this.caughtFrames = 0;
-    }
-
     // Only a change in time from what was currently rendered will require a render update
-    if (this.video.currentTime - this.renderedTime < 0.015) {
+    if (Math.abs(this.video.currentTime - this.renderedTime) < 0.015) {
       return;
     }
-
-    this.caughtFrames++;
 
     // Make sure we don't trigger duplicate updates by tracking the time we have rendered
     this.renderedTime = this.video.currentTime;
@@ -88,12 +65,6 @@ export class VideoTextureMonitor {
    * Cleans up any listeners this may have registered to ensure the video does not get retained
    */
   private removeEventListeners() {
-    this.video.removeEventListener("timeupdate", this.getFrame);
+    // No listeners needed yet
   }
-
-  private getFrame = () => {
-    if (this.video) {
-      console.log(++this.timeFrame / this.video.currentTime);
-    }
-  };
 }

@@ -1,58 +1,8 @@
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
-import { GLSettings } from "./gl-settings";
-import { Material } from "./material";
-import { Model } from "./model";
 import { RenderTarget } from "./render-target";
-import { Scene } from "./scene";
 import { Texture } from "./texture";
-import { MaterialUniformType } from "./types";
 import { WebGLRenderer } from "./webgl-renderer";
-
-const drawQuadVS = `
-  precision highp float;
-
-  uniform vec2 screenSize;
-  uniform vec4 bounds;
-
-  attribute vec2 position;
-  attribute vec2 texCoord;
-
-  varying vec2 _texCoord;
-
-  void main() {
-    vec2 mid = vec2(bounds.x + bounds.z / 2.0, screenSize.y - (bounds.y + bounds.w / 2.0));
-    vec2 _half = bounds.zw / 2.0;
-    vec2 pos = mid + _half * position;
-
-    pos.x = pos.x / screenSize.x * 2.0 - 1.0;
-    pos.y = pos.y / screenSize.y * 2.0 - 1.0;
-
-    _texCoord  = texCoord;
-    gl_Position = vec4(pos, 0.0, 1.0);
-    gl_PointSize = 10.0;
-  }
-`;
-
-const drawQuadFS = `
-  precision highp float;
-
-  uniform sampler2D tex;
-  varying vec2 _texCoord;
-
-  void main() {
-    gl_FragColor = texture2D(tex, _texCoord);
-  }
-`;
-
-let quadProgram: Material | null = null;
-const emptyTexture = new Texture({
-  data: {
-    width: 2,
-    height: 2,
-    buffer: null
-  }
-});
 
 const positionData = new Float32Array([
   // Top tri
@@ -83,72 +33,10 @@ const texCoord = new Attribute(texCoordData, 2, false, false);
 quadGeometry.addAttribute("position", position);
 quadGeometry.addAttribute("texCoord", texCoord);
 
-/** Model for drawing quads */
-let quadModel: Model;
-/** The used scene for rendering */
-const debugScene = new Scene();
 /** Height of each view that is rendered */
 const debugViewHeight = 200;
 /** This stores deferred debug statements which will be emptied when flushDebug is called */
 const debugQueue: [WebGLRenderer, RenderTarget | null, Function, any[]][] = [];
-
-/**
- * Compiles all small elements needed to make debugging resources work.
- */
-function compileDebugFragments() {
-  if (!quadProgram) {
-    quadProgram = new Material({
-      fragmentShader: drawQuadFS,
-      vertexShader: drawQuadVS,
-      culling: GLSettings.Material.CullSide.NONE,
-      uniforms: {
-        tex: { type: MaterialUniformType.TEXTURE, value: emptyTexture },
-        screenSize: { type: MaterialUniformType.VEC2, value: [0, 0] },
-        bounds: { type: MaterialUniformType.VEC4, value: [0, 0, 0, 0] }
-      }
-    });
-
-    quadModel = new Model(quadGeometry, quadProgram);
-    quadModel.drawMode = GLSettings.Model.DrawMode.TRIANGLES;
-    quadModel.vertexCount = 6;
-  }
-
-  debugScene.add(quadModel);
-
-  return true;
-}
-
-function makePlaceholder(
-  renderer: WebGLRenderer,
-  width: number,
-  height: number,
-  id: string
-) {
-  const container = getContainer(renderer.options.canvas);
-  if (!container.parentElement) return [0, 0, 0, 0];
-
-  let empty = document.getElementById(id);
-
-  if (!empty) {
-    const aspect = height / width;
-    empty = document.createElement("div");
-    empty.style.height = `${debugViewHeight}px`;
-    empty.style.width = `${debugViewHeight / aspect}px`;
-    empty.style.marginLeft = "4px";
-    empty.id = id;
-    container.appendChild(empty);
-  }
-
-  const parentBox = container.parentElement.getBoundingClientRect();
-  const emptyBox = empty.getBoundingClientRect();
-
-  return [
-    (emptyBox.left - parentBox.left) * renderer.state.pixelRatio,
-    (emptyBox.top - parentBox.top) * renderer.state.pixelRatio,
-    emptyBox.width * renderer.state.pixelRatio,
-    emptyBox.height * renderer.state.pixelRatio
-  ];
-}
 
 function getContainer(context: HTMLCanvasElement) {
   let container = document.getElementById(`__debug_read_pixels__`);
@@ -209,7 +97,7 @@ export function debugRenderTarget(
 
     target.buffers.color.forEach(colorBuffer => {
       if (colorBuffer instanceof Texture) {
-        debugTexture(renderer, colorBuffer, debugId);
+        debugTexture(renderer, colorBuffer, 400);
         foundTexture = true;
       }
     });
@@ -222,12 +110,11 @@ export function debugRenderTarget(
   }
 
   if (colorBuffer instanceof Texture) {
-    debugTexture(renderer, colorBuffer, debugId);
+    debugTexture(renderer, colorBuffer, 400);
   } else {
     const dataWidth = Math.floor(target.width);
     const dataHeight = Math.floor(target.height);
     const data = new Uint8Array(dataWidth * dataHeight * 4);
-    console.log(dataWidth, dataHeight);
     renderer.readPixels(0, 0, dataWidth, dataHeight, data);
     renderer.setRenderTarget(null);
     renderer.clear(false, true);
@@ -241,43 +128,46 @@ export function debugRenderTarget(
 export function debugTexture(
   renderer: WebGLRenderer,
   texture: Texture,
-  id: string,
-  defer?: boolean
+  maxSize: number
 ) {
-  if (defer) {
-    debugQueue.push([
-      renderer,
-      renderer.state.currentRenderTarget,
-      debugTexture,
-      Array.from(arguments).slice(0, -1)
-    ]);
+  if (!texture.data) return;
 
-    return;
-  }
+  const debugFBO = new RenderTarget({
+    buffers: {
+      color: texture
+    }
+  });
 
-  // Make sure our debugging fragments are compiled so we can draw simple quads for our textures
-  if (!texture.data) return false;
-  if (!compileDebugFragments()) return false;
-  if (!quadProgram) return false;
-
-  // Make a container in the DOM
-  const bounds = makePlaceholder(
-    renderer,
-    texture.data.width,
-    texture.data.height,
-    id
+  const scale = Math.min(
+    1,
+    maxSize / Math.max(texture.data.width, texture.data.height)
   );
 
-  // Apply the texture as the texture to be rendered then draw it
-  quadProgram.uniforms.tex.value = texture;
-  quadProgram.uniforms.screenSize.value = renderer.getRenderSize();
-  quadProgram.uniforms.bounds.value = bounds;
+  const view = new Uint8Array(texture.data.width * texture.data.height * 4);
+  renderer.setRenderTarget(debugFBO);
+  renderer.readPixels(0, 0, texture.data.width, texture.data.height, view);
+  const canvas = document.createElement("canvas");
+  canvas.width = texture.data.width;
+  canvas.height = texture.data.height;
+  canvas.style.position = "fixed";
+  canvas.style.right = "10px";
+  canvas.style.bottom = "10px";
+  canvas.style.zIndex = `${Number.MAX_SAFE_INTEGER}`;
+  canvas.style.width = `${texture.data.width * scale}px`;
+  canvas.style.height = `${texture.data.height * scale}px`;
+  canvas.style.background = "magenta";
+  const ctx = canvas.getContext("2d");
 
-  renderer.setRenderTarget(null);
-  renderer.setViewport(renderer.getFullViewport());
-  renderer.setScissor(renderer.getFullViewport());
-  renderer.clear(false, true, false);
-  renderer.render(debugScene);
+  if (ctx) {
+    const clamped = new Uint8ClampedArray(view);
+    ctx.putImageData(
+      new ImageData(clamped, texture.data.width, texture.data.height),
+      0,
+      0
+    );
+  }
+
+  document.getElementsByTagName("body")[0].appendChild(canvas);
 
   return true;
 }

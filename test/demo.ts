@@ -92,7 +92,6 @@ export class Demo {
     this.buildConsole();
     // Let the demo modify the console
     this.currentDemo.buildConsole(this.gui);
-
     // Let the demo know everything is done and ready for the demo to operate
     await this.currentDemo.init();
     // Set this demo as the current demo so page refreshes return here

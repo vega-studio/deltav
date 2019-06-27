@@ -1,6 +1,7 @@
 import { Texture } from "../../gl/texture";
 import { Bounds } from "../../primitives/bounds";
 import { InstanceIOValue, Omit } from "../../types";
+import { uid } from "../../util";
 import { Vec2 } from "../../util/vector";
 import { VideoTextureMonitor } from "./video-texture-monitor";
 
@@ -31,6 +32,11 @@ export function subTextureIOValue(
  * Defines a texture that is located on an atlas
  */
 export class SubTexture {
+  /** A unique identifier for the sub texture to aid in debugging issues */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
   /** Stores the aspect ratio of the image for quick reference */
   aspectRatio: number = 1.0;
   /** This is the top left UV coordinate of the sub texture on the atlas */
@@ -112,5 +118,22 @@ export class SubTexture {
   update() {
     if (!this.texture || !this.source || !this.atlasRegion) return;
     this.texture.update(this.source, this.atlasRegion);
+  }
+
+  toString(): string {
+    return JSON.stringify(
+      {
+        atlas: {
+          TL: this.atlasTL,
+          TR: this.atlasTR,
+          BL: this.atlasBL,
+          BR: this.atlasBR
+        },
+        width: this.pixelWidth,
+        height: this.pixelHeight
+      },
+      null,
+      2
+    );
   }
 }

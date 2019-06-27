@@ -11,8 +11,6 @@ import {
   ImageLayer,
   InstanceProvider,
   PickType,
-  RectangleInstance,
-  RectangleLayer,
   ScaleMode,
   TextureSize,
   Vec2
@@ -24,14 +22,28 @@ function rand() {
   return Math.random();
 }
 
+const assets = {
+  Wildlife: require("../../assets/Wildlife.mp4"),
+  Waterfall: require("../../assets/Waterfall.mp4"),
+  play: new Image(),
+  pause: new Image(),
+  mute: new Image(),
+  unmute: new Image()
+};
+
+assets.play.src = require("../../assets/play.png");
+assets.pause.src = require("../../assets/pause.png");
+assets.mute.src = require("../../assets/mute.png");
+assets.unmute.src = require("../../assets/unmute.png");
+
 /**
  * A demo showing the use of video as a texture. In this case rendered as a simple image.
  */
 export class VideoDemo extends BaseDemo {
   /** Surface providers */
   providers = {
-    images: new InstanceProvider<ImageInstance>(),
-    boxes: new InstanceProvider<RectangleInstance>()
+    controls: new InstanceProvider<ImageInstance>(),
+    images: new InstanceProvider<ImageInstance>()
   };
 
   /** All images produced */
@@ -48,22 +60,31 @@ export class VideoDemo extends BaseDemo {
   videoInstance: ImageInstance;
 
   controls = {
-    mute: new RectangleInstance({
-      size: [20, 20],
-      color: [1, 0, 0, 1]
+    mute: new ImageInstance({
+      height: 20,
+      tint: [1, 1, 1, 1],
+      source: assets.mute,
+      onReady: this.onImageReady
     }),
-    play: new RectangleInstance({
-      size: [20, 20],
-      color: [1, 0, 0, 1]
+    play: new ImageInstance({
+      height: 20,
+      tint: [1, 1, 1, 1],
+      source: assets.play,
+      onReady: this.onImageReady
     })
   };
+
+  onImageReady(image: ImageInstance) {
+    const aspect = image.sourceWidth / image.sourceHeight;
+    image.width = image.height * aspect;
+  }
 
   buildConsole(gui: datGUI.GUI): void {
     const parameters = gui.addFolder("Parameters");
     parameters
       .add(this.parameters, "source", {
-        WildLife: require("../../assets/Wildlife.mp4"),
-        HamRadio: require("../../assets/Waterfall.mp4")
+        WildLife: assets.Wildlife,
+        Waterfall: assets.Waterfall
       })
       .onChange(async (value: string) => {
         this.images.forEach(image => {
@@ -84,8 +105,8 @@ export class VideoDemo extends BaseDemo {
       },
       resources: {
         atlas: createAtlas({
-          width: TextureSize._1024,
-          height: TextureSize._1024
+          width: TextureSize._2048,
+          height: TextureSize._2048
         })
       },
       eventManagers: cameras => ({
@@ -120,24 +141,33 @@ export class VideoDemo extends BaseDemo {
               })
             },
             layers: {
-              boxes: createLayer(RectangleLayer, {
-                data: providers.boxes,
+              boxes: createLayer(ImageLayer, {
+                data: providers.controls,
                 picking: PickType.SINGLE,
+                atlas: resources.atlas.key,
 
                 onMouseClick: info => {
                   const instance = info.instances[0];
 
                   if (this.video && instance === this.controls.mute) {
                     this.video.muted = !this.video.muted;
-
-                    if (this.video.muted) {
-                      instance.color = [1, 0, 0, 1];
-                    } else {
-                      instance.color = [0, 1, 0, 1];
-                    }
+                    this.updateMuteState();
                   } else if (instance === this.controls.play) {
-                    if (this.video) this.video.play();
-                    else this.videoInstance.videoLoad();
+                    if (this.video) {
+                      if (this.video.paused) {
+                        this.video.play().catch(_err => {
+                          if (this.video) {
+                            this.video.load();
+                          }
+                        });
+                      } else {
+                        this.video.pause();
+                      }
+                    } else {
+                      this.videoInstance.videoLoad();
+                    }
+
+                    this.updatePlayState();
                   }
                 }
               })
@@ -146,6 +176,22 @@ export class VideoDemo extends BaseDemo {
         }
       })
     });
+  }
+
+  updateMuteState() {
+    if (!this.video || this.video.muted) {
+      this.controls.mute.source = assets.mute;
+    } else {
+      this.controls.mute.source = assets.unmute;
+    }
+  }
+
+  updatePlayState() {
+    if (!this.video || this.video.paused) {
+      this.controls.play.source = assets.play;
+    } else {
+      this.controls.play.source = assets.pause;
+    }
   }
 
   async init() {
@@ -184,6 +230,9 @@ export class VideoDemo extends BaseDemo {
 
             image.origin[0] = image.origin[0] - image.width / 2;
             image.origin[1] = image.origin[1] - image.height / 2;
+
+            this.updateMuteState();
+            this.updatePlayState();
           }
         })
       );
@@ -191,9 +240,12 @@ export class VideoDemo extends BaseDemo {
       this.images.push(this.videoInstance);
     }
 
-    Object.values(this.controls).forEach((box, i) => {
-      box.position = [10 + i * 30, screen[1] - 30];
-      this.providers.boxes.add(box);
+    Object.values(this.controls).forEach((control, i) => {
+      control.origin = [10 + i * 30, screen[1] - 30];
+      this.providers.controls.add(control);
     });
+
+    this.updateMuteState();
+    this.updatePlayState();
   }
 }

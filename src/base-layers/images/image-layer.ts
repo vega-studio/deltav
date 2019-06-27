@@ -172,10 +172,20 @@ export class ImageLayer<
               }
 
               // Remove the instance from 'using' the video source
-              const instancesUsing = this.usingVideo.get(previous.src);
+              let instancesUsing = this.usingVideo.get(
+                previous.getAttribute("data-source") || ""
+              );
 
-              if (instancesUsing) {
-                instancesUsing.delete(instance);
+              if (!instancesUsing) {
+                instancesUsing = new Set();
+              }
+
+              instancesUsing.delete(instance);
+
+              if (instancesUsing.size <= 0) {
+                this.sourceToVideo.delete(
+                  previous.getAttribute("data-source") || ""
+                );
               }
 
               // Revert the instance's onReady back to what it originally was
@@ -214,7 +224,6 @@ export class ImageLayer<
               let request = this.sourceToRequest.get(resource);
 
               if (!request || (request.texture && !request.texture.isValid)) {
-                console.log("NEW REQUEST");
                 request = atlasRequest({
                   key: this.props.atlas || "",
                   source: resource,
@@ -231,7 +240,6 @@ export class ImageLayer<
           break;
 
         case InstanceDiffType.INSERT:
-          console.log("INSERT");
           // Look for similar requests for resources and consolidate
           if (instance.source) {
             // Make sure we get the atlas appropriate resource for the instance
@@ -289,12 +297,16 @@ export class ImageLayer<
               }
             }
 
-            const instancesUsing = this.usingVideo.get(
-              instance.source.videoSrc
-            );
+            let instancesUsing = this.usingVideo.get(instance.source.videoSrc);
 
-            if (instancesUsing) {
-              instancesUsing.delete(instance);
+            if (!instancesUsing) {
+              instancesUsing = new Set();
+            }
+
+            instancesUsing.delete(instance);
+
+            if (instancesUsing.size <= 0) {
+              this.sourceToVideo.delete(instance.source.videoSrc);
             }
 
             this.originalOnReadyCallbacks.delete(instance);
@@ -347,7 +359,6 @@ export class ImageLayer<
    * converts the video Image to a simple white image that will take on the tint of the ImageInstance.
    */
   private prepareVideo(image: ImageInstance, source: ImageVideoResource) {
-    console.log("PREP VIDEO:", source.videoSrc);
     const check = this.sourceToVideo.get(source.videoSrc);
     const checkCallback = this.originalOnReadyCallbacks.get(image);
 
@@ -385,7 +396,6 @@ export class ImageLayer<
         // Replace the onReady that the resource manager will fire with an onReady that will execute with the video
         // that is prepped and ready included.
         image.onReady = (image: ImageInstance) => {
-          console.log("ONREADY:", check.src);
           onReady(image, check);
         };
       }
@@ -393,11 +403,11 @@ export class ImageLayer<
       return;
     }
 
-    console.log("REGISTERING VIDEO FOR DOWNLOAD", source.videoSrc);
-
     // Create the physical video element to use.
     const video = document.createElement("video");
     this.sourceToVideo.set(source.videoSrc, video);
+    // Store the exact source path on the element (the src attribute gets resolved to relative http request)
+    video.setAttribute("data-source", source.videoSrc);
 
     debugVideoEvents(video);
 
@@ -416,18 +426,15 @@ export class ImageLayer<
     };
 
     const waitForData = () => {
-      console.log("DATA");
       dataResolver.resolve();
     };
 
     const waitForMetaData = () => {
-      console.log("META");
       metaResolver.resolve();
     };
 
     const waitForError = (event: any) => {
       let error;
-      console.log("ERROR");
 
       // Chrome v60
       if (event.path && event.path[0]) {
@@ -490,7 +497,10 @@ export class ImageLayer<
     Promise.all([metaResolver.promise, dataResolver.promise])
       // This executes when the video is officially ready and will be loaded into the resource manager for play back
       .then(() => {
-        console.log("VIDEO IS READY FOR THE RESOURCE MANAGER");
+        // Make sure the video start from the beginning
+        video.currentTime = 0;
+
+        // Check the video source preferences to see if the video should play immediately upon loading.
         if (source.autoPlay) {
           video.play();
         }
@@ -512,8 +522,6 @@ export class ImageLayer<
       .catch(() => {
         removeListeners();
       });
-
-    console.log("REGISTERED VIDEO FOR DOWNLOAD", source.videoSrc);
   }
 
   /**

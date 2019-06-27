@@ -132,7 +132,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * an artifacted element.
    */
   destroy() {
-    console.log("DESTROY ATLAS");
     // Delete the GPU's texture object
     this.texture.dispose();
 
@@ -166,7 +165,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     if (texture.video) {
       texture.video.monitor.destroy();
       delete texture.video;
-      console.log("VIDEO DEESTROYED");
     }
   }
 
@@ -207,7 +205,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     };
 
     reference.count--;
-    console.log("STOP", reference.count);
   }
 
   /**
@@ -220,6 +217,5 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     };
 
     reference.count++;
-    console.log("USE", reference.count);
   }
 }

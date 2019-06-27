@@ -4,6 +4,7 @@ import {
   BasicSurface,
   ChartCamera,
   ClearFlags,
+  copy2,
   createAtlas,
   createLayer,
   createView,
@@ -206,11 +207,14 @@ export class VideoDemo extends BaseDemo {
     };
 
     for (let i = 0; i < 10; ++i) {
+      const origin: Vec2 = [rand() * screen[0], rand() * screen[1]];
+      const scale = Math.random() * 0.8 + 0.2;
+
       this.videoInstance = this.providers.images.add(
         new ImageInstance({
           source: videoSrc,
           tint: [rand(), rand(), rand(), 1],
-          origin: [rand() * screen[0], rand() * screen[1]],
+          origin: copy2(origin),
           scaling: ScaleMode.ALWAYS,
 
           onReady: async (image: ImageInstance, video?: HTMLVideoElement) => {
@@ -220,16 +224,15 @@ export class VideoDemo extends BaseDemo {
 
             this.videoInstance = image;
             this.video = video;
-            let scale = Math.random() * 0.8 + 0.2;
 
             const max = Math.max(this.video.videoWidth, this.video.videoHeight);
-            scale = Math.min(500 / max, scale);
+            const adjustedScale = Math.min(500 / max, scale);
 
-            image.width = this.video.videoWidth * scale;
-            image.height = this.video.videoHeight * scale;
+            image.width = this.video.videoWidth * adjustedScale;
+            image.height = this.video.videoHeight * adjustedScale;
 
-            image.origin[0] = image.origin[0] - image.width / 2;
-            image.origin[1] = image.origin[1] - image.height / 2;
+            image.origin[0] = origin[0] - image.width / 2;
+            image.origin[1] = origin[1] - image.height / 2;
 
             this.updateMuteState();
             this.updatePlayState();

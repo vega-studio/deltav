@@ -15,6 +15,8 @@ export class Geometry {
   gl = {};
   /** Number of instances this geometry covers */
   maxInstancedCount: number = 0;
+  /** If all attributes added are instanced or not instanced, then this geometry is not instanced */
+  isInstanced: boolean = false;
 
   /**
    * Adds an attribute to this geometry. This will associate the attribute's buffer to an attribute
@@ -22,6 +24,17 @@ export class Geometry {
    */
   addAttribute(name: string, attribute: Attribute) {
     this._attributes[name] = attribute;
+    this.isInstanced = false;
+    let didChange: number | undefined;
+
+    // Check to see if the attributes are uniform or not in instancing
+    Object.values(this._attributes).forEach(attr => {
+      const check = attr.isInstanced ? 1 : 0;
+      // Initialize the check value if it has not been yet
+      if (didChange === undefined) didChange = check;
+      // If a change occurs then we have dynamic and instanced attributes, which means this geometry is instanced drawing
+      if ((didChange ^ check) === 1) this.isInstanced = true;
+    });
   }
 
   /**

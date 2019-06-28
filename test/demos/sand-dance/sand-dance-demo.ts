@@ -1,9 +1,9 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   ClearFlags,
   createLayer,
   createView,
@@ -17,7 +17,8 @@ import {
   PickType,
   RectangleInstance,
   RectangleLayer,
-  Vec4
+  Vec4,
+  View2D
 } from "src";
 import { BaseDemo } from "test/common/base-demo";
 import { DEFAULT_RESOURCES } from "test/types";
@@ -25,7 +26,7 @@ import { DEFAULT_RESOURCES } from "test/types";
 import { SandDance } from "./sand-dance";
 
 export class SandDanceDemo extends BaseDemo {
-  camera: ChartCamera;
+  // camera: ChartCamera;
 
   gui: datGUI.GUI;
 
@@ -51,18 +52,20 @@ export class SandDanceDemo extends BaseDemo {
   selectedbucket: RectangleInstance | null = null;
 
   mouseClick = (info: IPickInfo<RectangleInstance>) => {
-    const instance = info.instances[0];
+    if (info.instances.length > 0) {
+      const instance = info.instances[0];
 
-    if (!this.selectedRectangle || this.selectedRectangle !== instance) {
-      this.selectedRectangle = instance;
+      if (!this.selectedRectangle || this.selectedRectangle !== instance) {
+        this.selectedRectangle = instance;
 
-      const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
-      const highLight: Vec4 = [1, 1, 1, 1];
+        const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+        const highLight: Vec4 = [1, 1, 1, 1];
 
-      this.sandDance.highLightSingleRectangle(dimColor, instance, highLight);
-    } else {
-      this.selectedRectangle = null;
-      this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
+        this.sandDance.highLightSingleRectangle(dimColor, instance, highLight);
+      } else {
+        this.selectedRectangle = null;
+        this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
+      }
     }
   };
 
@@ -144,7 +147,7 @@ export class SandDanceDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {
         font: DEFAULT_RESOURCES.font
@@ -153,7 +156,7 @@ export class SandDanceDemo extends BaseDemo {
         antialias: true
       },
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["default-view"],
           wheelShouldScroll: false
@@ -163,7 +166,7 @@ export class SandDanceDemo extends BaseDemo {
         scenes: {
           default: {
             views: {
-              "default-view": createView({
+              "default-view": createView(View2D, {
                 background: [0, 0, 0, 1],
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]

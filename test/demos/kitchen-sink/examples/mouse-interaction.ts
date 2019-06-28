@@ -1,6 +1,8 @@
 import * as anime from "animejs";
 import {
   AutoEasingMethod,
+  BasicCamera2DController,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   createLayer,
@@ -14,6 +16,18 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 export class MouseInteraction extends BaseExample {
   isOver = new Map<CircleInstance, boolean>();
   hasLeft = new Map<CircleInstance, boolean>();
+
+  makeController(
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
+    viewName: string
+  ) {
+    return new BasicCamera2DController({
+      camera: defaultCamera,
+      startView: viewName,
+      twoFingerPan: true
+    });
+  }
 
   handleCircleClick = (info: IPickInfo<CircleInstance>) => {
     for (const circle of info.instances) {

@@ -171,28 +171,40 @@ export class SandDance {
   ) {
     highLightInstance.color = highlightColor;
 
-    let index = 0;
+    for (let i = 0; i < this.rectangles.length; i++) {
+      const rec = this.rectangles[i];
+      if (rec !== highLightInstance) rec.color = dimColor;
+    }
+
+    EasingUtil.all(
+      true,
+      this.rectangles,
+      [RectangleLayer.attributeNames.color],
+      (easing, _instance, i) => easing.setTiming(i * 10 + 1000)
+    );
+
+    /*let index = 0;
 
     while (index < this.rectangles.length) {
       const toChange = [];
 
-      for (let i = 0; i < 30 && index < this.rectangles.length; ++index, ++i) {
+      for (let i = 0; i < 100 && index < this.rectangles.length; ++index, ++i) {
         const rec = this.rectangles[index];
         if (rec !== highLightInstance) rec.color = dimColor;
         toChange.push(rec);
       }
 
-      EasingUtil.all(
-        false,
+      await EasingUtil.all(
+        true,
         toChange,
         [RectangleLayer.attributeNames.color],
         easing => {
-          easing.setTiming(11);
+          easing.setTiming(100);
         }
       );
 
-      await nextFrame();
-    }
+      // await nextFrame();
+    }*/
   }
 
   /** Hightlight all rectangles in a bucket and dim the others */
@@ -219,7 +231,7 @@ export class SandDance {
       }
 
       EasingUtil.all(
-        false,
+        true,
         toChange,
         [RectangleLayer.attributeNames.color],
         easing => {

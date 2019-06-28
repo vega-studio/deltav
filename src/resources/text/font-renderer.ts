@@ -350,7 +350,7 @@ export class FontRenderer {
     // It is used to store the metrics of each glyph
     const map: IGlyphRenderMetrics = {};
     // Get all unique glyphs provided
-    const uniqueGlyphs = new Set();
+    const uniqueGlyphs = new Set<string>();
 
     for (let i = 0, iMax = glyphs.length; i < iMax; ++i) {
       uniqueGlyphs.add(glyphs[i]);

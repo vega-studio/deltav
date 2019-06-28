@@ -1,4 +1,4 @@
-import { add2, scale2, subtract2, Vec2 } from "../util";
+import { add2, scale2, subtract2, Vec2 } from "../util/vector";
 
 /**
  * Calculates the distance between two points, but keeps the distance in dquared form

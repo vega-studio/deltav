@@ -1,7 +1,7 @@
 import * as anime from "animejs";
 import {
   AnchorType,
-  ChartCamera,
+  Camera2D,
   createLayer,
   InstanceProvider,
   IPickInfo,
@@ -9,7 +9,7 @@ import {
   LabelLayer,
   LayerInitializer,
   PickType,
-  ReferenceCamera
+  ReferenceCamera2D
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -71,8 +71,8 @@ export class MouseInteractionLabels extends BaseExample {
     }
   };
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    return new ReferenceCamera({
+  makeCamera(defaultCamera: Camera2D): Camera2D {
+    return new ReferenceCamera2D({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
@@ -90,7 +90,7 @@ export class MouseInteractionLabels extends BaseExample {
       onMouseClick: this.handleLabelClick,
       onMouseOut: this.handleLabelOut,
       onMouseOver: this.handleLabelOver,
-      picking: PickType.ALL
+      picking: PickType.SINGLE
     });
   }
 

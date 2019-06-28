@@ -388,7 +388,7 @@ export class GLProxy {
 
     // We now delete any uniforms that are not matched between material and program as they are not needed
     // and will just be lingering unused clutter.
-    const uniformToRemove = new Set();
+    const uniformToRemove = new Set<string>();
 
     Object.keys(material.uniforms).forEach(name => {
       if (!usedUniforms.has(name)) {
@@ -790,7 +790,7 @@ export class GLProxy {
    */
   compileTexture(texture: Texture) {
     if (!texture.gl) return;
-    // If the id is already established, this does noe need a compile but an update
+    // If the id is already established, this does not need a compile but an update
     if (texture.gl.textureId) return;
 
     // The texture must have a unit established in order to be compiled
@@ -853,8 +853,8 @@ export class GLProxy {
       drawRange = [0, model.vertexCount];
     }
 
-    // Only if this geomxetry has instances requested will it attempt to render instances
-    if (model.drawInstances >= 0) {
+    // Only if this geometry has instances requested will it attempt to render instances
+    if (model.drawInstances >= 0 && model.geometry.isInstanced) {
       instancing = this.extensions.instancing;
     }
 
@@ -953,24 +953,36 @@ export class GLProxy {
       // List of color buffers for MRT
       if (Array.isArray(target.gl.colorBufferId)) {
         target.gl.colorBufferId.forEach(buffer => {
-          if (buffer instanceof Texture) this.disposeTexture(buffer);
-          else this.disposeRenderBuffer(buffer);
+          if (buffer instanceof Texture && !target.retainTextureTargets) {
+            this.disposeTexture(buffer);
+          } else {
+            this.disposeRenderBuffer(buffer);
+          }
         });
-      } else if (target.gl.colorBufferId instanceof Texture) {
+      } else if (
+        target.gl.colorBufferId instanceof Texture &&
+        !target.retainTextureTargets
+      ) {
         this.disposeTexture(target.gl.colorBufferId);
       } else if (target.gl.colorBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.colorBufferId);
       }
 
       // Dispose of depth buffer
-      if (target.gl.depthBufferId instanceof Texture) {
+      if (
+        target.gl.depthBufferId instanceof Texture &&
+        !target.retainTextureTargets
+      ) {
         this.disposeTexture(target.gl.depthBufferId);
       } else if (target.gl.depthBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.depthBufferId);
       }
 
       // Dispose of stencil buffer
-      if (target.gl.stencilBufferId instanceof Texture) {
+      if (
+        target.gl.stencilBufferId instanceof Texture &&
+        !target.retainTextureTargets
+      ) {
         this.disposeTexture(target.gl.stencilBufferId);
       } else if (target.gl.stencilBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.stencilBufferId);
@@ -1411,7 +1423,7 @@ export class GLProxy {
    * This performs all necessary functions to use the attribute utilizing
    * the current program in use.
    */
-  useAttribute(name: string, attribute: Attribute) {
+  useAttribute(name: string, attribute: Attribute, geometry: Geometry) {
     // We need a valid program in use.
     if (!this.state.currentProgram) return false;
     // Must have it's gl context established
@@ -1453,7 +1465,11 @@ export class GLProxy {
       0
     );
 
-    if (attribute.isInstanced && this.extensions.instancing) {
+    if (
+      geometry.isInstanced &&
+      attribute.isInstanced &&
+      this.extensions.instancing
+    ) {
       this.state.setVertexAttributeArrayDivisor(location, 1);
     } else {
       this.state.setVertexAttributeArrayDivisor(location, 0);

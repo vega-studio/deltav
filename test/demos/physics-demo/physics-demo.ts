@@ -1,17 +1,18 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
   Bounds,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   createLayer,
   createView,
   InstanceProvider,
-  LabelInstance
+  LabelInstance,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -54,8 +55,8 @@ export class PhysicsDemo extends BaseDemo {
     parameters
       .add(this.parameters, "count", 0, 500, 1)
       .onChange(async (value: number) => {
-        const bounds = await this.getViewScreenBounds();
-        if (!bounds) return;
+        if (!this.surface) return;
+        const bounds = this.surface.getViewScreenBounds("main.view");
         const delta = value - this.parameters.previous.count;
 
         if (delta > 0) {
@@ -95,25 +96,23 @@ export class PhysicsDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {},
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main
         })
       }),
       pipeline: (_resources, providers, cameras) => ({
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          main: {
+            views: {
+              view: createView(View2D, {
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
-            ],
+            },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
@@ -121,11 +120,11 @@ export class PhysicsDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0]
+                scaleFactor: () => cameras.main.scale2D[0]
               })
             ]
           }
-        ]
+        }
       })
     });
   }
@@ -134,8 +133,9 @@ export class PhysicsDemo extends BaseDemo {
    * Initialize the demo
    */
   async init() {
-    const bounds = await this.getViewScreenBounds();
-    if (!bounds) return;
+    if (!this.surface) return;
+    await this.surface.ready;
+    const bounds = this.surface.getViewScreenBounds("main.view");
 
     const engine = (this.engine = Matter.Engine.create());
     const allObjects: Matter.Body[] = [];

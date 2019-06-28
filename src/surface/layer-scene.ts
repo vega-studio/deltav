@@ -2,10 +2,16 @@ import { Scene } from "../gl/scene";
 import { Instance } from "../instance-provider/instance";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import {
+  ILayerProps,
+  ILayerPropsInternal,
+  Layer,
+  LayerInitializer,
+  LayerInitializerInternal
+} from "./layer";
 import { generateDefaultElements } from "./layer-processing/generate-default-scene";
-import { LayerInitializer, LayerInitializerInternal, Surface } from "./surface";
-import { IViewOptions, View } from "./view";
+import { Surface } from "./surface";
+import { IViewProps, View, ViewInitializer } from "./view";
 
 const debug = require("debug")("performance");
 
@@ -28,7 +34,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
    * Or perhaps you want an aerial shot as a minimap in the bottom right corner while the rest
    * of the canvas renders a first person view, then you would make two views for that as well.
    */
-  views: IViewOptions[];
+  views: ViewInitializer<IViewProps>[];
 }
 
 /**
@@ -50,7 +56,7 @@ export class LayerScene extends IdentifyByKey {
   /** The presiding surface over this scene */
   surface?: Surface;
   /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
-  viewDiffs: ReactiveDiff<View, IViewOptions>;
+  viewDiffs: ReactiveDiff<View<IViewProps>, ViewInitializer<IViewProps>>;
 
   /** This is all of the layers attached to the scene */
   get layers(): Layer<any, any>[] {
@@ -58,7 +64,7 @@ export class LayerScene extends IdentifyByKey {
   }
 
   /** This is all of the views attached to the scene */
-  get views(): View[] {
+  get views(): View<IViewProps>[] {
     return this.viewDiffs.items;
   }
 
@@ -206,24 +212,37 @@ export class LayerScene extends IdentifyByKey {
 
     // Create the diff manager to handle the views coming in.
     this.viewDiffs = new ReactiveDiff({
-      buildItem: async (initializer: IViewOptions) => {
+      buildItem: async (initializer: ViewInitializer<IViewProps>) => {
         if (!this.surface) return null;
-        const newView = new View(this, initializer);
-        newView.camera = newView.camera || defaultElements.camera;
-        newView.viewCamera = newView.viewCamera || defaultElements.viewCamera;
+        const newView = new initializer.init[0](this, initializer.init[1]);
+        newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
-        newView.camera.surface = this.surface;
+        newView.props.camera.surface = this.surface;
         this.surface.mouseManager.waitingForRender = true;
 
         return newView;
       },
 
       // No special needs for destroying/removing a view
-      destroyItem: async (_initializer: IViewOptions, _view: View) => true,
+      destroyItem: async (
+        _initializer: ViewInitializer<IViewProps>,
+        _view: View<IViewProps>
+      ) => true,
 
       // Hand off the initializer to the update of the view
-      updateItem: async (initializer: IViewOptions, view: View) => {
-        view.update(initializer);
+      updateItem: async (
+        initializer: ViewInitializer<IViewProps>,
+        view: View<IViewProps>
+      ) => {
+        const props = initializer.init[1];
+        view.willUpdateProps(props);
+
+        if (view.shouldDrawView(view.props, props)) {
+          view.needsDraw = true;
+        }
+
+        Object.assign(view.props, props);
+        view.didUpdateProps();
 
         if (this.surface) {
           this.surface.mouseManager.waitingForRender = true;

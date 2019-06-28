@@ -6,6 +6,7 @@ import { BaseResourceOptions } from "../base-resource-manager";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
+import { VideoTextureMonitor } from "./video-texture-monitor";
 
 const debug = require("debug")("performance");
 
@@ -32,7 +33,8 @@ export interface IAtlasResource extends BaseResourceOptions {
  * Use this in the property creation of atlas'.
  */
 export function createAtlas(
-  options: Omit<IAtlasResource, "type"> & Partial<Pick<IAtlasResource, "key">>
+  options: Omit<IAtlasResource, "type" | "key"> &
+    Partial<Pick<IAtlasResource, "key">>
 ): IAtlasResource {
   return {
     key: "",
@@ -48,7 +50,11 @@ export function isAtlasResource(val: BaseResourceOptions): val is Atlas {
   return val && val.type === ResourceType.ATLAS;
 }
 
-type ResourceReference = { subtexture: SubTexture; count: number };
+type ResourceReference = {
+  subtexture: SubTexture;
+  count: number;
+  videoMonitor?: VideoTextureMonitor;
+};
 
 /**
  * This represents a single Texture on the gpu that is composed of several smaller textures
@@ -74,12 +80,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   textureSettings?: TextureOptions;
   /** The resource type for resource management */
   type: number = ResourceType.ATLAS;
-  /**
-   * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
-   * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
-   * the atlas at any given moment.
-   */
-  validResources = new Set<IAtlasResourceRequest>();
   /** Stores the size of the atlas texture */
   width: TextureSize;
 
@@ -94,25 +94,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     this.packing = new PackNode(0, 0, options.width, options.height);
     // Make sure the texture is started and updated
     this.createTexture(canvas);
-  }
-
-  /**
-   * This invalidates the SubTexture of an atlas resource.
-   */
-  private invalidateTexture(texture: SubTexture) {
-    const zero: Vec2 = [0, 0];
-    texture.aspectRatio = 1;
-
-    // Make anything trying to render with the image not render much anything useful
-    texture.atlasBL = zero;
-    texture.atlasBR = zero;
-    texture.atlasTL = zero;
-    texture.atlasTR = zero;
-    texture.textureReferenceID = "";
-    texture.isValid = false;
-    texture.texture = null;
-    texture.pixelHeight = 0;
-    texture.pixelWidth = 0;
   }
 
   /**
@@ -142,13 +123,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       data: canvas,
       ...textureSettings
     });
-
-    // Update resources referencing the texture
-    this.validResources.forEach(resource => {
-      if (resource.texture) {
-        resource.texture.texture = this.texture;
-      }
-    });
   }
 
   /**
@@ -163,37 +137,34 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
 
     // Invalidate the Sub textures so they don't start rendering wild colors. Instead
     // should render a single color at the 0, 0 mark of the texture.
-    this.validResources.forEach((_isValid, resource) => {
-      if (resource.texture) this.invalidateTexture(resource.texture);
+    this.resourceReferences.forEach(resource => {
+      this.invalidateTexture(resource.subtexture);
     });
   }
 
   /**
-   * This flags a resource for use and increments it's reference count.
+   * This invalidates the SubTexture of an atlas resource.
    */
-  useResource(request: IAtlasResourceRequest) {
-    const reference = this.resourceReferences.get(request.source) || {
-      subtexture: request.texture,
-      count: 0
-    };
+  private invalidateTexture(texture: SubTexture) {
+    const zero: Vec2 = [0, 0];
 
-    reference.count++;
-  }
+    // Make anything trying to render with the image not render much anything useful
+    texture.aspectRatio = 1;
+    texture.atlasBL = zero;
+    texture.atlasBR = zero;
+    texture.atlasTL = zero;
+    texture.atlasTR = zero;
+    texture.isValid = false;
+    texture.texture = null;
+    texture.pixelHeight = 0;
+    texture.pixelWidth = 0;
+    delete texture.source;
 
-  /**
-   * This flags a resource no longeer used and decrements it's reference count.
-   * If the use of the resource drops low enough, this will clear out the resurce
-   * completely.
-   */
-  stopUsingResource(request: IAtlasResourceRequest) {
-    const reference: ResourceReference = this.resourceReferences.get(
-      request.source
-    ) || {
-      subtexture: request.texture || new SubTexture(),
-      count: 0
-    };
-
-    reference.count--;
+    // Video monitoring should be stopped at this point.
+    if (texture.video) {
+      texture.video.monitor.destroy();
+      delete texture.video;
+    }
   }
 
   /**
@@ -217,5 +188,33 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     for (let i = 0, iMax = toRemove.length; i < iMax; ++i) {
       this.resourceReferences.delete(toRemove[i]);
     }
+  }
+
+  /**
+   * This flags a resource no longeer used and decrements it's reference count.
+   * If the use of the resource drops low enough, this will clear out the resurce
+   * completely.
+   */
+  stopUsingResource(request: IAtlasResourceRequest) {
+    const reference: ResourceReference = this.resourceReferences.get(
+      request.source
+    ) || {
+      subtexture: request.texture || new SubTexture(),
+      count: 0
+    };
+
+    reference.count--;
+  }
+
+  /**
+   * This flags a resource for use and increments it's reference count.
+   */
+  useResource(request: IAtlasResourceRequest) {
+    const reference = this.resourceReferences.get(request.source) || {
+      subtexture: request.texture,
+      count: 0
+    };
+
+    reference.count++;
   }
 }

@@ -2,6 +2,14 @@ import { Omit, ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
 import { SubTexture } from "./sub-texture";
 
+export type AtlasVideoResource = {
+  videoSrc: string;
+};
+
+export type AtlasResource = string | TexImageSource;
+
+const EMPTY_IMAGE = new Image();
+
 /**
  * Base information an atlas resource can provide
  */
@@ -23,7 +31,7 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
    */
   rasterizationScale?: number;
   /** This is the requested resource to be loaded into the manager system */
-  source: string | TexImageSource;
+  source: AtlasResource;
   /**
    * Once loaded into the texture, this will be populated revealing the informaion needed to sample the image
    * from the atlas.
@@ -42,7 +50,7 @@ export function atlasRequest(
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
-    source: "",
+    source: EMPTY_IMAGE,
     ...options
   };
 }

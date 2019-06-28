@@ -18,6 +18,7 @@ import { LabelInstance } from "./label-instance";
 import { LabelLayer } from "./label-layer";
 import {
   NewLineCharacterMode,
+  TextAlignment,
   TextAreaInstance,
   TextAreaLabel,
   WordWrap
@@ -279,6 +280,8 @@ export class TextAreaLayer<
   /** This stores splited words of a textArea */
   areaToWords = new Map<TextAreaInstance, string[]>();
 
+  labelsInLine: LabelInstance[] = [];
+
   /**
    * This provides the child layers that will render on behalf of this layer.
    *
@@ -345,6 +348,7 @@ export class TextAreaLayer<
 
     const {
       active: activeId,
+      alignment: alignmentId,
       borderWidth: borderWidthId,
       color: colorId,
       fontSize: fontSizeId,
@@ -373,7 +377,6 @@ export class TextAreaLayer<
           // possibly have glyphs added or removed to handle the issue.
           if (changed[textId] !== undefined) {
             this.clear(instance);
-            // instance.generateLabels();
             this.updateLabels(instance);
             this.layout(instance);
           } else if (changed[activeId] !== undefined) {
@@ -383,6 +386,12 @@ export class TextAreaLayer<
             } else {
               this.hideLabels(instance);
             }
+          }
+
+          if (changed[alignmentId] !== undefined) {
+            this.clear(instance);
+            this.updateLabels(instance);
+            this.layoutLabels(instance);
           }
 
           if (changed[colorId] !== undefined) {
@@ -597,13 +606,24 @@ export class TextAreaLayer<
     this.providers.labels.add(label1);
     instance.newLabels.push(label1);
 
+    this.labelsInLine.push(label1);
+    currentX += label1.getWidth() + spaceWidth;
+
     // New Line if word wrap mode is normal
     if (
       instance.wordWrap === WordWrap.CHARACTER ||
       instance.wordWrap === WordWrap.WORD
     ) {
-      currentY += instance.lineHeight;
+      this.setTextAlignment(
+        currentX,
+        currentY,
+        spaceWidth,
+        maxWidth,
+        instance.alignment
+      );
+
       currentX = 0;
+      currentY += instance.lineHeight;
 
       // Label2
       if (currentY + instance.lineHeight <= maxHeight) {
@@ -646,8 +666,22 @@ export class TextAreaLayer<
             label.size[1]
           ];
 
+          currentX += label3.getWidth() + spaceWidth;
+
+          this.labelsInLine.push(label3);
+
           this.providers.labels.add(label3);
           instance.newLabels.push(label3);
+
+          this.setTextAlignment(
+            currentX,
+            currentY,
+            spaceWidth,
+            maxWidth,
+            instance.alignment
+          );
+
+          currentX = 0;
           currentY += instance.lineHeight;
           index = lastIndexOfLine;
           widthLeft = glyphWidths[glyphWidths.length - 1] - glyphWidths[index];
@@ -678,6 +712,8 @@ export class TextAreaLayer<
             glyphWidths[glyphWidths.length - 1] - glyphWidths[index],
             label.size[1]
           ];
+
+          this.labelsInLine.push(label2);
 
           const widths: number[] = [];
 
@@ -825,6 +861,45 @@ export class TextAreaLayer<
   }
 
   /**
+   * Sets the alignment of TextArea by adjusting all the labels' origin
+   */
+  setTextAlignment(
+    currentX: number,
+    currentY: number,
+    spaceWidth: number,
+    maxWidth: number,
+    alignment: TextAlignment
+  ) {
+    if (currentX - spaceWidth < maxWidth) {
+      if (alignment !== TextAlignment.LEFT) {
+        const offset = maxWidth - currentX + spaceWidth;
+        const toMove = alignment === TextAlignment.RIGHT ? offset : offset / 2;
+
+        this.labelsInLine.forEach(label => {
+          const oldAnchor = label.anchor;
+
+          label.anchor = {
+            padding: oldAnchor.padding,
+            type: AnchorType.Custom,
+            paddingDirection: [
+              (oldAnchor.paddingDirection ? oldAnchor.paddingDirection[0] : 0) +
+                toMove,
+              oldAnchor.paddingDirection
+                ? oldAnchor.paddingDirection[1]
+                : currentY
+            ],
+            x: oldAnchor.x,
+            y: oldAnchor.y
+          };
+        });
+      }
+    }
+
+    // Empty the labels array
+    this.labelsInLine = [];
+  }
+
+  /**
    * Layout the border of textAreaInstance
    */
   layoutBorder(instance: T) {
@@ -928,6 +1003,8 @@ export class TextAreaLayer<
     let currentX = 0;
     let currentY = 0;
 
+    this.labelsInLine = [];
+
     // Layout labels within maxWidth and maxHeight one after one, line after line.
     // Labels which exceed maxHeight will be hidden, labels which exceed maxWidth will be wrap,
     // hidden to move to next line based on wordWrap mode.
@@ -964,6 +1041,7 @@ export class TextAreaLayer<
             };
 
             currentX += width + spaceWidth;
+            this.labelsInLine.push(label);
 
             if (currentX >= maxWidth) {
               // If next label is not NEWLINE, no need to move to next line
@@ -972,6 +1050,14 @@ export class TextAreaLayer<
                 i + 1 < endi &&
                 instance.labels[i + 1] !== NewLineCharacterMode.NEWLINE
               ) {
+                this.setTextAlignment(
+                  currentX,
+                  currentY,
+                  spaceWidth,
+                  maxWidth,
+                  instance.alignment
+                );
+
                 currentX = 0;
                 currentY += instance.lineHeight;
               }
@@ -983,6 +1069,14 @@ export class TextAreaLayer<
               instance.wordWrap === WordWrap.WORD &&
               label.getWidth() <= instance.maxWidth
             ) {
+              this.setTextAlignment(
+                currentX,
+                currentY,
+                spaceWidth,
+                maxWidth,
+                instance.alignment
+              );
+
               currentX = 0;
               currentY += instance.lineHeight;
 
@@ -1001,6 +1095,8 @@ export class TextAreaLayer<
                   x: textAreaAnchor[0],
                   y: textAreaAnchor[1]
                 };
+
+                this.labelsInLine.push(label);
 
                 currentX += label.getWidth() + spaceWidth;
               } else {
@@ -1041,6 +1137,14 @@ export class TextAreaLayer<
                   instance.wordWrap === WordWrap.CHARACTER ||
                   instance.wordWrap === WordWrap.WORD
                 ) {
+                  this.setTextAlignment(
+                    currentX,
+                    currentY,
+                    spaceWidth,
+                    maxWidth,
+                    instance.alignment
+                  );
+
                   // Move position to next line
                   currentY += instance.lineHeight;
                   currentX = 0;
@@ -1064,6 +1168,8 @@ export class TextAreaLayer<
                         y: textAreaAnchor[1]
                       };
 
+                      this.labelsInLine.push(label);
+
                       currentX += label.getWidth() + spaceWidth;
 
                       if (
@@ -1071,6 +1177,14 @@ export class TextAreaLayer<
                         i + 1 < endi &&
                         instance.labels[i + 1] !== NewLineCharacterMode.NEWLINE
                       ) {
+                        this.setTextAlignment(
+                          currentX,
+                          currentY,
+                          spaceWidth,
+                          maxWidth,
+                          instance.alignment
+                        );
+
                         currentX = 0;
                         currentY += instance.lineHeight;
                       }
@@ -1125,10 +1239,26 @@ export class TextAreaLayer<
 
       // New line
       else if (label === NewLineCharacterMode.NEWLINE) {
+        this.setTextAlignment(
+          currentX,
+          currentY,
+          spaceWidth,
+          maxWidth,
+          instance.alignment
+        );
+
         currentX = 0;
         currentY += instance.lineHeight;
       }
     }
+
+    this.setTextAlignment(
+      currentX,
+      currentY,
+      spaceWidth,
+      maxWidth,
+      instance.alignment
+    );
   }
 
   /**

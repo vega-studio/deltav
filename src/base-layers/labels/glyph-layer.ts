@@ -191,7 +191,16 @@ export class GlyphLayer<
         break;
       }
 
-      case ScaleMode.ALWAYS:
+      case ScaleMode.ALWAYS: {
+        fs = this.props.inTextArea
+          ? require("./text-area-layer-always.fs")
+          : require("./glyph-layer-always.fs");
+        vs = this.props.inTextArea
+          ? require("./text-area-layer-always.vs")
+          : require("./glyph-layer-always.vs");
+        break;
+      }
+
       default: {
         fs = require("./glyph-layer-always.fs");
         vs = require("./glyph-layer-always.vs");

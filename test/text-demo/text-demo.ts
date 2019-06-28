@@ -1,9 +1,9 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   ClearFlags,
   createLayer,
   createView,
@@ -15,7 +15,8 @@ import {
   LabelInstance,
   LabelLayer,
   nextFrame,
-  ScaleMode
+  ScaleMode,
+  View2D
 } from "src";
 import { DEFAULT_RESOURCES, WORDS } from "test/types";
 import { BaseDemo } from "../common/base-demo";
@@ -160,13 +161,13 @@ export class TextDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {
         font: DEFAULT_RESOURCES.font
       },
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["default-view"],
           wheelShouldScroll: false
@@ -176,7 +177,7 @@ export class TextDemo extends BaseDemo {
         scenes: {
           default: {
             views: {
-              "default-view": createView({
+              "default-view": createView(View2D, {
                 background: [0, 0, 0, 1],
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]

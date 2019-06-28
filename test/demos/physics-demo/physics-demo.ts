@@ -1,17 +1,18 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
   Bounds,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   createLayer,
   createView,
   InstanceProvider,
-  LabelInstance
+  LabelInstance,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -95,11 +96,11 @@ export class PhysicsDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {},
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main
         })
       }),
@@ -107,7 +108,7 @@ export class PhysicsDemo extends BaseDemo {
         scenes: {
           main: {
             views: {
-              view: createView({
+              view: createView(View2D, {
                 camera: cameras.main,
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
@@ -119,7 +120,7 @@ export class PhysicsDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0]
+                scaleFactor: () => cameras.main.scale2D[0]
               })
             ]
           }

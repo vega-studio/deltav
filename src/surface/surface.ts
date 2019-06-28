@@ -3,6 +3,7 @@ import { UserInputEventManager } from "../event-management/user-input-event-mana
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
+import { getAbsolutePositionBounds } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import {
   BaseResourceManager,
@@ -13,7 +14,7 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { FrameMetrics, Omit, ResourceType, SurfaceErrorType } from "../types";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
@@ -28,12 +29,12 @@ import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
-import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
+import { ILayerProps, Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { ISceneOptions, LayerScene } from "./layer-scene";
-import { ClearFlags, View } from "./view";
+import { ClearFlags, IViewProps, View } from "./view";
 
 /**
  * Default IO expansion controllers applied to the system when explicit settings
@@ -151,70 +152,12 @@ export interface ISurfaceOptions {
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
 
 /**
- * A type to describe the constructor of a Layer class.
- */
-export interface ILayerConstructable<T extends Instance> {
-  new (surface: Surface, scene: LayerScene, props: ILayerProps<T>): Layer<
-    any,
-    any
-  >;
-}
-
-/**
- * This specifies a class type that can be used in creating a layer with createLayer
- */
-export type ILayerConstructionClass<
-  T extends Instance,
-  U extends ILayerProps<T>
-> = ILayerConstructable<T> & { defaultProps: U };
-
-/**
- * This is a pair of a Class Type and the props to be applied to that class type.
- */
-export type LayerInitializer = {
-  key: string;
-  init: [
-    ILayerConstructionClass<Instance, ILayerProps<Instance>>,
-    ILayerProps<Instance>
-  ];
-};
-
-/**
- * The internal system layer initializer that hides additional properties the front
- * facing API should not be concerned with.
- */
-export type LayerInitializerInternal = {
-  key: string;
-  init: [
-    ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
-    ILayerPropsInternal<Instance>
-  ];
-};
-
-/**
  * Sort method for any object with an 'order' property
  */
 function sortByOrder<T extends { order?: number }>(a: T, b: T) {
   return (
     (a.order || Number.MAX_SAFE_INTEGER) - (b.order || Number.MAX_SAFE_INTEGER)
   );
-}
-
-/**
- * Used for reactive layer generation and updates.
- */
-export function createLayer<T extends Instance, U extends ILayerProps<T>>(
-  layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">>
-): LayerInitializer {
-  const keyedProps = Object.assign(props, { key: props.key || "" });
-
-  return {
-    get key() {
-      return props.key || "";
-    },
-    init: [layerClass, keyedProps]
-  };
 }
 
 /**
@@ -257,13 +200,16 @@ export class Surface {
   /** When set to true, the next render will make sure color picking is updated for layer interactions */
   updateColorPick?: {
     position: Vec2;
-    views: View[];
+    views: View<IViewProps>[];
   };
   /**
    * This map is a quick look up for a view to determine other views that
    * would need to be redrawn as a consequence of the key view needing a redraw.
    */
-  private viewDrawDependencies = new Map<View, View[]>();
+  private viewDrawDependencies = new Map<
+    View<IViewProps>,
+    View<IViewProps>[]
+  >();
   /**
    * This is used to indicate the surface has loaded it's initial systems. This is complete after init has executed
    * successfully for this surface.
@@ -276,7 +222,12 @@ export class Surface {
    * Picking gets deferred to the beginning of next draw. Thus picking operations get queued till next
    * frame using this store here.
    */
-  private queuedPicking?: [LayerScene, View, Layer<any, any>[], Vec2][];
+  private queuedPicking?: [
+    LayerScene,
+    View<IViewProps>,
+    Layer<any, any>[],
+    Vec2
+  ][];
 
   /** Diff manager to handle diffing resource objects for the pipeline */
   resourceDiffs: ReactiveDiff<
@@ -431,7 +382,7 @@ export class Surface {
     onViewReady?: (
       needsDraw: boolean,
       scene: LayerScene,
-      view: View,
+      view: View<IViewProps>,
       pickingPass: Layer<any, any>[]
     ) => void
   ) {
@@ -469,7 +420,7 @@ export class Surface {
     const scenes = this.sceneDiffs.items;
     scenes.sort(sortByOrder);
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
-    const pickingPassByView = new Map<View, Layer<any, any>[]>();
+    const pickingPassByView = new Map<View<IViewProps>, Layer<any, any>[]>();
 
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
@@ -488,16 +439,24 @@ export class Surface {
         // When this flags true, a picking pass will be rendered for the provided scene / view
         const pickingPass: Layer<any, any>[] = [];
 
+        // Get the bounds of the screen to hand to the view
+        const screenBounds = new Bounds<never>({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0
+        });
+
+        // Calculate the bounds of the viewport relative to the screen
+        const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
+          view.props.viewport,
+          screenBounds,
+          this.pixelRatio
+        );
+
         // We must perform any operations necessary to make the view camera fit the viewport
         // Correctly
-        view.fitViewtoViewport(
-          new Bounds({
-            height: this.context.canvas.height,
-            width: this.context.canvas.width,
-            x: 0,
-            y: 0
-          })
-        );
+        view.fitViewtoViewport(screenBounds, viewportBounds);
 
         // Let the layers update their uniforms before the draw
         for (let j = 0, endj = layers.length; j < endj; ++j) {
@@ -520,7 +479,7 @@ export class Surface {
             view.animationEndTime = Math.max(
               view.animationEndTime,
               layer.animationEndTime,
-              view.camera.animationEndTime
+              view.props.camera.animationEndTime
             );
             // Indicate this layer is being rendered at the current time frame
             layer.lastFrameTime = time;
@@ -542,7 +501,7 @@ export class Surface {
         if (
           view.needsDraw ||
           (time && time < view.lastFrameTime) ||
-          view.camera.needsViewDrawn ||
+          view.props.camera.needsViewDrawn ||
           true
         ) {
           view.needsDraw = true;
@@ -689,7 +648,7 @@ export class Surface {
     this.analyzePickRendering();
     // Gather all of our picking calls to call at the end to prevent readPixels from
     // becoming a major blocking operation
-    const toPick: [LayerScene, View, Layer<any, any>[]][] = [];
+    const toPick: [LayerScene, View<IViewProps>, Layer<any, any>[]][] = [];
 
     // Before we draw the frame, we must have every camera resolve broadcasting changes so everything can respond
     // to the change before all of the drawing operations take place.
@@ -698,7 +657,7 @@ export class Surface {
 
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const view = scene.views[k];
-        view.camera.broadcast();
+        view.props.camera.broadcast(view.id);
       }
     }
 
@@ -750,7 +709,7 @@ export class Surface {
       for (let i = 0, iMax = scene.views.length; i < iMax; ++i) {
         const view = scene.views[i];
         view.needsDraw = false;
-        view.camera.resolve();
+        view.props.camera.resolve();
       }
     }
 
@@ -803,7 +762,7 @@ export class Surface {
    */
   private drawPicking(
     scene: LayerScene,
-    view: View,
+    view: View<IViewProps>,
     pickingPass: Layer<any, any>[]
   ) {
     if (!this.updateColorPick) return false;
@@ -821,22 +780,30 @@ export class Surface {
       // Get the current flags for the view
       const flags = view.clearFlags.slice(0);
       // Store the current background of the view
-      const background = view.background && copy4(view.background);
+      const background = view.props.background && copy4(view.props.background);
       // Set color rendering flag
-      view.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
+      view.props.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
       // Set the view's background to a solid black so we don't interfere with color encoding
-      view.background = [0, 0, 0, 0];
+      view.props.background = [0, 0, 0, 0];
+
+      // We change the bounds for the view to occupy relative to the render target
+      let screenBounds = new Bounds<never>({
+        height: this.pickingTarget.height,
+        width: this.pickingTarget.width,
+        x: 0,
+        y: 0
+      });
+
+      // Calculate the bounds the viewport will occupy relative to the render target's space
+      let viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
+        view.props.viewport,
+        screenBounds,
+        this.pixelRatio
+      );
 
       // We must perform any operations necessary to make the view camera fit the viewport
       // Correctly with the possibly adjusted pixel ratio
-      view.fitViewtoViewport(
-        new Bounds({
-          height: this.pickingTarget.height,
-          width: this.pickingTarget.width,
-          x: 0,
-          y: 0
-        })
-      );
+      view.fitViewtoViewport(screenBounds, viewportBounds);
 
       // We must redraw the layers so they will update their uniforms to adapt to a picking pass
       for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
@@ -867,20 +834,28 @@ export class Surface {
       // Return the pixel ratio back to the rendered ratio
       view.pixelRatio = this.pixelRatio;
       // Return the view's clear flags
-      view.clearFlags = flags;
+      view.props.clearFlags = flags;
       // Return the view's background color
-      view.background = background;
+      view.props.background = background;
+
+      // Revert the bounds back to being relative to the screen space
+      screenBounds = new Bounds<never>({
+        height: this.context.canvas.height,
+        width: this.context.canvas.width,
+        x: 0,
+        y: 0
+      });
+
+      // Calculate the bounds the viewport will occupy relative to the screen space
+      viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
+        view.props.viewport,
+        screenBounds,
+        this.pixelRatio
+      );
 
       // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
       // will work properly
-      view.fitViewtoViewport(
-        new Bounds({
-          height: this.context.canvas.height,
-          width: this.context.canvas.width,
-          x: 0,
-          y: 0
-        })
-      );
+      view.fitViewtoViewport(screenBounds, viewportBounds);
 
       return true;
     }
@@ -893,14 +868,14 @@ export class Surface {
    */
   private drawSceneView(
     scene: Scene,
-    view: View,
+    view: View<IViewProps>,
     renderer?: WebGLRenderer,
     target?: RenderTarget
   ) {
     renderer = renderer || this.renderer;
     const offset = { x: view.viewBounds.left, y: view.viewBounds.top };
     const size = view.viewBounds;
-    const background = view.background || DEFAULT_BACKGROUND_COLOR;
+    const background = view.props.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
 
     // Make sure the correct render target is applied
@@ -968,14 +943,23 @@ export class Surface {
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const view = scene.views[k];
 
-        view.fitViewtoViewport(
-          new Bounds({
-            height: this.context.canvas.height,
-            width: this.context.canvas.width,
-            x: 0,
-            y: 0
-          })
+        // To look for the overlaps of the view in screen space, we must calculate the view's viewport bounds
+        // relative to the screenspace.
+        const screenBounds = new Bounds<never>({
+          height: this.context.canvas.height,
+          width: this.context.canvas.width,
+          x: 0,
+          y: 0
+        });
+
+        // Calculate the bounds the viewport will occupy relative to the screen space
+        const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
+          view.props.viewport,
+          screenBounds,
+          this.pixelRatio
         );
+
+        view.fitViewtoViewport(screenBounds, viewportBounds);
       }
     }
 
@@ -985,7 +969,7 @@ export class Surface {
 
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const sourceView = scene.views[k];
-        const overlapViews: View[] = [];
+        const overlapViews: View<IViewProps>[] = [];
 
         for (let j = 0, endj = scenes.length; j < endj; j++) {
           if (j !== i) {
@@ -1010,7 +994,7 @@ export class Surface {
    * This allws for querying a view's screen bounds. Null i;s returned if the view id
    * specified does not exist.
    */
-  getViewSize(viewId: string): Bounds<View> | null {
+  getViewSize(viewId: string): Bounds<View<IViewProps>> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
       const view = scene.viewDiffs.getByKey(viewId);
@@ -1354,7 +1338,7 @@ export class Surface {
    * This triggers an update to all of the layers that perform picking, the pixel data
    * within the specified mouse range.
    */
-  updateColorPickPosition(position: Vec2, views: View[]) {
+  updateColorPickPosition(position: Vec2, views: View<IViewProps>[]) {
     // We will flag the color range as needing an update
     this.updateColorPick = {
       position,

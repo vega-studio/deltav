@@ -1,12 +1,15 @@
 import {
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   ClearFlags,
+  createView,
   EventManager,
   IInstanceProvider,
   InstanceProvider,
   ISceneOptions,
-  LayerInitializer
+  LayerInitializer,
+  Vec4,
+  View2D
 } from "src";
 
 import * as datGUI from "dat.gui";
@@ -209,7 +212,7 @@ export class KitchenSink extends BaseDemo {
     const scenes: SceneInitializer[] = [];
     const viewSize = 100 / sceneBlockSize;
 
-    const backgrounds: [number, number, number, number][] = [
+    const backgrounds: Vec4[] = [
       [0.1, 0.0, 0.0, 1.0],
       [0.0, 0.1, 0.0, 1.0],
       [0.0, 0.0, 0.1, 1.0],
@@ -224,7 +227,7 @@ export class KitchenSink extends BaseDemo {
     for (let i = 0; i < sceneBlockSize && testIndex < tests.length + 1; ++i) {
       for (let k = 0; k < sceneBlockSize && testIndex < tests.length + 1; ++k) {
         const name = `${i}_${k}`;
-        const camera = new ChartCamera();
+        const camera = new Camera2D();
         const test = tests[++testIndex];
 
         if (test) {
@@ -240,7 +243,7 @@ export class KitchenSink extends BaseDemo {
             scene: {
               key: name,
               views: [
-                {
+                createView(View2D, {
                   background:
                     backgrounds[Math.floor(Math.random() * backgrounds.length)],
                   camera: testCamera,
@@ -252,7 +255,7 @@ export class KitchenSink extends BaseDemo {
                     top: `${viewSize * i}%`,
                     width: `${viewSize}%`
                   }
-                }
+                })
               ],
               layers: []
             }

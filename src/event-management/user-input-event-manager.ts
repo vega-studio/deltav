@@ -1,20 +1,11 @@
 import { Bounds } from "../primitives";
 import { LayerScene } from "../surface/layer-scene";
 import { Surface } from "../surface/surface";
-import { View } from "../surface/view";
-import {
-  add2,
-  ChartCamera,
-  isDefined,
-  length2,
-  scale2,
-  subtract2,
-  Vec2,
-  ViewCamera
-} from "../util";
-import { Camera } from "../util/camera";
+import { IViewProps, NoView, View } from "../surface/view";
+import { isDefined } from "../util/common-filters";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
+import { add2, length2, scale2, subtract2, Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import {
   IMouseInteraction,
@@ -31,21 +22,14 @@ import {
 const VALID_CLICK_DELAY = 1e3;
 const VALID_TAP_DELAY = 200;
 
-const emptyView: View = new View(
-  new LayerScene(undefined, { key: "error", layers: [], views: [] }),
-  {
-    key: "error",
-    viewport: {},
-    viewCamera: new ViewCamera(Camera.defaultCamera()),
-    camera: new ChartCamera()
-  }
-);
+const emptyView: View<IViewProps> = new NoView();
 
 emptyView.fitViewtoViewport(
+  new Bounds({ x: 0, y: 0, width: 100, height: 100 }),
   new Bounds({ x: 0, y: 0, width: 100, height: 100 })
 );
 
-function sortByDepth(a: Bounds<View>, b: Bounds<View>) {
+function sortByDepth(a: Bounds<View<IViewProps>>, b: Bounds<View<IViewProps>>) {
   if (b.d && a.d) return b.d.depth - a.d.depth;
   return 0;
 }
@@ -67,7 +51,7 @@ export class UserInputEventManager {
   /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
   controllers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
-  quadTree: QuadTree<Bounds<View>>;
+  quadTree: QuadTree<Bounds<View<IViewProps>>>;
   /** The parent layer surface this event manager is beneath */
   surface: Surface;
   /** The events created that need to be removed */
@@ -923,7 +907,7 @@ export class UserInputEventManager {
   /**
    * Retrieves the view for the provided id
    */
-  getView(viewId: string): View | null {
+  getView(viewId: string): View<IViewProps> | null {
     const scenes = this.scenes;
 
     for (let i = 0, iMax = scenes.length; i < iMax; ++i) {

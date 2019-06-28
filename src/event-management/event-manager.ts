@@ -1,5 +1,5 @@
 import { Bounds } from "../primitives";
-import { View } from "../surface/view";
+import { IViewProps, View } from "../surface/view";
 import { IProjection } from "../types";
 import { IMouseInteraction, ITouchInteraction } from "./types";
 import { UserInputEventManager } from "./user-input-event-manager";
@@ -66,7 +66,7 @@ export abstract class EventManager {
   /**
    * This retrieves the actual view for the view specified by the provided viewId.
    */
-  getView(viewId: string): View | null {
+  getView(viewId: string): View<IViewProps> | null {
     return (
       (this.userInputManager && this.userInputManager.getView(viewId)) || null
     );
@@ -75,7 +75,7 @@ export abstract class EventManager {
   /**
    * This retrieves the screen bounds for the view specified by the provided viewId.
    */
-  getViewScreenBounds(viewId: string): Bounds<View> | null {
+  getViewScreenBounds(viewId: string): Bounds<View<IViewProps>> | null {
     const view = this.userInputManager.getView(viewId);
 
     if (view) {

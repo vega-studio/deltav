@@ -8,6 +8,8 @@ import { ShaderModule } from "../processing";
 ShaderModule.register([
   {
     moduleId: "camera",
+    // No explicit functional content is required, we will only use the uniforms for injecting information for this
+    // module.
     content: "",
     compatibility: ShaderInjectionTarget.ALL,
     uniforms: (layer: Layer<any, any>) => [
@@ -15,30 +17,33 @@ ShaderModule.register([
       {
         name: "projection",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.viewCamera.baseCamera.projection
+        update: () => layer.view.props.camera.projection
       },
       // This injects the model view matrix from the view camera
       {
         name: "modelView",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.viewCamera.baseCamera.view
+        update: () => layer.view.props.camera.view
       },
-      // This injects the camera offset uniforms that need to be present for projecting in a more
-      // Chart centric style
+      // This injects the camera's current position
       {
-        name: "cameraOffset",
+        name: "cameraPosition",
         size: UniformSize.THREE,
-        update: () => layer.view.camera.offset
+        update: () => layer.view.props.camera.position
       },
-      // This injects the camera scaling uniforms that need to be present for projecting in a more
-      // Chart centric style
+      // This injects the camera's current scale
       {
         name: "cameraScale",
         size: UniformSize.THREE,
-        update: () => layer.view.camera.scale
+        update: () => layer.view.props.camera.scale
       },
-      // This injects the camera scaling uniforms that need to be present for projecting in a more
-      // Chart centric style
+      // This injects the camera's Euler rotation
+      {
+        name: "cameraRotation",
+        size: UniformSize.THREE,
+        update: () => layer.view.props.camera.scale
+      },
+      // This injects the pixel width and height of the view
       {
         name: "viewSize",
         size: UniformSize.TWO,

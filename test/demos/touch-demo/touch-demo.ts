@@ -2,7 +2,7 @@ import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -14,7 +14,8 @@ import {
   ITouchInteraction,
   nextFrame,
   PickType,
-  SimpleEventHandler
+  SimpleEventHandler,
+  View2D
 } from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -57,7 +58,7 @@ export class TouchDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {},
       eventManagers: _cameras => ({
@@ -147,9 +148,9 @@ export class TouchDemo extends BaseDemo {
         scenes: {
           TL: {
             views: {
-              TL: createView({
+              TL: createView(View2D, {
                 background: [0.1, 0, 0, 1],
-                camera: new ChartCamera(),
+                camera: new Camera2D(),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 viewport: {
                   left: 0,
@@ -174,9 +175,9 @@ export class TouchDemo extends BaseDemo {
           },
           TR: {
             views: {
-              TR: createView({
+              TR: createView(View2D, {
                 background: [0.1, 0.1, 0, 1],
-                camera: new ChartCamera(),
+                camera: new Camera2D(),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 viewport: {
                   left: "50%",
@@ -201,9 +202,9 @@ export class TouchDemo extends BaseDemo {
           },
           BL: {
             views: {
-              BL: createView({
+              BL: createView(View2D, {
                 background: [0.1, 0.1, 0.1, 1],
-                camera: new ChartCamera(),
+                camera: new Camera2D(),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 viewport: {
                   left: 0,
@@ -228,9 +229,9 @@ export class TouchDemo extends BaseDemo {
           },
           BR: {
             views: {
-              BR: createView({
+              BR: createView(View2D, {
                 background: [0, 0.1, 0.1, 1],
-                camera: new ChartCamera(),
+                camera: new Camera2D(),
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
                 viewport: {
                   left: "50%",
@@ -255,7 +256,7 @@ export class TouchDemo extends BaseDemo {
           },
           default: {
             views: {
-              "default-view": createView({
+              "default-view": createView(View2D, {
                 background: [0, 0, 0, 1],
                 camera: cameras.main,
                 clearFlags: [ClearFlags.DEPTH]

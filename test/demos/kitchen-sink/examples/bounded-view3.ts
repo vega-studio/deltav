@@ -1,9 +1,9 @@
 import {
   AnchorType,
-  BasicCameraController,
+  BasicCamera2DController,
   Bounds,
+  Camera2D,
   CameraBoundsAnchor,
-  ChartCamera,
   createLayer,
   EventManager,
   ICameraBoundsOptions,
@@ -17,12 +17,12 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView3 extends BaseExample {
   view: string;
-  manager: BasicCameraController;
+  manager: BasicCamera2DController;
   originalRange: Bounds<never>;
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ): EventManager {
     const bounds: ICameraBoundsOptions = {
@@ -38,7 +38,7 @@ export class BoundedView3 extends BaseExample {
         y: 0
       })
     };
-    return new BasicCameraController({
+    return new BasicCamera2DController({
       bounds: bounds,
       camera: defaultCamera,
       startView: viewName

@@ -13,17 +13,9 @@ import {
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
-import {
-  ChartCamera,
-  Mat3x3,
-  Mat4x4,
-  Vec,
-  Vec1,
-  Vec2,
-  Vec3,
-  Vec4
-} from "./util";
+import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
@@ -459,7 +451,7 @@ export interface IProjection {
   /** SInce projections are the views (just interface stripping functionality) we should provide the id for added flexibility to events */
   id: string;
   /** This is the chart camera utilized in the projection of elements */
-  camera: ChartCamera;
+  props: IViewProps;
   /** Converts from the pixel density layer to the screen space */
   pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
   /** Converts from the screen coordinates to the pixel density layer */

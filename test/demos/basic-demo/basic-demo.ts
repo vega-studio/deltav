@@ -3,9 +3,9 @@ import {
   add2,
   AutoEasingLoopStyle,
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -19,7 +19,8 @@ import {
   nextFrame,
   scale2,
   Size,
-  Vec2
+  Vec2,
+  View2D
 } from "src";
 import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
@@ -89,7 +90,6 @@ export class BasicDemo extends BaseDemo {
       });
 
     parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
-
     parameters.add(this.parameters, "moveAtOnce", 0, 100000, 1);
 
     parameters
@@ -129,11 +129,11 @@ export class BasicDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {},
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["main.main"]
         }),
@@ -155,7 +155,7 @@ export class BasicDemo extends BaseDemo {
         scenes: {
           main: {
             views: {
-              main: createView({
+              main: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
@@ -172,7 +172,7 @@ export class BasicDemo extends BaseDemo {
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale[0],
+                scaleFactor: () => cameras.main.scale2D[0],
                 usePoints: true
               })
             ]

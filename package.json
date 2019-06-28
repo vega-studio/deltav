@@ -59,7 +59,7 @@
     "spectorjs": "0.9.7",
     "style-loader": "0.20.3",
     "tiny-sdf": "github:diniden/tiny-sdf",
-    "ts-loader": "4.2.0",
+    "ts-loader": "6.0.4",
     "tslint": "5.9.1",
     "tslint-loader": "3.6.0",
     "typescript": "3.3.1",

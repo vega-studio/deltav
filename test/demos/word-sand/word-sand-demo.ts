@@ -1,15 +1,16 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   createLayer,
   createView,
-  InstanceProvider
+  InstanceProvider,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -95,12 +96,12 @@ export class WordSandDemo extends BaseDemo {
     return new BasicSurface({
       container,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       providers: this.providers,
       resources: {},
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["default.default-view"]
         })
@@ -109,7 +110,7 @@ export class WordSandDemo extends BaseDemo {
         scenes: {
           main: {
             views: {
-              view: createView({
+              view: createView(View2D, {
                 camera: cameras.main,
                 clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
               })

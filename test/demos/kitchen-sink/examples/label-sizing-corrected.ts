@@ -1,12 +1,12 @@
 import {
   AnchorType,
-  ChartCamera,
+  Camera2D,
   createLayer,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  ReferenceCamera
+  ReferenceCamera2D
 } from "src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -22,8 +22,8 @@ export class LabelSizingCorrected extends BaseExample {
     });
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
-    return new ReferenceCamera({
+  makeCamera(defaultCamera: Camera2D): Camera2D {
+    return new ReferenceCamera2D({
       base: defaultCamera,
       scaleFilter: (scale: [number, number, number]) => [scale[0], scale[1], 1]
     });

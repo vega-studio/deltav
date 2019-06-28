@@ -1,9 +1,9 @@
 import * as datGUI from "dat.gui";
 import {
   AnchorType,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
@@ -11,14 +11,15 @@ import {
   createView,
   InstanceProvider,
   ScaleMode,
-  Vec1Compat
+  Vec1Compat,
+  View2D
 } from "src";
 import {
   TextAlignment,
   TextAreaInstance,
   WordWrap
-} from "src/base-layers/labels/text-area-instance";
-import { TextAreaLayer } from "src/base-layers/labels/text-area-layer";
+} from "src/2d/layers/labels/text-area-instance";
+import { TextAreaLayer } from "src/2d/layers/labels/text-area-layer";
 import { DEFAULT_RESOURCES, STORY } from "test/types";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -246,13 +247,13 @@ export class TextAreaDemo extends BaseDemo {
       },
       providers: this.providers,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       resources: {
         font: DEFAULT_RESOURCES.font
       },
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["default.default-view"],
           wheelShouldScroll: false
@@ -262,7 +263,7 @@ export class TextAreaDemo extends BaseDemo {
         scenes: {
           default: {
             views: {
-              "default-view": createView({
+              "default-view": createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]

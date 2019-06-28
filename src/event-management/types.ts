@@ -1,4 +1,4 @@
-import { View } from "../surface/view";
+import { IViewProps, View } from "../surface/view";
 import { Vec2 } from "../util/vector";
 
 export enum MouseButton {
@@ -28,13 +28,13 @@ export interface IEventInteraction {
     /** Position the touch started relative to the view */
     position: Vec2;
     /** The immediate view beneath the touch when the touch started */
-    view: View;
+    view: View<IViewProps>;
     /** All of the views beneath the touch when the touch started */
     views: {
       /** The position of the touch where it started relative to the view */
       position: Vec2;
       /** A view beneath the start position of the touch, but possibly not the immediate view */
-      view: View;
+      view: View<IViewProps>;
     }[];
   };
   /** The View Immediately underneath the touch. The position stored is the screen position relative to the view. */
@@ -42,13 +42,13 @@ export interface IEventInteraction {
     /** The position of the touch relative to the target */
     position: Vec2;
     /** The view imeediately beneath the touch */
-    view: View;
+    view: View<IViewProps>;
     /** All views beneath the touch (views that may be overlapping within the area) */
     views: {
       /** The position of the touch relative to the view indicated */
       position: Vec2;
       /** One of the view's beneath the touch currently. */
-      view: View;
+      view: View<IViewProps>;
     }[];
   };
 }
@@ -102,7 +102,7 @@ export interface IInteractionMetrics {
   /** The position this touch started */
   start: Vec2;
   /** The beginning view of the touch */
-  startView: View | undefined;
+  startView: View<IViewProps> | undefined;
 }
 
 /**

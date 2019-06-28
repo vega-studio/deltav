@@ -1,6 +1,6 @@
 import {
-  BasicCameraController,
-  ChartCamera,
+  BasicCamera2DController,
+  Camera2D,
   EventManager,
   IInstanceProvider,
   Instance,
@@ -26,17 +26,17 @@ export abstract class BaseExample {
   }
 
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ): EventManager {
-    return new BasicCameraController({
+    return new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName
     });
   }
 
-  makeCamera(defaultCamera: ChartCamera): ChartCamera {
+  makeCamera(defaultCamera: Camera2D): Camera2D {
     return defaultCamera;
   }
 

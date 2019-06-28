@@ -1,15 +1,20 @@
 import * as datGUI from "dat.gui";
 import {
+  AnchorType,
   BasicCameraController,
   BasicSurface,
   ChartCamera,
+  CircleInstance,
+  CircleLayer,
   ClearFlags,
   createLayer,
   createView,
   InstanceProvider,
+  ScaleMode,
   Vec1Compat
 } from "src";
 import {
+  TextAlignment,
   TextAreaInstance,
   WordWrap
 } from "src/base-layers/labels/text-area-instance";
@@ -18,7 +23,7 @@ import { DEFAULT_RESOURCES, STORY } from "test/types";
 import { BaseDemo } from "../../common/base-demo";
 
 const texts = [
-  `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg, a girl is no one
+  `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg,
   how check it now, Valar Morghulis, Valar Dohaeris, mother of dragons7 blue, brown, green
   are you`,
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz,.()*&^%$#@!<>?":"[]`,
@@ -32,6 +37,7 @@ const texts = [
 
 export class TextAreaDemo extends BaseDemo {
   parameters = {
+    alignment: TextAlignment.LEFT,
     text: texts[0],
     fontSize: 24,
     maxHeight: 510,
@@ -40,17 +46,18 @@ export class TextAreaDemo extends BaseDemo {
     x: 0,
     y: 0,
     lineHeight: 30,
-    wordWrap: 1,
+    wordWrap: WordWrap.WORD,
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 0,
     paddingLeft: 0,
     borderWidth: 1,
     hasBorder: true,
-    letterSpacing: 10
+    letterSpacing: 0
   };
 
   providers = {
+    circles: new InstanceProvider<CircleInstance>(),
     textAreas: new InstanceProvider<TextAreaInstance>()
   };
 
@@ -120,7 +127,7 @@ export class TextAreaDemo extends BaseDemo {
 
     parameters
       .add(this.parameters, "wordWrap", {
-        None: 0,
+        NONE: 0,
         CHARACTER: 1,
         WORD: 2
       })
@@ -132,6 +139,24 @@ export class TextAreaDemo extends BaseDemo {
             textArea.wordWrap = WordWrap.CHARACTER;
           } else if (value === "2") {
             textArea.wordWrap = WordWrap.WORD;
+          }
+        });
+      });
+
+    parameters
+      .add(this.parameters, "alignment", {
+        LEFT: 0,
+        RIGHT: 1,
+        CENTER: 2
+      })
+      .onChange((value: string) => {
+        this.textAreas.forEach(textArea => {
+          if (value === "0") {
+            textArea.alignment = TextAlignment.LEFT;
+          } else if (value === "1") {
+            textArea.alignment = TextAlignment.RIGHT;
+          } else if (value === "2") {
+            textArea.alignment = TextAlignment.CENTERED;
           }
         });
       });
@@ -230,7 +255,7 @@ export class TextAreaDemo extends BaseDemo {
         main: new BasicCameraController({
           camera: cameras.main,
           startView: ["default.default-view"],
-          wheelShouldScroll: true
+          wheelShouldScroll: false
         })
       }),
       pipeline: (resources, providers, cameras) => ({
@@ -246,7 +271,11 @@ export class TextAreaDemo extends BaseDemo {
             layers: {
               textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
-                resourceKey: resources.font.key
+                resourceKey: resources.font.key,
+                scaling: ScaleMode.BOUND_MAX
+              }),
+              circles: createLayer(CircleLayer, {
+                data: providers.circles
               })
             }
           }
@@ -261,6 +290,13 @@ export class TextAreaDemo extends BaseDemo {
       const x = i % 4;
       const y = Math.floor(i / 4);
       const textArea = new TextAreaInstance({
+        alignment: this.parameters.alignment,
+        anchor: {
+          padding: 0,
+          type: AnchorType.TopRight,
+          x: 0,
+          y: 0
+        },
         origin: [this.parameters.maxWidth * x, this.parameters.maxHeight * y],
         color: [
           this.parameters.color[0],
@@ -292,6 +328,13 @@ export class TextAreaDemo extends BaseDemo {
     this.textAreas[0].maxWidth = 420;
 
     const textArea = new TextAreaInstance({
+      alignment: TextAlignment.CENTERED,
+      anchor: {
+        padding: 0,
+        type: AnchorType.MiddleLeft,
+        x: 0,
+        y: 0
+      },
       origin: [this.parameters.maxWidth * 2, this.parameters.maxHeight * 1],
       color: [
         this.parameters.color[0],
@@ -319,5 +362,24 @@ export class TextAreaDemo extends BaseDemo {
     this.providers.textAreas.add(textArea);
 
     textArea.maxHeight = 800;
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [
+          this.parameters.maxWidth * 2,
+          this.parameters.maxHeight * 1 + 400
+        ],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
+
+    this.providers.circles.add(
+      new CircleInstance({
+        center: [420, 0],
+        radius: 5,
+        color: [1, 0, 0, 1]
+      })
+    );
   }
 }

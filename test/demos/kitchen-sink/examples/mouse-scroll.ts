@@ -1,6 +1,6 @@
 import {
-  BasicCameraController,
-  ChartCamera,
+  BasicCamera2DController,
+  Camera2D,
   createLayer,
   EdgeInstance,
   EdgeLayer,
@@ -14,11 +14,11 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseScroll extends BaseExample {
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ): EventManager {
-    return new BasicCameraController({
+    return new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName,
       wheelShouldScroll: true

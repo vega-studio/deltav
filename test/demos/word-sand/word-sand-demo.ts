@@ -1,15 +1,16 @@
 import * as datGUI from "dat.gui";
 import {
   AutoEasingMethod,
-  BasicCameraController,
+  BasicCamera2DController,
   BasicSurface,
-  ChartCamera,
+  Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   createLayer,
   createView,
-  InstanceProvider
+  InstanceProvider,
+  View2D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -95,27 +96,25 @@ export class WordSandDemo extends BaseDemo {
     return new BasicSurface({
       container,
       cameras: {
-        main: new ChartCamera()
+        main: new Camera2D()
       },
       providers: this.providers,
       resources: {},
       eventManagers: cameras => ({
-        main: new BasicCameraController({
+        main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["default-view"]
+          startView: ["default.default-view"]
         })
       }),
       pipeline: (_resources, providers, cameras) => ({
-        scenes: [
-          {
-            key: "default",
-            views: [
-              createView({
-                key: "default-view",
+        scenes: {
+          main: {
+            views: {
+              view: createView(View2D, {
                 camera: cameras.main,
                 clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
               })
-            ],
+            },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
@@ -127,7 +126,7 @@ export class WordSandDemo extends BaseDemo {
               })
             ]
           }
-        ]
+        }
       })
     });
   }
@@ -165,8 +164,9 @@ export class WordSandDemo extends BaseDemo {
    * Moves all specified circles to the text specified
    */
   private async moveToText(circles: CircleInstance[]) {
-    const bounds = await this.getViewScreenBounds();
-    if (!bounds) return;
+    if (!this.surface) return;
+    await this.surface.ready;
+    const bounds = this.surface.getViewScreenBounds("main.view");
 
     const xy = textPositions(
       bounds,

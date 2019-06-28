@@ -1,5 +1,5 @@
 import {
-  ChartCamera,
+  Camera2D,
   createLayer,
   InstanceProvider,
   LayerInitializer,
@@ -10,9 +10,9 @@ import {
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoxOfRings extends BaseExample {
-  camera: ChartCamera;
+  camera: Camera2D;
 
-  makeCamera(defaultCamera: ChartCamera) {
+  makeCamera(defaultCamera: Camera2D) {
     this.camera = defaultCamera;
     return defaultCamera;
   }
@@ -24,7 +24,7 @@ export class BoxOfRings extends BaseExample {
     return createLayer(RingLayer, {
       data: provider,
       key: "box-of-rings",
-      scaleFactor: () => this.camera.scale[0],
+      scaleFactor: () => this.camera.scale2D[0],
       picking: PickType.SINGLE
     });
   }

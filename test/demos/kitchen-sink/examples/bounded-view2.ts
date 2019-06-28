@@ -1,19 +1,19 @@
-import { AnchorType, BasicCameraController, Bounds, CameraBoundsAnchor, ChartCamera, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleMode } from 'src';
+import { AnchorType, BasicCamera2DController, Bounds, CameraBoundsAnchor, Camera2D, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleMode } from 'src';
 import { BaseExample, TestResourceKeys } from './base-example';
 
 export class BoundedView2 extends BaseExample {
   view: string;
-  manager: BasicCameraController;
+  manager: BasicCamera2DController;
   originalRange: Bounds<never>;
 
-  makeController(defaultCamera: ChartCamera, _testCamera: ChartCamera, viewName: string): EventManager {
+  makeController(defaultCamera: Camera2D, _testCamera: Camera2D, viewName: string): EventManager {
     const bounds: ICameraBoundsOptions = {
       anchor: CameraBoundsAnchor.BOTTOM_MIDDLE,
       screenPadding: {left: 5, right: 5, top: 5, bottom: 5},
       view: '3_2',
       worldBounds: new Bounds({left: 0, top: 0, right: 200, bottom: 200, x: 0, y: 0}),
     };
-    return  new BasicCameraController({
+    return  new BasicCamera2DController({
       bounds: bounds,
       camera: defaultCamera,
       startView: viewName,

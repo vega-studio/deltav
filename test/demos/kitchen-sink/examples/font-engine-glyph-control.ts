@@ -1,8 +1,8 @@
 import {
   AnchorType,
   AutoEasingMethod,
-  BasicCameraController,
-  ChartCamera,
+  BasicCamera2DController,
+  Camera2D,
   createLayer,
   EventManager,
   InstanceProvider,
@@ -15,11 +15,11 @@ import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class FontEngineGlyphControl extends BaseExample {
   makeController(
-    defaultCamera: ChartCamera,
-    _testCamera: ChartCamera,
+    defaultCamera: Camera2D,
+    _testCamera: Camera2D,
     viewName: string
   ): EventManager {
-    return new BasicCameraController({
+    return new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName,
       wheelShouldScroll: true

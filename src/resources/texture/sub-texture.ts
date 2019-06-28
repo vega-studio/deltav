@@ -1,7 +1,9 @@
 import { Texture } from "../../gl/texture";
 import { Bounds } from "../../primitives/bounds";
-import { InstanceIOValue } from "../../types";
+import { InstanceIOValue, Omit } from "../../types";
+import { uid } from "../../util";
 import { Vec2 } from "../../util/vector";
+import { VideoTextureMonitor } from "./video-texture-monitor";
 
 /**
  * Converts a SubTexture reference to a valid Instance IO value where:
@@ -30,6 +32,11 @@ export function subTextureIOValue(
  * Defines a texture that is located on an atlas
  */
 export class SubTexture {
+  /** A unique identifier for the sub texture to aid in debugging issues */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
   /** Stores the aspect ratio of the image for quick reference */
   aspectRatio: number = 1.0;
   /** This is the top left UV coordinate of the sub texture on the atlas */
@@ -48,12 +55,25 @@ export class SubTexture {
   pixelWidth: number = 0;
   /** Height in pixels of the image on the atlas */
   pixelHeight: number = 0;
-  /** The id of the texture this resource is located within */
-  textureReferenceID: string = "";
+  /** The region information of the subtexture on the atlas' texture. */
+  atlasRegion?: { x: number; y: number; width: number; height: number };
+  /** This is the source image/data that this sub texture applied to the atlas */
+  source?: TexImageSource;
   /** This is the actual texture this resource is located within */
   texture: Texture | null = null;
+  /**
+   * If this is a subtexture that references a video, this will be populated with it's monitor that ensures the portion
+   * of the texture is kept up to date with the latest from the video's playback.
+   */
+  video?: {
+    monitor: VideoTextureMonitor;
+  };
   /** This is the normalized width of the sub texture on the atlas */
   widthOnAtlas: number = 0;
+
+  constructor(options?: Omit<Partial<SubTexture>, "update">) {
+    Object.assign(this, options);
+  }
 
   /**
    * Generates a SubTexture object based on the texture and region provided.
@@ -85,5 +105,33 @@ export class SubTexture {
     sub.atlasTR = [right, top];
 
     return sub;
+  }
+
+  /**
+   * Forces an update of this sub texture on the texture it is located.
+   *
+   * NOTE: Use this WISELY. This does NOT smartly determine if the update would do nothing. This WILL cause the source
+   * to be uploaded to the Atlas when this is called.
+   */
+  update() {
+    if (!this.texture || !this.source || !this.atlasRegion) return;
+    this.texture.update(this.source, this.atlasRegion);
+  }
+
+  toString(): string {
+    return JSON.stringify(
+      {
+        atlas: {
+          TL: this.atlasTL,
+          TR: this.atlasTR,
+          BL: this.atlasBL,
+          BR: this.atlasBR
+        },
+        width: this.pixelWidth,
+        height: this.pixelHeight
+      },
+      null,
+      2
+    );
   }
 }

@@ -1,4 +1,5 @@
 import { Omit } from "../types";
+import { uid } from "../util";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 
@@ -14,6 +15,12 @@ export type TextureOptions = Omit<
  * This represents a texture that is loaded into the GPU.
  */
 export class Texture {
+  /** Unique identifier of the texture to aid in debugging and referencing */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
+
   /**
    * Anisotropic filtering level. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
@@ -233,7 +240,19 @@ export class Texture {
     .Wrapping.CLAMP_TO_EDGE;
 
   constructor(options: TextureOptions) {
-    Object.assign(this, options);
+    this.anisotropy = options.anisotropy || this.anisotropy;
+    this.data = options.data || this.data;
+    this.flipY = options.flipY || this.flipY;
+    this.format = options.format || this.format;
+    this.generateMipMaps = options.generateMipMaps || this.generateMipMaps;
+    this.magFilter = options.magFilter || this.magFilter;
+    this.minFilter = options.minFilter || this.minFilter;
+    this.packAlignment = options.packAlignment || this.packAlignment;
+    this.premultiplyAlpha = options.premultiplyAlpha || this.premultiplyAlpha;
+    this.type = options.type || this.type;
+    this.unpackAlignment = options.unpackAlignment || this.unpackAlignment;
+    this.wrapHorizontal = options.wrapHorizontal || this.wrapHorizontal;
+    this.wrapVertical = options.wrapVertical || this.wrapVertical;
   }
 
   /**

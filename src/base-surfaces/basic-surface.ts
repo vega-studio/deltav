@@ -1,18 +1,19 @@
+import { EventManager } from "../event-management/event-manager";
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
 import {
-  EventManager,
   ISceneOptions,
   ISurfaceOptions,
-  IViewOptions,
+  IViewProps,
+  LayerInitializer,
   Surface,
-  View
+  View,
+  ViewInitializer
 } from "../surface";
-import { LayerInitializer } from "../surface/surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
-import { ChartCamera, nextFrame, PromiseResolver } from "../util";
-import { waitForFrame } from "../util/waitForFrame";
+import { nextFrame, onFrame, PromiseResolver } from "../util";
+import { Camera } from "../util/camera";
 
 /**
  * This gets all of the values of a Lookup
@@ -78,11 +79,14 @@ function mapLookupValues<T, U>(
 }
 
 /** Non-keyed View options with ordering property to specify rendering order */
-export type BasicSurfaceView = Omit<IViewOptions, "key"> &
-  Partial<Pick<IViewOptions, "key">>;
+export type BasicSurfaceView<TViewProps extends IViewProps> = Omit<
+  ViewInitializer<TViewProps>,
+  "key"
+> &
+  Partial<Pick<IViewProps, "key">>;
 /** Non-keyed layer initializer with ordering property to specify rendering order */
 export type BasicSurfaceLayer = Omit<LayerInitializer, "key"> &
-  Partial<Pick<IViewOptions, "key">>;
+  Partial<Pick<IViewProps, "key">>;
 
 /**
  * Defines a scene that elements are injected to. Each scene can be viewed with multiple views
@@ -98,7 +102,7 @@ export type BasicSurfaceSceneOptions = Omit<
   /** Layers to inject elements into the scene */
   layers: Lookup<BasicSurfaceLayer>;
   /** Views for rendering a perspective of the scene to a surface */
-  views: Lookup<BasicSurfaceView>;
+  views: Lookup<BasicSurfaceView<IViewProps>>;
 };
 
 export type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, "key"> & {
@@ -115,7 +119,7 @@ export interface IBasicSurfacePipeline {
  */
 export interface IBasicSurfaceOptions<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > {
@@ -172,7 +176,7 @@ export interface IBasicSurfaceOptions<
  */
 export class BasicSurface<
   T extends Lookup<InstanceProvider<Instance>>,
-  U extends Lookup<ChartCamera>,
+  U extends Lookup<Camera>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>
 > {
@@ -317,7 +321,7 @@ export class BasicSurface<
       // Use the established cameras and managers to establish the initial pipeline for the surface
       // await this.updatePipeline();
       // Begin the draw loop
-      this.draw(await waitForFrame());
+      this.draw(await onFrame());
       // Use the established cameras and managers to establish the initial pipeline for the surface
       await this.updatePipeline();
       // Establish event listeners
@@ -374,7 +378,7 @@ export class BasicSurface<
    * Retrieves the bounds of the view as it appears on the screen (relative to the canvas).
    * If it does not exist yet, this will return a dimensionless Bounds object.
    */
-  getViewScreenBounds(viewId: string): Bounds<View> {
+  getViewScreenBounds(viewId: string): Bounds<View<IViewProps>> {
     if (!this.base) return new Bounds({ x: 0, y: 0, width: 0, height: 0 });
     const bounds = this.base.getViewWorldBounds(viewId);
     if (!bounds) return new Bounds({ x: 0, y: 0, width: 0, height: 0 });
@@ -386,7 +390,7 @@ export class BasicSurface<
    * Gets the bounds of the view within world space.
    * If it does not exist yet, this will return a dimensionless Bounds object.
    */
-  getViewWorldBounds(viewId: string): Bounds<View> {
+  getViewWorldBounds(viewId: string): Bounds<View<IViewProps>> {
     if (!this.base) return new Bounds({ x: 0, y: 0, width: 0, height: 0 });
     const bounds = this.base.getViewWorldBounds(viewId);
     if (!bounds) return new Bounds({ x: 0, y: 0, width: 0, height: 0 });
@@ -510,15 +514,22 @@ export class BasicSurface<
       "scenes",
       (val: any) => val && val.views !== undefined && val.layers !== undefined,
       pipelineWithLookups.scenes,
-      (key: string, val: BasicSurfaceSceneOptions) => {
+      (sceneKey: string, val: BasicSurfaceSceneOptions) => {
         const views = mapLookupValues(
           "views",
-          (val: any) => val.camera !== undefined && val.viewport !== undefined,
+          (val: any) => val && val.init !== undefined && val.init.length === 2,
           val.views,
-          (key: string, val: BasicSurfaceView) => {
-            const view: IViewOptions = {
+          (key: string, val: BasicSurfaceView<IViewProps>) => {
+            const view: ViewInitializer<IViewProps> = {
               ...val,
-              key: val.key || key
+              key: `${sceneKey}.${val.key || key}`
+            };
+
+            // Make the props it's own object so we don't mutate the originating object when we apply the
+            // calculated key
+            view.init[1] = {
+              ...view.init[1],
+              key: view.key
             };
 
             return view;
@@ -541,7 +552,7 @@ export class BasicSurface<
         );
 
         const scene: ISceneOptions = {
-          key,
+          key: sceneKey,
           order: val.order,
           views,
           layers

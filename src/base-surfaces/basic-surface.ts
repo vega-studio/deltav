@@ -11,8 +11,7 @@ import {
 } from "../surface";
 import { LayerInitializer } from "../surface/surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
-import { ChartCamera, nextFrame, PromiseResolver } from "../util";
-import { waitForFrame } from "../util/waitForFrame";
+import { ChartCamera, nextFrame, onFrame, PromiseResolver } from "../util";
 
 /**
  * This gets all of the values of a Lookup
@@ -317,7 +316,7 @@ export class BasicSurface<
       // Use the established cameras and managers to establish the initial pipeline for the surface
       // await this.updatePipeline();
       // Begin the draw loop
-      this.draw(await waitForFrame());
+      this.draw(await onFrame());
       // Use the established cameras and managers to establish the initial pipeline for the surface
       await this.updatePipeline();
       // Establish event listeners

@@ -42,13 +42,6 @@ import { debounce } from "../../common/debounce";
 import { DEFAULT_RESOURCES, WORDS } from "../../types";
 
 /**
- * Promise based wait timer function
- */
-export async function wait(t: number) {
-  return new Promise(resolve => setTimeout(resolve, t));
-}
-
-/**
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class NodesEdges extends BaseDemo {

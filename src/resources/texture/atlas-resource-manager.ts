@@ -1,3 +1,4 @@
+import { WebGLRenderer } from "../../gl";
 import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface";
@@ -42,6 +43,16 @@ export class AtlasResourceManager extends BaseResourceManager<
     string,
     Map<IAtlasResourceRequest, [Layer<any, any>, Instance][]>
   >();
+
+  /** Override the get and set of the webgl renderer so we can also apply it to the atlas manager object */
+  get webGLRenderer() {
+    return this._webGLRenderer;
+  }
+  set webGLRenderer(val: WebGLRenderer | undefined) {
+    this._webGLRenderer = val;
+    this.atlasManager.renderer = val;
+  }
+  private _webGLRenderer?: WebGLRenderer;
 
   constructor(options?: IAtlasResourceManagerOptions) {
     super();

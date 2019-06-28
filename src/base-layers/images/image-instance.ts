@@ -1,8 +1,10 @@
 import { observable } from "../../instance-provider";
 import { IInstanceOptions, Instance } from "../../instance-provider/instance";
-import { AtlasResouce, IAtlasResourceRequest } from "../../resources";
+import { IAtlasResourceRequest } from "../../resources";
+import { NOOP } from "../../types";
 import { Vec2 } from "../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../types";
+import { ImageInstanceResource } from "./image-layer";
 
 const { max } = Math;
 
@@ -15,7 +17,7 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** Depth sorting of the image (or the z value of the lable) */
   depth?: number;
   /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
-  source: AtlasResouce;
+  source: ImageInstanceResource;
   /** The height of the image as it is to be rendered in world space */
   height?: number;
   /** The coordinate where the image will be anchored to in world space */
@@ -27,8 +29,10 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   /** The width of the image as it is to be rendered in world space */
   width?: number;
 
+  /** Triggered when it's detected that the image will never render correctly */
+  onError?(): void;
   /** Triggered when the image has fully loaded it's resources */
-  onReady?(image: ImageInstance): void;
+  onReady?(image: ImageInstance, video?: HTMLVideoElement): void;
 }
 
 /**
@@ -80,12 +84,6 @@ const anchorCalculator: {
   }
 };
 
-export type ImageInstanceSource =
-  | ImageBitmap
-  | ImageData
-  | HTMLImageElement
-  | HTMLCanvasElement;
-
 /**
  * This generates a new image instance.
  * There are restrictions surrounding images due to texture sizes and rendering limitations.
@@ -116,7 +114,7 @@ export class ImageInstance extends Instance {
   /** Sets the way the image scales with the world */
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
   /** This is where the source of the image will come from */
-  @observable source: AtlasResouce;
+  @observable source: ImageInstanceResource;
   /**
    * The width of the image as it is to be rendered in world space.
    * After onReady: this is immediately populated with the width and height of the image as it
@@ -138,8 +136,10 @@ export class ImageInstance extends Instance {
     this.height = value;
   }
 
+  /** Event called when there is an error attempting to load and render the image */
+  onError?: IImageInstanceOptions["onError"];
   /** Event called when the instance has it's resource loaded and ready for use */
-  onReady?: (image: ImageInstance) => void;
+  onReady?: IImageInstanceOptions["onReady"];
   /** This is the request generated for the instance to retrieve the correct resource */
   request?: IAtlasResourceRequest;
   /** After onReady: This is populated with the width of the source image loaded into the Atlas */
@@ -178,6 +178,15 @@ export class ImageInstance extends Instance {
   get anchor() {
     return this._anchor;
   }
+
+  /**
+   * In the event that video auto play is not permitted, one may have to respond to a user input gesture to begin
+   * loading and playing the video. While your video is not ready to play, the ImageInstance will NOT fire the onReady
+   * callback. Instead it will wait idle as an image that is merely the 'tint color' provided. Once this is called
+   * (within a user gesture) the video will for sure start loading, the onReady will call back once the video has
+   * properly prepped.
+   */
+  videoLoad: Function = NOOP;
 
   /** This is triggered after the request has been completed */
   resourceTrigger() {

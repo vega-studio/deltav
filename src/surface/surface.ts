@@ -22,11 +22,10 @@ import {
   IResourceType,
   PickType
 } from "../types";
-import { PromiseResolver } from "../util";
+import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { copy4, Vec2, Vec4 } from "../util/vector";
-import { waitForFrame } from "../util/waitForFrame";
 import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, ILayerPropsInternal, Layer } from "./layer";
@@ -738,7 +737,7 @@ export class Surface {
       // If buffering did occur and completed, then we should be performing a draw to ensure all of the
       // Changes are committed and pushed out.
       if (didBuffer) {
-        this.draw(await waitForFrame());
+        this.draw(await onFrame());
       }
     }
 

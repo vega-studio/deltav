@@ -80,21 +80,20 @@ export class Demo {
     }
 
     // Our current demo is officially the new demo found
-    this.currentDemo = demo;
+    this.currentDemo = new demo();
 
     // Make the demo produce it's surface.
-    const surface = demo.makeSurface(this.options.container);
+    const surface = this.currentDemo.makeSurface(this.options.container);
     // Set the created surface to the demo
-    demo.setSurface(surface);
+    this.currentDemo.setSurface(surface);
     // Wait for the surface to be prepped
     await surface.ready;
     // Build a new console for the demo
     this.buildConsole();
     // Let the demo modify the console
-    demo.buildConsole(this.gui);
-
+    this.currentDemo.buildConsole(this.gui);
     // Let the demo know everything is done and ready for the demo to operate
-    await demo.init();
+    await this.currentDemo.init();
     // Set this demo as the current demo so page refreshes return here
     localStorage.setItem("deltaV_currentDemo", demoKey);
   }

@@ -424,6 +424,8 @@ export class WebGLRenderer {
     bounds?: { x: number; y: number; width: number; height: number },
     target?: RenderTarget
   ) {
+    target = target || this.state.currentRenderTarget || undefined;
+
     if (target) {
       const _height = target.height;
 

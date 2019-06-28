@@ -46,14 +46,14 @@ export class TextAreaDemo extends BaseDemo {
     x: 0,
     y: 0,
     lineHeight: 30,
-    wordWrap: 1,
+    wordWrap: WordWrap.WORD,
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 0,
     paddingLeft: 0,
     borderWidth: 1,
     hasBorder: true,
-    letterSpacing: 1
+    letterSpacing: 0
   };
 
   providers = {
@@ -272,7 +272,7 @@ export class TextAreaDemo extends BaseDemo {
               textArea: createLayer(TextAreaLayer, {
                 data: providers.textAreas,
                 resourceKey: resources.font.key,
-                scaling: ScaleMode.ALWAYS
+                scaling: ScaleMode.BOUND_MAX
               }),
               circles: createLayer(CircleLayer, {
                 data: providers.circles

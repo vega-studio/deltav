@@ -59,11 +59,11 @@ export class SandDance {
   /** Actuall number of bucket, will be determined by number of values */
   bucketNum: number;
   /** Color of rectangles that represent buckets */
-  bucketRectangleColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+  bucketRectangleColor: Vec4 = [0, 0, 0, 1.0];
   /** Width of buckets' rectangles , will be determined by bucketNum and chartWidth */
   bucketRectangleWidth: number;
   /** Height of buckets' rectangles */
-  bucketRectangleHeight: number = 20;
+  bucketRectangleHeight: number = 10;
   /** Number of rectangles in a row, will be determined by bucketRectangleWidtha and rectangelWidth */
   numOfRecsPerRow: number;
   /** Number of rectangles */
@@ -117,6 +117,7 @@ export class SandDance {
       options.gapBetweenRectangles || this.gapBetweenRectangles;
     this.addAtOnce = options.addAtOnce || this.addAtOnce;
     this.moveAtOnce = options.moveAtOnce || this.moveAtOnce;
+
     this.providers = options.providers;
 
     // Generate Persons
@@ -131,6 +132,7 @@ export class SandDance {
   initGraph() {
     this.providers.labels.clear();
     this.providers.buckets.clear();
+    this.providers.lines.clear();
     this.bucketToRectangles.clear();
     this.buckets = [];
   }
@@ -364,11 +366,11 @@ export class SandDance {
         depth: 0,
         position: [
           this.origin[0] + this.bucketRectangleWidth * i,
-          this.origin[1] + 20
+          this.origin[1] + this.rectangleHeight + 2
         ],
-        size: [this.bucketRectangleWidth - 5, this.bucketRectangleHeight],
+        size: [this.bucketRectangleWidth, this.bucketRectangleHeight],
         scaling: ScaleMode.ALWAYS,
-        color: [0.5, 0.5, 0.5, 1]
+        color: this.bucketRectangleColor
       });
 
       this.providers.buckets.add(bucketRec);
@@ -383,17 +385,62 @@ export class SandDance {
   layoutLines() {
     this.providers.lines.add(
       new EdgeInstance({
-        start: [this.origin[0], this.origin[1] + 10],
-        end: [this.origin[0] + this.chartWidth, this.origin[1] + 10]
+        startColor: [0.3, 0.3, 0.3, 1.0],
+        endColor: [0.3, 0.3, 0.3, 1.0],
+        start: [this.origin[0], this.origin[1] + this.rectangleHeight + 2],
+        end: [
+          this.origin[0] + this.chartWidth,
+          this.origin[1] + this.rectangleHeight + 2
+        ],
+        thickness: [1, 1]
       })
     );
 
     this.providers.lines.add(
       new EdgeInstance({
-        start: [this.origin[0], this.origin[1] + 10],
+        startColor: [0.3, 0.3, 0.3, 1.0],
+        endColor: [0.3, 0.3, 0.3, 1.0],
+        start: [
+          this.origin[0],
+          this.origin[1] + this.rectangleHeight + this.bucketRectangleHeight + 2
+        ],
+        end: [
+          this.origin[0] + this.chartWidth,
+          this.origin[1] + this.rectangleHeight + this.bucketRectangleHeight + 2
+        ],
+        thickness: [1, 1]
+      })
+    );
+
+    this.providers.lines.add(
+      new EdgeInstance({
+        startColor: [0.3, 0.3, 0.3, 1.0],
+        endColor: [0.3, 0.3, 0.3, 1.0],
+        start: [this.origin[0], this.origin[1] + this.rectangleHeight + 2],
         end: [this.origin[0], this.origin[1] - this.chartHeight + 10]
       })
     );
+
+    for (let i = 0; i <= this.bucketNum; i++) {
+      this.providers.lines.add(
+        new EdgeInstance({
+          startColor: [0.3, 0.3, 0.3, 1.0],
+          endColor: [0.3, 0.3, 0.3, 1.0],
+          start: [
+            this.origin[0] + this.bucketRectangleWidth * i,
+            this.origin[1] + this.rectangleHeight + 2
+          ],
+          end: [
+            this.origin[0] + this.bucketRectangleWidth * i,
+            this.origin[1] +
+              this.rectangleHeight +
+              this.bucketRectangleHeight +
+              2
+          ],
+          thickness: [1, 1]
+        })
+      );
+    }
   }
 
   /** Layout all the rectangles */
@@ -471,28 +518,46 @@ export class SandDance {
 
   /** Layout all the labels that represent buckets */
   layoutLabels() {
-    for (let i = 0; i < this.bucketNum; i++) {
-      const bucket = this.buckets[i];
+    for (let i = 0; i <= this.bucketNum; i++) {
+      const bucket = i < this.bucketNum ? this.buckets[i] : this.buckets[i - 1];
       let labelText = "";
 
-      if (bucket.type === BucketType.SINGLE) {
+      if (bucket.type === BucketType.SINGLE && i < this.bucketNum) {
         labelText = bucket.value.toString();
+        const label = new LabelInstance({
+          text: labelText,
+          color: [0.6, 0.6, 0.6, 1],
+          origin: [
+            this.origin[0] +
+              this.bucketRectangleWidth * i +
+              this.bucketRectangleWidth / 2,
+            this.origin[1] +
+              this.bucketRectangleHeight +
+              this.rectangleHeight +
+              6
+          ],
+          fontSize: 12
+        });
+        this.providers.labels.add(label);
       } else {
         if (typeof bucket.value === "object") {
-          labelText = `${bucket.value[0]} - ${bucket.value[1]}`;
+          labelText =
+            i < this.bucketNum ? `${bucket.value[0]}` : `${bucket.value[1]}`; // - ${bucket.value[1]}`;
         }
+        const label = new LabelInstance({
+          text: labelText,
+          color: [0.6, 0.6, 0.6, 1],
+          origin: [
+            this.origin[0] + this.bucketRectangleWidth * i,
+            this.origin[1] +
+              this.bucketRectangleHeight +
+              this.rectangleHeight +
+              6
+          ],
+          fontSize: 12
+        });
+        this.providers.labels.add(label);
       }
-
-      const label = new LabelInstance({
-        text: labelText,
-        color: [1, 1, 1, 1],
-        origin: [
-          this.origin[0] + this.bucketRectangleWidth * i,
-          this.origin[1] + 40
-        ],
-        fontSize: 24
-      });
-      this.providers.labels.add(label);
     }
   }
 

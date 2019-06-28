@@ -37,6 +37,7 @@ export class SandDanceDemo extends BaseDemo {
     width: 6,
     sortBy: "null"
   };
+
   providers = {
     buckets: new InstanceProvider<RectangleInstance>(),
     rectangles: new InstanceProvider<RectangleInstance>(),
@@ -50,24 +51,22 @@ export class SandDanceDemo extends BaseDemo {
   selectedbucket: RectangleInstance | null = null;
 
   mouseClick = (info: IPickInfo<RectangleInstance>) => {
-    if (info.instances.length > 0) {
-      const instance = info.instances[0];
+    const instance = info.instances[0];
 
-      if (!this.selectedRectangle || this.selectedRectangle !== instance) {
-        this.selectedRectangle = instance;
+    if (!this.selectedRectangle || this.selectedRectangle !== instance) {
+      this.selectedRectangle = instance;
 
-        const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
-        const highLight: Vec4 = [1, 1, 1, 1];
+      const dimColor: Vec4 = [0.1, 0.1, 0.1, 1.0];
+      const highLight: Vec4 = [1, 1, 1, 1];
 
-        this.sandDance.highLightSingleRectangle(dimColor, instance, highLight);
-      } else {
-        this.selectedRectangle = null;
-        this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
-      }
+      this.sandDance.highLightSingleRectangle(dimColor, instance, highLight);
+    } else {
+      this.selectedRectangle = null;
+      this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
     }
   };
 
-  mouseClickbucket = (info: IPickInfo<RectangleInstance>) => {
+  mouseClickBucket = (info: IPickInfo<RectangleInstance>) => {
     if (info.instances.length > 0) {
       const bucketInstance = info.instances[0];
       if (!this.selectedbucket || this.selectedbucket !== bucketInstance) {
@@ -86,6 +85,20 @@ export class SandDanceDemo extends BaseDemo {
         this.selectedbucket = null;
         this.sandDance.setColorForAllRectangles([0, 0, 1, 1]);
       }
+    }
+  };
+
+  mouseOverBucket = (info: IPickInfo<RectangleInstance>) => {
+    if (info.instances.length > 0) {
+      const bucketInstance = info.instances[0];
+      bucketInstance.color = [0.3, 0.3, 0.3, 1.0];
+    }
+  };
+
+  mouseOutBucket = (info: IPickInfo<RectangleInstance>) => {
+    if (info.instances.length > 0) {
+      const bucketInstance = info.instances[0];
+      bucketInstance.color = [0.0, 0.0, 0.0, 1.0];
     }
   };
 
@@ -161,10 +174,6 @@ export class SandDanceDemo extends BaseDemo {
                 data: providers.labels,
                 resourceKey: resources.font.key
               }),
-              lines: createLayer(EdgeLayer, {
-                data: providers.lines,
-                type: EdgeType.LINE
-              }),
               rectangles: createLayer(RectangleLayer, {
                 animate: {
                   color: AutoEasingMethod.linear(1000),
@@ -179,8 +188,14 @@ export class SandDanceDemo extends BaseDemo {
                   color: AutoEasingMethod.linear(300)
                 },
                 data: providers.buckets,
-                onMouseClick: this.mouseClickbucket,
+                onMouseClick: this.mouseClickBucket,
+                onMouseOver: this.mouseOverBucket,
+                onMouseOut: this.mouseOutBucket,
                 picking: PickType.SINGLE
+              }),
+              lines: createLayer(EdgeLayer, {
+                data: providers.lines,
+                type: EdgeType.LINE
               })
             }
           }

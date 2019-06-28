@@ -85,7 +85,7 @@ module.exports = {
       { test: /\.png$/, loader: 'base64-image-loader' },
       { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
       {
-        test: /\.(mp4)$/,
+        test: /\.(mp4|mov)$/,
         loader: 'file-loader',
         options: {
           name: '[name].[ext]',

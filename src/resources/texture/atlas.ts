@@ -80,12 +80,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   textureSettings?: TextureOptions;
   /** The resource type for resource management */
   type: number = ResourceType.ATLAS;
-  /**
-   * This is all of the resources associated with this atlas. The boolean flag indicates if the resource
-   * is flagged for removal. When set to false, the resource is no longer valid and can be removed from
-   * the atlas at any given moment.
-   */
-  validResources = new Set<IAtlasResourceRequest>();
   /** Stores the size of the atlas texture */
   width: TextureSize;
 
@@ -129,13 +123,6 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       data: canvas,
       ...textureSettings
     });
-
-    // Update resources referencing the texture
-    this.validResources.forEach(resource => {
-      if (resource.texture) {
-        resource.texture.texture = this.texture;
-      }
-    });
   }
 
   /**
@@ -150,8 +137,8 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
 
     // Invalidate the Sub textures so they don't start rendering wild colors. Instead
     // should render a single color at the 0, 0 mark of the texture.
-    this.validResources.forEach((_isValid, resource) => {
-      if (resource.texture) this.invalidateTexture(resource.texture);
+    this.resourceReferences.forEach(resource => {
+      this.invalidateTexture(resource.subtexture);
     });
   }
 
@@ -160,14 +147,13 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    */
   private invalidateTexture(texture: SubTexture) {
     const zero: Vec2 = [0, 0];
-    texture.aspectRatio = 1;
 
     // Make anything trying to render with the image not render much anything useful
+    texture.aspectRatio = 1;
     texture.atlasBL = zero;
     texture.atlasBR = zero;
     texture.atlasTL = zero;
     texture.atlasTR = zero;
-    texture.textureReferenceID = "";
     texture.isValid = false;
     texture.texture = null;
     texture.pixelHeight = 0;

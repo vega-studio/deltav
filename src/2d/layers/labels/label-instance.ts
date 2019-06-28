@@ -145,6 +145,7 @@ export class LabelInstance extends Instance {
   setAnchor(anchor: Anchor) {
     const newAnchor = {
       padding: anchor.padding || 0,
+      paddingDirection: anchor.paddingDirection,
       type: anchor.type,
       x: anchor.x || 0,
       y: anchor.y || 0

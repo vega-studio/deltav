@@ -19,9 +19,8 @@ import {
   View2D
 } from "src";
 import { DEFAULT_RESOURCES, WORDS } from "test/types";
-import { wait } from "../../../src/util/wait";
-import { BaseDemo } from "../../common/base-demo";
-import { debounce } from "../../common/debounce";
+import { BaseDemo } from "../common/base-demo";
+import { debounce } from "../common/debounce";
 
 const { random } = Math;
 
@@ -46,6 +45,13 @@ const copyToClipboard = (str: string) => {
     }
   }
 };
+
+/**
+ * Promise based wait timer function
+ */
+export async function wait(t: number) {
+  return new Promise(resolve => setTimeout(resolve, t));
+}
 
 /**
  * A demo demonstrating particles collecting within the bounds of text.
@@ -163,8 +169,8 @@ export class TextDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["default.default-view"],
-          wheelShouldScroll: true
+          startView: ["default-view"],
+          wheelShouldScroll: false
         })
       }),
       pipeline: (resources, providers, cameras) => ({

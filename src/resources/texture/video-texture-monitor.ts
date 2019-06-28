@@ -1,5 +1,4 @@
 import { onFrame } from "../../util";
-import { waitForFrame } from "../../util/waitForFrame";
 import { SubTexture } from "./sub-texture";
 
 /**
@@ -12,6 +11,11 @@ export class VideoTextureMonitor {
   /** This is the current rendered time frame that is applied to the subtexture */
   private renderedTime: number = -1;
 
+  previousTime: number = -1;
+  playedFrames: number = 0;
+  caughtFrames: number = 0;
+  timeFrame: number = 0;
+
   constructor(public video: HTMLVideoElement, public subTexture: SubTexture) {
     this.addEventListeners();
   }
@@ -21,8 +25,7 @@ export class VideoTextureMonitor {
    */
   private async addEventListeners() {
     if (this.isDestroyed) return;
-    this.video.addEventListener("timeupdate", this.doUpdate);
-    this.loop(await waitForFrame());
+    this.loop(await onFrame());
   }
 
   /**
@@ -39,7 +42,10 @@ export class VideoTextureMonitor {
    */
   private doUpdate = () => {
     // Only a change in time from what was currently rendered will require a render update
-    if (this.video.currentTime === this.renderedTime) return;
+    if (Math.abs(this.video.currentTime - this.renderedTime) < 0.015) {
+      return;
+    }
+
     // Make sure we don't trigger duplicate updates by tracking the time we have rendered
     this.renderedTime = this.video.currentTime;
     // Tell the sub texture to update from it's source again which will grab the newest and bestest pixels
@@ -59,6 +65,6 @@ export class VideoTextureMonitor {
    * Cleans up any listeners this may have registered to ensure the video does not get retained
    */
   private removeEventListeners() {
-    this.video.removeEventListener("timeupdate", this.doUpdate);
+    // No listeners needed yet
   }
 }

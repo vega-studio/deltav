@@ -25,6 +25,11 @@ export interface IRenderTargetOptions {
    */
   height?: number;
   /**
+   * If set to true, then disposing this render target will NOT cause the targets that are textures to be disposed
+   * when this is disposed.
+   */
+  retainTextureTargets?: boolean;
+  /**
    * The width of the render target. This is used when the textures are not dictating the width
    * and the width. This is required if no Textures are specified as a buffer.
    */
@@ -80,6 +85,9 @@ export class RenderTarget {
   }
   private _validFramebuffer: boolean = false;
 
+  /** Flag indicating whether or not to preserve render targets that are textures or not. */
+  retainTextureTargets: boolean = false;
+
   /**
    * Split buffers occur to handle compatibility problems with MRT (multi render targeting)
    * If the system this is running on does not support MRT, then for every color buffer attachment
@@ -123,6 +131,7 @@ export class RenderTarget {
     };
     this._width = options.width || 0;
     this._height = options.height || 0;
+    this.retainTextureTargets = options.retainTextureTargets || false;
     this.getDimensions();
   }
 

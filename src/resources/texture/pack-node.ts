@@ -171,7 +171,7 @@ export class PackNode<T> {
    */
   static applyToSubTexture<T>(
     root: PackNode<T>,
-    node: PackNode<T>,
+    node: PackNode<T> | Bounds<T>,
     texture?: SubTexture,
     padding?: { top: number; left: number; right: number; bottom: number },
     flipY?: boolean
@@ -185,13 +185,15 @@ export class PackNode<T> {
       right: 0
     };
 
+    const bounds = node instanceof PackNode ? node.bounds : node;
+
     // Set our image's atlas properties
-    const ux = (node.bounds.x + padding.left) / root.bounds.width;
-    const uy = (node.bounds.y + padding.top) / root.bounds.height;
+    const ux = (bounds.x + padding.left) / root.bounds.width;
+    const uy = (bounds.y + padding.top) / root.bounds.height;
     const uw =
-      (node.bounds.width - padding.left - padding.right) / root.bounds.width;
+      (bounds.width - padding.left - padding.right) / root.bounds.width;
     const uh =
-      (node.bounds.height - padding.top - padding.bottom) / root.bounds.height;
+      (bounds.height - padding.top - padding.bottom) / root.bounds.height;
 
     let atlasDimensions: Bounds<never>;
 

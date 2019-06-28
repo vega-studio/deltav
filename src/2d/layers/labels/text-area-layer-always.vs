@@ -6,7 +6,7 @@ void main() {
 
   // Calculate in the anchor, the origin, glyph offset, and the quad pushout to make our quad geometry
   vec2 pushOut = normals * glyphSize * fontScale;
-  vec3 position = vec3(origin + padding - anchor + offset + pushOut, depth);
+  vec3 position = vec3(origin + padding + offset + pushOut, depth);
   gl_Position = clipSpace(position);
 
   // Get the atlas position of the texture information

@@ -59,8 +59,6 @@ export class SubTexture {
   atlasRegion?: { x: number; y: number; width: number; height: number };
   /** This is the source image/data that this sub texture applied to the atlas */
   source?: TexImageSource;
-  /** The id of the texture this resource is located within */
-  textureReferenceID: string = "";
   /** This is the actual texture this resource is located within */
   texture: Texture | null = null;
   /**

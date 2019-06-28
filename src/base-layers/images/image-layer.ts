@@ -40,7 +40,7 @@ export type ImageInstanceResource =
 /**
  * Typeguard for video resource requests
  */
-function isVideoResource(val: any): val is ImageVideoResource {
+export function isVideoResource(val: any): val is ImageVideoResource {
   return val && val.videoSrc;
 }
 

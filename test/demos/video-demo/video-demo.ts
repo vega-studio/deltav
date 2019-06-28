@@ -97,6 +97,14 @@ export class VideoDemo extends BaseDemo {
       });
   }
 
+  handlePlay = () => {
+    this.updatePlayState();
+  };
+
+  handlePause = () => {
+    this.updatePlayState();
+  };
+
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
@@ -167,8 +175,6 @@ export class VideoDemo extends BaseDemo {
                     } else {
                       this.videoInstance.videoLoad();
                     }
-
-                    this.updatePlayState();
                   }
                 }
               })
@@ -224,6 +230,11 @@ export class VideoDemo extends BaseDemo {
 
             this.videoInstance = image;
             this.video = video;
+
+            video.removeEventListener("play", this.handlePlay);
+            video.removeEventListener("pause", this.handlePause);
+            video.addEventListener("play", this.handlePlay);
+            video.addEventListener("pause", this.handlePause);
 
             const max = Math.max(this.video.videoWidth, this.video.videoHeight);
             const adjustedScale = Math.min(500 / max, scale);

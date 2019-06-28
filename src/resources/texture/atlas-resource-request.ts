@@ -8,6 +8,8 @@ export type AtlasVideoResource = {
 
 export type AtlasResource = string | TexImageSource;
 
+const EMPTY_IMAGE = new Image();
+
 /**
  * Base information an atlas resource can provide
  */
@@ -48,7 +50,7 @@ export function atlasRequest(
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
-    source: "",
+    source: EMPTY_IMAGE,
     ...options
   };
 }

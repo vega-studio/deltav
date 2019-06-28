@@ -24,7 +24,6 @@ const ZERO_IMAGE: SubTexture = new SubTexture({
   aspectRatio: 0,
   atlasBL: [0, 0],
   atlasBR: [0, 0],
-  textureReferenceID: "",
   texture: null,
   atlasTL: [0, 0],
   atlasTR: [0, 0],

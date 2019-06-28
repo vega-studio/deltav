@@ -147,14 +147,13 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    */
   private invalidateTexture(texture: SubTexture) {
     const zero: Vec2 = [0, 0];
-    texture.aspectRatio = 1;
 
     // Make anything trying to render with the image not render much anything useful
+    texture.aspectRatio = 1;
     texture.atlasBL = zero;
     texture.atlasBR = zero;
     texture.atlasTL = zero;
     texture.atlasTR = zero;
-    texture.textureReferenceID = "";
     texture.isValid = false;
     texture.texture = null;
     texture.pixelHeight = 0;

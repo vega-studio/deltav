@@ -932,3 +932,19 @@ export function VecMath<T extends IVec>(vec: T): VecMethods<T> {
 
   return methods;
 }
+
+export function toString1(v: Vec1Compat): string {
+  return `[${v[0]}]`;
+}
+
+export function toString2(v: Vec2Compat): string {
+  return `[${v[0]}, ${v[1]}]`;
+}
+
+export function toString3(v: Vec3Compat): string {
+  return `[${v[0]}, ${v[1]}, ${v[2]}]`;
+}
+
+export function toString4(v: Vec4Compat): string {
+  return `[${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}]`;
+}

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/util/vector';
+import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/util/vector';
 
 function fail1(actual: Vec1, expected: Vec1): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;
@@ -532,6 +532,10 @@ describe('Vector Library', () => {
     });
 
     it("Divide vector1 should be correct", () => {
+      assert1(divide1([5], [-2]), [-2.5]);
+    });
+
+    it("Divide vector1 should be correct", () => {
       assert1(divide1([6], [2]), [3]);
     });
 
@@ -545,6 +549,18 @@ describe('Vector Library', () => {
 
     it("Divide vector1 should be correct", () => {
       assert1(divide1([-5], [0]), [-Infinity]);
+    });
+
+    it("Divide vector2 should be correct", () => {
+      assert2(divide2([5, 6], [2, 2]), [2.5, 3]);
+    });
+
+    it("Divide vector2 should be correct", () => {
+      assert2(divide2([5, 6], [0, 2]), [Infinity, 3]);
+    });
+
+    it("Divide vector2 should be correct", () => {
+      assert2(divide2([5, 6], [2, -0]), [2.5, -Infinity]);
     });
   });
 

@@ -17,7 +17,7 @@
     "release": "auto build",
     "start": "node scripts/dev",
     "unit-test": "mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'",
-    "unit-test-dev": "nodemon -e 'ts' -x \"mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'\""
+    "unit-test-dev": "nodemon -e 'ts' -x \"mocha --file unit-test/test-bootstrap.js unit-test/**/*.ts\""
   },
   "dependencies": {},
   "devDependencies": {

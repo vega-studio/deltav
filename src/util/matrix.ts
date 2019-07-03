@@ -919,10 +919,10 @@ export function orthographic4x4(
  */
 export function compare2x2(m1: Mat2x2, m2: Mat2x2): boolean {
   return (
-    Math.abs(m1[0] - m2[0]) < 1e-10 &&
-    Math.abs(m1[1] - m2[1]) < 1e-10 &&
-    Math.abs(m1[2] - m2[2]) < 1e-10 &&
-    Math.abs(m1[3] - m2[3]) < 1e-10
+    Math.abs(m1[0] - m2[0]) <= 1e-7 &&
+    Math.abs(m1[1] - m2[1]) <= 1e-7 &&
+    Math.abs(m1[2] - m2[2]) <= 1e-7 &&
+    Math.abs(m1[3] - m2[3]) <= 1e-7
   );
 }
 
@@ -931,15 +931,15 @@ export function compare2x2(m1: Mat2x2, m2: Mat2x2): boolean {
  */
 export function compare3x3(m1: Mat3x3, m2: Mat3x3): boolean {
   return (
-    Math.abs(m1[0] - m2[0]) < 1e-10 &&
-    Math.abs(m1[1] - m2[1]) < 1e-10 &&
-    Math.abs(m1[2] - m2[2]) < 1e-10 &&
-    Math.abs(m1[3] - m2[3]) < 1e-10 &&
-    Math.abs(m1[4] - m2[4]) < 1e-10 &&
-    Math.abs(m1[5] - m2[5]) < 1e-10 &&
-    Math.abs(m1[6] - m2[6]) < 1e-10 &&
-    Math.abs(m1[7] - m2[7]) < 1e-10 &&
-    Math.abs(m1[8] - m2[8]) < 1e-10
+    Math.abs(m1[0] - m2[0]) <= 1e-7 &&
+    Math.abs(m1[1] - m2[1]) <= 1e-7 &&
+    Math.abs(m1[2] - m2[2]) <= 1e-7 &&
+    Math.abs(m1[3] - m2[3]) <= 1e-7 &&
+    Math.abs(m1[4] - m2[4]) <= 1e-7 &&
+    Math.abs(m1[5] - m2[5]) <= 1e-7 &&
+    Math.abs(m1[6] - m2[6]) <= 1e-7 &&
+    Math.abs(m1[7] - m2[7]) <= 1e-7 &&
+    Math.abs(m1[8] - m2[8]) <= 1e-7
   );
 }
 
@@ -948,21 +948,21 @@ export function compare3x3(m1: Mat3x3, m2: Mat3x3): boolean {
  */
 export function compare4x4(m1: Mat4x4, m2: Mat4x4): boolean {
   return (
-    Math.abs(m1[0] - m2[0]) < 1e-10 &&
-    Math.abs(m1[1] - m2[1]) < 1e-10 &&
-    Math.abs(m1[2] - m2[2]) < 1e-10 &&
-    Math.abs(m1[3] - m2[3]) < 1e-10 &&
-    Math.abs(m1[4] - m2[4]) < 1e-10 &&
-    Math.abs(m1[5] - m2[5]) < 1e-10 &&
-    Math.abs(m1[6] - m2[6]) < 1e-10 &&
-    Math.abs(m1[7] - m2[7]) < 1e-10 &&
-    Math.abs(m1[8] - m2[8]) < 1e-10 &&
-    Math.abs(m1[9] - m2[9]) < 1e-10 &&
-    Math.abs(m1[10] - m2[10]) < 1e-10 &&
-    Math.abs(m1[11] - m2[11]) < 1e-10 &&
-    Math.abs(m1[12] - m2[12]) < 1e-10 &&
-    Math.abs(m1[13] - m2[13]) < 1e-10 &&
-    Math.abs(m1[14] - m2[14]) < 1e-10 &&
-    Math.abs(m1[15] - m2[15]) < 1e-10
+    Math.abs(m1[0] - m2[0]) <= 1e-7 &&
+    Math.abs(m1[1] - m2[1]) <= 1e-7 &&
+    Math.abs(m1[2] - m2[2]) <= 1e-7 &&
+    Math.abs(m1[3] - m2[3]) <= 1e-7 &&
+    Math.abs(m1[4] - m2[4]) <= 1e-7 &&
+    Math.abs(m1[5] - m2[5]) <= 1e-7 &&
+    Math.abs(m1[6] - m2[6]) <= 1e-7 &&
+    Math.abs(m1[7] - m2[7]) <= 1e-7 &&
+    Math.abs(m1[8] - m2[8]) <= 1e-7 &&
+    Math.abs(m1[9] - m2[9]) <= 1e-7 &&
+    Math.abs(m1[10] - m2[10]) <= 1e-7 &&
+    Math.abs(m1[11] - m2[11]) <= 1e-7 &&
+    Math.abs(m1[12] - m2[12]) <= 1e-7 &&
+    Math.abs(m1[13] - m2[13]) <= 1e-7 &&
+    Math.abs(m1[14] - m2[14]) <= 1e-7 &&
+    Math.abs(m1[15] - m2[15]) <= 1e-7
   );
 }

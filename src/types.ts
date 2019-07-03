@@ -127,9 +127,27 @@ export interface IResourceType {
 export type Color = Vec4;
 
 /**
- * This represents a rotation in Euler angles [roll, pitch, yaw]
+ * This represents a rotation in Euler angles [X axis, Y axis, Z axis]
  */
-export type EulerRotation = Vec3Compat;
+export type EulerRotation = Vec3;
+
+/**
+ * Order description of the way a euler angle is supposed to be applied
+ */
+export enum EulerOrder {
+  zyx,
+  zyz,
+  zxy,
+  zxz,
+  yxz,
+  yxy,
+  yzx,
+  yzy,
+  xyz,
+  xyx,
+  xzy,
+  xzx
+}
 
 /**
  * Represents something with a unique id

@@ -10,7 +10,8 @@ const DEVGL = process.env.DEVGL;
 const IS_HEROKU = process.env.NODE_ENV === 'heroku';
 const IS_RELEASE = process.env.NODE_ENV === 'release';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
 const tslint = { loader: 'tslint-loader', options: {
@@ -68,9 +69,17 @@ if (IS_PRODUCTION) {
   console.log('Minification enabled');
 }
 
+let entry = 'src';
+if (IS_DEVELOPMENT || IS_HEROKU) entry = 'test';
+if (IS_UNIT_TESTS) entry = 'unit-test';
+
+let path = resolve(__dirname, 'build');
+if (IS_PRODUCTION) path = resolve(__dirname, 'dist');
+if (IS_UNIT_TESTS) path = resolve(__dirname, 'unit-test', 'build');
+
 module.exports = {
   devtool: 'source-map',
-  entry: (IS_DEVELOPMENT || IS_HEROKU) ? 'test' : 'src',
+  entry,
   externals,
   mode: MODE,
 
@@ -78,7 +87,7 @@ module.exports = {
     rules: [
       { test: /\.tsx?/, use: [
         { loader: 'babel-loader', options: babelOptions },
-        'ts-loader',
+        { loader: 'ts-loader', options: { transpileOnly: IS_UNIT_TESTS } },
       ] },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
@@ -97,7 +106,7 @@ module.exports = {
   output: {
     library,
     libraryTarget,
-    path: IS_PRODUCTION ? resolve(__dirname, 'dist') : resolve(__dirname, 'build'),
+    path,
     filename: 'index.js'
   },
 

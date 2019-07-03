@@ -15,7 +15,17 @@ import { Instance } from "./instance-provider/instance";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
 import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
-import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
+import {
+  Mat3x3,
+  Mat4x4,
+  Vec,
+  Vec1,
+  Vec2,
+  Vec2Compat,
+  Vec3,
+  Vec3Compat,
+  Vec4
+} from "./util";
 import { IAutoEasingMethod } from "./util/auto-easing-method";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
@@ -114,7 +124,12 @@ export interface IResourceType {
 /**
  * This represents a color in the VoidGL system. Ranges are [0 - 1, 0 - 1, 0 - 1, 0 - 1]
  */
-export type Color = [number, number, number, number];
+export type Color = Vec4;
+
+/**
+ * This represents a rotation in Euler angles [roll, pitch, yaw]
+ */
+export type EulerRotation = Vec3Compat;
 
 /**
  * Represents something with a unique id
@@ -453,21 +468,21 @@ export interface IProjection {
   /** This is the chart camera utilized in the projection of elements */
   props: IViewProps;
   /** Converts from the pixel density layer to the screen space */
-  pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
+  pixelSpaceToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from the screen coordinates to the pixel density layer */
-  screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;
+  screenToPixelSpace(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from screen space to the view's relative coordinates */
-  screenToView(point: Vec2, out?: Vec2): Vec2;
+  screenToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from screen space to the world space of a scene */
-  screenToWorld(point: Vec2, out?: Vec2): Vec2;
+  screenToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from a view's space to the screen */
-  viewToScreen(point: Vec2, out?: Vec2): Vec2;
+  viewToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from a views space to the world coordinates */
-  viewToWorld(point: Vec2, out?: Vec2): Vec2;
+  viewToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from world coordinate space of a scene to the screen */
-  worldToScreen(point: Vec2, out?: Vec2): Vec2;
+  worldToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from world coordinate space of a scene to the view's space */
-  worldToView(point: Vec2, out?: Vec2): Vec2;
+  worldToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 }
 
 /**

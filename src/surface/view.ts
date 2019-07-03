@@ -1,7 +1,7 @@
 import { AbsolutePosition } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
-import { Vec2 } from "../util";
+import { Vec2, Vec2Compat } from "../util";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { LayerScene } from "./layer-scene";
@@ -192,22 +192,22 @@ export abstract class View<
   /**
    * Maps a coordinate relative to the screen to a coordinate found within the world space.
    */
-  abstract screenToWorld(point: Vec2, out?: Vec2): Vec2;
+  abstract screenToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 
   /**
    * Maps a coordinate found within the world to a relative coordinate within the screen space.
    */
-  abstract worldToScreen(point: Vec2, out?: Vec2): Vec2;
+  abstract worldToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 
   /**
    * Maps a coordinate relative to the view's viewport to a coordinate found within the world.
    */
-  abstract viewToWorld(point: Vec2, out?: Vec2): Vec2;
+  abstract viewToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 
   /**
    * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
    */
-  abstract worldToView(point: Vec2, out?: Vec2): Vec2;
+  abstract worldToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 
   /**
    * This operation makes sure we have the view camera adjusted to the new viewport's needs.

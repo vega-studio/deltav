@@ -9,7 +9,7 @@ import {
   translation4x4by3
 } from "./matrix";
 import { uid } from "./uid";
-import { copy3, Vec3 } from "./vector";
+import { copy3, scale3, Vec3 } from "./vector";
 
 export enum CameraProjectionType {
   PERSPECTIVE,
@@ -217,7 +217,7 @@ export class Camera {
   update(force?: boolean) {
     if (this._needsUpdate || force) {
       this.updateProjection();
-      this.updateTransform();
+      this.updateView();
     }
   }
 
@@ -248,10 +248,10 @@ export class Camera {
    * Takes the current components of the camera and updates the transform of the camera (the view)
    * within Model View Projection Transform
    */
-  updateTransform() {
+  updateView() {
     this._view = multiply4x4(
       scale4x4by3(this._scale),
-      translation4x4by3(this._position)
+      translation4x4by3(scale3(this._position, -1))
     );
   }
 }

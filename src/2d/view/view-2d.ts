@@ -145,8 +145,8 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         viewport
       );
       camera.position = [
-        -viewBounds.width / 2.0,
-        viewBounds.height / 2.0,
+        viewBounds.width / 2.0,
+        -viewBounds.height / 2.0,
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];

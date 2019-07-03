@@ -1,6 +1,6 @@
 import { apply3, apply4, Vec3, Vec3Compat, Vec4 } from "./vector";
 
-const { cos, sin } = Math;
+const { cos, sin, tan } = Math;
 
 // prettier-ignore
 export type Mat2x2 = [
@@ -622,6 +622,105 @@ export function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
+ * This makes a shear 2d matrix that shears parallel to the x-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn('A shear matrix can not have radians >+ PI / 2 or <= -PI / 2');
+  }
+
+  out = out || identity2();
+
+  return apply2x2(out,
+    1, 0,
+    tan(radians), 1
+  );
+}
+
+/**
+ * This makes a shear 2d matrix that shears parallel to the y-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn('A shear matrix can not have radians >+ PI / 2 or <= -PI / 2');
+  }
+
+  out = out || identity2();
+
+  return apply2x2(out,
+    1, 0,
+    tan(radians), 1
+  );
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the x-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn('A shear matrix can not have radians >+ PI / 2 or <= -PI / 2');
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  return apply4x4(out,
+    1, shear, shear, 0,
+    shear, 1, 0, 0,
+    shear, 0, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the y-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn('A shear matrix can not have radians >+ PI / 2 or <= -PI / 2');
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  return apply4x4(out,
+    1, shear, 0, 0,
+    shear, 1, shear, 0,
+    0, shear, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the z-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn('A shear matrix can not have radians >+ PI / 2 or <= -PI / 2');
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  return apply4x4(out,
+    1, 0, shear, 0,
+    0, 1, shear, 0,
+    shear, shear, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
  * Transforms a Vec3 by a matrix.
  */
 export function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3 {
@@ -649,7 +748,7 @@ export function transform3as4(m: Mat4x4, v: Vec3, out?: Vec4): Vec4 {
 /**
  * Transforms a vector by the provided matrix
  */
-export function transform4(m: Mat4x4, v: Vec4, out?: Vec4): vec4 {
+export function transform4(m: Mat4x4, v: Vec4, out?: Vec4): Vec4 {
   return apply4(
     out,
     m[M400] * v[0] + m[M410] * v[1] + m[M420] * v[2] + m[M430] * v[3],

@@ -1,4 +1,4 @@
-import { apply3, apply4, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { apply2, apply3, apply4, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
 
 const { cos, sin, tan } = Math;
 
@@ -22,6 +22,15 @@ export type Mat4x4 = [
   number, number, number, number,
   number, number, number, number
 ];
+
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M200 = 0;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M201 = 1;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M210 = 2;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M211 = 3;
 
 /** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M300 = 0;
@@ -427,8 +436,8 @@ export function identity4(out?: Mat4x4): Mat4x4 {
 export function multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
-    left[0] * right[0] + left[1] * right[2], left[0] * right[1] + left[1] * right[3],
-    left[2] * right[0] + left[3] * right[2], left[2] * right[1] + left[1] * right[3]
+    left[M200] * right[M200] + left[M201] * right[M210], left[M200] * right[M201] + left[M201] * right[M211],
+    left[M210] * right[M200] + left[M211] * right[M210], left[M210] * right[M201] + left[M211] * right[M211],
   );
 }
 
@@ -717,6 +726,17 @@ export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
     0, 1, shear, 0,
     shear, shear, 1, 0,
     0, 0, 0, 1
+  );
+}
+
+/**
+ * Transforms a Vec2 by a matrix
+ */
+export function transform2(m: Mat2x2, v: Vec2, out?: Vec2): Vec2 {
+  return apply2(
+    out,
+    m[M200] * v[0] + m[M210] * v[1],
+    m[M201] * v[0] + m[M211] * v[1]
   );
 }
 

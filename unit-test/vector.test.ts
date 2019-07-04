@@ -18,7 +18,7 @@ function fail4(actual: Vec4, expected: Vec4): string {
   return `\n\nACTUAL: ${toString4(actual)}\nEXPECTED: ${toString4(expected)}`;
 }
 
-function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
+export function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare1(actual, expected), true, fail1(actual, expected));
   }
@@ -28,7 +28,7 @@ function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
   }
 }
 
-function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
+export function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare2(actual, expected), true, fail2(actual, expected));
   }
@@ -38,7 +38,7 @@ function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
   }
 }
 
-function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+export function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare3(actual, expected), true, fail3(actual, expected));
   }
@@ -48,7 +48,7 @@ function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   }
 }
 
-function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
+export function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare4(actual, expected), true, fail4(actual, expected));
   }

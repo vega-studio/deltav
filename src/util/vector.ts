@@ -122,6 +122,10 @@ export function divide1(
   return apply1(out, top[0] / bottom[0]);
 }
 
+export function empty1(out?: Vec1) {
+  return apply1(out, 0);
+}
+
 export function flatten1(list: Vec1Compat[], out?: number[]): number[] {
   out = out || [];
 
@@ -280,6 +284,10 @@ export function divide2(
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, top[0] / bottom[0], top[1] / bottom[1]);
+}
+
+export function empty2(out?: Vec2) {
+  return apply2(out, 0, 0);
 }
 
 export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
@@ -458,6 +466,10 @@ export function divide3(
     top[1] / bottom[1],
     top[2] / bottom[2]
   );
+}
+
+export function empty3(out?: Vec3) {
+  return apply3(out, 0, 0, 0);
 }
 
 export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
@@ -659,6 +671,10 @@ export function divide4(
   );
 }
 
+export function empty4(out?: Vec4) {
+  return apply4(out, 0, 0, 0, 0);
+}
+
 export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
   out = out || [];
 
@@ -817,6 +833,7 @@ export type VecMethods<T extends Vec> = {
   cross(left: T, right: T, out?: T): T;
   divide(top: T, bottom: T, out?: T): T;
   dot(left: T, right: T): number;
+  empty(out?: T): T;
   flatten(list: T[], out?: number[]): number[];
   floor(vec: T, out?: T): T;
   inverse(vec: T, out?: T): T;
@@ -838,6 +855,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   cross: cross1,
   divide: divide1,
   dot: dot1,
+  empty: empty1,
   flatten: flatten1,
   floor: floor1,
   inverse: inverse1,
@@ -859,6 +877,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   cross: cross2,
   divide: divide2,
   dot: dot2,
+  empty: empty2,
   flatten: flatten2,
   floor: floor2,
   inverse: inverse2,
@@ -880,6 +899,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   cross: cross3,
   divide: divide3,
   dot: dot3,
+  empty: empty3,
   flatten: flatten3,
   floor: floor3,
   inverse: inverse3,
@@ -901,6 +921,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   cross: cross4,
   divide: divide4,
   dot: dot4,
+  empty: empty4,
   flatten: flatten4,
   floor: floor4,
   inverse: inverse4,

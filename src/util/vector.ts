@@ -1,4 +1,4 @@
-const { sqrt, max, min, floor, ceil } = Math;
+const { sqrt, max, min, floor, ceil, abs } = Math;
 
 /** Explicit Vec1 */
 export interface IVec1 extends Array<number> {
@@ -94,6 +94,14 @@ export function ceil1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
 
 export function compare1(left: Vec1Compat, right: Vec1Compat): boolean {
   return left[0] === right[0];
+}
+
+export function fuzzyCompare1(
+  left: Vec1Compat,
+  right: Vec1Compat,
+  epsilon: number
+): boolean {
+  return abs(left[0] - right[0]) <= epsilon;
 }
 
 export function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
@@ -278,6 +286,16 @@ export function compare2(left: Vec2Compat, right: Vec2Compat): boolean {
   return left[0] === right[0] && left[1] === right[1];
 }
 
+export function fuzzyCompare2(
+  left: Vec2Compat,
+  right: Vec2Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon && abs(left[1] - right[1]) <= epsilon
+  );
+}
+
 export function divide2(
   top: Vec2Compat,
   bottom: Vec2Compat,
@@ -440,6 +458,18 @@ export function copy3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
 
 export function compare3(left: Vec3Compat, right: Vec3Compat): boolean {
   return left[0] === right[0] && left[1] === right[1] && left[2] === right[2];
+}
+
+export function fuzzyCompare3(
+  left: Vec3Compat,
+  right: Vec3Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon &&
+    abs(left[1] - right[1]) <= epsilon &&
+    abs(left[2] - right[2]) <= epsilon
+  );
 }
 
 export function cross3(
@@ -646,6 +676,19 @@ export function compare4(left: Vec4Compat, right: Vec4Compat): boolean {
     left[1] === right[1] &&
     left[2] === right[2] &&
     left[3] === right[3]
+  );
+}
+
+export function fuzzyCompare4(
+  left: Vec4Compat,
+  right: Vec4Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon &&
+    abs(left[1] - right[1]) <= epsilon &&
+    abs(left[2] - right[2]) <= epsilon &&
+    abs(left[3] - right[3]) <= epsilon
   );
 }
 

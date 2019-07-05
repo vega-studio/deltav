@@ -291,20 +291,26 @@ export function fromEulerAxisAngleToQuat(
 /**
  * This converts a general euler angle of any rotation order into a quaternion
  */
-export function fromOrderedEulerToQuat(angles: Vec3, order: EulerOrder, out?: Quaternion): Quaternion {
+export function fromOrderedEulerToQuat(
+  angles: Vec3,
+  order: EulerOrder,
+  out?: Quaternion
+): Quaternion {
   out = out || zeroQuat();
-  const x = angles[0], y = angles[1], z = angles[2];
+  const x = angles[0],
+    y = angles[1],
+    z = angles[2];
 
   const cos = Math.cos;
   const sin = Math.sin;
 
-  const c1 = cos( x / 2 );
-  const c2 = cos( y / 2 );
-  const c3 = cos( z / 2 );
+  const c1 = cos(x / 2);
+  const c2 = cos(y / 2);
+  const c3 = cos(z / 2);
 
-  const s1 = sin( x / 2 );
-  const s2 = sin( y / 2 );
-  const s3 = sin( z / 2 );
+  const s1 = sin(x / 2);
+  const s2 = sin(y / 2);
+  const s3 = sin(z / 2);
 
   switch (order) {
     case EulerOrder.xyz:
@@ -357,7 +363,11 @@ export function fromOrderedEulerToQuat(angles: Vec3, order: EulerOrder, out?: Qu
  * This converts a euler angle of any ordering and turns it into an euler of XYZ orientation which is the expected
  * rotation of most elements in this framework.
  */
-export function toEulerXYZfromOrderedEuler(euler: Vec3, order: EulerOrder, out?: EulerRotation): EulerRotation {
+export function toEulerXYZfromOrderedEuler(
+  euler: Vec3,
+  order: EulerOrder,
+  out?: EulerRotation
+): EulerRotation {
   out = out || [0, 0, 0];
   const q = fromOrderedEulerToQuat(euler, order);
   toOrderedEulerFromQuat(q, EulerOrder.xyz, out);
@@ -368,7 +378,14 @@ export function toEulerXYZfromOrderedEuler(euler: Vec3, order: EulerOrder, out?:
 /**
  * Helper method for toEulerQuat
  */
-function twoAxisRotation(r11: number, r12: number, r21: number, r31: number, r32: number, out: number[]){
+function twoAxisRotation(
+  r11: number,
+  r12: number,
+  r21: number,
+  r31: number,
+  r32: number,
+  out: number[]
+) {
   out[0] = atan2(r11, r12);
   out[1] = acos(r21);
   out[2] = atan2(r31, r32);
@@ -377,7 +394,14 @@ function twoAxisRotation(r11: number, r12: number, r21: number, r31: number, r32
 /**
  * Helper method for toEulerQuat
  */
-function threeAxisRotation(r11: number, r12: number, r21: number, r31: number, r32: number, out: number[]){
+function threeAxisRotation(
+  r11: number,
+  r12: number,
+  r21: number,
+  r31: number,
+  r32: number,
+  out: number[]
+) {
   out[0] = atan2(r31, r32);
   out[1] = asin(r21);
   out[2] = atan2(r11, r12);
@@ -396,120 +420,148 @@ export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
  * NOTE: It is best to convert to XYZ ordering if using with this framework's 3D system, or simply use toEulerFromQuat
  * if this is desired. Only use this if you specifically need an Euler angle for a known purpose.
  */
-export function toOrderedEulerFromQuat(q: Quaternion, order: EulerOrder, out?: Vec3): Vec3 {
+export function toOrderedEulerFromQuat(
+  q: Quaternion,
+  order: EulerOrder,
+  out?: Vec3
+): Vec3 {
   out = out || [0, 0, 0];
 
   switch (order) {
     case EulerOrder.zyx:
-      threeAxisRotation(2 * (q[1] * q[2] + q[0] * q[3]),
-                     q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                    -2 * (q[1] * q[3] - q[0] * q[2]),
-                     2 * (q[2] * q[3] + q[0] * q[1]),
-                     q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                     out);
+      threeAxisRotation(
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        -2 * (q[1] * q[3] - q[0] * q[2]),
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.zyz:
-      twoAxisRotation(2 * (q[2] * q[3] - q[0] * q[1]),
-                   2 * (q[1] * q[3] + q[0] * q[2]),
-                   q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                   2 * (q[2] * q[3] + q[0] * q[1]),
-                  -2 * (q[1] * q[3] - q[0] * q[2]),
-                  out);
+      twoAxisRotation(
+        2 * (q[2] * q[3] - q[0] * q[1]),
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        -2 * (q[1] * q[3] - q[0] * q[2]),
+        out
+      );
       break;
 
     case EulerOrder.zxy:
-      threeAxisRotation( -2 * (q[1] * q[2] - q[0] * q[3]),
-                      q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                      2 * (q[2] * q[3] + q[0] * q[1]),
-                     -2 * (q[1] * q[3] - q[0] * q[2]),
-                      q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                      out);
+      threeAxisRotation(
+        -2 * (q[1] * q[2] - q[0] * q[3]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        -2 * (q[1] * q[3] - q[0] * q[2]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.zxz:
-      twoAxisRotation( 2 * (q[1] * q[3] + q[0] * q[2]),
-                  -2 * (q[2] * q[3] - q[0] * q[1]),
-                   q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                   2 * (q[1] * q[3] - q[0] * q[2]),
-                   2 * (q[2] * q[3] + q[0] * q[1]),
-                   out);
+      twoAxisRotation(
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        -2 * (q[2] * q[3] - q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        2 * (q[1] * q[3] - q[0] * q[2]),
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        out
+      );
       break;
 
     case EulerOrder.yxz:
-      threeAxisRotation( 2 * (q[1] * q[3] + q[0] * q[2]),
-                     q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                    -2 * (q[2] * q[3] - q[0] * q[1]),
-                     2 * (q[1] * q[2] + q[0] * q[3]),
-                     q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                     out);
+      threeAxisRotation(
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        -2 * (q[2] * q[3] - q[0] * q[1]),
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.yxy:
-      twoAxisRotation( 2 * (q[1] * q[2] - q[0] * q[3]),
-                   2 * (q[2] * q[3] + q[0] * q[1]),
-                   q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                   2 * (q[1] * q[2] + q[0] * q[3]),
-                  -2 * (q[2] * q[3] - q[0] * q[1]),
-                  out);
+      twoAxisRotation(
+        2 * (q[1] * q[2] - q[0] * q[3]),
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        -2 * (q[2] * q[3] - q[0] * q[1]),
+        out
+      );
       break;
 
     case EulerOrder.yzx:
-      threeAxisRotation( -2 * (q[1] * q[3] - q[0] * q[2]),
-                      q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                      2 * (q[1] * q[2] + q[0] * q[3]),
-                     -2 * (q[2] * q[3] - q[0] * q[1]),
-                      q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                      out);
+      threeAxisRotation(
+        -2 * (q[1] * q[3] - q[0] * q[2]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        -2 * (q[2] * q[3] - q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.yzy:
-      twoAxisRotation( 2 * (q[2] * q[3] + q[0] * q[1]),
-                  -2 * (q[1] * q[2] - q[0] * q[3]),
-                   q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                   2 * (q[2] * q[3] - q[0] * q[1]),
-                   2 * (q[1] * q[2] + q[0] * q[3]),
-                   out);
+      twoAxisRotation(
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        -2 * (q[1] * q[2] - q[0] * q[3]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        2 * (q[2] * q[3] - q[0] * q[1]),
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        out
+      );
       break;
 
     case EulerOrder.xyz:
-      threeAxisRotation( -2 * (q[2] * q[3] - q[0] * q[1]),
-                    q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
-                    2 * (q[1] * q[3] + q[0] * q[2]),
-                   -2 * (q[1] * q[2] - q[0] * q[3]),
-                    q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                    out);
+      threeAxisRotation(
+        -2 * (q[2] * q[3] - q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        -2 * (q[1] * q[2] - q[0] * q[3]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.xyx:
-      twoAxisRotation( 2 * (q[1] * q[2] + q[0] * q[3]),
-                  -2 * (q[1] * q[3] - q[0] * q[2]),
-                   q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                   2 * (q[1] * q[2] - q[0] * q[3]),
-                   2 * (q[1] * q[3] + q[0] * q[2]),
-                   out);
+      twoAxisRotation(
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        -2 * (q[1] * q[3] - q[0] * q[2]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        2 * (q[1] * q[2] - q[0] * q[3]),
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        out
+      );
       break;
 
     case EulerOrder.xzy:
-      threeAxisRotation( 2 * (q[2] * q[3] + q[0] * q[1]),
-                     q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
-                    -2 * (q[1] * q[2] - q[0] * q[3]),
-                     2 * (q[1] * q[3] + q[0] * q[2]),
-                     q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                     out);
+      threeAxisRotation(
+        2 * (q[2] * q[3] + q[0] * q[1]),
+        q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
+        -2 * (q[1] * q[2] - q[0] * q[3]),
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        out
+      );
       break;
 
     case EulerOrder.xzx:
-      twoAxisRotation( 2 * (q[1] * q[3] - q[0] * q[2]),
-                   2 * (q[1] * q[2] + q[0] * q[3]),
-                   q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
-                   2 * (q[1] * q[3] + q[0] * q[2]),
-                  -2 * (q[1] * q[2] - q[0] * q[3]),
-                  out);
+      twoAxisRotation(
+        2 * (q[1] * q[3] - q[0] * q[2]),
+        2 * (q[1] * q[2] + q[0] * q[3]),
+        q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
+        2 * (q[1] * q[3] + q[0] * q[2]),
+        -2 * (q[1] * q[2] - q[0] * q[3]),
+        out
+      );
       break;
 
     default:
-      console.warn('Invalid Euler rotation order.');
+      console.warn("Invalid Euler rotation order.");
       break;
   }
 

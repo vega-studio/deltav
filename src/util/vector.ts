@@ -1,4 +1,4 @@
-const { sqrt, max, min, floor, ceil } = Math;
+const { sqrt, max, min, floor, ceil, abs } = Math;
 
 /** Explicit Vec1 */
 export interface IVec1 extends Array<number> {
@@ -96,6 +96,14 @@ export function compare1(left: Vec1Compat, right: Vec1Compat): boolean {
   return left[0] === right[0];
 }
 
+export function fuzzyCompare1(
+  left: Vec1Compat,
+  right: Vec1Compat,
+  epsilon: number
+): boolean {
+  return abs(left[0] - right[0]) <= epsilon;
+}
+
 export function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, vec[0]);
 }
@@ -120,6 +128,10 @@ export function divide1(
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, top[0] / bottom[0]);
+}
+
+export function empty1(out?: Vec1) {
+  return apply1(out, 0);
 }
 
 export function flatten1(list: Vec1Compat[], out?: number[]): number[] {
@@ -274,12 +286,26 @@ export function compare2(left: Vec2Compat, right: Vec2Compat): boolean {
   return left[0] === right[0] && left[1] === right[1];
 }
 
+export function fuzzyCompare2(
+  left: Vec2Compat,
+  right: Vec2Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon && abs(left[1] - right[1]) <= epsilon
+  );
+}
+
 export function divide2(
   top: Vec2Compat,
   bottom: Vec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, top[0] / bottom[0], top[1] / bottom[1]);
+}
+
+export function empty2(out?: Vec2) {
+  return apply2(out, 0, 0);
 }
 
 export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
@@ -434,6 +460,18 @@ export function compare3(left: Vec3Compat, right: Vec3Compat): boolean {
   return left[0] === right[0] && left[1] === right[1] && left[2] === right[2];
 }
 
+export function fuzzyCompare3(
+  left: Vec3Compat,
+  right: Vec3Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon &&
+    abs(left[1] - right[1]) <= epsilon &&
+    abs(left[2] - right[2]) <= epsilon
+  );
+}
+
 export function cross3(
   left: Vec3Compat,
   right: Vec3Compat,
@@ -458,6 +496,10 @@ export function divide3(
     top[1] / bottom[1],
     top[2] / bottom[2]
   );
+}
+
+export function empty3(out?: Vec3) {
+  return apply3(out, 0, 0, 0);
 }
 
 export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
@@ -637,6 +679,19 @@ export function compare4(left: Vec4Compat, right: Vec4Compat): boolean {
   );
 }
 
+export function fuzzyCompare4(
+  left: Vec4Compat,
+  right: Vec4Compat,
+  epsilon: number
+): boolean {
+  return (
+    abs(left[0] - right[0]) <= epsilon &&
+    abs(left[1] - right[1]) <= epsilon &&
+    abs(left[2] - right[2]) <= epsilon &&
+    abs(left[3] - right[3]) <= epsilon
+  );
+}
+
 /**
  * 4D cross product? Lots of issues here. If you need a proper cross product for 3D, please use cross3. What
  * this method should do is up for debate for now and will return a unit 4D vector.
@@ -657,6 +712,10 @@ export function divide4(
     top[2] / bottom[2],
     top[3] / bottom[3]
   );
+}
+
+export function empty4(out?: Vec4) {
+  return apply4(out, 0, 0, 0, 0);
 }
 
 export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
@@ -817,6 +876,7 @@ export type VecMethods<T extends Vec> = {
   cross(left: T, right: T, out?: T): T;
   divide(top: T, bottom: T, out?: T): T;
   dot(left: T, right: T): number;
+  empty(out?: T): T;
   flatten(list: T[], out?: number[]): number[];
   floor(vec: T, out?: T): T;
   inverse(vec: T, out?: T): T;
@@ -838,6 +898,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   cross: cross1,
   divide: divide1,
   dot: dot1,
+  empty: empty1,
   flatten: flatten1,
   floor: floor1,
   inverse: inverse1,
@@ -859,6 +920,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   cross: cross2,
   divide: divide2,
   dot: dot2,
+  empty: empty2,
   flatten: flatten2,
   floor: floor2,
   inverse: inverse2,
@@ -880,6 +942,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   cross: cross3,
   divide: divide3,
   dot: dot3,
+  empty: empty3,
   flatten: flatten3,
   floor: floor3,
   inverse: inverse3,
@@ -901,6 +964,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   cross: cross4,
   divide: divide4,
   dot: dot4,
+  empty: empty4,
   flatten: flatten4,
   floor: floor4,
   inverse: inverse4,

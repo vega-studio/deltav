@@ -1,6 +1,6 @@
-import { apply3, apply4, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { apply2, apply3, apply4, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
 
-const { cos, sin } = Math;
+const { cos, sin, tan } = Math;
 
 // prettier-ignore
 export type Mat2x2 = [
@@ -22,6 +22,15 @@ export type Mat4x4 = [
   number, number, number, number,
   number, number, number, number
 ];
+
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M200 = 0;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M201 = 1;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M210 = 2;
+/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+export const M211 = 3;
 
 /** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M300 = 0;
@@ -427,8 +436,8 @@ export function identity4(out?: Mat4x4): Mat4x4 {
 export function multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
-    left[0] * right[0] + left[1] * right[2], left[0] * right[1] + left[1] * right[3],
-    left[2] * right[0] + left[3] * right[2], left[2] * right[1] + left[1] * right[3]
+    right[M200] * left[M200] + right[M201] * left[M210], right[M200] * left[M201] + right[M201] * left[M211],
+    right[M210] * left[M200] + right[M211] * left[M210], right[M210] * left[M201] + right[M211] * left[M211],
   );
 }
 
@@ -439,9 +448,9 @@ export function multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
 export function multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
-    left[0] * right[0] + left[1] * right[3] + left[2] * right[6], left[0] * right[1] + left[1] * right[4] + left[2] * right[7], left[0] * right[2] + left[1] * right[5] + left[2] * right[8],
-    left[3] * right[0] + left[4] * right[3] + left[5] * right[6], left[3] * right[1] + left[4] * right[4] + left[5] * right[7], left[3] * right[2] + left[4] * right[5] + left[5] * right[8],
-    left[6] * right[0] + left[7] * right[3] + left[8] * right[6], left[6] * right[1] + left[7] * right[4] + left[8] * right[7], left[6] * right[2] + left[7] * right[5] + left[8] * right[8]
+    right[0] * left[0] + right[1] * left[3] + right[2] * left[6], right[0] * left[1] + right[1] * left[4] + right[2] * left[7], right[0] * left[2] + right[1] * left[5] + right[2] * left[8],
+    right[3] * left[0] + right[4] * left[3] + right[5] * left[6], right[3] * left[1] + right[4] * left[4] + right[5] * left[7], right[3] * left[2] + right[4] * left[5] + right[5] * left[8],
+    right[6] * left[0] + right[7] * left[3] + right[8] * left[6], right[6] * left[1] + right[7] * left[4] + right[8] * left[7], right[6] * left[2] + right[7] * left[5] + right[8] * left[8]
   );
 }
 
@@ -452,10 +461,10 @@ export function multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
 export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
-        left[0] * right[0] + left[1] * right[4] + left[2] * right[8] + left[3] * right[12],     left[0] * right[1] + left[1] * right[5] + left[2] * right[9] + left[3] * right[13],     left[0] * right[2] + left[1] * right[6] + left[2] * right[10] + left[3] * right[14],     left[0] * right[3] + left[1] * right[7] + left[2] * right[11] + left[3] * right[15],
-        left[4] * right[0] + left[5] * right[4] + left[6] * right[8] + left[7] * right[12],     left[4] * right[1] + left[5] * right[5] + left[6] * right[9] + left[7] * right[13],     left[4] * right[2] + left[5] * right[6] + left[6] * right[10] + left[7] * right[14],     left[4] * right[3] + left[5] * right[7] + left[6] * right[11] + left[7] * right[15],
-      left[8] * right[0] + left[9] * right[4] + left[10] * right[8] + left[11] * right[12],   left[8] * right[1] + left[9] * right[5] + left[10] * right[9] + left[11] * right[13],   left[8] * right[2] + left[9] * right[6] + left[10] * right[10] + left[11] * right[14],   left[8] * right[3] + left[9] * right[7] + left[10] * right[11] + left[11] * right[15],
-    left[12] * right[0] + left[13] * right[4] + left[14] * right[8] + left[15] * right[12], left[12] * right[1] + left[13] * right[5] + left[14] * right[9] + left[15] * right[13], left[12] * right[2] + left[13] * right[6] + left[14] * right[10] + left[15] * right[14], left[12] * right[3] + left[13] * right[7] + left[14] * right[11] + left[15] * right[15]
+        right[0] * left[0] + right[1] * left[4] + right[2] * left[8] + right[3] * left[12],     right[0] * left[1] + right[1] * left[5] + right[2] * left[9] + right[3] * left[13],     right[0] * left[2] + right[1] * left[6] + right[2] * left[10] + right[3] * left[14],     right[0] * left[3] + right[1] * left[7] + right[2] * left[11] + right[3] * left[15],
+        right[4] * left[0] + right[5] * left[4] + right[6] * left[8] + right[7] * left[12],     right[4] * left[1] + right[5] * left[5] + right[6] * left[9] + right[7] * left[13],     right[4] * left[2] + right[5] * left[6] + right[6] * left[10] + right[7] * left[14],     right[4] * left[3] + right[5] * left[7] + right[6] * left[11] + right[7] * left[15],
+      right[8] * left[0] + right[9] * left[4] + right[10] * left[8] + right[11] * left[12],   right[8] * left[1] + right[9] * left[5] + right[10] * left[9] + right[11] * left[13],   right[8] * left[2] + right[9] * left[6] + right[10] * left[10] + right[11] * left[14],   right[8] * left[3] + right[9] * left[7] + right[10] * left[11] + right[11] * left[15],
+    right[12] * left[0] + right[13] * left[4] + right[14] * left[8] + right[15] * left[12], right[12] * left[1] + right[13] * left[5] + right[14] * left[9] + right[15] * left[13], right[12] * left[2] + right[13] * left[6] + right[14] * left[10] + right[15] * left[14], right[12] * left[3] + right[13] * left[7] + right[14] * left[11] + right[15] * left[15]
   );
 }
 
@@ -622,6 +631,115 @@ export function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
+ * This makes a shear 2d matrix that shears parallel to the x-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn("A shear matrix can not have radians >+ PI / 2 or <= -PI / 2");
+  }
+
+  out = out || identity2();
+
+  return apply2x2(out, 1, 0, tan(radians), 1);
+}
+
+/**
+ * This makes a shear 2d matrix that shears parallel to the y-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn("A shear matrix can not have radians >+ PI / 2 or <= -PI / 2");
+  }
+
+  out = out || identity2();
+
+  return apply2x2(out, 1, 0, tan(radians), 1);
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the x-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn("A shear matrix can not have radians >+ PI / 2 or <= -PI / 2");
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  // prettier-ignore
+  return apply4x4(
+    out,
+    1, shear, shear, 0,
+    shear, 1, 0, 0,
+    shear, 0, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the y-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn("A shear matrix can not have radians >+ PI / 2 or <= -PI / 2");
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  // prettier-ignore
+  return apply4x4(
+    out,
+    1, shear, 0, 0,
+    shear, 1, shear, 0,
+    0, shear, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
+ * This makes a shear 3d matrix that shears parallel to the z-axis.
+ * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ */
+export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
+  if (radians >= Math.PI / 2 || radians <= Math.PI / 2) {
+    console.warn("A shear matrix can not have radians >+ PI / 2 or <= -PI / 2");
+  }
+
+  out = out || identity4();
+  const shear = tan(radians);
+
+  return apply4x4(
+    out,
+    1, 0, shear, 0,
+    0, 1, shear, 0,
+    shear, shear, 1, 0,
+    0, 0, 0, 1
+  );
+}
+
+/**
+ * Transforms a Vec2 by a matrix
+ */
+export function transform2(m: Mat2x2, v: Vec2, out?: Vec2): Vec2 {
+  return apply2(
+    out,
+    m[M200] * v[0] + m[M210] * v[1],
+    m[M201] * v[0] + m[M211] * v[1]
+  );
+}
+
+/**
  * Transforms a Vec3 by a matrix.
  */
 export function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3 {
@@ -704,19 +822,19 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
     if (y) {
       if (z) {
         // x, y, z
-        const cx = cos(x);
-        const cy = cos(y);
-        const cz = cos(z);
-        const sx = sin(x);
-        const sy = sin(y);
-        const sz = sin(z);
+        const c0 = cos(x);
+        const c1 = cos(y);
+        const c2 = cos(z);
+        const s0 = sin(x);
+        const s1 = sin(y);
+        const s2 = sin(z);
 
         // prettier-ignore
         return apply4x4(out,
-           cy * cz,  sx * sy * cz + cx * sz, -cx * sy * cz + sx * sz, 0,
-          -cy * sz, -sx * sy * sz + cx * cz,  cx * sy * sz + sx * cz, 0,
-                sy,                -sx * cy,                 cx * cy, 0,
-                0,                       0,                       0, 1
+          c1 * c2, c1 * s2, s1, 0,
+          -c2 * s0 * s1 - c0 * s2, c0 * c2 - s0 * s1 * s2, c1 * s0, 0,
+           s0 * s2 - c0 * c2 * s1, -c2 * s0 - c0 * s1 * s2, c0 * c1, 0,
+                  0,                       0,                      0, 1
         );
       } else {
         // x, y
@@ -789,7 +907,7 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
            0, 1,   0, 0,
           sy, 0,  cy, 0,
            0, 0,   0, 1
-       );
+        );
       }
     } else {
       if (z) {
@@ -803,7 +921,7 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
          -sz, cz, 0, 0,
            0,  0, 1, 0,
            0,  0, 0, 1
-       );
+        );
       } else {
         // no x, y, z
         return identity4(out);

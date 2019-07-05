@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/util/vector';
+import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, divide3, divide4, dot1, dot2, dot3, dot4, flatten1, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/util/vector';
 
 function fail1(actual: Vec1, expected: Vec1): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;
@@ -55,6 +55,22 @@ function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
 
   else {
     assert.equal(!compare4(actual, expected), true, fail4(actual, expected));
+  }
+}
+
+function compareArray(actual: number[], expected: number[]) {
+  const length = Math.min(actual.length, expected.length);
+
+  for (let i = 0; i < length; i++) {
+    if (actual[i] !== expected[i]) return false;
+  }
+
+  return true;
+}
+
+function assertArray(actual: number[], expected: number[], shouldEqual: boolean = true) {
+  if (shouldEqual) {
+    assert.equal();
   }
 }
 
@@ -540,7 +556,7 @@ describe('Vector Library', () => {
     });
 
     it("Divide vector1 should be correct", () => {
-      assert1(divide1([5], [0]), [-Infinity]);
+      assert1(divide1([5], [0]), [Infinity]);
     });
 
     it("Divide vector1 should be correct", () => {
@@ -560,20 +576,88 @@ describe('Vector Library', () => {
     });
 
     it("Divide vector2 should be correct", () => {
-      assert2(divide2([5, 6], [2, -0]), [2.5, -Infinity]);
+      assert2(divide2([5, 6], [-2, -0]), [-2.5, -Infinity]);
+    });
+
+    it("Divide vector3 should be correct", () => {
+      assert3(divide3([5, 6, 9], [2, 2, 3]), [2.5, 3, 3]);
+    });
+
+    it("Divide vector3 should be correct", () => {
+      assert3(divide3([5, 6, 4], [0, 2, 3]), [Infinity, 3, 4 / 3]);
+    });
+
+    it("Divide vector3 should be correct", () => {
+      assert3(divide3([5, 6, 3], [-2, -0, 7]), [-2.5, -Infinity, 3 / 7]);
+    });
+
+    it("Divide vector4 should be correct", () => {
+      assert4(divide4([5, 6, 9, 16], [2, 2, 3, 4]), [2.5, 3, 3, 4]);
+    });
+
+    it("Divide vector4 should be correct", () => {
+      assert4(divide4([5, 6, 4, 9], [0, 2, 3, 7]), [Infinity, 3, 4 / 3, 9 / 7]);
+    });
+
+    it("Divide vector4 should be correct", () => {
+      assert4(divide4([5, 6, 3, 1], [-2, -0, 7, 3]), [-2.5, -Infinity, 3 / 7, 1 / 3]);
     });
   });
 
   describe("Dot", () => {
-    //
-  });
+    it("Dot vector1 should be correct", () => {
+      assert1([dot1([2], [3])], [6]);
+    });
 
-  describe("divide", () => {
-    //
+    it("Dot vector1 should be correct", () => {
+      assert1([dot1([2, 6], [3])], [6]);
+    });
+
+    it("Dot vector1 should be correct", () => {
+      assert1([dot1([2], [3, 7])], [6]);
+    });
+
+    it("Dot vector2 should be correct", () => {
+      assert1([dot2([2, 3], [4, 5])], [23]);
+    });
+
+    it("Dot vector2 should be correct", () => {
+      assert1([dot2([2, -3], [8, 5, 7])], [1]);
+    });
+
+    it("Dot vector2 should be correct", () => {
+      assert1([dot2([0, -3, 9], [8, 0, 7])], [0]);
+    });
+
+    it("Dot vector3 should be correct", () => {
+      assert1([dot3([0, -3, 9], [8, 0, 7])], [63]);
+    });
+
+    it("Dot vector3 should be correct", () => {
+      assert1([dot3([1, 2, 3, 4], [4, 5, 6])], [32]);
+    });
+
+    it("Dot vector3 should be correct", () => {
+      assert1([dot3([1, 2, 3, 4], [4, 5, 6, 7])], [32]);
+    });
+
+    it("Dot vector4 should be correct", () => {
+      assert1([dot4([1, 2, 3, 4], [4, 5, 6, 7])], [60]);
+    });
+
+    it("Dot vector4 should be correct", () => {
+      assert1([dot4([-1, 2, -3, 4], [4, 5, 6, 7])], [16]);
+    });
   });
 
   describe("Flatten", () => {
-    //
+    it("Flattern vector4 should be correct", () => {
+      const v1: Vec1Compat = [1];
+      const v2: Vec1Compat = [2];
+      const v3: Vec1Compat = [3];
+      const v4: Vec1Compat = [4];
+      const list = [v1, v2, v3, v4];
+    });
   });
 
   describe("Floor", () => {

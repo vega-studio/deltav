@@ -1046,8 +1046,8 @@ describe("Matrix Library", () => {
 
       assert4x4(m, [
         1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, -1, 0, 0,
+        0, 0, -1, 0,
+        0, 1, 0, 0,
         0, 0, 0, 1
       ]);
     });
@@ -1056,9 +1056,9 @@ describe("Matrix Library", () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 0);
 
       assert4x4(m, [
-        0, 0, -1, 0,
+        0, 0, 1, 0,
         0, 1, 0, 0,
-        1, 0, 0, 0,
+        -1, 0, 0, 0,
         0, 0, 0, 1
       ]);
     });
@@ -1067,8 +1067,8 @@ describe("Matrix Library", () => {
       const m = rotation4x4(0, 0, 90 * TO_RADIANS);
 
       assert4x4(m, [
-        0, 1, 0, 0,
-        -1, 0, 0, 0,
+        0, -1, 0, 0,
+        1, 0, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
       ]);
@@ -1077,45 +1077,45 @@ describe("Matrix Library", () => {
     it ('Should be a 90 degree rotation about the xy-axis', () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, [
         0,  0,  1, 0,
-        1,  0, -0, 0,
-        -0,  1,  0,  0,
+        1,  0, 0, 0,
+        0,  1,  0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should be a 90 degree rotation about the xz-axis', () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 90 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, [
         0, -1,  0, 0,
         0,  0, -1, 0,
         1,  0,  0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should be a 90 degree rotation about the yz-axis', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, [
         0, -0,  1, 0,
         1,  0,  0, 0,
         -0,  1,  0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should be a 90 degree rotation about the xyz-axis', () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, [
         -0, -0, 1, 0,
         0, -1, -0, 0,
         1,  0, -0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should modify to a 90 degree rotation about the x-axis', () => {
@@ -1123,8 +1123,8 @@ describe("Matrix Library", () => {
 
       assert4x4(m4x4, [
         1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, -1, 0, 0,
+        0, 0, -1, 0,
+        0, 1, 0, 0,
         0, 0, 0, 1
       ]);
     });
@@ -1133,9 +1133,9 @@ describe("Matrix Library", () => {
       rotation4x4(0, 90 * TO_RADIANS, 0, m4x4);
 
       assert4x4(m4x4, [
-        0, 0, -1, 0,
+        0, 0, 1, 0,
         0, 1, 0, 0,
-        1, 0, 0, 0,
+        -1, 0, 0, 0,
         0, 0, 0, 1
       ]);
     });
@@ -1144,8 +1144,8 @@ describe("Matrix Library", () => {
       rotation4x4(0, 0, 90 * TO_RADIANS, m4x4);
 
       assert4x4(m4x4, [
-        0, 1, 0, 0,
-        -1, 0, 0, 0,
+        0, -1, 0, 0,
+        1, 0, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
       ]);
@@ -1155,9 +1155,9 @@ describe("Matrix Library", () => {
       rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0, m4x4);
 
       assert4x4(m4x4, [
-        0,  1,  0, 0,
-        0,  0, 1, 0,
-        1,  0,  0,  0,
+        0,  0,  1, 0,
+        1,  0, 0, 0,
+        0,  1,  0,  0,
         0, 0, 0, 1
       ]);
     });
@@ -1165,34 +1165,34 @@ describe("Matrix Library", () => {
     it ('Should modify to a 90 degree rotation about the xz-axis', () => {
       rotation4x4(90 * TO_RADIANS, 0, 90 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, [
         0, -1,  0, 0,
         0,  0, -1, 0,
         1,  0,  0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should modify to a 90 degree rotation about the yz-axis', () => {
       rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, [
         0, -0,  1, 0,
         1,  0,  0, 0,
         -0,  1,  0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
 
     it ('Should modify to a 90 degree rotation about the xyz-axis', () => {
       rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, [
         -0, -0, 1, 0,
         0, -1, -0, 0,
         1,  0, -0,  0,
         0, 0, 0, 1
-      ]));
+      ]);
     });
     // #endregion
 
@@ -1200,7 +1200,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the x-axis', () => {
       const m = rotation4x4(45 * TO_RADIANS, 0, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         1,  0,  0, 0,
         0,  0.7071068, -0.7071068, 0,
         0,  0.7071068,  0.7071068, 0,
@@ -1211,7 +1211,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the y-axis', () => {
       const m = rotation4x4(0, 45 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.7071068,  0,  0.7071068, 0,
         0,  1,  0, 0,
         -0.7071068,  0,  0.7071068, 0,
@@ -1222,7 +1222,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the z-axis', () => {
       const m = rotation4x4(0, 0, 45 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.7071068, -0.7071068, 0, 0,
         0.7071068,  0.7071068, 0, 0,
         0,  0,  1, 0,
@@ -1233,7 +1233,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the xy-axis', () => {
       const m = rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.7071068,  0,  0.7071068, 0,
         0.5,  0.7071068, -0.5, 0,
        -0.5,  0.7071068,  0.5,  0,
@@ -1244,7 +1244,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the xz-axis', () => {
       const m = rotation4x4(45 * TO_RADIANS, 0, 45 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.7071068, -0.7071068, 0, 0,
         0.5,  0.5, -0.7071068, 0,
         0.5,  0.5,  0.7071068,  0,
@@ -1255,7 +1255,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the yz-axis', () => {
       const m = rotation4x4(0, 45 * TO_RADIANS, 45 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.5, -0.5,  0.7071068, 0,
         0.7071068,  0.7071068,  0, 0,
         -0.5,  0.5,  0.7071068,  0,
@@ -1266,7 +1266,7 @@ describe("Matrix Library", () => {
     it ('Should be a 45 degree rotation about the xyz-axis', () => {
       const m = rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 45 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.5, -0.5,  0.7071068, 0,
         0.8535534,  0.1464466, -0.5, 0,
         0.1464466,  0.8535534,  0.5,  0,
@@ -1277,7 +1277,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the x-axis', () => {
       rotation4x4(45 * TO_RADIANS, 0, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         1,  0,  0, 0,
         0,  0.7071068, -0.7071068, 0,
         0,  0.7071068,  0.7071068, 0,
@@ -1288,7 +1288,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the y-axis', () => {
       rotation4x4(0, 45 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.7071068,  0,  0.7071068, 0,
         0,  1,  0, 0,
         -0.7071068,  0,  0.7071068, 0,
@@ -1299,7 +1299,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the z-axis', () => {
       rotation4x4(0, 0, 45 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.7071068, -0.7071068, 0, 0,
         0.7071068,  0.7071068, 0, 0,
         0,  0,  1, 0,
@@ -1310,7 +1310,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the xy-axis', () => {
       rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.7071068,  0,  0.7071068, 0,
         0.5,  0.7071068, -0.5, 0,
        -0.5,  0.7071068,  0.5,  0,
@@ -1321,7 +1321,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the xz-axis', () => {
       rotation4x4(45 * TO_RADIANS, 0, 45 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.7071068, -0.7071068, 0, 0,
         0.5,  0.5, -0.7071068, 0,
         0.5,  0.5,  0.7071068,  0,
@@ -1332,7 +1332,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the yz-axis', () => {
       rotation4x4(0, 45 * TO_RADIANS, 45 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.5, -0.5,  0.7071068, 0,
         0.7071068,  0.7071068,  0, 0,
         -0.5,  0.5,  0.7071068,  0,
@@ -1343,7 +1343,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 45 degree rotation about the xyz-axis', () => {
       rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 45 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.5, -0.5,  0.7071068, 0,
         0.8535534,  0.1464466, -0.5, 0,
         0.1464466,  0.8535534,  0.5,  0,
@@ -1356,7 +1356,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the x-axis', () => {
       const m = rotation4x4(53 * TO_RADIANS, 0, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         1.0000000,  0.0000000,  0.0000000, 0,
         0.0000000,  0.6018150, -0.7986355, 0,
         0.0000000,  0.7986355,  0.6018150, 0,
@@ -1367,7 +1367,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the y-axis', () => {
       const m = rotation4x4(0, 53 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6018150,  0.0000000,  0.7986355, 0,
         0.0000000,  1.0000000,  0.0000000, 0,
         -0.7986355,  0.0000000,  0.6018150, 0,
@@ -1378,7 +1378,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the z-axis', () => {
       const m = rotation4x4(0, 0, 53 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6018150, -0.7986355,  0.0000000, 0,
         0.7986355,  0.6018150,  0.0000000, 0,
         0.0000000,  0.0000000,  1.0000000, 0,
@@ -1389,7 +1389,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the xy-axis', () => {
       const m = rotation4x4(53 * TO_RADIANS, 53 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6018150,  0.0000000,  0.7986355, 0,
         0.6378187,  0.6018150, -0.4806308, 0,
         -0.4806308,  0.7986355,  0.3621813, 0,
@@ -1400,7 +1400,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the xz-axis', () => {
       const m = rotation4x4(53 * TO_RADIANS, 0, 53 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6018150, -0.7986355,  0.0000000, 0,
         0.4806308,  0.3621813, -0.7986355, 0,
         0.6378187,  0.4806308,  0.6018150, 0,
@@ -1411,7 +1411,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the yz-axis', () => {
       const m = rotation4x4(0, 53 * TO_RADIANS, 53 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.3621813, -0.4806308,  0.7986355, 0,
         0.7986355,  0.6018150,  0.0000000, 0,
         -0.4806308,  0.6378187,  0.6018150, 0,
@@ -1422,7 +1422,7 @@ describe("Matrix Library", () => {
     it ('Should be a 53 degree rotation about the xyz-axis', () => {
       const m = rotation4x4(53 * TO_RADIANS, 53 * TO_RADIANS, 53 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.3621813, -0.4806308,  0.7986355, 0,
         0.8644797, -0.1472033, -0.4806308, 0,
         0.3485678,  0.8644797,  0.3621813, 0,
@@ -1433,7 +1433,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the x-axis', () => {
       rotation4x4(53 * TO_RADIANS, 0, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         1.0000000,  0.0000000,  0.0000000, 0,
         0.0000000,  0.6018150, -0.7986355, 0,
         0.0000000,  0.7986355,  0.6018150, 0,
@@ -1444,7 +1444,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the y-axis', () => {
       rotation4x4(0, 53 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6018150,  0.0000000,  0.7986355, 0,
         0.0000000,  1.0000000,  0.0000000, 0,
         -0.7986355,  0.0000000,  0.6018150, 0,
@@ -1455,7 +1455,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the z-axis', () => {
       rotation4x4(0, 0, 53 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6018150, -0.7986355,  0.0000000, 0,
         0.7986355,  0.6018150,  0.0000000, 0,
         0.0000000,  0.0000000,  1.0000000, 0,
@@ -1466,7 +1466,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the xy-axis', () => {
       rotation4x4(53 * TO_RADIANS, 53 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6018150,  0.0000000,  0.7986355, 0,
         0.6378187,  0.6018150, -0.4806308, 0,
         -0.4806308,  0.7986355,  0.3621813, 0,
@@ -1477,7 +1477,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the xz-axis', () => {
       rotation4x4(53 * TO_RADIANS, 0, 53 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6018150, -0.7986355,  0.0000000, 0,
         0.4806308,  0.3621813, -0.7986355, 0,
         0.6378187,  0.4806308,  0.6018150, 0,
@@ -1488,7 +1488,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the yz-axis', () => {
       rotation4x4(0, 53 * TO_RADIANS, 53 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.3621813, -0.4806308,  0.7986355, 0,
         0.7986355,  0.6018150,  0.0000000, 0,
         -0.4806308,  0.6378187,  0.6018150, 0,
@@ -1499,7 +1499,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a 53 degree rotation about the xyz-axis', () => {
       rotation4x4(53 * TO_RADIANS, 53 * TO_RADIANS, 53 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.3621813, -0.4806308,  0.7986355, 0,
         0.8644797, -0.1472033, -0.4806308, 0,
         0.3485678,  0.8644797,  0.3621813, 0,
@@ -1512,7 +1512,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the x-axis', () => {
       const m = rotation4x4(-51 * TO_RADIANS, 0, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         1.0000000,  0.0000000,  0.0000000, 0,
         0.0000000,  0.6293204,  0.7771460, 0,
         0.0000000, -0.7771460,  0.6293204, 0,
@@ -1523,7 +1523,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the y-axis', () => {
       const m = rotation4x4(0, -51 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6293204,  0.0000000, -0.7771460, 0,
         0.0000000,  1.0000000,  0.0000000, 0,
         0.7771460,  0.0000000,  0.6293204, 0,
@@ -1534,7 +1534,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the z-axis', () => {
       const m = rotation4x4(0, 0, -51 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6293204,  0.7771460,  0.0000000, 0,
         -0.7771460,  0.6293204,  0.0000000, 0,
         0.0000000,  0.0000000,  1.0000000, 0,
@@ -1545,7 +1545,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the xy-axis', () => {
       const m = rotation4x4(-51 * TO_RADIANS, -51 * TO_RADIANS, 0);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6293204,  0.0000000, -0.7771460, 0,
         0.6039559,  0.6293204,  0.4890738, 0,
         0.4890738, -0.7771460,  0.3960442, 0,
@@ -1556,7 +1556,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the xz-axis', () => {
       const m = rotation4x4(-51 * TO_RADIANS, 0, -51 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.6293204,  0.7771460,  0.0000000, 0,
         -0.4890738,  0.3960442,  0.7771460, 0,
         0.6039559, -0.4890738,  0.6293204, 0,
@@ -1567,7 +1567,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the yz-axis', () => {
       const m = rotation4x4(0, -51 * TO_RADIANS, -51 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.3960442,  0.4890738, -0.7771460, 0,
         -0.7771460,  0.6293204,  0.0000000, 0,
         0.4890738,  0.6039559,  0.6293204, 0,
@@ -1578,7 +1578,7 @@ describe("Matrix Library", () => {
     it ('Should be a -51 degree rotation about the xyz-axis', () => {
       const m = rotation4x4(-51 * TO_RADIANS, -51 * TO_RADIANS, -51 * TO_RADIANS);
 
-      assert4x4(m, transpose4x4([
+      assert4x4(m, ([
         0.3960442,  0.4890738, -0.7771460, 0,
         -0.1089921,  0.8654060,  0.4890738, 0,
         0.9117399, -0.1089921,  0.3960442, 0,
@@ -1589,7 +1589,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the x-axis', () => {
       rotation4x4(-51 * TO_RADIANS, 0, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         1.0000000,  0.0000000,  0.0000000, 0,
         0.0000000,  0.6293204,  0.7771460, 0,
         0.0000000, -0.7771460,  0.6293204, 0,
@@ -1600,7 +1600,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the y-axis', () => {
       rotation4x4(0, -51 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6293204,  0.0000000, -0.7771460, 0,
         0.0000000,  1.0000000,  0.0000000, 0,
         0.7771460,  0.0000000,  0.6293204, 0,
@@ -1611,7 +1611,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the z-axis', () => {
       rotation4x4(0, 0, -51 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6293204,  0.7771460,  0.0000000, 0,
         -0.7771460,  0.6293204,  0.0000000, 0,
         0.0000000,  0.0000000,  1.0000000, 0,
@@ -1622,7 +1622,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the xy-axis', () => {
       rotation4x4(-51 * TO_RADIANS, -51 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6293204,  0.0000000, -0.7771460, 0,
         0.6039559,  0.6293204,  0.4890738, 0,
         0.4890738, -0.7771460,  0.3960442, 0,
@@ -1633,7 +1633,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the xz-axis', () => {
       rotation4x4(-51 * TO_RADIANS, 0, -51 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.6293204,  0.7771460,  0.0000000, 0,
         -0.4890738,  0.3960442,  0.7771460, 0,
         0.6039559, -0.4890738,  0.6293204, 0,
@@ -1644,7 +1644,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the yz-axis', () => {
       rotation4x4(0, -51 * TO_RADIANS, -51 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.3960442,  0.4890738, -0.7771460, 0,
         -0.7771460,  0.6293204,  0.0000000, 0,
         0.4890738,  0.6039559,  0.6293204, 0,
@@ -1655,7 +1655,7 @@ describe("Matrix Library", () => {
     it ('Should modify to a -51 degree rotation about the xyz-axis', () => {
       rotation4x4(-51 * TO_RADIANS, -51 * TO_RADIANS, -51 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, transpose4x4([
+      assert4x4(m4x4, ([
         0.3960442,  0.4890738, -0.7771460, 0,
         -0.1089921,  0.8654060,  0.4890738, 0,
         0.9117399, -0.1089921,  0.3960442, 0,
@@ -1799,8 +1799,8 @@ describe("Matrix Library", () => {
       const m2: Mat2x2 = [4, 3, 2, 1];
 
       assert2x2(multiply2x2(m1, m2), [
-        8, 5,
-        20, 13
+        13, 20,
+        5, 8
       ]);
     });
 
@@ -1809,8 +1809,8 @@ describe("Matrix Library", () => {
       const m2: Mat2x2 = [4, 3, 2, 1];
 
       assert2x2(multiply2x2(m2, m1), [
-        13, 20,
-        5, 8
+        8, 5,
+        20, 13
       ]);
     });
 
@@ -1863,9 +1863,9 @@ describe("Matrix Library", () => {
       const m2: Mat3x3 = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 
       assert3x3(multiply3x3(m1, m2), [
-        30, 24, 18,
-        84, 69, 54,
-        138, 114, 90
+        90, 114, 138,
+        54, 69, 84,
+        18, 24, 30
       ]);
     });
 
@@ -1874,9 +1874,9 @@ describe("Matrix Library", () => {
       const m2: Mat3x3 =  [9, 8, 7, 6, 5, 4, 3, 2, 1];
 
       assert3x3(multiply3x3(m2, m1), [
-        90, 114, 138,
-        54, 69, 84,
-        18, 24, 30
+        30, 24, 18,
+        84, 69, 54,
+        138, 114, 90
       ]);
     });
 
@@ -1931,10 +1931,10 @@ describe("Matrix Library", () => {
       const m2: Mat4x4 = [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
       assert4x4(multiply4x4(m1, m2), [
-        80, 70, 60, 50,
-        240, 214, 188, 162,
-        400, 358, 316, 274,
-        560, 502, 444, 386,
+        386, 444, 502, 560,
+        274, 316, 358, 400,
+        162, 188, 214, 240,
+        50, 60, 70, 80,
       ]);
     });
 
@@ -1943,10 +1943,10 @@ describe("Matrix Library", () => {
       const m2: Mat4x4 = [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
       assert4x4(multiply4x4(m2, m1), [
-        386, 444, 502, 560,
-        274, 316, 358, 400,
-        162, 188, 214, 240,
-        50, 60, 70, 80,
+        80, 70, 60, 50,
+        240, 214, 188, 162,
+        400, 358, 316, 274,
+        560, 502, 444, 386,
       ]);
     });
   });
@@ -2265,33 +2265,6 @@ describe("Matrix Library", () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0);
       const v: Vec4 = [1, 1, 1, 1];
 
-      console.log(
-        transform4(
-          multiply4x4(
-            rotation4x4(0, 90 * TO_RADIANS, 0),
-            rotation4x4(90 * TO_RADIANS, 0, 0),
-          ),
-          v
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(0, 90 * TO_RADIANS, 0),
-          transform4(
-            rotation4x4(90 * TO_RADIANS, 0, 0),
-            v
-          )
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0),
-          v
-        )
-      );
-
       assert4(transform4(m, v), [1, 1, 1, 1]);
     });
 
@@ -2305,33 +2278,6 @@ describe("Matrix Library", () => {
     it ('Should rotate y then z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
-
-      console.log(
-        transform4(
-          multiply4x4(
-            rotation4x4(0, 0, 90 * TO_RADIANS),
-            rotation4x4(0, 90 * TO_RADIANS, 0),
-          ),
-          v
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(0, 0, 90 * TO_RADIANS),
-          transform4(
-            rotation4x4(0, 90 * TO_RADIANS, 0),
-            v
-          )
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS),
-          v
-        )
-      );
 
       assert4(transform4(m, v), [1, 1, 1, 1]);
     });
@@ -2352,39 +2298,6 @@ describe("Matrix Library", () => {
         rotation4x4(0, 90 * TO_RADIANS, 0),
         transform4(
           rotation4x4(90 * TO_RADIANS, 0, 0),
-          v
-        )
-      );
-
-      console.log(
-        transform4(
-          multiply4x4(
-            rotation4x4(0, 0, 90 * TO_RADIANS),
-            multiply4x4(
-              rotation4x4(0, 90 * TO_RADIANS, 0),
-              rotation4x4(90 * TO_RADIANS, 0, 0),
-            )
-          ),
-          v
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(0, 0, 90 * TO_RADIANS),
-          transform4(
-            rotation4x4(0, 90 * TO_RADIANS, 0),
-            transform4(
-              rotation4x4(90 * TO_RADIANS, 0, 0),
-              v
-            )
-          )
-        )
-      );
-
-      console.log(
-        transform4(
-          rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS),
           v
         )
       );

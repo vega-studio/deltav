@@ -836,12 +836,6 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
           s0 * s2 - c0 * s1 * c2, s0 * c2 + c0 * s1 * s2, c0 * c1, 0,
           0, 0, 0, 1
         );
-
-        /**c1 * c2, c1 * s2, s1, 0,
-          -c2 * s0 * s1 - c0 * s2, c0 * c2 - s0 * s1 * s2, c1 * s0, 0,
-           s0 * s2 - c0 * c2 * s1, -c2 * s0 - c0 * s1 * s2, c0 * c1, 0,
-                  0,                       0,                      0, 1 */
-
       } else {
         // x, y
         const cx = cos(x);
@@ -856,11 +850,6 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
         -cx * sy, sx, cx * cy, 0,
         0, 0, 0, 1
         );
-
-        /*cy,  sx * sy, -cx * sy, 0,
-           0,       cx,       sx, 0,
-          sy, -sx * cy,  cx * cy, 0,
-           0,        0,        0, 1;*/
       }
     } else {
       if (z) {
@@ -877,11 +866,6 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
           sx * sz, sx * cz, cx, 0,
           0, 0, 0, 1
         );
-
-        /** cz, cx * sz, sx * sz, 0,
-          -sz, cx * cz, sx * cz, 0,
-            0,     -sx,      cx, 0,
-            0,       0,       0, 1 */
       } else {
         // x
         const cx = cos(x);
@@ -912,11 +896,6 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
           -sy * cz, sy * sz, cy, 0,
           0, 0, 0, 1
        );
-       /** cy * cz, sz, -sy * cz, 0,
-         -cy * sz, cz,  sy * sz, 0,
-               sy,  0,       cy, 0,
-                0,  0,        0, 1 */
-
       } else {
         // y
         const cy = cos(y);

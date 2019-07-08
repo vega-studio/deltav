@@ -50,8 +50,8 @@ import {
   transpose2x2,
   transpose3x3,
   transpose4x4
-} from '../src/util/matrix';
-import { fuzzyCompare1, fuzzyCompare2, fuzzyCompare3, fuzzyCompare4, Vec1, Vec2, Vec3, Vec4 } from '../src/util/vector';
+} from '../src/math/matrix';
+import { fuzzyCompare1, fuzzyCompare2, fuzzyCompare3, fuzzyCompare4, Vec1, Vec2, Vec3, Vec4 } from '../src/math/vector';
 import { fail1, fail2, fail3, fail4 } from './vector.test';
 
 function fail2x2(actual: any, expected: any) {

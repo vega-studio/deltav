@@ -1,3 +1,4 @@
+import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
 import { Bounds } from "../primitives";
 import { LayerScene } from "../surface/layer-scene";
 import { Surface } from "../surface/surface";
@@ -5,7 +6,6 @@ import { IViewProps, NoView, View } from "../surface/view";
 import { isDefined } from "../util/common-filters";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
-import { add2, length2, scale2, subtract2, Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import {
   IMouseInteraction,

@@ -1,5 +1,5 @@
 import { Bounds } from "../primitives";
-import { Vec2, Vec2Compat } from "../util/vector";
+import { Vec2, Vec2Compat } from "./vector";
 
 /**
  * This object expresses a suite of methods that aids in projecting values from screen to world and vice versa.

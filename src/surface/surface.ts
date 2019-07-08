@@ -3,6 +3,7 @@ import { UserInputEventManager } from "../event-management/user-input-event-mana
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
+import { copy4, Vec2, Vec4 } from "../math/vector";
 import { getAbsolutePositionBounds } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import {
@@ -26,7 +27,6 @@ import {
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";

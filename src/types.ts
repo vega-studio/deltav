@@ -12,6 +12,7 @@ import {
   Texture
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
 import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
@@ -26,7 +27,6 @@ import {
   Vec3Compat,
   Vec4
 } from "./util";
-import { IAutoEasingMethod } from "./util/auto-easing-method";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];

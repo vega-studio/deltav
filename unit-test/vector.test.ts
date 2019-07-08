@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
 import { normalize } from 'path';
-import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, divide3, divide4, dot1, dot2, dot3, dot4, flatten1, flatten2, flatten3, flatten4, floor1, floor2, floor3, floor4, inverse1, inverse2, inverse3, inverse4, linear1, linear2, linear3, linear4, max1, max2, max3, max4, min1, min2, min3, min4, multiply1, multiply2, multiply3, multiply4, normalize1, normalize2, normalize3, normalize4, scale1, scale2, scale3, scale4, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/util/vector';
+import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, divide3, divide4, dot1, dot2, dot3, dot4, flatten1, flatten2, flatten3, flatten4, floor1, floor2, floor3, floor4, inverse1, inverse2, inverse3, inverse4, linear1, linear2, linear3, linear4, max1, max2, max3, max4, min1, min2, min3, min4, multiply1, multiply2, multiply3, multiply4, normalize1, normalize2, normalize3, normalize4, scale1, scale2, scale3, scale4, toString1, toString2, toString3, toString4, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/math/vector';
 
 export function fail1(actual: Vec1, expected: Vec1): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;

@@ -1,4 +1,6 @@
 import { InstanceProvider } from "../../../instance-provider/instance-provider";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
+import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { KernedLayout } from "../../../resources/text/font-map";
 import {
@@ -7,8 +9,6 @@ import {
   LayerInitializer
 } from "../../../surface/layer";
 import { InstanceDiffType, ResourceType } from "../../../types";
-import { IAutoEasingMethod } from "../../../util/auto-easing-method";
-import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";

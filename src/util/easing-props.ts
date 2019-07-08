@@ -1,5 +1,5 @@
+import { Vec } from "../math/vector";
 import { IEasingProps } from "../types";
-import { Vec } from "./vector";
 
 /**
  * This object represents the data associated with easing. It provides the

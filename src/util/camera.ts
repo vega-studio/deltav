@@ -1,4 +1,3 @@
-import { Surface } from "../surface";
 import {
   identity4,
   Mat4x4,
@@ -7,9 +6,10 @@ import {
   perspective4x4,
   scale4x4by3,
   translation4x4by3
-} from "./matrix";
+} from "../math/matrix";
+import { copy3, scale3, Vec3 } from "../math/vector";
+import { Surface } from "../surface";
 import { uid } from "./uid";
-import { copy3, scale3, Vec3 } from "./vector";
 
 export enum CameraProjectionType {
   PERSPECTIVE,

@@ -1,4 +1,6 @@
 import { Instance } from "../../../instance-provider";
+import { AutoEasingLoopStyle } from "../../../math/auto-easing-method";
+import { Vec, VecMath, VecMethods } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult
@@ -16,13 +18,11 @@ import {
   IVertexAttribute,
   ShaderInjectionTarget
 } from "../../../types";
-import { AutoEasingLoopStyle } from "../../../util/auto-easing-method";
 import { EasingProps } from "../../../util/easing-props";
 import {
   IShaderTemplateRequirements,
   shaderTemplate
 } from "../../../util/shader-templating";
-import { Vec, VecMath, VecMethods } from "../../../util/vector";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
 
 const debugCtx = "EasingIOExpansion";

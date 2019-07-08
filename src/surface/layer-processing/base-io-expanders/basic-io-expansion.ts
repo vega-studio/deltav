@@ -1,6 +1,7 @@
 import { uniformBufferInstanceBufferName } from "../../../constants";
 import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
+import { Vec4 } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult
@@ -17,7 +18,6 @@ import {
   PickType,
   ShaderInjectionTarget
 } from "../../../types";
-import { Vec4 } from "../../../util/vector";
 
 /** Provides a label for performance debugging */
 const debugCtx = "BasicIOExpansion";

@@ -202,7 +202,7 @@ export function linear1(
   t: number,
   out?: Vec1Compat
 ): Vec1 {
-  return scale1(add1(subtract1(end, start), start), t, out);
+  return add1(scale1(subtract1(end, start), t), start, out);
 }
 
 export function length1(start: Vec1Compat): number {
@@ -383,7 +383,7 @@ export function linear2(
   t: number,
   out?: Vec2Compat
 ): Vec2 {
-  return scale2(add2(subtract2(end, start), start), t, out);
+  return add2(scale2(subtract2(end, start), t), start, out);
 }
 
 export function length2(start: Vec2Compat): number {
@@ -563,7 +563,7 @@ export function linear3(
   t: number,
   out?: Vec3Compat
 ): Vec3 {
-  return scale3(add3(subtract3(end, start), start), t, out);
+  return add3(scale3(subtract3(end, start), t), start, out);
 }
 
 export function length3(start: Vec3Compat): number {
@@ -791,7 +791,7 @@ export function linear4(
   t: number,
   out?: Vec4Compat
 ): Vec4 {
-  return scale4(add4(subtract4(end, start), start), t, out);
+  return add4(scale4(subtract4(end, start), t), start, out);
 }
 
 export function length4(start: Vec4): number {

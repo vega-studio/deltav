@@ -34,6 +34,11 @@ import {
   rotation4x4by3,
   scale4x4,
   scale4x4by3,
+  shearX2x2,
+  shearX4x4,
+  shearY2x2,
+  shearY4x4,
+  shearZ4x4,
   toString2x2,
   toString3x3,
   toString4x4,
@@ -2303,6 +2308,401 @@ describe("Matrix Library", () => {
       );
 
       assert4(transform4(a, b), [1, -1, 1, 1]);
+    });
+
+    it ('Should rotate regardless of w value', () => {
+      const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
+      const m1 = multiply4x4(
+        rotation4x4(0, 0, 90 * TO_RADIANS),
+        multiply4x4(
+          rotation4x4(0, 90 * TO_RADIANS, 0),
+          rotation4x4(90 * TO_RADIANS, 0, 0),
+        )
+      );
+      const v: Vec4 = [1, 1, 1, 0];
+
+      const a: Mat4x4 = rotation4x4(0, 0, 90 * TO_RADIANS);
+      const b: Vec4 = transform4(
+        rotation4x4(0, 90 * TO_RADIANS, 0),
+        transform4(
+          rotation4x4(90 * TO_RADIANS, 0, 0),
+          v
+        )
+      );
+
+      assert4(transform4(a, b), [1, -1, 1, 0]);
+    });
+  });
+
+  describe('Shear transforms', () => {
+    it ('Should produce identity 2x2', () => {
+      assert2x2(shearX2x2(0), identity2());
+    });
+
+    it ('Should produce identity 4x4', () => {
+      assert4x4(shearX4x4(0), identity4());
+    });
+
+    it ('Should modify to identity 2x2', () => {
+      const m: Mat2x2 = [0, 0, 0, 0];
+      shearX2x2(0, m);
+      assert2x2(m, identity2());
+    });
+
+    it ('Should modify to identity 4x4', () => {
+      const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      shearX4x4(0, m);
+      assert4x4(m, identity4());
+    });
+
+    it ('Should produce identity 2x2', () => {
+      assert2x2(shearY2x2(0), identity2());
+    });
+
+    it ('Should produce identity 4x4', () => {
+      assert4x4(shearY4x4(0), identity4());
+    });
+
+    it ('Should modify to identity 2x2', () => {
+      const m: Mat2x2 = [0, 0, 0, 0];
+      shearY2x2(0, m);
+      assert2x2(m, identity2());
+    });
+
+    it ('Should modify to identity 4x4', () => {
+      const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      shearY4x4(0, m);
+      assert4x4(m, identity4());
+    });
+
+    it ('Should produce identity 4x4', () => {
+      assert4x4(shearZ4x4(0), identity4());
+    });
+
+    it ('Should modify to identity 4x4', () => {
+      const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      shearZ4x4(0, m);
+      assert4x4(m, identity4());
+    });
+
+    // #region 45 degrees
+    it ('Should shear Vec2 parallel to x-axis by 45 degrees', () => {
+      const m: Mat2x2 = shearX2x2(45 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+
+      assert2(transform2(m, v), [1, 1]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to x-axis by 45 degrees', () => {
+      const m: Mat2x2 = shearX2x2(45 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+      transform2(m, v, v);
+
+      assert2(v, [1, 1]);
+    });
+
+    it ('Should shear Vec2 parallel to y-axis by 45 degrees', () => {
+      const m: Mat2x2 = shearY2x2(45 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+
+      assert2(transform2(m, v), [1, 1]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to y-axis by 45 degrees', () => {
+      const m: Mat2x2 = shearY2x2(45 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+      transform2(m, v, v);
+
+      assert2(v, [1, 1]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by 45 degrees', () => {
+      const m = shearX4x4(45 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [1, 1, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by 45 degrees', () => {
+      const m = shearX4x4(45 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [1, 0, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by 45 degrees', () => {
+      const m = shearY4x4(45 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, 1, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by 45 degrees', () => {
+      const m = shearY4x4(45 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [0, 1, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by 45 degrees', () => {
+      const m = shearZ4x4(45 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, 0, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by 45 degrees', () => {
+      const m = shearZ4x4(45 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [0, 1, 1, 0]);
+    });
+    // #endregion
+
+    // #region 63.4349488229 degrees
+    it ('Should shear Vec2 parallel to x-axis by 63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearX2x2(63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+
+      assert2(transform2(m, v), [2, 1]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to x-axis by 63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearX2x2(63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+      transform2(m, v, v);
+
+      assert2(v, [2, 1]);
+    });
+
+    it ('Should shear Vec2 parallel to y-axis by 63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearY2x2(63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+
+      assert2(transform2(m, v), [1, 2]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to y-axis by 63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearY2x2(63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+      transform2(m, v, v);
+
+      assert2(v, [1, 2]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by 63.4349488229 degrees', () => {
+      const m = shearX4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [2, 1, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by 63.4349488229 degrees', () => {
+      const m = shearX4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [2, 0, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by 63.4349488229 degrees', () => {
+      const m = shearY4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, 2, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by 63.4349488229 degrees', () => {
+      const m = shearY4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [0, 2, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by 63.4349488229 degrees', () => {
+      const m = shearZ4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, 0, 2, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by 63.4349488229 degrees', () => {
+      const m = shearZ4x4(63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [0, 1, 2, 0]);
+    });
+    // #endregion
+
+    // #region -63.4349488229 degrees
+    it ('Should shear Vec2 parallel to x-axis by -63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearX2x2(-63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+
+      assert2(transform2(m, v), [-2, 1]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to x-axis by -63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearX2x2(-63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [0, 1];
+      transform2(m, v, v);
+
+      assert2(v, [-2, 1]);
+    });
+
+    it ('Should shear Vec2 parallel to y-axis by -63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearY2x2(-63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+
+      assert2(transform2(m, v), [1, -2]);
+    });
+
+    it ('Should shear and modify Vec2 parallel to y-axis by -63.4349488229 degrees', () => {
+      const m: Mat2x2 = shearY2x2(-63.4349488229 * TO_RADIANS);
+      const v: Vec2 = [1, 0];
+      transform2(m, v, v);
+
+      assert2(v, [1, -2]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by -63.4349488229 degrees', () => {
+      const m = shearX4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [-2, 1, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the x-axis by -63.4349488229 degrees', () => {
+      const m = shearX4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [-2, 0, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by -63.4349488229 degrees', () => {
+      const m = shearY4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, -2, 0, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the y-axis by -63.4349488229 degrees', () => {
+      const m = shearY4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 0, 1, 0];
+
+      assert4(transform4(m, v), [0, -2, 1, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by -63.4349488229 degrees', () => {
+      const m = shearZ4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [1, 0, 0, 0];
+
+      assert4(transform4(m, v), [1, 0, -2, 0]);
+    });
+
+    it ('Should shear Vec4 parallel to the z-axis by -63.4349488229 degrees', () => {
+      const m = shearZ4x4(-63.4349488229 * TO_RADIANS);
+      const v: Vec4 = [0, 1, 0, 0];
+
+      assert4(transform4(m, v), [0, 1, -2, 0]);
+    });
+    // #endregion
+  });
+
+  describe('Matrix Transforms: Order of operations', () => {
+    it ('Should scale then translate', () => {
+      const s = scale4x4(1, 2, 3);
+      const t = translation4x4(10, 20, 30);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          t,
+          s
+        ),
+        v
+      );
+
+      assert4(r, [11, 22, 33, 1]);
+    });
+
+    it ('Should translate then scale', () => {
+      const s = scale4x4(1, 2, 3);
+      const t = translation4x4(10, 20, 30);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          s,
+          t
+        ),
+        v
+      );
+
+      assert4(r, [11, 42, 93, 1]);
+    });
+
+    it ('Should scale then rotate', () => {
+      const s = scale4x4(1, 2, 3);
+      const rot = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          rot,
+          s,
+        ),
+        v
+      );
+
+      assert4(r, [3, -2, 1, 1]);
+    });
+
+    it ('Should rotate then scale', () => {
+      const s = scale4x4(1, 2, 3);
+      const rot = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          s,
+          rot,
+        ),
+        v
+      );
+
+      assert4(r, [1, -2, 3, 1]);
+    });
+
+    it ('Should rotate then translate', () => {
+      const t = translation4x4(10, 20, 30);
+      const rot = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          t,
+          rot,
+        ),
+        v
+      );
+
+      assert4(r, [11, 19, 31, 1]);
+    });
+
+    it ('Should translate then rotate', () => {
+      const t = translation4x4(10, 20, 30);
+      const rot = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
+      const v: Vec4 = [1, 1, 1, 1];
+
+      const r = transform4(
+        multiply4x4(
+          rot,
+          t,
+        ),
+        v
+      );
+
+      assert4(r, [31, -21, 11, 1]);
     });
   });
 });

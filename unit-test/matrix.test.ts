@@ -601,7 +601,7 @@ describe("Matrix Library", () => {
     });
   });
 
-  describe('Rotation', () => {
+  describe('Rotation (Right hand rule)', () => {
     // #region 0 degrees (Identity)
     it ('Should produce an identity matrix', () => {
       const m = rotation4x4(0, 0, 0);
@@ -2222,7 +2222,7 @@ describe("Matrix Library", () => {
     });
   });
 
-  describe('Rotation Transforms', () => {
+  describe('Rotation Transforms (Right hand rule)', () => {
     it ('Should be identity', () => {
       const m = rotation4x4(0, 0, 0);
       assert4x4(m, identity4());
@@ -2608,7 +2608,7 @@ describe("Matrix Library", () => {
     // #endregion
   });
 
-  describe('Matrix Transforms: Order of operations', () => {
+  describe('Transforms: Order of operations', () => {
     it ('Should scale then translate', () => {
       const s = scale4x4(1, 2, 3);
       const t = translation4x4(10, 20, 30);

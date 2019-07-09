@@ -1,4 +1,5 @@
 import { Bounds } from "../primitives";
+import { uid } from "../util";
 import { Vec2, Vec2Compat } from "./vector";
 
 /**
@@ -6,6 +7,14 @@ import { Vec2, Vec2Compat } from "./vector";
  * These methods can be implemented in many ways and should be customized to a view + camera configuration.
  */
 export abstract class BaseProjection<T> {
+  /** Provides a numerical UID for this object */
+  get uid() {
+    return this._uid;
+  }
+  private _uid: number = uid();
+  /** Allows for a sensical identifier to be applied to this projection. */
+  id: string = "";
+
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = 1;
   /** This is the rendering bounds within screen space */

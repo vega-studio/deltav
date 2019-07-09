@@ -1,6 +1,6 @@
+import { BaseProjection } from "../math";
 import { Bounds } from "../primitives";
 import { IViewProps, View } from "../surface/view";
-import { IProjection } from "../types";
 import { IMouseInteraction, ITouchInteraction } from "./types";
 import { UserInputEventManager } from "./user-input-event-manager";
 
@@ -59,8 +59,10 @@ export abstract class EventManager {
   /**
    * This retrieves the projections for the view specified by the provided viewId.
    */
-  getProjection(viewId: string): IProjection | null {
-    return this.userInputManager.getView(viewId);
+  getProjection(viewId: string): BaseProjection<any> | null {
+    const view = this.userInputManager.getView(viewId);
+    if (view) return view.projection;
+    return null;
   }
 
   /**

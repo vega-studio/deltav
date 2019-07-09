@@ -1,4 +1,4 @@
-import { identity4, Mat4x4 } from "../../util";
+import { identity4, Mat4x4 } from "../../math";
 import { Transform } from "./transform";
 
 /**
@@ -17,11 +17,15 @@ export class Node3D {
   visibleInGraph: boolean = true;
 
   /** The transform in local space of this node. If there is no parent, this transform === the world transform */
-  get local() { return this._local; }
+  get local() {
+    return this._local;
+  }
   private _local: Transform = new Transform();
 
   /** The parent node of this node */
-  get parent() { return this._parent; }
+  get parent() {
+    return this._parent;
+  }
   private _parent: Node3D | null = null;
 
   /**

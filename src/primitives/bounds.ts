@@ -1,4 +1,4 @@
-import { Vec2 } from "../util";
+import { Vec2 } from "../math";
 
 const { min, max } = Math;
 

@@ -1,5 +1,5 @@
+import { normalize3, Vec2, Vec3 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
-import { Mat4x4, multiply4x4, normalize3, Vec2, Vec3 } from "../../util";
 import { Camera, CameraProjectionType } from "../../util/camera";
 
 export class Projection3D extends BaseProjection<any> {
@@ -38,6 +38,9 @@ export class Projection3D extends BaseProjection<any> {
       }
 
       const rayReference: Vec3 = [Px, Py, -1];
+
+      out[0] = rayReference[0];
+      out[1] = rayReference[1];
 
       // TODO: Now we need to have a matrix that will transform this rayDirection to world space (model transform of
       // the camera, then world projection)
@@ -92,7 +95,7 @@ export class Projection3D extends BaseProjection<any> {
   /**
    * Maps a coordinate found within the world to a relative coordinate within the screen space.
    */
-  worldToScreen(point: Vec3, out?: Vec2) {
+  worldToScreen(_point: Vec3, _out?: Vec2) {
     // const viewProjectionMatrix: Mat4x4 = multiply4x4(this.camera.projection, this.camera.view);
     // // Transform world to clipping coordinates
     // point3D = viewProjectionMatrix.multiply(point3D);
@@ -110,14 +113,14 @@ export class Projection3D extends BaseProjection<any> {
   /**
    * Maps a coordinate relative to the view's viewport to a coordinate found within the world.
    */
-  viewToWorld(point: Vec2, out?: Vec2) {
+  viewToWorld(_point: Vec2, _out?: Vec2) {
     return [0, 0] as Vec2;
   }
 
   /**
    * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
    */
-  worldToView(point: Vec2, out?: Vec2) {
+  worldToView(_point: Vec2, out?: Vec2) {
     const screen = out || [0, 0];
 
     // Calculate from the camera to view space

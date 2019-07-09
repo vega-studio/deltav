@@ -4,7 +4,8 @@ import {
   IMouseInteraction,
   ITouchInteraction
 } from "../../event-management/types";
-import { IProjection, PickType } from "../../types";
+import { BaseProjection } from "../../math";
+import { PickType } from "../../types";
 import {
   isDefined,
   mapGetWithDefault,
@@ -249,7 +250,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleInteraction(
     e: IEventInteraction,
-    callback: (layer: Layer<any, any>, view: IProjection) => void
+    callback: (layer: Layer<any, any>, view: BaseProjection<any>) => void
   ) {
     // Get all of the scenes under the mouse
     const views = this.getSceneViewsUnderMouse(e);
@@ -265,13 +266,13 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleView(
     view: View<IViewProps>,
-    callback: (layer: Layer<any, any>, view: IProjection) => void
+    callback: (layer: Layer<any, any>, view: BaseProjection<any>) => void
   ) {
     for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {
       const layer = view.scene.layers[i];
 
       if (layer.picking && layer.picking.type !== PickType.NONE) {
-        callback(layer, view);
+        callback(layer, view.projection);
       }
     }
   }

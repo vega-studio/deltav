@@ -20,13 +20,15 @@
     "noUnusedParameters": true,
     "removeComments": true,
     "strictNullChecks": true,
-    "target": "es5"
+    "target": "es5",
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": [
     "src",
     "test"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "!node_modules/@types"
   ]
 }

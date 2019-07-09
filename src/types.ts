@@ -12,10 +12,7 @@ import {
   Texture
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
-import { IAutoEasingMethod } from "./math/auto-easing-method";
-import { BaseResourceOptions } from "./resources/base-resource-manager";
-import { IViewProps } from "./surface";
-import { ISceneOptions } from "./surface/layer-scene";
+import { BaseProjection } from "./math";
 import {
   Mat3x3,
   Mat4x4,
@@ -24,9 +21,12 @@ import {
   Vec2,
   Vec2Compat,
   Vec3,
-  Vec3Compat,
   Vec4
-} from "./util";
+} from "./math";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { IViewProps } from "./surface";
+import { ISceneOptions } from "./surface/layer-scene";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -177,11 +177,11 @@ export interface IPickInfo<T extends Instance> {
   /** This is the list of instances that were detected in the interaction */
   readonly instances: T[];
   /** This is the screen coordinates of the interaction point that interacted with the instances */
-  readonly screen: [number, number];
+  readonly screen: Vec2;
   /** This is the world coordinates of the ineraction point that interacted with the instances */
-  readonly world: [number, number];
+  readonly world: Vec2Compat;
   /** Projection methods to easily go between coordinate spaces */
-  readonly projection: IProjection;
+  readonly projection: BaseProjection<any>;
 }
 
 /**
@@ -537,9 +537,6 @@ export type ILayerMaterialOptions = Partial<
 export function createMaterialOptions(options: ILayerMaterialOptions) {
   return options;
 }
-
-/** This is the method signature for determining whether or not a point hits an instance */
-export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 
 /**
  * This is the type of picking assigned to a layer. Each mode has performance and functionality

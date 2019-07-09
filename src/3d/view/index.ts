@@ -1,1 +1,1 @@
-export * from './view-3d';
+export * from "./view-3d";

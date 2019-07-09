@@ -7,8 +7,7 @@ import { Projection3D } from "./projection-3d";
 /**
  * Defines the input metrics of a view for a scene.
  */
-export interface IView3DProps extends IViewProps {
-}
+export interface IView3DProps extends IViewProps {}
 
 /**
  * Type guard to ensure the camera type is orthographic
@@ -30,7 +29,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
       height: 100,
       fov: Math.PI / 2,
       far: 100000,
-      near: 1,
+      near: 1
     }),
     viewport: {
       left: 0,

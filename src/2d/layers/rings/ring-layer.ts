@@ -1,4 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -7,7 +8,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../../types";
-import { CommonMaterialOptions, IAutoEasingMethod, Vec } from "../../../util";
+import { CommonMaterialOptions } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { RingInstance } from "./ring-instance";
 

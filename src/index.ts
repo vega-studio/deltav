@@ -13,3 +13,4 @@ export * from "./resources";
 export * from "./gl";
 export * from "./base-surfaces";
 export * from "./util-layers";
+export * from "./math";

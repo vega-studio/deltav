@@ -3,6 +3,7 @@ import { UserInputEventManager } from "../event-management/user-input-event-mana
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
+import { BaseProjection } from "../math";
 import { copy4, Vec2, Vec4 } from "../math/vector";
 import { getAbsolutePositionBounds } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
@@ -15,15 +16,14 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
-  IProjection,
   IResourceType,
   PickType
 } from "../types";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
@@ -1014,8 +1014,8 @@ export class Surface {
 
       if (view) {
         if (view.screenBounds) {
-          const topLeft = view.viewToWorld([0, 0]);
-          const bottomRight = view.screenToWorld([
+          const topLeft = view.projection.viewToWorld([0, 0]);
+          const bottomRight = view.projection.screenToWorld([
             view.screenBounds.right,
             view.screenBounds.bottom
           ]);
@@ -1039,12 +1039,12 @@ export class Surface {
    * Retrieves the projection methods for a given view, null if the view id does not exist
    * in the surface
    */
-  getProjections(viewId: string): IProjection | null {
+  getProjections(viewId: string): BaseProjection<any> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
       const view = scene.viewDiffs.getByKey(viewId);
 
-      if (view) return view;
+      if (view) return view.projection;
     }
 
     return null;

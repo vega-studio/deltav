@@ -3,7 +3,7 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
-import { Vec2, Vec4 } from "../../../util";
+import { Vec2, Vec4 } from "../../../math";
 
 export interface IArcInstanceOptions extends IInstanceOptions {
   /** The start and end angle of the arc */

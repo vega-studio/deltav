@@ -1,8 +1,8 @@
+import { Vec2 } from "../math";
 import { BaseProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
-import { Vec2 } from "../util";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { LayerScene } from "./layer-scene";
@@ -126,6 +126,14 @@ export abstract class View<
   scene: LayerScene;
   /** This establishes the projection methods that can be used to project geometry between the screen and the world */
   projection: BaseProjection<View<TViewProps>>;
+
+  get screenBounds() {
+    return this.projection.screenBounds;
+  }
+
+  get viewBounds() {
+    return this.projection.viewBounds;
+  }
 
   /** Retrieves the clearflag prop assigned to the view and provides a default */
   get clearFlags() {

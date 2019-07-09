@@ -1,7 +1,7 @@
 import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
+import { Vec } from "../../../math";
 import { IInstanceAttributeInternal } from "../../../types";
-import { Vec } from "../../../util";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import {
   IBufferLocation,

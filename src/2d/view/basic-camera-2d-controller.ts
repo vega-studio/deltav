@@ -4,12 +4,10 @@ import {
   ISingleTouchInteraction,
   ITouchInteraction
 } from "../../event-management/types";
-import { Bounds } from "../../primitives/bounds";
-import { IViewProps, View } from "../../surface/view";
-import { IProjection } from "../../types";
 import {
   add3,
   AutoEasingMethod,
+  BaseProjection,
   copy3,
   divide2,
   divide3,
@@ -19,13 +17,13 @@ import {
   scale3,
   subtract2,
   subtract3,
-  touchesContainsStartView,
-  touchesHasStartView,
-  uid,
   Vec2,
   Vec3,
   vec3
-} from "../../util";
+} from "../../math";
+import { Bounds } from "../../primitives/bounds";
+import { IViewProps, View } from "../../surface/view";
+import { touchesContainsStartView, touchesHasStartView, uid } from "../../util";
 import { Camera2D } from "./camera-2d";
 
 /**
@@ -74,7 +72,7 @@ export interface IBasicCamera2DControllerOptions {
    * This is a handler for when the camera has applied changes to the visible range of what is seen.
    * Which most likely means offset or scale has been altered.
    */
-  onRangeChanged?(camera: Camera2D, targetView: View<IViewProps>): void;
+  onRangeChanged?(camera: Camera2D, projections: BaseProjection<any>): void;
   /**
    * This provides a control to filter panning that will be applied to the camera. The input and
    * output of this will be the delta value to be applied.
@@ -172,7 +170,10 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /**
    * Callback for when the range has changed for the camera in a view
    */
-  private onRangeChanged = (_camera: Camera2D, _targetView: IProjection) => {
+  private onRangeChanged = (
+    _camera: Camera2D,
+    _targetView: BaseProjection<any>
+  ) => {
     /* no-op */
   };
 
@@ -343,11 +344,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
     targetView: View<IViewProps>,
     bounds: ICameraBoundsOptions
   ) {
-    const worldTLinScreenSpace = targetView.worldToScreen([
+    const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
       bounds.worldBounds.top
     ]);
-    const worldBRinScreenSpace = targetView.worldToScreen([
+    const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
       bounds.worldBounds.bottom
     ]);
@@ -396,11 +397,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
     targetView: View<IViewProps>,
     bounds: ICameraBoundsOptions
   ) {
-    const worldTLinScreenSpace = targetView.worldToScreen([
+    const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
       bounds.worldBounds.top
     ]);
-    const worldBRinScreenSpace = targetView.worldToScreen([
+    const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
       bounds.worldBounds.bottom
     ]);
@@ -494,7 +495,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
     // Add additional correction for bounds
     this.applyBounds();
     // Broadcast the change occurred
-    this.onRangeChanged(this.camera, relativeView);
+    this.onRangeChanged(this.camera, relativeView.projection);
     // Add additional correction for bounds
     this.applyBounds();
     // Indicate the camera needs a refresh
@@ -514,7 +515,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
     allViews: View<IViewProps>[],
     deltaScale: Vec3
   ) {
-    const beforeZoom = targetView.screenToWorld(focalPoint);
+    const beforeZoom = targetView.projection.screenToWorld(focalPoint);
     const currentZoomX = this.camera.control2D.getScale()[0] || 1.0;
     const currentZoomY = this.camera.control2D.getScale()[1] || 1.0;
 
@@ -528,7 +529,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
     // Ensure the new scale values are within bounds before attempting to correct offsets
     this.applyScaleBounds();
 
-    const afterZoom = targetView.screenToWorld(focalPoint);
+    const afterZoom = targetView.projection.screenToWorld(focalPoint);
     const deltaZoom = subtract2(beforeZoom, afterZoom);
     this.camera.control2D.getOffset()[0] -= deltaZoom[0];
     this.camera.control2D.getOffset()[1] -= deltaZoom[1];
@@ -536,7 +537,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
     // Add additional correction for bounds
     this.applyBounds();
     // Broadcast the change occurred
-    this.onRangeChanged(this.camera, targetView);
+    this.onRangeChanged(this.camera, targetView.projection);
     // Add additional correction for bounds
     this.applyBounds();
 
@@ -1000,7 +1001,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
       // Bound the camera to the specified bounding range
       this.applyBounds();
       // Broadcast the change occurred
-      this.onRangeChanged(this.camera, view);
+      this.onRangeChanged(this.camera, view.projection);
       // Bound the camera to the specified bounding range
       this.applyBounds();
     }

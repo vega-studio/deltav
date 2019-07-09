@@ -6,8 +6,9 @@ import {
   MaterialUniformType
 } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
+import { Vec2, Vec4 } from "../../../math";
 import { IInstanceAttribute } from "../../../types";
-import { uid, Vec2, Vec4 } from "../../../util";
+import { uid } from "../../../util";
 import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";

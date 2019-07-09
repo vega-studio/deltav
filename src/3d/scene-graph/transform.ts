@@ -1,4 +1,14 @@
-import { identity4, Mat4x4, matrix4x4FromUnitQuat, multiply4x4, oneQuat, Quaternion, scale4x4by3, translation4x4by3, Vec3 } from "../../util";
+import {
+  identity4,
+  Mat4x4,
+  matrix4x4FromUnitQuat,
+  multiply4x4,
+  oneQuat,
+  Quaternion,
+  scale4x4by3,
+  translation4x4by3,
+  Vec3
+} from "../../math";
 
 /**
  * This is a wrapper for a 3D matrix for transforming coordinates from one vector space to another. Follows the order
@@ -10,7 +20,9 @@ export class Transform {
    * Flag indicating this transform has changed properties. Will remain in a changed state until the transform has it's
    * resolve() called.
    */
-  get changed() { return this._changed; }
+  get changed() {
+    return this._changed;
+  }
   private _changed: boolean = false;
   /** Flag that indicates if the transform needs to be updated */
   private needsUpdate: boolean = false;
@@ -31,7 +43,9 @@ export class Transform {
   }
 
   /** Orientation of this transform */
-  get rotation() { return this._rotation; }
+  get rotation() {
+    return this._rotation;
+  }
   set rotation(val: Quaternion) {
     this._rotation = val;
     this.needsUpdate = true;
@@ -43,7 +57,9 @@ export class Transform {
   private needsRotationUpdate: boolean = false;
 
   /** Scaling transform of this matrix */
-  get scale() { return this._scale; }
+  get scale() {
+    return this._scale;
+  }
   set scale(val: Vec3) {
     this._scale = val;
     this.needsUpdate = true;
@@ -55,7 +71,9 @@ export class Transform {
   private needsScaleUpdate = false;
 
   /** Translation of this transform */
-  get translation() { return this._translation; }
+  get translation() {
+    return this._translation;
+  }
   set translation(val: Vec3) {
     this._translation = val;
     this.needsUpdate = true;
@@ -92,13 +110,7 @@ export class Transform {
       T = translation4x4by3(this._translation);
     }
 
-    this._matrix = multiply4x4(
-      T,
-      multiply4x4(
-        R,
-        S
-      )
-    );
+    this._matrix = multiply4x4(T, multiply4x4(R, S));
 
     this.needsUpdate = false;
   }

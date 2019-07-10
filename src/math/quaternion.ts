@@ -682,63 +682,100 @@ export function lookAtQuat(
   q = q || zeroQuat();
   forward = normalize3(forward);
 
-  const v1 = forward;
-  const v2 = cross3(up, v1);
-  const v3 = cross3(v1, v2);
+  const f = forward;
+  const l = normalize3(cross3(up, f));
+  const u = normalize3(cross3(f, l));
 
-  const m00 = v2[0];
-  const m01 = v2[1];
-  const m02 = v2[2];
-  const m10 = v3[0];
-  const m11 = v3[1];
-  const m12 = v3[2];
-  const m20 = v1[0];
-  const m21 = v1[1];
-  const m22 = v1[2];
+  const m00 = l[0];
+  const m01 = l[1];
+  const m02 = l[2];
+  const m10 = u[0];
+  const m11 = u[1];
+  const m12 = u[2];
+  const m20 = f[0];
+  const m21 = f[1];
+  const m22 = f[2];
 
-  const num8 = m00 + m11 + m22;
+  const tr = m00 + m11 + m22;
 
-  if (num8 > 0.0) {
-    let num = sqrt(num8 + 1.0);
-    q[0] = num * 0.5;
-    num = 0.5 / num;
-    q[1] = (m12 - m21) * num;
-    q[2] = (m20 - m02) * num;
-    q[3] = (m01 - m10) * num;
+  if (tr > 0.0) {
+    const s = sqrt(tr + 1.0) * 2;
+    q[0] = 0.25 * s;
+    // num = 0.5 / num;
+    q[1] = (m21 - m12) / s;
+    q[2] = (m02 - m20) / s;
+    q[3] = (m10 - m01) / s;
 
     return q;
   }
 
-  if (m00 >= m11 && m00 >= m22) {
-    const num7 = sqrt(1.0 + m00 - m11 - m22);
-    const num4 = 0.5 / num7;
-    q[1] = 0.5 * num7;
-    q[2] = (m01 + m10) * num4;
-    q[3] = (m02 + m20) * num4;
-    q[0] = (m12 - m21) * num4;
+  if (m00 > m11 && m00 > m22) {
+    // const num7 = sqrt(1.0 + m00 - m11 - m22);
+    // const num4 = 0.5 / num7;
+    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
+    q[0] = (m21 - m12) / s;
+    q[1] = 0.25 * s;
+    q[2] = (m01 + m10) / s;
+    q[3] = (m02 + m20) / s;
 
     return q;
   }
 
   if (m11 > m22) {
-    const num6 = sqrt(1.0 + m11 - m00 - m22);
-    const num3 = 0.5 / num6;
-    q[1] = (m10 + m01) * num3;
-    q[2] = 0.5 * num6;
-    q[3] = (m21 + m12) * num3;
-    q[0] = (m20 - m02) * num3;
+    // const num6 = sqrt(1.0 + m11 - m00 - m22);
+    // const num3 = 0.5 / num6;
+    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
+
+    q[0] = (m02 - m20) / s;
+    q[1] = (m10 + m01) / s;
+    q[2] = 0.25 * s;
+    q[3] = (m21 + m12) / s;
 
     return q;
   }
 
-  const num5 = sqrt(1.0 + m22 - m00 - m11);
-  const num2 = 0.5 / num5;
-  q[1] = (m20 + m02) * num2;
-  q[2] = (m21 + m12) * num2;
-  q[3] = 0.5 * num5;
-  q[0] = (m01 - m10) * num2;
+  // const num5 = sqrt(1.0 + m22 - m00 - m11);
+  // const num2 = 0.5 / num5;
+  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
+  q[0] = (m10 - m01) / s;
+  q[1] = (m20 + m02) / s;
+  q[2] = (m21 + m12) / s;
+  q[3] = 0.25 * s;
 
   return q;
+}
+
+export function lookAtMatrix(
+  forward: Vec3Compat,
+  up: Vec3Compat,
+  m?: Mat4x4
+): Mat4x4 {
+  m = m || identity4();
+
+  forward = normalize3(forward);
+
+  const f = forward;
+  const l = normalize3(cross3(up, f));
+  const u = normalize3(cross3(f, l));
+
+  m[0] = l[0];
+  m[1] = u[0];
+  m[2] = f[0];
+  m[3] = 0.0;
+  m[4] = l[1];
+  m[5] = u[1];
+  m[6] = f[1];
+  m[7] = 0.0;
+  m[8] = l[2];
+  m[9] = u[2];
+  m[10] = f[2];
+  m[11] = 0.0;
+  m[12] = 0.0;
+  m[13] = 0.0;
+  m[14] = 0.0;
+  m[15] = 1.0;
+
+  return m;
 }
 
 /**

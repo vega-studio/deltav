@@ -1209,7 +1209,7 @@ export class Surface {
   private initMouseManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers themselves
     const eventManagers: EventManager[] = ([
-      new LayerMouseEvents(this)
+      new LayerMouseEvents()
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer

@@ -469,6 +469,26 @@ export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
+ * Concat a list of matrices in this order:
+ * concat4x4(A, B, C, D, E, ..., N);
+ * T = A * B * C * E * ... * N
+ *
+ * Thus the far right is considered the 'first' operation and the far left is the last.
+ */
+export function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4 {
+  if (m.length <= 0) return identity4();
+  out = out || identity4();
+  apply4x4.call(null, out, ...m[m.length - 1]);
+
+  for (let i = m.length - 2; i >= 0; --i) {
+    const next = m[i];
+    multiply4x4(next, out, out);
+  }
+
+  return out;
+}
+
+/**
  * Add each element by each element in two matrices
  * 4 OPS
  */
@@ -1024,25 +1044,76 @@ export function translation4x4(
 }
 
 /**
- * Generate a projection matrix with perspective
+ * Produces a perspective matrix for a given frustum:
+ * n: near,
+ * f: far,
+ * l: left,
+ * r: right,
+ * b: bottom,
+ * t: top
+ */
+export function perspectiveFrustum4x4(
+  n: number,
+  f: number,
+  l: number,
+  r: number,
+  t: number,
+  b: number,
+  out?: Mat4x4
+) {
+  out = out || identity4();
+
+  // This is a column major matrix that should homogenize coordinates to within unit cube if the specified point is
+  // within the expressed frustum.
+  // prettier-ignore
+  return apply4x4(out,
+      2 * n / (r - l),                 0,                      0,  0,
+                    0,   2 * n / (t - b),                      0,  0,
+    (r + l) / (r - l), (t + b) / (t - b),     -(f + n) / (f - n), -1,
+                    0,                 0, -(2 * f * n) / (f - n),  0
+  );
+}
+
+/**
+ * Generate a projection matrix with perspective.
+ * The provided FOV is for the horizontal FOV.
  */
 export function perspective4x4(
   fovRadians: number,
-  aspectRatio: number,
+  width: number,
+  height: number,
   near: number,
   far: number,
   out?: Mat4x4
 ): Mat4x4 {
-  const f = 1.0 / Math.tan(fovRadians / 2);
-  const rangeInv = 1 / (near - far);
+  const aspect = height / width;
+  const r = -tan(fovRadians / 2) * near;
+  const l = -r;
+  const t = aspect * r;
+  const b = -t;
 
-  // prettier-ignore
-  return apply4x4(out,
-    f / aspectRatio, 0,                         0,  0,
-    0,               f,                         0,  0,
-    0,               0,   (near + far) * rangeInv, -1,
-    0,               0, near * far * rangeInv * 2,  0
-  );
+  return perspectiveFrustum4x4(near, far, l, r, t, b, out);
+}
+
+/**
+ * Generate a projection matrix with perspective.
+ * The provided FOV is for the vertical FOV.
+ */
+export function perspectiveFOVY4x4(
+  fovRadians: number,
+  width: number,
+  height: number,
+  near: number,
+  far: number,
+  out?: Mat4x4
+): Mat4x4 {
+  const aspect = width / height;
+  const t = tan(fovRadians / 2) * near;
+  const b = -t;
+  const r = aspect * t;
+  const l = -r;
+
+  return perspectiveFrustum4x4(near, far, l, r, t, b, out);
 }
 
 /**
@@ -1064,6 +1135,30 @@ export function orthographic4x4(
                                   0,              2 / (top - bottom),                    0, 0,
                                   0,                               0,    -1 / (far - near), 0,
     (right + left) / (left - right), (top + bottom) / (bottom - top), -near / (near - far), 1
+  );
+}
+
+/**
+ * Performs the operations to project a Vec4 to screen coordinates using a projection matrix. The x and y of the out
+ * Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogenous coordinates
+ * where -1 <= z <= 1 iff z lies within frustum near and far planes.
+ */
+export function projectToScreen(
+  proj: Mat4x4,
+  point: Vec4,
+  width: number,
+  height: number,
+  out?: Vec4
+): Vec4 {
+  out = out || [0, 0, 0, 0];
+  transform4(proj, point, out);
+
+  return apply4(
+    out,
+    (out[0] / out[3] + 1) * 0.5 * width,
+    (out[1] / out[3] + 1) * 0.5 * height,
+    out[2] / out[3],
+    1
   );
 }
 

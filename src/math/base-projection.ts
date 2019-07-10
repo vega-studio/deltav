@@ -1,6 +1,6 @@
-import { Bounds } from "../primitives";
-import { uid } from "../util";
-import { Vec2, Vec2Compat } from "./vector";
+import { Bounds } from "../primitives/bounds";
+import { uid } from "../util/uid";
+import { apply2, Vec2, Vec2Compat } from "./vector";
 
 /**
  * This object expresses a suite of methods that aids in projecting values from screen to world and vice versa.
@@ -25,22 +25,26 @@ export abstract class BaseProjection<T> {
    */
   viewBounds: Bounds<T>;
 
-  screenToPixelSpace(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
+  /**
+   * This projects a point to be relative to the rendering dimensions of the view.
+   */
+  screenToRenderSpace(point: Vec2, out?: Vec2) {
+    out = this.screenToView(point, out);
 
-    p[0] = point[0] * this.pixelRatio;
-    p[1] = point[1] * this.pixelRatio;
-
-    return p;
+    return apply2(out, point[0] * this.pixelRatio, point[1] * this.pixelRatio);
   }
 
-  pixelSpaceToScreen(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
+  /**
+   * This projects a point relative to the render space of the view to the screen coordinates
+   */
+  renderSpaceToScreen(point: Vec2, out?: Vec2) {
+    out = out || [0, 0];
 
-    p[0] = point[0] / this.pixelRatio;
-    p[1] = point[1] / this.pixelRatio;
-
-    return p;
+    return apply2(
+      out,
+      point[0] / this.pixelRatio - this.screenBounds.x,
+      point[1] / this.pixelRatio - this.screenBounds.y
+    );
   }
 
   /**
@@ -48,12 +52,13 @@ export abstract class BaseProjection<T> {
    * the screen.
    */
   screenToView(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
+    out = out || [0, 0];
 
-    p[0] = point[0] - this.screenBounds.x;
-    p[1] = point[1] - this.screenBounds.y;
-
-    return p;
+    return apply2(
+      out,
+      point[0] - this.screenBounds.x,
+      point[1] - this.screenBounds.y
+    );
   }
 
   /**
@@ -61,12 +66,13 @@ export abstract class BaseProjection<T> {
    * the screen.
    */
   viewToScreen(point: Vec2, out?: Vec2) {
-    const p: Vec2 = [0, 0];
+    out = out || [0, 0];
 
-    p[0] = point[0] + this.screenBounds.x;
-    p[1] = point[1] + this.screenBounds.y;
-
-    return this.pixelSpaceToScreen(p, out);
+    return apply2(
+      out,
+      point[0] + this.screenBounds.x,
+      point[1] + this.screenBounds.y
+    );
   }
 
   /**
@@ -88,4 +94,25 @@ export abstract class BaseProjection<T> {
    * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
    */
   abstract worldToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+}
+
+/**
+ * This is an implementation of the BaseProjection with the abstract methods implmented but not functional
+ */
+export class SimpleProjection extends BaseProjection<any> {
+  screenToWorld(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {
+    return point;
+  }
+
+  worldToScreen(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {
+    return point;
+  }
+
+  viewToWorld(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {
+    return point;
+  }
+
+  worldToView(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {
+    return point;
+  }
 }

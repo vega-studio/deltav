@@ -18,6 +18,7 @@ import {
   compare2x2,
   compare3x3,
   compare4x4,
+  concat4x4,
   identity2,
   identity3,
   identity4,
@@ -2703,6 +2704,32 @@ describe("Matrix Library", () => {
       );
 
       assert4(r, [31, -21, 11, 1]);
+    });
+
+    it ('Should concat multiple operations', () => {
+      const v: Vec4 = [1, 1, 1, 1];
+      const t = concat4x4(
+        undefined,
+        rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS),
+        translation4x4(10, 20, 30),
+        scale4x4(1, 2, 3),
+      );
+
+      assert4(transform4(t, v), [33, -22, 11, 1]);
+    });
+
+    it ('Should concat multiple operations and modify', () => {
+      const m = identity4();
+      const v: Vec4 = [1, 1, 1, 1];
+
+      concat4x4(
+        m,
+        rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS),
+        translation4x4(10, 20, 30),
+        scale4x4(1, 2, 3),
+      );
+
+      assert4(transform4(m, v), [33, -22, 11, 1]);
     });
   });
 });

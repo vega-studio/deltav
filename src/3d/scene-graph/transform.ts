@@ -1,11 +1,13 @@
 import {
   identity4,
+  lookAtQuat,
   Mat4x4,
   matrix4x4FromUnitQuat,
   multiply4x4,
   oneQuat,
   Quaternion,
   scale4x4by3,
+  subtract3,
   translation4x4by3,
   Vec3
 } from "../../math";
@@ -38,10 +40,6 @@ export class Transform {
   }
   private _matrix: Mat4x4 = identity4();
 
-  resolve() {
-    this._changed = false;
-  }
-
   /** Orientation of this transform */
   get rotation() {
     return this._rotation;
@@ -71,10 +69,10 @@ export class Transform {
   private needsScaleUpdate = false;
 
   /** Translation of this transform */
-  get translation() {
+  get position() {
     return this._translation;
   }
-  set translation(val: Vec3) {
+  set position(val: Vec3) {
     this._translation = val;
     this.needsUpdate = true;
     this.needsTranslationUpdate = true;
@@ -85,33 +83,49 @@ export class Transform {
   private needsTranslationUpdate: boolean = false;
 
   /**
+   * Orients this transform to make the forward direction point toward another position.
+   */
+  lookAt(position: Vec3, up: Vec3) {
+    this.rotation = lookAtQuat(subtract3(position, this._translation), up);
+  }
+
+  /**
+   * Used by the system to indicate all changes for the transform are resolved, thus putting this transform into a
+   * settled state. Unresolved transforms can trigger updates in other parts of the system.
+   */
+  resolve() {
+    this._changed = false;
+  }
+
+  /**
    * If needed, this updates the matrix for this transform. This is called automatically when the matrix is retrieved.
    */
   update() {
     if (!this.needsUpdate) return;
 
-    let S = this.scaleMatrix;
+    const S = this.scaleMatrix;
 
     if (this.needsScaleUpdate) {
       this.needsScaleUpdate = false;
-      S = scale4x4by3(this._scale);
+      scale4x4by3(this._scale, S);
     }
 
-    let R = this.rotationMatrix;
+    const R = this.rotationMatrix;
 
     if (this.needsRotationUpdate) {
-      R = matrix4x4FromUnitQuat(this._rotation);
+      matrix4x4FromUnitQuat(this._rotation, R);
     }
 
-    let T = this.translationMatrix;
+    const T = this.translationMatrix;
 
     if (this.needsTranslationUpdate) {
       this.needsTranslationUpdate = false;
-      T = translation4x4by3(this._translation);
+      translation4x4by3(this._translation, T);
     }
 
-    this._matrix = multiply4x4(T, multiply4x4(R, S));
-
+    // Concat the SRT transform in this order Scale -> Rotation -> Translation
+    // We utilize our existing matrix to reduce redundant allocations of matrix information.
+    multiply4x4(T, multiply4x4(R, S, this._matrix), this._matrix);
     this.needsUpdate = false;
   }
 }

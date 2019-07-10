@@ -41,4 +41,18 @@ export class Node3D {
     return this._world;
   }
   private _world: Mat4x4 | null = identity4();
+
+  /**
+   * Lifecycle: This executes before updates are applied / required of this node in the scene graph
+   */
+  willUpdate() {
+    /** No-op as the default behavior */
+  }
+
+  /**
+   * Lifecycle: This executes after updates are applied to this node.
+   */
+  didUpdate() {
+    /** No-op as the default behavior */
+  }
 }

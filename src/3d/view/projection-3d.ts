@@ -1,5 +1,5 @@
-import { normalize3, Vec2, Vec3 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
+import { normalize3, Vec2, Vec3 } from "../../math/vector";
 import { Camera, CameraProjectionType } from "../../util/camera";
 
 export class Projection3D extends BaseProjection<any> {

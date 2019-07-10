@@ -892,7 +892,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
    */
   private handleCameraViewChange = (cam: Camera2D, viewId: string) => {
     if (viewId !== this.startViews[0]) return;
-    const projections = cam.surface.getProjections(viewId);
+    const projections = this.surface.getProjections(viewId);
     if (!projections) return;
     this.onRangeChanged(cam, projections);
   };

@@ -65,8 +65,8 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         height
       };
 
-      const scaleX = this.pixelRatio;
-      const scaleY = this.pixelRatio;
+      const scaleX = 1;
+      const scaleY = 1;
       const camera = this.props.camera;
 
       camera.projectionOptions = Object.assign(

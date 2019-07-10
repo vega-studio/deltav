@@ -19,9 +19,17 @@ import {
   M433,
   Mat4x4
 } from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+import {
+  cross3,
+  dot3,
+  dot4,
+  normalize3,
+  Vec3,
+  Vec3Compat,
+  Vec4
+} from "./vector";
 
-const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
+const { abs, cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
 
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
@@ -269,7 +277,7 @@ export function dotQuat(q1: Quaternion, q2: Quaternion): number {
  * Constructs a rotation quaternion from an axis (a normalized
  * Vec3) and an angle (in radians).
  */
-export function fromEulerAxisAngleToQuat(
+export function fromAxisAngleToQuat(
   axis: Vec3,
   angle: number,
   out?: Quaternion
@@ -679,66 +687,21 @@ export function lookAtQuat(
   up: Vec3Compat,
   q?: Quaternion
 ): Quaternion {
-  q = q || zeroQuat();
-  forward = normalize3(forward);
+  const dot = dot3(up, forward);
 
-  const v1 = forward;
-  const v2 = cross3(up, v1);
-  const v3 = cross3(v1, v2);
-
-  const m00 = v2[0];
-  const m01 = v2[1];
-  const m02 = v2[2];
-  const m10 = v3[0];
-  const m11 = v3[1];
-  const m12 = v3[2];
-  const m20 = v1[0];
-  const m21 = v1[1];
-  const m22 = v1[2];
-
-  const num8 = m00 + m11 + m22;
-
-  if (num8 > 0.0) {
-    let num = sqrt(num8 + 1.0);
-    q[0] = num * 0.5;
-    num = 0.5 / num;
-    q[1] = (m12 - m21) * num;
-    q[2] = (m20 - m02) * num;
-    q[3] = (m01 - m10) * num;
-
-    return q;
+  if (abs(dot + 1.0) < 0.000001) {
+    return [Math.PI, 0, 1, 0];
   }
 
-  if (m00 >= m11 && m00 >= m22) {
-    const num7 = sqrt(1.0 + m00 - m11 - m22);
-    const num4 = 0.5 / num7;
-    q[1] = 0.5 * num7;
-    q[2] = (m01 + m10) * num4;
-    q[3] = (m02 + m20) * num4;
-    q[0] = (m12 - m21) * num4;
-
-    return q;
+  if (abs(dot - 1.0) < 0.000001) {
+    return oneQuat();
   }
 
-  if (m11 > m22) {
-    const num6 = sqrt(1.0 + m11 - m00 - m22);
-    const num3 = 0.5 / num6;
-    q[1] = (m10 + m01) * num3;
-    q[2] = 0.5 * num6;
-    q[3] = (m21 + m12) * num3;
-    q[0] = (m20 - m02) * num3;
+  const rotAngle = acos(dot);
+  const rotAxis = cross3(up, forward);
+  normalize3(rotAxis, rotAxis);
 
-    return q;
-  }
-
-  const num5 = sqrt(1.0 + m22 - m00 - m11);
-  const num2 = 0.5 / num5;
-  q[1] = (m20 + m02) * num2;
-  q[2] = (m21 + m12) * num2;
-  q[3] = 0.5 * num5;
-  q[0] = (m01 - m10) * num2;
-
-  return q;
+  return fromAxisAngleToQuat(rotAxis, rotAngle, q);
 }
 
 /**

@@ -64,8 +64,8 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         top: height / 2
       };
 
-      const scaleX = this.pixelRatio;
-      const scaleY = this.pixelRatio;
+      const scaleX = 1 / this.pixelRatio;
+      const scaleY = 1 / this.pixelRatio;
       const camera = this.props.camera;
 
       camera.projectionOptions = Object.assign(
@@ -81,7 +81,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
       camera.update();
 
       this.projection.viewBounds = viewBounds;
-      this.viewBounds.d = this;
+      viewBounds.d = this;
       this.projection.screenBounds = new Bounds<View<TViewProps>>({
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,

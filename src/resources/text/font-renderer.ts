@@ -3,7 +3,7 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-import * as html2canvas from "html2canvas";
+import html2canvas from "html2canvas";
 import { WebGLStat } from "../../gl/webgl-stat";
 import { scale2, Vec2 } from "../../math";
 import { IResourceType, ResourceType } from "../../types";

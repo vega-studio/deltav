@@ -7,15 +7,15 @@ export function fail1(actual: Vec1, expected: Vec1): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;
 }
 
-export function fail2(actual: Vec2, expected: Vec2): string {
+export function fail2(actual: Vec2Compat, expected: Vec2Compat): string {
   return `\n\nACTUAL: ${toString2(actual)}\nEXPECTED: ${toString2(expected)}`;
 }
 
-export function fail3(actual: Vec3, expected: Vec3): string {
+export function fail3(actual: Vec3Compat, expected: Vec3Compat): string {
   return `\n\nACTUAL: ${toString3(actual)}\nEXPECTED: ${toString3(expected)}`;
 }
 
-export function fail4(actual: Vec4, expected: Vec4): string {
+export function fail4(actual: Vec4Compat, expected: Vec4Compat): string {
   return `\n\nACTUAL: ${toString4(actual)}\nEXPECTED: ${toString4(expected)}`;
 }
 

@@ -1,5 +1,5 @@
 import { Vec2 } from "../math";
-import { BaseProjection } from "../math/base-projection";
+import { BaseProjection, SimpleProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../primitives/absolute-position";
 import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
@@ -131,8 +131,16 @@ export abstract class View<
     return this.projection.screenBounds;
   }
 
+  set screenBounds(val: Bounds<View<TViewProps>>) {
+    this.projection.screenBounds = val;
+  }
+
   get viewBounds() {
     return this.projection.viewBounds;
+  }
+
+  set viewBounds(val: Bounds<View<TViewProps>>) {
+    this.projection.viewBounds = val;
   }
 
   /** Retrieves the clearflag prop assigned to the view and provides a default */
@@ -201,25 +209,24 @@ export abstract class View<
  * Useful as a placeholder view to not cause null or undefined values.
  */
 export class NoView extends View<IViewProps> {
-  screenBounds = new Bounds<never>({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100
-  });
+  projection = new SimpleProjection();
 
   screenToWorld(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   worldToScreen(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   viewToWorld(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   worldToView(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   fitViewtoViewport(
     screenBounds: Bounds<never>,
     _viewBounds: Bounds<View<IViewProps>>
@@ -233,6 +240,13 @@ export class NoView extends View<IViewProps> {
       key: "error",
       viewport: {},
       camera: Camera.makeOrthographic()
+    });
+
+    this.screenBounds = new Bounds<never>({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100
     });
   }
 }

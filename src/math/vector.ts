@@ -634,6 +634,42 @@ export function vec3(
   return out as Vec3;
 }
 
+/**
+ * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
+ * the forward vector)
+ */
+export function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+  out = out || [0, 0, 0];
+  return normalize3(cross3(cross3(forward, up, out), forward, out), out);
+}
+
+/**
+ * Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the
+ * forrward vector)
+ */
+export function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+  out = out || [0, 0, 0];
+  return normalize3(cross3(forward, up, out), out);
+}
+
+/**
+ * Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the
+ * forrward vector)
+ */
+export function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+  out = out || [0, 0, 0];
+  return normalize3(cross3(up, forward, out), out);
+}
+
+/**
+ * Produces a directional vector that is straight down from the provided reference vectors (90 degress declined from
+ * the forward vector)
+ */
+export function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+  out = out || [0, 0, 0];
+  return normalize3(cross3(forward, cross3(forward, up, out), out), out);
+}
+
 // Vec4 methods
 
 export function apply4(

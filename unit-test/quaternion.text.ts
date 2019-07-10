@@ -176,6 +176,20 @@ describe("Quaternion", () => {
     });
 
     it("LookAt Quaternion should be correct", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([1, 2, 3], [2, 1, 3])),
+        lookAtMatrix([1, 2, 3], [2, 1, 3])
+      );
+    });
+
+    it("LookAt Quaternion should be correct with negative values", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([-1, -2, -3], [0, 1, 0])),
+        lookAtMatrix([-1, -2, -3], [0, 1, 0])
+      );
+    });
+
+    it("LookAt Quaternion should be identity", () => {
       assert4(
         lookAtQuat([0, 0, 1], [0, 1, 0]),
         [1, 0, 0, 0]

@@ -1,6 +1,5 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { normalize } from 'path';
 import { compare4x4, Mat4x4, toString4x4, transform4 } from '../src/math/matrix';
 import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat } from '../src/math/quaternion';
 import { compare1, compare3, compare4, fuzzyCompare4, Vec1, Vec3, Vec4 } from '../src/math/vector';

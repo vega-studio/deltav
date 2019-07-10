@@ -143,7 +143,7 @@ export function exponentQuat(q: Quaternion, out?: Quaternion): Quaternion {
   const scale = wExp / norm * sin(norm);
 
   if (norm === 0) {
-    out[0] = 0;
+    out[0] = exp(a);
     out[1] = 0;
     out[2] = 0;
     out[3] = 0;
@@ -239,6 +239,8 @@ export function lengthQuat(q: Quaternion): number {
  */
 export function normalizeQuat(q: Quaternion, out?: Quaternion): Quaternion {
   out = out || zeroQuat();
+  const len = lengthQuat(q);
+  if (len === 0) return [0, 0, 0, 0];
   const rlen = 1 / lengthQuat(q);
 
   return scaleQuat(q, rlen, out);

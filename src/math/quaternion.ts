@@ -19,17 +19,9 @@ import {
   M433,
   Mat4x4
 } from "./matrix";
-import {
-  cross3,
-  dot3,
-  dot4,
-  normalize3,
-  Vec3,
-  Vec3Compat,
-  Vec4
-} from "./vector";
+import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
 
-const { abs, cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
+const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
 
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
@@ -277,7 +269,7 @@ export function dotQuat(q1: Quaternion, q2: Quaternion): number {
  * Constructs a rotation quaternion from an axis (a normalized
  * Vec3) and an angle (in radians).
  */
-export function fromAxisAngleToQuat(
+export function fromEulerAxisAngleToQuat(
   axis: Vec3,
   angle: number,
   out?: Quaternion
@@ -687,21 +679,103 @@ export function lookAtQuat(
   up: Vec3Compat,
   q?: Quaternion
 ): Quaternion {
-  const dot = dot3(up, forward);
+  q = q || zeroQuat();
+  forward = normalize3(forward);
 
-  if (abs(dot + 1.0) < 0.000001) {
-    return [Math.PI, 0, 1, 0];
+  const f = forward;
+  const l = normalize3(cross3(up, f));
+  const u = normalize3(cross3(f, l));
+
+  const m00 = l[0];
+  const m01 = l[1];
+  const m02 = l[2];
+  const m10 = u[0];
+  const m11 = u[1];
+  const m12 = u[2];
+  const m20 = f[0];
+  const m21 = f[1];
+  const m22 = f[2];
+
+  const tr = m00 + m11 + m22;
+
+  if (tr > 0.0) {
+    const s = sqrt(tr + 1.0) * 2;
+    q[0] = 0.25 * s;
+    // num = 0.5 / num;
+    q[1] = (m21 - m12) / s;
+    q[2] = (m02 - m20) / s;
+    q[3] = (m10 - m01) / s;
+
+    return q;
   }
 
-  if (abs(dot - 1.0) < 0.000001) {
-    return oneQuat();
+  if (m00 > m11 && m00 > m22) {
+    // const num7 = sqrt(1.0 + m00 - m11 - m22);
+    // const num4 = 0.5 / num7;
+    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
+    q[0] = (m21 - m12) / s;
+    q[1] = 0.25 * s;
+    q[2] = (m01 + m10) / s;
+    q[3] = (m02 + m20) / s;
+
+    return q;
   }
 
-  const rotAngle = acos(dot);
-  const rotAxis = cross3(up, forward);
-  normalize3(rotAxis, rotAxis);
+  if (m11 > m22) {
+    // const num6 = sqrt(1.0 + m11 - m00 - m22);
+    // const num3 = 0.5 / num6;
+    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
 
-  return fromAxisAngleToQuat(rotAxis, rotAngle, q);
+    q[0] = (m02 - m20) / s;
+    q[1] = (m10 + m01) / s;
+    q[2] = 0.25 * s;
+    q[3] = (m21 + m12) / s;
+
+    return q;
+  }
+
+  // const num5 = sqrt(1.0 + m22 - m00 - m11);
+  // const num2 = 0.5 / num5;
+  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
+  q[0] = (m10 - m01) / s;
+  q[1] = (m20 + m02) / s;
+  q[2] = (m21 + m12) / s;
+  q[3] = 0.25 * s;
+
+  return q;
+}
+
+export function lookAtMatrix(
+  forward: Vec3Compat,
+  up: Vec3Compat,
+  m?: Mat4x4
+): Mat4x4 {
+  m = m || identity4();
+
+  forward = normalize3(forward);
+
+  const f = forward;
+  const l = normalize3(cross3(up, f));
+  const u = normalize3(cross3(f, l));
+
+  m[0] = l[0];
+  m[1] = u[0];
+  m[2] = f[0];
+  m[3] = 0.0;
+  m[4] = l[1];
+  m[5] = u[1];
+  m[6] = f[1];
+  m[7] = 0.0;
+  m[8] = l[2];
+  m[9] = u[2];
+  m[10] = f[2];
+  m[11] = 0.0;
+  m[12] = 0.0;
+  m[13] = 0.0;
+  m[14] = 0.0;
+  m[15] = 1.0;
+
+  return m;
 }
 
 /**

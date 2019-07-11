@@ -345,7 +345,7 @@ describe('View 3D projections', () => {
         v
       );
 
-      assert2(v, [SCREEN.renderWidth / 2, 0]);
+      assert2(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight]);
     });
 
     it ("Should project to the bottom of the screen", () => {
@@ -368,7 +368,7 @@ describe('View 3D projections', () => {
         v
       );
 
-      assert2(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight]);
+      assert2(v, [SCREEN.renderWidth / 2, 0]);
     });
 
     it ('Should be to the right of the camera', () => {

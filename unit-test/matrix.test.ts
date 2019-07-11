@@ -2305,7 +2305,7 @@ describe("Matrix Library", () => {
         )
       );
 
-      assert4(transform4(a, b), [1, -1, 1, 1]);
+      assert4(transform4(a, b), [1, 1, -1, 1]);
     });
 
     it ('Should rotate regardless of w value', () => {
@@ -2328,7 +2328,7 @@ describe("Matrix Library", () => {
         )
       );
 
-      assert4(transform4(a, b), [1, -1, 1, 0]);
+      assert4(transform4(a, b), [1, 1, -1, 0]);
     });
   });
 

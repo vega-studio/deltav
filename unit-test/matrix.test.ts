@@ -2249,43 +2249,40 @@ describe("Matrix Library", () => {
     it ('Should rotate x only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 0);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [1, 1, -1, 1]);
+      assert4(transform4(m, v), [1, -1, 1, 1]);
     });
 
     it ('Should rotate y only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 0);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [-1, 1, 1, 1]);
+      assert4(transform4(m, v), [1, 1, -1, 1]);
     });
 
     it ('Should rotate z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 0, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [1, -1, 1, 1]);
+      assert4(transform4(m, v), [-1, 1, 1, 1]);
     });
 
-    // QUESTION: Why is this value all positive ones?! For every other rotation that happens you rotate the axis in the
-    // same winding direction. For this one, you must reverse the winding direction of the x-axis for this value to be
-    // the right value.
     it ('Should rotate x then y only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, 1, 1, 1]);
+      assert4(transform4(m, v), [1, -1, -1, 1]);
     });
 
     it ('Should rotate x then z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, -1, -1, 1]);
+      assert4(transform4(m, v), [1, 1, 1, 1]);
     });
 
     it ('Should rotate y then z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, 1, 1, 1]);
+      assert4(transform4(m, v), [-1, 1, -1, 1]);
     });
 
     it ('Should rotate x then y then z 90 degrees (w = 1)', () => {

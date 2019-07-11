@@ -178,7 +178,7 @@ export class Camera {
     this._lookAt = position;
     this._up = copy3(up);
   }
-  private _lookAt: Vec3 = [0, 0, 1];
+  private _lookAt: Vec3 = [0, 0, -1];
   private _up: Vec3 = [0, 1, 0];
 
   get rotationMatrix() {

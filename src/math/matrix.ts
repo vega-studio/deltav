@@ -877,18 +877,24 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
     if (y) {
       if (z) {
         // x, y, z
-        const c0 = cos(x);
-        const c1 = cos(y);
-        const c2 = cos(z);
-        const s0 = sin(x);
-        const s1 = sin(y);
-        const s2 = sin(z);
+        const cx = cos(x);
+        const cy = cos(y);
+        const cz = cos(z);
+        const sx = sin(x);
+        const sy = sin(y);
+        const sz = sin(z);
 
         // prettier-ignore
-        return apply4x4(out,
+        /*return apply4x4(out,
           c1 * c2,  - c1 * s2, s1, 0,
           s0 * s1 * c2 + c0 * s2, -s0 * s1 * s2 + c0 * c2, -s0 * c1, 0,
           s0 * s2 - c0 * s1 * c2, s0 * c2 + c0 * s1 * s2, c0 * c1, 0,
+          0, 0, 0, 1
+        );*/
+        return apply4x4(out,
+          cy * cz, cy * sz, -sy, 0,
+          sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * sy, 0,
+          cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
           0, 0, 0, 1
         );
       } else {
@@ -900,10 +906,10 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 
         // prettier-ignore
         return apply4x4(out,
-          cy, 0, sy, 0,
-        sx * sy, cx, -sx * cy, 0,
-        -cx * sy, sx, cx * cy, 0,
-        0, 0, 0, 1
+          cy, 0, -sy, 0,
+          sx * sy, cx, sx * cy, 0,
+          cx * sy, -sx, cx * cy, 0,
+          0, 0, 0, 1
         );
       }
     } else {
@@ -916,9 +922,9 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 
         // prettier-ignore
         return apply4x4(out,
-          cz, -sz, 0, 0,
-          cx * sz, cx * cz, -sx, 0,
-          sx * sz, sx * cz, cx, 0,
+          cz, sz, 0, 0,
+          -cx * sz, cx * cz, sx, 0,
+          sx * sz, -sx * cz, cx, 0,
           0, 0, 0, 1
         );
       } else {
@@ -929,8 +935,8 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
         // prettier-ignore
         return apply4x4(out,
            1,  0,  0, 0,
-           0,  cx, -sx, 0,
-           0,  sx, cx, 0,
+           0,  cx, sx, 0,
+           0,  -sx, cx, 0,
            0,  0,  0,  1
         );
       }
@@ -946,9 +952,9 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 
         // prettier-ignore
         return apply4x4(out,
-          cy * cz, -cy * sz, sy, 0,
-          sz, cz, 0, 0,
-          -sy * cz, sy * sz, cy, 0,
+          cy * cz, cy * sz, -sy, 0,
+          -sz, cz, 0, 0,
+          sy * cz, sy * sz, cy, 0,
           0, 0, 0, 1
        );
       } else {
@@ -958,9 +964,9 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 
         // prettier-ignore
         return apply4x4(out,
-          cy, 0, sy, 0,
+          cy, 0, -sy, 0,
            0, 1,   0, 0,
-          -sy, 0,  cy, 0,
+          sy, 0,  cy, 0,
            0, 0,   0, 1
         );
       }
@@ -972,8 +978,8 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 
         // prettier-ignore
         return apply4x4(out,
-          cz, -sz, 0, 0,
-         sz, cz, 0, 0,
+          cz, sz, 0, 0,
+         -sz, cz, 0, 0,
            0,  0, 1, 0,
            0,  0, 0, 1
         );
@@ -1087,7 +1093,7 @@ export function perspective4x4(
   out?: Mat4x4
 ): Mat4x4 {
   const aspect = height / width;
-  const r = -tan(fovRadians / 2) * near;
+  const r = tan(fovRadians / 2) * near;
   const l = -r;
   const t = aspect * r;
   const b = -t;

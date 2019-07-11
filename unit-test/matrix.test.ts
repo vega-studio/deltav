@@ -1084,9 +1084,9 @@ describe("Matrix Library", () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0);
 
       assert4x4(m, [
-        0,  0,  1, 0,
+        0,  0,  -1, 0,
         1,  0, 0, 0,
-        0,  1,  0,  0,
+        0,  -1,  0,  0,
         0, 0, 0, 1
       ]);
     });
@@ -1095,8 +1095,8 @@ describe("Matrix Library", () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 90 * TO_RADIANS);
 
       assert4x4(m, [
-        0, -1,  0, 0,
-        0,  0, -1, 0,
+        0, 1,  0, 0,
+        0,  0, 1, 0,
         1,  0,  0,  0,
         0, 0, 0, 1
       ]);
@@ -1106,8 +1106,8 @@ describe("Matrix Library", () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS);
 
       assert4x4(m, [
-        0, -0,  1, 0,
-        1,  0,  0, 0,
+        0, -0,  -1, 0,
+        -1,  0,  0, 0,
         -0,  1,  0,  0,
         0, 0, 0, 1
       ]);
@@ -1117,8 +1117,8 @@ describe("Matrix Library", () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
 
       assert4x4(m, [
-        -0, -0, 1, 0,
-        0, -1, -0, 0,
+        -0, -0, -1, 0,
+        0, 1, -0, 0,
         1,  0, -0,  0,
         0, 0, 0, 1
       ]);

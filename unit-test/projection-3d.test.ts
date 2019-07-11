@@ -221,11 +221,11 @@ describe('View 3D projections', () => {
 
   describe("Camera at origin view", () => {
     it ('Should be identity quat', () => {
-      assert4(lookAtQuat([0, 0, 1], [0, 1, 0]), [1, 0, 0, 0]);
+      assert4(lookAtQuat([0, 0, -1], [0, 1, 0]), [1, 0, 0, 0]);
     });
 
     it ('Should be identity', () => {
-      assert4x4(matrix4x4FromUnitQuat(lookAtQuat([0, 0, 1], [0, 1, 0])), identity4());
+      assert4x4(matrix4x4FromUnitQuat(lookAtQuat([0, 0, -1], [0, 1, 0])), identity4());
     });
 
     it ('Should project to the middle of the screen', () => {

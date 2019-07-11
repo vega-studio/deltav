@@ -279,7 +279,8 @@ export class Camera {
       this._view,
       // The world looks at the camera. The camera does not look at the world
       matrix4x4FromUnitQuat(
-        lookAtQuat(subtract3(this._lookAt, this._position), this._up)
+        // lookAtQuat(subtract3(this._lookAt, this._position), this._up)
+        lookAtQuat(subtract3(this._position, this._lookAt), this._up)
       ),
       // The world moves to align itself with the camera's position
       translation4x4by3(scale3(this._position, -1)),

@@ -2289,6 +2289,7 @@ describe("Matrix Library", () => {
     });
 
     it ('Should rotate x then y then z 90 degrees (w = 1)', () => {
+      const v: Vec4 = [1, 1, 1, 1];
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 90 * TO_RADIANS);
       const m1 = multiply4x4(
         rotation4x4(0, 0, 90 * TO_RADIANS),
@@ -2297,7 +2298,6 @@ describe("Matrix Library", () => {
           rotation4x4(90 * TO_RADIANS, 0, 0),
         )
       );
-      const v: Vec4 = [1, 1, 1, 1];
 
       const a: Mat4x4 = rotation4x4(0, 0, 90 * TO_RADIANS);
       const b: Vec4 = transform4(

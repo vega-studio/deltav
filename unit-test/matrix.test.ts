@@ -2652,7 +2652,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [3, -2, 1, 1]);
+      assert4(r, [3, 2, -1, 1]);
     });
 
     it ('Should rotate then scale', () => {
@@ -2668,7 +2668,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [1, -2, 3, 1]);
+      assert4(r, [1, 2, -3, 1]);
     });
 
     it ('Should rotate then translate', () => {
@@ -2684,7 +2684,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [11, 19, 31, 1]);
+      assert4(r, [11, 21, 29, 1]);
     });
 
     it ('Should translate then rotate', () => {
@@ -2700,7 +2700,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [31, -21, 11, 1]);
+      assert4(r, [31, 21, -11, 1]);
     });
 
     it ('Should concat multiple operations', () => {
@@ -2712,7 +2712,7 @@ describe("Matrix Library", () => {
         scale4x4(1, 2, 3),
       );
 
-      assert4(transform4(t, v), [33, -22, 11, 1]);
+      assert4(transform4(t, v), [33, 22, -11, 1]);
     });
 
     it ('Should concat multiple operations and modify', () => {
@@ -2726,7 +2726,7 @@ describe("Matrix Library", () => {
         scale4x4(1, 2, 3),
       );
 
-      assert4(transform4(m, v), [33, -22, 11, 1]);
+      assert4(transform4(m, v), [33, 22, -11, 1]);
     });
   });
 });

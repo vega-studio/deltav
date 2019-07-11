@@ -2249,43 +2249,40 @@ describe("Matrix Library", () => {
     it ('Should rotate x only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 0);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [1, 1, -1, 1]);
+      assert4(transform4(m, v), [1, -1, 1, 1]);
     });
 
     it ('Should rotate y only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 0);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [-1, 1, 1, 1]);
+      assert4(transform4(m, v), [1, 1, -1, 1]);
     });
 
     it ('Should rotate z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 0, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
-      assert4(transform4(m, v), [1, -1, 1, 1]);
+      assert4(transform4(m, v), [-1, 1, 1, 1]);
     });
 
-    // QUESTION: Why is this value all positive ones?! For every other rotation that happens you rotate the axis in the
-    // same winding direction. For this one, you must reverse the winding direction of the x-axis for this value to be
-    // the right value.
     it ('Should rotate x then y only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 90 * TO_RADIANS, 0);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, 1, 1, 1]);
+      assert4(transform4(m, v), [1, -1, -1, 1]);
     });
 
     it ('Should rotate x then z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(90 * TO_RADIANS, 0, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, -1, -1, 1]);
+      assert4(transform4(m, v), [1, 1, 1, 1]);
     });
 
     it ('Should rotate y then z only 90 degrees (w = 1)', () => {
       const m = rotation4x4(0, 90 * TO_RADIANS, 90 * TO_RADIANS);
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(m, v), [1, 1, 1, 1]);
+      assert4(transform4(m, v), [-1, 1, -1, 1]);
     });
 
     it ('Should rotate x then y then z 90 degrees (w = 1)', () => {
@@ -2308,7 +2305,7 @@ describe("Matrix Library", () => {
         )
       );
 
-      assert4(transform4(a, b), [1, -1, 1, 1]);
+      assert4(transform4(a, b), [1, 1, -1, 1]);
     });
 
     it ('Should rotate regardless of w value', () => {
@@ -2331,7 +2328,7 @@ describe("Matrix Library", () => {
         )
       );
 
-      assert4(transform4(a, b), [1, -1, 1, 0]);
+      assert4(transform4(a, b), [1, 1, -1, 0]);
     });
   });
 
@@ -2655,7 +2652,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [3, -2, 1, 1]);
+      assert4(r, [3, 2, -1, 1]);
     });
 
     it ('Should rotate then scale', () => {
@@ -2671,7 +2668,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [1, -2, 3, 1]);
+      assert4(r, [1, 2, -3, 1]);
     });
 
     it ('Should rotate then translate', () => {
@@ -2687,7 +2684,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [11, 19, 31, 1]);
+      assert4(r, [11, 21, 29, 1]);
     });
 
     it ('Should translate then rotate', () => {
@@ -2703,7 +2700,7 @@ describe("Matrix Library", () => {
         v
       );
 
-      assert4(r, [31, -21, 11, 1]);
+      assert4(r, [31, 21, -11, 1]);
     });
 
     it ('Should concat multiple operations', () => {
@@ -2715,7 +2712,7 @@ describe("Matrix Library", () => {
         scale4x4(1, 2, 3),
       );
 
-      assert4(transform4(t, v), [33, -22, 11, 1]);
+      assert4(transform4(t, v), [33, 22, -11, 1]);
     });
 
     it ('Should concat multiple operations and modify', () => {
@@ -2729,7 +2726,7 @@ describe("Matrix Library", () => {
         scale4x4(1, 2, 3),
       );
 
-      assert4(transform4(m, v), [33, -22, 11, 1]);
+      assert4(transform4(m, v), [33, 22, -11, 1]);
     });
   });
 });

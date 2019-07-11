@@ -893,7 +893,7 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
         );*/
         return apply4x4(out,
           cy * cz, cy * sz, -sy, 0,
-          sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * sy, 0,
+          sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy, 0,
           cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
           0, 0, 0, 1
         );

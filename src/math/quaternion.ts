@@ -755,7 +755,7 @@ export function lookAtMatrix(
 ): Mat4x4 {
   m = m || identity4();
 
-  forward = normalize3([-forward[0], -forward[1], -forward[2]]);
+  forward = normalize3(forward);
 
   const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
   const l = normalize3(cross3(up, f));

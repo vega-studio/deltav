@@ -1,5 +1,6 @@
 import { EulerOrder, EulerRotation } from "../types";
 import {
+  apply3x3,
   identity4,
   M400,
   M401,
@@ -281,8 +282,8 @@ export function fromEulerAxisAngleToQuat(
     y = axis[1],
     z = axis[2];
   const r = 1 / sqrt(x * x + y * y + z * z);
-  const s = sin(angle / 2);
-  out[0] = cos(angle / 2);
+  const s = cos(angle / 2);
+  out[0] = sin(angle / 2);
   out[1] = s * x * r;
   out[2] = s * y * r;
   out[3] = s * z * r;
@@ -684,7 +685,7 @@ export function lookAtQuat(
   q = q || zeroQuat();
   forward = normalize3(forward);
 
-  const f = forward;
+  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
   const l = normalize3(cross3(up, f));
   const u = normalize3(cross3(f, l));
 
@@ -754,7 +755,7 @@ export function lookAtMatrix(
 ): Mat4x4 {
   m = m || identity4();
 
-  forward = normalize3(forward);
+  forward = normalize3([-forward[0], -forward[1], -forward[2]]);
 
   const f = forward;
   const l = normalize3(cross3(up, f));

@@ -698,6 +698,16 @@ export function add4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
   );
 }
 
+export function add4by3(left: Vec4, right: Vec3Compat, out?: Vec4Compat): Vec4 {
+  return apply4(
+    out,
+    left[0] + right[0],
+    left[1] + right[1],
+    left[2] + right[2],
+    left[3]
+  );
+}
+
 export function ceil4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(out, ceil(vec[0]), ceil(vec[1]), ceil(vec[2]), ceil(vec[3]));
 }

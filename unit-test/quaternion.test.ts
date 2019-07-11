@@ -203,7 +203,7 @@ describe("Quaternion", () => {
 
     it("LookAt Quaternion should be identity", () => {
       assert4(
-        lookAtQuat([0, 0, 1], [0, 1, 0]),
+        lookAtQuat([0, 0, -1], [0, 1, 0]),
         [1, 0, 0, 0]
       );
     });
@@ -216,7 +216,7 @@ describe("Quaternion", () => {
           matrix4x4FromUnitQuat(look),
           v
         ),
-        [0, 0, sqrt(3), 1]
+        [0, 0, -sqrt(3), 1]
       );
     });
 
@@ -228,7 +228,7 @@ describe("Quaternion", () => {
           matrix4x4FromUnitQuat(look),
           v
         ),
-        [0, 0, -sqrt(29), 1]
+        [0, 0, sqrt(29), 1]
       );
     });
 

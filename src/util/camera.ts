@@ -181,6 +181,12 @@ export class Camera {
   private _lookAt: Vec3 = [0, 0, 1];
   private _up: Vec3 = [0, 1, 0];
 
+  get rotationMatrix() {
+    return matrix4x4FromUnitQuat(
+      lookAtQuat(subtract3(this._lookAt, this._position), this._up)
+    );
+  }
+
   /**
    * This is a scale distortion the camera views the world with. A scale of 2 along an axis, means the camera will view
    * 2x the amount of the world along that axis (thus having a visual compression if the screen dimensions do

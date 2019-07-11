@@ -640,6 +640,18 @@ describe('Vector Library', () => {
       assert3(cross3([0, 1, 0], [0, 0, -1]), [-1, 0, 0]);
     });
 
+    it("Cross Vector3 should be -x", () => {
+      assert3(cross3([0, 0, 1], [0, 1, 0]), [-1, 0, 0]);
+    });
+
+    it("Cross Vector3 should be +y", () => {
+      assert3(cross3([0, 0, 1], [1, 0, 0]), [0, 1, 0]);
+    });
+
+    it("Cross Vector3 should be +z", () => {
+      assert3(cross3([1, 0, 0], [0, 1, 0]), [0, 0, 1]);
+    });
+
     it("Cross Vector4 should be correct", () => {
       assert4(cross4([2, 3, 4, 5], [5, 6, 7, 9]), [0, 0, 0, 1]);
     });

@@ -20,7 +20,7 @@ import {
   M433,
   Mat4x4
 } from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { cross3, dot4, normalize3, Vec, Vec3, Vec3Compat, Vec4 } from "./vector";
 
 const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
 
@@ -757,7 +757,7 @@ export function lookAtMatrix(
 
   forward = normalize3([-forward[0], -forward[1], -forward[2]]);
 
-  const f = forward;
+  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
   const l = normalize3(cross3(up, f));
   const u = normalize3(cross3(f, l));
 

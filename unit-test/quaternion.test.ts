@@ -1,11 +1,13 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { compare4x4, Mat4x4, toString4x4, transform4 } from '../src/math/matrix';
+import { compare4x4, Mat4x4, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
 import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat } from '../src/math/quaternion';
 import { compare1, compare3, compare4, fuzzyCompare4, Vec1, Vec3, Vec4 } from '../src/math/vector';
 import { fail1, fail3, fail4, fuzzCompare4 } from './vector.test';
 
 const { exp, cos, sin, sqrt } = Math;
+
+const TO_RADIANS = Math.PI / 180;
 
 function fail4x4(actual: any, expected: any) {
   return `\n\nACTUAL: ${toString4x4(actual)},\nEXPECTED: ${toString4x4(expected)}`;
@@ -201,10 +203,45 @@ describe("Quaternion", () => {
       );
     });
 
-    it("LookAt Quaternion should be identity", () => {
+    it("LookAt [0, 0, -1] Quaternion should be identity", () => {
       assert4(
         lookAtQuat([0, 0, -1], [0, 1, 0]),
         [1, 0, 0, 0]
+      );
+    });
+
+    it("LookAt [0, 0, 1] Matrix should be same as rotate y axis by 180 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([0, 0, 1], [0, 1, 0])),
+        rotation4x4(0, 180 * TO_RADIANS, 0)
+      );
+    });
+
+    it("LookAt [1, 0, 0] Matrix should be same as rotate y axis by -90 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([1, 0, 0], [0, 1, 0])),
+        rotation4x4(0, -90 * TO_RADIANS, 0)
+      );
+    });
+
+    it("LookAt [-1, 0, 0] Matrix should be same as rotate y axis by 90 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([-1, 0, 0], [0, 1, 0])),
+        rotation4x4(0, 90 * TO_RADIANS, 0)
+      );
+    });
+
+    it("LookAt [0, 1, 0] with up [0 ,0 ,1] Matrix should be same as rotate x axis by 90 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([0, 1, 0], [0, 0, 1])),
+        rotation4x4(90 * TO_RADIANS, 0, 0)
+      );
+    });
+
+    it("LookAt [0, -1, 0] with up [0 ,0 , -1] Matrix should be same as rotate x axis by -90 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([0, -1, 0], [0, 0, -1])),
+        rotation4x4(-90 * TO_RADIANS, 0, 0)
       );
     });
 

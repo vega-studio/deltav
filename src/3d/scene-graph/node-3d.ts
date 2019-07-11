@@ -1,24 +1,16 @@
 import { identity4, Mat4x4 } from "../../math";
+import { Node } from './node'
 import { Transform } from "./transform";
+
 
 /**
  * Expresses an item in the 3D world within a SceneGraph. Allows the concept of parent child relationships and provides
  * calculated world transforms as the culmination of the relationships.
  */
-export class Node3D {
-  /** This is a flag to allow manual control over the visibility of the node and NOT it's children */
-  localVisible: boolean = true;
-  /** This is a flag to allow manual control over the visibility of the node's children */
-  branchVisible: boolean = true;
-  /**
-   * This is a flag controlled by the Scene Graph that is used to let the graph determine if the node should be visible
-   * or not. THings like the graph's internal octree or other strategies will control this visibility setting.
-   */
-  visibleInGraph: boolean = true;
-
+export class Node3D extends Node<Node3D, Node3D> {
   /** The transform in local space of this node. If there is no parent, this transform === the world transform */
   get local() {
-    return this._local;
+    return this._local.matrix;
   }
   private _local: Transform = new Transform();
 
@@ -38,7 +30,7 @@ export class Node3D {
       return this._local.matrix;
     }
 
-    return this._world;
+    this._world;
   }
   private _world: Mat4x4 | null = identity4();
 

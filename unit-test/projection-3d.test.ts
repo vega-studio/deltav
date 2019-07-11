@@ -132,9 +132,6 @@ function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
 describe('View 3D projections', () => {
   describe("Project to screen", () => {
     it ("Should project to the middle of the screen", () => {
-
-      console.log('view at beginning', ORIGIN_CAMERA.view);
-
       const v: Vec4 = [0, 0, -1, 1];
       if (ORIGIN_CAMERA.projectionOptions.type !== CameraProjectionType.PERSPECTIVE) return;
 
@@ -378,8 +375,6 @@ describe('View 3D projections', () => {
       const v: Vec4 = [0, 0, -1, 1];
       const up: Vec4 = [0, 1, 0, 1];
       const side = vec4(right3(v, up), 1);
-      console.log("side is ", side);
-      console.log("view", ORIGIN_CAMERA.view);
       assert4(transform4(ORIGIN_CAMERA.view, side), [1, 0, 0, 1]);
     });
 
@@ -401,7 +396,6 @@ describe('View 3D projections', () => {
 
     it ('Should not move', () => {
       const v: Vec4 = [1, 0, 0, 1];
-      console.log(toString4x4(ANGLED_CAMERA.rotationMatrix));
       assert4(transform4(ANGLED_CAMERA.view, v), [1, 0, 0, 1]);
     });
 
@@ -425,13 +419,13 @@ describe('View 3D projections', () => {
     it ('Should be in front of the camera', () => {
       const v: Vec4 = [-1, -1, -1, 1];
 
-      assert4(transform4(ODD_ANGLED_CAMERA.view, v), [0, 0, length3(v), 1]);
+      assert4(transform4(ODD_ANGLED_CAMERA.view, v), [0, 0, -length3(v), 1]);
     });
 
     it ('Should be behind the camera', () => {
       const v: Vec4 = [1, 1, 1, 1];
 
-      assert4(transform4(ODD_ANGLED_CAMERA.view, v), [0, 0, -length3(v), 1]);
+      assert4(transform4(ODD_ANGLED_CAMERA.view, v), [0, 0, length3(v), 1]);
     });
 
     it ('Should be to the right of the camera', () => {

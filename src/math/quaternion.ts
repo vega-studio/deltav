@@ -278,9 +278,9 @@ export function fromEulerAxisAngleToQuat(
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
-  const x = axis[0],
-    y = axis[1],
-    z = axis[2];
+  const x = -axis[0],
+    y = -axis[1],
+    z = -axis[2];
   const r = 1 / sqrt(x * x + y * y + z * z);
   const s = cos(angle / 2);
   out[0] = sin(angle / 2);

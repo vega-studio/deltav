@@ -252,7 +252,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       cpu: (start: T, end: T, t: number, out?: T) => {
         const { add, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
-        return add(scale(subtract(end, start, out), t, out), start, out);
+        return add(scale(subtract(end, start), t), start, out);
       },
       delay,
       duration,
@@ -276,7 +276,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -300,7 +300,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t * (2 - t);
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -324,7 +324,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -348,7 +348,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -372,7 +372,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = --t * t * t + 1;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -397,7 +397,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         const time =
           t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -421,7 +421,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -445,7 +445,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = 1 - --t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -469,7 +469,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -493,7 +493,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = t * t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -517,7 +517,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         t = clamp(t, 0, 1);
         const time = 1 + --t * t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -542,7 +542,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         const time =
           t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -567,7 +567,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         const p = 0.3;
         const time = pow(2, -10 * t) * sin((t - p / 4) * (2 * PI) / p) + 1;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -592,7 +592,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         const a = 1.05;
         const time = t * t * t - t * a * sin(t * PI);
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -618,7 +618,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         const t1 = t - 1;
         const time = t1 * t1 * ((a + 1) * t1 + a) + 1;
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -649,7 +649,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
             ? 0.5 * (t1 * t1 * (a1 + 1) * t1 - a1)
             : 0.5 * (t2 * t2 * ((a1 + 1) * t2 + a1) + 2);
         const { add, scale, subtract } = VecMath(start);
-        return add(scale(subtract(end, start, out), time, out), start, out);
+        return add(scale(subtract(end, start), time), start, out);
       },
       delay,
       duration,
@@ -675,7 +675,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       cpu: (start: T, end: T, t: number, out?: T) => {
         const { add, length, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
-        const direction = subtract(end, start, out);
+        const direction = subtract(end, start);
         const amplitude = length(direction) * 2.0;
         return add(start, scale(direction, sin(t * PI * 2) * amplitude), out);
       },

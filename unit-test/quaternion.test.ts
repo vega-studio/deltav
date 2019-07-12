@@ -217,31 +217,31 @@ describe("Quaternion", () => {
       );
     });
 
-    it("LookAt [1, 0, 0] Matrix should be same as rotate y axis by -90 degree", () => {
+    it("LookAt [1, 0, 0] Matrix should be same as rotate y axis by 90 degree", () => {
       assert4x4(
         matrix4x4FromUnitQuat(lookAtQuat([1, 0, 0], [0, 1, 0])),
-        rotation4x4(0, -90 * TO_RADIANS, 0)
-      );
-    });
-
-    it("LookAt [-1, 0, 0] Matrix should be same as rotate y axis by 90 degree", () => {
-      assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([-1, 0, 0], [0, 1, 0])),
         rotation4x4(0, 90 * TO_RADIANS, 0)
       );
     });
 
-    it("LookAt [0, 1, 0] with up [0 ,0 ,1] Matrix should be same as rotate x axis by 90 degree", () => {
+    it("LookAt [-1, 0, 0] Matrix should be same as rotate y axis by -90 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([0, 1, 0], [0, 0, 1])),
-        rotation4x4(90 * TO_RADIANS, 0, 0)
+        matrix4x4FromUnitQuat(lookAtQuat([-1, 0, 0], [0, 1, 0])),
+        rotation4x4(0, -90 * TO_RADIANS, 0)
       );
     });
 
-    it("LookAt [0, -1, 0] with up [0 ,0 , -1] Matrix should be same as rotate x axis by -90 degree", () => {
+    it("LookAt [0, 1, 0] with up [0 ,0 ,1] Matrix should be same as rotate x axis by -90 degree", () => {
+      assert4x4(
+        matrix4x4FromUnitQuat(lookAtQuat([0, 1, 0], [0, 0, 1])),
+        rotation4x4(-90 * TO_RADIANS, 0, 0)
+      );
+    });
+
+    it("LookAt [0, -1, 0] with up [0 ,0 , -1] Matrix should be same as rotate x axis by 90 degree", () => {
       assert4x4(
         matrix4x4FromUnitQuat(lookAtQuat([0, -1, 0], [0, 0, -1])),
-        rotation4x4(-90 * TO_RADIANS, 0, 0)
+        rotation4x4(90 * TO_RADIANS, 0, 0)
       );
     });
 

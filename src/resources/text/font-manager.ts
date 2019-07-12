@@ -1,4 +1,4 @@
-import { Bounds } from "../../primitives";
+import { Bounds } from "../../math/primitives";
 import { PackNode } from "../../resources/texture/pack-node";
 import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";

@@ -1,7 +1,7 @@
 import { RenderTarget } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { BaseResourceManager, BaseResourceOptions, BaseResourceRequest, ResourceRouter } from "../resources";
 import { FrameMetrics, Omit } from "../types";
 import { IdentifiableById, IPipeline, IProjection, IResourceType } from "../types";

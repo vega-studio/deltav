@@ -1,5 +1,5 @@
 import { Instance } from "../instance-provider/instance";
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { Vec2 } from "../util/vector";
 export declare type TrackedQuadTreeBoundsAccessor<T extends Instance> = (o: T) => Bounds<any> | null;
 export interface ITrackedQuadTreeVisitFunction<T extends Instance> {

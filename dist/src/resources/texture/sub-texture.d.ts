@@ -1,5 +1,5 @@
 import { Texture } from "../../gl/texture";
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
 import { InstanceIOValue } from "../../types";
 import { Vec2 } from "../../util/vector";
 export declare function subTextureIOValue(texture?: SubTexture | null): InstanceIOValue;

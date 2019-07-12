@@ -8,7 +8,7 @@ import { TO_RADIANS } from '../src/constants';
 import { fromEulerAxisAngleToQuat, lookAtQuat, matrix4x4FromUnitQuat } from '../src/math';
 import { compare4x4, identity4, Mat4x4, multiply4x4, projectToScreen, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
 import { add3, add4, add4by3, cross3, down3, fuzzyCompare2, fuzzyCompare3, fuzzyCompare4, left3, length3, normalize3, normalize4, right3, scale4, subtract3, subtract4, up3, Vec2Compat, Vec3, Vec3Compat, Vec4, vec4 } from '../src/math/vector';
-import { Bounds } from '../src/primitives/bounds';
+import { Bounds } from '../src/math/primitives/bounds';
 import { Camera, CameraProjectionType } from '../src/util/camera';
 import { fail2, fail3, fail4 } from './vector.test';
 

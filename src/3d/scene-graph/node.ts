@@ -7,10 +7,14 @@ import { uid } from "../../util";
  */
 export abstract class Node<TSibling extends Node<any>> {
   /** Unique numerical identifier to make identification of this object easier */
-  get uid() { return this._uid; }
+  get uid() {
+    return this._uid;
+  }
   private _uid = uid();
   /** These are the siblings related to this specified node */
-  get siblings(): ReadonlyMap<number, TSibling> { return this._siblings; }
+  get siblings(): ReadonlyMap<number, TSibling> {
+    return this._siblings;
+  }
   private _siblings = new Map<number, TSibling>();
 
   /**
@@ -62,7 +66,7 @@ export abstract class Node<TSibling extends Node<any>> {
    * Generic trigger method
    */
   trigger() {
-
+    // NOOP
   }
 
   /**

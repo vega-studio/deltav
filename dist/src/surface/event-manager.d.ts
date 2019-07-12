@@ -1,4 +1,4 @@
-import { Bounds } from "../primitives";
+import { Bounds } from "../math/primitives";
 import { IProjection } from "../types";
 import { IDragMetrics, IMouseInteraction, IWheelMetrics, MouseEventManager } from "./mouse-event-manager";
 import { View } from "./view";

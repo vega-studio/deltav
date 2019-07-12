@@ -1,5 +1,5 @@
 import { Instance, InstanceProvider } from "../instance-provider";
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { BaseResourceOptions } from "../resources";
 import { EventManager, ISceneOptions, ISurfaceOptions, IViewOptions, Surface, View } from "../surface";
 import { LayerInitializer } from "../surface/surface";

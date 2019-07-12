@@ -1,4 +1,4 @@
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
 import { IViewProps, View } from "../../surface";
 import { LayerScene } from "../../surface/layer-scene";
 import { Camera, CameraProjectionType, isPerspective } from "../../util/camera";

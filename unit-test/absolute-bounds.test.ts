@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { Bounds } from '../src/primitives';
-import { AbsolutePosition, getAbsolutePositionBounds } from '../src/primitives/absolute-position';
+import { Bounds } from '../src/math/primitives';
+import { AbsolutePosition, getAbsolutePositionBounds } from '../src/math/primitives/absolute-position';
 
 describe('Absolute Position', () => {
   it ('Should occupy the whole screen by setting size in percent', () => {

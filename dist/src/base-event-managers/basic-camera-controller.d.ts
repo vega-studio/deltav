@@ -1,4 +1,4 @@
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { EventManager } from "../surface/event-manager";
 import { IDragMetrics, IMouseInteraction, IWheelMetrics } from "../surface/mouse-event-manager";
 import { View } from "../surface/view";

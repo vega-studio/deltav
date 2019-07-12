@@ -1,7 +1,7 @@
 import { Vec2 } from "../math";
 import { BaseProjection, SimpleProjection } from "../math/base-projection";
-import { AbsolutePosition } from "../primitives/absolute-position";
-import { Bounds } from "../primitives/bounds";
+import { AbsolutePosition } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
 import { Color, Omit } from "../types";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";

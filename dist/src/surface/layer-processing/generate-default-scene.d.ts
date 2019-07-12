@@ -1,4 +1,4 @@
-import { AbsolutePosition } from "../../primitives/absolute-position";
+import { AbsolutePosition } from "../../math/primitives/absolute-position";
 import { ChartCamera } from "../../util/chart-camera";
 import { ViewCamera } from "../../util/view-camera";
 export interface IDefaultElements {

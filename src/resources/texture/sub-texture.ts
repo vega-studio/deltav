@@ -1,6 +1,6 @@
 import { Texture } from "../../gl/texture";
+import { Bounds } from "../../math/primitives/bounds";
 import { Vec2 } from "../../math/vector";
-import { Bounds } from "../../primitives/bounds";
 import { InstanceIOValue, Omit } from "../../types";
 import { uid } from "../../util";
 import { VideoTextureMonitor } from "./video-texture-monitor";

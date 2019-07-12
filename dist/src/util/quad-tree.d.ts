@@ -1,4 +1,4 @@
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { Vec2 } from "./vector";
 export declare type IQuadTreeItem = Bounds<any>;
 export declare function filterQuery<T extends IQuadTreeItem>(type: Function[], queryValues: IQuadTreeItem[]): T[];

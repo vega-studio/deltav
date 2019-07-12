@@ -1,6 +1,6 @@
 import { IFontResourceRequest } from "../../../src/resources";
 import { InstanceProvider } from "../../instance-provider/instance-provider";
-import { Bounds } from "../../primitives";
+import { Bounds } from "../../math/primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { ILayerConstructionClass, LayerInitializer } from "../../surface/surface";
 import { IProjection } from "../../types";

@@ -179,8 +179,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // On instance reactivation we want the easing to just be at it's end value
         else if (instance.reactivate) {
-          values.end = vecMethods.copy(end);
-          values.start = vecMethods.copy(end);
+          vecMethods.copy(end, values.end);
+          vecMethods.copy(end, values.end);
           values.startTime = currentTime;
         }
 
@@ -229,14 +229,15 @@ export class EasingIOExpansion extends BaseIOExpansion {
           easingValues.start = easing(
             easingValues.start,
             easingValues.end,
-            timeValue
+            timeValue,
+            easingValues.start
           );
         }
 
         // Set the current time as the start time of our animation
         easingValues.startTime = currentTime + delay;
         // Set the provided value as our destination
-        easingValues.end = vecMethods.copy(end);
+        vecMethods.copy(end, easingValues.end);
         // Update the information shared between this attribute and it's children
         attributeDataShare.values = easingValues;
 

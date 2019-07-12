@@ -1,5 +1,5 @@
 import { InstanceProvider } from "../../instance-provider/instance-provider";
-import { Bounds } from "../../primitives";
+import { Bounds } from "../../math/primitives";
 import { IFontResourceRequest } from "../../resources";
 import { KernedLayout } from "../../resources/text/font-map";
 import { ILayerProps, Layer } from "../../surface/layer";

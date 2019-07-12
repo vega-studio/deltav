@@ -1,13 +1,12 @@
 import { identity4, Mat4x4 } from "../../math";
-import { Node } from './node'
+import { Node } from "./node";
 import { Transform } from "./transform";
-
 
 /**
  * Expresses an item in the 3D world within a SceneGraph. Allows the concept of parent child relationships and provides
  * calculated world transforms as the culmination of the relationships.
  */
-export class Node3D extends Node<Node3D, Node3D> {
+export class Node3D extends Node<Node3D> {
   /** The transform in local space of this node. If there is no parent, this transform === the world transform */
   get local() {
     return this._local.matrix;
@@ -30,21 +29,15 @@ export class Node3D extends Node<Node3D, Node3D> {
       return this._local.matrix;
     }
 
-    this._world;
+    return this._world;
   }
   private _world: Mat4x4 | null = identity4();
 
-  /**
-   * Lifecycle: This executes before updates are applied / required of this node in the scene graph
-   */
-  willUpdate() {
-    /** No-op as the default behavior */
+  willMount(): void {
+    throw new Error("Method not implemented.");
   }
 
-  /**
-   * Lifecycle: This executes after updates are applied to this node.
-   */
-  didUpdate() {
-    /** No-op as the default behavior */
+  didMount(): void {
+    throw new Error("Method not implemented.");
   }
 }

@@ -21,7 +21,7 @@ import {
   Vec3,
   vec3
 } from "../../math";
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
 import { IViewProps, View } from "../../surface/view";
 import { touchesContainsStartView, touchesHasStartView, uid } from "../../util";
 import { Camera2D } from "./camera-2d";

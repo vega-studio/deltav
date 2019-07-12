@@ -6,6 +6,6 @@ export class Instance3d extends Instance {
 
   @observable
   get translation() {
-    return this.transform.t;
+    return this.transform;
   }
 }

@@ -1,5 +1,5 @@
-import { Bounds } from "../primitives/bounds";
 import { uid } from "../util/uid";
+import { Bounds } from "./primitives/bounds";
 import { apply2, Vec2, Vec2Compat } from "./vector";
 
 /**

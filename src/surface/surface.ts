@@ -4,9 +4,9 @@ import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { BaseProjection } from "../math";
+import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
 import { copy4, Vec2, Vec4 } from "../math/vector";
-import { getAbsolutePositionBounds } from "../primitives/absolute-position";
-import { Bounds } from "../primitives/bounds";
 import {
   BaseResourceManager,
   BaseResourceOptions,

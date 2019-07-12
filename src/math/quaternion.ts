@@ -1,6 +1,5 @@
 import { EulerOrder, EulerRotation } from "../types";
 import {
-  apply3x3,
   identity4,
   M400,
   M401,
@@ -20,7 +19,7 @@ import {
   M433,
   Mat4x4
 } from "./matrix";
-import { cross3, dot4, normalize3, Vec, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
 
 const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
 

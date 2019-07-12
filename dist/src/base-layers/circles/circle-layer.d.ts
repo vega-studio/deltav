@@ -1,4 +1,4 @@
-import { Bounds } from "../../primitives";
+import { Bounds } from "../../math/primitives";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { ILayerMaterialOptions, IProjection, IShaderInitialization } from "../../types";
 import { Vec } from "../../util";

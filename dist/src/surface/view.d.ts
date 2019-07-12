@@ -1,5 +1,5 @@
-import { AbsolutePosition } from "../primitives/absolute-position";
-import { Bounds } from "../primitives/bounds";
+import { AbsolutePosition } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
 import { Color, Omit } from "../types";
 import { Vec2 } from "../util";
 import { ChartCamera } from "../util/chart-camera";

@@ -11,5 +11,11 @@ export class NodeTree<TParent extends NodeTree<any, any, any>, TChild extends No
   get children() { return this._children; }
   private _children = new Map<number, TChild>();
 
+  willMount(): void {
+    throw new Error("Method not implemented.");
+  }
 
+  didMount(): void {
+    throw new Error("Method not implemented.");
+  }
 }

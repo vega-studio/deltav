@@ -1,5 +1,5 @@
+import { Bounds } from "../../math/primitives/bounds";
 import { add3 } from "../../math/vector";
-import { Bounds } from "../../primitives/bounds";
 import { IViewProps, View } from "../../surface";
 import { LayerScene } from "../../surface/layer-scene";
 import { Camera, CameraProjectionType } from "../../util/camera";

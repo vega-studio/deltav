@@ -10,5 +10,4 @@ export * from "./quad-tree";
 export * from "./reactive-diff";
 export * from "./shader-templating";
 export * from "./shallow-compare";
-export * from "./tracked-quad-tree";
 export * from "./uid";

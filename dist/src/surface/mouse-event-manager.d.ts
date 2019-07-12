@@ -1,4 +1,4 @@
-import { Bounds } from "../primitives";
+import { Bounds } from "../math/primitives";
 import { Vec2 } from "../util";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";

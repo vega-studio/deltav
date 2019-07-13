@@ -14,7 +14,9 @@ import {
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
+  IUniform,
   IUniformInternal,
+  IVertexAttribute,
   IVertexAttributeInternal,
   Omit,
   PickType,
@@ -81,6 +83,29 @@ export type LayerInitializerInternal = {
     ILayerPropsInternal<Instance>
   ];
 };
+
+/**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createAttribute<T extends Instance>(
+  options: IInstanceAttribute<T>
+) {
+  return options;
+}
+
+/**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createUniform(options: IUniform) {
+  return options;
+}
+
+/**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createVertex(options: IVertexAttribute) {
+  return options;
+}
 
 /**
  * Used for reactive layer generation and updates.

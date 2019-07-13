@@ -14,3 +14,13 @@ glob(resolve('src', '**', '*.d.ts'), (err, matches) => {
     });
   });
 });
+
+glob(resolve('test', '**', '*.d.ts'), (err, matches) => {
+  if (err) console.log(err);
+
+  matches.forEach(fileName => {
+    unlink(fileName, err => {
+      if (err) console.log('Could not remove', fileName);
+    });
+  });
+});

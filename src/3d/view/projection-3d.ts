@@ -27,14 +27,24 @@ export class Projection3D extends BaseProjection<any> {
 
       if (width > height) {
         const imageAspectRatio = width / height;
-        Px = (2 * ((point[0] + 0.5) / width) - 1) * Math.tan(fov / 2 * Math.PI / 180) * imageAspectRatio;
-        Py = (1 - 2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180));
-      }
-
-      else {
+        Px =
+          (2 * ((point[0] + 0.5) / width) - 1) *
+          Math.tan(fov / 2 * Math.PI / 180) *
+          imageAspectRatio;
+        Py =
+          1 -
+          2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180);
+      } else {
         const imageAspectRatio = height / width;
-        Px = (2 * ((point[0] + 0.5) / width) - 1) * Math.tan(fov / 2 * Math.PI / 180);
-        Py = (1 - 2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180)) * imageAspectRatio;
+        Px =
+          (2 * ((point[0] + 0.5) / width) - 1) *
+          Math.tan(fov / 2 * Math.PI / 180);
+        Py =
+          (1 -
+            2 *
+              ((point[1] + 0.5) / height) *
+              Math.tan(fov / 2 * Math.PI / 180)) *
+          imageAspectRatio;
       }
 
       const rayReference: Vec3 = [Px, Py, -1];
@@ -72,14 +82,24 @@ export class Projection3D extends BaseProjection<any> {
 
       if (width > height) {
         const imageAspectRatio = width / height;
-        Px = (2 * ((point[0] + 0.5) / width) - 1) * Math.tan(fov / 2 * Math.PI / 180) * imageAspectRatio;
-        Py = (1 - 2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180));
-      }
-
-      else {
+        Px =
+          (2 * ((point[0] + 0.5) / width) - 1) *
+          Math.tan(fov / 2 * Math.PI / 180) *
+          imageAspectRatio;
+        Py =
+          1 -
+          2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180);
+      } else {
         const imageAspectRatio = height / width;
-        Px = (2 * ((point[0] + 0.5) / width) - 1) * Math.tan(fov / 2 * Math.PI / 180);
-        Py = (1 - 2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180)) * imageAspectRatio;
+        Px =
+          (2 * ((point[0] + 0.5) / width) - 1) *
+          Math.tan(fov / 2 * Math.PI / 180);
+        Py =
+          (1 -
+            2 *
+              ((point[1] + 0.5) / height) *
+              Math.tan(fov / 2 * Math.PI / 180)) *
+          imageAspectRatio;
       }
 
       let rayDirection: Vec3 = [Px, Py, -1];

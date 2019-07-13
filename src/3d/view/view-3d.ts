@@ -43,6 +43,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
 
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
+    this.projection = new Projection3D();
   }
 
   /**
@@ -59,26 +60,19 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
       const height = viewBounds.height;
 
       const viewport = {
-        far: 10000000,
         near: 1,
+        far: 100000,
         width,
         height
       };
 
-      const scaleX = 1;
-      const scaleY = 1;
       const camera = this.props.camera;
 
       camera.projectionOptions = Object.assign(
         camera.projectionOptions,
         viewport
       );
-      camera.position = [
-        -viewBounds.width / 2.0,
-        viewBounds.height / 2.0,
-        camera.position[2]
-      ];
-      camera.scale = [scaleX, -scaleY, 1.0];
+
       camera.update();
 
       this.projection.viewBounds = viewBounds;
@@ -91,7 +85,11 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
       });
       this.projection.screenBounds.d = this;
     } else if (!isOrthographic(this.props.camera)) {
-      console.warn("View2D does not support non-orthographic cameras yet.");
+      console.warn("View3D does not support orthographic cameras yet.");
     }
+  }
+
+  willUpdateProps(newProps: IView3DProps) {
+    this.projection.camera = newProps.camera;
   }
 }

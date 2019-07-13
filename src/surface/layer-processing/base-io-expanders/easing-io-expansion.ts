@@ -62,7 +62,9 @@ const templateVars = {
 function isEasingAttribute<T extends Instance>(
   attr: any
 ): attr is IEasingInstanceAttribute<T> {
-  return Boolean(attr) && attr.easing && attr.size !== undefined;
+  return (
+    Boolean(attr) && attr.easing && attr.size !== undefined && attr.size <= 4
+  );
 }
 
 /**

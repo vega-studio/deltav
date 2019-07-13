@@ -120,7 +120,8 @@ export class Camera {
   }
 
   /**
-   * Quick generation of a camera with properties. None of any make sense.
+   * Quick generation of a camera with properties. None make any sense and should be set appropriately.
+   * ie - View2D handles setting these values correctly for you.
    */
   static makeOrthographic() {
     return new Camera({
@@ -132,6 +133,25 @@ export class Camera {
       far: 100000,
       type: CameraProjectionType.ORTHOGRAPHIC
     });
+  }
+
+  /**
+   * Quick generation of a camera with perspective properties.
+   */
+  static makePerspective(options?: Partial<ICameraPerspectiveOptions>) {
+    return new Camera(
+      Object.assign(
+        {
+          type: CameraProjectionType.PERSPECTIVE,
+          far: 10000,
+          near: 1,
+          fov: 90 * Math.PI / 180,
+          height: 1000,
+          width: 1000
+        },
+        options
+      )
+    );
   }
 
   /** The expected projection style of the Camera. */

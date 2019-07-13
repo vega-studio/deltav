@@ -32,7 +32,8 @@ export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type ShaderIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Vec4[] | Float32Array;
-export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4;
+export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Mat4x4;
+export type InstanceIOVectorValue = Vec1 | Vec2 | Vec3 | Vec4;
 export type UniformIOValue =
   | number
   | InstanceIOValue
@@ -54,6 +55,7 @@ export enum InstanceAttributeSize {
   TWO = 2,
   THREE = 3,
   FOUR = 4,
+  MAT4X4 = 16,
   /** Special case for making instance attributes that can target Atlas resources */
   ATLAS = 99
 }
@@ -63,6 +65,7 @@ export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
   [InstanceAttributeSize.TWO]: 2,
   [InstanceAttributeSize.THREE]: 3,
   [InstanceAttributeSize.FOUR]: 4,
+  [InstanceAttributeSize.MAT4X4]: 16,
   [InstanceAttributeSize.ATLAS]: 4
 };
 
@@ -339,6 +342,24 @@ export interface IInstanceAttributeInternal<T extends Instance>
 }
 
 /**
+ * This is specifically a deduced type of instance attribute that is specially dealing with Vec1-4 values. These types
+ * of vectors can be dealt with in special ways, thus they get this special case.
+ */
+export interface IInstanceAttributeVector<T extends Instance>
+  extends IInstanceAttribute<T> {
+  update(instance: T): InstanceIOVectorValue;
+}
+
+/**
+ * Typeguard to determine if an instance attribute provides vectors or something larger
+ */
+export function isInstanceAttributeVector<T extends Instance>(
+  val: IInstanceAttribute<T>
+): val is IInstanceAttributeVector<T> {
+  return val.size !== undefined && val.size <= 4;
+}
+
+/**
  * This is an attribute where the resource is definitely declared.
  */
 export interface IResourceInstanceAttribute<T extends Instance>
@@ -396,6 +417,8 @@ export interface IEasingInstanceAttribute<T extends Instance>
    * Easing attributes requires size to be present
    */
   size: InstanceAttributeSize;
+  /** If this is an easing attribute, then the instance will only provide Vec1-4 values */
+  update(o: T): InstanceIOVectorValue;
 }
 
 /**

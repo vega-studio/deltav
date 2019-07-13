@@ -1,6 +1,6 @@
 import { Instance } from "../../../instance-provider/instance";
 import { InstanceDiff } from "../../../instance-provider/instance-provider";
-import { Vec } from "../../../math";
+import { Mat4x4, Vec } from "../../../math";
 import { IInstanceAttributeInternal } from "../../../types";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import {
@@ -136,7 +136,7 @@ export class InstanceAttributeDiffProcessor<
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
 
     let location: IInstanceAttributeBufferLocation;
-    let updateValue: Vec;
+    let updateValue: Vec | Mat4x4;
     let updateRange;
     let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
@@ -224,7 +224,7 @@ export class InstanceAttributeDiffProcessor<
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
 
     let location: IInstanceAttributeBufferLocation;
-    let updateValue: Vec;
+    let updateValue: Vec | Mat4x4;
     let childLocations: IInstanceAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<T>;
 

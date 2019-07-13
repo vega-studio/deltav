@@ -113,6 +113,7 @@ export class Transform {
     const R = this.rotationMatrix;
 
     if (this.needsRotationUpdate) {
+      this.needsRotationUpdate = false;
       matrix4x4FromUnitQuat(this._rotation, R);
     }
 
@@ -129,3 +130,5 @@ export class Transform {
     this.needsUpdate = false;
   }
 }
+
+export const IdentityTransform: Readonly<Transform> = new Transform();

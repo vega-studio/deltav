@@ -1,19 +1,17 @@
+import { PerlinNoise } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
   BasicSurface,
   Camera2D,
   CircleInstance,
-  CircleLayer,
   ClearFlags,
+  color4FromHex3,
   createLayer,
   createView,
   InstanceProvider,
-  multiply4x4,
+  PickType,
   Size,
-  Transform,
-  transform4,
   Vec2Compat,
-  View2D,
   View3D
 } from "src";
 import { CubeInstance } from "../../../src/3d/layers/cube/cube-instance";
@@ -21,8 +19,9 @@ import { CubeLayer } from "../../../src/3d/layers/cube/cube-layer";
 import { TriangleInstance } from "../../../src/3d/layers/triangle/triangle-instance";
 import { TriangleLayer } from "../../../src/3d/layers/triangle/triangle-layer";
 import { Camera } from "../../../src/util/camera";
-import { wait } from "../../../src/util/wait";
 import { BaseDemo } from "../../common/base-demo";
+import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
+import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
 
 /**
  * A very basic demo proving the system is operating as expected
@@ -39,7 +38,8 @@ export class BasicDemo3D extends BaseDemo {
   providers = {
     cubes: new InstanceProvider<CubeInstance>(),
     circles: new InstanceProvider<CircleInstance>(),
-    triangles: new InstanceProvider<TriangleInstance>()
+    triangles: new InstanceProvider<TriangleInstance>(),
+    squares: new InstanceProvider<SurfaceTileInstance>()
   };
 
   /** GUI properties */
@@ -69,6 +69,9 @@ export class BasicDemo3D extends BaseDemo {
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
+      rendererOptions: {
+        antialias: true
+      },
       providers: this.providers,
       cameras: {
         flat: new Camera2D(),
@@ -94,6 +97,22 @@ export class BasicDemo3D extends BaseDemo {
               }),
               cubes: createLayer(CubeLayer, {
                 data: providers.cubes
+              }),
+              squares: createLayer(SurfaceTileLayer, {
+                data: providers.squares,
+                picking: PickType.SINGLE,
+
+                onMouseOver: info => {
+                  info.instances.forEach(i => {
+                    i.color = [1, 1, 0, 1];
+                  });
+                },
+
+                onMouseOut: info => {
+                  info.instances.forEach(i => {
+                    i.color = color4FromHex3(0xffffff - i.uid);
+                  });
+                }
               })
             }
           }
@@ -106,47 +125,57 @@ export class BasicDemo3D extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    this.surface.cameras.perspective.position = [0, 0, 100];
-
-    const tri = new TriangleInstance({
-      transform: new Transform(),
-      scale: 10
+    const perlin = new PerlinNoise({
+      width: 256,
+      height: 256,
+      blendPasses: 5,
+      octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
+      valueRange: [0, 1]
     });
 
-    // this.providers.triangles.add(tri);
+    await perlin.generate();
+    this.surface.cameras.perspective.position = [0, 0, 100];
+    this.surface.cameras.perspective.lookAt([1280, 50, -1280], [0, 1, 0]);
 
-    for (let i = 0; i < 100; ++i) {
-      const transform = new Transform();
+    // Add an extra row and column to make over sampling not break the loop
+    const data = perlin.data.slice(0);
+    data.push(perlin.data[perlin.data.length - 1].slice(0));
+    data.forEach(row => row.push(row[row.length - 1]));
 
-      transform.position = [
-        Math.random() * 100 - 50,
-        Math.random() * 100 - 50,
-        Math.random() * 100 - 50
-      ];
+    for (let i = 0, iMax = perlin.data.length; i < iMax; ++i) {
+      const row = perlin.data[i];
 
-      this.providers.cubes.add(
-        new CubeInstance({
-          color: [1, 0, 0, 1],
-          transform,
-          size: [
-            Math.random() * 6 + 2,
-            Math.random() * 6 + 2,
-            Math.random() * 6 + 2
-          ]
-        })
-      );
+      for (let k = 0, kMax = row.length; k < kMax; ++k) {
+        const tile = this.providers.squares.add(
+          new SurfaceTileInstance({
+            corners: [
+              [i * 10, data[i][k] * 200, -k * 10],
+              [(i + 1) * 10, data[i + 1][k] * 200, -k * 10],
+              [(i + 1) * 10, data[i + 1][k + 1] * 200, -(k + 1) * 10],
+              [i * 10, data[i][k + 1] * 200, -(k + 1) * 10]
+            ]
+          })
+        );
+
+        tile.color = color4FromHex3(0xffffff - tile.uid);
+      }
     }
 
     let t = 0;
 
-    setInterval(() => {
-      t += Math.PI / 60;
+    const loop = () => {
+      if (!this.surface) return;
+      t += Math.PI / 120;
 
       this.surface.cameras.perspective.position = [
-        Math.sin(t) * 100,
-        0,
-        Math.cos(t) * 100
+        Math.sin(t / 5) * 1280 + 1280,
+        200,
+        Math.cos(t / 5) * 1280 - 1280
       ];
-    }, 1000 / 60);
+
+      requestAnimationFrame(loop);
+    };
+
+    requestAnimationFrame(loop);
   }
 }

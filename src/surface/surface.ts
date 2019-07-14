@@ -16,6 +16,7 @@ import {
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
@@ -23,7 +24,6 @@ import {
   IResourceType,
   PickType
 } from "../types";
-import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";

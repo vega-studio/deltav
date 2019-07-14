@@ -912,6 +912,30 @@ export function vec4(
   return out as Vec4;
 }
 
+export function color4FromHex3(hex: number, out?: Vec4) {
+  out = out || [0, 0, 0, 0];
+
+  return apply4(
+    out,
+    ((hex & 0xff0000) >> 16) / 255,
+    ((hex & 0xff00) >> 8) / 255,
+    (hex & 0xff) / 255,
+    1
+  );
+}
+
+export function color4FromHex4(hex: number, out?: Vec4) {
+  out = out || [0, 0, 0, 0];
+
+  return apply4(
+    out,
+    ((hex & 0xff000000) >> 24) / 255,
+    ((hex & 0xff0000) >> 16) / 255,
+    ((hex & 0xff00) >> 8) / 255,
+    (hex & 0xff) / 255
+  );
+}
+
 // Vec method aggregations
 
 export type VecMethods<T extends Vec> = {

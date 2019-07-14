@@ -425,7 +425,6 @@ export class BasicIOExpansion extends BaseIOExpansion {
     instanceAttributes: IInstanceAttribute<T>[]
   ) {
     instanceAttributes.forEach(attribute => {
-      console.log(attribute.size);
       this.setDeclaration(
         declarations,
         attribute.name,

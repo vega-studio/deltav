@@ -21,6 +21,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@diniden/signal-processing": "github:diniden/signal-processing",
     "@types/animejs": "2.0.0",
     "@types/assert": "1.4.2",
     "@types/d3-color": "1.2.2",

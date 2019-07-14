@@ -1439,7 +1439,6 @@ export class GLProxy {
       location = this.gl.getAttribLocation(this.state.currentProgram, name);
 
       if (location === -1) {
-        console.log(name);
         debug(
           "WARN: An attribute is not being used with the current material: %o",
           name,

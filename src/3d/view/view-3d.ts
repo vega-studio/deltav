@@ -44,6 +44,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
     this.projection = new Projection3D();
+    this.projection.camera = options.camera;
   }
 
   /**

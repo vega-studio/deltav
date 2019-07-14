@@ -1,6 +1,6 @@
 import { GLSettings } from "../../../gl";
 import { InstanceProvider } from "../../../instance-provider";
-import { Vec3 } from "../../../math/vector";
+import { Vec2, Vec3 } from "../../../math/vector";
 import { createAttribute, ILayerProps, Layer } from "../../../surface/layer";
 import {
   InstanceAttributeSize,
@@ -129,6 +129,50 @@ export class CubeLayer<
       down
     ];
 
+    const tex: Vec2[] = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 0],
+      [1, 1],
+      [0, 1],
+
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 0],
+      [1, 1],
+      [0, 1],
+
+      [0, 0],
+      [1, 1],
+      [1, 0],
+      [0, 0],
+      [0, 1],
+      [1, 1],
+
+      [0, 0],
+      [1, 1],
+      [1, 0],
+      [0, 0],
+      [0, 1],
+      [1, 1],
+
+      [0, 0],
+      [1, 1],
+      [1, 0],
+      [0, 0],
+      [0, 1],
+      [1, 1],
+
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 0],
+      [1, 1],
+      [0, 1]
+    ];
+
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
       fs: require("./cube-layer.fs"),
@@ -155,6 +199,11 @@ export class CubeLayer<
           name: "normal",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => normals[vertex]
+        },
+        {
+          name: "texCoord",
+          size: VertexAttributeSize.TWO,
+          update: (vertex: number) => tex[vertex]
         }
       ],
       vertexCount: 36,
@@ -164,7 +213,7 @@ export class CubeLayer<
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.NONE
+      cullSide: GLSettings.Material.CullSide.CCW
     });
   }
 }

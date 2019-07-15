@@ -10,15 +10,16 @@
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tslint src && webpack",
+    "build": "node scripts/build",
     "dev": "node scripts/dev",
     "eslint": "eslint",
-    "release": "auto build",
+    "release": "runner release-notes -f RELEASE_NOTES.md --update-package",
     "start": "node scripts/dev",
     "auto": "auto"
   },
   "dependencies": {},
   "devDependencies": {
+    "@tarwich/runner": "1.10.0",
     "@types/animejs": "2.0.0",
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",

@@ -10,9 +10,8 @@
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node scripts/build",
+    "build": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test",
     "dev": "node scripts/dev",
-    "eslint": "eslint",
     "release": "runner release-notes -f RELEASE_NOTES.md --update-package",
     "start": "node scripts/dev",
     "auto": "auto"

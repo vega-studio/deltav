@@ -18,6 +18,8 @@ import { BaseDemo } from "../../common/base-demo";
 import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
 import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
 
+const DATA_SIZE = 256;
+
 /**
  * A very basic demo proving the system is operating as expected
  */
@@ -140,9 +142,12 @@ export class BasicDemo3D extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
+    const midX = DATA_SIZE / 2 * 10;
+    const midZ = DATA_SIZE / 2 * 10;
+
     // Set the camera initial position
     this.surface.cameras.perspective.position = [0, 0, 100];
-    this.surface.cameras.perspective.lookAt([1280, 50, -1280], [0, 1, 0]);
+    this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
     // Make the initial perlin data
     await this.generatePerlinData();
     // Generate all of the tiles for our perlin data size
@@ -170,15 +175,15 @@ export class BasicDemo3D extends BaseDemo {
     this.moveTilesToPerlin(tilesFlattened);
 
     // Move the camera around
-    const t = 0;
+    let t = 0;
     const loop = () => {
       if (!this.surface) return;
-      // t += Math.PI / 120;
+      t += Math.PI / 120;
 
       this.surface.cameras.perspective.position = [
-        Math.sin(t / 5) * 1280 + 1280,
+        Math.sin(t / 5) * midX + midX,
         300,
-        Math.cos(t / 5) * 1280 - 1280
+        Math.cos(t / 5) * midZ - midZ
       ];
 
       requestAnimationFrame(loop);
@@ -192,8 +197,8 @@ export class BasicDemo3D extends BaseDemo {
   async generatePerlinData() {
     if (!this.perlin) {
       const perlin = new PerlinNoise({
-        width: 256,
-        height: 256,
+        width: DATA_SIZE,
+        height: DATA_SIZE,
         blendPasses: 5,
         octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
         valueRange: [0, 1]
@@ -205,8 +210,8 @@ export class BasicDemo3D extends BaseDemo {
     await this.perlin.generate();
 
     // Add an extra row and column to make over sampling not break the loop
-    let data = this.perlin.data.slice(0);
-    data.push(this.perlin.data[this.perlin.data.length - 1].slice(0));
+    let data = this.perlin.sample(0, 0, DATA_SIZE, DATA_SIZE);
+    data.push(data[data.length - 1].slice(0));
     data = data.map(r => {
       const row = r.slice(0);
       row.push(r[r.length - 1]);

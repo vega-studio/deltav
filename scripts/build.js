@@ -14,14 +14,13 @@ console.log('Building Project...');
 compiler.run((err, stats) => {
   if (err) {
     console.error(err.stack || err);
-    if (err.details) {
-      console.error(err.details);
-    }
+    if (err.details) console.error(err.details);
     return;
   }
 
   console.log(stats.toString({
     colors: true,
   }));
+
   console.log('Finished building project');
 });

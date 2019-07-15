@@ -10,11 +10,12 @@
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test",
+    "build": "",
     "dev": "node scripts/dev",
-    "release": "runner release-notes -f RELEASE_NOTES.md --update-package",
+    "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes -f RELEASE_NOTES.md --update-package",
     "start": "node scripts/dev",
-    "auto": "auto"
+    "auto": "auto",
+    "runner": "runner"
   },
   "dependencies": {},
   "devDependencies": {

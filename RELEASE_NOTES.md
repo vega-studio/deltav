@@ -1,5 +1,20 @@
 # Release Notes
 
+## 1.32.0
+
+* `(ADDED)` Custom view creation. Use createView(View Type, props) to generate customized view functionality to handle viewport changes and manipulate your camera.
+* `(ADDED)` All layers for 2D are now distinguished and ripped away from deep in the framework. This will make it much easier to manipulate, as well as simplify integration of additional systems.
+* `(ADDED)` Use world2D shader module and Layer2D to work within the 2D world system.
+* `(ADDED)` More reliable video playback.
+* `(ADDED)` Resources used with the resource manager now properly garbage collects unused resources within the atlas when more resources are required to be injected in the atlas and the atlas is full.
+* `(ADDED)` Alignment property for the text area is now available. Text can be center, left, or right within its bounds.
+* `(ADDED)` TextArea now has scale modes BOUND_MAX, NEVER, ALWAYS to aid in displaying the text appropriately for varying situations.
+* `(ADDED)` TextArea honors anchor points now to work in tandem with the scale modes.
+* `(ADDED)` Touch events for single and multitouch input
+* `(ADDED)` Touch support for the Basic Camera Controller. Pinch to zoom, drag to pan
+* `(FIXED)` Fixed an issue with using a Texture as the options to creating a new Texture.
+* `(FIXED)` Circles can now render as quads or points. Points perform way better in many cases but have rendering limitations. For this reason, the points mode will be the optional mode rather than the default.
+
 ## 1.31.3
 
 * `(FIXED)` Circles can now render as quads or points. Points perform way better in many cases but have rendering limitations. For this reason, the points mode will be the optional mode rather than the default.

@@ -5,14 +5,15 @@
     "url": "http://diniden.com"
   },
   "name": "@vega-studio/deltav",
-  "version": "1.32.0",
+  "version": "1.33.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
     "build": "",
     "dev": "node scripts/dev",
-    "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes -f RELEASE_NOTES.md --update-package",
+    "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes --file RELEASE_NOTES.md --update-package",
+    "r": "runner release-notes -f RELEASE_NOTES.md --update-package",
     "start": "node scripts/dev",
     "auto": "auto",
     "runner": "runner"

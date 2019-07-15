@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
 import { compare4x4, Mat4x4, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
-import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat } from '../src/math/quaternion';
+import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat, slerpUnitQuat, matrix4x4ToQuaternion } from '../src/math/quaternion';
 import { compare1, compare3, compare4, fuzzyCompare4, Vec1, Vec3, Vec4 } from '../src/math/vector';
 import { fail1, fail3, fail4, fuzzCompare4 } from './vector.test';
 
@@ -395,4 +395,259 @@ describe("Quaternion", () => {
       fuzzyAssertNumber(dotQuat([-1, 2, -3, 4], [4, 5, 6, 7]), 16);
     });
   });
+
+  describe("Slerp Quaternion", () => {
+    it("Slerp Quaternion on rotation on x-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(90 * TO_RADIANS, 0, 0);
+      const m2 = rotation4x4(30 * TO_RADIANS, 0, 0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on x-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(90 * TO_RADIANS, 0, 0);
+      const m2 = rotation4x4(45 * TO_RADIANS, 0, 0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on x-axis should be correct", () => {
+      const m0 = rotation4x4(27 * TO_RADIANS, 0, 0);
+      const m1 = rotation4x4(59 * TO_RADIANS, 0, 0);
+      const m2 = rotation4x4(35 * TO_RADIANS, 0, 0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.25
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on y-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(0, 90 * TO_RADIANS,  0);
+      const m2 = rotation4x4(0, 30 * TO_RADIANS,  0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on y-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(0, 90 * TO_RADIANS,  0);
+      const m2 = rotation4x4(0, 45 * TO_RADIANS,  0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on y-axis should be correct", () => {
+      const m0 = rotation4x4(0, 65 * TO_RADIANS, 0);
+      const m1 = rotation4x4(0, 25 * TO_RADIANS,  0);
+      const m2 = rotation4x4(0, 35 * TO_RADIANS,  0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.75
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+
+    it("Slerp Quaternion on rotation on z-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(0, 0, 90 * TO_RADIANS);
+      const m2 = rotation4x4(0, 0, 30 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on z-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0);
+      const m1 = rotation4x4(0, 0, 90 * TO_RADIANS);
+      const m2 = rotation4x4(0, 0, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(matrix4x4ToQuaternion(m2), q2)
+    })
+
+    it("Slerp Quaternion on rotation on z-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0, 0 * TO_RADIANS);
+      const m1 = rotation4x4(0, 0, 5 * TO_RADIANS);
+      const m2 = rotation4x4(0, 0, 1 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.2
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xy-axis should be correct", () => {
+      const m0 = rotation4x4(45 * TO_RADIANS, 0, 0);
+      const m1 = rotation4x4(45 * TO_RADIANS, 90 * TO_RADIANS, 0);
+      const m2 = rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xy-axis should be correct", () => {
+      const m0 = rotation4x4(0 * TO_RADIANS, 45 * TO_RADIANS, 0);
+      const m1 = rotation4x4(45 * TO_RADIANS, 45 * TO_RADIANS, 0);
+      const m2 = rotation4x4(15 * TO_RADIANS, 45 * TO_RADIANS, 0);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xz-axis should be correct", () => {
+      const m0 = rotation4x4(45 * TO_RADIANS, 0, 0);
+      const m1 = rotation4x4(45 * TO_RADIANS, 0, 90 * TO_RADIANS);
+      const m2 = rotation4x4(45 * TO_RADIANS, 0, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xz-axis should be correct", () => {
+      const m0 = rotation4x4(0 * TO_RADIANS, 0, 45 * TO_RADIANS);
+      const m1 = rotation4x4(45 * TO_RADIANS, 0, 45 * TO_RADIANS);
+      const m2 = rotation4x4(15 * TO_RADIANS, 0, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on yz-axis should be correct", () => {
+      const m0 = rotation4x4(0, 0 * TO_RADIANS, 45 * TO_RADIANS);
+      const m1 = rotation4x4(0, 45 * TO_RADIANS, 45 * TO_RADIANS);
+      const m2 = rotation4x4(0, 15 * TO_RADIANS, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xz-axis should be correct", () => {
+      const m0 = rotation4x4(0, 45 * TO_RADIANS,  0);
+      const m1 = rotation4x4(0, 45 * TO_RADIANS, 90 * TO_RADIANS);
+      const m2 = rotation4x4(0, 45 * TO_RADIANS, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xyz-axis should be correct", () => {
+      const m0 = rotation4x4(45 * TO_RADIANS, 34 * TO_RADIANS, 0);
+      const m1 = rotation4x4(45 * TO_RADIANS, 34 * TO_RADIANS, 90 * TO_RADIANS);
+      const m2 = rotation4x4(45 * TO_RADIANS, 34 * TO_RADIANS, 45 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.5
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xyz-axis should be correct", () => {
+      const m0 = rotation4x4(6 * TO_RADIANS, 34 * TO_RADIANS, 387 * TO_RADIANS);
+      const m1 = rotation4x4(6 * TO_RADIANS, 37 * TO_RADIANS, 387 * TO_RADIANS);
+      const m2 = rotation4x4(6 * TO_RADIANS, 35 * TO_RADIANS, 387 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        1 / 3
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+
+    it("Slerp Quaternion on rotation on xyz-axis should be correct", () => {
+      const m0 = rotation4x4(36 * TO_RADIANS, 591 * TO_RADIANS, 387 * TO_RADIANS);
+      const m1 = rotation4x4(6 * TO_RADIANS, 591 * TO_RADIANS, 387 * TO_RADIANS);
+      const m2 = rotation4x4(12 * TO_RADIANS, 591 * TO_RADIANS, 387 * TO_RADIANS);
+
+      const q2 = slerpUnitQuat(
+        normalizeQuat(matrix4x4ToQuaternion(m0)), 
+        normalizeQuat(matrix4x4ToQuaternion(m1)), 
+        0.8
+      );
+
+      fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+  })
 });

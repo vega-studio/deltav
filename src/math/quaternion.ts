@@ -17,7 +17,8 @@ import {
   M431,
   M432,
   M433,
-  Mat4x4
+  Mat4x4,
+  Mat3x3
 } from "./matrix";
 import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
 
@@ -747,6 +748,132 @@ export function lookAtQuat(
   return q;
 }
 
+export function matrix3x3ToQuaternion(mat: Mat3x3,q?: Quaternion
+  ):Quaternion {
+  q = q || zeroQuat();
+
+  const m00 = mat[0];
+  const m01 = mat[3];
+  const m02 = mat[6];
+  const m10 = mat[1];
+  const m11 = mat[4];
+  const m12 = mat[7];
+  const m20 = mat[2];
+  const m21 = mat[5];
+  const m22 = mat[8];
+
+  const tr = m00 + m11 + m22;
+
+  if (tr > 0.0) {
+    const s = sqrt(tr + 1.0) * 2;
+    q[0] = 0.25 * s;
+    // num = 0.5 / num;
+    q[1] = (m21 - m12) / s;
+    q[2] = (m02 - m20) / s;
+    q[3] = (m10 - m01) / s;
+
+    return q;
+  }
+
+  if (m00 > m11 && m00 > m22) {
+    // const num7 = sqrt(1.0 + m00 - m11 - m22);
+    // const num4 = 0.5 / num7;
+    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
+    q[0] = (m21 - m12) / s;
+    q[1] = 0.25 * s;
+    q[2] = (m01 + m10) / s;
+    q[3] = (m02 + m20) / s;
+
+    return q;
+  }
+
+  if (m11 > m22) {
+    // const num6 = sqrt(1.0 + m11 - m00 - m22);
+    // const num3 = 0.5 / num6;
+    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
+
+    q[0] = (m02 - m20) / s;
+    q[1] = (m10 + m01) / s;
+    q[2] = 0.25 * s;
+    q[3] = (m21 + m12) / s;
+
+    return q;
+  }
+
+  // const num5 = sqrt(1.0 + m22 - m00 - m11);
+  // const num2 = 0.5 / num5;
+  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
+  q[0] = (m10 - m01) / s;
+  q[1] = (m20 + m02) / s;
+  q[2] = (m21 + m12) / s;
+  q[3] = 0.25 * s;
+
+  return q;
+}
+
+export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion
+  ):Quaternion {
+  q = q || zeroQuat();
+
+  const m00 = mat[0];
+  const m01 = mat[4];
+  const m02 = mat[8];
+  const m10 = mat[1];
+  const m11 = mat[5];
+  const m12 = mat[9];
+  const m20 = mat[2];
+  const m21 = mat[6];
+  const m22 = mat[10];
+
+  const tr = m00 + m11 + m22;
+
+  if (tr > 0.0) {
+    const s = sqrt(tr + 1.0) * 2;
+    q[0] = 0.25 * s;
+    // num = 0.5 / num;
+    q[1] = (m21 - m12) / s;
+    q[2] = (m02 - m20) / s;
+    q[3] = (m10 - m01) / s;
+
+    return q;
+  }
+
+  if (m00 > m11 && m00 > m22) {
+    // const num7 = sqrt(1.0 + m00 - m11 - m22);
+    // const num4 = 0.5 / num7;
+    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
+    q[0] = (m21 - m12) / s;
+    q[1] = 0.25 * s;
+    q[2] = (m01 + m10) / s;
+    q[3] = (m02 + m20) / s;
+
+    return q;
+  }
+
+  if (m11 > m22) {
+    // const num6 = sqrt(1.0 + m11 - m00 - m22);
+    // const num3 = 0.5 / num6;
+    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
+
+    q[0] = (m02 - m20) / s;
+    q[1] = (m10 + m01) / s;
+    q[2] = 0.25 * s;
+    q[3] = (m21 + m12) / s;
+
+    return q;
+  }
+
+  // const num5 = sqrt(1.0 + m22 - m00 - m11);
+  // const num2 = 0.5 / num5;
+  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
+  q[0] = (m10 - m01) / s;
+  q[1] = (m20 + m02) / s;
+  q[2] = (m21 + m12) / s;
+  q[3] = 0.25 * s;
+
+  return q;
+}
+
 export function lookAtMatrix(
   forward: Vec3Compat,
   up: Vec3Compat,
@@ -809,7 +936,7 @@ export function slerpUnitQuat(
   }
 
   // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
-  if (1.0 - cosom > 0.001) {
+  if (1.0 - cosom > 0.0000001) {
     omega = acos(cosom);
     sinom = sin(omega);
     scale0 = sin((1.0 - t) * omega) / sinom;

@@ -1,9 +1,10 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
 import { compare4x4, Mat4x4, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
-import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat, slerpUnitQuat, matrix4x4ToQuaternion } from '../src/math/quaternion';
+import { addQuat, conjugateQuat, divideQuat, dotQuat, exponentQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, zeroQuat, slerpUnitQuat, matrix4x4ToQuaternion, axisQuat, angleQuat, fromEulerAxisAngleToQuat, eulerToQuat, toEulerFromQuat, toEulerXYZfromOrderedEuler } from '../src/math/quaternion';
 import { compare1, compare3, compare4, fuzzyCompare4, Vec1, Vec3, Vec4 } from '../src/math/vector';
-import { fail1, fail3, fail4, fuzzCompare4 } from './vector.test';
+import { fail1, fail3, fail4, fuzzCompare4, fuzzCompare3 } from './vector.test';
+import { EulerOrder } from '../src/types';
 
 const { exp, cos, sin, sqrt } = Math;
 
@@ -11,6 +12,14 @@ const TO_RADIANS = Math.PI / 180;
 
 function fail4x4(actual: any, expected: any) {
   return `\n\nACTUAL: ${toString4x4(actual)},\nEXPECTED: ${toString4x4(expected)}`;
+}
+
+function fuzzyCompare3(v1: Vec3, v2: Vec3): boolean {
+  return (
+    Math.abs(v1[0] - v2[0]) <= 1e-6 &&
+    Math.abs(v1[1] - v2[1]) <= 1e-6 &&
+    Math.abs(v1[2] - v2[2]) <= 1e-6
+  );
 }
 
 function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
@@ -50,6 +59,16 @@ function fuzzyAssertNumber(actual: number, expected: number, shouldEqual: boolea
 
   else {
     assert.equal(actual - expected > 1e07, true, fail1([actual], [expected]));
+  }
+}
+
+function fuzzyAssert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+  if (shouldEqual) {
+    assert.equal(fuzzyCompare3(actual, expected), true, fail3(actual, expected));
+  }
+
+  else {
+    assert.equal(!fuzzyCompare3(actual, expected), true, fail3(actual, expected));
   }
 }
 
@@ -648,6 +667,128 @@ describe("Quaternion", () => {
       );
 
       fuzzyAssert4(normalizeQuat(matrix4x4ToQuaternion(m2)), q2)
+    })
+  })
+
+  describe("axisQuat", () => {
+    it("axis Quaternion should be correct", () => {
+      fuzzyAssert3(axisQuat([1, 2, 3, 4]), [2 / sqrt(29), 3 / sqrt(29), 4 / sqrt(29)]);
+    })
+
+    it("axis Quaternion should be correct", () => {
+      fuzzyAssert3(axisQuat([1, 0, 0, 0]), [0, 0, 0]);
+    })
+  })
+
+  describe("angleQuat", () => {
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([0, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 180 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([1, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 0 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([-1, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 360 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([0.5, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 120 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([-0.5, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 240 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([sqrt(3) / 2, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 60 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([-sqrt(3) / 2, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 300 * TO_RADIANS)
+    })
+
+    it("angle Quaternion should be correct", () => {
+      const angle = angleQuat([sqrt(2) / 2, 1, 1, 1]);
+      fuzzyAssertNumber(angle, 90 * TO_RADIANS)
+    })
+  })
+
+  describe("fromEulerAxisAngleToQuat", () => {
+    it("axis(2, 3, 4) with degree 120 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([2, 3, 4], 120 * TO_RADIANS), [0.5, 0.3216338, 0.4824506, 0.6432675])
+    })
+ 
+    it("axis(1, 0, 0) with degree 0 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 0, 0], 0 * TO_RADIANS), [1, 0, 0, 0])
+    })
+
+    it("axis(1, 0, 0) with degree 50 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 0, 0], 50 * TO_RADIANS), [0.9063078, 0.4226183, 0, 0])
+    })
+
+    it("axis(1, 1, 1) with degree 200 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 1, 1], 200 * TO_RADIANS), [-0.1736482, 0.568579, 0.568579, 0.568579])
+    })
+
+    it("axis(0, 1, 0) with degree 90 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([0, 1, 0], 90 * TO_RADIANS), [0.7071068, 0, 0.7071068, 0])
+    })
+
+    it("axis(0, 0, 1) with degree 180 should be correct", () => {
+      fuzzyAssert4(fromEulerAxisAngleToQuat([0, 0, 1], 180 * TO_RADIANS), [0, 0, 0, 1])
+    })
+  })
+
+  describe("eulerToQuat", () => {
+    it("Euler angles [30 degree, 40 degree, 50 degree] should be correct", () => {
+      console.log(toEulerFromQuat([0.8600422, 0.0808047, 0.4021985, 0.3033718]));
+      fuzzyAssert4(eulerToQuat([30 * TO_RADIANS, 40 * TO_RADIANS, 50 * TO_RADIANS]), [0.8600422, 0.0808047, 0.4021985, 0.3033718])
+    })
+
+    it("Should return [30 degree, 40 degree, 50 degree]", ()=>{
+      fuzzyAssert3(toEulerFromQuat([0.8600422, 0.0808047, 0.4021985, 0.3033718]), [30 * TO_RADIANS, 40 * TO_RADIANS, 50 * TO_RADIANS])
+    })
+
+    it("Euler angles [30 degree, 0 degree, 0 degree] should be correct", () => {
+      fuzzyAssert4(eulerToQuat([30 * TO_RADIANS, 0 * TO_RADIANS, 0 * TO_RADIANS]), [0.9659258, 0.258819, 0, 0])
+    })
+
+    it("Should return [30 degree, 0 degree, 0 degree]", ()=>{
+      fuzzyAssert3(toEulerFromQuat([0.9659258, 0.258819, 0, 0]), [30 * TO_RADIANS, 0, 0])
+    })
+
+    it("Euler angles [0 degree, 40 degree, 0 degree] should be correct", () => {
+      fuzzyAssert4(eulerToQuat([0 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS]), [0.9396926, 0, 0.3420201, 0])
+    })
+
+    it("Should return [0 degree, 40 degree, 0 degree]", ()=>{
+      fuzzyAssert3(toEulerFromQuat([0.9396926, 0, 0.3420201, 0]), [0, 40 * TO_RADIANS, 0])
+    })
+
+    it("Euler angles [0 degree, 0 degree, 50 degree] should be correct", () => {
+      fuzzyAssert4(eulerToQuat([0 * TO_RADIANS, 0 * TO_RADIANS, 50 * TO_RADIANS]), [0.9063078, 0, 0, 0.4226183])
+    })
+
+    it("Should return [0 degree, 0 degree, 50 degree]", ()=>{
+      fuzzyAssert3(toEulerFromQuat([0.9063078, 0, 0, 0.4226183]), [0, 0, 50 * TO_RADIANS])
+    })
+
+
+    it("Euler angles [30 degree, 40 degree, 0 degree] should be correct", () => {
+      fuzzyAssert4(eulerToQuat([30 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS]), [0.9076734, 0.2432103, 0.3303661, -0.0885213])
+    })
+
+    it("Should return [30 degree, 40 degree, 0 degree]", ()=>{
+      fuzzyAssert3(toEulerFromQuat([0.9076734, 0.2432103, 0.3303661, -0.0885213]), [30 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS])
     })
   })
 });

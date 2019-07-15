@@ -278,12 +278,12 @@ export function fromEulerAxisAngleToQuat(
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
-  const x = -axis[0],
-    y = -axis[1],
-    z = -axis[2];
+  const x = axis[0],
+    y = axis[1],
+    z = axis[2];
   const r = 1 / sqrt(x * x + y * y + z * z);
-  const s = cos(angle / 2);
-  out[0] = sin(angle / 2);
+  const s = sin(angle / 2);
+  out[0] = cos(angle / 2);
   out[1] = s * x * r;
   out[2] = s * y * r;
   out[3] = s * z * r;
@@ -414,7 +414,7 @@ function threeAxisRotation(
  * Produces a XYZ Euler angle from the provided Quaternion.
  */
 export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
-  return toOrderedEulerFromQuat(q, EulerOrder.xyz, out);
+  return toOrderedEulerFromQuat(q, EulerOrder.zyx, out);
 }
 
 /**
@@ -597,6 +597,11 @@ export function axisQuat(quat: Quaternion): Vec3 {
   const x = quat[1],
     y = quat[2],
     z = quat[3];
+
+  const length = sqrt(x * x + y * y + z * z);
+
+  if(length ===0) return [0, 0, 0];
+
   const r = 1 / sqrt(x * x + y * y + z * z);
 
   return [x * r, y * r, z * r];
@@ -647,7 +652,7 @@ export function matrix4x4FromUnitQuat(q: Quaternion, m?: Mat4x4): Mat4x4 {
 }
 
 /**
- * Converts Euler angles [roll, pitch, yaw]
+ * Converts Euler angles [roll(X), pitch(Y), yaw(Z)]
  */
 export function eulerToQuat(
   angles: EulerRotation,

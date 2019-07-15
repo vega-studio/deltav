@@ -3,21 +3,16 @@ import * as datGUI from "dat.gui";
 import {
   BasicSurface,
   Camera2D,
-  CircleInstance,
   ClearFlags,
   color4FromHex3,
   createLayer,
   createView,
   InstanceProvider,
+  nextFrame,
+  onFrame,
   PickType,
-  Size,
-  Vec2Compat,
   View3D
 } from "src";
-import { CubeInstance } from "../../../src/3d/layers/cube/cube-instance";
-import { CubeLayer } from "../../../src/3d/layers/cube/cube-layer";
-import { TriangleInstance } from "../../../src/3d/layers/triangle/triangle-instance";
-import { TriangleLayer } from "../../../src/3d/layers/triangle/triangle-layer";
 import { Camera } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
@@ -27,19 +22,9 @@ import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
  * A very basic demo proving the system is operating as expected
  */
 export class BasicDemo3D extends BaseDemo {
-  /** All circles created for this demo */
-  circles: CircleInstance[] = [];
-  /** Stores the size of the screen */
-  screen: Size;
-  /** Timer used to debounce the shake circle operation */
-  shakeTimer: number;
-
   /** Surface providers */
   providers = {
-    cubes: new InstanceProvider<CubeInstance>(),
-    circles: new InstanceProvider<CircleInstance>(),
-    triangles: new InstanceProvider<TriangleInstance>(),
-    squares: new InstanceProvider<SurfaceTileInstance>()
+    tiles: new InstanceProvider<SurfaceTileInstance>()
   };
 
   /** GUI properties */
@@ -54,7 +39,13 @@ export class BasicDemo3D extends BaseDemo {
     }
   };
 
-  currentLocation: Vec2Compat = [0, 0];
+  /** All tiles being rendered */
+  tiles: SurfaceTileInstance[][] = [];
+  tileToIndex = new Map<number, [number, number]>();
+  isSpreading: boolean = false;
+  isFlattened: boolean = false;
+  perlin: PerlinNoise;
+  perlinData: number[][];
 
   buildConsole(_gui: datGUI.GUI): void {
     // const parameters = gui.addFolder("Parameters");
@@ -63,7 +54,6 @@ export class BasicDemo3D extends BaseDemo {
 
   destroy(): void {
     super.destroy();
-    this.providers.cubes.clear();
   }
 
   makeSurface(container: HTMLElement) {
@@ -76,7 +66,8 @@ export class BasicDemo3D extends BaseDemo {
       cameras: {
         flat: new Camera2D(),
         perspective: Camera.makePerspective({
-          fov: 60 * Math.PI / 180
+          fov: 60 * Math.PI / 180,
+          far: 100000
         })
       },
       resources: {},
@@ -92,14 +83,8 @@ export class BasicDemo3D extends BaseDemo {
               })
             },
             layers: {
-              triangles: createLayer(TriangleLayer, {
-                data: providers.triangles
-              }),
-              cubes: createLayer(CubeLayer, {
-                data: providers.cubes
-              }),
               squares: createLayer(SurfaceTileLayer, {
-                data: providers.squares,
+                data: providers.tiles,
                 picking: PickType.SINGLE,
 
                 onMouseOver: info => {
@@ -112,6 +97,36 @@ export class BasicDemo3D extends BaseDemo {
                   info.instances.forEach(i => {
                     i.color = color4FromHex3(0xffffff - i.uid);
                   });
+                },
+
+                onMouseClick: async info => {
+                  if (this.isSpreading) return;
+
+                  if (!this.isFlattened) {
+                    this.isFlattened = true;
+                    await this.spread(info.instances[0], tiles => {
+                      for (let i = 0, iMax = tiles.length; i < iMax; ++i) {
+                        const tile = tiles[i];
+                        tile.c1[1] = 0;
+                        tile.c2[1] = 0;
+                        tile.c3[1] = 0;
+                        tile.c4[1] = 0;
+                        tile.c1 = tile.c1;
+                        tile.c2 = tile.c2;
+                        tile.c3 = tile.c3;
+                        tile.c4 = tile.c4;
+                      }
+                    });
+                  } else {
+                    this.isFlattened = false;
+                    // Make a new perlin noise map
+                    await this.generatePerlinData();
+
+                    // Move the tiles to their new perlin position
+                    await this.spread(info.instances[0], tiles => {
+                      this.moveTilesToPerlin(tiles);
+                    });
+                  }
                 }
               })
             }
@@ -125,51 +140,44 @@ export class BasicDemo3D extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    const perlin = new PerlinNoise({
-      width: 256,
-      height: 256,
-      blendPasses: 5,
-      octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
-      valueRange: [0, 1]
-    });
-
-    await perlin.generate();
+    // Set the camera initial position
     this.surface.cameras.perspective.position = [0, 0, 100];
     this.surface.cameras.perspective.lookAt([1280, 50, -1280], [0, 1, 0]);
+    // Make the initial perlin data
+    await this.generatePerlinData();
+    // Generate all of the tiles for our perlin data size
+    const tilesFlattened = [];
 
-    // Add an extra row and column to make over sampling not break the loop
-    const data = perlin.data.slice(0);
-    data.push(perlin.data[perlin.data.length - 1].slice(0));
-    data.forEach(row => row.push(row[row.length - 1]));
-
-    for (let i = 0, iMax = perlin.data.length; i < iMax; ++i) {
-      const row = perlin.data[i];
+    for (let i = 0, iMax = this.perlin.data.length; i < iMax; ++i) {
+      const row = this.perlin.data[i];
+      this.tiles.push([]);
 
       for (let k = 0, kMax = row.length; k < kMax; ++k) {
-        const tile = this.providers.squares.add(
+        const tile = this.providers.tiles.add(
           new SurfaceTileInstance({
-            corners: [
-              [i * 10, data[i][k] * 200, -k * 10],
-              [(i + 1) * 10, data[i + 1][k] * 200, -k * 10],
-              [(i + 1) * 10, data[i + 1][k + 1] * 200, -(k + 1) * 10],
-              [i * 10, data[i][k + 1] * 200, -(k + 1) * 10]
-            ]
+            corners: [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]]
           })
         );
 
-        tile.color = color4FromHex3(0xffffff - tile.uid);
+        tile.color = color4FromHex3(0xffffff - tilesFlattened.length);
+        this.tiles[i][k] = tile;
+        this.tileToIndex.set(tile.uid, [i, k]);
+        tilesFlattened.push(tile);
       }
     }
 
-    let t = 0;
+    // Initialize the tiles to be positioned to the perlin map
+    this.moveTilesToPerlin(tilesFlattened);
 
+    // Move the camera around
+    const t = 0;
     const loop = () => {
       if (!this.surface) return;
-      t += Math.PI / 120;
+      // t += Math.PI / 120;
 
       this.surface.cameras.perspective.position = [
         Math.sin(t / 5) * 1280 + 1280,
-        200,
+        300,
         Math.cos(t / 5) * 1280 - 1280
       ];
 
@@ -177,5 +185,126 @@ export class BasicDemo3D extends BaseDemo {
     };
 
     requestAnimationFrame(loop);
+
+    await nextFrame();
+  }
+
+  async generatePerlinData() {
+    if (!this.perlin) {
+      const perlin = new PerlinNoise({
+        width: 256,
+        height: 256,
+        blendPasses: 5,
+        octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
+        valueRange: [0, 1]
+      });
+
+      this.perlin = perlin;
+    }
+
+    await this.perlin.generate();
+
+    // Add an extra row and column to make over sampling not break the loop
+    let data = this.perlin.data.slice(0);
+    data.push(this.perlin.data[this.perlin.data.length - 1].slice(0));
+    data = data.map(r => {
+      const row = r.slice(0);
+      row.push(r[r.length - 1]);
+      return row;
+    });
+
+    this.perlinData = data;
+  }
+
+  moveTilesToPerlin(tiles: SurfaceTileInstance[]) {
+    const data = this.perlinData;
+
+    for (let j = 0, iMax = tiles.length; j < iMax; ++j) {
+      const tile = tiles[j];
+      const index = this.tileToIndex.get(tile.uid);
+      if (!index) continue;
+      const [i, k] = index;
+
+      tile.c1 = [i * 10, Math.pow(data[i][k] * 200, 1.1), -k * 10];
+      tile.c2 = [(i + 1) * 10, Math.pow(data[i + 1][k] * 200, 1.1), -k * 10];
+      tile.c3 = [
+        (i + 1) * 10,
+        Math.pow(data[i + 1][k + 1] * 200, 1.1),
+        -(k + 1) * 10
+      ];
+      tile.c4 = [i * 10, Math.pow(data[i][k + 1] * 200, 1.1), -(k + 1) * 10];
+    }
+  }
+
+  async spread(
+    target: SurfaceTileInstance,
+    cb: (tiles: SurfaceTileInstance[]) => void
+  ) {
+    if (this.isSpreading) return;
+    this.isSpreading = true;
+
+    let neighbor: SurfaceTileInstance | undefined;
+    let neighborRow: SurfaceTileInstance[] | undefined;
+    let nextRing = [target];
+    const processed = new Set<number>();
+    cb(nextRing);
+    processed.add(target.uid);
+    await onFrame();
+
+    while (nextRing.length > 0) {
+      const gather = [];
+
+      for (let i = 0, iMax = nextRing.length; i < iMax; ++i) {
+        const tile = nextRing[i];
+        const index = this.tileToIndex.get(tile.uid);
+
+        if (index) {
+          neighborRow = this.tiles[index[0]];
+
+          if (neighborRow) {
+            neighbor = neighborRow[index[1] - 1];
+            if (neighbor) gather.push(neighbor);
+            neighbor = neighborRow[index[1] + 1];
+            if (neighbor) gather.push(neighbor);
+          }
+
+          neighborRow = this.tiles[index[0] - 1];
+
+          if (neighborRow) {
+            neighbor = neighborRow[index[1]];
+            if (neighbor) gather.push(neighbor);
+            neighbor = neighborRow[index[1] - 1];
+            if (neighbor) gather.push(neighbor);
+            neighbor = neighborRow[index[1] + 1];
+            if (neighbor) gather.push(neighbor);
+          }
+
+          neighborRow = this.tiles[index[0] + 1];
+
+          if (neighborRow) {
+            neighbor = neighborRow[index[1]];
+            if (neighbor) gather.push(neighbor);
+            neighbor = neighborRow[index[1] - 1];
+            if (neighbor) gather.push(neighbor);
+            neighbor = neighborRow[index[1] + 1];
+            if (neighbor) gather.push(neighbor);
+          }
+        }
+      }
+
+      nextRing = gather.filter(tile => {
+        if (!processed.has(tile.uid)) {
+          processed.add(tile.uid);
+          return true;
+        }
+
+        return false;
+      });
+
+      cb(nextRing);
+      await onFrame();
+    }
+
+    this.isSpreading = false;
   }
 }

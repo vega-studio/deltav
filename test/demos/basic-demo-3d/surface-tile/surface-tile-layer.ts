@@ -1,5 +1,6 @@
 import { Vec2 } from "@diniden/signal-processing";
 import {
+  AutoEasingMethod,
   CommonMaterialOptions,
   createAttribute,
   createVertex,
@@ -48,21 +49,25 @@ export class SurfaceTileLayer extends Layer<
       fs: require("./surface-tile-layer.fs"),
       instanceAttributes: [
         createAttribute({
+          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "c1",
           size: InstanceAttributeSize.THREE,
           update: o => o.c1
         }),
         createAttribute({
+          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "c2",
           size: InstanceAttributeSize.THREE,
           update: o => o.c2
         }),
         createAttribute({
+          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "c3",
           size: InstanceAttributeSize.THREE,
           update: o => o.c3
         }),
         createAttribute({
+          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "c4",
           size: InstanceAttributeSize.THREE,
           update: o => o.c4

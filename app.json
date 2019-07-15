@@ -1,0 +1,23 @@
+{
+  "name": "deltav",
+  "description": "Graphics library for large scale mutating data",
+  "env": {
+    "ESENTIRE_NO_AUTH": {
+      "required": false
+    },
+    "HEROKU": {
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "hobby"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

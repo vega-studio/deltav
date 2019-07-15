@@ -10,14 +10,18 @@ process.env.NODE_ENV = 'production';
 
 const compiler = webpack(require(resolve('webpack.config.js')));
 
-compiler.compile();
+console.log('Building Project...');
+compiler.run((err, stats) => {
+  if (err) {
+    console.error(err.stack || err);
+    if (err.details) {
+      console.error(err.details);
+    }
+    return;
+  }
 
-// const server = new DevServer(compiler, {
-//   contentBase: resolve('test/assets'),
-//   compress: true,
-//   port: process.env.PORT || 8080
-// });
-
-// server.listen(process.env.PORT || 8080, process.env.HOST || '0.0.0.0', () => {
-//   console.log(`Starting server on ${process.env.HOST || '0.0.0.0'}:${process.env.PORT || 8080}`);
-// });
+  console.log(stats.toString({
+    colors: true,
+  }));
+  console.log('Finished building project');
+});

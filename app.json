@@ -4,6 +4,9 @@
   "env": {
     "HEROKU": {
       "required": false
+    },
+    "NPM_CONFIG_PRODUCTION": {
+      "value": false
     }
   },
   "formation": {

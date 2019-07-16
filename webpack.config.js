@@ -2,6 +2,8 @@ const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
+console.log('NODE_ENV', process.env.NODE_ENV);
+
 // This is an optional path that can be passed into the program. When set, the
 // project will use the source code from the webgl project specified instead of
 // the internally installed version. It can be set by environment variable, or
@@ -11,7 +13,7 @@ const IS_HEROKU = process.env.NODE_ENV === 'heroku';
 const IS_RELEASE = process.env.NODE_ENV === 'release';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
 const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS;
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
 const tslint = { loader: 'tslint-loader', options: {
@@ -87,7 +89,7 @@ module.exports = {
     rules: [
       { test: /\.tsx?/, use: [
         { loader: 'babel-loader', options: babelOptions },
-        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS } },
+        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS || IS_HEROKU } },
       ] },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },

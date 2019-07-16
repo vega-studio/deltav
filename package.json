@@ -13,7 +13,7 @@
     "dev": "node scripts/dev",
     "eslint": "eslint",
     "release": "node scripts/release",
-    "start": "node scripts/dev",
+    "start": "node scripts/heroku",
     "auto": "auto",
     "runner": "runner",
     "unit-test": "mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'",

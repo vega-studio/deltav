@@ -5,7 +5,7 @@ const glob = require('glob');
 const { unlink } = require('fs');
 const { resolve } = require('path');
 
-glob(resolve('src', '**', '*.d.ts'), (err, matches) => {
+glob(resolve('src', '**', '*.d.ts'), (err, matches = []) => {
   if (err) console.log(err);
 
   matches.forEach(fileName => {
@@ -15,7 +15,7 @@ glob(resolve('src', '**', '*.d.ts'), (err, matches) => {
   });
 });
 
-glob(resolve('test', '**', '*.d.ts'), (err, matches) => {
+glob(resolve('test', '**', '*.d.ts'), (err, matches = []) => {
   if (err) console.log(err);
 
   matches.forEach(fileName => {

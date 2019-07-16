@@ -1,4 +1,4 @@
-import { Bounds } from "../../math/primitives/bounds";
+import { Bounds } from "../../primitives/bounds";
 import { SubTexture } from "./sub-texture";
 export interface IPackNodeDimensions<T> {
     data: T;
@@ -14,7 +14,7 @@ export declare class PackNode<T> {
     hasChild(): boolean;
     insert(image: IPackNodeDimensions<T>): PackNode<T> | null;
     remove(data: T): boolean;
-    static applyToSubTexture<T>(root: PackNode<T>, node: PackNode<T>, texture?: SubTexture, padding?: {
+    static applyToSubTexture<T>(root: PackNode<T>, node: PackNode<T> | Bounds<T>, texture?: SubTexture, padding?: {
         top: number;
         left: number;
         right: number;

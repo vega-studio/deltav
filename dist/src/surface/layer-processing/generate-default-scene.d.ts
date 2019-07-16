@@ -1,9 +1,7 @@
-import { AbsolutePosition } from "../../math/primitives/absolute-position";
-import { ChartCamera } from "../../util/chart-camera";
-import { ViewCamera } from "../../util/view-camera";
+import { AbsolutePosition } from "../../primitives/absolute-position";
+import { Camera } from "../../util/camera";
 export interface IDefaultElements {
-    camera: ChartCamera;
-    viewCamera: ViewCamera;
+    camera: Camera;
     viewport: AbsolutePosition;
 }
 export declare function generateDefaultElements(context: WebGLRenderingContext): IDefaultElements;

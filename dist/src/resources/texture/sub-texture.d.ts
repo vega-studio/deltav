@@ -1,9 +1,12 @@
 import { Texture } from "../../gl/texture";
-import { Bounds } from "../../math/primitives/bounds";
-import { InstanceIOValue } from "../../types";
+import { Bounds } from "../../primitives/bounds";
+import { InstanceIOValue, Omit } from "../../types";
 import { Vec2 } from "../../util/vector";
+import { VideoTextureMonitor } from "./video-texture-monitor";
 export declare function subTextureIOValue(texture?: SubTexture | null): InstanceIOValue;
 export declare class SubTexture {
+    readonly uid: number;
+    private _uid;
     aspectRatio: number;
     atlasTL: Vec2;
     atlasTR: Vec2;
@@ -13,8 +16,20 @@ export declare class SubTexture {
     isValid: boolean;
     pixelWidth: number;
     pixelHeight: number;
-    textureReferenceID: string;
+    atlasRegion?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    source?: TexImageSource;
     texture: Texture | null;
+    video?: {
+        monitor: VideoTextureMonitor;
+    };
     widthOnAtlas: number;
+    constructor(options?: Omit<Partial<SubTexture>, "update">);
     static fromRegion(source: Texture, region: Bounds<any>): SubTexture | null;
+    update(): void;
+    toString(): string;
 }

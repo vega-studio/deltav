@@ -47,7 +47,17 @@ if (sh('git', 'reset', '--hard', `${ENSURE_REMOTE}/dev`).code !== 0) {
 }
 
 // Build declaration files
-if (sh('tsc', '-d', '--emitDeclarationOnly', '--outDir', 'dist', '--project', './tsconfig.json').code !== 0) {
+if (
+  sh(
+    'tsc',
+    '-d',
+    '--emitDeclarationOnly',
+    '--outDir',
+    'dist',
+    '--project',
+    './tsconfig.json'
+  ).code !== 0
+) {
   console.log('Failed to compile type declarations');
   process.exit(1);
 }
@@ -73,7 +83,16 @@ if (sh('git', 'add', '-A').code !== 0) {
 // Have this execute the runner release notes script
 // NOTE: this creates a commit with the latest version
 if (
-  sh('npm', 'run', 'runner', '--', 'release-notes', '--file', 'RELEASE_NOTES.md', '--update-package').code !== 0
+  sh(
+    'npm',
+    'run',
+    'runner',
+    '--',
+    'release-notes',
+    '--file',
+    'RELEASE_NOTES.md',
+    '--update-package'
+  ).code !== 0
 ) {
   console.log('Failed to update release fragments');
   process.exit(1);

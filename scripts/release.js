@@ -40,11 +40,11 @@ if (shell.exec('git fetch --all').code !== 0) {
   process.exit(1);
 }
 
-// // Make sure we are exactly what is in dev
-// if (shell.exec(`git reset --hard ${ENSURE_REMOTE}/dev`).code !== 0) {
-//   console.log('Could not reset branch to dev');
-//   process.exit(1);
-// }
+// Make sure we are exactly what is in dev
+if (shell.exec(`git reset --hard ${ENSURE_REMOTE}/dev`).code !== 0) {
+  console.log('Could not reset branch to dev');
+  process.exit(1);
+}
 
 // // Build declaration files
 // if (shell.exec('tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json').code !== 0) {

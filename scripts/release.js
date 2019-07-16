@@ -35,7 +35,7 @@ if (shell.exec('git checkout release').code !== 0) {
 }
 
 // Make sure we have the latest from the remote
-if (shell.exec('git fetch -all').code !== 0) {
+if (shell.exec('git fetch --all').code !== 0) {
   console.log('Could not fetch from remote servers.');
   process.exit(1);
 }

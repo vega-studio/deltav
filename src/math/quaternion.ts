@@ -17,8 +17,8 @@ import {
   M431,
   M432,
   M433,
-  Mat4x4,
-  Mat3x3
+  Mat3x3,
+  Mat4x4
 } from "./matrix";
 import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
 
@@ -600,7 +600,7 @@ export function axisQuat(quat: Quaternion): Vec3 {
 
   const length = sqrt(x * x + y * y + z * z);
 
-  if(length ===0) return [0, 0, 0];
+  if (length === 0) return [0, 0, 0];
 
   const r = 1 / sqrt(x * x + y * y + z * z);
 
@@ -753,8 +753,7 @@ export function lookAtQuat(
   return q;
 }
 
-export function matrix3x3ToQuaternion(mat: Mat3x3,q?: Quaternion
-  ):Quaternion {
+export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
   const m00 = mat[0];
@@ -816,8 +815,7 @@ export function matrix3x3ToQuaternion(mat: Mat3x3,q?: Quaternion
   return q;
 }
 
-export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion
-  ):Quaternion {
+export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
   const m00 = mat[0];

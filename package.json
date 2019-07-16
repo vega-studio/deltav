@@ -19,7 +19,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@tarwich/runner": "file:../../self/tarwich-runner",
+    "@tarwich/runner": "github:tarwich/runner",
     "@types/animejs": "2.0.0",
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",

@@ -87,7 +87,12 @@ if (lastCommitProcess.code !== 0) {
   process.exit(1);
 }
 
-const version = lastCommitProcess.stdout.trim();
+const version = (lastCommitProcess.stdout.trim().toLowerCase().split('Release ')[1] || '').trim();
+
+if (!version) {
+  console.log('Could not determine release version from the last commit');
+  process.exit(1);
+}
 
 // Tag the commit with the version number
 if (shell.exec(`git tag -a '${version}' -m 'Release ${version}'`).code !== 0) {

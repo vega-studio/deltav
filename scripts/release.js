@@ -87,7 +87,7 @@ if (lastCommitProcess.code !== 0) {
   process.exit(1);
 }
 
-const version = (lastCommitProcess.stdout.trim().toLowerCase().split('Release ')[1] || '').trim();
+const version = (lastCommitProcess.stdout.trim().toLowerCase().split('release ')[1] || '').trim();
 
 if (!version) {
   console.log('Could not determine release version from the last commit');

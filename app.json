@@ -2,9 +2,6 @@
   "name": "vega-studio/deltav",
   "description": "Graphics library for large scale mutating data",
   "env": {
-    "ESENTIRE_NO_AUTH": {
-      "required": false
-    },
     "HEROKU": {
       "required": false
     }

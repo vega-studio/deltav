@@ -10,7 +10,7 @@ const DEVGL = process.env.DEVGL;
 const IS_HEROKU = process.env.NODE_ENV === 'heroku';
 const IS_RELEASE = process.env.NODE_ENV === 'release';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_HEROKU;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
 const tslint = { loader: 'tslint-loader', options: {
@@ -78,7 +78,7 @@ module.exports = {
     rules: [
       { test: /\.tsx?/, use: [
         { loader: 'babel-loader', options: babelOptions },
-        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION } },
+        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION | IS_HEROKU } },
       ] },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },

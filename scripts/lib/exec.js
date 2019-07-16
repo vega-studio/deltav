@@ -11,6 +11,8 @@ const exec = (program, ...args) => {
 
     if (error) console.log(error);
 
+    console.log(stdout.toString());
+
     result = {
       code: status,
       stdout,

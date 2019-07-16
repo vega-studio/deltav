@@ -13,6 +13,7 @@
     "dev": "node scripts/dev",
     "eslint": "eslint",
     "release": "node scripts/release",
+    "start": "node scripts/heroku",
     "auto": "auto",
     "runner": "runner"
   },

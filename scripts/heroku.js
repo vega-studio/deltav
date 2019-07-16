@@ -7,7 +7,7 @@ const { readFileSync, statSync } = require('fs');
 const { resolve } = require('path');
 const webpack = require('webpack');
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 80;
 
 let status = 'building';
 process.env.NODE_ENV = 'heroku';

@@ -39,7 +39,9 @@ const exec = (program, ...args) => {
  * @return {string} stdout value
  */
 const sh = (...rest) => {
-  const shargs = rest;
+  const shargs = rest || [];
+  if (shargs.length === 0) return { code: 1 };
+  if (shargs.length === 1) return exec(shargs[0]);
   return exec(shargs[0], ...shargs.slice(1));
 };
 

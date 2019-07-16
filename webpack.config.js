@@ -78,7 +78,7 @@ module.exports = {
     rules: [
       { test: /\.tsx?/, use: [
         { loader: 'babel-loader', options: babelOptions },
-        'ts-loader',
+        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION } },
       ] },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },

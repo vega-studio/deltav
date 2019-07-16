@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "node scripts/dev",
     "eslint": "eslint",
-    "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes --file RELEASE_NOTES.md --update-package",
+    "release": "node scripts/release",
     "start": "node scripts/dev",
     "auto": "auto",
     "runner": "runner"
@@ -57,6 +57,7 @@
     "random": "github:tarwich/node-random#1.0.0",
     "raw-loader": "0.5.1",
     "rimraf": "2.6.2",
+    "shelljs": "0.8.3",
     "spectorjs": "0.9.7",
     "style-loader": "0.20.3",
     "tiny-sdf": "github:diniden/tiny-sdf",

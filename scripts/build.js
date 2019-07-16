@@ -15,7 +15,7 @@ compiler.run((err, stats) => {
   if (err) {
     console.error(err.stack || err);
     if (err.details) console.error(err.details);
-    return;
+    process.exit(1);
   }
 
   console.log(stats.toString({

@@ -10,8 +10,10 @@ const exec = (program, ...args) => {
 
     if (error) console.log(error);
 
-    const out = stdout.toString();
-    if (out) console.log(out);
+    if (stdout) {
+      const out = stdout.toString();
+      if (out) console.log(out);
+    }
 
     result = {
       code: status,

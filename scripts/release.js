@@ -1,7 +1,9 @@
 const shell = require('shelljs');
 
-const ENSURE_REMOTE = 'origin';
-const ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git';
+const {
+  ENSURE_REMOTE = 'origin',
+  ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git',
+} = process.env;
 
 // We check our remote to ensure we have a projected with expected values
 const remoteListProcess = shell.exec('git remote -v');
@@ -11,7 +13,7 @@ if (remoteListProcess.code !== 0) {
   process.exit(1);
 }
 
-const remotes = remoteListProcess.stdout.split(/\n|\r|\n\r|\r\n/g);
+const remotes = remoteListProcess.stdout.split(/\r?\n/g);
 
 const foundRemote = remotes.find(row =>
   row.indexOf(ENSURE_REMOTE) >= 0 && row.indexOf(ENSURE_REMOTE_PROJECT) >= 0

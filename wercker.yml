@@ -13,6 +13,3 @@ build:
     - script:
       name: Check js files
       code: npm run eslint -- . --ignore-pattern node_modules --ignore-pattern dist
-    - script:
-      name: Autorelease
-      code: npm run auto release

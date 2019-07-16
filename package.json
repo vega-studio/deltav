@@ -15,7 +15,8 @@
     "release": "node scripts/release",
     "start": "node scripts/heroku",
     "auto": "auto",
-    "runner": "runner"
+    "runner": "runner",
+    "heroku-postbuild": "echo This runs afterwards."
   },
   "dependencies": {},
   "devDependencies": {

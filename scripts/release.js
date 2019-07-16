@@ -1,9 +1,7 @@
 const shell = require('shelljs');
 
-const {
-  ENSURE_REMOTE = 'origin',
-  ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git',
-} = process.env;
+const ENSURE_REMOTE = 'origin';
+const ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git';
 
 // We check our remote to ensure we have a projected with expected values
 const remoteListProcess = shell.exec('git remote -v');

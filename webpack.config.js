@@ -2,6 +2,8 @@ const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
+console.log('NODE_ENV', process.env.NODE_ENV);
+
 // This is an optional path that can be passed into the program. When set, the
 // project will use the source code from the webgl project specified instead of
 // the internally installed version. It can be set by environment variable, or

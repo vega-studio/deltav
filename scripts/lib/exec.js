@@ -2,7 +2,6 @@ const { spawnSync } = require('child_process');
 
 const exec = (program, ...args) => {
   let result = '';
-  console.log('Executing', program, args);
 
   try {
     const {
@@ -11,7 +10,8 @@ const exec = (program, ...args) => {
 
     if (error) console.log(error);
 
-    console.log(stdout.toString());
+    const out = stdout.toString();
+    if (out) console.log(out);
 
     result = {
       code: status,
@@ -40,7 +40,6 @@ const exec = (program, ...args) => {
  */
 const sh = (...rest) => {
   const shargs = rest;
-  console.log('Shargs', shargs);
   return exec(shargs[0], ...shargs.slice(1));
 };
 

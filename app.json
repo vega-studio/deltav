@@ -8,6 +8,10 @@
     "NPM_CONFIG_PRODUCTION": {
       "required": true,
       "value": false
+    },
+    "NODE_ENV": {
+      "required": true,
+      "value": "heroku"
     }
   },
   "formation": {

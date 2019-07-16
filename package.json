@@ -13,9 +13,10 @@
     "dev": "node scripts/dev",
     "eslint": "eslint",
     "release": "node scripts/release",
-    "start": "node scripts/dev",
+    "start": "node scripts/heroku",
     "auto": "auto",
-    "runner": "runner"
+    "runner": "runner",
+    "heroku-postbuild": "echo This runs afterwards."
   },
   "dependencies": {},
   "devDependencies": {

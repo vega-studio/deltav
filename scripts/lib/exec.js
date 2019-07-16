@@ -2,15 +2,29 @@ const { spawnSync } = require('child_process');
 
 const exec = (program, ...args) => {
   let result = '';
+  console.log('Executing', program, args);
 
-  const {
-    error, output, status
-  } = spawnSync(program, args);
+  try {
+    const {
+      error, stdout, output, status
+    } = spawnSync(program, args);
 
-  if (error)
+    if (error) console.log(error);
 
-  result = output.join('\n');
-  result.code = status;
+    result = {
+      code: status,
+      stdout,
+      output,
+    };
+  }
+
+  catch (err) {
+    console.log(err.stack || err.message);
+    console.log('Could not execute', program, args);
+    result = {
+      code: 1
+    };
+  }
 
   return result;
 };
@@ -18,17 +32,14 @@ const exec = (program, ...args) => {
 /**
  * Executes a shell command
  *
- * @param {string[]} strings All the input from the template string split by the
- *                           template expressions
  * @param {string[]} rest The template expressions
  *
  * @return {string} stdout value
  */
-const sh = (strings, ...rest) => {
-  const shargs = strings.reduce((result, item, i) => {
-    return result.concat(item.trim()).concat(rest[i]);
-  }, []).filter(Boolean);
-  return exec(shargs);
+const sh = (...rest) => {
+  const shargs = rest;
+  console.log('Shargs', shargs);
+  return exec(shargs[0], ...shargs.slice(1));
 };
 
 module.exports = {

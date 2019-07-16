@@ -4,14 +4,14 @@ const ENSURE_REMOTE = 'origin';
 const ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git';
 
 // We check our remote to ensure we have a projected with expected values
-const remoteListProcess = sh('git remote -v');
+const remoteListProcess = sh('git', 'remote', '-v');
 
 if (remoteListProcess.code !== 0) {
   console.log('Could not list remotes for the git project.');
   process.exit(1);
 }
 
-const remotes = remoteListProcess.stdout.split(/\r?\n/g);
+const remotes = remoteListProcess.stdout.toString().split(/\r?\n/g);
 
 const foundRemote = remotes.find(row =>
   row.indexOf(ENSURE_REMOTE) >= 0 && row.indexOf(ENSURE_REMOTE_PROJECT) >= 0
@@ -27,21 +27,21 @@ if (!foundRemote) {
 }
 
 // Make sure we're on a release branch that matches dev
-if (sh('git checkout release').code !== 0) {
-  if (sh('git checkout -b release').code !== 0) {
+if (sh('git', 'checkout', 'release').code !== 0) {
+  if (sh('git', 'checkout' ,'-b', 'release').code !== 0) {
     console.log('Could not switch to the release branch. Make sure the branch exists locally.');
     process.exit(1);
   }
 }
 
 // Make sure we have the latest from the remote
-if (sh('git fetch --all').code !== 0) {
+if (sh('git', 'fetch', '--all').code !== 0) {
   console.log('Could not fetch from remote servers.');
   process.exit(1);
 }
 
 // Make sure we are exactly what is in dev
-if (sh('git reset --hard', `${ENSURE_REMOTE}/dev`).code !== 0) {
+if (sh('git', 'reset', '--hard', `${ENSURE_REMOTE}/dev`).code !== 0) {
   console.log('Could not reset branch to dev');
   process.exit(1);
 }

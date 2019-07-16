@@ -10,7 +10,6 @@
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "",
     "dev": "node scripts/dev",
     "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes --file RELEASE_NOTES.md --update-package",
     "r": "runner release-notes -f RELEASE_NOTES.md --update-package",
@@ -20,7 +19,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@tarwich/runner": "1.10.0",
+    "@tarwich/runner": "file:../../self/tarwich-runner",
     "@types/animejs": "2.0.0",
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",

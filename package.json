@@ -11,8 +11,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "node scripts/dev",
+    "eslint": "eslint",
     "release": "tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json && node scripts/build && rm -rf dist/test && runner release-notes --file RELEASE_NOTES.md --update-package",
-    "r": "runner release-notes -f RELEASE_NOTES.md --update-package",
     "start": "node scripts/dev",
     "auto": "auto",
     "runner": "runner"

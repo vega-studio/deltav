@@ -1,3 +1,10 @@
+## 1.32.1
+
+## Fixed
+
+- [`FIXED`]: Release script added to replace auto release for now
+- [`FIXED`]: Added app json to enable heroku features
+
 # Release Notes
 
 ## 1.32.0
@@ -415,4 +422,3 @@
 ## 1.0.0
 
 * `(BREAKING)` Changed from react to preact
-

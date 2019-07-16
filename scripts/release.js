@@ -1,4 +1,6 @@
 const { sh } = require('./lib/exec');
+const { removeSync } = require('fs-extra');
+const { resolve } = require('path');
 
 const ENSURE_REMOTE = 'origin';
 const ENSURE_REMOTE_PROJECT = 'git@github.com:vega-studio/deltav.git';
@@ -69,7 +71,10 @@ if (sh('node', 'scripts/build').code !== 0) {
 }
 
 // Clean out the compiled test file typings
-if (sh('-rf', 'rm', '-rf', 'dist/test').code !== 0) {
+try {
+  removeSync(resolve('dist/test'));
+}
+catch (err) {
   console.log('Failed to clean distribution');
   process.exit(1);
 }

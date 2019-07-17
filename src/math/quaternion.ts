@@ -1,31 +1,20 @@
-import { EulerOrder, EulerRotation } from "../types";
+import { EulerOrder, EulerRotation } from '../types';
 import {
-  identity4,
-  M400,
-  M401,
-  M402,
-  M403,
-  M410,
-  M411,
-  M412,
-  M413,
-  M420,
-  M421,
-  M422,
-  M423,
-  M430,
-  M431,
-  M432,
-  M433,
-  Mat4x4,
-  Mat3x3
-} from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+    identity4, M400, M401, M402, M403, M410, M411, M412, M413, M420, M421, M422, M423, M430, M431,
+    M432, M433, Mat3x3, Mat4x4
+} from './matrix';
+import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from './vector';
 
 const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
 
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
+
+export function clamp(x: number, min: number, max: number) {
+  if (x > max) return max;
+  if (x < min) return min;
+  return x;
+}
 
 /**
  * Generates a new zero quaternion
@@ -321,41 +310,52 @@ export function fromOrderedEulerToQuat(
       out[2] = c1 * s2 * c3 - s1 * c2 * s3;
       out[3] = c1 * c2 * s3 + s1 * s2 * c3;
       out[0] = c1 * c2 * c3 - s1 * s2 * s3;
+      /*out[0] = c1 * c2 * c3 + s1 * s2 * s3;
+      out[1] = s1 * c2 * c3 - c1 * s2 * s3;
+      out[2] = c1 * s2 * c3 + s1 * c2 * s3;
+      out[3] = c1 * c2 * s3 - s1 * s2 * c3;*/
       break;
 
     case EulerOrder.yxz:
+      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
       out[1] = s1 * c2 * c3 + c1 * s2 * s3;
       out[2] = c1 * s2 * c3 - s1 * c2 * s3;
       out[3] = c1 * c2 * s3 - s1 * s2 * c3;
-      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
+      /*out[0] = c1 * c2 * c3 - s1 * s2 * s3;
+      out[1] = c1 * s2 * c3 - s1 * c2 * s3;
+      out[2] = c1 * s2 * s3 + s1 * c2 * c3 ;
+      out[3] = c1 * c2 * s3 + s1 * s2 * c3;*/
       break;
 
     case EulerOrder.zxy:
+      out[0] = c1 * c2 * c3 - s1 * s2 * s3;
       out[1] = s1 * c2 * c3 - c1 * s2 * s3;
       out[2] = c1 * s2 * c3 + s1 * c2 * s3;
       out[3] = c1 * c2 * s3 + s1 * s2 * c3;
-      out[0] = c1 * c2 * c3 - s1 * s2 * s3;
       break;
 
     case EulerOrder.zyx:
+      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
       out[1] = s1 * c2 * c3 - c1 * s2 * s3;
       out[2] = c1 * s2 * c3 + s1 * c2 * s3;
       out[3] = c1 * c2 * s3 - s1 * s2 * c3;
-      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
+
       break;
 
     case EulerOrder.yzx:
+      out[0] = c1 * c2 * c3 - s1 * s2 * s3;
       out[1] = s1 * c2 * c3 + c1 * s2 * s3;
       out[2] = c1 * s2 * c3 + s1 * c2 * s3;
       out[3] = c1 * c2 * s3 - s1 * s2 * c3;
-      out[0] = c1 * c2 * c3 - s1 * s2 * s3;
+
       break;
 
     case EulerOrder.xzy:
+      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
       out[1] = s1 * c2 * c3 - c1 * s2 * s3;
       out[2] = c1 * s2 * c3 - s1 * c2 * s3;
       out[3] = c1 * c2 * s3 + s1 * s2 * c3;
-      out[0] = c1 * c2 * c3 + s1 * s2 * s3;
+
       break;
   }
 
@@ -374,7 +374,7 @@ export function toEulerXYZfromOrderedEuler(
   out = out || [0, 0, 0];
   const q = fromOrderedEulerToQuat(euler, order);
   toOrderedEulerFromQuat(q, EulerOrder.xyz, out);
-
+  // toOrderedEulerFromQuat(q, EulerOrder.zyx, out);
   return out;
 }
 
@@ -384,13 +384,13 @@ export function toEulerXYZfromOrderedEuler(
 function twoAxisRotation(
   r11: number,
   r12: number,
-  r21: number,
+  r2: number,
   r31: number,
   r32: number,
   out: number[]
 ) {
   out[0] = atan2(r11, r12);
-  out[1] = acos(r21);
+  out[1] = acos(r2);
   out[2] = atan2(r31, r32);
 }
 
@@ -400,14 +400,16 @@ function twoAxisRotation(
 function threeAxisRotation(
   r11: number,
   r12: number,
-  r21: number,
+  r2: number,
   r31: number,
   r32: number,
   out: number[]
 ) {
-  out[0] = atan2(r31, r32);
-  out[1] = asin(r21);
-  out[2] = atan2(r11, r12);
+  // out[0] = atan2(r31, r32);
+  out[0] = atan2(r11, r12);
+  out[1] = asin(r2);
+  // out[2] = atan2(r11, r12);
+  out[2] = atan2(r31, r32);
 }
 
 /**
@@ -430,9 +432,25 @@ export function toOrderedEulerFromQuat(
 ): Vec3 {
   out = out || [0, 0, 0];
 
+  const q0 = q[0],
+    q1 = q[1],
+    q2 = q[2],
+    q3 = q[3];
+
+  const m = matrix4x4FromUnitQuat(q);
+  const m11 = m[0],
+    m12 = m[4],
+    m13 = m[8];
+  const m21 = m[1],
+    m22 = m[5],
+    m23 = m[9];
+  const m31 = m[2],
+    m32 = m[6],
+    m33 = m[10];
+
   switch (order) {
     case EulerOrder.zyx:
-      threeAxisRotation(
+      /*threeAxisRotation(
         2 * (q[1] * q[2] + q[0] * q[3]),
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         -2 * (q[1] * q[3] - q[0] * q[2]),
@@ -440,21 +458,47 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q0 * q3 - 2 * q1 * q2,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        2 * q1 * q3 + 2 * q0 * q2,
+        2 * q0 * q1 - 2 * q2 * q3,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        out
+      )*/
+
+      out[1] = Math.asin(-clamp(m31, -1, 1));
+
+      if (Math.abs(m31) < 0.99999) {
+        out[0] = Math.atan2(m32, m33);
+        out[2] = Math.atan2(m21, m11);
+      } else {
+        out[0] = 0;
+        out[2] = Math.atan2(-m12, m22);
+      }
       break;
 
     case EulerOrder.zyz:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[2] * q[3] - q[0] * q[1]),
         2 * (q[1] * q[3] + q[0] * q[2]),
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         2 * (q[2] * q[3] + q[0] * q[1]),
         -2 * (q[1] * q[3] - q[0] * q[2]),
+        out
+      );*/
+      twoAxisRotation(
+        2 * q2 * q3 + 2 * q0 * q1,
+        2 * q0 * q2 - 2 * q1 * q3,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        2 * q2 * q3 - 2 * q0 * q1,
+        2 * q1 * q3 + 2 * q0 * q2,
         out
       );
       break;
 
     case EulerOrder.zxy:
-      threeAxisRotation(
+      /*threeAxisRotation(
         -2 * (q[1] * q[2] - q[0] * q[3]),
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         2 * (q[2] * q[3] + q[0] * q[1]),
@@ -462,21 +506,47 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q1 * q2 + 2 * q0 * q3,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        2 * q0 * q1 - 2 * q2 * q3,
+        2 * q1 * q3 + 2 * q0 * q2,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        out
+      )*/
+      out[0] = Math.asin(clamp(m32, -1, 1));
+
+      if (Math.abs(m32) < 0.99999) {
+        out[1] = Math.atan2(-m31, m33);
+        out[2] = Math.atan2(-m12, m22);
+      } else {
+        out[1] = 0;
+        out[2] = Math.atan2(m21, m11);
+      }
+
       break;
 
     case EulerOrder.zxz:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[1] * q[3] + q[0] * q[2]),
         -2 * (q[2] * q[3] - q[0] * q[1]),
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         2 * (q[1] * q[3] - q[0] * q[2]),
         2 * (q[2] * q[3] + q[0] * q[1]),
         out
+      );*/
+      twoAxisRotation(
+        2 * q1 * q3 - 2 * q0 * q2,
+        2 * q2 * q3 + 2 * q0 * q1,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        2 * q1 * q3 + 2 * q0 * q2,
+        2 * q0 * q1 - 2 * q2 * q3,
+        out
       );
       break;
 
     case EulerOrder.yxz:
-      threeAxisRotation(
+      /*threeAxisRotation(
         2 * (q[1] * q[3] + q[0] * q[2]),
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         -2 * (q[2] * q[3] - q[0] * q[1]),
@@ -484,21 +554,47 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q0 * q2 - 2 * q1 * q3,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        2 * q2 * q3 + 2 * q0 * q1,
+        2 * q0 * q3 - 2 * q1 * q2,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        out
+      )*/
+
+      out[0] = Math.asin(-clamp(m23, -1, 1));
+
+      if (Math.abs(m23) < 0.9999) {
+        out[1] = Math.atan2(m13, m33);
+        out[2] = Math.atan2(m21, m22);
+      } else {
+        out[1] = Math.atan2(-m31, m11);
+        out[2] = 0;
+      }
       break;
 
     case EulerOrder.yxy:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[1] * q[2] - q[0] * q[3]),
         2 * (q[2] * q[3] + q[0] * q[1]),
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         2 * (q[1] * q[2] + q[0] * q[3]),
         -2 * (q[2] * q[3] - q[0] * q[1]),
         out
+      );*/
+      twoAxisRotation(
+        2 * q1 * q2 + 2 * q0 * q3,
+        2 * q0 * q1 - 2 * q2 * q3,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        2 * q1 * q2 - 2 * q0 * q3,
+        2 * q2 * q3 + 2 * q0 * q1,
+        out
       );
       break;
 
     case EulerOrder.yzx:
-      threeAxisRotation(
+      /*threeAxisRotation(
         -2 * (q[1] * q[3] - q[0] * q[2]),
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         2 * (q[1] * q[2] + q[0] * q[3]),
@@ -506,21 +602,47 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q1 * q3 + 2 * q0 * q2,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        2 * q0 * q3 - 2 * q1 * q2,
+        2 * q2 * q3 + 2 * q0 * q1,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        out
+      )*/
+
+      out[2] = Math.asin(clamp(m21, -1, 1));
+
+      if (Math.abs(m21) < 0.99999) {
+        out[0] = Math.atan2(-m23, m22);
+        out[1] = Math.atan2(-m31, m11);
+      } else {
+        out[0] = 0;
+        out[1] = Math.atan2(m13, m33);
+      }
       break;
 
     case EulerOrder.yzy:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[2] * q[3] + q[0] * q[1]),
         -2 * (q[1] * q[2] - q[0] * q[3]),
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         2 * (q[2] * q[3] - q[0] * q[1]),
         2 * (q[1] * q[2] + q[0] * q[3]),
         out
+      );*/
+      twoAxisRotation(
+        2 * q2 * q3 - 2 * q0 * q1,
+        2 * q1 * q2 + 2 * q0 * q3,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        2 * q2 * q3 + 2 * q0 * q1,
+        2 * q0 * q3 - 2 * q1 * q2,
+        out
       );
       break;
 
     case EulerOrder.xyz:
-      threeAxisRotation(
+      /*threeAxisRotation(
         -2 * (q[2] * q[3] - q[0] * q[1]),
         q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3],
         2 * (q[1] * q[3] + q[0] * q[2]),
@@ -528,21 +650,47 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q2 * q3 + 2 * q0 * q1,
+        q3 * q3 - q2 * q2 - q1 * q1 + q0 * q0,
+        2 * q0 *q2 - 2 * q1 * q3,
+        2 * q1 * q2 + 2 * q0 * q3,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        out
+      );*/
+
+      out[1] = Math.asin(clamp(m13, -1, 1));
+
+      if (Math.abs(m13) < 0.99999) {
+        out[0] = Math.atan2(-m23, m33);
+        out[2] = Math.atan2(-m12, m11);
+      } else {
+        out[0] = Math.atan2(m32, m22);
+        out[2] = 0;
+      }
       break;
 
     case EulerOrder.xyx:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[1] * q[2] + q[0] * q[3]),
         -2 * (q[1] * q[3] - q[0] * q[2]),
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         2 * (q[1] * q[2] - q[0] * q[3]),
         2 * (q[1] * q[3] + q[0] * q[2]),
         out
+      );*/
+      twoAxisRotation(
+        2 * q1 * q2 - 2 * q0 * q3,
+        2 * q1 * q3 + 2 * q0 * q2,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        2 * q1 * q2 + 2 * q0 * q3,
+        2 * q0 * q2 - 2 * q1 * q3,
+        out
       );
       break;
 
     case EulerOrder.xzy:
-      threeAxisRotation(
+      /*threeAxisRotation(
         2 * (q[2] * q[3] + q[0] * q[1]),
         q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3],
         -2 * (q[1] * q[2] - q[0] * q[3]),
@@ -550,15 +698,43 @@ export function toOrderedEulerFromQuat(
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         out
       );
+      threeAxisRotation(
+        2 * q0 * q1 - 2 * q2 * q3,
+        q2 * q2 - q3 * q3 + q0 * q0 - q1 * q1,
+        2 * q1 * q2 + 2 * q0 * q3,
+        2 * q0 * q2 - 2 * q1 * q3,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        out
+      )*/
+
+      out[2] = Math.asin(-clamp(m12, -1, 1));
+
+      if (Math.abs(m12) < 0.99999) {
+        out[0] = Math.atan2(m32, m22);
+        out[1] = Math.atan2(m13, m11);
+      } else {
+        out[0] = Math.atan2(-m23, m33);
+        out[1] = 0;
+      }
+
       break;
 
     case EulerOrder.xzx:
-      twoAxisRotation(
+      /*twoAxisRotation(
         2 * (q[1] * q[3] - q[0] * q[2]),
         2 * (q[1] * q[2] + q[0] * q[3]),
         q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3],
         2 * (q[1] * q[3] + q[0] * q[2]),
         -2 * (q[1] * q[2] - q[0] * q[3]),
+        out
+      );*/
+
+      twoAxisRotation(
+        2 * q1 * q3 + 2 * q0 * q2,
+        2 * q0 * q3 - 2 * q1 * q2,
+        q1 * q1 + q0 * q0 - q3 * q3 - q2 * q2,
+        2 * q1 * q3 - 2 * q0 * q2,
+        2 * q1 * q2 + 2 * q0 * q3,
         out
       );
       break;
@@ -569,6 +745,100 @@ export function toOrderedEulerFromQuat(
   }
 
   return out;
+}
+
+export function toOrderedEulerFromQuat2(
+  quat: Quaternion,
+  order: EulerOrder,
+  out?: Vec3
+) {
+  out = out || [0, 0, 0];
+
+  const m = matrix4x4FromUnitQuat(quat);
+  const m11 = m[0],
+    m12 = m[4],
+    m13 = m[8];
+  const m21 = m[1],
+    m22 = m[5],
+    m23 = m[9];
+  const m31 = m[2],
+    m32 = m[6],
+    m33 = m[10];
+
+  switch (order) {
+    case EulerOrder.xyz:
+      out[1] = Math.asin(clamp(m13, -1, 1));
+
+      if (Math.abs(m13) < 0.99999) {
+        out[0] = Math.atan2(-m23, m33);
+        out[2] = Math.atan2(-m12, m11);
+      } else {
+        out[0] = Math.atan2(m32, m22);
+        out[2] = 0;
+      }
+
+      break;
+    case EulerOrder.yxz:
+      out[0] = Math.asin(-clamp(m23, -1, 1));
+
+      if (Math.abs(m23) < 0.9999) {
+        out[1] = Math.atan2(m13, m33);
+        out[2] = Math.atan2(m21, m22);
+      } else {
+        out[1] = Math.atan2(-m31, m11);
+        out[2] = 0;
+      }
+
+      break;
+    case EulerOrder.zxy:
+      out[0] = Math.asin(clamp(m32, -1, 1));
+
+      if (Math.abs(m32) < 0.99999) {
+        out[1] = Math.atan2(-m31, m33);
+        out[2] = Math.atan2(-m12, m22);
+      } else {
+        out[1] = 0;
+        out[2] = Math.atan2(m21, m11);
+      }
+
+      break;
+    case EulerOrder.zyx:
+      out[1] = Math.asin(-clamp(m31, -1, 1));
+
+      if (Math.abs(m31) < 0.99999) {
+        out[0] = Math.atan2(m32, m33);
+        out[2] = Math.atan2(m21, m11);
+      } else {
+        out[0] = 0;
+        out[2] = Math.atan2(-m12, m22);
+      }
+
+      break;
+    case EulerOrder.yzx:
+      out[2] = Math.asin(clamp(m21, -1, 1));
+
+      if (Math.abs(m21) < 0.99999) {
+        out[0] = Math.atan2(-m23, m22);
+        out[1] = Math.atan2(-m31, m11);
+      } else {
+        out[0] = 0;
+        out[1] = Math.atan2(m13, m33);
+      }
+
+      break;
+    case EulerOrder.xzy:
+      out[2] = Math.asin(-clamp(m12, -1, 1));
+
+      if (Math.abs(m12) < 0.99999) {
+        out[0] = Math.atan2(m32, m22);
+        out[1] = Math.atan2(m13, m11);
+      } else {
+        out[0] = Math.atan2(-m23, m33);
+        out[1] = 0;
+      }
+
+      break;
+  }
 }
 
 /**
@@ -600,7 +870,7 @@ export function axisQuat(quat: Quaternion): Vec3 {
 
   const length = sqrt(x * x + y * y + z * z);
 
-  if(length ===0) return [0, 0, 0];
+  if (length === 0) return [0, 0, 0];
 
   const r = 1 / sqrt(x * x + y * y + z * z);
 
@@ -753,8 +1023,7 @@ export function lookAtQuat(
   return q;
 }
 
-export function matrix3x3ToQuaternion(mat: Mat3x3,q?: Quaternion
-  ):Quaternion {
+export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
   const m00 = mat[0];
@@ -816,8 +1085,7 @@ export function matrix3x3ToQuaternion(mat: Mat3x3,q?: Quaternion
   return q;
 }
 
-export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion
-  ):Quaternion {
+export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
   const m00 = mat[0];

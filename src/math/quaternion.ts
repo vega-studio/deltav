@@ -1006,7 +1006,6 @@ export function lookAtQuat (
   if (tr > 0.0) {
     const s = sqrt(tr + 1.0) * 2;
     q[0] = 0.25 * s;
-    // num = 0.5 / num;
     q[1] = (m21 - m12) / s;
     q[2] = (m02 - m20) / s;
     q[3] = (m10 - m01) / s;
@@ -1015,8 +1014,6 @@ export function lookAtQuat (
   }
 
   if (m00 > m11 && m00 > m22) {
-    // const num7 = sqrt(1.0 + m00 - m11 - m22);
-    // const num4 = 0.5 / num7;
     const s = sqrt(1.0 + m00 - m11 - m22) * 2;
     q[0] = (m21 - m12) / s;
     q[1] = 0.25 * s;
@@ -1027,8 +1024,6 @@ export function lookAtQuat (
   }
 
   if (m11 > m22) {
-    // const num6 = sqrt(1.0 + m11 - m00 - m22);
-    // const num3 = 0.5 / num6;
     const s = sqrt(1.0 + m11 - m00 - m22) * 2;
 
     q[0] = (m02 - m20) / s;
@@ -1039,8 +1034,6 @@ export function lookAtQuat (
     return q;
   }
 
-  // const num5 = sqrt(1.0 + m22 - m00 - m11);
-  // const num2 = 0.5 / num5;
   const s = sqrt(1.0 + m22 - m00 - m11) * 2;
   q[0] = (m10 - m01) / s;
   q[1] = (m20 + m02) / s;
@@ -1068,7 +1061,6 @@ export function matrix3x3ToQuaternion (mat: Mat3x3, q?: Quaternion): Quaternion 
   if (tr > 0.0) {
     const s = sqrt(tr + 1.0) * 2;
     q[0] = 0.25 * s;
-    // num = 0.5 / num;
     q[1] = (m21 - m12) / s;
     q[2] = (m02 - m20) / s;
     q[3] = (m10 - m01) / s;
@@ -1077,8 +1069,6 @@ export function matrix3x3ToQuaternion (mat: Mat3x3, q?: Quaternion): Quaternion 
   }
 
   if (m00 > m11 && m00 > m22) {
-    // const num7 = sqrt(1.0 + m00 - m11 - m22);
-    // const num4 = 0.5 / num7;
     const s = sqrt(1.0 + m00 - m11 - m22) * 2;
     q[0] = (m21 - m12) / s;
     q[1] = 0.25 * s;
@@ -1089,8 +1079,6 @@ export function matrix3x3ToQuaternion (mat: Mat3x3, q?: Quaternion): Quaternion 
   }
 
   if (m11 > m22) {
-    // const num6 = sqrt(1.0 + m11 - m00 - m22);
-    // const num3 = 0.5 / num6;
     const s = sqrt(1.0 + m11 - m00 - m22) * 2;
 
     q[0] = (m02 - m20) / s;
@@ -1101,8 +1089,6 @@ export function matrix3x3ToQuaternion (mat: Mat3x3, q?: Quaternion): Quaternion 
     return q;
   }
 
-  // const num5 = sqrt(1.0 + m22 - m00 - m11);
-  // const num2 = 0.5 / num5;
   const s = sqrt(1.0 + m22 - m00 - m11) * 2;
   q[0] = (m10 - m01) / s;
   q[1] = (m20 + m02) / s;

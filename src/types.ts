@@ -742,7 +742,10 @@ export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
 
 export interface IShaderExtension {
   header?: string;
-  body?: string;
+  main?: {
+    pre?: string;
+    post?: string;
+  };
 }
 
 export type IShaderIOExtension<T extends Instance> = Partial<

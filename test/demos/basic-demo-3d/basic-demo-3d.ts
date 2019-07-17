@@ -86,7 +86,6 @@ export class BasicDemo3D extends BaseDemo {
             },
             layers: {
               squares: createLayer(SurfaceTileLayer, {
-                printShader: true,
                 data: providers.tiles,
                 picking: PickType.SINGLE,
 

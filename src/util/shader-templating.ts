@@ -33,7 +33,7 @@ export interface IShaderTemplateOptions {
    *
    * If the body in the callback is null, then that means a main() method could NOT be determined.
    */
-  onMain?(body: string | null): string;
+  onMain?(body: string | null): string | { main: string; header: string };
 
   /** This is a key value pair the template uses to match tokens found to replacement values */
   options: { [key: string]: string };
@@ -215,10 +215,19 @@ export function shaderTemplate(
           const body = bodyStart.substr(0, endBody);
           const modifiedBody = onMain(body);
 
-          results.shader =
-            shader.substr(0, start + found[0].length) +
-            modifiedBody +
-            shader.substr(start + found[0].length + endBody);
+          if (typeof modifiedBody === "string") {
+            results.shader =
+              shader.substr(0, start + found[0].length) +
+              modifiedBody +
+              shader.substr(start + found[0].length + endBody);
+          } else {
+            results.shader =
+              shader.substr(0, start) +
+              modifiedBody.header +
+              shader.substr(start, found[0].length) +
+              modifiedBody.main +
+              shader.substr(start + found[0].length + endBody);
+          }
         } else {
           onMain(null);
         }

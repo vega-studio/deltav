@@ -13,10 +13,3 @@ vec3 hsv2rgb(vec3 c) {
   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
-
-vec4 dimColor(vec4 inputColor) {
-  vec3 hsv = rgb2hsv(inputColor.rgb);
-  hsv.z *= dimming;
-
-  return vec4(mix(inputColor.rgb, hsv2rgb(hsv), float(dimming > 0.0)), inputColor.w);
-}

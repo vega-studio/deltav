@@ -104,7 +104,7 @@ export class BasicDemo3D extends BaseDemo {
                 },
 
                 onMouseClick: async info => {
-                  if (this.isSpreading) return;
+                  if (this.isSpreading || info.instances.length <= 0) return;
 
                   if (!this.isFlattened) {
                     this.isFlattened = true;

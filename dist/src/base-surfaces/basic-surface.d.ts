@@ -1,15 +1,15 @@
+import { EventManager } from "../event-management/event-manager";
 import { Instance, InstanceProvider } from "../instance-provider";
-import { Bounds } from "../math/primitives/bounds";
+import { Bounds } from "../primitives/bounds";
 import { BaseResourceOptions } from "../resources";
-import { EventManager, ISceneOptions, ISurfaceOptions, IViewOptions, Surface, View } from "../surface";
-import { LayerInitializer } from "../surface/surface";
+import { ISceneOptions, ISurfaceOptions, IViewProps, LayerInitializer, Surface, View, ViewInitializer } from "../surface";
 import { Lookup, Omit, Size } from "../types";
-import { ChartCamera } from "../util";
-export declare type BasicSurfaceView = Omit<IViewOptions, "key"> & Partial<Pick<IViewOptions, "key">>;
-export declare type BasicSurfaceLayer = Omit<LayerInitializer, "key"> & Partial<Pick<IViewOptions, "key">>;
+import { Camera } from "../util/camera";
+export declare type BasicSurfaceView<TViewProps extends IViewProps> = Omit<ViewInitializer<TViewProps>, "key"> & Partial<Pick<IViewProps, "key">>;
+export declare type BasicSurfaceLayer = Omit<LayerInitializer, "key"> & Partial<Pick<IViewProps, "key">>;
 export declare type BasicSurfaceSceneOptions = Omit<ISceneOptions, "key" | "views" | "layers"> & {
     layers: Lookup<BasicSurfaceLayer>;
-    views: Lookup<BasicSurfaceView>;
+    views: Lookup<BasicSurfaceView<IViewProps>>;
 };
 export declare type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, "key"> & {
     key?: string;
@@ -17,7 +17,7 @@ export declare type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, "key
 export interface IBasicSurfacePipeline {
     scenes: Lookup<BasicSurfaceSceneOptions>;
 }
-export interface IBasicSurfaceOptions<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<ChartCamera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> {
+export interface IBasicSurfaceOptions<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<Camera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> {
     container: HTMLElement;
     cameras: U;
     handlesWheelEvents?: boolean;
@@ -28,7 +28,7 @@ export interface IBasicSurfaceOptions<T extends Lookup<InstanceProvider<Instance
     pipeline(resources: W, providers: T, cameras: U, managers: V): IBasicSurfacePipeline;
     onNoWebGL?(): void;
 }
-export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<ChartCamera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> {
+export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<Camera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> {
     private context;
     private currentTime;
     private drawRequestId;
@@ -50,8 +50,8 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
     fitContainer(preventRedraw?: boolean): void;
     getViewProjections(viewId: string): import("../types").IProjection | null;
     getViewScreenSize(viewId: string): Size;
-    getViewScreenBounds(viewId: string): Bounds<View>;
-    getViewWorldBounds(viewId: string): Bounds<View>;
+    getViewScreenBounds(viewId: string): Bounds<View<IViewProps>>;
+    getViewWorldBounds(viewId: string): Bounds<View<IViewProps>>;
     pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["pipeline"]): Promise<void>;
     rebuild(): Promise<void>;
     rebuild(clearProviders?: boolean): Promise<void>;

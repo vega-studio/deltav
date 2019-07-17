@@ -1,3 +1,4 @@
+import { Transform } from "../3d/scene-graph/transform";
 import { lookAtQuat, matrix4x4FromUnitQuat } from "../math";
 import {
   concat4x4,
@@ -107,6 +108,8 @@ export class Camera {
   needsBroadcast: boolean = false;
   /** The id of the view to be broadcasted for the sake of a change */
   viewChangeViewId: string = "";
+  /** This is the transform that places the camera within world space */
+  transform: Transform = new Transform();
 
   /** Handler  */
   onChange?(camera: Camera, viewId: string): void;
@@ -185,6 +188,7 @@ export class Camera {
   }
   set position(val: Vec3) {
     this._position = val;
+    this.transform.position = val;
     this._needsUpdate = true;
   }
   private _position: Vec3 = [0, 0, 0];
@@ -197,6 +201,7 @@ export class Camera {
     this._needsUpdate = true;
     this._lookAt = position;
     this._up = copy3(up);
+    this.transform.lookAt(position, up);
   }
   private _lookAt: Vec3 = [0, 0, -1];
   private _up: Vec3 = [0, 1, 0];
@@ -220,6 +225,7 @@ export class Camera {
   }
   set scale(val: Vec3) {
     this._scale = val;
+    this.transform.scale = val;
     this._needsUpdate = true;
   }
   private _scale: Vec3 = [1, 1, 1];

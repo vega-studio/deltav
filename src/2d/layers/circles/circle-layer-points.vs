@@ -12,8 +12,6 @@ varying float edgeSharpnessBase;
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   vertexColor = color;
   vertexColor.a *= layerOpacity;
   float size = radius * scaleFactor;

@@ -1169,6 +1169,28 @@ export function projectToScreen(
 }
 
 /**
+ * Performs the operations to project a Vec3 to screen coordinates as a Vec4 with a w of value 1.
+ * using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1,
+ * and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and
+ * far planes.
+ */
+export function project3As4ToScreen(
+  proj: Mat4x4,
+  point: Vec3Compat,
+  width: number,
+  height: number,
+  out?: Vec4
+) {
+  return projectToScreen(
+    proj,
+    [point[0], point[1], point[2], 1],
+    width,
+    height,
+    out
+  );
+}
+
+/**
  * Determines equality of two 2x2 matrices
  */
 export function compare2x2(m1: Mat2x2, m2: Mat2x2): boolean {

@@ -43,7 +43,7 @@ export class BasicDemo3D extends BaseDemo {
 
   /** All tiles being rendered */
   tiles: SurfaceTileInstance[][] = [];
-  tileToIndex = new Map<number, [number, number]>();
+  tileToIndex = new Map<number, [number, number, number]>();
   isSpreading: boolean = false;
   isFlattened: boolean = false;
   perlin: PerlinNoise;
@@ -97,12 +97,14 @@ export class BasicDemo3D extends BaseDemo {
 
                 onMouseOut: info => {
                   info.instances.forEach(i => {
-                    i.color = color4FromHex3(0xffffff - i.uid);
+                    const index = this.tileToIndex.get(i.uid);
+                    if (!index) return;
+                    i.color = color4FromHex3(0xffffff - index[2]);
                   });
                 },
 
                 onMouseClick: async info => {
-                  if (this.isSpreading) return;
+                  if (this.isSpreading || info.instances.length <= 0) return;
 
                   if (!this.isFlattened) {
                     this.isFlattened = true;
@@ -166,7 +168,7 @@ export class BasicDemo3D extends BaseDemo {
 
         tile.color = color4FromHex3(0xffffff - tilesFlattened.length);
         this.tiles[i][k] = tile;
-        this.tileToIndex.set(tile.uid, [i, k]);
+        this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
         tilesFlattened.push(tile);
       }
     }

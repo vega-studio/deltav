@@ -14,8 +14,6 @@ vec2 interpolation(float t, vec2 center, float radius, float start, float end) {
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   // Destructure some of the vec injections
   float startAngle = angle.x;
   float endAngle = angle.y;

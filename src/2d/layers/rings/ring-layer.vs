@@ -9,8 +9,6 @@ ${extendHeader}
 varying float scale;
 
 void main() {
-  ${attributes}
-
   scale = scaleFactor;
 
   vertexColor = color;

@@ -1,51 +1,69 @@
-import { AbsolutePosition } from "../math/primitives/absolute-position";
-import { Bounds } from "../math/primitives/bounds";
+import { AbsolutePosition } from "../primitives/absolute-position";
+import { Bounds } from "../primitives/bounds";
 import { Color, Omit } from "../types";
 import { Vec2 } from "../util";
-import { ChartCamera } from "../util/chart-camera";
+import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { ViewCamera } from "../util/view-camera";
 import { LayerScene } from "./layer-scene";
 export declare enum ClearFlags {
     COLOR = 1,
     DEPTH = 2,
     STENCIL = 4
 }
-export declare function createView(options: Pick<IViewOptions, "camera"> & Omit<Partial<IViewOptions>, "viewport">): IViewOptions;
-export interface IViewOptions extends IdentifyByKeyOptions {
+export interface IViewConstructable<TViewProps extends IViewProps> {
+    new (scene: LayerScene, props: TViewProps): View<TViewProps>;
+}
+export declare type IViewConstructionClass<TViewProps extends IViewProps> = IViewConstructable<TViewProps> & {
+    defaultProps: TViewProps;
+};
+export declare type ViewInitializer<TViewProps extends IViewProps> = {
+    key: string;
+    init: [IViewConstructionClass<TViewProps>, IViewProps];
+};
+export declare function createView<TViewProps extends IViewProps>(viewClass: IViewConstructable<TViewProps> & {
+    defaultProps: TViewProps;
+}, props: Omit<TViewProps, "key" | "viewport"> & Partial<Pick<TViewProps, "key" | "viewport">>): ViewInitializer<TViewProps>;
+export interface IViewProps extends IdentifyByKeyOptions {
     background?: Color;
-    camera: ChartCamera;
+    camera: Camera;
     clearFlags?: ClearFlags[];
     order?: number;
-    viewCamera?: ViewCamera;
     viewport: AbsolutePosition;
 }
-export declare class View extends IdentifyByKey {
-    static DEFAULT_VIEW_ID: string;
+export declare abstract class View<TViewProps extends IViewProps> extends IdentifyByKey {
+    static defaultProps: IViewProps;
     animationEndTime: number;
-    background?: Color;
-    camera: ChartCamera;
-    clearFlags: ClearFlags[];
     depth: number;
     lastFrameTime: number;
     needsDraw: boolean;
     optimizeRendering: boolean;
-    order?: number;
     pixelRatio: number;
+    props: TViewProps;
     scene: LayerScene;
-    screenBounds: Bounds<View>;
-    viewCamera: ViewCamera;
-    viewport: AbsolutePosition;
-    viewBounds: Bounds<View>;
-    constructor(scene: LayerScene, options: IViewOptions);
-    update(options: IViewOptions): void;
+    screenBounds: Bounds<View<TViewProps>>;
+    viewBounds: Bounds<View<IViewProps>>;
+    readonly clearFlags: ClearFlags[];
+    readonly order: number;
+    constructor(scene: LayerScene, props: TViewProps);
     screenToPixelSpace(point: Vec2, out?: Vec2): [number, number];
     pixelSpaceToScreen(point: Vec2, out?: Vec2): [number, number];
     screenToView(point: Vec2, out?: Vec2): [number, number];
     viewToScreen(point: Vec2, out?: Vec2): [number, number];
-    screenToWorld(point: Vec2, out?: Vec2): [number, number];
-    worldToScreen(point: Vec2, out?: Vec2): [number, number];
-    viewToWorld(point: Vec2, out?: Vec2): [number, number];
-    worldToView(point: Vec2, out?: Vec2): [number, number];
-    fitViewtoViewport(surfaceDimensions: Bounds<never>): void;
+    abstract screenToWorld(point: Vec2, out?: Vec2): Vec2;
+    abstract worldToScreen(point: Vec2, out?: Vec2): Vec2;
+    abstract viewToWorld(point: Vec2, out?: Vec2): Vec2;
+    abstract worldToView(point: Vec2, out?: Vec2): Vec2;
+    abstract fitViewtoViewport(_surfaceDimensions: Bounds<never>, viewBounds: Bounds<View<IViewProps>>): void;
+    shouldDrawView(oldProps: TViewProps, newProps: TViewProps): boolean;
+    willUpdateProps(_newProps: IViewProps): void;
+    didUpdateProps(): void;
+}
+export declare class NoView extends View<IViewProps> {
+    screenBounds: Bounds<never>;
+    screenToWorld(_point: Vec2, _out?: Vec2): Vec2;
+    worldToScreen(_point: Vec2, _out?: Vec2): Vec2;
+    viewToWorld(_point: Vec2, _out?: Vec2): Vec2;
+    worldToView(_point: Vec2, _out?: Vec2): Vec2;
+    fitViewtoViewport(screenBounds: Bounds<never>, _viewBounds: Bounds<View<IViewProps>>): void;
+    constructor();
 }

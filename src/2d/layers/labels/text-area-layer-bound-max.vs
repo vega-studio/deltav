@@ -2,8 +2,6 @@ varying vec4 vertexColor;
 varying vec2 texCoord;
 
 void main() {
-  ${attributes}
-
   vec2 scale = fontScale * cameraScale2D.xy;
   float scaleBy = max(scale.x, scale.y) / maxScale;
   vec2 pushOut = normals * glyphSize * fontScale;

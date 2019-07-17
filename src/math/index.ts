@@ -4,6 +4,7 @@ export * from "./matrix";
 export * from "./quaternion";
 export * from "./vector";
 export * from "./primitives";
+export * from "./ray";
 
 import * as matrix from "./matrix";
 import * as quaternion from "./quaternion";

@@ -26,11 +26,20 @@ export interface IShaderTemplateOptions {
   onError?(msg: string): void;
   /** Callback that allows overrides for token replacement. Provides the token found and the suggested replacement for it */
   onToken?(token: string, replace: string): string;
+  /**
+   * If this is provided, the shader templater will search out the void main method of the shader and provide the body
+   * contents of that main() method. You can edit those body contents and return the edited value to replace the body
+   * with those contents.
+   *
+   * If the body in the callback is null, then that means a main() method could NOT be determined.
+   */
+  onMain?(body: string | null): string | { main: string; header: string };
+
   /** This is a key value pair the template uses to match tokens found to replacement values */
   options: { [key: string]: string };
   /** This is used to indicate which tokens are required both within the shader AND within the 'options' */
   required?: IShaderTemplateRequirements;
-  /** THis is the shader written with templating information */
+  /** This is the shader written with templating information */
   shader: string;
 }
 
@@ -44,7 +53,14 @@ export interface IShaderTemplateOptions {
 export function shaderTemplate(
   templateOptions: IShaderTemplateOptions
 ): IShaderTemplateResults {
-  const { shader, options, required, onError, onToken } = templateOptions;
+  const {
+    shader,
+    options,
+    required,
+    onError,
+    onToken,
+    onMain
+  } = templateOptions;
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
   const notFound = new Map<string, number>();
@@ -109,6 +125,114 @@ export function shaderTemplate(
         else console.error(msg);
       }
     });
+  }
+  // If onMain is specified, then the caller is wanting to manipulate the body of the main method of the shader
+  if (onMain) {
+    const shader = results.shader;
+    // Use this regex to find the beginning of the main method up to it's opening bracket.
+    const found = shader.match(
+      /void((.+)|\s)(main(\s+)\(\)|main\(\))(((.+)(\s*)\{)|(\s*)\{)/gm
+    );
+    if (found && found.length > 0) {
+      const start = shader.indexOf(found[0]);
+      // Validate we found something useful
+      if (start < 0) onMain(null);
+      // At this point, we can take the shader and get a string that starts with the body of the void main() method.
+      else {
+        const bodyStart = shader.substr(start + found[0].length);
+        // We now must count valid context brackets till we find a bracket that would close the context of the main
+        // body.
+        let multilineCommentCount = 0;
+        let singleLineCommentCount = 0;
+        let openBracket = 1;
+        let closeBracket = 0;
+        let endBody = -1;
+
+        // When openBracket === close bracket, we have the location of the end of the body of the main method
+        for (let i = 0, iMax = bodyStart.length; i < iMax; ++i) {
+          const char = bodyStart[i];
+          const nextChar = bodyStart[i + 1];
+
+          // Analyze each character for comments and valid bracket contexts
+          switch (char) {
+            case "/":
+              switch (nextChar) {
+                case "*":
+                  multilineCommentCount++;
+                  i++;
+                  break;
+
+                case "/":
+                  singleLineCommentCount++;
+                  i++;
+                  break;
+              }
+              break;
+
+            case "*":
+              if (nextChar === "/") {
+                if (multilineCommentCount > 0) {
+                  multilineCommentCount--;
+                  i++;
+                }
+              }
+              break;
+
+            case "\n":
+            case "\r":
+              if (nextChar === "\n") {
+                i++;
+              }
+              if (singleLineCommentCount > 0) {
+                singleLineCommentCount--;
+              }
+              break;
+
+            case "{":
+              if (singleLineCommentCount === 0 && multilineCommentCount === 0) {
+                openBracket++;
+              }
+              break;
+
+            case "}":
+              if (singleLineCommentCount === 0 && multilineCommentCount === 0) {
+                closeBracket++;
+              }
+
+              if (openBracket === closeBracket) {
+                endBody = i;
+              }
+              break;
+          }
+
+          // If end body is detected, then we stop looping
+          if (endBody !== -1) {
+            break;
+          }
+        }
+
+        if (endBody !== -1) {
+          const body = bodyStart.substr(0, endBody);
+          const modifiedBody = onMain(body);
+
+          if (typeof modifiedBody === "string") {
+            results.shader =
+              shader.substr(0, start + found[0].length) +
+              modifiedBody +
+              shader.substr(start + found[0].length + endBody);
+          } else {
+            results.shader =
+              shader.substr(0, start) +
+              modifiedBody.header +
+              shader.substr(start, found[0].length) +
+              modifiedBody.main +
+              shader.substr(start + found[0].length + endBody);
+          }
+        } else {
+          onMain(null);
+        }
+      }
+    }
   }
 
   return results;

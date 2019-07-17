@@ -14,8 +14,6 @@ ${interpolation}
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   // Destructure threejs's bug with the position requirement
   float normal = vertex.x;
   float interpolationTime = vertex.y;

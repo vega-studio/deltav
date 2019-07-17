@@ -41,6 +41,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
 
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
+    this.projection.camera = options.camera;
   }
 
   /**
@@ -79,7 +80,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];
-      camera.lookAt(add3(camera.position, [0, 0, 1]), [0, 1, 0]);
+      camera.lookAt(add3(camera.position, [0, 0, -1]), [0, 1, 0]);
       camera.update();
 
       this.projection.viewBounds = viewBounds;

@@ -11,8 +11,6 @@ varying vec2 pointCoord;
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   vertexColor = color;
   vertexColor.a *= layerOpacity;
   float size = radius * scaleFactor * pixelRatio;

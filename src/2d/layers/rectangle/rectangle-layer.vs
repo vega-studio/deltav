@@ -4,8 +4,6 @@ varying vec4 vertexColor;
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   // Determine final screen size of label
   vec3 screenSize = cameraSpaceSize(vec3(size * scale / scaleFactor / maxScale, 1.0));
 

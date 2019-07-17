@@ -10,8 +10,6 @@ varying vec4 vertexColor;
 ${extendHeader}
 
 void main() {
-  ${attributes}
-
   // Destructure some of the vec injections
   float startAngle = angle.x + angleOffset;
   float endAngle = angle.y + angleOffset;

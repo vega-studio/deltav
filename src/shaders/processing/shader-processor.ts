@@ -203,10 +203,33 @@ export class ShaderProcessor {
         [templateVars.attributes]: destructuring
       };
 
+      // This flag will determine if the attributes are manually placed in the shader. If this is not true, then the
+      // attributes will get injected into the main() method.
+      let hasAttributes = false;
+
       const processedShaderVS = shaderTemplate({
         options: templateOptions,
         required: undefined,
-        shader: fullShaderVS
+        shader: fullShaderVS,
+
+        onToken(token: string, replace: string) {
+          if (token === templateVars.attributes) {
+            hasAttributes = true;
+          }
+
+          return replace;
+        },
+
+        onMain(body: string | null) {
+          if (hasAttributes) return body || "";
+
+          if (body === null) {
+            console.warn("The body of void main() could not be determined.");
+            return "";
+          }
+
+          return `${destructuring}\n${body}`;
+        }
       });
 
       // We process the Fragment shader as well, currently with nothing to replace

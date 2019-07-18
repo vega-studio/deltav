@@ -6,7 +6,7 @@ import {
   Vec4
 } from "../../../../src";
 
-export interface Line3DInstanceOptions extends IInstanceOptions {
+export interface ILine3DInstanceOptions extends IInstanceOptions {
   start: Vec3;
   end: Vec3;
   colorStart: Vec4;
@@ -19,7 +19,7 @@ export class Line3DInstance extends Instance {
   @observable colorStart: Vec4;
   @observable colorEnd: Vec4;
 
-  constructor(options: Line3DInstanceOptions) {
+  constructor(options: ILine3DInstanceOptions) {
     super(options);
     this.start = options.start;
     this.end = options.end;

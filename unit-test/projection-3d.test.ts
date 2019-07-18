@@ -5,7 +5,7 @@ import assert from 'assert';
 import { describe, it } from 'mocha';
 import { Projection3D } from '../src/3d/view/projection-3d';
 import { TO_RADIANS } from '../src/constants';
-import { fromEulerAxisAngleToQuat, lookAtQuat, matrix4x4FromUnitQuat } from '../src/math';
+import { fromEulerAxisAngleToQuat, lookAtQuat, matrix4x4FromUnitQuatView } from '../src/math';
 import { compare4x4, identity4, Mat4x4, multiply4x4, projectToScreen, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
 import { Bounds } from '../src/math/primitives/bounds';
 import { add3, add4by3, down3, fuzzyCompare2, fuzzyCompare3, fuzzyCompare4, left3, length3, right3, subtract3, up3, Vec2Compat, Vec3, Vec3Compat, Vec4, vec4 } from '../src/math/vector';
@@ -255,7 +255,7 @@ describe('View 3D projections', () => {
     });
 
     it ('Should be identity', () => {
-      assert4x4(matrix4x4FromUnitQuat(lookAtQuat([0, 0, -1], [0, 1, 0])), identity4());
+      assert4x4(matrix4x4FromUnitQuatView(lookAtQuat([0, 0, -1], [0, 1, 0])), identity4());
     });
 
     it ('Should project to the middle of the screen', () => {
@@ -502,7 +502,7 @@ describe('View 3D projections', () => {
     it ('Should project to the right of the screen', () => {
       const v = vec4(subtract3([0, 0, 0], POSITION_CAMERA.position), 1);
       const axis: Vec3 = up3(subtract3([0, 0, 0], POSITION_CAMERA.position), [0, 1, 0]);
-      const rot = matrix4x4FromUnitQuat(fromEulerAxisAngleToQuat(axis, -45 * TO_RADIANS));
+      const rot = matrix4x4FromUnitQuatView(fromEulerAxisAngleToQuat(axis, -45 * TO_RADIANS));
 
       transform4(rot, v, v);
 

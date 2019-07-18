@@ -4,7 +4,7 @@ import {
   inverse3,
   lookAtQuat,
   Mat4x4,
-  matrix4x4FromUnitQuat,
+  matrix4x4FromUnitQuatView,
   multiply4x4,
   oneQuat,
   Quaternion,
@@ -12,6 +12,7 @@ import {
   scale4x4by3,
   subtract3,
   translation4x4by3,
+  transpose4x4,
   Vec3
 } from "../../math";
 
@@ -134,7 +135,7 @@ export class Transform {
 
     if (this.needsRotationUpdate) {
       this.needsRotationUpdate = false;
-      matrix4x4FromUnitQuat(this._rotation, R);
+      transpose4x4(matrix4x4FromUnitQuatView(this._rotation, R), R);
     }
 
     const T = this.translationMatrix;
@@ -159,7 +160,7 @@ export class Transform {
       concat4x4(
         this._viewMatrix,
         // The world looks at the camera. The camera does not look at the world
-        R,
+        matrix4x4FromUnitQuatView(this._rotation),
         // The world moves to align itself with the camera's position
         translation4x4by3(scale3(this._translation, -1)),
         // The world condenses and expands to fit the camera

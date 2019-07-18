@@ -2,7 +2,7 @@ import assert from 'assert';
 import { describe, it } from 'mocha';
 import { Transform } from '../src/3d/scene-graph/transform';
 import { compare4x4, identity4, Mat4x4, rotation4x4, toString4x4, transform4 } from '../src/math/matrix';
-import { addQuat, angleQuat, axisQuat, conjugateQuat, divideQuat, dotQuat, eulerToQuat, exponentQuat, fromEulerAxisAngleToQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuat, matrix4x4ToQuaternion, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, slerpUnitQuat, toEulerFromQuat, toEulerXYZfromOrderedEuler, zeroQuat } from '../src/math/quaternion';
+import { addQuat, angleQuat, axisQuat, conjugateQuat, divideQuat, dotQuat, eulerToQuat, exponentQuat, fromEulerAxisAngleToQuat, imaginaryQuat, inverseQuat, iQuat, jQuat, kQuat, lengthQuat, lookAtMatrix, lookAtQuat, matrix4x4FromUnitQuatView, matrix4x4ToQuaternion, multiplyQuat, normalizeQuat, oneQuat, Quaternion, realQuat, scaleQuat, slerpUnitQuat, toEulerFromQuat, toEulerXYZfromOrderedEuler, zeroQuat } from '../src/math/quaternion';
 import { compare1, compare3, compare4, fuzzyCompare4, Vec1, Vec3, Vec4 } from '../src/math/vector';
 import { fail1, fail3, fail4, fuzzCompare3, fuzzCompare4 } from './vector.test';
 

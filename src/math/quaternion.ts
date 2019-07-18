@@ -22,7 +22,7 @@ import {
 } from "./matrix";
 import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
 
-const { cos, sin, sqrt, exp, acos, asin, atan2, PI } = Math;
+const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
@@ -413,21 +413,22 @@ function twoAxisRotation(
 
 /**
  * Helper method for toEulerQuat
+ * TODO: May not need this method anymore?
  */
-function threeAxisRotation(
-  r11: number,
-  r12: number,
-  r2: number,
-  r31: number,
-  r32: number,
-  out: number[]
-) {
-  // out[0] = atan2(r31, r32);
-  out[0] = atan2(r11, r12);
-  out[1] = asin(r2);
-  // out[2] = atan2(r11, r12);
-  out[2] = atan2(r31, r32);
-}
+// function threeAxisRotation(
+//   r11: number,
+//   r12: number,
+//   r2: number,
+//   r31: number,
+//   r32: number,
+//   out: number[]
+// ) {
+//   // out[0] = atan2(r31, r32);
+//   out[0] = atan2(r11, r12);
+//   out[1] = asin(r2);
+//   // out[2] = atan2(r11, r12);
+//   out[2] = atan2(r31, r32);
+// }
 
 /**
  * Produces a XYZ Euler angle from the provided Quaternion.
@@ -454,7 +455,7 @@ export function toOrderedEulerFromQuat(
     q2 = q[2],
     q3 = q[3];
 
-  const m = matrix4x4FromUnitQuat(q);
+  const m = matrix4x4FromUnitQuatView(q);
   const m11 = m[0],
     m12 = m[4],
     m13 = m[8];
@@ -771,7 +772,7 @@ export function toOrderedEulerFromQuat2(
 ) {
   out = out || [0, 0, 0];
 
-  const m = matrix4x4FromUnitQuat(quat);
+  const m = matrix4x4FromUnitQuatView(quat);
   const m11 = m[0],
     m12 = m[4],
     m13 = m[8];
@@ -895,9 +896,55 @@ export function axisQuat(quat: Quaternion): Vec3 {
 }
 
 /**
- * Produces a transform matrix from a returned unit quaternion
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'models' perspective
+ * where the model orients itself to match the orientation.
  */
-export function matrix4x4FromUnitQuat(q: Quaternion, m?: Mat4x4): Mat4x4 {
+export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
+  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+  m = m || identity4();
+
+  // calculate coefficients
+  x2 = q[1] + q[1];
+  y2 = q[2] + q[2];
+  z2 = q[3] + q[3];
+  xx = q[1] * x2;
+  xy = q[1] * y2;
+  xz = q[1] * z2;
+  yy = q[2] * y2;
+  yz = q[2] * z2;
+  zz = q[3] * z2;
+  wx = q[0] * x2;
+  wy = q[0] * y2;
+  wz = q[0] * z2;
+
+  m[M400] = 1.0 - (yy + zz);
+  m[M401] = xy - wz;
+  m[M402] = xz + wy;
+  m[M403] = 0.0;
+
+  m[M410] = xy + wz;
+  m[M411] = 1.0 - (xx + zz);
+  m[M412] = yz - wx;
+  m[M413] = 0.0;
+
+  m[M420] = xz - wy;
+  m[M421] = yz + wx;
+  m[M422] = 1.0 - (xx + yy);
+  m[M423] = 0.0;
+
+  m[M430] = 0;
+  m[M431] = 0;
+  m[M432] = 0;
+  m[M433] = 1;
+
+  return m;
+}
+
+/**
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'views' perspective
+ * where the world orients to match the view.
+ */
+export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
   let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
   m = m || identity4();
 

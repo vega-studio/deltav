@@ -2,23 +2,10 @@ import {
   Mat4x4,
   multiply4x4,
   project3As4ToScreen,
-  toString4x4,
-  transform3as4,
   transform4
 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
-import {
-  add3,
-  add4,
-  apply2,
-  apply3,
-  divide2,
-  normalize3,
-  scale2,
-  Vec2,
-  Vec3,
-  vec4
-} from "../../math/vector";
+import { apply2, apply3, scale2, Vec2, Vec3, vec4 } from "../../math/vector";
 import { Camera, CameraProjectionType } from "../../util/camera";
 
 export class Projection3D extends BaseProjection<any> {
@@ -85,7 +72,6 @@ export class Projection3D extends BaseProjection<any> {
     const { projectionOptions } = this.camera;
     const renderSpace = scale2(point, this.pixelRatio);
     const { tan } = Math;
-    console.log("PROJECTING", point, renderSpace, width, height);
 
     // We here analyze the point specified and calculate a ray that would project out into the world such that it
     // eminates where the ray would appear as a dot flying away from the screen.
@@ -102,16 +88,10 @@ export class Projection3D extends BaseProjection<any> {
       Py = (1 - 2 * ((renderSpace[1] + 0.5) / height)) * r * aspect;
 
       const rayReference: Vec3 = [Px, Py, -1];
-      console.log("RAY REF", rayReference);
-      console.log("POSITION", this.camera.transform.position);
-      console.log("TRANSFORM", toString4x4(this.camera.transform.matrix));
       const world = transform4(
         this.camera.transform.matrix,
-        vec4(rayReference, 0)
+        vec4(rayReference, 1)
       );
-      console.log("ROTATED", world);
-      add3(this.camera.position, world, world);
-
       apply3(out, world[0], world[1], world[2]);
     } else {
       console.warn(
@@ -119,7 +99,6 @@ export class Projection3D extends BaseProjection<any> {
       );
     }
 
-    console.log("RESULT", out);
     return out;
   }
 

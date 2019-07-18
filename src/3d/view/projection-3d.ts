@@ -2,10 +2,23 @@ import {
   Mat4x4,
   multiply4x4,
   project3As4ToScreen,
-  transform3as4
+  toString4x4,
+  transform3as4,
+  transform4
 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
-import { apply2, apply3, Vec2, Vec3 } from "../../math/vector";
+import {
+  add3,
+  add4,
+  apply2,
+  apply3,
+  divide2,
+  normalize3,
+  scale2,
+  Vec2,
+  Vec3,
+  vec4
+} from "../../math/vector";
 import { Camera, CameraProjectionType } from "../../util/camera";
 
 export class Projection3D extends BaseProjection<any> {
@@ -70,37 +83,34 @@ export class Projection3D extends BaseProjection<any> {
     out = out || [0, 0, 0];
     const { width, height } = this.viewBounds;
     const { projectionOptions } = this.camera;
+    const renderSpace = scale2(point, this.pixelRatio);
+    const { tan } = Math;
+    console.log("PROJECTING", point, renderSpace, width, height);
 
     // We here analyze the point specified and calculate a ray that would project out into the world such that it
     // eminates where the ray would appear as a dot flying away from the screen.
     if (projectionOptions.type === CameraProjectionType.PERSPECTIVE) {
-      const { fov } = projectionOptions;
+      const { fov, near } = projectionOptions;
       let Px, Py;
 
-      if (width > height) {
-        const imageAspectRatio = width / height;
-        Px =
-          (2 * ((point[0] + 0.5) / width) - 1) *
-          Math.tan(fov / 2 * Math.PI / 180) *
-          imageAspectRatio;
-        Py =
-          1 -
-          2 * ((point[1] + 0.5) / height) * Math.tan(fov / 2 * Math.PI / 180);
-      } else {
-        const imageAspectRatio = height / width;
-        Px =
-          (2 * ((point[0] + 0.5) / width) - 1) *
-          Math.tan(fov / 2 * Math.PI / 180);
-        Py =
-          (1 -
-            2 *
-              ((point[1] + 0.5) / height) *
-              Math.tan(fov / 2 * Math.PI / 180)) *
-          imageAspectRatio;
-      }
+      const aspect = height / width;
+      const r = tan(fov / 2) * near;
+
+      // We assume z = 1 and algebraically reverse the projection operation to solve for the vector input instead of the
+      // screen.
+      Px = (2 * ((renderSpace[0] + 0.5) / width) - 1) * r;
+      Py = (1 - 2 * ((renderSpace[1] + 0.5) / height)) * r * aspect;
 
       const rayReference: Vec3 = [Px, Py, -1];
-      const world = transform3as4(this.camera.transform.matrix, rayReference);
+      console.log("RAY REF", rayReference);
+      console.log("POSITION", this.camera.transform.position);
+      console.log("TRANSFORM", toString4x4(this.camera.transform.matrix));
+      const world = transform4(
+        this.camera.transform.matrix,
+        vec4(rayReference, 0)
+      );
+      console.log("ROTATED", world);
+      add3(this.camera.position, world, world);
 
       apply3(out, world[0], world[1], world[2]);
     } else {
@@ -109,6 +119,7 @@ export class Projection3D extends BaseProjection<any> {
       );
     }
 
+    console.log("RESULT", out);
     return out;
   }
 

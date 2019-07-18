@@ -1,11 +1,14 @@
 import {
+  concat4x4,
   identity4,
+  inverse3,
   lookAtQuat,
   Mat4x4,
   matrix4x4FromUnitQuat,
   multiply4x4,
   oneQuat,
   Quaternion,
+  scale3,
   scale4x4by3,
   subtract3,
   translation4x4by3,
@@ -28,6 +31,10 @@ export class Transform {
   private _changed: boolean = false;
   /** Flag that indicates if the transform needs to be updated */
   private needsUpdate: boolean = false;
+  /**
+   * Flag that indicates this transform has a matrix that performs the operations in reverse (such as for a camera.)
+   */
+  private hasViewMatrix: boolean = false;
 
   /**
    * This is the inner matrix that represents the culmination of all the properties into a single transform matrix. It
@@ -39,6 +46,19 @@ export class Transform {
     return this._matrix;
   }
   private _matrix: Mat4x4 = identity4();
+
+  /**
+   * This is the transform matrix that contains the operations in reverse order. This produces a 'view matrix' for the
+   * transform and shouldn't be considered an inverse matrix.
+   */
+  get viewMatrix(): Mat4x4 {
+    this.hasViewMatrix = true;
+    if (!this._viewMatrix) this.needsUpdate = true;
+    this.update();
+    if (!this._viewMatrix) return identity4();
+    return this._viewMatrix;
+  }
+  private _viewMatrix?: Mat4x4;
 
   /** Orientation of this transform */
   get rotation() {
@@ -127,6 +147,26 @@ export class Transform {
     // Concat the SRT transform in this order Scale -> Rotation -> Translation
     // We utilize our existing matrix to reduce redundant allocations of matrix information.
     multiply4x4(T, multiply4x4(R, S, this._matrix), this._matrix);
+
+    if (this.hasViewMatrix) {
+      if (!this._viewMatrix) this._viewMatrix = identity4();
+      // When generating this transform, it is important to remember that when you envision the camera looking at
+      // something, everything else is in the exact opposite orientation to the camera.
+      // Remember: this view matrix gets APPLIED to geometry to orient it correclty to the camera.
+      // Thus the world is being moved for the sake of the camera, the camera itself is not moving.
+      // THUS: all operations to make this matrix will be the INVERSE of where the camera is physically located and
+      // oriented
+      concat4x4(
+        this._viewMatrix,
+        // The world looks at the camera. The camera does not look at the world
+        R,
+        // The world moves to align itself with the camera's position
+        translation4x4by3(scale3(this._translation, -1)),
+        // The world condenses and expands to fit the camera
+        scale4x4by3(inverse3(this._scale))
+      );
+    }
+
     this.needsUpdate = false;
   }
 }

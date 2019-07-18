@@ -45,6 +45,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
     super(scene, options);
     this.projection = new Projection3D();
     this.projection.camera = options.camera;
+    this.projection.pixelRatio = this.pixelRatio;
   }
 
   /**
@@ -76,6 +77,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
 
       camera.update();
 
+      this.projection.pixelRatio = this.pixelRatio;
       this.projection.viewBounds = viewBounds;
       this.projection.viewBounds.d = this;
       this.projection.screenBounds = new Bounds<View<TViewProps>>({

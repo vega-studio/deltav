@@ -1,3 +1,4 @@
+export * from "./camera";
 export * from "./common-filters";
 export * from "./common-operations";
 export * from "./common-options";

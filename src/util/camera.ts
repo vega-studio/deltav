@@ -1,15 +1,11 @@
 import { Transform } from "../3d/scene-graph/transform";
-import { lookAtQuat, matrix4x4FromUnitQuat } from "../math";
 import {
-  concat4x4,
   identity4,
   Mat4x4,
   orthographic4x4,
-  perspective4x4,
-  scale4x4by3,
-  translation4x4by3
+  perspective4x4
 } from "../math/matrix";
-import { copy3, inverse3, scale3, subtract3, Vec3 } from "../math/vector";
+import { Vec3 } from "../math/vector";
 import { uid } from "./uid";
 
 export enum CameraProjectionType {
@@ -171,10 +167,8 @@ export class Camera {
 
   /** The computed view transform of the camera. */
   get view() {
-    this.update();
-    return this._view;
+    return this.transform.viewMatrix;
   }
-  private _view: Mat4x4 = identity4();
 
   /** Flag indicating the transforms for this camera need updating. */
   get needsUpdate() {
@@ -184,32 +178,18 @@ export class Camera {
 
   /** This is the position of the camera within the world. */
   get position() {
-    return this._position;
+    return this.transform.position;
   }
   set position(val: Vec3) {
-    this._position = val;
     this.transform.position = val;
-    this._needsUpdate = true;
   }
-  private _position: Vec3 = [0, 0, 0];
 
   /**
    * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
    * of the camera viewing the world.
    */
   lookAt(position: Vec3, up: Vec3) {
-    this._needsUpdate = true;
-    this._lookAt = position;
-    this._up = copy3(up);
     this.transform.lookAt(position, up);
-  }
-  private _lookAt: Vec3 = [0, 0, -1];
-  private _up: Vec3 = [0, 1, 0];
-
-  get rotationMatrix() {
-    return matrix4x4FromUnitQuat(
-      lookAtQuat(subtract3(this._lookAt, this._position), this._up)
-    );
   }
 
   /**
@@ -221,14 +201,11 @@ export class Camera {
    * any of the axis.
    */
   get scale() {
-    return this._scale;
+    return this.transform.scale;
   }
   set scale(val: Vec3) {
-    this._scale = val;
     this.transform.scale = val;
-    this._needsUpdate = true;
   }
-  private _scale: Vec3 = [1, 1, 1];
 
   /**
    * Options used for making the projection of the camera. Set new options to update the projection.
@@ -265,7 +242,6 @@ export class Camera {
   update(force?: boolean) {
     if (this._needsUpdate || force) {
       this.updateProjection();
-      this.updateView();
       this._needsUpdate = false;
     }
   }
@@ -294,29 +270,5 @@ export class Camera {
         this._projection
       );
     }
-  }
-
-  /**
-   * Takes the current components of the camera and updates the transform of the camera (the view)
-   * within Model View Projection Transform
-   */
-  updateView() {
-    // When generating this transform, it is important to remember that when you envision the camera looking at
-    // something, everything else is in the exact opposite orientation to the camera.
-    // Remember: this view matrix gets APPLIED to geometry to orient it correclty to the camera.
-    // Thus the world is being moved for the sake of the camera, the camera itself is not moving.
-    // THUS: all operations to make this matrix will be the INVERSE of where the camera is physically located and
-    // oriented
-    concat4x4(
-      this._view,
-      // The world looks at the camera. The camera does not look at the world
-      matrix4x4FromUnitQuat(
-        lookAtQuat(subtract3(this._lookAt, this._position), this._up)
-      ),
-      // The world moves to align itself with the camera's position
-      translation4x4by3(scale3(this._position, -1)),
-      // The world condenses and expands to fit the camera
-      scale4x4by3(inverse3(this._scale))
-    );
   }
 }

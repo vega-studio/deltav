@@ -747,24 +747,13 @@ export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
   out = out || identity4();
   const shear = tan(radians);
 
+  // prettier-ignore
   return apply4x4(
     out,
-    1,
-    0,
-    shear,
-    0,
-    0,
-    1,
-    shear,
-    0,
-    shear,
-    shear,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1
+    1, 0, shear, 0,
+    0, 1, shear, 0,
+    shear, shear, 1, 0,
+    0, 0, 0, 1
   );
 }
 

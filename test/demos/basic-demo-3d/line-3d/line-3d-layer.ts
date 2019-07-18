@@ -26,7 +26,7 @@ export class Line3DLayer extends Layer<
     const vertexCount = 2;
 
     return {
-      drawMode: GLSettings.Model.DrawMode.LINES,
+      drawMode: GLSettings.Model.DrawMode.POINTS,
       fs: require("./line-3d-layer.fs"),
       instanceAttributes: [
         createAttribute({
@@ -38,19 +38,19 @@ export class Line3DLayer extends Layer<
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
           name: "end",
-          size: InstanceAttributeSize.FOUR,
+          size: InstanceAttributeSize.THREE,
           update: o => o.end
         }),
         createAttribute({
           name: "colorStart",
-          size: InstanceAttributeSize.THREE,
+          size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         }),
         createAttribute({
           name: "colorEnd",
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd
-        }),
+        })
       ],
       uniforms: [],
       vertexAttributes: [
@@ -58,7 +58,7 @@ export class Line3DLayer extends Layer<
           name: "interpolation",
           size: VertexAttributeSize.ONE,
           update: (vertex: number) => [vertex / (vertexCount - 1)]
-        }),
+        })
       ],
       vertexCount,
       vs: require("./line-3d-layer.vs")

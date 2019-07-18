@@ -16,10 +16,12 @@ const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
-const tslint = { loader: 'tslint-loader', options: {
-  fix: false,
-  emitErrors: true,
-} };
+const tslint = {
+  loader: 'tslint-loader', options: {
+    fix: false,
+    emitErrors: true,
+  }
+};
 
 const prettier = {
   loader: resolve('prettier-loader.js'),
@@ -87,10 +89,15 @@ module.exports = {
 
   module: {
     rules: [
-      { test: /\.tsx?/, use: [
-        { loader: 'babel-loader', options: babelOptions },
-        { loader: 'ts-loader', options: { transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS || IS_HEROKU } },
-      ] },
+      {
+        test: /\.tsx?/, use: [
+          { loader: 'babel-loader', options: babelOptions },
+          {
+            loader: 'ts-loader',
+            options: { transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS || IS_HEROKU }
+          },
+        ]
+      },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
       { test: /\.png$/, loader: 'base64-image-loader' },

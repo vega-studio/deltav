@@ -1,13 +1,13 @@
 import { PerlinNoise } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
-  add3,
   BasicSurface,
   Camera2D,
   ClearFlags,
   color4FromHex3,
   createLayer,
   createView,
+  EasingUtil,
   InstanceProvider,
   nextFrame,
   onFrame,
@@ -96,7 +96,7 @@ export class BasicDemo3D extends BaseDemo {
                 data: providers.lines,
                 picking: PickType.SINGLE,
 
-                onMouseClick: info => {
+                onMouseClick: async info => {
                   if (info.projection instanceof Projection3D) {
                     const world = info.projection.screenToWorld(info.screen);
                     const ray = rayFromPoints(
@@ -104,22 +104,32 @@ export class BasicDemo3D extends BaseDemo {
                       world
                     );
 
-                    // console.log(
-                    //   info.screen,
-                    //   world,
-                    //   ray,
-                    //   cameras.perspective.position,
-                    //   location
-                    // );
-
-                    providers.lines.add(
+                    const line = providers.lines.add(
                       new Line3DInstance({
-                        start: rayToLocation(ray, -10),
-                        end: rayToLocation(ray, 99999),
+                        start: rayToLocation(ray, 0),
+                        end: rayToLocation(ray, 1000),
                         colorStart: [1, 0, 0, 1],
                         colorEnd: [0, 1, 0, 1]
                       })
                     );
+
+                    await nextFrame();
+
+                    line.colorEnd[3] = 0;
+                    line.colorEnd = line.colorEnd;
+                    line.colorStart[3] = 0;
+                    line.colorStart = line.colorStart;
+
+                    await EasingUtil.all(
+                      true,
+                      [line],
+                      [
+                        Line3DLayer.attributeNames.colorEnd,
+                        Line3DLayer.attributeNames.colorStart
+                      ]
+                    );
+
+                    providers.lines.remove(line);
                   }
                 }
               }),
@@ -128,45 +138,45 @@ export class BasicDemo3D extends BaseDemo {
                 picking: PickType.SINGLE,
 
                 onMouseOver: info => {
-                  // info.instances.forEach(i => {
-                  //   i.color = [1, 1, 0, 1];
-                  // });
+                  info.instances.forEach(i => {
+                    i.color = [1, 1, 0, 1];
+                  });
                 },
 
                 onMouseOut: info => {
-                  // info.instances.forEach(i => {
-                  //   const index = this.tileToIndex.get(i.uid);
-                  //   if (!index) return;
-                  //   i.color = color4FromHex3(0xffffff - index[2]);
-                  // });
+                  info.instances.forEach(i => {
+                    const index = this.tileToIndex.get(i.uid);
+                    if (!index) return;
+                    i.color = color4FromHex3(0xffffff - index[2]);
+                  });
                 },
 
                 onMouseClick: async info => {
-                  // if (this.isSpreading || info.instances.length <= 0) return;
-                  // if (!this.isFlattened) {
-                  //   this.isFlattened = true;
-                  //   await this.spread(info.instances[0], tiles => {
-                  //     for (let i = 0, iMax = tiles.length; i < iMax; ++i) {
-                  //       const tile = tiles[i];
-                  //       tile.c1[1] = 0;
-                  //       tile.c2[1] = 0;
-                  //       tile.c3[1] = 0;
-                  //       tile.c4[1] = 0;
-                  //       tile.c1 = tile.c1;
-                  //       tile.c2 = tile.c2;
-                  //       tile.c3 = tile.c3;
-                  //       tile.c4 = tile.c4;
-                  //     }
-                  //   });
-                  // } else {
-                  //   this.isFlattened = false;
-                  //   // Make a new perlin noise map
-                  //   await this.generatePerlinData();
-                  //   // Move the tiles to their new perlin position
-                  //   await this.spread(info.instances[0], tiles => {
-                  //     this.moveTilesToPerlin(tiles);
-                  //   });
-                  // }
+                  if (this.isSpreading || info.instances.length <= 0) return;
+                  if (!this.isFlattened) {
+                    this.isFlattened = true;
+                    await this.spread(info.instances[0], tiles => {
+                      for (let i = 0, iMax = tiles.length; i < iMax; ++i) {
+                        const tile = tiles[i];
+                        tile.c1[1] = 0;
+                        tile.c2[1] = 0;
+                        tile.c3[1] = 0;
+                        tile.c4[1] = 0;
+                        tile.c1 = tile.c1;
+                        tile.c2 = tile.c2;
+                        tile.c3 = tile.c3;
+                        tile.c4 = tile.c4;
+                      }
+                    });
+                  } else {
+                    this.isFlattened = false;
+                    // Make a new perlin noise map
+                    await this.generatePerlinData();
+                    // Move the tiles to their new perlin position
+                    await this.spread(info.instances[0], tiles => {
+                      this.moveTilesToPerlin(tiles);
+                    });
+                  }
                 }
               })
             }
@@ -183,87 +193,52 @@ export class BasicDemo3D extends BaseDemo {
     const midX = DATA_SIZE / 2 * 10;
     const midZ = DATA_SIZE / 2 * 10;
 
-    // Set the camera initial position
-    this.surface.cameras.perspective.position = [0, 0, 100];
+    // Set the camera initial orientation
     this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
     // Make the initial perlin data
     await this.generatePerlinData();
     // Generate all of the tiles for our perlin data size
-    // const tilesFlattened = [];
+    const tilesFlattened = [];
 
-    // for (let i = 0, iMax = this.perlin.data.length; i < iMax; ++i) {
-    //   const row = this.perlin.data[i];
-    //   this.tiles.push([]);
+    for (let i = 0, iMax = this.perlin.data.length; i < iMax; ++i) {
+      const row = this.perlin.data[i];
+      this.tiles.push([]);
 
-    //   for (let k = 0, kMax = row.length; k < kMax; ++k) {
-    //     const tile = this.providers.tiles.add(
-    //       new SurfaceTileInstance({
-    //         corners: [
-    //           [i * 10, 0, -k * 10],
-    //           [(i + 1) * 10, 0, -k * 10],
-    //           [(i + 1) * 10, 0, -(k + 1) * 10],
-    //           [i * 10, 0, -(k + 1) * 10]
-    //         ],
-    //         color: color4FromHex3(0xffffff - tilesFlattened.length)
-    //       })
-    //     );
+      for (let k = 0, kMax = row.length; k < kMax; ++k) {
+        const tile = this.providers.tiles.add(
+          new SurfaceTileInstance({
+            corners: [
+              [i * 10, 0, -k * 10],
+              [(i + 1) * 10, 0, -k * 10],
+              [(i + 1) * 10, 0, -(k + 1) * 10],
+              [i * 10, 0, -(k + 1) * 10]
+            ],
+            color: color4FromHex3(0xffffff - tilesFlattened.length)
+          })
+        );
 
-    //     this.tiles[i][k] = tile;
-    //     this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
-    //     tilesFlattened.push(tile);
-    //   }
-    // }
+        this.tiles[i][k] = tile;
+        this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
+        tilesFlattened.push(tile);
+      }
+    }
 
     // Initialize the tiles to be positioned to the perlin map
-    // this.moveTilesToPerlin(tilesFlattened);
-
-    this.providers.tiles.add(
-      new SurfaceTileInstance({
-        corners: [[-100, 0, -100], [0, 0, -100], [0, 0, 0], [-100, 0, 0]],
-        color: [1, 0, 0, 1]
-      })
-    );
-
-    this.providers.tiles.add(
-      new SurfaceTileInstance({
-        corners: [[100, 0, -100], [0, 0, -100], [0, 0, 0], [100, 0, 0]],
-        color: [0, 1, 0, 1]
-      })
-    );
-
-    this.providers.tiles.add(
-      new SurfaceTileInstance({
-        corners: [[100, 0, 100], [0, 0, 100], [0, 0, 0], [100, 0, 0]],
-        color: [0, 0, 1, 1]
-      })
-    );
-
-    this.providers.tiles.add(
-      new SurfaceTileInstance({
-        corners: [[-100, 0, 100], [0, 0, 100], [0, 0, 0], [-100, 0, 0]],
-        color: [1, 1, 0, 1]
-      })
-    );
+    this.moveTilesToPerlin(tilesFlattened);
 
     // Move the camera around
     let t = 0;
     const loop = () => {
       if (!this.surface) return;
-      // t += Math.PI / 120;
-      t += 0;
+      t += Math.PI / 120;
+      // t = Math.PI / 10;
 
-      // this.surface.cameras.perspective.position = [
-      //   Math.sin(t / 5) * midX + midX,
-      //   300,
-      //   Math.cos(t / 5) * midZ - midZ
-      // ];
-
-      this.surface.cameras.perspective.position = [0, 1, 0];
-
-      this.surface.cameras.perspective.lookAt(
-        add3(this.surface.cameras.perspective.position, [-100, 0, -100]),
-        [0, 1, 0]
-      );
+      this.surface.cameras.perspective.position = [
+        Math.sin(t / 5) * midX + midX,
+        300,
+        Math.cos(t / 5) * midX - midZ
+      ];
+      this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
 
       requestAnimationFrame(loop);
     };

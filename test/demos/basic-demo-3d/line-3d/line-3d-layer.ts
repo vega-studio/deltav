@@ -22,32 +22,41 @@ export class Line3DLayer extends Layer<
     data: new InstanceProvider<Line3DInstance>()
   };
 
+  static attributeNames = {
+    start: "start",
+    end: "end",
+    colorStart: "colorStart",
+    colorEnd: "colorEnd"
+  };
+
   initShader(): IShaderInitialization<Line3DInstance> {
     const vertexCount = 2;
 
     return {
-      drawMode: GLSettings.Model.DrawMode.POINTS,
+      drawMode: GLSettings.Model.DrawMode.LINES,
       fs: require("./line-3d-layer.fs"),
       instanceAttributes: [
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "start",
+          name: Line3DLayer.attributeNames.start,
           size: InstanceAttributeSize.THREE,
           update: o => o.start
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "end",
+          name: Line3DLayer.attributeNames.end,
           size: InstanceAttributeSize.THREE,
           update: o => o.end
         }),
         createAttribute({
-          name: "colorStart",
+          easing: AutoEasingMethod.easeInOutCubic(2000),
+          name: Line3DLayer.attributeNames.colorStart,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorStart
         }),
         createAttribute({
-          name: "colorEnd",
+          easing: AutoEasingMethod.easeInOutCubic(2000),
+          name: Line3DLayer.attributeNames.colorEnd,
           size: InstanceAttributeSize.FOUR,
           update: o => o.colorEnd
         })

@@ -30,7 +30,7 @@ import {
     lengthQuat,
     lookAtMatrix,
     lookAtQuat,
-    matrix4x4FromUnitQuat,
+    matrix4x4FromUnitQuatView,
     matrix4x4ToQuaternion,
     multiplyQuat,
     normalizeQuat,
@@ -293,28 +293,28 @@ describe("Quaternion", () => {
   describe("Lookat Quaternion", () => {
     it("LookAt Quaternion should be correct", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([1, 1, 1], [0, 1, 0])),
+        matrix4x4FromUnitQuatView(lookAtQuat([1, 1, 1], [0, 1, 0])),
         lookAtMatrix([1, 1, 1], [0, 1, 0])
       );
     });
 
     it("LookAt Quaternion should be correct", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([1, 1, 1], [2, 1, 3])),
+        matrix4x4FromUnitQuatView(lookAtQuat([1, 1, 1], [2, 1, 3])),
         lookAtMatrix([1, 1, 1], [2, 1, 3])
       );
     });
 
     it("LookAt Quaternion should be correct", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([1, 2, 3], [2, 1, 3])),
+        matrix4x4FromUnitQuatView(lookAtQuat([1, 2, 3], [2, 1, 3])),
         lookAtMatrix([1, 2, 3], [2, 1, 3])
       );
     });
 
     it("LookAt Quaternion should be correct with negative values", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([-1, -2, -3], [0, 1, 0])),
+        matrix4x4FromUnitQuatView(lookAtQuat([-1, -2, -3], [0, 1, 0])),
         lookAtMatrix([-1, -2, -3], [0, 1, 0])
       );
     });
@@ -325,35 +325,35 @@ describe("Quaternion", () => {
 
     it("LookAt [0, 0, 1] Matrix should be same as rotate y axis by 180 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([0, 0, 1], [0, 1, 0])),
+        matrix4x4FromUnitQuatView(lookAtQuat([0, 0, 1], [0, 1, 0])),
         rotation4x4(0, 180 * TO_RADIANS, 0)
       );
     });
 
     it("LookAt [1, 0, 0] Matrix should be same as rotate y axis by 90 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([1, 0, 0], [0, 1, 0])),
+        matrix4x4FromUnitQuatView(lookAtQuat([1, 0, 0], [0, 1, 0])),
         rotation4x4(0, 90 * TO_RADIANS, 0)
       );
     });
 
     it("LookAt [-1, 0, 0] Matrix should be same as rotate y axis by -90 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([-1, 0, 0], [0, 1, 0])),
+        matrix4x4FromUnitQuatView(lookAtQuat([-1, 0, 0], [0, 1, 0])),
         rotation4x4(0, -90 * TO_RADIANS, 0)
       );
     });
 
     it("LookAt [0, 1, 0] with up [0 ,0 ,1] Matrix should be same as rotate x axis by -90 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([0, 1, 0], [0, 0, 1])),
+        matrix4x4FromUnitQuatView(lookAtQuat([0, 1, 0], [0, 0, 1])),
         rotation4x4(-90 * TO_RADIANS, 0, 0)
       );
     });
 
     it("LookAt [0, -1, 0] with up [0 ,0 , -1] Matrix should be same as rotate x axis by 90 degree", () => {
       assert4x4(
-        matrix4x4FromUnitQuat(lookAtQuat([0, -1, 0], [0, 0, -1])),
+        matrix4x4FromUnitQuatView(lookAtQuat([0, -1, 0], [0, 0, -1])),
         rotation4x4(90 * TO_RADIANS, 0, 0)
       );
     });
@@ -361,7 +361,7 @@ describe("Quaternion", () => {
     it("LookAt Quaternion should be correct", () => {
       const v: Vec4 = [-1, -1, -1, 1];
       const look = lookAtQuat([-1, -1, -1], [0, 1, 0]);
-      fuzzyAssert4(transform4(matrix4x4FromUnitQuat(look), v), [
+      fuzzyAssert4(transform4(matrix4x4FromUnitQuatView(look), v), [
         0,
         0,
         -sqrt(3),
@@ -372,7 +372,7 @@ describe("Quaternion", () => {
     it("LookAt Quaternion should be correct", () => {
       const v: Vec4 = [-2, -3, -4, 1];
       const look = lookAtQuat([2, 3, 4], [0, 1, 0]);
-      fuzzyAssert4(transform4(matrix4x4FromUnitQuat(look), v), [
+      fuzzyAssert4(transform4(matrix4x4FromUnitQuatView(look), v), [
         0,
         0,
         sqrt(29),

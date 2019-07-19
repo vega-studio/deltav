@@ -51,5 +51,7 @@ void main() {
   gl_Position = clipSpace(vec3(vertexPos, depth));
   gl_PointSize = 5.0;
 
+  // gl_Position = clipSpace(vec3(0., 0., 0.));
+
   ${extend}
 }

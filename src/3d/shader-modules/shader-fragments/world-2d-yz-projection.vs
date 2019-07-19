@@ -10,9 +10,9 @@ vec3 cameraSpaceSize(vec3 worldSize) {
 }
 
 vec4 clipSpace(vec3 world) {
-  return (projection * view) * vec4(cameraSpace(world), 1.0);
+  return ((projection * view) * vec4(cameraSpace(world.zyx), 1.0));
 }
 
 vec4 clipSpaceSize(vec3 worldSize) {
-  return (projection * view) * vec4(cameraSpaceSize(worldSize), 0.0);
+  return ((projection * view) * vec4(cameraSpaceSize(worldSize.zyx), 0.0));
 }

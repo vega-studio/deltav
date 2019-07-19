@@ -1,22 +1,29 @@
-import { ShaderModule } from "../../shaders/processing";
-import { Layer } from "../../surface";
+import { Control2D } from "../../2d";
+import { Layer2D } from "../../2d/view/layer-2d";
+import { ShaderModule } from "../../shaders";
+import { Layer } from "../../surface/layer";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
-import { Camera2D } from "../view/camera-2d";
-import { Layer2D } from "../view/layer-2d";
 
 /**
- * This module provides uniforms for retrieving camera propeerties within the shader.
+ * This module changes the projections for Layer2D style layers to map [x, y] -> [x, z]
  */
 ShaderModule.register([
   {
-    moduleId: "world2D",
-    content: require("./shader-fragments/world-2d-projection.vs"),
+    moduleId: "world2DXY",
+    content: require("../../2d/shader-modules/shader-fragments/world-2d-projection.vs"),
     compatibility: ShaderInjectionTarget.ALL,
     uniforms: (layer: Layer<any, any>) => {
       if (!(layer instanceof Layer2D)) {
         console.warn(
-          "A shader requesed the module world2D; however, the layer the shader comes from is NOT a Layer2D which is",
+          "A shader requesed the module world2DXZ; however, the layer the shader comes from is NOT a Layer2D which is",
           "required for the module to work."
+        );
+        return [];
+      }
+
+      if (!layer.props.control2D) {
+        console.warn(
+          "For a layer 2D to be compatible with a 3D View, the layer requires an additional prop of control2D"
         );
         return [];
       }
@@ -39,8 +46,8 @@ ShaderModule.register([
           name: "cameraOffset",
           size: UniformSize.THREE,
           update: () =>
-            layer.view.props.camera instanceof Camera2D
-              ? layer.view.props.camera.control2D.offset
+            layer.props.control2D instanceof Control2D
+              ? layer.props.control2D.offset
               : [0, 0, 0]
         },
         // This injects the camera's current position
@@ -60,15 +67,15 @@ ShaderModule.register([
           name: "cameraScale2D",
           size: UniformSize.THREE,
           update: () =>
-            layer.view.props.camera instanceof Camera2D
-              ? layer.view.props.camera.scale2D
+            layer.props.control2D instanceof Control2D
+              ? layer.props.control2D.scale
               : [1, 1, 1]
         },
         // This injects the camera's Euler rotation
         {
           name: "cameraRotation",
-          size: UniformSize.THREE,
-          update: () => layer.view.props.camera.scale
+          size: UniformSize.FOUR,
+          update: () => layer.view.props.camera.transform.rotation
         },
         // This injects the pixel width and height of the view
         {

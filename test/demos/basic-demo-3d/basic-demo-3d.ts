@@ -1,24 +1,30 @@
 import { PerlinNoise } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
+  AnchorType,
+  Axis2D,
   BasicSurface,
   Camera2D,
   ClearFlags,
   color4FromHex3,
   createLayer,
+  createLayer2Din3D,
   createView,
-  EasingUtil,
+  EdgeInstance,
+  EdgeLayer,
+  EdgeScaleType,
+  EdgeType,
   InstanceProvider,
+  LabelInstance,
   nextFrame,
   onFrame,
   PickType,
-  rayFromPoints,
-  rayToLocation,
+  Vec4,
   View3D
 } from "src";
-import { Projection3D } from "../../../src/3d/view/projection-3d";
 import { Camera } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
+import { DEFAULT_RESOURCES } from "../../types";
 import { Line3DInstance } from "./line-3d/line-3d-instance";
 import { Line3DLayer } from "./line-3d/line-3d-layer";
 import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
@@ -33,7 +39,9 @@ export class BasicDemo3D extends BaseDemo {
   /** Surface providers */
   providers = {
     tiles: new InstanceProvider<SurfaceTileInstance>(),
-    lines: new InstanceProvider<Line3DInstance>()
+    lines: new InstanceProvider<Line3DInstance>(),
+    ticks: new InstanceProvider<EdgeInstance>(),
+    labels: new InstanceProvider<LabelInstance>()
   };
 
   /** GUI properties */
@@ -50,6 +58,7 @@ export class BasicDemo3D extends BaseDemo {
 
   /** All tiles being rendered */
   tiles: SurfaceTileInstance[][] = [];
+  tileCorners: { tile: SurfaceTileInstance; corner: number }[][][] = [];
   tileToIndex = new Map<number, [number, number, number]>();
   isSpreading: boolean = false;
   isFlattened: boolean = false;
@@ -73,13 +82,15 @@ export class BasicDemo3D extends BaseDemo {
       },
       providers: this.providers,
       cameras: {
-        flat: new Camera2D(),
+        xz: new Camera2D(),
         perspective: Camera.makePerspective({
           fov: 60 * Math.PI / 180,
           far: 100000
         })
       },
-      resources: {},
+      resources: {
+        font: DEFAULT_RESOURCES.font
+      },
       eventManagers: _cameras => ({}),
       pipeline: (_resources, providers, cameras) => ({
         resources: [],
@@ -92,47 +103,6 @@ export class BasicDemo3D extends BaseDemo {
               })
             },
             layers: {
-              lines: createLayer(Line3DLayer, {
-                data: providers.lines,
-                picking: PickType.SINGLE,
-
-                onMouseClick: async info => {
-                  if (info.projection instanceof Projection3D) {
-                    const world = info.projection.screenToWorld(info.screen);
-                    const ray = rayFromPoints(
-                      cameras.perspective.position,
-                      world
-                    );
-
-                    const line = providers.lines.add(
-                      new Line3DInstance({
-                        start: rayToLocation(ray, 0),
-                        end: rayToLocation(ray, 1000),
-                        colorStart: [1, 0, 0, 1],
-                        colorEnd: [0, 1, 0, 1]
-                      })
-                    );
-
-                    await nextFrame();
-
-                    line.colorEnd[3] = 0;
-                    line.colorEnd = line.colorEnd;
-                    line.colorStart[3] = 0;
-                    line.colorStart = line.colorStart;
-
-                    await EasingUtil.all(
-                      true,
-                      [line],
-                      [
-                        Line3DLayer.attributeNames.colorEnd,
-                        Line3DLayer.attributeNames.colorStart
-                      ]
-                    );
-
-                    providers.lines.remove(line);
-                  }
-                }
-              }),
               squares: createLayer(SurfaceTileLayer, {
                 data: providers.tiles,
                 picking: PickType.SINGLE,
@@ -180,10 +150,136 @@ export class BasicDemo3D extends BaseDemo {
                 }
               })
             }
+          },
+          overlay: {
+            views: {
+              perspective: createView(View3D, {
+                camera: cameras.perspective,
+                clearFlags: [ClearFlags.DEPTH]
+              })
+            },
+            layers: {
+              ticks: createLayer2Din3D(Axis2D.XZ, EdgeLayer, {
+                data: providers.ticks,
+                type: EdgeType.LINE,
+                control2D: cameras.xz.control2D,
+                scaleType: EdgeScaleType.NONE
+              }),
+              lines: createLayer(Line3DLayer, {
+                data: providers.lines
+              })
+              // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
+              // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.
+              // labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
+              //   data: providers.labels,
+              //   resourceKey: resources.font.key,
+              //   control2D: cameras.xz.control2D,
+              //   scaleMode: ScaleMode.NEVER
+              // })
+            }
           }
         }
       })
     });
+  }
+
+  addToCorner(
+    r: number,
+    col: number,
+    corner: number,
+    tile: SurfaceTileInstance
+  ) {
+    const row = this.tileCorners[r] || [];
+    this.tileCorners[r] = row;
+    const bucket = row[col] || [];
+    row[col] = bucket;
+    bucket.push({ tile, corner });
+  }
+
+  makeAxis(showXYZ?: boolean) {
+    const tickColor: Vec4 = [1, 1, 1, 1];
+    const tickLength = DATA_SIZE / 128 * 25;
+
+    for (let i = 0; i < DATA_SIZE / 10; ++i) {
+      this.providers.ticks.add(
+        new EdgeInstance({
+          start: [i * 10 * 10, 0],
+          end: [i * 10 * 10, tickLength],
+          startColor: tickColor,
+          endColor: tickColor,
+          thickness: [10, 10],
+          depth: 0
+        })
+      );
+
+      this.providers.labels.add(
+        new LabelInstance({
+          text: `${i}`,
+          anchor: {
+            type: AnchorType.MiddleRight,
+            padding: 0
+          },
+          color: tickColor,
+          origin: [i * 10 * 10, tickLength],
+          fontSize: 100
+        })
+      );
+    }
+
+    for (let i = 0; i < DATA_SIZE / 10; ++i) {
+      this.providers.ticks.add(
+        new EdgeInstance({
+          start: [0, -i * 10 * 10],
+          end: [-tickLength, -i * 10 * 10],
+          startColor: tickColor,
+          endColor: tickColor,
+          thickness: [10, 10],
+          depth: 0
+        })
+      );
+
+      this.providers.labels.add(
+        new LabelInstance({
+          text: `${i}`,
+          anchor: {
+            type: AnchorType.MiddleLeft,
+            padding: 0
+          },
+          color: tickColor,
+          origin: [-tickLength, -i * 10 * 10],
+          fontSize: 100
+        })
+      );
+    }
+
+    if (showXYZ) {
+      this.providers.lines.add(
+        new Line3DInstance({
+          start: [0, 0, 0],
+          end: [0, 1000, 0],
+          colorStart: [0, 1, 0, 1],
+          colorEnd: [0, 1, 0, 1]
+        })
+      );
+
+      this.providers.lines.add(
+        new Line3DInstance({
+          start: [0, 0, 0],
+          end: [1000, 0, 0],
+          colorStart: [1, 0, 0, 1],
+          colorEnd: [1, 0, 0, 1]
+        })
+      );
+
+      this.providers.lines.add(
+        new Line3DInstance({
+          start: [0, 0, 0],
+          end: [0, 0, 1000],
+          colorStart: [0, 0, 1, 1],
+          colorEnd: [0, 0, 1, 1]
+        })
+      );
+    }
   }
 
   async init() {
@@ -217,6 +313,9 @@ export class BasicDemo3D extends BaseDemo {
           })
         );
 
+        this.addToCorner(i, k, 1, tile);
+        this.addToCorner(i + 1, k, 2, tile);
+
         this.tiles[i][k] = tile;
         this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
         tilesFlattened.push(tile);
@@ -225,20 +324,38 @@ export class BasicDemo3D extends BaseDemo {
 
     // Initialize the tiles to be positioned to the perlin map
     this.moveTilesToPerlin(tilesFlattened);
+    // Draw the axis
+    this.makeAxis();
 
     // Move the camera around
     let t = 0;
     const loop = () => {
       if (!this.surface) return;
       t += Math.PI / 120;
-      // t = Math.PI / 10;
 
+      // Spin in the middle of the data!
       this.surface.cameras.perspective.position = [
         Math.sin(t / 5) * midX + midX,
         300,
         Math.cos(t / 5) * midX - midZ
       ];
-      this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
+
+      // Good view from afar
+      // this.surface.cameras.perspective.position = [midX * 2, 3000, -midZ * 2];
+
+      // View from afar opposite
+      this.surface.cameras.perspective.position = [-midX * 2, 3000, midZ * 2];
+
+      // Observe the origin from above
+      // this.surface.cameras.perspective.position = [0, 1000, 0];
+      // this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 0, -1]);
+
+      // Observe the origin XY
+      // this.surface.cameras.perspective.position = [0, 0, 100];
+      // this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 1, 0]);
+
+      // Look at the middle of the data
+      this.surface.cameras.perspective.lookAt([midX, 0, -midZ], [0, 1, 0]);
 
       requestAnimationFrame(loop);
     };

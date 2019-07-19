@@ -1,4 +1,3 @@
-// TODO: Stub module for this folder while it's being developed. Delete when content is available.
-export const NOOP_3D_SHADER_MODULES = () => {
-  /** noop */
-};
+import "./world-2d-xy.shader";
+import "./world-2d-xz.shader";
+import "./world-2d-yz.shader";

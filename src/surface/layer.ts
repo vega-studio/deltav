@@ -149,6 +149,14 @@ export interface IInstanceProvider<T extends Instance> {
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
+  /**
+   * This allows for external overriding of the base shader modules for a layer. This can cause a layer to break if the
+   * overrides do not provide what the layer is expecting at the least.
+   */
+  baseShaderModules?(
+    shaderIO: IShaderInitialization<T>,
+    layerModules: { fs: string[]; vs: string[] }
+  ): { fs: string[]; vs: string[] };
   /** This is the data provider where the instancing data is injected and modified. */
   data: IInstanceProvider<T>;
   /**

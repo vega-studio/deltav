@@ -19,6 +19,9 @@ import {
   nextFrame,
   onFrame,
   PickType,
+  Projection3D,
+  rayFromPoints,
+  rayToLocation,
   Vec4,
   View3D
 } from "src";
@@ -166,7 +169,25 @@ export class BasicDemo3D extends BaseDemo {
                 scaleType: EdgeScaleType.NONE
               }),
               lines: createLayer(Line3DLayer, {
-                data: providers.lines
+                data: providers.lines,
+                // Toggle this to SINGLE to draw rays that eminate from the camera
+                picking: PickType.NONE,
+
+                onMouseClick: info => {
+                  if (!(info.projection instanceof Projection3D)) return;
+                  const ray = rayFromPoints(
+                    cameras.perspective.position,
+                    info.projection.screenToWorld(info.screen)
+                  );
+                  this.providers.lines.add(
+                    new Line3DInstance({
+                      start: rayToLocation(ray, -10),
+                      end: rayToLocation(ray, 300),
+                      colorEnd: [0, 1, 0, 1],
+                      colorStart: [1, 0, 0, 1]
+                    })
+                  );
+                }
               })
               // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
               // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.

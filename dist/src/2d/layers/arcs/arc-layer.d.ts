@@ -1,5 +1,5 @@
+import { IAutoEasingMethod, Vec } from "../../../math";
 import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { IAutoEasingMethod, Vec } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { ArcInstance } from "./arc-instance";
 export declare enum ArcScaleType {

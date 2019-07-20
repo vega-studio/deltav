@@ -1,4 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
 import {
   fontRequest,
   FontResourceRequestFetch,
@@ -12,12 +13,7 @@ import {
   IShaderInitialization,
   VertexAttributeSize
 } from "../../../types";
-import {
-  CommonMaterialOptions,
-  IAutoEasingMethod,
-  Vec,
-  Vec2
-} from "../../../util";
+import { CommonMaterialOptions } from "../../../util";
 import { ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";

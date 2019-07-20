@@ -1,5 +1,5 @@
+import { Vec } from "../math/vector";
 import { IEasingProps } from "../types";
-import { Vec } from "./vector";
 export declare class EasingProps implements IEasingProps {
     delay: number;
     duration: number;

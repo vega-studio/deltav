@@ -651,8 +651,21 @@ export class InstanceAttributePackingBufferManager<
     const attributesBufferLocations: {
       attribute: IInstanceAttribute<T>;
       bufferLocationsForAttribute: IInstanceAttributePackingBufferLocation[];
-      childBufferLocations: IInstanceAttributePackingBufferLocation[][];
+      childBufferLocations: {
+        location: IInstanceAttributePackingBufferLocation[];
+        // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
+        // groups, one would simply use the available items and shift() those items out into the group; however,
+        // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
+        // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
+        // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
+        bufferIndex: number;
+      }[];
       ids: number[];
+      // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
+      // groups, one would simply use the available items and shift() those items out into the group; however,
+      // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
+      // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
+      // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
       bufferIndex: number;
     }[] = [];
 
@@ -661,9 +674,10 @@ export class InstanceAttributePackingBufferManager<
         attribute,
         bufferLocationsForAttribute:
           attributeToNewBufferLocations.get(attribute.name) || [],
-        childBufferLocations: (attribute.childAttributes || []).map(
-          attr => attributeToNewBufferLocations.get(attr.name) || []
-        ),
+        childBufferLocations: (attribute.childAttributes || []).map(attr => ({
+          location: attributeToNewBufferLocations.get(attr.name) || [],
+          bufferIndex: -1
+        })),
         ids,
         bufferIndex: -1
       });
@@ -742,7 +756,10 @@ export class InstanceAttributePackingBufferManager<
               allLocations.childBufferLocations[k];
 
             if (bufferLocationsForChildAttribute) {
-              const childBufferLocation = bufferLocationsForChildAttribute.shift();
+              const childBufferLocation =
+                bufferLocationsForChildAttribute.location[
+                  ++bufferLocationsForChildAttribute.bufferIndex
+                ];
               if (childBufferLocation) {
                 childLocations.push(childBufferLocation);
               } else {

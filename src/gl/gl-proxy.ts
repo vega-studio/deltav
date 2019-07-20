@@ -1441,6 +1441,7 @@ export class GLProxy {
       if (location === -1) {
         debug(
           "WARN: An attribute is not being used with the current material: %o",
+          name,
           attribute
         );
       }
@@ -1453,26 +1454,71 @@ export class GLProxy {
 
     // At this point we're ready to establish the attribute's state and stride
     this.state.bindVBO(attribute.gl.bufferId);
-    // Enable the use of the vertex location
-    this.state.willUseVertexAttributeArray(location);
-    // Now we establish the metrics of the buffer
-    this.gl.vertexAttribPointer(
-      location,
-      attribute.size, // How many floats used for the attribute
-      this.gl.FLOAT, // We are only sending over float data right now
-      attribute.normalize,
-      0,
-      0
-    );
 
-    if (
-      geometry.isInstanced &&
-      attribute.isInstanced &&
-      this.extensions.instancing
-    ) {
-      this.state.setVertexAttributeArrayDivisor(location, 1);
-    } else {
-      this.state.setVertexAttributeArrayDivisor(location, 0);
+    switch (attribute.size) {
+      // For sizes that fit within a single vertex block, this is the simplest way to establish the pointer
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+        // Enable the use of the vertex location
+        this.state.willUseVertexAttributeArray(location);
+        // Now we establish the metrics of the buffer
+        this.gl.vertexAttribPointer(
+          location,
+          attribute.size, // How many floats used for the attribute
+          this.gl.FLOAT, // We are only sending over float data right now
+          attribute.normalize,
+          0,
+          0
+        );
+        if (
+          geometry.isInstanced &&
+          attribute.isInstanced &&
+          this.extensions.instancing
+        ) {
+          this.state.setVertexAttributeArrayDivisor(location, 1);
+        } else {
+          this.state.setVertexAttributeArrayDivisor(location, 0);
+        }
+        break;
+
+      // For sizes that exceed a single 'block' for a vertex attribute, one must break up the attribute pointers as the
+      // max allowed size is 4 at a time.
+      default:
+        const totalBlocks = Math.ceil(attribute.size / 4);
+
+        // ENable array for every location
+        for (let i = 0; i < totalBlocks; ++i) {
+          // Enable the use of the vertex location
+          this.state.willUseVertexAttributeArray(location + i);
+        }
+
+        // Now we establish the metrics of the buffer
+        for (let i = 0; i < totalBlocks; ++i) {
+          this.gl.vertexAttribPointer(
+            location + i,
+            4,
+            this.gl.FLOAT,
+            attribute.normalize,
+            totalBlocks * 4 * 4,
+            i * 16
+          );
+        }
+
+        for (let i = 0; i < totalBlocks; ++i) {
+          if (
+            geometry.isInstanced &&
+            attribute.isInstanced &&
+            this.extensions.instancing
+          ) {
+            this.state.setVertexAttributeArrayDivisor(location + i, 1);
+          } else {
+            this.state.setVertexAttributeArrayDivisor(location + i, 0);
+          }
+        }
+
+        break;
     }
 
     return true;

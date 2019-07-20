@@ -14,8 +14,6 @@ float circle(vec2 coord, float radius){
   );
 }
 
-${extendHeader}
-
 void main() {
   float step_factor = circle(gl_PointCoord, 1.0);
 
@@ -26,6 +24,4 @@ void main() {
   ));
 
   if (gl_FragColor.a <= 0.0) discard;
-
-  ${extend}
 }

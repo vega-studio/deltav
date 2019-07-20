@@ -11,11 +11,7 @@ varying vec4 vertexColor;
 // Interpolation type injection
 ${interpolation}
 
-${extendHeader}
-
 void main() {
-  ${attributes}
-
   // Destructure threejs's bug with the position requirement
   float normal = vertex.x;
   float interpolationTime = vertex.y;
@@ -53,5 +49,5 @@ void main() {
   gl_Position = clipSpace(vec3(vertexPos, depth));
   gl_PointSize = 5.0;
 
-  ${extend}
+  // gl_Position = clipSpace(vec3(0., 0., 0.));
 }

@@ -1,11 +1,11 @@
-import { Bounds } from "../primitives";
+import { Bounds } from "../math/primitives";
+import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
 import { LayerScene } from "../surface/layer-scene";
 import { Surface } from "../surface/surface";
 import { IViewProps, NoView, View } from "../surface/view";
 import { isDefined } from "../util/common-filters";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
-import { add2, length2, scale2, subtract2, Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import {
   IMouseInteraction,
@@ -21,7 +21,6 @@ import {
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
 const VALID_TAP_DELAY = 200;
-
 const emptyView: View<IViewProps> = new NoView();
 
 emptyView.fitViewtoViewport(
@@ -950,25 +949,27 @@ export class UserInputEventManager {
         position: mouse.currentPosition
       },
       start: {
-        position: startView.screenToView(mouse.start),
+        position: startView.projection.screenToView(mouse.start),
         view: startView,
         views: startViews.map(v => {
           if (!v.d) v.d = emptyView;
 
           return {
-            position: v.d.screenToView(mouse.start),
+            position: v.d.projection.screenToView(mouse.start),
             view: v.d
           };
         })
       },
       target: {
-        position: targetSceneView.screenToView(mouse.currentPosition),
+        position: targetSceneView.projection.screenToView(
+          mouse.currentPosition
+        ),
         view: targetSceneView,
         views: hitViews.map(v => {
           if (!v.d) v.d = emptyView;
 
           return {
-            position: v.d.screenToView(mouse.currentPosition),
+            position: v.d.projection.screenToView(mouse.currentPosition),
             view: v.d
           };
         })
@@ -993,25 +994,25 @@ export class UserInputEventManager {
         position
       },
       start: {
-        position: startView.screenToView(touch.start),
+        position: startView.projection.screenToView(touch.start),
         view: startView,
         views: this.getViewsUnderPosition(touch.start).map(v => {
           if (!v.d) v.d = emptyView;
 
           return {
-            position: v.d.screenToView(touch.start),
+            position: v.d.projection.screenToView(touch.start),
             view: v.d
           };
         })
       },
       target: {
-        position: targetSceneView.screenToView(position),
+        position: targetSceneView.projection.screenToView(position),
         view: targetSceneView,
         views: hitViews.map(v => {
           if (!v.d) v.d = emptyView;
 
           return {
-            position: v.d.screenToView(position),
+            position: v.d.projection.screenToView(position),
             view: v.d
           };
         })

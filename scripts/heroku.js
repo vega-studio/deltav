@@ -7,13 +7,13 @@ const { readFileSync, statSync } = require('fs');
 const { resolve } = require('path');
 const webpack = require('webpack');
 
-const config = require(resolve('webpack.config.js'));
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 80;
 
 let status = 'building';
+process.env.NODE_ENV = 'heroku';
 
-process.env.NODE_ENV = 'development';
 console.log('Building...');
+const config = require(resolve('webpack.config.js'));
 webpack(config).run(error => {
   if (error) throw error;
 
@@ -52,6 +52,7 @@ const server = createServer((request, response) => {
     response.end();
   }
 });
+
 server.listen(PORT, () => {
   console.log(`Server is available at http://localhost:${PORT} ...`);
 });

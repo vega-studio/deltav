@@ -12,17 +12,28 @@ import {
   Texture
 } from "./gl";
 import { Instance } from "./instance-provider/instance";
+import { BaseProjection } from "./math";
+import {
+  Mat3x3,
+  Mat4x4,
+  Vec,
+  Vec1,
+  Vec2,
+  Vec2Compat,
+  Vec3,
+  Vec4
+} from "./math";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
 import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
-import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
-import { IAutoEasingMethod } from "./util/auto-easing-method";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type ShaderIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Vec4[] | Float32Array;
-export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4;
+export type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Mat4x4;
+export type InstanceIOVectorValue = Vec1 | Vec2 | Vec3 | Vec4;
 export type UniformIOValue =
   | number
   | InstanceIOValue
@@ -44,6 +55,7 @@ export enum InstanceAttributeSize {
   TWO = 2,
   THREE = 3,
   FOUR = 4,
+  MAT4X4 = 16,
   /** Special case for making instance attributes that can target Atlas resources */
   ATLAS = 99
 }
@@ -53,6 +65,7 @@ export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
   [InstanceAttributeSize.TWO]: 2,
   [InstanceAttributeSize.THREE]: 3,
   [InstanceAttributeSize.FOUR]: 4,
+  [InstanceAttributeSize.MAT4X4]: 16,
   [InstanceAttributeSize.ATLAS]: 4
 };
 
@@ -114,7 +127,30 @@ export interface IResourceType {
 /**
  * This represents a color in the VoidGL system. Ranges are [0 - 1, 0 - 1, 0 - 1, 0 - 1]
  */
-export type Color = [number, number, number, number];
+export type Color = Vec4;
+
+/**
+ * This represents a rotation in Euler angles [X axis, Y axis, Z axis]
+ */
+export type EulerRotation = Vec3;
+
+/**
+ * Order description of the way a euler angle is supposed to be applied
+ */
+export enum EulerOrder {
+  zyx,
+  zyz,
+  zxy,
+  zxz,
+  yxz,
+  yxy,
+  yzx,
+  yzy,
+  xyz,
+  xyx,
+  xzy,
+  xzx
+}
 
 /**
  * Represents something with a unique id
@@ -144,11 +180,11 @@ export interface IPickInfo<T extends Instance> {
   /** This is the list of instances that were detected in the interaction */
   readonly instances: T[];
   /** This is the screen coordinates of the interaction point that interacted with the instances */
-  readonly screen: [number, number];
+  readonly screen: Vec2;
   /** This is the world coordinates of the ineraction point that interacted with the instances */
-  readonly world: [number, number];
+  readonly world: Vec2Compat;
   /** Projection methods to easily go between coordinate spaces */
-  readonly projection: IProjection;
+  readonly projection: BaseProjection<any>;
 }
 
 /**
@@ -306,6 +342,24 @@ export interface IInstanceAttributeInternal<T extends Instance>
 }
 
 /**
+ * This is specifically a deduced type of instance attribute that is specially dealing with Vec1-4 values. These types
+ * of vectors can be dealt with in special ways, thus they get this special case.
+ */
+export interface IInstanceAttributeVector<T extends Instance>
+  extends IInstanceAttribute<T> {
+  update(instance: T): InstanceIOVectorValue;
+}
+
+/**
+ * Typeguard to determine if an instance attribute provides vectors or something larger
+ */
+export function isInstanceAttributeVector<T extends Instance>(
+  val: IInstanceAttribute<T>
+): val is IInstanceAttributeVector<T> {
+  return val.size !== undefined && val.size <= 4;
+}
+
+/**
  * This is an attribute where the resource is definitely declared.
  */
 export interface IResourceInstanceAttribute<T extends Instance>
@@ -363,6 +417,8 @@ export interface IEasingInstanceAttribute<T extends Instance>
    * Easing attributes requires size to be present
    */
   size: InstanceAttributeSize;
+  /** If this is an easing attribute, then the instance will only provide Vec1-4 values */
+  update(o: T): InstanceIOVectorValue;
 }
 
 /**
@@ -453,21 +509,21 @@ export interface IProjection {
   /** This is the chart camera utilized in the projection of elements */
   props: IViewProps;
   /** Converts from the pixel density layer to the screen space */
-  pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
+  pixelSpaceToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from the screen coordinates to the pixel density layer */
-  screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;
+  screenToPixelSpace(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from screen space to the view's relative coordinates */
-  screenToView(point: Vec2, out?: Vec2): Vec2;
+  screenToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from screen space to the world space of a scene */
-  screenToWorld(point: Vec2, out?: Vec2): Vec2;
+  screenToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from a view's space to the screen */
-  viewToScreen(point: Vec2, out?: Vec2): Vec2;
+  viewToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from a views space to the world coordinates */
-  viewToWorld(point: Vec2, out?: Vec2): Vec2;
+  viewToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from world coordinate space of a scene to the screen */
-  worldToScreen(point: Vec2, out?: Vec2): Vec2;
+  worldToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
   /** Converts from world coordinate space of a scene to the view's space */
-  worldToView(point: Vec2, out?: Vec2): Vec2;
+  worldToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 }
 
 /**
@@ -504,9 +560,6 @@ export type ILayerMaterialOptions = Partial<
 export function createMaterialOptions(options: ILayerMaterialOptions) {
   return options;
 }
-
-/** This is the method signature for determining whether or not a point hits an instance */
-export type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
 
 /**
  * This is the type of picking assigned to a layer. Each mode has performance and functionality
@@ -689,7 +742,10 @@ export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
 
 export interface IShaderExtension {
   header?: string;
-  body?: string;
+  main?: {
+    pre?: string;
+    post?: string;
+  };
 }
 
 export type IShaderIOExtension<T extends Instance> = Partial<

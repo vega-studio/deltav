@@ -1,4 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -8,12 +9,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../../types";
-import {
-  CommonMaterialOptions,
-  IAutoEasingMethod,
-  shaderTemplate,
-  Vec
-} from "../../../util";
+import { CommonMaterialOptions, shaderTemplate } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { EdgeInstance } from "./edge-instance";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";

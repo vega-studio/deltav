@@ -1,7 +1,7 @@
 import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { add2, scale2, Vec2 } from "../../math/vector";
 import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
-import { add2, scale2, Vec2 } from "../../util/vector";
 import { PackNode } from "../texture/pack-node";
 import { SubTexture } from "../texture/sub-texture";
 import {

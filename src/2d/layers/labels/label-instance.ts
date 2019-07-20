@@ -3,8 +3,8 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
+import { Vec2 } from "../../../math";
 import { isWhiteSpace, Size } from "../../../types";
-import { Vec2 } from "../../../util";
 import { Anchor, AnchorType } from "../../types";
 import { GlyphInstance } from "./glyph-instance";
 import { TextAreaInstance } from "./text-area-instance";

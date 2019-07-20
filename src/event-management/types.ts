@@ -1,5 +1,5 @@
+import { Vec2 } from "../math/vector";
 import { IViewProps, View } from "../surface/view";
-import { Vec2 } from "../util/vector";
 
 export enum MouseButton {
   /** No button detected */

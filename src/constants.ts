@@ -7,3 +7,11 @@ export const uniformBufferInstanceBufferName = "instanceData";
  * that determines if an instance is rendered or not.
  */
 export const activeAttributeName = "_active";
+/**
+ * Constant that can convert a number expressed in degrees to radians by multiplying
+ */
+export const TO_RADIANS = Math.PI / 180;
+/**
+ * Constant that can convert a number expressed in radians to degrees by multiplying
+ */
+export const TO_DEGREES = 180 / Math.PI;

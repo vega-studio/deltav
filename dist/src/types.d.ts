@@ -1,11 +1,12 @@
 import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "src/event-management";
 import { Attribute, GLSettings, IMaterialUniform, MaterialOptions, MaterialUniformType, Texture } from "./gl";
 import { Instance } from "./instance-provider/instance";
+import { BaseProjection } from "./math";
+import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec2Compat, Vec3, Vec4 } from "./math";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
 import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
-import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec3, Vec4 } from "./util";
-import { IAutoEasingMethod } from "./util/auto-easing-method";
 export declare type Diff<T extends string, U extends string> = ({
     [P in T]: P;
 } & {
@@ -15,7 +16,8 @@ export declare type Diff<T extends string, U extends string> = ({
 })[T];
 export declare type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export declare type ShaderIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Vec4[] | Float32Array;
-export declare type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4;
+export declare type InstanceIOValue = Vec1 | Vec2 | Vec3 | Vec4 | Mat4x4;
+export declare type InstanceIOVectorValue = Vec1 | Vec2 | Vec3 | Vec4;
 export declare type UniformIOValue = number | InstanceIOValue | Mat3x3 | Mat4x4 | Float32Array | Texture | number[];
 export declare enum InstanceBlockIndex {
     ONE = 1,
@@ -28,6 +30,7 @@ export declare enum InstanceAttributeSize {
     TWO = 2,
     THREE = 3,
     FOUR = 4,
+    MAT4X4 = 16,
     ATLAS = 99
 }
 export declare const instanceAttributeSizeFloatCount: {
@@ -70,7 +73,22 @@ export declare enum ResourceType {
 export interface IResourceType {
     type: number;
 }
-export declare type Color = [number, number, number, number];
+export declare type Color = Vec4;
+export declare type EulerRotation = Vec3;
+export declare enum EulerOrder {
+    zyx = 0,
+    zyz = 1,
+    zxy = 2,
+    zxz = 3,
+    yxz = 4,
+    yxy = 5,
+    yzx = 6,
+    yzy = 7,
+    xyz = 8,
+    xyx = 9,
+    xzy = 10,
+    xzx = 11
+}
 export interface IdentifiableById {
     id: string | number;
 }
@@ -81,9 +99,9 @@ export interface IPickInfo<T extends Instance> {
     readonly interaction?: IMouseInteraction | ITouchInteraction;
     readonly layer: string;
     readonly instances: T[];
-    readonly screen: [number, number];
-    readonly world: [number, number];
-    readonly projection: IProjection;
+    readonly screen: Vec2;
+    readonly world: Vec2Compat;
+    readonly projection: BaseProjection<any>;
 }
 export interface IMousePickInfo<T extends Instance> extends IPickInfo<T> {
     readonly interaction: IMouseInteraction;
@@ -124,6 +142,10 @@ export interface IInstanceAttributeInternal<T extends Instance> extends IInstanc
     packUID?: number;
     bufferAttribute: Attribute;
 }
+export interface IInstanceAttributeVector<T extends Instance> extends IInstanceAttribute<T> {
+    update(instance: T): InstanceIOVectorValue;
+}
+export declare function isInstanceAttributeVector<T extends Instance>(val: IInstanceAttribute<T>): val is IInstanceAttributeVector<T>;
 export interface IResourceInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
     resource: {
         key(): string;
@@ -143,6 +165,7 @@ export interface IEasingInstanceAttribute<T extends Instance> extends IInstanceA
         uid?: number;
     };
     size: InstanceAttributeSize;
+    update(o: T): InstanceIOVectorValue;
 }
 export interface IValueInstanceAttribute<T extends Instance> extends IInstanceAttribute<T> {
     atlas: undefined;
@@ -174,14 +197,14 @@ export interface IShaders {
 export interface IProjection {
     id: string;
     props: IViewProps;
-    pixelSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
-    screenToPixelSpace(point: Vec2, out?: Vec2): Vec2;
-    screenToView(point: Vec2, out?: Vec2): Vec2;
-    screenToWorld(point: Vec2, out?: Vec2): Vec2;
-    viewToScreen(point: Vec2, out?: Vec2): Vec2;
-    viewToWorld(point: Vec2, out?: Vec2): Vec2;
-    worldToScreen(point: Vec2, out?: Vec2): Vec2;
-    worldToView(point: Vec2, out?: Vec2): Vec2;
+    pixelSpaceToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    screenToPixelSpace(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    screenToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    screenToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    viewToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    viewToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    worldToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
+    worldToView(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 }
 export declare function NOOP(): void;
 export declare const whiteSpaceRegEx: RegExp;
@@ -191,8 +214,7 @@ export declare const newLineRegEx: RegExp;
 export declare const newLineCharRegEx: RegExp;
 export declare const isNewline: any;
 export declare type ILayerMaterialOptions = Partial<Omit<MaterialOptions, "uniforms" | "vertexShader" | "fragmentShader">>;
-export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Pick<Pick<Partial<import("./gl").Material>, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "name" | "polygonOffset" | "uniforms" | "vertexShader">, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "name" | "polygonOffset">>;
-export declare type InstanceHitTest<T> = (o: T, p: Vec2, v: IProjection) => boolean;
+export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Pick<Pick<Partial<import("./gl").Material>, "name" | "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "polygonOffset" | "uniforms" | "vertexShader">, "name" | "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "polygonOffset">>;
 export declare enum PickType {
     NONE = 0,
     SINGLE = 1
@@ -257,7 +279,10 @@ export interface IShaderInputs<T extends Instance> {
 export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
 export interface IShaderExtension {
     header?: string;
-    body?: string;
+    main?: {
+        pre?: string;
+        post?: string;
+    };
 }
 export declare type IShaderIOExtension<T extends Instance> = Partial<IShaderInputs<T>> & {
     vs?: IShaderExtension;

@@ -1,5 +1,5 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Vec2, Vec4 } from "../../../util";
+import { Vec2, Vec4 } from "../../../math";
 export interface IArcInstanceOptions extends IInstanceOptions {
     angle: Vec2;
     center: Vec2;

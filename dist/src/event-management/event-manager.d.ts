@@ -1,10 +1,11 @@
-import { Bounds } from "../primitives";
+import { BaseProjection } from "../math";
+import { Bounds } from "../math/primitives";
 import { IViewProps, View } from "../surface/view";
-import { IProjection } from "../types";
 import { IMouseInteraction, ITouchInteraction } from "./types";
 import { UserInputEventManager } from "./user-input-event-manager";
 export declare abstract class EventManager {
     private userInputManager;
+    readonly surface: import("..").Surface;
     abstract handleMouseDown(e: IMouseInteraction): void;
     abstract handleMouseUp(e: IMouseInteraction): void;
     abstract handleMouseOver(e: IMouseInteraction): void;
@@ -26,7 +27,7 @@ export declare abstract class EventManager {
     abstract handleSpread(e: ITouchInteraction): void;
     abstract handleTouchRotate(e: ITouchInteraction): void;
     abstract handleSwipe(e: ITouchInteraction): void;
-    getProjection(viewId: string): IProjection | null;
+    getProjection(viewId: string): BaseProjection<any> | null;
     getView(viewId: string): View<IViewProps> | null;
     getViewScreenBounds(viewId: string): Bounds<View<IViewProps>> | null;
     setUserInputManager(mouseManager: UserInputEventManager): void;

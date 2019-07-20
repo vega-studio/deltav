@@ -1,7 +1,7 @@
 import {
   CircleInstance,
   CircleLayer,
-  extendShaderInitialization,
+  extendShader,
   ICircleLayerProps,
   InstanceProvider,
   IShaderInitialization,
@@ -23,7 +23,7 @@ export class ExtendedCircles extends CircleLayer<
   };
 
   initShader(): IShaderInitialization<CircleInstance> {
-    const shaderIO = extendShaderInitialization(super.initShader(), {
+    const shaderIO = extendShader(super.initShader(), {
       uniforms: [
         {
           name: "dimming",
@@ -32,8 +32,10 @@ export class ExtendedCircles extends CircleLayer<
         }
       ],
       vs: {
-        body: require("./extended-circles-extend-body.vs"),
-        header: require("./extended-circles-extend-header.vs")
+        header: '${import: dimColor}',
+        main: {
+          post: require("./extended-circles-extend-body.vs"),
+        },
       }
     });
 

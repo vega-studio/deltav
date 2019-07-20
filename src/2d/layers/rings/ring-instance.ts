@@ -3,7 +3,7 @@ import {
   Instance
 } from "../../../instance-provider/instance";
 import { observable } from "../../../instance-provider/observable";
-import { Vec2 } from "../../../util";
+import { Vec2 } from "../../../math";
 
 export interface IRingInstanceOptions extends IInstanceOptions {
   /** The center of the ring */

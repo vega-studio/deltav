@@ -1,4 +1,4 @@
-import { Vec2 } from "../../../util";
+import { Vec2 } from "../../../math";
 import { IRectangleInstanceOptions, RectangleInstance } from "../rectangle/rectangle-instance";
 export interface IBorderInstanceOptions extends IRectangleInstanceOptions {
     fontScale?: number;

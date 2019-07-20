@@ -1,6 +1,6 @@
 import { EventManager } from "../event-management/event-manager";
 import { Instance, InstanceProvider } from "../instance-provider";
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { BaseResourceOptions } from "../resources";
 import {
   ISceneOptions,

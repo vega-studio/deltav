@@ -1,6 +1,6 @@
+import { Vec } from "../../../math";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { Vec } from "../../../util";
-import { IAutoEasingMethod } from "../../../util/auto-easing-method";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { CircleInstance } from "./circle-instance";
 export interface ICircleLayerProps<T extends CircleInstance> extends ILayer2DProps<T> {

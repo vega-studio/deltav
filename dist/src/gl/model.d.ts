@@ -1,4 +1,4 @@
-import { Vec2 } from "../util";
+import { Vec2 } from "../math";
 import { Geometry } from "./geometry";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";

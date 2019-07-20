@@ -17,7 +17,7 @@ export class ObservableMonitoring {
   }
 
   /**
-   * This retrieves the observables montiored IDs that were gathered when setObservableMonitor was
+   * This retrieves the observables monitored IDs that were gathered when setObservableMonitor was
    * enabled.
    */
   static getObservableMonitorIds(clear?: boolean) {

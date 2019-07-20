@@ -1,5 +1,7 @@
 import { GLSettings } from "../../../gl";
 import { InstanceProvider } from "../../../instance-provider";
+import { Vec } from "../../../math";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -9,8 +11,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../../types";
-import { CommonMaterialOptions, Vec } from "../../../util";
-import { IAutoEasingMethod } from "../../../util/auto-easing-method";
+import { CommonMaterialOptions } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { CircleInstance } from "./circle-instance";
 

@@ -3,9 +3,9 @@ import {
   Instance,
   observable
 } from "../../../instance-provider";
+import { Vec2, Vec4 } from "../../../math/vector";
 import { IFontResourceRequest } from "../../../resources";
 import { Omit } from "../../../types";
-import { Vec2, Vec4 } from "../../../util/vector";
 import { LabelInstance } from "./label-instance";
 
 export type GlyphInstanceOptions = Omit<

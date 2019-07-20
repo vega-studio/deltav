@@ -1,5 +1,5 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Vec2 } from "../../../util";
+import { Vec2 } from "../../../math";
 export interface ICircleInstanceOptions extends IInstanceOptions {
     center: Vec2;
     radius: number;

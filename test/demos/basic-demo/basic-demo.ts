@@ -20,6 +20,7 @@ import {
   scale2,
   Size,
   Vec2,
+  Vec2Compat,
   View2D
 } from "src";
 import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
@@ -55,7 +56,7 @@ export class BasicDemo extends BaseDemo {
     }
   };
 
-  currentLocation: Vec2 = [0, 0];
+  currentLocation: Vec2Compat = [0, 0];
 
   buildConsole(gui: datGUI.GUI): void {
     const parameters = gui.addFolder("Parameters");
@@ -140,12 +141,14 @@ export class BasicDemo extends BaseDemo {
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction) => {
             const target = e.target;
-            this.moveToLocation(target.view.screenToWorld(e.screen.position));
+            this.moveToLocation(
+              target.view.projection.screenToWorld(e.screen.position)
+            );
           },
           handleTap: (e: ITouchInteraction) => {
             const touch = e.touches[0];
             this.moveToLocation(
-              touch.target.view.screenToWorld(touch.screen.position)
+              touch.target.view.projection.screenToWorld(touch.screen.position)
             );
           }
         })
@@ -207,7 +210,7 @@ export class BasicDemo extends BaseDemo {
     this.circles.push(circle);
   }
 
-  async moveToLocation(location: Vec2) {
+  async moveToLocation(location: Vec2Compat) {
     this.currentLocation = location;
 
     let index = 0;

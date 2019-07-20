@@ -1,8 +1,8 @@
 import { SimpleEventHandler } from "../../event-management/simple-event-handler";
 import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../../event-management/types";
-import { Bounds } from "../../primitives/bounds";
+import { BaseProjection, Vec3 } from "../../math";
+import { Bounds } from "../../math/primitives/bounds";
 import { IViewProps, View } from "../../surface/view";
-import { Vec3 } from "../../util";
 import { Camera2D } from "./camera-2d";
 export declare enum CameraBoundsAnchor {
     TOP_LEFT = 0,
@@ -32,7 +32,7 @@ export interface IBasicCamera2DControllerOptions {
     bounds?: ICameraBoundsOptions;
     camera: Camera2D;
     ignoreCoverViews?: boolean;
-    onRangeChanged?(camera: Camera2D, targetView: View<IViewProps>): void;
+    onRangeChanged?(camera: Camera2D, projections: BaseProjection<any>): void;
     panFilter?(offset: [number, number, number], view: View<IViewProps>, allViews: View<IViewProps>[]): [number, number, number];
     scaleFactor?: number;
     scaleFilter?(scale: [number, number, number], view: View<IViewProps>, allViews: View<IViewProps>[]): [number, number, number];

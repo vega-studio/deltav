@@ -3,8 +3,10 @@ import { UserInputEventManager } from "../event-management/user-input-event-mana
 import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
-import { getAbsolutePositionBounds } from "../primitives/absolute-position";
-import { Bounds } from "../primitives/bounds";
+import { BaseProjection } from "../math";
+import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
+import { copy4, Vec2, Vec4 } from "../math/vector";
 import {
   BaseResourceManager,
   BaseResourceOptions,
@@ -19,14 +21,12 @@ import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
-  IProjection,
   IResourceType,
   PickType
 } from "../types";
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { copy4, Vec2, Vec4 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { ILayerProps, Layer } from "./layer";
@@ -1014,8 +1014,8 @@ export class Surface {
 
       if (view) {
         if (view.screenBounds) {
-          const topLeft = view.viewToWorld([0, 0]);
-          const bottomRight = view.screenToWorld([
+          const topLeft = view.projection.viewToWorld([0, 0]);
+          const bottomRight = view.projection.screenToWorld([
             view.screenBounds.right,
             view.screenBounds.bottom
           ]);
@@ -1039,12 +1039,12 @@ export class Surface {
    * Retrieves the projection methods for a given view, null if the view id does not exist
    * in the surface
    */
-  getProjections(viewId: string): IProjection | null {
+  getProjections(viewId: string): BaseProjection<any> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
       const view = scene.viewDiffs.getByKey(viewId);
 
-      if (view) return view;
+      if (view) return view.projection;
     }
 
     return null;
@@ -1209,7 +1209,7 @@ export class Surface {
   private initMouseManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers themselves
     const eventManagers: EventManager[] = ([
-      new LayerMouseEvents(this)
+      new LayerMouseEvents()
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer

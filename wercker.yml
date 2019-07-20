@@ -8,6 +8,9 @@ build:
       name: Check package.json
       code: npm run auto check-package
     - script:
+      name: Unit tests
+      code: npm run unit-test
+    - script:
       name: Check index imports
       code: npm run auto scan-for-import-index
     - script:

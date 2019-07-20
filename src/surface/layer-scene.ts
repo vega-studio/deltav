@@ -217,7 +217,6 @@ export class LayerScene extends IdentifyByKey {
         const newView = new initializer.init[0](this, initializer.init[1]);
         newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
-        newView.props.camera.surface = this.surface;
         this.surface.mouseManager.waitingForRender = true;
 
         return newView;

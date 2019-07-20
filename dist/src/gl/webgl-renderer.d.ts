@@ -1,5 +1,5 @@
+import { Vec4 } from "../math";
 import { Size } from "../types";
-import { Vec4 } from "../util";
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";

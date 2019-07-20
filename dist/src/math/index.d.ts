@@ -1,0 +1,13 @@
+export * from "./auto-easing-method";
+export * from "./base-projection";
+export * from "./matrix";
+export * from "./quaternion";
+export * from "./vector";
+export * from "./primitives";
+export * from "./ray";
+import * as matrix from "./matrix";
+import * as quaternion from "./quaternion";
+import * as vector from "./vector";
+export declare const MatrixMath: typeof matrix;
+export declare const VectorMath: typeof vector;
+export declare const QuaternionMath: typeof quaternion;

@@ -4,7 +4,7 @@ import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ResourceRouter } from "../resources";
-import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceDiffType, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniformInternal, IVertexAttributeInternal, Omit, PickType } from "../types";
+import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceDiffType, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, Omit, PickType } from "../types";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
@@ -27,6 +27,9 @@ export declare type LayerInitializerInternal = {
     key: string;
     init: [ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>, ILayerPropsInternal<Instance>];
 };
+export declare function createAttribute<T extends Instance>(options: IInstanceAttribute<T>): IInstanceAttribute<T>;
+export declare function createUniform(options: IUniform): IUniform;
+export declare function createVertex(options: IVertexAttribute): IVertexAttribute;
 export declare function createLayer<T extends Instance, U extends ILayerProps<T>>(layerClass: ILayerConstructable<T> & {
     defaultProps: U;
 }, props: Omit<U, "key"> & Partial<Pick<U, "key">>): LayerInitializer;
@@ -39,6 +42,13 @@ export interface IInstanceProvider<T extends Instance> {
     sync(): void;
 }
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
+    baseShaderModules?(shaderIO: IShaderInitialization<T>, layerModules: {
+        fs: string[];
+        vs: string[];
+    }): {
+        fs: string[];
+        vs: string[];
+    };
     data: IInstanceProvider<T>;
     materialOptions?: ILayerMaterialOptions;
     order?: number;

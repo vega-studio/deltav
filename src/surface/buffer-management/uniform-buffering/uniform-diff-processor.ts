@@ -1,5 +1,5 @@
 import { Instance, InstanceDiff } from "../../../instance-provider";
-import { Vec4 } from "../../../util/vector";
+import { Vec4 } from "../../../math/vector";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 import {

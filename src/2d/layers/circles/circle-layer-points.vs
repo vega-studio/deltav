@@ -9,11 +9,7 @@ varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float edgeSharpnessBase;
 
-${extendHeader}
-
 void main() {
-  ${attributes}
-
   vertexColor = color;
   vertexColor.a *= layerOpacity;
   float size = radius * scaleFactor;
@@ -24,6 +20,4 @@ void main() {
   // support drawing non-instanced data yet.
   gl_Position = clipSpace(vec3(center, depth));
   gl_PointSize = size * 2.0 * pixelRatio;
-
-  ${extend}
 }

@@ -2,8 +2,6 @@ varying vec4 vertexColor;
 varying vec2 texCoord;
 
 void main() {
-  ${attributes}
-
   // Calculate in the anchor, the origin, glyph offset, and the quad pushout to make our quad geometry
   vec2 pushOut = normals * glyphSize * fontScale;
   vec3 position = vec3(origin + padding + offset + pushOut, depth);

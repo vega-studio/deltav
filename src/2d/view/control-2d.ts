@@ -1,10 +1,10 @@
-import { Surface } from "../../surface";
 import {
   AutoEasingMethod,
   IAutoEasingMethod
-} from "../../util/auto-easing-method";
+} from "../../math/auto-easing-method";
+import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector";
+import { Surface } from "../../surface";
 import { uid } from "../../util/uid";
-import { copy3, divide3, scale3, subtract3, Vec3 } from "../../util/vector";
 import { Camera2D } from "./camera-2d";
 
 export interface IControl2DOptions {

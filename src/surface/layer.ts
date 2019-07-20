@@ -14,7 +14,9 @@ import {
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
+  IUniform,
   IUniformInternal,
+  IVertexAttribute,
   IVertexAttributeInternal,
   Omit,
   PickType,
@@ -83,6 +85,29 @@ export type LayerInitializerInternal = {
 };
 
 /**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createAttribute<T extends Instance>(
+  options: IInstanceAttribute<T>
+) {
+  return options;
+}
+
+/**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createUniform(options: IUniform) {
+  return options;
+}
+
+/**
+ * Makes it easier to type out and get better editor help in establishing initShader
+ */
+export function createVertex(options: IVertexAttribute) {
+  return options;
+}
+
+/**
  * Used for reactive layer generation and updates.
  */
 export function createLayer<T extends Instance, U extends ILayerProps<T>>(
@@ -124,6 +149,14 @@ export interface IInstanceProvider<T extends Instance> {
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
+  /**
+   * This allows for external overriding of the base shader modules for a layer. This can cause a layer to break if the
+   * overrides do not provide what the layer is expecting at the least.
+   */
+  baseShaderModules?(
+    shaderIO: IShaderInitialization<T>,
+    layerModules: { fs: string[]; vs: string[] }
+  ): { fs: string[]; vs: string[] };
   /** This is the data provider where the instancing data is injected and modified. */
   data: IInstanceProvider<T>;
   /**

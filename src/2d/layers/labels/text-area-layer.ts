@@ -1,4 +1,6 @@
 import { InstanceProvider } from "../../../instance-provider/instance-provider";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
+import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import {
   createLayer,
@@ -6,8 +8,6 @@ import {
   LayerInitializer
 } from "../../../surface/layer";
 import { InstanceDiffType, newLineRegEx } from "../../../types";
-import { IAutoEasingMethod } from "../../../util/auto-easing-method";
-import { add2, copy4, scale2, Vec, Vec2 } from "../../../util/vector";
 import { AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { BorderInstance } from "./border-instance";

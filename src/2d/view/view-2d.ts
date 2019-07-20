@@ -1,9 +1,10 @@
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
+import { add3 } from "../../math/vector";
 import { IViewProps, View } from "../../surface";
 import { LayerScene } from "../../surface/layer-scene";
-import { Vec2 } from "../../util";
 import { Camera, CameraProjectionType } from "../../util/camera";
 import { Camera2D } from "./camera-2d";
+import { Projection2D } from "./projection-2d";
 
 /**
  * Defines the input metrics of a view for a scene.
@@ -13,7 +14,7 @@ export interface IView2DProps extends IViewProps {
   camera: Camera2D;
 }
 
-/**
+/**s
  * Type guard to ensure the camera type is orthographic
  */
 function isOrthographic(val: Camera): val is Camera {
@@ -35,83 +36,12 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
     }
   };
 
+  /** These are the projection methods specific to rendering with this 2D system. */
+  projection: Projection2D = new Projection2D();
+
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
-  }
-
-  /**
-   * Maps a coordinate relative to the screen to a coordinate found within the world space.
-   */
-  screenToWorld(point: Vec2, out?: Vec2) {
-    const view = this.screenToView(point);
-
-    const world = out || [0, 0];
-    world[0] =
-      (view[0] -
-        this.props.camera.control2D.offset[0] * this.props.camera.scale2D[0]) /
-      this.props.camera.scale2D[0];
-    world[1] =
-      (view[1] -
-        this.props.camera.control2D.offset[1] * this.props.camera.scale2D[1]) /
-      this.props.camera.scale2D[1];
-
-    return world;
-  }
-
-  /**
-   * Maps a coordinate found within the world to a relative coordinate within the screen space.
-   */
-  worldToScreen(point: Vec2, out?: Vec2) {
-    const screen: Vec2 = [0, 0];
-
-    // Calculate from the camera to view space
-    screen[0] =
-      (point[0] * this.props.camera.scale2D[0] +
-        this.props.camera.control2D.offset[0] * this.props.camera.scale2D[0]) *
-      this.pixelRatio;
-    screen[1] =
-      (point[1] * this.props.camera.scale2D[1] +
-        this.props.camera.control2D.offset[1] * this.props.camera.scale2D[1]) *
-      this.pixelRatio;
-
-    // Convert from view to screen space
-    return this.viewToScreen(screen, out);
-  }
-
-  /**
-   * Maps a coordinate relative to the view's viewport to a coordinate found within the world.
-   */
-  viewToWorld(point: Vec2, out?: Vec2) {
-    const world = out || [0, 0];
-
-    const screen = point;
-    world[0] =
-      (screen[0] -
-        this.props.camera.control2D.offset[0] * this.props.camera.scale2D[0]) /
-      this.props.camera.scale2D[0];
-    world[1] =
-      (screen[1] -
-        this.props.camera.control2D.offset[1] * this.props.camera.scale2D[1]) /
-      this.props.camera.scale2D[1];
-
-    return world;
-  }
-
-  /**
-   * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
-   */
-  worldToView(point: Vec2, out?: Vec2) {
-    const screen = out || [0, 0];
-
-    // Calculate from the camera to view space
-    screen[0] =
-      point[0] * this.props.camera.scale2D[0] +
-      this.props.camera.control2D.offset[0] * this.props.camera.scale2D[0];
-    screen[1] =
-      point[1] * this.props.camera.scale2D[1] +
-      this.props.camera.control2D.offset[1] * this.props.camera.scale2D[1];
-
-    return screen;
+    this.projection.camera = options.camera;
   }
 
   /**
@@ -136,8 +66,8 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         top: height / 2
       };
 
-      const scaleX = this.pixelRatio;
-      const scaleY = this.pixelRatio;
+      const scaleX = 1 / this.pixelRatio;
+      const scaleY = 1 / this.pixelRatio;
       const camera = this.props.camera;
 
       camera.projectionOptions = Object.assign(
@@ -145,16 +75,17 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         viewport
       );
       camera.position = [
-        -viewBounds.width / 2.0,
-        viewBounds.height / 2.0,
+        viewBounds.width / 2.0,
+        -viewBounds.height / 2.0,
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];
+      camera.lookAt(add3(camera.position, [0, 0, -1]), [0, 1, 0]);
       camera.update();
 
-      this.viewBounds = viewBounds;
-      this.viewBounds.d = this;
-      this.screenBounds = new Bounds<View<TViewProps>>({
+      this.projection.viewBounds = viewBounds;
+      viewBounds.d = this;
+      this.projection.screenBounds = new Bounds<View<TViewProps>>({
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,
@@ -164,5 +95,9 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
     } else if (!isOrthographic(this.props.camera)) {
       console.warn("View2D does not support non-orthographic cameras yet.");
     }
+  }
+
+  willUpdateProps(newProps: IView2DProps) {
+    this.projection.camera = newProps.camera;
   }
 }

@@ -1,7 +1,7 @@
 import { Texture, TextureOptions } from "../../gl/texture";
+import { Vec2 } from "../../math/vector";
 import { Omit, ResourceType, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
-import { Vec2 } from "../../util/vector";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { PackNode } from "./pack-node";

@@ -1,5 +1,5 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Vec2 } from "../../../util/vector";
+import { Vec2 } from "../../../math/vector";
 import { Anchor, ScaleMode } from "../../types";
 export interface IRectangleInstanceOptions extends IInstanceOptions {
     anchor?: Anchor;

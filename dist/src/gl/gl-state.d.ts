@@ -1,5 +1,5 @@
+import { Vec4 } from "../math/vector";
 import { TypeVec } from "../types";
-import { Vec4 } from "../util/vector";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";

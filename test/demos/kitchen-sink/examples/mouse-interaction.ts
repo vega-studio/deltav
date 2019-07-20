@@ -1,4 +1,4 @@
-import * as anime from "animejs";
+import anime from "animejs";
 import {
   AutoEasingMethod,
   BasicCamera2DController,

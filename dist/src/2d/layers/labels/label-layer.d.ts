@@ -1,9 +1,9 @@
 import { InstanceProvider } from "../../../instance-provider/instance-provider";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
+import { Vec } from "../../../math/vector";
 import { IFontResourceRequest } from "../../../resources";
 import { KernedLayout } from "../../../resources/text/font-map";
 import { ILayerConstructionClass, LayerInitializer } from "../../../surface/layer";
-import { IAutoEasingMethod } from "../../../util/auto-easing-method";
-import { Vec } from "../../../util/vector";
 import { ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";

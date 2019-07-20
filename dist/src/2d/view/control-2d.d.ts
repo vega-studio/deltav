@@ -1,6 +1,6 @@
+import { IAutoEasingMethod } from "../../math/auto-easing-method";
+import { Vec3 } from "../../math/vector";
 import { Surface } from "../../surface";
-import { IAutoEasingMethod } from "../../util/auto-easing-method";
-import { Vec3 } from "../../util/vector";
 import { Camera2D } from "./camera-2d";
 export interface IControl2DOptions {
     offset?: Vec3;

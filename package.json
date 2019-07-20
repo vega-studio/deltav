@@ -21,8 +21,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@tarwich/runner": "github:tarwich/runner",
     "@diniden/signal-processing": "github:diniden/signal-processing",
+    "@tarwich/runner": "github:tarwich/runner",
     "@types/animejs": "2.0.0",
     "@types/assert": "1.4.2",
     "@types/d3-color": "1.2.2",

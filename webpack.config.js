@@ -16,6 +16,7 @@ const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
+
 const tslint = {
   loader: 'tslint-loader', options: {
     fix: false,
@@ -101,7 +102,7 @@ module.exports = {
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
       { test: /\.png$/, loader: 'base64-image-loader' },
-      { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
+      { test: /\.[fv]s$/, use: IS_PRODUCTION ? ['shader-compress-loader'] : ['raw-loader'] },
       {
         test: /\.(mp4|mov)$/,
         loader: 'file-loader',
@@ -128,6 +129,10 @@ module.exports = {
       '@voidrayco/voidgl$': DEVGL,
     } : undefined,
   },
+
+  resolveLoader: {
+    modules: ['node_modules', 'loaders']
+  }
 };
 
 if (IS_DEVELOPMENT) {

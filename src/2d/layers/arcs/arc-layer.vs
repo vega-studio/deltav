@@ -7,8 +7,6 @@ precision highp float;
 **/
 varying vec4 vertexColor;
 
-${extendHeader}
-
 void main() {
   // Destructure some of the vec injections
   float startAngle = angle.x + angleOffset;
@@ -31,6 +29,4 @@ void main() {
   vertexColor = mix(colorStart, colorEnd, interpolationTime);
 
   gl_Position = clipSpace(vec3(vertex, depth));
-
-  ${extend}
 }

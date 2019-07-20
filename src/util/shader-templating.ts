@@ -142,8 +142,8 @@ export function shaderTemplate(
         const bodyStart = shader.substr(start + found[0].length);
         // We now must count valid context brackets till we find a bracket that would close the context of the main
         // body.
-        let multilineCommentCount = 0;
-        let singleLineCommentCount = 0;
+        let insideMultiLine = false;
+        let insideSingleLine = false;
         let openBracket = 1;
         let closeBracket = 0;
         let endBody = -1;
@@ -158,21 +158,25 @@ export function shaderTemplate(
             case "/":
               switch (nextChar) {
                 case "*":
-                  multilineCommentCount++;
-                  i++;
+                  if (!insideMultiLine && !insideSingleLine) {
+                    insideMultiLine = true;
+                    i++;
+                  }
                   break;
 
                 case "/":
-                  singleLineCommentCount++;
-                  i++;
+                  if (!insideMultiLine && !insideSingleLine) {
+                    insideSingleLine = true;
+                    i++;
+                  }
                   break;
               }
               break;
 
             case "*":
               if (nextChar === "/") {
-                if (multilineCommentCount > 0) {
-                  multilineCommentCount--;
+                if (!insideSingleLine) {
+                  insideMultiLine = false;
                   i++;
                 }
               }
@@ -180,22 +184,19 @@ export function shaderTemplate(
 
             case "\n":
             case "\r":
-              if (nextChar === "\n") {
-                i++;
-              }
-              if (singleLineCommentCount > 0) {
-                singleLineCommentCount--;
+              if (!insideMultiLine) {
+                insideSingleLine = false;
               }
               break;
 
             case "{":
-              if (singleLineCommentCount === 0 && multilineCommentCount === 0) {
+              if (!insideMultiLine && !insideSingleLine) {
                 openBracket++;
               }
               break;
 
             case "}":
-              if (singleLineCommentCount === 0 && multilineCommentCount === 0) {
+              if (!insideMultiLine && !insideSingleLine) {
                 closeBracket++;
               }
 

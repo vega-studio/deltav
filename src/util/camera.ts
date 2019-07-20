@@ -1,15 +1,13 @@
-import { Surface } from "../surface";
+import { Transform } from "../3d/scene-graph/transform";
 import {
   identity4,
   Mat4x4,
   multiply4x4,
   orthographic4x4,
-  perspective4x4,
-  scale4x4by3,
-  translation4x4by3
-} from "./matrix";
+  perspective4x4
+} from "../math/matrix";
+import { Vec3 } from "../math/vector";
 import { uid } from "./uid";
-import { copy3, Vec3 } from "./vector";
 
 export enum CameraProjectionType {
   PERSPECTIVE,
@@ -88,7 +86,9 @@ export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
 }
 
 /**
- * This class is present to simplify the concepts of Matrix math down to simpler camera concepts.
+ * This class is present to simplify the concepts of Matrix math down to simpler camera concepts. A camera is two things:
+ * - An object that can be placed within the world and be a part of a scene graph
+ * - A mathematical structure that defines the viewing
  */
 export class Camera {
   /** Provide an identifier for the camera to follow the pattern of most everything in this framework. */
@@ -103,24 +103,25 @@ export class Camera {
   needsViewDrawn: boolean = true;
   /** Flag indicating the camera needs to broadcast changes applied to it */
   needsBroadcast: boolean = false;
-  /** The governing surface this camera is utilized beneath */
-  surface: Surface;
   /** The id of the view to be broadcasted for the sake of a change */
   viewChangeViewId: string = "";
+  /** This is the transform that places the camera within world space */
+  transform: Transform = new Transform();
 
   /** Handler  */
-  onViewChange?(camera: Camera, viewId: string): void;
+  onChange?(camera: Camera, viewId: string): void;
 
   /**
    * Performs the broadcast of changes for the camera if the camera needed a broadcast.
    */
   broadcast(viewId: string) {
     // Emit changes for the view indicated that this camera affects
-    if (this.onViewChange) this.onViewChange(this, viewId);
+    if (this.onChange) this.onChange(this, viewId);
   }
 
   /**
-   * Quick generation of a camera with properties. None of any make sense.
+   * Quick generation of a camera with properties. None make any sense and should be set appropriately.
+   * ie - View2D handles setting these values correctly for you.
    */
   static makeOrthographic() {
     return new Camera({
@@ -134,6 +135,25 @@ export class Camera {
     });
   }
 
+  /**
+   * Quick generation of a camera with perspective properties.
+   */
+  static makePerspective(options?: Partial<ICameraPerspectiveOptions>) {
+    return new Camera(
+      Object.assign(
+        {
+          type: CameraProjectionType.PERSPECTIVE,
+          far: 10000,
+          near: 1,
+          fov: 90 * Math.PI / 180,
+          height: 1000,
+          width: 1000
+        },
+        options
+      )
+    );
+  }
+
   /** The expected projection style of the Camera. */
   get projectionType() {
     return this._projectionOptions.type;
@@ -141,56 +161,62 @@ export class Camera {
 
   /** The computed projection of the camera. */
   get projection() {
+    this.update();
     return this._projection;
   }
   private _projection: Mat4x4 = identity4();
+
   /** The computed view transform of the camera. */
   get view() {
-    return this._view;
+    return this.transform.viewMatrix;
   }
-  private _view: Mat4x4 = identity4();
+
   /** Flag indicating the transforms for this camera need updating. */
   get needsUpdate() {
     return this._needsUpdate;
   }
-  private _needsUpdate = false;
+  private _needsUpdate = true;
 
-  /** This is the position of the camera within the world. Call updateTransform for changes to take effect. */
+  /** This is the position of the camera within the world. */
   get position() {
-    return copy3(this._position);
+    return this.transform.position;
   }
   set position(val: Vec3) {
-    this._position = val;
     this._needsUpdate = true;
+    this.transform.position = val;
   }
-  private _position: Vec3 = [0, 0, 0];
 
-  /** This is a scale distortion the camera views the world with */
+  /**
+   * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
+   * of the camera viewing the world.
+   */
+  lookAt(position: Vec3, up: Vec3) {
+    this._needsUpdate = true;
+    this.transform.lookAt(position, up);
+  }
+
+  /**
+   * This is a scale distortion the camera views the world with. A scale of 2 along an axis, means the camera will view
+   * 2x the amount of the world along that axis (thus having a visual compression if the screen dimensions do
+   * not change).
+   *
+   * This also has the added benefit of quickly and easily swapping axis directions by simply making the scale -1 for
+   * any of the axis.
+   */
   get scale() {
-    return copy3(this._scale);
+    return this.transform.scale;
   }
   set scale(val: Vec3) {
-    this._scale = val;
     this._needsUpdate = true;
+    this.transform.scale = val;
   }
-  private _scale: Vec3 = [1, 1, 1];
-
-  /** This is the rotation of the camera looking into the world */
-  get rotation() {
-    return copy3(this._rotation);
-  }
-  set rotation(val: Vec3) {
-    this._rotation = val;
-    this._needsUpdate = true;
-  }
-  private _rotation: Vec3 = [0, 0, 0];
 
   /**
    * Options used for making the projection of the camera. Set new options to update the projection.
    * Getting the options returns a copy of the object and is not the internal object itself.
    */
   get projectionOptions() {
-    return Object.assign({}, this._projectionOptions);
+    return this._projectionOptions;
   }
   set projectionOptions(val: ICameraOptions) {
     this._projectionOptions = val;
@@ -198,13 +224,28 @@ export class Camera {
   }
   private _projectionOptions: ICameraOptions;
 
+  /**
+   * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
+   */
+  get viewProjection() {
+    if (this.transform.changed || this._needsUpdate) {
+      this.update(true);
+    }
+
+    return this._viewProjection;
+  }
+  private _viewProjection: Mat4x4 = identity4();
+
   constructor(options: ICameraOptions) {
     this._projectionOptions = options;
     this._needsUpdate = true;
-    this.onViewChange = options.onViewChange;
+    this.onChange = options.onViewChange;
     this.update();
   }
 
+  /**
+   * This marks the camera's changes as resolved and responded to.
+   */
   resolve() {
     this._needsUpdate = false;
     this.needsViewDrawn = false;
@@ -217,41 +258,39 @@ export class Camera {
   update(force?: boolean) {
     if (this._needsUpdate || force) {
       this.updateProjection();
-      this.updateTransform();
+      this._needsUpdate = false;
     }
   }
 
   /**
-   * Takes the current projection options and
+   * Takes the current projection options and produces the projection matrix needed to project elements to the screen.
    */
   updateProjection() {
     if (isOrthographic(this)) {
-      this._projection = orthographic4x4(
+      orthographic4x4(
         this.projectionOptions.left,
         this.projectionOptions.right,
         this.projectionOptions.bottom,
         this.projectionOptions.top,
         this.projectionOptions.near,
-        this.projectionOptions.far
+        this.projectionOptions.far,
+        this._projection
       );
     } else if (isPerspective(this)) {
-      this._projection = perspective4x4(
+      perspective4x4(
         this.projectionOptions.fov,
-        this.projectionOptions.width / this.projectionOptions.height,
+        this.projectionOptions.width,
+        this.projectionOptions.height,
         this.projectionOptions.near,
-        this.projectionOptions.far
+        this.projectionOptions.far,
+        this._projection
       );
     }
-  }
 
-  /**
-   * Takes the current components of the camera and updates the transform of the camera (the view)
-   * within Model View Projection Transform
-   */
-  updateTransform() {
-    this._view = multiply4x4(
-      scale4x4by3(this._scale),
-      translation4x4by3(this._position)
+    multiply4x4(
+      this._projection,
+      this.transform.viewMatrix,
+      this._viewProjection
     );
   }
 }

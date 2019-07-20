@@ -4,7 +4,8 @@ import {
   IMouseInteraction,
   ITouchInteraction
 } from "../../event-management/types";
-import { IProjection, PickType } from "../../types";
+import { BaseProjection } from "../../math";
+import { PickType } from "../../types";
 import {
   isDefined,
   mapGetWithDefault,
@@ -13,7 +14,6 @@ import {
 } from "../../util";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
-import { Surface } from "../surface";
 import { IViewProps, View } from "../view";
 
 /**
@@ -34,15 +34,9 @@ export class LayerMouseEvents extends SimpleEventHandler {
     if (!this.surface || !this.surface.sceneDiffs) return [];
     return this.surface.sceneDiffs.items;
   }
-  /**
-   * This is the surface this LayerMouseEvent Controller is operating on behalf of. We use this to trigger,
-   * pre-layer processing items, such as color pick narrowing prior to the Layers receiving the event.
-   */
-  surface: Surface;
 
-  constructor(surface: Surface) {
+  constructor() {
     super({});
-    this.surface = surface;
   }
 
   getSceneViewsUnderMouse(e: IEventInteraction) {
@@ -249,7 +243,7 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleInteraction(
     e: IEventInteraction,
-    callback: (layer: Layer<any, any>, view: IProjection) => void
+    callback: (layer: Layer<any, any>, view: BaseProjection<any>) => void
   ) {
     // Get all of the scenes under the mouse
     const views = this.getSceneViewsUnderMouse(e);
@@ -265,13 +259,13 @@ export class LayerMouseEvents extends SimpleEventHandler {
 
   handleView(
     view: View<IViewProps>,
-    callback: (layer: Layer<any, any>, view: IProjection) => void
+    callback: (layer: Layer<any, any>, view: BaseProjection<any>) => void
   ) {
     for (let i = 0, iMax = view.scene.layers.length; i < iMax; ++i) {
       const layer = view.scene.layers[i];
 
       if (layer.picking && layer.picking.type !== PickType.NONE) {
-        callback(layer, view);
+        callback(layer, view.projection);
       }
     }
   }

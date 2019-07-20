@@ -525,7 +525,15 @@ export class InstanceAttributeBufferManager<
     const attributesBufferLocations: {
       attribute: IInstanceAttribute<T>;
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
-      childBufferLocations: IInstanceAttributeBufferLocation[][];
+      childBufferLocations: {
+        location: IInstanceAttributeBufferLocation[];
+        // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
+        // groups, one would simply use the available items and shift() those items out into the group; however,
+        // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
+        // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
+        // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
+        bufferIndex: number;
+      }[];
       ids: number[];
       bufferIndex: number;
     }[] = [];
@@ -535,9 +543,10 @@ export class InstanceAttributeBufferManager<
         attribute,
         bufferLocationsForAttribute:
           attributeToNewBufferLocations.get(attribute.name) || [],
-        childBufferLocations: (attribute.childAttributes || []).map(
-          attr => attributeToNewBufferLocations.get(attr.name) || []
-        ),
+        childBufferLocations: (attribute.childAttributes || []).map(attr => ({
+          location: attributeToNewBufferLocations.get(attr.name) || [],
+          bufferIndex: -1
+        })),
         ids,
         bufferIndex: -1
       });
@@ -548,9 +557,7 @@ export class InstanceAttributeBufferManager<
       ids: number[],
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
       bufferLocation: IInstanceAttributeBufferLocation | undefined,
-      childAttribute: IInstanceAttribute<T>,
-      bufferLocationsForChildAttribute: IInstanceAttributeBufferLocation[],
-      childBufferLocation: IInstanceAttributeBufferLocation | undefined;
+      childAttribute: IInstanceAttribute<T>;
 
     // Loop through all of the new instances available and gather all of the buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
@@ -619,11 +626,15 @@ export class InstanceAttributeBufferManager<
             k < endk;
             ++k
           ) {
-            bufferLocationsForChildAttribute =
+            const bufferLocationsForChildAttribute =
               allLocations.childBufferLocations[k];
 
             if (bufferLocationsForChildAttribute) {
-              childBufferLocation = bufferLocationsForChildAttribute.shift();
+              const childBufferLocation =
+                bufferLocationsForChildAttribute.location[
+                  ++bufferLocationsForChildAttribute.bufferIndex
+                ];
+              // count++;
               if (childBufferLocation) {
                 bufferLocation.childLocations.push(childBufferLocation);
               } else {

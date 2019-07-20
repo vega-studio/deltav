@@ -1,6 +1,7 @@
 import { uniformBufferInstanceBufferName } from "../../../constants";
 import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
+import { Vec4 } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult
@@ -17,7 +18,6 @@ import {
   PickType,
   ShaderInjectionTarget
 } from "../../../types";
-import { Vec4 } from "../../../util/vector";
 
 /** Provides a label for performance debugging */
 const debugCtx = "BasicIOExpansion";
@@ -235,9 +235,21 @@ export class BasicIOExpansion extends BaseIOExpansion {
     const out = "";
 
     orderedAttributes.forEach(attribute => {
-      const block = attribute.block;
+      const block = attribute.block || 0;
 
-      if (attribute.size === InstanceAttributeSize.FOUR) {
+      // An attribute that is utilizing a matrix will span itself across 4 blocks
+      if (attribute.size === InstanceAttributeSize.MAT4X4) {
+        // If we have a size the size of a block, then don't swizzle the vector
+        this.setDeclaration(
+          declarations,
+          attribute.name,
+          `  ${sizeToType[attribute.size]} ${
+            attribute.name
+          } = mat4(block${block}, block${block + 1}, block${block +
+            2}, block${block + 3});\n`,
+          debugCtx
+        );
+      } else if (attribute.size === InstanceAttributeSize.FOUR) {
         // If we have a size the size of a block, then don't swizzle the vector
         this.setDeclaration(
           declarations,

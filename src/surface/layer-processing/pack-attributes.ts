@@ -77,10 +77,27 @@ export function packAttributes<T extends Instance>(
   // First make sure each attribute has a size
   ensureSizes(attributes);
   // Keep a list of the blocks we have decided needs to be in use
-  const blocks = [new Block(0)];
+  const blocks: Block<T>[] = [];
 
   // Loop through all attributes and pack em' in
   attributes.forEach(attr => {
+    // A matrix 4x4 is a special case where it requires 4 consecutive blocks to work correctly
+    if (attr.size && attr.size === InstanceAttributeSize.MAT4X4) {
+      attr.block = blocks.length;
+      attr.blockIndex = 0;
+
+      // We know any block that gets created instantly receives some content. Thus we know to fit the matrix
+      // we need to simply immediately create 4 blocks.
+      for (let i = 0; i < 4; ++i) {
+        const newBlock = new Block(blocks.length);
+        newBlock.available = 0;
+        newBlock.index = 0;
+        blocks.push(newBlock);
+      }
+
+      return;
+    }
+
     // Look for a block that can fit our attribute
     const block = blocks.find(block => {
       if (block.setAttribute(attr)) {

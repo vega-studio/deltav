@@ -3,7 +3,7 @@ import {
   Instance
 } from "../../../instance-provider/instance";
 import { observable } from "../../../instance-provider/observable";
-import { copy4, Vec2, Vec4 } from "../../../util";
+import { copy4, Vec2, Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** This is the list of control points  */

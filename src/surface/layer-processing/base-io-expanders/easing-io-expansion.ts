@@ -1,4 +1,6 @@
 import { Instance } from "../../../instance-provider";
+import { AutoEasingLoopStyle } from "../../../math/auto-easing-method";
+import { Vec, VecMath, VecMethods } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult
@@ -16,13 +18,11 @@ import {
   IVertexAttribute,
   ShaderInjectionTarget
 } from "../../../types";
-import { AutoEasingLoopStyle } from "../../../util/auto-easing-method";
 import { EasingProps } from "../../../util/easing-props";
 import {
   IShaderTemplateRequirements,
   shaderTemplate
 } from "../../../util/shader-templating";
-import { Vec, VecMath, VecMethods } from "../../../util/vector";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
 
 const debugCtx = "EasingIOExpansion";
@@ -62,7 +62,9 @@ const templateVars = {
 function isEasingAttribute<T extends Instance>(
   attr: any
 ): attr is IEasingInstanceAttribute<T> {
-  return Boolean(attr) && attr.easing && attr.size !== undefined;
+  return (
+    Boolean(attr) && attr.easing && attr.size !== undefined && attr.size <= 4
+  );
 }
 
 /**
@@ -179,8 +181,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // On instance reactivation we want the easing to just be at it's end value
         else if (instance.reactivate) {
-          values.end = vecMethods.copy(end);
-          values.start = vecMethods.copy(end);
+          vecMethods.copy(end, values.end);
+          vecMethods.copy(end, values.end);
           values.startTime = currentTime;
         }
 
@@ -229,14 +231,15 @@ export class EasingIOExpansion extends BaseIOExpansion {
           easingValues.start = easing(
             easingValues.start,
             easingValues.end,
-            timeValue
+            timeValue,
+            easingValues.start
           );
         }
 
         // Set the current time as the start time of our animation
         easingValues.startTime = currentTime + delay;
         // Set the provided value as our destination
-        easingValues.end = vecMethods.copy(end);
+        vecMethods.copy(end, easingValues.end);
         // Update the information shared between this attribute and it's children
         attributeDataShare.values = easingValues;
 

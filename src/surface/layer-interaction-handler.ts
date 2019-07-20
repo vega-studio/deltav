@@ -8,10 +8,10 @@ import {
   ITouchInteraction
 } from "../event-management/types";
 import { Instance } from "../instance-provider/instance";
+import { BaseProjection } from "../math/base-projection";
 import {
   IColorPickingData,
   IMousePickInfo,
-  IProjection,
   ITouchPickInfo,
   PickType
 } from "../types";
@@ -72,7 +72,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseOver(_view: IProjection, _interaction: IMouseInteraction) {
+  handleMouseOver(_view: BaseProjection<any>, _interaction: IMouseInteraction) {
     // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
     // With the instances
   }
@@ -81,7 +81,7 @@ export class LayerInteractionHandler<
    * Handles touch down gestures for a layer within a view
    */
   handleTouchOver(
-    _view: IProjection,
+    _view: BaseProjection<any>,
     _interaction: ITouchInteraction,
     _touch: ISingleTouchInteraction
   ) {
@@ -92,7 +92,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseDown(view: IProjection, interaction: IMouseInteraction) {
+  handleMouseDown(view: BaseProjection<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseDown } = this.layer.props;
@@ -133,7 +133,7 @@ export class LayerInteractionHandler<
    * Handles touch events for instances for layers
    */
   handleTouchDown(
-    view: IProjection,
+    view: BaseProjection<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -198,7 +198,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse out events for a layer within the view
    */
-  handleMouseOut(view: IProjection, interaction: IMouseInteraction) {
+  handleMouseOut(view: BaseProjection<any>, interaction: IMouseInteraction) {
     // This will fire an instance mouse out for any over instances in the queue since we left the view
     // Thus no instances shall be considered 'over'
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
@@ -228,7 +228,7 @@ export class LayerInteractionHandler<
    * Handles touch events that have been dragged off of a view
    */
   handleTouchOut(
-    view: IProjection,
+    view: BaseProjection<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -263,7 +263,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse up gestures for the layer within the provided view
    */
-  handleMouseUp(view: IProjection, interaction: IMouseInteraction) {
+  handleMouseUp(view: BaseProjection<any>, interaction: IMouseInteraction) {
     const { onMouseUp, onMouseUpOutside } = this.layer.props;
 
     // Check to ensure the layer is configured to accept the events
@@ -322,7 +322,7 @@ export class LayerInteractionHandler<
    * Handles touch up events that occur over a view
    */
   handleTouchUp(
-    view: IProjection,
+    view: BaseProjection<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -417,7 +417,7 @@ export class LayerInteractionHandler<
   /**
    * Mouse move events on the layer will detect when instances have their item newly over or just moved on
    */
-  handleMouseMove(view: IProjection, interaction: IMouseInteraction) {
+  handleMouseMove(view: BaseProjection<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     const { onMouseOver, onMouseMove, onMouseOut } = this.layer.props;
 
@@ -509,7 +509,7 @@ export class LayerInteractionHandler<
    * Handles touches that are moving along the screen
    */
   handleTouchMove(
-    view: IProjection,
+    view: BaseProjection<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -611,7 +611,7 @@ export class LayerInteractionHandler<
   /**
    * Handles click gestures on the layer within a view
    */
-  handleMouseClick(view: IProjection, interaction: IMouseInteraction) {
+  handleMouseClick(view: BaseProjection<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseClick } = this.layer.props;
@@ -648,7 +648,7 @@ export class LayerInteractionHandler<
    * Handles tap interactions with the view
    */
   handleTap(
-    view: IProjection,
+    view: BaseProjection<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -688,7 +688,7 @@ export class LayerInteractionHandler<
   /**
    * Handles drag gestures for the layer within the view
    */
-  handleMouseDrag(_view: IProjection, _interaction: IMouseInteraction) {
+  handleMouseDrag(_view: BaseProjection<any>, _interaction: IMouseInteraction) {
     // We probably should not broadcast drag events for the sake of instances. Instance dragging should be handled on
     // An instance by instance basis rather than coming from the view's gestures
   }

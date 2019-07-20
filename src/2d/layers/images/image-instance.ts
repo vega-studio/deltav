@@ -3,9 +3,9 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
+import { Vec2 } from "../../../math/vector";
 import { IAtlasResourceRequest } from "../../../resources";
 import { NOOP } from "../../../types";
-import { Vec2 } from "../../../util/vector";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
 import { ImageInstanceResource } from "./image-layer";
 

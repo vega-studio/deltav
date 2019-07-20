@@ -1,5 +1,5 @@
+import { Vec2 } from "../math/vector";
 import { normalizeWheel } from "./normalize-wheel";
-import { Vec2 } from "./vector";
 
 /**
  * Analyzes a MouseEvent and calculates the mouse coordinates (relative to the element).

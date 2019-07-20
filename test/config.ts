@@ -1,5 +1,6 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
+import { BasicDemo3D } from "./demos/basic-demo-3d";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
@@ -17,6 +18,7 @@ export const demos = new Map<string, IDemoCtor>();
 export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";
 
 demos.set("basic-demo", BasicDemo);
+demos.set("basic-demo-3d", BasicDemo3D);
 demos.set("text-area", TextAreaDemo);
 demos.set("text-demo", TextDemo);
 demos.set("nodes-edges", NodesEdges);

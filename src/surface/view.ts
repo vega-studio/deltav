@@ -1,7 +1,8 @@
-import { AbsolutePosition } from "../primitives/absolute-position";
-import { Bounds } from "../primitives/bounds";
+import { Vec2 } from "../math";
+import { BaseProjection, SimpleProjection } from "../math/base-projection";
+import { AbsolutePosition } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
 import { Color, Omit } from "../types";
-import { Vec2 } from "../util";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { LayerScene } from "./layer-scene";
@@ -118,15 +119,29 @@ export abstract class View<
    */
   optimizeRendering: boolean = false;
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
-  pixelRatio: number = window.devicePixelRatio;
+  pixelRatio: number = 1;
   /** The props applied to this view */
   props: TViewProps;
   /** The scene this view is displaying */
   scene: LayerScene;
-  /** This is the rendering bounds within screen space */
-  screenBounds: Bounds<View<TViewProps>>;
-  /** The bounds of the render space on the canvas this view will render on */
-  viewBounds: Bounds<View<IViewProps>>;
+  /** This establishes the projection methods that can be used to project geometry between the screen and the world */
+  projection: BaseProjection<View<TViewProps>>;
+
+  get screenBounds() {
+    return this.projection.screenBounds;
+  }
+
+  set screenBounds(val: Bounds<View<TViewProps>>) {
+    this.projection.screenBounds = val;
+  }
+
+  get viewBounds() {
+    return this.projection.viewBounds;
+  }
+
+  set viewBounds(val: Bounds<View<TViewProps>>) {
+    this.projection.viewBounds = val;
+  }
 
   /** Retrieves the clearflag prop assigned to the view and provides a default */
   get clearFlags() {
@@ -144,70 +159,6 @@ export abstract class View<
     // Keep our props within the view
     this.props = Object.assign({}, View.defaultProps || {}, props);
   }
-
-  screenToPixelSpace(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
-
-    p[0] = point[0] * this.pixelRatio;
-    p[1] = point[1] * this.pixelRatio;
-
-    return p;
-  }
-
-  pixelSpaceToScreen(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
-
-    p[0] = point[0] / this.pixelRatio;
-    p[1] = point[1] / this.pixelRatio;
-
-    return p;
-  }
-
-  /**
-   * Takes a coordinate in screen coordinates and maps it to a point that is relative to a view's viewport on
-   * the screen.
-   */
-  screenToView(point: Vec2, out?: Vec2) {
-    const p = out || [0, 0];
-
-    p[0] = point[0] - this.screenBounds.x;
-    p[1] = point[1] - this.screenBounds.y;
-
-    return p;
-  }
-
-  /**
-   * Takes a coordinate that is relative to a view's viewport within the screen and maps it to a coordinate relative to
-   * the screen.
-   */
-  viewToScreen(point: Vec2, out?: Vec2) {
-    const p: Vec2 = [0, 0];
-
-    p[0] = point[0] + this.screenBounds.x;
-    p[1] = point[1] + this.screenBounds.y;
-
-    return this.pixelSpaceToScreen(p, out);
-  }
-
-  /**
-   * Maps a coordinate relative to the screen to a coordinate found within the world space.
-   */
-  abstract screenToWorld(point: Vec2, out?: Vec2): Vec2;
-
-  /**
-   * Maps a coordinate found within the world to a relative coordinate within the screen space.
-   */
-  abstract worldToScreen(point: Vec2, out?: Vec2): Vec2;
-
-  /**
-   * Maps a coordinate relative to the view's viewport to a coordinate found within the world.
-   */
-  abstract viewToWorld(point: Vec2, out?: Vec2): Vec2;
-
-  /**
-   * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
-   */
-  abstract worldToView(point: Vec2, out?: Vec2): Vec2;
 
   /**
    * This operation makes sure we have the view camera adjusted to the new viewport's needs.
@@ -258,25 +209,24 @@ export abstract class View<
  * Useful as a placeholder view to not cause null or undefined values.
  */
 export class NoView extends View<IViewProps> {
-  screenBounds = new Bounds<never>({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100
-  });
+  projection = new SimpleProjection();
 
   screenToWorld(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   worldToScreen(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   viewToWorld(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   worldToView(_point: Vec2, _out?: Vec2): Vec2 {
     return [0, 0];
   }
+
   fitViewtoViewport(
     screenBounds: Bounds<never>,
     _viewBounds: Bounds<View<IViewProps>>
@@ -290,6 +240,13 @@ export class NoView extends View<IViewProps> {
       key: "error",
       viewport: {},
       camera: Camera.makeOrthographic()
+    });
+
+    this.screenBounds = new Bounds<never>({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100
     });
   }
 }

@@ -1,4 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -6,7 +7,6 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../../types";
-import { IAutoEasingMethod, Vec } from "../../../util";
 import { CommonMaterialOptions } from "../../../util/common-options";
 import { ILayer2DProps, Layer2D } from "../../view";
 import { BorderInstance } from "./border-instance";

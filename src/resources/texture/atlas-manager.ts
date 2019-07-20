@@ -10,7 +10,7 @@ import {
   Texture,
   WebGLRenderer
 } from "../../gl";
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
 import { Atlas, IAtlasResource } from "./atlas";

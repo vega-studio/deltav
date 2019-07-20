@@ -16,7 +16,6 @@ const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
 const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
 
-
 const tslint = {
   loader: 'tslint-loader', options: {
     fix: false,

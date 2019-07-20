@@ -1,3 +1,20 @@
+## 1.33.0
+
+## Added
+
+- [`ADDED`]: 3D system with initial 3D layers
+- [`ADDED`]: Transform support for both Cameras and models.
+- [`ADDED`]: Views are now customizable and can be injected into the pipeline
+- [`ADDED`]: Unit testing
+- [`ADDED`]: Matrix and Quaternion libraries with tested methods. Vector library unit tested now as well.
+- [`ADDED`]: Shader compression added. When the library is built, the shaders are stripped of comments and excess whitespace.
+- [`ADDED`]: Math libraries have an out variable pattern to reduce interim allocations of variables.
+
+## Fixed
+
+- [`FIXED`]: Major performance enhancement for attributes with child attributes. A shift operator was causing load times to explode for items with many child attributes.
+- [`FIXED`]: Fixed heroku deploys for CI
+
 ## 1.32.1
 
 ## Fixed

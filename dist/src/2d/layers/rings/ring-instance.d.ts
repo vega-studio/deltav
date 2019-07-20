@@ -1,5 +1,5 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Vec2 } from "../../../util";
+import { Vec2 } from "../../../math";
 export interface IRingInstanceOptions extends IInstanceOptions {
     center?: Vec2;
     color?: [number, number, number, number];

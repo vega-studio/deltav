@@ -1,6 +1,6 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
+import { Vec2 } from "../../../math";
 import { Size } from "../../../types";
-import { Vec2 } from "../../../util";
 import { Anchor } from "../../types";
 import { GlyphInstance } from "./glyph-instance";
 import { TextAreaInstance } from "./text-area-instance";

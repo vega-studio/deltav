@@ -1,5 +1,5 @@
 /// <reference types="webgl2" />
-import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../util";
+import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
 import { Texture } from "./texture";
 export declare enum MaterialUniformType {
     FLOAT = 0,

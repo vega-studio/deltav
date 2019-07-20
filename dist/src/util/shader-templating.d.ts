@@ -12,6 +12,10 @@ export interface IShaderTemplateRequirements {
 export interface IShaderTemplateOptions {
     onError?(msg: string): void;
     onToken?(token: string, replace: string): string;
+    onMain?(body: string | null): string | {
+        main: string;
+        header: string;
+    };
     options: {
         [key: string]: string;
     };

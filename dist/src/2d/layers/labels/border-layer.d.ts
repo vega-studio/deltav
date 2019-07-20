@@ -1,5 +1,5 @@
+import { IAutoEasingMethod, Vec } from "../../../math";
 import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { IAutoEasingMethod, Vec } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view";
 import { BorderInstance } from "./border-instance";
 export interface IBorderLayerProps<T extends BorderInstance> extends ILayer2DProps<T> {

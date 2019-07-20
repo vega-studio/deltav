@@ -1,6 +1,6 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
+import { Vec2 } from "../../../math/vector";
 import { IAtlasResourceRequest } from "../../../resources";
-import { Vec2 } from "../../../util/vector";
 import { Anchor, ScaleMode } from "../../types";
 import { ImageInstanceResource } from "./image-layer";
 export interface IImageInstanceOptions extends IInstanceOptions {

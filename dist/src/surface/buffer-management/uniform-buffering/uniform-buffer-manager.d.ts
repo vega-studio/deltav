@@ -1,7 +1,7 @@
 import { Geometry, Material, Model } from "../../../gl";
 import { IMaterialUniform, MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
-import { Vec2 } from "../../../util";
+import { Vec2 } from "../../../math";
 import { Layer } from "../../layer";
 import { LayerScene } from "../../layer-scene";
 import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";

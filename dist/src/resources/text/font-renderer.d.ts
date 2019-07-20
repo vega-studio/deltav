@@ -1,5 +1,5 @@
+import { Vec2 } from "../../math";
 import { IResourceType, ResourceType } from "../../types";
-import { Vec2 } from "../../util";
 import { IdentifyByKey } from "../../util/identify-by-key";
 declare type IGlyphRenderMetrics = {
     [key: string]: {

@@ -1,5 +1,5 @@
-import { Surface } from "../surface";
-import { Vec3 } from "./vector";
+import { Transform } from "../3d/scene-graph/transform";
+import { Vec3 } from "../math/vector";
 export declare enum CameraProjectionType {
     PERSPECTIVE = 0,
     ORTHOGRAPHIC = 1
@@ -38,29 +38,27 @@ export declare class Camera {
     animationEndTime: number;
     needsViewDrawn: boolean;
     needsBroadcast: boolean;
-    surface: Surface;
     viewChangeViewId: string;
-    onViewChange?(camera: Camera, viewId: string): void;
+    transform: Transform;
+    onChange?(camera: Camera, viewId: string): void;
     broadcast(viewId: string): void;
     static makeOrthographic(): Camera;
+    static makePerspective(options?: Partial<ICameraPerspectiveOptions>): Camera;
     readonly projectionType: CameraProjectionType;
     readonly projection: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
     private _projection;
     readonly view: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
-    private _view;
     readonly needsUpdate: boolean;
     private _needsUpdate;
     position: Vec3;
-    private _position;
+    lookAt(position: Vec3, up: Vec3): void;
     scale: Vec3;
-    private _scale;
-    rotation: Vec3;
-    private _rotation;
     projectionOptions: ICameraOptions;
     private _projectionOptions;
+    readonly viewProjection: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+    private _viewProjection;
     constructor(options: ICameraOptions);
     resolve(): void;
     update(force?: boolean): void;
     updateProjection(): void;
-    updateTransform(): void;
 }

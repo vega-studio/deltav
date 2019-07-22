@@ -157,7 +157,10 @@ export class InstanceAttributePackingBufferManager<
    */
   private doAdd(instance: T) {
     // Ensure we have buffer locations available
-    if (this.availableLocations.length <= 0) {
+    if (
+      this.availableLocations.length <= 0 ||
+      this.currentAvailableLocation >= this.availableLocations.length - 1
+    ) {
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
       // Break down the newly generated buffers into property groupings for the instances

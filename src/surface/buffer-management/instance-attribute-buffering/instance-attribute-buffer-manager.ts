@@ -173,7 +173,7 @@ export class InstanceAttributeBufferManager<
     // Ensure we have buffer locations available
     if (
       this.availableLocations.length <= 0 ||
-      this.currentAvailableLocation >= this.availableLocations.length
+      this.currentAvailableLocation >= this.availableLocations.length - 1
     ) {
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();

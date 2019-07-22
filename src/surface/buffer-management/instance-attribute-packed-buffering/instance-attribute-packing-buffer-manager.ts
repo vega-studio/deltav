@@ -326,6 +326,8 @@ export class InstanceAttributePackingBufferManager<
       }
     }
 
+    debug("BEGIN: Resizing packed attribute buffer by %d instances", growth);
+
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
       // The buffer grows from 0 to our initial instance count
@@ -656,6 +658,8 @@ export class InstanceAttributePackingBufferManager<
       this.scene.container.add(this.model);
     }
 
+    debug("COMPLETE: Resizing unpacked attribute buffer");
+
     return {
       growth,
       newLocations: attributeToNewBufferLocations
@@ -674,6 +678,8 @@ export class InstanceAttributePackingBufferManager<
     totalNewInstances: number
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
+
+    debug("BEGIN: Packed attribute manager grouping new buffer locations");
 
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
@@ -821,6 +827,8 @@ export class InstanceAttributePackingBufferManager<
       // Store this group as a group that is ready to be associated with an instance
       this.availableLocations.push(group);
     }
+
+    debug("COMPLETE: Packed attribute buffer manager buffer location grouping");
 
     // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
     flushEmitOnce();

@@ -5,7 +5,7 @@
     "url": "http://diniden.com"
   },
   "name": "@vega-studio/deltav",
-  "version": "1.32.1",
+  "version": "1.33.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
@@ -23,8 +23,8 @@
     "webgl-obj-loader": "^2.0.3"
   },
   "devDependencies": {
-    "@tarwich/runner": "github:tarwich/runner",
     "@diniden/signal-processing": "github:diniden/signal-processing",
+    "@tarwich/runner": "github:tarwich/runner",
     "@types/animejs": "2.0.0",
     "@types/assert": "1.4.2",
     "@types/d3-color": "1.2.2",

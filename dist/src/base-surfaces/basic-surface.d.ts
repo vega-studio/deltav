@@ -1,6 +1,6 @@
 import { EventManager } from "../event-management/event-manager";
 import { Instance, InstanceProvider } from "../instance-provider";
-import { Bounds } from "../primitives/bounds";
+import { Bounds } from "../math/primitives/bounds";
 import { BaseResourceOptions } from "../resources";
 import { ISceneOptions, ISurfaceOptions, IViewProps, LayerInitializer, Surface, View, ViewInitializer } from "../surface";
 import { Lookup, Omit, Size } from "../types";
@@ -48,7 +48,7 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
     private handleResize;
     init(): Promise<void>;
     fitContainer(preventRedraw?: boolean): void;
-    getViewProjections(viewId: string): import("../types").IProjection | null;
+    getViewProjections(viewId: string): import("..").BaseProjection<any> | null;
     getViewScreenSize(viewId: string): Size;
     getViewScreenBounds(viewId: string): Bounds<View<IViewProps>>;
     getViewWorldBounds(viewId: string): Bounds<View<IViewProps>>;

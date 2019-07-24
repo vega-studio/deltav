@@ -33,7 +33,7 @@ export class Line3DLayer extends Layer<
     const vertexCount = 2;
 
     return {
-      drawMode: GLSettings.Model.DrawMode.LINES,
+      drawMode: GLSettings.Model.DrawMode.POINTS,
       fs: require("./line-3d-layer.fs"),
       instanceAttributes: [
         createAttribute({

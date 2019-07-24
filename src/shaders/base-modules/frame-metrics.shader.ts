@@ -15,6 +15,11 @@ ShaderModule.register({
       name: "currentTime",
       size: UniformSize.ONE,
       update: () => [layer.surface.frameMetrics.currentTime]
+    },
+    {
+      name: "currentFrame",
+      size: UniformSize.ONE,
+      update: () => [layer.surface.frameMetrics.currentFrame]
     }
   ]
 });

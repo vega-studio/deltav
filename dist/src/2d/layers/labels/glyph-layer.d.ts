@@ -1,6 +1,6 @@
+import { IAutoEasingMethod, Vec } from "../../../math";
 import { IFontResourceRequest } from "../../../resources";
 import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { IAutoEasingMethod, Vec } from "../../../util";
 import { ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";

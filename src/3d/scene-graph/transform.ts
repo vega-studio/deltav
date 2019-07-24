@@ -4,6 +4,7 @@ import {
   inverse3,
   lookAtQuat,
   Mat4x4,
+  matrix4x4FromUnitQuatModel,
   matrix4x4FromUnitQuatView,
   multiply4x4,
   oneQuat,
@@ -12,7 +13,6 @@ import {
   scale4x4by3,
   subtract3,
   translation4x4by3,
-  transpose4x4,
   Vec3
 } from "../../math";
 
@@ -135,7 +135,7 @@ export class Transform {
 
     if (this.needsRotationUpdate) {
       this.needsRotationUpdate = false;
-      transpose4x4(matrix4x4FromUnitQuatView(this._rotation, R), R);
+      matrix4x4FromUnitQuatModel(this._rotation, R);
     }
 
     const T = this.translationMatrix;

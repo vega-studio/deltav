@@ -277,7 +277,11 @@ export class ShaderProcessor {
     shaders: IShaderInitialization<T>
   ): ProcessShaderImportResults {
     const shaderModuleUnits = new Set<ShaderModuleUnit>();
-    const baseModules = layer.baseShaderModules(shaders);
+    let baseModules = layer.baseShaderModules(shaders);
+
+    if (layer.props.baseShaderModules) {
+      baseModules = layer.props.baseShaderModules(shaders, baseModules);
+    }
 
     // Process imports for the vertex shader
     const vs = ShaderModule.process(

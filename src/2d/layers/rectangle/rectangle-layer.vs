@@ -1,7 +1,6 @@
 precision highp float;
 
 varying vec4 vertexColor;
-${extendHeader}
 
 void main() {
   // Determine final screen size of label
@@ -78,5 +77,4 @@ void main() {
   vertexColor = color;
 
   gl_Position = clipSpace(vec3(vertex, depth));
-  ${extend}
 }

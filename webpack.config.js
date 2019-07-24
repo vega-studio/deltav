@@ -1,6 +1,7 @@
 const { resolve } = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+.BundleAnalyzerPlugin;
 
 console.log('NODE_ENV', process.env.NODE_ENV);
 
@@ -13,34 +14,40 @@ const IS_HEROKU = process.env.NODE_ENV === 'heroku';
 const IS_RELEASE = process.env.NODE_ENV === 'release';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || IS_RELEASE;
 const IS_UNIT_TESTS = process.env.NODE_ENV === 'unit-test';
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
-const MODE = process.env.MODE || (IS_RELEASE | IS_PRODUCTION) ? 'production' : 'development';
+const IS_DEVELOPMENT =
+  process.env.NODE_ENV === 'development' || IS_UNIT_TESTS || IS_HEROKU;
+const MODE =
+  process.env.MODE || IS_RELEASE | IS_PRODUCTION ? 'production' : 'development';
 
 const tslint = {
-  loader: 'tslint-loader', options: {
+  loader: 'tslint-loader',
+  options: {
     fix: false,
-    emitErrors: true,
+    emitErrors: true
   }
 };
 
 const prettier = {
-  loader: resolve('prettier-loader.js'),
+  loader: resolve('prettier-loader.js')
 };
 
 const babelOptions = {
   babelrc: false,
   presets: [
-    ['env', {
-      targets: {
-        browsers: [
-          'last 2 Chrome versions',
-          'last 2 Safari versions',
-          'last 2 Firefox versions',
-          'last 2 Edge versions',
-        ]
-      },
-      modules: false
-    }]
+    [
+      'env',
+      {
+        targets: {
+          browsers: [
+            'last 2 Chrome versions',
+            'last 2 Safari versions',
+            'last 2 Firefox versions',
+            'last 2 Edge versions'
+          ]
+        },
+        modules: false
+      }
+    ]
   ]
 };
 
@@ -53,8 +60,8 @@ if (IS_DEVELOPMENT) {
   plugins.push(
     new CircularDependencyPlugin({
       exclude: /\bnode_modules\b/,
-      failOnError: true,
-    }),
+      failOnError: true
+    })
   );
 
   if (process.env.DEBUG_PACKAGE) plugins.push(new BundleAnalyzerPlugin());
@@ -90,26 +97,34 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?/, use: [
+        test: /\.tsx?/,
+        use: [
           { loader: 'babel-loader', options: babelOptions },
           {
             loader: 'ts-loader',
-            options: { transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS || IS_HEROKU }
-          },
+            options: {
+              transpileOnly: IS_PRODUCTION || IS_UNIT_TESTS || IS_HEROKU
+            }
+          }
         ]
       },
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
-      { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
+      {
+        test: /\.html$/,
+        use: { loader: 'file-loader', options: { name: '[name].html' } }
+      },
       { test: /\.png$/, loader: 'base64-image-loader' },
       { test: /\.[fv]s$/, use: ['raw-loader'] }, // Currently used to load shaders into javascript files
+      { test: /\.obj$/, use: ['raw-loader'] },
+      { test: /\.mtl$/, use: ['raw-loader'] },
       {
         test: /\.(mp4|mov)$/,
         loader: 'file-loader',
         options: {
-          name: '[name].[ext]',
+          name: '[name].[ext]'
         }
       }
-    ],
+    ]
   },
 
   output: {
@@ -124,10 +139,12 @@ module.exports = {
   resolve: {
     modules: ['.', './node_modules', './src'],
     extensions: ['.ts', '.tsx', '.js', '.json'],
-    alias: DEVGL ? {
-      '@voidrayco/voidgl$': DEVGL,
-    } : undefined,
-  },
+    alias: DEVGL ?
+      {
+        '@voidrayco/voidgl$': DEVGL
+      } :
+      undefined
+  }
 };
 
 if (IS_DEVELOPMENT) {

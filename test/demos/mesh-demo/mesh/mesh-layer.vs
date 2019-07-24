@@ -6,6 +6,8 @@ varying vec4 vertexColor;
 varying vec2 vertexTexture;
 varying float enableTexture;
 
+${extendHeader}
+
 mat4 translation4x4(vec4 vec) {
     return mat4(
         1.0, 0.0, 0.0, 0.0, 

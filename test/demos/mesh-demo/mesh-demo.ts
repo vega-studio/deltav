@@ -39,8 +39,8 @@ export enum CameraOrder {
 }
 
 export class MeshDemo extends BaseDemo {
-  obj: string = require("./obj/lego/lego.obj");
-  mtl: string = require("./obj/lego/lego.mtl");
+  obj: string = require("./obj/cube/cube.obj");
+  mtl: string = require("./obj/cube/cube.mtl");
 
   gui: datGUI.GUI;
 
@@ -158,8 +158,8 @@ export class MeshDemo extends BaseDemo {
       },
       resources: {
         atlas: createAtlas({
-          width: TextureSize._2048,
-          height: TextureSize._2048
+          width: TextureSize._128,
+          height: TextureSize._128
         })
       },
       eventManagers: _cameras => ({}),
@@ -184,7 +184,6 @@ export class MeshDemo extends BaseDemo {
                 light: new Light({ position: [1, 1, 1] }),
                 onMouseDown: info => {
                   this.mouseDown = true;
-                  console.warn(info.screen);
                   this.mouseX = info.screen[0];
                   this.mouseY = info.screen[1];
                 },
@@ -198,6 +197,7 @@ export class MeshDemo extends BaseDemo {
                   if (this.mouseDown) {
                     this.angleH += (info.screen[0] - this.mouseX) / 100;
                     this.angleV += -(info.screen[1] - this.mouseY) / 100;
+                    if (this.angleV < 0.0001) this.angleV = 0.0001;
                     this.setCamera();
                     this.mouseX = info.screen[0];
                     this.mouseY = info.screen[1];
@@ -388,7 +388,7 @@ export class MeshDemo extends BaseDemo {
     let zMax = Number.MIN_SAFE_INTEGER;
 
     const objModel = new objLoader.Mesh(this.obj);
-    console.warn("VERTICES", objModel.vertices);
+
     for (let i = 0, endi = objModel.vertices.length; i < endi; i += 3) {
       const x = objModel.vertices[i * 3];
       if (x > xMax) xMax = x;
@@ -404,10 +404,6 @@ export class MeshDemo extends BaseDemo {
     const centerX = (xMin + xMax) / 2;
     const centerY = (yMin + yMax) / 2;
     const centerZ = (zMin + zMax) / 2;
-    console.warn("x", xMin, xMax);
-    console.warn("y", yMin, yMax);
-    console.warn("z", zMin, zMax);
-    console.warn("CENTER", [centerX, centerY, centerZ]);
 
     this.surface.cameras.perspective.position = [
       centerX + this.distance * Math.sin(this.angleV) * Math.cos(this.angleH),

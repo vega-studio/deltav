@@ -31,6 +31,7 @@ export interface IMeshLayerProps<T extends MeshInstance>
   mtl: string;
   light: Light;
   hasTexture?: boolean;
+  rasterizationScale?: number;
 }
 
 export class MeshLayer<
@@ -59,7 +60,7 @@ export class MeshLayer<
     if (isVideoResource(mesh.source)) {
       return this.sourceToVideo.get(mesh.source.videoSrc) || WHITE_PIXEL;
     }
-
+    // console.warn("source", mesh.source);
     return mesh.source;
   }
 
@@ -77,6 +78,8 @@ export class MeshLayer<
 
     const mtl = new objLoader.MaterialLibrary(this.props.mtl);
     const obj = new objLoader.Mesh(this.props.obj);
+
+    console.warn("TEXURE", obj.textures);
 
     let i = 0;
     let j = 0;
@@ -126,8 +129,17 @@ export class MeshLayer<
             name: "imageAtlas"
           },
           update: o => {
-            o.source;
+            const resource = this.getAtlasSource(o);
 
+            const request = atlasRequest({
+              key: this.props.atlas || "",
+              source: resource,
+              rasterizationScale: this.props.rasterizationScale
+            });
+            // console.warn("REQUEST", this.resource.request(this, o, request));
+            return this.resource.request(this, o, request);
+          }
+          /*{
             if (
               !o.request ||
               (o.request.texture && !o.request.texture.isValid)
@@ -142,8 +154,8 @@ export class MeshLayer<
 
               return this.resource.request(this, o, request);
             }
-            return this.resource.request(this, o, o.request);
-          }
+            return
+          }*/
         },
         {
           name: "transform",

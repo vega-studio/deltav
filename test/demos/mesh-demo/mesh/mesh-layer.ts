@@ -46,7 +46,7 @@ export class MeshLayer<
     obj: "",
     mtl: "",
     light: new Light({ position: [1, 1, 1] }),
-    hasTexture: false
+    hasTexture: true
   };
 
   static attributeNames = {
@@ -131,13 +131,15 @@ export class MeshLayer<
           update: o => {
             const resource = this.getAtlasSource(o);
 
-            const request = atlasRequest({
-              key: this.props.atlas || "",
-              source: resource,
-              rasterizationScale: this.props.rasterizationScale
-            });
-            // console.warn("REQUEST", this.resource.request(this, o, request));
-            return this.resource.request(this, o, request);
+            if (!o.request) {
+              o.request = atlasRequest({
+                key: this.props.atlas || "",
+                source: resource,
+                rasterizationScale: 1.0
+              });
+            }
+
+            return this.resource.request(this, o, o.request);
           }
           /*{
             if (

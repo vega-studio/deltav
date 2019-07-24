@@ -158,8 +158,8 @@ export class MeshDemo extends BaseDemo {
       },
       resources: {
         atlas: createAtlas({
-          width: TextureSize._128,
-          height: TextureSize._128
+          width: TextureSize._4096,
+          height: TextureSize._4096
         })
       },
       eventManagers: _cameras => ({}),

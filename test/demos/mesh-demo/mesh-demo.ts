@@ -198,6 +198,7 @@ export class MeshDemo extends BaseDemo {
                     this.angleH += (info.screen[0] - this.mouseX) / 100;
                     this.angleV += -(info.screen[1] - this.mouseY) / 100;
                     if (this.angleV < 0.0001) this.angleV = 0.0001;
+                    if (this.angleV > Math.PI) this.angleV = Math.PI;
                     this.setCamera();
                     this.mouseX = info.screen[0];
                     this.mouseY = info.screen[1];

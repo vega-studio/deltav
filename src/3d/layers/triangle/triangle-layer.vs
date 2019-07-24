@@ -1,7 +1,7 @@
 ${import: projection}
 
 void main() {
-  vec4 pos = vec4(position * scale, 1.0);
+  vec4 pos = vec4(position * size, 1.0);
   vec4 world = transform * pos;
   // vec4 world = mat4(1.,0.,0.,0., 0.,1.,0.,0., 0.,0.,1.,0., 0.,0.,0.,1.) * pos;
 

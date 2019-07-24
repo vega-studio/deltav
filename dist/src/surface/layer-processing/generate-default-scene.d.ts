@@ -1,4 +1,4 @@
-import { AbsolutePosition } from "../../primitives/absolute-position";
+import { AbsolutePosition } from "../../math/primitives/absolute-position";
 import { Camera } from "../../util/camera";
 export interface IDefaultElements {
     camera: Camera;

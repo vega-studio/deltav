@@ -30,7 +30,7 @@ ShaderModule.register([
         },
         // This injects the model view matrix from the view camera
         {
-          name: "modelView",
+          name: "view",
           size: UniformSize.MATRIX4,
           update: () => layer.view.props.camera.view
         },

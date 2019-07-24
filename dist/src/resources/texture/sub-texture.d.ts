@@ -1,7 +1,7 @@
 import { Texture } from "../../gl/texture";
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
+import { Vec2 } from "../../math/vector";
 import { InstanceIOValue, Omit } from "../../types";
-import { Vec2 } from "../../util/vector";
 import { VideoTextureMonitor } from "./video-texture-monitor";
 export declare function subTextureIOValue(texture?: SubTexture | null): InstanceIOValue;
 export declare class SubTexture {

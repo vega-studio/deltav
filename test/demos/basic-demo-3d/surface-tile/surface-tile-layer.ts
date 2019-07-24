@@ -23,6 +23,13 @@ export class SurfaceTileLayer extends Layer<
     data: new InstanceProvider<SurfaceTileInstance>()
   };
 
+  static attributeNames = {
+    c1: "c1",
+    c2: "c2",
+    c3: "c3",
+    c4: "c4"
+  };
+
   initShader(): IShaderInitialization<SurfaceTileInstance> {
     const positions: number[] = [
       // up
@@ -50,25 +57,25 @@ export class SurfaceTileLayer extends Layer<
       instanceAttributes: [
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "c1",
+          name: SurfaceTileLayer.attributeNames.c1,
           size: InstanceAttributeSize.THREE,
           update: o => o.c1
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "c2",
+          name: SurfaceTileLayer.attributeNames.c2,
           size: InstanceAttributeSize.THREE,
           update: o => o.c2
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "c3",
+          name: SurfaceTileLayer.attributeNames.c3,
           size: InstanceAttributeSize.THREE,
           update: o => o.c3
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "c4",
+          name: SurfaceTileLayer.attributeNames.c4,
           size: InstanceAttributeSize.THREE,
           update: o => o.c4
         }),

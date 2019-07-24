@@ -1,7 +1,7 @@
 import { Texture } from "../../gl";
+import { Vec2 } from "../../math/vector";
 import { ResourceType, Size } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
-import { Vec2 } from "../../util/vector";
 import { PackNode } from "../texture/pack-node";
 import { SubTexture } from "../texture/sub-texture";
 import { FontManager, FontMapSource, IFontResourceOptions } from "./font-manager";

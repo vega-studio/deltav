@@ -11,8 +11,6 @@ vec2 interpolation(float t, vec2 center, float radius, float start, float end) {
   return center + vec2(cos(angle) * radius, sin(angle) * radius);
 }
 
-${extendHeader}
-
 void main() {
   // Destructure some of the vec injections
   float startAngle = angle.x;
@@ -41,6 +39,4 @@ void main() {
 
   gl_Position = vec4((vertex / viewSize) * vec2(2.0, 2.0) - vec2(1.0, 1.0), centerClip.zw);
   gl_PointSize = 5.0;
-
-  ${extend}
 }

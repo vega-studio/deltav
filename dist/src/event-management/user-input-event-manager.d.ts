@@ -1,9 +1,9 @@
-import { Bounds } from "../primitives";
+import { Bounds } from "../math/primitives";
+import { Vec2 } from "../math/vector";
 import { LayerScene } from "../surface/layer-scene";
 import { Surface } from "../surface/surface";
 import { IViewProps, View } from "../surface/view";
 import { QuadTree } from "../util/quad-tree";
-import { Vec2 } from "../util/vector";
 import { EventManager } from "./event-manager";
 import { IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types";
 export declare class UserInputEventManager {

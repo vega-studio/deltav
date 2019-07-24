@@ -1,1 +1,1 @@
-import "./world-2d";
+import "./world-2d.shader";

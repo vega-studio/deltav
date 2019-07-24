@@ -5,8 +5,6 @@ precision highp float;
 varying vec4 vertexColor;
 varying vec2 texCoord;
 
-${extendHeader}
-
 void main() {
   // Figure out the size of the image as it'd show on the screen
   vec3 screenSize = cameraSpaceSize(vec3(size, 1.0));
@@ -73,6 +71,4 @@ void main() {
   );
 
   gl_Position = clipSpace(vec3(vertex, depth));
-
-  ${extend}
 }

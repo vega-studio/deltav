@@ -2,6 +2,7 @@ import { Transform } from "../3d/scene-graph/transform";
 import {
   identity4,
   Mat4x4,
+  multiply4x4,
   orthographic4x4,
   perspective4x4
 } from "../math/matrix";
@@ -181,6 +182,7 @@ export class Camera {
     return this.transform.position;
   }
   set position(val: Vec3) {
+    this._needsUpdate = true;
     this.transform.position = val;
   }
 
@@ -189,6 +191,7 @@ export class Camera {
    * of the camera viewing the world.
    */
   lookAt(position: Vec3, up: Vec3) {
+    this._needsUpdate = true;
     this.transform.lookAt(position, up);
   }
 
@@ -204,6 +207,7 @@ export class Camera {
     return this.transform.scale;
   }
   set scale(val: Vec3) {
+    this._needsUpdate = true;
     this.transform.scale = val;
   }
 
@@ -219,6 +223,18 @@ export class Camera {
     this._needsUpdate = true;
   }
   private _projectionOptions: ICameraOptions;
+
+  /**
+   * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
+   */
+  get viewProjection() {
+    if (this.transform.changed || this._needsUpdate) {
+      this.update(true);
+    }
+
+    return this._viewProjection;
+  }
+  private _viewProjection: Mat4x4 = identity4();
 
   constructor(options: ICameraOptions) {
     this._projectionOptions = options;
@@ -270,5 +286,11 @@ export class Camera {
         this._projection
       );
     }
+
+    multiply4x4(
+      this._projection,
+      this.transform.viewMatrix,
+      this._viewProjection
+    );
   }
 }

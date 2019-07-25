@@ -857,6 +857,8 @@ export function toOrderedEulerFromQuat2(
 
       break;
   }
+
+  return out;
 }
 
 /**

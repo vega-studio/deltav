@@ -9,9 +9,17 @@ import {
   createAtlas,
   createLayer,
   createView,
+  cross3,
   InstanceProvider,
+  Mat4x4,
+  matrix4x4ToQuaternion,
+  multiply4x4,
   PickType,
+  rotationByAxis,
+  subtract3,
   TextureSize,
+  Transform,
+  transform4,
   Vec3,
   View3D
 } from "../../../src";
@@ -39,18 +47,24 @@ export enum CameraOrder {
 }
 
 export class MeshDemo extends BaseDemo {
-  obj: string = require("./obj/cube/cube.obj");
-  mtl: string = require("./obj/cube/cube.mtl");
+  obj: string = require("./obj/lego/lego.obj");
+  mtl: string = require("./obj/lego/lego.mtl");
 
   gui: datGUI.GUI;
 
   mouseDown: boolean = false;
   private center: Vec3 = [0, 0, 0];
 
-  distance: number = 20;
+  distance: number = 200;
   angleV: number = 90 * TO_RADIANS;
-  angleH: number = 0;
+  angleH: number = 90 * TO_RADIANS;
   order: CameraOrder = CameraOrder.DIRECT;
+
+  transform: Transform;
+
+  mesh: MeshInstance;
+
+  matrix: Mat4x4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
   parameters = {
     distance: this.distance,
@@ -98,6 +112,12 @@ export class MeshDemo extends BaseDemo {
       .add(this.parameters, "angleH", 0, 360, 1)
       .onFinishChange((value: number) => {
         this.moveCameraByAngleH(value * TO_RADIANS, this.parameters.duration);
+        /*const q = fromEulerAxisAngleToQuat(
+          [0, 1, 0],
+          -value * TO_RADIANS + this.angleH
+        );
+        this.mesh.quaternion = multiplyQuat(q, this.mesh.quaternion);
+        this.angleH = value;*/
       });
     parameters.add(this.parameters, "duration", 100, 2000, 100);
     parameters
@@ -187,19 +207,48 @@ export class MeshDemo extends BaseDemo {
                   this.mouseX = info.screen[0];
                   this.mouseY = info.screen[1];
                 },
-                onMouseUp: () => {
+                onMouseUp: info => {
                   this.mouseDown = false;
+                  this.mouseX = info.screen[0];
+                  this.mouseY = info.screen[1];
                 },
                 onMouseUpOutside: () => {
                   this.mouseDown = false;
                 },
                 onMouseMove: info => {
-                  if (this.mouseDown) {
-                    this.angleH += (info.screen[0] - this.mouseX) / 100;
+                  if (this.mouseDown && this.surface) {
+                    /*this.angleH += (info.screen[0] - this.mouseX) / 100;
                     this.angleV += -(info.screen[1] - this.mouseY) / 100;
                     if (this.angleV < 0.0001) this.angleV = 0.0001;
                     if (this.angleV > Math.PI) this.angleV = Math.PI;
                     this.setCamera();
+                    this.mouseX = info.screen[0];
+                    this.mouseY = info.screen[1];*/
+
+                    const angleU = -(info.screen[0] - this.mouseX) / 100;
+                    const angleT = -(info.screen[1] - this.mouseY) / 100;
+
+                    const vectorFromObjectoCamera = subtract3(
+                      this.surface.cameras.perspective.position,
+                      this.center
+                    );
+
+                    const t = cross3([0, 1, 0], vectorFromObjectoCamera);
+                    const u = cross3(vectorFromObjectoCamera, t);
+
+                    const t2 = transform4(this.matrix, [t[0], t[1], t[2], 1]);
+                    const u2 = transform4(this.matrix, [u[0], u[1], u[2], 1]);
+
+                    const matrixT = rotationByAxis(t2[0], t2[1], t2[2], angleT);
+                    const matrixU = rotationByAxis(u2[0], u2[1], u2[2], angleU);
+
+                    this.matrix = multiply4x4(
+                      matrixT,
+                      multiply4x4(matrixU, this.matrix)
+                    );
+
+                    this.mesh.quaternion = matrix4x4ToQuaternion(this.matrix);
+
                     this.mouseX = info.screen[0];
                     this.mouseY = info.screen[1];
                   }
@@ -376,9 +425,8 @@ export class MeshDemo extends BaseDemo {
     const cube = new MeshInstance({
       color: [1, 0, 0, 1],
       source: cubeTexture
-      // onReady: ()
     });
-
+    this.mesh = cube;
     this.providers.cubes.add(cube);
 
     let xMin = Number.MAX_SAFE_INTEGER;
@@ -406,15 +454,14 @@ export class MeshDemo extends BaseDemo {
     const centerY = (yMin + yMax) / 2;
     const centerZ = (zMin + zMax) / 2;
 
+    this.mesh.transform = [-centerX, -centerY, -centerZ, 1];
+
     this.surface.cameras.perspective.position = [
-      centerX + this.distance * Math.sin(this.angleV) * Math.cos(this.angleH),
-      centerY + this.distance * Math.cos(this.angleV),
-      centerZ + this.distance * Math.sin(this.angleV) * Math.sin(this.angleH)
+      0 + this.distance * Math.sin(this.angleV) * Math.cos(this.angleH),
+      0 + this.distance * Math.cos(this.angleV),
+      0 + this.distance * Math.sin(this.angleV) * Math.sin(this.angleH)
     ];
-    this.surface.cameras.perspective.lookAt(
-      [centerX, centerY, centerZ],
-      [0, 1, 0]
-    );
-    this.center = [centerX, centerY, centerZ];
+    this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 1, 0]);
+    this.center = [0, 0, 0];
   }
 }

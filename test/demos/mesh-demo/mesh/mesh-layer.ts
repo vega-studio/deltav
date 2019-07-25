@@ -46,7 +46,7 @@ export class MeshLayer<
     obj: "",
     mtl: "",
     light: new Light({ position: [1, 1, 1] }),
-    hasTexture: true
+    hasTexture: false
   };
 
   static attributeNames = {

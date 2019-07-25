@@ -980,6 +980,41 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
   }
 }
 
+export function rotationByAxis(
+  x: number,
+  y: number,
+  z: number,
+  angle: number,
+  out?: Mat4x4
+) {
+  out = out || identity4();
+
+  const sqrt = Math.sqrt(x * x + y * y + z * z);
+  const ux = x / sqrt;
+  const uy = y / sqrt;
+  const uz = z / sqrt;
+
+  return apply4x4(
+    out,
+    cos(angle) + ux * ux * (1 - cos(angle)),
+    uy * ux * (1 - cos(angle)) + uz * sin(angle),
+    uz * ux * (1 - cos(angle)) - uy * sin(angle),
+    0,
+    ux * uy * (1 - cos(angle)) - uz * sin(angle),
+    cos(angle) + uy * uy * (1 - cos(angle)),
+    uz * uy * (1 - cos(angle)) + ux * sin(angle),
+    0,
+    ux * uz * (1 - cos(angle)) + uy * sin(angle),
+    uy * uz * (1 - cos(angle)) - ux * sin(angle),
+    cos(angle) + uz * uz * (1 - cos(angle)),
+    0,
+    0,
+    0,
+    0,
+    1
+  );
+}
+
 /**
  * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
  * receive a matrix that will perform rotations by that amount in that order.

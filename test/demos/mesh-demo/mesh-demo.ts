@@ -10,12 +10,16 @@ import {
   createLayer,
   createView,
   cross3,
+  eulerToQuat,
   InstanceProvider,
+  lookAtQuat,
   Mat4x4,
   matrix4x4ToQuaternion,
   multiply4x4,
   PickType,
+  Quaternion,
   rotationByAxis,
+  slerpUnitQuat,
   subtract3,
   TextureSize,
   Transform,
@@ -84,6 +88,200 @@ export class MeshDemo extends BaseDemo {
       );
 
       this.gui.updateDisplay();
+    },
+    movePositions: () => {
+      if (this.surface) {
+        const quat = this.surface.cameras.perspective.transform.rotation;
+        const positions: Vec3[] = [
+          [
+            -20 + 40 * Math.random(),
+            -20 + 40 * Math.random(),
+            200 * Math.random()
+          ],
+          [
+            -20 + 40 * Math.random(),
+            -20 + 40 * Math.random(),
+            200 * Math.random()
+          ],
+          [
+            -20 + 40 * Math.random(),
+            -20 + 40 * Math.random(),
+            200 * Math.random()
+          ],
+          [
+            -20 + 40 * Math.random(),
+            -20 + 40 * Math.random(),
+            200 * Math.random()
+          ],
+          [
+            -20 + 40 * Math.random(),
+            -20 + 40 * Math.random(),
+            200 * Math.random()
+          ]
+        ];
+
+        const duration = 2000;
+        let index = 0;
+        const endi = positions.length;
+
+        let pos = positions[index];
+        this.moveCameraTo(pos, quat, duration);
+
+        const intervalId = setInterval(() => {
+          index++;
+
+          if (index >= endi) {
+            clearInterval(intervalId);
+          } else {
+            pos = positions[index];
+            this.moveCameraTo(pos, quat, duration);
+          }
+        }, duration);
+      }
+    },
+    moveRotations: () => {
+      if (this.surface) {
+        const pos = this.surface.cameras.perspective.position;
+
+        const quats = [
+          lookAtQuat(
+            [
+              this.center[0] - pos[0],
+              this.center[1] + 50 - pos[1],
+              this.center[2] - pos[2]
+            ],
+            [0, 1, 0]
+          ),
+          lookAtQuat(
+            [
+              this.center[0] + 100 - pos[0],
+              this.center[1] - pos[1],
+              this.center[2] - pos[2]
+            ],
+            [0, 1, 0]
+          ),
+          lookAtQuat(
+            [
+              this.center[0] - pos[0],
+              this.center[1] - pos[1],
+              this.center[2] + 60 - pos[2]
+            ],
+            [0, 1, 0]
+          ),
+          lookAtQuat(
+            [
+              this.center[0] - 100 - pos[0],
+              this.center[1] + 50 - pos[1],
+              this.center[2] - pos[2]
+            ],
+            [0, 1, 0]
+          ),
+          lookAtQuat(
+            [
+              this.center[0] - 40 - pos[0],
+              this.center[1] + 20 - pos[1],
+              this.center[2] + 60 - pos[2]
+            ],
+            [0, 1, 0]
+          )
+        ];
+
+        const duration = 2000;
+        let index = 0;
+        const endi = quats.length;
+
+        let q = quats[index];
+        this.moveCameraTo(pos, q, duration);
+
+        const intervalId = setInterval(() => {
+          index++;
+
+          if (index >= endi) {
+            clearInterval(intervalId);
+          } else {
+            q = quats[index];
+            this.moveCameraTo(pos, q, duration);
+          }
+        }, duration);
+      }
+    },
+    move: () => {
+      const positions: Vec3[] = [
+        [20 * Math.random(), 20 * Math.random(), 200 * Math.random()],
+        [20 * Math.random(), 20 * Math.random(), 200 * Math.random()],
+        [20 * Math.random(), 20 * Math.random(), 200 * Math.random()],
+        [20 * Math.random(), 20 * Math.random(), 200 * Math.random()],
+        [20 * Math.random(), 20 * Math.random(), 200 * Math.random()]
+      ];
+
+      const rotations: Quaternion[] = [
+        eulerToQuat([
+          0.2 * Math.PI * Math.random(),
+          (-0.2 + 0.4 * Math.random()) * Math.PI,
+          0.2 * Math.PI * Math.random()
+        ]),
+        eulerToQuat([
+          0.2 * Math.PI * Math.random(),
+          (-0.2 + 0.4 * Math.random()) * Math.PI,
+          0.2 * Math.PI * Math.random()
+        ]),
+        eulerToQuat([
+          0.2 * Math.PI * Math.random(),
+          (-0.2 + 0.4 * Math.random()) * Math.PI,
+          0.2 * Math.PI * Math.random()
+        ]),
+        eulerToQuat([
+          0.2 * Math.PI * Math.random(),
+          (-0.2 + 0.4 * Math.random()) * Math.PI,
+          0.2 * Math.PI * Math.random()
+        ]),
+        eulerToQuat([
+          0.2 * Math.PI * Math.random(),
+          (-0.2 + 0.4 * Math.random()) * Math.PI,
+          0.2 * Math.PI * Math.random()
+        ])
+      ];
+
+      const duration = 2000;
+      let index = 0;
+      const endi = positions.length;
+
+      let pos = positions[index];
+      let rot = rotations[index];
+      this.moveCameraTo(pos, rot, duration);
+
+      const intervalId = setInterval(() => {
+        index++;
+
+        if (index >= endi) {
+          clearInterval(intervalId);
+        } else {
+          pos = positions[index];
+          rot = rotations[index];
+          this.moveCameraTo(pos, rot, duration);
+        }
+      }, duration);
+    },
+    reset: () => {
+      this.mesh.quaternion = [1, 0, 0, 0];
+      this.distance = 200;
+      this.angleV = 90 * TO_RADIANS;
+      this.angleH = 90 * TO_RADIANS;
+      this.order = CameraOrder.DIRECT;
+      this.parameters.distance = this.distance;
+      this.parameters.angleV = this.angleV;
+      this.parameters.angleH = this.angleH;
+      this.parameters.order = this.order;
+      this.matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+      if (this.surface) {
+        this.surface.cameras.perspective.position = [
+          0 + this.distance * Math.sin(this.angleV) * Math.cos(this.angleH),
+          0 + this.distance * Math.cos(this.angleV),
+          0 + this.distance * Math.sin(this.angleV) * Math.sin(this.angleH)
+        ];
+        this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 1, 0]);
+      }
     }
   };
 
@@ -156,6 +354,10 @@ export class MeshDemo extends BaseDemo {
         }
       });
     parameters.add(this.parameters, "random");
+    parameters.add(this.parameters, "move");
+    parameters.add(this.parameters, "moveRotations");
+    parameters.add(this.parameters, "movePositions");
+    parameters.add(this.parameters, "reset");
   }
 
   destroy(): void {
@@ -383,6 +585,37 @@ export class MeshDemo extends BaseDemo {
         }, subDuration);
         break;
     }
+  }
+
+  moveCameraTo(newPosition: Vec3, newRotation: Quaternion, duration: number) {
+    if (!this.surface) return;
+    const oldPosition = this.surface.cameras.perspective.position;
+    const oldRotation = this.surface.cameras.perspective.transform.rotation;
+
+    let i = 0;
+
+    const timerId = setInterval(() => {
+      if (this.surface) {
+        const t = i / 100;
+        const t1 = 1 - t;
+        const time =
+          t < 0.5 ? 8.0 * t * t * t * t : 1.0 - 8.0 * t1 * t1 * t1 * t1;
+        this.surface.cameras.perspective.position = [
+          oldPosition[0] + (newPosition[0] - oldPosition[0]) * time,
+          oldPosition[1] + (newPosition[1] - oldPosition[1]) * time,
+          oldPosition[2] + (newPosition[2] - oldPosition[2]) * time
+        ];
+
+        this.surface.cameras.perspective.transform.rotation = slerpUnitQuat(
+          oldRotation,
+          newRotation,
+          time
+        );
+
+        i++;
+        if (i === 100) clearInterval(timerId);
+      }
+    }, duration / 100);
   }
 
   moveCameraToPosition(newPosition: Vec3, duration: number) {

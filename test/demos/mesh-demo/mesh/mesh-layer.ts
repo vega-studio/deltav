@@ -79,8 +79,6 @@ export class MeshLayer<
     const mtl = new objLoader.MaterialLibrary(this.props.mtl);
     const obj = new objLoader.Mesh(this.props.obj);
 
-    console.warn("TEXURE", obj.textures);
-
     let i = 0;
     let j = 0;
     obj.indices.forEach(index => {

@@ -141,3 +141,14 @@ export function stopAnimationLoop(id: number) {
     animationFrameId = requestAnimationFrame(loop);
   }
 }
+
+/**
+ * This method provides an ensured way to clear ALL commands queued up to fire for a frame. This includes halting all:
+ * animation loops, nextFrame, and onFrame commands.
+ */
+export function stopAllFrameCommands() {
+  animationLoopCommands.clear();
+  immediateQueuedCommands = [];
+  nextQueuedCommands = [];
+  nextFrameCommands = [];
+}

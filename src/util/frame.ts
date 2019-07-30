@@ -11,8 +11,7 @@ let nextFrameCommands: Command[] = [];
 const animationLoopCommands = new Map<number, [Command, number, number]>();
 
 /**
- * Frame loop that queues and shuffles commands to execute them on the frame after the frame
- * they were queued up.
+ * Frame loop that executes queued commands
  */
 const loop = (time: number) => {
   let keepLooping = false;

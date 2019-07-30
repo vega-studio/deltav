@@ -287,7 +287,7 @@ export class MeshDemo extends BaseDemo {
 
   providers = {
     spheres: new InstanceProvider<MeshInstance>(),
-    cubes: new InstanceProvider<MeshInstance>()
+    meshes: new InstanceProvider<MeshInstance>()
   };
 
   mouseX: number;
@@ -398,12 +398,13 @@ export class MeshDemo extends BaseDemo {
             layers: {
               cubes: createLayer(MeshLayer, {
                 atlas: resources.atlas.key,
-                data: providers.cubes,
+                data: providers.meshes,
                 picking: PickType.SINGLE,
                 key: "meshes",
                 obj: this.obj,
                 mtl: this.mtl,
                 light: new Light({ position: [1, 1, 1] }),
+
                 onMouseDown: info => {
                   this.mouseDown = true;
                   this.mouseX = info.screen[0];
@@ -660,7 +661,7 @@ export class MeshDemo extends BaseDemo {
       source: cubeTexture
     });
     this.mesh = cube;
-    this.providers.cubes.add(cube);
+    this.providers.meshes.add(cube);
 
     let xMin = Number.MAX_SAFE_INTEGER;
     let xMax = Number.MIN_SAFE_INTEGER;

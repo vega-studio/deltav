@@ -207,8 +207,7 @@ $\{easingMethod} {
 const continuousSinusoidalGPU = `
 $\{easingMethod} {
   $\{T} direction = end - start;
-  float amplitude = length(direction) * 2.0;
-  return start + direction * sin(t * ${GPU_PI} * 2.0) * amplitude;
+  return start + direction * 0.5 + direction * sin(t * ${GPU_PI} * 2.0) * 0.5;
 }
 `;
 
@@ -673,11 +672,16 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     return {
       uid: uid(),
       cpu: (start: T, end: T, t: number, out?: T) => {
-        const { add, length, scale, subtract } = VecMath(start);
+        const { add, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
         const direction = subtract(end, start);
-        const amplitude = length(direction) * 2.0;
-        return add(start, scale(direction, sin(t * PI * 2) * amplitude), out);
+        const halfDirection = scale(direction, 0.5);
+        // const amplitude = length(direction) * 2.0;
+        return add(
+          add(start, halfDirection),
+          scale(halfDirection, sin(t * PI * 2) * 1.0),
+          out
+        );
       },
       delay,
       duration,

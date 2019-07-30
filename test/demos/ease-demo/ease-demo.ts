@@ -24,6 +24,7 @@ import { DEFAULT_RESOURCES } from "test/types";
 
 export class EaseDemo extends BaseDemo {
   rectangles: RectangleInstance[] = [];
+  followingRectangles: RectangleInstance[] = [];
   labels: LabelInstance[] = [];
 
   duration: number = 2000;
@@ -78,13 +79,8 @@ export class EaseDemo extends BaseDemo {
     delay: 0,
     loopStyle: "1",
     start: () => {
-      this.rectangles.forEach(
-        rec =>
-          (rec.position = [
-            window.innerWidth * 0.05 + window.innerWidth * 0.8,
-            rec.position[1]
-          ])
-      );
+      this.clear();
+      this.init();
     }
   };
 
@@ -422,6 +418,10 @@ export class EaseDemo extends BaseDemo {
 
   destroy() {
     super.destroy();
+    this.clear();
+  }
+
+  clear() {
     this.providers.rectangles1.clear();
     this.providers.rectangles2.clear();
     this.providers.rectangles3.clear();
@@ -442,8 +442,48 @@ export class EaseDemo extends BaseDemo {
     this.providers.rectangles18.clear();
     this.providers.labels.clear();
     this.providers.lines.clear();
-
     this.rectangles = [];
+    this.followingRectangles = [];
+  }
+
+  addRectanglesToProvider() {
+    this.providers.rectangles1.add(this.rectangles[0]);
+    this.providers.rectangles2.add(this.rectangles[1]);
+    this.providers.rectangles3.add(this.rectangles[2]);
+    this.providers.rectangles4.add(this.rectangles[3]);
+    this.providers.rectangles5.add(this.rectangles[4]);
+    this.providers.rectangles6.add(this.rectangles[5]);
+    this.providers.rectangles7.add(this.rectangles[6]);
+    this.providers.rectangles8.add(this.rectangles[7]);
+    this.providers.rectangles9.add(this.rectangles[8]);
+    this.providers.rectangles10.add(this.rectangles[9]);
+    this.providers.rectangles11.add(this.rectangles[10]);
+    this.providers.rectangles12.add(this.rectangles[11]);
+    this.providers.rectangles13.add(this.rectangles[12]);
+    this.providers.rectangles14.add(this.rectangles[13]);
+    this.providers.rectangles15.add(this.rectangles[14]);
+    this.providers.rectangles16.add(this.rectangles[15]);
+    this.providers.rectangles17.add(this.rectangles[16]);
+    this.providers.rectangles18.add(this.rectangles[17]);
+
+    this.providers.rectangles1.add(this.followingRectangles[0]);
+    this.providers.rectangles2.add(this.followingRectangles[1]);
+    this.providers.rectangles3.add(this.followingRectangles[2]);
+    this.providers.rectangles4.add(this.followingRectangles[3]);
+    this.providers.rectangles5.add(this.followingRectangles[4]);
+    this.providers.rectangles6.add(this.followingRectangles[5]);
+    this.providers.rectangles7.add(this.followingRectangles[6]);
+    this.providers.rectangles8.add(this.followingRectangles[7]);
+    this.providers.rectangles9.add(this.followingRectangles[8]);
+    this.providers.rectangles10.add(this.followingRectangles[9]);
+    this.providers.rectangles11.add(this.followingRectangles[10]);
+    this.providers.rectangles12.add(this.followingRectangles[11]);
+    this.providers.rectangles13.add(this.followingRectangles[12]);
+    this.providers.rectangles14.add(this.followingRectangles[13]);
+    this.providers.rectangles15.add(this.followingRectangles[14]);
+    this.providers.rectangles16.add(this.followingRectangles[15]);
+    this.providers.rectangles17.add(this.followingRectangles[16]);
+    this.providers.rectangles18.add(this.followingRectangles[17]);
   }
 
   async init() {
@@ -468,7 +508,7 @@ export class EaseDemo extends BaseDemo {
       "easeBackIn",
       "easeBackOut",
       "easeBackInOut",
-      "coninuousSinusoidal"
+      "continuousSinusoidal"
     ];
 
     for (let i = 0; i < 18; i++) {
@@ -482,6 +522,19 @@ export class EaseDemo extends BaseDemo {
           ],
           size: [10, 10],
           color: [1, 1, 1, 1]
+        })
+      );
+
+      this.followingRectangles.push(
+        new RectangleInstance({
+          position: [
+            window.innerWidth * 0.05,
+            window.innerHeight * i / 18 +
+              window.innerHeight / 36 +
+              window.innerHeight / 100
+          ],
+          size: [10, 10],
+          color: [1, 1, 1, 0.3]
         })
       );
 
@@ -513,23 +566,18 @@ export class EaseDemo extends BaseDemo {
       );
     }
 
-    this.providers.rectangles1.add(this.rectangles[0]);
-    this.providers.rectangles2.add(this.rectangles[1]);
-    this.providers.rectangles3.add(this.rectangles[2]);
-    this.providers.rectangles4.add(this.rectangles[3]);
-    this.providers.rectangles5.add(this.rectangles[4]);
-    this.providers.rectangles6.add(this.rectangles[5]);
-    this.providers.rectangles7.add(this.rectangles[6]);
-    this.providers.rectangles8.add(this.rectangles[7]);
-    this.providers.rectangles9.add(this.rectangles[8]);
-    this.providers.rectangles10.add(this.rectangles[9]);
-    this.providers.rectangles11.add(this.rectangles[10]);
-    this.providers.rectangles12.add(this.rectangles[11]);
-    this.providers.rectangles13.add(this.rectangles[12]);
-    this.providers.rectangles14.add(this.rectangles[13]);
-    this.providers.rectangles15.add(this.rectangles[14]);
-    this.providers.rectangles16.add(this.rectangles[15]);
-    this.providers.rectangles17.add(this.rectangles[16]);
-    this.providers.rectangles18.add(this.rectangles[17]);
+    this.addRectanglesToProvider();
+
+    setTimeout(() => {
+      this.rectangles.forEach(
+        rec => (rec.position = [window.innerWidth * 0.85, rec.position[1]])
+      );
+    }, 100);
+
+    setTimeout(() => {
+      this.followingRectangles.forEach(
+        rec => (rec.position = [window.innerWidth * 0.85, rec.position[1]])
+      );
+    }, 1500);
   }
 }

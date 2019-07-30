@@ -69,7 +69,12 @@ const loop = (time: number) => {
   nextFrameCommands = nextQueuedCommands.slice(0);
   nextQueuedCommands = [];
 
-  if (keepLooping) requestAnimationFrame(loop);
+  if (nextFrameCommands.length > 0) {
+    keepLooping = true;
+  }
+
+  if (keepLooping) animationFrameId = requestAnimationFrame(loop);
+  else animationFrameId = -1;
 };
 
 // Start the next frame command loop

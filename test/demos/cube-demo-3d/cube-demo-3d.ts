@@ -1,12 +1,15 @@
 import * as datGUI from "dat.gui";
 import {
+  // add3,
   add3,
   BasicSurface,
   ClearFlags,
   createLayer,
   createView,
+  // onAnimationLoop,
   InstanceProvider,
   onAnimationLoop,
+  stopAnimationLoop,
   Transform,
   View3D
 } from "src";
@@ -27,6 +30,8 @@ export class CubeDemo3D extends BaseDemo {
   /** GUI properties */
   parameters = {};
 
+  loopId: number;
+
   buildConsole(_gui: datGUI.GUI): void {
     // const parameters = gui.addFolder("Parameters");
     // parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
@@ -34,6 +39,7 @@ export class CubeDemo3D extends BaseDemo {
 
   destroy(): void {
     super.destroy();
+    stopAnimationLoop(this.loopId);
   }
 
   makeSurface(container: HTMLElement) {
@@ -87,7 +93,7 @@ export class CubeDemo3D extends BaseDemo {
       })
     );
 
-    onAnimationLoop((t: number) => {
+    this.loopId = onAnimationLoop((t: number) => {
       const theta = t / 1400 * Math.PI * 2;
       transform.position = [Math.sin(theta) * 3, 0, Math.cos(theta) * 3];
       transform.lookAt(

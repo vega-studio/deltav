@@ -3,12 +3,13 @@ import { UserInputEventManager } from "../event-management/user-input-event-mana
 import { RenderTarget } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
-import { Bounds } from "../primitives/bounds";
+import { BaseProjection } from "../math";
+import { Bounds } from "../math/primitives/bounds";
+import { Vec2 } from "../math/vector";
 import { BaseResourceManager, BaseResourceOptions, BaseResourceRequest, ResourceRouter } from "../resources";
 import { FrameMetrics } from "../types";
-import { IdentifiableById, IPipeline, IProjection, IResourceType } from "../types";
+import { IdentifiableById, IPipeline, IResourceType } from "../types";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { Vec2 } from "../util/vector";
 import { BaseIOSorting } from "./base-io-sorting";
 import { ILayerProps, Layer } from "./layer";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
@@ -69,7 +70,7 @@ export declare class Surface {
     private gatherViewDrawDependencies;
     getViewSize(viewId: string): Bounds<View<IViewProps>> | null;
     getViewWorldBounds(viewId: string): Bounds<never> | null;
-    getProjections(viewId: string): IProjection | null;
+    getProjections(viewId: string): BaseProjection<any> | null;
     init(options: ISurfaceOptions): Promise<this>;
     private initGL;
     private initIOExpanders;

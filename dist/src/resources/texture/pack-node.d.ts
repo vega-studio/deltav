@@ -1,4 +1,4 @@
-import { Bounds } from "../../primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds";
 import { SubTexture } from "./sub-texture";
 export interface IPackNodeDimensions<T> {
     data: T;

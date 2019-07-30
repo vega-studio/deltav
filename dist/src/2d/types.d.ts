@@ -1,4 +1,4 @@
-import { Vec2 } from "../util/vector";
+import { Vec2 } from "../math/vector";
 export declare enum AnchorType {
     BottomLeft = 0,
     BottomMiddle = 1,

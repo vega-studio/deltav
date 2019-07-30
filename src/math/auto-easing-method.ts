@@ -1,5 +1,6 @@
 import { InstanceIOValue } from "../types";
 import { uid } from "../util/uid";
+import { Quaternion, slerpUnitQuat } from "./quaternion";
 import { Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;
@@ -75,6 +76,8 @@ $\{easingMethod} {
   return (end - start) * t + start;
 }
 `;
+
+const slerpQuatLinearGPU = ``;
 
 const easeInQuadGPU = `
 $\{easingMethod} {
@@ -696,6 +699,32 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         // When the time is > 1 our value will not clamp to the value at 1.
         ignoreOverTimeCheck: true
       }
+    };
+  }
+
+  static slerpQuatLinear<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (start.length < 4 || end.length < 4) {
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return [1, 0, 0, 0];
+        }
+
+        t = clamp(t, 0, 1);
+        return slerpUnitQuat([1, 1, 1, 1], end, t, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatLinearGPU,
+      loop,
+      methodName: "slerpQuatLinear"
     };
   }
 

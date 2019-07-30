@@ -1,4 +1,5 @@
 import * as datGUI from "dat.gui";
+import { stopAllFrameCommands } from "../src";
 import { BaseDemo } from "./common/base-demo";
 import { demoKeys, demos, startDemoKey } from "./config";
 
@@ -61,6 +62,9 @@ export class Demo {
    * to properly shift to the specified demo.
    */
   async changeDemo(demoKey: string) {
+    // Ensure ANY queued frame commands are cleared out
+    stopAllFrameCommands();
+
     // If a demo is already established, make sure it frees up any resources it may be hanging onto
     if (this.currentDemo) {
       this.currentDemo.destroy();

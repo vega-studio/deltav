@@ -42,9 +42,9 @@ export class TriangleLayer<
           update: o => (o.transform || IdentityTransform).matrix
         }),
         createAttribute({
-          name: "scale",
+          name: "size",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.scale]
+          update: o => [o.size]
         })
       ],
       uniforms: [],

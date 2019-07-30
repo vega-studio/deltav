@@ -1,6 +1,7 @@
 import { Geometry } from "../gl/geometry";
 import { Material } from "../gl/material";
 import { Model } from "../gl/model";
+import { WebGLStat } from "../gl/webgl-stat";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ObservableMonitoring } from "../instance-provider/observable";
@@ -10,7 +11,7 @@ import {
   IInstanceAttribute,
   ILayerMaterialOptions,
   INonePickingMetrics,
-  InstanceDiffType,
+  instanceAttributeSizeFloatCount,
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
@@ -18,12 +19,18 @@ import {
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal,
+  LayerBufferType,
   Omit,
   PickType,
   UniformIOValue
 } from "../types";
 import { uid } from "../util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import {
+  InstanceAttributeBufferManager,
+  InstanceAttributePackingBufferManager,
+  UniformBufferManager
+} from "./buffer-management";
 import {
   BufferManagerBase,
   IBufferLocation
@@ -33,10 +40,6 @@ import { LayerInteractionHandler } from "./layer-interaction-handler";
 import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
 import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
-import {
-  LayerBufferType,
-  makeLayerBufferManager
-} from "./layer-processing/layer-buffer-type";
 import { LayerScene } from "./layer-scene";
 import { Surface } from "./surface";
 import { IViewProps, View } from "./view";
@@ -435,7 +438,7 @@ export class Layer<
     this.vertexAttributes = vertexAttributes;
 
     // Generate the correct buffering strategy for the layer
-    makeLayerBufferManager(this.surface.gl, this, this.scene);
+    this.makeLayerBufferManager(this.surface.gl, this.scene);
 
     if (this.props.printShader) {
       console.warn(
@@ -642,6 +645,137 @@ export class Layer<
   }
 
   /**
+   * This method determines the buffering strategy that the layer should be utilizing based on provided vertex and
+   * instance attributes.
+   */
+  getLayerBufferType<T extends Instance>(
+    _gl: WebGLRenderingContext,
+    vertexAttributes: IVertexAttribute[],
+    instanceAttributes: IInstanceAttribute<T>[]
+  ) {
+    let type = LayerBufferType.UNIFORM;
+    let attributesUsed = 0;
+
+    // The layer only gets it's buffer type calculated once
+    if (this.bufferType !== undefined) {
+      return this.bufferType;
+    }
+
+    // Uncomment this to force the uniform buffer strategy
+    // this.setBufferType(LayerBufferType.UNIFORM);
+    // return LayerBufferType.UNIFORM;
+
+    if (WebGLStat.HARDWARE_INSTANCING) {
+      for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
+        const attribute = vertexAttributes[i];
+        attributesUsed += Math.ceil(attribute.size / 4);
+      }
+
+      for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
+        const attribute = instanceAttributes[i];
+        attributesUsed += Math.ceil(
+          instanceAttributeSizeFloatCount[attribute.size || 1] / 4
+        );
+      }
+
+      // Too many attempted single attributes. We will next attempt to see if we can pack the vertex
+      // attributes down into blocks.
+      if (attributesUsed > WebGLStat.MAX_VERTEX_ATTRIBUTES) {
+        attributesUsed = 0;
+
+        for (let i = 0, end = instanceAttributes.length; i < end; ++i) {
+          const attribute = instanceAttributes[i];
+          attributesUsed = Math.max(attributesUsed, attribute.block || 0);
+        }
+
+        for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
+          const attribute = vertexAttributes[i];
+          attributesUsed += Math.ceil(attribute.size / 4);
+        }
+
+        // If we can fit now, then we are good to go with using attribute packing
+        if (attributesUsed < WebGLStat.MAX_VERTEX_ATTRIBUTES) {
+          type = LayerBufferType.INSTANCE_ATTRIBUTE_PACKING;
+
+          debug(
+            `Performance Issue (Moderate):
+            Layer %o is utilizing too many vertex attributes and is now using vertex packing.
+            Max Vertex units %o
+            Used Vertex units %o
+            Instance Attributes %o
+            Vertex Attributes %o`,
+            this.id,
+            WebGLStat.MAX_VERTEX_ATTRIBUTES,
+            attributesUsed,
+            instanceAttributes,
+            vertexAttributes
+          );
+        }
+      } else {
+        // If we make it here, we are good to go using hardware instancing! Hooray performance!
+        type = LayerBufferType.INSTANCE_ATTRIBUTE;
+      }
+    }
+
+    // No other faster mode supported: use uniform instancing
+    if (type === LayerBufferType.UNIFORM) {
+      debug(
+        `Performance Issue (High):
+        Layer %o is utilizing too many vertex attributes and is now using a uniform buffer.
+        Max Vertex units %o
+        Used Vertex units %o
+        Instance Attributes %o
+        Vertex Attributes %o`,
+        this.id,
+        WebGLStat.MAX_VERTEX_ATTRIBUTES,
+        attributesUsed,
+        instanceAttributes,
+        vertexAttributes
+      );
+      type = LayerBufferType.UNIFORM;
+    }
+
+    // Apply the type to the layer
+    this.setBufferType(type);
+
+    return type;
+  }
+
+  /**
+   * This generates the buffer manager to be used to manage instances getting applied to attribute locations.
+   */
+  makeLayerBufferManager(gl: WebGLRenderingContext, scene: LayerScene) {
+    // Esnure the buffering type has been calculated for the layer
+    const type = this.getLayerBufferType(
+      gl,
+      this.vertexAttributes,
+      this.instanceAttributes
+    );
+
+    switch (type) {
+      // This is the Instance Attribute buffering strategy, which means the system
+      case LayerBufferType.INSTANCE_ATTRIBUTE: {
+        this.setBufferManager(new InstanceAttributeBufferManager(this, scene));
+        break;
+      }
+
+      // This is the Instance Attribute buffering strategy, which means the system
+      case LayerBufferType.INSTANCE_ATTRIBUTE_PACKING: {
+        this.setBufferManager(
+          new InstanceAttributePackingBufferManager(this, scene)
+        );
+        break;
+      }
+
+      // Anything not utiliziing a specialized buffering strategy will use the uniform compatibility mode
+      default: {
+        this.setBufferManager(new UniformBufferManager(this, scene));
+        break;
+      }
+    }
+  }
+
+  /**
    * This tells the framework to rebuild the layer from scratch, thus reconstructing the shaders and geometries
    * of the layer.
    */
@@ -749,11 +883,6 @@ export class Layer<
         materialUniform => (materialUniform.value = value)
       );
     }
-  }
-
-  willUpdateInstances(_changes: [T, InstanceDiffType]) {
-    // HOOK: Simple hook so a class can review all of it's changed instances before
-    //       Getting applied to the Shader IO
   }
 
   /**

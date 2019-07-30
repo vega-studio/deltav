@@ -958,6 +958,7 @@ export type VecMethods<T extends Vec> = {
   normalize(vec: T, out?: T): T;
   scale(vec: T, scale: number, out?: T): T;
   subtract(left: T, right: T, out?: T): T;
+  vec(values: number[] | number, ...args: (number | number[])[]): T;
 };
 
 export const vec1Methods: VecMethods<Vec1> = {
@@ -979,7 +980,8 @@ export const vec1Methods: VecMethods<Vec1> = {
   multiply: multiply1,
   normalize: normalize1,
   scale: scale1,
-  subtract: subtract1
+  subtract: subtract1,
+  vec: vec1
 };
 
 export const vec2Methods: VecMethods<Vec2> = {
@@ -1001,7 +1003,8 @@ export const vec2Methods: VecMethods<Vec2> = {
   multiply: multiply2,
   normalize: normalize2,
   scale: scale2,
-  subtract: subtract2
+  subtract: subtract2,
+  vec: vec2
 };
 
 export const vec3Methods: VecMethods<Vec3> = {
@@ -1023,7 +1026,8 @@ export const vec3Methods: VecMethods<Vec3> = {
   multiply: multiply3,
   normalize: normalize3,
   scale: scale3,
-  subtract: subtract3
+  subtract: subtract3,
+  vec: vec3
 };
 
 export const vec4Methods: VecMethods<Vec4> = {
@@ -1045,7 +1049,8 @@ export const vec4Methods: VecMethods<Vec4> = {
   multiply: multiply4,
   normalize: normalize4,
   scale: scale4,
-  subtract: subtract4
+  subtract: subtract4,
+  vec: vec4
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

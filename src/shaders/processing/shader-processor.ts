@@ -3,7 +3,6 @@ import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
-import { getLayerBufferType } from "../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -92,9 +91,8 @@ export class ShaderProcessor {
       );
       // After all of the shader IO is established, let's calculate the appropriate buffering strategy
       // For the layer.
-      getLayerBufferType(
+      layer.getLayerBufferType(
         layer.surface.gl,
-        layer,
         vertexAttributes,
         instanceAttributes
       );

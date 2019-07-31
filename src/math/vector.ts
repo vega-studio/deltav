@@ -1,3 +1,5 @@
+import { slerpUnitQuat } from "./quaternion";
+
 const { sqrt, max, min, floor, ceil, abs } = Math;
 
 /** Explicit Vec1 */
@@ -959,6 +961,7 @@ export type VecMethods<T extends Vec> = {
   scale(vec: T, scale: number, out?: T): T;
   subtract(left: T, right: T, out?: T): T;
   vec(values: number[] | number, ...args: (number | number[])[]): T;
+  slerpQuat?(start: T, end: T, t: number, out?: T): T;
 };
 
 export const vec1Methods: VecMethods<Vec1> = {
@@ -1050,7 +1053,8 @@ export const vec4Methods: VecMethods<Vec4> = {
   normalize: normalize4,
   scale: scale4,
   subtract: subtract4,
-  vec: vec4
+  vec: vec4,
+  slerpQuat: slerpUnitQuat
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

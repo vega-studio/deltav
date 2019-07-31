@@ -1,7 +1,6 @@
 import { InstanceIOValue } from "../types";
 import { uid } from "../util/uid";
-import { Quaternion, slerpUnitQuat } from "./quaternion";
-import { Vec, VecMath } from "./vector";
+import { isVec4, Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -76,8 +75,6 @@ $\{easingMethod} {
   return (end - start) * t + start;
 }
 `;
-
-const slerpQuatLinearGPU = ``;
 
 const easeInQuadGPU = `
 $\{easingMethod} {
@@ -211,6 +208,25 @@ const continuousSinusoidalGPU = `
 $\{easingMethod} {
   $\{T} direction = end - start;
   return start + direction * 0.5 + direction * sin(t * ${GPU_PI} * 2.0) * 0.5;
+}
+`;
+
+const slerpQuatLinearGPU = `
+$\{easingMethod} {
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - t, t),
+    vec2(sin((1.0 - t) * omega) / sinom, sin(t * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
 }
 `;
 
@@ -710,15 +726,19 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     return {
       uid: uid(),
       cpu: (start: T, end: T, t: number, out?: T) => {
-        if (start.length < 4 || end.length < 4) {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
           console.warn(
             "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
-          return [1, 0, 0, 0];
+          return vec(1, 0, 0, 0);
         }
 
-        t = clamp(t, 0, 1);
-        return slerpUnitQuat([1, 1, 1, 1], end, t, out);
+        const { slerpQuat, vec } = VecMath(start);
+
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+
+        return slerpQuat(start, end, t, out);
       },
       delay,
       duration,

@@ -12,7 +12,7 @@ void main() {
   _color = mix(
     color,
     frontColor,
-    float(normal.z == 1.)
+    float(normal.z == -1.)
   );
 
   gl_Position = clipSpace(world.xyz);

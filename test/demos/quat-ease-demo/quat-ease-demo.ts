@@ -422,13 +422,13 @@ export class QuatEaseDemo extends BaseDemo {
       const row = Math.floor(i / 6);
       const col = i % 6;
       const transform = new Transform();
-      transform.position = [-4.5 + col * 1.8, 2 - row * 2, 0];
+      transform.position = [-4.5 + col * 1.8, 2.1 - row * 2, 0];
       transforms.push(transform);
 
       this.providers.labels.add(
         new LabelInstance({
-          origin: [-4 + col * 1.8, 1 - row * 2],
-          fontSize: 0.15,
+          origin: [-5 + col * 1.8, 1.4 - row * 2],
+          fontSize: -0.15,
           anchor: {
             type: AnchorType.MiddleRight,
             padding: 0
@@ -440,7 +440,7 @@ export class QuatEaseDemo extends BaseDemo {
     }
 
     const camera = this.surface.cameras.perspective;
-    camera.position = [0, 0, 10];
+    camera.position = [0, 0, -10];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
     const cube0 = this.providers.cubes0.add(

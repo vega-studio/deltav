@@ -6,6 +6,7 @@ import { EaseDemo } from "./demos/ease-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
+import { QuatEaseDemo } from "./demos/quat-ease-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";
 import { TextDemo } from "./demos/text-demo";
 import { TouchDemo } from "./demos/touch-demo";
@@ -31,5 +32,6 @@ demos.set("kitchen-sink", KitchenSink);
 demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
 demos.set("ease-demo", EaseDemo);
+demos.set("quat-ease-demo", QuatEaseDemo);
 
 export const demoKeys = Array.from(demos.keys());

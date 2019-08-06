@@ -59,14 +59,22 @@ export class BoneDemo extends BaseDemo {
     await this.surface;
 
     const camera = this.surface.cameras.perspective;
-    camera.position = [0, 0, 10];
+    camera.position = [0, 0, 15];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
+
+    let angle = Math.PI / 4;
 
     const transform1 = new Transform();
     transform1.rotation = eulerToQuat([0, 0, Math.PI / 4]);
 
     const transform2 = new Transform();
-    //transform2.rotation = eulerToQuat([0, 0, Math.PI / 4]);
+    transform2.rotation = eulerToQuat([Math.PI / 2, 0, angle]);
+
+    const transform3 = new Transform();
+    transform3.rotation = eulerToQuat([0, 0, -Math.PI / 3]);
+
+    const transform4 = new Transform();
+    transform4.rotation = eulerToQuat([0, 0, Math.PI / 2]);
 
     const bone1 = new BoneInstance({
       transform: transform1,
@@ -77,9 +85,33 @@ export class BoneDemo extends BaseDemo {
       transform: transform2,
       color: [0, 0, 1, 1]
     });
+
+    const bone3 = new BoneInstance({
+      transform: transform3,
+      color: [0, 1, 0, 1]
+    });
+
+    const bone4 = new BoneInstance({
+      transform: transform4,
+      color: [1, 1, 0, 1]
+    });
+
     bone1.addChild(bone2);
+
+    bone2.addChild(bone4);
+    bone2.addChild(bone3);
 
     this.providers.bones.add(bone1);
     this.providers.bones.add(bone2);
+
+    this.providers.bones.add(bone3);
+    this.providers.bones.add(bone4);
+
+    setTimeout(() => {
+      setInterval(() => {
+        angle += 0.01;
+        bone2.setRotation(eulerToQuat([Math.PI / 2, 0, angle]));
+      }, 50);
+    }, 2000);
   }
 }

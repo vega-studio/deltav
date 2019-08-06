@@ -1,26 +1,19 @@
 import {
-  add4,
   CommonMaterialOptions,
   createAttribute,
   GLSettings,
-  identity4,
   ILayerProps,
   InstanceAttributeSize,
   InstanceProvider,
   IShaderInitialization,
   Layer,
-  matrix4x4FromUnitQuatModel,
-  matrix4x4ToQuaternion,
-  multiply4x4,
-  transform4,
   Vec2,
   Vec3,
-  Vec4,
   VertexAttributeSize
 } from "../../../../src";
 import { BoneInstance } from "./bone-instance";
 
-function getRotation(bone: BoneInstance) {
+/*function getRotation(bone: BoneInstance) {
   let rotationMatrix = matrix4x4FromUnitQuatModel(bone.transform.rotation);
   let parent = bone.parent;
 
@@ -47,8 +40,8 @@ function getOrigin(bone: BoneInstance) {
     parent = parent.parent;
   }
 
-  let origin: Vec4 = [0, 0, 0, 1];
-  let top: Vec4 = [0, 0, 0, 1];
+  let origin: Vec3 = [0, 0, 0];
+  let top: Vec3 = [0, 0, 0];
   let rotation = identity4();
 
   let hasTop = false;
@@ -67,16 +60,16 @@ function getOrigin(bone: BoneInstance) {
         origin = curBone.origin;
         rotation = matrix4x4FromUnitQuatModel(curBone.transform.rotation);
       }
-
-      top = add4(origin, transform4(rotation, [0, curBone.length, 0, 1]));
+      const t = transform4(rotation, [0, curBone.length, 0, 1]);
+      top = add3(origin, [t[0], t[1], t[2]]);
       hasTop = true;
     }
   }
 
-  console.warn(bone.color, origin);
+  // console.warn(bone.color, origin);
 
   return origin;
-}
+}*/
 
 export interface IBoneLayerProps<TInstance extends BoneInstance>
   extends ILayerProps<TInstance> {}
@@ -151,7 +144,7 @@ export class BoneLayer<
         createAttribute({
           name: "t",
           size: InstanceAttributeSize.THREE,
-          update: o => o.position
+          update: o => o.origin
         }),
 
         createAttribute({

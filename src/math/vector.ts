@@ -1,4 +1,4 @@
-const { sqrt, max, min, floor, ceil, abs } = Math;
+const { sqrt, max, min, floor, ceil, abs, acos, sin } = Math;
 
 /** Explicit Vec1 */
 export interface IVec1 extends Array<number> {
@@ -936,6 +936,48 @@ export function color4FromHex4(hex: number, out?: Vec4) {
   );
 }
 
+export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
+  out = out || [0, 0, 0, 0];
+  const to1: Vec4 = [0, 0, 0, 0];
+  let omega, cosom, sinom, scale0, scale1;
+  cosom = from[1] * to[1] + from[2] * to[2] + from[3] * to[3] + from[0] * to[0];
+
+  if (cosom < 0.0) {
+    cosom = -cosom;
+    to1[0] = -to[1];
+    to1[1] = -to[2];
+    to1[2] = -to[3];
+    to1[3] = -to[0];
+  } else {
+    to1[0] = to[1];
+    to1[1] = to[2];
+    to1[2] = to[3];
+    to1[3] = to[0];
+  }
+
+  // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
+  if (1.0 - cosom > 0.0000001) {
+    omega = acos(cosom);
+    sinom = sin(omega);
+    scale0 = sin((1.0 - t) * omega) / sinom;
+    scale1 = sin(t * omega) / sinom;
+  }
+
+  // We linear interpolate for quaternions that are very close together in angle.
+  else {
+    scale0 = 1.0 - t;
+    scale1 = t;
+  }
+
+  // calculate final values
+  out[1] = scale0 * from[1] + scale1 * to1[0];
+  out[2] = scale0 * from[2] + scale1 * to1[1];
+  out[3] = scale0 * from[3] + scale1 * to1[2];
+  out[0] = scale0 * from[0] + scale1 * to1[3];
+
+  return out;
+}
+
 // Vec method aggregations
 
 export type VecMethods<T extends Vec> = {
@@ -958,6 +1000,8 @@ export type VecMethods<T extends Vec> = {
   normalize(vec: T, out?: T): T;
   scale(vec: T, scale: number, out?: T): T;
   subtract(left: T, right: T, out?: T): T;
+  vec(values: number[] | number, ...args: (number | number[])[]): T;
+  slerpQuat?(start: T, end: T, t: number, out?: T): T;
 };
 
 export const vec1Methods: VecMethods<Vec1> = {
@@ -979,7 +1023,8 @@ export const vec1Methods: VecMethods<Vec1> = {
   multiply: multiply1,
   normalize: normalize1,
   scale: scale1,
-  subtract: subtract1
+  subtract: subtract1,
+  vec: vec1
 };
 
 export const vec2Methods: VecMethods<Vec2> = {
@@ -1001,7 +1046,8 @@ export const vec2Methods: VecMethods<Vec2> = {
   multiply: multiply2,
   normalize: normalize2,
   scale: scale2,
-  subtract: subtract2
+  subtract: subtract2,
+  vec: vec2
 };
 
 export const vec3Methods: VecMethods<Vec3> = {
@@ -1023,7 +1069,8 @@ export const vec3Methods: VecMethods<Vec3> = {
   multiply: multiply3,
   normalize: normalize3,
   scale: scale3,
-  subtract: subtract3
+  subtract: subtract3,
+  vec: vec3
 };
 
 export const vec4Methods: VecMethods<Vec4> = {
@@ -1045,7 +1092,9 @@ export const vec4Methods: VecMethods<Vec4> = {
   multiply: multiply4,
   normalize: normalize4,
   scale: scale4,
-  subtract: subtract4
+  subtract: subtract4,
+  vec: vec4,
+  slerpQuat: slerpQuat
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

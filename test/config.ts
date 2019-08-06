@@ -1,6 +1,7 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
+import { BoneDemo } from "./demos/bone-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
@@ -29,5 +30,6 @@ demos.set("physics-demo", PhysicsDemo);
 demos.set("kitchen-sink", KitchenSink);
 demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
+demos.set("Bone-demo", BoneDemo);
 
 export const demoKeys = Array.from(demos.keys());

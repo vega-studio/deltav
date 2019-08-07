@@ -22,6 +22,7 @@ import {
   Projection3D,
   rayFromPoints,
   rayToLocation,
+  Vec3,
   Vec4,
   View3D
 } from "src";
@@ -34,6 +35,7 @@ import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
 import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
 
 const DATA_SIZE = 256;
+const TO_RADIANS = Math.PI / 180;
 
 /**
  * A very basic demo proving the system is operating as expected
@@ -46,6 +48,15 @@ export class BasicDemo3D extends BaseDemo {
     ticks: new InstanceProvider<EdgeInstance>(),
     labels: new InstanceProvider<LabelInstance>()
   };
+
+  mouseDown: boolean = false;
+  mouseX: number;
+  mouseY: number;
+
+  private center: Vec3 = [0, 0, 0];
+  cameraDistance: number = 200;
+  cameraAngleV: number = 45 * TO_RADIANS;
+  cameraAngleH: number = 45 * TO_RADIANS;
 
   /** GUI properties */
   parameters = {
@@ -109,7 +120,32 @@ export class BasicDemo3D extends BaseDemo {
               squares: createLayer(SurfaceTileLayer, {
                 data: providers.tiles,
                 picking: PickType.SINGLE,
-
+                onMouseDown: info => {
+                  this.mouseDown = true;
+                  this.mouseX = info.screen[0];
+                  this.mouseY = info.screen[1];
+                },
+                onMouseUp: info => {
+                  this.mouseDown = false;
+                  this.mouseX = info.screen[0];
+                  this.mouseY = info.screen[1];
+                },
+                onMouseUpOutside: () => {
+                  this.mouseDown = false;
+                },
+                onMouseMove: info => {
+                  if (this.mouseDown && this.surface) {
+                    this.cameraAngleH += (info.screen[0] - this.mouseX) / 100;
+                    this.cameraAngleV += -(info.screen[1] - this.mouseY) / 100;
+                    if (this.cameraAngleV < 0.0001) this.cameraAngleV = 0.0001;
+                    if (this.cameraAngleV > Math.PI) {
+                      this.cameraAngleV = Math.PI;
+                    }
+                    this.setCamera();
+                    this.mouseX = info.screen[0];
+                    this.mouseY = info.screen[1];
+                  }
+                },
                 onMouseOver: info => {
                   info.instances.forEach(i => {
                     i.color = [1, 1, 0, 1];
@@ -348,8 +384,15 @@ export class BasicDemo3D extends BaseDemo {
     // Draw the axis
     this.makeAxis();
 
+    this.center = [midX, 0, -midZ];
+    this.cameraDistance = Math.sqrt(midX ** 2 + 3000 ** 2 + midZ ** 2);
+    this.setCamera();
+
+    // this.surface.cameras.perspective.position = [midX * 2, 3000, -midZ * 2];
+    // this.surface.cameras.perspective.lookAt([midX, 0, -midZ], [0, 1, 0]);
+
     // Move the camera around
-    let t = 0;
+    /*let t = 0;
     const loop = () => {
       if (!this.surface) return;
       t += Math.PI / 120;
@@ -383,7 +426,7 @@ export class BasicDemo3D extends BaseDemo {
 
     requestAnimationFrame(loop);
 
-    await nextFrame();
+    await nextFrame();*/
   }
 
   async generatePerlinData() {
@@ -503,5 +546,22 @@ export class BasicDemo3D extends BaseDemo {
     }
 
     this.isSpreading = false;
+  }
+
+  setCamera() {
+    if (!this.surface) return;
+    this.surface.cameras.perspective.position = [
+      this.center[0] +
+        this.cameraDistance *
+          Math.sin(this.cameraAngleV) *
+          Math.cos(this.cameraAngleH),
+      this.center[1] + this.cameraDistance * Math.cos(this.cameraAngleV),
+      this.center[2] +
+        this.cameraDistance *
+          Math.sin(this.cameraAngleV) *
+          Math.sin(this.cameraAngleH)
+    ];
+
+    this.surface.cameras.perspective.lookAt(this.center, [0, 1, 0]);
   }
 }

@@ -100,6 +100,7 @@ export class Transform {
     this._changed = true;
   }
   private _translation: Vec3 = [0, 0, 0];
+  private _focus: Vec3 = [0, 0, 0];
   private translationMatrix: Mat4x4 = identity4();
   private needsTranslationUpdate: boolean = false;
 
@@ -108,6 +109,11 @@ export class Transform {
    */
   lookAt(position: Vec3, up: Vec3) {
     this.rotation = lookAtQuat(subtract3(position, this._translation), up);
+    this._focus = position;
+  }
+
+  get focus() {
+    return this._focus;
   }
 
   /**

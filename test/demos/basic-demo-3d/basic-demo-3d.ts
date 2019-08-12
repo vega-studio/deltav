@@ -1,6 +1,7 @@
 import { PerlinNoise } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
+  add3,
   AnchorType,
   Axis2D,
   BasicSurface,
@@ -16,12 +17,15 @@ import {
   EdgeType,
   InstanceProvider,
   LabelInstance,
-  nextFrame,
   onFrame,
   PickType,
   Projection3D,
   rayFromPoints,
   rayToLocation,
+  rotation4x4,
+  scale3,
+  subtract3,
+  transform4,
   Vec3,
   Vec4,
   View3D
@@ -37,6 +41,16 @@ import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
 const DATA_SIZE = 256;
 const TO_RADIANS = Math.PI / 180;
 
+export enum CameraOrder {
+  DIRECT,
+  DVH,
+  DHV,
+  VHD,
+  VDH,
+  HVD,
+  HDV
+}
+
 /**
  * A very basic demo proving the system is operating as expected
  */
@@ -49,14 +63,21 @@ export class BasicDemo3D extends BaseDemo {
     labels: new InstanceProvider<LabelInstance>()
   };
 
+  gui: dat.GUI;
+
   mouseDown: boolean = false;
   mouseX: number;
   mouseY: number;
 
   private center: Vec3 = [0, 0, 0];
+
   cameraDistance: number = 200;
   cameraAngleV: number = 45 * TO_RADIANS;
   cameraAngleH: number = 45 * TO_RADIANS;
+  cameraOrder: CameraOrder = CameraOrder.DIRECT;
+
+  timeouts = [];
+  intervals: any[] = [];
 
   /** GUI properties */
   parameters = {
@@ -64,6 +85,158 @@ export class BasicDemo3D extends BaseDemo {
     radius: 100,
     moveAtOnce: 10000,
     addAtOnce: 10000,
+
+    distance: this.cameraDistance,
+    angleV: Math.round(this.cameraAngleV / TO_RADIANS),
+    angleH: Math.round(this.cameraAngleH / TO_RADIANS),
+    duration: 100,
+    order: this.cameraOrder,
+    random: () => {
+      this.parameters.angleH = 1 + Math.round(179 * Math.random());
+      this.parameters.angleV = Math.round(90 * Math.random());
+      this.moveCamera(
+        (this.parameters.distance = 2000 + Math.round(4000 * Math.random())),
+        this.parameters.angleH * TO_RADIANS,
+        this.parameters.angleV * TO_RADIANS,
+        this.parameters.duration,
+        this.cameraOrder
+      );
+
+      this.gui.updateDisplay();
+    },
+    soaring1: () => {
+      if (!this.surface) return;
+      const startPoint: Vec3 = [DATA_SIZE * 10, 300, -DATA_SIZE * 10];
+      // 0: Move to start
+      this.moveCameraFocusingOnCenter(startPoint, 1000, 100);
+
+      // 1: Move straight to Destiny1
+      const destiny1: Vec3 = [
+        this.center[0] + 0.5 * (this.center[0] - startPoint[0]),
+        startPoint[1],
+        this.center[1] + 0.5 * (this.center[1] - startPoint[1])
+      ];
+
+      setTimeout(() => {
+        this.moveCameraToPosition(destiny1, 3000, 100);
+      }, 1000);
+
+      // 2: Rotate camera
+      setTimeout(() => {
+        this.rotateCamera(180 * TO_RADIANS, 100, true, 3000);
+      }, 4000);
+
+      // 3: Move back to start
+      setTimeout(() => {
+        this.moveCameraToPosition(startPoint, 3000, 100);
+      }, 7000);
+
+      // 4: Rotate camera
+      setTimeout(() => {
+        this.rotateCamera(180 * TO_RADIANS, 100, false, 3000);
+      }, 10000);
+    },
+    soaring2: () => {
+      if (!this.surface) return;
+
+      const durations = [1000, 1000, 10000, 1000, 10000];
+      let timeout = 0;
+
+      // Part0: Move to start point
+      const startPoint: Vec3 = [DATA_SIZE / 2 * 10, 300, 0];
+      this.moveCameraFocusingOnCenter(startPoint, durations[0], 100);
+      timeout += durations[0];
+
+      // Part1: Go straight
+      const destiny1: Vec3 = [DATA_SIZE / 2 * 10, 300, -DATA_SIZE * 0.75 * 10];
+
+      setTimeout(() => {
+        this.moveCameraToPosition(destiny1, durations[1], 100);
+      }, timeout);
+
+      timeout += durations[1];
+
+      // Part2: Rotate around
+      const circleCenter1: Vec3 = [
+        DATA_SIZE * 0.75 * 10,
+        300,
+        -DATA_SIZE * 0.75 * 10
+      ];
+
+      setTimeout(() => {
+        this.rotateCameraAround(
+          circleCenter1,
+          270 * TO_RADIANS,
+          100,
+          true,
+          durations[2]
+        );
+      }, timeout);
+
+      timeout += durations[2];
+
+      // Part3: Go staight
+      const destiny2: Vec3 = [
+        DATA_SIZE * 0.25 * 10,
+        300,
+        -DATA_SIZE * 0.5 * 10
+      ];
+
+      setTimeout(() => {
+        this.moveCameraToPosition(destiny2, durations[3], 100);
+      }, timeout);
+      timeout += durations[3];
+
+      // Part4: Rotate around
+      const circleCenter2: Vec3 = [
+        DATA_SIZE * 0.25 * 10,
+        300,
+        -DATA_SIZE * 0.25 * 10
+      ];
+
+      setTimeout(() => {
+        this.rotateCameraAround(
+          circleCenter2,
+          270 * TO_RADIANS,
+          100,
+          false,
+          durations[4]
+        );
+      }, timeout);
+      timeout += durations[4];
+    },
+
+    reset: () => {
+      this.cameraDistance = 3500;
+      this.cameraAngleV = 45 * TO_RADIANS;
+      this.cameraAngleH = 45 * TO_RADIANS;
+      this.cameraOrder = CameraOrder.DIRECT;
+      this.parameters.distance = this.cameraDistance;
+      this.parameters.angleV = this.cameraAngleV;
+      this.parameters.angleH = this.cameraAngleH;
+      this.parameters.order = this.cameraOrder;
+
+      if (this.surface) {
+        this.surface.cameras.perspective.position = [
+          this.center[0] +
+            this.cameraDistance *
+              Math.sin(this.cameraAngleV) *
+              Math.cos(this.cameraAngleH),
+          this.center[1] + this.cameraDistance * Math.cos(this.cameraAngleV),
+          this.center[2] +
+            this.cameraDistance *
+              Math.sin(this.cameraAngleV) *
+              Math.sin(this.cameraAngleH)
+        ];
+        this.surface.cameras.perspective.lookAt(this.center, [0, 1, 0]);
+      }
+
+      for (let i = 0, endi = this.intervals.length; i < endi; i++) {
+        const timerId = this.intervals[i];
+        clearInterval(timerId);
+      }
+      this.intervals = [];
+    },
 
     previous: {
       count: 1000
@@ -79,9 +252,67 @@ export class BasicDemo3D extends BaseDemo {
   perlin: PerlinNoise;
   perlinData: number[][];
 
-  buildConsole(_gui: datGUI.GUI): void {
+  buildConsole(gui: datGUI.GUI): void {
+    this.gui = gui;
     // const parameters = gui.addFolder("Parameters");
     // parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
+
+    const parameters = gui.addFolder("Parameters");
+    parameters
+      .add(this.parameters, "distance", 1, 6000, 1)
+      .onFinishChange((value: number) => {
+        this.moveCameraByDistance(value, this.parameters.duration);
+      });
+    parameters
+      .add(this.parameters, "angleV", 0, 180, 1)
+      .onFinishChange((value: number) => {
+        this.moveCameraByAngleV(value * TO_RADIANS, this.parameters.duration);
+      });
+    parameters
+      .add(this.parameters, "angleH", 0, 360, 1)
+      .onFinishChange((value: number) => {
+        this.moveCameraByAngleH(value * TO_RADIANS, this.parameters.duration);
+      });
+    parameters.add(this.parameters, "duration", 100, 2000, 100);
+    parameters
+      .add(this.parameters, "order", {
+        DIRECT: 0,
+        DVH: 1,
+        DHV: 2,
+        VHD: 3,
+        VDH: 4,
+        HVD: 5,
+        HDV: 6
+      })
+      .onChange((value: string) => {
+        switch (value) {
+          case "0":
+            this.cameraOrder = CameraOrder.DIRECT;
+            break;
+          case "1":
+            this.cameraOrder = CameraOrder.DVH;
+            break;
+          case "2":
+            this.cameraOrder = CameraOrder.DHV;
+            break;
+          case "3":
+            this.cameraOrder = CameraOrder.VHD;
+            break;
+          case "4":
+            this.cameraOrder = CameraOrder.VDH;
+            break;
+          case "5":
+            this.cameraOrder = CameraOrder.HVD;
+            break;
+          case "6":
+            this.cameraOrder = CameraOrder.HDV;
+            break;
+        }
+      });
+    parameters.add(this.parameters, "random");
+    parameters.add(this.parameters, "soaring1");
+    parameters.add(this.parameters, "soaring2");
+    parameters.add(this.parameters, "reset");
   }
 
   destroy(): void {
@@ -386,6 +617,8 @@ export class BasicDemo3D extends BaseDemo {
 
     this.center = [midX, 0, -midZ];
     this.cameraDistance = Math.sqrt(midX ** 2 + 3000 ** 2 + midZ ** 2);
+    this.parameters.distance = this.cameraDistance;
+    this.gui.updateDisplay();
     this.setCamera();
 
     // this.surface.cameras.perspective.position = [midX * 2, 3000, -midZ * 2];
@@ -563,5 +796,280 @@ export class BasicDemo3D extends BaseDemo {
     ];
 
     this.surface.cameras.perspective.lookAt(this.center, [0, 1, 0]);
+  }
+
+  moveCameraByDistance(distance: number, duration: number) {
+    const newPosition: Vec3 = [
+      this.center[0] +
+        distance * Math.sin(this.cameraAngleV) * Math.cos(this.cameraAngleH),
+      this.center[1] + distance * Math.cos(this.cameraAngleV),
+      this.center[2] +
+        distance * Math.sin(this.cameraAngleV) * Math.sin(this.cameraAngleH)
+    ];
+
+    this.moveCameraFocusingOnCenter(newPosition, duration, 100);
+    this.cameraDistance = distance;
+  }
+
+  moveCameraByAngleH(angleH: number, duration: number) {
+    const newPosition: Vec3 = [
+      this.center[0] +
+        this.cameraDistance * Math.sin(this.cameraAngleV) * Math.cos(angleH),
+      this.center[1] + this.cameraDistance * Math.cos(this.cameraAngleV),
+      this.center[2] +
+        this.cameraDistance * Math.sin(this.cameraAngleV) * Math.sin(angleH)
+    ];
+
+    this.moveCameraFocusingOnCenter(newPosition, duration, 100);
+    this.cameraAngleH = angleH;
+  }
+
+  moveCameraByAngleV(angleV: number, duration: number) {
+    const newPosition: Vec3 = [
+      this.center[0] +
+        this.cameraDistance * Math.sin(angleV) * Math.cos(this.cameraAngleH),
+      this.center[1] + this.cameraDistance * Math.cos(angleV),
+      this.center[2] +
+        this.cameraDistance * Math.sin(angleV) * Math.sin(this.cameraAngleH)
+    ];
+
+    this.moveCameraFocusingOnCenter(newPosition, duration, 100);
+    this.cameraAngleV = angleV;
+  }
+
+  moveCameraDirect(
+    distance: number,
+    angleH: number,
+    angleV: number,
+    duration: number
+  ) {
+    const newPosition: Vec3 = [
+      this.center[0] + distance * Math.sin(angleV) * Math.cos(angleH),
+      this.center[1] + distance * Math.cos(angleV),
+      this.center[2] + distance * Math.sin(angleV) * Math.sin(angleH)
+    ];
+
+    this.moveCameraFocusingOnCenter(newPosition, duration, 100);
+
+    this.cameraDistance = distance;
+    this.cameraAngleH = angleH;
+    this.cameraAngleV = angleV;
+  }
+
+  moveCameraFocusingOnCenter(
+    newPosition: Vec3,
+    duration: number,
+    steps: number
+  ) {
+    if (!this.surface) return;
+    const oldPosition = this.surface.cameras.perspective.position;
+
+    let i = 0;
+
+    const timerId = setInterval(() => {
+      if (this.surface) {
+        const curPos: Vec3 = add3(
+          oldPosition,
+          scale3(subtract3(newPosition, oldPosition), i / steps)
+        );
+
+        this.surface.cameras.perspective.position = curPos;
+        this.surface.cameras.perspective.lookAt(this.center, [0, 1, 0]);
+        i++;
+        if (i === steps) clearInterval(timerId);
+      }
+    }, duration / steps);
+
+    this.intervals.push(timerId);
+  }
+
+  moveCameraToPosition(newPosition: Vec3, duration: number, steps: number) {
+    if (!this.surface) return;
+    const oldPosition = this.surface.cameras.perspective.position;
+    const focus = this.surface.cameras.perspective.transform.focus;
+    const offset = subtract3(focus, oldPosition);
+
+    let i = 0;
+
+    const timerId = setInterval(() => {
+      if (this.surface) {
+        const curPos: Vec3 = add3(
+          oldPosition,
+          scale3(subtract3(newPosition, oldPosition), i / steps)
+        );
+
+        const curFocus = offset ? add3(curPos, offset) : this.center;
+        this.surface.cameras.perspective.position = curPos;
+        this.surface.cameras.perspective.lookAt(curFocus, [0, 1, 0]);
+        i++;
+        if (i === steps) clearInterval(timerId);
+      }
+    }, duration / steps);
+
+    this.intervals.push(timerId);
+  }
+
+  rotateCameraAround(
+    center: Vec3,
+    angles: number,
+    steps: number,
+    clockWise: boolean,
+    duration: number
+  ) {
+    if (!this.surface) return;
+    const startPosition = this.surface.cameras.perspective.position;
+    const focus = this.surface.cameras.perspective.transform.focus;
+    const offset = subtract3(focus, startPosition);
+    const relativePostion = subtract3(startPosition, center);
+    const radius = Math.sqrt(relativePostion[0] ** 2 + relativePostion[2] ** 2);
+
+    let startAngle = Math.asin(relativePostion[2] / radius);
+    if (relativePostion[0] < 0) startAngle = Math.PI - startAngle;
+
+    const stepAngle = (clockWise ? 1 : -1) * angles / steps;
+
+    let curAngle = startAngle;
+    let count = 0;
+    const timerId = setInterval(() => {
+      if (this.surface) {
+        count++;
+        curAngle += stepAngle;
+
+        const curPos = add3(center, [
+          radius * Math.cos(curAngle),
+          0,
+          radius * Math.sin(curAngle)
+        ]);
+
+        const curOffset = transform4(rotation4x4(0, -count * stepAngle, 0), [
+          offset[0],
+          offset[1],
+          offset[2],
+          1
+        ]);
+
+        const curFocus = add3(curPos, [
+          curOffset[0],
+          curOffset[1],
+          curOffset[2]
+        ]);
+
+        this.surface.cameras.perspective.position = curPos;
+        this.surface.cameras.perspective.lookAt(curFocus, [0, 1, 0]);
+      }
+
+      if (count >= steps) clearInterval(timerId);
+    }, duration / steps);
+
+    this.intervals.push(timerId);
+  }
+
+  rotateCamera(
+    angles: number,
+    steps: number,
+    clockWise: Boolean,
+    duration: number
+  ) {
+    if (!this.surface) return;
+    const position = this.surface.cameras.perspective.position;
+    const focus = this.surface.cameras.perspective.transform.focus;
+    const offset = subtract3(focus, position);
+    const offsetRadius = Math.sqrt(offset[0] ** 2 + offset[2] ** 2);
+
+    const stepAngle = (clockWise ? 1 : -1) * angles / steps;
+
+    let angle = Math.asin(offset[2] / offsetRadius);
+    if (offset[0] < 0) angle = Math.PI - angle;
+
+    let count = 0;
+    const timerId = setInterval(() => {
+      if (this.surface) {
+        count++;
+        const curAngle = angle + count * stepAngle;
+
+        const curFocus = add3(position, [
+          offsetRadius * Math.cos(curAngle),
+          offset[1],
+          offsetRadius * Math.sin(curAngle)
+        ]);
+
+        this.surface.cameras.perspective.lookAt(curFocus, [0, 1, 0]);
+        if (count >= steps) clearInterval(timerId);
+      }
+    }, duration / steps);
+
+    this.intervals.push(timerId);
+  }
+
+  moveCamera(
+    distance: number,
+    angleH: number,
+    angleV: number,
+    duration: number,
+    order?: CameraOrder
+  ) {
+    order = order || CameraOrder.DIRECT;
+
+    const subDuration = duration / 3;
+
+    switch (order) {
+      case CameraOrder.DIRECT:
+        this.moveCameraDirect(distance, angleH, angleV, duration);
+        break;
+      case CameraOrder.DVH:
+        this.moveCameraByDistance(distance, subDuration);
+        setTimeout(() => {
+          this.moveCameraByAngleV(angleV, subDuration);
+          setTimeout(() => {
+            this.moveCameraByAngleH(angleH, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+      case CameraOrder.DHV:
+        this.moveCameraByDistance(distance, subDuration);
+        setTimeout(() => {
+          this.moveCameraByAngleH(angleH, subDuration);
+          setTimeout(() => {
+            this.moveCameraByAngleV(angleV, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+      case CameraOrder.HDV:
+        this.moveCameraByAngleH(angleH, subDuration);
+        setTimeout(() => {
+          this.moveCameraByDistance(distance, subDuration);
+          setTimeout(() => {
+            this.moveCameraByAngleV(angleV, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+      case CameraOrder.HVD:
+        this.moveCameraByAngleH(angleH, subDuration);
+        setTimeout(() => {
+          this.moveCameraByAngleV(angleV, subDuration);
+          setTimeout(() => {
+            this.moveCameraByDistance(distance, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+      case CameraOrder.VDH:
+        this.moveCameraByAngleV(angleV, subDuration);
+        setTimeout(() => {
+          this.moveCameraByDistance(distance, subDuration);
+          setTimeout(() => {
+            this.moveCameraByAngleH(angleH, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+      case CameraOrder.VHD:
+        this.moveCameraByAngleV(angleV, subDuration);
+        setTimeout(() => {
+          this.moveCameraByAngleH(angleH, subDuration);
+          setTimeout(() => {
+            this.moveCameraByDistance(distance, subDuration);
+          }, subDuration);
+        }, subDuration);
+        break;
+    }
   }
 }

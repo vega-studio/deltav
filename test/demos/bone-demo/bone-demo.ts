@@ -65,7 +65,7 @@ export class BoneDemo extends BaseDemo {
     await this.surface;
 
     const camera = this.surface.cameras.perspective;
-    camera.position = [0, 0, 15];
+    camera.position = [0, 0, 30];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
     let angle = Math.PI / 4;
@@ -112,17 +112,21 @@ export class BoneDemo extends BaseDemo {
     // this.providers.bones.add(bone3);
     // this.providers.bones.add(bone4);
 
-    setTimeout(() => {
-      setInterval(() => {
-        angle += 0.01;
-        bone2.setRotation(eulerToQuat([0, 0, angle]));
-      }, 50);
-    }, 2000);
-
     const arm = new ArmInstance({
-      transform: transform1
+      transform: transform1,
+      quat1: eulerToQuat([0, 0, Math.PI / 6]),
+      length1: 6,
+      length2: 6,
+      quat2: eulerToQuat([0, 0, -Math.PI / 4])
     });
 
     this.providers.arms.add(arm);
+
+    setTimeout(() => {
+      setInterval(() => {
+        angle += 0.01;
+        arm.quat2 = eulerToQuat([0, 0, angle]);
+      }, 50);
+    }, 2000);
   }
 }

@@ -25,6 +25,8 @@ export class ArmInstance extends Instance3D {
   @observable quat1: Vec4 = [1, 0, 0, 0];
   @observable quat2: Vec4 = [1, 0, 0, 0];
 
+  @observable origin: Vec3 = [0, 0, 0];
+
   constructor(options: IArmOptions) {
     super(options);
     this.color = options.color || this.color;
@@ -33,5 +35,6 @@ export class ArmInstance extends Instance3D {
     this.length2 = options.length2 || this.length2;
     this.quat1 = options.quat1 || this.quat1;
     this.quat2 = options.quat2 || this.quat2;
+    this.origin = options.origin || this.origin;
   }
 }

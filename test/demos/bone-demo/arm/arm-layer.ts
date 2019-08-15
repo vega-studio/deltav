@@ -12,6 +12,14 @@ import {
 } from "../../../../src";
 import { ArmInstance } from "./arm-instance";
 
+function getWeight(b: number) {
+  if (b < 0.4) return 1;
+
+  if (b > 0.6) return 0;
+
+  return -5 * b + 3;
+}
+
 export interface IArmLayerProps<TInstance extends ArmInstance>
   extends ILayerProps<TInstance> {}
 
@@ -26,23 +34,31 @@ export class ArmLayer<
 
   initShader(): IShaderInitialization<TInstance> | null {
     const positions: Vec3[] = [];
-    const weight1s: Vec3[] = [];
-    const weight2s: Vec3[] = [];
+    const weight1s: number[] = [];
+    const weight2s: number[] = [];
 
     // Fill positions
     const segments1 = 10;
-    const segments2 = 20;
+    const segments2 = 100;
 
-    for (let i = 0; i < segments1; i++) {
-      for (let j = 0; j < segments2; j++) {
+    for (let j = 0; j < segments2; j++) {
+      const b = j / segments2;
+      const t = (j + 1) / segments2;
+
+      const wb1 = getWeight(b);
+      const wb2 = 1 - wb1;
+      const wt1 = getWeight(t);
+      const wt2 = 1 - wt1;
+
+      for (let i = 0; i < segments1; i++) {
         const angle1 = i * Math.PI * 2 / segments1;
         const angle2 = (i + 1) * Math.PI * 2 / segments1;
+
         const c1 = Math.cos(angle1);
         const s1 = Math.sin(angle1);
         const c2 = Math.cos(angle2);
         const s2 = Math.sin(angle2);
-        const b = j / segments2;
-        const t = (j + 1) / segments2;
+
         const bl: Vec3 = [c1, b, s1];
         const br: Vec3 = [c2, b, s2];
         const tl: Vec3 = [c1, t, s1];
@@ -53,10 +69,27 @@ export class ArmLayer<
         positions.push(br);
         positions.push(tl);
 
+        weight1s.push(wb1, wb1, wt1);
+        weight2s.push(wb2, wb2, wt2);
+
         // triangle2: br -> tr -> tl
         positions.push(br);
         positions.push(tr);
         positions.push(tl);
+
+        weight1s.push(wb1, wt1, wt1);
+        weight2s.push(wb2, wt2, wt2);
+
+        /*if (b < 0.4) {
+          weight1s.push(1, 1, 1, 1, 1, 1);
+          weight2s.push(0, 0, 0, 0, 0, 0);
+        } else if (b < 0.6) {
+          weight1s.push(0.5, 0.5, 0.5, 0.5, 0.5, 0.5);
+          weight2s.push(0.5, 0.5, 0.5, 0.5, 0.5, 0.5);
+        } else {
+          weight1s.push(0, 0, 0, 0, 0, 0);
+          weight2s.push(1, 1, 1, 1, 1, 1);
+        }*/
       }
     }
 
@@ -80,9 +113,9 @@ export class ArmLayer<
           update: o => o.quat2
         }),
         createAttribute({
-          name: "t",
+          name: "t1",
           size: InstanceAttributeSize.THREE,
-          update: () => [0, 0, 0]
+          update: o => o.origin
         }),
         createAttribute({
           name: "radius",
@@ -111,6 +144,16 @@ export class ArmLayer<
           name: "position",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => positions[vertex]
+        },
+        {
+          name: "weight1",
+          size: VertexAttributeSize.ONE,
+          update: (vertex: number) => [weight1s[vertex]]
+        },
+        {
+          name: "weight2",
+          size: VertexAttributeSize.ONE,
+          update: (vertex: number) => [weight2s[vertex]]
         }
       ],
       vertexCount: segments1 * segments2 * 6,

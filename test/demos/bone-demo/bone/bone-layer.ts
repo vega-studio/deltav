@@ -131,16 +131,16 @@ export class BoneLayer<
           size: InstanceAttributeSize.THREE,
           update: o => o.scale
         }),
-        {
+        createAttribute({
           name: "origin",
           size: InstanceAttributeSize.THREE,
           update: o => o.origin
-        },
-        {
+        }),
+        createAttribute({
           name: "r",
           size: InstanceAttributeSize.FOUR,
           update: o => o.quat
-        },
+        }),
         createAttribute({
           name: "t",
           size: InstanceAttributeSize.THREE,

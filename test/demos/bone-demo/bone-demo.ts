@@ -10,12 +10,15 @@ import {
   View3D
 } from "src";
 import { BaseDemo } from "test/common/base-demo";
+import { ArmInstance } from "./arm/arm-instance";
+import { ArmLayer } from "./arm/arm-layer";
 import { BoneInstance } from "./bone/bone-instance";
 import { BoneLayer } from "./bone/bone-layer";
 
 export class BoneDemo extends BaseDemo {
   providers = {
-    bones: new InstanceProvider<BoneInstance>()
+    bones: new InstanceProvider<BoneInstance>(),
+    arms: new InstanceProvider<ArmInstance>()
   };
   buildConsole(_gui: dat.GUI) {
     //
@@ -46,6 +49,9 @@ export class BoneDemo extends BaseDemo {
             layers: {
               bones: createLayer(BoneLayer, {
                 data: providers.bones
+              }),
+              arms: createLayer(ArmLayer, {
+                data: providers.arms
               })
             }
           }
@@ -98,20 +104,25 @@ export class BoneDemo extends BaseDemo {
 
     bone1.addChild(bone2);
 
-    bone2.addChild(bone4);
-    bone2.addChild(bone3);
+    // bone2.addChild(bone4);
+    // bone2.addChild(bone3);
+    // this.providers.bones.add(bone2);
+    // this.providers.bones.add(bone1);
 
-    this.providers.bones.add(bone1);
-    this.providers.bones.add(bone2);
-
-    this.providers.bones.add(bone3);
-    this.providers.bones.add(bone4);
+    // this.providers.bones.add(bone3);
+    // this.providers.bones.add(bone4);
 
     setTimeout(() => {
       setInterval(() => {
         angle += 0.01;
-        bone2.setRotation(eulerToQuat([Math.PI / 2, 0, angle]));
+        bone2.setRotation(eulerToQuat([0, 0, angle]));
       }, 50);
     }, 2000);
+
+    const arm = new ArmInstance({
+      transform: transform1
+    });
+
+    this.providers.arms.add(arm);
   }
 }

@@ -1,7 +1,9 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
-import { BarChartDemo } from "./demos/common-charts";
+import { HistogramDemo } from "./demos/common-charts";
+import { ScatterChatDemo } from "./demos/common-charts";
+import { PieChartDemo } from "./demos/common-charts/pie-chart";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
@@ -34,6 +36,8 @@ demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
 demos.set("ease-demo", EaseDemo);
 demos.set("quat-ease-demo", QuatEaseDemo);
-demos.set("bar-chart-demo", BarChartDemo);
+demos.set("histogram-demo", HistogramDemo);
+demos.set("scatter-chart-demo", ScatterChatDemo);
+demos.set("pie-chart-demo", PieChartDemo);
 
 export const demoKeys = Array.from(demos.keys());

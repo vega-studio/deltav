@@ -3,13 +3,11 @@ import {
   EdgeInstance,
   LabelInstance,
   RectangleInstance,
-  Vec2,
-  Vec4
+  Vec2
 } from "src";
+import { Color, getColor } from "../chart-utility";
 
-type Color = Vec4 | string;
-
-export interface IBarChartOptions {
+export interface IHistogramOptions {
   origin?: Vec2;
   width?: number;
   height?: number;
@@ -18,7 +16,7 @@ export interface IBarChartOptions {
   colors?: Color[];
 }
 
-export class BarChart {
+export class Histogram {
   origin: Vec2 = [0, 0];
   width: number = 1000;
   height: number = 500;
@@ -30,7 +28,7 @@ export class BarChart {
   lines: EdgeInstance[] = [];
   labels: LabelInstance[] = [];
 
-  constructor(options: IBarChartOptions) {
+  constructor(options: IHistogramOptions) {
     this.origin = options.origin || this.origin;
     this.width = options.width || this.width;
     this.height = options.height || this.height;
@@ -52,7 +50,7 @@ export class BarChart {
     this.lines.push(
       new EdgeInstance({
         start: this.origin,
-        end: add2(this.origin, [0, this.height])
+        end: add2(this.origin, [0, -this.height])
       })
     );
 
@@ -63,9 +61,12 @@ export class BarChart {
     for (let i = 0, endi = this.datas.length; i < endi; i++) {
       this.rectangles.push(
         new RectangleInstance({
-          color: [1, 1, 1, 1],
+          color: getColor(this.colors[i]),
           depth: 0,
-          position: add2(this.origin, [barWidth * i + barWidth / 2, 0]),
+          position: add2(this.origin, [
+            barWidth * i + barWidth / 4,
+            -this.datas[i] * 5
+          ]),
           size: [barWidth * 0.5, this.datas[i] * 5]
         })
       );

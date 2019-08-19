@@ -1,1 +1,2 @@
-export * from "./bar-chart-demo";
+export * from "./histogram";
+export * from "./scatter-chart";

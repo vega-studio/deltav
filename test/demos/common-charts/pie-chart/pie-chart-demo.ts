@@ -1,5 +1,7 @@
 import * as datGUI from "dat.gui";
 import {
+  ArcInstance,
+  ArcLayer,
   BasicCamera2DController,
   BasicSurface,
   Camera2D,
@@ -10,17 +12,15 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  RectangleInstance,
-  RectangleLayer,
   View2D
 } from "src";
-import { BaseDemo } from "../../common/base-demo";
-import { BarChart } from "./bar-chart";
+import { BaseDemo } from "test/common/base-demo";
+import { PieChart } from "./pie-chart";
 
-export class BarChartDemo extends BaseDemo {
-  chart: BarChart;
+export class PieChartDemo extends BaseDemo {
+  chart: PieChart;
   providers = {
-    rectangles: new InstanceProvider<RectangleInstance>(),
+    arcs: new InstanceProvider<ArcInstance>(),
     lines: new InstanceProvider<EdgeInstance>()
   };
 
@@ -30,29 +30,28 @@ export class BarChartDemo extends BaseDemo {
 
   async init() {
     if (!this.surface) return;
-    await this.surface.ready;
 
-    this.chart = new BarChart({
-      origin: [0, 500],
-      barNames: ["a", "b", "c"],
-      datas: [5, 6, 7],
-      colors: ["blue", "red", "yellow"]
+    this.chart = new PieChart({
+      center: [window.innerWidth / 2, window.innerHeight / 2],
+      radius: 300,
+      datas: [34, 22, 45, 67, 89],
+      colors: ["blue", "yellow", "purple", "green", "red"]
     });
 
     this.addChartToProvider();
   }
 
   addChartToProvider() {
-    // if (!this.chart) return;
-    this.chart.rectangles.forEach(rectangle =>
-      this.providers.rectangles.add(rectangle)
-    );
+    this.chart.arcs.forEach(arc => this.providers.arcs.add(arc));
     this.chart.lines.forEach(line => this.providers.lines.add(line));
   }
 
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
+      rendererOptions: {
+        antialias: true
+      },
       providers: this.providers,
       cameras: {
         main: new Camera2D()
@@ -76,9 +75,9 @@ export class BarChartDemo extends BaseDemo {
               })
             },
             layers: [
-              createLayer(RectangleLayer, {
-                data: providers.rectangles,
-                key: `rectangles`
+              createLayer(ArcLayer, {
+                data: providers.arcs,
+                key: `arcs`
               }),
               createLayer(EdgeLayer, {
                 data: providers.lines,

@@ -15,13 +15,16 @@ import {
   View2D
 } from "src";
 import { BaseDemo } from "test/common/base-demo";
+import { FanInstance } from "./fan-shape/fan-instance";
+import { FanLayer } from "./fan-shape/fan-layer";
 import { PieChart } from "./pie-chart";
 
 export class PieChartDemo extends BaseDemo {
   chart: PieChart;
   providers = {
     arcs: new InstanceProvider<ArcInstance>(),
-    lines: new InstanceProvider<EdgeInstance>()
+    lines: new InstanceProvider<EdgeInstance>(),
+    fans: new InstanceProvider<FanInstance>()
   };
 
   buildConsole(_gui: datGUI.GUI) {
@@ -34,8 +37,8 @@ export class PieChartDemo extends BaseDemo {
     this.chart = new PieChart({
       center: [window.innerWidth / 2, window.innerHeight / 2],
       radius: 300,
-      datas: [34, 22],
-      colors: ["blue", "blue", "purple", "green", "red"]
+      datas: [34, 22, 10, 6, 9],
+      colors: ["blue", "yellow", "purple", "green", "red"]
     });
 
     this.addChartToProvider();
@@ -44,6 +47,7 @@ export class PieChartDemo extends BaseDemo {
   addChartToProvider() {
     this.chart.arcs.forEach(arc => this.providers.arcs.add(arc));
     this.chart.lines.forEach(line => this.providers.lines.add(line));
+    this.chart.fans.forEach(fan => this.providers.fans.add(fan));
   }
 
   makeSurface(container: HTMLElement) {
@@ -83,6 +87,10 @@ export class PieChartDemo extends BaseDemo {
                 data: providers.lines,
                 key: `lines`,
                 type: EdgeType.LINE
+              }),
+              createLayer(FanLayer, {
+                data: providers.fans,
+                key: `fans`
               })
             ]
           }

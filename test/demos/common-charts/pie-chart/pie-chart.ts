@@ -1,5 +1,6 @@
 import { add2, ArcInstance, EdgeInstance, Vec2 } from "src";
 import { Color, getColor, getSum } from "../chart-utility";
+import { FanInstance } from "./fan-shape/fan-instance";
 
 export interface IPieChartOptions {
   center?: Vec2;
@@ -16,6 +17,7 @@ export class PieChart {
 
   arcs: ArcInstance[] = [];
   lines: EdgeInstance[] = [];
+  fans: FanInstance[] = [];
 
   constructor(options: IPieChartOptions) {
     this.center = options.center || this.center;
@@ -40,7 +42,8 @@ export class PieChart {
         angle: [startAngle, startAngle + this.datas[i] * Math.PI * 2 / sum],
         thickness: [this.radius, this.radius]
       });
-      this.arcs.push(arc);
+
+      // this.arcs.push(arc);
 
       const line = new EdgeInstance({
         start: this.center,
@@ -52,7 +55,16 @@ export class PieChart {
         endColor: [1, 1, 1, 1],
         thickness: [4, 4]
       });
-      this.lines.push(line);
+      // this.lines.push(line);
+
+      const fan = new FanInstance({
+        angle: [startAngle, startAngle + this.datas[i] * Math.PI * 2 / sum],
+        radius: this.radius,
+        color,
+        center: this.center
+      });
+
+      this.fans.push(fan);
 
       startAngle += this.datas[i] * Math.PI * 2 / sum;
     }

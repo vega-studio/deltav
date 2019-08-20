@@ -1,9 +1,14 @@
+import { Vec2 } from "@diniden/signal-processing";
 import {
+  GLSettings,
   ILayerProps,
+  InstanceAttributeSize,
   InstanceProvider,
   IShaderInitialization,
-  Layer2D
-} from "src";
+  Layer2D,
+  UniformSize,
+  VertexAttributeSize
+} from "../../../../../src";
 import { FanInstance } from "./fan-instance";
 
 export interface IFanLayerProps<T extends FanInstance> extends ILayerProps<T> {}
@@ -27,8 +32,61 @@ export class FanLayer<
   };
 
   initShader(): IShaderInitialization<FanInstance> {
-    const MAX_SEGMENTS = 150;
+    const MAX_SEGMENTS = 50;
 
-    const vertexToNormal;
+    const vertices: { [key: number]: Vec2 } = {
+      0: [0, 0]
+    };
+
+    for (let i = 0; i <= MAX_SEGMENTS; i++) {
+      vertices[i + 1] = [i / MAX_SEGMENTS, 1];
+    }
+
+    return {
+      drawMode: GLSettings.Model.DrawMode.TRIANGLE_FAN,
+      fs: require("./fan-layer.fs"),
+      instanceAttributes: [
+        {
+          name: FanLayer.attributeNames.angle,
+          size: InstanceAttributeSize.TWO,
+          update: o => o.angle
+        },
+        {
+          name: FanLayer.attributeNames.center,
+          size: InstanceAttributeSize.TWO,
+          update: o => o.center
+        },
+        {
+          name: FanLayer.attributeNames.radius,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.radius]
+        },
+        {
+          name: FanLayer.attributeNames.depth,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.depth]
+        },
+        {
+          name: FanLayer.attributeNames.color,
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.color
+        },
+        {
+          name: FanLayer.attributeNames.edgeColor,
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.edgeColor
+        }
+      ],
+      uniforms: [],
+      vertexAttributes: [
+        {
+          name: "vertex",
+          size: VertexAttributeSize.TWO,
+          update: (vertex: number) => vertices[vertex]
+        }
+      ],
+      vertexCount: MAX_SEGMENTS + 2,
+      vs: require("./fan-layer.vs")
+    };
   }
 }

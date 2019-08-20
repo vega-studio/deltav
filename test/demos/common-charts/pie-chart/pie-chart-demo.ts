@@ -34,8 +34,8 @@ export class PieChartDemo extends BaseDemo {
     this.chart = new PieChart({
       center: [window.innerWidth / 2, window.innerHeight / 2],
       radius: 300,
-      datas: [34, 22, 45, 67, 89],
-      colors: ["blue", "yellow", "purple", "green", "red"]
+      datas: [34, 22],
+      colors: ["blue", "blue", "purple", "green", "red"]
     });
 
     this.addChartToProvider();

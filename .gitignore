@@ -14,3 +14,7 @@ package-lock.json
 .vscode
 npm*log-*
 *.log
+
+# -----[ Local Administrative Items ] --------------------------
+.aws-local.js
+dist.tar

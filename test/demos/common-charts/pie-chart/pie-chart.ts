@@ -1,4 +1,4 @@
-import { ArcInstance, EdgeInstance, Vec2 } from "src";
+import { Vec2 } from "src";
 import { Color, getColor, getSum } from "../chart-utility";
 import { FanInstance } from "./fan-shape/fan-instance";
 
@@ -14,9 +14,6 @@ export class PieChart {
   radius: number = 200;
   datas: number[] = [];
   colors: Color[] = [];
-
-  arcs: ArcInstance[] = [];
-  lines: EdgeInstance[] = [];
   fans: FanInstance[] = [];
 
   constructor(options: IPieChartOptions) {

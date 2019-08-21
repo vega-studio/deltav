@@ -1,5 +1,7 @@
 import * as datGUI from "dat.gui";
 import {
+  ArcInstance,
+  ArcLayer,
   BasicCamera2DController,
   BasicSurface,
   Camera2D,
@@ -10,14 +12,12 @@ import {
   View2D
 } from "src";
 import { BaseDemo } from "test/common/base-demo";
-import { FanInstance } from "./fan-shape/fan-instance";
-import { FanLayer } from "./fan-shape/fan-layer";
-import { PieChart } from "./pie-chart";
+import { DonutChart } from "./donut-chart";
 
-export class PieChartDemo extends BaseDemo {
-  chart: PieChart;
+export class DonutChartDemo extends BaseDemo {
+  chart: DonutChart;
   providers = {
-    fans: new InstanceProvider<FanInstance>()
+    arcs: new InstanceProvider<ArcInstance>()
   };
 
   buildConsole(_gui: datGUI.GUI) {
@@ -27,10 +27,11 @@ export class PieChartDemo extends BaseDemo {
   async init() {
     if (!this.surface) return;
 
-    this.chart = new PieChart({
+    this.chart = new DonutChart({
       center: [window.innerWidth / 2, window.innerHeight / 2],
-      radius: 300,
-      datas: [68, 22, 10, 6, 9],
+      outerRadius: 300,
+      innerRadius: 50,
+      datas: [68, 34, 12, 9, 100],
       colors: [0x0000bb, 0xaa00bb, 0x00bb00, 0xbbbb00, 0xbb0000]
     });
 
@@ -38,7 +39,7 @@ export class PieChartDemo extends BaseDemo {
   }
 
   addChartToProvider() {
-    this.chart.fans.forEach(fan => this.providers.fans.add(fan));
+    this.chart.arcs.forEach(arc => this.providers.arcs.add(arc));
   }
 
   makeSurface(container: HTMLElement) {
@@ -70,9 +71,9 @@ export class PieChartDemo extends BaseDemo {
               })
             },
             layers: [
-              createLayer(FanLayer, {
-                data: providers.fans,
-                key: `fans`
+              createLayer(ArcLayer, {
+                data: providers.arcs,
+                key: `arcs`
               })
             ]
           }

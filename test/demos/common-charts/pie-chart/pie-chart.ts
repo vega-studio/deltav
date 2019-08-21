@@ -1,4 +1,4 @@
-import { add2, ArcInstance, EdgeInstance, Vec2 } from "src";
+import { ArcInstance, EdgeInstance, Vec2 } from "src";
 import { Color, getColor, getSum } from "../chart-utility";
 import { FanInstance } from "./fan-shape/fan-instance";
 
@@ -34,28 +34,6 @@ export class PieChart {
 
     for (let i = 0, endi = this.datas.length; i < endi; i++) {
       const color = getColor(this.colors[i]);
-      const arc = new ArcInstance({
-        center: this.center,
-        radius: this.radius / 2,
-        colorStart: color,
-        colorEnd: color,
-        angle: [startAngle, startAngle + this.datas[i] * Math.PI * 2 / sum],
-        thickness: [this.radius, this.radius]
-      });
-
-      // this.arcs.push(arc);
-
-      const line = new EdgeInstance({
-        start: this.center,
-        end: add2(this.center, [
-          Math.cos(startAngle) * this.radius,
-          Math.sin(startAngle) * this.radius
-        ]),
-        startColor: [1, 1, 1, 1],
-        endColor: [1, 1, 1, 1],
-        thickness: [4, 4]
-      });
-      // this.lines.push(line);
 
       const fan = new FanInstance({
         angle: [startAngle, startAngle + this.datas[i] * Math.PI * 2 / sum],

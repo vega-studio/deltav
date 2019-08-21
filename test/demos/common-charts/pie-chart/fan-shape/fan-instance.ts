@@ -6,6 +6,7 @@ export interface IFanInstanceOptions extends IInstanceOptions {
   color?: Vec4;
   depth?: number;
   edgeColor?: Vec4;
+  gap?: number;
   radius?: number;
 }
 
@@ -16,6 +17,7 @@ export class FanInstance extends Instance {
   @observable depth: number = 0;
   @observable edgeColor: Vec4 = [1, 1, 1, 1];
   @observable radius: number = 1;
+  @observable gap: number = 1;
 
   constructor(options: IFanInstanceOptions) {
     super(options);
@@ -25,6 +27,7 @@ export class FanInstance extends Instance {
     this.edgeColor = options.edgeColor || this.edgeColor;
     this.center = options.center || this.center;
     this.depth = options.depth || this.depth;
+    this.gap = options.gap || this.gap;
     this.radius = options.radius || this.radius;
   }
 }

@@ -6,7 +6,6 @@ import {
   InstanceProvider,
   IShaderInitialization,
   Layer2D,
-  UniformSize,
   VertexAttributeSize
 } from "../../../../../src";
 import { FanInstance } from "./fan-instance";
@@ -28,11 +27,12 @@ export class FanLayer<
     color: "color",
     edgeColor: "edgeColor",
     depth: "depth",
-    radius: "radius"
+    radius: "radius",
+    gap: "gap"
   };
 
   initShader(): IShaderInitialization<FanInstance> {
-    const MAX_SEGMENTS = 50;
+    const MAX_SEGMENTS = 100;
 
     const vertices: { [key: number]: Vec2 } = {
       0: [0, 0]
@@ -75,6 +75,11 @@ export class FanLayer<
           name: FanLayer.attributeNames.edgeColor,
           size: InstanceAttributeSize.FOUR,
           update: o => o.edgeColor
+        },
+        {
+          name: FanLayer.attributeNames.gap,
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.gap]
         }
       ],
       uniforms: [],

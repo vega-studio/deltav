@@ -37,8 +37,8 @@ export class PieChartDemo extends BaseDemo {
     this.chart = new PieChart({
       center: [window.innerWidth / 2, window.innerHeight / 2],
       radius: 300,
-      datas: [34, 22, 10, 6, 9],
-      colors: ["blue", "yellow", "purple", "green", "red"]
+      datas: [68, 22, 10, 6, 9],
+      colors: [0x0000bb, 0xaa00bb, 0x00bb00, 0xbbbb00, 0xbb0000]
     });
 
     this.addChartToProvider();
@@ -74,7 +74,7 @@ export class PieChartDemo extends BaseDemo {
             views: {
               main: createView(View2D, {
                 camera: cameras.main,
-                background: [0, 0, 0, 1],
+                background: [1, 1, 1, 1],
                 clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
               })
             },

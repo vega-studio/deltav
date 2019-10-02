@@ -14,3 +14,5 @@ package-lock.json
 .vscode
 npm*log-*
 *.log
+#Local Files
+.aws-local.js

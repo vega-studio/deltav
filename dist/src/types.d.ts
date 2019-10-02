@@ -309,3 +309,8 @@ export declare type Lookup<T> = {
 } | {
     [key: string]: T | Lookup<T>;
 };
+export declare enum LayerBufferType {
+    UNIFORM = 0,
+    INSTANCE_ATTRIBUTE = 1,
+    INSTANCE_ATTRIBUTE_PACKING = 2
+}

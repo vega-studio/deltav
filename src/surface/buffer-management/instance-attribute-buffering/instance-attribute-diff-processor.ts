@@ -151,6 +151,9 @@ export class InstanceAttributeDiffProcessor<
       for (let i = 0, end = propIds.length; i < end; ++i) {
         // First update for the instance attribute itself
         location = propertyToLocation[propIds[i]];
+        // Not finding a location can indicate an observable property changed on the instance that is not used by the
+        // layer
+        if (!location) continue;
         attribute = location.attribute;
         attributeChangeUID = attribute.packUID || attribute.uid;
         updateValue = attribute.update(instance);
@@ -171,6 +174,9 @@ export class InstanceAttributeDiffProcessor<
 
           for (let k = 0, endk = childLocations.length; k < endk; ++k) {
             location = childLocations[k];
+            // Not finding a location can indicate an observable property changed on the instance that is not used by
+            // the layer
+            if (!location) continue;
             attributeChangeUID =
               location.attribute.packUID || location.attribute.uid;
             updateValue = location.attribute.update(instance);
@@ -237,6 +243,9 @@ export class InstanceAttributeDiffProcessor<
       for (let i = 0, end = propIds.length; i < end; ++i) {
         // First update for the instance attribute itself
         location = propertyToLocation[propIds[i]];
+        // Not finding a location can indicate an observable property changed on the instance that is not used by the
+        // layer
+        if (!location) continue;
         attribute = location.attribute;
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
@@ -250,6 +259,9 @@ export class InstanceAttributeDiffProcessor<
 
           for (let k = 0, endk = childLocations.length; k < endk; ++k) {
             location = childLocations[k];
+            // Not finding a location can indicate an observable property changed on the instance that is not used by the
+            // layer
+            if (!location) continue;
             attribute = location.attribute;
             updateValue = attribute.update(instance);
             location.buffer.value.set(updateValue, location.range[0]);

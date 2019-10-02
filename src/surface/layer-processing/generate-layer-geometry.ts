@@ -3,10 +3,10 @@ import { Instance } from "../../instance-provider/instance";
 import {
   IVertexAttribute,
   IVertexAttributeInternal,
+  LayerBufferType,
   ShaderIOValue
 } from "../../types";
 import { Layer } from "../layer";
-import { LayerBufferType } from "./layer-buffer-type";
 
 function isNumberCluster(
   val: ShaderIOValue

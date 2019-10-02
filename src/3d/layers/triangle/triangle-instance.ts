@@ -6,8 +6,8 @@ import { IInstance3DOptions, Instance3D } from "../base/instance-3d";
 export interface ITriangleOptions extends IInstance3DOptions {
   /** Sets the color of the Triangle */
   color?: Color;
-  /** Scales the triangle */
-  scale?: number;
+  /** Sizes the triangle */
+  size?: number;
 }
 
 /**
@@ -16,12 +16,12 @@ export interface ITriangleOptions extends IInstance3DOptions {
 export class TriangleInstance extends Instance3D {
   /** Sets the color of the Triangle */
   @observable color: Color = [1, 1, 1, 1];
-  /** Scales the  */
-  @observable scale: number = 1;
+  /** Sizes the triangle */
+  @observable size: number = 1;
 
   constructor(options: ITriangleOptions) {
     super(options);
     this.color = options.color || this.color;
-    this.scale = options.scale || this.scale;
+    this.size = options.size || this.size;
   }
 }

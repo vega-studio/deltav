@@ -9,12 +9,12 @@ import {
 import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
-import { LayerBufferType } from "../../../surface/layer-processing/layer-buffer-type";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
   IUniform,
   IVertexAttribute,
+  LayerBufferType,
   PickType,
   ShaderInjectionTarget
 } from "../../../types";

@@ -129,6 +129,7 @@ export declare function normalize4(left: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function vec4(values: number[] | number, ...args: (number | number[])[]): Vec4;
 export declare function color4FromHex3(hex: number, out?: Vec4): [number, number, number, number];
 export declare function color4FromHex4(hex: number, out?: Vec4): [number, number, number, number];
+export declare function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4;
 export declare type VecMethods<T extends Vec> = {
     add(left: T, right: T, out?: T): T;
     ceil(vec: T, out?: T): T;
@@ -149,6 +150,8 @@ export declare type VecMethods<T extends Vec> = {
     normalize(vec: T, out?: T): T;
     scale(vec: T, scale: number, out?: T): T;
     subtract(left: T, right: T, out?: T): T;
+    vec(values: number[] | number, ...args: (number | number[])[]): T;
+    slerpQuat?(start: T, end: T, t: number, out?: T): T;
 };
 export declare const vec1Methods: VecMethods<Vec1>;
 export declare const vec2Methods: VecMethods<Vec2>;

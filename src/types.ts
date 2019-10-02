@@ -839,3 +839,27 @@ export type NumberId = number;
 export type Lookup<T> =
   | { [key: number]: T | Lookup<T> }
   | { [key: string]: T | Lookup<T> };
+
+/**
+ * This expresses determined buffer types that already exists within the framework.
+ */
+export enum LayerBufferType {
+  /**
+   * This is a compatibility mode for instance attributes. This is used when:
+   * 1. It would perform better
+   * 2. When instance attributes are not available for the gl context (ANGLE draw instanced arrays)
+   * 3. When the instance attributes + vertex attributes exceeds the max Vertex Attributes for the hardware and Attribute
+   *    packing still can not fit all of the attributes for the item.
+   */
+  UNIFORM = 0,
+  /* This is a fast and zippy buffering strategy used when the hardware supports it for a provided layer!  */
+  INSTANCE_ATTRIBUTE = 1,
+  /**
+   * This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering strategy. If provided attributes do
+   * not fit the limited amount of vertex attributes supported by the hardware, then we have one last strategy
+   * to utilize the highly optimized hardware instancing, which is to cram multiple attributes within single
+   * attribute blocks. An attribute block is considered to be 4 32 bit floats. These packed attributes will then
+   * get dereferenced in the shader.
+   */
+  INSTANCE_ATTRIBUTE_PACKING = 2
+}

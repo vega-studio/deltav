@@ -1,3 +1,18 @@
+## 1.34.0
+
+## Added
+
+- [`ADDED`]: OnAnimationLoop method now available to generate a command that executes on the animation frame. This also provides a means to do timings that resolve on an animation frame.
+- [`ADDED`]: StopAllFrameCommands is a means to stop EVERYTHING that made a frame request including simple single frame commands and animation loops.
+
+## Fixed
+
+- [`FIXED`]: Git ignore updated to remove local aws script
+- [`FIXED`]: Added a script to make aws deployment easier while not Open Sourced yet.
+- [`FIXED`]: Added demos for easing equations to make it easier to have them debugged and visualize their output
+- [`FIXED`]: Established a pattern for sub properties working with observables.
+- [`FIXED`]: Removed a shift operator that caused hefty performance costs during add operations
+
 ## 1.33.0
 
 ## Added

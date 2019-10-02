@@ -72,11 +72,34 @@ export class InstanceAttributePackingBufferManager<
    * This is used by the diffing process to target updates related to deactivating an instance.
    */
   private activePropertyId: number = -1;
+  /**
+   * As changes are processed, instances will be added into the buffers. As they are added in, the instance
+   * will take over available locations within the buffer. Normally we would have these available locations
+   * in a queue and we would push and shift into that queue to retrieve the locations; however, shifting queues
+   * when done in VERY large quantities causes javascript to lag horrendously. Thus we instead have this index
+   * to monitor the next available item to pull during processing changes. AFTER changes have been processed
+   * we perform a one time operation splice to delete any list of available locations that have been used. This
+   * GREATLY improves performance for these types of operations.
+   */
+  private currentAvailableLocation: number = -1;
 
   constructor(layer: Layer<T, any>, scene: LayerScene) {
     super(layer, scene);
     // Start our add method as a registration step.
     this.add = this.doAddWithRegistration;
+  }
+
+  /**
+   * This is the tail end of processing changes and lets us clean up anything that might have been used to aid in the
+   * processing.
+   */
+  changesProcessed() {
+    super.changesProcessed();
+    // Clean out available locations that have been consumed during processing changes
+    this.availableLocations.splice(0, this.currentAvailableLocation + 1);
+    // All elements in the availableLocations buffer are now valid locations so we reset this index back to the
+    // beginning which is -1 since our loop iterates with it using ++currentAvailableLocation.
+    this.currentAvailableLocation = -1;
   }
 
   /**
@@ -134,7 +157,10 @@ export class InstanceAttributePackingBufferManager<
    */
   private doAdd(instance: T) {
     // Ensure we have buffer locations available
-    if (this.availableLocations.length <= 0) {
+    if (
+      this.availableLocations.length <= 0 ||
+      this.currentAvailableLocation >= this.availableLocations.length - 1
+    ) {
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
       // Break down the newly generated buffers into property groupings for the instances
@@ -145,7 +171,9 @@ export class InstanceAttributePackingBufferManager<
     }
 
     // Get the next available location
-    const bufferLocations = this.availableLocations.shift();
+    const bufferLocations = this.availableLocations[
+      ++this.currentAvailableLocation
+    ];
 
     // Pair up the instance with it's buffer location
     if (bufferLocations && this.geometry) {
@@ -298,6 +326,8 @@ export class InstanceAttributePackingBufferManager<
       }
     }
 
+    debug("BEGIN: Resizing packed attribute buffer by %d instances", growth);
+
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
       // The buffer grows from 0 to our initial instance count
@@ -322,7 +352,7 @@ export class InstanceAttributePackingBufferManager<
       this.blockAttributes = [];
 
       // We have to determine how many blocks will be used to cram all of our instance properties into.
-      // So we calculate how big each block will be. The number of sizes calculated will be how manyblocks
+      // So we calculate how big each block will be. The number of sizes calculated will be how many blocks
       // need to be generated.
       const blockSizes = new Map<number, number>();
       const blockSubAttributesLookup = new Map<
@@ -628,6 +658,8 @@ export class InstanceAttributePackingBufferManager<
       this.scene.container.add(this.model);
     }
 
+    debug("COMPLETE: Resizing unpacked attribute buffer");
+
     return {
       growth,
       newLocations: attributeToNewBufferLocations
@@ -646,6 +678,8 @@ export class InstanceAttributePackingBufferManager<
     totalNewInstances: number
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
+
+    debug("BEGIN: Packed attribute manager grouping new buffer locations");
 
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
@@ -793,6 +827,8 @@ export class InstanceAttributePackingBufferManager<
       // Store this group as a group that is ready to be associated with an instance
       this.availableLocations.push(group);
     }
+
+    debug("COMPLETE: Packed attribute buffer manager buffer location grouping");
 
     // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
     flushEmitOnce();

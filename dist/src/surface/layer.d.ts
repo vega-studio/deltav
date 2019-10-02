@@ -4,12 +4,11 @@ import { Model } from "../gl/model";
 import { Instance } from "../instance-provider/instance";
 import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ResourceRouter } from "../resources";
-import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, InstanceDiffType, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, Omit, PickType } from "../types";
+import { IInstanceAttribute, ILayerMaterialOptions, INonePickingMetrics, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniform, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, Omit, PickType } from "../types";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerBufferType } from "./layer-processing/layer-buffer-type";
 import { LayerScene } from "./layer-scene";
 import { Surface } from "./surface";
 import { IViewProps, View } from "./view";
@@ -127,14 +126,15 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     getMaterialOptions(): ILayerMaterialOptions;
     initShader(): IShaderInitialization<T> | null;
     managesInstance(instance: T): boolean;
+    getLayerBufferType<T extends Instance>(_gl: WebGLRenderingContext, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[]): LayerBufferType;
+    makeLayerBufferManager(gl: WebGLRenderingContext, scene: LayerScene): void;
     rebuildLayer(): void;
-    resolveChanges(preserveProvider?: boolean): [T, InstanceDiffType, {
+    resolveChanges(preserveProvider?: boolean): [T, import("../types").InstanceDiffType, {
         [key: number]: number;
     }][];
     setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>): void;
     setBufferType(val: LayerBufferType): void;
     shouldDrawView(oldProps: U, newProps: U): boolean;
     updateUniforms(): void;
-    willUpdateInstances(_changes: [T, InstanceDiffType]): void;
     willUpdateProps(newProps: ILayerProps<T>): void;
 }

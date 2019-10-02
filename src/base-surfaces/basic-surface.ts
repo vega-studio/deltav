@@ -12,7 +12,12 @@ import {
   ViewInitializer
 } from "../surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
-import { nextFrame, onFrame, PromiseResolver } from "../util";
+import {
+  nextFrame,
+  onAnimationLoop,
+  PromiseResolver,
+  stopAnimationLoop
+} from "../util";
 import { Camera } from "../util/camera";
 
 /**
@@ -243,7 +248,7 @@ export class BasicSurface<
       delete this.context;
     }
 
-    cancelAnimationFrame(this.drawRequestId);
+    stopAnimationLoop(this.drawRequestId);
     window.removeEventListener("resize", this.handleResize);
   };
 
@@ -254,7 +259,6 @@ export class BasicSurface<
     if (!this.base) return;
     this.currentTime = time;
     this.base.draw(time);
-    this.drawRequestId = requestAnimationFrame(this.draw);
   };
 
   /**
@@ -321,7 +325,7 @@ export class BasicSurface<
       // Use the established cameras and managers to establish the initial pipeline for the surface
       // await this.updatePipeline();
       // Begin the draw loop
-      this.draw(await onFrame());
+      this.drawRequestId = onAnimationLoop(this.draw);
       // Use the established cameras and managers to establish the initial pipeline for the surface
       await this.updatePipeline();
       // Establish event listeners

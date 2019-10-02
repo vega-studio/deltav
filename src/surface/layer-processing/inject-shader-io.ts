@@ -17,7 +17,6 @@ import {
 import { BaseIOSorting } from "../base-io-sorting";
 import { ILayerProps, Layer } from "../layer";
 import { BaseIOExpansion } from "./base-io-expansion";
-import { getLayerBufferType } from "./layer-buffer-type";
 import { packAttributes } from "./pack-attributes";
 
 /**
@@ -300,7 +299,7 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // Let's pack in our attributes automagically so we can determine block and block indices.
   packAttributes(allInstanceAttributes);
   // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
-  getLayerBufferType(gl, layer, vertexAttributes, allInstanceAttributes);
+  layer.getLayerBufferType(gl, vertexAttributes, allInstanceAttributes);
 
   return {
     instanceAttributes: allInstanceAttributes,

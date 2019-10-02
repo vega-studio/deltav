@@ -4,9 +4,9 @@ import {
   IInstanceAttribute,
   INonePickingMetrics,
   ISinglePickingMetrics,
+  LayerBufferType,
   PickType
 } from "../../types";
-import { LayerBufferType } from "../layer-processing/layer-buffer-type";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";

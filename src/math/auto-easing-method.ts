@@ -1,6 +1,6 @@
 import { InstanceIOValue } from "../types";
 import { uid } from "../util/uid";
-import { Vec, VecMath } from "./vector";
+import { isVec4, Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -207,8 +207,361 @@ $\{easingMethod} {
 const continuousSinusoidalGPU = `
 $\{easingMethod} {
   $\{T} direction = end - start;
-  float amplitude = length(direction) * 2.0;
-  return start + direction * sin(t * ${GPU_PI} * 2.0) * amplitude;
+  return start + direction * 0.5 + direction * sin(t * ${GPU_PI} * 2.0) * 0.5;
+}
+`;
+
+const slerpQuatLinearGPU = `
+$\{easingMethod} {
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - t, t),
+    vec2(sin((1.0 - t) * omega) / sinom, sin(t * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInQuadGPU = `
+$\{easingMethod} {
+  float time = t * t;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatOutQuadGPU = `
+$\{easingMethod} {
+  float time = t * (2.0 - t);
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInOutQuadGPU = `
+$\{easingMethod} {
+  float time = t < 0.5 ? 2.0 * t * t : -1.0 + (4.0 - 2.0 * t) * t;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInCubicGPU = `
+$\{easingMethod} {
+  float time = t * t * t;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatOutCubicGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float time = t1 * t1 * t1 + 1.0;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInOutCubicGPU = `
+$\{easingMethod} {
+  float time = t < 0.5 ? 4.0 * t * t * t : (t - 1.0) * (2.0 * t - 2.0) * (2.0 * t - 2.0) + 1.0;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInQuartGPU = `
+$\{easingMethod} {
+  float time = t * t * t * t;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatOutQuartGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float time = 1.0 - t1 * t1 * t1 * t1;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInOutQuartGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float time = t < 0.5 ? 8.0 * t * t * t * t : 1.0 - 8.0 * t1 * t1 * t1 * t1;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInQuintGPU = `
+$\{easingMethod} {
+  float time = t * t * t * t * t;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatOutQuintGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float time = 1.0 + t1 * t1 * t1 * t1 * t1;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatInOutQuintGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float time = t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 + 16.0 * t1 * t1 * t1 * t1 * t1;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatOutElasticGPU = `
+$\{easingMethod} {
+  float p = 0.3;
+  float time = pow(2.0, -10.0 * t) * sin((t - p / 4.0) * (2.0 * ${GPU_PI}) / p) + 1.0;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatBackInGPU = `
+$\{easingMethod} {
+  float time = t * t * t - t * 1.05 * sin(t * ${GPU_PI});
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatBackOutGPU = `
+$\{easingMethod} {
+  float t1 = t - 1.0;
+  float a = 1.7;
+  float time = (t1 * t1 * ((a + 1.0) * t1 + a) + 1.0);
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
+}
+`;
+
+const slerpQuatBackInOutGPU = `
+$\{easingMethod} {
+  float a = 1.4;
+  float a1 = a * 1.525;
+  float t1 = t / 0.5;
+  float t2 = t1 - 2.0;
+  float time =
+    (t1 < 1.0) ? 0.5 * (t1 * t1 * (a1 + 1.0) * t1 - a1) :
+    0.5 * (t2 * t2 * ((a1 + 1.0) * t2 + a1) + 2.0)
+  ;
+  float cosom = dot(start, end);
+  $\{T} end1 = mix(end, -end, float(cosom < 0.0));
+  cosom = mix(cosom, -cosom, float(cosom < 0.0));
+
+  float omega = acos(cosom);
+  float sinom = sin(omega);
+
+  vec2 scale = mix(
+    vec2(1.0 - time, time),
+    vec2(sin((1.0 - time) * omega) / sinom, sin(time * omega) / sinom),
+    float(1.0 - cosom > 0.0000001)
+  );
+
+  return scale.x * start + scale.y * end;
 }
 `;
 
@@ -673,11 +1026,16 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     return {
       uid: uid(),
       cpu: (start: T, end: T, t: number, out?: T) => {
-        const { add, length, scale, subtract } = VecMath(start);
+        const { add, scale, subtract } = VecMath(start);
         t = clamp(t, 0, 1);
         const direction = subtract(end, start);
-        const amplitude = length(direction) * 2.0;
-        return add(start, scale(direction, sin(t * PI * 2) * amplitude), out);
+        const halfDirection = scale(direction, 0.5);
+        // const amplitude = length(direction) * 2.0;
+        return add(
+          add(start, halfDirection),
+          scale(halfDirection, sin(t * PI * 2) * 1.0),
+          out
+        );
       },
       delay,
       duration,
@@ -692,6 +1050,512 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         // When the time is > 1 our value will not clamp to the value at 1.
         ignoreOverTimeCheck: true
       }
+    };
+  }
+
+  static slerpQuatLinear<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+
+        t = clamp(t, 0, 1);
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, t, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatLinearGPU,
+      loop,
+      methodName: "slerpQuatLinear"
+    };
+  }
+
+  static slerpQuatInQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInQuadGPU,
+      loop,
+      methodName: "slerpQuatInQuad"
+    };
+  }
+
+  static slerpQuatOutQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t * (2 - t);
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatOutQuadGPU,
+      loop,
+      methodName: "slerpQuatOutQuad"
+    };
+  }
+
+  static slerpQuatInOutQuad<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInOutQuadGPU,
+      loop,
+      methodName: "slerpQuatInOutQuad"
+    };
+  }
+
+  static slerpQuatInCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInCubicGPU,
+      loop,
+      methodName: "slerpQuatInCubic"
+    };
+  }
+
+  static slerpQuatOutCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = --t * t * t + 1;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatOutCubicGPU,
+      loop,
+      methodName: "slerpQuatOutCubic"
+    };
+  }
+
+  static slerpQuatInOutCubic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time =
+          t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInOutCubicGPU,
+      loop,
+      methodName: "slerpQuatInOutCubic"
+    };
+  }
+
+  static slerpQuatInQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInQuartGPU,
+      loop,
+      methodName: "slerpQuatInQuart"
+    };
+  }
+
+  static slerpQuatOutQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = 1 - --t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatOutQuartGPU,
+      loop,
+      methodName: "slerpQuatOutQuart"
+    };
+  }
+
+  static slerpQuatInOutQuart<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInOutQuartGPU,
+      loop,
+      methodName: "slerpQuatInOutQuart"
+    };
+  }
+
+  static slerpQuatInQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = t * t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInQuintGPU,
+      loop,
+      methodName: "slerpQuatInQuint"
+    };
+  }
+
+  static slerpQuatOutQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time = 1 + --t * t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatOutQuintGPU,
+      loop,
+      methodName: "slerpQuatOutQuint"
+    };
+  }
+
+  static slerpQuatInOutQuint<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const time =
+          t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatInOutQuintGPU,
+      loop,
+      methodName: "slerpQuatInOutQuint"
+    };
+  }
+
+  static slerpQuatOutElastic<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const p = 0.3;
+        const time = pow(2, -10 * t) * sin((t - p / 4) * (2 * PI) / p) + 1;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatOutElasticGPU,
+      loop,
+      methodName: "slerpQuatOutElastic"
+    };
+  }
+
+  static slerpQuatBackIn<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const a = 1.05;
+        const time = t * t * t - t * a * sin(t * PI);
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatBackInGPU,
+      loop,
+      methodName: "slerpQuatBackIn"
+    };
+  }
+
+  static slerpQuatBackOut<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const a = 1.7;
+        const t1 = t - 1;
+        const time = t1 * t1 * ((a + 1) * t1 + a) + 1;
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatBackOutGPU,
+      loop,
+      methodName: "slerpQuatBackOut"
+    };
+  }
+
+  static slerpQuatBackInOut<T extends Vec>(
+    duration: number,
+    delay: number = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
+          const { vec } = VecMath(end);
+          console.warn(
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+          );
+          return vec(1, 0, 0, 0);
+        }
+        t = clamp(t, 0, 1);
+        const a = 1.7;
+        const a1 = a * 1.525;
+        const t1 = t / 0.5;
+        const t2 = t1 - 2;
+        const time =
+          t1 < 1
+            ? 0.5 * (t1 * t1 * (a1 + 1) * t1 - a1)
+            : 0.5 * (t2 * t2 * ((a1 + 1) * t2 + a1) + 2);
+        const { slerpQuat, vec } = VecMath(start);
+        if (!slerpQuat) return vec(1, 0, 0, 0);
+        return slerpQuat(start, end, time, out);
+      },
+      delay,
+      duration,
+      gpu: slerpQuatBackInOutGPU,
+      loop,
+      methodName: "slerpQuatBackInOut"
     };
   }
 

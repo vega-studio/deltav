@@ -1,7 +1,6 @@
 import { Instance } from "../../instance-provider/instance";
 import { ResourceRouter } from "../../resources";
-import { IInstanceAttribute, INonePickingMetrics, ISinglePickingMetrics } from "../../types";
-import { LayerBufferType } from "../layer-processing/layer-buffer-type";
+import { IInstanceAttribute, INonePickingMetrics, ISinglePickingMetrics, LayerBufferType } from "../../types";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";

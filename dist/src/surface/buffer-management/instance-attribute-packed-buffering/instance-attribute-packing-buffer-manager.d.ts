@@ -20,7 +20,9 @@ export declare class InstanceAttributePackingBufferManager<T extends Instance> e
     private attributeToPropertyIds;
     private updateAllPropertyIdList;
     private activePropertyId;
+    private currentAvailableLocation;
     constructor(layer: Layer<T, any>, scene: LayerScene);
+    changesProcessed(): void;
     private doAddWithRegistration;
     private doAdd;
     destroy(): void;

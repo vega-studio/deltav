@@ -1,5 +1,5 @@
-import { GLSettings } from "../gl/gl-settings";
-import { ILayerMaterialOptions } from "../types";
+import { GLSettings } from '../gl/gl-settings';
+import { ILayerMaterialOptions } from '../types';
 
 /**
  * These are material options you may commonly see for handling various scenarios.
@@ -13,9 +13,9 @@ export class CommonMaterialOptions {
     blending: {
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
       blendEquation: GLSettings.Material.BlendingEquations.Add,
-      blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
+      blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
     },
-    culling: GLSettings.Material.CullSide.NONE
+    culling: GLSettings.Material.CullSide.NONE,
   };
 
   /**
@@ -26,8 +26,8 @@ export class CommonMaterialOptions {
     blending: {
       blendSrc: GLSettings.Material.BlendingSrcFactor.One,
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
-      blendEquation: GLSettings.Material.BlendingEquations.Add
+      blendEquation: GLSettings.Material.BlendingEquations.Add,
     },
-    culling: GLSettings.Material.CullSide.NONE
+    culling: GLSettings.Material.CullSide.NONE,
   };
 }

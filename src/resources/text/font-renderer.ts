@@ -3,14 +3,14 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-import html2canvas from "html2canvas";
-import { WebGLStat } from "../../gl/webgl-stat";
-import { scale2, Vec2 } from "../../math";
-import { IResourceType, ResourceType } from "../../types";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { renderGlyph } from "./glyph-renderer";
+import html2canvas from 'html2canvas';
+import { WebGLStat } from '../../gl/webgl-stat';
+import { scale2, Vec2 } from '../../math';
+import { IResourceType, ResourceType } from '../../types';
+import { IdentifyByKey } from '../../util/identify-by-key';
+import { renderGlyph } from './glyph-renderer';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 const { floor } = Math;
 
 type IGlyphRenderMetrics = {
@@ -39,17 +39,17 @@ async function renderEachPair(
   // Calculate the max width the system can reliably handle
   const contextWidth = WebGLStat.MAX_TEXTURE_SIZE / window.devicePixelRatio;
   // Create the table
-  const table = document.createElement("div");
+  const table = document.createElement('div');
   const maxColumns = floor(contextWidth / (fontSize * 2));
   const cellWidth = fontSize * 2.5;
   const cellHeight = fontSize * 2;
 
-  table.style.display = "table";
+  table.style.display = 'table';
   table.style.width = `${contextWidth}px`;
-  table.style.textAlign = "center";
-  table.style.tableLayout = "fixed";
-  table.style.position = "relative";
-  table.style.left = "0px";
+  table.style.textAlign = 'center';
+  table.style.tableLayout = 'fixed';
+  table.style.position = 'relative';
+  table.style.left = '0px';
   table.style.top = `${window.innerHeight}px`;
 
   let currentPair = 0;
@@ -60,9 +60,9 @@ async function renderEachPair(
 
   // Render each pair to cell of the table
   while (currentPair < pairs.all.length) {
-    const tr = document.createElement("div");
+    const tr = document.createElement('div');
     currentRow = tr;
-    tr.style.display = "table-row";
+    tr.style.display = 'table-row';
     tr.style.height = `${cellHeight}px`;
     tr.style.width = `width:${contextWidth}px`;
 
@@ -76,11 +76,11 @@ async function renderEachPair(
       columnIndex < maxColumns && currentPair < pairs.all.length;
       columnIndex++
     ) {
-      const td = document.createElement("div");
-      td.style.display = "table-cell";
+      const td = document.createElement('div');
+      td.style.display = 'table-cell';
       td.style.width = `${cellWidth}px`;
       td.style.height = `${cellHeight}px`;
-      td.style.overflow = "hidden";
+      td.style.overflow = 'hidden';
       td.style.font = fontString;
 
       const pair = pairs.all[currentPair];
@@ -89,10 +89,10 @@ async function renderEachPair(
       const rightStr = pair[1];
 
       // Each td has two spans
-      const leftSpan = document.createElement("span");
-      const rightSpan = document.createElement("span");
-      leftSpan.style.color = "#ff0000";
-      rightSpan.style.color = "#0000ff";
+      const leftSpan = document.createElement('span');
+      const rightSpan = document.createElement('span');
+      leftSpan.style.color = '#ff0000';
+      rightSpan.style.color = '#0000ff';
 
       leftSpan.innerText = leftStr;
       rightSpan.innerText = rightStr;
@@ -105,8 +105,8 @@ async function renderEachPair(
     }
 
     if (remaining >= 0) {
-      const td = document.createElement("div");
-      td.style.display = "table-cell";
+      const td = document.createElement('div');
+      td.style.display = 'table-cell';
       td.style.width = `${remaining}px`;
       tr.appendChild(td);
       rowSpacer = td;
@@ -126,7 +126,7 @@ async function renderEachPair(
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
-      Number.MAX_SAFE_INTEGER
+      Number.MAX_SAFE_INTEGER,
     ]);
   }
 
@@ -137,12 +137,12 @@ async function renderEachPair(
 
   // If the distance of a space is required, then we add in one more additional cell
   if (calculateSpace) {
-    const testChar = "M";
-    const td = document.createElement("div");
-    td.style.display = "table-cell";
+    const testChar = 'M';
+    const td = document.createElement('div');
+    td.style.display = 'table-cell';
     td.style.width = `${cellWidth}px`;
     td.style.height = `${cellHeight}px`;
-    td.style.overflow = "hidden";
+    td.style.overflow = 'hidden';
     td.style.font = fontString;
 
     // The test character for the spacing will be the first character in the pairs we
@@ -175,17 +175,17 @@ async function renderEachPair(
 
       // Otherwise, we make a new row to inject into
       else {
-        const tr = document.createElement("div");
+        const tr = document.createElement('div');
         currentRow = tr;
-        tr.style.display = "table-row";
+        tr.style.display = 'table-row';
         tr.style.height = `${cellHeight}px`;
         tr.style.width = `width:${contextWidth}px`;
         currentRow.appendChild(td);
         table.appendChild(tr);
 
         // Inject a spacer to fill the remaining space
-        rowSpacer = document.createElement("div");
-        rowSpacer.style.display = "table-cell";
+        rowSpacer = document.createElement('div');
+        rowSpacer.style.display = 'table-cell';
         rowSpacer.style.width = `${(maxColumns - 1) * cellWidth}px`;
         tr.appendChild(rowSpacer);
       }
@@ -195,7 +195,7 @@ async function renderEachPair(
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
-        Number.MAX_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER,
       ]);
 
       // Indicate the space check is indeed happening
@@ -204,19 +204,19 @@ async function renderEachPair(
   }
 
   // The element must be a part of the body for html2canvas to work
-  document.getElementsByTagName("body")[0].appendChild(table);
+  document.getElementsByTagName('body')[0].appendChild(table);
 
   // Config for html2canvas
   const config: Html2Canvas.Html2CanvasOptions = {
     backgroundColor: null,
-    logging: debug.enabled
+    logging: debug.enabled,
   };
 
-  debug("Rendering table for font kerning analysis", pairs, table);
+  debug('Rendering table for font kerning analysis', pairs, table);
   const canvas = await html2canvas(table, config);
 
   if (!canvas) {
-    console.warn("Could not convert DOM structure to canvas");
+    console.warn('Could not convert DOM structure to canvas');
     return;
   }
 
@@ -226,8 +226,8 @@ async function renderEachPair(
   const w = cellWidth * window.devicePixelRatio;
   const h = cellHeight * window.devicePixelRatio;
 
-  const ctx = canvas.getContext("2d");
-  debug("Analyzing rendered canvas", canvas);
+  const ctx = canvas.getContext('2d');
+  debug('Analyzing rendered canvas', canvas);
 
   if (ctx) {
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -288,12 +288,12 @@ async function renderEachPair(
     }
   } else {
     console.warn(
-      "html2canvas did not produce a valid canvas context to analyze"
+      'html2canvas did not produce a valid canvas context to analyze'
     );
   }
 
   table.remove();
-  debug("Kerning rendering analysis complete", pairs.pairs);
+  debug('Kerning rendering analysis complete', pairs.pairs);
 }
 
 /**
@@ -305,7 +305,7 @@ function stringToPairs(
   out?: KerningInfo
 ): KerningInfo {
   // Remove all the whitespace
-  str = str.replace(/\s/g, "");
+  str = str.replace(/\s/g, '');
   const all: string[] = (out && out.all) || [];
   const pairs: KerningPairs = (out && out.pairs) || {};
 
@@ -328,7 +328,7 @@ function stringToPairs(
   return {
     all,
     pairs,
-    spaceWidth: 0
+    spaceWidth: 0,
   };
 }
 
@@ -366,13 +366,13 @@ export class FontRenderer {
       if (glyph) {
         map[char] = {
           glyph: glyph.data,
-          glyphIndex: i
+          glyphIndex: i,
         };
       } else {
         console.warn(
-          "Unable to render character",
+          'Unable to render character',
           char,
-          "to font map for rendering."
+          'to font map for rendering.'
         );
       }
     }
@@ -396,10 +396,10 @@ export class FontRenderer {
     const pairInfo: KerningInfo = {
       all: [],
       pairs: {},
-      spaceWidth: 0
+      spaceWidth: 0,
     };
 
-    debug("Estimating Kerning for", str);
+    debug('Estimating Kerning for', str);
 
     for (let i = 0, iMax = str.length; i < iMax; ++i) {
       const s = str[i];

@@ -1,8 +1,8 @@
-import { Bounds } from "../../math/primitives/bounds";
-import { IViewProps, View } from "../../surface";
-import { LayerScene } from "../../surface/layer-scene";
-import { Camera, CameraProjectionType, isPerspective } from "../../util/camera";
-import { Projection3D } from "./projection-3d";
+import { Bounds } from '../../math/primitives/bounds';
+import { IViewProps, View } from '../../surface';
+import { LayerScene } from '../../surface/layer-scene';
+import { Camera, CameraProjectionType, isPerspective } from '../../util/camera';
+import { Projection3D } from './projection-3d';
 
 /**
  * Defines the input metrics of a view for a scene.
@@ -22,21 +22,21 @@ function isOrthographic(val: Camera): val is Camera {
  */
 export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   static defaultProps: IView3DProps = {
-    key: "",
+    key: '',
     camera: new Camera({
       type: CameraProjectionType.PERSPECTIVE,
       width: 100,
       height: 100,
       fov: Math.PI / 2,
       far: 100000,
-      near: 1
+      near: 1,
     }),
     viewport: {
       left: 0,
       right: 0,
       bottom: 0,
-      top: 0
-    }
+      top: 0,
+    },
   };
 
   projection: Projection3D;
@@ -65,7 +65,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         near: 1,
         far: 100000,
         width,
-        height
+        height,
       };
 
       const camera = this.props.camera;
@@ -84,11 +84,11 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         height: this.projection.viewBounds.height / this.pixelRatio,
         width: this.projection.viewBounds.width / this.pixelRatio,
         x: this.projection.viewBounds.x / this.pixelRatio,
-        y: this.projection.viewBounds.y / this.pixelRatio
+        y: this.projection.viewBounds.y / this.pixelRatio,
       });
       this.projection.screenBounds.d = this;
     } else if (!isOrthographic(this.props.camera)) {
-      console.warn("View3D does not support orthographic cameras yet.");
+      console.warn('View3D does not support orthographic cameras yet.');
     }
   }
 

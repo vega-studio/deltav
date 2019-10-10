@@ -1,9 +1,9 @@
-import { observable } from "../../../instance-provider";
-import { Vec2 } from "../../../math";
+import { observable } from '../../../instance-provider';
+import { Vec2 } from '../../../math';
 import {
   IRectangleInstanceOptions,
-  RectangleInstance
-} from "../rectangle/rectangle-instance";
+  RectangleInstance,
+} from '../rectangle/rectangle-instance';
 
 export interface IBorderInstanceOptions extends IRectangleInstanceOptions {
   /** Sets the fontScale of textArea the border locates */

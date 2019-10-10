@@ -1,4 +1,4 @@
-import { Vec2 } from "../math/vector";
+import { Vec2 } from '../math/vector';
 
 export enum AnchorType {
   BottomLeft,
@@ -10,7 +10,7 @@ export enum AnchorType {
   MiddleRight,
   TopLeft,
   TopMiddle,
-  TopRight
+  TopRight,
 }
 
 export type Anchor = {
@@ -36,5 +36,5 @@ export enum ScaleMode {
   /** The image will scale to it's font size then stop growing */
   BOUND_MAX = 2,
   /** The image will alwyas retain it's font size on screen */
-  NEVER = 3
+  NEVER = 3,
 }

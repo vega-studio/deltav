@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   AutoEasingMethod,
   BasicCamera2DController,
@@ -12,11 +12,11 @@ import {
   createView,
   InstanceProvider,
   LabelInstance,
-  View2D
-} from "src";
-import { BaseDemo } from "../../common/base-demo";
+  View2D,
+} from 'src';
+import { BaseDemo } from '../../common/base-demo';
 
-import * as Matter from "matter-js";
+import * as Matter from 'matter-js';
 
 const { random } = Math;
 const PHYSICS_FRAME = 1000 / 60;
@@ -30,7 +30,7 @@ export class PhysicsDemo extends BaseDemo {
   /** Surface providers */
   providers = {
     circles: new InstanceProvider<CircleInstance>(),
-    labels: new InstanceProvider<LabelInstance>()
+    labels: new InstanceProvider<LabelInstance>(),
   };
 
   /** GUI properties */
@@ -39,8 +39,8 @@ export class PhysicsDemo extends BaseDemo {
     radius: 30,
 
     previous: {
-      count: 250
-    }
+      count: 250,
+    },
   };
 
   // Physics engine
@@ -49,14 +49,14 @@ export class PhysicsDemo extends BaseDemo {
   animationTimer: number;
 
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
+    const parameters = gui.addFolder('Parameters');
 
     // Controller causes the number of circles rendered to change
     parameters
-      .add(this.parameters, "count", 0, 500, 1)
+      .add(this.parameters, 'count', 0, 500, 1)
       .onChange(async (value: number) => {
         if (!this.surface) return;
-        const bounds = this.surface.getViewScreenBounds("main.view");
+        const bounds = this.surface.getViewScreenBounds('main.view');
         const delta = value - this.parameters.previous.count;
 
         if (delta > 0) {
@@ -79,7 +79,7 @@ export class PhysicsDemo extends BaseDemo {
         this.parameters.previous.count = value;
       });
 
-    parameters.add(this.parameters, "radius", 2, 50, 1);
+    parameters.add(this.parameters, 'radius', 2, 50, 1);
   }
 
   destroy(): void {
@@ -96,13 +96,13 @@ export class PhysicsDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
-          camera: cameras.main
-        })
+          camera: cameras.main,
+        }),
       }),
       pipeline: (_resources, providers, cameras) => ({
         scenes: {
@@ -110,22 +110,22 @@ export class PhysicsDemo extends BaseDemo {
             views: {
               view: createView(View2D, {
                 camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
-                  center: AutoEasingMethod.linear(PHYSICS_FRAME)
+                  center: AutoEasingMethod.linear(PHYSICS_FRAME),
                 },
                 data: providers.circles,
                 key: `circles`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              })
-            ]
-          }
-        }
-      })
+                scaleFactor: () => cameras.main.scale2D[0],
+              }),
+            ],
+          },
+        },
+      }),
     });
   }
 
@@ -135,7 +135,7 @@ export class PhysicsDemo extends BaseDemo {
   async init() {
     if (!this.surface) return;
     await this.surface.ready;
-    const bounds = this.surface.getViewScreenBounds("main.view");
+    const bounds = this.surface.getViewScreenBounds('main.view');
 
     const engine = (this.engine = Matter.Engine.create());
     const allObjects: Matter.Body[] = [];
@@ -152,13 +152,13 @@ export class PhysicsDemo extends BaseDemo {
         bounds.width,
         60,
         {
-          isStatic: true
+          isStatic: true,
         }
       )
     );
     allObjects.push(
       Matter.Bodies.rectangle(-15, bounds.height / 2, 30, bounds.height, {
-        isStatic: true
+        isStatic: true,
       })
     );
     allObjects.push(
@@ -168,7 +168,7 @@ export class PhysicsDemo extends BaseDemo {
         30,
         bounds.height,
         {
-          isStatic: true
+          isStatic: true,
         }
       )
     );
@@ -192,7 +192,7 @@ export class PhysicsDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * bounds.width, random() * bounds.height],
         radius: random() * this.parameters.radius + 1,
-        color: [0, random(), random(), 1.0]
+        color: [0, random(), random(), 1.0],
       })
     );
 

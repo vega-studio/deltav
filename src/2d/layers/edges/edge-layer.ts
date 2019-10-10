@@ -1,5 +1,5 @@
-import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec } from "../../../math";
+import { InstanceProvider } from '../../../instance-provider';
+import { IAutoEasingMethod, Vec } from '../../../math';
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -7,12 +7,12 @@ import {
   IShaderInitialization,
   IUniform,
   UniformSize,
-  VertexAttributeSize
-} from "../../../types";
-import { CommonMaterialOptions, shaderTemplate } from "../../../util";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { EdgeInstance } from "./edge-instance";
-import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
+  VertexAttributeSize,
+} from '../../../types';
+import { CommonMaterialOptions, shaderTemplate } from '../../../util';
+import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
+import { EdgeInstance } from './edge-instance';
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from './types';
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
   extends ILayer2DProps<T> {
@@ -51,15 +51,15 @@ function toInstanceIOValue(value: [number, number][]): InstanceIOValue {
 
 /** This picks the appropriate shader for the edge type desired */
 const pickVS = {
-  [EdgeType.LINE]: require("./shader/edge-layer-line.vs"),
-  [EdgeType.BEZIER]: require("./shader/edge-layer-bezier.vs"),
-  [EdgeType.BEZIER2]: require("./shader/edge-layer-bezier2.vs")
+  [EdgeType.LINE]: require('./shader/edge-layer-line.vs'),
+  [EdgeType.BEZIER]: require('./shader/edge-layer-bezier.vs'),
+  [EdgeType.BEZIER2]: require('./shader/edge-layer-bezier2.vs'),
 };
 
 /** This is the base edge layer which is a template that can be filled with the needed specifics for a given line type */
-const baseVS = require("./shader/edge-layer.vs");
-const screenVS = require("./shader/edge-layer-screen-curve.vs");
-const edgeFS = require("./shader/edge-layer.fs");
+const baseVS = require('./shader/edge-layer.vs');
+const screenVS = require('./shader/edge-layer-screen-curve.vs');
+const edgeFS = require('./shader/edge-layer.fs');
 
 /**
  * This layer displays edges and provides as many controls as possible for displaying
@@ -73,19 +73,19 @@ export class EdgeLayer<
   static defaultProps: IEdgeLayerProps<EdgeInstance> = {
     broadphase: EdgeBroadphase.ALL,
     data: new InstanceProvider<EdgeInstance>(),
-    key: "none",
+    key: 'none',
     scaleType: EdgeScaleType.NONE,
-    type: EdgeType.LINE
+    type: EdgeType.LINE,
   };
 
   static attributeNames = {
-    control: "control",
-    depth: "depth",
-    end: "end",
-    endColor: "endColor",
-    start: "start",
-    startColor: "startColor",
-    thickness: "thickness"
+    control: 'control',
+    depth: 'depth',
+    end: 'end',
+    endColor: 'endColor',
+    start: 'start',
+    startColor: 'startColor',
+    thickness: 'thickness',
   };
 
   /**
@@ -96,7 +96,7 @@ export class EdgeLayer<
       animate = {},
       scaleFactor = () => 1,
       type,
-      scaleType = EdgeScaleType.NONE
+      scaleType = EdgeScaleType.NONE,
     } = this.props;
 
     const {
@@ -105,7 +105,7 @@ export class EdgeLayer<
       startColor: animateColorStart,
       endColor: animateColorEnd,
       control: animateControl,
-      thickness: animateThickness
+      thickness: animateThickness,
     } = animate;
 
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
@@ -113,12 +113,12 @@ export class EdgeLayer<
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
-      [MAX_SEGMENTS * 2 + 2]: -1
+      [MAX_SEGMENTS * 2 + 2]: -1,
     };
 
     const vertexInterpolation: { [key: number]: number } = {
       0: 0,
-      [MAX_SEGMENTS * 2 + 2]: 1
+      [MAX_SEGMENTS * 2 + 2]: 1,
     };
 
     let sign = 1;
@@ -129,14 +129,14 @@ export class EdgeLayer<
     }
 
     const templateOptions = {
-      interpolation: pickVS[type]
+      interpolation: pickVS[type],
     };
 
     const vs = shaderTemplate({
       options: templateOptions,
       required: {
-        name: "Edge Layer",
-        values: ["interpolation"]
+        name: 'Edge Layer',
+        values: ['interpolation'],
       },
       shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
 
@@ -147,7 +147,7 @@ export class EdgeLayer<
         }
 
         return replace;
-      }
+      },
     });
 
     return {
@@ -157,43 +157,43 @@ export class EdgeLayer<
           easing: animateColorStart,
           name: EdgeLayer.attributeNames.startColor,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.startColor
+          update: o => o.startColor,
         },
         {
           easing: animateColorEnd,
           name: EdgeLayer.attributeNames.endColor,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.endColor
+          update: o => o.endColor,
         },
         {
           easing: animateStart,
           name: EdgeLayer.attributeNames.start,
           size: InstanceAttributeSize.TWO,
-          update: o => o.start
+          update: o => o.start,
         },
         {
           easing: animateEnd,
           name: EdgeLayer.attributeNames.end,
           size: InstanceAttributeSize.TWO,
-          update: o => o.end
+          update: o => o.end,
         },
         {
           easing: animateThickness,
           name: EdgeLayer.attributeNames.thickness,
           size: InstanceAttributeSize.TWO,
-          update: o => o.thickness
+          update: o => o.thickness,
         },
         {
           name: EdgeLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
+          update: o => [o.depth],
         },
         type === EdgeType.LINE
           ? {
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
-              update: _o => [0, 0, 0, 0]
+              update: _o => [0, 0, 0, 0],
             }
           : null,
         type === EdgeType.BEZIER
@@ -201,7 +201,7 @@ export class EdgeLayer<
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
-              update: o => [o.control[0][0], o.control[0][1], 0, 0]
+              update: o => [o.control[0][0], o.control[0][1], 0, 0],
             }
           : null,
         type === EdgeType.BEZIER2
@@ -209,27 +209,27 @@ export class EdgeLayer<
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
               size: InstanceAttributeSize.FOUR,
-              update: o => toInstanceIOValue(o.control)
+              update: o => toInstanceIOValue(o.control),
             }
-          : null
+          : null,
       ],
       uniforms: [
         {
-          name: "scaleFactor",
+          name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [scaleFactor()]
+          update: (_uniform: IUniform) => [scaleFactor()],
         },
         {
-          name: "layerOpacity",
+          name: 'layerOpacity',
           size: UniformSize.ONE,
           update: (_uniform: IUniform) => [
-            this.props.opacity === undefined ? 1.0 : this.props.opacity
-          ]
-        }
+            this.props.opacity === undefined ? 1.0 : this.props.opacity,
+          ],
+        },
       ],
       vertexAttributes: [
         {
-          name: "vertex",
+          name: 'vertex',
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
@@ -237,12 +237,12 @@ export class EdgeLayer<
             // The side of the quad
             vertexInterpolation[vertex],
             // The number of vertices
-            MAX_SEGMENTS * 2
-          ]
-        }
+            MAX_SEGMENTS * 2,
+          ],
+        },
       ],
       vertexCount: MAX_SEGMENTS * 2 + 2,
-      vs: vs.shader
+      vs: vs.shader,
     };
   }
 

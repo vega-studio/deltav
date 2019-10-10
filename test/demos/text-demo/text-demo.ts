@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   AutoEasingMethod,
   BasicCamera2DController,
@@ -16,28 +16,28 @@ import {
   LabelLayer,
   nextFrame,
   ScaleMode,
-  View2D
-} from "src";
-import { DEFAULT_RESOURCES, WORDS } from "test/types";
-import { wait } from "../../../src/util/wait";
-import { BaseDemo } from "../../common/base-demo";
-import { debounce } from "../../common/debounce";
+  View2D,
+} from 'src';
+import { wait } from '../../../src/util/wait';
+import { BaseDemo } from '../../common/base-demo';
+import { debounce } from '../../common/debounce';
+import { DEFAULT_RESOURCES, WORDS } from '../../types';
 
 const { random } = Math;
 
 const copyToClipboard = (str: string) => {
-  const el = document.createElement("textarea");
+  const el = document.createElement('textarea');
   el.value = str;
-  el.setAttribute("readonly", "");
-  el.style.position = "absolute";
-  el.style.left = "-9999px";
+  el.setAttribute('readonly', '');
+  el.style.position = 'absolute';
+  el.style.left = '-9999px';
   document.body.appendChild(el);
   const selection = document.getSelection();
 
   if (selection) {
     const selected = selection.rangeCount > 0 ? selection.getRangeAt(0) : false;
     el.select();
-    document.execCommand("copy");
+    document.execCommand('copy');
     document.body.removeChild(el);
 
     if (selected) {
@@ -58,7 +58,7 @@ export class TextDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    labels: new InstanceProvider<LabelInstance>()
+    labels: new InstanceProvider<LabelInstance>(),
   };
 
   /** GUI properties */
@@ -71,23 +71,23 @@ export class TextDemo extends BaseDemo {
     scaleMode: ScaleMode.BOUND_MAX,
 
     previous: {
-      count: 100
+      count: 100,
     },
 
     copy: () => {
-      const texts = this.labels.map(lbl => lbl.text).join("\n");
+      const texts = this.labels.map(lbl => lbl.text).join('\n');
       copyToClipboard(texts);
-    }
+    },
   };
 
   /**
    * Dat gui construction
    */
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
+    const parameters = gui.addFolder('Parameters');
 
     // Changes the shape the circles take on
-    parameters.add(this.parameters, "count", 1, 500, 1).onChange(
+    parameters.add(this.parameters, 'count', 1, 500, 1).onChange(
       debounce(async (value: number) => {
         const delta = value - this.parameters.previous.count;
 
@@ -107,7 +107,7 @@ export class TextDemo extends BaseDemo {
       }, 250)
     );
 
-    parameters.add(this.parameters, "words", 1, 50, 1).onChange(
+    parameters.add(this.parameters, 'words', 1, 50, 1).onChange(
       debounce(async (_value: number) => {
         while (this.labels.length > 0) this.removeLabel();
 
@@ -117,30 +117,30 @@ export class TextDemo extends BaseDemo {
       }, 250)
     );
 
-    parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
+    parameters.add(this.parameters, 'fontSize', 4, 80, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
         this.layoutLabels();
       }, 250)
     );
 
-    parameters.add(this.parameters, "maxWidth", 0, 1200, 1).onChange(
+    parameters.add(this.parameters, 'maxWidth', 0, 1200, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.maxWidth = value));
       }, 250)
     );
 
     parameters
-      .add(this.parameters, "scaleMode", {
+      .add(this.parameters, 'scaleMode', {
         Always: ScaleMode.ALWAYS,
         BoundMax: ScaleMode.BOUND_MAX,
-        Never: ScaleMode.NEVER
+        Never: ScaleMode.NEVER,
       })
       .onChange();
 
-    parameters.add(this.parameters, "copy");
+    parameters.add(this.parameters, 'copy');
 
-    parameters.add(this.parameters, "letterSpacing", -5, 20, 1).onChange(
+    parameters.add(this.parameters, 'letterSpacing', -5, 20, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.letterSpacing = value));
       }, 250)
@@ -155,49 +155,49 @@ export class TextDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {
-        font: DEFAULT_RESOURCES.font
+        font: DEFAULT_RESOURCES.font,
       },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["default.default-view"],
-          wheelShouldScroll: true
-        })
+          startView: ['default.default-view'],
+          wheelShouldScroll: true,
+        }),
       }),
       pipeline: (resources, providers, cameras) => ({
         scenes: {
           default: {
             views: {
-              "default-view": createView(View2D, {
+              'default-view': createView(View2D, {
                 background: [0, 0, 0, 1],
                 camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: {
               hey: createLayer(LabelLayer, {
                 animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
+                  color: AutoEasingMethod.easeInOutCubic(500),
                 },
                 data: new InstanceProvider(),
                 resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode
+                scaleMode: this.parameters.scaleMode,
               }),
               labels: createLayer(LabelLayer, {
                 animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
+                  color: AutoEasingMethod.easeInOutCubic(500),
                 },
                 data: providers.labels,
                 resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode
-              })
-            }
-          }
-        }
-      })
+                scaleMode: this.parameters.scaleMode,
+              }),
+            },
+          },
+        },
+      }),
     });
   }
 
@@ -258,11 +258,11 @@ export class TextDemo extends BaseDemo {
     const label = new LabelInstance({
       origin: [20, this.parameters.fontSize * this.labels.length],
       color: [0, random(), random(), 0.0],
-      text: txt !== undefined ? txt : words.join(" "),
+      text: txt !== undefined ? txt : words.join(' '),
       fontSize: this.parameters.fontSize,
       letterSpacing: this.parameters.letterSpacing,
       onReady: this.labelReady,
-      preload
+      preload,
     });
 
     this.providers.labels.add(label);

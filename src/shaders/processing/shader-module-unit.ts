@@ -1,19 +1,19 @@
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from '../../instance-provider/instance';
+import { ILayerProps, Layer } from '../../surface/layer';
 import {
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
   Omit,
-  ShaderInjectionTarget
-} from "../../types";
+  ShaderInjectionTarget,
+} from '../../types';
 
 /** This is the message used when a module unit is attempted to be modified after it has been locked down */
 const LOCKED_MODULE_UNIT_MESSAGE =
-  "Once a ShaderModuleUnit has been registered, you CAN NOT modify it! Module ID:";
+  'Once a ShaderModuleUnit has been registered, you CAN NOT modify it! Module ID:';
 
 /** Options for the constructor for a new ShaderModuleUnit */
-export type ShaderModuleUnitOptions = Omit<Partial<ShaderModuleUnit>, "lock">;
+export type ShaderModuleUnitOptions = Omit<Partial<ShaderModuleUnit>, 'lock'>;
 
 /**
  * This is a module unit that can be registered as a ShaderModule which the system will use to resolve

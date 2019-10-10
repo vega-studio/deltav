@@ -11,9 +11,9 @@ import {
   IInstanceProvider,
   InstanceProvider,
   LayerInitializer,
-  nextFrame
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  nextFrame,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class AnimateDeleteAdd extends BaseExample {
   makeLayer(
@@ -22,10 +22,10 @@ export class AnimateDeleteAdd extends BaseExample {
   ): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
-        center: AutoEasingMethod.linear(1000)
+        center: AutoEasingMethod.linear(1000),
       },
       data: provider,
-      key: "animate-delete-add"
+      key: 'animate-delete-add',
     });
   }
 
@@ -35,9 +35,9 @@ export class AnimateDeleteAdd extends BaseExample {
     const circle = circleProvider.add(
       new CircleInstance({
         color: [0.01, 0.1, 1.0, 1.0],
-        id: "yay",
+        id: 'yay',
         radius: 10,
-        center: [0, 0]
+        center: [0, 0],
       })
     );
 
@@ -56,7 +56,7 @@ export class AnimateDeleteAdd extends BaseExample {
         circle.color = [1.0, 0.0, 1.0, 1.0];
         circle.center = [
           Math.random() * size.width,
-          Math.random() * size.height
+          Math.random() * size.height,
         ];
 
         const easing = circle.getEasing(CircleLayer.attributeNames.center);

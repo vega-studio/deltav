@@ -1,13 +1,13 @@
-import { Vec4 } from "../math";
-import { Size } from "../types";
-import { Attribute } from "./attribute";
-import { Geometry } from "./geometry";
-import { GLProxy } from "./gl-proxy";
-import { GLState } from "./gl-state";
-import { Model } from "./model";
-import { RenderTarget } from "./render-target";
-import { Scene } from "./scene";
-import { WebGLStat } from "./webgl-stat";
+import { Vec4 } from '../math';
+import { Size } from '../types';
+import { Attribute } from './attribute';
+import { Geometry } from './geometry';
+import { GLProxy } from './gl-proxy';
+import { GLState } from './gl-state';
+import { Model } from './model';
+import { RenderTarget } from './render-target';
+import { Scene } from './scene';
+import { WebGLStat } from './webgl-stat';
 
 /**
  * Options used to create or update the renderer.
@@ -92,7 +92,7 @@ export class WebGLRenderer {
     currentRenderTarget: null,
     displaySize: [1, 1],
     pixelRatio: 1,
-    renderSize: [1, 1]
+    renderSize: [1, 1],
   };
 
   constructor(options: IWebGLRendererOptions) {
@@ -101,14 +101,14 @@ export class WebGLRenderer {
       {
         alpha: false,
         antialias: false,
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: false,
       },
       options
     );
 
     // Make sure we are provided a canvas to work with
     if (!this.options.canvas) {
-      console.warn("WebGLRenderer ERROR: A canvas is REQUIRED as a parameter.");
+      console.warn('WebGLRenderer ERROR: A canvas is REQUIRED as a parameter.');
     }
 
     // Initialize context for the renderer
@@ -124,7 +124,7 @@ export class WebGLRenderer {
     this.state.clearMask = [
       clear[0] || color || false,
       clear[1] || depth || false,
-      clear[2] || stencil || false
+      clear[2] || stencil || false,
     ];
   }
 
@@ -156,7 +156,7 @@ export class WebGLRenderer {
       alpha: this.options.alpha || false,
       antialias: this.options.antialias || false,
       premultipliedAlpha: this.options.premultipliedAlpha || false,
-      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false
+      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false,
     });
 
     if (gl.context) {
@@ -171,7 +171,7 @@ export class WebGLRenderer {
       this.options.onNoContext();
     } else {
       console.warn(
-        "No context was able to be produced, and the handler onNoContext was not implemented for such cases."
+        'No context was able to be produced, and the handler onNoContext was not implemented for such cases.'
       );
     }
 
@@ -214,7 +214,7 @@ export class WebGLRenderer {
         x: 0,
         y: 0,
         width: target.width,
-        height: target.height
+        height: target.height,
       };
     } else {
       const size = this.getRenderSize();
@@ -223,7 +223,7 @@ export class WebGLRenderer {
         x: 0,
         y: 0,
         width: size[0],
-        height: size[1]
+        height: size[1],
       };
     }
   }
@@ -240,7 +240,7 @@ export class WebGLRenderer {
     // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
     // behavior while rendering
     else {
-      console.warn("Could not update attribute", attribute);
+      console.warn('Could not update attribute', attribute);
       return false;
     }
 
@@ -267,7 +267,7 @@ export class WebGLRenderer {
     // If the fbo is not ready, we're not drawing
     if (target && !target.gl) {
       console.warn(
-        "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
+        'FBO is not ready for drawing. Skipping the rendering of the scene and target:',
         { scene, target }
       );
       return;
@@ -315,7 +315,7 @@ export class WebGLRenderer {
         this.glProxy.draw(model);
       } else {
         console.warn(
-          "Geometry was unable to update correctly, thus we are skipping the drawing of",
+          'Geometry was unable to update correctly, thus we are skipping the drawing of',
           model
         );
 
@@ -323,7 +323,7 @@ export class WebGLRenderer {
       }
     } else {
       console.warn(
-        "Could not utilize material. Skipping draw call for:",
+        'Could not utilize material. Skipping draw call for:',
         material,
         geometry
       );
@@ -352,7 +352,7 @@ export class WebGLRenderer {
 
     if (!canRead) {
       console.warn(
-        "Framebuffer is incomplete. Can not read pixels at this time."
+        'Framebuffer is incomplete. Can not read pixels at this time.'
       );
       return;
     }
@@ -446,7 +446,7 @@ export class WebGLRenderer {
           x: x,
           y: _height - y - height,
           width: width,
-          height: height
+          height: height,
         });
       } else {
         this.glState.setScissor(null);

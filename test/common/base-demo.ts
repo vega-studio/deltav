@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   BaseResourceOptions,
   BasicSurface,
@@ -8,8 +8,8 @@ import {
   Instance,
   InstanceProvider,
   Lookup,
-  Omit
-} from "src";
+  Omit,
+} from 'src';
 
 export type DemoPipeline<
   T extends Lookup<InstanceProvider<Instance>>,
@@ -18,7 +18,7 @@ export type DemoPipeline<
   W extends Lookup<BaseResourceOptions>
 > = Omit<
   IBasicSurfaceOptions<T, U, V, W>,
-  "container" | "onNoWebGL" | "handlesWheelEvents" | "rendererOptions"
+  'container' | 'onNoWebGL' | 'handlesWheelEvents' | 'rendererOptions'
 >;
 
 export interface ITest<T> {
@@ -38,7 +38,7 @@ export abstract class BaseDemo {
     return this._isDestroyed;
   }
   /** The surface being used to render this demo */
-  surface?: ReturnType<this["makeSurface"]>;
+  surface?: ReturnType<this['makeSurface']>;
 
   /**
    * Hook for when the console for the demo should be set up
@@ -93,7 +93,7 @@ export abstract class BaseDemo {
   /**
    * Applies the surface being used that renders the elements for the demo.
    */
-  setSurface(surface: ReturnType<this["makeSurface"]>) {
+  setSurface(surface: ReturnType<this['makeSurface']>) {
     this.surface = surface;
   }
 }

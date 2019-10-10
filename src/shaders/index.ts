@@ -1,2 +1,2 @@
-import "./base-modules";
-export * from "./processing";
+import './base-modules';
+export * from './processing';

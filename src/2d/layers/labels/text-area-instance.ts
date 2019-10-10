@@ -1,7 +1,7 @@
-import { observable } from "../../../instance-provider/observable";
-import { Vec1Compat } from "../../../math";
-import { BorderInstance } from "./border-instance";
-import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
+import { observable } from '../../../instance-provider/observable';
+import { Vec1Compat } from '../../../math';
+import { BorderInstance } from './border-instance';
+import { ILabelInstanceOptions, LabelInstance } from './label-instance';
 
 /**
  * Alignment mode for text within a region.
@@ -9,7 +9,7 @@ import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 export enum TextAlignment {
   LEFT,
   RIGHT,
-  CENTERED
+  CENTERED,
 }
 
 /**
@@ -30,13 +30,13 @@ export enum WordWrap {
    * WORD: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
    * and the whole word continues on the next line.
    */
-  WORD
+  WORD,
 }
 
 /** This is used to mark the specialLetter when divide the textArea into several labels */
 export enum NewLineCharacterMode {
   /** When the scanner meets a new line sign ("/n", "/r", "/n/r") */
-  NEWLINE
+  NEWLINE,
 }
 
 export type TextAreaLabel = LabelInstance | NewLineCharacterMode;

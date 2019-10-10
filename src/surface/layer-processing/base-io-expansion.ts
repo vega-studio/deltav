@@ -1,16 +1,16 @@
-import { Instance } from "../../instance-provider/instance";
+import { Instance } from '../../instance-provider/instance';
 import {
   BaseShaderIOInjection,
-  ShaderIOHeaderInjectionResult
-} from "../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+  ShaderIOHeaderInjectionResult,
+} from '../../shaders/processing/base-shader-io-injection';
+import { MetricsProcessing } from '../../shaders/processing/metrics-processing';
 import {
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
-  ShaderInjectionTarget
-} from "../../types";
-import { ILayerProps, Layer } from "../layer";
+  ShaderInjectionTarget,
+} from '../../types';
+import { ILayerProps, Layer } from '../layer';
 
 export type ShaderIOExpansion<T extends Instance> = {
   /** The additional instance attributes to add to the layer's Shader IO */
@@ -46,7 +46,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
     return {
       instanceAttributes: [],
       uniforms: [],
-      vertexAttributes: []
+      vertexAttributes: [],
     };
   }
 
@@ -93,7 +93,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
     _uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     return {
-      injection: ""
+      injection: '',
     };
   }
 
@@ -115,6 +115,6 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
     _instanceAttributes: IInstanceAttribute<Instance>[],
     _uniforms: IUniform[]
   ): string {
-    return "";
+    return '';
   }
 }

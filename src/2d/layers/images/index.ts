@@ -1,2 +1,2 @@
-export * from "./image-layer";
-export * from "./image-instance";
+export * from './image-layer';
+export * from './image-instance';

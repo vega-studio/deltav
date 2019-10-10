@@ -13,8 +13,8 @@ import {
   scale4x4by3,
   subtract3,
   translation4x4by3,
-  Vec3
-} from "../../math";
+  Vec3,
+} from '../../math';
 
 /**
  * This is a wrapper for a 3D matrix for transforming coordinates from one vector space to another. Follows the order

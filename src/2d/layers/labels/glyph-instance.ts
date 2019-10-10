@@ -1,16 +1,16 @@
 import {
   IInstanceOptions,
   Instance,
-  observable
-} from "../../../instance-provider";
-import { Vec2, Vec4 } from "../../../math/vector";
-import { IFontResourceRequest } from "../../../resources";
-import { Omit } from "../../../types";
-import { LabelInstance } from "./label-instance";
+  observable,
+} from '../../../instance-provider';
+import { Vec2, Vec4 } from '../../../math/vector';
+import { IFontResourceRequest } from '../../../resources';
+import { Omit } from '../../../types';
+import { LabelInstance } from './label-instance';
 
 export type GlyphInstanceOptions = Omit<
   Partial<GlyphInstance>,
-  "resourceTrigger" | keyof Instance | "parentLabel" | "request"
+  'resourceTrigger' | keyof Instance | 'parentLabel' | 'request'
 > &
   IInstanceOptions;
 
@@ -21,7 +21,7 @@ export class GlyphInstance extends Instance {
   /** Adjustment to position the glyph relative to an anchor location on an overrarching label */
   @observable anchor: Vec2 = [0, 0];
   /** This is the character the glyph will render. */
-  @observable character: string = "a";
+  @observable character: string = 'a';
   /** The color to tint the glyph */
   @observable color: Vec4 = [1, 1, 1, 1];
   /** Z distance of the glyph */

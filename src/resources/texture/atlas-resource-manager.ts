@@ -1,19 +1,19 @@
-import { WebGLRenderer } from "../../gl";
-import { Texture } from "../../gl/texture";
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface";
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
-import { nextFrame } from "../../util";
+import { WebGLRenderer } from '../../gl';
+import { Texture } from '../../gl/texture';
+import { Instance } from '../../instance-provider/instance';
+import { ILayerProps, Layer } from '../../surface';
+import { BaseIOExpansion } from '../../surface/layer-processing/base-io-expansion';
+import { InstanceIOValue, IResourceContext, ResourceType } from '../../types';
+import { nextFrame } from '../../util';
 import {
   BaseResourceManager,
-  BaseResourceOptions
-} from "../base-resource-manager";
-import { Atlas, IAtlasResource, isAtlasResource } from "./atlas";
-import { AtlasManager } from "./atlas-manager";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
-import { subTextureIOValue } from "./sub-texture";
-import { TextureIOExpansion } from "./texture-io-expansion";
+  BaseResourceOptions,
+} from '../base-resource-manager';
+import { Atlas, IAtlasResource, isAtlasResource } from './atlas';
+import { AtlasManager } from './atlas-manager';
+import { IAtlasResourceRequest } from './atlas-resource-request';
+import { subTextureIOValue } from './sub-texture';
+import { TextureIOExpansion } from './texture-io-expansion';
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */
@@ -197,7 +197,7 @@ export class AtlasResourceManager extends BaseResourceManager<
     request: IAtlasResourceRequest,
     _context?: IResourceContext
   ): InstanceIOValue {
-    const resourceContext = request.key || "";
+    const resourceContext = request.key || '';
     const texture = request.texture;
 
     // If the texture is ready and available, then we simply return the IO values

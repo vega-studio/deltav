@@ -1,19 +1,19 @@
-import { compare4, copy4, flatten4, Vec4 } from "../math/vector";
-import { TypeVec } from "../types";
-import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
-import { Material } from "./material";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
+import { compare4, copy4, flatten4, Vec4 } from '../math/vector';
+import { TypeVec } from '../types';
+import { indexToTextureUnit, textureUnitToIndex } from './gl-decode';
+import { GLProxy } from './gl-proxy';
+import { GLSettings } from './gl-settings';
+import { Material } from './material';
+import { RenderTarget } from './render-target';
+import { Texture } from './texture';
 import {
   IExtensions,
   IMaterialUniform,
   MaterialUniformType,
-  MaterialUniformValue
-} from "./types";
+  MaterialUniformValue,
+} from './types';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
@@ -24,7 +24,7 @@ const debug = require("debug")("performance");
  */
 export class GLState {
   /** Message to include with debug, warns, and errors */
-  debugContext: string = "";
+  debugContext: string = '';
   /** The extensions enabled for the context */
   private extensions: IExtensions;
   /** Stores the gl context this is watching the state over */
@@ -134,7 +134,7 @@ export class GLState {
   }
   private _boundTexture: { id: WebGLTexture | null; unit: number } = {
     id: null,
-    unit: -1
+    unit: -1,
   };
 
   /** The current program in use */
@@ -266,7 +266,7 @@ export class GLState {
     ) {
       this._boundTexture = {
         id: texture.gl.textureId,
-        unit: this._activeTextureUnit
+        unit: this._activeTextureUnit,
       };
 
       switch (target) {
@@ -592,7 +592,7 @@ export class GLState {
         }
 
         glSettings = {
-          location
+          location,
         };
 
         // Store the found location for the uniform
@@ -679,7 +679,7 @@ export class GLState {
       default:
         console.warn(
           this.debugContext,
-          "A uniform specified an unrecognized type. It will not sync with the GPU:",
+          'A uniform specified an unrecognized type. It will not sync with the GPU:',
           uniform
         );
     }
@@ -707,7 +707,7 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: this.gl.TEXTURE0,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       }
     });
@@ -806,7 +806,7 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       } else {
         texture.gl.textureUnit = freeUnit;
@@ -825,7 +825,7 @@ export class GLState {
     // If there are no units available in this manner, then we are officially using too many
     // textures for the next draw call.
     debug(
-      "WARNING: Too many textures in use are causing texture units to be swapped. Doing this occasionally is fine, but handling this on a frame loop can have serious performance concerns."
+      'WARNING: Too many textures in use are causing texture units to be swapped. Doing this occasionally is fine, but handling this on a frame loop can have serious performance concerns.'
     );
 
     // Get a list of texture units in use but are not required for next draw call
@@ -851,7 +851,7 @@ export class GLState {
     if (canGiveUpUnit.length === 0) {
       console.warn(
         this.debugContext,
-        "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
+        'There are too many textures being used for a single draw call. These textures will not be utilized on the GPU',
         needsUnit
       );
       return needsUnit;
@@ -876,7 +876,7 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit.gl.textureUnit,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       } else {
         texture.gl.textureUnit = freeUnit.gl.textureUnit;
@@ -889,7 +889,7 @@ export class GLState {
     if (needsUnit.length > 0) {
       console.warn(
         this.debugContext,
-        "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
+        'There are too many textures being used for a single draw call. These textures will not be utilized on the GPU',
         needsUnit
       );
     }
@@ -912,7 +912,7 @@ export class GLState {
     } else {
       console.warn(
         this.debugContext,
-        "Attempted to set a Texture Object to a uniform, but the Texture object did not have a valid texture unit.",
+        'Attempted to set a Texture Object to a uniform, but the Texture object did not have a valid texture unit.',
         texture
       );
     }
@@ -934,7 +934,7 @@ export class GLState {
         if (uniforms !== target) {
           console.warn(
             this.debugContext,
-            "A Texture is attempting to be used by two different render targets in a single draw."
+            'A Texture is attempting to be used by two different render targets in a single draw.'
           );
         }
       }
@@ -945,7 +945,7 @@ export class GLState {
         if (uniforms instanceof RenderTarget) {
           console.warn(
             this.debugContext,
-            "A texture in a single draw is attempting to attach to a uniform AND a render target which is invalid."
+            'A texture in a single draw is attempting to attach to a uniform AND a render target which is invalid.'
           );
         } else {
           uniforms.add(target);

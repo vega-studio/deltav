@@ -1,0 +1,1 @@
+{"id":"../src/shaders/base-modules/shader-fragments/constants/pi2_inv.vs","dependencies":[],"generated":{"js":"module.exports = \"// This is 1 / (pi * 2.0)\\nfloat PI2_INV = 0.1591549431;\\n\""},"sourceMaps":null,"error":null,"hash":"748f56a8b54e01dede18051a3e93ff7a","cacheData":{}}

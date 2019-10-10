@@ -1,17 +1,17 @@
-import { InstanceProvider } from "../../../instance-provider";
+import { InstanceProvider } from '../../../instance-provider';
 import {
   atlasRequest,
   AtlasResource,
-  IAtlasResourceRequest
-} from "../../../resources";
-import { createLayer, LayerInitializer } from "../../../surface/layer";
-import { InstanceDiffType } from "../../../types";
-import { mapInjectDefault } from "../../../util";
-import { PromiseResolver } from "../../../util/promise-resolver";
-import { Layer2D } from "../../view/layer-2d";
-import { debugVideoEvents } from "./debug-video";
-import { ImageInstance } from "./image-instance";
-import { IImageRenderLayerProps, ImageRenderLayer } from "./image-render-layer";
+  IAtlasResourceRequest,
+} from '../../../resources';
+import { createLayer, LayerInitializer } from '../../../surface/layer';
+import { InstanceDiffType } from '../../../types';
+import { mapInjectDefault } from '../../../util';
+import { PromiseResolver } from '../../../util/promise-resolver';
+import { Layer2D } from '../../view/layer-2d';
+import { debugVideoEvents } from './debug-video';
+import { ImageInstance } from './image-instance';
+import { IImageRenderLayerProps, ImageRenderLayer } from './image-render-layer';
 
 export interface IImageLayerProps<T extends ImageInstance>
   extends IImageRenderLayerProps<T> {}
@@ -47,7 +47,7 @@ export function isVideoResource(val: any): val is ImageVideoResource {
 /** Simple image source to be used for waiting elements */
 const WHITE_PIXEL = new Image();
 WHITE_PIXEL.src =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 /**
  * This layer displays Images and provides as many controls as possible for displaying
@@ -58,9 +58,9 @@ export class ImageLayer<
   U extends IImageLayerProps<T>
 > extends Layer2D<T, U> {
   static defaultProps: IImageLayerProps<any> = {
-    atlas: "default",
-    key: "",
-    data: new InstanceProvider<ImageInstance>()
+    atlas: 'default',
+    key: '',
+    data: new InstanceProvider<ImageInstance>(),
   };
 
   /** Internal provider for child layers for this layer to hand off to */
@@ -69,7 +69,7 @@ export class ImageLayer<
    * This tracks which resource this image is associated with This allows us to know what resource an image
    * moves on from, thus allowing us to dispatch a disposal request of the resource.
    */
-  imageToResource = new Map<ImageInstance, IAtlasResourceRequest["source"]>();
+  imageToResource = new Map<ImageInstance, IAtlasResourceRequest['source']>();
   /** The cached property ids of the instances so they are not processed every draw */
   propertyIds?: { [key: string]: number };
   /** We can consolidate requests at this layer level to reduce memory footprint of requests */
@@ -95,7 +95,7 @@ export class ImageLayer<
    */
   originalOnReadyCallbacks = new Map<
     ImageInstance,
-    ImageInstance["onReady"] | undefined
+    ImageInstance['onReady'] | undefined
   >();
 
   /**
@@ -106,8 +106,8 @@ export class ImageLayer<
     return [
       createLayer(ImageRenderLayer, {
         ...this.props,
-        key: `${this.props.key}.image-render-layer`
-      })
+        key: `${this.props.key}.image-render-layer`,
+      }),
     ];
   }
 
@@ -134,7 +134,7 @@ export class ImageLayer<
 
     if (!this.propertyIds) {
       this.propertyIds = this.getInstanceObservableIds(changes[0][0], [
-        "source"
+        'source',
       ]);
     }
 
@@ -173,7 +173,7 @@ export class ImageLayer<
 
               // Remove the instance from 'using' the video source
               let instancesUsing = this.usingVideo.get(
-                previous.getAttribute("data-source") || ""
+                previous.getAttribute('data-source') || ''
               );
 
               if (!instancesUsing) {
@@ -184,7 +184,7 @@ export class ImageLayer<
 
               if (instancesUsing.size <= 0) {
                 this.sourceToVideo.delete(
-                  previous.getAttribute("data-source") || ""
+                  previous.getAttribute('data-source') || ''
                 );
               }
 
@@ -213,9 +213,9 @@ export class ImageLayer<
               this,
               instance,
               atlasRequest({
-                key: this.props.atlas || "",
+                key: this.props.atlas || '',
                 disposeResource: true,
-                source: previous
+                source: previous,
               })
             );
 
@@ -225,9 +225,9 @@ export class ImageLayer<
 
               if (!request || (request.texture && !request.texture.isValid)) {
                 request = atlasRequest({
-                  key: this.props.atlas || "",
+                  key: this.props.atlas || '',
                   source: resource,
-                  rasterizationScale: this.props.rasterizationScale
+                  rasterizationScale: this.props.rasterizationScale,
                 });
 
                 this.sourceToRequest.set(resource, request);
@@ -263,9 +263,9 @@ export class ImageLayer<
 
             if (!request || (request.texture && !request.texture.isValid)) {
               request = atlasRequest({
-                key: this.props.atlas || "",
+                key: this.props.atlas || '',
                 source: resource,
-                rasterizationScale: this.props.rasterizationScale
+                rasterizationScale: this.props.rasterizationScale,
               });
 
               this.sourceToRequest.set(resource, request);
@@ -317,9 +317,9 @@ export class ImageLayer<
             this,
             instance,
             atlasRequest({
-              key: this.props.atlas || "",
+              key: this.props.atlas || '',
               disposeResource: true,
-              source: resource
+              source: resource,
             })
           );
           break;
@@ -404,10 +404,10 @@ export class ImageLayer<
     }
 
     // Create the physical video element to use.
-    const video = document.createElement("video");
+    const video = document.createElement('video');
     this.sourceToVideo.set(source.videoSrc, video);
     // Store the exact source path on the element (the src attribute gets resolved to relative http request)
-    video.setAttribute("data-source", source.videoSrc);
+    video.setAttribute('data-source', source.videoSrc);
 
     debugVideoEvents(video);
 
@@ -417,9 +417,9 @@ export class ImageLayer<
     const dataResolver = new PromiseResolver<void>();
 
     const removeListeners = () => {
-      video.removeEventListener("loadedmetadata", waitForMetaData);
-      video.removeEventListener("loadeddata", waitForData);
-      video.removeEventListener("error", waitForError);
+      video.removeEventListener('loadedmetadata', waitForMetaData);
+      video.removeEventListener('loadeddata', waitForData);
+      video.removeEventListener('error', waitForError);
 
       this.waitingForVideo.delete(source.videoSrc);
       this.waitForVideoSource.delete(image);
@@ -448,7 +448,7 @@ export class ImageLayer<
 
       // Broadcast the error
       console.warn(
-        "There was an error loading the video resource to the atlas texture context"
+        'There was an error loading the video resource to the atlas texture context'
       );
       console.warn(error);
 
@@ -460,9 +460,9 @@ export class ImageLayer<
     // We must ensure the source has it's meta data and first frame available. The meta data ensures a
     // videoWidth and height are available and the first frame ensures WebGL does not throw an error in some
     // browsers like chrome that will think the video is initially invalid.
-    video.addEventListener("loadedmetadata", waitForMetaData);
-    video.addEventListener("loadeddata", waitForData);
-    video.addEventListener("error", waitForError);
+    video.addEventListener('loadedmetadata', waitForMetaData);
+    video.addEventListener('loadeddata', waitForData);
+    video.addEventListener('error', waitForError);
 
     // We now initialize the image as waiting on the video
     // The image may have a custom onReady set awaiting the video's completion. We must not allow it to happen for

@@ -63,7 +63,7 @@ export class Attribute {
   get updateRange() {
     return this._updateRange;
   }
-  set updateRange(val: Attribute["_updateRange"]) {
+  set updateRange(val: Attribute['_updateRange']) {
     this._updateRange = val;
     this._needsUpdate = true;
   }
@@ -71,7 +71,7 @@ export class Attribute {
     /** Number of vertices to update */
     count: -1,
     /** Offset to the first vertex to begin updating */
-    offset: -1
+    offset: -1,
   };
 
   /**

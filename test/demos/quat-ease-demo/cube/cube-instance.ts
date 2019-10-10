@@ -3,8 +3,8 @@ import {
   IInstance3DOptions,
   Instance3D,
   observable,
-  Size
-} from "../../../../src";
+  Size,
+} from '../../../../src';
 
 /** Customizes a new Cube instance */
 export interface ICubeOptions extends IInstance3DOptions {

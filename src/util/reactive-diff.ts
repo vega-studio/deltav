@@ -1,4 +1,4 @@
-import { IdentifiableById } from "../types";
+import { IdentifiableById } from '../types';
 
 /**
  * These are the minimum properties required for a ReactiveDiff to monitor a set of objects.
@@ -32,11 +32,11 @@ export class ReactiveDiff<
   /** The options used to construct this controller */
   private options: IReactiveDiffOptions<U, T>;
   /** All items flagged for disposing */
-  private willDispose = new Set<T["key"]>();
+  private willDispose = new Set<T['key']>();
   /** We track all items by their key for quicker processing */
-  private keyToItem = new Map<T["key"], U>();
+  private keyToItem = new Map<T['key'], U>();
   /** We track all initializers by their key for quicker processing */
-  private keyToInitializer = new Map<T["key"], T>();
+  private keyToInitializer = new Map<T['key'], T>();
   /** Used to faciliate and enable the inline() ability */
   private currentInitalizerIndex = 0;
   /**

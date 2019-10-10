@@ -1,24 +1,24 @@
-import { Attribute, Geometry, Material, Model } from "../../../gl";
-import { Instance, ObservableMonitoring } from "../../../instance-provider";
+import { Attribute, Geometry, Material, Model } from '../../../gl';
+import { Instance, ObservableMonitoring } from '../../../instance-provider';
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
   InstanceAttributeSize,
-  InstanceDiffType
-} from "../../../types";
-import { uid } from "../../../util";
-import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
-import { Layer } from "../../layer";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { LayerScene } from "../../layer-scene";
+  InstanceDiffType,
+} from '../../../types';
+import { uid } from '../../../util';
+import { emitOnce, flushEmitOnce } from '../../../util/emit-once';
+import { Layer } from '../../layer';
+import { generateLayerModel } from '../../layer-processing/generate-layer-model';
+import { LayerScene } from '../../layer-scene';
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup
-} from "../buffer-manager-base";
+  IBufferLocationGroup,
+} from '../buffer-manager-base';
 
 const { max } = Math;
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * This represents the location of data for an instance's property to the piece of attribute buffer
@@ -194,7 +194,7 @@ export class InstanceAttributePackingBufferManager<
       }
     } else {
       console.error(
-        "Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location"
+        'Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location'
       );
     }
 
@@ -326,7 +326,7 @@ export class InstanceAttributePackingBufferManager<
       }
     }
 
-    debug("BEGIN: Resizing packed attribute buffer by %d instances", growth);
+    debug('BEGIN: Resizing packed attribute buffer by %d instances', growth);
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
@@ -404,12 +404,12 @@ export class InstanceAttributePackingBufferManager<
 
         if (!blockSize) {
           console.warn(
-            "Instance Attribute Packing Error: The system tried to build an attribute with a size of zero.",
-            "These are the attributes used:",
+            'Instance Attribute Packing Error: The system tried to build an attribute with a size of zero.',
+            'These are the attributes used:',
             this.layer.instanceAttributes,
-            "These are the block sizes calculated",
+            'These are the block sizes calculated',
             blockSizes,
-            "This is the block to attribute lookup generated",
+            'This is the block to attribute lookup generated',
             blockSubAttributesLookup
           );
         }
@@ -450,7 +450,7 @@ export class InstanceAttributePackingBufferManager<
               uid: block,
               packUID: blockAttributeUID,
               bufferAttribute,
-              size: blockSize
+              size: blockSize,
             });
 
             const startAttributeIndex = attribute.blockIndex || 0;
@@ -461,13 +461,13 @@ export class InstanceAttributePackingBufferManager<
                 attribute: internalAttribute,
                 block,
                 buffer: {
-                  value: buffer
+                  value: buffer,
                 },
                 instanceIndex: i,
                 range: [
                   i * blockSize + startAttributeIndex,
-                  i * blockSize + startAttributeIndex + attributeSize
-                ]
+                  i * blockSize + startAttributeIndex + attributeSize,
+                ],
               };
 
               newBufferLocations.push(newLocation);
@@ -484,16 +484,16 @@ export class InstanceAttributePackingBufferManager<
             bufferAttribute,
             name: `block${block}`,
             size: InstanceAttributeSize.FOUR,
-            update: () => [0]
+            update: () => [0],
           });
         } else {
           console.warn(
-            "Instance Attribute Packing Buffer Error: Somehow there are no attributes associated with a block.",
-            "These are the attributes used:",
+            'Instance Attribute Packing Buffer Error: Somehow there are no attributes associated with a block.',
+            'These are the attributes used:',
             this.layer.instanceAttributes,
-            "These are the block sizes calculated",
+            'These are the block sizes calculated',
             blockSizes,
-            "This is the block to attribute lookup generated",
+            'This is the block to attribute lookup generated',
             blockSubAttributesLookup
           );
         }
@@ -595,7 +595,7 @@ export class InstanceAttributePackingBufferManager<
               > = Object.assign({}, subAttribute, {
                 uid: uid(),
                 packUID: attribute.packUID,
-                bufferAttribute
+                bufferAttribute,
               });
 
               const startAttributeIndex = subAttribute.blockIndex || 0;
@@ -606,7 +606,7 @@ export class InstanceAttributePackingBufferManager<
                 const location = allLocations[j];
                 location.attribute = internalAttribute;
                 location.buffer = {
-                  value: buffer
+                  value: buffer,
                 };
               }
 
@@ -620,13 +620,13 @@ export class InstanceAttributePackingBufferManager<
                   attribute: internalAttribute,
                   block,
                   buffer: {
-                    value: buffer
+                    value: buffer,
                   },
                   instanceIndex: i,
                   range: [
                     i * blockSize + startAttributeIndex,
-                    i * blockSize + startAttributeIndex + attributeSize
-                  ]
+                    i * blockSize + startAttributeIndex + attributeSize,
+                  ],
                 };
 
                 newBufferLocations.push(newLocation);
@@ -658,11 +658,11 @@ export class InstanceAttributePackingBufferManager<
       this.scene.container.add(this.model);
     }
 
-    debug("COMPLETE: Resizing unpacked attribute buffer");
+    debug('COMPLETE: Resizing unpacked attribute buffer');
 
     return {
       growth,
-      newLocations: attributeToNewBufferLocations
+      newLocations: attributeToNewBufferLocations,
     };
   }
 
@@ -679,7 +679,7 @@ export class InstanceAttributePackingBufferManager<
   ) {
     if (this.attributeToPropertyIds.size === 0) return;
 
-    debug("BEGIN: Packed attribute manager grouping new buffer locations");
+    debug('BEGIN: Packed attribute manager grouping new buffer locations');
 
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
@@ -710,10 +710,10 @@ export class InstanceAttributePackingBufferManager<
           attributeToNewBufferLocations.get(attribute.name) || [],
         childBufferLocations: (attribute.childAttributes || []).map(attr => ({
           location: attributeToNewBufferLocations.get(attr.name) || [],
-          bufferIndex: -1
+          bufferIndex: -1,
         })),
         ids,
-        bufferIndex: -1
+        bufferIndex: -1,
       });
     });
 
@@ -721,7 +721,7 @@ export class InstanceAttributePackingBufferManager<
     for (let i = 0; i < totalNewInstances; ++i) {
       const group: IInstanceAttributePackingBufferLocationGroup = {
         instanceIndex: -1,
-        propertyToBufferLocation: {}
+        propertyToBufferLocation: {},
       };
 
       // Loop through all of the property ids that affect specific attributes. Each of these ids
@@ -735,7 +735,7 @@ export class InstanceAttributePackingBufferManager<
 
         if (!bufferLocationsForAttribute) {
           emitOnce(
-            "Instance Attribute Buffer Error",
+            'Instance Attribute Buffer Error',
             (count: number, id: string) => {
               console.warn(
                 `${id}: There is an error in forming buffer location groups in InstanceAttributePackingBufferManager. Error count: ${count}`
@@ -750,7 +750,7 @@ export class InstanceAttributePackingBufferManager<
 
         if (!bufferLocation) {
           emitOnce(
-            "Instance Attribute Buffer Error",
+            'Instance Attribute Buffer Error',
             (count: number, id: string) => {
               console.warn(
                 `${id}: There is an error in forming buffer location groups in InstanceAttributePackingBufferManager. Error count: ${count}`
@@ -764,7 +764,7 @@ export class InstanceAttributePackingBufferManager<
           group.instanceIndex = bufferLocation.instanceIndex;
         } else if (bufferLocation.instanceIndex !== group.instanceIndex) {
           emitOnce(
-            "Instance Attribute Parallelism Error",
+            'Instance Attribute Parallelism Error',
             (count: number, id: string) => {
               console.warn(
                 `${id}: A buffer location does not have a matching instance index which means the buffer locations are not in parallel with each other somehow. Error count: ${count}`
@@ -798,7 +798,7 @@ export class InstanceAttributePackingBufferManager<
                 childLocations.push(childBufferLocation);
               } else {
                 emitOnce(
-                  "Instance Attribute Child Attribute Error",
+                  'Instance Attribute Child Attribute Error',
                   (count: number, id: string) => {
                     console.warn(
                       `${id}: A child attribute does not have a buffer location available. Error count: ${count}`
@@ -828,7 +828,7 @@ export class InstanceAttributePackingBufferManager<
       this.availableLocations.push(group);
     }
 
-    debug("COMPLETE: Packed attribute buffer manager buffer location grouping");
+    debug('COMPLETE: Packed attribute buffer manager buffer location grouping');
 
     // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
     flushEmitOnce();

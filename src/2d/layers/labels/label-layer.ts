@@ -1,24 +1,24 @@
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
-import { fontRequest, IFontResourceRequest } from "../../../resources";
-import { KernedLayout } from "../../../resources/text/font-map";
+import { InstanceProvider } from '../../../instance-provider/instance-provider';
+import { IAutoEasingMethod } from '../../../math/auto-easing-method';
+import { copy2, copy4, dot2, scale2, Vec, Vec2 } from '../../../math/vector';
+import { fontRequest, IFontResourceRequest } from '../../../resources';
+import { KernedLayout } from '../../../resources/text/font-map';
 import {
   createLayer,
   ILayerConstructionClass,
-  LayerInitializer
-} from "../../../surface/layer";
-import { InstanceDiffType, ResourceType } from "../../../types";
-import { Anchor, AnchorType, ScaleMode } from "../../types";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { GlyphInstance } from "./glyph-instance";
-import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
-import { LabelInstance } from "./label-instance";
+  LayerInitializer,
+} from '../../../surface/layer';
+import { InstanceDiffType, ResourceType } from '../../../types';
+import { Anchor, AnchorType, ScaleMode } from '../../types';
+import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
+import { GlyphInstance } from './glyph-instance';
+import { GlyphLayer, IGlyphLayerOptions } from './glyph-layer';
+import { LabelInstance } from './label-instance';
 
 /**
  * Default characters for truncating a label.
  */
-const DEFAULT_TRUNCATION = "...";
+const DEFAULT_TRUNCATION = '...';
 
 /**
  * This is a lookup to quickly find the proper calculation for setting the correct anchor
@@ -66,7 +66,7 @@ const anchorCalculator: {
   [AnchorType.Custom]: (anchor: Anchor, _label: LabelInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  }
+  },
 };
 
 const directions: Vec2[] = [
@@ -78,7 +78,7 @@ const directions: Vec2[] = [
   [1, 0],
   [-1, 1],
   [0, 1],
-  [1, 1]
+  [1, 1],
 ].map((dir: Vec2) => {
   const mag = Math.sqrt(dot2(dir, dir));
   return scale2(dir, 1 / -mag);
@@ -119,7 +119,7 @@ const paddingCalculator: {
   },
   [AnchorType.Custom]: (anchor: Anchor) => {
     anchor.paddingDirection = anchor.paddingDirection;
-  }
+  },
 };
 
 /**
@@ -163,8 +163,8 @@ export class LabelLayer<
   U extends ILabelLayerProps<T>
 > extends Layer2D<T, U> {
   static defaultProps: ILabelLayerProps<LabelInstance> = {
-    key: "",
-    data: new InstanceProvider<LabelInstance>()
+    key: '',
+    data: new InstanceProvider<LabelInstance>(),
   };
 
   /**
@@ -215,8 +215,8 @@ export class LabelLayer<
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX,
-        inTextArea: this.props.inTextArea
-      })
+        inTextArea: this.props.inTextArea,
+      }),
     ];
   }
 
@@ -235,15 +235,15 @@ export class LabelLayer<
     if (!this.propertyIds) {
       const instance = changes[0][0];
       this.propertyIds = this.getInstanceObservableIds(instance, [
-        "text",
-        "active",
-        "anchor",
-        "color",
-        "origin",
-        "fontSize",
-        "maxWidth",
-        "maxScale",
-        "letterSpacing"
+        'text',
+        'active',
+        'anchor',
+        'color',
+        'origin',
+        'fontSize',
+        'maxWidth',
+        'maxScale',
+        'letterSpacing',
       ]);
     }
 
@@ -256,7 +256,7 @@ export class LabelLayer<
       fontSize: fontSizeId,
       maxWidth: maxWidthId,
       maxScale: maxScaleId,
-      letterSpacing: letterSpacingId
+      letterSpacing: letterSpacingId,
     } = this.propertyIds;
 
     for (let i = 0, iMax = changes.length; i < iMax; ++i) {
@@ -564,7 +564,7 @@ export class LabelLayer<
           color: instance.color,
           origin: instance.origin,
           maxScale: instance.maxScale,
-          onReady: this.handleGlyphReady
+          onReady: this.handleGlyphReady,
         });
 
         glyph.parentLabel = instance;
@@ -665,7 +665,7 @@ export class LabelLayer<
       if (
         labelKerningRequest.fontMap &&
         !labelKerningRequest.fontMap.supportsKerning(
-          checkText.replace(/\s/g, "")
+          checkText.replace(/\s/g, '')
         )
       ) {
         this.labelToKerningRequest.delete(instance);
@@ -680,11 +680,11 @@ export class LabelLayer<
 
     // If no request is present we must make one
     if (!labelKerningRequest) {
-      const metrics: IFontResourceRequest["metrics"] = {
+      const metrics: IFontResourceRequest['metrics'] = {
         // We want the request to return all of the metrics for the text as well
         fontSize: instance.fontSize,
         text: instance.text,
-        letterSpacing: instance.letterSpacing
+        letterSpacing: instance.letterSpacing,
       };
 
       // Include truncation metrics if the text needs it
@@ -695,10 +695,10 @@ export class LabelLayer<
 
       // Make the request for retrieving the kerning information.
       labelKerningRequest = fontRequest({
-        key: this.props.resourceKey || "",
-        character: "",
+        key: this.props.resourceKey || '',
+        character: '',
         kerningPairs: [checkText],
-        metrics
+        metrics,
       });
 
       // In order for the glyphs to be laid out, we need the font map to get the kerning information.
@@ -709,8 +709,8 @@ export class LabelLayer<
         this.resource.request(this, instance, labelKerningRequest, {
           resource: {
             type: ResourceType.FONT,
-            key: this.props.resourceKey || ""
-          }
+            key: this.props.resourceKey || '',
+          },
         });
 
         this.labelToKerningRequest.set(instance, labelKerningRequest);

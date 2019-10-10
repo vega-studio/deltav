@@ -1,7 +1,7 @@
-import { EventManager } from "../event-management/event-manager";
-import { Instance, InstanceProvider } from "../instance-provider";
-import { Bounds } from "../math/primitives/bounds";
-import { BaseResourceOptions } from "../resources";
+import { EventManager } from '../event-management/event-manager';
+import { Instance, InstanceProvider } from '../instance-provider';
+import { Bounds } from '../math/primitives/bounds';
+import { BaseResourceOptions } from '../resources';
 import {
   ISceneOptions,
   ISurfaceOptions,
@@ -9,16 +9,16 @@ import {
   LayerInitializer,
   Surface,
   View,
-  ViewInitializer
-} from "../surface";
-import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
+  ViewInitializer,
+} from '../surface';
+import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from '../types';
 import {
   nextFrame,
   onAnimationLoop,
   PromiseResolver,
-  stopAnimationLoop
-} from "../util";
-import { Camera } from "../util/camera";
+  stopAnimationLoop,
+} from '../util';
+import { Camera } from '../util/camera';
 
 /**
  * This gets all of the values of a Lookup
@@ -53,7 +53,7 @@ function mapLookupValues<T, U>(
   const out: U[] = [];
   const toProcess = Object.keys(lookup).map<[string, T | Lookup<T>]>(key => [
     key,
-    (lookup as any)[key]
+    (lookup as any)[key],
   ]);
 
   for (let index = 0; index < toProcess.length; ++index) {
@@ -72,7 +72,7 @@ function mapLookupValues<T, U>(
           added.add(value);
         } else {
           error = true;
-          console.warn("Invalid lookup for BasicSurface detected:", label);
+          console.warn('Invalid lookup for BasicSurface detected:', label);
         }
       });
 
@@ -86,12 +86,12 @@ function mapLookupValues<T, U>(
 /** Non-keyed View options with ordering property to specify rendering order */
 export type BasicSurfaceView<TViewProps extends IViewProps> = Omit<
   ViewInitializer<TViewProps>,
-  "key"
+  'key'
 > &
-  Partial<Pick<IViewProps, "key">>;
+  Partial<Pick<IViewProps, 'key'>>;
 /** Non-keyed layer initializer with ordering property to specify rendering order */
-export type BasicSurfaceLayer = Omit<LayerInitializer, "key"> &
-  Partial<Pick<IViewProps, "key">>;
+export type BasicSurfaceLayer = Omit<LayerInitializer, 'key'> &
+  Partial<Pick<IViewProps, 'key'>>;
 
 /**
  * Defines a scene that elements are injected to. Each scene can be viewed with multiple views
@@ -102,7 +102,7 @@ export type BasicSurfaceLayer = Omit<LayerInitializer, "key"> &
  */
 export type BasicSurfaceSceneOptions = Omit<
   ISceneOptions,
-  "key" | "views" | "layers"
+  'key' | 'views' | 'layers'
 > & {
   /** Layers to inject elements into the scene */
   layers: Lookup<BasicSurfaceLayer>;
@@ -110,7 +110,7 @@ export type BasicSurfaceSceneOptions = Omit<
   views: Lookup<BasicSurfaceView<IViewProps>>;
 };
 
-export type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, "key"> & {
+export type BasicSurfaceResourceOptions = Omit<BaseResourceOptions, 'key'> & {
   key?: string;
 };
 
@@ -148,7 +148,7 @@ export interface IBasicSurfaceOptions<
    */
   providers: T;
   /** Options used to specify settings for the surface itself and how it will be composited in the DOM */
-  rendererOptions?: ISurfaceOptions["rendererOptions"];
+  rendererOptions?: ISurfaceOptions['rendererOptions'];
   /** The resources to be used for the pipeline */
   resources: W;
 
@@ -221,8 +221,8 @@ export class BasicSurface<
   private createContext() {
     // If our context is not defined, then one must be made
     if (!this.context) {
-      this.context = document.createElement("canvas");
-      this.context.title = "";
+      this.context = document.createElement('canvas');
+      this.context.title = '';
       this.context.width =
         (this.options.container.offsetWidth || 0) * window.devicePixelRatio;
       this.context.height =
@@ -249,7 +249,7 @@ export class BasicSurface<
     }
 
     stopAnimationLoop(this.drawRequestId);
-    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener('resize', this.handleResize);
   };
 
   /**
@@ -314,10 +314,10 @@ export class BasicSurface<
         rendererOptions: Object.assign(
           {
             alpha: true,
-            antialias: false
+            antialias: false,
           },
           this.options.rendererOptions
-        )
+        ),
       }).ready;
 
       // Make sure the context fits the container
@@ -329,13 +329,13 @@ export class BasicSurface<
       // Use the established cameras and managers to establish the initial pipeline for the surface
       await this.updatePipeline();
       // Establish event listeners
-      window.addEventListener("resize", this.handleResize);
+      window.addEventListener('resize', this.handleResize);
     } catch (err) {
       // We catch any initialization errors from the surface
       if (err.error === SurfaceErrorType.NO_WEBGL_CONTEXT) {
         if (this.options.onNoWebGL) this.options.onNoWebGL();
       } else {
-        console.error("The Basic Surface could not be initialized");
+        console.error('The Basic Surface could not be initialized');
         console.error(err.stack || err.message);
       }
     }
@@ -405,7 +405,7 @@ export class BasicSurface<
   /**
    * Redeclare the pipeline
    */
-  async pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["pipeline"]) {
+  async pipeline(callback: IBasicSurfaceOptions<T, U, V, W>['pipeline']) {
     this.options.pipeline = callback;
     if (!this.base) return;
     await this.updatePipeline();
@@ -423,7 +423,7 @@ export class BasicSurface<
     let options;
 
     // See if the rebuild wanted to clear the providers or not.
-    if (typeof param === "boolean") {
+    if (typeof param === 'boolean') {
       if (param && this.providers) {
         const providers = lookupValues<InstanceProvider<Instance>>(
           InstanceProvider,
@@ -444,7 +444,7 @@ export class BasicSurface<
 
     if (this.options && options) {
       console.warn(
-        "Ignoring options provided to rebuild method. The constructor is the only way to apply an options configuration object"
+        'Ignoring options provided to rebuild method. The constructor is the only way to apply an options configuration object'
       );
     }
 
@@ -492,13 +492,13 @@ export class BasicSurface<
     // Take the resource lookup and flatten it's values to a list. Each value will be given a key based on whether the
     // value expressed an explicit key or will be a key made from the properties leading up to the value in the lookup.
     const resources = mapLookupValues(
-      "resources",
+      'resources',
       (val: any) => val && val.type !== undefined,
       this.resources || [],
       (key: string, val: BaseResourceOptions) => {
         const resource: BaseResourceOptions = {
           ...val,
-          key: val.key || key
+          key: val.key || key,
         };
 
         val.key = resource.key;
@@ -515,25 +515,25 @@ export class BasicSurface<
     );
 
     const scenes = mapLookupValues(
-      "scenes",
+      'scenes',
       (val: any) => val && val.views !== undefined && val.layers !== undefined,
       pipelineWithLookups.scenes,
       (sceneKey: string, val: BasicSurfaceSceneOptions) => {
         const views = mapLookupValues(
-          "views",
+          'views',
           (val: any) => val && val.init !== undefined && val.init.length === 2,
           val.views,
           (key: string, val: BasicSurfaceView<IViewProps>) => {
             const view: ViewInitializer<IViewProps> = {
               ...val,
-              key: `${sceneKey}.${val.key || key}`
+              key: `${sceneKey}.${val.key || key}`,
             };
 
             // Make the props it's own object so we don't mutate the originating object when we apply the
             // calculated key
             view.init[1] = {
               ...view.init[1],
-              key: view.key
+              key: view.key,
             };
 
             return view;
@@ -541,13 +541,13 @@ export class BasicSurface<
         );
 
         const layers = mapLookupValues(
-          "layers",
+          'layers',
           (val: any) => val && val.init !== undefined,
           val.layers,
           (key: string, val: BasicSurfaceLayer) => {
             const layer: LayerInitializer = {
               init: val.init,
-              key: val.key || key
+              key: val.key || key,
             };
 
             val.init[1].key = layer.key;
@@ -559,7 +559,7 @@ export class BasicSurface<
           key: sceneKey,
           order: val.order,
           views,
-          layers
+          layers,
         };
 
         if (val.order === undefined) {
@@ -572,7 +572,7 @@ export class BasicSurface<
 
     const pipeline: IPipeline = {
       resources,
-      scenes
+      scenes,
     };
 
     return await this.base.pipeline(pipeline);
@@ -591,14 +591,14 @@ export class BasicSurface<
     if (box.width === 0 || box.height === 0) {
       let observing = true;
       const toWatch = {
-        attributes: true
+        attributes: true,
       };
 
       const observer = new MutationObserver(mutationsList => {
         if (!observing) return;
 
         for (const mutation of mutationsList) {
-          if (mutation.type === "attributes") {
+          if (mutation.type === 'attributes') {
             box = container.getBoundingClientRect();
 
             if (box.width !== 0 && box.height !== 0) {

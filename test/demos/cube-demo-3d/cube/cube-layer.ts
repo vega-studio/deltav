@@ -10,9 +10,9 @@ import {
   Layer,
   Vec2,
   Vec3,
-  VertexAttributeSize
-} from "../../../../src";
-import { CubeInstance } from "./cube-instance";
+  VertexAttributeSize,
+} from '../../../../src';
+import { CubeInstance } from './cube-instance';
 
 export interface ICubeLayerProps<TInstance extends CubeInstance>
   extends ILayerProps<TInstance> {}
@@ -26,8 +26,8 @@ export class CubeLayer<
 > extends Layer<TInstance, TProps> {
   static defaultProps: ICubeLayerProps<CubeInstance> = {
     data: new InstanceProvider<CubeInstance>(),
-    key: "",
-    materialOptions: CommonMaterialOptions.transparentShapeBlending
+    key: '',
+    materialOptions: CommonMaterialOptions.transparentShapeBlending,
   };
 
   initShader(): IShaderInitialization<TInstance> | null {
@@ -83,7 +83,7 @@ export class CubeLayer<
       BRB,
       FLB,
       BRB,
-      BLB
+      BLB,
     ];
 
     const right: Vec3 = [1, 0, 0];
@@ -129,7 +129,7 @@ export class CubeLayer<
       down,
       down,
       down,
-      down
+      down,
     ];
 
     const tex: Vec2[] = [
@@ -173,71 +173,71 @@ export class CubeLayer<
       [1, 1],
       [0, 0],
       [1, 1],
-      [0, 1]
+      [0, 1],
     ];
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
-      fs: require("./cube-layer.fs"),
+      fs: require('./cube-layer.fs'),
       instanceAttributes: [
         createAttribute({
-          name: "s",
+          name: 's',
           size: InstanceAttributeSize.THREE,
-          update: o => o.scale
+          update: o => o.scale,
         }),
         createAttribute({
-          name: "r",
+          name: 'r',
           size: InstanceAttributeSize.FOUR,
-          update: o => o.rotation
+          update: o => o.rotation,
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
-          name: "t",
+          name: 't',
           size: InstanceAttributeSize.THREE,
-          update: o => o.position
+          update: o => o.position,
         }),
         createAttribute({
-          name: "size",
+          name: 'size',
           size: InstanceAttributeSize.THREE,
-          update: o => o.size
+          update: o => o.size,
         }),
         createAttribute({
-          name: "color",
+          name: 'color',
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color
+          update: o => o.color,
         }),
         createAttribute({
-          name: "frontColor",
+          name: 'frontColor',
           size: InstanceAttributeSize.FOUR,
-          update: o => o.frontColor
-        })
+          update: o => o.frontColor,
+        }),
       ],
       uniforms: [],
       vertexAttributes: [
         {
-          name: "position",
+          name: 'position',
           size: VertexAttributeSize.THREE,
-          update: (vertex: number) => positions[vertex]
+          update: (vertex: number) => positions[vertex],
         },
         {
-          name: "normal",
+          name: 'normal',
           size: VertexAttributeSize.THREE,
-          update: (vertex: number) => normals[vertex]
+          update: (vertex: number) => normals[vertex],
         },
         {
-          name: "texCoord",
+          name: 'texCoord',
           size: VertexAttributeSize.TWO,
-          update: (vertex: number) => tex[vertex]
-        }
+          update: (vertex: number) => tex[vertex],
+        },
       ],
       vertexCount: 36,
-      vs: require("./cube-layer.vs")
+      vs: require('./cube-layer.vs'),
     };
   }
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CCW
+      cullSide: GLSettings.Material.CullSide.CCW,
     });
   }
 }

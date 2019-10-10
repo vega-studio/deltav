@@ -1,6 +1,6 @@
-import { uid } from "../util/uid";
-import { Bounds } from "./primitives/bounds";
-import { apply2, Vec2, Vec2Compat } from "./vector";
+import { uid } from '../util/uid';
+import { Bounds } from './primitives/bounds';
+import { apply2, Vec2, Vec2Compat } from './vector';
 
 /**
  * This object expresses a suite of methods that aids in projecting values from screen to world and vice versa.
@@ -13,7 +13,7 @@ export abstract class BaseProjection<T> {
   }
   private _uid: number = uid();
   /** Allows for a sensical identifier to be applied to this projection. */
-  id: string = "";
+  id: string = '';
 
   /** This is set to ensure the projections that happen properly translates the pixel ratio to normal Web coordinates */
   pixelRatio: number = 1;

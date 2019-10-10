@@ -1,5 +1,5 @@
-import { EventManager } from "./event-manager";
-import { IMouseInteraction, ITouchInteraction } from "./types";
+import { EventManager } from './event-manager';
+import { IMouseInteraction, ITouchInteraction } from './types';
 
 /**
  * This is a simple way to access the events executing on the chart.

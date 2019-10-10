@@ -1,13 +1,13 @@
-import { Instance } from "../../../instance-provider";
-import { ISinglePickingMetrics, PickType } from "../../../types";
+import { Instance } from '../../../instance-provider';
+import { ISinglePickingMetrics, PickType } from '../../../types';
 import {
   BufferManagerBase,
   IBufferLocation,
-  isBufferLocationGroup
-} from "../buffer-manager-base";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
-import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager";
-import { InstanceAttributeDiffProcessor } from "./instance-attribute-diff-processor";
+  isBufferLocationGroup,
+} from '../buffer-manager-base';
+import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
+import { IInstanceAttributeBufferLocationGroup } from './instance-attribute-buffer-manager';
+import { InstanceAttributeDiffProcessor } from './instance-attribute-diff-processor';
 
 const EMPTY: number[] = [];
 
@@ -30,7 +30,7 @@ export class InstanceAttributeColorDiffProcessor<
       this.colorPicking.uidToInstance = new Map<number, T>();
     } else {
       console.warn(
-        "Diff Processing Error: A layer has a diff processor requesting Color Processing but the picking type is not valid."
+        'Diff Processing Error: A layer has a diff processor requesting Color Processing but the picking type is not valid.'
       );
     }
   }
@@ -61,7 +61,7 @@ export class InstanceAttributeColorDiffProcessor<
         manager.colorPicking.uidToInstance.set(instance.uid, instance);
       } else {
         console.warn(
-          "A data cluster was not provided by the manager to associate an instance with."
+          'A data cluster was not provided by the manager to associate an instance with.'
         );
       }
     }

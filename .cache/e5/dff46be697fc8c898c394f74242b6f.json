@@ -1,0 +1,1 @@
+{"id":"../src/shaders/base-modules/shader-fragments/matrix/transform.vs","dependencies":[],"generated":{"js":"module.exports = \"${import: translation, rotation, scale}\\n\\nmat4 transform(vec3 s, vec4 r, vec3 t) {\\n  return translation(t) * rotationFromQuaternion(r) * scale(s);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"f50c25bdebd0120c39fa76ceb0b67dd3","cacheData":{}}

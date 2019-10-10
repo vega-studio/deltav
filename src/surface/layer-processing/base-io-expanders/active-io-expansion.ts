@@ -1,12 +1,12 @@
-import { activeAttributeName } from "../../../constants";
-import { Instance } from "../../../instance-provider/instance";
-import { ShaderDeclarationStatements } from "../../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../../surface/layer";
-import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
-import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../../types";
+import { activeAttributeName } from '../../../constants';
+import { Instance } from '../../../instance-provider/instance';
+import { ShaderDeclarationStatements } from '../../../shaders/processing/base-shader-io-injection';
+import { MetricsProcessing } from '../../../shaders/processing/metrics-processing';
+import { ILayerProps, Layer } from '../../../surface/layer';
+import { BaseIOExpansion } from '../../../surface/layer-processing/base-io-expansion';
+import { IInstanceAttribute, IUniform, IVertexAttribute } from '../../../types';
 
-const debugCtx = "ActiveIOExpansion";
+const debugCtx = 'ActiveIOExpansion';
 
 /**
  * This is a special case io expander that handles detecting the _active attribute
@@ -23,7 +23,7 @@ export class ActiveIOExpansion extends BaseIOExpansion {
     instanceAttributes: IInstanceAttribute<Instance>[],
     _uniforms: IUniform[]
   ): string {
-    const out = "";
+    const out = '';
 
     // Find the active attribute. If it exists we inject our active attribute handler
     if (!instanceAttributes.find(attr => attr.name === activeAttributeName)) {
@@ -34,8 +34,8 @@ export class ActiveIOExpansion extends BaseIOExpansion {
     // honor the active control
     this.setDeclaration(
       declarations,
-      "__active_attribute_handler__",
-      require("./fragments/active-attribute-handler.vs"),
+      '__active_attribute_handler__',
+      require('./fragments/active-attribute-handler.vs'),
       debugCtx
     );
 

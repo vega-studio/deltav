@@ -1,1 +1,1 @@
-export * from "./touch-demo";
+export * from './touch-demo';

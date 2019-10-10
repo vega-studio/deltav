@@ -1,1 +1,1 @@
-export * from "./basic-demo-3d";
+export * from './basic-demo-3d';

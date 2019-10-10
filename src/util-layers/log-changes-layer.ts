@@ -1,4 +1,4 @@
-import { Instance, InstanceProvider } from "../instance-provider";
+import { Instance, InstanceProvider } from '../instance-provider';
 import {
   createLayer,
   ILayerConstructable,
@@ -6,15 +6,15 @@ import {
   Layer,
   LayerInitializer,
   LayerScene,
-  Surface
-} from "../surface";
-import { Omit } from "../types";
+  Surface,
+} from '../surface';
+import { Omit } from '../types';
 
 /**
  * Options for generating a Logging layer
  */
 interface ILogChangesLayerProps<T extends Instance>
-  extends Omit<ILayerProps<T>, "key"> {
+  extends Omit<ILayerProps<T>, 'key'> {
   /** Gets the key for the layer. */
   key: string;
   /** Provides a header to the log output to make the logs easier to understand */
@@ -35,19 +35,19 @@ class LogChangesLayer<
   /** Default props for the Layer */
   static defaultProps: ILogChangesLayerProps<any> = {
     data: new InstanceProvider(),
-    key: "default",
-    messageHeader: () => "",
+    key: 'default',
+    messageHeader: () => '',
     wrap: createLayer(Layer, {
       data: new InstanceProvider(),
-      scene: "default"
-    })
+      scene: 'default',
+    }),
   };
 
   constructor(surface: Surface, scene: LayerScene, props: U) {
     super(surface, scene, props);
 
     console.warn(
-      "Please ensure all debugLayer calls are removed for production:",
+      'Please ensure all debugLayer calls are removed for production:',
       props.key
     );
   }
@@ -69,11 +69,11 @@ class LogChangesLayer<
     if (!this.props.wrap) return;
     const changes = this.resolveChanges(true);
     if (changes.length === 0) return;
-    const { messageHeader = () => "" } = this.props;
+    const { messageHeader = () => '' } = this.props;
 
     console.warn(`${messageHeader()}\n`, {
       totalChanges: changes.length,
-      changes
+      changes,
     });
   }
 
@@ -101,7 +101,7 @@ class LogChangesLayer<
       );
 
       childLayers[childLayer.id] = {
-        shaderIO: childLayer.initShader()
+        shaderIO: childLayer.initShader(),
       };
 
       childLayer.childLayers().forEach(l => toProcess.push(l));
@@ -109,7 +109,7 @@ class LogChangesLayer<
 
     console.warn(`Shader IO: ${this.id}\n`, {
       shaderIO: layer.initShader(),
-      childLayers
+      childLayers,
     });
 
     return null;
@@ -121,12 +121,12 @@ class LogChangesLayer<
  */
 export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">>
+  props: Omit<U, 'key'> & Partial<Pick<U, 'key'>>
 ): LayerInitializer {
   const initializer: LayerInitializer = createLayer(LogChangesLayer, {
     messageHeader: () => `CHANGES FOR: ${initializer.init[1].key}`,
     wrap: createLayer(layerClass, props),
-    data: props.data
+    data: props.data,
   });
 
   return initializer;

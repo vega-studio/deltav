@@ -1,4 +1,4 @@
-import { EulerOrder, EulerRotation } from "../types";
+import { EulerOrder, EulerRotation } from '../types';
 import {
   identity4,
   M400,
@@ -18,9 +18,9 @@ import {
   M432,
   M433,
   Mat3x3,
-  Mat4x4
-} from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+  Mat4x4,
+} from './matrix';
+import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from './vector';
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 
@@ -758,7 +758,7 @@ export function toOrderedEulerFromQuat(
       break;
 
     default:
-      console.warn("Invalid Euler rotation order.");
+      console.warn('Invalid Euler rotation order.');
       break;
   }
 

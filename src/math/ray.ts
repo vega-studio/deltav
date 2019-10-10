@@ -4,8 +4,8 @@ import {
   normalize3,
   scale3,
   subtract3,
-  Vec3
-} from "../math/vector";
+  Vec3,
+} from '../math/vector';
 
 /**
  * Represents a ray starting from some origin eminating in a direction.

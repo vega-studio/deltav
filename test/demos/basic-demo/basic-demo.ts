@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   add2,
   AutoEasingLoopStyle,
@@ -21,10 +21,10 @@ import {
   Size,
   Vec2,
   Vec2Compat,
-  View2D
-} from "src";
-import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
-import { BaseDemo } from "../../common/base-demo";
+  View2D,
+} from '../../../src';
+import { SimpleEventHandler } from '../../../src/event-management/simple-event-handler';
+import { BaseDemo } from '../../common/base-demo';
 
 const { random } = Math;
 
@@ -41,7 +41,7 @@ export class BasicDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    circles: new InstanceProvider<CircleInstance>()
+    circles: new InstanceProvider<CircleInstance>(),
   };
 
   /** GUI properties */
@@ -52,18 +52,18 @@ export class BasicDemo extends BaseDemo {
     addAtOnce: 10000,
 
     previous: {
-      count: 1000
-    }
+      count: 1000,
+    },
   };
 
   currentLocation: Vec2Compat = [0, 0];
 
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
+    const parameters = gui.addFolder('Parameters');
 
     // Controller causes the number of circles rendered to change
     parameters
-      .add(this.parameters, "count", 0, 500000, 1)
+      .add(this.parameters, 'count', 0, 500000, 1)
       .onFinishChange(async () => {
         while (this.circles.length < this.parameters.count) {
           for (
@@ -90,11 +90,11 @@ export class BasicDemo extends BaseDemo {
         }
       });
 
-    parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
-    parameters.add(this.parameters, "moveAtOnce", 0, 100000, 1);
+    parameters.add(this.parameters, 'addAtOnce', 0, 100000, 1);
+    parameters.add(this.parameters, 'moveAtOnce', 0, 100000, 1);
 
     parameters
-      .add(this.parameters, "radius", 0, 10000, 1)
+      .add(this.parameters, 'radius', 0, 10000, 1)
       .onChange(async (_value: number) => {
         this.moveToLocation(this.currentLocation);
       });
@@ -130,13 +130,13 @@ export class BasicDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["main.main"]
+          startView: ['main.main'],
         }),
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction) => {
@@ -150,8 +150,8 @@ export class BasicDemo extends BaseDemo {
             this.moveToLocation(
               touch.target.view.projection.screenToWorld(touch.screen.position)
             );
-          }
-        })
+          },
+        }),
       }),
       pipeline: (_resources, providers, cameras) => ({
         resources: [],
@@ -161,8 +161,8 @@ export class BasicDemo extends BaseDemo {
               main: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: [
               createLayer(CircleLayer, {
@@ -171,17 +171,17 @@ export class BasicDemo extends BaseDemo {
                     2000,
                     0,
                     AutoEasingLoopStyle.NONE
-                  )
+                  ),
                 },
                 data: providers.circles,
                 key: `circles`,
                 scaleFactor: () => cameras.main.scale2D[0],
-                usePoints: true
-              })
-            ]
-          }
-        }
-      })
+                usePoints: true,
+              }),
+            ],
+          },
+        },
+      }),
     });
   }
 
@@ -189,7 +189,7 @@ export class BasicDemo extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    this.screen = this.surface.getViewScreenSize("main.main");
+    this.screen = this.surface.getViewScreenSize('main.main');
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeCircle();
@@ -203,7 +203,7 @@ export class BasicDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * this.screen[0], random() * this.screen[1]],
         radius: random() * 10 + 2,
-        color: [0, random(), random(), 1.0]
+        color: [0, random(), random(), 1.0],
       })
     );
 
@@ -260,7 +260,7 @@ export class BasicDemo extends BaseDemo {
       this.circles.forEach(circle => {
         circle.center = [
           circle.center[0] + random() * 10 - 5,
-          circle.center[1] + random() * 10 - 5
+          circle.center[1] + random() * 10 - 5,
         ];
       });
     }, 100);

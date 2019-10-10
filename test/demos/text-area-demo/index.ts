@@ -1,1 +1,1 @@
-export * from "./text-area-demo";
+export * from './text-area-demo';

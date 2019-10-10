@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   AutoEasingMethod,
   BasicCamera2DController,
@@ -10,11 +10,11 @@ import {
   createLayer,
   createView,
   InstanceProvider,
-  View2D
-} from "src";
-import { BaseDemo } from "../../common/base-demo";
-import { debounce } from "../../common/debounce";
-import { textPositions } from "../../common/text-positions";
+  View2D,
+} from 'src';
+import { BaseDemo } from '../../common/base-demo';
+import { debounce } from '../../common/debounce';
+import { textPositions } from '../../common/text-positions';
 
 const { random } = Math;
 
@@ -29,36 +29,36 @@ export class WordSandDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    circles: new InstanceProvider<CircleInstance>()
+    circles: new InstanceProvider<CircleInstance>(),
   };
 
   /** GUI properties */
   parameters = {
     count: 10000,
     speedFactor: 1,
-    text: "Enter Text",
+    text: 'Enter Text',
     fontSize: 60,
 
     previous: {
-      count: 10000
-    }
+      count: 10000,
+    },
   };
 
   /**
    * Dat gui construction
    */
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
+    const parameters = gui.addFolder('Parameters');
 
     // Changes the shape the circles take on
-    parameters.add(this.parameters, "text").onChange(
+    parameters.add(this.parameters, 'text').onChange(
       debounce(async (_value: number) => {
         this.moveToText(this.circles);
       }, 250)
     );
 
     // Controller causes the number of circles rendered to change
-    parameters.add(this.parameters, "count", 5000, 50000, 1).onChange(
+    parameters.add(this.parameters, 'count', 5000, 50000, 1).onChange(
       debounce(async (value: number) => {
         const delta = value - this.parameters.previous.count;
 
@@ -80,10 +80,10 @@ export class WordSandDemo extends BaseDemo {
       }, 250)
     );
 
-    parameters.add(this.parameters, "speedFactor", 0.01, 2, 0.01);
+    parameters.add(this.parameters, 'speedFactor', 0.01, 2, 0.01);
 
     parameters
-      .add(this.parameters, "fontSize", 4, 80, 1)
+      .add(this.parameters, 'fontSize', 4, 80, 1)
       .onChange(async (_value: number) => {
         this.moveToText(this.circles);
       });
@@ -96,15 +96,15 @@ export class WordSandDemo extends BaseDemo {
     return new BasicSurface({
       container,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       providers: this.providers,
       resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["default.default-view"]
-        })
+          startView: ['default.default-view'],
+        }),
       }),
       pipeline: (_resources, providers, cameras) => ({
         scenes: {
@@ -112,22 +112,22 @@ export class WordSandDemo extends BaseDemo {
             views: {
               view: createView(View2D, {
                 camera: cameras.main,
-                clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
-              })
+                clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR],
+              }),
             },
             layers: [
               createLayer(CircleLayer, {
                 animate: {
-                  center: AutoEasingMethod.easeInOutQuad(250)
+                  center: AutoEasingMethod.easeInOutQuad(250),
                 },
                 data: providers.circles,
-                key: "circles",
-                scaleFactor: () => cameras.main.scale[0]
-              })
-            ]
-          }
-        }
-      })
+                key: 'circles',
+                scaleFactor: () => cameras.main.scale[0],
+              }),
+            ],
+          },
+        },
+      }),
     });
   }
 
@@ -153,7 +153,7 @@ export class WordSandDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * 2000, random() * 2000],
         radius: random() * 10 + 2,
-        color: [0, random(), random(), 1.0]
+        color: [0, random(), random(), 1.0],
       })
     );
 
@@ -166,7 +166,7 @@ export class WordSandDemo extends BaseDemo {
   private async moveToText(circles: CircleInstance[]) {
     if (!this.surface) return;
     await this.surface.ready;
-    const bounds = this.surface.getViewScreenBounds("main.view");
+    const bounds = this.surface.getViewScreenBounds('main.view');
 
     const xy = textPositions(
       bounds,

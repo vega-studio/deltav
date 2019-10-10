@@ -1,19 +1,19 @@
-import { Scene } from "../gl/scene";
-import { Instance } from "../instance-provider/instance";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { ReactiveDiff } from "../util/reactive-diff";
+import { Scene } from '../gl/scene';
+import { Instance } from '../instance-provider/instance';
+import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
+import { ReactiveDiff } from '../util/reactive-diff';
 import {
   ILayerProps,
   ILayerPropsInternal,
   Layer,
   LayerInitializer,
-  LayerInitializerInternal
-} from "./layer";
-import { generateDefaultElements } from "./layer-processing/generate-default-scene";
-import { Surface } from "./surface";
-import { IViewProps, View, ViewInitializer } from "./view";
+  LayerInitializerInternal,
+} from './layer';
+import { generateDefaultElements } from './layer-processing/generate-default-scene';
+import { Surface } from './surface';
+import { IViewProps, View, ViewInitializer } from './view';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
@@ -42,7 +42,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
  * is rendered with.
  */
 export class LayerScene extends IdentifyByKey {
-  static DEFAULT_SCENE_ID = "__default__";
+  static DEFAULT_SCENE_ID = '__default__';
 
   /** This is the three scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
@@ -88,7 +88,7 @@ export class LayerScene extends IdentifyByKey {
     // Create the diff manager to handle the layers coming in.
     this.layerDiffs = new ReactiveDiff({
       buildItem: async (initializer: LayerInitializerInternal) => {
-        debug("Building layer", initializer.key);
+        debug('Building layer', initializer.key);
         if (!this.surface) return null;
         const layerClass = initializer.init[0];
         const props = initializer.init[1];
@@ -117,9 +117,9 @@ export class LayerScene extends IdentifyByKey {
         // Add the layer to this surface
         if (!layer.init()) {
           console.warn(
-            "Error initializing layer:",
+            'Error initializing layer:',
             props.key,
-            "A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated"
+            'A layer was unable to be added to the surface. See previous warnings (if any) to determine why they could not be instantiated'
           );
 
           return null;
@@ -144,7 +144,7 @@ export class LayerScene extends IdentifyByKey {
         initializer: LayerInitializer,
         layer: Layer<Instance, ILayerProps<Instance>>
       ) => {
-        debug("Destroying layer", initializer.key);
+        debug('Destroying layer', initializer.key);
         layer.destroy();
         return true;
       },
@@ -207,7 +207,7 @@ export class LayerScene extends IdentifyByKey {
         else {
           this.layerDiffs.inline(layer.childLayers());
         }
-      }
+      },
     });
 
     // Create the diff manager to handle the views coming in.
@@ -246,7 +246,7 @@ export class LayerScene extends IdentifyByKey {
         if (this.surface) {
           this.surface.mouseManager.waitingForRender = true;
         }
-      }
+      },
     });
 
     // Now add in the initial data into our diff objects

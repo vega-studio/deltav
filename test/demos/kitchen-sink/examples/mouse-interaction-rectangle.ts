@@ -1,4 +1,4 @@
-import anime from "animejs";
+import anime from 'animejs';
 import {
   AnchorType,
   Camera2D,
@@ -10,9 +10,9 @@ import {
   RectangleInstance,
   RectangleLayer,
   ReferenceCamera2D,
-  ScaleMode
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  ScaleMode,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class MouseInteractionRectangle extends BaseExample {
   isOver = new Map<RectangleInstance, anime.AnimeInstance>();
@@ -30,7 +30,7 @@ export class MouseInteractionRectangle extends BaseExample {
         targets: rectangle.color,
         update: () => {
           rectangle.color = rectangle.color;
-        }
+        },
       });
     }
   };
@@ -41,7 +41,7 @@ export class MouseInteractionRectangle extends BaseExample {
         const animation = anime({
           height: 20,
           targets: rectangle,
-          width: 20
+          width: 20,
         });
 
         this.isOver.set(rectangle, animation);
@@ -59,7 +59,7 @@ export class MouseInteractionRectangle extends BaseExample {
         const leave = anime({
           height: 10,
           targets: rectangle,
-          width: 10
+          width: 10,
         });
 
         leave.pause();
@@ -76,7 +76,7 @@ export class MouseInteractionRectangle extends BaseExample {
     return new ReferenceCamera2D({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
-      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
+      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
     });
   }
 
@@ -86,11 +86,11 @@ export class MouseInteractionRectangle extends BaseExample {
   ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
-      key: "mouse-interaction-rectangle",
+      key: 'mouse-interaction-rectangle',
       onMouseClick: this.handleRectangleClick,
       onMouseOut: this.handleRectangleOut,
       onMouseOver: this.handleRectangleOver,
-      picking: PickType.SINGLE
+      picking: PickType.SINGLE,
     });
   }
 
@@ -102,13 +102,13 @@ export class MouseInteractionRectangle extends BaseExample {
         const rectangle = new RectangleInstance({
           anchor: {
             padding: 0,
-            type: AnchorType.Middle
+            type: AnchorType.Middle,
           },
           color: [Math.random(), Math.random(), 1.0, Math.random() * 0.8 + 0.2],
           id: `rectangle${i * 100 + k}`,
           scaling: ScaleMode.ALWAYS,
           size: [10, 10],
-          position: [i * 10, k * 10]
+          position: [i * 10, k * 10],
         });
 
         rectangleProvider.add(rectangle);

@@ -1,6 +1,6 @@
-import { Instance } from "../instance-provider/instance";
-import { IShaderInitialization, IShaderIOExtension } from "../types";
-import { shaderTemplate } from "./shader-templating";
+import { Instance } from '../instance-provider/instance';
+import { IShaderInitialization, IShaderIOExtension } from '../types';
+import { shaderTemplate } from './shader-templating';
 
 export function extendShader<T extends Instance>(
   shaderIO: IShaderInitialization<T>,
@@ -8,15 +8,15 @@ export function extendShader<T extends Instance>(
 ): IShaderInitialization<T> {
   const extendedShaders = {
     vs: shaderIO.vs,
-    fs: shaderIO.fs
+    fs: shaderIO.fs,
   };
 
   if (extend.vs) {
     extendedShaders.vs = shaderTemplate({
       options: {},
       required: {
-        name: "Shader Extension",
-        values: []
+        name: 'Shader Extension',
+        values: [],
       },
       shader: shaderIO.vs,
 
@@ -26,21 +26,21 @@ export function extendShader<T extends Instance>(
       onMain(body: string | null) {
         if (body === null) {
           console.warn(
-            "Could not extend the shader as the void main method could not be determined"
+            'Could not extend the shader as the void main method could not be determined'
           );
-          return "";
+          return '';
         }
 
         if (!extend.vs) return body;
 
         return {
-          header: extend.vs.header || "",
+          header: extend.vs.header || '',
           main: extend.vs.main
-            ? `${extend.vs.main.pre || ""}\n${body}\n${extend.vs.main.post ||
-                ""}`
-            : body
+            ? `${extend.vs.main.pre || ''}\n${body}\n${extend.vs.main.post ||
+                ''}`
+            : body,
         };
-      }
+      },
     }).shader;
   }
 
@@ -48,8 +48,8 @@ export function extendShader<T extends Instance>(
     extendedShaders.fs = shaderTemplate({
       options: {},
       required: {
-        name: "Shader Extension",
-        values: []
+        name: 'Shader Extension',
+        values: [],
       },
       shader: shaderIO.fs,
 
@@ -59,21 +59,21 @@ export function extendShader<T extends Instance>(
       onMain(body: string | null) {
         if (body === null) {
           console.warn(
-            "Could not extend the shader as the void main method could not be determined"
+            'Could not extend the shader as the void main method could not be determined'
           );
-          return "";
+          return '';
         }
 
         if (!extend.fs) return body;
 
         return {
-          header: extend.fs.header || "",
+          header: extend.fs.header || '',
           main: extend.fs.main
-            ? `${extend.fs.main.pre || ""}\n${body}\n${extend.fs.main.post ||
-                ""}`
-            : body
+            ? `${extend.fs.main.pre || ''}\n${body}\n${extend.fs.main.post ||
+                ''}`
+            : body,
         };
-      }
+      },
     }).shader;
   }
 
@@ -87,6 +87,6 @@ export function extendShader<T extends Instance>(
       extend.vertexAttributes || []
     ),
     vertexCount: shaderIO.vertexCount,
-    vs: extendedShaders.vs
+    vs: extendedShaders.vs,
   };
 }

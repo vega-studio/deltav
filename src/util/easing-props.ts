@@ -1,5 +1,5 @@
-import { Vec } from "../math/vector";
-import { IEasingProps } from "../types";
+import { Vec } from '../math/vector';
+import { IEasingProps } from '../types';
 
 /**
  * This object represents the data associated with easing. It provides the
@@ -40,7 +40,7 @@ export class EasingProps implements IEasingProps {
     if (start) {
       if (this.start.length !== start.length) {
         console.warn(
-          "A manual easing adjustment provided an incompatible value for the easing type."
+          'A manual easing adjustment provided an incompatible value for the easing type.'
         );
       } else {
         this.start = start;

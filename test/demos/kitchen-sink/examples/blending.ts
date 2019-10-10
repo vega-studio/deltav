@@ -1,4 +1,4 @@
-import { hsl } from "d3-color";
+import { hsl } from 'd3-color';
 import {
   AutoEasingMethod,
   createLayer,
@@ -8,9 +8,9 @@ import {
   InstanceProvider,
   LabelLayer,
   LayerInitializer,
-  Vec4
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  Vec4,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class Blending extends BaseExample {
   makeLayer(
@@ -21,17 +21,17 @@ export class Blending extends BaseExample {
       createLayer(EdgeLayer, {
         animate: {
           endColor: AutoEasingMethod.easeInOutCubic(3000),
-          startColor: AutoEasingMethod.easeInOutCubic(3000)
+          startColor: AutoEasingMethod.easeInOutCubic(3000),
         },
         data: provider,
-        key: "blending",
-        type: EdgeType.LINE
+        key: 'blending',
+        type: EdgeType.LINE,
       }),
       createLayer(LabelLayer, {
         data: new InstanceProvider(),
-        key: "blending-labels",
-        resourceKey: resource.font
-      })
+        key: 'blending-labels',
+        resourceKey: resource.font,
+      }),
     ];
   }
 
@@ -56,7 +56,7 @@ export class Blending extends BaseExample {
           depth: -i,
           thickness: [5, 5],
           start: [sx, sy],
-          end: [ex, ey]
+          end: [ex, ey],
         })
       );
     }
@@ -68,7 +68,7 @@ export class Blending extends BaseExample {
         depth: 0,
         thickness: [10, 10],
         start: [10, 0],
-        end: [10, 100]
+        end: [10, 100],
       })
     );
 
@@ -79,7 +79,7 @@ export class Blending extends BaseExample {
         depth: 1,
         thickness: [10, 10],
         start: [10, 20],
-        end: [10, 120]
+        end: [10, 120],
       })
     );
 
@@ -90,7 +90,7 @@ export class Blending extends BaseExample {
         depth: 1,
         thickness: [10, 10],
         start: [10, 40],
-        end: [10, 140]
+        end: [10, 140],
       })
     );
 

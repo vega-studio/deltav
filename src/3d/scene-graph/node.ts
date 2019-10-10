@@ -1,4 +1,4 @@
-import { uid } from "../../util";
+import { uid } from '../../util';
 
 /**
  * This is the most basic node that will be within a Scene Graph. This is simply a container that makes an element

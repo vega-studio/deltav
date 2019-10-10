@@ -1,9 +1,9 @@
 import {
   IInstanceOptions,
-  Instance
-} from "../../../instance-provider/instance";
-import { observable } from "../../../instance-provider/observable";
-import { copy4, Vec2, Vec4 } from "../../../math";
+  Instance,
+} from '../../../instance-provider/instance';
+import { observable } from '../../../instance-provider/observable';
+import { copy4, Vec2, Vec4 } from '../../../math';
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** This is the list of control points  */
@@ -52,7 +52,7 @@ export class EdgeInstance extends Instance {
 
     return [
       (this.end[1] - this.start[1]) / length,
-      -(this.end[0] - this.start[0]) / length
+      -(this.end[0] - this.start[0]) / length,
     ];
   }
 

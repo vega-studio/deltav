@@ -59,7 +59,7 @@ export function shaderTemplate(
     required,
     onError,
     onToken,
-    onMain
+    onMain,
   } = templateOptions;
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
@@ -69,7 +69,7 @@ export function shaderTemplate(
   const shaderResults = shader.replace(
     /\$\{([^\}]*)\}/g,
     (_x: string, match: string) => {
-      let replace = "";
+      let replace = '';
       shaderOptions.set(match, (shaderOptions.get(match) || 0) + 1);
 
       if (match in options) {
@@ -99,7 +99,7 @@ export function shaderTemplate(
     shader: shaderResults,
     shaderProvidedOptions: shaderOptions,
     unresolvedProvidedOptions: notFound,
-    unresolvedShaderOptions: noValueProvided
+    unresolvedShaderOptions: noValueProvided,
   };
 
   if (required) {
@@ -155,16 +155,16 @@ export function shaderTemplate(
 
           // Analyze each character for comments and valid bracket contexts
           switch (char) {
-            case "/":
+            case '/':
               switch (nextChar) {
-                case "*":
+                case '*':
                   if (!insideMultiLine && !insideSingleLine) {
                     insideMultiLine = true;
                     i++;
                   }
                   break;
 
-                case "/":
+                case '/':
                   if (!insideMultiLine && !insideSingleLine) {
                     insideSingleLine = true;
                     i++;
@@ -173,8 +173,8 @@ export function shaderTemplate(
               }
               break;
 
-            case "*":
-              if (nextChar === "/") {
+            case '*':
+              if (nextChar === '/') {
                 if (!insideSingleLine) {
                   insideMultiLine = false;
                   i++;
@@ -182,20 +182,20 @@ export function shaderTemplate(
               }
               break;
 
-            case "\n":
-            case "\r":
+            case '\n':
+            case '\r':
               if (!insideMultiLine) {
                 insideSingleLine = false;
               }
               break;
 
-            case "{":
+            case '{':
               if (!insideMultiLine && !insideSingleLine) {
                 openBracket++;
               }
               break;
 
-            case "}":
+            case '}':
               if (!insideMultiLine && !insideSingleLine) {
                 closeBracket++;
               }
@@ -216,7 +216,7 @@ export function shaderTemplate(
           const body = bodyStart.substr(0, endBody);
           const modifiedBody = onMain(body);
 
-          if (typeof modifiedBody === "string") {
+          if (typeof modifiedBody === 'string') {
             results.shader =
               shader.substr(0, start + found[0].length) +
               modifiedBody +

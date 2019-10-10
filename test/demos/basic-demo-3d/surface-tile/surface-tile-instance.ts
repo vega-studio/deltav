@@ -4,8 +4,8 @@ import {
   Instance,
   observable,
   Vec3,
-  Vec4
-} from "../../../../src";
+  Vec4,
+} from '../../../../src';
 
 export interface ISurfaceTileInstance extends IInstanceOptions {
   corners: [Vec3, Vec3, Vec3, Vec3];

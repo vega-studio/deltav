@@ -1,5 +1,5 @@
-import { BaseProjection, Vec2 } from "../../math";
-import { Camera2D } from "./camera-2d";
+import { BaseProjection, Vec2 } from '../../math';
+import { Camera2D } from './camera-2d';
 
 export class Projection2D extends BaseProjection<any> {
   camera: Camera2D;

@@ -1,4 +1,4 @@
-import { Attribute } from "./attribute";
+import { Attribute } from './attribute';
 
 /**
  * This represents a buffer of data that is expressed as attributes to be placed

@@ -1,0 +1,1 @@
+{"id":"demos/basic-demo-3d/surface-tile/surface-tile-layer.fs","dependencies":[],"generated":{"js":"module.exports = \"varying vec2 _texCoord;\\nvarying vec4 _color;\\n\\nvoid main() {\\n  setColor(_color);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"7dadd1f03bef82a8b6b0697cfe3d3061","cacheData":{}}

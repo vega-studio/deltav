@@ -1,9 +1,9 @@
-import { observable } from "../../../instance-provider";
+import { observable } from '../../../instance-provider';
 import {
   IInstanceOptions,
-  Instance
-} from "../../../instance-provider/instance";
-import { Vec2 } from "../../../math";
+  Instance,
+} from '../../../instance-provider/instance';
+import { Vec2 } from '../../../math';
 
 export interface ICircleInstanceOptions extends IInstanceOptions {
   /** Center x position of the circle */

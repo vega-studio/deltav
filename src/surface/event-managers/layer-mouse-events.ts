@@ -1,20 +1,20 @@
-import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { SimpleEventHandler } from '../../event-management/simple-event-handler';
 import {
   IEventInteraction,
   IMouseInteraction,
-  ITouchInteraction
-} from "../../event-management/types";
-import { BaseProjection } from "../../math";
-import { PickType } from "../../types";
+  ITouchInteraction,
+} from '../../event-management/types';
+import { BaseProjection } from '../../math';
+import { PickType } from '../../types';
 import {
   isDefined,
   mapGetWithDefault,
   mapInjectDefault,
-  nextFrame
-} from "../../util";
-import { Layer } from "../layer";
-import { LayerScene } from "../layer-scene";
-import { IViewProps, View } from "../view";
+  nextFrame,
+} from '../../util';
+import { Layer } from '../layer';
+import { LayerScene } from '../layer-scene';
+import { IViewProps, View } from '../view';
 
 /**
  * This class is an injected event manager for the surface, it specifically handles taking in mouse events intended for view interactions

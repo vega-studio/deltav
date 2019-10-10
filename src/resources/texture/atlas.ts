@@ -1,14 +1,14 @@
-import { Texture, TextureOptions } from "../../gl/texture";
-import { Vec2 } from "../../math/vector";
-import { Omit, ResourceType, TextureSize } from "../../types";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { BaseResourceOptions } from "../base-resource-manager";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
-import { PackNode } from "./pack-node";
-import { SubTexture } from "./sub-texture";
-import { VideoTextureMonitor } from "./video-texture-monitor";
+import { Texture, TextureOptions } from '../../gl/texture';
+import { Vec2 } from '../../math/vector';
+import { Omit, ResourceType, TextureSize } from '../../types';
+import { IdentifyByKey } from '../../util/identify-by-key';
+import { BaseResourceOptions } from '../base-resource-manager';
+import { IAtlasResourceRequest } from './atlas-resource-request';
+import { PackNode } from './pack-node';
+import { SubTexture } from './sub-texture';
+import { VideoTextureMonitor } from './video-texture-monitor';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * Options required for generating an atlas.
@@ -33,13 +33,13 @@ export interface IAtlasResource extends BaseResourceOptions {
  * Use this in the property creation of atlas'.
  */
 export function createAtlas(
-  options: Omit<IAtlasResource, "type" | "key"> &
-    Partial<Pick<IAtlasResource, "key">>
+  options: Omit<IAtlasResource, 'type' | 'key'> &
+    Partial<Pick<IAtlasResource, 'key'>>
 ): IAtlasResource {
   return {
-    key: "",
+    key: '',
     type: ResourceType.ATLAS,
-    ...options
+    ...options,
   };
 }
 
@@ -71,7 +71,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * should the atlas need to consolidate resources.
    */
   resourceReferences = new Map<
-    IAtlasResourceRequest["source"],
+    IAtlasResourceRequest['source'],
     ResourceReference
   >();
   /** This is the actual texture object that represents the atlas on the GPU */
@@ -85,7 +85,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
 
   constructor(options: IAtlasResource) {
     super(options);
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     this.width = canvas.width = options.width;
     this.height = canvas.height = options.height;
     this.textureSettings = options.textureSettings;
@@ -109,19 +109,19 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       textureSettings = {
         generateMipMaps: true,
         premultiplyAlpha: true,
-        ...this.textureSettings
+        ...this.textureSettings,
       };
     } else {
       textureSettings = {
         generateMipMaps: true,
-        premultiplyAlpha: true
+        premultiplyAlpha: true,
       };
     }
 
     // Generate the texture
     this.texture = new Texture({
       data: canvas,
-      ...textureSettings
+      ...textureSettings,
     });
   }
 
@@ -172,12 +172,12 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    * should be removed or not.
    */
   resolveResources() {
-    const toRemove: IAtlasResourceRequest["source"][] = [];
+    const toRemove: IAtlasResourceRequest['source'][] = [];
 
     this.resourceReferences.forEach((ref, source) => {
       if (ref.count <= 0 && ref.subtexture) {
         debug(
-          "A subtexture on an atlas has been invalidated as it is deemed no longer used: %o",
+          'A subtexture on an atlas has been invalidated as it is deemed no longer used: %o',
           ref.subtexture
         );
         this.invalidateTexture(ref.subtexture);
@@ -200,7 +200,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       request.source
     ) || {
       subtexture: request.texture || new SubTexture(),
-      count: 0
+      count: 0,
     };
 
     reference.count--;
@@ -212,7 +212,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   useResource(request: IAtlasResourceRequest) {
     const reference = this.resourceReferences.get(request.source) || {
       subtexture: request.texture,
-      count: 0
+      count: 0,
     };
 
     reference.count++;

@@ -1,0 +1,1 @@
+{"id":"../src/shaders/base-modules/shader-fragments/no-picking.fs","dependencies":[],"generated":{"js":"module.exports = \"lowp vec4 setColor(vec4 color) {\\n  gl_FragColor = color;\\n  return gl_FragColor;\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"bfb7688281528c6ff23af5506fdab5e3","cacheData":{}}

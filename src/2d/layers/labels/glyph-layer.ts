@@ -1,22 +1,22 @@
-import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
+import { InstanceProvider } from '../../../instance-provider';
+import { IAutoEasingMethod, Vec, Vec2 } from '../../../math';
 import {
   fontRequest,
   FontResourceRequestFetch,
-  IFontResourceRequest
-} from "../../../resources";
+  IFontResourceRequest,
+} from '../../../resources';
 import {
   createMaterialOptions,
   IInstanceAttribute,
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
-  VertexAttributeSize
-} from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ScaleMode } from "../../types";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { GlyphInstance } from "./glyph-instance";
+  VertexAttributeSize,
+} from '../../../types';
+import { CommonMaterialOptions } from '../../../util';
+import { ScaleMode } from '../../types';
+import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
+import { GlyphInstance } from './glyph-instance';
 
 /**
  * Options available to this layer as props.
@@ -47,20 +47,20 @@ export class GlyphLayer<
 > extends Layer2D<T, U> {
   /** Set up the default props so our auto complete is a happier place */
   static defaultProps: IGlyphLayerOptions<GlyphInstance> = {
-    key: "",
+    key: '',
     data: new InstanceProvider<GlyphInstance>(),
-    resourceKey: "No resource specified"
+    resourceKey: 'No resource specified',
   };
 
   /**
    * Easy access names of each attribute to make easing controls easier
    */
   static attributeNames = {
-    color: "color",
-    depth: "depth",
-    anchor: "anchor",
-    origin: "origin",
-    offset: "offset"
+    color: 'color',
+    depth: 'depth',
+    anchor: 'anchor',
+    origin: 'origin',
+    offset: 'offset',
   };
 
   /**
@@ -78,7 +78,7 @@ export class GlyphLayer<
       anchor: animateAnchor,
       color: animateColor,
       offset: animateOffset,
-      origin: animateOrigin
+      origin: animateOrigin,
     } = animate;
 
     const vertexInfo: { [key: number]: Vec2 } = {
@@ -87,14 +87,14 @@ export class GlyphLayer<
       2: [1, 0],
       3: [0, 1],
       4: [1, 1],
-      5: [1, 1]
+      5: [1, 1],
     };
 
     const glyphTextureAttr: IInstanceAttribute<T> = {
-      name: "texture",
+      name: 'texture',
       resource: {
-        key: () => this.props.resourceKey || "",
-        name: "fontMap"
+        key: () => this.props.resourceKey || '',
+        name: 'fontMap',
       },
       update: o => {
         const char = o.character;
@@ -104,8 +104,8 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
-              key: this.props.resourceKey || "",
-              character: char
+              key: this.props.resourceKey || '',
+              character: char,
             });
 
             this.glyphRequests[o.character] = o.request;
@@ -119,7 +119,7 @@ export class GlyphLayer<
 
         o.request.fetch = FontResourceRequestFetch.TEXCOORDS;
         return this.resource.request(this, o, o.request);
-      }
+      },
     };
 
     /**
@@ -128,11 +128,11 @@ export class GlyphLayer<
      * triggers this attribute as well.
      */
     const glyphSizeAttr: IInstanceAttribute<T> = {
-      name: "glyphSize",
+      name: 'glyphSize',
       parentAttribute: glyphTextureAttr,
       resource: {
-        key: () => this.props.resourceKey || "",
-        name: "fontMap"
+        key: () => this.props.resourceKey || '',
+        name: 'fontMap',
       },
       size: InstanceAttributeSize.TWO,
       update: o => {
@@ -143,8 +143,8 @@ export class GlyphLayer<
             o.request = this.glyphRequests[o.character];
           } else {
             o.request = fontRequest({
-              key: this.props.resourceKey || "",
-              character: char
+              key: this.props.resourceKey || '',
+              character: char,
             });
 
             this.glyphRequests[o.character] = o.request;
@@ -158,7 +158,7 @@ export class GlyphLayer<
 
         o.request.fetch = FontResourceRequestFetch.IMAGE_SIZE;
         return this.resource.request(this, o, o.request);
-      }
+      },
     };
 
     glyphTextureAttr.childAttributes = [glyphSizeAttr];
@@ -169,37 +169,37 @@ export class GlyphLayer<
     switch (scaleMode) {
       case ScaleMode.BOUND_MAX: {
         fs = this.props.inTextArea
-          ? require("./text-area-layer-bound-max.fs")
-          : require("./glyph-layer-bound-max.fs");
+          ? require('./text-area-layer-bound-max.fs')
+          : require('./glyph-layer-bound-max.fs');
         vs = this.props.inTextArea
-          ? require("./text-area-layer-bound-max.vs")
-          : require("./glyph-layer-bound-max.vs");
+          ? require('./text-area-layer-bound-max.vs')
+          : require('./glyph-layer-bound-max.vs');
         break;
       }
 
       case ScaleMode.NEVER: {
         fs = this.props.inTextArea
-          ? require("./glyph-layer-never.fs")
-          : require("./text-area-layer-never.fs");
+          ? require('./glyph-layer-never.fs')
+          : require('./text-area-layer-never.fs');
         vs = this.props.inTextArea
-          ? require("./text-area-layer-never.vs")
-          : require("./glyph-layer-never.vs");
+          ? require('./text-area-layer-never.vs')
+          : require('./glyph-layer-never.vs');
         break;
       }
 
       case ScaleMode.ALWAYS: {
         fs = this.props.inTextArea
-          ? require("./text-area-layer-always.fs")
-          : require("./glyph-layer-always.fs");
+          ? require('./text-area-layer-always.fs')
+          : require('./glyph-layer-always.fs');
         vs = this.props.inTextArea
-          ? require("./text-area-layer-always.vs")
-          : require("./glyph-layer-always.vs");
+          ? require('./text-area-layer-always.vs')
+          : require('./glyph-layer-always.vs');
         break;
       }
 
       default: {
-        fs = require("./glyph-layer-always.fs");
-        vs = require("./glyph-layer-always.vs");
+        fs = require('./glyph-layer-always.fs');
+        vs = require('./glyph-layer-always.vs');
         break;
       }
     }
@@ -211,61 +211,61 @@ export class GlyphLayer<
           easing: animateColor,
           name: GlyphLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color
+          update: o => o.color,
         },
         {
           name: GlyphLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
+          update: o => [o.depth],
         },
         {
-          name: "fontScale",
+          name: 'fontScale',
           size: InstanceAttributeSize.ONE,
-          update: o => [o.fontScale]
+          update: o => [o.fontScale],
         },
         {
           easing: animateAnchor,
           name: GlyphLayer.attributeNames.anchor,
           size: InstanceAttributeSize.TWO,
-          update: o => o.anchor
+          update: o => o.anchor,
         },
         {
           easing: animateOrigin,
           name: GlyphLayer.attributeNames.origin,
           size: InstanceAttributeSize.TWO,
-          update: o => o.origin
+          update: o => o.origin,
         },
         {
           easing: animateOffset,
           name: GlyphLayer.attributeNames.offset,
           size: InstanceAttributeSize.TWO,
-          update: o => o.offset
+          update: o => o.offset,
         },
         {
-          name: "padding",
+          name: 'padding',
           size: InstanceAttributeSize.TWO,
-          update: o => o.padding
+          update: o => o.padding,
         },
         {
-          name: "maxScale",
+          name: 'maxScale',
           size: InstanceAttributeSize.ONE,
-          update: o => [o.maxScale]
+          update: o => [o.maxScale],
         },
         glyphSizeAttr,
-        glyphTextureAttr
+        glyphTextureAttr,
       ],
       uniforms: [],
       vertexAttributes: [
         {
-          name: "normals",
+          name: 'normals',
           size: VertexAttributeSize.TWO,
           update: (vertex: number) =>
             // Quad vertex side information
-            vertexInfo[vertex]
-        }
+            vertexInfo[vertex],
+        },
       ],
       vertexCount: 6,
-      vs
+      vs,
     };
   }
 
@@ -281,7 +281,7 @@ export class GlyphLayer<
       {},
       CommonMaterialOptions.transparentImageBlending,
       createMaterialOptions({
-        depthTest: false
+        depthTest: false,
       })
     );
   }
@@ -295,7 +295,7 @@ export class GlyphLayer<
     if (nextProps.resourceKey !== this.props.resourceKey) {
       Object.values(this.glyphRequests).forEach(req => {
         delete req.fontMap;
-        req.key = nextProps.resourceKey || "";
+        req.key = nextProps.resourceKey || '';
       });
       this.rebuildLayer();
     }

@@ -1,1 +1,1 @@
-export * from "./ease-demo";
+export * from './ease-demo';

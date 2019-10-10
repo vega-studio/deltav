@@ -8,8 +8,8 @@
  * Thus, we pack down the attributes into appropriate block indices and slots.
  */
 
-import { Instance } from "../../instance-provider/instance";
-import { IInstanceAttribute, InstanceAttributeSize } from "../../types";
+import { Instance } from '../../instance-provider/instance';
+import { IInstanceAttribute, InstanceAttributeSize } from '../../types';
 
 /**
  * A quick representation of an available block with a convenience method to easily apply
@@ -59,7 +59,7 @@ function ensureSizes<T extends Instance>(attributes: IInstanceAttribute<T>[]) {
         }
       } catch (err) {
         console.warn(
-          "The system could not determine the size of the provided attribute. Please provide the size of the attribute:",
+          'The system could not determine the size of the provided attribute. Please provide the size of the attribute:',
           attr
         );
       }
@@ -115,7 +115,7 @@ export function packAttributes<T extends Instance>(
 
       if (!newBlock.setAttribute(attr)) {
         console.warn(
-          "There was a problem packing an attribute into a block. No block would accommodate it:",
+          'There was a problem packing an attribute into a block. No block would accommodate it:',
           attr
         );
       }

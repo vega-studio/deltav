@@ -14,7 +14,7 @@ export namespace GLSettings {
     export enum ColorBufferFormat {
       RGBA4,
       RGB565,
-      RGB5_A1
+      RGB5_A1,
     }
 
     /**
@@ -24,7 +24,7 @@ export namespace GLSettings {
      */
     export enum DepthBufferFormat {
       DEPTH_COMPONENT16,
-      DEPTH_STENCIL
+      DEPTH_STENCIL,
     }
 
     /**
@@ -33,7 +33,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
      */
     export enum StencilBufferFormat {
-      STENCIL_INDEX8
+      STENCIL_INDEX8,
     }
   }
 
@@ -48,7 +48,7 @@ export namespace GLSettings {
       NormalBlending = 1,
       AdditiveBlending = 2,
       SubtractiveBlending = 3,
-      MultiplyBlending = 4
+      MultiplyBlending = 4,
     }
 
     /**
@@ -65,7 +65,7 @@ export namespace GLSettings {
       DstAlpha = 6,
       OneMinusDstAlpha = 7,
       DstColor = 8,
-      OneMinusDstColor = 9
+      OneMinusDstColor = 9,
     }
 
     /**
@@ -83,7 +83,7 @@ export namespace GLSettings {
       OneMinusDstAlpha = 7,
       DstColor = 8,
       OneMinusDstColor = 9,
-      SrcAlphaSaturate = 10
+      SrcAlphaSaturate = 10,
     }
 
     /**
@@ -93,7 +93,7 @@ export namespace GLSettings {
     export enum BlendingEquations {
       Add = 0,
       Subtract = 1,
-      ReverseSubtract = 2
+      ReverseSubtract = 2,
       /** Requires extension for Webgl 1.0 */
       // Min = 3,
       // Max = 4
@@ -112,7 +112,7 @@ export namespace GLSettings {
       GREATER = 4,
       NOTEQUAL = 5,
       GREATER_OR_EQUAL = 6,
-      ALWAYS = 7
+      ALWAYS = 7,
     }
 
     /**
@@ -124,7 +124,7 @@ export namespace GLSettings {
       NONE = 0,
       CW = 1,
       CCW = 2,
-      BOTH = 3
+      BOTH = 3,
     }
   }
 
@@ -139,7 +139,7 @@ export namespace GLSettings {
       POINTS,
       TRIANGLE_FAN,
       TRIANGLE_STRIP,
-      TRIANGLES
+      TRIANGLES,
     }
   }
 
@@ -152,7 +152,7 @@ export namespace GLSettings {
      */
     export enum TextureBindingTarget {
       TEXTURE_2D,
-      CUBE_MAP
+      CUBE_MAP,
     }
 
     /**
@@ -162,7 +162,7 @@ export namespace GLSettings {
     export enum Wrapping {
       REPEAT = 0,
       CLAMP_TO_EDGE = 1,
-      MIRRORED_REPEAT = 2
+      MIRRORED_REPEAT = 2,
     }
 
     /**
@@ -175,7 +175,7 @@ export namespace GLSettings {
       NearestMipMapLinear = 2,
       Linear = 3,
       LinearMipMapNearest = 4,
-      LinearMipMapLinear = 5
+      LinearMipMapLinear = 5,
     }
 
     /**
@@ -184,7 +184,7 @@ export namespace GLSettings {
      */
     export enum TextureMagFilter {
       Nearest = 0,
-      Linear = 1
+      Linear = 1,
     }
 
     /**
@@ -235,7 +235,7 @@ export namespace GLSettings {
       /** Webgl 2 */
       UnsignedInt_5_9_9_9_REV = 14,
       /** Webgl 2 */
-      Float32UnsignedInt_24_8_REV = 15
+      Float32UnsignedInt_24_8_REV = 15,
     }
 
     /**
@@ -274,7 +274,7 @@ export namespace GLSettings {
        * Red, green, blue and alpha components are read from the color buffer.
        */
       RGBA = 6,
-      RGBE = 7
+      RGBE = 7,
     }
 
     /**
@@ -290,7 +290,7 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8
+      EIGHT = 8,
     }
 
     /**
@@ -306,7 +306,7 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8
+      EIGHT = 8,
     }
   }
 
@@ -320,7 +320,7 @@ export namespace GLSettings {
     export enum ReadFilter {
       ALPHA,
       RGB,
-      RGBA
+      RGBA,
     }
 
     /**
@@ -331,7 +331,7 @@ export namespace GLSettings {
       UNSIGNED_SHORT_5_6_5,
       UNSIGNED_SHORT_4_4_4_4,
       UNSIGNED_SHORT_5_5_5_1,
-      FLOAT
+      FLOAT,
     }
   }
 }

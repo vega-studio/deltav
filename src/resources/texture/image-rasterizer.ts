@@ -23,7 +23,7 @@ export class ImageRasterizer {
    */
   static getContext() {
     if (!canvas) {
-      canvas = document.createElement("canvas").getContext("2d");
+      canvas = document.createElement('canvas').getContext('2d');
     }
   }
 
@@ -36,14 +36,14 @@ export class ImageRasterizer {
 
     if (!canvas) {
       console.warn(
-        "The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first."
+        'The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first.'
       );
       return;
     }
 
     if (image.width === 0 || image.height === 0) {
       console.warn(
-        "Images provided shoud have valid dimensions! Please ensure the image is loaded first."
+        'Images provided shoud have valid dimensions! Please ensure the image is loaded first.'
       );
       return;
     }
@@ -66,7 +66,7 @@ export class ImageRasterizer {
 
     if (!canvas) {
       console.warn(
-        "The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first."
+        'The Image rasterizer was unable to establish a valid canvas context. Please ensure the system supports contexts and ensure the document is ready first.'
       );
 
       return image;
@@ -74,7 +74,7 @@ export class ImageRasterizer {
 
     if (image.width === 0 || image.height === 0) {
       console.warn(
-        "Images provided shoud have valid dimensions! Please ensure the image is loaded first."
+        'Images provided shoud have valid dimensions! Please ensure the image is loaded first.'
       );
 
       return image;
@@ -101,7 +101,7 @@ export class ImageRasterizer {
 
     // Make our canvas a data url for another image to become
     const out = new Image();
-    out.src = canvas.canvas.toDataURL("image/png");
+    out.src = canvas.canvas.toDataURL('image/png');
     // Ensure the image is renderable at this moment
     await ImageRasterizer.calculateImageSize(out);
 

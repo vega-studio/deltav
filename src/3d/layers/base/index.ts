@@ -1,1 +1,1 @@
-export * from "./instance-3d";
+export * from './instance-3d';

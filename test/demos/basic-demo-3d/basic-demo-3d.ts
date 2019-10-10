@@ -1,9 +1,10 @@
-import { PerlinNoise } from "@diniden/signal-processing";
-import * as datGUI from "dat.gui";
+import { PerlinNoise } from '@diniden/signal-processing';
+import * as datGUI from 'dat.gui';
 import {
   AnchorType,
   Axis2D,
   BasicSurface,
+  Camera,
   Camera2D,
   ClearFlags,
   color4FromHex3,
@@ -23,15 +24,14 @@ import {
   rayFromPoints,
   rayToLocation,
   Vec4,
-  View3D
-} from "src";
-import { Camera } from "../../../src/util/camera";
-import { BaseDemo } from "../../common/base-demo";
-import { DEFAULT_RESOURCES } from "../../types";
-import { Line3DInstance } from "./line-3d/line-3d-instance";
-import { Line3DLayer } from "./line-3d/line-3d-layer";
-import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
-import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
+  View3D,
+} from 'src';
+import { BaseDemo } from '../../common/base-demo';
+import { DEFAULT_RESOURCES } from '../../types';
+import { Line3DInstance } from './line-3d/line-3d-instance';
+import { Line3DLayer } from './line-3d/line-3d-layer';
+import { SurfaceTileInstance } from './surface-tile/surface-tile-instance';
+import { SurfaceTileLayer } from './surface-tile/surface-tile-layer';
 
 const DATA_SIZE = 256;
 
@@ -44,7 +44,7 @@ export class BasicDemo3D extends BaseDemo {
     tiles: new InstanceProvider<SurfaceTileInstance>(),
     lines: new InstanceProvider<Line3DInstance>(),
     ticks: new InstanceProvider<EdgeInstance>(),
-    labels: new InstanceProvider<LabelInstance>()
+    labels: new InstanceProvider<LabelInstance>(),
   };
 
   /** GUI properties */
@@ -55,8 +55,8 @@ export class BasicDemo3D extends BaseDemo {
     addAtOnce: 10000,
 
     previous: {
-      count: 1000
-    }
+      count: 1000,
+    },
   };
 
   /** All tiles being rendered */
@@ -81,18 +81,18 @@ export class BasicDemo3D extends BaseDemo {
     return new BasicSurface({
       container,
       rendererOptions: {
-        antialias: true
+        antialias: true,
       },
       providers: this.providers,
       cameras: {
         xz: new Camera2D(),
         perspective: Camera.makePerspective({
           fov: 60 * Math.PI / 180,
-          far: 100000
-        })
+          far: 100000,
+        }),
       },
       resources: {
-        font: DEFAULT_RESOURCES.font
+        font: DEFAULT_RESOURCES.font,
       },
       eventManagers: _cameras => ({}),
       pipeline: (_resources, providers, cameras) => ({
@@ -102,8 +102,8 @@ export class BasicDemo3D extends BaseDemo {
             views: {
               perspective: createView(View3D, {
                 camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: {
               squares: createLayer(SurfaceTileLayer, {
@@ -150,23 +150,23 @@ export class BasicDemo3D extends BaseDemo {
                       this.moveTilesToPerlin(tiles);
                     });
                   }
-                }
-              })
-            }
+                },
+              }),
+            },
           },
           overlay: {
             views: {
               perspective: createView(View3D, {
                 camera: cameras.perspective,
-                clearFlags: [ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.DEPTH],
+              }),
             },
             layers: {
               ticks: createLayer2Din3D(Axis2D.XZ, EdgeLayer, {
                 data: providers.ticks,
                 type: EdgeType.LINE,
                 control2D: cameras.xz.control2D,
-                scaleType: EdgeScaleType.NONE
+                scaleType: EdgeScaleType.NONE,
               }),
               lines: createLayer(Line3DLayer, {
                 data: providers.lines,
@@ -184,11 +184,11 @@ export class BasicDemo3D extends BaseDemo {
                       start: rayToLocation(ray, -10),
                       end: rayToLocation(ray, 300),
                       colorEnd: [0, 1, 0, 1],
-                      colorStart: [1, 0, 0, 1]
+                      colorStart: [1, 0, 0, 1],
                     })
                   );
-                }
-              })
+                },
+              }),
               // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
               // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.
               // labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
@@ -197,10 +197,10 @@ export class BasicDemo3D extends BaseDemo {
               //   control2D: cameras.xz.control2D,
               //   scaleMode: ScaleMode.NEVER
               // })
-            }
-          }
-        }
-      })
+            },
+          },
+        },
+      }),
     });
   }
 
@@ -229,7 +229,7 @@ export class BasicDemo3D extends BaseDemo {
           startColor: tickColor,
           endColor: tickColor,
           thickness: [10, 10],
-          depth: 0
+          depth: 0,
         })
       );
 
@@ -238,11 +238,11 @@ export class BasicDemo3D extends BaseDemo {
           text: `${i}`,
           anchor: {
             type: AnchorType.MiddleRight,
-            padding: 0
+            padding: 0,
           },
           color: tickColor,
           origin: [i * 10 * 10, tickLength],
-          fontSize: 100
+          fontSize: 100,
         })
       );
     }
@@ -255,7 +255,7 @@ export class BasicDemo3D extends BaseDemo {
           startColor: tickColor,
           endColor: tickColor,
           thickness: [10, 10],
-          depth: 0
+          depth: 0,
         })
       );
 
@@ -264,11 +264,11 @@ export class BasicDemo3D extends BaseDemo {
           text: `${i}`,
           anchor: {
             type: AnchorType.MiddleLeft,
-            padding: 0
+            padding: 0,
           },
           color: tickColor,
           origin: [-tickLength, -i * 10 * 10],
-          fontSize: 100
+          fontSize: 100,
         })
       );
     }
@@ -279,7 +279,7 @@ export class BasicDemo3D extends BaseDemo {
           start: [0, 0, 0],
           end: [0, 1000, 0],
           colorStart: [0, 1, 0, 1],
-          colorEnd: [0, 1, 0, 1]
+          colorEnd: [0, 1, 0, 1],
         })
       );
 
@@ -288,7 +288,7 @@ export class BasicDemo3D extends BaseDemo {
           start: [0, 0, 0],
           end: [1000, 0, 0],
           colorStart: [1, 0, 0, 1],
-          colorEnd: [1, 0, 0, 1]
+          colorEnd: [1, 0, 0, 1],
         })
       );
 
@@ -297,7 +297,7 @@ export class BasicDemo3D extends BaseDemo {
           start: [0, 0, 0],
           end: [0, 0, 1000],
           colorStart: [0, 0, 1, 1],
-          colorEnd: [0, 0, 1, 1]
+          colorEnd: [0, 0, 1, 1],
         })
       );
     }
@@ -328,9 +328,9 @@ export class BasicDemo3D extends BaseDemo {
               [i * 10, 0, -k * 10],
               [(i + 1) * 10, 0, -k * 10],
               [(i + 1) * 10, 0, -(k + 1) * 10],
-              [i * 10, 0, -(k + 1) * 10]
+              [i * 10, 0, -(k + 1) * 10],
             ],
-            color: color4FromHex3(0xffffff - tilesFlattened.length)
+            color: color4FromHex3(0xffffff - tilesFlattened.length),
           })
         );
 
@@ -358,7 +358,7 @@ export class BasicDemo3D extends BaseDemo {
       this.surface.cameras.perspective.position = [
         Math.sin(t / 5) * midX + midX,
         300,
-        Math.cos(t / 5) * midX - midZ
+        Math.cos(t / 5) * midX - midZ,
       ];
 
       // Good view from afar
@@ -393,7 +393,7 @@ export class BasicDemo3D extends BaseDemo {
         height: DATA_SIZE,
         blendPasses: 5,
         octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
-        valueRange: [0, 1]
+        valueRange: [0, 1],
       });
 
       this.perlin = perlin;
@@ -427,7 +427,7 @@ export class BasicDemo3D extends BaseDemo {
       tile.c3 = [
         (i + 1) * 10,
         Math.pow(data[i + 1][k + 1] * 200, 1.1),
-        -(k + 1) * 10
+        -(k + 1) * 10,
       ];
       tile.c4 = [i * 10, Math.pow(data[i][k + 1] * 200, 1.1), -(k + 1) * 10];
     }

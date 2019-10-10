@@ -1,5 +1,5 @@
-import { Attribute } from "./attribute";
-import { Geometry } from "./geometry";
+import { Attribute } from './attribute';
+import { Geometry } from './geometry';
 import {
   colorBufferFormat,
   depthBufferFormat,
@@ -10,17 +10,17 @@ import {
   minFilter,
   stencilBufferFormat,
   texelFormat,
-  wrapMode
-} from "./gl-decode";
-import { GLSettings } from "./gl-settings";
-import { GLState } from "./gl-state";
-import { Material } from "./material";
-import { Model } from "./model";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-import { GLContext, IExtensions } from "./types";
+  wrapMode,
+} from './gl-decode';
+import { GLSettings } from './gl-settings';
+import { GLState } from './gl-state';
+import { Material } from './material';
+import { Model } from './model';
+import { RenderTarget } from './render-target';
+import { Texture } from './texture';
+import { GLContext, IExtensions } from './types';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * Type guard to see if a textire object's data is a buffer.
@@ -63,7 +63,7 @@ function isTextureReady(
  */
 export class GLProxy {
   /** Message to include with debugging statements, warnings and errors */
-  debugContext: string = "";
+  debugContext: string = '';
   /** This is the gl context we're manipulating. */
   gl: GLContext;
   /** This is the state tracker of the GL context */
@@ -99,34 +99,34 @@ export class GLProxy {
    * This enables the desired and supported extensions this framework utilizes.
    */
   static addExtensions(gl: GLContext): IExtensions {
-    const instancing = gl.getExtension("ANGLE_instanced_arrays");
-    const drawBuffers = gl.getExtension("WEBGL_draw_buffers");
+    const instancing = gl.getExtension('ANGLE_instanced_arrays');
+    const drawBuffers = gl.getExtension('WEBGL_draw_buffers');
     const anisotropicFiltering = gl.getExtension(
-      "EXT_texture_filter_anisotropic"
+      'EXT_texture_filter_anisotropic'
     );
 
     const anisotropicStats = {
-      maxAnistropicFilter: 0
+      maxAnistropicFilter: 0,
     };
 
     // This exists as an extension or as a webgl2 context
     if (!instancing && !(gl instanceof WebGL2RenderingContext)) {
       debug(
-        "This device does not have hardware instancing. All buffering strategies will be utilizing compatibility modes."
+        'This device does not have hardware instancing. All buffering strategies will be utilizing compatibility modes.'
       );
     }
 
     // This exists as an extension or as a webgl2 context
     if (!drawBuffers && !(gl instanceof WebGL2RenderingContext)) {
       debug(
-        "This device does not have hardware multi-render target capabilities. The system will have to fallback to multiple render passes to multiple FBOs to achieve the same result."
+        'This device does not have hardware multi-render target capabilities. The system will have to fallback to multiple render passes to multiple FBOs to achieve the same result.'
       );
     }
 
     // This only exists as an extension
     if (!anisotropicFiltering) {
       debug(
-        "This device does not have hardware anisotropic filtering for textures. This property will be ignored when setting texture settings."
+        'This device does not have hardware anisotropic filtering for textures. This property will be ignored when setting texture settings.'
       );
     } else {
       anisotropicStats.maxAnistropicFilter = gl.getParameter(
@@ -142,9 +142,9 @@ export class GLProxy {
       anisotropicFiltering: anisotropicFiltering
         ? {
             ext: anisotropicFiltering,
-            stat: anisotropicStats
+            stat: anisotropicStats,
           }
-        : undefined
+        : undefined,
     };
   }
 
@@ -173,7 +173,7 @@ export class GLProxy {
     if (!buffer) {
       console.warn(
         this.debugContext,
-        "Could bot create WebGLBuffer. Printing any existing gl errors:"
+        'Could bot create WebGLBuffer. Printing any existing gl errors:'
       );
       this.printError();
 
@@ -192,7 +192,7 @@ export class GLProxy {
 
     attribute.gl = {
       bufferId: buffer,
-      type: gl.ARRAY_BUFFER
+      type: gl.ARRAY_BUFFER,
     };
 
     // Indicate the attribute is updated to it's latest needs and concerns
@@ -232,7 +232,7 @@ export class GLProxy {
       if (!fs) {
         console.warn(
           this.debugContext,
-          "Could not create a Fragment WebGLShader. Printing GL Errors:"
+          'Could not create a Fragment WebGLShader. Printing GL Errors:'
         );
         this.printError();
         return;
@@ -244,14 +244,14 @@ export class GLProxy {
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
         console.error(
           this.debugContext,
-          "FRAGMENT SHADER COMPILER ERROR:",
+          'FRAGMENT SHADER COMPILER ERROR:',
           material.name
         );
         console.warn(
-          "Could not compile provided shader. Printing logs and errors:"
+          'Could not compile provided shader. Printing logs and errors:'
         );
         console.warn(this.lineFormatShader(material.fragmentShader));
-        console.warn("LOGS:");
+        console.warn('LOGS:');
         console.warn(this.gl.getShaderInfoLog(fs));
         this.printError();
         this.gl.deleteShader(fs);
@@ -270,7 +270,7 @@ export class GLProxy {
       if (!vs) {
         console.warn(
           this.debugContext,
-          "Could not create a Vertex WebGLShader. Printing GL Errors:"
+          'Could not create a Vertex WebGLShader. Printing GL Errors:'
         );
         this.printError();
         return;
@@ -282,14 +282,14 @@ export class GLProxy {
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
         console.error(
           this.debugContext,
-          "VERTEX SHADER COMPILER ERROR",
+          'VERTEX SHADER COMPILER ERROR',
           material.name
         );
         console.warn(
-          "Could not compile provided shader. Printing logs and errors:"
+          'Could not compile provided shader. Printing logs and errors:'
         );
         console.warn(this.lineFormatShader(material.vertexShader));
-        console.warn("LOGS:");
+        console.warn('LOGS:');
         console.warn(this.gl.getShaderInfoLog(vs));
         this.printError();
         this.gl.deleteShader(vs);
@@ -313,7 +313,7 @@ export class GLProxy {
       if (!program) {
         console.warn(
           this.debugContext,
-          "Could not create a WebGLProgram. Printing GL Errors:"
+          'Could not create a WebGLProgram. Printing GL Errors:'
         );
         this.printError();
 
@@ -322,7 +322,7 @@ export class GLProxy {
 
       useMetrics = {
         useCount: 1,
-        program
+        program,
       };
 
       this.gl.attachShader(program, vs);
@@ -339,7 +339,7 @@ export class GLProxy {
         const info = this.gl.getProgramInfoLog(program);
         console.warn(
           this.debugContext,
-          "Could not compile WebGL program. \n\n",
+          'Could not compile WebGL program. \n\n',
           info
         );
         this.gl.deleteProgram(program);
@@ -358,7 +358,7 @@ export class GLProxy {
       fsId: fs,
       vsId: vs,
       programId: useMetrics.program,
-      proxy: this
+      proxy: this,
     };
 
     // Let's get a list of all uniforms the shaders are demanding and make sure the material is
@@ -404,11 +404,11 @@ export class GLProxy {
     if (Object.keys(material.uniforms).length !== usedUniforms.size) {
       console.warn(
         this.debugContext,
-        "A program is requesting a set of uniforms:",
+        'A program is requesting a set of uniforms:',
         Array.from(usedUniforms.values()),
-        "but our material only provides",
+        'but our material only provides',
         Object.keys(material.uniforms),
-        "thus the expected rendering will be considered invalid."
+        'thus the expected rendering will be considered invalid.'
       );
 
       return false;
@@ -436,7 +436,7 @@ export class GLProxy {
     if (!fbo) {
       console.warn(
         this.debugContext,
-        "Could not generate a frame buffer object. Printing GL errors:"
+        'Could not generate a frame buffer object. Printing GL errors:'
       );
       this.printError();
       return false;
@@ -446,9 +446,9 @@ export class GLProxy {
     this.state.bindFBO(fbo);
 
     // Generate the context to be attached to the render target
-    const glContext: RenderTarget["gl"] = {
+    const glContext: RenderTarget['gl'] = {
       fboId: fbo,
-      proxy: this
+      proxy: this,
     };
 
     // Color buffer
@@ -473,7 +473,7 @@ export class GLProxy {
           } else {
             console.warn(
               this.debugContext,
-              "Attempted to compile render target whose target texture was not ready for use."
+              'Attempted to compile render target whose target texture was not ready for use.'
             );
             isReady = false;
           }
@@ -516,7 +516,7 @@ export class GLProxy {
         } else {
           console.warn(
             this.debugContext,
-            "Attempted to compile render target whose target texture was not ready for use."
+            'Attempted to compile render target whose target texture was not ready for use.'
           );
           return false;
         }
@@ -616,7 +616,7 @@ export class GLProxy {
     const frameBufferCheckResult = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     let unidentifiedResult = false;
     let stillUnidentifiedResult = false;
-    let message = "";
+    let message = '';
 
     switch (frameBufferCheckResult) {
       case gl.FRAMEBUFFER_COMPLETE:
@@ -624,19 +624,19 @@ export class GLProxy {
         break;
 
       case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-        message = "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+        message = 'FRAMEBUFFER_INCOMPLETE_ATTACHMENT';
         break;
 
       case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-        message = "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+        message = 'FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT';
         break;
 
       case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-        message = "FRAMEBUFFER_INCOMPLETE_DIMENSIONS";
+        message = 'FRAMEBUFFER_INCOMPLETE_DIMENSIONS';
         break;
 
       case gl.FRAMEBUFFER_UNSUPPORTED:
-        message = "FRAMEBUFFER_UNSUPPORTED";
+        message = 'FRAMEBUFFER_UNSUPPORTED';
         break;
 
       default:
@@ -648,11 +648,11 @@ export class GLProxy {
     if (gl instanceof WebGL2RenderingContext) {
       switch (frameBufferCheckResult) {
         case gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-          message = "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+          message = 'FRAMEBUFFER_INCOMPLETE_MULTISAMPLE';
           break;
 
         case gl.RENDERBUFFER_SAMPLES:
-          message = "RENDERBUFFER_SAMPLES";
+          message = 'RENDERBUFFER_SAMPLES';
           break;
 
         default:
@@ -664,19 +664,19 @@ export class GLProxy {
     if (unidentifiedResult && stillUnidentifiedResult) {
       console.warn(
         this.debugContext,
-        "A framebuffer check failed to return a known result. This FBO for render target will be assumed failed"
+        'A framebuffer check failed to return a known result. This FBO for render target will be assumed failed'
       );
-      console.warn("Result:", frameBufferCheckResult, "Render Target:", target);
-      message = "UNKNOWN";
+      console.warn('Result:', frameBufferCheckResult, 'Render Target:', target);
+      message = 'UNKNOWN';
     }
 
     if (message) {
       console.warn(
         this.debugContext,
-        "When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:"
+        'When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:'
       );
       console.warn(message);
-      console.warn("FAILED RENDER TARGET:", target);
+      console.warn('FAILED RENDER TARGET:', target);
       delete target.gl;
 
       return false;
@@ -699,7 +699,7 @@ export class GLProxy {
     if (!rbo) {
       console.warn(
         this.debugContext,
-        "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
+        'Could not generate a WebGLRenderBuffer. Printing GL Errors:'
       );
       this.printError();
       return;
@@ -732,7 +732,7 @@ export class GLProxy {
     if (!rbo) {
       console.warn(
         this.debugContext,
-        "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
+        'Could not generate a WebGLRenderBuffer. Printing GL Errors:'
       );
       this.printError();
       return;
@@ -765,7 +765,7 @@ export class GLProxy {
     if (!rbo) {
       console.warn(
         this.debugContext,
-        "Could not generate a WebGLRenderBuffer. Printing GL Errors:"
+        'Could not generate a WebGLRenderBuffer. Printing GL Errors:'
       );
       this.printError();
       return;
@@ -797,7 +797,7 @@ export class GLProxy {
     if (texture.gl.textureUnit < 0) {
       console.warn(
         this.debugContext,
-        "A Texture object attempted to be compiled without an established Texture Unit.",
+        'A Texture object attempted to be compiled without an established Texture Unit.',
         texture
       );
       return;
@@ -812,7 +812,7 @@ export class GLProxy {
     if (!textureId) {
       console.warn(
         this.debugContext,
-        "Could not generate a texture object on the GPU. Printing any gl errors:"
+        'Could not generate a texture object on the GPU. Printing any gl errors:'
       );
       this.printError();
       return;
@@ -847,7 +847,7 @@ export class GLProxy {
     ) {
       drawRange = [
         model.vertexDrawRange[0],
-        model.vertexDrawRange[1] - model.vertexDrawRange[0]
+        model.vertexDrawRange[1] - model.vertexDrawRange[0],
       ];
     } else {
       drawRange = [0, model.vertexCount];
@@ -902,7 +902,7 @@ export class GLProxy {
       if (!useMetrics) {
         useMetrics = {
           useCount: 0,
-          program: programId
+          program: programId,
         };
       }
 
@@ -1010,7 +1010,7 @@ export class GLProxy {
    */
   static getContext(canvas: HTMLCanvasElement, options: {}) {
     // TODO: Let's make sure webgl works before we attempt any webgl 2 shenanigans
-    const names = [/** "webgl2", */ "webgl", "experimental-webgl"];
+    const names = [/** "webgl2", */ 'webgl', 'experimental-webgl'];
     let context: GLContext | null = null;
     let extensions: IExtensions = {};
 
@@ -1024,7 +1024,7 @@ export class GLProxy {
           ctx instanceof WebGL2RenderingContext)
       ) {
         debug(
-          "Generated GL Context of version with attributes:",
+          'Generated GL Context of version with attributes:',
           name,
           options
         );
@@ -1036,7 +1036,7 @@ export class GLProxy {
 
     return {
       context,
-      extensions
+      extensions,
     };
   }
 
@@ -1048,36 +1048,36 @@ export class GLProxy {
 
     switch (glError) {
       case this.gl.NO_ERROR:
-        console.warn("GL Error: No Error");
+        console.warn('GL Error: No Error');
         break;
 
       case this.gl.INVALID_ENUM:
-        console.warn("GL Error: INVALID ENUM");
+        console.warn('GL Error: INVALID ENUM');
         break;
 
       case this.gl.INVALID_VALUE:
-        console.warn("GL Error: INVALID_VALUE");
+        console.warn('GL Error: INVALID_VALUE');
         break;
 
       case this.gl.INVALID_OPERATION:
-        console.warn("GL Error: INVALID OPERATION");
+        console.warn('GL Error: INVALID OPERATION');
         break;
 
       case this.gl.INVALID_FRAMEBUFFER_OPERATION:
-        console.warn("GL Error: INVALID FRAMEBUFFER OPERATION");
+        console.warn('GL Error: INVALID FRAMEBUFFER OPERATION');
         break;
 
       case this.gl.OUT_OF_MEMORY:
-        console.warn("GL Error: OUT OF MEMORY");
+        console.warn('GL Error: OUT OF MEMORY');
         break;
 
       case this.gl.CONTEXT_LOST_WEBGL:
-        console.warn("GL Error: CONTEXT LOST WEBGL");
+        console.warn('GL Error: CONTEXT LOST WEBGL');
         break;
 
       default:
         console.warn(
-          "GL Error: GL Context output an unrecognized error value:",
+          'GL Error: GL Context output an unrecognized error value:',
           glError
         );
         break;
@@ -1088,15 +1088,15 @@ export class GLProxy {
    * Prints a shader broken down by lines
    */
   lineFormatShader(shader: string) {
-    const lines = shader.split("\n");
+    const lines = shader.split('\n');
     const lineChars = String(lines.length).length + 1;
 
     return `\n${lines
       .map(
         (l, i) =>
-          `${Array(lineChars - String(i + 1).length).join(" ")}${i + 1}: ${l}`
+          `${Array(lineChars - String(i + 1).length).join(' ')}${i + 1}: ${l}`
       )
-      .join("\n")}`;
+      .join('\n')}`;
   }
 
   /**
@@ -1106,7 +1106,7 @@ export class GLProxy {
     if (!texture.gl || texture.gl.textureUnit < 0) {
       console.warn(
         this.debugContext,
-        "Can not update or compile a texture that does not have an established texture unit.",
+        'Can not update or compile a texture that does not have an established texture unit.',
         texture
       );
       return;
@@ -1164,7 +1164,7 @@ export class GLProxy {
           !isPowerOf2(texture.data.width) ||
           !isPowerOf2(texture.data.height)
         ) {
-          debug("Created a texture that is not using power of 2 dimensions.");
+          debug('Created a texture that is not using power of 2 dimensions.');
         }
 
         gl.texImage2D(
@@ -1184,7 +1184,7 @@ export class GLProxy {
           !isPowerOf2(texture.data.height)
         ) {
           debug(
-            "Created a texture that is not using power of 2 dimensions. %o",
+            'Created a texture that is not using power of 2 dimensions. %o',
             texture
           );
         }
@@ -1210,7 +1210,7 @@ export class GLProxy {
       texture.data = {
         width: texture.data.width,
         height: texture.data.height,
-        buffer: null
+        buffer: null,
       };
     }
 
@@ -1440,7 +1440,7 @@ export class GLProxy {
 
       if (location === -1) {
         debug(
-          "WARN: An attribute is not being used with the current material: %o",
+          'WARN: An attribute is not being used with the current material: %o',
           name,
           attribute
         );

@@ -1,7 +1,7 @@
-import { Vec2 } from "../math";
-import { Geometry } from "./geometry";
-import { GLSettings } from "./gl-settings";
-import { Material } from "./material";
+import { Vec2 } from '../math';
+import { Geometry } from './geometry';
+import { GLSettings } from './gl-settings';
+import { Material } from './material';
 
 /**
  * This represents a Geometry with a Material as a paired configuration to be rendered

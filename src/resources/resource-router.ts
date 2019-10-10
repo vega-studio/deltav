@@ -1,14 +1,14 @@
-import { WebGLRenderer } from "../gl";
-import { Instance } from "../instance-provider/instance";
-import { ILayerProps, Layer } from "../surface/layer";
-import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
+import { WebGLRenderer } from '../gl';
+import { Instance } from '../instance-provider/instance';
+import { ILayerProps, Layer } from '../surface/layer';
+import { BaseIOExpansion } from '../surface/layer-processing/base-io-expansion';
+import { InstanceIOValue, IResourceContext, IResourceType } from '../types';
 import {
   BaseResourceManager,
-  INVALID_RESOURCE_MANAGER
-} from "./base-resource-manager";
+  INVALID_RESOURCE_MANAGER,
+} from './base-resource-manager';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * This is the manager of all Resource Managers. This handles registering managers for various resource types
@@ -130,7 +130,7 @@ export class ResourceRouter {
 
     if (this.resourceKeyToType.has(resource.key)) {
       console.warn(
-        "Detected two resources with identical keys. The duplicate resource will not be generated:",
+        'Detected two resources with identical keys. The duplicate resource will not be generated:',
         resource.key
       );
 

@@ -1,22 +1,19 @@
-import {
-  mapGetWithDefault,
-  mapInjectDefault
-} from "src/util/common-operations";
+import { mapGetWithDefault, mapInjectDefault } from 'src';
 import {
   IMouseInteraction,
   ISingleTouchInteraction,
-  ITouchInteraction
-} from "../event-management/types";
-import { Instance } from "../instance-provider/instance";
-import { BaseProjection } from "../math/base-projection";
+  ITouchInteraction,
+} from '../event-management/types';
+import { Instance } from '../instance-provider/instance';
+import { BaseProjection } from '../math/base-projection';
 import {
   IColorPickingData,
   IMousePickInfo,
   ITouchPickInfo,
-  PickType
-} from "../types";
-import { UniformColorDiffProcessor } from "./buffer-management/uniform-buffering/uniform-color-diff-processor";
-import { ILayerProps, Layer } from "./layer";
+  PickType,
+} from '../types';
+import { UniformColorDiffProcessor } from './buffer-management/uniform-buffering/uniform-color-diff-processor';
+import { ILayerProps, Layer } from './layer';
 
 function isColorProcessor<T extends Instance>(
   val: any
@@ -117,7 +114,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseDown(info);
@@ -167,7 +164,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     // Add the instances involved in the touch down to our down state items.
@@ -213,7 +210,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseOut(info);
@@ -251,7 +248,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     onTouchOut(info);
@@ -293,7 +290,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view,
       screen: interaction.screen.position,
-      world
+      world,
     };
 
     // Broadcast the mouse up event to the layers
@@ -311,7 +308,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view,
       screen: interaction.screen.position,
-      world
+      world,
     };
 
     // Broadcast the mouse up outside event to the layers
@@ -330,7 +327,7 @@ export class LayerInteractionHandler<
       onTouchUp,
       onTouchUpOutside,
       onTouchOut,
-      onTouchAllEnd
+      onTouchAllEnd,
     } = this.layer.props;
 
     // Check to ensure the layer is configured to accept the events
@@ -361,7 +358,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     // Broadcast the touch up event to the layers
@@ -388,7 +385,7 @@ export class LayerInteractionHandler<
         layer: this.layer.id,
         projection: view,
         screen: touch.screen.position,
-        world
+        world,
       };
 
       // Broadcast the mouse up outside event to the layers
@@ -407,7 +404,7 @@ export class LayerInteractionHandler<
         layer: this.layer.id,
         projection: view,
         screen: touch.screen.position,
-        world
+        world,
       };
 
       onTouchAllEnd(info);
@@ -459,7 +456,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           if (noLongerOver.length > 0) onMouseOut(info);
@@ -477,7 +474,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           if (notOverInstances.length > 0) onMouseOver(info);
@@ -493,7 +490,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           onMouseMove(info);
@@ -562,7 +559,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           if (noLongerOver.length > 0) onTouchOut(info);
@@ -579,7 +576,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           if (notOverInstances.length > 0) onTouchOver(info);
@@ -596,7 +593,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           onTouchMove(info);
@@ -636,7 +633,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseClick(info);
@@ -677,7 +674,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view,
           screen: touch.screen.position,
-          world
+          world,
         };
 
         onTap(info);

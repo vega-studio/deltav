@@ -1,13 +1,13 @@
-import { Bounds } from "../../math/primitives";
-import { PackNode } from "../../resources/texture/pack-node";
-import { Omit, ResourceType, Size } from "../../types";
-import { BaseResourceOptions } from "../base-resource-manager";
-import { SubTexture } from "../texture/sub-texture";
-import { FontMap, FontMapGlyphType } from "./font-map";
-import { FontRenderer } from "./font-renderer";
-import { IFontResourceRequest } from "./font-resource-request";
+import { Bounds } from '../../math/primitives';
+import { PackNode } from '../../resources/texture/pack-node';
+import { Omit, ResourceType, Size } from '../../types';
+import { BaseResourceOptions } from '../base-resource-manager';
+import { SubTexture } from '../texture/sub-texture';
+import { FontMap, FontMapGlyphType } from './font-map';
+import { FontRenderer } from './font-renderer';
+import { IFontResourceRequest } from './font-resource-request';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * Valid glyph rendering sizes that the system will use when rendering the glyphs to the font map's texture.
@@ -20,7 +20,7 @@ export enum FontGlyphRenderSize {
   /** Better quality glyphs for rendering, but suffers from resource useasge */
   _64 = 64,
   /** NOT RECOMMENDED: This is very large and will not allow for many glyphs on a single texture */
-  _128 = 128
+  _128 = 128,
 }
 
 /**
@@ -146,13 +146,13 @@ function isSimpleFontMetrics(val: any): val is ISimpleFontMapMetrics {
  * an IFontResourceOptions object. Excludes the need to specify the type.
  */
 export function createFont(
-  options: Omit<IFontResourceOptions, "type" | "key"> &
-    Partial<Pick<IFontResourceOptions, "key">>
+  options: Omit<IFontResourceOptions, 'type' | 'key'> &
+    Partial<Pick<IFontResourceOptions, 'key'>>
 ): IFontResourceOptions {
   return {
-    key: "",
+    key: '',
     type: ResourceType.FONT,
-    ...options
+    ...options,
   };
 }
 
@@ -179,7 +179,7 @@ export class FontManager {
     resourceKey: string,
     requests: IFontResourceRequest[]
   ) {
-    debug("Calculating metrics for requests");
+    debug('Calculating metrics for requests');
     const fontMap = this.fontMaps.get(resourceKey);
     if (!fontMap) return;
 
@@ -198,11 +198,11 @@ export class FontManager {
 
         // If a max width is present, we need to calculate the truncation of the label
         if (metrics.maxWidth) {
-          debug("Calculating truncation for", metrics.text, metrics.maxWidth);
+          debug('Calculating truncation for', metrics.text, metrics.maxWidth);
 
           metrics.layout = await fontMap.getTruncatedLayout(
             metrics.layout,
-            metrics.truncation || "",
+            metrics.truncation || '',
             metrics.maxWidth,
             metrics.fontSize,
             metrics.letterSpacing,
@@ -221,7 +221,7 @@ export class FontManager {
    */
   private characterFilterToCharacters(filter: string): string {
     const characters = new Set<string>();
-    let all = "";
+    let all = '';
 
     for (let i = 0, iMax = filter.length; i < iMax; ++i) {
       const char = filter[i];
@@ -242,7 +242,7 @@ export class FontManager {
   async createFontMap(resourceOptions: IFontResourceOptions) {
     // This will contain all of the characters that the map initially starts with
     const characters: string = this.characterFilterToCharacters(
-      resourceOptions.characterFilter || ""
+      resourceOptions.characterFilter || ''
     );
     // This is the generated font map specified by the resource options
     let fontMap: FontMap | undefined;
@@ -264,7 +264,7 @@ export class FontManager {
     // Create our new font map resource
     fontMap = new FontMap({
       ...resourceOptions,
-      glyphType
+      glyphType,
     });
 
     // Apply initial characters to the fontMap
@@ -312,7 +312,7 @@ export class FontManager {
       // We add in truncation characters as well if provided
       if (req.metrics) {
         if (req.metrics.truncation) {
-          const truncation = req.metrics.truncation.replace(/\s/g, "");
+          const truncation = req.metrics.truncation.replace(/\s/g, '');
           allPairs.push(truncation);
 
           for (let i = 0, iMax = req.metrics.truncation.length; i < iMax; ++i) {
@@ -328,7 +328,7 @@ export class FontManager {
     }
 
     // Convert the characters to be rendered to a sinple string
-    let uniqueCharacters: string = "";
+    let uniqueCharacters: string = '';
     allCharacters.forEach(char => (uniqueCharacters += char));
 
     // Perform the updates to the font map
@@ -392,7 +392,7 @@ export class FontManager {
           x: 0,
           y: 0,
           width: metrics.glyph.width,
-          height: metrics.glyph.height
+          height: metrics.glyph.height,
         });
 
         // Make the sub texture object our packing is going to associate with
@@ -401,12 +401,12 @@ export class FontManager {
         // Pack the glyph information into the font map texture
         const packing = fontMap.packing.insert({
           data: subTexture,
-          bounds: packBounds
+          bounds: packBounds,
         });
 
         if (!packing) {
           console.warn(
-            "Font map is full and could not pack in any more glyphs"
+            'Font map is full and could not pack in any more glyphs'
           );
           return;
         }
@@ -426,19 +426,19 @@ export class FontManager {
           y:
             fontMap.packing.bounds.height -
             packing.bounds.y -
-            packing.bounds.height
+            packing.bounds.height,
         });
 
         // Register the glyph with the font map
         if (subTexture) fontMap.registerGlyph(char, subTexture);
         else {
           console.warn(
-            "Could not generate a subtexture for the font map registration."
+            'Could not generate a subtexture for the font map registration.'
           );
         }
       } else {
         console.warn(
-          "Can not update font map as the maps texture data is not defined."
+          'Can not update font map as the maps texture data is not defined.'
         );
       }
     }
@@ -471,7 +471,7 @@ export class FontManager {
       // A valid error glyph MUST be present
       if (!source.errorGlyph) {
         console.warn(
-          "The prerendered source provided did NOT provide a proper glyph for rendering when a glyph could not be located."
+          'The prerendered source provided did NOT provide a proper glyph for rendering when a glyph could not be located.'
         );
         return [];
       }
@@ -484,8 +484,8 @@ export class FontManager {
       // Wait for the image to finish loading
       image.onload = function() {
         // Make our canvas context to render the glyph data to.
-        const canvas: HTMLCanvasElement = document.createElement("canvas");
-        const context = canvas.getContext("2d");
+        const canvas: HTMLCanvasElement = document.createElement('canvas');
+        const context = canvas.getContext('2d');
         if (!context) return;
         // Our canvas to render to will be the specified glyphSize block
         canvas.width = glyphSize;
@@ -501,7 +501,7 @@ export class FontManager {
       // If an error occurrs
       image.onerror = function() {
         console.warn(
-          "There was an issue with loading the glyph data for character:",
+          'There was an issue with loading the glyph data for character:',
           char
         );
         resolve(null);

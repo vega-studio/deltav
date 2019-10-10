@@ -5,10 +5,10 @@ import {
   EdgeLayer,
   EdgeType,
   InstanceProvider,
-  LayerInitializer
-} from "src";
-import { nextFrame } from "src/util/frame";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  LayerInitializer,
+  nextFrame,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class Lines extends BaseExample {
   makeLayer(
@@ -17,11 +17,11 @@ export class Lines extends BaseExample {
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       animate: {
-        end: AutoEasingMethod.continuousSinusoidal(5000, 0)
+        end: AutoEasingMethod.continuousSinusoidal(5000, 0),
       },
       data: provider,
-      key: "lines",
-      type: EdgeType.LINE
+      key: 'lines',
+      type: EdgeType.LINE,
     });
   }
 
@@ -42,7 +42,7 @@ export class Lines extends BaseExample {
           end: [0, 0],
           id: `line-${index}-${k}`,
           start: [k * 20, index * LINE_HEIGHT + LINE_HEIGHT],
-          thickness: [10, 10]
+          thickness: [10, 10],
         });
 
         edges.push(edgeProvider.add(edge));

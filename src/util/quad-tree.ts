@@ -1,5 +1,5 @@
-import { Bounds } from "../math/primitives/bounds";
-import { isVec2, Vec2 } from "../math/vector";
+import { Bounds } from '../math/primitives/bounds';
+import { isVec2, Vec2 } from '../math/vector';
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -310,12 +310,12 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
     // Could not grow to accomodate the child.
     if (isNaN(child.width + child.height + child.x + child.y)) {
       console.error(
-        "Child did not fit into bounds because a dimension is NaN",
+        'Child did not fit into bounds because a dimension is NaN',
         child
       );
     } else if (child.area === 0) {
       console.error(
-        "Child did not fit into bounds because the area is zero",
+        'Child did not fit into bounds because the area is zero',
         child
       );
     }

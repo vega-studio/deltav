@@ -1,4 +1,4 @@
-import anime from "animejs";
+import anime from 'animejs';
 import {
   AnchorType,
   Camera2D,
@@ -9,9 +9,9 @@ import {
   LabelLayer,
   LayerInitializer,
   PickType,
-  ReferenceCamera2D
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  ReferenceCamera2D,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class MouseInteractionLabels extends BaseExample {
   isOver = new Map<LabelInstance, anime.AnimeInstance>();
@@ -29,7 +29,7 @@ export class MouseInteractionLabels extends BaseExample {
         targets: label.color,
         update: () => {
           label.color = label.color;
-        }
+        },
       });
     }
   };
@@ -40,7 +40,7 @@ export class MouseInteractionLabels extends BaseExample {
         const animation = anime({
           duration: 500,
           scale: 1.1,
-          targets: label
+          targets: label,
         });
 
         this.isOver.set(label, animation);
@@ -58,7 +58,7 @@ export class MouseInteractionLabels extends BaseExample {
         const leave = anime({
           duration: 500,
           scale: 1,
-          targets: label
+          targets: label,
         });
 
         leave.pause();
@@ -75,7 +75,7 @@ export class MouseInteractionLabels extends BaseExample {
     return new ReferenceCamera2D({
       base: defaultCamera,
       offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
-      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
+      scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
     });
   }
 
@@ -86,11 +86,11 @@ export class MouseInteractionLabels extends BaseExample {
     return createLayer(LabelLayer, {
       resourceKey: resource.font,
       data: provider,
-      key: "mouse-interaction-labels",
+      key: 'mouse-interaction-labels',
       onMouseClick: this.handleLabelClick,
       onMouseOut: this.handleLabelOut,
       onMouseOver: this.handleLabelOver,
-      picking: PickType.SINGLE
+      picking: PickType.SINGLE,
     });
   }
 
@@ -100,13 +100,13 @@ export class MouseInteractionLabels extends BaseExample {
     const label = new LabelInstance({
       anchor: {
         padding: 0,
-        type: AnchorType.TopLeft
+        type: AnchorType.TopLeft,
       },
       color: [1.0, 1.0, 1.0, 1.0],
       fontSize: 20,
       id: `label-vertical-0`,
-      text: "TL",
-      origin: [20, 20]
+      text: 'TL',
+      origin: [20, 20],
     });
 
     // Left Middle left
@@ -116,13 +116,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.TopMiddle
+          type: AnchorType.TopMiddle,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "TM",
-        origin: [100, 20]
+        text: 'TM',
+        origin: [100, 20],
       })
     );
 
@@ -130,13 +130,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.TopRight
+          type: AnchorType.TopRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "TR",
-        origin: [180, 20]
+        text: 'TR',
+        origin: [180, 20],
       })
     );
 
@@ -144,13 +144,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleLeft
+          type: AnchorType.MiddleLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "ML",
-        origin: [20, 100]
+        text: 'ML',
+        origin: [20, 100],
       })
     );
 
@@ -158,13 +158,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.Middle
+          type: AnchorType.Middle,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "M",
-        origin: [100, 100]
+        text: 'M',
+        origin: [100, 100],
       })
     );
 
@@ -172,13 +172,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleRight
+          type: AnchorType.MiddleRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "MR",
-        origin: [180, 100]
+        text: 'MR',
+        origin: [180, 100],
       })
     );
 
@@ -186,13 +186,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.BottomLeft
+          type: AnchorType.BottomLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "BL",
-        origin: [20, 180]
+        text: 'BL',
+        origin: [20, 180],
       })
     );
 
@@ -200,13 +200,13 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.BottomMiddle
+          type: AnchorType.BottomMiddle,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "BM",
-        origin: [100, 180]
+        text: 'BM',
+        origin: [100, 180],
       })
     );
 
@@ -214,12 +214,12 @@ export class MouseInteractionLabels extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.BottomRight
+          type: AnchorType.BottomRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
-        text: "BR",
-        origin: [180, 180]
+        text: 'BR',
+        origin: [180, 180],
       })
     );
 

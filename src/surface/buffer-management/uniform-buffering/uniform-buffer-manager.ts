@@ -1,18 +1,18 @@
-import { uniformBufferInstanceBufferName } from "../../../constants";
-import { Attribute, Geometry, Material, Model } from "../../../gl";
+import { uniformBufferInstanceBufferName } from '../../../constants';
+import { Attribute, Geometry, Material, Model } from '../../../gl';
 import {
   IMaterialUniform,
   isUniformVec4Array,
-  MaterialUniformType
-} from "../../../gl/types";
-import { Instance } from "../../../instance-provider";
-import { Vec2, Vec4 } from "../../../math";
-import { IInstanceAttribute } from "../../../types";
-import { uid } from "../../../util";
-import { Layer } from "../../layer";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { LayerScene } from "../../layer-scene";
-import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
+  MaterialUniformType,
+} from '../../../gl/types';
+import { Instance } from '../../../instance-provider';
+import { Vec2, Vec4 } from '../../../math';
+import { IInstanceAttribute } from '../../../types';
+import { uid } from '../../../util';
+import { Layer } from '../../layer';
+import { generateLayerModel } from '../../layer-processing/generate-layer-model';
+import { LayerScene } from '../../layer-scene';
+import { BufferManagerBase, IBufferLocation } from '../buffer-manager-base';
 
 export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */
@@ -124,7 +124,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       this.instanceToCluster[instance.uid] = cluster;
     } else {
       console.warn(
-        "No valid cluster available for instance added to uniform manager."
+        'No valid cluster available for instance added to uniform manager.'
       );
     }
 
@@ -225,7 +225,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
       this.scene = scene;
     } else {
-      console.warn("Can not set a scene that has an undefined container.");
+      console.warn('Can not set a scene that has an undefined container.');
     }
   }
 
@@ -255,7 +255,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Ensure the draw range covers every instance in the geometry.
     newModel.vertexDrawRange = [
       0,
-      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount
+      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount,
     ];
 
     // Make our new buffer which will manage the geometry and everything necessary
@@ -266,7 +266,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       geometry: newGeometry,
       lastInstance: 0,
       material: newMaterial,
-      model: newModel
+      model: newModel,
     };
 
     this.buffers.push(buffer);
@@ -285,11 +285,11 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
         0.0,
         0.0,
         0.0,
-        0.0
+        0.0,
       ]);
     } else {
       console.warn(
-        "Material is utilizing an invalid uniform type for Uniform Buffer Management. Buffering will not be possible."
+        'Material is utilizing an invalid uniform type for Uniform Buffer Management. Buffering will not be possible.'
       );
       return;
     }
@@ -297,7 +297,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // A fake attribute to satisfy type requirements
     const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
       bufferAttribute: new Attribute(new Float32Array(1), 1),
-      uid: uid()
+      uid: uid(),
     });
 
     for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
@@ -306,7 +306,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
         // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
-        range: [uniformIndex, 0]
+        range: [uniformIndex, 0],
       };
 
       uniformIndex += this.uniformBlocksPerInstance;

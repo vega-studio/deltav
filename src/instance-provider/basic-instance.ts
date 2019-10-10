@@ -1,4 +1,4 @@
-import { Instance } from "./instance";
+import { Instance } from './instance';
 
 /**
  * This is an instance that is basically an instance stub that won't throw any implementation

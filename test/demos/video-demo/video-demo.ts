@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   BasicCamera2DController,
   BasicSurface,
@@ -15,28 +15,28 @@ import {
   ScaleMode,
   TextureSize,
   Vec2,
-  View2D
-} from "src";
-import { wait } from "../../../src/util/wait";
-import { BaseDemo } from "../../common/base-demo";
+  View2D,
+} from 'src';
+import { wait } from '../../../src/util/wait';
+import { BaseDemo } from '../../common/base-demo';
 
 function rand() {
   return Math.random();
 }
 
 const assets = {
-  Wildlife: require("../../assets/Wildlife.mp4"),
-  Waterfall: require("../../assets/Waterfall.mp4"),
+  Wildlife: require('../../assets/Wildlife.mp4'),
+  Waterfall: require('../../assets/Waterfall.mp4'),
   play: new Image(),
   pause: new Image(),
   mute: new Image(),
-  unmute: new Image()
+  unmute: new Image(),
 };
 
-assets.play.src = require("../../assets/play.png");
-assets.pause.src = require("../../assets/pause.png");
-assets.mute.src = require("../../assets/mute.png");
-assets.unmute.src = require("../../assets/unmute.png");
+assets.play.src = require('../../assets/play.png');
+assets.pause.src = require('../../assets/pause.png');
+assets.mute.src = require('../../assets/mute.png');
+assets.unmute.src = require('../../assets/unmute.png');
 
 /**
  * A demo showing the use of video as a texture. In this case rendered as a simple image.
@@ -45,7 +45,7 @@ export class VideoDemo extends BaseDemo {
   /** Surface providers */
   providers = {
     controls: new InstanceProvider<ImageInstance>(),
-    images: new InstanceProvider<ImageInstance>()
+    images: new InstanceProvider<ImageInstance>(),
   };
 
   /** All images produced */
@@ -53,7 +53,7 @@ export class VideoDemo extends BaseDemo {
 
   /** GUI properties */
   parameters = {
-    source: require("../../assets/Wildlife.mp4")
+    source: require('../../assets/Wildlife.mp4'),
   };
 
   currentLocation: Vec2 = [0, 0];
@@ -66,14 +66,14 @@ export class VideoDemo extends BaseDemo {
       height: 20,
       tint: [1, 1, 1, 1],
       source: assets.mute,
-      onReady: this.onImageReady
+      onReady: this.onImageReady,
     }),
     play: new ImageInstance({
       height: 20,
       tint: [1, 1, 1, 1],
       source: assets.play,
-      onReady: this.onImageReady
-    })
+      onReady: this.onImageReady,
+    }),
   };
 
   onImageReady(image: ImageInstance) {
@@ -82,17 +82,17 @@ export class VideoDemo extends BaseDemo {
   }
 
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
+    const parameters = gui.addFolder('Parameters');
     parameters
-      .add(this.parameters, "source", {
+      .add(this.parameters, 'source', {
         WildLife: assets.Wildlife,
-        Waterfall: assets.Waterfall
+        Waterfall: assets.Waterfall,
       })
       .onChange(async (value: string) => {
         this.images.forEach(image => {
           image.source = {
             videoSrc: value,
-            autoPlay: true
+            autoPlay: true,
           };
         });
       });
@@ -111,19 +111,19 @@ export class VideoDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {
         atlas: createAtlas({
           width: TextureSize._2048,
-          height: TextureSize._2048
-        })
+          height: TextureSize._2048,
+        }),
       },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["main.main"]
-        })
+          startView: ['main.main'],
+        }),
       }),
       pipeline: (resources, providers, cameras) => ({
         resources: [],
@@ -133,22 +133,22 @@ export class VideoDemo extends BaseDemo {
               main: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: {
               video: createLayer(ImageLayer, {
                 data: providers.images,
-                atlas: resources.atlas.key
-              })
-            }
+                atlas: resources.atlas.key,
+              }),
+            },
           },
           screen: {
             views: {
               main: createView(View2D, {
                 camera: new Camera2D(),
-                clearFlags: [ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.DEPTH],
+              }),
             },
             layers: {
               boxes: createLayer(ImageLayer, {
@@ -177,12 +177,12 @@ export class VideoDemo extends BaseDemo {
                       this.videoInstance.videoLoad();
                     }
                   }
-                }
-              })
-            }
-          }
-        }
-      })
+                },
+              }),
+            },
+          },
+        },
+      }),
     });
   }
 
@@ -206,11 +206,11 @@ export class VideoDemo extends BaseDemo {
     await wait(1000);
     if (!this.surface) return;
     await this.surface.ready;
-    const screen = this.surface.getViewScreenSize("main.main");
+    const screen = this.surface.getViewScreenSize('main.main');
 
     const videoSrc = {
       videoSrc: this.parameters.source,
-      autoPlay: true
+      autoPlay: true,
     };
 
     for (let i = 0; i < 10; ++i) {
@@ -232,10 +232,10 @@ export class VideoDemo extends BaseDemo {
             this.videoInstance = image;
             this.video = video;
 
-            video.removeEventListener("play", this.handlePlay);
-            video.removeEventListener("pause", this.handlePause);
-            video.addEventListener("play", this.handlePlay);
-            video.addEventListener("pause", this.handlePause);
+            video.removeEventListener('play', this.handlePlay);
+            video.removeEventListener('pause', this.handlePause);
+            video.addEventListener('play', this.handlePlay);
+            video.addEventListener('pause', this.handlePause);
 
             const max = Math.max(this.video.videoWidth, this.video.videoHeight);
             const adjustedScale = Math.min(500 / max, scale);
@@ -248,7 +248,7 @@ export class VideoDemo extends BaseDemo {
 
             this.updateMuteState();
             this.updatePlayState();
-          }
+          },
         })
       );
 

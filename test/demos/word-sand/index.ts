@@ -1,1 +1,1 @@
-export * from "./word-sand-demo";
+export * from './word-sand-demo';

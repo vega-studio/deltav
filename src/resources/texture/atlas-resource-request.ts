@@ -1,6 +1,6 @@
-import { Omit, ResourceType } from "../../types";
-import { BaseResourceRequest } from "../base-resource-manager";
-import { SubTexture } from "./sub-texture";
+import { Omit, ResourceType } from '../../types';
+import { BaseResourceRequest } from '../base-resource-manager';
+import { SubTexture } from './sub-texture';
 
 export type AtlasVideoResource = {
   videoSrc: string;
@@ -45,12 +45,12 @@ export interface IAtlasResourceRequest extends BaseResourceRequest {
  * Simple wrapper to make autocomplete easier for making an atlas request.
  */
 export function atlasRequest(
-  options: Omit<Partial<IAtlasResourceRequest>, "type"> &
-    Pick<IAtlasResourceRequest, "key">
+  options: Omit<Partial<IAtlasResourceRequest>, 'type'> &
+    Pick<IAtlasResourceRequest, 'key'>
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
     source: EMPTY_IMAGE,
-    ...options
+    ...options,
   };
 }

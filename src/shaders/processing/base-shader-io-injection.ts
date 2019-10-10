@@ -1,16 +1,16 @@
-import { Attribute } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../surface/layer";
+import { Attribute } from '../../gl';
+import { Instance } from '../../instance-provider/instance';
+import { MetricsProcessing } from '../../shaders/processing/metrics-processing';
+import { ILayerProps, Layer } from '../../surface/layer';
 import {
   IInstanceAttribute,
   IInstancingUniform,
   IUniform,
   IVertexAttribute,
-  ShaderInjectionTarget
-} from "../../types";
+  ShaderInjectionTarget,
+} from '../../types';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * The result of an injection into the header of a shader. Allows for injection content into the header
@@ -49,8 +49,8 @@ export abstract class BaseShaderIOInjection {
   ) {
     if (declarations.get(key)) {
       debug(
-        "%s: Overriding declaration %s\nSetting new value: %s",
-        debugMessageCtx || "Expand IO Declarations",
+        '%s: Overriding declaration %s\nSetting new value: %s',
+        debugMessageCtx || 'Expand IO Declarations',
         key,
         value
       );

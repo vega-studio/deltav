@@ -1,10 +1,10 @@
-import { observable } from "../../../instance-provider";
+import { observable } from '../../../instance-provider';
 import {
   IInstanceOptions,
-  Instance
-} from "../../../instance-provider/instance";
-import { Vec2 } from "../../../math/vector";
-import { Anchor, AnchorType, ScaleMode } from "../../types";
+  Instance,
+} from '../../../instance-provider/instance';
+import { Vec2 } from '../../../math/vector';
+import { Anchor, AnchorType, ScaleMode } from '../../types';
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**
@@ -70,7 +70,7 @@ const anchorCalculator: {
   [AnchorType.Custom]: (anchor: Anchor, _rectangle: RectangleInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  }
+  },
 };
 
 /**
@@ -112,7 +112,7 @@ export class RectangleInstance extends Instance {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(options: IRectangleInstanceOptions) {
@@ -140,7 +140,7 @@ export class RectangleInstance extends Instance {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0
+      y: anchor.y || 0,
     };
 
     // Calculate the new anchors position values

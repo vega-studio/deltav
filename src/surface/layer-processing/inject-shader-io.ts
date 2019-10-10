@@ -4,20 +4,20 @@
  * in order to operate with the conveniences the library offers. This includes things such as
  * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { Instance } from "../../instance-provider/instance";
-import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
+import { Instance } from '../../instance-provider/instance';
+import { ProcessShaderImportResults } from '../../shaders/processing/shader-processor';
 import {
   IInstanceAttribute,
   IShaderInitialization,
   IUniform,
   IUniformInternal,
   IVertexAttribute,
-  IVertexAttributeInternal
-} from "../../types";
-import { BaseIOSorting } from "../base-io-sorting";
-import { ILayerProps, Layer } from "../layer";
-import { BaseIOExpansion } from "./base-io-expansion";
-import { packAttributes } from "./pack-attributes";
+  IVertexAttributeInternal,
+} from '../../types';
+import { BaseIOSorting } from '../base-io-sorting';
+import { ILayerProps, Layer } from '../layer';
+import { BaseIOExpansion } from './base-io-expansion';
+import { packAttributes } from './pack-attributes';
 
 /**
  * Instance attribute typeguard
@@ -71,7 +71,7 @@ function validateInstanceAttributes<T extends Instance>(
   instanceAttributes.forEach(attribute => {
     if (attribute.name === undefined) {
       console.warn(
-        "All instance attributes MUST have a name on Layer:",
+        'All instance attributes MUST have a name on Layer:',
         layer.id
       );
     }
@@ -82,21 +82,21 @@ function validateInstanceAttributes<T extends Instance>(
       )
     ) {
       console.warn(
-        "An instance attribute can not have the same name used more than once:",
+        'An instance attribute can not have the same name used more than once:',
         attribute.name
       );
     }
 
     if (vertexAttributes.find(attr => attr.name === attribute.name)) {
       console.warn(
-        "An instance attribute and a vertex attribute in a layer can not share the same name:",
+        'An instance attribute and a vertex attribute in a layer can not share the same name:',
         attribute.name
       );
     }
 
     if (!attribute.resource) {
       if (attribute.size === undefined) {
-        console.warn("An instance attribute requires the size to be defined.");
+        console.warn('An instance attribute requires the size to be defined.');
         console.warn(attribute);
       }
     }
@@ -150,9 +150,9 @@ function gatherIOFromShaderModules<
     if (uniform) {
       if (uniformNames.has(uniform.name)) {
         console.warn(
-          "Included shader modules has introduced duplicate uniform names:",
+          'Included shader modules has introduced duplicate uniform names:',
           uniform.name,
-          "One will be overridden thus causing a potential crash of the shader."
+          'One will be overridden thus causing a potential crash of the shader.'
         );
         return false;
       }
@@ -169,9 +169,9 @@ function gatherIOFromShaderModules<
     if (attribute) {
       if (instanceAttributeNames.has(attribute.name)) {
         console.warn(
-          "Included shader modules has introduced duplicate Instance Attribute names:",
+          'Included shader modules has introduced duplicate Instance Attribute names:',
           attribute.name,
-          "One will be overridden thus causing a potential crash of the shader."
+          'One will be overridden thus causing a potential crash of the shader.'
         );
         return false;
       }
@@ -188,9 +188,9 @@ function gatherIOFromShaderModules<
     if (attribute) {
       if (vertexAttributeNames.has(attribute.name)) {
         console.warn(
-          "Included shader modules has introduced duplicate Vertex Attribute names:",
+          'Included shader modules has introduced duplicate Vertex Attribute names:',
           attribute.name,
-          "One will be overridden thus causing a potential crash of the shader."
+          'One will be overridden thus causing a potential crash of the shader.'
         );
         return false;
       }
@@ -304,6 +304,6 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   return {
     instanceAttributes: allInstanceAttributes,
     uniforms: allUniforms,
-    vertexAttributes: allVertexAttributes
+    vertexAttributes: allVertexAttributes,
   };
 }

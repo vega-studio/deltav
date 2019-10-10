@@ -10,15 +10,15 @@ import {
   LayerInitializer,
   ReferenceCamera2D,
   ScaleMode,
-  uid
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  uid,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class SingleAxisLabelScaling extends BaseExample {
   providers = {
     always: new InstanceProvider<LabelInstance>(),
     never: new InstanceProvider<LabelInstance>(),
-    bound: new InstanceProvider<LabelInstance>()
+    bound: new InstanceProvider<LabelInstance>(),
   };
   isYAxis: boolean | undefined = true;
   layers: LayerInitializer[];
@@ -35,25 +35,25 @@ export class SingleAxisLabelScaling extends BaseExample {
         offsetFilter: (offset: [number, number, number]) => [
           offset[0],
           offset[1],
-          0
+          0,
         ],
         scaleFilter: (scale: [number, number, number]) => [
           scale[0],
           scale[1],
-          1
-        ]
+          1,
+        ],
       });
     } else if (this.isYAxis) {
       return new ReferenceCamera2D({
         base: defaultCamera,
         offsetFilter: (offset: [number, number, number]) => [0, offset[1], 0],
-        scaleFilter: (scale: [number, number, number]) => [1, scale[1], 1]
+        scaleFilter: (scale: [number, number, number]) => [1, scale[1], 1],
       });
     } else {
       return new ReferenceCamera2D({
         base: defaultCamera,
         offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
-        scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1]
+        scaleFilter: (scale: [number, number, number]) => [scale[0], 1, 1],
       });
     }
   }
@@ -67,39 +67,39 @@ export class SingleAxisLabelScaling extends BaseExample {
         createLayer(LabelLayer, {
           animate: {
             offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
-            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000),
           },
           resourceKey: resource.font,
           data: this.providers.always,
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scaleMode: ScaleMode.ALWAYS
+          scaleMode: ScaleMode.ALWAYS,
         }),
         createLayer(LabelLayer, {
           animate: {
             offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
-            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000),
           },
           resourceKey: resource.font,
           data: this.providers.never,
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scaleMode: ScaleMode.NEVER
+          scaleMode: ScaleMode.NEVER,
         }),
         createLayer(LabelLayer, {
           animate: {
             offset: AutoEasingMethod.easeInOutCubic(2000, 1000),
-            color: AutoEasingMethod.easeInOutCubic(2000, 1000)
+            color: AutoEasingMethod.easeInOutCubic(2000, 1000),
           },
           resourceKey: resource.font,
           data: this.providers.bound,
           key: this.isYAxis
             ? `vertical-label-scaling-${uid()}`
             : `horizontal-label-scaling-${uid()}`,
-          scaleMode: ScaleMode.BOUND_MAX
-        })
+          scaleMode: ScaleMode.BOUND_MAX,
+        }),
       ];
     }
 
@@ -113,26 +113,26 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleLeft
+          type: AnchorType.MiddleLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
-        text: "Anchored Middle Left:",
-        origin: [20, count++ * 20]
+        text: 'Anchored Middle Left:',
+        origin: [20, count++ * 20],
       })
     );
 
     const label = new LabelInstance({
       anchor: {
         padding: 0,
-        type: AnchorType.MiddleLeft
+        type: AnchorType.MiddleLeft,
       },
       color: [1.0, 1.0, 1.0, 1.0],
       fontSize: 20,
       id: `label-vertical-1`,
-      text: "ScaleType: NEVER",
-      origin: [20, count++ * 20]
+      text: 'ScaleType: NEVER',
+      origin: [20, count++ * 20],
     });
 
     // Left Middle left
@@ -142,13 +142,13 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleLeft
+          type: AnchorType.MiddleLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-2`,
-        text: "ScaleType: ALWAYS",
-        origin: [20, count++ * 20]
+        text: 'ScaleType: ALWAYS',
+        origin: [20, count++ * 20],
       })
     );
 
@@ -156,13 +156,13 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleLeft
+          type: AnchorType.MiddleLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-3`,
-        text: "ScaleType: BOUND_MAX",
-        origin: [20, count++ * 20]
+        text: 'ScaleType: BOUND_MAX',
+        origin: [20, count++ * 20],
       })
     );
 
@@ -173,17 +173,17 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleRight
+          type: AnchorType.MiddleRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-4`,
-        text: "Anchored Middle Right:",
+        text: 'Anchored Middle Right:',
         origin: [20, count++ * 20],
 
         onReady: label => {
           label.origin = add2(label.origin, [label.size[0], 0]);
-        }
+        },
       })
     );
 
@@ -191,17 +191,17 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleRight
+          type: AnchorType.MiddleRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-5`,
-        text: "ScaleType: NEVER",
+        text: 'ScaleType: NEVER',
         origin: [20, count++ * 20],
 
         onReady: label => {
           label.origin = add2(label.origin, [label.size[0], 0]);
-        }
+        },
       })
     );
 
@@ -209,17 +209,17 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleRight
+          type: AnchorType.MiddleRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-6`,
-        text: "ScaleType: ALWAYS",
+        text: 'ScaleType: ALWAYS',
         origin: [20, count++ * 20],
 
         onReady: label => {
           label.origin = add2(label.origin, [label.size[0], 0]);
-        }
+        },
       })
     );
 
@@ -227,17 +227,17 @@ export class SingleAxisLabelScaling extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.MiddleRight
+          type: AnchorType.MiddleRight,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-7`,
-        text: "ScaleType: BOUND_MAX",
+        text: 'ScaleType: BOUND_MAX',
         origin: [20, count++ * 20],
 
         onReady: label => {
           label.origin = add2(label.origin, [label.size[0], 0]);
-        }
+        },
       })
     );
 

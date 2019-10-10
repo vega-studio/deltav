@@ -4,9 +4,9 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
-  LayerInitializer
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  LayerInitializer,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class LabelAnimatedScale extends BaseExample {
   minScale: number = 0.1;
@@ -20,7 +20,7 @@ export class LabelAnimatedScale extends BaseExample {
     return createLayer(LabelLayer, {
       resourceKey: resource.font,
       data: provider,
-      key: "label-animated-scale"
+      key: 'label-animated-scale',
     });
   }
 
@@ -30,14 +30,14 @@ export class LabelAnimatedScale extends BaseExample {
       new LabelInstance({
         anchor: {
           padding: 0,
-          type: AnchorType.TopLeft
+          type: AnchorType.TopLeft,
         },
         color: [1.0, 1.0, 1.0, 1.0],
         fontSize: 20,
         id: `label-vertical-0`,
         scale: 1.0,
-        text: "Scaling text...:",
-        origin: [20, 100]
+        text: 'Scaling text...:',
+        origin: [20, 100],
       })
     );
 

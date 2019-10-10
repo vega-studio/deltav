@@ -1,4 +1,4 @@
-import * as datGUI from "dat.gui";
+import * as datGUI from 'dat.gui';
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
@@ -17,10 +17,10 @@ import {
   RectangleInstance,
   RectangleLayer,
   ScaleMode,
-  View2D
-} from "src";
-import { BaseDemo } from "test/common/base-demo";
-import { DEFAULT_RESOURCES } from "test/types";
+  View2D,
+} from 'src';
+import { BaseDemo } from '../../common/base-demo';
+import { DEFAULT_RESOURCES } from '../../types';
 
 export class EaseDemo extends BaseDemo {
   rectangles: RectangleInstance[] = [];
@@ -71,17 +71,17 @@ export class EaseDemo extends BaseDemo {
     // labels
     labels: new InstanceProvider<LabelInstance>(),
     // lines
-    lines: new InstanceProvider<EdgeInstance>()
+    lines: new InstanceProvider<EdgeInstance>(),
   };
 
   parameters = {
     duration: 2000,
     delay: 0,
-    loopStyle: "1",
+    loopStyle: '1',
     start: () => {
       this.clear();
       this.init();
-    }
+    },
   };
 
   reset() {
@@ -94,63 +94,63 @@ export class EaseDemo extends BaseDemo {
 
   buildConsole(gui: datGUI.GUI): void {
     gui
-      .add(this.parameters, "duration", 0, 10000, 100)
+      .add(this.parameters, 'duration', 0, 10000, 100)
       .onFinishChange((value: number) => {
         this.duration = value;
         this.reset();
       });
 
     gui
-      .add(this.parameters, "delay", 0, 10000, 100)
+      .add(this.parameters, 'delay', 0, 10000, 100)
       .onFinishChange((value: number) => {
         this.duration = value;
         this.reset();
       });
 
     gui
-      .add(this.parameters, "loopStyle", {
+      .add(this.parameters, 'loopStyle', {
         NONE: 0,
         REFLECT: 1,
         REPEAT: 2,
-        CONTINUOUS: 3
+        CONTINUOUS: 3,
       })
       .onFinishChange((value: string) => {
         switch (value) {
-          case "0":
+          case '0':
             this.loopStyle = AutoEasingLoopStyle.NONE;
             break;
-          case "1":
+          case '1':
             this.loopStyle = AutoEasingLoopStyle.REFLECT;
             break;
-          case "2":
+          case '2':
             this.loopStyle = AutoEasingLoopStyle.REPEAT;
             break;
-          case "3":
+          case '3':
             this.loopStyle = AutoEasingLoopStyle.CONTINUOUS;
         }
 
         this.reset();
       });
 
-    gui.add(this.parameters, "start");
+    gui.add(this.parameters, 'start');
   }
 
   makeSurface(container: HTMLElement) {
-    console.warn("make surface");
+    console.warn('make surface');
     return new BasicSurface({
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {
-        font: DEFAULT_RESOURCES.font
+        font: DEFAULT_RESOURCES.font,
       },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["main.main"]
-        })
+          startView: ['main.main'],
+        }),
       }),
       pipeline: (resources, providers, cameras) => ({
         resources: [],
@@ -160,8 +160,8 @@ export class EaseDemo extends BaseDemo {
               main: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              }),
             },
             layers: [
               // immediate
@@ -171,11 +171,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles1,
                 key: `rectangles1`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // linear
               createLayer(RectangleLayer, {
@@ -184,11 +184,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles2,
                 key: `rectangles2`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInQuad
               createLayer(RectangleLayer, {
@@ -197,11 +197,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles3,
                 key: `rectangles3`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeOutQuad
               createLayer(RectangleLayer, {
@@ -210,11 +210,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles4,
                 key: `rectangles4`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInOutQuad
               createLayer(RectangleLayer, {
@@ -223,11 +223,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles5,
                 key: `rectangles5`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInCubic
               createLayer(RectangleLayer, {
@@ -236,11 +236,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles6,
                 key: `rectangles6`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeOutCubic
               createLayer(RectangleLayer, {
@@ -249,11 +249,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles7,
                 key: `rectangles7`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInOutCubic
               createLayer(RectangleLayer, {
@@ -262,11 +262,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles8,
                 key: `rectangles8`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInQuart
               createLayer(RectangleLayer, {
@@ -275,11 +275,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles9,
                 key: `rectangles9`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeOutQuart
               createLayer(RectangleLayer, {
@@ -288,11 +288,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles10,
                 key: `rectangles10`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInOutQuart
               createLayer(RectangleLayer, {
@@ -301,11 +301,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles11,
                 key: `rectangles11`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeInQuint
               createLayer(RectangleLayer, {
@@ -314,11 +314,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles12,
                 key: `rectangles12`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeOutQuint
               createLayer(RectangleLayer, {
@@ -327,11 +327,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles13,
                 key: `rectangles13`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeOutElastic
               createLayer(RectangleLayer, {
@@ -340,11 +340,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles14,
                 key: `rectangles14`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeBackIn
               createLayer(RectangleLayer, {
@@ -353,11 +353,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles15,
                 key: `rectangles15`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeBackOut
               createLayer(RectangleLayer, {
@@ -366,11 +366,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles16,
                 key: `rectangles16`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // easeBackInOut
               createLayer(RectangleLayer, {
@@ -379,11 +379,11 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles17,
                 key: `rectangles17`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               // continuousSinusoidal
               createLayer(RectangleLayer, {
@@ -392,27 +392,27 @@ export class EaseDemo extends BaseDemo {
                     this.duration,
                     this.delay,
                     this.loopStyle
-                  )
+                  ),
                 },
                 data: providers.rectangles18,
                 key: `rectangles`,
-                scaleFactor: () => cameras.main.scale2D[0]
+                scaleFactor: () => cameras.main.scale2D[0],
               }),
               createLayer(LabelLayer, {
                 data: providers.labels,
                 key: `labels`,
                 resourceKey: resources.font.key,
-                scaleMode: ScaleMode.ALWAYS
+                scaleMode: ScaleMode.ALWAYS,
               }),
               createLayer(EdgeLayer, {
                 data: this.providers.lines,
-                key: "lines",
-                type: EdgeType.LINE
-              })
-            ]
-          }
-        }
-      })
+                key: 'lines',
+                type: EdgeType.LINE,
+              }),
+            ],
+          },
+        },
+      }),
     });
   }
 
@@ -491,24 +491,24 @@ export class EaseDemo extends BaseDemo {
     await this.surface.ready;
 
     const labelTexts = [
-      "immediate",
-      "linear",
-      "easeInQuad",
-      "easeOutQuad",
-      "easeInOutQuad",
-      "easeInCubic",
-      "easeOutCubic",
-      "easeInOutCubic",
-      "easeInQuart",
-      "easeOutQuart",
-      "easeInOutQuart",
-      "easeInQuint",
-      "easeOutQuint",
-      "easeOutElastic",
-      "easeBackIn",
-      "easeBackOut",
-      "easeBackInOut",
-      "continuousSinusoidal"
+      'immediate',
+      'linear',
+      'easeInQuad',
+      'easeOutQuad',
+      'easeInOutQuad',
+      'easeInCubic',
+      'easeOutCubic',
+      'easeInOutCubic',
+      'easeInQuart',
+      'easeOutQuart',
+      'easeInOutQuart',
+      'easeInQuint',
+      'easeOutQuint',
+      'easeOutElastic',
+      'easeBackIn',
+      'easeBackOut',
+      'easeBackInOut',
+      'continuousSinusoidal',
     ];
 
     for (let i = 0; i < 18; i++) {
@@ -518,10 +518,10 @@ export class EaseDemo extends BaseDemo {
             window.innerWidth * 0.05,
             window.innerHeight * i / 18 +
               window.innerHeight / 36 +
-              window.innerHeight / 100
+              window.innerHeight / 100,
           ],
           size: [10, 10],
-          color: [1, 1, 1, 1]
+          color: [1, 1, 1, 1],
         })
       );
 
@@ -531,10 +531,10 @@ export class EaseDemo extends BaseDemo {
             window.innerWidth * 0.05,
             window.innerHeight * i / 18 +
               window.innerHeight / 36 +
-              window.innerHeight / 100
+              window.innerHeight / 100,
           ],
           size: [10, 10],
-          color: [1, 1, 1, 0.3]
+          color: [1, 1, 1, 0.3],
         })
       );
 
@@ -542,11 +542,11 @@ export class EaseDemo extends BaseDemo {
         new LabelInstance({
           origin: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            window.innerHeight * i / 18 + window.innerHeight / 100,
           ],
           fontSize: 20,
           text: labelTexts[i],
-          color: [1, 1, 1, 1]
+          color: [1, 1, 1, 1],
         })
       );
 
@@ -554,14 +554,14 @@ export class EaseDemo extends BaseDemo {
         new EdgeInstance({
           start: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            window.innerHeight * i / 18 + window.innerHeight / 100,
           ],
           end: [
             window.innerWidth * 0.86,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            window.innerHeight * i / 18 + window.innerHeight / 100,
           ],
           startColor: [1, 1, 1, 1],
-          endColor: [1, 1, 1, 1]
+          endColor: [1, 1, 1, 1],
         })
       );
     }

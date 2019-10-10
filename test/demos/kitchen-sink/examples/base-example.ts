@@ -5,8 +5,8 @@ import {
   IInstanceProvider,
   Instance,
   LayerInitializer,
-  Surface
-} from "src";
+  Surface,
+} from '../../../../src';
 
 export type TestResourceKeys = {
   atlas: string;
@@ -32,7 +32,7 @@ export abstract class BaseExample {
   ): EventManager {
     return new BasicCamera2DController({
       camera: defaultCamera,
-      startView: viewName
+      startView: viewName,
     });
   }
 

@@ -1,18 +1,18 @@
-import { Instance } from "../../../instance-provider/instance";
-import { InstanceDiff } from "../../../instance-provider/instance-provider";
-import { Mat4x4, Vec } from "../../../math";
-import { IInstanceAttributeInternal } from "../../../types";
-import { BaseDiffProcessor } from "../base-diff-processor";
+import { Instance } from '../../../instance-provider/instance';
+import { InstanceDiff } from '../../../instance-provider/instance-provider';
+import { Mat4x4, Vec } from '../../../math';
+import { IInstanceAttributeInternal } from '../../../types';
+import { BaseDiffProcessor } from '../base-diff-processor';
 import {
   IBufferLocation,
   IBufferLocationGroup,
-  isBufferLocationGroup
-} from "../buffer-manager-base";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+  isBufferLocationGroup,
+} from '../buffer-manager-base';
+import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
 import {
   IInstanceAttributeBufferLocation,
-  IInstanceAttributeBufferLocationGroup
-} from "./instance-attribute-buffer-manager";
+  IInstanceAttributeBufferLocationGroup,
+} from './instance-attribute-buffer-manager';
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
@@ -21,7 +21,7 @@ enum DiffMode {
   /** This mode will analyze incoming buffer location changes and only update the range of changed buffer */
   PARTIAL,
   /** This mode will not spend time figuring out what has changed for a buffer, rather the whole buffer will get an update */
-  FULL
+  FULL,
 }
 
 /**
@@ -161,7 +161,7 @@ export class InstanceAttributeDiffProcessor<
         updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
           null,
           Number.MAX_SAFE_INTEGER,
-          Number.MIN_SAFE_INTEGER
+          Number.MIN_SAFE_INTEGER,
         ];
         updateRange[0] = attribute;
         updateRange[1] = min(location.range[0], updateRange[1]);
@@ -184,7 +184,7 @@ export class InstanceAttributeDiffProcessor<
             updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
               null,
               Number.MAX_SAFE_INTEGER,
-              Number.MIN_SAFE_INTEGER
+              Number.MIN_SAFE_INTEGER,
             ];
             updateRange[0] = location.attribute;
             updateRange[1] = min(location.range[0], updateRange[1]);
@@ -204,7 +204,7 @@ export class InstanceAttributeDiffProcessor<
       updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
         null,
         Number.MAX_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER,
       ];
       updateRange[0] = attribute;
       updateRange[1] = min(location.range[0], updateRange[1]);
@@ -299,7 +299,7 @@ export class InstanceAttributeDiffProcessor<
         const attribute = update[0].bufferAttribute;
         attribute.updateRange = {
           count: update[2] - update[1],
-          offset: update[1]
+          offset: update[1],
         };
       }
     } else {
@@ -311,7 +311,7 @@ export class InstanceAttributeDiffProcessor<
         const attribute = updates[i].bufferAttribute;
         attribute.updateRange = {
           count: -1,
-          offset: 0
+          offset: 0,
         };
       }
     }

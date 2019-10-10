@@ -1,0 +1,1 @@
+{"id":"../src/shaders/base-modules/shader-fragments/fmod.vs","dependencies":[],"generated":{"js":"module.exports = \"float fmod(float x, float m, float m_inv) {\\n  return x - m * floor(x * m_inv);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"5b86716b5a2faf8c3f68d9a150e35a72","cacheData":{}}

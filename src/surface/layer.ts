@@ -1,12 +1,12 @@
-import { Geometry } from "../gl/geometry";
-import { Material } from "../gl/material";
-import { Model } from "../gl/model";
-import { WebGLStat } from "../gl/webgl-stat";
-import { Instance } from "../instance-provider/instance";
-import { InstanceDiff } from "../instance-provider/instance-provider";
-import { ObservableMonitoring } from "../instance-provider/observable";
-import { ResourceRouter } from "../resources";
-import { ShaderProcessor } from "../shaders/processing/shader-processor";
+import { Geometry } from '../gl/geometry';
+import { Material } from '../gl/material';
+import { Model } from '../gl/model';
+import { WebGLStat } from '../gl/webgl-stat';
+import { Instance } from '../instance-provider/instance';
+import { InstanceDiff } from '../instance-provider/instance-provider';
+import { ObservableMonitoring } from '../instance-provider/observable';
+import { ResourceRouter } from '../resources';
+import { ShaderProcessor } from '../shaders/processing/shader-processor';
 import {
   IInstanceAttribute,
   ILayerMaterialOptions,
@@ -22,29 +22,29 @@ import {
   LayerBufferType,
   Omit,
   PickType,
-  UniformIOValue
-} from "../types";
-import { uid } from "../util";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+  UniformIOValue,
+} from '../types';
+import { uid } from '../util';
+import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
 import {
   InstanceAttributeBufferManager,
   InstanceAttributePackingBufferManager,
-  UniformBufferManager
-} from "./buffer-management";
+  UniformBufferManager,
+} from './buffer-management';
 import {
   BufferManagerBase,
-  IBufferLocation
-} from "./buffer-management/buffer-manager-base";
-import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
-import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
-import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
-import { generateLayerModel } from "./layer-processing/generate-layer-model";
-import { LayerScene } from "./layer-scene";
-import { Surface } from "./surface";
-import { IViewProps, View } from "./view";
+  IBufferLocation,
+} from './buffer-management/buffer-manager-base';
+import { InstanceDiffManager } from './buffer-management/instance-diff-manager';
+import { LayerInteractionHandler } from './layer-interaction-handler';
+import { generateLayerGeometry } from './layer-processing/generate-layer-geometry';
+import { generateLayerMaterial } from './layer-processing/generate-layer-material';
+import { generateLayerModel } from './layer-processing/generate-layer-model';
+import { LayerScene } from './layer-scene';
+import { Surface } from './surface';
+import { IViewProps, View } from './view';
 
-const debug = require("debug")("performance");
+const debug = require('debug')('performance');
 
 /**
  * A type to describe the constructor of a Layer class.
@@ -115,15 +115,15 @@ export function createVertex(options: IVertexAttribute) {
  */
 export function createLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">>
+  props: Omit<U, 'key'> & Partial<Pick<U, 'key'>>
 ): LayerInitializer {
-  const keyedProps = Object.assign(props, { key: props.key || "" });
+  const keyedProps = Object.assign(props, { key: props.key || '' });
 
   return {
     get key() {
-      return props.key || "";
+      return props.key || '';
     },
-    init: [layerClass, keyedProps]
+    init: [layerClass, keyedProps],
   };
 }
 
@@ -342,12 +342,12 @@ export class Layer<
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.SINGLE,
-        uidToInstance: new Map<number, T>()
+        uidToInstance: new Map<number, T>(),
       };
     } else {
       this.picking = {
         currentPickMode: PickType.NONE,
-        type: PickType.NONE
+        type: PickType.NONE,
       };
     }
 
@@ -363,7 +363,7 @@ export class Layer<
     if (!shaderIO) {
       this.picking.type = PickType.NONE;
       debug(
-        "Shell layer initialized. Nothing will be rendered for this layer",
+        'Shell layer initialized. Nothing will be rendered for this layer',
         this.id
       );
       return true;
@@ -371,7 +371,7 @@ export class Layer<
 
     if (!shaderIO.fs || !shaderIO.vs) {
       console.warn(
-        "Layer needs to specify the fragment and vertex shaders:",
+        'Layer needs to specify the fragment and vertex shaders:',
         this.id
       );
       return false;
@@ -398,7 +398,7 @@ export class Layer<
     // Check to see if the Shader Processing failed. If so, return null as a failure flag.
     if (!shaderMetrics) {
       console.warn(
-        "The shader processor did not produce metrics for the layer."
+        'The shader processor did not produce metrics for the layer.'
       );
       return false;
     }
@@ -442,14 +442,14 @@ export class Layer<
 
     if (this.props.printShader) {
       console.warn(
-        "A Layer requested its shader be debugged. Do not leave this active for production:",
-        "Layer:",
+        'A Layer requested its shader be debugged. Do not leave this active for production:',
+        'Layer:',
         this.props.key,
-        "Shader Metrics",
+        'Shader Metrics',
         shaderMetrics
       );
-      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
-      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+      console.warn('\n\nVERTEX SHADER\n--------------\n\n', shaderMetrics.vs);
+      console.warn('\n\nFRAGMENT SHADER\n--------------\n\n', shaderMetrics.fs);
     }
 
     return true;
@@ -466,15 +466,15 @@ export class Layer<
     const additionalImportsFS = [];
 
     // All layers need the basic instancing functionality
-    additionalImportsVS.push("instancing");
+    additionalImportsVS.push('instancing');
 
     // See if the layer needs picking modules
     if (this.picking.type === PickType.SINGLE) {
-      additionalImportsVS.push("picking");
-      additionalImportsFS.push("picking");
+      additionalImportsVS.push('picking');
+      additionalImportsFS.push('picking');
     } else {
-      additionalImportsVS.push("no-picking");
-      additionalImportsFS.push("no-picking");
+      additionalImportsVS.push('no-picking');
+      additionalImportsFS.push('no-picking');
     }
 
     // See if there are any attributes that have  auto easing involved
@@ -484,12 +484,12 @@ export class Layer<
 
     // If easing is involved then we need to make sure that frame metrics are imported for our animations
     if (easing) {
-      additionalImportsVS.push("frame");
+      additionalImportsVS.push('frame');
     }
 
     return {
       fs: additionalImportsFS,
-      vs: additionalImportsVS
+      vs: additionalImportsVS,
     };
   }
 
@@ -626,12 +626,12 @@ export class Layer<
    */
   initShader(): IShaderInitialization<T> | null {
     return {
-      fs: "${import: no-op}",
+      fs: '${import: no-op}',
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
       vertexCount: 0,
-      vs: "${import: no-op}"
+      vs: '${import: no-op}',
     };
   }
 
@@ -844,7 +844,7 @@ export class Layer<
       this._bufferType = val;
     } else {
       console.warn(
-        "You can not change a layers buffer strategy once it has been instantiated."
+        'You can not change a layers buffer strategy once it has been instantiated.'
       );
     }
   }

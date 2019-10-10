@@ -1,12 +1,12 @@
-import { Attribute, Geometry } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
+import { Attribute, Geometry } from '../../gl';
+import { Instance } from '../../instance-provider/instance';
 import {
   IVertexAttribute,
   IVertexAttributeInternal,
   LayerBufferType,
-  ShaderIOValue
-} from "../../types";
-import { Layer } from "../layer";
+  ShaderIOValue,
+} from '../../types';
+import { Layer } from '../layer';
 
 function isNumberCluster(
   val: ShaderIOValue
@@ -72,7 +72,7 @@ export function generateLayerGeometry<T extends Instance>(
 
   if (formatError) {
     console.warn(
-      "A vertex buffer updating method should not use arrays of arrays of numbers."
+      'A vertex buffer updating method should not use arrays of arrays of numbers.'
     );
   }
 

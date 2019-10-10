@@ -1,13 +1,13 @@
-import { observable } from "../../../instance-provider";
+import { observable } from '../../../instance-provider';
 import {
   IInstanceOptions,
-  Instance
-} from "../../../instance-provider/instance";
-import { Vec2 } from "../../../math";
-import { isWhiteSpace, Size } from "../../../types";
-import { Anchor, AnchorType } from "../../types";
-import { GlyphInstance } from "./glyph-instance";
-import { TextAreaInstance } from "./text-area-instance";
+  Instance,
+} from '../../../instance-provider/instance';
+import { Vec2 } from '../../../math';
+import { isWhiteSpace, Size } from '../../../types';
+import { Anchor, AnchorType } from '../../types';
+import { GlyphInstance } from './glyph-instance';
+import { TextAreaInstance } from './text-area-instance';
 
 export interface ILabelInstanceOptions extends IInstanceOptions {
   /**
@@ -72,7 +72,7 @@ export class LabelInstance extends Instance {
   /** Scales the label uniformly */
   @observable scale: number = 1.0;
   /** The rendered text for the label. */
-  @observable text: string = "";
+  @observable text: string = '';
   /** Spacing between letters in a label */
   @observable letterSpacing: number = 0;
 
@@ -103,7 +103,7 @@ export class LabelInstance extends Instance {
    * This provides the calculated truncated text. If not populated, then no truncation
    * has happened.
    */
-  truncatedText: string = "";
+  truncatedText: string = '';
 
   /** This is the anchor location relative to the label's render space */
   @observable
@@ -112,7 +112,7 @@ export class LabelInstance extends Instance {
     paddingDirection: [0, 0],
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(options: ILabelInstanceOptions) {
@@ -148,7 +148,7 @@ export class LabelInstance extends Instance {
       paddingDirection: anchor.paddingDirection,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0
+      y: anchor.y || 0,
     };
 
     // Apply the anchor

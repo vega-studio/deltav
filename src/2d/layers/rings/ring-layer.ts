@@ -1,16 +1,16 @@
-import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec } from "../../../math";
+import { InstanceProvider } from '../../../instance-provider';
+import { IAutoEasingMethod, Vec } from '../../../math';
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
   UniformSize,
-  VertexAttributeSize
-} from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { RingInstance } from "./ring-instance";
+  VertexAttributeSize,
+} from '../../../types';
+import { CommonMaterialOptions } from '../../../util';
+import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
+import { RingInstance } from './ring-instance';
 
 export interface IRingLayerProps<T extends RingInstance>
   extends ILayer2DProps<T> {
@@ -32,16 +32,16 @@ export class RingLayer<
   U extends IRingLayerProps<T>
 > extends Layer2D<T, U> {
   static defaultProps: IRingLayerProps<RingInstance> = {
-    key: "",
-    data: new InstanceProvider<RingInstance>()
+    key: '',
+    data: new InstanceProvider<RingInstance>(),
   };
 
   static attributeNames = {
-    center: "center",
-    radius: "radius",
-    depth: "depth",
-    color: "color",
-    thickness: "thickness"
+    center: 'center',
+    radius: 'radius',
+    depth: 'depth',
+    color: 'color',
+    thickness: 'thickness',
   };
 
   /**
@@ -53,7 +53,7 @@ export class RingLayer<
     const {
       color: animateColor,
       center: animateCenter,
-      radius: animateRadius
+      radius: animateRadius,
     } = animations;
 
     const vertexToNormal: { [key: number]: number } = {
@@ -62,7 +62,7 @@ export class RingLayer<
       2: -1,
       3: 1,
       4: -1,
-      5: -1
+      5: -1,
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -71,62 +71,62 @@ export class RingLayer<
       2: -1,
       3: 1,
       4: 1,
-      5: 1
+      5: 1,
     };
 
     return {
-      fs: require("./ring-layer.fs"),
+      fs: require('./ring-layer.fs'),
       instanceAttributes: [
         {
           easing: animateCenter,
           name: RingLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: o => o.center
+          update: o => o.center,
         },
         {
           easing: animateRadius,
           name: RingLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.radius]
+          update: o => [o.radius],
         },
         {
           name: RingLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
+          update: o => [o.depth],
         },
         {
           easing: animateColor,
           name: RingLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color
+          update: o => o.color,
         },
         {
           name: RingLayer.attributeNames.thickness,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.thickness]
-        }
+          update: o => [o.thickness],
+        },
       ],
       uniforms: [
         {
-          name: "scaleFactor",
+          name: 'scaleFactor',
           size: UniformSize.ONE,
-          update: (_: IUniform) => [scaleFactor()]
-        }
+          update: (_: IUniform) => [scaleFactor()],
+        },
       ],
       vertexAttributes: [
         {
-          name: "normals",
+          name: 'normals',
           size: VertexAttributeSize.TWO,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
-            vertexToSide[vertex]
-          ]
-        }
+            vertexToSide[vertex],
+          ],
+        },
       ],
       vertexCount: 6,
-      vs: require("./ring-layer.vs")
+      vs: require('./ring-layer.vs'),
     };
   }
 

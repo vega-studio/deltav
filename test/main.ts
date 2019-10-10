@@ -1,11 +1,11 @@
-import { Demo } from "./demo";
+import { Demo } from './demo';
 
 async function start() {
-  const container = document.getElementById("main");
+  const container = document.getElementById('main');
   if (!container) return;
 
   const app = new Demo({
-    container
+    container,
   });
 
   await app.init();

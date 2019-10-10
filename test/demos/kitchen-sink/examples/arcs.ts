@@ -7,10 +7,10 @@ import {
   Bounds,
   createLayer,
   InstanceProvider,
-  LayerInitializer
-} from "src";
-import { nextFrame } from "src/util/frame";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  LayerInitializer,
+  nextFrame,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 export class Arcs extends BaseExample {
   makeLayer(
@@ -20,11 +20,15 @@ export class Arcs extends BaseExample {
     return createLayer(ArcLayer, {
       animate: {
         angle: AutoEasingMethod.linear(2500, 0, AutoEasingLoopStyle.REFLECT),
-        thickness: AutoEasingMethod.linear(2500, 0, AutoEasingLoopStyle.REFLECT)
+        thickness: AutoEasingMethod.linear(
+          2500,
+          0,
+          AutoEasingLoopStyle.REFLECT
+        ),
       },
       data: provider,
-      key: "arcs",
-      scaleType: ArcScaleType.NONE
+      key: 'arcs',
+      scaleType: ArcScaleType.NONE,
     });
   }
 
@@ -45,7 +49,7 @@ export class Arcs extends BaseExample {
         colorStart: [1.0, 0.0, 1.0, 1.0],
         depth: 10,
         radius: (i + 1) * 4,
-        thickness: [0.1, 0.1]
+        thickness: [0.1, 0.1],
       });
 
       directions[i] = 1;
@@ -60,7 +64,7 @@ export class Arcs extends BaseExample {
         colorStart: [1.0, 0.0, 1.0, 1.0],
         depth: 10,
         radius: (i + 1) * 4,
-        thickness: [0.1, 0.1]
+        thickness: [0.1, 0.1],
       });
 
       directions[i] = 1;

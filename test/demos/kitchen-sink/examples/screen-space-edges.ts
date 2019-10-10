@@ -10,9 +10,9 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-  ReferenceCamera2D
-} from "src";
-import { BaseExample, TestResourceKeys } from "./base-example";
+  ReferenceCamera2D,
+} from '../../../../src';
+import { BaseExample, TestResourceKeys } from './base-example';
 
 /**
  * Test edges that are made with their curvature and line width declared in screen space
@@ -55,8 +55,8 @@ export class ScreenSpaceEdges extends BaseExample {
       scaleFilter: (scale: [number, number, number]) => [
         this.shiftIsDown ? 1 : scale[0],
         this.shiftIsDown ? scale[1] : 1,
-        1
-      ]
+        1,
+      ],
     });
 
     return this.camera;
@@ -68,16 +68,16 @@ export class ScreenSpaceEdges extends BaseExample {
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       animate: {
-        thickness: AutoEasingMethod.easeOutElastic(500)
+        thickness: AutoEasingMethod.easeOutElastic(500),
       },
       data: provider,
-      key: "screen-space-edges",
+      key: 'screen-space-edges',
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.SINGLE,
       scaleFactor: () => this.camera.scale2D[1],
       scaleType: EdgeScaleType.SCREEN_CURVE,
-      type: EdgeType.BEZIER2
+      type: EdgeType.BEZIER2,
     });
   }
 
@@ -91,7 +91,7 @@ export class ScreenSpaceEdges extends BaseExample {
       end: [20, 200],
       id: `edge-interaction-0`,
       start: [20, 20],
-      thickness: [10, 10]
+      thickness: [10, 10],
     });
 
     edgeProvider.add(edge);
@@ -103,7 +103,7 @@ export class ScreenSpaceEdges extends BaseExample {
       end: [200, 20],
       id: `edge-interaction-1`,
       start: [20, 20],
-      thickness: [10, 10]
+      thickness: [10, 10],
     });
 
     edgeProvider.add(edge);
@@ -115,7 +115,7 @@ export class ScreenSpaceEdges extends BaseExample {
       end: [200, 200],
       id: `edge-interaction-2`,
       start: [20, 20],
-      thickness: [10, 10]
+      thickness: [10, 10],
     });
 
     edgeProvider.add(edge);

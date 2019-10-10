@@ -1,4 +1,4 @@
-import { apply2, apply3, apply4, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { apply2, apply3, apply4, Vec2, Vec3, Vec3Compat, Vec4 } from './vector';
 
 const { cos, sin, tan } = Math;
 
@@ -657,7 +657,7 @@ export function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 {
  */
 export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
-    console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
+    console.warn('A shear matrix can not have radians >= PI / 2 or <= -PI / 2');
   }
 
   out = out || identity2();
@@ -676,7 +676,7 @@ export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
  */
 export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
-    console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
+    console.warn('A shear matrix can not have radians >= PI / 2 or <= -PI / 2');
   }
 
   out = out || identity2();
@@ -695,7 +695,7 @@ export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
  */
 export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
-    console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
+    console.warn('A shear matrix can not have radians >= PI / 2 or <= -PI / 2');
   }
 
   out = out || identity4();
@@ -718,7 +718,7 @@ export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
  */
 export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
-    console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
+    console.warn('A shear matrix can not have radians >= PI / 2 or <= -PI / 2');
   }
 
   out = out || identity4();
@@ -741,7 +741,7 @@ export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
  */
 export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
-    console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
+    console.warn('A shear matrix can not have radians >= PI / 2 or <= -PI / 2');
   }
 
   out = out || identity4();

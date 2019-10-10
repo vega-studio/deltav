@@ -1024,7 +1024,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   normalize: normalize1,
   scale: scale1,
   subtract: subtract1,
-  vec: vec1
+  vec: vec1,
 };
 
 export const vec2Methods: VecMethods<Vec2> = {
@@ -1047,7 +1047,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   normalize: normalize2,
   scale: scale2,
   subtract: subtract2,
-  vec: vec2
+  vec: vec2,
 };
 
 export const vec3Methods: VecMethods<Vec3> = {
@@ -1070,7 +1070,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   normalize: normalize3,
   scale: scale3,
   subtract: subtract3,
-  vec: vec3
+  vec: vec3,
 };
 
 export const vec4Methods: VecMethods<Vec4> = {
@@ -1094,7 +1094,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   scale: scale4,
   subtract: subtract4,
   vec: vec4,
-  slerpQuat: slerpQuat
+  slerpQuat: slerpQuat,
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

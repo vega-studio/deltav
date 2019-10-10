@@ -2,11 +2,11 @@ import {
   Mat4x4,
   multiply4x4,
   project3As4ToScreen,
-  transform4
-} from "../../math";
-import { BaseProjection } from "../../math/base-projection";
-import { apply2, apply3, scale2, Vec2, Vec3, vec4 } from "../../math/vector";
-import { Camera, CameraProjectionType } from "../../util/camera";
+  transform4,
+} from '../../math';
+import { BaseProjection } from '../../math/base-projection';
+import { apply2, apply3, scale2, Vec2, Vec3, vec4 } from '../../math/vector';
+import { Camera, CameraProjectionType } from '../../util/camera';
 
 export class Projection3D extends BaseProjection<any> {
   /** Camera used for the 3d view. */
@@ -95,7 +95,7 @@ export class Projection3D extends BaseProjection<any> {
       apply3(out, world[0], world[1], world[2]);
     } else {
       console.warn(
-        "Projections with orthographic cameras and 3D contexts are not working yet"
+        'Projections with orthographic cameras and 3D contexts are not working yet'
       );
     }
 

@@ -65,7 +65,6 @@ async function renderEachPair(
   while (currentPair < pairs.all.length) {
     const tr = document.createElementNS(svgNS, "g");
     currentRow = tr;
-    console.log("NEW ROW");
     tr.setAttribute("transform", `translate(0, ${rowIndex * cellHeight})`);
     rowIndex++;
 
@@ -84,7 +83,6 @@ async function renderEachPair(
       td.setAttribute("dy", "1em");
 
       const pair = pairs.all[currentPair];
-      console.log(pair);
       currentPair++;
       const leftStr = pair[0];
       const rightStr = pair[1];
@@ -228,7 +226,6 @@ async function renderEachPair(
     // const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     const data = result.data;
     let pixel, r, g, b, min, index;
-    let rc = 0;
 
     for (let y = 0, canvasHeight = result.height; y < canvasHeight; y++) {
       for (let x = 0, canvasWidth = result.width; x < canvasWidth; x++) {
@@ -239,8 +236,6 @@ async function renderEachPair(
 
         // Get the index of the pair by the position of pixel
         index = floor(y / h) * maxColumns + floor(x / w);
-
-        if (r !== 0) rc++;
 
         if (index < mins.length) {
           min = mins[index];
@@ -259,8 +254,6 @@ async function renderEachPair(
         }
       }
     }
-
-    console.log(rc);
 
     // Before letter processing, remove and analyze processing for the 'space' character
     if (doSpaceCheck) {

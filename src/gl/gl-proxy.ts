@@ -241,6 +241,10 @@ export class GLProxy {
       this.gl.shaderSource(fs, material.fragmentShader);
       this.gl.compileShader(fs);
 
+      if (this.gl.isContextLost()) {
+        console.warn("Context was lost during compilation");
+      }
+
       if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
         console.error(
           this.debugContext,
@@ -260,7 +264,7 @@ export class GLProxy {
       }
     }
 
-    // Check for existingg vertex shader object
+    // Check for existing vertex shader object
     let vs = this.vertexShaders.get(material.vertexShader) || null;
 
     // If none exists, then compile
@@ -278,6 +282,10 @@ export class GLProxy {
 
       this.gl.shaderSource(vs, material.vertexShader);
       this.gl.compileShader(vs);
+
+      if (this.gl.isContextLost()) {
+        console.warn("Context was lost during compilation");
+      }
 
       if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
         console.error(
@@ -1524,3 +1532,15 @@ export class GLProxy {
     return true;
   }
 }
+
+// console.log(GLProxy.prototype);
+
+// for (const key in GLProxy.prototype) {
+//   if (typeof GLProxy.prototype[key] === "function") {
+//     const original = GLProxy.prototype[key];
+//     GLProxy.prototype[key] = function(...args) {
+//       console.log("calling", key);
+//       original.apply(this, args);
+//     };
+//   }
+// }

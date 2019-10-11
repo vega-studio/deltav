@@ -55,7 +55,6 @@
     "file-loader": "1.1.11",
     "fs-extra": "4.0.3",
     "glob": "7.1.4",
-    "html2canvas": "1.0.0-alpha.8",
     "less": "3.8.1",
     "less-loader": "4.1.0",
     "matter-js": "0.14.2",

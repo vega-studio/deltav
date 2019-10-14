@@ -38,25 +38,27 @@ async function renderEachPair(
 ) {
   // Make the svg namespace to dynamically construct an svg
   const svgNS = "http://www.w3.org/2000/svg";
-  // Calculate the max width the system can reliably handle
+  // Calculate the max width the system can reliably handle. It can be considered that the WebGL texture limit would
+  // be the limit a canvas context could handle. It would make little sense for a browser to behave otherwise.
   const contextWidth = WebGLStat.MAX_TEXTURE_SIZE / window.devicePixelRatio;
   // Create the table
-  const table = document.createElementNS(svgNS, "svg");
-  const cellWidth = fontSize * 2.5;
-  const cellHeight = fontSize * 2;
+  const cellWidth = fontSize * 2;
+  const cellHeight = fontSize * 1.3;
   const maxColumns = floor(contextWidth / cellWidth);
-
+  // Generate the svg wrapper that will hold all of our elements
+  const table = document.createElementNS(svgNS, "svg");
   table.setAttribute("width", `${contextWidth}px`);
   table.style.font = fontString;
-  // table.style.textAlign = "center";
-  // table.style.tableLayout = "fixed";
   table.style.position = "relative";
   table.style.left = "0px";
   table.style.top = `0px`;
+  // We will store the rows discovered so we can render them in batches to accommodate systems with smaller canvas limits
+  const rows = [];
+  const rowsPerBatch = Math.floor(contextWidth / cellHeight);
+  let currentBatch = 0;
 
   let currentPair = 0;
   let columnIndex = 0;
-  let rowIndex = 0;
   let currentRow;
   let rowSpacer;
   let remainingSpace = 0;
@@ -65,8 +67,13 @@ async function renderEachPair(
   while (currentPair < pairs.all.length) {
     const tr = document.createElementNS(svgNS, "g");
     currentRow = tr;
-    tr.setAttribute("transform", `translate(0, ${rowIndex * cellHeight})`);
-    rowIndex++;
+    currentBatch = Math.floor(rows.length / rowsPerBatch);
+    tr.setAttribute(
+      "transform",
+      `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
+        cellHeight})`
+    );
+    rows.push(tr);
 
     // We track how much room is remaining so we can inject an empty cell at the end to ensure
     // the table doesn't stretch to fill
@@ -113,7 +120,6 @@ async function renderEachPair(
     }
 
     remainingSpace = remaining;
-    table.appendChild(tr);
   }
 
   // Init the array for left-top corners for each letter in a pair
@@ -186,11 +192,15 @@ async function renderEachPair(
       // Otherwise, we make a new row to inject into
       else {
         const tr = document.createElement("g");
-        tr.setAttribute("transform", `translate(0, ${rowIndex * cellHeight})`);
-        rowIndex++;
+        currentBatch = Math.floor(rows.length / rowsPerBatch);
+        tr.setAttribute(
+          "transform",
+          `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
+            cellHeight})`
+        );
         currentRow = tr;
         currentRow.appendChild(td);
-        table.appendChild(tr);
+        rows.push(tr);
 
         // Inject a spacer to fill the remaining space
         rowSpacer = document.createElementNS(svgNS, "text");
@@ -210,17 +220,69 @@ async function renderEachPair(
     }
   }
 
-  // Adjust the height of the svg to cover allrows added
-  table.setAttribute("height", `${rowIndex * cellHeight}px`);
+  // We now have all of the rows calculated and prepared. We now batch the rows together to fit within the max allowed
+  // canvas size and stitch the results together at the end.
+  const totalHeight = rows.length * cellHeight;
+  const totalCanvasBatches = Math.ceil(totalHeight / contextWidth);
+  let result: ImageData | null = null;
+
+  debug(
+    "Rendering table canvas batches for font kerning analysis",
+    pairs,
+    rows
+  );
+
+  for (let i = 0; i < totalCanvasBatches; ++i) {
+    // Gather the next batch to render
+    const rowBatch = rows.splice(0, rowsPerBatch);
+    const batchHeight = rowBatch.length * cellHeight;
+    // Adjust the height of the svg to cover allrows added
+    table.setAttribute("height", `${batchHeight}px`);
+
+    // Clear out the table children
+    while (table.lastElementChild) table.lastElementChild.remove();
+
+    // Add the next row batch to the table
+    for (let k = 0, kMax = rowBatch.length; k < kMax; ++k) {
+      const row = rowBatch[k];
+      table.appendChild(row);
+    }
+
+    // Start the results with the first found result
+    if (!result) {
+      result = await svgToData(table);
+    }
+
+    // Additional results will need their results stitched into the initial result
+    else {
+      const stitchResult = await svgToData(table);
+
+      if (!stitchResult) {
+        console.warn(
+          "Font Renderer: Could not generate image data for analyzing font kerning"
+        );
+        continue;
+      }
+
+      const newBuffer: Uint8ClampedArray = new Uint8ClampedArray(
+        result.data.length + stitchResult.data.length
+      );
+
+      newBuffer.set(result.data);
+      newBuffer.set(stitchResult.data, result.data.length);
+      result = new ImageData(
+        newBuffer,
+        contextWidth * window.devicePixelRatio,
+        result.height + stitchResult.height
+      );
+    }
+  }
+
+  debug("Analyzing rendered data", result);
 
   // Width and height of each cell
   const w = cellWidth * window.devicePixelRatio;
   const h = cellHeight * window.devicePixelRatio;
-
-  // const ctx = canvas.getContext("2d");
-  debug("Rendering table for font kerning analysis", pairs, table);
-  const result = await svgToData(table);
-  debug("Analyzing rendered data", result);
 
   if (result) {
     // const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;

@@ -1532,15 +1532,3 @@ export class GLProxy {
     return true;
   }
 }
-
-// console.log(GLProxy.prototype);
-
-// for (const key in GLProxy.prototype) {
-//   if (typeof GLProxy.prototype[key] === "function") {
-//     const original = GLProxy.prototype[key];
-//     GLProxy.prototype[key] = function(...args) {
-//       console.log("calling", key);
-//       original.apply(this, args);
-//     };
-//   }
-// }

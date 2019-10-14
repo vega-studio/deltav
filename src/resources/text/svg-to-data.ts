@@ -44,11 +44,9 @@ export async function svgToData(svg: SVGSVGElement) {
     );
 
     resolver.resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
-    img.src = "";
 
-    // document.body.appendChild(canvas);
-    canvas.style.zIndex = "99999";
-    canvas.style.position = "absolute";
+    // Clean up used RAM useage for the image and canvas context
+    img.src = "";
     canvas.width = 0;
     canvas.height = 0;
   };

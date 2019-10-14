@@ -199,7 +199,7 @@ export class WordSandDemo extends BaseDemo {
 
         if (circle && pos) {
           circle.center = [pos[0], pos[1]];
-          circle.radius = 0.5;
+          circle.radius = 1;
           circle.color = [random(), random(), 1.0, 1.0];
 
           const easing = circle.getEasing(CircleLayer.attributeNames.center);

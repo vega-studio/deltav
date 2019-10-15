@@ -3,14 +3,14 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-import html2canvas from 'html2canvas';
-import { WebGLStat } from '../../gl/webgl-stat';
-import { scale2, Vec2 } from '../../math';
-import { IResourceType, ResourceType } from '../../types';
-import { IdentifyByKey } from '../../util/identify-by-key';
-import { renderGlyph } from './glyph-renderer';
+import { WebGLStat } from "../../gl/webgl-stat";
+import { scale2, Vec2 } from "../../math";
+import { IResourceType, ResourceType } from "../../types";
+import { IdentifyByKey } from "../../util/identify-by-key";
+import { renderGlyph } from "./glyph-renderer";
+import { svgToData } from "./svg-to-data";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 const { floor } = Math;
 
 type IGlyphRenderMetrics = {
@@ -36,21 +36,26 @@ async function renderEachPair(
   pairs: KerningInfo,
   calculateSpace: boolean
 ) {
-  // Calculate the max width the system can reliably handle
+  // Make the svg namespace to dynamically construct an svg
+  const svgNS = "http://www.w3.org/2000/svg";
+  // Calculate the max width the system can reliably handle. It can be considered that the WebGL texture limit would
+  // be the limit a canvas context could handle. It would make little sense for a browser to behave otherwise.
   const contextWidth = WebGLStat.MAX_TEXTURE_SIZE / window.devicePixelRatio;
   // Create the table
-  const table = document.createElement('div');
-  const maxColumns = floor(contextWidth / (fontSize * 2));
-  const cellWidth = fontSize * 2.5;
-  const cellHeight = fontSize * 2;
-
-  table.style.display = 'table';
-  table.style.width = `${contextWidth}px`;
-  table.style.textAlign = 'center';
-  table.style.tableLayout = 'fixed';
-  table.style.position = 'relative';
-  table.style.left = '0px';
-  table.style.top = `${window.innerHeight}px`;
+  const cellWidth = fontSize * 2;
+  const cellHeight = fontSize * 1.3;
+  const maxColumns = floor(contextWidth / cellWidth);
+  // Generate the svg wrapper that will hold all of our elements
+  const table = document.createElementNS(svgNS, "svg");
+  table.setAttribute("width", `${contextWidth}px`);
+  table.style.font = fontString;
+  table.style.position = "relative";
+  table.style.left = "0px";
+  table.style.top = `0px`;
+  // We will store the rows discovered so we can render them in batches to accommodate systems with smaller canvas limits
+  const rows = [];
+  const rowsPerBatch = Math.floor(contextWidth / cellHeight);
+  let currentBatch = 0;
 
   let currentPair = 0;
   let columnIndex = 0;
@@ -60,11 +65,15 @@ async function renderEachPair(
 
   // Render each pair to cell of the table
   while (currentPair < pairs.all.length) {
-    const tr = document.createElement('div');
+    const tr = document.createElementNS(svgNS, "g");
     currentRow = tr;
-    tr.style.display = 'table-row';
-    tr.style.height = `${cellHeight}px`;
-    tr.style.width = `width:${contextWidth}px`;
+    currentBatch = Math.floor(rows.length / rowsPerBatch);
+    tr.setAttribute(
+      "transform",
+      `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
+        cellHeight})`
+    );
+    rows.push(tr);
 
     // We track how much room is remaining so we can inject an empty cell at the end to ensure
     // the table doesn't stretch to fill
@@ -76,12 +85,9 @@ async function renderEachPair(
       columnIndex < maxColumns && currentPair < pairs.all.length;
       columnIndex++
     ) {
-      const td = document.createElement('div');
-      td.style.display = 'table-cell';
-      td.style.width = `${cellWidth}px`;
-      td.style.height = `${cellHeight}px`;
-      td.style.overflow = 'hidden';
-      td.style.font = fontString;
+      const td = document.createElementNS(svgNS, "text");
+      td.setAttribute("x", `${columnIndex * cellWidth}`);
+      td.setAttribute("dy", "1em");
 
       const pair = pairs.all[currentPair];
       currentPair++;
@@ -89,13 +95,13 @@ async function renderEachPair(
       const rightStr = pair[1];
 
       // Each td has two spans
-      const leftSpan = document.createElement('span');
-      const rightSpan = document.createElement('span');
-      leftSpan.style.color = '#ff0000';
-      rightSpan.style.color = '#0000ff';
+      const leftSpan = document.createElementNS(svgNS, "tspan");
+      const rightSpan = document.createElementNS(svgNS, "tspan");
+      leftSpan.setAttribute("fill", "#ff0000");
+      rightSpan.setAttribute("fill", "#0000ff");
 
-      leftSpan.innerText = leftStr;
-      rightSpan.innerText = rightStr;
+      leftSpan.textContent = leftStr;
+      rightSpan.textContent = rightStr;
 
       td.appendChild(leftSpan);
       td.appendChild(rightSpan);
@@ -105,9 +111,8 @@ async function renderEachPair(
     }
 
     if (remaining >= 0) {
-      const td = document.createElement('div');
-      td.style.display = 'table-cell';
-      td.style.width = `${remaining}px`;
+      const td = document.createElementNS(svgNS, "text");
+      td.setAttribute("width", `${remaining}px`);
       tr.appendChild(td);
       rowSpacer = td;
     } else {
@@ -115,7 +120,6 @@ async function renderEachPair(
     }
 
     remainingSpace = remaining;
-    table.appendChild(tr);
   }
 
   // Init the array for left-top corners for each letter in a pair
@@ -137,12 +141,14 @@ async function renderEachPair(
 
   // If the distance of a space is required, then we add in one more additional cell
   if (calculateSpace) {
-    const testChar = 'M';
-    const td = document.createElement('div');
-    td.style.display = 'table-cell';
-    td.style.width = `${cellWidth}px`;
-    td.style.height = `${cellHeight}px`;
-    td.style.overflow = 'hidden';
+    const testChar = "M";
+    const td = document.createElementNS(svgNS, "text");
+    td.setAttribute("dy", "1em");
+    // td.style.display = "table-cell";
+    td.style.width = `${cellWidth}`;
+    td.style.height = `${cellHeight}`;
+    td.setAttribute("x", `${cellWidth * columnIndex}`);
+    // td.style.overflow = "hidden";
     td.style.font = fontString;
 
     // The test character for the spacing will be the first character in the pairs we
@@ -153,8 +159,18 @@ async function renderEachPair(
       // Keep how wide the test character is for after the kerning calculation so we can accurately
       // determine how large a space is by subtracting the width of the character from the kerning distance.
       testSpaceCharacterWidth = render.size[0];
-      // We create two of the test characters and place a space between them. This will allow
-      td.innerHTML = `<span style="color:#ff0000">${testChar}</span> <span style="color:#0000ff">${testChar}</span>`;
+      // We create two of the test characters and place a space between them.
+      const leftSpan = document.createElementNS(svgNS, "tspan");
+      const spaceSpan = document.createElementNS(svgNS, "tspan");
+      const rightSpan = document.createElementNS(svgNS, "tspan");
+      leftSpan.setAttribute("fill", "#ff0000");
+      rightSpan.setAttribute("fill", "#0000ff");
+      leftSpan.textContent = testChar;
+      rightSpan.textContent = testChar;
+      spaceSpan.textContent = " ";
+      td.appendChild(leftSpan);
+      td.appendChild(spaceSpan);
+      td.appendChild(rightSpan);
 
       // If the last row has room for the rendering, then we just add to it
       if (columnIndex < maxColumns && currentRow) {
@@ -175,18 +191,19 @@ async function renderEachPair(
 
       // Otherwise, we make a new row to inject into
       else {
-        const tr = document.createElement('div');
+        const tr = document.createElement("g");
+        currentBatch = Math.floor(rows.length / rowsPerBatch);
+        tr.setAttribute(
+          "transform",
+          `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
+            cellHeight})`
+        );
         currentRow = tr;
-        tr.style.display = 'table-row';
-        tr.style.height = `${cellHeight}px`;
-        tr.style.width = `width:${contextWidth}px`;
         currentRow.appendChild(td);
-        table.appendChild(tr);
+        rows.push(tr);
 
         // Inject a spacer to fill the remaining space
-        rowSpacer = document.createElement('div');
-        rowSpacer.style.display = 'table-cell';
-        rowSpacer.style.width = `${(maxColumns - 1) * cellWidth}px`;
+        rowSpacer = document.createElementNS(svgNS, "text");
         tr.appendChild(rowSpacer);
       }
 
@@ -203,38 +220,77 @@ async function renderEachPair(
     }
   }
 
-  // The element must be a part of the body for html2canvas to work
-  document.getElementsByTagName('body')[0].appendChild(table);
+  // We now have all of the rows calculated and prepared. We now batch the rows together to fit within the max allowed
+  // canvas size and stitch the results together at the end.
+  const totalHeight = rows.length * cellHeight;
+  const totalCanvasBatches = Math.ceil(totalHeight / contextWidth);
+  let result: ImageData | null = null;
 
-  // Config for html2canvas
-  const config: Html2Canvas.Html2CanvasOptions = {
-    backgroundColor: null,
-    logging: debug.enabled,
-  };
+  debug(
+    "Rendering table canvas batches for font kerning analysis",
+    pairs,
+    rows
+  );
 
-  debug('Rendering table for font kerning analysis', pairs, table);
-  const canvas = await html2canvas(table, config);
+  for (let i = 0; i < totalCanvasBatches; ++i) {
+    // Gather the next batch to render
+    const rowBatch = rows.splice(0, rowsPerBatch);
+    const batchHeight = rowBatch.length * cellHeight;
+    // Adjust the height of the svg to cover allrows added
+    table.setAttribute("height", `${batchHeight}px`);
 
-  if (!canvas) {
-    console.warn('Could not convert DOM structure to canvas');
-    return;
+    // Clear out the table children
+    while (table.lastElementChild) table.lastElementChild.remove();
+
+    // Add the next row batch to the table
+    for (let k = 0, kMax = rowBatch.length; k < kMax; ++k) {
+      const row = rowBatch[k];
+      table.appendChild(row);
+    }
+
+    // Start the results with the first found result
+    if (!result) {
+      result = await svgToData(table);
+    }
+
+    // Additional results will need their results stitched into the initial result
+    else {
+      const stitchResult = await svgToData(table);
+
+      if (!stitchResult) {
+        console.warn(
+          "Font Renderer: Could not generate image data for analyzing font kerning"
+        );
+        continue;
+      }
+
+      const newBuffer: Uint8ClampedArray = new Uint8ClampedArray(
+        result.data.length + stitchResult.data.length
+      );
+
+      newBuffer.set(result.data);
+      newBuffer.set(stitchResult.data, result.data.length);
+      result = new ImageData(
+        newBuffer,
+        contextWidth * window.devicePixelRatio,
+        result.height + stitchResult.height
+      );
+    }
   }
 
-  // table.remove();
+  debug("Analyzing rendered data", result);
 
   // Width and height of each cell
   const w = cellWidth * window.devicePixelRatio;
   const h = cellHeight * window.devicePixelRatio;
 
-  const ctx = canvas.getContext('2d');
-  debug('Analyzing rendered canvas', canvas);
-
-  if (ctx) {
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  if (result) {
+    // const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const data = result.data;
     let pixel, r, g, b, min, index;
 
-    for (let y = 0, canvasHeight = canvas.height; y < canvasHeight; y++) {
-      for (let x = 0, canvasWidth = canvas.width; x < canvasWidth; x++) {
+    for (let y = 0, canvasHeight = result.height; y < canvasHeight; y++) {
+      for (let x = 0, canvasWidth = result.width; x < canvasWidth; x++) {
         pixel = (canvasWidth * y + x) * 4;
         r = data[pixel + 0];
         g = data[pixel + 1];
@@ -260,6 +316,7 @@ async function renderEachPair(
         }
       }
     }
+
     // Before letter processing, remove and analyze processing for the 'space' character
     if (doSpaceCheck) {
       const min = mins.pop();
@@ -292,8 +349,8 @@ async function renderEachPair(
     );
   }
 
-  table.remove();
-  debug('Kerning rendering analysis complete', pairs.pairs);
+  // table.remove();
+  debug("Kerning rendering analysis complete", pairs.pairs);
 }
 
 /**

@@ -178,14 +178,6 @@ export class TextDemo extends BaseDemo {
               }),
             },
             layers: {
-              hey: createLayer(LabelLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500),
-                },
-                data: new InstanceProvider(),
-                resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode,
-              }),
               labels: createLayer(LabelLayer, {
                 animate: {
                   color: AutoEasingMethod.easeInOutCubic(500),

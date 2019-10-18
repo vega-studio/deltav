@@ -1,5 +1,5 @@
 const { sh } = require('./lib/exec');
-const { removeSync } = require('fs-extra');
+const { removeSync, copySync } = require('fs-extra');
 const { resolve } = require('path');
 
 const TEST = process.env.TEST;
@@ -73,7 +73,7 @@ if (
 }
 
 // Build the monolithic distribution
-if (sh('npm', 'run', 'build').code !== 0) {
+if (sh('node', 'scripts/build').code !== 0) {
   console.log('Failed to compile distribution');
   process.exit(1);
 }
@@ -84,6 +84,14 @@ try {
 }
 catch (err) {
   console.log('Failed to clean distribution');
+  process.exit(1);
+}
+
+try  {
+  copySync(resolve('docs'), resolve('dist/docs'));
+}
+catch (err) {
+  console.log('Failed to copy docs to distribution');
   process.exit(1);
 }
 

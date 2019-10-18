@@ -2,6 +2,7 @@
 node_modules
 # The actual build files
 build
+.cache
 
 # -----[ Metadata ]------------------------------------------------
 # macOS
@@ -20,8 +21,10 @@ scripts
 dist/index.js.map
 # Remove any development Code
 src
+docs
 # Ensure distribution sources are included
 !dist/src
+!dist/docs
 # Remove any tests
 test
 # Clear out any uneeded config files of any sort

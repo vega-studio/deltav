@@ -4,7 +4,7 @@
  */
 
 const { min, max } = Math;
-const canvas = document.createElement('canvas');
+const canvas = document.createElement("canvas");
 let ctx: CanvasRenderingContext2D;
 
 /**
@@ -74,7 +74,7 @@ export function renderGlyph(
   }
 
   if (!ctx) {
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     if (context) ctx = context;
     else return null;
   }
@@ -82,7 +82,7 @@ export function renderGlyph(
   // Draw the glyph
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = font;
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = "white";
   ctx.fillText(glyph, width / 2, height / 2);
 
   // Get the metrics of the glyph within the rendering
@@ -93,7 +93,7 @@ export function renderGlyph(
 
     return {
       data,
-      size: [0, 0],
+      size: [0, 0]
     };
   }
 
@@ -110,6 +110,6 @@ export function renderGlyph(
 
   return {
     data,
-    size: [glyphWidth, glyphHeight],
+    size: [glyphWidth, glyphHeight]
   };
 }

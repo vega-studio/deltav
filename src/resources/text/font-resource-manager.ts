@@ -1,35 +1,35 @@
-import { Instance } from '../../instance-provider/instance';
+import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
-  subTextureIOValue,
-} from '../../resources/texture/sub-texture';
-import { ILayerProps, Layer } from '../../surface/layer';
-import { BaseIOExpansion } from '../../surface/layer-processing/base-io-expansion';
+  subTextureIOValue
+} from "../../resources/texture/sub-texture";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
   IResourceContext,
   IResourceInstanceAttribute,
   Omit,
-  ResourceType,
-} from '../../types';
-import { nextFrame, shallowEqual } from '../../util';
+  ResourceType
+} from "../../types";
+import { nextFrame, shallowEqual } from "../../util";
 import {
   BaseResourceManager,
-  BaseResourceOptions,
-} from '../base-resource-manager';
-import { TextureIOExpansion } from '../texture/texture-io-expansion';
+  BaseResourceOptions
+} from "../base-resource-manager";
+import { TextureIOExpansion } from "../texture/texture-io-expansion";
 import {
   FontManager,
   IFontResourceOptions,
-  isFontResource,
-} from './font-manager';
-import { FontMap } from './font-map';
+  isFontResource
+} from "./font-manager";
+import { FontMap } from "./font-map";
 import {
   FontResourceRequestFetch,
-  IFontResourceRequest,
-} from './font-resource-request';
+  IFontResourceRequest
+} from "./font-resource-request";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 
 export interface IFontResourceRequestInternal extends IFontResourceRequest {
   /**
@@ -43,11 +43,11 @@ export interface IFontResourceRequestInternal extends IFontResourceRequest {
  * Wrapper method to create a font resource request to make typings and intellisense work better.
  */
 export function fontRequest(
-  options: Omit<IFontResourceRequest, 'type'>
+  options: Omit<IFontResourceRequest, "type">
 ): IFontResourceRequest {
   return {
     type: ResourceType.FONT,
-    ...options,
+    ...options
   };
 }
 
@@ -154,7 +154,7 @@ export class FontResourceManager extends BaseResourceManager<
           debug("All requests for resource '%s' are processed", fontResource);
         } else {
           debug(
-            'There were no Font requests waiting for completion for resource',
+            "There were no Font requests waiting for completion for resource",
             fontResource
           );
         }
@@ -208,7 +208,7 @@ export class FontResourceManager extends BaseResourceManager<
         this.resourceLookup.set(options.key, fontMap);
       }
 
-      debug('Font map created->', fontMap);
+      debug("Font map created->", fontMap);
     }
   }
 
@@ -305,7 +305,7 @@ export class FontResourceManager extends BaseResourceManager<
     if (shallowEqual(options.fontSource, resource.fontSource)) return;
 
     debug(
-      'Font resources currently do not update. To update their properties simply destroy and recreate for now.'
+      "Font resources currently do not update. To update their properties simply destroy and recreate for now."
     );
   }
 }

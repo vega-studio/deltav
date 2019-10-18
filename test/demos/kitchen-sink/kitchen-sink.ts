@@ -9,36 +9,36 @@ import {
   ISceneOptions,
   LayerInitializer,
   Vec4,
-  View2D,
-} from 'src';
+  View2D
+} from "../../../src";
 
-import * as datGUI from 'dat.gui';
-import { BaseDemo } from '../../common/base-demo';
+import * as datGUI from "dat.gui";
+import { BaseDemo } from "../../common/base-demo";
 
-import { Blending } from '../../demos/kitchen-sink/examples/blending';
-import { DEFAULT_RESOURCES } from '../../types';
-import { AnimateDeleteAdd } from './examples/animate-delete-add';
-import { Arcs } from './examples/arcs';
-import { BaseExample } from './examples/base-example';
-import { BendyEdge } from './examples/bendy-edge';
-import { BoundedView } from './examples/bounded-view';
-import { BoundedView3 } from './examples/bounded-view3';
-import { BoxOfCircles } from './examples/box-of-circles';
-import { BoxOfRings } from './examples/box-of-rings';
-import { ChangingAnchorLabels } from './examples/changing-anchor-labels';
-import { Images } from './examples/images';
-import { LabelAnimatedScale } from './examples/label-animated-scale';
-import { LabelSizingCorrected } from './examples/label-sizing-corrected';
-import { Lines } from './examples/lines';
-import { MouseInteraction } from './examples/mouse-interaction';
-import { MouseInteractionColorPicking } from './examples/mouse-interaction-color-picking';
-import { MouseInteractionEdges } from './examples/mouse-interaction-edges';
-import { MouseInteractionImages } from './examples/mouse-interaction-images';
-import { MouseInteractionLabels } from './examples/mouse-interaction-labels';
-import { MouseInteractionRectangle } from './examples/mouse-interaction-rectangle';
-import { ScreenSpaceEdges } from './examples/screen-space-edges';
-import { SingleAxisLabelScaling } from './examples/single-axis-label-scaling';
-import { VertexAttributePacking } from './examples/vertex-attribute-packing';
+import { Blending } from "../../demos/kitchen-sink/examples/blending";
+import { DEFAULT_RESOURCES } from "../../types";
+import { AnimateDeleteAdd } from "./examples/animate-delete-add";
+import { Arcs } from "./examples/arcs";
+import { BaseExample } from "./examples/base-example";
+import { BendyEdge } from "./examples/bendy-edge";
+import { BoundedView } from "./examples/bounded-view";
+import { BoundedView3 } from "./examples/bounded-view3";
+import { BoxOfCircles } from "./examples/box-of-circles";
+import { BoxOfRings } from "./examples/box-of-rings";
+import { ChangingAnchorLabels } from "./examples/changing-anchor-labels";
+import { Images } from "./examples/images";
+import { LabelAnimatedScale } from "./examples/label-animated-scale";
+import { LabelSizingCorrected } from "./examples/label-sizing-corrected";
+import { Lines } from "./examples/lines";
+import { MouseInteraction } from "./examples/mouse-interaction";
+import { MouseInteractionColorPicking } from "./examples/mouse-interaction-color-picking";
+import { MouseInteractionEdges } from "./examples/mouse-interaction-edges";
+import { MouseInteractionImages } from "./examples/mouse-interaction-images";
+import { MouseInteractionLabels } from "./examples/mouse-interaction-labels";
+import { MouseInteractionRectangle } from "./examples/mouse-interaction-rectangle";
+import { ScreenSpaceEdges } from "./examples/screen-space-edges";
+import { SingleAxisLabelScaling } from "./examples/single-axis-label-scaling";
+import { VertexAttributePacking } from "./examples/vertex-attribute-packing";
 
 /**
  * The state of the application
@@ -79,7 +79,7 @@ function makeDemos() {
     new Arcs(),
     new VertexAttributePacking(),
     new VertexAttributePacking(true),
-    new Blending(),
+    new Blending()
   ];
 }
 
@@ -144,18 +144,18 @@ export class KitchenSink extends BaseDemo {
     return new BasicSurface({
       container,
       rendererOptions: {
-        antialias: true,
+        antialias: true
       },
       providers: {},
       resources: {
         atlas: DEFAULT_RESOURCES.atlas,
-        font: DEFAULT_RESOURCES.font,
+        font: DEFAULT_RESOURCES.font
       },
       cameras: {},
       eventManagers: () => this.getEventManagers(),
       pipeline: () => ({
-        scenes,
-      }),
+        scenes
+      })
     });
   }
 
@@ -185,7 +185,7 @@ export class KitchenSink extends BaseDemo {
       const layer = test.makeLayer(
         {
           atlas: this.surface.resources.atlas.key,
-          font: this.surface.resources.font.key,
+          font: this.surface.resources.font.key
         },
         fakeProvider || !controls ? new InstanceProvider() : controls.provider
       );
@@ -219,7 +219,7 @@ export class KitchenSink extends BaseDemo {
       [0.1, 0.1, 0.0, 1.0],
       [0.1, 0.0, 0.1, 1.0],
       [0.1, 0.1, 0.1, 1.0],
-      [0.0, 0.1, 0.1, 1.0],
+      [0.0, 0.1, 0.1, 1.0]
     ];
 
     let testIndex = -1;
@@ -253,12 +253,12 @@ export class KitchenSink extends BaseDemo {
                     height: `${viewSize}%`,
                     left: `${viewSize * k}%`,
                     top: `${viewSize * i}%`,
-                    width: `${viewSize}%`,
-                  },
-                }),
+                    width: `${viewSize}%`
+                  }
+                })
               ],
-              layers: [],
-            },
+              layers: []
+            }
           };
 
           scenes.push(init);
@@ -277,7 +277,7 @@ export class KitchenSink extends BaseDemo {
       if (!surface.base) return;
       test.surface = surface.base;
       this.testControls.set(test, {
-        provider: test.makeProvider(),
+        provider: test.makeProvider()
       });
     });
 

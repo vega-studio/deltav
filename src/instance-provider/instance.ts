@@ -1,7 +1,7 @@
-import { IdentifiableById, IEasingControl, IEasingProps } from '../types';
-import { EasingProps } from '../util/easing-props';
-import { InstanceProvider } from './instance-provider';
-import { observable } from './observable';
+import { IdentifiableById, IEasingControl, IEasingProps } from "../types";
+import { EasingProps } from "../util/easing-props";
+import { InstanceProvider } from "./instance-provider";
+import { observable } from "./observable";
 
 let instanceUID = 0;
 
@@ -156,13 +156,13 @@ export class Instance implements IdentifiableById {
   resourceTrigger() {
     // No default behavior, subclasses must override and provide behavior.
     console.warn(
-      'resourceTrigger called on an instance that did not override resourceTrigger. resourceTrigger MUST be overridden for instances',
+      "resourceTrigger called on an instance that did not override resourceTrigger. resourceTrigger MUST be overridden for instances",
       "that utilize a resource. The observable that is tied to committing the resource should be 'triggered' in this method."
     );
   }
 
   constructor(options: IInstanceOptions) {
-    this._id = options.id || '';
+    this._id = options.id || "";
     this.active = options.active || this.active;
   }
 }

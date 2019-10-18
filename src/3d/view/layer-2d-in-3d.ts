@@ -1,11 +1,11 @@
-import { Control2D, Layer2D } from '../../2d';
-import { Instance } from '../../instance-provider/instance';
+import { Control2D, Layer2D } from "../../2d";
+import { Instance } from "../../instance-provider/instance";
 import {
   createLayer,
   ILayerConstructable,
-  ILayerProps,
-} from '../../surface/layer';
-import { IShaderInitialization, Omit } from '../../types';
+  ILayerProps
+} from "../../surface/layer";
+import { IShaderInitialization, Omit } from "../../types";
 
 /**
  * Specifies a 2D axis system within a 3D world.
@@ -16,7 +16,7 @@ export enum Axis2D {
   /** X-axis remains x-axis and y-axis is now mapped to the z axis */
   XZ,
   /** X-axis is mapped to the z-axis and the y-axis remains y-axis */
-  YZ,
+  YZ
 }
 
 /**
@@ -35,15 +35,15 @@ export enum Axis2D {
 export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
   axis2D: Axis2D,
   classType: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, 'key'> & Partial<Pick<U, 'key'>> & { control2D: Control2D }
+  props: Omit<U, "key"> & Partial<Pick<U, "key">> & { control2D: Control2D }
 ) {
   const doesInheritLayer2D =
     classType === Layer2D || classType.prototype instanceof Layer2D;
 
   if (!doesInheritLayer2D) {
     console.warn(
-      'A Layer type was specified for createLayer2din3D that is NOT a Layer2D type, which is invalid.',
-      'The layer will be used without being modified.'
+      "A Layer type was specified for createLayer2din3D that is NOT a Layer2D type, which is invalid.",
+      "The layer will be used without being modified."
     );
     return createLayer(classType, props);
   }
@@ -52,13 +52,13 @@ export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
 
   switch (axis2D) {
     case Axis2D.XY:
-      newModule = 'world2DXY';
+      newModule = "world2DXY";
       break;
     case Axis2D.XZ:
-      newModule = 'world2DXZ';
+      newModule = "world2DXZ";
       break;
     case Axis2D.YZ:
-      newModule = 'world2DYZ';
+      newModule = "world2DYZ";
       break;
 
     default:
@@ -71,20 +71,20 @@ export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
       layerModules: { fs: string[]; vs: string[] }
     ) => {
       // We remove the world 2D module to replace it with our custom module that will handle the projections correctly.
-      let world2DIndex = layerModules.vs.indexOf('world2D');
+      let world2DIndex = layerModules.vs.indexOf("world2D");
 
       if (world2DIndex >= 0) {
         layerModules.vs.splice(world2DIndex, 1, newModule);
       }
 
-      world2DIndex = layerModules.fs.indexOf('world2D');
+      world2DIndex = layerModules.fs.indexOf("world2D");
 
       if (world2DIndex >= 0) {
         layerModules.fs.splice(world2DIndex, 1, newModule);
       }
 
       return layerModules;
-    },
+    }
   });
 
   return createLayer(classType, modifiedProps);

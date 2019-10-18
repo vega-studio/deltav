@@ -1,6 +1,6 @@
-import { identity4, Mat4x4 } from '../../math';
-import { Node } from './node';
-import { Transform } from './transform';
+import { identity4, Mat4x4 } from "../../math";
+import { Node } from "./node";
+import { Transform } from "./transform";
 
 /**
  * Expresses an item in the 3D world within a SceneGraph. Allows the concept of parent child relationships and provides
@@ -34,10 +34,10 @@ export class Node3D extends Node<Node3D> {
   private _world: Mat4x4 | null = identity4();
 
   willMount(): void {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 
   didMount(): void {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 }

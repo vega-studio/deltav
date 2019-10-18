@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/constants/to-degrees.vs","dependencies":[],"generated":{"js":"module.exports = \"float toDegrees = 57.2957795131;\\n\""},"sourceMaps":null,"error":null,"hash":"adeafb3677482344c812b90e46d2e9a1","cacheData":{}}

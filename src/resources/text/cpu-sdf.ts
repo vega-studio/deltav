@@ -1,4 +1,4 @@
-import { dot2, subtract2, Vec2 } from '../../math/vector';
+import { dot2, subtract2, Vec2 } from "../../math/vector";
 
 const { ceil, max, log2, pow, sqrt } = Math;
 
@@ -35,7 +35,7 @@ function getSeed(canvas: HTMLCanvasElement, imageData: Uint8ClampedArray) {
 
   return {
     seed: buffer,
-    inverse,
+    inverse
   };
 }
 
@@ -198,7 +198,7 @@ function jfaPasses(seedBuffer: Vec2[][], passes: number) {
           (readBuffer[x + offset] || [])[y] || NO_DATA,
           (readBuffer[x - offset] || [])[y + offset] || NO_DATA,
           (readBuffer[x] || [])[y + offset] || NO_DATA,
-          (readBuffer[x + offset] || [])[y + offset] || NO_DATA,
+          (readBuffer[x + offset] || [])[y + offset] || NO_DATA
         ];
 
         nearestIndex = 0;
@@ -259,7 +259,7 @@ export function convertToSDF(
   ) => void = mapToDistanceField
 ) {
   const { width, height } = canvas;
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) return;
 
   const imageData = context.getImageData(0, 0, width, height).data;

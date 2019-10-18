@@ -13,9 +13,9 @@ import {
   LayerInitializer,
   Surface,
   Vec,
-  Vec2,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  Vec2
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 const { min, max, random } = Math;
 
@@ -27,14 +27,14 @@ function getColorIndicesForCoord(x: number, y: number, width: number) {
 function makeTextPositions(surface: Surface, view: string) {
   const viewBounds = surface.getViewSize(view);
   if (!viewBounds) return [];
-  const canvas = document.createElement('canvas').getContext('2d');
+  const canvas = document.createElement("canvas").getContext("2d");
   if (!canvas) return [];
 
   let width = (canvas.canvas.width = viewBounds.width - 10);
   let height = (canvas.canvas.height = 80);
-  canvas.fillStyle = 'white';
-  canvas.font = '40px Consolas';
-  canvas.fillText('Vega Animation', 0, 40, viewBounds.width - 10);
+  canvas.fillStyle = "white";
+  canvas.font = "40px Consolas";
+  canvas.fillText("Vega Animation", 0, 40, viewBounds.width - 10);
 
   const pixels = canvas.getImageData(0, 0, width, height);
 
@@ -129,7 +129,7 @@ export class BoxOfCircles extends BaseExample {
 
     this.manager = new BasicCamera2DController({
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
 
     return this.manager;
@@ -142,14 +142,14 @@ export class BoxOfCircles extends BaseExample {
     this.animationControl = {
       center: AutoEasingMethod.easeBackOut(1000, 500),
       color: AutoEasingMethod.linear(500, 1500),
-      radius: AutoEasingMethod.linear(500, 1500),
+      radius: AutoEasingMethod.linear(500, 1500)
     };
 
     return createLayer(CircleLayer, {
       animate: this.animationControl,
       data: provider,
-      key: 'box-of-circles',
-      scaleFactor: () => this.camera.scale2D[0],
+      key: "box-of-circles",
+      scaleFactor: () => this.camera.scale2D[0]
     });
   }
 
@@ -182,7 +182,7 @@ export class BoxOfCircles extends BaseExample {
 
       this.textCache = {
         buckets: circleBuckets,
-        xy,
+        xy
       };
     }
 
@@ -221,7 +221,7 @@ export class BoxOfCircles extends BaseExample {
           color: [1.0, 0.0, 0.0, 1.0],
           id: `circle${i * 100 + k}`,
           radius: 2,
-          center: [i * 4, k * 4],
+          center: [i * 4, k * 4]
         });
 
         circles.push(circle);

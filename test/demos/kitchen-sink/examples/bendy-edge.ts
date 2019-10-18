@@ -5,9 +5,9 @@ import {
   EdgeType,
   InstanceProvider,
   LayerInitializer,
-  nextFrame,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  nextFrame
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BendyEdge extends BaseExample {
   makeLayer(
@@ -16,8 +16,8 @@ export class BendyEdge extends BaseExample {
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       data: provider,
-      key: 'bendy-edge',
-      type: EdgeType.BEZIER,
+      key: "bendy-edge",
+      type: EdgeType.BEZIER
     });
   }
 
@@ -39,7 +39,7 @@ export class BendyEdge extends BaseExample {
           end: [200, bounds.height - 10],
           id: `edge-bendy`,
           start: [200, 5],
-          thickness: [5, 5],
+          thickness: [5, 5]
         });
 
         edges.push(edge);
@@ -53,13 +53,13 @@ export class BendyEdge extends BaseExample {
             Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
-            edge.start[1],
+            edge.start[1]
           ];
           edge.end = [
             Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
-            edge.end[1],
+            edge.end[1]
           ];
         }
       }, 1000 / 60);

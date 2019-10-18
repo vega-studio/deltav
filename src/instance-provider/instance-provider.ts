@@ -1,7 +1,7 @@
-import { IInstanceProvider } from '../surface/layer';
-import { InstanceDiffType } from '../types';
-import { uid } from '../util/uid';
-import { Instance } from './instance';
+import { IInstanceProvider } from "../surface/layer";
+import { InstanceDiffType } from "../types";
+import { uid } from "../util/uid";
+import { Instance } from "./instance";
 
 /**
  * This is an entry within the change list of the provider. It represents the type of change
@@ -36,7 +36,7 @@ export class InstanceProvider<T extends Instance>
    * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
    * so we use this to detect when multiple contexts have attempted use of this provider.
    */
-  resolveContext: string = '';
+  resolveContext: string = "";
 
   constructor(instances?: T[]) {
     if (instances) {
@@ -77,7 +77,7 @@ export class InstanceProvider<T extends Instance>
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.INSERT,
-        instance.changes,
+        instance.changes
       ]);
     }
 
@@ -117,7 +117,7 @@ export class InstanceProvider<T extends Instance>
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.CHANGE,
-        instance.changes,
+        instance.changes
       ]);
     }
   }
@@ -136,7 +136,7 @@ export class InstanceProvider<T extends Instance>
         this.instanceChanges.set(instance.uid, [
           instance,
           InstanceDiffType.REMOVE,
-          {},
+          {}
         ]);
       }
     }
@@ -153,7 +153,7 @@ export class InstanceProvider<T extends Instance>
 
     if (this.resolveContext && this.resolveContext !== context) {
       throw new Error(
-        'An instance provider has been issued to two layers. This is not a suppported feature yet and can cause issues.'
+        "An instance provider has been issued to two layers. This is not a suppported feature yet and can cause issues."
       );
     }
 
@@ -178,7 +178,7 @@ export class InstanceProvider<T extends Instance>
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.INSERT,
-        emptyPropertyChanges,
+        emptyPropertyChanges
       ]);
     });
   }

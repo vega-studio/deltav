@@ -1,15 +1,15 @@
-import { Texture } from '../../gl/texture';
-import { Instance } from '../../instance-provider/instance';
+import { Texture } from "../../gl/texture";
+import { Instance } from "../../instance-provider/instance";
 import {
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from '../../shaders/processing/base-shader-io-injection';
-import { MetricsProcessing } from '../../shaders/processing/metrics-processing';
-import { ILayerProps, Layer } from '../../surface/layer';
+  ShaderIOHeaderInjectionResult
+} from "../../shaders/processing/base-shader-io-injection";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+import { ILayerProps, Layer } from "../../surface/layer";
 import {
   BaseIOExpansion,
-  ShaderIOExpansion,
-} from '../../surface/layer-processing/base-io-expansion';
+  ShaderIOExpansion
+} from "../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
@@ -19,19 +19,19 @@ import {
   IValueInstanceAttribute,
   IVertexAttribute,
   ShaderInjectionTarget,
-  UniformSize,
-} from '../../types';
-import { ResourceRouter } from '../resource-router';
+  UniformSize
+} from "../../types";
+import { ResourceRouter } from "../resource-router";
 
-const debugCtx = 'TextureIOExpansion';
+const debugCtx = "TextureIOExpansion";
 
 /** Empty texture that will default to the zero texture and unit */
 const emptyTexture = new Texture({
   data: {
     width: 2,
     height: 2,
-    buffer: new Uint8Array(16),
-  },
+    buffer: new Uint8Array(16)
+  }
 });
 
 /** Resource Attribute typeguard */
@@ -131,7 +131,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
                 injection === ShaderInjectionTarget.ALL,
               injections[1] ||
                 injection === ShaderInjectionTarget.FRAGMENT ||
-                injection === ShaderInjectionTarget.ALL,
+                injection === ShaderInjectionTarget.ALL
             ]);
           } else {
             atlasInstanceAttributes.push(attribute);
@@ -139,7 +139,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
               injection === ShaderInjectionTarget.VERTEX ||
                 injection === ShaderInjectionTarget.ALL,
               injection === ShaderInjectionTarget.FRAGMENT ||
-                injection === ShaderInjectionTarget.ALL,
+                injection === ShaderInjectionTarget.ALL
             ]);
           }
         }
@@ -185,7 +185,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
               }
 
               return emptyTexture;
-            },
+            }
           },
           // This provides the size of the texture that is applied to the sampler.
           {
@@ -207,8 +207,8 @@ export class TextureIOExpansion extends BaseIOExpansion {
               }
 
               return [1, 1];
-            },
-          },
+            }
+          }
         ];
       }
     );
@@ -219,7 +219,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
     return {
       instanceAttributes: [],
       vertexAttributes: [],
-      uniforms: flatten,
+      uniforms: flatten
     };
   }
 
@@ -237,7 +237,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
     instanceAttributes.forEach(attribute => {
       if (attribute.easing && attribute.resource) {
         console.warn(
-          'An instance attribute can not have both easing and resource properties. Undefined behavior will occur.'
+          "An instance attribute can not have both easing and resource properties. Undefined behavior will occur."
         );
         console.warn(attribute);
 
@@ -262,7 +262,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
     uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     const out = {
-      injection: '',
+      injection: ""
     };
 
     for (let i = 0, iMax = uniforms.length; i < iMax; ++i) {

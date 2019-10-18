@@ -1,4 +1,4 @@
-import { Vec2 } from '@diniden/signal-processing';
+import { Vec2 } from "@diniden/signal-processing";
 import {
   AutoEasingMethod,
   CommonMaterialOptions,
@@ -10,24 +10,24 @@ import {
   InstanceProvider,
   IShaderInitialization,
   Layer,
-  VertexAttributeSize,
-} from '../../../../src';
-import { SurfaceTileInstance } from './surface-tile-instance';
+  VertexAttributeSize
+} from "../../../../src";
+import { SurfaceTileInstance } from "./surface-tile-instance";
 
 export class SurfaceTileLayer extends Layer<
   SurfaceTileInstance,
   ILayerProps<SurfaceTileInstance>
 > {
   static defaultProps: ILayerProps<SurfaceTileInstance> = {
-    key: '',
-    data: new InstanceProvider<SurfaceTileInstance>(),
+    key: "",
+    data: new InstanceProvider<SurfaceTileInstance>()
   };
 
   static attributeNames = {
-    c1: 'c1',
-    c2: 'c2',
-    c3: 'c3',
-    c4: 'c4',
+    c1: "c1",
+    c2: "c2",
+    c3: "c3",
+    c4: "c4"
   };
 
   initShader(): IShaderInitialization<SurfaceTileInstance> {
@@ -38,7 +38,7 @@ export class SurfaceTileLayer extends Layer<
       3,
       1,
       3,
-      4,
+      4
     ];
 
     const tex: Vec2[] = [
@@ -48,64 +48,64 @@ export class SurfaceTileLayer extends Layer<
 
       [0.0, 0.0],
       [1.0, 1.0],
-      [0.0, 1.0],
+      [0.0, 1.0]
     ];
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
-      fs: require('./surface-tile-layer.fs'),
+      fs: require("./surface-tile-layer.fs"),
       instanceAttributes: [
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
           name: SurfaceTileLayer.attributeNames.c1,
           size: InstanceAttributeSize.THREE,
-          update: o => o.c1,
+          update: o => o.c1
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
           name: SurfaceTileLayer.attributeNames.c2,
           size: InstanceAttributeSize.THREE,
-          update: o => o.c2,
+          update: o => o.c2
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
           name: SurfaceTileLayer.attributeNames.c3,
           size: InstanceAttributeSize.THREE,
-          update: o => o.c3,
+          update: o => o.c3
         }),
         createAttribute({
           easing: AutoEasingMethod.easeInOutCubic(500),
           name: SurfaceTileLayer.attributeNames.c4,
           size: InstanceAttributeSize.THREE,
-          update: o => o.c4,
+          update: o => o.c4
         }),
         createAttribute({
-          name: 'color',
+          name: "color",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.color,
-        }),
+          update: o => o.color
+        })
       ],
       uniforms: [],
       vertexAttributes: [
         createVertex({
-          name: 'corner',
+          name: "corner",
           size: VertexAttributeSize.ONE,
-          update: (vertex: number) => [positions[vertex]],
+          update: (vertex: number) => [positions[vertex]]
         }),
         createVertex({
-          name: 'texCoord',
+          name: "texCoord",
           size: VertexAttributeSize.TWO,
-          update: (vertex: number) => tex[vertex],
-        }),
+          update: (vertex: number) => tex[vertex]
+        })
       ],
       vertexCount: 6,
-      vs: require('./surface-tile-layer.vs'),
+      vs: require("./surface-tile-layer.vs")
     };
   }
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.NONE,
+      cullSide: GLSettings.Material.CullSide.NONE
     });
   }
 }

@@ -1,7 +1,7 @@
-import { GLSettings } from '../../../gl';
-import { InstanceProvider } from '../../../instance-provider';
-import { Vec } from '../../../math';
-import { IAutoEasingMethod } from '../../../math/auto-easing-method';
+import { GLSettings } from "../../../gl";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec } from "../../../math";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -9,11 +9,11 @@ import {
   IUniform,
   IVertexAttribute,
   UniformSize,
-  VertexAttributeSize,
-} from '../../../types';
-import { CommonMaterialOptions } from '../../../util';
-import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
-import { CircleInstance } from './circle-instance';
+  VertexAttributeSize
+} from "../../../types";
+import { CommonMaterialOptions } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { CircleInstance } from "./circle-instance";
 
 export interface ICircleLayerProps<T extends CircleInstance>
   extends ILayer2DProps<T> {
@@ -55,15 +55,15 @@ export class CircleLayer<
 > extends Layer2D<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
-    key: '',
-    scaleFactor: () => 1,
+    key: "",
+    scaleFactor: () => 1
   };
 
   static attributeNames = {
-    center: 'center',
-    color: 'color',
-    depth: 'depth',
-    radius: 'radius',
+    center: "center",
+    color: "color",
+    depth: "depth",
+    radius: "radius"
   };
 
   /**
@@ -74,13 +74,13 @@ export class CircleLayer<
       animate = {},
       scaleFactor = () => 1,
       usePoints = false,
-      opacity = () => 1,
+      opacity = () => 1
     } = this.props;
 
     const {
       center: animateCenter,
       radius: animateRadius,
-      color: animateColor,
+      color: animateColor
     } = animate;
 
     const vertexToNormal: { [key: number]: number } = {
@@ -89,7 +89,7 @@ export class CircleLayer<
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -98,20 +98,20 @@ export class CircleLayer<
       2: -1,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     const vertexAttributes: IVertexAttribute[] = [
       {
-        name: 'normals',
+        name: "normals",
         size: VertexAttributeSize.TWO,
         update: (vertex: number) => [
           // Normal
           vertexToNormal[vertex],
           // The side of the quad
-          vertexToSide[vertex],
-        ],
-      },
+          vertexToSide[vertex]
+        ]
+      }
     ];
 
     const vertexCount = 6;
@@ -121,50 +121,50 @@ export class CircleLayer<
         ? GLSettings.Model.DrawMode.POINTS
         : GLSettings.Model.DrawMode.TRIANGLE_STRIP,
       fs: usePoints
-        ? require('./circle-layer-points.fs')
-        : require('./circle-layer.fs'),
+        ? require("./circle-layer-points.fs")
+        : require("./circle-layer.fs"),
       instanceAttributes: [
         {
           easing: animateCenter,
           name: CircleLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: circle => circle.center,
+          update: circle => circle.center
         },
         {
           easing: animateRadius,
           name: CircleLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
-          update: circle => [circle.radius],
+          update: circle => [circle.radius]
         },
         {
           name: CircleLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: circle => [circle.depth],
+          update: circle => [circle.depth]
         },
         {
           easing: animateColor,
           name: CircleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
-          update: circle => circle.color,
-        },
+          update: circle => circle.color
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [scaleFactor()],
+          update: (_uniform: IUniform) => [scaleFactor()]
         },
         {
-          name: 'layerOpacity',
+          name: "layerOpacity",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [opacity()],
-        },
+          update: (_uniform: IUniform) => [opacity()]
+        }
       ],
       vertexAttributes: usePoints ? undefined : vertexAttributes,
       vertexCount: usePoints ? 0 : vertexCount,
       vs: usePoints
-        ? require('./circle-layer-points.vs')
-        : require('./circle-layer.vs'),
+        ? require("./circle-layer-points.vs")
+        : require("./circle-layer.vs")
     };
   }
 

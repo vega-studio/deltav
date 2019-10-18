@@ -1,14 +1,14 @@
-export * from './auto-easing-method';
-export * from './base-projection';
-export * from './matrix';
-export * from './quaternion';
-export * from './vector';
-export * from './primitives';
-export * from './ray';
+export * from "./auto-easing-method";
+export * from "./base-projection";
+export * from "./matrix";
+export * from "./quaternion";
+export * from "./vector";
+export * from "./primitives";
+export * from "./ray";
 
-import * as matrix from './matrix';
-import * as quaternion from './quaternion';
-import * as vector from './vector';
+import * as matrix from "./matrix";
+import * as quaternion from "./quaternion";
+import * as vector from "./vector";
 
 /**
  * This is a convenience lookup to see all of the math methods available for manipulating matrices. All of the methods

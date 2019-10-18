@@ -1,17 +1,17 @@
-import { GLSettings, Texture, TextureOptions } from '../../gl';
-import { add2, scale2, Vec2 } from '../../math/vector';
-import { isWhiteSpace, ResourceType, Size, TextureSize } from '../../types';
-import { IdentifyByKey } from '../../util/identify-by-key';
-import { PackNode } from '../texture/pack-node';
-import { SubTexture } from '../texture/sub-texture';
+import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { add2, scale2, Vec2 } from "../../math/vector";
+import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
+import { IdentifyByKey } from "../../util/identify-by-key";
+import { PackNode } from "../texture/pack-node";
+import { SubTexture } from "../texture/sub-texture";
 import {
   FontManager,
   FontMapSource,
-  IFontResourceOptions,
-} from './font-manager';
-import { FontRenderer, KerningPairs } from './font-renderer';
+  IFontResourceOptions
+} from "./font-manager";
+import { FontRenderer, KerningPairs } from "./font-renderer";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 
 export enum FontMapGlyphType {
   /** Straight images for each glyph */
@@ -19,7 +19,7 @@ export enum FontMapGlyphType {
   /** Signed distance field glyphs */
   SDF,
   /** Multichannel signed distance fields */
-  MSDF,
+  MSDF
 }
 
 export interface IFontMapOptions extends IFontResourceOptions {
@@ -138,7 +138,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       const cachedKerningStr = localStorage.getItem(this.getKerningCacheName());
 
       if (cachedKerningStr) {
-        debug('Loading cached kerning items:', this.getKerningCacheName());
+        debug("Loading cached kerning items:", this.getKerningCacheName());
 
         try {
           const cachedKerning = JSON.parse(cachedKerningStr);
@@ -146,7 +146,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
 
           for (const left in cachedKerning) {
             let isValid: boolean =
-              typeof left === 'string' && left.length === 1;
+              typeof left === "string" && left.length === 1;
             if (!isValid) continue;
 
             const rights = cachedKerning[left];
@@ -154,7 +154,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
             this.kerning[left] = rightKerning;
 
             for (const right in rights) {
-              isValid = typeof left === 'string' && left.length === 1;
+              isValid = typeof left === "string" && left.length === 1;
               if (!isValid) continue;
               rightKerning[right] = rights[right];
               totalKernsLoaded++;
@@ -162,8 +162,8 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           }
 
           debug(
-            'Found kerning items in the cache!',
-            'Count:',
+            "Found kerning items in the cache!",
+            "Count:",
             totalKernsLoaded
           );
         } catch (err) {
@@ -194,12 +194,12 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // If new kerning pairs applied, then we should update the cache
     if (hasNew && this.fontSource.localKerningCache) {
       try {
-        debug('Storing kerning info in cache...');
+        debug("Storing kerning info in cache...");
         const kerningCache = JSON.stringify(this.kerning);
         localStorage.setItem(this.getKerningCacheName(), kerningCache);
       } catch (err) {
         // Failures just silently fail
-        debug('Could not cache kerning info');
+        debug("Could not cache kerning info");
       }
     }
   }
@@ -218,12 +218,12 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       textureSettings = {
         generateMipMaps: true,
         premultiplyAlpha: true,
-        ...this.textureSettings,
+        ...this.textureSettings
       };
     } else {
       textureSettings = {
         generateMipMaps: true,
-        premultiplyAlpha: true,
+        premultiplyAlpha: true
       };
     }
 
@@ -232,9 +232,9 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       data: {
         width: size[0],
         height: size[1],
-        buffer: null,
+        buffer: null
       },
-      ...textureSettings,
+      ...textureSettings
     });
   }
 
@@ -254,7 +254,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     if (!this.glyphMap[oneChar]) {
       this.glyphMap[oneChar] = tex;
     } else {
-      console.warn('A Glyph is already registered with a rendering');
+      console.warn("A Glyph is already registered with a rendering");
     }
   }
 
@@ -263,7 +263,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    */
   findMissingCharacters(newCharacters: string) {
     const missing = new Set<string>();
-    let allMissing: string = '';
+    let allMissing: string = "";
 
     for (let i = 0, iMax = newCharacters.length; i < iMax; ++i) {
       const char = newCharacters[i];
@@ -332,7 +332,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   ) {
     // If the label exceeds the specified maxWidth then truncation must take places
     if (layout.size[0] > maxWidth) {
-      let truncatedText = '';
+      let truncatedText = "";
       let truncationWidth = 0;
 
       // We'll get a rough and dirty truncation character width estimate by simply adding the width of
@@ -346,10 +346,10 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       if (truncationWidth > maxWidth) {
         return {
           fontScale: 1,
-          glyphs: '',
+          glyphs: "",
           positions: [],
           size: [0, 0],
-          text: '',
+          text: ""
         } as KernedLayout;
       }
 
@@ -359,7 +359,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       let right = layout.positions.length;
       let cursor = 0;
       let check = 0;
-      let char = '';
+      let char = "";
 
       while (left !== right) {
         cursor = Math.floor((right - left) / 2) + left;
@@ -486,7 +486,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     let lastChar = text.length;
 
     // String param means we look for a substring
-    if (typeof param1 === 'string') {
+    if (typeof param1 === "string") {
       const index = text.indexOf(param1);
       // No found sub string means the examined text does not exist
       if (index < 0) return 0;
@@ -521,7 +521,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
 
     // We now have the indices of the first and last glyph's position information in our text.
     // We can use these two to determine the width of the text.
-    const lastGlyph = this.glyphMap[stringLayout.text[lastChar] || ''];
+    const lastGlyph = this.glyphMap[stringLayout.text[lastChar] || ""];
     if (!lastGlyph) return 0;
 
     return (
@@ -545,7 +545,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // The output positions for each letter in the text
     const positions: Vec2[] = [];
     // The output of each character found that is provided a position (the string without the whitespace)
-    let glyphs: string = '';
+    let glyphs: string = "";
     // Calculate the scaling of the font which would be the font map's rendered glyph size
     // as a ratio to the label's desired font size.
     const fontScale = fontSize / this.fontSource.size;
@@ -561,7 +561,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // Number of found whitespace characters since last character
     let whiteSpaceCount = 0;
     // The current character found to the left of the current one being processed
-    let leftChar = '';
+    let leftChar = "";
     // Holder for the found kerning of the character pair
     let kern: Vec2;
     // The image of the glyph that was rendered
@@ -586,7 +586,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       offset = add2(add2(offset, scale2(kern, fontScale)), [
         whiteSpaceCount * whiteSpacing * fontScale +
           (i === 0 ? 0 : letterSpacing),
-        0,
+        0
       ]);
 
       // Copy the offset to our output positions for the character
@@ -625,7 +625,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       glyphs,
       positions,
       size,
-      text,
+      text
     };
   }
 
@@ -639,7 +639,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.LinearMipMapLinear,
-          format: GLSettings.Texture.TexelDataType.LuminanceAlpha,
+          format: GLSettings.Texture.TexelDataType.LuminanceAlpha
         };
         break;
 
@@ -648,7 +648,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
-          format: GLSettings.Texture.TexelDataType.Luminance,
+          format: GLSettings.Texture.TexelDataType.Luminance
         };
         break;
 
@@ -658,7 +658,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
-          format: GLSettings.Texture.TexelDataType.RGB,
+          format: GLSettings.Texture.TexelDataType.RGB
         };
         break;
     }
@@ -672,7 +672,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       this.doRegisterGlyph(char, tex);
     } else {
       console.warn(
-        'Attempted to register a new glyph with a non-dynamic FontMap'
+        "Attempted to register a new glyph with a non-dynamic FontMap"
       );
     }
   }

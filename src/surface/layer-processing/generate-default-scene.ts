@@ -1,5 +1,5 @@
-import { AbsolutePosition } from '../../math/primitives/absolute-position';
-import { Camera, CameraProjectionType } from '../../util/camera';
+import { AbsolutePosition } from "../../math/primitives/absolute-position";
+import { Camera, CameraProjectionType } from "../../util/camera";
 
 export interface IDefaultElements {
   /** Default chartting camera */
@@ -37,7 +37,7 @@ export function generateDefaultElements(
     near: -100,
     right: width / 2,
     top: height / 2,
-    viewSize: height,
+    viewSize: height
   };
 
   const defaultCamera = new Camera({
@@ -47,7 +47,7 @@ export function generateDefaultElements(
     top: viewport.top,
     bottom: viewport.bottom,
     near: viewport.near,
-    far: viewport.far,
+    far: viewport.far
   });
 
   defaultCamera.scale = [1.0, -1.0, 1.0];
@@ -59,11 +59,11 @@ export function generateDefaultElements(
     bottom: 0,
     left: 0,
     right: 0,
-    top: 0,
+    top: 0
   };
 
   return {
     camera: defaultCamera,
-    viewport: defaultViewport,
+    viewport: defaultViewport
   };
 }

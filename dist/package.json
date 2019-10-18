@@ -1,0 +1,13 @@
+{
+  "author": {
+    "name": "A Maker of Things",
+    "email": "diniden@outlook.com",
+    "url": "http://diniden.com"
+  },
+  "name": "@vega-studio/deltav",
+  "version": "1.32.0",
+  "main": "index.js",
+  "types": "src/index.d.ts",
+  "license": "Apache-2.0",
+  "dependencies": {}
+}

@@ -3,8 +3,8 @@ import {
   Instance,
   observable,
   Vec3,
-  Vec4,
-} from '../../../../src';
+  Vec4
+} from "../../../../src";
 
 export interface ILine3DInstanceOptions extends IInstanceOptions {
   start: Vec3;

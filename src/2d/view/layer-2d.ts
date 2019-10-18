@@ -1,6 +1,6 @@
-import { Instance } from '../../instance-provider';
-import { ILayerProps, Layer } from '../../surface';
-import { IShaderInitialization } from '../../types';
+import { Instance } from "../../instance-provider";
+import { ILayerProps, Layer } from "../../surface";
+import { IShaderInitialization } from "../../types";
 
 export interface ILayer2DProps<TInstance extends Instance>
   extends ILayerProps<TInstance> {}
@@ -18,7 +18,7 @@ export class Layer2D<
    */
   baseShaderModules(shaderIO: IShaderInitialization<TInstance>) {
     const modules = super.baseShaderModules(shaderIO);
-    modules.vs.push('world2D');
+    modules.vs.push("world2D");
 
     return modules;
   }

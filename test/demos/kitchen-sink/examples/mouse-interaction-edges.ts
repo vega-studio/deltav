@@ -7,9 +7,9 @@ import {
   InstanceProvider,
   IPickInfo,
   LayerInitializer,
-  PickType,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  PickType
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionEdges extends BaseExample {
   side = 0;
@@ -42,15 +42,15 @@ export class MouseInteractionEdges extends BaseExample {
   ): LayerInitializer {
     return createLayer(EdgeLayer, {
       animate: {
-        thickness: AutoEasingMethod.easeOutElastic(500),
+        thickness: AutoEasingMethod.easeOutElastic(500)
       },
       data: provider,
-      key: 'mouse-interaction-lines',
+      key: "mouse-interaction-lines",
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       opacity: 1.0,
       picking: PickType.SINGLE,
-      type: EdgeType.BEZIER2,
+      type: EdgeType.BEZIER2
     });
   }
 
@@ -65,7 +65,7 @@ export class MouseInteractionEdges extends BaseExample {
         control: [[60, 20 * i - 40], [160, 20 * i - 40]],
         end: [200, 20 * i + 20],
         start: [20, 20 * i + 20],
-        thickness: [10, 10],
+        thickness: [10, 10]
       });
 
       edgeProvider.add(edge);

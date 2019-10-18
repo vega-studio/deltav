@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/no-op.fs","dependencies":[],"generated":{"js":"module.exports = \"void main() {\\n  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"2affbe561f8894e56bb0c6e8e5e7dc5c","cacheData":{}}

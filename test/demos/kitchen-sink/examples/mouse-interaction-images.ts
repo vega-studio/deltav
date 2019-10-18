@@ -1,4 +1,4 @@
-import * as anime from 'animejs';
+import * as anime from "animejs";
 import {
   AutoEasingMethod,
   createLayer,
@@ -8,11 +8,11 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType,
-  ScaleMode,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  ScaleMode
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
-const iconData = require('../../../assets/leaf.png');
+const iconData = require("../../../assets/leaf.png");
 const icon = new Image();
 icon.src = iconData;
 
@@ -45,15 +45,15 @@ export class MouseInteractionImages extends BaseExample {
     return createLayer(ImageLayer, {
       animate: {
         size: AutoEasingMethod.easeInOutCubic(500),
-        tint: AutoEasingMethod.easeInOutCubic(500),
+        tint: AutoEasingMethod.easeInOutCubic(500)
       },
       atlas: resource.atlas,
       data: provider,
-      key: 'mouse-interaction-images',
+      key: "mouse-interaction-images",
       onMouseClick: this.handleImageClick,
       onMouseOut: this.handleImageOut,
       onMouseOver: this.handleImageOver,
-      picking: PickType.SINGLE,
+      picking: PickType.SINGLE
     });
   }
 
@@ -75,7 +75,7 @@ export class MouseInteractionImages extends BaseExample {
           scaling: ScaleMode.ALWAYS,
           tint: [1.0, 1.0, 1.0, 1.0],
           origin: [20, 20],
-          onReady: sizeImage,
+          onReady: sizeImage
         })
       )
     );
@@ -87,7 +87,7 @@ export class MouseInteractionImages extends BaseExample {
           scaling: ScaleMode.BOUND_MAX,
           tint: [1.0, 1.0, 1.0, 1.0],
           origin: [20, 50],
-          onReady: sizeImage,
+          onReady: sizeImage
         })
       )
     );
@@ -99,7 +99,7 @@ export class MouseInteractionImages extends BaseExample {
           scaling: ScaleMode.NEVER,
           tint: [1.0, 1.0, 1.0, 1.0],
           origin: [20, 80],
-          onReady: sizeImage,
+          onReady: sizeImage
         })
       )
     );

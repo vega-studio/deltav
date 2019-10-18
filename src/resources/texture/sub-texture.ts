@@ -1,9 +1,9 @@
-import { Texture } from '../../gl/texture';
-import { Bounds } from '../../math/primitives/bounds';
-import { Vec2 } from '../../math/vector';
-import { InstanceIOValue, Omit } from '../../types';
-import { uid } from '../../util';
-import { VideoTextureMonitor } from './video-texture-monitor';
+import { Texture } from "../../gl/texture";
+import { Bounds } from "../../math/primitives/bounds";
+import { Vec2 } from "../../math/vector";
+import { InstanceIOValue, Omit } from "../../types";
+import { uid } from "../../util";
+import { VideoTextureMonitor } from "./video-texture-monitor";
 
 /**
  * Converts a SubTexture reference to a valid Instance IO value where:
@@ -24,7 +24,7 @@ export function subTextureIOValue(
     texture.atlasTL[0],
     texture.atlasTL[1],
     texture.atlasBR[0],
-    texture.atlasBR[1],
+    texture.atlasBR[1]
   ];
 }
 
@@ -71,7 +71,7 @@ export class SubTexture {
   /** This is the normalized width of the sub texture on the atlas */
   widthOnAtlas: number = 0;
 
-  constructor(options?: Omit<Partial<SubTexture>, 'update'>) {
+  constructor(options?: Omit<Partial<SubTexture>, "update">) {
     Object.assign(this, options);
   }
 
@@ -90,7 +90,7 @@ export class SubTexture {
       bottom: uy + uh,
       left: ux,
       right: ux + uw,
-      top: uy,
+      top: uy
     });
 
     const bottom = atlasDimensions.bottom;
@@ -125,10 +125,10 @@ export class SubTexture {
           TL: this.atlasTL,
           TR: this.atlasTR,
           BL: this.atlasBL,
-          BR: this.atlasBR,
+          BR: this.atlasBR
         },
         width: this.pixelWidth,
-        height: this.pixelHeight,
+        height: this.pixelHeight
       },
       null,
       2

@@ -1,8 +1,8 @@
-import { Instance } from '../../instance-provider/instance';
-import { BaseIOSorting } from '../../surface/base-io-sorting';
-import { ILayerProps, Layer } from '../../surface/layer';
-import { BaseIOExpansion } from '../../surface/layer-processing/base-io-expansion';
-import { injectShaderIO } from '../../surface/layer-processing/inject-shader-io';
+import { Instance } from "../../instance-provider/instance";
+import { BaseIOSorting } from "../../surface/base-io-sorting";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
+import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -10,14 +10,14 @@ import {
   IShaders,
   IUniformInternal,
   IVertexAttributeInternal,
-  ShaderInjectionTarget,
-} from '../../types';
-import { shaderTemplate } from '../../util/shader-templating';
-import { templateVars } from '../template-vars';
-import { ShaderIOHeaderInjectionResult } from './base-shader-io-injection';
-import { MetricsProcessing } from './metrics-processing';
-import { ShaderModule } from './shader-module';
-import { ShaderModuleUnit } from './shader-module-unit';
+  ShaderInjectionTarget
+} from "../../types";
+import { shaderTemplate } from "../../util/shader-templating";
+import { templateVars } from "../template-vars";
+import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
+import { MetricsProcessing } from "./metrics-processing";
+import { ShaderModule } from "./shader-module";
+import { ShaderModuleUnit } from "./shader-module-unit";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.
@@ -101,13 +101,13 @@ export class ShaderProcessor {
       this.metricsProcessing.process(instanceAttributes, uniforms);
 
       // We are going to gather headers for both vertex and fragment from our processors
-      let vsHeader = '';
-      let fsHeader = '';
+      let vsHeader = "";
+      let fsHeader = "";
       // We will also gather the destructuring structure for the attributes from our processor
-      let destructuring = '';
+      let destructuring = "";
       // In processing, this may generate changes to the Material to accommodate features required
-      const materialChanges: ShaderIOHeaderInjectionResult['material'] = {
-        uniforms: [],
+      const materialChanges: ShaderIOHeaderInjectionResult["material"] = {
+        uniforms: []
       };
 
       const vsHeaderDeclarations = new Map();
@@ -168,21 +168,21 @@ export class ShaderProcessor {
       }
 
       // After we have aggregated all of our declarations, we now piece them together
-      let declarations = '';
+      let declarations = "";
 
       vsHeaderDeclarations.forEach(declaration => {
         declarations += declaration;
       });
 
       vsHeader = declarations + vsHeader;
-      declarations = '';
+      declarations = "";
 
       fsHeaderDeclarations.forEach(declaration => {
         declarations += declaration;
       });
 
       fsHeader = declarations + fsHeader;
-      declarations = '';
+      declarations = "";
 
       destructureDeclarations.forEach(declaration => {
         declarations += declaration;
@@ -191,14 +191,14 @@ export class ShaderProcessor {
       destructuring = declarations + destructuring;
 
       // Create a default precision modifier for now
-      const precision = 'precision highp float;\n\n';
+      const precision = "precision highp float;\n\n";
       // Now we concatenate the shader pieces into one glorious shader of compatibility and happiness
       const fullShaderVS = precision + vsHeader + shadersWithImports.vs;
       const fullShaderFS = precision + fsHeader + shadersWithImports.fs;
 
       // Last we replace any templating variables with their relevant values
       let templateOptions: { [key: string]: string } = {
-        [templateVars.attributes]: destructuring,
+        [templateVars.attributes]: destructuring
       };
 
       // This flag will determine if the attributes are manually placed in the shader. If this is not true, then the
@@ -219,15 +219,15 @@ export class ShaderProcessor {
         },
 
         onMain(body: string | null) {
-          if (hasAttributes) return body || '';
+          if (hasAttributes) return body || "";
 
           if (body === null) {
-            console.warn('The body of void main() could not be determined.');
-            return '';
+            console.warn("The body of void main() could not be determined.");
+            return "";
           }
 
           return `${destructuring}\n${body}`;
-        },
+        }
       });
 
       // We process the Fragment shader as well, currently with nothing to replace
@@ -237,7 +237,7 @@ export class ShaderProcessor {
       const processShaderFS = shaderTemplate({
         options: templateOptions,
         required: undefined,
-        shader: fullShaderFS,
+        shader: fullShaderFS
       });
 
       const results = {
@@ -249,16 +249,16 @@ export class ShaderProcessor {
         vs: processedShaderVS.shader.trim(),
         vertexAttributes,
         instanceAttributes,
-        uniforms,
+        uniforms
       };
 
       return results;
     } catch (err) {
       console.warn(
-        'An unknown error occurred while processing the shaders for layer:',
+        "An unknown error occurred while processing the shaders for layer:",
         layer.id
       );
-      console.warn('Error:');
+      console.warn("Error:");
       console.warn(err && (err.stack || err.message));
       return null;
     }
@@ -291,9 +291,9 @@ export class ShaderProcessor {
 
     if (vs.errors.length > 0) {
       console.warn(
-        'Error processing imports for the vertex shader of layer:',
+        "Error processing imports for the vertex shader of layer:",
         layer.id,
-        'Errors',
+        "Errors",
         ...vs.errors.reverse()
       );
 
@@ -310,9 +310,9 @@ export class ShaderProcessor {
 
     if (fs.errors.length > 0) {
       console.warn(
-        'Error processing imports for the fragment shader of layer:',
+        "Error processing imports for the fragment shader of layer:",
         layer.id,
-        'Errors',
+        "Errors",
         ...fs.errors.reverse()
       );
 
@@ -328,9 +328,9 @@ export class ShaderProcessor {
     );
 
     return {
-      fs: fs.shader || '',
-      vs: vs.shader || '',
-      shaderModuleUnits,
+      fs: fs.shader || "",
+      vs: vs.shader || "",
+      shaderModuleUnits
     };
   }
 }

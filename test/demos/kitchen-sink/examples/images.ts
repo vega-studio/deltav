@@ -4,11 +4,11 @@ import {
   ImageLayer,
   InstanceProvider,
   LayerInitializer,
-  ScaleMode,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  ScaleMode
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
-const iconData = require('../../../assets/leaf.png');
+const iconData = require("../../../assets/leaf.png");
 const icon = new Image();
 icon.src = iconData;
 
@@ -20,7 +20,7 @@ export class Images extends BaseExample {
     return createLayer(ImageLayer, {
       atlas: resource.atlas,
       data: provider,
-      key: 'images',
+      key: "images"
     });
   }
 
@@ -39,7 +39,7 @@ export class Images extends BaseExample {
             image.origin = [image.width * 26 * aspect, image.height * 26];
             image.width = 25 * aspect;
             image.height = 25;
-          },
+          }
         });
 
         // Store the index in the width and height until it gets established

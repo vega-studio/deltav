@@ -1,7 +1,7 @@
-import * as datGUI from 'dat.gui';
-import { stopAllFrameCommands } from '../src';
-import { BaseDemo } from './common/base-demo';
-import { demoKeys, demos, startDemoKey } from './config';
+import * as datGUI from "dat.gui";
+import { stopAllFrameCommands } from "../src";
+import { BaseDemo } from "./common/base-demo";
+import { demoKeys, demos, startDemoKey } from "./config";
 
 export interface IDemoOptions {
   container: HTMLElement;
@@ -21,7 +21,7 @@ export class Demo {
 
   /** A storage object for the GUI to operate with */
   guiStore = {
-    currentDemo: startDemoKey,
+    currentDemo: startDemoKey
   };
 
   constructor(options: IDemoOptions) {
@@ -42,13 +42,13 @@ export class Demo {
       autoPlace: true,
       closed: true,
       hideable: true,
-      name: 'Demo Control',
+      name: "Demo Control"
     });
 
     // Add the gui to the folder
     gui
-      .addFolder('Demo Selection')
-      .add(this.guiStore, 'currentDemo', demoKeys)
+      .addFolder("Demo Selection")
+      .add(this.guiStore, "currentDemo", demoKeys)
       .onChange(async (value: string) => {
         await this.changeDemo(value);
       });
@@ -79,7 +79,7 @@ export class Demo {
     // See if there is a demo available
     const demo = demos.get(demoKey);
     if (!demo) {
-      console.warn('Error: Could not find a demo for key', demoKey);
+      console.warn("Error: Could not find a demo for key", demoKey);
       return;
     }
 
@@ -99,7 +99,7 @@ export class Demo {
     // Let the demo know everything is done and ready for the demo to operate
     await this.currentDemo.init();
     // Set this demo as the current demo so page refreshes return here
-    localStorage.setItem('deltaV_currentDemo', demoKey);
+    localStorage.setItem("deltaV_currentDemo", demoKey);
   }
 
   /**
@@ -123,7 +123,7 @@ export class Demo {
     }
 
     if (!demoKey) {
-      console.warn('Error: The first demo was not able to be determined.');
+      console.warn("Error: The first demo was not able to be determined.");
       return;
     }
 

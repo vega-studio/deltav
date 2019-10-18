@@ -1,1 +1,0 @@
-{"id":"../src/2d/layers/edges/shader/edge-layer.fs","dependencies":[],"generated":{"js":"module.exports = \"precision highp float;\\n\\nvarying vec4 vertexColor;\\n\\nvoid main() {\\n  setColor(vertexColor);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"ed805bff476031bfa25b71b476e4328d","cacheData":{}}

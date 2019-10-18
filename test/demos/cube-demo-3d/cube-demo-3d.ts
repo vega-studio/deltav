@@ -1,22 +1,20 @@
-import * as datGUI from 'dat.gui';
+import * as datGUI from "dat.gui";
 import {
-  // add3,
   add3,
   BasicSurface,
   ClearFlags,
   createLayer,
   createView,
-  // onAnimationLoop,
   InstanceProvider,
   onAnimationLoop,
   stopAnimationLoop,
   Transform,
-  View3D,
-} from 'src';
-import { Camera } from '../../../src/util/camera';
-import { BaseDemo } from '../../common/base-demo';
-import { CubeInstance } from './cube/cube-instance';
-import { CubeLayer } from './cube/cube-layer';
+  View3D
+} from "../../../src";
+import { Camera } from "../../../src/util/camera";
+import { BaseDemo } from "../../common/base-demo";
+import { CubeInstance } from "./cube/cube-instance";
+import { CubeLayer } from "./cube/cube-layer";
 
 /**
  * A very basic demo proving the system is operating as expected
@@ -24,7 +22,7 @@ import { CubeLayer } from './cube/cube-layer';
 export class CubeDemo3D extends BaseDemo {
   /** Surface providers */
   providers = {
-    cubes: new InstanceProvider<CubeInstance>(),
+    cubes: new InstanceProvider<CubeInstance>()
   };
 
   /** GUI properties */
@@ -46,14 +44,14 @@ export class CubeDemo3D extends BaseDemo {
     return new BasicSurface({
       container,
       rendererOptions: {
-        antialias: true,
+        antialias: true
       },
       providers: this.providers,
       cameras: {
         perspective: Camera.makePerspective({
           fov: 60 * Math.PI / 180,
-          far: 100000,
-        }),
+          far: 100000
+        })
       },
       resources: {},
       eventManagers: _cameras => ({}),
@@ -64,17 +62,17 @@ export class CubeDemo3D extends BaseDemo {
             views: {
               perspective: createView(View3D, {
                 camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-              }),
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
             },
             layers: {
               cubes: createLayer(CubeLayer, {
-                data: providers.cubes,
-              }),
-            },
-          },
-        },
-      }),
+                data: providers.cubes
+              })
+            }
+          }
+        }
+      })
     });
   }
 
@@ -89,7 +87,7 @@ export class CubeDemo3D extends BaseDemo {
     const cube = this.providers.cubes.add(
       new CubeInstance({
         transform,
-        color: [0.9, 0.56, 0.2, 1],
+        color: [0.9, 0.56, 0.2, 1]
       })
     );
 
@@ -100,7 +98,7 @@ export class CubeDemo3D extends BaseDemo {
         add3(transform.position, [
           Math.cos(-theta),
           Math.sin(-theta / 20),
-          Math.sin(-theta),
+          Math.sin(-theta)
         ]),
         [0, 1, 0]
       );

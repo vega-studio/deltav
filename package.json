@@ -19,7 +19,8 @@
     "unit-test": "mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'",
     "unit-test-dev": "nodemon -e ts -x \"mocha --file unit-test/test-bootstrap.js unit-test/**/*.ts\"",
     "parcel": "runner run client server --no-docker",
-    "clean": "runner clean"
+    "clean": "runner clean",
+    "build": "runner run lib"
   },
   "dependencies": {
     "src": "^1.1.2",
@@ -121,9 +122,11 @@
       {
         "name": "lib",
         "entry": "src/index.ts",
+        "run": false,
         "parcel": {
+          "build": true,
           "outDir": "./dist",
-          "outFile": "lib.js",
+          "outFile": "index.js",
           "sourceMaps": true
         }
       }

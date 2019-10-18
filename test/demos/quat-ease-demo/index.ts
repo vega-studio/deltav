@@ -1,1 +1,1 @@
-export * from './quat-ease-demo';
+export * from "./quat-ease-demo";

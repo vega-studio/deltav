@@ -1,4 +1,4 @@
-import { ISingleTouchInteraction } from '../event-management/types';
+import { ISingleTouchInteraction } from "../event-management/types";
 
 /**
  * This file contains common methods for filtering data within the framework.

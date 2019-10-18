@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/matrix/scale.vs","dependencies":[],"generated":{"js":"module.exports = \"mat4 scale(vec3 s) {\\n  return mat4(\\n    s.x, 0, 0, 0,\\n    0, s.y, 0, 0,\\n    0, 0, s.z, 0,\\n    0, 0, 0, 1\\n  );\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"0d41a1b6645ee0c3471bb527ccb2e365","cacheData":{}}

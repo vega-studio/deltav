@@ -1,5 +1,5 @@
-import { PromiseResolver } from './promise-resolver';
-import { uid } from './uid';
+import { PromiseResolver } from "./promise-resolver";
+import { uid } from "./uid";
 
 type Command = (t: number) => void;
 

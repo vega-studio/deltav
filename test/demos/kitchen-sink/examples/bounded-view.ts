@@ -11,9 +11,9 @@ import {
   LayerInitializer,
   RectangleInstance,
   RectangleLayer,
-  ScaleMode,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  ScaleMode
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView extends BaseExample {
   view: string;
@@ -30,20 +30,20 @@ export class BoundedView extends BaseExample {
       scaleMax: [5, 5, 5],
       scaleMin: [0.1, 0.1, 0.1],
       screenPadding: { left: 5, right: 5, top: 5, bottom: 5 },
-      view: '3_1',
+      view: "3_1",
       worldBounds: new Bounds({
         bottom: 200,
         left: 0,
         right: 200,
         top: 0,
         x: 0,
-        y: 0,
-      }),
+        y: 0
+      })
     };
     return new BasicCamera2DController({
       bounds: bounds,
       camera: defaultCamera,
-      startView: viewName,
+      startView: viewName
     });
   }
 
@@ -53,7 +53,7 @@ export class BoundedView extends BaseExample {
   ): LayerInitializer {
     return createLayer(RectangleLayer, {
       data: provider,
-      key: 'bounded-view',
+      key: "bounded-view"
     });
   }
 
@@ -72,7 +72,7 @@ export class BoundedView extends BaseExample {
       [0, 0, 100, 0.1],
       [55, 0, 55, 0.1],
       [0, 0, 100, 0.1],
-      [55, 0, 55, 0.1],
+      [55, 0, 55, 0.1]
     ];
     const anchor = [
       AnchorType.MiddleLeft,
@@ -82,19 +82,19 @@ export class BoundedView extends BaseExample {
       AnchorType.MiddleLeft,
       AnchorType.TopMiddle,
       AnchorType.MiddleRight,
-      AnchorType.BottomMiddle,
+      AnchorType.BottomMiddle
     ];
     for (let i = 0; i < 8; i++) {
       const rectangle = new RectangleInstance({
         anchor: {
           padding: 0,
-          type: anchor[i],
+          type: anchor[i]
         },
         color: [color[i][0], color[i][1], color[i][2], color[i][3]],
         id: `rectangle${i}`,
         scaling: ScaleMode.ALWAYS,
         size: [width[i], height[i]],
-        position: [x[i], y[i]],
+        position: [x[i], y[i]]
       });
 
       rectangleProvider.add(rectangle);

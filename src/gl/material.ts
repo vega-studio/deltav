@@ -1,11 +1,11 @@
-import { Omit, TypeVec } from '../types';
-import { GLProxy } from './gl-proxy';
-import { GLSettings } from './gl-settings';
-import { IMaterialUniform, MaterialUniformType } from './types';
+import { Omit, TypeVec } from "../types";
+import { GLProxy } from "./gl-proxy";
+import { GLSettings } from "./gl-settings";
+import { IMaterialUniform, MaterialUniformType } from "./types";
 
 export type MaterialOptions = Omit<
   Partial<Material>,
-  'clone' | 'dispose' | 'gl'
+  "clone" | "dispose" | "gl"
 >;
 
 /**
@@ -21,7 +21,7 @@ export class Material {
   } | null = {
     blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
     blendEquation: GLSettings.Material.BlendingEquations.Add,
-    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
+    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
   };
   /**
    * The write mask to the color buffer. Each channel can be toggled on or off as the color buffer is written to. See:
@@ -49,7 +49,7 @@ export class Material {
    */
   dithering: boolean = true;
   /** The fragment shader in raw text format that will be compiled to run as the program to use when this material is used */
-  fragmentShader: string = '';
+  fragmentShader: string = "";
   /**
    * Stores any gl state associated with this object. Modifying this outside the framework
    * is almost guaranteed to break something.
@@ -61,7 +61,7 @@ export class Material {
     proxy: GLProxy;
   };
   /** A name for the  */
-  name: string = '';
+  name: string = "";
   /**
    * TODO: This is NOT IN USE YET
    * GL Polygon offset settings. When set, enables polygon offset modes within the gl state. See:
@@ -76,7 +76,7 @@ export class Material {
   /** Uniforms that will be synced with the GPU when this material is used */
   uniforms: { [key: string]: IMaterialUniform<MaterialUniformType> } = {};
   /** The vertex shader that will be compiled to run as the program to use when this material is used */
-  vertexShader: string = '';
+  vertexShader: string = "";
 
   constructor(options: MaterialOptions) {
     // Take in the properties

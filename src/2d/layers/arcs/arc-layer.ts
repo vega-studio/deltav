@@ -1,16 +1,16 @@
-import { GLSettings } from '../../../gl';
-import { InstanceProvider } from '../../../instance-provider';
-import { IAutoEasingMethod, Vec } from '../../../math';
+import { GLSettings } from "../../../gl";
+import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
-  VertexAttributeSize,
-} from '../../../types';
-import { CommonMaterialOptions } from '../../../util';
-import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
-import { ArcInstance } from './arc-instance';
+  VertexAttributeSize
+} from "../../../types";
+import { CommonMaterialOptions } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { ArcInstance } from "./arc-instance";
 
 export enum ArcScaleType {
   /** All dimensions are within world space */
@@ -19,7 +19,7 @@ export enum ArcScaleType {
    * The thickness of the arc is in screen space. Thus, camera zoom changes will not affect it and
    * must be controlled by scaleFactor alone.
    */
-  SCREEN_CURVE,
+  SCREEN_CURVE
 }
 
 export interface IArcLayerProps<T extends ArcInstance>
@@ -46,20 +46,20 @@ export class ArcLayer<
 > extends Layer2D<T, U> {
   static defaultProps: IArcLayerProps<ArcInstance> = {
     data: new InstanceProvider<ArcInstance>(),
-    key: '',
-    scaleType: ArcScaleType.NONE,
+    key: "",
+    scaleType: ArcScaleType.NONE
   };
 
   /** Easy lookup of all attribute names for the layer */
   static attributeNames = {
-    angle: 'angle',
-    angleOffset: 'angleOffset',
-    center: 'center',
-    colorEnd: 'colorEnd',
-    colorStart: 'colorStart',
-    depth: 'depth',
-    radius: 'radius',
-    thickness: 'thickness',
+    angle: "angle",
+    angleOffset: "angleOffset",
+    center: "center",
+    colorEnd: "colorEnd",
+    colorStart: "colorStart",
+    depth: "depth",
+    radius: "radius",
+    thickness: "thickness"
   };
 
   /**
@@ -75,7 +75,7 @@ export class ArcLayer<
       radius: animateRadius,
       thickness: animateThickness,
       colorStart: animateColorStart,
-      colorEnd: animateColorEnd,
+      colorEnd: animateColorEnd
     } = animations;
 
     const MAX_SEGMENTS = 150;
@@ -83,12 +83,12 @@ export class ArcLayer<
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
-      [MAX_SEGMENTS * 2 + 2]: -1,
+      [MAX_SEGMENTS * 2 + 2]: -1
     };
 
     const vertexInterpolation: { [key: number]: number } = {
       0: 0,
-      [MAX_SEGMENTS * 2 + 2]: 1,
+      [MAX_SEGMENTS * 2 + 2]: 1
     };
 
     let sign = 1;
@@ -100,73 +100,73 @@ export class ArcLayer<
 
     const vs =
       scaleType === ArcScaleType.NONE
-        ? require('./arc-layer.vs')
-        : require('./arc-layer-screen-space.vs');
+        ? require("./arc-layer.vs")
+        : require("./arc-layer-screen-space.vs");
 
     return {
-      fs: require('./arc-layer.fs'),
+      fs: require("./arc-layer.fs"),
       instanceAttributes: [
         {
           easing: animateCenter,
           name: ArcLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: o => o.center,
+          update: o => o.center
         },
         {
           easing: animateRadius,
           name: ArcLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.radius],
+          update: o => [o.radius]
         },
         {
           name: ArcLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           easing: animateThickness,
           name: ArcLayer.attributeNames.thickness,
           size: InstanceAttributeSize.TWO,
-          update: o => o.thickness,
+          update: o => o.thickness
         },
         {
           easing: animateAngle,
           name: ArcLayer.attributeNames.angle,
           size: InstanceAttributeSize.TWO,
-          update: o => o.angle,
+          update: o => o.angle
         },
         {
           easing: animateAngleOffset,
           name: ArcLayer.attributeNames.angleOffset,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.angleOffset],
+          update: o => [o.angleOffset]
         },
         {
           easing: animateColorStart,
           name: ArcLayer.attributeNames.colorStart,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorStart,
+          update: o => o.colorStart
         },
         {
           easing: animateColorEnd,
           name: ArcLayer.attributeNames.colorEnd,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorEnd,
-        },
+          update: o => o.colorEnd
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: _u => [1],
-        },
+          update: _u => [1]
+        }
       ],
       vertexAttributes: [
         // TODO: This is from the heinous evils of THREEJS and their inability to fix a bug within our lifetimes.
         // Right now position is REQUIRED in order for rendering to occur, otherwise the draw range gets updated to
         // Zero against your wishes.
         {
-          name: 'vertex',
+          name: "vertex",
           size: VertexAttributeSize.THREE,
           update: (vertex: number) => [
             // Normal
@@ -174,18 +174,18 @@ export class ArcLayer<
             // The side of the quad
             vertexInterpolation[vertex],
             // The number of vertices
-            MAX_SEGMENTS * 2,
-          ],
-        },
+            MAX_SEGMENTS * 2
+          ]
+        }
       ],
       vertexCount: MAX_SEGMENTS * 2 + 2,
-      vs,
+      vs
     };
   }
 
   getMaterialOptions(): ILayerMaterialOptions {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      culling: GLSettings.Material.CullSide.NONE,
+      culling: GLSettings.Material.CullSide.NONE
     } as ILayerMaterialOptions);
   }
 }

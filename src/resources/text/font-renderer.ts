@@ -130,7 +130,7 @@ async function renderEachPair(
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
-      Number.MAX_SAFE_INTEGER,
+      Number.MAX_SAFE_INTEGER
     ]);
   }
 
@@ -212,7 +212,7 @@ async function renderEachPair(
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
-        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER
       ]);
 
       // Indicate the space check is indeed happening
@@ -345,7 +345,7 @@ async function renderEachPair(
     }
   } else {
     console.warn(
-      'html2canvas did not produce a valid canvas context to analyze'
+      "html2canvas did not produce a valid canvas context to analyze"
     );
   }
 
@@ -362,7 +362,7 @@ function stringToPairs(
   out?: KerningInfo
 ): KerningInfo {
   // Remove all the whitespace
-  str = str.replace(/\s/g, '');
+  str = str.replace(/\s/g, "");
   const all: string[] = (out && out.all) || [];
   const pairs: KerningPairs = (out && out.pairs) || {};
 
@@ -385,7 +385,7 @@ function stringToPairs(
   return {
     all,
     pairs,
-    spaceWidth: 0,
+    spaceWidth: 0
   };
 }
 
@@ -423,13 +423,13 @@ export class FontRenderer {
       if (glyph) {
         map[char] = {
           glyph: glyph.data,
-          glyphIndex: i,
+          glyphIndex: i
         };
       } else {
         console.warn(
-          'Unable to render character',
+          "Unable to render character",
           char,
-          'to font map for rendering.'
+          "to font map for rendering."
         );
       }
     }
@@ -453,10 +453,10 @@ export class FontRenderer {
     const pairInfo: KerningInfo = {
       all: [],
       pairs: {},
-      spaceWidth: 0,
+      spaceWidth: 0
     };
 
-    debug('Estimating Kerning for', str);
+    debug("Estimating Kerning for", str);
 
     for (let i = 0, iMax = str.length; i < iMax; ++i) {
       const s = str[i];

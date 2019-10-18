@@ -1,18 +1,18 @@
 import {
   IMouseInteraction,
   ISingleTouchInteraction,
-  ITouchInteraction,
-} from 'src/event-management';
+  ITouchInteraction
+} from "src/event-management";
 import {
   Attribute,
   GLSettings,
   IMaterialUniform,
   MaterialOptions,
   MaterialUniformType,
-  Texture,
-} from './gl';
-import { Instance } from './instance-provider/instance';
-import { BaseProjection } from './math';
+  Texture
+} from "./gl";
+import { Instance } from "./instance-provider/instance";
+import { BaseProjection } from "./math";
 import {
   Mat3x3,
   Mat4x4,
@@ -21,12 +21,12 @@ import {
   Vec2,
   Vec2Compat,
   Vec3,
-  Vec4,
-} from './math';
-import { IAutoEasingMethod } from './math/auto-easing-method';
-import { BaseResourceOptions } from './resources/base-resource-manager';
-import { IViewProps } from './surface';
-import { ISceneOptions } from './surface/layer-scene';
+  Vec4
+} from "./math";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { IViewProps } from "./surface";
+import { ISceneOptions } from "./surface/layer-scene";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -47,7 +47,7 @@ export enum InstanceBlockIndex {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 export enum InstanceAttributeSize {
@@ -57,7 +57,7 @@ export enum InstanceAttributeSize {
   FOUR = 4,
   MAT4X4 = 16,
   /** Special case for making instance attributes that can target Atlas resources */
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
@@ -66,7 +66,7 @@ export const instanceAttributeSizeFloatCount: { [key: number]: number } = {
   [InstanceAttributeSize.THREE]: 3,
   [InstanceAttributeSize.FOUR]: 4,
   [InstanceAttributeSize.MAT4X4]: 16,
-  [InstanceAttributeSize.ATLAS]: 4,
+  [InstanceAttributeSize.ATLAS]: 4
 };
 
 export enum UniformSize {
@@ -77,14 +77,14 @@ export enum UniformSize {
   MATRIX3 = 9,
   MATRIX4 = 16,
   VEC4_ARRAY = 98,
-  ATLAS = 99,
+  ATLAS = 99
 }
 
 export enum VertexAttributeSize {
   ONE = 1,
   TWO = 2,
   THREE = 3,
-  FOUR = 4,
+  FOUR = 4
 }
 
 /**
@@ -106,7 +106,7 @@ export enum TextureSize {
   _512 = 0x01 << 9,
   _1024 = 0x01 << 10,
   _2048 = 0x01 << 11,
-  _4096 = 0x01 << 12,
+  _4096 = 0x01 << 12
 }
 
 /**
@@ -114,7 +114,7 @@ export enum TextureSize {
  */
 export enum ResourceType {
   ATLAS = 0,
-  FONT = 1,
+  FONT = 1
 }
 
 /**
@@ -149,7 +149,7 @@ export enum EulerOrder {
   xyz,
   xyx,
   xzy,
-  xzx,
+  xzx
 }
 
 /**
@@ -441,7 +441,7 @@ export enum ShaderInjectionTarget {
   /** ONLY the fragment shader will receive the injection */
   FRAGMENT = 2,
   /** Both the fragment and vertex shader will receive the injection */
-  ALL = 3,
+  ALL = 3
 }
 
 export interface IUniform {
@@ -551,7 +551,7 @@ export const isNewline = newLineCharRegEx.test.bind(newLineCharRegEx);
  * Options a layer can provide for a material
  */
 export type ILayerMaterialOptions = Partial<
-  Omit<MaterialOptions, 'uniforms' | 'vertexShader' | 'fragmentShader'>
+  Omit<MaterialOptions, "uniforms" | "vertexShader" | "fragmentShader">
 >;
 
 /**
@@ -577,7 +577,7 @@ export enum PickType {
    *
    * This is vastly more efficient and accurate than ALL. This also will be more readily supported than ALL.
    */
-  SINGLE,
+  SINGLE
 }
 
 /**
@@ -638,7 +638,7 @@ export interface IColorPickingData {
 export enum InstanceDiffType {
   CHANGE = 0,
   INSERT = 1,
-  REMOVE = 2,
+  REMOVE = 2
 }
 
 /**
@@ -796,7 +796,7 @@ export interface IPipeline {
  */
 export enum SurfaceErrorType {
   /** Error is thrown when no web gl context can be established for the canvas */
-  NO_WEBGL_CONTEXT,
+  NO_WEBGL_CONTEXT
 }
 
 /**
@@ -861,5 +861,5 @@ export enum LayerBufferType {
    * attribute blocks. An attribute block is considered to be 4 32 bit floats. These packed attributes will then
    * get dereferenced in the shader.
    */
-  INSTANCE_ATTRIBUTE_PACKING = 2,
+  INSTANCE_ATTRIBUTE_PACKING = 2
 }

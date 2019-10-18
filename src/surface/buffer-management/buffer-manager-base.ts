@@ -1,9 +1,9 @@
-import { Instance } from '../../instance-provider/instance';
-import { InstanceDiff } from '../../instance-provider/instance-provider';
-import { Vec2, Vec4 } from '../../math';
-import { IInstanceAttributeInternal } from '../../types';
-import { Layer } from '../layer';
-import { LayerScene } from '../layer-scene';
+import { Instance } from "../../instance-provider/instance";
+import { InstanceDiff } from "../../instance-provider/instance-provider";
+import { Vec2, Vec4 } from "../../math";
+import { IInstanceAttributeInternal } from "../../types";
+import { Layer } from "../layer";
+import { LayerScene } from "../layer-scene";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;

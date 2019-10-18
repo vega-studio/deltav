@@ -1,10 +1,10 @@
 import {
   IInstanceOptions,
   Instance,
-  observable,
-} from '../../../instance-provider';
-import { Quaternion, Vec3 } from '../../../math';
-import { Transform } from '../../scene-graph';
+  observable
+} from "../../../instance-provider";
+import { Quaternion, Vec3 } from "../../../math";
+import { Transform } from "../../scene-graph";
 
 export interface IInstance3DOptions extends IInstanceOptions {
   /** The transform object that will manage this instance */

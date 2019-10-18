@@ -1,4 +1,4 @@
-import { Vec2 } from '../vector';
+import { Vec2 } from "../vector";
 
 const { min, max } = Math;
 
@@ -64,7 +64,7 @@ export class Bounds<T> {
       height: 0,
       width: 0,
       x: 0,
-      y: 0,
+      y: 0
     });
   }
 

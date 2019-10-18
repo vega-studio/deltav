@@ -1,11 +1,11 @@
-import { Instance, InstanceDiff } from '../../../instance-provider';
-import { Vec4 } from '../../../math/vector';
-import { BaseDiffProcessor } from '../base-diff-processor';
-import { IInstanceDiffManagerTarget } from '../instance-diff-manager';
+import { Instance, InstanceDiff } from "../../../instance-provider";
+import { Vec4 } from "../../../math/vector";
+import { BaseDiffProcessor } from "../base-diff-processor";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 import {
   isUniformBufferLocation,
-  IUniformBufferLocation,
-} from './uniform-buffer-manager';
+  IUniformBufferLocation
+} from "./uniform-buffer-manager";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];

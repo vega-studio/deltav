@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/no-op.vs","dependencies":[],"generated":{"js":"module.exports = \"void main() {\\n  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"8e5f9687f21c806e65337baccdaa0816","cacheData":{}}

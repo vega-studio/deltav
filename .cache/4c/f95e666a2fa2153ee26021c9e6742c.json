@@ -1,1 +1,0 @@
-{"id":"demos/basic-demo-3d/line-3d/line-3d-layer.fs","dependencies":[],"generated":{"js":"module.exports = \"varying vec4 _color;\\n\\nvoid main() {\\n  setColor(_color);\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"26decfdf8489c6c4fd8e1aa5ba96fac2","cacheData":{}}

@@ -8,17 +8,17 @@ import {
   RenderTarget,
   Scene,
   Texture,
-  WebGLRenderer,
-} from '../../gl';
-import { Bounds } from '../../math/primitives/bounds';
-import { ImageRasterizer } from '../../resources/texture/image-rasterizer';
-import { VideoTextureMonitor } from '../../resources/texture/video-texture-monitor';
-import { Atlas, IAtlasResource } from './atlas';
-import { IAtlasResourceRequest } from './atlas-resource-request';
-import { IPackNodeDimensions, PackNode } from './pack-node';
-import { SubTexture } from './sub-texture';
+  WebGLRenderer
+} from "../../gl";
+import { Bounds } from "../../math/primitives/bounds";
+import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
+import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
+import { Atlas, IAtlasResource } from "./atlas";
+import { IAtlasResourceRequest } from "./atlas-resource-request";
+import { IPackNodeDimensions, PackNode } from "./pack-node";
+import { SubTexture } from "./sub-texture";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 
 const ZERO_IMAGE: SubTexture = new SubTexture({
   aspectRatio: 0,
@@ -31,7 +31,7 @@ const ZERO_IMAGE: SubTexture = new SubTexture({
   isValid: false,
   pixelHeight: 0,
   pixelWidth: 0,
-  widthOnAtlas: 0,
+  widthOnAtlas: 0
 });
 
 /**
@@ -76,7 +76,7 @@ export class AtlasManager {
     // Make the atlas identifiable by it's name
     this.allAtlas.set(atlas.id, atlas);
 
-    debug('Atlas Created-> %o', atlas);
+    debug("Atlas Created-> %o", atlas);
 
     return atlas;
   }
@@ -141,7 +141,7 @@ export class AtlasManager {
     request.texture.isValid = true;
     atlas.resourceReferences.set(request.source, {
       subtexture: request.texture,
-      count: 0,
+      count: 0
     });
 
     // First we must load the image
@@ -158,13 +158,13 @@ export class AtlasManager {
         bottom: texture.pixelHeight,
         left: 0,
         right: texture.pixelWidth,
-        top: 0,
+        top: 0
       });
 
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: IPackNodeDimensions<SubTexture> = {
         data: texture,
-        bounds: rect,
+        bounds: rect
       };
 
       // Auto add a buffer in
@@ -185,7 +185,7 @@ export class AtlasManager {
 
         if (!success) {
           console.error(
-            'Repacking the atlas failed. Some resources may be in an undefined state. Consider making another atlas.'
+            "Repacking the atlas failed. Some resources may be in an undefined state. Consider making another atlas."
           );
           return false;
         }
@@ -205,7 +205,7 @@ export class AtlasManager {
           top: 0,
           left: 0,
           right: 1,
-          bottom: 1,
+          bottom: 1
         });
 
         // Track the subtexture with the source that created it.
@@ -213,7 +213,7 @@ export class AtlasManager {
         texture.source = loadedImage;
         texture.atlasRegion = {
           ...insertedNode.bounds,
-          y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height,
+          y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height
         };
 
         // Now specify the update region to be applied to the texture
@@ -223,7 +223,7 @@ export class AtlasManager {
         // location
         if (loadedImage instanceof HTMLVideoElement) {
           texture.video = {
-            monitor: new VideoTextureMonitor(loadedImage, texture),
+            monitor: new VideoTextureMonitor(loadedImage, texture)
           };
         }
 
@@ -241,7 +241,7 @@ export class AtlasManager {
     // by removing unused images that were placed in the atlas but were flagged as no longer used.
     else {
       if (texture && !texture.isValid) {
-        debug('Resource was invalidated during load:', request);
+        debug("Resource was invalidated during load:", request);
       } else {
         // Log an error and load a default sub texture
         console.error(`Could not load resource:`, request);
@@ -321,10 +321,10 @@ export class AtlasManager {
     } else if (source instanceof HTMLVideoElement) {
       if (source.videoHeight === 0 || source.videoWidth === 0) {
         console.warn(
-          'Video requests to the atlas manager MUST have the video completely loaded and ready for loading',
-          'There are too many caveats to automate video loading at this low of a level to have it prepped properly for',
-          'use in the texture for all browsers. Consider handling video resources at the layer level to have them',
-          'prepped for use.'
+          "Video requests to the atlas manager MUST have the video completely loaded and ready for loading",
+          "There are too many caveats to automate video loading at this low of a level to have it prepped properly for",
+          "use in the texture for all browsers. Consider handling video resources at the layer level to have them",
+          "prepped for use."
         );
         return null;
       }
@@ -336,7 +336,7 @@ export class AtlasManager {
 
       // Return the video here to indicate a successful load
       return source;
-    } else if (typeof source === 'string') {
+    } else if (typeof source === "string") {
       const dataURL = source;
 
       let image = await new Promise<TexImageSource | null>(resolve => {
@@ -398,7 +398,7 @@ export class AtlasManager {
   private repackResources(atlas: Atlas) {
     if (!this.renderer) {
       console.warn(
-        'Attempted to repack resources for an atlas, but no renderer has been specified for this manager yet.'
+        "Attempted to repack resources for an atlas, but no renderer has been specified for this manager yet."
       );
       return false;
     }
@@ -446,7 +446,7 @@ export class AtlasManager {
     newAtlasTexture.data = {
       buffer: new Uint8Array(atlas.width * atlas.height * 4),
       width: atlas.width,
-      height: atlas.height,
+      height: atlas.height
     };
 
     // We now have all of the valid nodes and their respective original bounds. We will now repack these nodes to
@@ -458,7 +458,7 @@ export class AtlasManager {
       const node = allNodes[i];
 
       if (!node.data) {
-        console.warn('Attempted to repack a node with no valid data.');
+        console.warn("Attempted to repack a node with no valid data.");
         continue;
       }
 
@@ -467,12 +467,12 @@ export class AtlasManager {
 
       const newNode = rootNode.insert({
         bounds: node.bounds,
-        data: node.data,
+        data: node.data
       });
 
       if (!newNode) {
         console.warn(
-          'When repacking the atlas, an existing node was unable to be repacked',
+          "When repacking the atlas, an existing node was unable to be repacked",
           node
         );
         failedRepack = true;
@@ -506,7 +506,7 @@ export class AtlasManager {
 
       if (!previousBounds || !nextTexture) {
         console.warn(
-          'While repacking there was an issue finding the previous bounds and the next texture to use',
+          "While repacking there was an issue finding the previous bounds and the next texture to use",
           previousBounds,
           nextTexture
         );
@@ -563,14 +563,14 @@ export class AtlasManager {
     const geometry = new Geometry();
     const positionAttr = new Attribute(positions, 2);
     const texAttr = new Attribute(texCoords, 2);
-    geometry.addAttribute('position', positionAttr);
-    geometry.addAttribute('texCoord', texAttr);
+    geometry.addAttribute("position", positionAttr);
+    geometry.addAttribute("texCoord", texAttr);
 
     // Make a simple material that will handle the
     const material = new Material({
       culling: GLSettings.Material.CullSide.NONE,
       uniforms: {
-        texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture },
+        texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture }
       },
       fragmentShader: `
         precision highp float;
@@ -593,7 +593,7 @@ export class AtlasManager {
           _texCoord = texCoord;
           gl_Position = vec4(position, 0.0, 1.0);
         }
-      `,
+      `
     });
 
     const model = new Model(geometry, material);
@@ -603,9 +603,9 @@ export class AtlasManager {
     // Now we create a render target that will render to our new texture
     const renderTarget = new RenderTarget({
       buffers: {
-        color: newAtlasTexture,
+        color: newAtlasTexture
       },
-      retainTextureTargets: true,
+      retainTextureTargets: true
     });
 
     // Make a dummy scene to cram our model into
@@ -666,9 +666,9 @@ export class AtlasManager {
       atlas.resolveResources();
     } else {
       console.warn(
-        'Can not update non-existing atlas:',
+        "Can not update non-existing atlas:",
         atlasName,
-        'These resources will not be loaded:',
+        "These resources will not be loaded:",
         requests
       );
     }

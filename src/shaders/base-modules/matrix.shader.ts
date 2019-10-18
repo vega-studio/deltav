@@ -1,25 +1,25 @@
-import { ShaderInjectionTarget } from '../../types';
-import { ShaderModule } from '../processing';
+import { ShaderInjectionTarget } from "../../types";
+import { ShaderModule } from "../processing";
 
 ShaderModule.register([
   {
-    moduleId: 'translation',
+    moduleId: "translation",
     compatibility: ShaderInjectionTarget.ALL,
-    content: require('./shader-fragments/matrix/translation.vs'),
+    content: require("./shader-fragments/matrix/translation.vs")
   },
   {
-    moduleId: 'rotation',
+    moduleId: "rotation",
     compatibility: ShaderInjectionTarget.ALL,
-    content: require('./shader-fragments/matrix/rotation.vs'),
+    content: require("./shader-fragments/matrix/rotation.vs")
   },
   {
-    moduleId: 'scale',
+    moduleId: "scale",
     compatibility: ShaderInjectionTarget.ALL,
-    content: require('./shader-fragments/matrix/scale.vs'),
+    content: require("./shader-fragments/matrix/scale.vs")
   },
   {
-    moduleId: 'transform',
+    moduleId: "transform",
     compatibility: ShaderInjectionTarget.ALL,
-    content: require('./shader-fragments/matrix/transform.vs'),
-  },
+    content: require("./shader-fragments/matrix/transform.vs")
+  }
 ]);

@@ -1,4 +1,4 @@
-import { Bounds, Vec2 } from 'src';
+import { Bounds, Vec2 } from "src";
 
 const { min, max } = Math;
 
@@ -7,12 +7,12 @@ export function textPositions(
   text: string,
   fontSize: number = 40
 ) {
-  const canvas = document.createElement('canvas').getContext('2d');
+  const canvas = document.createElement("canvas").getContext("2d");
   if (!canvas) return [];
 
   let width = (canvas.canvas.width = bounds.width - 10);
   let height = (canvas.canvas.height = fontSize * 2);
-  canvas.fillStyle = 'white';
+  canvas.fillStyle = "white";
   canvas.font = `${fontSize}px Consolas`;
   canvas.fillText(text, 0, fontSize, bounds.width - 10);
 

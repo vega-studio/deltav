@@ -10,9 +10,9 @@ import {
   InstanceProvider,
   IPickInfo,
   LayerInitializer,
-  PickType,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  PickType
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionColorPicking extends BaseExample {
   edgeProvider = new InstanceProvider<EdgeInstance>();
@@ -78,28 +78,28 @@ export class MouseInteractionColorPicking extends BaseExample {
       createLayer(CircleLayer, {
         animate: {
           color: AutoEasingMethod.linear(1000),
-          radius: AutoEasingMethod.easeOutElastic(1000),
+          radius: AutoEasingMethod.easeOutElastic(1000)
         },
         data: provider,
-        key: 'mouse-interaction-color-picking-1',
+        key: "mouse-interaction-color-picking-1",
         onMouseClick: this.handleCircleClick,
         onMouseOut: this.handleCircleOut,
         onMouseOver: this.handleCircleOver,
         opacity: () => 0.5,
         picking: PickType.SINGLE,
-        scaleFactor: () => 1,
+        scaleFactor: () => 1
       }),
       createLayer(EdgeLayer, {
         animate: {
-          thickness: AutoEasingMethod.easeOutElastic(1000),
+          thickness: AutoEasingMethod.easeOutElastic(1000)
         },
         data: this.edgeProvider,
-        key: 'mouse-interaction-color-picking-2',
+        key: "mouse-interaction-color-picking-2",
         onMouseMove: this.handleEdgeMouseMove,
         onMouseOut: this.handleEdgeMouseOut,
         picking: PickType.SINGLE,
-        type: EdgeType.BEZIER2,
-      }),
+        type: EdgeType.BEZIER2
+      })
     ];
   }
 
@@ -113,7 +113,7 @@ export class MouseInteractionColorPicking extends BaseExample {
           color: [1.0, Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
           id: `circle${i * 100 + k}`,
           radius: 5,
-          center: [i * 10, k * 10],
+          center: [i * 10, k * 10]
         });
 
         circleProvider.add(circle);
@@ -130,7 +130,7 @@ export class MouseInteractionColorPicking extends BaseExample {
         end: [300, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],
-        thickness: [10, 10],
+        thickness: [10, 10]
       });
 
       edgeProvider.add(edge);

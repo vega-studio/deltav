@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/matrix/translation.vs","dependencies":[],"generated":{"js":"module.exports = \"mat4 translation(vec3 t) {\\n  return mat4(\\n    1, 0, 0, 0,\\n    0, 1, 0, 0,\\n    0, 0, 1, 0,\\n    t.x, t.y, t.z, 1\\n  );\\n}\\n\""},"sourceMaps":null,"error":null,"hash":"1d7fa77653c1c0b47f998650964c1fdd","cacheData":{}}

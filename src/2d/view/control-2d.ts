@@ -1,11 +1,11 @@
 import {
   AutoEasingMethod,
-  IAutoEasingMethod,
-} from '../../math/auto-easing-method';
-import { copy3, divide3, scale3, subtract3, Vec3 } from '../../math/vector';
-import { Surface } from '../../surface';
-import { uid } from '../../util/uid';
-import { Camera2D } from './camera-2d';
+  IAutoEasingMethod
+} from "../../math/auto-easing-method";
+import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector";
+import { Surface } from "../../surface";
+import { uid } from "../../util/uid";
+import { Camera2D } from "./camera-2d";
 
 export interface IControl2DOptions {
   /** The world space offset of elements in the chart */
@@ -204,7 +204,7 @@ export class Control2D {
   /**
    * Applies the handler for broadcasting view changes from the camera.
    */
-  setViewChangeHandler(handler: Control2D['onViewChange']) {
+  setViewChangeHandler(handler: Control2D["onViewChange"]) {
     this.onViewChange = handler;
   }
 

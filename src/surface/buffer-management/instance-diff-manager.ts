@@ -1,19 +1,19 @@
-import { Instance } from '../../instance-provider/instance';
-import { ResourceRouter } from '../../resources';
+import { Instance } from "../../instance-provider/instance";
+import { ResourceRouter } from "../../resources";
 import {
   IInstanceAttribute,
   INonePickingMetrics,
   ISinglePickingMetrics,
   LayerBufferType,
-  PickType,
-} from '../../types';
-import { BaseDiffProcessor } from './base-diff-processor';
-import { IBufferLocationGroup } from './buffer-manager-base';
-import { BufferManagerBase, IBufferLocation } from './buffer-manager-base';
-import { InstanceAttributeColorDiffProcessor } from './instance-attribute-buffering/instance-attribute-color-diff-processor';
-import { InstanceAttributeDiffProcessor } from './instance-attribute-buffering/instance-attribute-diff-processor';
-import { UniformColorDiffProcessor } from './uniform-buffering/uniform-color-diff-processor';
-import { UniformDiffProcessor } from './uniform-buffering/uniform-diff-processor';
+  PickType
+} from "../../types";
+import { BaseDiffProcessor } from "./base-diff-processor";
+import { IBufferLocationGroup } from "./buffer-manager-base";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { InstanceAttributeColorDiffProcessor } from "./instance-attribute-buffering/instance-attribute-color-diff-processor";
+import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor";
+import { UniformColorDiffProcessor } from "./uniform-buffering/uniform-color-diff-processor";
+import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
 
 /** Signature of a method that handles a diff */
 export type DiffHandler<T extends Instance> = (
@@ -113,7 +113,7 @@ export class InstanceDiffManager<T extends Instance> {
     this.processing = [
       this.processor.changeInstance,
       this.processor.addInstance,
-      this.processor.removeInstance,
+      this.processor.removeInstance
     ];
 
     return this.processing;

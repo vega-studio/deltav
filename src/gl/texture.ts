@@ -1,14 +1,14 @@
-import { Omit } from '../types';
-import { uid } from '../util';
-import { GLProxy } from './gl-proxy';
-import { GLSettings } from './gl-settings';
+import { Omit } from "../types";
+import { uid } from "../util";
+import { GLProxy } from "./gl-proxy";
+import { GLSettings } from "./gl-settings";
 
 /**
  * This is the options to apply to a texture
  */
 export type TextureOptions = Omit<
   Partial<Texture>,
-  'dispose' | 'update' | 'updateRegions'
+  "dispose" | "update" | "updateRegions"
 >;
 
 /**
@@ -29,7 +29,7 @@ export class Texture {
   get anisotropy() {
     return this._anisotropy;
   }
-  set anisotropy(val: Texture['_anisotropy']) {
+  set anisotropy(val: Texture["_anisotropy"]) {
     this.needsSettingsUpdate = true;
     this._anisotropy = val;
   }
@@ -44,7 +44,7 @@ export class Texture {
   get data() {
     return this._data;
   }
-  set data(val: Texture['_data']) {
+  set data(val: Texture["_data"]) {
     this.needsDataUpload = true;
     this._data = val;
   }
@@ -75,7 +75,7 @@ export class Texture {
   get format() {
     return this._format;
   }
-  set format(val: Texture['_format']) {
+  set format(val: Texture["_format"]) {
     this.needsDataUpload = true;
     this._format = val;
   }
@@ -89,7 +89,7 @@ export class Texture {
   get generateMipMaps() {
     return this._generateMipmaps;
   }
-  set generateMipMaps(val: Texture['_generateMipmaps']) {
+  set generateMipMaps(val: Texture["_generateMipmaps"]) {
     this.needsSettingsUpdate = true;
     this._generateMipmaps = val;
   }
@@ -115,7 +115,7 @@ export class Texture {
   get magFilter() {
     return this._magFilter;
   }
-  set magFilter(val: Texture['_magFilter']) {
+  set magFilter(val: Texture["_magFilter"]) {
     this.needsSettingsUpdate = true;
     this._magFilter = val;
   }
@@ -129,7 +129,7 @@ export class Texture {
   get minFilter() {
     return this._minFilter;
   }
-  set minFilter(val: Texture['_minFilter']) {
+  set minFilter(val: Texture["_minFilter"]) {
     this.needsSettingsUpdate = true;
     this._minFilter = val;
   }
@@ -151,7 +151,7 @@ export class Texture {
   get packAlignment() {
     return this._packAlignment;
   }
-  set packAlignment(val: Texture['_packAlignment']) {
+  set packAlignment(val: Texture["_packAlignment"]) {
     this.needsSettingsUpdate = true;
     this._packAlignment = val;
   }
@@ -165,7 +165,7 @@ export class Texture {
   get premultiplyAlpha() {
     return this._premultiplyAlpha;
   }
-  set premultiplyAlpha(val: Texture['_premultiplyAlpha']) {
+  set premultiplyAlpha(val: Texture["_premultiplyAlpha"]) {
     this.needsSettingsUpdate = true;
     this._premultiplyAlpha = val;
   }
@@ -178,7 +178,7 @@ export class Texture {
   get type() {
     return this._type;
   }
-  set type(val: Texture['_type']) {
+  set type(val: Texture["_type"]) {
     this.needsDataUpload = true;
     this._type = val;
   }
@@ -192,7 +192,7 @@ export class Texture {
   get unpackAlignment() {
     return this._unpackAlignment;
   }
-  set unpackAlignment(val: Texture['_unpackAlignment']) {
+  set unpackAlignment(val: Texture["_unpackAlignment"]) {
     this.needsSettingsUpdate = true;
     this._unpackAlignment = val;
   }
@@ -207,7 +207,7 @@ export class Texture {
     return this._updateRegions;
   }
   private _updateRegions: [
-    Texture['data'],
+    Texture["data"],
     { x: number; y: number; width: number; height: number }
   ][] = [];
 
@@ -218,7 +218,7 @@ export class Texture {
   get wrapHorizontal() {
     return this._wrapHorizontal;
   }
-  set wrapHorizontal(val: Texture['_wrapHorizontal']) {
+  set wrapHorizontal(val: Texture["_wrapHorizontal"]) {
     this.needsSettingsUpdate = true;
     this._wrapHorizontal = val;
   }
@@ -232,7 +232,7 @@ export class Texture {
   get wrapVertical() {
     return this._wrapVertical;
   }
-  set wrapVertical(val: Texture['_wrapVertical']) {
+  set wrapVertical(val: Texture["_wrapVertical"]) {
     this.needsSettingsUpdate = true;
     this._wrapVertical = val;
   }
@@ -286,7 +286,7 @@ export class Texture {
    * This updates a portion of the texture object.
    */
   update(
-    data: Texture['data'],
+    data: Texture["data"],
     region: { x: number; y: number; width: number; height: number }
   ) {
     this.needsPartialDataUpload = true;

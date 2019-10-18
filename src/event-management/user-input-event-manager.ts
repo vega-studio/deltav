@@ -1,12 +1,12 @@
-import { Bounds } from '../math/primitives';
-import { add2, length2, scale2, subtract2, Vec2 } from '../math/vector';
-import { LayerScene } from '../surface/layer-scene';
-import { Surface } from '../surface/surface';
-import { IViewProps, NoView, View } from '../surface/view';
-import { isDefined } from '../util/common-filters';
-import { eventElementPosition, normalizeWheel } from '../util/mouse';
-import { QuadTree } from '../util/quad-tree';
-import { EventManager } from './event-manager';
+import { Bounds } from "../math/primitives";
+import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
+import { LayerScene } from "../surface/layer-scene";
+import { Surface } from "../surface/surface";
+import { IViewProps, NoView, View } from "../surface/view";
+import { isDefined } from "../util/common-filters";
+import { eventElementPosition, normalizeWheel } from "../util/mouse";
+import { QuadTree } from "../util/quad-tree";
+import { EventManager } from "./event-manager";
 import {
   IMouseInteraction,
   IMouseMetrics,
@@ -15,8 +15,8 @@ import {
   ISingleTouchInteraction,
   ITouchInteraction,
   ITouchMetrics,
-  IWheelMetrics,
-} from './types';
+  IWheelMetrics
+} from "./types";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
@@ -145,7 +145,7 @@ export class UserInputEventManager {
           startView: viewsUnderMouse[0].d,
           event,
           wheel: this.makeWheel(event),
-          button: -1,
+          button: -1
         };
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
@@ -158,13 +158,13 @@ export class UserInputEventManager {
         event.preventDefault();
       };
 
-      if ('onwheel' in element) {
+      if ("onwheel" in element) {
         element.onwheel = wheelHandler;
       }
 
-      if ('addEventListener' in element) {
-        element.addEventListener('DOMMouseScroll', wheelHandler);
-        this.eventCleanup.push(['DOMMouseScroll', wheelHandler]);
+      if ("addEventListener" in element) {
+        element.addEventListener("DOMMouseScroll", wheelHandler);
+        this.eventCleanup.push(["DOMMouseScroll", wheelHandler]);
       }
     }
 
@@ -204,7 +204,7 @@ export class UserInputEventManager {
           startView: viewsUnderMouse[0].d,
           event,
           wheel: this.makeWheel(),
-          button: -1,
+          button: -1
         };
       }
 
@@ -246,7 +246,7 @@ export class UserInputEventManager {
         startView: downViews[0].d,
         event,
         wheel: this.makeWheel(),
-        button: event.button,
+        button: event.button
       };
 
       const interaction = this.makeMouseInteraction(mouseMetrics);
@@ -346,7 +346,7 @@ export class UserInputEventManager {
           return false;
         };
       } else {
-        element.addEventListener('selectstart', function() {
+        element.addEventListener("selectstart", function() {
           event.preventDefault();
         });
       }
@@ -425,7 +425,7 @@ export class UserInputEventManager {
         return metrics
           .sort(sortByIdentifier)
           .map(m => m.touch.identifier)
-          .join('_');
+          .join("_");
       },
 
       rotation: (touches: ISingleTouchInteraction[]) => {
@@ -536,7 +536,7 @@ export class UserInputEventManager {
             return touch.startRelative.get(primary) || [0, 0];
           }
         );
-      },
+      }
     };
 
     element.ontouchstart = event => {
@@ -565,7 +565,7 @@ export class UserInputEventManager {
             startView,
             previousPosition: position,
             startRelative: new Map(),
-            touch,
+            touch
           };
 
           // Track the information with the touch
@@ -606,7 +606,7 @@ export class UserInputEventManager {
           allTouches: allTouches
             .map(t => currentTouchInteractions.get(t.touch.identifier))
             .filter(isDefined),
-          multitouch: multiTouchInteraction,
+          multitouch: multiTouchInteraction
         };
 
         // Broadcast to the controllers
@@ -639,7 +639,7 @@ export class UserInputEventManager {
       event.preventDefault();
 
       // The touches actually ended are in the changed list in the event
-      const touches = this.getTouches(event, 'changed');
+      const touches = this.getTouches(event, "changed");
       const allTouches = Array.from(currentTouchInteractions.values());
       const upTouches: ITouchMetrics[] = [];
 
@@ -658,7 +658,7 @@ export class UserInputEventManager {
           const tapEvent: ITouchInteraction = {
             touches: interactions,
             allTouches,
-            multitouch: multiTouchInteraction,
+            multitouch: multiTouchInteraction
           };
 
           // Broadcast to the controllers
@@ -681,7 +681,7 @@ export class UserInputEventManager {
         const moveEvent: ITouchInteraction = {
           touches: interactions,
           allTouches,
-          multitouch: multiTouchInteraction,
+          multitouch: multiTouchInteraction
         };
 
         // Broadcast to the controllers
@@ -717,7 +717,7 @@ export class UserInputEventManager {
               currentPosition: position,
               deltaPosition,
               previousPosition: trackedTouch.currentPosition,
-              touch,
+              touch
             });
             continue;
           }
@@ -729,7 +729,7 @@ export class UserInputEventManager {
             currentPosition: position,
             deltaPosition,
             previousPosition: trackedTouch.currentPosition,
-            touch,
+            touch
           });
         }
       }
@@ -745,7 +745,7 @@ export class UserInputEventManager {
           allTouches: all
             .map(m => currentTouchInteractions.get(m.touch.identifier))
             .filter(isDefined),
-          multitouch: multiTouchInteraction,
+          multitouch: multiTouchInteraction
         };
 
         // Broadcast to the controllers
@@ -761,7 +761,7 @@ export class UserInputEventManager {
       event.preventDefault();
 
       // The touches actually ended are in the changed list in the event
-      const touches = this.getTouches(event, 'changed');
+      const touches = this.getTouches(event, "changed");
       const allTouches = Array.from(currentTouchInteractions.values());
       const upTouches: ITouchMetrics[] = [];
 
@@ -783,7 +783,7 @@ export class UserInputEventManager {
         const moveEvent: ITouchInteraction = {
           touches: interactions,
           allTouches,
-          multitouch: multiTouchInteraction,
+          multitouch: multiTouchInteraction
         };
 
         // Broadcast to the controllers
@@ -861,13 +861,13 @@ export class UserInputEventManager {
    * Retrieves all touches from a touch event. This normalizes the touch information across: touches, changedTouches,
    * and targetTouches
    */
-  getTouches(event: TouchEvent, category?: 'touches' | 'changed' | 'target') {
+  getTouches(event: TouchEvent, category?: "touches" | "changed" | "target") {
     const touches = new Map<number, Touch>();
 
     if (
       event.touches &&
       event.touches.length > 0 &&
-      (!category || category === 'touches')
+      (!category || category === "touches")
     ) {
       for (let i = 0, iMax = event.touches.length; i < iMax; ++i) {
         const touch = event.touches.item(i);
@@ -879,7 +879,7 @@ export class UserInputEventManager {
     if (
       event.changedTouches &&
       event.changedTouches.length > 0 &&
-      (!category || category === 'changed')
+      (!category || category === "changed")
     ) {
       for (let i = 0, iMax = event.changedTouches.length; i < iMax; ++i) {
         const touch = event.changedTouches.item(i);
@@ -891,7 +891,7 @@ export class UserInputEventManager {
     if (
       event.targetTouches &&
       event.targetTouches.length > 0 &&
-      (!category || category === 'target')
+      (!category || category === "target")
     ) {
       for (let i = 0, iMax = event.targetTouches.length; i < iMax; ++i) {
         const touch = event.targetTouches.item(i);
@@ -946,7 +946,7 @@ export class UserInputEventManager {
     return {
       mouse,
       screen: {
-        position: mouse.currentPosition,
+        position: mouse.currentPosition
       },
       start: {
         position: startView.projection.screenToView(mouse.start),
@@ -956,9 +956,9 @@ export class UserInputEventManager {
 
           return {
             position: v.d.projection.screenToView(mouse.start),
-            view: v.d,
+            view: v.d
           };
-        }),
+        })
       },
       target: {
         position: targetSceneView.projection.screenToView(
@@ -970,10 +970,10 @@ export class UserInputEventManager {
 
           return {
             position: v.d.projection.screenToView(mouse.currentPosition),
-            view: v.d,
+            view: v.d
           };
-        }),
-      },
+        })
+      }
     };
   }
 
@@ -991,7 +991,7 @@ export class UserInputEventManager {
     return {
       touch,
       screen: {
-        position,
+        position
       },
       start: {
         position: startView.projection.screenToView(touch.start),
@@ -1001,9 +1001,9 @@ export class UserInputEventManager {
 
           return {
             position: v.d.projection.screenToView(touch.start),
-            view: v.d,
+            view: v.d
           };
-        }),
+        })
       },
       target: {
         position: targetSceneView.projection.screenToView(position),
@@ -1013,10 +1013,10 @@ export class UserInputEventManager {
 
           return {
             position: v.d.projection.screenToView(position),
-            view: v.d,
+            view: v.d
           };
-        }),
-      },
+        })
+      }
     };
   }
 
@@ -1037,7 +1037,7 @@ export class UserInputEventManager {
     // With all combinations in place, we can now find any combination that newly exists as a result of the new touches.
     for (let i = 0, iMax = allCombinations.length; i < iMax; ++i) {
       const combo = allCombinations[i];
-      const id = combo.map(metrics => metrics.touch.identifier).join('_');
+      const id = combo.map(metrics => metrics.touch.identifier).join("_");
       let multitouch = multiTouchLookup.get(id);
 
       if (!multitouch) {
@@ -1049,7 +1049,7 @@ export class UserInputEventManager {
           currentCenter: center,
           currentRotation: this.getAverageAngle(combo, center),
           centerDelta: [0, 0],
-          rotationDelta: 0,
+          rotationDelta: 0
         };
 
         multiTouchLookup.set(id, multitouch);
@@ -1072,7 +1072,7 @@ export class UserInputEventManager {
 
     for (let i = 0, iMax = allCombinations.length; i < iMax; ++i) {
       const combo = allCombinations[i];
-      const id = combo.map(metrics => metrics.touch.identifier).join('_');
+      const id = combo.map(metrics => metrics.touch.identifier).join("_");
       const multitouch = multiTouchLookup.get(id);
 
       if (multitouch) {
@@ -1112,14 +1112,14 @@ export class UserInputEventManager {
   makeWheel(event?: MouseWheelEvent): IWheelMetrics {
     if (!event) {
       return {
-        delta: [0, 0],
+        delta: [0, 0]
       };
     }
 
     const wheel = normalizeWheel(event);
 
     return {
-      delta: [wheel.pixelX, wheel.pixelY],
+      delta: [wheel.pixelX, wheel.pixelY]
     };
   }
 

@@ -29,11 +29,11 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-'use strict';
+"use strict";
 
-const UserAgent_DEPRECATED = require('./UserAgent_DEPRECATED');
+const UserAgent_DEPRECATED = require("./UserAgent_DEPRECATED");
 
-const isEventSupported = require('./isEventSupported');
+const isEventSupported = require("./isEventSupported");
 
 // Reasonable defaults
 const PIXEL_STEP = 10;
@@ -147,21 +147,21 @@ export function normalizeWheel(/*object*/ event: any) /*object*/ {
     pY = 0; // pixelX, pixelY
 
   // Legacy
-  if ('detail' in event) {
+  if ("detail" in event) {
     sY = event.detail;
   }
-  if ('wheelDelta' in event) {
+  if ("wheelDelta" in event) {
     sY = -event.wheelDelta / 120;
   }
-  if ('wheelDeltaY' in event) {
+  if ("wheelDeltaY" in event) {
     sY = -event.wheelDeltaY / 120;
   }
-  if ('wheelDeltaX' in event) {
+  if ("wheelDeltaX" in event) {
     sX = -event.wheelDeltaX / 120;
   }
 
   // side scrolling on FF with DOMMouseScroll
-  if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+  if ("axis" in event && event.axis === event.HORIZONTAL_AXIS) {
     sX = sY;
     sY = 0;
   }
@@ -169,10 +169,10 @@ export function normalizeWheel(/*object*/ event: any) /*object*/ {
   pX = sX * PIXEL_STEP;
   pY = sY * PIXEL_STEP;
 
-  if ('deltaY' in event) {
+  if ("deltaY" in event) {
     pY = event.deltaY;
   }
-  if ('deltaX' in event) {
+  if ("deltaX" in event) {
     pX = event.deltaX;
   }
 
@@ -200,7 +200,7 @@ export function normalizeWheel(/*object*/ event: any) /*object*/ {
     spinX: sX,
     spinY: -sY,
     pixelX: pX,
-    pixelY: -pY,
+    pixelY: -pY
   };
 }
 
@@ -211,8 +211,8 @@ export function normalizeWheel(/*object*/ event: any) /*object*/ {
  */
 normalizeWheel.getEventType = function() /*string*/ {
   return UserAgent_DEPRECATED.firefox()
-    ? 'DOMMouseScroll'
-    : isEventSupported('wheel')
-      ? 'wheel'
-      : 'mousewheel';
+    ? "DOMMouseScroll"
+    : isEventSupported("wheel")
+      ? "wheel"
+      : "mousewheel";
 };

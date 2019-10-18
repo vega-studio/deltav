@@ -1,5 +1,5 @@
-import { hsl } from 'd3-color';
-import * as datGUI from 'dat.gui';
+import { hsl } from "d3-color";
+import * as datGUI from "dat.gui";
 import {
   add2,
   AnchorType,
@@ -36,11 +36,11 @@ import {
   ScaleMode,
   Size,
   Vec4,
-  View2D,
-} from 'src';
-import { BaseDemo } from '../../common/base-demo';
-import { debounce } from '../../common/debounce';
-import { DEFAULT_RESOURCES, WORDS } from '../../types';
+  View2D
+} from "../../../src";
+import { BaseDemo } from "../../common/base-demo";
+import { debounce } from "../../common/debounce";
+import { DEFAULT_RESOURCES, WORDS } from "../../types";
 
 /**
  * A demo demonstrating particles collecting within the bounds of text.
@@ -60,7 +60,7 @@ export class NodesEdges extends BaseDemo {
     circles: new InstanceProvider<CircleInstance>(),
     edges: new InstanceProvider<EdgeInstance>(),
     rectangles: new InstanceProvider<RectangleInstance>(),
-    labels: new InstanceProvider<LabelInstance>(),
+    labels: new InstanceProvider<LabelInstance>()
   };
 
   /** Arcs used to animate hover */
@@ -71,7 +71,7 @@ export class NodesEdges extends BaseDemo {
       colorStart: [1, 1, 1, 1],
       center: [0, 0],
       thickness: [2, 2],
-      radius: 15,
+      radius: 15
     }),
     new ArcInstance({
       angle: [-Math.PI, -Math.PI / 2],
@@ -79,8 +79,8 @@ export class NodesEdges extends BaseDemo {
       colorStart: [1, 1, 1, 1],
       center: [0, 0],
       thickness: [2, 2],
-      radius: 15,
-    }),
+      radius: 15
+    })
   ];
 
   /** GUI properties */
@@ -93,8 +93,8 @@ export class NodesEdges extends BaseDemo {
     nodeRadius: 10,
 
     previous: {
-      count: 10,
-    },
+      count: 10
+    }
   };
 
   viewSize: Size;
@@ -103,10 +103,10 @@ export class NodesEdges extends BaseDemo {
    * Dat gui construction
    */
   buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder('Parameters');
+    const parameters = gui.addFolder("Parameters");
 
     // Changes the shape the circles take on
-    parameters.add(this.parameters, 'count', 1, 100, 1).onChange(
+    parameters.add(this.parameters, "count", 1, 100, 1).onChange(
       debounce(async (value: number) => {
         const delta = value - this.parameters.previous.count;
 
@@ -127,29 +127,29 @@ export class NodesEdges extends BaseDemo {
       }, 250)
     );
 
-    parameters.add(this.parameters, 'fontSize', 4, 80, 1).onChange(
+    parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
       }, 250)
     );
 
-    parameters.add(this.parameters, 'nodeRadius', 4, 500, 1).onChange(
+    parameters.add(this.parameters, "nodeRadius", 4, 500, 1).onChange(
       debounce(async (_value: number) => {
         this.layout();
       }, 250)
     );
 
-    parameters.add(this.parameters, 'circleRadius', 4, 5000, 1).onChange(
+    parameters.add(this.parameters, "circleRadius", 4, 5000, 1).onChange(
       debounce(async (_value: number) => {
         this.layout();
       }, 250)
     );
 
     parameters
-      .add(this.parameters, 'scaleMode', {
+      .add(this.parameters, "scaleMode", {
         Always: ScaleMode.ALWAYS,
         BoundMax: ScaleMode.BOUND_MAX,
-        Never: ScaleMode.NEVER,
+        Never: ScaleMode.NEVER
       })
       .onChange();
   }
@@ -253,7 +253,7 @@ export class NodesEdges extends BaseDemo {
     this.surface.eventManagers.main.centerOn(info.projection.id, [
       focus.center[0],
       focus.center[1],
-      0,
+      0
     ]);
   };
 
@@ -265,17 +265,17 @@ export class NodesEdges extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D(),
+        main: new Camera2D()
       },
       resources: {
-        font: DEFAULT_RESOURCES.font,
+        font: DEFAULT_RESOURCES.font
       },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ['main.view'],
-          wheelShouldScroll: false,
-        }),
+          startView: ["main.view"],
+          wheelShouldScroll: false
+        })
       }),
       pipeline: (resources, providers, cameras) => ({
         scenes: {
@@ -284,8 +284,8 @@ export class NodesEdges extends BaseDemo {
               view: createView(View2D, {
                 camera: cameras.main,
                 background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-              }),
+                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              })
             },
             layers: {
               arcs: createLayer(ArcLayer, {
@@ -294,21 +294,21 @@ export class NodesEdges extends BaseDemo {
                     1000,
                     0,
                     AutoEasingLoopStyle.REPEAT
-                  ),
+                  )
                 },
-                data: providers.arcs,
+                data: providers.arcs
               }),
               edges: createLayer(EdgeLayer, {
                 animate: {
                   startColor: AutoEasingMethod.easeInOutCubic(500),
-                  endColor: AutoEasingMethod.easeInOutCubic(500),
+                  endColor: AutoEasingMethod.easeInOutCubic(500)
                 },
                 data: providers.edges,
-                type: EdgeType.LINE,
+                type: EdgeType.LINE
               }),
               circles: createLayer(CircleLayer, {
                 animate: {
-                  color: AutoEasingMethod.easeInOutCubic(1000, 0),
+                  color: AutoEasingMethod.easeInOutCubic(1000, 0)
                 },
                 data: providers.circles,
                 scaleFactor: () => cameras.main.scale2D[0],
@@ -316,24 +316,24 @@ export class NodesEdges extends BaseDemo {
 
                 onMouseOver: this.handleCircleOver,
                 onMouseOut: this.handleCircleOut,
-                onMouseClick: this.handleCircleClick,
+                onMouseClick: this.handleCircleClick
               }),
               rects: createLayer(RectangleLayer, {
                 data: providers.rectangles,
-                scaleFactor: () => cameras.main.scale[0],
+                scaleFactor: () => cameras.main.scale[0]
               }),
               labels: createLayer(LabelLayer, {
                 animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500),
+                  color: AutoEasingMethod.easeInOutCubic(500)
                 },
                 data: providers.labels,
                 resourceKey: resources.font.key,
-                scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`),
-              }),
-            },
-          },
-        },
-      }),
+                scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
+              })
+            }
+          }
+        }
+      })
     });
   }
 
@@ -343,24 +343,24 @@ export class NodesEdges extends BaseDemo {
   async init() {
     if (!this.surface) return;
     await this.surface.ready;
-    const bounds = this.surface.getViewScreenBounds('main.view');
+    const bounds = this.surface.getViewScreenBounds("main.view");
     this.viewSize = [bounds.width, bounds.height];
 
     this.center = new CircleInstance({
       center: [bounds.width / 2, bounds.height / 2],
       radius: 10,
-      color: [1, 1, 1, 1],
+      color: [1, 1, 1, 1]
     });
 
     this.boundsView = new RectangleInstance({
       anchor: {
         type: AnchorType.TopLeft,
-        padding: 0,
+        padding: 0
       },
       position: [0, 0],
       size: [1, 1],
       color: [1, 1, 1, 0.2],
-      depth: -200,
+      depth: -200
     });
 
     // Uncomment this to see the bounds used for the camera
@@ -411,7 +411,7 @@ export class NodesEdges extends BaseDemo {
     const node = new CircleInstance({
       center: [0, 0],
       radius: this.parameters.nodeRadius,
-      color: [1, 1, 1, 1],
+      color: [1, 1, 1, 1]
     });
 
     this.providers.circles.add(node);
@@ -420,7 +420,7 @@ export class NodesEdges extends BaseDemo {
     const edge = new EdgeInstance({
       thickness: [8, 1],
       start: [0, 0],
-      end: [0, 0],
+      end: [0, 0]
     });
 
     this.providers.edges.add(edge);
@@ -429,11 +429,11 @@ export class NodesEdges extends BaseDemo {
     const rect = new RectangleInstance({
       anchor: {
         type: AnchorType.TopLeft,
-        padding: 0,
+        padding: 0
       },
       color: [0.5, 0.5, 0.5, 1],
       position: [0, 0],
-      size: [0, 0],
+      size: [0, 0]
     });
 
     // this.providers.rectangles.add(rect);
@@ -442,11 +442,11 @@ export class NodesEdges extends BaseDemo {
     const label = new LabelInstance({
       origin: [20, this.parameters.fontSize * this.labels.length],
       color: [1, 1, 1, 0.0],
-      text: txt !== undefined ? txt : words.join(' '),
+      text: txt !== undefined ? txt : words.join(" "),
       fontSize: this.parameters.fontSize,
       onReady: this.labelReady,
       maxScale: 0.5,
-      preload,
+      preload
     });
 
     this.providers.labels.add(label);
@@ -466,7 +466,7 @@ export class NodesEdges extends BaseDemo {
         circle.center = add2(
           [
             Math.cos(i / this.circles.length * Math.PI * 2) * distance,
-            Math.sin(i / this.circles.length * Math.PI * 2) * distance,
+            Math.sin(i / this.circles.length * Math.PI * 2) * distance
           ],
           this.center.center
         );
@@ -497,12 +497,12 @@ export class NodesEdges extends BaseDemo {
         if (angle > Math.PI / 2 && angle < Math.PI * 3 / 2) {
           lbl.anchor = {
             type: AnchorType.MiddleRight,
-            padding: this.circles[i].radius + 4,
+            padding: this.circles[i].radius + 4
           };
         } else {
           lbl.anchor = {
             type: AnchorType.MiddleLeft,
-            padding: this.circles[i].radius + 4,
+            padding: this.circles[i].radius + 4
           };
         }
       });

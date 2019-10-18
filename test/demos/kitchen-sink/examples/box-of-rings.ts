@@ -5,9 +5,9 @@ import {
   LayerInitializer,
   PickType,
   RingInstance,
-  RingLayer,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  RingLayer
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoxOfRings extends BaseExample {
   camera: Camera2D;
@@ -23,9 +23,9 @@ export class BoxOfRings extends BaseExample {
   ): LayerInitializer {
     return createLayer(RingLayer, {
       data: provider,
-      key: 'box-of-rings',
+      key: "box-of-rings",
       scaleFactor: () => this.camera.scale2D[0],
-      picking: PickType.SINGLE,
+      picking: PickType.SINGLE
     });
   }
 
@@ -49,7 +49,7 @@ export class BoxOfRings extends BaseExample {
                 id: `ring_${i}_${k}`,
                 radius: 10,
                 thickness: 1,
-                center: [i * 20, k * 20],
+                center: [i * 20, k * 20]
               })
             );
 

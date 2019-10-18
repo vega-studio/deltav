@@ -1,17 +1,17 @@
-import { Transform } from '../3d/scene-graph/transform';
+import { Transform } from "../3d/scene-graph/transform";
 import {
   identity4,
   Mat4x4,
   multiply4x4,
   orthographic4x4,
-  perspective4x4,
-} from '../math/matrix';
-import { Vec3 } from '../math/vector';
-import { uid } from './uid';
+  perspective4x4
+} from "../math/matrix";
+import { Vec3 } from "../math/vector";
+import { uid } from "./uid";
 
 export enum CameraProjectionType {
   PERSPECTIVE,
-  ORTHOGRAPHIC,
+  ORTHOGRAPHIC
 }
 
 /**
@@ -74,14 +74,14 @@ export interface IPerspectiveCamera extends Camera {
 export function isOrthographic(camera: Camera): camera is IOrthoGraphicCamera {
   return (
     camera.projectionOptions.type === CameraProjectionType.ORTHOGRAPHIC &&
-    'left' in camera.projectionOptions
+    "left" in camera.projectionOptions
   );
 }
 
 export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
   return (
     camera.projectionOptions.type === CameraProjectionType.PERSPECTIVE &&
-    'fov' in camera.projectionOptions
+    "fov" in camera.projectionOptions
   );
 }
 
@@ -104,7 +104,7 @@ export class Camera {
   /** Flag indicating the camera needs to broadcast changes applied to it */
   needsBroadcast: boolean = false;
   /** The id of the view to be broadcasted for the sake of a change */
-  viewChangeViewId: string = '';
+  viewChangeViewId: string = "";
   /** This is the transform that places the camera within world space */
   transform: Transform = new Transform();
 
@@ -131,7 +131,7 @@ export class Camera {
       bottom: 100,
       near: -100,
       far: 100000,
-      type: CameraProjectionType.ORTHOGRAPHIC,
+      type: CameraProjectionType.ORTHOGRAPHIC
     });
   }
 
@@ -147,7 +147,7 @@ export class Camera {
           near: 1,
           fov: 90 * Math.PI / 180,
           height: 1000,
-          width: 1000,
+          width: 1000
         },
         options
       )

@@ -1,0 +1,37 @@
+import { Bounds } from "../math/primitives";
+import { Vec2 } from "../math/vector";
+import { LayerScene } from "../surface/layer-scene";
+import { Surface } from "../surface/surface";
+import { IViewProps, View } from "../surface/view";
+import { QuadTree } from "../util/quad-tree";
+import { EventManager } from "./event-manager";
+import { IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types";
+export declare class UserInputEventManager {
+    context: HTMLCanvasElement;
+    controllers: EventManager[];
+    quadTree: QuadTree<Bounds<View<IViewProps>>>;
+    surface: Surface;
+    eventCleanup: [string, EventListenerOrEventListenerObject][];
+    private _waitingForRender;
+    waitingForRender: boolean;
+    readonly scenes: LayerScene[];
+    constructor(canvas: HTMLCanvasElement, surface: Surface, controllers: EventManager[], handlesWheelEvents?: boolean);
+    addContextListeners(handlesWheelEvents?: boolean): void;
+    private addMouseContextListeners;
+    private addTouchContextListeners;
+    getAverageDistance(touches: ITouchMetrics[], center: Vec2, accessor?: (touch: ITouchMetrics) => Vec2): number;
+    getAverageAngle(touches: ITouchMetrics[], center: Vec2, accessor?: (touch: ITouchMetrics) => Vec2): number;
+    getTouchCenter(touches: ITouchMetrics[], accessor?: (touch: ITouchMetrics) => Vec2): Vec2;
+    getTouches(event: TouchEvent, category?: "touches" | "changed" | "target"): Touch[];
+    getView(viewId: string): View<IViewProps> | null;
+    getViewsUnderPosition: (mouse: [number, number]) => Bounds<View<IViewProps>>[];
+    makeMouseInteraction(mouse: IMouseMetrics): IMouseInteraction;
+    makeSingleTouchInteraction(touch: ITouchMetrics): ISingleTouchInteraction;
+    makeMultiTouchInteractions(touchMetrics: ITouchMetrics[], multiTouchLookup: Map<string, IMultiTouchMetrics>): void;
+    updateMultiTouchInteractions(touchMetrics: ITouchMetrics[], multiTouchLookup: Map<string, IMultiTouchMetrics>): void;
+    allTouchCombinations(list: ITouchMetrics[]): ITouchMetrics[][];
+    makeWheel(event?: MouseWheelEvent): IWheelMetrics;
+    resize: () => void;
+    setControllers(controllers: EventManager[]): void;
+    destroy(): void;
+}

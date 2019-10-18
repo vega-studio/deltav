@@ -1,14 +1,14 @@
-import { WebGLRenderer } from '../gl';
-import { Instance } from '../instance-provider/instance';
-import { ILayerProps, Layer } from '../surface/layer';
-import { BaseIOExpansion } from '../surface/layer-processing/base-io-expansion';
+import { WebGLRenderer } from "../gl";
+import { Instance } from "../instance-provider/instance";
+import { ILayerProps, Layer } from "../surface/layer";
+import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
 import {
   InstanceIOValue,
   IResourceContext,
   IResourceInstanceAttribute,
-  IResourceType,
-} from '../types';
-import { ResourceRouter } from './resource-router';
+  IResourceType
+} from "../types";
+import { ResourceRouter } from "./resource-router";
 
 /**
  * The Base Options for initializing a resource.
@@ -120,7 +120,7 @@ export class InvalidResourceManager extends BaseResourceManager<
   }
 
   getResource(resourceKey: string) {
-    return this.resources.get(resourceKey) || { key: '', type: -1 };
+    return this.resources.get(resourceKey) || { key: "", type: -1 };
   }
 
   async initResource(resource: BaseResourceOptions) {

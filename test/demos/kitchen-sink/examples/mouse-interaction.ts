@@ -1,4 +1,4 @@
-import anime from 'animejs';
+import anime from "animejs";
 import {
   AutoEasingMethod,
   BasicCamera2DController,
@@ -9,9 +9,9 @@ import {
   InstanceProvider,
   IPickInfo,
   LayerInitializer,
-  PickType,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  PickType
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteraction extends BaseExample {
   isOver = new Map<CircleInstance, boolean>();
@@ -25,7 +25,7 @@ export class MouseInteraction extends BaseExample {
     return new BasicCamera2DController({
       camera: defaultCamera,
       startView: viewName,
-      twoFingerPan: true,
+      twoFingerPan: true
     });
   }
 
@@ -41,7 +41,7 @@ export class MouseInteraction extends BaseExample {
         targets: circle.color,
         update: () => {
           circle.color = circle.color;
-        },
+        }
       });
     }
   };
@@ -72,15 +72,15 @@ export class MouseInteraction extends BaseExample {
   ): LayerInitializer {
     return createLayer(CircleLayer, {
       animate: {
-        radius: AutoEasingMethod.easeOutElastic(500),
+        radius: AutoEasingMethod.easeOutElastic(500)
       },
       data: provider,
-      key: 'mouse-interaction',
+      key: "mouse-interaction",
       onMouseClick: this.handleCircleClick,
       onMouseOut: this.handleCircleOut,
       onMouseOver: this.handleCircleOver,
       picking: PickType.SINGLE,
-      scaleFactor: () => 1,
+      scaleFactor: () => 1
     });
   }
 
@@ -93,7 +93,7 @@ export class MouseInteraction extends BaseExample {
           color: [1.0, Math.random(), Math.random(), Math.random() * 0.8 + 0.2],
           id: `circle${i * 100 + k}`,
           radius: 5,
-          center: [i * 11, k * 11],
+          center: [i * 11, k * 11]
         });
 
         circleProvider.add(circle);

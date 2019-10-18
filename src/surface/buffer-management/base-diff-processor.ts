@@ -1,10 +1,10 @@
-import { Instance, InstanceDiff } from '../../instance-provider';
+import { Instance, InstanceDiff } from "../../instance-provider";
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup,
-} from './buffer-manager-base';
-import { IInstanceDiffManagerTarget } from './instance-diff-manager';
+  IBufferLocationGroup
+} from "./buffer-manager-base";
+import { IInstanceDiffManagerTarget } from "./instance-diff-manager";
 
 /**
  * Base requirements for handling diffs from a layer.

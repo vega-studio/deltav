@@ -6,9 +6,9 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer,
-  nextFrame,
-} from '../../../../src';
-import { BaseExample, TestResourceKeys } from './base-example';
+  nextFrame
+} from "../../../../src";
+import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class ChangingAnchorLabels extends BaseExample {
   makeLayer(
@@ -18,7 +18,7 @@ export class ChangingAnchorLabels extends BaseExample {
     return createLayer(LabelLayer, {
       resourceKey: resource.font,
       data: provider,
-      key: 'changing-anchor-labels',
+      key: "changing-anchor-labels"
     });
   }
 
@@ -36,13 +36,13 @@ export class ChangingAnchorLabels extends BaseExample {
           new LabelInstance({
             anchor: {
               padding: 0,
-              type: AnchorType.Middle,
+              type: AnchorType.Middle
             },
             color: [1, 1, 1, 1],
             fontSize: 20,
             id: `label-test-${i}`,
-            text: 'Changing Anchor Point',
-            origin: [bounds.width / 2, bounds.height / 2],
+            text: "Changing Anchor Point",
+            origin: [bounds.width / 2, bounds.height / 2]
           })
         );
 
@@ -63,8 +63,8 @@ export class ChangingAnchorLabels extends BaseExample {
               AnchorType.MiddleRight,
               AnchorType.BottomLeft,
               AnchorType.BottomMiddle,
-              AnchorType.BottomRight,
-            ][index++ % 9],
+              AnchorType.BottomRight
+            ][index++ % 9]
           };
           label.anchor = anchor;
         }

@@ -1,9 +1,9 @@
-import { SimpleEventHandler } from '../../event-management/simple-event-handler';
+import { SimpleEventHandler } from "../../event-management/simple-event-handler";
 import {
   IMouseInteraction,
   ISingleTouchInteraction,
-  ITouchInteraction,
-} from '../../event-management/types';
+  ITouchInteraction
+} from "../../event-management/types";
 import {
   add3,
   AutoEasingMethod,
@@ -19,12 +19,12 @@ import {
   subtract3,
   Vec2,
   Vec3,
-  vec3,
-} from '../../math';
-import { Bounds } from '../../math/primitives/bounds';
-import { IViewProps, View } from '../../surface/view';
-import { touchesContainsStartView, touchesHasStartView, uid } from '../../util';
-import { Camera2D } from './camera-2d';
+  vec3
+} from "../../math";
+import { Bounds } from "../../math/primitives/bounds";
+import { IViewProps, View } from "../../surface/view";
+import { touchesContainsStartView, touchesHasStartView, uid } from "../../util";
+import { Camera2D } from "./camera-2d";
 
 /**
  * Anchor options for the controller
@@ -38,7 +38,7 @@ export enum CameraBoundsAnchor {
   MIDDLE_RIGHT,
   BOTTOM_LEFT,
   BOTTOM_MIDDLE,
-  BOTTOM_RIGHT,
+  BOTTOM_RIGHT
 }
 
 /**
@@ -346,11 +346,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
   ) {
     const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
-      bounds.worldBounds.top,
+      bounds.worldBounds.top
     ]);
     const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
-      bounds.worldBounds.bottom,
+      bounds.worldBounds.bottom
     ]);
 
     const widthDifference =
@@ -399,11 +399,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
   ) {
     const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
-      bounds.worldBounds.top,
+      bounds.worldBounds.top
     ]);
     const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
-      bounds.worldBounds.bottom,
+      bounds.worldBounds.bottom
     ]);
 
     const heightDifference =
@@ -594,18 +594,18 @@ export class BasicCamera2DController extends SimpleEventHandler {
       /** Get the current viewed world bounds of the view */
       const topLeft = projection.screenToWorld([
         screenBounds.x,
-        screenBounds.y,
+        screenBounds.y
       ]);
       const bottomRight = projection.screenToWorld([
         screenBounds.right,
-        screenBounds.bottom,
+        screenBounds.bottom
       ]);
 
       return new Bounds({
         height: bottomRight[1] - topLeft[1],
         width: bottomRight[0] - topLeft[0],
         x: topLeft[0],
-        y: topLeft[1],
+        y: topLeft[1]
       });
     }
 
@@ -830,7 +830,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const deltaScale: Vec3 = [
           scaleToCurrentTouch * this.camera.scale2D[0] - this.camera.scale2D[0],
           scaleToCurrentTouch * this.camera.scale2D[1] - this.camera.scale2D[1],
-          0,
+          0
         ];
 
         if (scaleToCurrentTouch !== 1) {
@@ -856,7 +856,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
       if (this.wheelShouldScroll) {
         const deltaPosition: [number, number] = [
           -e.mouse.wheel.delta[0],
-          e.mouse.wheel.delta[1],
+          e.mouse.wheel.delta[1]
         ];
 
         if (e.start) {
@@ -874,7 +874,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const deltaScale: [number, number, number] = [
           e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomX,
           e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomY,
-          1,
+          1
         ];
 
         this.doScale(
@@ -974,7 +974,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
         [
           screenBounds.width / newWorld.width,
           screenBounds.height / newWorld.height,
-          1,
+          1
         ],
         this.camera.control2D.getScale()
       );
@@ -1010,7 +1010,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /**
    * Applies a handler for the range changing.
    */
-  setRangeChangeHandler(handler: BasicCamera2DController['onRangeChanged']) {
+  setRangeChangeHandler(handler: BasicCamera2DController["onRangeChanged"]) {
     this.onRangeChanged = handler;
   }
 }

@@ -1,5 +1,5 @@
-import { Camera, CameraProjectionType } from '../../util/camera';
-import { Control2D, IControl2DOptions } from './control-2d';
+import { Camera, CameraProjectionType } from "../../util/camera";
+import { Control2D, IControl2DOptions } from "./control-2d";
 
 /**
  * This is a complex camera that layers simpler 2D concepts over an actual 3D projection camera. This camera FORCES the
@@ -29,7 +29,7 @@ export class Camera2D extends Camera {
       bottom: 100,
       near: -100,
       far: 100000,
-      type: CameraProjectionType.ORTHOGRAPHIC,
+      type: CameraProjectionType.ORTHOGRAPHIC
     });
 
     // Generate the controller that manipulates our 2D world

@@ -1,4 +1,4 @@
-import { Bounds } from './bounds';
+import { Bounds } from "./bounds";
 
 /**
  * Anytime this is used to express bounds of an object, it is expected
@@ -27,7 +27,7 @@ function value(val: number | string, ref: number, scaleRatio: number) {
   }
 
   // If this is a percentage use the reference as the num to multiply against
-  if (parse.indexOf('%') > -1) {
+  if (parse.indexOf("%") > -1) {
     return num / 100.0 * ref;
   }
 
@@ -47,12 +47,12 @@ export function getAbsolutePositionBounds<T>(
 ): Bounds<T> {
   if (reference.width === 0 || reference.height === 0) {
     console.warn(
-      'An AbsolutePosition evaluated to invalid dimensions.',
-      'Please ensure that the object provided and the reference has valid dimensions',
-      'to produce dimensions with width and height that are non-zero.',
-      'item:',
+      "An AbsolutePosition evaluated to invalid dimensions.",
+      "Please ensure that the object provided and the reference has valid dimensions",
+      "to produce dimensions with width and height that are non-zero.",
+      "item:",
       item,
-      'reference:',
+      "reference:",
       reference.toString()
     );
   }
@@ -81,12 +81,12 @@ export function getAbsolutePositionBounds<T>(
 
     if (width < 0) {
       console.warn(
-        'An AbsolutePosition evaluated to invalid dimensions.',
-        'Please ensure that the object provided and the reference has valid dimensions',
-        'to produce dimensions with width and height that are greater than zero.',
-        'item:',
+        "An AbsolutePosition evaluated to invalid dimensions.",
+        "Please ensure that the object provided and the reference has valid dimensions",
+        "to produce dimensions with width and height that are greater than zero.",
+        "item:",
         item,
-        'reference:',
+        "reference:",
         reference.toString()
       );
     }
@@ -115,12 +115,12 @@ export function getAbsolutePositionBounds<T>(
 
     if (height === undefined || height < 0) {
       console.warn(
-        'An AbsolutePosition evaluated to invalid dimensions.',
-        'Please ensure that the object provided and the reference has valid dimensions',
-        'to produce dimensions with width and height that are greater than zero.',
-        'item:',
+        "An AbsolutePosition evaluated to invalid dimensions.",
+        "Please ensure that the object provided and the reference has valid dimensions",
+        "to produce dimensions with width and height that are greater than zero.",
+        "item:",
         item,
-        'reference:',
+        "reference:",
         reference.toString()
       );
     }

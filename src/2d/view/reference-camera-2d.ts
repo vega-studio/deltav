@@ -1,5 +1,5 @@
-import { Camera2D } from './camera-2d';
-import { Control2D } from './control-2d';
+import { Camera2D } from "./camera-2d";
+import { Control2D } from "./control-2d";
 
 export interface IReferenceControl2DOptions {
   /** This is the base camera to monitor */
@@ -86,7 +86,7 @@ export class ReferenceCamera2D extends Camera2D {
     this._control2D = new ReferenceControl2D(this.base, {
       base: this.base.control2D,
       offsetFilter: options.offsetFilter,
-      scaleFilter: options.scaleFilter,
+      scaleFilter: options.scaleFilter
     });
   }
 }

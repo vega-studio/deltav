@@ -1,0 +1,14 @@
+import { GLSettings } from "./gl-settings";
+import { GLContext, IExtensions } from "./types";
+export declare function drawMode(gl: GLContext, mode: GLSettings.Model.DrawMode): number;
+export declare function texelFormat(gl: GLContext, format: GLSettings.Texture.TexelDataType): number;
+export declare function inputImageFormat(gl: GLContext, format: GLSettings.Texture.SourcePixelFormat): number;
+export declare function magFilter(gl: GLContext, filter: GLSettings.Texture.TextureMagFilter, isPowerOf2: boolean): number;
+export declare function minFilter(gl: GLContext, filter: GLSettings.Texture.TextureMinFilter, isPowerOf2: boolean, hasMipMaps: boolean): number;
+export declare function colorBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat): number;
+export declare function depthBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.DepthBufferFormat): number;
+export declare function stencilBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.StencilBufferFormat): number;
+export declare function wrapMode(gl: GLContext, mode: GLSettings.Texture.Wrapping): number;
+export declare function indexToColorAttachment(gl: GLContext, extensions: IExtensions, index: number, isSingleBuffer: boolean): number;
+export declare function indexToTextureUnit(gl: GLContext, index: number): number;
+export declare function textureUnitToIndex(gl: GLContext, unit: number): number;

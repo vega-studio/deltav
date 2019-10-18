@@ -1,7 +1,7 @@
-import { uid } from '../util/uid';
-import { GLProxy } from './gl-proxy';
-import { GLSettings } from './gl-settings';
-import { Texture } from './texture';
+import { uid } from "../util/uid";
+import { GLProxy } from "./gl-proxy";
+import { GLSettings } from "./gl-settings";
+import { Texture } from "./texture";
 
 /**
  * These are the options available for creating a new RenderTarget.
@@ -57,10 +57,10 @@ export class RenderTarget {
         ? this._buffers.color.slice(0)
         : this._buffers.color,
       depth: this._buffers.depth,
-      stencil: this._buffers.stencil,
+      stencil: this._buffers.stencil
     };
   }
-  private _buffers: IRenderTargetOptions['buffers'];
+  private _buffers: IRenderTargetOptions["buffers"];
   /**
    * The height of the render target. This is automatically set if any of the buffers are a Texture
    * object. Otherwise, this reflects the value provided in the options.
@@ -127,7 +127,7 @@ export class RenderTarget {
         ? options.buffers.color.slice(0)
         : options.buffers.color,
       depth: options.buffers.depth,
-      stencil: options.buffers.stencil,
+      stencil: options.buffers.stencil
     };
     this._width = options.width || 0;
     this._height = options.height || 0;
@@ -180,10 +180,10 @@ export class RenderTarget {
 
         if (checkWidth !== width || checkHeight !== height) {
           console.warn(
-            'Texture applied to the render target is invalid as it does not match dimensions of all textures applied:',
+            "Texture applied to the render target is invalid as it does not match dimensions of all textures applied:",
             texture,
             textures,
-            'The texture will be removed as a target for the render target'
+            "The texture will be removed as a target for the render target"
           );
 
           this.removeTextureFromBuffer(texture);
@@ -194,7 +194,7 @@ export class RenderTarget {
       this._height = height;
     } else if (!this._width || !this._height) {
       console.warn(
-        'A RenderTarget was not able to establish valid dimensions. This target had no texture buffers and did not specify valid width and height values.',
+        "A RenderTarget was not able to establish valid dimensions. This target had no texture buffers and did not specify valid width and height values.",
         this
       );
     }
@@ -270,7 +270,7 @@ export class RenderTarget {
       texture.data = {
         buffer: null,
         height,
-        width,
+        width
       };
     });
   }

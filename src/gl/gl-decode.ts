@@ -1,5 +1,5 @@
-import { GLSettings } from './gl-settings';
-import { GLContext, IExtensions } from './types';
+import { GLSettings } from "./gl-settings";
+import { GLContext, IExtensions } from "./types";
 
 /**
  * This file contains all method used to decode/encode GLSettings to GL types
@@ -54,7 +54,7 @@ export function texelFormat(
       return gl.RGBA;
 
     default:
-      console.warn('An Unsupported texel format was provided', format);
+      console.warn("An Unsupported texel format was provided", format);
       return gl.RGBA;
   }
 }
@@ -72,7 +72,7 @@ export function inputImageFormat(
     case GLSettings.Texture.SourcePixelFormat.Float:
       return gl.FLOAT;
     case GLSettings.Texture.SourcePixelFormat.HalfFloat:
-      console.warn('Unsupported HALF_FLOAT');
+      console.warn("Unsupported HALF_FLOAT");
       return gl.BYTE;
     case GLSettings.Texture.SourcePixelFormat.Int:
       return gl.INT;
@@ -92,7 +92,7 @@ export function inputImageFormat(
       return gl.UNSIGNED_SHORT_5_6_5;
 
     default:
-      console.warn('An Unsupported input image format was provided', format);
+      console.warn("An Unsupported input image format was provided", format);
       return gl.BYTE;
   }
 }

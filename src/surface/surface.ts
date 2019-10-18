@@ -1,40 +1,40 @@
-import { EventManager } from '../event-management/event-manager';
-import { UserInputEventManager } from '../event-management/user-input-event-manager';
-import { GLSettings, RenderTarget, Scene, Texture } from '../gl';
-import { WebGLRenderer } from '../gl/webgl-renderer';
-import { Instance } from '../instance-provider/instance';
-import { BaseProjection } from '../math';
-import { getAbsolutePositionBounds } from '../math/primitives/absolute-position';
-import { Bounds } from '../math/primitives/bounds';
-import { copy4, Vec2, Vec4 } from '../math/vector';
+import { EventManager } from "../event-management/event-manager";
+import { UserInputEventManager } from "../event-management/user-input-event-manager";
+import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
+import { WebGLRenderer } from "../gl/webgl-renderer";
+import { Instance } from "../instance-provider/instance";
+import { BaseProjection } from "../math";
+import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
+import { copy4, Vec2, Vec4 } from "../math/vector";
 import {
   BaseResourceManager,
   BaseResourceOptions,
   BaseResourceRequest,
   FontResourceManager,
-  ResourceRouter,
-} from '../resources';
-import { AtlasResourceManager } from '../resources/texture/atlas-resource-manager';
-import { ActiveIOExpansion } from '../surface/layer-processing/base-io-expanders/active-io-expansion';
-import { FrameMetrics, ResourceType, SurfaceErrorType } from '../types';
+  ResourceRouter
+} from "../resources";
+import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
+import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
   IResourceType,
-  PickType,
-} from '../types';
-import { onFrame, PromiseResolver } from '../util';
-import { analyzeColorPickingRendering } from '../util/color-picking-analysis';
-import { ReactiveDiff } from '../util/reactive-diff';
-import { BaseIOSorting } from './base-io-sorting';
-import { LayerMouseEvents } from './event-managers/layer-mouse-events';
-import { ILayerProps, Layer } from './layer';
-import { BasicIOExpansion } from './layer-processing/base-io-expanders/basic-io-expansion';
-import { EasingIOExpansion } from './layer-processing/base-io-expanders/easing-io-expansion';
-import { BaseIOExpansion } from './layer-processing/base-io-expansion';
-import { ISceneOptions, LayerScene } from './layer-scene';
-import { ClearFlags, IViewProps, View } from './view';
+  PickType
+} from "../types";
+import { onFrame, PromiseResolver } from "../util";
+import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
+import { ReactiveDiff } from "../util/reactive-diff";
+import { BaseIOSorting } from "./base-io-sorting";
+import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
+import { ILayerProps, Layer } from "./layer";
+import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
+import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
+import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
+import { ISceneOptions, LayerScene } from "./layer-scene";
+import { ClearFlags, IViewProps, View } from "./view";
 
 /**
  * Default IO expansion controllers applied to the system when explicit settings
@@ -49,21 +49,21 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
   // attribute).
   new ActiveIOExpansion(),
   // Expansion to handle easing IO attributes and write AutoEasingMethods to the shaders
-  new EasingIOExpansion(),
+  new EasingIOExpansion()
 ];
 
 /**
  * Default resource managers the system will utilize to handle default / basic resources.
  */
-export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions['resourceManagers'] = [
+export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = [
   {
     type: ResourceType.ATLAS,
-    manager: new AtlasResourceManager({}),
+    manager: new AtlasResourceManager({})
   },
   {
     type: ResourceType.FONT,
-    manager: new FontResourceManager(),
-  },
+    manager: new FontResourceManager()
+  }
 ];
 
 /**
@@ -174,7 +174,7 @@ export class Surface {
     currentFrame: 0,
     currentTime: Date.now() | 0,
     frameDuration: 1000 / 60,
-    previousTime: Date.now() | 0,
+    previousTime: Date.now() | 0
   };
   /** This is used to help resolve concurrent draws and resolving resource request dequeue operations. */
   private isBufferingResources = false;
@@ -238,7 +238,7 @@ export class Surface {
       await this.resourceManager.initResource(initializer);
 
       return {
-        id: initializer.key,
+        id: initializer.key
       };
     },
 
@@ -256,7 +256,7 @@ export class Surface {
       _item: IdentifiableById
     ) => {
       await this.resourceManager.updateResource(initializer);
-    },
+    }
   });
 
   /** Diff manager to handle diffing scene objects for the pipeline */
@@ -265,7 +265,7 @@ export class Surface {
       const scene = new LayerScene(this, {
         key: initializer.key,
         views: initializer.views,
-        layers: initializer.layers,
+        layers: initializer.layers
       });
 
       return scene;
@@ -278,7 +278,7 @@ export class Surface {
 
     updateItem: async (initializer: ISceneOptions, item: LayerScene) => {
       await item.update(initializer);
-    },
+    }
   });
 
   constructor(options?: ISurfaceOptions) {
@@ -444,7 +444,7 @@ export class Surface {
           height: this.context.canvas.height,
           width: this.context.canvas.width,
           x: 0,
-          y: 0,
+          y: 0
         });
 
         // Calculate the bounds of the viewport relative to the screen
@@ -556,7 +556,7 @@ export class Surface {
 
     if (errors.length > 0) {
       console.warn(
-        'Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:',
+        "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
         errors.map(err => err[0].id)
       );
 
@@ -572,8 +572,8 @@ export class Surface {
           // than the attribute size. The only way to debug this is to run every instance in the layer and
           // retrieve it's update value and compare the return to the expected size.
           if (
-            message.indexOf('RangeError') > -1 ||
-            message.indexOf('Source is too large') > -1
+            message.indexOf("RangeError") > -1 ||
+            message.indexOf("Source is too large") > -1
           ) {
             const layer = err[0];
             const changes = layer.bufferManager.changeListContext;
@@ -589,9 +589,9 @@ export class Surface {
                 if (check.length !== attr.size) {
                   if (!singleMessage) {
                     singleMessage = [
-                      'Example instance returned the wrong sized value for an attribute:',
+                      "Example instance returned the wrong sized value for an attribute:",
                       instance,
-                      attr,
+                      attr
                     ];
                   }
 
@@ -602,14 +602,14 @@ export class Surface {
 
             if (singleMessage) {
               console.error(
-                'The following output shows discovered issues related to the specified error'
+                "The following output shows discovered issues related to the specified error"
               );
               console.error(
-                'Instances are returning too large IO for an attribute\n',
+                "Instances are returning too large IO for an attribute\n",
                 singleMessage[0],
                 singleMessage[1],
                 singleMessage[2],
-                'Total errors for too large IO values',
+                "Total errors for too large IO values",
                 errorCount
               );
             }
@@ -717,7 +717,7 @@ export class Surface {
     // so their changelists are considered consumed.
     this.layers.forEach(layer => {
       layer.needsViewDrawn = false;
-      layer.props.data.resolveContext = '';
+      layer.props.data.resolveContext = "";
     });
 
     // We render color picking to our color picking render target, but we save it's result for the beginning of next
@@ -740,7 +740,7 @@ export class Surface {
           picking[0],
           picking[1],
           picking[2],
-          this.updateColorPick.position,
+          this.updateColorPick.position
         ]);
       }
     }
@@ -791,7 +791,7 @@ export class Surface {
         height: this.pickingTarget.height,
         width: this.pickingTarget.width,
         x: 0,
-        y: 0,
+        y: 0
       });
 
       // Calculate the bounds the viewport will occupy relative to the render target's space
@@ -843,7 +843,7 @@ export class Surface {
         height: this.context.canvas.height,
         width: this.context.canvas.width,
         x: 0,
-        y: 0,
+        y: 0
       });
 
       // Calculate the bounds the viewport will occupy relative to the screen space
@@ -887,7 +887,7 @@ export class Surface {
         x: offset.x,
         y: offset.y,
         width: size.width,
-        height: size.height,
+        height: size.height
       },
       target
     );
@@ -899,7 +899,7 @@ export class Surface {
         background[0],
         background[1],
         background[2],
-        background[3],
+        background[3]
       ]);
     }
 
@@ -908,7 +908,7 @@ export class Surface {
       x: offset.x,
       y: offset.y,
       width: size.width,
-      height: size.height,
+      height: size.height
     });
 
     // Get the view's clearing preferences
@@ -949,7 +949,7 @@ export class Surface {
           height: this.context.canvas.height,
           width: this.context.canvas.width,
           x: 0,
-          y: 0,
+          y: 0
         });
 
         // Calculate the bounds the viewport will occupy relative to the screen space
@@ -1017,14 +1017,14 @@ export class Surface {
           const topLeft = view.projection.viewToWorld([0, 0]);
           const bottomRight = view.projection.screenToWorld([
             view.screenBounds.right,
-            view.screenBounds.bottom,
+            view.screenBounds.bottom
           ]);
 
           return new Bounds({
             bottom: bottomRight[1],
             left: topLeft[0],
             right: bottomRight[0],
-            top: topLeft[1],
+            top: topLeft[1]
           });
         } else {
           return null;
@@ -1071,7 +1071,7 @@ export class Surface {
       this.readyResolver.reject({
         error: SurfaceErrorType.NO_WEBGL_CONTEXT,
         message:
-          'Could not establish a webgl context. Surface is being destroyed to free resources.',
+          "Could not establish a webgl context. Surface is being destroyed to free resources."
       });
       this.destroy();
       return this;
@@ -1089,7 +1089,7 @@ export class Surface {
       await this.initIOExpanders(options);
     } else {
       console.warn(
-        'Could not establish a GL context. Layer Surface will be unable to render'
+        "Could not establish a GL context. Layer Surface will be unable to render"
       );
     }
 
@@ -1111,12 +1111,12 @@ export class Surface {
     const height = canvas.height;
     let hasContext = true;
 
-    const rendererOptions: ISurfaceOptions['rendererOptions'] = Object.assign(
+    const rendererOptions: ISurfaceOptions["rendererOptions"] = Object.assign(
       {
         alpha: false,
         antialias: false,
         preserveDrawingBuffer: false,
-        premultiplyAlpha: false,
+        premultiplyAlpha: false
       },
       options.rendererOptions
     );
@@ -1140,7 +1140,7 @@ export class Surface {
       // Let's us know if there is no valid webgl context to work with or not
       onNoContext: () => {
         hasContext = false;
-      },
+      }
     });
 
     if (!hasContext || !this.renderer.gl) return null;
@@ -1158,14 +1158,14 @@ export class Surface {
           data: {
             width,
             height,
-            buffer: null,
-          },
+            buffer: null
+          }
         }),
-        depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16,
+        depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
       // We want a target with a pixel ratio of just 1, which will be more than enough accuracy for mouse picking
       width,
-      height,
+      height
     });
 
     // This sets the pixel ratio to handle differing pixel densities in screens
@@ -1209,7 +1209,7 @@ export class Surface {
   private initMouseManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers themselves
     const eventManagers: EventManager[] = ([
-      new LayerMouseEvents(),
+      new LayerMouseEvents()
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer
@@ -1273,16 +1273,16 @@ export class Surface {
 
     if (container) {
       const canvas = this.context.canvas;
-      canvas.className = '';
-      canvas.setAttribute('style', '');
-      container.style.position = 'relative';
-      canvas.style.position = 'absolute';
-      canvas.style.left = '0xp';
-      canvas.style.top = '0xp';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.setAttribute('width', '');
-      canvas.setAttribute('height', '');
+      canvas.className = "";
+      canvas.setAttribute("style", "");
+      container.style.position = "relative";
+      canvas.style.position = "absolute";
+      canvas.style.left = "0xp";
+      canvas.style.top = "0xp";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.setAttribute("width", "");
+      canvas.setAttribute("height", "");
       const containerBox = container.getBoundingClientRect();
       const box = canvas.getBoundingClientRect();
 
@@ -1342,7 +1342,7 @@ export class Surface {
     // We will flag the color range as needing an update
     this.updateColorPick = {
       position,
-      views,
+      views
     };
   }
 }

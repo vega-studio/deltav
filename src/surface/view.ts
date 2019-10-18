@@ -1,16 +1,16 @@
-import { Vec2 } from '../math';
-import { BaseProjection, SimpleProjection } from '../math/base-projection';
-import { AbsolutePosition } from '../math/primitives/absolute-position';
-import { Bounds } from '../math/primitives/bounds';
-import { Color, Omit } from '../types';
-import { Camera } from '../util/camera';
-import { IdentifyByKey, IdentifyByKeyOptions } from '../util/identify-by-key';
-import { LayerScene } from './layer-scene';
+import { Vec2 } from "../math";
+import { BaseProjection, SimpleProjection } from "../math/base-projection";
+import { AbsolutePosition } from "../math/primitives/absolute-position";
+import { Bounds } from "../math/primitives/bounds";
+import { Color, Omit } from "../types";
+import { Camera } from "../util/camera";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { LayerScene } from "./layer-scene";
 
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
-  STENCIL = 0b0100,
+  STENCIL = 0b0100
 }
 
 /**
@@ -40,24 +40,24 @@ export type ViewInitializer<TViewProps extends IViewProps> = {
  */
 export function createView<TViewProps extends IViewProps>(
   viewClass: IViewConstructable<TViewProps> & { defaultProps: TViewProps },
-  props: Omit<TViewProps, 'key' | 'viewport'> &
-    Partial<Pick<TViewProps, 'key' | 'viewport'>>
+  props: Omit<TViewProps, "key" | "viewport"> &
+    Partial<Pick<TViewProps, "key" | "viewport">>
 ): ViewInitializer<TViewProps> {
   const keyedProps = Object.assign(props, {
-    key: props.key || '',
+    key: props.key || "",
     viewport: props.viewport || {
       left: 0,
       right: 0,
       top: 0,
-      bottom: 0,
-    },
+      bottom: 0
+    }
   });
 
   return {
     get key() {
-      return props.key || '';
+      return props.key || "";
     },
-    init: [viewClass, keyedProps],
+    init: [viewClass, keyedProps]
   };
 }
 
@@ -97,9 +97,9 @@ export abstract class View<
   TViewProps extends IViewProps
 > extends IdentifyByKey {
   static defaultProps: IViewProps = {
-    key: '',
+    key: "",
     camera: Camera.makeOrthographic(),
-    viewport: { left: 0, right: 0, top: 0, bottom: 0 },
+    viewport: { left: 0, right: 0, top: 0, bottom: 0 }
   };
 
   /** End time of animation */
@@ -236,17 +236,17 @@ export class NoView extends View<IViewProps> {
   }
 
   constructor() {
-    super(new LayerScene(undefined, { key: 'error', layers: [], views: [] }), {
-      key: 'error',
+    super(new LayerScene(undefined, { key: "error", layers: [], views: [] }), {
+      key: "error",
       viewport: {},
-      camera: Camera.makeOrthographic(),
+      camera: Camera.makeOrthographic()
     });
 
     this.screenBounds = new Bounds<never>({
       x: 0,
       y: 0,
       width: 100,
-      height: 100,
+      height: 100
     });
   }
 }

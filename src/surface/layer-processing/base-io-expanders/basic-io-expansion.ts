@@ -1,14 +1,14 @@
-import { uniformBufferInstanceBufferName } from '../../../constants';
-import { MaterialUniformType } from '../../../gl/types';
-import { Instance } from '../../../instance-provider/instance';
-import { Vec4 } from '../../../math/vector';
+import { uniformBufferInstanceBufferName } from "../../../constants";
+import { MaterialUniformType } from "../../../gl/types";
+import { Instance } from "../../../instance-provider/instance";
+import { Vec4 } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from '../../../shaders/processing/base-shader-io-injection';
-import { MetricsProcessing } from '../../../shaders/processing/metrics-processing';
-import { ILayerProps, Layer } from '../../../surface/layer';
-import { BaseIOExpansion } from '../../../surface/layer-processing/base-io-expansion';
+  ShaderIOHeaderInjectionResult
+} from "../../../shaders/processing/base-shader-io-injection";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
@@ -16,24 +16,24 @@ import {
   IVertexAttribute,
   LayerBufferType,
   PickType,
-  ShaderInjectionTarget,
-} from '../../../types';
+  ShaderInjectionTarget
+} from "../../../types";
 
 /** Provides a label for performance debugging */
-const debugCtx = 'BasicIOExpansion';
+const debugCtx = "BasicIOExpansion";
 /** Defines the elements for destructuring out of a vector */
-const VECTOR_COMPONENTS = ['x', 'y', 'z', 'w'];
+const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */
 const sizeToType: { [key: number]: string } = {
-  1: 'float',
-  2: 'vec2',
-  3: 'vec3',
-  4: 'vec4',
-  9: 'mat3',
-  16: 'mat4',
+  1: "float",
+  2: "vec2",
+  3: "vec3",
+  4: "vec4",
+  9: "mat3",
+  16: "mat4",
   /** This is the special case for instance attributes that want an atlas resource */
-  99: 'vec4',
+  99: "vec4"
 };
 
 /**
@@ -41,7 +41,7 @@ const sizeToType: { [key: number]: string } = {
  * provides vector.xy and a size of 4 provides vector.xyzw.
  */
 function makeVectorSwizzle(start: number, size: number) {
-  return VECTOR_COMPONENTS.slice(start, start + size).join('');
+  return VECTOR_COMPONENTS.slice(start, start + size).join("");
 }
 
 /**
@@ -75,20 +75,20 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // Add the number of blocks an instance utilizes
     this.setDeclaration(
       declarations,
-      'instanceSize',
+      "instanceSize",
       `int instanceSize = ${metrics.totalInstanceUniformBlocks};`,
       debugCtx
     );
     // Add the block retrieval method to aid in the Destructuring process
     this.setDeclaration(
       declarations,
-      'getBlock',
+      "getBlock",
       `vec4 getBlock(int index, int instanceIndex) { return ${uniformBufferInstanceBufferName}[(instanceSize * instanceIndex) + index]; }`,
       debugCtx
     );
 
     return {
-      injection: '',
+      injection: "",
       material: {
         uniforms: [
           {
@@ -96,10 +96,10 @@ export class BasicIOExpansion extends BaseIOExpansion {
             type: MaterialUniformType.VEC4_ARRAY,
             value: new Array(metrics.totalInstanceUniformBlocks)
               .fill(0)
-              .map<Vec4>(() => [0, 0, 0, 0]),
-          },
-        ],
-      },
+              .map<Vec4>(() => [0, 0, 0, 0])
+          }
+        ]
+      }
     };
   }
 
@@ -115,7 +115,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     instanceAttributes: IInstanceAttribute<Instance>[],
     _uniforms: IUniform[]
   ): string {
-    let out = '';
+    let out = "";
 
     // Prevent mutating
     const orderedAttributes = instanceAttributes.slice(0);
@@ -148,7 +148,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // For now we add in our picking varying assignment should it be needed
     if (layer.picking.type === PickType.SINGLE) {
       out +=
-        '\n// This portion is where the shader assigns the picking color that gets passed to the fragment shader\n_picking_color_pass_ = _pickingColor;\n';
+        "\n// This portion is where the shader assigns the picking color that gets passed to the fragment shader\n_picking_color_pass_ = _pickingColor;\n";
     }
 
     return out;
@@ -163,7 +163,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
   ) {
     // No-op, the attributes for normal instance attribute destructuring will simply be used directly
     // as they will not be packed in and will simply out
-    return '';
+    return "";
   }
 
   /**
@@ -177,7 +177,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     orderedAttributes: IInstanceAttribute<T>[]
   ) {
-    let out = '';
+    let out = "";
 
     // The attributes are generated in blocks already. Thus all that need be done for this scenario
     // is merely perform block destructuring
@@ -200,8 +200,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   ) {
     this.setDeclaration(
       declarations,
-      'instanceIndex',
-      'int instanceIndex = int(instance);',
+      "instanceIndex",
+      "int instanceIndex = int(instance);",
       debugCtx
     );
 
@@ -232,7 +232,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     orderedAttributes: IInstanceAttribute<T>[]
   ) {
-    const out = '';
+    const out = "";
 
     orderedAttributes.forEach(attribute => {
       const block = attribute.block || 0;
@@ -297,7 +297,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     let attributeDeclarations = {
-      injection: '',
+      injection: ""
     };
 
     // Attributes are only injected into the vertex shader
@@ -319,7 +319,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
 
     return {
       ...attributeDeclarations,
-      injection: attributeDeclarations.injection + uniformDeclaration,
+      injection: attributeDeclarations.injection + uniformDeclaration
     };
   }
 
@@ -334,7 +334,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     instanceAttributes: IInstanceAttribute<Instance>[]
   ): ShaderIOHeaderInjectionResult {
     let materialChanges = undefined;
-    let out = '// Shader input\n';
+    let out = "// Shader input\n";
 
     // If we are in a uniform buffer type strategy. Then we generate a uniform buffer that will contain
     // our instance attribute information along with some extras to help dereference from the buffer.
@@ -380,7 +380,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
 
     return {
       injection: out,
-      material: materialChanges,
+      material: materialChanges
     };
   }
 
@@ -392,7 +392,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     uniforms: IUniform[],
     injectionType: ShaderInjectionTarget
   ) {
-    const out = '';
+    const out = "";
     const injection = injectionType || ShaderInjectionTarget.VERTEX;
 
     uniforms.forEach(uniform => {
@@ -406,7 +406,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
         this.setDeclaration(
           declarations,
           uniform.name,
-          `uniform ${uniform.qualifier || ''}${uniform.qualifier ? ' ' : ''}${
+          `uniform ${uniform.qualifier || ""}${uniform.qualifier ? " " : ""}${
             sizeToType[uniform.size]
           } ${uniform.name};\n`,
           debugCtx
@@ -429,12 +429,12 @@ export class BasicIOExpansion extends BaseIOExpansion {
         declarations,
         attribute.name,
         `attribute ${sizeToType[attribute.size || 1]} ${attribute.qualifier ||
-          ''}${(attribute.qualifier && ' ') || ''} ${attribute.name};\n`,
+          ""}${(attribute.qualifier && " ") || ""} ${attribute.name};\n`,
         debugCtx
       );
     });
 
-    return '';
+    return "";
   }
 
   /**
@@ -455,7 +455,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
       );
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -471,11 +471,11 @@ export class BasicIOExpansion extends BaseIOExpansion {
         declarations,
         attribute.name,
         `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-          ''}${(attribute.qualifier && ' ') || ''}${attribute.name};\n`,
+          ""}${(attribute.qualifier && " ") || ""}${attribute.name};\n`,
         debugCtx
       );
     });
 
-    return '';
+    return "";
   }
 }

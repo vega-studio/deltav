@@ -1,13 +1,13 @@
-import { observable } from '../../../instance-provider';
+import { observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
-  Instance,
-} from '../../../instance-provider/instance';
-import { Vec2 } from '../../../math/vector';
-import { IAtlasResourceRequest } from '../../../resources';
-import { NOOP } from '../../../types';
-import { Anchor, AnchorType, ScaleMode } from '../../types';
-import { ImageInstanceResource } from './image-layer';
+  Instance
+} from "../../../instance-provider/instance";
+import { Vec2 } from "../../../math/vector";
+import { IAtlasResourceRequest } from "../../../resources";
+import { NOOP } from "../../../types";
+import { Anchor, AnchorType, ScaleMode } from "../../types";
+import { ImageInstanceResource } from "./image-layer";
 
 const { max } = Math;
 
@@ -84,7 +84,7 @@ const anchorCalculator: {
   [AnchorType.Custom]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  },
+  }
 };
 
 /**
@@ -140,9 +140,9 @@ export class ImageInstance extends Instance {
   }
 
   /** Event called when there is an error attempting to load and render the image */
-  onError?: IImageInstanceOptions['onError'];
+  onError?: IImageInstanceOptions["onError"];
   /** Event called when the instance has it's resource loaded and ready for use */
-  onReady?: IImageInstanceOptions['onReady'];
+  onReady?: IImageInstanceOptions["onReady"];
   /** This is the request generated for the instance to retrieve the correct resource */
   request?: IAtlasResourceRequest;
   /** After onReady: This is populated with the width of the source image loaded into the Atlas */
@@ -159,7 +159,7 @@ export class ImageInstance extends Instance {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(options: IImageInstanceOptions) {
@@ -212,7 +212,7 @@ export class ImageInstance extends Instance {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0,
+      y: anchor.y || 0
     };
 
     // Calculate the new anchors position values

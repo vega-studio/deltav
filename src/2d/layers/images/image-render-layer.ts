@@ -1,15 +1,15 @@
-import { InstanceProvider } from '../../../instance-provider';
-import { IAutoEasingMethod, Vec } from '../../../math';
+import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
-  VertexAttributeSize,
-} from '../../../types';
-import { CommonMaterialOptions } from '../../../util/common-options';
-import { ILayer2DProps, Layer2D } from '../../view/layer-2d';
-import { ImageInstance } from './image-instance';
+  VertexAttributeSize
+} from "../../../types";
+import { CommonMaterialOptions } from "../../../util/common-options";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { ImageInstance } from "./image-instance";
 
 export interface IImageRenderLayerProps<T extends ImageInstance>
   extends ILayer2DProps<T> {
@@ -37,19 +37,19 @@ export class ImageRenderLayer<
   U extends IImageRenderLayerProps<T>
 > extends Layer2D<T, U> {
   static defaultProps: IImageRenderLayerProps<any> = {
-    key: '',
-    data: new InstanceProvider<ImageInstance>(),
+    key: "",
+    data: new InstanceProvider<ImageInstance>()
   };
 
   /** Easy lookup of attribute names to aid in modifications to be applied to elements */
   static attributeNames = {
-    location: 'location',
-    anchor: 'anchor',
-    size: 'size',
-    depth: 'depth',
-    scaling: 'scaling',
-    texture: 'texture',
-    tint: 'tint',
+    location: "location",
+    anchor: "anchor",
+    size: "size",
+    depth: "depth",
+    scaling: "scaling",
+    texture: "texture",
+    tint: "tint"
   };
 
   /**
@@ -60,7 +60,7 @@ export class ImageRenderLayer<
     const {
       tint: animateTint,
       location: animateLocation,
-      size: animateSize,
+      size: animateSize
     } = animations;
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
@@ -68,7 +68,7 @@ export class ImageRenderLayer<
       2: -1,
       3: 1,
       4: -1,
-      5: -1,
+      5: -1
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -77,88 +77,88 @@ export class ImageRenderLayer<
       2: 0,
       3: 1,
       4: 1,
-      5: 1,
+      5: 1
     };
 
     return {
-      fs: require('./image-layer.fs'),
+      fs: require("./image-layer.fs"),
       instanceAttributes: [
         {
           easing: animateLocation,
           name: ImageRenderLayer.attributeNames.location,
           size: InstanceAttributeSize.TWO,
-          update: o => o.origin,
+          update: o => o.origin
         },
         {
           name: ImageRenderLayer.attributeNames.anchor,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.anchor.x || 0, o.anchor.y || 0],
+          update: o => [o.anchor.x || 0, o.anchor.y || 0]
         },
         {
           easing: animateSize,
           name: ImageRenderLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
-          update: o => [o.width, o.height],
+          update: o => [o.width, o.height]
         },
         {
           name: ImageRenderLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth],
+          update: o => [o.depth]
         },
         {
           name: ImageRenderLayer.attributeNames.scaling,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.scaling],
+          update: o => [o.scaling]
         },
         {
           name: ImageRenderLayer.attributeNames.texture,
           resource: {
-            key: () => this.props.atlas || '',
-            name: 'imageAtlas',
+            key: () => this.props.atlas || "",
+            name: "imageAtlas"
           },
           update: o => {
             o.source;
 
             if (!o.request) {
               console.warn(
-                'An image utilizing the image-render-layer does not have its request specified yet.',
-                'The image-render-layer does NOT manage requests and should be handled before this layer deals with the instance'
+                "An image utilizing the image-render-layer does not have its request specified yet.",
+                "The image-render-layer does NOT manage requests and should be handled before this layer deals with the instance"
               );
 
               return [0, 0, 0, 0];
             }
 
             return this.resource.request(this, o, o.request);
-          },
+          }
         },
         {
           easing: animateTint,
           name: ImageRenderLayer.attributeNames.tint,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.tint,
-        },
+          update: o => o.tint
+        }
       ],
       uniforms: [
         {
-          name: 'scaleFactor',
+          name: "scaleFactor",
           size: UniformSize.ONE,
-          update: _u => [1],
-        },
+          update: _u => [1]
+        }
       ],
       vertexAttributes: [
         {
-          name: 'normals',
+          name: "normals",
           size: VertexAttributeSize.TWO,
           update: (vertex: number) => [
             // Normal
             vertexToNormal[vertex],
             // The side of the quad
-            vertexToSide[vertex],
-          ],
-        },
+            vertexToSide[vertex]
+          ]
+        }
       ],
       vertexCount: 6,
-      vs: require('./image-layer.vs'),
+      vs: require("./image-layer.vs")
     };
   }
 

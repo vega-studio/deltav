@@ -1,1 +1,0 @@
-{"id":"../src/shaders/base-modules/shader-fragments/constants/pi.vs","dependencies":[],"generated":{"js":"module.exports = \"float PI = 3.14159265;\\n\""},"sourceMaps":null,"error":null,"hash":"0970c5ea939be773d8510c044b1e3444","cacheData":{}}

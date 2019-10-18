@@ -1,5 +1,5 @@
-import { Vec2, Vec4 } from '../math/vector';
-import { IColorPickingData } from '../types';
+import { Vec2, Vec4 } from "../math/vector";
+import { IColorPickingData } from "../types";
 
 /**
  * This analyzes the rendered data for color picking and outputs the metrics and data needed
@@ -18,7 +18,7 @@ export function analyzeColorPickingRendering(
     dataWidth: width,
     mouse,
     nearestColor: 0,
-    nearestColorBytes: [0, 0, 0, 0],
+    nearestColorBytes: [0, 0, 0, 0]
   };
 
   const uniqueColors = new Map<number, boolean>();

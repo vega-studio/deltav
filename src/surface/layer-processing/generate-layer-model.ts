@@ -1,4 +1,4 @@
-import { Geometry, GLSettings, Material, Model } from '../../gl';
+import { Geometry, GLSettings, Material, Model } from "../../gl";
 
 export function generateLayerModel(
   geometry: Geometry,

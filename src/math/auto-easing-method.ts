@@ -1,6 +1,6 @@
-import { InstanceIOValue } from '../types';
-import { uid } from '../util/uid';
-import { isVec4, Vec, VecMath } from './vector';
+import { InstanceIOValue } from "../types";
+import { uid } from "../util/uid";
+import { isVec4, Vec, VecMath } from "./vector";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -17,7 +17,7 @@ export enum AutoEasingLoopStyle {
   /** Time will continuously go 0 -> 1 then 0 -> 1 then 0 -> 1 etc etc */
   REPEAT = 2,
   /** Time will continously go 0 -> 1 then 1 -> 0 then 0 -> 1 then 1 -> 0 etc etc */
-  REFLECT = 3,
+  REFLECT = 3
 }
 
 /**
@@ -588,7 +588,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: immediateGPU,
       loop,
-      methodName: 'immediate',
+      methodName: "immediate"
     };
   }
 
@@ -611,7 +611,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: linearGPU,
       loop,
-      methodName: 'linear',
+      methodName: "linear"
     };
   }
 
@@ -635,7 +635,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuadGPU,
       loop,
-      methodName: 'easeInQuad',
+      methodName: "easeInQuad"
     };
   }
 
@@ -659,7 +659,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuadGPU,
       loop,
-      methodName: 'easeOutQuad',
+      methodName: "easeOutQuad"
     };
   }
 
@@ -683,7 +683,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuadGPU,
       loop,
-      methodName: 'easeInOutQuad',
+      methodName: "easeInOutQuad"
     };
   }
 
@@ -707,7 +707,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInCubicGPU,
       loop,
-      methodName: 'easeInCubic',
+      methodName: "easeInCubic"
     };
   }
 
@@ -731,7 +731,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutCubicGPU,
       loop,
-      methodName: 'easeOutCubic',
+      methodName: "easeOutCubic"
     };
   }
 
@@ -756,7 +756,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutCubicGPU,
       loop,
-      methodName: 'easeInOutCubic',
+      methodName: "easeInOutCubic"
     };
   }
 
@@ -780,7 +780,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuartGPU,
       loop,
-      methodName: 'easeInQuart',
+      methodName: "easeInQuart"
     };
   }
 
@@ -804,7 +804,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuartGPU,
       loop,
-      methodName: 'easeOutQuart',
+      methodName: "easeOutQuart"
     };
   }
 
@@ -828,7 +828,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuartGPU,
       loop,
-      methodName: 'easeInOutQuart',
+      methodName: "easeInOutQuart"
     };
   }
 
@@ -852,7 +852,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuintGPU,
       loop,
-      methodName: 'easeInQuint',
+      methodName: "easeInQuint"
     };
   }
 
@@ -876,7 +876,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuintGPU,
       loop,
-      methodName: 'easeOutQuint',
+      methodName: "easeOutQuint"
     };
   }
 
@@ -901,7 +901,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuintGPU,
       loop,
-      methodName: 'easeInOutQuint',
+      methodName: "easeInOutQuint"
     };
   }
 
@@ -926,7 +926,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutElasticGPU,
       loop,
-      methodName: 'easeOutElastic',
+      methodName: "easeOutElastic"
     };
   }
 
@@ -951,7 +951,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInGPU,
       loop,
-      methodName: 'easeBackIn',
+      methodName: "easeBackIn"
     };
   }
 
@@ -977,7 +977,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackOutGPU,
       loop,
-      methodName: 'easeBackOut',
+      methodName: "easeBackOut"
     };
   }
 
@@ -1008,7 +1008,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInOutGPU,
       loop,
-      methodName: 'easeBackInOut',
+      methodName: "easeBackInOut"
     };
   }
 
@@ -1041,15 +1041,15 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: continuousSinusoidalGPU,
       loop,
-      methodName: 'repeatingSinusoidal',
+      methodName: "repeatingSinusoidal",
 
       // Since this is sinusoidial and operates off of a continuous time structure
       validation: {
         // When time = 1 our value will = start and NOT end
         ignoreEndValueCheck: true,
         // When the time is > 1 our value will not clamp to the value at 1.
-        ignoreOverTimeCheck: true,
-      },
+        ignoreOverTimeCheck: true
+      }
     };
   }
 
@@ -1064,7 +1064,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1078,7 +1078,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatLinearGPU,
       loop,
-      methodName: 'slerpQuatLinear',
+      methodName: "slerpQuatLinear"
     };
   }
 
@@ -1093,7 +1093,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1107,7 +1107,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuadGPU,
       loop,
-      methodName: 'slerpQuatInQuad',
+      methodName: "slerpQuatInQuad"
     };
   }
 
@@ -1122,7 +1122,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1136,7 +1136,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuadGPU,
       loop,
-      methodName: 'slerpQuatOutQuad',
+      methodName: "slerpQuatOutQuad"
     };
   }
 
@@ -1151,7 +1151,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1165,7 +1165,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuadGPU,
       loop,
-      methodName: 'slerpQuatInOutQuad',
+      methodName: "slerpQuatInOutQuad"
     };
   }
 
@@ -1180,7 +1180,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1194,7 +1194,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInCubicGPU,
       loop,
-      methodName: 'slerpQuatInCubic',
+      methodName: "slerpQuatInCubic"
     };
   }
 
@@ -1209,7 +1209,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1223,7 +1223,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutCubicGPU,
       loop,
-      methodName: 'slerpQuatOutCubic',
+      methodName: "slerpQuatOutCubic"
     };
   }
 
@@ -1238,7 +1238,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1253,7 +1253,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutCubicGPU,
       loop,
-      methodName: 'slerpQuatInOutCubic',
+      methodName: "slerpQuatInOutCubic"
     };
   }
 
@@ -1268,7 +1268,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1282,7 +1282,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuartGPU,
       loop,
-      methodName: 'slerpQuatInQuart',
+      methodName: "slerpQuatInQuart"
     };
   }
 
@@ -1297,7 +1297,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1311,7 +1311,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuartGPU,
       loop,
-      methodName: 'slerpQuatOutQuart',
+      methodName: "slerpQuatOutQuart"
     };
   }
 
@@ -1326,7 +1326,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1340,7 +1340,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuartGPU,
       loop,
-      methodName: 'slerpQuatInOutQuart',
+      methodName: "slerpQuatInOutQuart"
     };
   }
 
@@ -1355,7 +1355,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1369,7 +1369,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuintGPU,
       loop,
-      methodName: 'slerpQuatInQuint',
+      methodName: "slerpQuatInQuint"
     };
   }
 
@@ -1384,7 +1384,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1398,7 +1398,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuintGPU,
       loop,
-      methodName: 'slerpQuatOutQuint',
+      methodName: "slerpQuatOutQuint"
     };
   }
 
@@ -1413,7 +1413,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1428,7 +1428,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuintGPU,
       loop,
-      methodName: 'slerpQuatInOutQuint',
+      methodName: "slerpQuatInOutQuint"
     };
   }
 
@@ -1443,7 +1443,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1458,7 +1458,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutElasticGPU,
       loop,
-      methodName: 'slerpQuatOutElastic',
+      methodName: "slerpQuatOutElastic"
     };
   }
 
@@ -1473,7 +1473,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1488,7 +1488,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackInGPU,
       loop,
-      methodName: 'slerpQuatBackIn',
+      methodName: "slerpQuatBackIn"
     };
   }
 
@@ -1503,7 +1503,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1519,7 +1519,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackOutGPU,
       loop,
-      methodName: 'slerpQuatBackOut',
+      methodName: "slerpQuatBackOut"
     };
   }
 
@@ -1534,7 +1534,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            'SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements.'
+            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1555,34 +1555,34 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackInOutGPU,
       loop,
-      methodName: 'slerpQuatBackInOut',
+      methodName: "slerpQuatBackInOut"
     };
   }
 
   /** A uid for the easing method */
   uid = uid();
   /** The easing method for the cpu */
-  cpu: IAutoEasingMethod<T>['cpu'];
+  cpu: IAutoEasingMethod<T>["cpu"];
   /** Time before a delay  */
   delay: number = 0;
   /** The time in ms is takes to complete the animation */
   duration: number = 500;
   /** The easing method on the GPU */
-  gpu: IAutoEasingMethod<T>['gpu'];
+  gpu: IAutoEasingMethod<T>["gpu"];
   /** The looping style of the animation */
   loop = AutoEasingLoopStyle.NONE;
   /** Method name of the ease function on the gpu */
   methodName: string;
 
   constructor(
-    cpu: IAutoEasingMethod<T>['cpu'],
-    gpu: IAutoEasingMethod<T>['gpu'],
+    cpu: IAutoEasingMethod<T>["cpu"],
+    gpu: IAutoEasingMethod<T>["gpu"],
     duration?: number,
     method?: string
   ) {
     this.cpu = cpu;
     this.gpu = gpu;
     this.duration = duration || 500;
-    this.methodName = method || 'easingMethod';
+    this.methodName = method || "easingMethod";
   }
 }

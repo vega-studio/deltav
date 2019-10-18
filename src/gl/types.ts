@@ -1,5 +1,5 @@
-import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from '../math';
-import { Texture } from './texture';
+import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
+import { Texture } from "./texture";
 
 export enum MaterialUniformType {
   /** A single float */
@@ -19,7 +19,7 @@ export enum MaterialUniformType {
   /** A single 4x4 matrix of floats */
   MATRIX4x4,
   /** The uniform refers to a texture that should be bound to an active texture unit */
-  TEXTURE,
+  TEXTURE
 }
 
 // Uniform type guards

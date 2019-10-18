@@ -1,13 +1,13 @@
-import { ShaderInjectionTarget } from '../../types';
-import { shaderTemplate } from '../../util';
+import { ShaderInjectionTarget } from "../../types";
+import { shaderTemplate } from "../../util";
 import {
   ShaderModuleUnit,
-  ShaderModuleUnitOptions,
-} from './shader-module-unit';
+  ShaderModuleUnitOptions
+} from "./shader-module-unit";
 
-const debug = require('debug')('performance');
-const debugModuleVS = require('debug')('shader-module-vs');
-const debugModuleFS = require('debug')('shader-module-fs');
+const debug = require("debug")("performance");
+const debugModuleVS = require("debug")("shader-module-vs");
+const debugModuleFS = require("debug")("shader-module-fs");
 
 /**
  * This is the results expected from a compile() operation from the ShaderModule.
@@ -25,7 +25,7 @@ export interface IShaderCompileResults {
  * The partial token that must be matched to indicate an import statement.
  * (Must be the first non-whitespace word found in the token)
  */
-const IMPORT_TOKEN = 'import';
+const IMPORT_TOKEN = "import";
 /**
  * This is a delimiter between the import token and the identifying import id value
  * provided. This must be the next non-whitespace character found after the import token.
@@ -38,7 +38,7 @@ const IMPORT_TOKEN = 'import';
  *
  * etc.
  */
-const IMPORT_DELIMITER = ':';
+const IMPORT_DELIMITER = ":";
 
 /**
  * Tests to see if a ShaderModuleUnit is compatible with a provided Shader Target
@@ -78,7 +78,7 @@ export class ShaderModule {
     // the options into a ShaderModuleUnit and do a registration.
     if (!(unit instanceof ShaderModuleUnit)) {
       if (Array.isArray(unit)) {
-        let out = '';
+        let out = "";
 
         unit.forEach(options => {
           const output = ShaderModule.register(options);
@@ -119,7 +119,7 @@ export class ShaderModule {
       }
 
       debug(
-        'A Shader Module Unit has overridden an existing module for the Fragment Shader Module ID: %o',
+        "A Shader Module Unit has overridden an existing module for the Fragment Shader Module ID: %o",
         unit.moduleId
       );
     }
@@ -132,7 +132,7 @@ export class ShaderModule {
       }
 
       debug(
-        'A Shader Module Unit has overridden an existing module for the Vertex Shader Module ID: %o',
+        "A Shader Module Unit has overridden an existing module for the Vertex Shader Module ID: %o",
         unit.moduleId
       );
     }
@@ -202,7 +202,7 @@ export class ShaderModule {
             const moduleIds = afterToken
               .substr(IMPORT_DELIMITER.length)
               .trim()
-              .split(',');
+              .split(",");
 
             // Wealso  allow trailing comma
             if (moduleIds[moduleIds.length - 1].trim().length === 0) {
@@ -255,7 +255,7 @@ export class ShaderModule {
 
                 if (!mod.vs && !mod.fs) {
                   errors.push(
-                    'Could not find a vertex or fragment shader within exisitng module'
+                    "Could not find a vertex or fragment shader within exisitng module"
                   );
                 }
 
@@ -272,13 +272,13 @@ export class ShaderModule {
             });
 
             // Clear the import token from the body of the shader
-            return '';
+            return "";
           }
         }
 
         // Leave any token not processed alone
         return `$\{${token}}`;
-      },
+      }
     });
 
     // Update the content to be stripped of it's import statements
@@ -315,7 +315,7 @@ export class ShaderModule {
     // Pick a debugging target based on shader target
     const debugTarget =
       target === ShaderInjectionTarget.VERTEX ? debugModuleVS : debugModuleFS;
-    debugTarget('Processing Shader for id %o:', id);
+    debugTarget("Processing Shader for id %o:", id);
 
     // Internal checking method of the state of the process to find circular dependencies
     function checkCircularDependency(unit: ShaderModuleUnit) {
@@ -323,12 +323,12 @@ export class ShaderModule {
       const id = unit.moduleId;
       // Debugging for the import id's found along with the current stack
       debugTarget(
-        '%o: %o',
+        "%o: %o",
         id,
         processing
           .slice(0)
           .reverse()
-          .join(' -> ')
+          .join(" -> ")
       );
 
       // First look to see if the identifier is already in the processing queue. If it is, we
@@ -344,7 +344,7 @@ export class ShaderModule {
         // Spew the blood
         errors.push(
           `A Shader has detected a Circular dependency in import requests: ${circularPath.join(
-            ' -> '
+            " -> "
           )}`
         );
         // Remove the id from the queue
@@ -378,11 +378,11 @@ export class ShaderModule {
         processing.shift();
 
         // Return empty, but not errored
-        return '';
+        return "";
       }
 
       // This will store all of the module content that should be injected as the header
-      let includedModuleContent = '';
+      let includedModuleContent = "";
       // Make sure the dependents for the module are properly analyzed
       const dependentsErrors = ShaderModule.analyzeDependents(unit);
       // Add in any errors discovered during module analysis
@@ -431,7 +431,7 @@ export class ShaderModule {
 
             if (!mod.vs && !mod.fs) {
               errors.push(
-                'Could not find a vertex or fragment shader within exisitng module'
+                "Could not find a vertex or fragment shader within exisitng module"
               );
             }
 
@@ -442,7 +442,7 @@ export class ShaderModule {
             }
 
             // Include the discovered content in the module content output
-            includedModuleContent += moduleContent || '';
+            includedModuleContent += moduleContent || "";
           } else {
             errors.push(
               `Could not find requested module: ${moduleId} requested by module: ${id}`
@@ -454,7 +454,7 @@ export class ShaderModule {
       // Remove the id being processed currently
       processing.shift();
       // Add the id to the list of items that have been included
-      included.add(id || '');
+      included.add(id || "");
 
       // Place the included module content at the top of the shader and return this module with it's necessary
       // inclusions
@@ -465,7 +465,7 @@ export class ShaderModule {
     let modifedShader = shader;
 
     if (additionalModules) {
-      let imports = '';
+      let imports = "";
 
       additionalModules.forEach(
         moduleId => (imports += `$\{import: ${moduleId}}\n`)
@@ -480,18 +480,18 @@ export class ShaderModule {
       compatibility: target,
       moduleId: `Layer "${id}" ${
         target === ShaderInjectionTarget.ALL
-          ? 'fs vs'
+          ? "fs vs"
           : target === ShaderInjectionTarget.VERTEX
-            ? 'vs'
-            : 'fs'
-      }`,
+            ? "vs"
+            : "fs"
+      }`
     });
 
     // Generate the results needed
     const results = {
       errors,
       shader: process(tempShaderModuleUnit),
-      shaderModuleUnits,
+      shaderModuleUnits
     };
 
     return results;

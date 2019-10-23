@@ -450,6 +450,7 @@ Vertex shader and fragment shader
 ### Methods:
 
 **transform(vec3 s, vec4 r, vec3 t)**
+
 Parameters:
 
 * s (vec3) - a 3d scale [scaleX, scaleY, scaleZ]
@@ -491,6 +492,7 @@ Vertex shader and fragment shader
 ### Methods:
 
 **rbg2hsv(vec3 c)**
+
 Parameters:
 
 * c (vec3) - a rgb color [r, g, b]

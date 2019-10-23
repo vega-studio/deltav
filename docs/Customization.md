@@ -8,7 +8,7 @@ Customers can create a new instance by simply extending [instance](Instances/Ins
 
 Customers can create a new layer by extending [Layer2D] or [Layer]. Customers should choose their own ways to initShaders, write their own shaders and set materialOptions.
 
-When initing shaders, an [IShaderInitialization<Instance>] interface should be returned from initShader() method and then the required prperties will be injected into custom shaders. This requires customers to do the following steps:
+When initing shaders, an [IShaderInitialization<Instance>] interface should be returned from initShader() method and then the required properties will be injected into custom shaders. This requires customers to do the following steps:
 
 * Specify the shader source
 * Specify [drawMode], it includes six modes: LINE_LOOP, LINE_STRIP, LINES, POINTS, TRIANGLE_FAN,TRIANGLE_STRIP, TRIANGLES
@@ -16,7 +16,7 @@ When initing shaders, an [IShaderInitialization<Instance>] interface should be r
 * Inject [instanceAttributes]
 * Inject [vertexAttributes]
 * Set the [uniforms]
-* Set special attribtue expansion
+* Set special attribute expansion
 
 Setting materialOptions uses the method getMaterialOptions of layer, and ILayerMaterialOptions interface should be returned.
 
@@ -29,7 +29,7 @@ When creating customized shaders, there are several in-built shader modules can 
 ${import: module1, module2, module3}
 ```
 
-After a module is imported, methods and contants in the module can be used directly in customized shaders.
+After a module is imported, methods and constants in the module can be used directly in customized shaders.
 Here are a list of available modules:
 
 ### Camera related modules
@@ -220,7 +220,7 @@ Here are a list of available modules:
 
   1.  rotationFromQuaternion(vec4 q)
       * return type: mat4
-      * description: return matrix 4x4 which reprsents the rotation from quaternion q
+      * description: return matrix 4x4 which represents the rotation from quaternion q
 
 * module-id: scale
 * compatibility: vertex shader and fragment shader
@@ -228,7 +228,7 @@ Here are a list of available modules:
 
   1.  scale(vec3 s)
       * return type: mat4
-      * description: return matrix 4x4 which reprsents the scale s
+      * description: return matrix 4x4 which represents the scale s
 
 * module-id: transform
 * compatibility: vertex shader and fragment shader
@@ -244,10 +244,10 @@ Here are a list of available modules:
 * uniforms:
   1.  currentTime
       * type: float
-      * descripton: current frame's current time
+      * description: current frame's current time
   2.  currentFrame
       * type: float
-      * descripion: current frame's index
+      * description: current frame's index
 
 ### Color related modules
 

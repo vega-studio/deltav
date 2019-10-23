@@ -8,7 +8,7 @@ Customers can create a new instance by simply extending [instance](Instances/Ins
 
 Customers can create a new layer by extending [Layer2D] or [Layer]. Customers should choose their own ways to initShaders, write their own shaders and set materialOptions.
 
-When initing shaders, an [IShaderInitialization<Instance>] interface should be returned from initShader() method and then the required prperties will be injected into custom shaders. This requires customers to do the following steps:
+When initing shaders, an [IShaderInitialization<Instance>] interface should be returned from initShader() method and then the required properties will be injected into custom shaders. This requires customers to do the following steps:
 
 * Specify the shader source
 * Specify [drawMode], it includes six modes: LINE_LOOP, LINE_STRIP, LINES, POINTS, TRIANGLE_FAN,TRIANGLE_STRIP, TRIANGLES
@@ -16,7 +16,7 @@ When initing shaders, an [IShaderInitialization<Instance>] interface should be r
 * Inject [instanceAttributes]
 * Inject [vertexAttributes]
 * Set the [uniforms]
-* Set special attribtue expansion
+* Set special attribute expansion
 
 Setting materialOptions uses the method getMaterialOptions of layer, and ILayerMaterialOptions interface should be returned.
 
@@ -29,10 +29,10 @@ When creating customized shaders, there are several in-built shader modules can 
 ${import: module1, module2, module3}
 ```
 
-After a module is imported, methods and contants in the module can be used directly in customized shaders.
+After a module is imported, methods and constants in the module can be used directly in customized shaders.
 Here are a list of available modules:
 
-### Shader Template
+### shaderTemplate
 
 A shader can also be created by function shaderTemplate, it could help to combine different actions with base shader together to be a new shader.
 

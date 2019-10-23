@@ -6,7 +6,7 @@ import {
 import { Vec2 } from "../../../math";
 
 export interface ICircleInstanceOptions extends IInstanceOptions {
-  /** Center x position of the circle */
+  /** Center position of the circle */
   center: Vec2;
   /** The radius of the circle */
   radius: number;

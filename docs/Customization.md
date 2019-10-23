@@ -32,6 +32,7 @@ ${import: module1, module2, module3}
 After a module is imported, methods and constants in the module can be used directly in customized shaders.
 Here are a list of available modules:
 
+<<<<<<< HEAD
 ### Camera related modules
 
 * module-id: camera
@@ -261,6 +262,8 @@ Here are a list of available modules:
       * return type: vec3
       * description: This method takes a hsv color and converts it to a rgb color
 
+=======
+>>>>>>> a1a2b954ff5e679be0533f64f7ce7d4d2c9fc701
 ### shaderTemplate
 
 A shader can also be created by method [shaderTemplate], it could help to combine different actions with base shader together to be a new shader.

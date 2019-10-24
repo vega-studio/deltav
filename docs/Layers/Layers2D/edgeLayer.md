@@ -6,7 +6,7 @@
 
 (optional for animate and all its elements)
 
-Porperties for animating attributes
+Properties for animating attributes
 
 **broadphase : EdgeBroadphase**
 

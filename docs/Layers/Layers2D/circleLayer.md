@@ -14,7 +14,7 @@ This sets a scaling factor for the circle's radius
 
 **opacity(): number** (optional)
 
-Opactiy of the layer as a whole
+Opacity of the layer as a whole
 
 **usePoints: boolean** (optional)
 

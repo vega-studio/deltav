@@ -4,7 +4,7 @@
 
 **animate : { end: IAutoEasingMethod<Vec>; start: IAutoEasingMethod<Vec>; startColor: IAutoEasingMethod<Vec>; endColor: IAutoEasingMethod<Vec>; control: IAutoEasingMethod<Vec>; thickness: IAutoEasingMethod<Vec>;}** (optional for animate and all its elements)
 
-Porperties for animating attributes
+Properties for animating attributes
 
 **broadphase : EdgeBroadphase** (optional)
 

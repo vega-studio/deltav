@@ -5,7 +5,7 @@
 **options: ICircleInstanceOptions**
 
 * center: Vec2 - (required) Center position of the circle
-* radius: number - (requied) The radius of the cirlce
+* radius: number - (required) The radius of the circle
 * color: [number, number, number, number] - (optional) The color of this circle
 * depth: number - (optional) The z depth of the circle (for draw ordering)
 

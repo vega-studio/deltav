@@ -395,7 +395,7 @@ Returns:
 
 Usage:
 
-* This mehod returns matrix 4x4 which represents the translation t
+* This method returns matrix 4x4 which represents the translation t
 
 ## Module-id: rotation
 
@@ -417,7 +417,7 @@ Returns:
 
 Usage:
 
-* Returns matrix 4x4 which reprsents the rotation from quaternion q
+* Returns matrix 4x4 which represents the rotation from quaternion q
 
 ## Module-id: scale
 
@@ -439,7 +439,7 @@ Returns:
 
 Usage:
 
-* Returns matrix 4x4 which reprsents the scale s
+* Returns matrix 4x4 which represents the scale s
 
 ## Module-id: transform
 

@@ -17,9 +17,13 @@ export interface ICircleInstanceOptions extends IInstanceOptions {
 }
 
 export class CircleInstance extends Instance {
+  /** The color of this circle */
   @observable color: [number, number, number, number] = [1.0, 1.0, 1.0, 1.0];
+  /** The z depth of the circle (for draw ordering) */
   @observable depth: number = 0;
+  /** The radius of the circle */
   @observable radius: number = 0;
+  /** Center position of the circle */
   @observable center: Vec2 = [0, 0];
 
   constructor(options: ICircleInstanceOptions) {

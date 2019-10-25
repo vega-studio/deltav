@@ -1,6 +1,10 @@
 # LabelLayer
 
-## Props
+LabelLayer extends [Layer2D]
+
+## LabelLayerProps
+
+LabelLayerProps extends [Layer2DProps]
 
 **animate: {<br>&emsp;&emsp;anchor: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;color: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;offset: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;origin: IAutoEasingMethod<Vec>;<br>}**
 
@@ -37,9 +41,13 @@ defaults to ellipses or three periods '...'
 
 # LabelInstance
 
+LabelInstance extends [Instance]
+
 ## Constructor(options: ILabelInstanceOptions)
 
 **options: ILabelInstanceOptions**
+
+ILabelInstanceOptions extends [InstanceOptions]
 
 * color: [number, number, number, number]
 

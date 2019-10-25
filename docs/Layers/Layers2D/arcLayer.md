@@ -1,8 +1,12 @@
 # ArcLayer
 
-ArcLayer displays arcs and provides controls for displaying them in interesting ways. ArcLayer extends from Layer2D
+ArcLayer displays arcs and provides controls for displaying them in interesting ways.
 
-## Props
+ArcLayer extends from [Layer2D]
+
+## IArcLayerProps
+
+IArcLayerProps extends [ILayer2DProps].
 
 **animate: { <br>&emsp;&emsp;angle: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;angleOffset: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;center: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;colorEnd: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;colorStart: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;radius: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;thickness: IAutoEasingMethod<Vec>;<br>}**
 
@@ -21,9 +25,13 @@ ArcScaleType has two options:
 
 # ArcInstance
 
+ArcInstance extends [Instance]
+
 ## Constructor(options: IArcInstanceOptions)
 
 **options: IArcInstanceOptions**
+
+IArcInstanceOptions extends [IInstanceOptions]
 
 * angle: Vec2
 

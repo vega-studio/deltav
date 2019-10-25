@@ -1,6 +1,10 @@
 # RingLayer
 
-## Props
+RingLayer extends [Layer2D]
+
+## IRingLayerProps
+
+IRingLayerProps extends [ILayer2DProps]
 
 **animate: {<br>&emsp;&emsp;color: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;center: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;radius: IAutoEasingMethod<Vec>;<br>}**
 
@@ -14,9 +18,13 @@ Provides easing animation for properties of [RingInstance]
 
 # RingInstance
 
+RingInstance extends [Instance]
+
 ## Constructor(options: IRingInstanceOptions)
 
 **options: IRingInstanceOptions**
+
+IRingInstanceOptions extends [IInstanceOptions]
 
 * center: Vec2
 

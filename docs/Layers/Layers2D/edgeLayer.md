@@ -1,6 +1,10 @@
 # EdgeLayer
 
-## Props
+EdgeLayer extends [Layer2D]
+
+## IEdgeLayerProps
+
+IEdgeLayerProps extends [ILayer2DProps]
 
 **animate : { <br>&emsp;&emsp;end: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;start: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;startColor: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;endColor: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;control: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;thickness: IAutoEasingMethod<Vec>;<br>}**
 
@@ -47,9 +51,13 @@ EdgeType has three options:
 
 # EdgeInstance
 
+EdgeInstance extends [Instance]
+
 ## Constructor(options: IEdgeInstanceOptions)
 
 **options: IEdgeInstanceOptions**
+
+IEdgeInstanceOptions extends [InstanceOptions]
 
 * start: Vec2
 

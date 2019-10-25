@@ -1,8 +1,12 @@
 # CircleLayer
 
-CircleLayer displays circles and provides controls for displaying them in interesting ways. Circle layer extends from Layer2D
+CircleLayer displays circles and provides controls for displaying them in interesting ways.
 
-## Props
+Circle layer extends from [Layer2D]
+
+## ICircleLayerProps
+
+ICircleLayerProps extends [ILayer2DProps]
 
 **animate: { <br>&emsp;&emsp;center: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;radius: IAutoEasingMethod<Vec>; <br>&emsp;&emsp;color: IAutoEasingMethod<Vec>;<br>}**
 
@@ -24,9 +28,13 @@ Provides easing animation for properties of [CircleInstance]
 
 # CircleInstance
 
+CircleInstance extends [Instance]
+
 ## constructor (options: ICircleInstanceOptions)
 
 **options: ICircleInstanceOptions**
+
+ICircleInstanceOptions extends [IInstanceOptions]
 
 * center: Vec2
 

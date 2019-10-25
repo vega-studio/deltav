@@ -1,6 +1,10 @@
 # GlyphLayer
 
-## Props
+GlyphLayer extends [Layer2D]
+
+## IGlyphLayerProps
+
+IGlyphLayerProps extends [ILayer2DProps]
 
 **animate: {<br>&emsp;&emsp;anchor: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;color: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;offset: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;origin: IAutoEasingMethod<Vec>;<br>}**
 
@@ -22,29 +26,52 @@ Provides easing animation for properties of [GlyphInstance]
 
 # GlyphInstance
 
+GlyphInstance extends [Instance]
+
 ## Constructor(options: GlyphInstanceOptions)
 
 **options: GlyphInstanceOptions**
 
+GlyphInstanceOptions extends [InstanceOptions]
+
 * anchor: Vec2
+
   (optional) Sets the position the glyph relative to an anchor location on an overrarching label
+
 * character: string
+
   (optional) The character the glyph will render
+
 * color: Vec4
+
   (optional) The color to tint the glyph
+
 * depth: number
+
   (optional) Z distance of the glyph
+
 * fontScale: number
+
   (optional) Sets the scale of the glyph compared to the font resource's rendering
+
 * maxScale: number
+
   (optional) Sets the max scale of the glyph
+
 * offset: Vec2
+
   (optional) Sets the top left location of this glyph's offset from it's origin
+
 * origin: Vec2
+
   (optional) Sets the anchor point of the glyph to which the glyph scales and rotates about and is positioned
+
 * padding: Vec2
+
   (optional) the amount of padding from the origin position to the anchor position
+
 * onReady?: (glyph: GlyphInstance) => void
+
   (optional) Called when this instance is ready for rendering
 
 ## Properties

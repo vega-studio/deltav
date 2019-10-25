@@ -1,6 +1,10 @@
 # RectangleLayer
 
-## Props
+RectangleLayer extends [Layer2D]
+
+## IRectangleLayerProps
+
+IRectangleLayerProps extends [ILayer2DProps]
 
 **animate: {<br>&emsp;&emsp;color: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;location: IAutoEasingMethod<Vec>;<br>}**
 
@@ -14,9 +18,13 @@ Set the animation for properties of rectangleInstance
 
 # RectangleInstance
 
+RectangleInstance extends [Instance]
+
 ## Constructor(options: IRectangleInstanceOptions)
 
 **options: IRectangleInstanceOptions**
+
+IRectangleInstanceOptions extends [IInstanceOptions]
 
 * anchor: Anchor
 

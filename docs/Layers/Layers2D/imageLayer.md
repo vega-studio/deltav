@@ -1,8 +1,12 @@
 # ImageLayer
 
-## Props
+ImageLayer extends [Layer2D]
 
-IImageLayerProps extends from IImageRenderLayerProps, here is the list of IImageRenderLayerProps.
+## IImageLayerProps
+
+IImageLayerProps extends from [IImageRenderLayerProps], here is the list of [IImageRenderLayerProps].
+
+[IImageRenderLayerProps] extends [ILayer2DProps]
 
 **animate: {<br>&emsp;&emsp;tint: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;location: IAutoEasingMethod<Vec>;<br>&emsp;&emsp;size: IAutoEasingMethod<Vec>;<br>}**
 
@@ -20,7 +24,11 @@ The properties to animate for the image.
 
 # ImageInstance
 
+ImageInstance extends Instance
+
 ## Constructor (options: IImageInstanceOptions)
+
+IImageInstanceOptions extends InstanceOptions
 
 **options: IImageInstanceOptions**
 

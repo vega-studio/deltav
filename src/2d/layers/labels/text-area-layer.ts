@@ -230,7 +230,7 @@ export interface ITextAreaLayerProps<T extends LabelInstance>
   >;
   /** String identifier of the resource font to use for the layer */
   resourceKey?: string;
-  /** This number represents how much space each whitespace characters represents */
+  /** This number represents how much space each whitespace character represents */
   whiteSpaceKerning?: number;
   /** This sets the scaling mode of textArea, cound be ALWAYS, BOUND_MAX or NEVER */
   scaling?: ScaleMode;

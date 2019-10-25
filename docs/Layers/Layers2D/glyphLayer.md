@@ -35,9 +35,13 @@ GlyphInstance extends [Instance]
 GlyphInstanceOptions extends [InstanceOptions]
 
 * anchor: Vec2
+<<<<<<< HEAD
 
   (optional) Sets the position the glyph relative to an anchor location on an overrarching label
 
+=======
+  (optional) Sets the position the glyph relative to an anchor location on an overarching label
+>>>>>>> a9faa0a4a7641df0e874719287cf7faa7957cfc5
 * character: string
 
   (optional) The character the glyph will render
@@ -78,7 +82,7 @@ GlyphInstanceOptions extends [InstanceOptions]
 
 **anchor: Vec2**
 
-Adjustment to position the glyph relative to an anchor location on an overrarching label
+Adjustment to position the glyph relative to an anchor location on an overarching label
 
 Default value is [0, 0]
 
@@ -150,4 +154,4 @@ Make a duplicate of this glyph
 
 **resourceTrigger()**
 
-This will trigger when the resource nmanager is ready to render this glyph
+This will trigger when the resource manager is ready to render this glyph

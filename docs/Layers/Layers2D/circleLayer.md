@@ -42,7 +42,7 @@ ICircleInstanceOptions extends [IInstanceOptions]
 
 * radius: number
 
-  (requied) The radius of the cirlce
+  (required) The radius of the circle
 
 * color: [number, number, number, number]
 

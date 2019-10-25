@@ -22,13 +22,13 @@ Animation methods for various properties of the glyphs
 
 **scaleMode: ScaleMode**
 
-(optional) The scaling strategy the labels will use wheh scaling the scene up and down
+(optional) The scaling strategy the labels will use when scaling the scene up and down
 
 ScaleMode has three options:
 
 * ALWAYS: The size of the image will be tied to world space
 * BOUND_MAX: The image will scale to it's font size then stop growing
-* NEVER: The image will alwyas retain it's font size on screen
+* NEVER: The image will always retain it's font size on screen
 
 **truncation: string**
 
@@ -141,7 +141,7 @@ Default value is 0
 
 **fontSize: number**
 
-Font size in world coordinates. This causes scaling relative to the base font resource available. IE- If the font resource is rendered at 32 and this is 16, then the output rendering will be glyphs that are 50% the size of the rendered glyph in the font map. This can cause artefacts based on the rendering strategy used.
+Font size in world coordinates. This causes scaling relative to the base font resource available. IE- If the font resource is rendered at 32 and this is 16, then the output rendering will be glyphs that are 50% the size of the rendered glyph in the font map. This can cause artifacts based on the rendering strategy used.
 
 Default value is 12
 

@@ -30,7 +30,7 @@ Set the animation for properties of rectangleInstance
 
   (optional) Sets the way the rectangle scales with the world
 
-* color: [number, number, number,number]
+* color: [number, number, number, number]
 
   (optional) The color the rectangle should render as
 

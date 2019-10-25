@@ -42,7 +42,7 @@ EdgeScaleType has two options:
 EdgeType has three options:
 
 * LINE: Makes a straight edge with no curve
-* BEZIER: Makes a single control point Bezier curve
+* BEZIER: Makes a single control point bezier curve
 * BEZIER2: Makes a two control point bezier curve
 
 # EdgeInstance

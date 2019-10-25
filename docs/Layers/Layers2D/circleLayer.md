@@ -34,7 +34,7 @@ Provides easing animation for properties of [CircleInstance]
 
 * radius: number
 
-  (requied) The radius of the cirlce
+  (required) The radius of the circle
 
 * color: [number, number, number, number]
 

@@ -132,7 +132,7 @@ After onReady: This is populated with the height of the source image loaded into
 
 Default value is 0
 
-## Metheds
+## Methods
 
 **get maxSize()**
 

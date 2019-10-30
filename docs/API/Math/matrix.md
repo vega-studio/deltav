@@ -147,7 +147,7 @@ Parameters:
 
 Returns:
 
-Mat2x2 | null: affine inverse matrix or null if determinat of mat is 0
+Mat2x2 | null: affine inverse matrix or null if determinant of mat is 0
 
 **affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null**
 
@@ -160,7 +160,7 @@ Parameters:
 
 Returns:
 
-Mat3x3 | null: affine inverse matrix or null if determinat of mat is 0
+Mat3x3 | null: affine inverse matrix or null if determinant of mat is 0
 
 **affineInverse4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 | null**
 
@@ -173,7 +173,7 @@ Parameters:
 
 Returns:
 
-Mat4x4 | null: affine inverse matrix or null if determinat of mat is 0
+Mat4x4 | null: affine inverse matrix or null if determinant of mat is 0
 
 **multiplyScalar2x2(mat: Mat2x2, scale: number, out?: Mat2x2): Mat2x2**
 

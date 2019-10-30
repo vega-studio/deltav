@@ -66,7 +66,7 @@ Default value is 0
 
 **d:T**
 
-It specifies the data type associated withe this shape
+It specifies the data type associated with this shape
 
 ## Methods
 

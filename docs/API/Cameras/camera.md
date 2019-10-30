@@ -4,7 +4,7 @@
 
 **options: ICameraOptions**
 
-ICameraOptions can be ICameraOrthographicOptions or ICameraPerspectiveOptions with a callback onViewChange
+ICameraOptions can be ICameraOrthographicOptions or ICameraPerspectiveOptions with a callback onViewChange.
 
 * ICameraOrthographicOptions
   * type: CameraProjectionType.ORTHOGRAPHIC
@@ -57,33 +57,33 @@ ICameraOptions can be ICameraOrthographicOptions or ICameraPerspectiveOptions wi
 
 **animationEndTime: number**
 
-This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates
+This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates.
  
-Default value is 0
+Default value is 0.
 
 **needsViewDrawn: boolean**
 
-Indicates the view's associated with this camera should be redrawn
+Indicates the view's associated with this camera should be redrawn.
 
-Default value is true
+Default value is true.
 
 **needsBroadcast: boolean**
 
-Flag indicating the camera needs to broadcast changes applied to it
+Flag indicating the camera needs to broadcast changes applied to it.
 
-Default value is false
+Default value is false.
 
 **viewChangeViewId: string**
 
-The id of the view to be broadcasted for the sake of a change
+The id of the view to be broadcasted for the sake of a change.
 
-Default value is empty string
+Default value is empty string.
 
 **transform: Transform**
 
-This is the transform that places the camera within world space
+This is the transform that places the camera within world space.
 
-Default value is new Transform()
+Default value is new Transform().
 
 ## Methods
 
@@ -101,29 +101,29 @@ Performs the broadcast of changes for the camera if the camera needed a broadcas
 
 **makePerspective(options?: Partial<ICameraPerspectiveOptions>)**
 
-(static) Quick generation of a camera with perspective properties
+(static) Quick generation of a camera with perspective properties.
 
 **get projectionType()**
 
-Returns the expected projection style of the camera
+Returns the expected projection style of the camera.
 
 **get projection()**
 
-Returns the computed projection of the camera
+Returns the computed projection of the camera.
 
 **get view()**
 
-Returns the computed view transform of the camera
+Returns the computed view transform of the camera.
 
 **get needsUpdate()**
 
-Flag indicating the transforms for this camera need updating
+Flag indicating the transforms for this camera need updating.
 
 **get position()**
 
 **set position(val: Vec3)**
 
-Gets and Sets the poistion of the camera within the world
+Gets and Sets the poistion of the camera within the world.
 
 **lookAt(position: Vec3, up: Vec3)**
 
@@ -190,17 +190,17 @@ Essentially this Camera is a two layer concept rolled into one. This is done thi
 
 **control2D: Control2D**
 
-These are the 2d controls to make manipulating a 2D world easier
+These are the 2d controls to make manipulating a 2D world easier.
 
 ## Methods
 
 **get scale2D()**
 
-Gets the scale of 2d control
+Gets the scale of 2d control.
 
 **get offset()**
 
-Gets the offset of 2d control
+Gets the offset of 2d control.
 
 
  

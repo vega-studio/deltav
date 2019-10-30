@@ -147,7 +147,7 @@ Parameters:
 
 Returns:
 
-Mat2x2 | null: affine inverse matrix or null if determinat of mat is 0
+Mat2x2 | null: affine inverse matrix or null if determinant of mat is 0
 
 **affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null**
 
@@ -160,7 +160,7 @@ Parameters:
 
 Returns:
 
-Mat3x3 | null: affine inverse matrix or null if determinat of mat is 0
+Mat3x3 | null: affine inverse matrix or null if determinant of mat is 0
 
 **affineInverse4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 | null**
 
@@ -173,7 +173,7 @@ Parameters:
 
 Returns:
 
-Mat4x4 | null: affine inverse matrix or null if determinat of mat is 0
+Mat4x4 | null: affine inverse matrix or null if determinant of mat is 0
 
 **multiplyScalar2x2(mat: Mat2x2, scale: number, out?: Mat2x2): Mat2x2**
 
@@ -255,7 +255,7 @@ Mat4x4: a 4x4 identity matrix
 
 **multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2**
 
-Concat two 2x2 matrices. result = left x right
+Concatenate two 2x2 matrices. result = left x right
 
 Parameters:
 
@@ -269,7 +269,7 @@ Mat2x2: result of left x right
 
 **multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3**
 
-Concat two 3x3 matrices. result = left x right
+Concatenate two 3x3 matrices. result = left x right
 
 Parameters:
 
@@ -283,7 +283,7 @@ Mat3x3: result of left x right
 
 **multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4**
 
-Concat two 4x4 matrices. result = left x right
+Concatenate two 4x4 matrices. result = left x right
 
 Parameters:
 
@@ -792,7 +792,7 @@ Mat4x4: orthographic matrix
 
 **projectToScreen(proj: Mat4x4, point: Vec4, width: number, height: number, out?: Vec4): Vec4**
 
-Performs the operations to project a Vec4 to screen coordinates using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
+Performs the operations to project a Vec4 to screen coordinates using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogeneous coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
 
 Parameters:
 
@@ -808,7 +808,7 @@ Returns:
 
 **project3As4ToScreen(proj: Mat4x4, point: Vec3Compat, width: number, height: number, out?: Vec4): Vec4**
 
-Performs the operations to project a Vec3 to screen coordinates as a Vec4 with a w of value 1 using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
+Performs the operations to project a Vec3 to screen coordinates as a Vec4 with a w of value 1 using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogeneous coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
 
 Parameters:
 

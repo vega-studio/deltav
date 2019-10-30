@@ -1,6 +1,6 @@
 # Bounds
 
-This class is used to generate a simple bound shape
+This class is used to generate a simple bound shape.
 
 ## Constructor(options: IBoundsOptions)
 
@@ -42,73 +42,73 @@ This class is used to generate a simple bound shape
 
 **x: number**
 
-X position of bounds' top left corner
+X position of bounds' top left corner.
 
-Default value is 0
+Default value is 0.
 
 **y: number**
 
-Y position of bounds' to left corner
+Y position of bounds' to left corner.
 
-Default value is 0
+Default value is 0.
 
 **width: number**
 
 Width of bounds
 
-Default value is 0
+Default value is 0.
 
 **height: number**
 
 Height of bounds
 
-Default value is 0
+Default value is 0.
 
 **d:T**
 
-It specifies the data type associated with this shape
+It specifies the data type associated with this shape.
 
 ## Methods
 
 **get area()**
 
-Returns the area of bounds
+Returns the area of bounds.
 
 **get bottom()**
 
-Returns the bottom side of bounds
+Returns the bottom side of bounds.
 
 **get left()**
 
-Returns the left side of bounds
+Returns the left side of bounds.
 
 **get mid(): Vec2**
 
-Returns the center point of bounds
+Returns the center point of bounds.
 
 **get right()**
 
-Returns the right side of bounds
+Returns the right side of bounds.
 
 **get top()**
 
-Returns the top side of bounds
+Returns the top side of bounds.
 
 **get location(): Vec2**
 
-Returns top left position of the bounds
+Returns top left position of the bounds.
 
 **emptyBound<T>()**
 
-(static) Returns an empty Bounds object
+(static) Returns an empty Bounds object.
 
 **containsPoint(point: Vec2)**
 
-Checks to see if a point in within this bounds object
+Checks to see if a point in within this bounds object.
 
 **encapsulate(item: Bounds<any> | Vec2)**
 
-Grows this bounds object to cover the space of the provided bounds object or point
+Grows this bounds object to cover the space of the provided bounds object or point.
 
 **encapsulateAll(all: Bounds<any>[] | Vec2[])**
 
@@ -116,7 +116,7 @@ Grows the bounds (if needed) to encompass all bounds or points provided.
 
 **fits(bounds: Bounds<T>): 0 | 1 | 2**
 
-Checks to see if the provided bounds object could fit within the dimensions of this bounds object
+Checks to see if the provided bounds object could fit within the dimensions of this bounds object.
 
 This ignores position and just checks width and height.
 
@@ -128,7 +128,7 @@ Returns:
 
 **hitBounds(bounds: Bounds<any>)**
 
-Checks if a bounds object intersects another bounds object
+Checks if a bounds object intersects another bounds object.
 
 Returns:
 
@@ -148,4 +148,4 @@ Returns:
 
 **toString()**
 
-Easy readout of this Bounds object
+Easy readout of this Bounds object.

@@ -1,6 +1,7 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
+import { BucketDepthChartDemo } from "./demos/bucket-depth-chart";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
@@ -33,5 +34,6 @@ demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
 demos.set("ease-demo", EaseDemo);
 demos.set("quat-ease-demo", QuatEaseDemo);
+demos.set("bucket-depth-chart-demo", BucketDepthChartDemo);
 
 export const demoKeys = Array.from(demos.keys());

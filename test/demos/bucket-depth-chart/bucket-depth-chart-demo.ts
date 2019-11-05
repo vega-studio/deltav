@@ -20,8 +20,37 @@ export class BucketDepthChartDemo extends BaseDemo {
     blocks: new InstanceProvider<BlockInstance>()
   };
 
-  buildConsole(_gui: datGUI.GUI): void {
-    //
+  front: boolean = false;
+
+  parameters = {
+    changeView: () => {
+      if (!this.surface) return;
+      const camera = this.surface.cameras.perspective;
+
+      if (!this.front) {
+        let i = 0;
+        const timeId = setInterval(() => {
+          i++;
+          camera.position = [10 - i, 10 - i, 10];
+          camera.lookAt([0, 0, 0], [0, 1, 0]);
+          if (i >= 10) clearInterval(timeId);
+        }, 100);
+      } else {
+        let i = 0;
+        const timeId = setInterval(() => {
+          i++;
+          camera.position = [i, i, 10];
+          camera.lookAt([0, 0, 0], [0, 1, 0]);
+          if (i >= 10) clearInterval(timeId);
+        }, 100);
+      }
+
+      this.front = !this.front;
+    }
+  };
+
+  buildConsole(gui: datGUI.GUI): void {
+    gui.add(this.parameters, "changeView");
   }
 
   async init() {
@@ -56,7 +85,8 @@ export class BucketDepthChartDemo extends BaseDemo {
       width: 10,
       heightScale: 0.3,
       colors,
-      chartData: data
+      chartData: data,
+      resolution: 9
     });
 
     bdc.insertToProvider(this.providers.blocks);
@@ -66,6 +96,9 @@ export class BucketDepthChartDemo extends BaseDemo {
     return new BasicSurface({
       container,
       providers: this.providers,
+      rendererOptions: {
+        antialias: true
+      },
       cameras: {
         perspective: Camera.makePerspective({
           fov: 80 * Math.PI / 180,

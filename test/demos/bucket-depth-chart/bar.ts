@@ -1,4 +1,5 @@
 import { BlockInstance, InstanceProvider, Vec2, Vec4 } from "src";
+import { Bucket } from "./bucket";
 
 export interface IBarOptions {
   // Sets the center point of the bottom line
@@ -15,6 +16,66 @@ export interface IBarOptions {
   heightScale?: number;
   // Sets the width of the chart
   width: number;
+  // Sets the number of data groups to form the bar
+  resolution?: number;
+}
+
+function generateBuckets(data: Vec2[], resolution: number): Bucket[] {
+  const num = data.length;
+  const base = Math.floor(num / resolution);
+  const extra = num - base * resolution;
+
+  const groups = [];
+
+  for (let i = 0; i < resolution; i++) {
+    groups.push(i < extra ? base + 1 : base);
+  }
+
+  const nodes: Vec2[] = [];
+  const bucketDatas: Vec2[][] = [];
+  let index = 0;
+
+  for (let i = 0; i < groups.length; i++) {
+    // Get average time and max value in each group
+    let time = 0;
+    let value = data[index][1];
+    const groupDatas = [];
+
+    for (let j = 0; j < groups[i]; j++) {
+      time += data[index][0];
+      value = Math.max(value, data[index][1]);
+      groupDatas.push(data[index]);
+      index++;
+    }
+
+    time /= groups[i];
+
+    nodes.push([time, value]);
+    bucketDatas.push(groupDatas);
+  }
+
+  const minTime = nodes[0][0];
+  const maxTime = nodes[nodes.length - 1][0];
+  const delta = maxTime - minTime;
+  // Adjust time
+  for (let i = 0; i < nodes.length; i++) {
+    nodes[i][0] = (nodes[i][0] - minTime) / delta;
+  }
+
+  // Generate buckets
+  const buckets = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    const bucket = new Bucket({
+      time: nodes[i][0],
+      value: nodes[i][1],
+      data: bucketDatas[i]
+    });
+
+    buckets.push(bucket);
+  }
+
+  return buckets;
 }
 
 /** A chart which shows data change over time, the chart will always face to the positive Z direction*/
@@ -31,6 +92,8 @@ export class Bar {
   private blockInstances: BlockInstance[] = [];
   /** Width of the chart */
   private _width: number;
+  /**Number of data groups that make up each line*/
+  resolution: number;
 
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
@@ -38,6 +101,16 @@ export class Bar {
     this._depth = options.depth || this._depth;
     this._heightScale = options.heightScale || this._heightScale;
     this._width = options.width;
+
+    if (options.resolution) {
+      if (options.resolution > options.barData.length) {
+        this.resolution = options.barData.length;
+      } else {
+        this.resolution = options.resolution;
+      }
+    } else {
+      this.resolution = options.barData.length;
+    }
 
     this.generateInstances(options.barData);
   }
@@ -148,11 +221,13 @@ export class Bar {
   }
 
   private generateInstances(data: Vec2[]) {
-    if (data.length < 1) {
+    if (data.length <= 1) {
       console.error(
         "A bucket depth chart needs at least two elements in data array"
       );
     }
+
+    const buckets = generateBuckets(data, this.resolution);
 
     data.sort((a, b) => a[0] - b[0]);
 
@@ -165,11 +240,11 @@ export class Bar {
     const baseX = bottomCenter[0] - width / 2;
     const baseY = bottomCenter[1];
 
-    for (let i = 0, endi = data.length; i < endi - 1; i++) {
-      const x1 = baseX + data[i][0] * width;
-      const x2 = baseX + data[i + 1][0] * width;
-      const y1 = data[i][1] * heightScale;
-      const y2 = data[i + 1][1] * heightScale;
+    for (let i = 0, endi = buckets.length; i < endi - 1; i++) {
+      const x1 = baseX + buckets[i].time * width;
+      const x2 = baseX + buckets[i + 1].time * width;
+      const y1 = buckets[i].value * heightScale;
+      const y2 = buckets[i + 1].value * heightScale;
 
       const block = new BlockInstance({
         startValue: [x1, y1, depth],

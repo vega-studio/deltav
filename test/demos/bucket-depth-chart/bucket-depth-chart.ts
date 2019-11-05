@@ -9,6 +9,7 @@ export interface IBucketDepthChartOptions {
   minDepth?: number;
   width: number;
   heightScale?: number;
+  resolution?: number;
 }
 
 export class BucketDepthChart {
@@ -17,6 +18,7 @@ export class BucketDepthChart {
   private _bottomCenter: Vec2 = [0, 0];
   private _width: number;
   private _heightScale: number = 1;
+  resolution: number = 100;
   bars: Bar[] = [];
 
   constructor(options: IBucketDepthChartOptions) {
@@ -25,6 +27,7 @@ export class BucketDepthChart {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this._width = options.width;
     this._heightScale = options.heightScale || this._heightScale;
+    this.resolution = options.resolution || this.resolution;
 
     this.generateBars(options.chartData, options.colors);
   }
@@ -123,7 +126,8 @@ export class BucketDepthChart {
           width: this.width,
           heightScale: this.heightScale,
           color: colors[i],
-          depth: this.minDepth + deltaDepth * i
+          depth: this.minDepth + deltaDepth * i,
+          resolution: this.resolution
         });
 
         this.bars.push(bar);

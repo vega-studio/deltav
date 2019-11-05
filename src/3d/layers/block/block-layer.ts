@@ -13,6 +13,7 @@ import { GLSettings } from "../../../gl";
 import { Vec2 } from "../../../math/vector";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import {
+  ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize
@@ -85,5 +86,9 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
       ],
       vertexCount: 6
     };
+  }
+
+  getMaterialOptions(): ILayerMaterialOptions {
+    return {};
   }
 }

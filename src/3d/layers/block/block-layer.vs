@@ -1,13 +1,15 @@
 ${import: projection}
 varying vec4 _color;
 void main() {
-  // The value of the
+  // The value of the vertex
   vec3 value = mix(
     startValue,
     endValue,
     float(position.x)
   );
-  vec3 pos = vec3(value.x, baseLine + mix(0.0, value.y, position.y), value.z);
+
+  float scale = distance(cameraPosition, vec3(bottomCenter, value.z)) / distance(cameraPosition, vec3(bottomCenter, 0.0));
+  vec3 pos = vec3((value.x + dragX) * scale, (baseLine + mix(0.0, value.y, position.y)) * scale, value.z);
   _color = color;
   gl_Position = clipSpace(pos);
 }

@@ -10,29 +10,27 @@
 
 import { GLSettings } from "../../../gl";
 // import { InstanceProvider } from "../../../instance-provider";
-import { Vec2 } from "../../../math/vector";
+import { Vec2, Vec3 } from "../../../math/vector";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
+  UniformSize,
   VertexAttributeSize
 } from "../../../types";
 import { BlockInstance } from "./block-instance";
-export interface IBlockLayerProps extends ILayerProps<BlockInstance> {}
+export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
+  cameraPosition?(): Vec3;
+  bottomCenter?(): Vec2;
+  dragX?(): number;
+}
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    /*const FRT: Vec3 = [1, 1, 1];
-    const BRT: Vec3 = [1, 1, -1];
-    const BRB: Vec3 = [1, -1, -1];
-    const FRB: Vec3 = [1, -1, 1];
-    const FLT: Vec3 = [-1, 1, 1];
-    const BLT: Vec3 = [-1, 1, -1];
-    const BLB: Vec3 = [-1, -1, -1];
-    const FLB: Vec3 = [-1, -1, 1];*/
+    const { cameraPosition, bottomCenter, dragX } = this.props;
 
     const LB: Vec2 = [0, 0];
     const LT: Vec2 = [0, 1];
@@ -82,6 +80,23 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "position",
           size: VertexAttributeSize.TWO,
           update: vertex => positions[vertex]
+        }
+      ],
+      uniforms: [
+        {
+          name: "cameraPosition",
+          size: UniformSize.THREE,
+          update: () => (cameraPosition ? cameraPosition() : [0, 0, 0])
+        },
+        {
+          name: "bottomCenter",
+          size: UniformSize.TWO,
+          update: () => (bottomCenter ? bottomCenter() : [0, 0])
+        },
+        {
+          name: "dragX",
+          size: UniformSize.ONE,
+          update: () => (dragX ? dragX() : 0)
         }
       ],
       vertexCount: 6

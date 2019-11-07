@@ -7,7 +7,9 @@ import {
   ClearFlags,
   createLayer,
   createView,
+  IMouseInteraction,
   InstanceProvider,
+  SimpleEventHandler,
   Vec2,
   Vec4,
   View3D
@@ -20,7 +22,12 @@ export class BucketDepthChartDemo extends BaseDemo {
     blocks: new InstanceProvider<BlockInstance>()
   };
 
-  front: boolean = false;
+  front: boolean = true;
+  bottomCenter: Vec2 = [0, 0];
+  dragX: number = 0;
+  mouseDown: boolean = false;
+  mouseX: number = 0;
+  bdc: BucketDepthChart;
 
   parameters = {
     changeView: () => {
@@ -58,38 +65,39 @@ export class BucketDepthChartDemo extends BaseDemo {
 
     // const transform = new Transform();
     const camera = this.surface.cameras.perspective;
-    camera.position = [10, 10, 10];
+    camera.position = [0, 0, 10];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
     const data: Vec2[][] = [];
 
     for (let i = 0; i < 5; i++) {
       data[i] = [];
-      for (let j = 0; j <= 10; j++) {
-        const point: Vec2 = [j / 10, 3 + 2 * Math.random()];
+      for (let j = 0; j <= 100; j++) {
+        const point: Vec2 = [j / 100, 3 + 3 * Math.random()];
         data[i].push(point);
       }
     }
 
     const colors: Vec4[] = [
-      [1, 0, 0, 0.8],
-      [0, 1, 0, 0.8],
-      [0, 0, 1, 0.8],
-      [1, 1, 0, 0.8],
-      [0, 1, 1, 0.8]
+      [73 / 255, 45 / 255, 123 / 255, 1],
+      [138 / 255, 53 / 255, 106 / 255, 1],
+      [135 / 255, 78 / 255, 141 / 255, 1],
+      [184 / 255, 88 / 255, 106 / 255, 1],
+      [210 / 255, 151 / 255, 91 / 255, 1]
     ];
 
-    const bdc = new BucketDepthChart({
+    this.bdc = new BucketDepthChart({
       maxDepth: 0,
       minDepth: -5,
       width: 10,
       heightScale: 0.3,
       colors,
       chartData: data,
-      resolution: 9
+      resolution: 60,
+      provider: this.providers.blocks
     });
 
-    bdc.insertToProvider(this.providers.blocks);
+    this.bdc.insertToProvider(this.providers.blocks);
   }
 
   makeSurface(container: HTMLElement) {
@@ -108,7 +116,31 @@ export class BucketDepthChartDemo extends BaseDemo {
         })
       },
       resources: {},
-      eventManagers: _cameras => ({}),
+      eventManagers: () => ({
+        dragScreen: new SimpleEventHandler({
+          handleMouseDown: (e: IMouseInteraction) => {
+            if (this.front) {
+              this.mouseDown = true;
+              this.mouseX = e.mouse.currentPosition[0];
+            }
+          },
+          handleMouseMove: (e: IMouseInteraction) => {
+            if (this.front && this.mouseDown) {
+              this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
+              this.bdc.updateByDragX(this.dragX);
+              this.mouseX = e.mouse.currentPosition[0];
+            }
+          },
+          handleMouseUp: (e: IMouseInteraction) => {
+            if (this.front) {
+              if (this.mouseDown) {
+                this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
+                this.mouseDown = false;
+              }
+            }
+          }
+        })
+      }),
       pipeline: (_resources, providers, cameras) => ({
         resources: [],
         scenes: {
@@ -121,7 +153,16 @@ export class BucketDepthChartDemo extends BaseDemo {
             },
             layers: {
               blocks: createLayer(BlockLayer, {
-                data: providers.blocks
+                data: providers.blocks,
+                cameraPosition: () => {
+                  if (this.surface) {
+                    return this.surface.cameras.perspective.position;
+                  }
+
+                  return [0, 0, 0];
+                },
+                bottomCenter: () => this.bottomCenter,
+                dragX: () => this.dragX
               })
             }
           }

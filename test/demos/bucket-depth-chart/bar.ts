@@ -1,5 +1,6 @@
 import { BlockInstance, InstanceProvider, Vec2, Vec4 } from "src";
 import { Bucket } from "./bucket";
+import { Interval } from "./interval";
 
 export interface IBarOptions {
   // Sets the center point of the bottom line
@@ -18,6 +19,8 @@ export interface IBarOptions {
   width: number;
   // Sets the number of data groups to form the bar
   resolution?: number;
+
+  provider: InstanceProvider<BlockInstance>;
 }
 
 function generateBuckets(data: Vec2[], resolution: number): Bucket[] {
@@ -95,12 +98,18 @@ export class Bar {
   /**Number of data groups that make up each line*/
   resolution: number;
 
+  provider: InstanceProvider<BlockInstance>;
+
+  buckets: Bucket[];
+  intervals: Interval[] = [];
+
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this._color = options.color || this._color;
     this._depth = options.depth || this._depth;
     this._heightScale = options.heightScale || this._heightScale;
     this._width = options.width;
+    this.provider = options.provider;
 
     if (options.resolution) {
       if (options.resolution > options.barData.length) {
@@ -227,7 +236,7 @@ export class Bar {
       );
     }
 
-    const buckets = generateBuckets(data, this.resolution);
+    this.buckets = generateBuckets(data, this.resolution);
 
     data.sort((a, b) => a[0] - b[0]);
 
@@ -240,11 +249,21 @@ export class Bar {
     const baseX = bottomCenter[0] - width / 2;
     const baseY = bottomCenter[1];
 
-    for (let i = 0, endi = buckets.length; i < endi - 1; i++) {
-      const x1 = baseX + buckets[i].time * width;
-      const x2 = baseX + buckets[i + 1].time * width;
-      const y1 = buckets[i].value * heightScale;
-      const y2 = buckets[i + 1].value * heightScale;
+    for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
+      const bucket = this.buckets[i];
+      const nextBucket = this.buckets[i + 1];
+
+      const x1 = baseX + bucket.time * width;
+      const x2 = baseX + nextBucket.time * width;
+      const y1 = bucket.value * heightScale;
+      const y2 = nextBucket.value * heightScale;
+
+      const interval = new Interval({
+        leftX: bucket.time * width,
+        rightX: nextBucket.time * width,
+        leftY: y1,
+        rightY: y2
+      });
 
       const block = new BlockInstance({
         startValue: [x1, y1, depth],
@@ -254,10 +273,135 @@ export class Bar {
       });
 
       this.blockInstances.push(block);
+      interval.addInstance(block);
+      this.intervals.push(interval);
     }
   }
 
   insertToProvider(provider: InstanceProvider<BlockInstance>) {
     this.blockInstances.forEach(instance => provider.add(instance));
+  }
+
+  updateByDragX(dragX: number) {
+    const width = this.width;
+    const bottomCenter = this.bottomCenter;
+    const baseX = bottomCenter[0] - width / 2;
+    const depth = this.depth;
+    const color = this.color;
+    const baseY = bottomCenter[1];
+
+    this.intervals.forEach(interval => {
+      const rightCount = Math.floor((interval.rightX + dragX) / width);
+      const leftCount = Math.floor((interval.leftX + dragX) / width);
+      const curCount = interval.offsetCount;
+
+      // Right Count > offsetCount, left Count == offsetCount, insects right bound
+      // Left Count < offsetCount, right Count == offsetCount, insects left bound
+      if (
+        (rightCount > curCount && leftCount === curCount) ||
+        (leftCount < curCount && rightCount === curCount)
+      ) {
+        interval.blockInstances.forEach(instance =>
+          this.provider.remove(instance)
+        );
+
+        interval.blockInstances = [];
+
+        // Get y position of the middle
+        const scale =
+          (interval.rightX + dragX - rightCount * width) /
+          (interval.rightX - interval.leftX);
+
+        const middleY = interval.leftY * scale + interval.rightY * (1 - scale);
+
+        // block1
+        const x10 = baseX + interval.leftX - leftCount * width;
+        const x11 = baseX + width - dragX;
+        const y10 = interval.leftY;
+        const y11 = middleY;
+
+        const block1 = new BlockInstance({
+          startValue: [x10, y10, depth],
+          endValue: [x11, y11, depth],
+          baseLine: baseY,
+          color
+        });
+
+        // block2
+        const x20 = baseX - dragX;
+        const x21 = baseX + interval.rightX - rightCount * width;
+        const y20 = middleY;
+        const y21 = interval.rightY;
+
+        const block2 = new BlockInstance({
+          startValue: [x20, y20, depth],
+          endValue: [x21, y21, depth],
+          baseLine: baseY,
+          color
+        });
+
+        interval.insectBounds = true;
+        interval.blockInstances.push(block1);
+        interval.blockInstances.push(block2);
+        this.provider.add(block1);
+        this.provider.add(block2);
+      }
+
+      // Right Count > offsetCount, left Count > offsetCount, update offsetCount
+      // Right Count < offsetCount, left Count <>> offsetCount, update offsetCount
+      else if (
+        (rightCount > curCount && leftCount > curCount) ||
+        (rightCount < curCount && leftCount < curCount)
+      ) {
+        interval.blockInstances.forEach(instance =>
+          this.provider.remove(instance)
+        );
+        interval.blockInstances = [];
+
+        const x0 = interval.leftX - leftCount * width + baseX;
+        const x1 = interval.rightX - leftCount * width + baseX;
+
+        const block = new BlockInstance({
+          startValue: [x0, interval.leftY, depth],
+          endValue: [x1, interval.rightY, depth],
+          baseLine: baseY,
+          color
+        });
+
+        interval.blockInstances.push(block);
+        this.provider.add(block);
+
+        interval.offsetCount = leftCount;
+        interval.insectBounds = false;
+      }
+
+      // Previous insect, current in bounds
+      else if (
+        interval.insectBounds &&
+        leftCount === curCount &&
+        rightCount === curCount
+      ) {
+        interval.blockInstances.forEach(instance =>
+          this.provider.remove(instance)
+        );
+
+        interval.blockInstances = [];
+
+        const x0 = interval.leftX - curCount * width + baseX;
+        const x1 = interval.rightX - curCount * width + baseX;
+
+        const block = new BlockInstance({
+          startValue: [x0, interval.leftY, depth],
+          endValue: [x1, interval.rightY, depth],
+          baseLine: baseY,
+          color
+        });
+
+        interval.blockInstances.push(block);
+        this.provider.add(block);
+
+        interval.insectBounds = false;
+      }
+    });
   }
 }

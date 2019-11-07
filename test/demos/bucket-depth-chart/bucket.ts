@@ -1,4 +1,4 @@
-import { Vec2 } from "src";
+import { BlockInstance, Vec2 } from "src";
 
 export interface IBucketOptions {
   time: number;
@@ -10,6 +10,7 @@ export class Bucket {
   time: number;
   value: number;
   data: Vec2[];
+  blockInstances: BlockInstance[] = [];
 
   constructor(options: IBucketOptions) {
     this.data = options.data;

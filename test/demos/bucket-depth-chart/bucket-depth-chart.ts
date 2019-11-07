@@ -10,6 +10,7 @@ export interface IBucketDepthChartOptions {
   width: number;
   heightScale?: number;
   resolution?: number;
+  provider: InstanceProvider<BlockInstance>;
 }
 
 export class BucketDepthChart {
@@ -20,6 +21,7 @@ export class BucketDepthChart {
   private _heightScale: number = 1;
   resolution: number = 100;
   bars: Bar[] = [];
+  provider: InstanceProvider<BlockInstance>;
 
   constructor(options: IBucketDepthChartOptions) {
     this._maxDepth = options.maxDepth || this._maxDepth;
@@ -28,6 +30,7 @@ export class BucketDepthChart {
     this._width = options.width;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
+    this.provider = options.provider;
 
     this.generateBars(options.chartData, options.colors);
   }
@@ -112,7 +115,8 @@ export class BucketDepthChart {
         width: this.width,
         heightScale: this.heightScale,
         color: colors[0],
-        depth: (this.maxDepth + this.minDepth) / 2
+        depth: (this.maxDepth + this.minDepth) / 2,
+        provider: this.provider
       });
 
       this.bars.push(bar);
@@ -127,7 +131,8 @@ export class BucketDepthChart {
           heightScale: this.heightScale,
           color: colors[i],
           depth: this.minDepth + deltaDepth * i,
-          resolution: this.resolution
+          resolution: this.resolution,
+          provider: this.provider
         });
 
         this.bars.push(bar);
@@ -137,5 +142,9 @@ export class BucketDepthChart {
 
   insertToProvider(provider: InstanceProvider<BlockInstance>) {
     this.bars.forEach(bar => bar.insertToProvider(provider));
+  }
+
+  updateByDragX(dragX: number) {
+    this.bars.forEach(bar => bar.updateByDragX(dragX));
   }
 }

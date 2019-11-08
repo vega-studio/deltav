@@ -1,4 +1,4 @@
-import { BlockInstance, InstanceProvider, Vec2, Vec4 } from "src";
+import { BlockInstance, InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { Bucket } from "./bucket";
 import { Interval } from "./interval";
 
@@ -96,10 +96,11 @@ export class Bar {
   /** Width of the chart */
   private _width: number;
   /**Number of data groups that make up each line*/
-  resolution: number;
+  private _resolution: number;
 
   provider: InstanceProvider<BlockInstance>;
 
+  data: Vec2[];
   buckets: Bucket[];
   intervals: Interval[] = [];
 
@@ -110,18 +111,40 @@ export class Bar {
     this._heightScale = options.heightScale || this._heightScale;
     this._width = options.width;
     this.provider = options.provider;
+    this.data = options.barData;
 
     if (options.resolution) {
       if (options.resolution > options.barData.length) {
-        this.resolution = options.barData.length;
+        this._resolution = options.barData.length;
       } else {
-        this.resolution = options.resolution;
+        this._resolution = options.resolution;
       }
     } else {
-      this.resolution = options.barData.length;
+      this._resolution = options.barData.length;
     }
 
     this.generateInstances(options.barData);
+  }
+
+  get resolution() {
+    return this._resolution;
+  }
+
+  set resolution(val: number) {
+    if (val !== this._resolution) {
+      if (val > this.data.length) {
+        this._resolution = this.data.length;
+      }
+      if (val < 2) {
+        this._resolution = 2;
+      } else {
+        this._resolution = val;
+      }
+
+      this.clearAllInstances();
+      this.generateInstances(this.data);
+      this.insertToProvider(this.provider);
+    }
   }
 
   get bottomCenter() {
@@ -229,6 +252,16 @@ export class Bar {
     this._heightScale = val;
   }
 
+  clearAllInstances() {
+    this.blockInstances.forEach(instance => this.provider.remove(instance));
+
+    this.blockInstances = [];
+
+    this.buckets = [];
+
+    this.intervals = [];
+  }
+
   private generateInstances(data: Vec2[]) {
     if (data.length <= 1) {
       console.error(
@@ -280,6 +313,18 @@ export class Bar {
 
   insertToProvider(provider: InstanceProvider<BlockInstance>) {
     this.blockInstances.forEach(instance => provider.add(instance));
+  }
+
+  updateByCameraPosition(pos: Vec3) {
+    const barPos = [this.bottomCenter[0], this.bottomCenter[1], this.depth];
+    const distance = Math.sqrt(
+      (pos[0] - barPos[0]) ** 2 +
+        (pos[1] - barPos[1]) ** 2 +
+        (pos[2] - barPos[2]) ** 2
+    );
+
+    // Will be changed according to requirements
+    this.resolution = 60 - 10 * Math.floor(distance / 11);
   }
 
   updateByDragX(dragX: number) {
@@ -348,7 +393,7 @@ export class Bar {
       }
 
       // Right Count > offsetCount, left Count > offsetCount, update offsetCount
-      // Right Count < offsetCount, left Count <>> offsetCount, update offsetCount
+      // Right Count < offsetCount, left Count < offsetCount, update offsetCount
       else if (
         (rightCount > curCount && leftCount > curCount) ||
         (rightCount < curCount && leftCount < curCount)

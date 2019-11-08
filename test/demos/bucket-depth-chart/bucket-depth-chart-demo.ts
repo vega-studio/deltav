@@ -11,6 +11,7 @@ import {
   InstanceProvider,
   SimpleEventHandler,
   Vec2,
+  Vec3,
   Vec4,
   View3D
 } from "src";
@@ -24,6 +25,7 @@ export class BucketDepthChartDemo extends BaseDemo {
 
   front: boolean = true;
   bottomCenter: Vec2 = [0, 0];
+  cameraCenter: Vec3 = [0, 0, 0];
   dragX: number = 0;
   mouseDown: boolean = false;
   mouseX: number = 0;
@@ -39,7 +41,7 @@ export class BucketDepthChartDemo extends BaseDemo {
         const timeId = setInterval(() => {
           i++;
           camera.position = [10 - i, 10 - i, 10];
-          camera.lookAt([0, 0, 0], [0, 1, 0]);
+          camera.lookAt(this.cameraCenter, [0, 1, 0]);
           if (i >= 10) clearInterval(timeId);
         }, 100);
       } else {
@@ -137,6 +139,18 @@ export class BucketDepthChartDemo extends BaseDemo {
                 this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
                 this.mouseDown = false;
               }
+            }
+          },
+          handleWheel: (e: IMouseInteraction) => {
+            if (this.surface && this.front) {
+              const camera = this.surface.cameras.perspective;
+              camera.position = [
+                0,
+                0,
+                camera.position[2] + e.mouse.wheel.delta[1] / 200
+              ];
+              camera.lookAt(this.cameraCenter, [0, 1, 0]);
+              this.bdc.updateByCameraPosition(camera.position);
             }
           }
         })

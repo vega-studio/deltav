@@ -1,4 +1,4 @@
-import { BlockInstance, InstanceProvider, Vec2, Vec4 } from "src";
+import { BlockInstance, InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { Bar } from "./bar";
 
 export interface IBucketDepthChartOptions {
@@ -146,5 +146,11 @@ export class BucketDepthChart {
 
   updateByDragX(dragX: number) {
     this.bars.forEach(bar => bar.updateByDragX(dragX));
+  }
+
+  updateByCameraPosition(pos: Vec3) {
+    // this.bars[4].resolution = 10;
+    this.bars.forEach(bar => bar.updateByCameraPosition(pos));
+    //
   }
 }

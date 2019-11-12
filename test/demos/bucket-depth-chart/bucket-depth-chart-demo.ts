@@ -9,7 +9,9 @@ import {
   createView,
   IMouseInteraction,
   InstanceProvider,
+  onAnimationLoop,
   SimpleEventHandler,
+  stopAnimationLoop,
   Vec2,
   Vec3,
   Vec4,
@@ -38,20 +40,20 @@ export class BucketDepthChartDemo extends BaseDemo {
 
       if (!this.front) {
         let i = 0;
-        const timeId = setInterval(() => {
-          i++;
+        const timeId = onAnimationLoop(() => {
+          i += 0.1;
           camera.position = [10 - i, 10 - i, 10];
           camera.lookAt(this.cameraCenter, [0, 1, 0]);
-          if (i >= 10) clearInterval(timeId);
-        }, 100);
+          if (i >= 10) stopAnimationLoop(timeId);
+        });
       } else {
         let i = 0;
-        const timeId = setInterval(() => {
-          i++;
+        const timeId = onAnimationLoop(() => {
+          i += 0.1;
           camera.position = [i, i, 10];
           camera.lookAt([0, 0, 0], [0, 1, 0]);
-          if (i >= 10) clearInterval(timeId);
-        }, 100);
+          if (i >= 10) stopAnimationLoop(timeId);
+        });
       }
 
       this.front = !this.front;

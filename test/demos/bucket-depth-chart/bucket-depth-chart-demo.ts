@@ -55,11 +55,15 @@ export class BucketDepthChartDemo extends BaseDemo {
       }
 
       this.front = !this.front;
+    },
+    addData: () => {
+      this.bdc.bars[4].addData([Math.random(), 3 + 3 * Math.random()]);
     }
   };
 
   buildConsole(gui: datGUI.GUI): void {
     gui.add(this.parameters, "changeView");
+    gui.add(this.parameters, "addData");
   }
 
   async init() {
@@ -121,28 +125,24 @@ export class BucketDepthChartDemo extends BaseDemo {
       eventManagers: () => ({
         dragScreen: new SimpleEventHandler({
           handleMouseDown: (e: IMouseInteraction) => {
-            if (this.front) {
-              this.mouseDown = true;
-              this.mouseX = e.mouse.currentPosition[0];
-            }
+            this.mouseDown = true;
+            this.mouseX = e.mouse.currentPosition[0];
           },
           handleMouseMove: (e: IMouseInteraction) => {
-            if (this.front && this.mouseDown) {
+            if (this.mouseDown) {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
               this.bdc.updateByDragX(this.dragX);
               this.mouseX = e.mouse.currentPosition[0];
             }
           },
           handleMouseUp: (e: IMouseInteraction) => {
-            if (this.front) {
-              if (this.mouseDown) {
-                this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
-                this.mouseDown = false;
-              }
+            if (this.mouseDown) {
+              this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
+              this.mouseDown = false;
             }
           },
           handleWheel: (e: IMouseInteraction) => {
-            if (this.surface && this.front) {
+            if (this.surface) {
               const camera = this.surface.cameras.perspective;
               camera.position = [
                 0,

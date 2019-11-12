@@ -23,14 +23,14 @@ export interface IBarOptions {
   provider: InstanceProvider<BlockInstance>;
 }
 
-function generateBuckets(data: Vec2[], resolution: number): Bucket[] {
+function generateBuckets(data: Vec2[], segments: number): Bucket[] {
   const num = data.length;
-  const base = Math.floor(num / resolution);
-  const extra = num - base * resolution;
+  const base = Math.floor(num / segments);
+  const extra = num - base * segments;
 
   const groups = [];
 
-  for (let i = 0; i < resolution; i++) {
+  for (let i = 0; i < segments; i++) {
     groups.push(i < extra ? base + 1 : base);
   }
 
@@ -97,6 +97,7 @@ export class Bar {
   private _width: number;
   /**Number of data groups that make up each line*/
   private _resolution: number;
+  private segments: number;
 
   provider: InstanceProvider<BlockInstance>;
 
@@ -112,15 +113,18 @@ export class Bar {
     this._width = options.width;
     this.provider = options.provider;
     this.data = options.barData;
+    this.data.sort((a, b) => a[0] - b[0]);
 
     if (options.resolution) {
+      this._resolution = options.resolution;
       if (options.resolution > options.barData.length) {
-        this._resolution = options.barData.length;
+        this.segments = options.barData.length;
       } else {
-        this._resolution = options.resolution;
+        this.segments = options.resolution;
       }
     } else {
       this._resolution = options.barData.length;
+      this.segments = options.barData.length;
     }
 
     this.generateInstances(options.barData);
@@ -132,18 +136,23 @@ export class Bar {
 
   set resolution(val: number) {
     if (val !== this._resolution) {
+      this._resolution = val;
+
+      const oldSegments = this.segments;
+
       if (val > this.data.length) {
-        this._resolution = this.data.length;
-      }
-      if (val < 2) {
-        this._resolution = 2;
+        this.segments = this.data.length;
+      } else if (val < 2) {
+        this.segments = 2;
       } else {
-        this._resolution = val;
+        this.segments = val;
       }
 
-      this.clearAllInstances();
-      this.generateInstances(this.data);
-      this.insertToProvider(this.provider);
+      if (this.segments !== oldSegments) {
+        this.clearAllInstances();
+        this.generateInstances(this.data);
+        this.insertToProvider(this.provider);
+      }
     }
   }
 
@@ -252,6 +261,37 @@ export class Bar {
     this._heightScale = val;
   }
 
+  addData(d: Vec2) {
+    const endi = this.data.length;
+
+    for (let i = 0; i < endi; i++) {
+      if (d[0] < this.data[i][0]) {
+        this.data.splice(i, 0, d);
+        break;
+      }
+    }
+
+    if (d[0] >= this.data[endi - 1][0]) this.data.push(d);
+
+    if (this.resolution > this.data.length) {
+      this.segments = this.data.length;
+    } else if (this.resolution < 2) {
+      this.segments = 2;
+    } else {
+      this.segments = this.resolution;
+    }
+
+    this.reDraw();
+  }
+
+  reDraw() {
+    this.clearAllInstances();
+
+    this.generateInstances(this.data);
+
+    this.insertToProvider(this.provider);
+  }
+
   clearAllInstances() {
     this.blockInstances.forEach(instance => this.provider.remove(instance));
 
@@ -269,10 +309,7 @@ export class Bar {
       );
     }
 
-    this.buckets = generateBuckets(data, this.resolution);
-
-    data.sort((a, b) => a[0] - b[0]);
-
+    this.buckets = generateBuckets(data, this.segments);
     const width = this.width;
     const heightScale = this.heightScale;
     const bottomCenter = this.bottomCenter;

@@ -149,8 +149,6 @@ export class BucketDepthChart {
   }
 
   updateByCameraPosition(pos: Vec3) {
-    // this.bars[4].resolution = 10;
     this.bars.forEach(bar => bar.updateByCameraPosition(pos));
-    //
   }
 }

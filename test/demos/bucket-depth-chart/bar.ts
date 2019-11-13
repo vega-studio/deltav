@@ -284,6 +284,24 @@ export class Bar {
     this.reDraw();
   }
 
+  removeDataAt(index: number) {
+    if (index < 0 || index >= this.data.length) {
+      console.error("Index is outside the bound");
+    }
+
+    this.data.splice(index, 1);
+
+    if (this.resolution > this.data.length) {
+      this.segments = this.data.length;
+    } else if (this.resolution < 2) {
+      this.segments = 2;
+    } else {
+      this.segments = this.resolution;
+    }
+
+    this.reDraw();
+  }
+
   reDraw() {
     this.clearAllInstances();
 

@@ -1,7 +1,6 @@
 import * as datGUI from "dat.gui";
 import {
   BasicSurface,
-  BlockInstance,
   BlockLayer,
   Camera,
   ClearFlags,
@@ -18,6 +17,7 @@ import {
   View3D
 } from "src";
 import { BaseDemo } from "../../common/base-demo";
+import { BlockInstance } from "./block";
 import { BucketDepthChart } from "./bucket-depth-chart";
 
 export class BucketDepthChartDemo extends BaseDemo {
@@ -28,35 +28,83 @@ export class BucketDepthChartDemo extends BaseDemo {
   front: boolean = true;
   bottomCenter: Vec2 = [0, 0];
   cameraCenter: Vec3 = [0, 0, 0];
+  cameraPosition: Vec3 = [0, 0, 10];
+  width: number = 10;
+  viewWidth: number = 8;
   dragX: number = 0;
   mouseDown: boolean = false;
   mouseX: number = 0;
   bdc: BucketDepthChart;
 
   parameters = {
-    changeView: () => {
+    frontView: () => {
       if (!this.surface) return;
       const camera = this.surface.cameras.perspective;
-
-      if (!this.front) {
-        let i = 0;
-        const timeId = onAnimationLoop(() => {
-          i += 0.1;
-          camera.position = [10 - i, 10 - i, 10];
-          camera.lookAt(this.cameraCenter, [0, 1, 0]);
-          if (i >= 10) stopAnimationLoop(timeId);
-        });
-      } else {
-        let i = 0;
-        const timeId = onAnimationLoop(() => {
-          i += 0.1;
-          camera.position = [i, i, 10];
-          camera.lookAt([0, 0, 0], [0, 1, 0]);
-          if (i >= 10) stopAnimationLoop(timeId);
-        });
-      }
-
-      this.front = !this.front;
+      const oldPosition = this.cameraPosition;
+      const newPosition: Vec3 = [0, 0, 10];
+      const delta = [
+        newPosition[0] - oldPosition[0],
+        newPosition[1] - oldPosition[1],
+        newPosition[2] - oldPosition[2]
+      ];
+      let i = 0;
+      const timeId = onAnimationLoop(() => {
+        camera.position = [
+          oldPosition[0] + delta[0] * i,
+          oldPosition[1] + delta[1] * i,
+          oldPosition[2] + delta[2] * i
+        ];
+        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        if (i >= 1) stopAnimationLoop(timeId);
+        i += 0.01;
+      });
+      this.cameraPosition = newPosition;
+    },
+    topView: () => {
+      if (!this.surface) return;
+      const camera = this.surface.cameras.perspective;
+      const oldPosition = this.cameraPosition;
+      const newPosition: Vec3 = [0, 10, 0.00001];
+      const delta = [
+        newPosition[0] - oldPosition[0],
+        newPosition[1] - oldPosition[1],
+        newPosition[2] - oldPosition[2]
+      ];
+      let i = 0;
+      const timeId = onAnimationLoop(() => {
+        camera.position = [
+          oldPosition[0] + delta[0] * i,
+          oldPosition[1] + delta[1] * i,
+          oldPosition[2] + delta[2] * i
+        ];
+        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        if (i >= 1) stopAnimationLoop(timeId);
+        i += 0.01;
+      });
+      this.cameraPosition = newPosition;
+    },
+    angledView: () => {
+      if (!this.surface) return;
+      const camera = this.surface.cameras.perspective;
+      const oldPosition = this.cameraPosition;
+      const newPosition: Vec3 = [10, 10, 10];
+      const delta = [
+        newPosition[0] - oldPosition[0],
+        newPosition[1] - oldPosition[1],
+        newPosition[2] - oldPosition[2]
+      ];
+      let i = 0;
+      const timeId = onAnimationLoop(() => {
+        camera.position = [
+          oldPosition[0] + delta[0] * i,
+          oldPosition[1] + delta[1] * i,
+          oldPosition[2] + delta[2] * i
+        ];
+        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        if (i >= 1) stopAnimationLoop(timeId);
+        i += 0.01;
+      });
+      this.cameraPosition = newPosition;
     },
     addData: () => {
       this.bdc.bars[4].addData([Math.random(), 3 + 3 * Math.random()]);
@@ -64,7 +112,9 @@ export class BucketDepthChartDemo extends BaseDemo {
   };
 
   buildConsole(gui: datGUI.GUI): void {
-    gui.add(this.parameters, "changeView");
+    gui.add(this.parameters, "frontView");
+    gui.add(this.parameters, "topView");
+    gui.add(this.parameters, "angledView");
     gui.add(this.parameters, "addData");
   }
 
@@ -97,12 +147,13 @@ export class BucketDepthChartDemo extends BaseDemo {
     this.bdc = new BucketDepthChart({
       maxDepth: 0,
       minDepth: -5,
-      width: 10,
+      width: this.width,
       heightScale: 0.3,
       colors,
       chartData: data,
       resolution: 60,
-      provider: this.providers.blocks
+      provider: this.providers.blocks,
+      viewWidth: this.viewWidth
     });
 
     this.bdc.insertToProvider(this.providers.blocks);
@@ -133,6 +184,11 @@ export class BucketDepthChartDemo extends BaseDemo {
           handleMouseMove: (e: IMouseInteraction) => {
             if (this.mouseDown) {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
+              this.dragX = Math.max(
+                Math.min(this.dragX, 0),
+                this.viewWidth - this.width
+              );
+
               this.bdc.updateByDragX(this.dragX);
               this.mouseX = e.mouse.currentPosition[0];
             }
@@ -140,6 +196,11 @@ export class BucketDepthChartDemo extends BaseDemo {
           handleMouseUp: (e: IMouseInteraction) => {
             if (this.mouseDown) {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
+              this.dragX = Math.max(
+                Math.min(this.dragX, 0),
+                this.viewWidth - this.width
+              );
+              this.bdc.updateByDragX(this.dragX);
               this.mouseDown = false;
             }
           },

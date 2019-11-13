@@ -1,4 +1,5 @@
-import { BlockInstance, Vec2 } from "src";
+import { Vec2 } from "src";
+import { BlockInstance } from "./block";
 
 export interface IBucketOptions {
   time: number;

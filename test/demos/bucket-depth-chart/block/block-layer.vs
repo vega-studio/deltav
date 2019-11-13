@@ -9,7 +9,7 @@ void main() {
   );
 
   float scale = distance(cameraPosition, vec3(bottomCenter, value.z)) / distance(cameraPosition, vec3(bottomCenter, 0.0));
-  vec3 pos = vec3((value.x + dragX) * scale, (baseLine + mix(0.0, value.y, position.y)) * scale, value.z);
+  vec3 pos = vec3(value.x * scale, (baseLine + mix(0.0, value.y, position.y)) * scale, value.z);
   _color = color;
   gl_Position = clipSpace(pos);
 }

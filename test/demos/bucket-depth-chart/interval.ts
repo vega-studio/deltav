@@ -1,4 +1,4 @@
-import { BlockInstance } from "src";
+import { BlockInstance } from "./block";
 
 export interface IIntervalOptions {
   leftX: number;
@@ -13,7 +13,7 @@ export class Interval {
   leftY: number;
   rightY: number;
 
-  blockInstances: BlockInstance[] = [];
+  blockInstance: BlockInstance | null;
   offsetCount: number = 0;
   insectBounds: boolean = false;
 
@@ -22,9 +22,5 @@ export class Interval {
     this.rightX = options.rightX;
     this.leftY = options.leftY;
     this.rightY = options.rightY;
-  }
-
-  addInstance(instance: BlockInstance) {
-    this.blockInstances.push(instance);
   }
 }

@@ -8,17 +8,17 @@
   VertexAttributeSize
 } from "src";*/
 
-import { GLSettings } from "../../../gl";
+import { GLSettings } from "../../../../src/gl";
 // import { InstanceProvider } from "../../../instance-provider";
-import { Vec2, Vec3 } from "../../../math/vector";
-import { ILayerProps, Layer } from "../../../surface/layer";
+import { Vec2, Vec3 } from "../../../../src/math/vector";
+import { ILayerProps, Layer } from "../../../../src/surface/layer";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize
-} from "../../../types";
+} from "../../../../src/types";
 import { BlockInstance } from "./block-instance";
 export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   cameraPosition?(): Vec3;

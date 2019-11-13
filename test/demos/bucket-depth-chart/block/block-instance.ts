@@ -10,8 +10,8 @@ import {
   IInstanceOptions,
   Instance,
   observable
-} from "../../../instance-provider";
-import { Vec3, Vec4 } from "../../../math";
+} from "../../../../src/instance-provider";
+import { Vec3, Vec4 } from "../../../../src/math";
 // import { Color, Size } from "../../../types";
 // import { IInstance3DOptions, Instance3D } from "../base/instance-3d";
 

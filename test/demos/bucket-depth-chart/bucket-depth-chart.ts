@@ -1,5 +1,6 @@
-import { BlockInstance, InstanceProvider, Vec2, Vec3, Vec4 } from "src";
+import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { Bar } from "./bar";
+import { BlockInstance } from "./block";
 
 export interface IBucketDepthChartOptions {
   bottomCenter?: Vec2;
@@ -8,6 +9,7 @@ export interface IBucketDepthChartOptions {
   maxDepth?: number;
   minDepth?: number;
   width: number;
+  viewWidth?: number;
   heightScale?: number;
   resolution?: number;
   provider: InstanceProvider<BlockInstance>;
@@ -18,6 +20,7 @@ export class BucketDepthChart {
   private _minDepth: number = 0;
   private _bottomCenter: Vec2 = [0, 0];
   private _width: number;
+  viewWidth: number;
   private _heightScale: number = 1;
   resolution: number = 100;
   bars: Bar[] = [];
@@ -28,6 +31,7 @@ export class BucketDepthChart {
     this._minDepth = options.minDepth || this._minDepth;
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this._width = options.width;
+    this.viewWidth = options.viewWidth || options.width;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
     this.provider = options.provider;
@@ -132,7 +136,8 @@ export class BucketDepthChart {
           color: colors[i],
           depth: this.minDepth + deltaDepth * i,
           resolution: this.resolution,
-          provider: this.provider
+          provider: this.provider,
+          viewWidth: this.viewWidth
         });
 
         this.bars.push(bar);
@@ -145,7 +150,10 @@ export class BucketDepthChart {
   }
 
   updateByDragX(dragX: number) {
-    this.bars.forEach(bar => bar.updateByDragX(dragX));
+    for (let i = 0, endi = this.bars.length; i < endi; i++) {
+      const bar = this.bars[i];
+      bar.updateByDragX2(dragX);
+    }
   }
 
   updateByCameraPosition(pos: Vec3) {

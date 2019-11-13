@@ -1,3 +1,3 @@
 export * from "./base";
 export * from "./cube";
-export * from "./block";
+export * from "../../../test/demos/bucket-depth-chart/block";

@@ -1,4 +1,5 @@
-import { BlockInstance, InstanceProvider, Vec2, Vec3, Vec4 } from "src";
+import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
+import { BlockInstance } from "./block";
 import { Bucket } from "./bucket";
 import { Interval } from "./interval";
 
@@ -17,6 +18,8 @@ export interface IBarOptions {
   heightScale?: number;
   // Sets the width of the chart
   width: number;
+
+  viewWidth?: number;
   // Sets the number of data groups to form the bar
   resolution?: number;
 
@@ -95,6 +98,8 @@ export class Bar {
   private blockInstances: BlockInstance[] = [];
   /** Width of the chart */
   private _width: number;
+
+  viewWidth: number;
   /**Number of data groups that make up each line*/
   private _resolution: number;
   private segments: number;
@@ -111,6 +116,7 @@ export class Bar {
     this._depth = options.depth || this._depth;
     this._heightScale = options.heightScale || this._heightScale;
     this._width = options.width;
+    this.viewWidth = options.viewWidth || options.width;
     this.provider = options.provider;
     this.data = options.barData;
     this.data.sort((a, b) => a[0] - b[0]);
@@ -328,14 +334,20 @@ export class Bar {
     }
 
     this.buckets = generateBuckets(data, this.segments);
+
     const width = this.width;
+    const viewWidth = this.viewWidth;
+
     const heightScale = this.heightScale;
     const bottomCenter = this.bottomCenter;
     const depth = this.depth;
     const color = this.color;
 
-    const baseX = bottomCenter[0] - width / 2;
+    const baseX = bottomCenter[0] - viewWidth / 2;
     const baseY = bottomCenter[1];
+
+    const leftBound = baseX;
+    const rightBound = baseX + viewWidth;
 
     for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
       const bucket = this.buckets[i];
@@ -353,15 +365,26 @@ export class Bar {
         rightY: y2
       });
 
-      const block = new BlockInstance({
-        startValue: [x1, y1, depth],
-        endValue: [x2, y2, depth],
-        baseLine: baseY,
-        color
-      });
+      if (x1 < rightBound && x2 > leftBound) {
+        const leftX = Math.max(x1, leftBound);
+        const rightX = Math.min(x2, rightBound);
 
-      this.blockInstances.push(block);
-      interval.addInstance(block);
+        const leftScale = (leftX - x1) / (x2 - x1);
+        const rightScale = (rightX - x1) / (x2 - x1);
+
+        const leftY = (1 - leftScale) * y1 + leftScale * y2;
+        const rightY = (1 - rightScale) * y1 + rightScale * y2;
+
+        const block = new BlockInstance({
+          startValue: [leftX, leftY, depth],
+          endValue: [rightX, rightY, depth],
+          baseLine: baseY,
+          color
+        });
+
+        this.blockInstances.push(block);
+        interval.blockInstance = block;
+      }
       this.intervals.push(interval);
     }
   }
@@ -382,7 +405,58 @@ export class Bar {
     this.resolution = 60 - 10 * Math.floor(distance / 11);
   }
 
-  updateByDragX(dragX: number) {
+  updateByDragX2(dragX: number) {
+    // const width = this.width;
+    const viewWidth = this.viewWidth;
+    const bottomCenter = this.bottomCenter;
+    const baseX = bottomCenter[0] - viewWidth / 2;
+    const depth = this.depth;
+    const color = this.color;
+    const baseY = bottomCenter[1];
+
+    const leftBound = baseX;
+    const rightBound = baseX + viewWidth;
+
+    this.intervals.forEach(interval => {
+      const x1 = baseX + interval.leftX + dragX;
+      const x2 = baseX + interval.rightX + dragX;
+      const y1 = interval.leftY;
+      const y2 = interval.rightY;
+
+      if (x1 < rightBound && x2 > leftBound) {
+        const leftX = Math.max(x1, leftBound);
+        const rightX = Math.min(x2, rightBound);
+
+        const leftScale = (leftX - x1) / (x2 - x1);
+        const rightScale = (rightX - x1) / (x2 - x1);
+
+        const leftY = (1 - leftScale) * y1 + leftScale * y2;
+        const rightY = (1 - rightScale) * y1 + rightScale * y2;
+
+        if (interval.blockInstance) {
+          interval.blockInstance.startValue = [leftX, leftY, depth];
+          interval.blockInstance.endValue = [rightX, rightY, depth];
+        } else {
+          const block = new BlockInstance({
+            startValue: [leftX, leftY, depth],
+            endValue: [rightX, rightY, depth],
+            baseLine: baseY,
+            color
+          });
+
+          this.provider.add(block);
+          interval.blockInstance = block;
+        }
+      } else {
+        if (interval.blockInstance) {
+          this.provider.remove(interval.blockInstance);
+          interval.blockInstance = null;
+        }
+      }
+    });
+  }
+
+  /*updateByDragX(dragX: number) {
     const width = this.width;
     const bottomCenter = this.bottomCenter;
     const baseX = bottomCenter[0] - width / 2;
@@ -503,5 +577,5 @@ export class Bar {
         interval.insectBounds = false;
       }
     });
-  }
+  }*/
 }

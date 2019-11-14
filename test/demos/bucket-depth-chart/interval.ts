@@ -5,6 +5,8 @@ export interface IIntervalOptions {
   rightX: number;
   leftY: number;
   rightY: number;
+  leftDepth: number;
+  rightDepth: number;
 }
 
 export class Interval {
@@ -12,6 +14,8 @@ export class Interval {
   rightX: number;
   leftY: number;
   rightY: number;
+  leftDepth: number;
+  rightDepth: number;
 
   blockInstance: BlockInstance | null;
   offsetCount: number = 0;
@@ -22,5 +26,7 @@ export class Interval {
     this.rightX = options.rightX;
     this.leftY = options.leftY;
     this.rightY = options.rightY;
+    this.leftDepth = options.leftDepth;
+    this.rightDepth = options.rightDepth;
   }
 }

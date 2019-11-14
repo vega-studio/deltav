@@ -19,7 +19,8 @@ export interface IBlockInstanceOptions extends IInstanceOptions {
   startValue?: Vec3;
   endValue?: Vec3;
   color?: Vec4;
-  baseLine?: number;
+  baseY?: number;
+  baseZ: number;
 }
 export class BlockInstance extends Instance {
   /** The beginning value of this block [time, height, width] */
@@ -29,7 +30,9 @@ export class BlockInstance extends Instance {
   /** This is the color of the block */
   @observable color: Vec4 = [252 / 255, 187 / 255, 3 / 255, 1.0];
   /** This is the bottom line's y position */
-  @observable baseLine: number = 0;
+  @observable baseY: number = 0;
+
+  @observable baseZ: number = 0;
 
   constructor(options: IBlockInstanceOptions) {
     super(options);
@@ -37,6 +40,7 @@ export class BlockInstance extends Instance {
     this.startValue = options.startValue || this.startValue;
     this.endValue = options.endValue || this.endValue;
     this.color = options.color || this.color;
-    this.baseLine = options.baseLine || this.baseLine;
+    this.baseY = options.baseY || this.baseY;
+    this.baseZ = options.baseZ || this.baseZ;
   }
 }

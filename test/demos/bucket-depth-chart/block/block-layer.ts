@@ -23,21 +23,29 @@ import { BlockInstance } from "./block-instance";
 export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   cameraPosition?(): Vec3;
   bottomCenter?(): Vec2;
-  dragX?(): number;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { cameraPosition, bottomCenter, dragX } = this.props;
+    const { cameraPosition, bottomCenter } = this.props;
 
-    const LB: Vec2 = [0, 0];
+    /*const LB: Vec2 = [0, 0];
     const LT: Vec2 = [0, 1];
     const RB: Vec2 = [1, 0];
-    const RT: Vec2 = [1, 1];
+    const RT: Vec2 = [1, 1];*/
 
-    const positions: Vec2[] = [
+    const FRT: Vec3 = [1, 1, 1];
+    const BRT: Vec3 = [1, 1, -1];
+    const BRB: Vec3 = [1, 0, -1];
+    const FRB: Vec3 = [1, 0, 1];
+    const FLT: Vec3 = [0, 1, 1];
+    const BLT: Vec3 = [0, 1, -1];
+    const BLB: Vec3 = [0, 0, -1];
+    const FLB: Vec3 = [0, 0, 1];
+
+    /*const positions: Vec2[] = [
       // First triangle
       LB,
       LT,
@@ -47,6 +55,32 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
       LB,
       RT,
       RB
+    ];*/
+
+    const positions2: Vec3[] = [
+      // Front face
+      FLB,
+      FLT,
+      FRT,
+      FLB,
+      FRT,
+      FRB,
+
+      // Top face
+      FLT,
+      BLT,
+      BRT,
+      FLT,
+      BRT,
+      FRT,
+
+      // Back face
+      BLB,
+      BLT,
+      BRT,
+      BLB,
+      BRT,
+      BRB
     ];
 
     return {
@@ -70,16 +104,21 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           update: o => o.color
         },
         {
-          name: "baseLine",
+          name: "baseY",
           size: InstanceAttributeSize.ONE,
-          update: o => [o.baseLine]
+          update: o => [o.baseY]
+        },
+        {
+          name: "baseZ",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.baseZ]
         }
       ],
       vertexAttributes: [
         {
           name: "position",
-          size: VertexAttributeSize.TWO,
-          update: vertex => positions[vertex]
+          size: VertexAttributeSize.THREE,
+          update: vertex => positions2[vertex]
         }
       ],
       uniforms: [
@@ -92,18 +131,15 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "bottomCenter",
           size: UniformSize.TWO,
           update: () => (bottomCenter ? bottomCenter() : [0, 0])
-        },
-        {
-          name: "dragX",
-          size: UniformSize.ONE,
-          update: () => (dragX ? dragX() : 0)
         }
       ],
-      vertexCount: 6
+      vertexCount: 18
     };
   }
 
   getMaterialOptions(): ILayerMaterialOptions {
-    return {};
+    return {
+      culling: GLSettings.Material.CullSide.NONE
+    };
   }
 }

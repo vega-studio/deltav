@@ -4,7 +4,7 @@ import { BlockInstance } from "./block";
 
 export interface IBucketDepthChartOptions {
   bottomCenter?: Vec2;
-  chartData: Vec2[][];
+  chartData: Vec3[][];
   colors: Vec4[];
   maxDepth?: number;
   minDepth?: number;
@@ -47,12 +47,12 @@ export class BucketDepthChart {
     if (this.bars.length === 0) return;
 
     if (this.bars.length === 1) {
-      this.bars[0].depth = (val + this._minDepth) / 2;
+      this.bars[0].baseZ = (val + this._minDepth) / 2;
     } else {
       const deltaDepth = (val - this.minDepth) / (this.bars.length - 1);
 
       for (let i = 0, endi = this.bars.length; i < endi; i++) {
-        this.bars[i].depth = this.minDepth + deltaDepth * i;
+        this.bars[i].baseZ = this.minDepth + deltaDepth * i;
       }
     }
 
@@ -67,12 +67,12 @@ export class BucketDepthChart {
     if (this.bars.length === 0) return;
 
     if (this.bars.length === 1) {
-      this.bars[0].depth = (this._maxDepth + val) / 2;
+      this.bars[0].baseZ = (this._maxDepth + val) / 2;
     } else {
       const deltaDepth = (this._maxDepth - val) / (this.bars.length - 1);
 
       for (let i = 0, endi = this.bars.length; i < endi; i++) {
-        this.bars[i].depth = val + deltaDepth * i;
+        this.bars[i].baseZ = val + deltaDepth * i;
       }
     }
 
@@ -109,7 +109,7 @@ export class BucketDepthChart {
     this._bottomCenter = val;
   }
 
-  generateBars(data: Vec2[][], colors: Vec4[]) {
+  generateBars(data: Vec3[][], colors: Vec4[]) {
     if (data.length === 0) return;
 
     if (data.length === 1) {
@@ -119,8 +119,10 @@ export class BucketDepthChart {
         width: this.width,
         heightScale: this.heightScale,
         color: colors[0],
-        depth: (this.maxDepth + this.minDepth) / 2,
-        provider: this.provider
+        baseZ: (this.maxDepth + this.minDepth) / 2,
+        provider: this.provider,
+        viewWidth: this.viewWidth,
+        resolution: this.resolution
       });
 
       this.bars.push(bar);
@@ -134,7 +136,7 @@ export class BucketDepthChart {
           width: this.width,
           heightScale: this.heightScale,
           color: colors[i],
-          depth: this.minDepth + deltaDepth * i,
+          baseZ: this.minDepth + deltaDepth * i,
           resolution: this.resolution,
           provider: this.provider,
           viewWidth: this.viewWidth
@@ -152,7 +154,7 @@ export class BucketDepthChart {
   updateByDragX(dragX: number) {
     for (let i = 0, endi = this.bars.length; i < endi; i++) {
       const bar = this.bars[i];
-      bar.updateByDragX2(dragX);
+      bar.updateByDragX(dragX);
     }
   }
 

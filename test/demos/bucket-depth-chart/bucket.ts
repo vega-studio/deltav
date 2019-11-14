@@ -1,21 +1,24 @@
-import { Vec2 } from "src";
+import { Vec3 } from "src";
 import { BlockInstance } from "./block";
 
 export interface IBucketOptions {
   time: number;
   value: number;
-  data: Vec2[];
+  depth: number;
+  data: Vec3[];
 }
 
 export class Bucket {
   time: number;
   value: number;
-  data: Vec2[];
+  depth: number;
+  data: Vec3[];
   blockInstances: BlockInstance[] = [];
 
   constructor(options: IBucketOptions) {
     this.data = options.data;
     this.time = options.time;
     this.value = options.value;
+    this.depth = options.depth;
   }
 }

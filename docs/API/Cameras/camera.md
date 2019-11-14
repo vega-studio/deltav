@@ -47,9 +47,9 @@ ICameraOptions can be ICameraOrthographicOptions or ICameraPerspectiveOptions wi
     (required) The near clipping plane
   * far: number
 
-    (requied) The far clipping plane
+    (required) The far clipping plane
 
-* onViewChange(camear: Camera, viewId: string): void
+* onViewChange(camera: Camera, viewId: string): void
 
   (optional) callback when view is changed
 
@@ -123,11 +123,11 @@ Flag indicating the transforms for this camera need updating.
 
 **set position(val: Vec3)**
 
-Gets and Sets the poistion of the camera within the world.
+Gets and Sets the position of the camera within the world.
 
 **lookAt(position: Vec3, up: Vec3)**
 
-Sets the camera to look at a position with up dircection. This in conjunction with 'roll' defines the orientation of the camera viewing the world.
+Sets the camera to look at a position with up direction. This in conjunction with 'roll' defines the orientation of the camera viewing the world.
 
 **get scale()**
 

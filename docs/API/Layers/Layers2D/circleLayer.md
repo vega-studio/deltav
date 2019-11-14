@@ -20,7 +20,7 @@ Provides easing animation for properties of [CircleInstance]
 
 **opacity(): number**
 
-(optional) Opactiy of the layer as a whole
+(optional) Opacity of the layer as a whole
 
 **usePoints: boolean**
 

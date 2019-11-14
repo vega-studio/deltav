@@ -28,11 +28,11 @@ ITriangleOptions extends [IInstance3DOptions]
 
 **size: Size**
 
-Dimensions of the ctriangleube.
+Dimensions of the triangle.
 
 Default value is [1, 1, 1]
 
-**colro: Color**
+**color: Color**
 
 Color of the triangle.
 

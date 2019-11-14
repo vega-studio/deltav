@@ -10,7 +10,7 @@ Parameters:
 
 Returns:
 
-Quternion: a new zero quaternion
+Quaternion: a new zero quaternion
 
 **addQuat(q1: Quaternion, q2: Quaternion, out?: Quaternion): Quaternion**
 
@@ -176,7 +176,7 @@ This converts a euler angle of any ordering and turns it into an euler of XYZ or
 Parameters:
 
 * euler: angles to perform rotation
-* order: order to perform rotation by specifed euler anlges
+* order: order to perform rotation by specified euler angles
 * out: (optional) an EulerOrder that will be filled by the result if provided
 
 Returns:
@@ -266,7 +266,7 @@ This produces a quaternion that creates an orientation that will look in the dir
 Parameters:
 
 * forward: direction to look at
-* up: up dirction for the "look at" action
+* up: up direction for the "look at" action
 * q: (optional) a quaternion that will be filled by the result if provided
 
 Returns:
@@ -304,7 +304,7 @@ Quaternion: a quaternion which represents the matrix
 Parameters:
 
 * forward: direction to look at
-* up: up dirction for the "look at" action
+* up: up direction for the "look at" action
 * m: (optional) a matrix4x4 that will be filled by the result if provided
 
 Returns:

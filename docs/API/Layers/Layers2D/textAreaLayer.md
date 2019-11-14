@@ -38,7 +38,7 @@ Scaling has three options:
 
 * ALWAYS: The size of the image will be tied to world space
 * BOUND_MAX: The image will scale to it's font size then stop growing
-* NEVER: The image will alwyas retain it's font size on screen
+* NEVER: The image will always retain it's font size on screen
 
 # TextAreaInstance
 
@@ -118,7 +118,7 @@ Default value is TextAlignment.LEFT
 
 **labels: TextAreaLabel[]**
 
-When onReady is called, this will be populated with all of the labels used to compose this text area. SpecialLetter will be used when layouting labels, it may indicates a new line
+When onReady is called, this will be populated with all of the labels used to compose this text area. SpecialLetter will be used when laying out labels, it may indicates a new line
 
 Default value is []
 

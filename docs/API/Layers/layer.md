@@ -14,7 +14,7 @@ ILayer2DProps extends from [ILayerProps], since no additional attributes are add
 
 **materialOptions: ILayerMaterialOptions**
 
-(optional) Any pipeline declaring a layer cn manipulate a layer's default material settings as every pipeline can have some specific and significant needs the layer does not provide as a default.
+(optional) Any pipeline declaring a layer can manipulate a layer's default material settings as every pipeline can have some specific and significant needs the layer does not provide as a default.
 
 **order: number**
 

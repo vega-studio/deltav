@@ -480,7 +480,7 @@ Mat4x4: transpose matrix of mat
 
 **shearX2x2(radians: number, out?: Mat2x2): Mat2x2**
 
-This makes a shear 2d matrix that shears parallel to the x-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+This makes a shear 2d matrix that shears parallel to the x-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is nonsensical as it would shear to infinity and beyond.
 
 Parameters:
 
@@ -493,7 +493,7 @@ Mat2x2: result of shear operation
 
 **shearY2x2(radians: number, out?: Mat2x2): Mat2x2**
 
-This makes a shear 2d matrix that shears parallel to the y-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+This makes a shear 2d matrix that shears parallel to the y-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is nonsensical as it would shear to infinity and beyond.
 
 Parameters:
 
@@ -506,7 +506,7 @@ Mat2x2: result of shear operation
 
 **shearX4x4(radians: number, out?: Mat4x4): Mat4x4**
 
-This makes a shear 3d matrix that shears parallel to the x-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+This makes a shear 3d matrix that shears parallel to the x-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is nonsensical as it would shear to infinity and beyond.
 
 Parameters:
 
@@ -519,7 +519,7 @@ Mat4x4: result of shear operation
 
 **shearY4x4(radians: number, out?: Mat4x4): Mat4x4**
 
-This makes a shear 3d matrix that shears parallel to the y-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+This makes a shear 3d matrix that shears parallel to the y-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is nonsensical as it would shear to infinity and beyond.
 
 Parameters:
 
@@ -532,7 +532,7 @@ Mat4x4: result of shear operation
 
 **shearZ4x4(radians: number, out?: Mat4x4): Mat4x4**
 
-This makes a shear 3d matrix that shears parallel to the z-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+This makes a shear 3d matrix that shears parallel to the z-axis. The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees). A shear >= 90 degrees is nonsensical as it would shear to infinity and beyond.
 
 Parameters:
 

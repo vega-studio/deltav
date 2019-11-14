@@ -5,7 +5,7 @@ _ This indicates the back buffer for the webgl context will have an alpha channe
 _ for the DOM compositing the canvas with the other DOM elements.
 _/
 alpha?: boolean;
-/\*\* Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. _/
+/\*\* Hardware anti-aliasing. Disabled by default. Enabled makes things prettier but slower. _/
 antialias?: boolean;
 /**
 _ This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing

@@ -16,7 +16,7 @@ The properties to animate for the image.
 
 **atlas: string**
 
-(optional) The id of the atlas to load resources into
+(optional) The id of the atlas to load resources into.
 
 **rasterizationScale: number**
 
@@ -24,11 +24,11 @@ The properties to animate for the image.
 
 # ImageInstance
 
-ImageInstance extends Instance
+ImageInstance extends Instance.
 
 ## Constructor (options: IImageInstanceOptions)
 
-IImageInstanceOptions extends InstanceOptions
+IImageInstanceOptions extends InstanceOptions.
 
 **options: IImageInstanceOptions**
 

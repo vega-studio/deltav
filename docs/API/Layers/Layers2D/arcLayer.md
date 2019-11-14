@@ -51,7 +51,7 @@ IArcInstanceOptions extends [IInstanceOptions]
 
 * depth: number
 
-  (optional) Depth sorting of the arc (or the z value of the lable)
+  (optional) Depth sorting of the arc (or the z value of the label)
 
 * radius: number
 

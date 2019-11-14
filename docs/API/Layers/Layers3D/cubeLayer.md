@@ -32,7 +32,7 @@ Dimensions of the cube.
 
 Default value is [1, 1, 1]
 
-**colro: Color**
+**color: Color**
 
 Color of the cube.
 

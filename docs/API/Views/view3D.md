@@ -12,7 +12,7 @@ The scene this view is displaying
 
 TViewProps extends from IView3DProps while IView3DProps extends from IViewProps.
 
-IView3DProps has no addtional attributes compared IViewProps
+IView3DProps has no additional attributes compared IViewProps
 
 ## Properties
 

@@ -1,10 +1,10 @@
 # InstanceProvider<T extends Instance>
 
-InstanceProvider implements IInstancePrivider
+InstanceProvider implements IInstanceProvider
 
 ## Constructor(instances: T[])
 
-Can be constructed by an arroy of instances or an empty provider will be constructed. 
+Can be constructed by an array of instances or an empty provider will be constructed. 
 
 **instances:T[]**
 
@@ -34,7 +34,7 @@ Removes all instances from this provider
 
 **destroy()**
 
-Clear all resources held by this provider. It IS valid to lose reference to all instances and to this object, which would effectively cause this object to get GC'ed. But if you desire to hang onto the instance objects, then this should be called.
+Clear all resources held by this provider. It IS valid to lose reference to all instances and to this object, which would effectively cause this object to get garbadge collected. But if you desire to hang onto the instance objects, then this should be called.
    
 **instanceUpdated(instance: T)**
 
@@ -52,7 +52,7 @@ Flagged all changes as dealt with
 
 **sync()**
 
-This performs an operation that forces all of the instances to be flagged as an'add' change. This allows a layer listening to this provider to ensure it has added all currently existing instances monitored by the provider.
+This performs an operation that forces all of the instances to be flagged as an add change. This allows a layer listening to this provider to ensure it has added all currently existing instances monitored by the provider.
 
 NOTE: This is a VERY poor performing method and should probably be used by the framework and not manually.
   

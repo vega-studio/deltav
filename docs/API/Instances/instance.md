@@ -1,6 +1,6 @@
 # Instance
 
-Class Instanace implements IdentifiableById.
+Class Instance implements IdentifiableById.
 
 ## Constructor(options: IInstanceOptions)
 
@@ -78,7 +78,7 @@ This attempts to get the easing object for this instance for a given attribute t
 
 When an instance is added to a layer and the layer has attributes with easing applied to them, the instance gains easing values for the attributes in the layer with applied easing.
 
-Easing values can be accessed by requesting the attribute's "name" property value using this method.
+Easing values can be accessed by requesting the attributes "name" property value using this method.
 
 There is NO WAY TO GUARANTEE this value is set or available, so this method WILL return undefined if you did not use the correct name, or no such value exists, or the layer decided to not make the attribute animateable.
 

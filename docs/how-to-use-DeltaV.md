@@ -27,11 +27,11 @@
 
 #### Providers
 
-Customers can create a list of InstanceProviders or an empty list. These providers can be empty or with instances. Different providers can hold same or different types of instances.
+developers can create a list of InstanceProviders or an empty list. These providers can be empty or with instances. Different providers can hold same or different types of instances.
 
 #### Cameras
 
-Customers can create a list of cameras to be applied to controllers and views.
+developers can create a list of cameras to be applied to controllers and views.
 
 #### EventManagers
 
@@ -39,7 +39,7 @@ This callBack will return a list of eventHandlers. These eventHandlers include S
 
 #### Resources
 
-This is a list of resources that customer will use in layers for labels, images or videos. There are two types of resources: AtlasResouce and FontResource
+This is a list of resources that developers will use in layers for labels, images or videos. There are two types of resources: AtlasResouce and FontResource
 
 #### Pipeline
 

@@ -14,7 +14,7 @@ The scene this view is displaying
 
 TViewProps extends from IView2DProps while IView2DProps extends from IViewProps.
 
-IView2DProps has one addtional attributes compared IViewProps
+IView2DProps has one additional attributes compared IViewProps
 
 * camera: Camera2D
 

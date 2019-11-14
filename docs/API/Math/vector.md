@@ -138,7 +138,7 @@ Returns length of a Vec1. For Vec1, abs(start[0]) will be returned.
 
 **vec1(values: number[] | number, ...args: (number | number[])[]): Vec1**
 
-Return a Vec1 from values or args when values contains nothing
+Return a Vec1 from values or arguments when values contains nothing
 
 ## Vector2 Methods
 
@@ -198,7 +198,7 @@ Returns a Vec2 with every element 0
 
 Parameter out is optional which will be filled by result if provided
 
-Returns an array filled with value at 0, 1 from every memeber of list
+Returns an array filled with value at 0, 1 from every member of list
 
 **floor2(vec: Vec2Compat, out?: Vec2Compat): Vec2**
 
@@ -264,7 +264,7 @@ Returns the length of a Vec2 with value from start[0], start[1]
 
 **vec2(values: number[] | number, ...args: (number | number[])[]): Vec2**
 
-Return a Vec2 from values or args when values contains nothing
+Return a Vec2 from values or arguments when values contains nothing
 
 ## Vector3 Methods
 
@@ -322,7 +322,7 @@ Returns a Vec3 with every element 0
 
 Parameter out is optional which will be filled by result if provided
 
-Returns an array filled with value at 0, 1, 2 from every memeber of list
+Returns an array filled with value at 0, 1, 2 from every member of list
 
 **floor3(vec: Vec3Compat, out?: Vec3Compat): Vec3**
 
@@ -388,7 +388,7 @@ Returns a summation of all left[i] x right[i]
 
 **vec3(values: number[] | number, ...args: (number | number[])[]): Vec3**
 
-Return a Vec3 from values or args when values contains nothing
+Return a Vec3 from values or arguments when values contains nothing
 
 **up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat)**
 
@@ -400,13 +400,13 @@ Produces a directional vector that is straight up from the provided reference ve
 
 Parameter out is optional which will be filled by result if provided
 
-Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the forrward vector)
+Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the forward vector)
 
 **left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat)**
 
 Parameter out is optional which will be filled by result if provided
 
-Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the forrward vector)
+Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the forward vector)
 
 **down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat)**
 
@@ -542,7 +542,7 @@ Returns a Vec4 with normalization value from [left[0], left[1], left[2], left[4]
 
 **vec4(values: number[] | number, ...args: (number | number[])[]): Vec4**
 
-Return a Vec4 from values or args when values contains nothing
+Return a Vec4 from values or arguments when values contains nothing
 
 **color4FromHex3(hex: number, out?: Vec4)**
 
@@ -560,4 +560,4 @@ Parameter out is optional which will be filled by result if provided
 
 Parameter out is optional which will be filled by result if provided
 
-Returns a slerp interpolation from two Vec4 at time t
+Returns a slerp interpolation from two Vec4 at time time.

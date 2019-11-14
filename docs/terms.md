@@ -4,8 +4,8 @@
 
 * An instance is a single element of certain shape or item that will be displayed in given environment.
 * It should have some basic properties of a shape such as size, position, color and so on.
-* Every time a customer needs to extends the customized instance from Instance class and set the necessary properties that can describe the shape.
-* Instances are very easy to use and completely detached from rendering process. Customer can create, add, modify and remove instances at any phase of a rendering process.
+* Every time a developer needs to extends the customized instance from Instance class and set the necessary properties that can describe the shape.
+* Instances are very easy to use and completely detached from rendering process. Developers can create, add, modify and remove instances at any phase of a rendering process.
 
 ## InstanceProvider
 
@@ -17,7 +17,7 @@
 
 ## Layer
 
-* A layer is the platform to display instances. Customer can create the layer by setting the data to display, how data will be displayed and what interactions or animations will be attached to instances. Customer also needs to implement shaders associated with the shapes to display.
+* A layer is the platform to display instances. Developers can create the layer by setting the data to display, how data will be displayed and what interactions or animations will be attached to instances. Developers also needs to implement shaders associated with the shapes to display.
 * A layer will be created by createLayer() method.
 
 ### Layer Props
@@ -74,4 +74,4 @@
 
 ## Surface
 
-* Surface helps customers to fill the provide htmlCanvasElement with customized contents. It is the foundation and creation point of rendering pipelines while pipeline implements views and layers with data and set-ups from surface. It connects customers' specified cameras, events and resources for rendering texts, images or videos. There are some concepts which are already set up within it, such as monitoring resizing, waiting for a valid size to be present, a render loop tied into requestAnimationFrame.
+* Surface helps developers to fill the provide htmlCanvasElement with customized contents. It is the foundation and creation point of rendering pipelines while pipeline implements views and layers with data and set-ups from surface. It connects developers specified cameras, events and resources for rendering texts, images or videos. There are some concepts which are already set up within it, such as monitoring resizing, waiting for a valid size to be present, a render loop tied into requestAnimationFrame.

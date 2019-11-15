@@ -1,15 +1,4 @@
-/*import {
-  GLSettings,
-  ILayerProps,
-  InstanceAttributeSize,
-  IShaderInitialization,
-  Layer,
-  Vec3,
-  VertexAttributeSize
-} from "src";*/
-
 import { GLSettings } from "../../../../src/gl";
-// import { InstanceProvider } from "../../../instance-provider";
 import { Vec2, Vec3 } from "../../../../src/math/vector";
 import { ILayerProps, Layer } from "../../../../src/surface/layer";
 import {
@@ -21,20 +10,15 @@ import {
 } from "../../../../src/types";
 import { BlockInstance } from "./block-instance";
 export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
-  cameraPosition?(): Vec3;
   bottomCenter?(): Vec2;
+  lightPosition?(): Vec3;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { cameraPosition, bottomCenter } = this.props;
-
-    /*const LB: Vec2 = [0, 0];
-    const LT: Vec2 = [0, 1];
-    const RB: Vec2 = [1, 0];
-    const RT: Vec2 = [1, 1];*/
+    const { bottomCenter, lightPosition } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
     const BRT: Vec3 = [1, 1, -1];
@@ -45,19 +29,7 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
     const BLB: Vec3 = [0, 0, -1];
     const FLB: Vec3 = [0, 0, 1];
 
-    /*const positions: Vec2[] = [
-      // First triangle
-      LB,
-      LT,
-      RT,
-
-      // Second triangle
-      LB,
-      RT,
-      RB
-    ];*/
-
-    const positions2: Vec3[] = [
+    const positions: Vec3[] = [
       // Front face
       FLB,
       FLT,
@@ -82,6 +54,8 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
       BRT,
       BRB
     ];
+
+    const normals = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2];
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
@@ -112,25 +86,45 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "baseZ",
           size: InstanceAttributeSize.ONE,
           update: o => [o.baseZ]
+        },
+        {
+          name: "normal1",
+          size: InstanceAttributeSize.THREE,
+          update: o => o.normal1
+        },
+        {
+          name: "normal2",
+          size: InstanceAttributeSize.THREE,
+          update: o => o.normal2
+        },
+        {
+          name: "normal3",
+          size: InstanceAttributeSize.THREE,
+          update: o => o.normal3
         }
       ],
       vertexAttributes: [
         {
           name: "position",
           size: VertexAttributeSize.THREE,
-          update: vertex => positions2[vertex]
+          update: vertex => positions[vertex]
+        },
+        {
+          name: "nIndex",
+          size: VertexAttributeSize.ONE,
+          update: vertex => [normals[vertex]]
         }
       ],
       uniforms: [
         {
-          name: "cameraPosition",
-          size: UniformSize.THREE,
-          update: () => (cameraPosition ? cameraPosition() : [0, 0, 0])
-        },
-        {
           name: "bottomCenter",
           size: UniformSize.TWO,
           update: () => (bottomCenter ? bottomCenter() : [0, 0])
+        },
+        {
+          name: "lightPosition",
+          size: UniformSize.THREE,
+          update: () => (lightPosition ? lightPosition() : [0, 0, 0])
         }
       ],
       vertexCount: 18

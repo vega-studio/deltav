@@ -1,4 +1,4 @@
-import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
+import { cross3, InstanceProvider, normalize3, Vec2, Vec3, Vec4 } from "src";
 import { BlockInstance } from "./block";
 import { Bucket } from "./bucket";
 import { Interval } from "./interval";
@@ -108,6 +108,8 @@ export class Bar {
   private segments: number;
 
   provider: InstanceProvider<BlockInstance>;
+
+  dragX: number = 0;
 
   data: Vec3[];
   buckets: Bucket[];
@@ -320,9 +322,14 @@ export class Bar {
   }
 
   clearAllInstances() {
-    this.blockInstances.forEach(instance => this.provider.remove(instance));
-
     this.blockInstances = [];
+
+    this.intervals.forEach(interval => {
+      if (interval.blockInstance) {
+        this.provider.remove(interval.blockInstance);
+        interval.blockInstance = null;
+      }
+    });
 
     this.buckets = [];
 
@@ -350,6 +357,8 @@ export class Bar {
     const baseY = bottomCenter[1];
     const baseZ = this.baseZ;
 
+    const dragX = this.dragX;
+
     const leftBound = baseX;
     const rightBound = baseX + viewWidth;
 
@@ -357,8 +366,8 @@ export class Bar {
       const bucket = this.buckets[i];
       const nextBucket = this.buckets[i + 1];
 
-      const x1 = baseX + bucket.time * width;
-      const x2 = baseX + nextBucket.time * width;
+      const x1 = baseX + bucket.time * width + dragX;
+      const x2 = baseX + nextBucket.time * width + dragX;
       const y1 = bucket.value * heightScale;
       const y2 = nextBucket.value * heightScale;
       const depth1 = bucket.depth;
@@ -386,12 +395,31 @@ export class Bar {
         const leftDepth = (1 - leftScale) * depth1 + leftScale * depth2;
         const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
 
+        const vector1 = normalize3([
+          rightX - leftX,
+          rightY - leftY,
+          (rightDepth - leftDepth) / 2
+        ]);
+
+        const vector2 = normalize3([
+          rightX - leftX,
+          rightY - leftY,
+          -(rightDepth - leftDepth) / 2
+        ]);
+
+        const normal1 = cross3(vector2, [0, -1, 0]);
+        const normal2 = cross3(vector1, [0, 0, -1]);
+        const normal3 = cross3([0, -1, 0], vector1);
+
         const block = new BlockInstance({
           startValue: [leftX, leftY, leftDepth],
           endValue: [rightX, rightY, rightDepth],
           baseY,
           baseZ,
-          color
+          color,
+          normal1,
+          normal2,
+          normal3
         });
 
         this.blockInstances.push(block);
@@ -415,9 +443,11 @@ export class Bar {
 
     // Will be changed according to requirements
     this.resolution = 60 - 10 * Math.floor(distance / 11);
+    this.resolution = Math.max(2, this.resolution);
   }
 
   updateByDragX(dragX: number) {
+    this.dragX = dragX;
     const viewWidth = this.viewWidth;
     const bottomCenter = this.bottomCenter;
     const baseX = bottomCenter[0] - viewWidth / 2;

@@ -21,6 +21,9 @@ export interface IBlockInstanceOptions extends IInstanceOptions {
   color?: Vec4;
   baseY?: number;
   baseZ: number;
+  normal1?: Vec3;
+  normal2?: Vec3;
+  normal3?: Vec3;
 }
 export class BlockInstance extends Instance {
   /** The beginning value of this block [time, height, width] */
@@ -34,6 +37,10 @@ export class BlockInstance extends Instance {
 
   @observable baseZ: number = 0;
 
+  @observable normal1: Vec3 = [0.0, 0.0, -1.0];
+  @observable normal2: Vec3 = [0.0, 1.0, 0.0];
+  @observable normal3: Vec3 = [0.0, 0.0, 1.0];
+
   constructor(options: IBlockInstanceOptions) {
     super(options);
 
@@ -42,5 +49,8 @@ export class BlockInstance extends Instance {
     this.color = options.color || this.color;
     this.baseY = options.baseY || this.baseY;
     this.baseZ = options.baseZ || this.baseZ;
+    this.normal1 = options.normal1 || this.normal1;
+    this.normal2 = options.normal2 || this.normal2;
+    this.normal3 = options.normal3 || this.normal3;
   }
 }

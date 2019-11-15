@@ -33,6 +33,7 @@ export class BucketDepthChartDemo extends BaseDemo {
   bottomCenter: Vec2 = [0, 0];
   cameraCenter: Vec3 = [0, 0, 0];
   cameraPosition: Vec3 = [0, 0, 10];
+  lightPosition: Vec3 = [10, 10, 10];
   zoomingDistance: number = 10;
   width: number = 10;
   viewWidth: number = 8;
@@ -318,6 +319,7 @@ export class BucketDepthChartDemo extends BaseDemo {
           },
           handleWheel: (e: IMouseInteraction) => {
             this.zoomingDistance += e.mouse.wheel.delta[1] / 200;
+            this.zoomingDistance = Math.max(0, this.zoomingDistance);
             this.bdc1.updateByCameraPosition([0, 0, this.zoomingDistance]);
             this.bdc2.updateByCameraPosition([0, 0, this.zoomingDistance]);
             this.bdc3.updateByCameraPosition([0, 0, this.zoomingDistance]);
@@ -346,7 +348,8 @@ export class BucketDepthChartDemo extends BaseDemo {
 
                   return [0, 0, 0];
                 },
-                bottomCenter: () => this.bottomCenter
+                bottomCenter: () => this.bottomCenter,
+                lightPostion: () => this.lightPosition
               }),
               blocks2: createLayer(BlockLayer, {
                 data: providers.blocks2,
@@ -357,7 +360,8 @@ export class BucketDepthChartDemo extends BaseDemo {
 
                   return [0, 0, 0];
                 },
-                bottomCenter: () => this.bottomCenter
+                bottomCenter: () => this.bottomCenter,
+                lightPostion: () => this.lightPosition
               }),
               blocks3: createLayer(BlockLayer, {
                 data: providers.blocks3,
@@ -368,7 +372,8 @@ export class BucketDepthChartDemo extends BaseDemo {
 
                   return [0, 0, 0];
                 },
-                bottomCenter: () => this.bottomCenter
+                bottomCenter: () => this.bottomCenter,
+                lightPostion: () => this.lightPosition
               }),
               blocks4: createLayer(BlockLayer, {
                 data: providers.blocks4,
@@ -379,7 +384,8 @@ export class BucketDepthChartDemo extends BaseDemo {
 
                   return [0, 0, 0];
                 },
-                bottomCenter: () => this.bottomCenter
+                bottomCenter: () => this.bottomCenter,
+                lightPostion: () => this.lightPosition
               }),
               blocks5: createLayer(BlockLayer, {
                 data: providers.blocks5,
@@ -390,7 +396,8 @@ export class BucketDepthChartDemo extends BaseDemo {
 
                   return [0, 0, 0];
                 },
-                bottomCenter: () => this.bottomCenter
+                bottomCenter: () => this.bottomCenter,
+                lightPostion: () => this.lightPosition
               })
             }
           }

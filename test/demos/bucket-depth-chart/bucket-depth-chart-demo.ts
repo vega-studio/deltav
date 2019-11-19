@@ -1,3 +1,4 @@
+import { FIRFilter } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
   BasicSurface,
@@ -19,6 +20,7 @@ import {
 import { BaseDemo } from "../../common/base-demo";
 import { BlockInstance } from "./block";
 import { BucketDepthChart } from "./bucket-depth-chart";
+import { PlateEndInstance, PlateEndLayer } from "./plateEnd";
 
 export class BucketDepthChartDemo extends BaseDemo {
   providers = {
@@ -26,14 +28,25 @@ export class BucketDepthChartDemo extends BaseDemo {
     blocks2: new InstanceProvider<BlockInstance>(),
     blocks3: new InstanceProvider<BlockInstance>(),
     blocks4: new InstanceProvider<BlockInstance>(),
-    blocks5: new InstanceProvider<BlockInstance>()
+    blocks5: new InstanceProvider<BlockInstance>(),
+    ends1: new InstanceProvider<PlateEndInstance>(),
+    ends2: new InstanceProvider<PlateEndInstance>(),
+    ends3: new InstanceProvider<PlateEndInstance>(),
+    ends4: new InstanceProvider<PlateEndInstance>(),
+    ends5: new InstanceProvider<PlateEndInstance>()
   };
 
   front: boolean = true;
   bottomCenter: Vec2 = [0, 0];
   cameraCenter: Vec3 = [0, 0, 0];
   cameraPosition: Vec3 = [0, 0, 10];
-  lightPosition: Vec3 = [10, 10, 10];
+  angleV: number = Math.PI / 2;
+  angleH: number = 0;
+  lightDirection: Vec3 = [
+    Math.sin(this.angleV) * Math.cos(this.angleH),
+    Math.cos(this.angleV),
+    Math.sin(this.angleV) * Math.sin(this.angleH)
+  ];
   zoomingDistance: number = 10;
   width: number = 10;
   viewWidth: number = 8;
@@ -41,10 +54,10 @@ export class BucketDepthChartDemo extends BaseDemo {
   mouseDown: boolean = false;
   mouseX: number = 0;
   bdc1: BucketDepthChart;
-  bdc2: BucketDepthChart;
+  /*bdc2: BucketDepthChart;
   bdc3: BucketDepthChart;
   bdc4: BucketDepthChart;
-  bdc5: BucketDepthChart;
+  bdc5: BucketDepthChart;*/
 
   parameters = {
     frontView: () => {
@@ -122,7 +135,9 @@ export class BucketDepthChartDemo extends BaseDemo {
         3 + 3 * Math.random(),
         1 + 2 * Math.random()
       ]);
-    }
+    },
+    lightAngleV: this.angleV * 180 / Math.PI,
+    lightAngleH: this.angleH * 180 / Math.PI
   };
 
   buildConsole(gui: datGUI.GUI): void {
@@ -130,84 +145,158 @@ export class BucketDepthChartDemo extends BaseDemo {
     gui.add(this.parameters, "topView");
     gui.add(this.parameters, "angledView");
     gui.add(this.parameters, "addData");
+    gui
+      .add(this.parameters, "lightAngleV", 0, 180)
+      .onChange((angleV: number) => {
+        this.angleV = angleV * Math.PI / 180;
+        this.lightDirection = [
+          Math.sin(this.angleV) * Math.cos(this.angleH),
+          Math.cos(this.angleV),
+          Math.sin(this.angleV) * Math.sin(this.angleH)
+        ];
+      });
+    gui
+      .add(this.parameters, "lightAngleH", 0, 360)
+      .onChange((angleH: number) => {
+        this.angleH = angleH * Math.PI / 180;
+        this.lightDirection = [
+          Math.sin(this.angleV) * Math.cos(this.angleH),
+          Math.cos(this.angleV),
+          Math.sin(this.angleV) * Math.sin(this.angleH)
+        ];
+      });
   }
 
   async init() {
     if (!this.surface) return;
 
-    // const transform = new Transform();
+    const filter1 = new FIRFilter(
+      [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+      1
+    );
+
+    /*const filter2 = new FIRFilter(
+      [[0.2, 0], [0.1, 0], [0.1, 0], [0.15, 0], [0.15, 0]],
+      1
+    );
+
+    const filter3 = new FIRFilter(
+      [[0.4, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.5, 0]],
+      1
+    );
+
+    const filter4 = new FIRFilter(
+      [[0.5, 0], [0.5, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+      1
+    );
+
+    const filter5 = new FIRFilter(
+      [[0.1, 0], [0.1, 0], [0.5, 0], [0.5, 0], [0.5, 0]],
+      1
+    );*/
+
     const camera = this.surface.cameras.perspective;
     camera.position = [0, 0, 10];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
-    const data1: Vec3[][] = [];
+    const datas: Vec3[][] = [];
+
+    /*const data1: Vec3[][] = [];
     const data2: Vec3[][] = [];
     const data3: Vec3[][] = [];
     const data4: Vec3[][] = [];
-    const data5: Vec3[][] = [];
+    const data5: Vec3[][] = [];*/
 
-    for (let i = 0; i < 1; i++) {
-      data1[i] = [];
+    for (let i = 0; i < 5; i++) {
+      /*data1[i] = [];
       data2[i] = [];
       data3[i] = [];
       data4[i] = [];
-      data5[i] = [];
+      data5[i] = [];*/
+      datas[i] = [];
 
       for (let j = 0; j <= 100; j++) {
         const point1: Vec3 = [
           j / 100,
-          3 + 3 * Math.random(),
+          3 + filter1.stream(3 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
-        data1[i].push(point1);
-        const point2: Vec3 = [
+
+        datas[i].push(point1);
+        /*const point2: Vec3 = [
           j / 100,
-          3 + 3 * Math.random(),
+          3 + filter2.stream(3 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
         data2[i].push(point2);
         const point3: Vec3 = [
           j / 100,
-          3 + 3 * Math.random(),
+          3 + filter3.stream(3 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
         data3[i].push(point3);
         const point4: Vec3 = [
           j / 100,
-          3 + 3 * Math.random(),
+          3 + filter4.stream(3 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
         data4[i].push(point4);
         const point5: Vec3 = [
           j / 100,
-          3 + 3 * Math.random(),
+          3 + filter5.stream(3 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
-        data5[i].push(point5);
+        data5[i].push(point5);*/
       }
     }
     const alpha = 0.9;
-    const colors1: Vec4[] = [[73 / 255, 45 / 255, 123 / 255, alpha]];
+    const colors: Vec4[] = [
+      [73 / 255, 45 / 255, 123 / 255, alpha],
+      [138 / 255, 53 / 255, 106 / 255, alpha],
+      [135 / 255, 78 / 255, 141 / 255, alpha],
+      [184 / 255, 88 / 255, 106 / 255, alpha],
+      [210 / 255, 151 / 255, 91 / 255, alpha]
+    ];
+
+    /*const colors1: Vec4[] = [[73 / 255, 45 / 255, 123 / 255, alpha]];
     const colors2: Vec4[] = [[138 / 255, 53 / 255, 106 / 255, alpha]];
     const colors3: Vec4[] = [[135 / 255, 78 / 255, 141 / 255, alpha]];
     const colors4: Vec4[] = [[184 / 255, 88 / 255, 106 / 255, alpha]];
-    const colors5: Vec4[] = [[210 / 255, 151 / 255, 91 / 255, alpha]];
+    const colors5: Vec4[] = [[210 / 255, 151 / 255, 91 / 255, alpha]];*/
+
+    const blockProviders: InstanceProvider<BlockInstance>[] = [
+      this.providers.blocks1,
+      this.providers.blocks2,
+      this.providers.blocks3,
+      this.providers.blocks4,
+      this.providers.blocks5
+    ];
+
+    const endPlateProviders: InstanceProvider<PlateEndInstance>[] = [
+      this.providers.ends1,
+      this.providers.ends2,
+      this.providers.ends3,
+      this.providers.ends4,
+      this.providers.ends5
+    ];
 
     this.bdc1 = new BucketDepthChart({
-      maxDepth: -4,
+      maxDepth: 0,
       minDepth: -4,
       width: this.width,
       heightScale: 0.3,
-      colors: colors1,
-      chartData: data1,
+      colors: colors,
+      chartData: datas,
       resolution: 60,
       provider: this.providers.blocks1,
-      viewWidth: this.viewWidth
+      viewWidth: this.viewWidth,
+      providers: blockProviders,
+      endProviders: endPlateProviders
     });
 
-    this.bdc1.insertToProvider(this.providers.blocks1);
+    // this.bdc1.insertToProvider(this.providers.blocks1);
 
-    this.bdc2 = new BucketDepthChart({
+    /*this.bdc2 = new BucketDepthChart({
       maxDepth: -3,
       minDepth: -3,
       width: this.width,
@@ -261,7 +350,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       viewWidth: this.viewWidth
     });
 
-    this.bdc5.insertToProvider(this.providers.blocks5);
+    this.bdc5.insertToProvider(this.providers.blocks5);*/
   }
 
   makeSurface(container: HTMLElement) {
@@ -295,10 +384,10 @@ export class BucketDepthChartDemo extends BaseDemo {
               );
 
               this.bdc1.updateByDragX(this.dragX);
-              this.bdc2.updateByDragX(this.dragX);
+              /*this.bdc2.updateByDragX(this.dragX);
               this.bdc3.updateByDragX(this.dragX);
               this.bdc4.updateByDragX(this.dragX);
-              this.bdc5.updateByDragX(this.dragX);
+              this.bdc5.updateByDragX(this.dragX);*/
               this.mouseX = e.mouse.currentPosition[0];
             }
           },
@@ -310,10 +399,10 @@ export class BucketDepthChartDemo extends BaseDemo {
                 this.viewWidth - this.width
               );
               this.bdc1.updateByDragX(this.dragX);
-              this.bdc2.updateByDragX(this.dragX);
+              /*this.bdc2.updateByDragX(this.dragX);
               this.bdc3.updateByDragX(this.dragX);
               this.bdc4.updateByDragX(this.dragX);
-              this.bdc5.updateByDragX(this.dragX);
+              this.bdc5.updateByDragX(this.dragX);*/
               this.mouseDown = false;
             }
           },
@@ -321,10 +410,10 @@ export class BucketDepthChartDemo extends BaseDemo {
             this.zoomingDistance += e.mouse.wheel.delta[1] / 200;
             this.zoomingDistance = Math.max(0, this.zoomingDistance);
             this.bdc1.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            this.bdc2.updateByCameraPosition([0, 0, this.zoomingDistance]);
+            /*this.bdc2.updateByCameraPosition([0, 0, this.zoomingDistance]);
             this.bdc3.updateByCameraPosition([0, 0, this.zoomingDistance]);
             this.bdc4.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            this.bdc5.updateByCameraPosition([0, 0, this.zoomingDistance]);
+            this.bdc5.updateByCameraPosition([0, 0, this.zoomingDistance]);*/
           }
         })
       }),
@@ -341,63 +430,53 @@ export class BucketDepthChartDemo extends BaseDemo {
             layers: {
               blocks1: createLayer(BlockLayer, {
                 data: providers.blocks1,
-                cameraPosition: () => {
-                  if (this.surface) {
-                    return this.surface.cameras.perspective.position;
-                  }
-
-                  return [0, 0, 0];
-                },
                 bottomCenter: () => this.bottomCenter,
-                lightPostion: () => this.lightPosition
+                lightDirection: () => this.lightDirection
+              }),
+              end1: createLayer(PlateEndLayer, {
+                data: providers.ends1,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
               }),
               blocks2: createLayer(BlockLayer, {
                 data: providers.blocks2,
-                cameraPosition: () => {
-                  if (this.surface) {
-                    return this.surface.cameras.perspective.position;
-                  }
-
-                  return [0, 0, 0];
-                },
                 bottomCenter: () => this.bottomCenter,
-                lightPostion: () => this.lightPosition
+                lightDirection: () => this.lightDirection
+              }),
+              end2: createLayer(PlateEndLayer, {
+                data: providers.ends2,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
               }),
               blocks3: createLayer(BlockLayer, {
                 data: providers.blocks3,
-                cameraPosition: () => {
-                  if (this.surface) {
-                    return this.surface.cameras.perspective.position;
-                  }
-
-                  return [0, 0, 0];
-                },
                 bottomCenter: () => this.bottomCenter,
-                lightPostion: () => this.lightPosition
+                lightDirection: () => this.lightDirection
+              }),
+              end3: createLayer(PlateEndLayer, {
+                data: providers.ends3,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
               }),
               blocks4: createLayer(BlockLayer, {
                 data: providers.blocks4,
-                cameraPosition: () => {
-                  if (this.surface) {
-                    return this.surface.cameras.perspective.position;
-                  }
-
-                  return [0, 0, 0];
-                },
                 bottomCenter: () => this.bottomCenter,
-                lightPostion: () => this.lightPosition
+                lightDirection: () => this.lightDirection
+              }),
+              end4: createLayer(PlateEndLayer, {
+                data: providers.ends4,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
               }),
               blocks5: createLayer(BlockLayer, {
                 data: providers.blocks5,
-                cameraPosition: () => {
-                  if (this.surface) {
-                    return this.surface.cameras.perspective.position;
-                  }
-
-                  return [0, 0, 0];
-                },
                 bottomCenter: () => this.bottomCenter,
-                lightPostion: () => this.lightPosition
+                lightDirection: () => this.lightDirection
+              }),
+              end5: createLayer(PlateEndLayer, {
+                data: providers.ends5,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
               })
             }
           }

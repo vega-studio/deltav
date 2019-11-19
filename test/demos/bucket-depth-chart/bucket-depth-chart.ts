@@ -1,6 +1,7 @@
 import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { Bar } from "./bar";
 import { BlockInstance } from "./block";
+import { PlateEndInstance } from "./plateEnd";
 
 export interface IBucketDepthChartOptions {
   bottomCenter?: Vec2;
@@ -13,6 +14,8 @@ export interface IBucketDepthChartOptions {
   heightScale?: number;
   resolution?: number;
   provider: InstanceProvider<BlockInstance>;
+  providers: InstanceProvider<BlockInstance>[];
+  endProviders: InstanceProvider<PlateEndInstance>[];
 }
 
 export class BucketDepthChart {
@@ -24,7 +27,9 @@ export class BucketDepthChart {
   private _heightScale: number = 1;
   resolution: number = 100;
   bars: Bar[] = [];
-  provider: InstanceProvider<BlockInstance>;
+  // provider: InstanceProvider<BlockInstance>;
+  providers: InstanceProvider<BlockInstance>[];
+  endProviders: InstanceProvider<PlateEndInstance>[];
 
   constructor(options: IBucketDepthChartOptions) {
     this._maxDepth = options.maxDepth || this._maxDepth;
@@ -34,7 +39,9 @@ export class BucketDepthChart {
     this.viewWidth = options.viewWidth || options.width;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
-    this.provider = options.provider;
+    // this.provider = options.provider;
+    this.providers = options.providers;
+    this.endProviders = options.endProviders;
 
     this.generateBars(options.chartData, options.colors);
   }
@@ -120,7 +127,8 @@ export class BucketDepthChart {
         heightScale: this.heightScale,
         color: colors[0],
         baseZ: (this.maxDepth + this.minDepth) / 2,
-        provider: this.provider,
+        provider: this.providers[0],
+        endProvider: this.endProviders[0],
         viewWidth: this.viewWidth,
         resolution: this.resolution
       });
@@ -138,7 +146,8 @@ export class BucketDepthChart {
           color: colors[i],
           baseZ: this.minDepth + deltaDepth * i,
           resolution: this.resolution,
-          provider: this.provider,
+          provider: this.providers[i],
+          endProvider: this.endProviders[i],
           viewWidth: this.viewWidth
         });
 
@@ -147,9 +156,9 @@ export class BucketDepthChart {
     }
   }
 
-  insertToProvider(provider: InstanceProvider<BlockInstance>) {
+  /*insertToProvider(provider: InstanceProvider<BlockInstance>) {
     this.bars.forEach(bar => bar.insertToProvider(provider));
-  }
+  }*/
 
   updateByDragX(dragX: number) {
     for (let i = 0, endi = this.bars.length; i < endi; i++) {

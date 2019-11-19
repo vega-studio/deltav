@@ -2,6 +2,7 @@ import { cross3, InstanceProvider, normalize3, Vec2, Vec3, Vec4 } from "src";
 import { BlockInstance } from "./block";
 import { Bucket } from "./bucket";
 import { Interval } from "./interval";
+import { PlateEndInstance } from "./plateEnd";
 
 export interface IBarOptions {
   // Sets the center point of the bottom line
@@ -24,6 +25,8 @@ export interface IBarOptions {
   resolution?: number;
 
   provider: InstanceProvider<BlockInstance>;
+
+  endProvider: InstanceProvider<PlateEndInstance>;
 }
 
 function generateBuckets(data: Vec3[], segments: number): Bucket[] {
@@ -99,6 +102,7 @@ export class Bar {
   private _heightScale: number = 1;
   /** Instances that will be generated */
   private blockInstances: BlockInstance[] = [];
+
   /** Width of the chart */
   private _width: number;
 
@@ -108,6 +112,10 @@ export class Bar {
   private segments: number;
 
   provider: InstanceProvider<BlockInstance>;
+  endProvider: InstanceProvider<PlateEndInstance>;
+
+  leftEnd: PlateEndInstance;
+  rightEnd: PlateEndInstance;
 
   dragX: number = 0;
 
@@ -123,6 +131,7 @@ export class Bar {
     this._width = options.width;
     this.viewWidth = options.viewWidth || options.width;
     this.provider = options.provider;
+    this.endProvider = options.endProvider;
     this.data = options.barData;
     this.data.sort((a, b) => a[0] - b[0]);
 
@@ -162,7 +171,7 @@ export class Bar {
       if (this.segments !== oldSegments) {
         this.clearAllInstances();
         this.generateInstances(this.data);
-        this.insertToProvider(this.provider);
+        // this.insertToProvider(this.provider);
       }
     }
   }
@@ -318,7 +327,7 @@ export class Bar {
 
     this.generateInstances(this.data);
 
-    this.insertToProvider(this.provider);
+    // this.insertToProvider(this.provider);
   }
 
   clearAllInstances() {
@@ -423,15 +432,42 @@ export class Bar {
         });
 
         this.blockInstances.push(block);
+        this.provider.add(block);
         interval.blockInstance = block;
+
+        // End plate on the left
+        if (x1 <= leftBound && x2 > leftBound) {
+          this.leftEnd = new PlateEndInstance({
+            width: leftDepth,
+            height: leftY,
+            base: [leftBound, baseZ],
+            normal: [-1, 0, 0],
+            color
+          });
+
+          this.endProvider.add(this.leftEnd);
+        }
+
+        // End plate on the right
+        if (x2 >= rightBound && x1 < rightBound) {
+          this.rightEnd = new PlateEndInstance({
+            width: rightDepth,
+            height: rightY,
+            base: [rightBound, baseZ],
+            normal: [1, 0, 0],
+            color
+          });
+
+          this.endProvider.add(this.rightEnd);
+        }
       }
       this.intervals.push(interval);
     }
   }
 
-  insertToProvider(provider: InstanceProvider<BlockInstance>) {
+  /*insertToProvider(provider: InstanceProvider<BlockInstance>) {
     this.blockInstances.forEach(instance => provider.add(instance));
-  }
+  }*/
 
   updateByCameraPosition(pos: Vec3) {
     const barPos = [this.bottomCenter[0], this.bottomCenter[1], this.baseZ]; // will be changed
@@ -493,6 +529,22 @@ export class Bar {
 
           this.provider.add(block);
           interval.blockInstance = block;
+        }
+
+        // End plate on the left
+        if (x1 <= leftBound && x2 > leftBound) {
+          if (this.leftEnd) {
+            this.leftEnd.width = leftDepth;
+            this.leftEnd.height = leftY;
+          }
+        }
+
+        // End plate on the right
+        if (x2 >= rightBound && x1 < rightBound) {
+          if (this.rightEnd) {
+            this.rightEnd.width = rightDepth;
+            this.rightEnd.height = rightY;
+          }
         }
       } else {
         if (interval.blockInstance) {

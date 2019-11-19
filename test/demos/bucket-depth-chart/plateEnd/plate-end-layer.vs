@@ -1,28 +1,26 @@
 ${import: projection}
+
 varying vec4 _color;
+
 void main() {
 
-  // The value of the vertex
-  vec3 value = mix(
-    startValue,
-    endValue,
-    float(position.x)
-  );
+  // X
+  float baseX = base.x;
+  // Y
+  float y = position.y * height;
+  // Z
+  float baseZ = base.y;
+  float depth = baseZ + position.x * width * 0.5;
 
   // Position
-  float depth = baseZ + position.z * value.z * 0.5;
   float distanceToCenter = distance(cameraPosition, vec3(bottomCenter, depth));
   float distanceToOrigin = distance(cameraPosition, vec3(bottomCenter, 0.0));
-  float scale =  distanceToCenter / distanceToOrigin; 
-  vec3 pos = vec3(value.x * scale, (baseY + mix(0.0, value.y, position.y)) * scale, depth);
+  float scale =  distanceToCenter / distanceToOrigin;
 
-  // Color
-  vec3 N = mix(
-    mix(normal2, normal3, float(nIndex == 2.0)), 
-    normal1, 
-    float(nIndex == 0.0)
-  );
- 
+  vec3 pos = vec3(baseX * scale, y * scale, depth); 
+
+  vec3 N = normalize(normal);
+
   vec3 L = normalize(lightDirection); //normalize(cameraPosition - pos);
   vec3 R = reflect(-L, normalize(N));
 
@@ -33,5 +31,6 @@ void main() {
   vec4 vertexColor = ambientColor + diffuseColor;
 
   _color = vec4(vertexColor.rgb, color.a);
+
   gl_Position = clipSpace(pos);
 }

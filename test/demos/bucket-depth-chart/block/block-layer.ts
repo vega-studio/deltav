@@ -11,14 +11,14 @@ import {
 import { BlockInstance } from "./block-instance";
 export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   bottomCenter?(): Vec2;
-  lightPosition?(): Vec3;
+  lightDirection?(): Vec3;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { bottomCenter, lightPosition } = this.props;
+    const { bottomCenter, lightDirection } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
     const BRT: Vec3 = [1, 1, -1];
@@ -48,11 +48,12 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
 
       // Back face
       BLB,
+      BRT,
       BLT,
-      BRT,
+
       BLB,
-      BRT,
-      BRB
+      BRB,
+      BRT
     ];
 
     const normals = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2];
@@ -122,9 +123,9 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           update: () => (bottomCenter ? bottomCenter() : [0, 0])
         },
         {
-          name: "lightPosition",
+          name: "lightDirection",
           size: UniformSize.THREE,
-          update: () => (lightPosition ? lightPosition() : [0, 0, 0])
+          update: () => (lightDirection ? lightDirection() : [1, 1, 1])
         }
       ],
       vertexCount: 18
@@ -132,8 +133,6 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   }
 
   getMaterialOptions(): ILayerMaterialOptions {
-    return {
-      culling: GLSettings.Material.CullSide.NONE
-    };
+    return {};
   }
 }

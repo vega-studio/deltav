@@ -1,19 +1,9 @@
-/*import {
-  IInstanceOptions,
-  Instance,
-  observable,
-  Vec3,
-  Vec4
-} from "@vega-studio/deltav";*/
-
 import {
   IInstanceOptions,
   Instance,
   observable
 } from "../../../../src/instance-provider";
 import { Vec3, Vec4 } from "../../../../src/math";
-// import { Color, Size } from "../../../types";
-// import { IInstance3DOptions, Instance3D } from "../base/instance-3d";
 
 export interface IBlockInstanceOptions extends IInstanceOptions {
   startValue?: Vec3;

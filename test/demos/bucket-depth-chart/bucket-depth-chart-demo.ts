@@ -53,7 +53,7 @@ export class BucketDepthChartDemo extends BaseDemo {
   dragX: number = 0;
   mouseDown: boolean = false;
   mouseX: number = 0;
-  bdc1: BucketDepthChart;
+  bdc: BucketDepthChart;
   /*bdc2: BucketDepthChart;
   bdc3: BucketDepthChart;
   bdc4: BucketDepthChart;
@@ -130,7 +130,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.cameraPosition = newPosition;
     },
     addData: () => {
-      this.bdc1.bars[4].addData([
+      this.bdc.bars[4].addData([
         Math.random(),
         3 + 3 * Math.random(),
         1 + 2 * Math.random()
@@ -170,30 +170,10 @@ export class BucketDepthChartDemo extends BaseDemo {
   async init() {
     if (!this.surface) return;
 
-    const filter1 = new FIRFilter(
+    const filter = new FIRFilter(
       [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
       1
     );
-
-    /*const filter2 = new FIRFilter(
-      [[0.2, 0], [0.1, 0], [0.1, 0], [0.15, 0], [0.15, 0]],
-      1
-    );
-
-    const filter3 = new FIRFilter(
-      [[0.4, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.5, 0]],
-      1
-    );
-
-    const filter4 = new FIRFilter(
-      [[0.5, 0], [0.5, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-      1
-    );
-
-    const filter5 = new FIRFilter(
-      [[0.1, 0], [0.1, 0], [0.5, 0], [0.5, 0], [0.5, 0]],
-      1
-    );*/
 
     const camera = this.surface.cameras.perspective;
     camera.position = [0, 0, 10];
@@ -201,52 +181,19 @@ export class BucketDepthChartDemo extends BaseDemo {
 
     const datas: Vec3[][] = [];
 
-    /*const data1: Vec3[][] = [];
-    const data2: Vec3[][] = [];
-    const data3: Vec3[][] = [];
-    const data4: Vec3[][] = [];
-    const data5: Vec3[][] = [];*/
-
     for (let i = 0; i < 5; i++) {
-      /*data1[i] = [];
-      data2[i] = [];
-      data3[i] = [];
-      data4[i] = [];
-      data5[i] = [];*/
       datas[i] = [];
 
-      for (let j = 0; j <= 100; j++) {
+      for (let j = 0; j <= 500; j++) {
         const point1: Vec3 = [
           j / 100,
-          3 + filter1.stream(3 * Math.random()),
+          j % 100 < 40
+            ? filter.stream(3 + 3 * Math.random())
+            : filter.stream(7 + 4 * Math.random()),
           0.5 + 0.5 * Math.random()
         ];
 
         datas[i].push(point1);
-        /*const point2: Vec3 = [
-          j / 100,
-          3 + filter2.stream(3 * Math.random()),
-          0.5 + 0.5 * Math.random()
-        ];
-        data2[i].push(point2);
-        const point3: Vec3 = [
-          j / 100,
-          3 + filter3.stream(3 * Math.random()),
-          0.5 + 0.5 * Math.random()
-        ];
-        data3[i].push(point3);
-        const point4: Vec3 = [
-          j / 100,
-          3 + filter4.stream(3 * Math.random()),
-          0.5 + 0.5 * Math.random()
-        ];
-        data4[i].push(point4);
-        const point5: Vec3 = [
-          j / 100,
-          3 + filter5.stream(3 * Math.random()),
-          0.5 + 0.5 * Math.random()
-        ];
-        data5[i].push(point5);*/
       }
     }
     const alpha = 0.9;
@@ -257,12 +204,6 @@ export class BucketDepthChartDemo extends BaseDemo {
       [184 / 255, 88 / 255, 106 / 255, alpha],
       [210 / 255, 151 / 255, 91 / 255, alpha]
     ];
-
-    /*const colors1: Vec4[] = [[73 / 255, 45 / 255, 123 / 255, alpha]];
-    const colors2: Vec4[] = [[138 / 255, 53 / 255, 106 / 255, alpha]];
-    const colors3: Vec4[] = [[135 / 255, 78 / 255, 141 / 255, alpha]];
-    const colors4: Vec4[] = [[184 / 255, 88 / 255, 106 / 255, alpha]];
-    const colors5: Vec4[] = [[210 / 255, 151 / 255, 91 / 255, alpha]];*/
 
     const blockProviders: InstanceProvider<BlockInstance>[] = [
       this.providers.blocks1,
@@ -280,77 +221,18 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.providers.ends5
     ];
 
-    this.bdc1 = new BucketDepthChart({
+    this.bdc = new BucketDepthChart({
       maxDepth: 0,
       minDepth: -4,
       width: this.width,
       heightScale: 0.3,
       colors: colors,
       chartData: datas,
-      resolution: 60,
-      provider: this.providers.blocks1,
+      resolution: 100,
       viewWidth: this.viewWidth,
       providers: blockProviders,
       endProviders: endPlateProviders
     });
-
-    // this.bdc1.insertToProvider(this.providers.blocks1);
-
-    /*this.bdc2 = new BucketDepthChart({
-      maxDepth: -3,
-      minDepth: -3,
-      width: this.width,
-      heightScale: 0.3,
-      colors: colors2,
-      chartData: data2,
-      resolution: 60,
-      provider: this.providers.blocks2,
-      viewWidth: this.viewWidth
-    });
-
-    this.bdc2.insertToProvider(this.providers.blocks2);
-
-    this.bdc3 = new BucketDepthChart({
-      maxDepth: -2,
-      minDepth: -2,
-      width: this.width,
-      heightScale: 0.3,
-      colors: colors3,
-      chartData: data3,
-      resolution: 60,
-      provider: this.providers.blocks3,
-      viewWidth: this.viewWidth
-    });
-
-    this.bdc3.insertToProvider(this.providers.blocks3);
-
-    this.bdc4 = new BucketDepthChart({
-      maxDepth: -1,
-      minDepth: -1,
-      width: this.width,
-      heightScale: 0.3,
-      colors: colors4,
-      chartData: data4,
-      resolution: 60,
-      provider: this.providers.blocks4,
-      viewWidth: this.viewWidth
-    });
-
-    this.bdc4.insertToProvider(this.providers.blocks4);
-
-    this.bdc5 = new BucketDepthChart({
-      maxDepth: 0,
-      minDepth: 0,
-      width: this.width,
-      heightScale: 0.3,
-      colors: colors5,
-      chartData: data5,
-      resolution: 60,
-      provider: this.providers.blocks5,
-      viewWidth: this.viewWidth
-    });
-
-    this.bdc5.insertToProvider(this.providers.blocks5);*/
   }
 
   makeSurface(container: HTMLElement) {
@@ -383,11 +265,7 @@ export class BucketDepthChartDemo extends BaseDemo {
                 this.viewWidth - this.width
               );
 
-              this.bdc1.updateByDragX(this.dragX);
-              /*this.bdc2.updateByDragX(this.dragX);
-              this.bdc3.updateByDragX(this.dragX);
-              this.bdc4.updateByDragX(this.dragX);
-              this.bdc5.updateByDragX(this.dragX);*/
+              this.bdc.updateByDragX(this.dragX);
               this.mouseX = e.mouse.currentPosition[0];
             }
           },
@@ -398,22 +276,14 @@ export class BucketDepthChartDemo extends BaseDemo {
                 Math.min(this.dragX, 0),
                 this.viewWidth - this.width
               );
-              this.bdc1.updateByDragX(this.dragX);
-              /*this.bdc2.updateByDragX(this.dragX);
-              this.bdc3.updateByDragX(this.dragX);
-              this.bdc4.updateByDragX(this.dragX);
-              this.bdc5.updateByDragX(this.dragX);*/
+              this.bdc.updateByDragX(this.dragX);
               this.mouseDown = false;
             }
           },
           handleWheel: (e: IMouseInteraction) => {
             this.zoomingDistance += e.mouse.wheel.delta[1] / 200;
             this.zoomingDistance = Math.max(0, this.zoomingDistance);
-            this.bdc1.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            /*this.bdc2.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            this.bdc3.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            this.bdc4.updateByCameraPosition([0, 0, this.zoomingDistance]);
-            this.bdc5.updateByCameraPosition([0, 0, this.zoomingDistance]);*/
+            this.bdc.updateByCameraPosition([0, 0, this.zoomingDistance]);
           }
         })
       }),

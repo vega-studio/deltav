@@ -13,7 +13,6 @@ export interface IBucketDepthChartOptions {
   viewWidth?: number;
   heightScale?: number;
   resolution?: number;
-  provider: InstanceProvider<BlockInstance>;
   providers: InstanceProvider<BlockInstance>[];
   endProviders: InstanceProvider<PlateEndInstance>[];
 }
@@ -25,9 +24,9 @@ export class BucketDepthChart {
   private _width: number;
   viewWidth: number;
   private _heightScale: number = 1;
+  padding: number = 0.1;
   resolution: number = 100;
   bars: Bar[] = [];
-  // provider: InstanceProvider<BlockInstance>;
   providers: InstanceProvider<BlockInstance>[];
   endProviders: InstanceProvider<PlateEndInstance>[];
 
@@ -39,7 +38,6 @@ export class BucketDepthChart {
     this.viewWidth = options.viewWidth || options.width;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
-    // this.provider = options.provider;
     this.providers = options.providers;
     this.endProviders = options.endProviders;
 
@@ -135,16 +133,22 @@ export class BucketDepthChart {
 
       this.bars.push(bar);
     } else {
-      const deltaDepth = (this.maxDepth - this.minDepth) / (data.length - 1);
+      let preDepth = 0;
+      let baseZ = 0;
 
       for (let i = 0, endi = data.length; i < endi; i++) {
+        let curDepth = 0;
+        data[i].forEach(d => (curDepth = Math.max(curDepth, d[2])));
+
+        if (i > 0) baseZ += preDepth / 2 + this.padding + curDepth / 2;
+
         const bar: Bar = new Bar({
           bottomCenter: this.bottomCenter,
           barData: data[i],
           width: this.width,
           heightScale: this.heightScale,
           color: colors[i],
-          baseZ: this.minDepth + deltaDepth * i,
+          baseZ,
           resolution: this.resolution,
           provider: this.providers[i],
           endProvider: this.endProviders[i],
@@ -152,13 +156,10 @@ export class BucketDepthChart {
         });
 
         this.bars.push(bar);
+        preDepth = curDepth;
       }
     }
   }
-
-  /*insertToProvider(provider: InstanceProvider<BlockInstance>) {
-    this.bars.forEach(bar => bar.insertToProvider(provider));
-  }*/
 
   updateByDragX(dragX: number) {
     for (let i = 0, endi = this.bars.length; i < endi; i++) {

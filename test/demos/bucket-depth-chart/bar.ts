@@ -106,6 +106,8 @@ export class Bar {
   /** Width of the chart */
   private _width: number;
 
+  // maxDepth: number = 0;
+
   viewWidth: number;
   /**Number of data groups that make up each line*/
   private _resolution: number;
@@ -354,6 +356,10 @@ export class Bar {
 
     this.buckets = generateBuckets(data, this.segments);
 
+    /*this.buckets.forEach(bucket => {
+      this.maxDepth = Math.max(bucket.depth, this.maxDepth);
+    })*/
+
     const width = this.width;
     const viewWidth = this.viewWidth;
 
@@ -465,10 +471,6 @@ export class Bar {
     }
   }
 
-  /*insertToProvider(provider: InstanceProvider<BlockInstance>) {
-    this.blockInstances.forEach(instance => provider.add(instance));
-  }*/
-
   updateByCameraPosition(pos: Vec3) {
     const barPos = [this.bottomCenter[0], this.bottomCenter[1], this.baseZ]; // will be changed
     const distance = Math.sqrt(
@@ -519,12 +521,31 @@ export class Bar {
           interval.blockInstance.startValue = [leftX, leftY, leftDepth];
           interval.blockInstance.endValue = [rightX, rightY, rightDepth];
         } else {
+          const vector1 = normalize3([
+            rightX - leftX,
+            rightY - leftY,
+            (rightDepth - leftDepth) / 2
+          ]);
+
+          const vector2 = normalize3([
+            rightX - leftX,
+            rightY - leftY,
+            -(rightDepth - leftDepth) / 2
+          ]);
+
+          const normal1 = cross3(vector2, [0, -1, 0]);
+          const normal2 = cross3(vector1, [0, 0, -1]);
+          const normal3 = cross3([0, -1, 0], vector1);
+
           const block = new BlockInstance({
             startValue: [leftX, leftY, leftDepth],
             endValue: [rightX, rightY, rightDepth],
             baseY,
             baseZ,
-            color
+            color,
+            normal1,
+            normal2,
+            normal3
           });
 
           this.provider.add(block);

@@ -2,7 +2,7 @@
 
 ## Custom Instances
 
-Developers can create a new instance by simply extending [instance](Instances/Instance.md). When creating the new instance, developers can add decorator @observable which intends for single properties on Instances only. It will facilitate automatic updates and stream the updates through an InstanceProvider to properly update the Instances values in the appropriate and corresponding buffers that will get committed to the GPU
+Developers can create a new instance by simply extending [instance](API/Instances/Instance.md). When creating the new instance, developers can add decorator @observable which intends for single properties on Instances only. It will facilitate automatic updates and stream the updates through an InstanceProvider to properly update the Instances values in the appropriate and corresponding buffers that will get committed to the GPU
 
 ## Custom Layers
 

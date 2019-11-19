@@ -40,8 +40,8 @@ export class BucketDepthChartDemo extends BaseDemo {
   bottomCenter: Vec2 = [0, 0];
   cameraCenter: Vec3 = [0, 0, 0];
   cameraPosition: Vec3 = [0, 0, 10];
-  angleV: number = Math.PI / 2;
-  angleH: number = 0;
+  angleV: number = 100 * Math.PI / 180;
+  angleH: number = 245 * Math.PI / 180;
   lightDirection: Vec3 = [
     Math.sin(this.angleV) * Math.cos(this.angleH),
     Math.cos(this.angleV),

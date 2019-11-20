@@ -22,56 +22,19 @@
 
 ### Layer Props
 
-#### Properties
-
-* baseShaderModules( shaderIO: IShaderInitialization<T>, layerModules: { fs: string[]; vs: string[] }): { fs: string[]; vs: string[] }
-* (option) This allows for external overriding of the base shader modules for a layer. This can cause a layer to break if the overrides do not provide what the layer is expecting at the least.
-* data: IInstanceProvider<T>
-* (required) This is the data provider where the instancing data is injected and modified.
-* materialOptions: ILayerMaterialOptions
-* (option) Any pipeline declaring a layer can manipulate a layer's default material settings as every pipeline can have some specific and significant needs the layer does not provide as a default.
-* order: number
-* (option) Helps guarantee a rendering order for the layers. Lower numbers render first.
-* picking: PickType
-* (option) This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF the value is not NONE.
-* printShader: boolean
-* (option) Used for debugging. Logs the generated shader for the layer in the console.
-
-#### Events
-
-* onMouseDown(info: IPickInfo<T>): void
-* (option) Executes when the mouse is down on instances (Picking type must be set)
-* onMouseMove(info: IPickInfo<T>): void
-* (option) Executes when the mouse moves on instances (Picking type must be set)
-* onMouseOut(info: IPickInfo<T>): void
-* (option) Executes when the mouse no longer over instances (Picking type must be set)
-* onMouseOver?(info: IPickInfo<T>): void
-* (option) Executes when the mouse is newly over instances (Picking type must be set)
-* onMouseUp(info: IPickInfo<T>): void
-* (option) Executes when the mouse button is released when over instances (Picking type must be set)
-* onMouseUpOutside(info: IPickInfo<T>): void
-* (option) Executes when the mouse was down on an instance but is released up outside of that instance (Picking type must be set)
-* onMouseClick(info: IPickInfo<T>): void
-* (option) Executes when the mouse click gesture is executed over instances (Picking type must be set)
-* onTouchAllEnd(info: IPickInfo<T>): void
-* (option) Executes when there are no longer any touches that are down for the layer (Picking type must be set). This executes for touches being released inside and outside their respective instance.
-* onTouchDown(info: IPickInfo<T>): void
-* (option) Executes when a touch is down on instances. Each touch will produce its own event (Picking type must be set)
-* onTouchUp(info: IPickInfo<T>): void
-* (option) Executes when a touch is up when over on instances. Each touch will produce its own event (Picking type must be set)
-* onTouchUpOutside?(info: IPickInfo<T>): void
-* (option) Executes when a touch was down on an instance but is released up outside of that instance (Picking type must be set)
-* onTouchMove(info: IPickInfo<T>): void
-* (option) Executes when a touch is moving atop of instances. Each touch will produce its own event (Picking type must be set)
-* onTouchOut(info: IPickInfo<T>): void
-* (option) Executes when a touch is moves off of an instance. Each touch will produce its own event (Picking type must be set)
-* onTouchOver(info: IPickInfo<T>): void
-* (option) Executes when a touch moves over instances while the touch is dragged around the screen. (Picking type must be set)
-* onTouchAllOut(info: IPickInfo<T>): void
-* (option) Executes when a touch moves off of an instance and there is no longer ANY touches over the instance (Picking type must be set)
-* onTap(info: IPickInfo<T>): void
-* (option) Executes when a touch taps on instances. (Picking type must be set)
+* Properties that are injected into a layer for it to react to. These are injected into the layer when createLayer() is invoked.
+* All layers have a data property and a materialOptions property to override default material options.
 
 ## Surface
 
 * Surface helps developers to fill the provide htmlCanvasElement with customized contents. It is the foundation and creation point of rendering pipelines while pipeline implements views and layers with data and set-ups from surface. It connects developers specified cameras, events and resources for rendering texts, images or videos. There are some concepts which are already set up within it, such as monitoring resizing, waiting for a valid size to be present, a render loop tied into requestAnimationFrame.
+
+## Scene
+
+* A Scene is an abstract space geometry from a shader can be injected into. Layers are how geometry gets injected into a Scene.
+
+## View
+
+* A View is a given viewing angle of a Scene with a specific Camera projection and is projected to some type of target.
+* A simple View would be a camera looking at a Scene that contains a box and is projected to fill the entire render space of the canvas.
+* View can be more complicated and render to offscreen target resources or render to multiple offscreen target resources.

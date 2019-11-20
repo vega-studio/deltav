@@ -116,8 +116,8 @@ export class Bar {
   provider: InstanceProvider<BlockInstance>;
   endProvider: InstanceProvider<PlateEndInstance>;
 
-  leftEnd: PlateEndInstance;
-  rightEnd: PlateEndInstance;
+  leftEnd: PlateEndInstance | null = null;
+  rightEnd: PlateEndInstance | null = null;
 
   dragX: number = 0;
 
@@ -246,15 +246,22 @@ export class Bar {
   }
 
   set baseZ(val: number) {
-    this.blockInstances.forEach(instance => {
-      instance.startValue = [
-        instance.startValue[0],
-        instance.startValue[1],
-        val
-      ];
-
-      instance.endValue = [instance.endValue[0], instance.endValue[1], val];
+    // Blocks
+    this.intervals.forEach(interval => {
+      if (interval.blockInstance) {
+        const instance = interval.blockInstance;
+        instance.baseZ = val;
+      }
     });
+
+    // Ends
+    if (this.leftEnd) {
+      this.leftEnd.base = [this.leftEnd.base[0], val];
+    }
+
+    if (this.rightEnd) {
+      this.rightEnd.base = [this.rightEnd.base[0], val];
+    }
 
     this._baseZ = val;
   }
@@ -328,8 +335,6 @@ export class Bar {
     this.clearAllInstances();
 
     this.generateInstances(this.data);
-
-    // this.insertToProvider(this.provider);
   }
 
   clearAllInstances() {
@@ -355,10 +360,6 @@ export class Bar {
     }
 
     this.buckets = generateBuckets(data, this.segments);
-
-    /*this.buckets.forEach(bucket => {
-      this.maxDepth = Math.max(bucket.depth, this.maxDepth);
-    })*/
 
     const width = this.width;
     const viewWidth = this.viewWidth;
@@ -443,28 +444,38 @@ export class Bar {
 
         // End plate on the left
         if (x1 <= leftBound && x2 > leftBound) {
-          this.leftEnd = new PlateEndInstance({
-            width: leftDepth,
-            height: leftY,
-            base: [leftBound, baseZ],
-            normal: [-1, 0, 0],
-            color
-          });
+          if (this.leftEnd) {
+            this.leftEnd.width = leftDepth;
+            this.leftEnd.height = leftY;
+          } else {
+            this.leftEnd = new PlateEndInstance({
+              width: leftDepth,
+              height: leftY,
+              base: [leftBound, baseZ],
+              normal: [-1, 0, 0],
+              color
+            });
 
-          this.endProvider.add(this.leftEnd);
+            this.endProvider.add(this.leftEnd);
+          }
         }
 
         // End plate on the right
         if (x2 >= rightBound && x1 < rightBound) {
-          this.rightEnd = new PlateEndInstance({
-            width: rightDepth,
-            height: rightY,
-            base: [rightBound, baseZ],
-            normal: [1, 0, 0],
-            color
-          });
+          if (this.rightEnd) {
+            this.rightEnd.width = rightDepth;
+            this.rightEnd.height = rightY;
+          } else {
+            this.rightEnd = new PlateEndInstance({
+              width: rightDepth,
+              height: rightY,
+              base: [rightBound, baseZ],
+              normal: [1, 0, 0],
+              color
+            });
 
-          this.endProvider.add(this.rightEnd);
+            this.endProvider.add(this.rightEnd);
+          }
         }
       }
       this.intervals.push(interval);

@@ -7,10 +7,10 @@ export interface IBucketDepthChartOptions {
   bottomCenter?: Vec2;
   chartData: Vec3[][];
   colors: Vec4[];
-  maxDepth?: number;
-  minDepth?: number;
+  baseDepth?: number;
   width: number;
   viewWidth?: number;
+  padding?: number;
   heightScale?: number;
   resolution?: number;
   providers: InstanceProvider<BlockInstance>[];
@@ -18,33 +18,34 @@ export interface IBucketDepthChartOptions {
 }
 
 export class BucketDepthChart {
-  private _maxDepth: number = 0;
-  private _minDepth: number = 0;
+  private _baseDepth: number = 0;
+  private _middleDepth: number = 0;
   private _bottomCenter: Vec2 = [0, 0];
   private _width: number;
   viewWidth: number;
   private _heightScale: number = 1;
-  padding: number = 0.1;
+  private _padding: number = 0;
   resolution: number = 100;
   bars: Bar[] = [];
   providers: InstanceProvider<BlockInstance>[];
   endProviders: InstanceProvider<PlateEndInstance>[];
 
   constructor(options: IBucketDepthChartOptions) {
-    this._maxDepth = options.maxDepth || this._maxDepth;
-    this._minDepth = options.minDepth || this._minDepth;
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this._width = options.width;
     this.viewWidth = options.viewWidth || options.width;
+    this._padding = options.padding || this._padding;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
     this.providers = options.providers;
     this.endProviders = options.endProviders;
+    this._baseDepth = options.baseDepth || this._baseDepth;
+    this._middleDepth = this._baseDepth;
 
     this.generateBars(options.chartData, options.colors);
   }
 
-  get maxDepth() {
+  /*get maxDepth() {
     return this._maxDepth;
   }
 
@@ -82,6 +83,33 @@ export class BucketDepthChart {
     }
 
     this._minDepth = val;
+  }*/
+
+  get padding() {
+    return this._padding;
+  }
+
+  set padding(val: number) {
+    const delta = val - this.padding;
+    this._padding = val;
+
+    for (let i = 0, endi = this.bars.length; i < endi; i++) {
+      const bar = this.bars[i];
+
+      // update base Z
+      bar.baseZ = bar.baseZ + delta * i;
+    }
+
+    // Update center
+    this.middleDepth += (this.bars.length - 1) * delta / 2;
+  }
+
+  get middleDepth() {
+    return this._middleDepth;
+  }
+
+  set middleDepth(val: number) {
+    this._middleDepth = val;
   }
 
   get width() {
@@ -124,7 +152,7 @@ export class BucketDepthChart {
         width: this.width,
         heightScale: this.heightScale,
         color: colors[0],
-        baseZ: (this.maxDepth + this.minDepth) / 2,
+        baseZ: this._baseDepth,
         provider: this.providers[0],
         endProvider: this.endProviders[0],
         viewWidth: this.viewWidth,
@@ -134,13 +162,16 @@ export class BucketDepthChart {
       this.bars.push(bar);
     } else {
       let preDepth = 0;
-      let baseZ = 0;
+      let baseZ = this._baseDepth;
+      let minDepth = baseZ;
+      let maxDepth = baseZ;
 
       for (let i = 0, endi = data.length; i < endi; i++) {
         let curDepth = 0;
         data[i].forEach(d => (curDepth = Math.max(curDepth, d[2])));
-
-        if (i > 0) baseZ += preDepth / 2 + this.padding + curDepth / 2;
+        if (i === 0) minDepth = baseZ - curDepth / 2;
+        if (i > 0) baseZ += preDepth / 2 + this._padding + curDepth / 2;
+        maxDepth = baseZ + curDepth / 2;
 
         const bar: Bar = new Bar({
           bottomCenter: this.bottomCenter,
@@ -158,6 +189,8 @@ export class BucketDepthChart {
         this.bars.push(bar);
         preDepth = curDepth;
       }
+
+      this._middleDepth = (minDepth + maxDepth) / 2;
     }
   }
 

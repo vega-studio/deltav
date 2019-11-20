@@ -54,14 +54,13 @@ export class BucketDepthChartDemo extends BaseDemo {
   mouseDown: boolean = false;
   mouseX: number = 0;
   bdc: BucketDepthChart;
-  /*bdc2: BucketDepthChart;
-  bdc3: BucketDepthChart;
-  bdc4: BucketDepthChart;
-  bdc5: BucketDepthChart;*/
+  padding: number = 0.4;
+  topView: boolean = false;
 
   parameters = {
     frontView: () => {
       if (!this.surface) return;
+      this.topView = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
       const newPosition: Vec3 = [0, 0, 10];
@@ -77,7 +76,7 @@ export class BucketDepthChartDemo extends BaseDemo {
           oldPosition[1] + delta[1] * i,
           oldPosition[2] + delta[2] * i
         ];
-        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
         if (i >= 1) stopAnimationLoop(timeId);
         i += 0.01;
       });
@@ -85,9 +84,10 @@ export class BucketDepthChartDemo extends BaseDemo {
     },
     topView: () => {
       if (!this.surface) return;
+      this.topView = true;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [0, 10, 0.00001];
+      const newPosition: Vec3 = [0, 10, this.bdc.middleDepth + 0.00001];
       const delta = [
         newPosition[0] - oldPosition[0],
         newPosition[1] - oldPosition[1],
@@ -100,7 +100,7 @@ export class BucketDepthChartDemo extends BaseDemo {
           oldPosition[1] + delta[1] * i,
           oldPosition[2] + delta[2] * i
         ];
-        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
         if (i >= 1) stopAnimationLoop(timeId);
         i += 0.01;
       });
@@ -108,6 +108,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     },
     angledView: () => {
       if (!this.surface) return;
+      this.topView = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
       const newPosition: Vec3 = [10, 10, 10];
@@ -123,7 +124,7 @@ export class BucketDepthChartDemo extends BaseDemo {
           oldPosition[1] + delta[1] * i,
           oldPosition[2] + delta[2] * i
         ];
-        camera.lookAt(this.cameraCenter, [0, 1, 0]);
+        camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
         if (i >= 1) stopAnimationLoop(timeId);
         i += 0.01;
       });
@@ -137,7 +138,8 @@ export class BucketDepthChartDemo extends BaseDemo {
       ]);
     },
     lightAngleV: this.angleV * 180 / Math.PI,
-    lightAngleH: this.angleH * 180 / Math.PI
+    lightAngleH: this.angleH * 180 / Math.PI,
+    padding: this.padding
   };
 
   buildConsole(gui: datGUI.GUI): void {
@@ -165,13 +167,27 @@ export class BucketDepthChartDemo extends BaseDemo {
           Math.sin(this.angleV) * Math.sin(this.angleH)
         ];
       });
+    gui.add(this.parameters, "padding", 0, 2).onChange((val: number) => {
+      this.bdc.padding = val;
+      if (!this.surface) return;
+      const camera = this.surface.cameras.perspective;
+      if (this.topView) {
+        camera.position = [0, 10, this.bdc.middleDepth + 0.00001];
+      }
+      camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
+    });
   }
 
   async init() {
     if (!this.surface) return;
 
-    const filter = new FIRFilter(
+    const heightFilter = new FIRFilter(
       [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+      1
+    );
+
+    const depthFilter = new FIRFilter(
+      [[0.3, 0], [0.2, 0], [0.1, 0], [0.15, 0], [0.25, 0]],
       1
     );
 
@@ -179,23 +195,72 @@ export class BucketDepthChartDemo extends BaseDemo {
     camera.position = [0, 0, 10];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
-    const datas: Vec3[][] = [];
+    const datas: Vec3[][] = [[], [], [], [], []];
 
-    for (let i = 0; i < 5; i++) {
-      datas[i] = [];
+    // bar 0 data
+    for (let j = 0; j <= 500; j++) {
+      const point1: Vec3 = [
+        j / 100,
+        j % 100 < 40
+          ? heightFilter.stream(1 + 3 * Math.random())
+          : heightFilter.stream(6 + 4 * Math.random()),
+        depthFilter.stream(0.5 + 0.5 * Math.random())
+      ];
 
-      for (let j = 0; j <= 500; j++) {
-        const point1: Vec3 = [
-          j / 100,
-          j % 100 < 40
-            ? filter.stream(3 + 3 * Math.random())
-            : filter.stream(7 + 4 * Math.random()),
-          0.5 + 0.5 * Math.random()
-        ];
-
-        datas[i].push(point1);
-      }
+      datas[0].push(point1);
     }
+
+    // bar 1 data
+    for (let j = 0; j <= 700; j++) {
+      const point1: Vec3 = [
+        j / 100,
+        j % 100 > 80
+          ? heightFilter.stream(2 + 3 * Math.random())
+          : heightFilter.stream(9 + 4 * Math.random()),
+        depthFilter.stream(0.1 + 0.6 * Math.random())
+      ];
+
+      datas[1].push(point1);
+    }
+    // bar 2 data
+    for (let j = 0; j <= 1000; j++) {
+      const point1: Vec3 = [
+        j / 100,
+        j % 100 > 30 && j % 100 < 50
+          ? heightFilter.stream(3 + 3 * Math.random())
+          : heightFilter.stream(7 + 4 * Math.random()),
+        depthFilter.stream(0.05 + 0.9 * Math.random())
+      ];
+
+      datas[2].push(point1);
+    }
+    // bar 3 data
+    for (let j = 0; j <= 200; j++) {
+      const point1: Vec3 = [
+        j / 100,
+        j % 100 < 15
+          ? heightFilter.stream(Math.random())
+          : heightFilter.stream(4 + 4 * Math.random()),
+        j % 100 < 50
+          ? depthFilter.stream(0.6 + 0.1 * Math.random())
+          : depthFilter.stream(0.1 + 0.1 * Math.random())
+      ];
+
+      datas[3].push(point1);
+    }
+    // bar 4 data
+    for (let j = 0; j <= 400; j++) {
+      const point1: Vec3 = [
+        j / 100,
+        j % 100 < 70 && j % 100 > 60
+          ? heightFilter.stream(4 + 3 * Math.random())
+          : heightFilter.stream(4 * Math.random()),
+        0
+      ];
+
+      datas[4].push(point1);
+    }
+
     const alpha = 0.9;
     const colors: Vec4[] = [
       [73 / 255, 45 / 255, 123 / 255, alpha],
@@ -222,14 +287,14 @@ export class BucketDepthChartDemo extends BaseDemo {
     ];
 
     this.bdc = new BucketDepthChart({
-      maxDepth: 0,
-      minDepth: -4,
+      baseDepth: 0,
       width: this.width,
       heightScale: 0.3,
       colors: colors,
       chartData: datas,
       resolution: 100,
       viewWidth: this.viewWidth,
+      padding: this.padding,
       providers: blockProviders,
       endProviders: endPlateProviders
     });

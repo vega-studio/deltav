@@ -9,8 +9,9 @@ export interface IBlockInstanceOptions extends IInstanceOptions {
   startValue?: Vec3;
   endValue?: Vec3;
   color?: Vec4;
+  baseX?: number;
   baseY?: number;
-  baseZ: number;
+  baseZ?: number;
   normal1?: Vec3;
   normal2?: Vec3;
   normal3?: Vec3;
@@ -22,9 +23,12 @@ export class BlockInstance extends Instance {
   @observable endValue: Vec3 = [0, 0, 0];
   /** This is the color of the block */
   @observable color: Vec4 = [252 / 255, 187 / 255, 3 / 255, 1.0];
-  /** This is the bottom line's y position */
-  @observable baseY: number = 0;
 
+  /** This is the left point's x value of viewport */
+  @observable baseX: number = 0;
+  /** This is the bottom line's y value */
+  @observable baseY: number = 0;
+  /** This is the middle line's z value */
   @observable baseZ: number = 0;
 
   @observable normal1: Vec3 = [0.0, 0.0, -1.0];
@@ -37,6 +41,7 @@ export class BlockInstance extends Instance {
     this.startValue = options.startValue || this.startValue;
     this.endValue = options.endValue || this.endValue;
     this.color = options.color || this.color;
+    this.baseX = options.baseX || this.baseX;
     this.baseY = options.baseY || this.baseY;
     this.baseZ = options.baseZ || this.baseZ;
     this.normal1 = options.normal1 || this.normal1;

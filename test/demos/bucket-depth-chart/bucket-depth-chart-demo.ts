@@ -87,13 +87,14 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.topView = true;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [0, 10, this.bdc.middleDepth + 0.00001];
+      const newPosition: Vec3 = [0, 10, this.bdc.middleDepth + 0.5];
       const delta = [
         newPosition[0] - oldPosition[0],
         newPosition[1] - oldPosition[1],
         newPosition[2] - oldPosition[2]
       ];
       let i = 0;
+      let deltai = 0.01;
       const timeId = onAnimationLoop(() => {
         camera.position = [
           oldPosition[0] + delta[0] * i,
@@ -102,7 +103,8 @@ export class BucketDepthChartDemo extends BaseDemo {
         ];
         camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
         if (i >= 1) stopAnimationLoop(timeId);
-        i += 0.01;
+        i += deltai;
+        if (i >= 0.8) deltai = 0.005;
       });
       this.cameraPosition = newPosition;
     },
@@ -131,11 +133,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.cameraPosition = newPosition;
     },
     addData: () => {
-      this.bdc.bars[4].addData([
-        Math.random(),
-        3 + 3 * Math.random(),
-        1 + 2 * Math.random()
-      ]);
+      this.bdc.bars[4].addData([Math.random(), 3 + 3 * Math.random(), 0]);
     },
     lightAngleV: this.angleV * 180 / Math.PI,
     lightAngleH: this.angleH * 180 / Math.PI,
@@ -172,7 +170,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       if (!this.surface) return;
       const camera = this.surface.cameras.perspective;
       if (this.topView) {
-        camera.position = [0, 10, this.bdc.middleDepth + 0.00001];
+        camera.position = [0, 10, this.bdc.middleDepth + 0.5];
       }
       camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
     });
@@ -366,7 +364,8 @@ export class BucketDepthChartDemo extends BaseDemo {
               blocks1: createLayer(BlockLayer, {
                 data: providers.blocks1,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX
               }),
               end1: createLayer(PlateEndLayer, {
                 data: providers.ends1,
@@ -376,7 +375,8 @@ export class BucketDepthChartDemo extends BaseDemo {
               blocks2: createLayer(BlockLayer, {
                 data: providers.blocks2,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX
               }),
               end2: createLayer(PlateEndLayer, {
                 data: providers.ends2,
@@ -386,7 +386,8 @@ export class BucketDepthChartDemo extends BaseDemo {
               blocks3: createLayer(BlockLayer, {
                 data: providers.blocks3,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX
               }),
               end3: createLayer(PlateEndLayer, {
                 data: providers.ends3,
@@ -396,7 +397,8 @@ export class BucketDepthChartDemo extends BaseDemo {
               blocks4: createLayer(BlockLayer, {
                 data: providers.blocks4,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX
               }),
               end4: createLayer(PlateEndLayer, {
                 data: providers.ends4,
@@ -406,7 +408,8 @@ export class BucketDepthChartDemo extends BaseDemo {
               blocks5: createLayer(BlockLayer, {
                 data: providers.blocks5,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,

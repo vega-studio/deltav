@@ -197,7 +197,7 @@ export class BucketDepthChart {
   updateByDragX(dragX: number) {
     for (let i = 0, endi = this.bars.length; i < endi; i++) {
       const bar = this.bars[i];
-      bar.updateByDragX(dragX);
+      bar.updateByDragX2(dragX);
     }
   }
 

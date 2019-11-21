@@ -12,13 +12,14 @@ import { BlockInstance } from "./block-instance";
 export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   bottomCenter?(): Vec2;
   lightDirection?(): Vec3;
+  dragX?(): number;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { bottomCenter, lightDirection } = this.props;
+    const { bottomCenter, lightDirection, dragX } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
     const BRT: Vec3 = [1, 1, -1];
@@ -79,6 +80,11 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           update: o => o.color
         },
         {
+          name: "baseX",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.baseX]
+        },
+        {
           name: "baseY",
           size: InstanceAttributeSize.ONE,
           update: o => [o.baseY]
@@ -126,6 +132,11 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "lightDirection",
           size: UniformSize.THREE,
           update: () => (lightDirection ? lightDirection() : [1, 1, 1])
+        },
+        {
+          name: "dragX",
+          size: UniformSize.ONE,
+          update: () => (dragX ? dragX() : 0)
         }
       ],
       vertexCount: 18

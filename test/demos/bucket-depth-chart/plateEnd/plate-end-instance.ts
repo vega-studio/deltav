@@ -1,4 +1,5 @@
 import { IInstanceOptions, Instance, observable, Vec2, Vec3, Vec4 } from "src";
+import { Interval } from "../interval";
 
 export interface IPlateEndOptions extends IInstanceOptions {
   width?: number;
@@ -25,5 +26,22 @@ export class PlateEndInstance extends Instance {
     this.base = options.base || this.base;
     this.color = options.color || this.color;
     this.barCenter = options.barCenter || this.barCenter;
+  }
+
+  update(interval: Interval, bound: number, dragX: number) {
+    const x1 = interval.leftX + dragX;
+    const x2 = interval.rightX + dragX;
+    const scale = (bound - x1) / (x2 - x1);
+
+    const y1 = interval.leftY;
+    const y2 = interval.rightY;
+    const depth1 = interval.leftDepth;
+    const depth2 = interval.rightDepth;
+
+    const height = (1 - scale) * y1 + scale * y2;
+    const width = (1 - scale) * depth1 + scale * depth2;
+
+    this.width = width;
+    this.height = height;
   }
 }

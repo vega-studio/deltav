@@ -117,6 +117,7 @@ export class Bar {
   rightEnd: PlateEndInstance | null = null;
 
   dragX: number = 0;
+  scaleX: number = 1;
 
   data: Vec3[];
   buckets: Bucket[];
@@ -367,6 +368,7 @@ export class Bar {
     const baseY = bottomCenter[1];
     const baseZ = this.baseZ;
     const dragX = this.dragX;
+    const scaleX = this.scaleX;
     const leftBound = 0;
     const rightBound = viewWidth;
 
@@ -374,8 +376,8 @@ export class Bar {
       const bucket = this.buckets[i];
       const nextBucket = this.buckets[i + 1];
 
-      const x1 = bucket.time * width + dragX;
-      const x2 = nextBucket.time * width + dragX;
+      const x1 = bucket.time * width * scaleX + dragX;
+      const x2 = nextBucket.time * width * scaleX + dragX;
       const y1 = bucket.value * heightScale;
       const y2 = nextBucket.value * heightScale;
       const depth1 = bucket.depth;
@@ -398,6 +400,7 @@ export class Bar {
           baseY,
           baseZ,
           color,
+          scaleX,
           dragX,
           viewWidth,
           this.provider
@@ -470,24 +473,24 @@ export class Bar {
 
   updateByDragX2(dragX: number) {
     this.dragX = dragX;
+    const scaleX = this.scaleX;
     const viewWidth = this.viewWidth;
     const bottomCenter = this.bottomCenter;
     const baseX = bottomCenter[0] - viewWidth / 2;
-    const baseZ = this.baseZ;
     const baseY = bottomCenter[1];
+    const baseZ = this.baseZ;
     const color = this.color;
-
     const leftBound = 0;
     const rightBound = viewWidth;
 
     this.intervals.forEach(interval => {
-      const x1 = interval.leftX + dragX;
-      const x2 = interval.rightX + dragX;
+      const x1 = interval.leftX * scaleX + dragX;
+      const x2 = interval.rightX * scaleX + dragX;
       // Inside bound
       if (x1 >= leftBound && x2 <= rightBound) {
         // update
         if (interval.status === IntervalStatus.INSECT) {
-          interval.updateInstance(dragX, viewWidth);
+          interval.updateInstance(dragX, scaleX, viewWidth);
         }
         // create
         else if (interval.status === IntervalStatus.OUT) {
@@ -496,6 +499,7 @@ export class Bar {
             baseY,
             baseZ,
             color,
+            scaleX,
             dragX,
             viewWidth,
             this.provider
@@ -512,7 +516,7 @@ export class Bar {
       ) {
         // update
         if (interval.status !== IntervalStatus.OUT) {
-          interval.updateInstance(dragX, viewWidth);
+          interval.updateInstance(dragX, scaleX, viewWidth);
         }
         // create
         else {
@@ -521,6 +525,7 @@ export class Bar {
             baseY,
             baseZ,
             color,
+            scaleX,
             dragX,
             viewWidth,
             this.provider
@@ -543,14 +548,14 @@ export class Bar {
       // End plate on the left
       if (x1 <= leftBound && x2 > leftBound) {
         if (this.leftEnd) {
-          this.leftEnd.update(interval, leftBound, dragX);
+          this.leftEnd.update(interval, leftBound, scaleX, dragX);
         }
       }
 
       // End plate on the right
       if (x2 >= rightBound && x1 < rightBound) {
         if (this.rightEnd) {
-          this.rightEnd.update(interval, rightBound, dragX);
+          this.rightEnd.update(interval, rightBound, scaleX, dragX);
         }
       }
     });
@@ -646,5 +651,29 @@ export class Bar {
         }
       }
     });
+  }
+
+  updateByScaleX(scaleX: number, dragX: number, resolution: number) {
+    this.scaleX = scaleX;
+    this.dragX = dragX;
+
+    const oldSegments = this.segments;
+
+    if (resolution > this.data.length) {
+      this.segments = this.data.length;
+    } else if (resolution < 2) {
+      this.segments = 2;
+    } else {
+      this.segments = resolution;
+    }
+
+    this._resolution = resolution;
+
+    if (this.segments !== oldSegments) {
+      this.clearAllInstances();
+      this.generateInstances(this.data);
+    }
+
+    this.updateByDragX2(dragX);
   }
 }

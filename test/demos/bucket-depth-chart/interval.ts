@@ -45,12 +45,13 @@ export class Interval {
     baseY: number,
     baseZ: number,
     color: Vec4,
+    scaleX: number,
     dragX: number,
     viewWidth: number,
     provider: InstanceProvider<BlockInstance>
   ) {
-    const x1 = this.leftX + dragX;
-    const x2 = this.rightX + dragX;
+    const x1 = this.leftX * scaleX + dragX;
+    const x2 = this.rightX * scaleX + dragX;
     const y1 = this.leftY;
     const y2 = this.rightY;
     const depth1 = this.leftDepth;
@@ -89,8 +90,8 @@ export class Interval {
       const normal3 = cross3([0, -1, 0], vector1);
 
       const block = new BlockInstance({
-        startValue: [leftX - dragX, leftY, leftDepth],
-        endValue: [rightX - dragX, rightY, rightDepth],
+        startValue: [(leftX - dragX) / scaleX, leftY, leftDepth],
+        endValue: [(rightX - dragX) / scaleX, rightY, rightDepth],
         baseX,
         baseY,
         baseZ,
@@ -105,10 +106,10 @@ export class Interval {
     }
   }
 
-  updateInstance(dragX: number, viewWidth: number) {
+  updateInstance(dragX: number, scaleX: number, viewWidth: number) {
     if (this.blockInstance) {
-      const x1 = this.leftX + dragX;
-      const x2 = this.rightX + dragX;
+      const x1 = this.leftX * scaleX + dragX;
+      const x2 = this.rightX * scaleX + dragX;
       const y1 = this.leftY;
       const y2 = this.rightY;
       const depth1 = this.leftDepth;
@@ -130,8 +131,16 @@ export class Interval {
         const leftDepth = (1 - leftScale) * depth1 + leftScale * depth2;
         const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
 
-        this.blockInstance.startValue = [leftX - dragX, leftY, leftDepth];
-        this.blockInstance.endValue = [rightX - dragX, rightY, rightDepth];
+        this.blockInstance.startValue = [
+          (leftX - dragX) / scaleX,
+          leftY,
+          leftDepth
+        ];
+        this.blockInstance.endValue = [
+          (rightX - dragX) / scaleX,
+          rightY,
+          rightDepth
+        ];
       }
     }
   }

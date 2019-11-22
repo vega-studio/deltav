@@ -14,7 +14,7 @@ void main() {
   float distanceToCenter = distance(cameraPosition, vec3(bottomCenter, depth));
   float distanceToOrigin = distance(cameraPosition, vec3(bottomCenter, 0.0));
   float scale =  distanceToCenter / distanceToOrigin; 
-  vec3 pos = vec3((baseX + value.x + dragX) * scale, (baseY + mix(0.0, value.y, position.y)) * scale, depth);
+  vec3 pos = vec3((baseX + value.x * scaleX + dragX) * scale, (baseY + mix(0.0, value.y, position.y)) * scale, depth);
 
   // Color
   vec3 N = mix(

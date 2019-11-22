@@ -13,13 +13,14 @@ export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   bottomCenter?(): Vec2;
   lightDirection?(): Vec3;
   dragX?(): number;
+  scaleX?(): number;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { bottomCenter, lightDirection, dragX } = this.props;
+    const { bottomCenter, lightDirection, dragX, scaleX } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
     const BRT: Vec3 = [1, 1, -1];
@@ -137,6 +138,11 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "dragX",
           size: UniformSize.ONE,
           update: () => (dragX ? dragX() : 0)
+        },
+        {
+          name: "scaleX",
+          size: UniformSize.ONE,
+          update: () => (scaleX ? scaleX() : 1)
         }
       ],
       vertexCount: 18

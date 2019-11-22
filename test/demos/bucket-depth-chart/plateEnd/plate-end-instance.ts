@@ -28,9 +28,9 @@ export class PlateEndInstance extends Instance {
     this.barCenter = options.barCenter || this.barCenter;
   }
 
-  update(interval: Interval, bound: number, dragX: number) {
-    const x1 = interval.leftX + dragX;
-    const x2 = interval.rightX + dragX;
+  update(interval: Interval, bound: number, scaleX: number, dragX: number) {
+    const x1 = interval.leftX * scaleX + dragX;
+    const x2 = interval.rightX * scaleX + dragX;
     const scale = (bound - x1) / (x2 - x1);
 
     const y1 = interval.leftY;

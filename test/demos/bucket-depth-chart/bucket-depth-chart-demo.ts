@@ -22,6 +22,14 @@ import { BlockInstance } from "./block";
 import { BucketDepthChart } from "./bucket-depth-chart";
 import { PlateEndInstance, PlateEndLayer } from "./plateEnd";
 
+function getResolutionByDistance(distance: number) {
+  if (distance < 60) return 60 - 5 * Math.floor(distance / 6);
+
+  if (distance < 69) return 70 - Math.floor(distance);
+
+  return 2;
+}
+
 export class BucketDepthChartDemo extends BaseDemo {
   providers = {
     blocks1: new InstanceProvider<BlockInstance>(),
@@ -48,8 +56,9 @@ export class BucketDepthChartDemo extends BaseDemo {
     Math.sin(this.angleV) * Math.sin(this.angleH)
   ];
   zoomingDistance: number = 10;
-  width: number = 10;
+  width: number = 20;
   viewWidth: number = 8;
+  scaleX: number = 1;
   dragX: number = 0;
   mouseDown: boolean = false;
   mouseX: number = 0;
@@ -325,7 +334,7 @@ export class BucketDepthChartDemo extends BaseDemo {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
               this.dragX = Math.max(
                 Math.min(this.dragX, 0),
-                this.viewWidth - this.width
+                this.viewWidth - this.width * this.scaleX
               );
 
               this.bdc.updateByDragX(this.dragX);
@@ -337,16 +346,31 @@ export class BucketDepthChartDemo extends BaseDemo {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
               this.dragX = Math.max(
                 Math.min(this.dragX, 0),
-                this.viewWidth - this.width
+                this.viewWidth - this.width * this.scaleX
               );
               this.bdc.updateByDragX(this.dragX);
               this.mouseDown = false;
             }
           },
           handleWheel: (e: IMouseInteraction) => {
-            this.zoomingDistance += e.mouse.wheel.delta[1] / 200;
-            this.zoomingDistance = Math.max(0, this.zoomingDistance);
-            this.bdc.updateByCameraPosition([0, 0, this.zoomingDistance]);
+            this.zoomingDistance += e.mouse.wheel.delta[1] * 60 / 1000;
+            this.zoomingDistance = Math.min(
+              Math.max(0, this.zoomingDistance),
+              70
+            );
+            // this.bdc.updateByCameraPosition([0, 0, this.zoomingDistance]);
+            // ScaleX
+            this.scaleX -= e.mouse.wheel.delta[1] * 0.6 / 1000;
+            this.scaleX = Math.min(Math.max(this.scaleX, 0.4), 1.0);
+            // Drag X update
+            this.dragX = Math.max(
+              Math.min(this.dragX, 0),
+              this.viewWidth - this.width * this.scaleX
+            );
+            // Resolution update
+            const resolution = getResolutionByDistance(this.zoomingDistance);
+
+            this.bdc.updateByScaleX(this.scaleX, this.dragX, resolution);
           }
         })
       }),
@@ -365,7 +389,8 @@ export class BucketDepthChartDemo extends BaseDemo {
                 data: providers.blocks1,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
-                dragX: () => this.dragX
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
               }),
               end1: createLayer(PlateEndLayer, {
                 data: providers.ends1,
@@ -376,7 +401,8 @@ export class BucketDepthChartDemo extends BaseDemo {
                 data: providers.blocks2,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
-                dragX: () => this.dragX
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
               }),
               end2: createLayer(PlateEndLayer, {
                 data: providers.ends2,
@@ -387,7 +413,8 @@ export class BucketDepthChartDemo extends BaseDemo {
                 data: providers.blocks3,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
-                dragX: () => this.dragX
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
               }),
               end3: createLayer(PlateEndLayer, {
                 data: providers.ends3,
@@ -398,7 +425,8 @@ export class BucketDepthChartDemo extends BaseDemo {
                 data: providers.blocks4,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
-                dragX: () => this.dragX
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
               }),
               end4: createLayer(PlateEndLayer, {
                 data: providers.ends4,
@@ -409,7 +437,8 @@ export class BucketDepthChartDemo extends BaseDemo {
                 data: providers.blocks5,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
-                dragX: () => this.dragX
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,

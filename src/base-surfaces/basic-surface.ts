@@ -150,7 +150,7 @@ export interface IBasicSurfaceOptions<
   /** Options used to specify settings for the surface itself and how it will be composited in the DOM */
   rendererOptions?: ISurfaceOptions["rendererOptions"];
   /** The resources to be used for the pipeline */
-  resources: W;
+  resources?: W;
 
   // CALLBACKS
 
@@ -160,12 +160,12 @@ export interface IBasicSurfaceOptions<
    */
   eventManagers(cameras: U): V;
   /** A callback that provides the pipeline to use in the surface */
-  pipeline(
+  scenes(
     resources: W,
     providers: T,
     cameras: U,
     managers: V
-  ): IBasicSurfacePipeline;
+  ): Lookup<BasicSurfaceSceneOptions>;
   /** This will be called if no webgl context is detected */
   onNoWebGL?(): void;
 }
@@ -295,7 +295,7 @@ export class BasicSurface<
       // Establish the cameras desired to be used in the surface
       this.cameras = this.options.cameras;
       // Establish the resources desired to be used in the surface
-      this.resources = this.options.resources;
+      this.resources = this.options.resources || ({} as W);
       // Establish the event managers to be used in the surface
       this.eventManagers = this.options.eventManagers(this.cameras);
 
@@ -405,8 +405,8 @@ export class BasicSurface<
   /**
    * Redeclare the pipeline
    */
-  async pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["pipeline"]) {
-    this.options.pipeline = callback;
+  async pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["scenes"]) {
+    this.options.scenes = callback;
     if (!this.base) return;
     await this.updatePipeline();
   }
@@ -491,24 +491,25 @@ export class BasicSurface<
     //
     // Take the resource lookup and flatten it's values to a list. Each value will be given a key based on whether the
     // value expressed an explicit key or will be a key made from the properties leading up to the value in the lookup.
-    const resources = mapLookupValues(
-      "resources",
-      (val: any) => val && val.type !== undefined,
-      this.resources || [],
-      (key: string, val: BaseResourceOptions) => {
-        const resource: BaseResourceOptions = {
-          ...val,
-          key: val.key || key
-        };
+    const resources =
+      mapLookupValues(
+        "resources",
+        (val: any) => val && val.type !== undefined,
+        this.resources || [],
+        (key: string, val: BaseResourceOptions) => {
+          const resource: BaseResourceOptions = {
+            ...val,
+            key: val.key || key
+          };
 
-        val.key = resource.key;
-        return resource;
-      }
-    );
+          val.key = resource.key;
+          return resource;
+        }
+      ) || [];
 
     // We must convert all look ups of scenes and layers etc into a list of items that contain keys
-    const pipelineWithLookups = this.options.pipeline(
-      this.resources,
+    const pipelineWithLookups = this.options.scenes(
+      this.resources || ({} as W),
       this.providers,
       this.cameras,
       this.eventManagers
@@ -517,7 +518,7 @@ export class BasicSurface<
     const scenes = mapLookupValues(
       "scenes",
       (val: any) => val && val.views !== undefined && val.layers !== undefined,
-      pipelineWithLookups.scenes,
+      pipelineWithLookups,
       (sceneKey: string, val: BasicSurfaceSceneOptions) => {
         const views = mapLookupValues(
           "views",

@@ -132,7 +132,6 @@ export class BasicDemo extends BaseDemo {
       cameras: {
         main: new Camera2D()
       },
-      resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
@@ -153,33 +152,30 @@ export class BasicDemo extends BaseDemo {
           }
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              main: createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: [
-              createLayer(CircleLayer, {
-                animate: {
-                  center: AutoEasingMethod.easeInOutCubic(
-                    2000,
-                    0,
-                    AutoEasingLoopStyle.NONE
-                  )
-                },
-                data: providers.circles,
-                key: `circles`,
-                scaleFactor: () => cameras.main.scale2D[0],
-                usePoints: true
-              })
-            ]
-          }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            main: createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutCubic(
+                  2000,
+                  0,
+                  AutoEasingLoopStyle.NONE
+                )
+              },
+              data: providers.circles,
+              key: `circles`,
+              scaleFactor: () => cameras.main.scale2D[0],
+              usePoints: true
+            })
+          ]
         }
       })
     });

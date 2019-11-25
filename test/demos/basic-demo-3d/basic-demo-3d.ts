@@ -95,109 +95,106 @@ export class BasicDemo3D extends BaseDemo {
         font: DEFAULT_RESOURCES.font
       },
       eventManagers: _cameras => ({}),
-      pipeline: (_resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              squares: createLayer(SurfaceTileLayer, {
-                data: providers.tiles,
-                picking: PickType.SINGLE,
-
-                onMouseOver: info => {
-                  info.instances.forEach(i => {
-                    i.color = [1, 1, 0, 1];
-                  });
-                },
-
-                onMouseOut: info => {
-                  info.instances.forEach(i => {
-                    const index = this.tileToIndex.get(i.uid);
-                    if (!index) return;
-                    i.color = color4FromHex3(0xffffff - index[2]);
-                  });
-                },
-
-                onMouseClick: async info => {
-                  if (this.isSpreading || info.instances.length <= 0) return;
-                  if (!this.isFlattened) {
-                    this.isFlattened = true;
-                    await this.spread(info.instances[0], tiles => {
-                      for (let i = 0, iMax = tiles.length; i < iMax; ++i) {
-                        const tile = tiles[i];
-                        tile.c1[1] = 0;
-                        tile.c2[1] = 0;
-                        tile.c3[1] = 0;
-                        tile.c4[1] = 0;
-                        tile.c1 = tile.c1;
-                        tile.c2 = tile.c2;
-                        tile.c3 = tile.c3;
-                        tile.c4 = tile.c4;
-                      }
-                    });
-                  } else {
-                    this.isFlattened = false;
-                    // Make a new perlin noise map
-                    await this.generatePerlinData();
-                    // Move the tiles to their new perlin position
-                    await this.spread(info.instances[0], tiles => {
-                      this.moveTilesToPerlin(tiles);
-                    });
-                  }
-                }
-              })
-            }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
           },
-          overlay: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              ticks: createLayer2Din3D(Axis2D.XZ, EdgeLayer, {
-                data: providers.ticks,
-                type: EdgeType.LINE,
-                control2D: cameras.xz.control2D,
-                scaleType: EdgeScaleType.NONE
-              }),
-              lines: createLayer(Line3DLayer, {
-                data: providers.lines,
-                // Toggle this to SINGLE to draw rays that eminate from the camera
-                picking: PickType.NONE,
+          layers: {
+            squares: createLayer(SurfaceTileLayer, {
+              data: providers.tiles,
+              picking: PickType.SINGLE,
 
-                onMouseClick: info => {
-                  if (!(info.projection instanceof Projection3D)) return;
-                  const ray = rayFromPoints(
-                    cameras.perspective.position,
-                    info.projection.screenToWorld(info.screen)
-                  );
-                  this.providers.lines.add(
-                    new Line3DInstance({
-                      start: rayToLocation(ray, -10),
-                      end: rayToLocation(ray, 300),
-                      colorEnd: [0, 1, 0, 1],
-                      colorStart: [1, 0, 0, 1]
-                    })
-                  );
+              onMouseOver: info => {
+                info.instances.forEach(i => {
+                  i.color = [1, 1, 0, 1];
+                });
+              },
+
+              onMouseOut: info => {
+                info.instances.forEach(i => {
+                  const index = this.tileToIndex.get(i.uid);
+                  if (!index) return;
+                  i.color = color4FromHex3(0xffffff - index[2]);
+                });
+              },
+
+              onMouseClick: async info => {
+                if (this.isSpreading || info.instances.length <= 0) return;
+                if (!this.isFlattened) {
+                  this.isFlattened = true;
+                  await this.spread(info.instances[0], tiles => {
+                    for (let i = 0, iMax = tiles.length; i < iMax; ++i) {
+                      const tile = tiles[i];
+                      tile.c1[1] = 0;
+                      tile.c2[1] = 0;
+                      tile.c3[1] = 0;
+                      tile.c4[1] = 0;
+                      tile.c1 = tile.c1;
+                      tile.c2 = tile.c2;
+                      tile.c3 = tile.c3;
+                      tile.c4 = tile.c4;
+                    }
+                  });
+                } else {
+                  this.isFlattened = false;
+                  // Make a new perlin noise map
+                  await this.generatePerlinData();
+                  // Move the tiles to their new perlin position
+                  await this.spread(info.instances[0], tiles => {
+                    this.moveTilesToPerlin(tiles);
+                  });
                 }
-              })
-              // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
-              // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.
-              // labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
-              //   data: providers.labels,
-              //   resourceKey: resources.font.key,
-              //   control2D: cameras.xz.control2D,
-              //   scaleMode: ScaleMode.NEVER
-              // })
-            }
+              }
+            })
+          }
+        },
+        overlay: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            ticks: createLayer2Din3D(Axis2D.XZ, EdgeLayer, {
+              data: providers.ticks,
+              type: EdgeType.LINE,
+              control2D: cameras.xz.control2D,
+              scaleType: EdgeScaleType.NONE
+            }),
+            lines: createLayer(Line3DLayer, {
+              data: providers.lines,
+              // Toggle this to SINGLE to draw rays that eminate from the camera
+              picking: PickType.NONE,
+
+              onMouseClick: info => {
+                if (!(info.projection instanceof Projection3D)) return;
+                const ray = rayFromPoints(
+                  cameras.perspective.position,
+                  info.projection.screenToWorld(info.screen)
+                );
+                this.providers.lines.add(
+                  new Line3DInstance({
+                    start: rayToLocation(ray, -10),
+                    end: rayToLocation(ray, 300),
+                    colorEnd: [0, 1, 0, 1],
+                    colorStart: [1, 0, 0, 1]
+                  })
+                );
+              }
+            })
+            // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
+            // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.
+            // labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
+            //   data: providers.labels,
+            //   resourceKey: resources.font.key,
+            //   control2D: cameras.xz.control2D,
+            //   scaleMode: ScaleMode.NEVER
+            // })
           }
         }
       })

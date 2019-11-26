@@ -55,21 +55,18 @@ export class CubeDemo3D extends BaseDemo {
       },
       resources: {},
       eventManagers: _cameras => ({}),
-      pipeline: (_resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              cubes: createLayer(CubeLayer, {
-                data: providers.cubes
-              })
-            }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            cubes: createLayer(CubeLayer, {
+              data: providers.cubes
+            })
           }
         }
       })

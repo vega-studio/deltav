@@ -144,141 +144,139 @@ export class TouchDemo extends BaseDemo {
           }
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        scenes: {
-          TL: {
-            views: {
-              TL: createView(View2D, {
-                background: [0.1, 0, 0, 1],
-                camera: new Camera2D(),
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-                viewport: {
-                  left: 0,
-                  width: "50%",
-                  height: "50%",
-                  top: 0
-                }
-              })
-            },
-            layers: {
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  radius: AutoEasingMethod.linear(500)
-                },
-                data: this.providers.TL,
-                picking: PickType.SINGLE,
-                scaleFactor: () => cameras.main.scale[0],
-                onTouchOver: this.handleTestDotOver,
-                onTouchOut: this.handleTestDotOut
-              })
-            }
+      scenes: (_resources, providers, cameras) => ({
+        TL: {
+          views: {
+            TL: createView(View2D, {
+              background: [0.1, 0, 0, 1],
+              camera: new Camera2D(),
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              viewport: {
+                left: 0,
+                width: "50%",
+                height: "50%",
+                top: 0
+              }
+            })
           },
-          TR: {
-            views: {
-              TR: createView(View2D, {
-                background: [0.1, 0.1, 0, 1],
-                camera: new Camera2D(),
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-                viewport: {
-                  left: "50%",
-                  width: "50%",
-                  height: "50%",
-                  top: 0
-                }
-              })
-            },
-            layers: {
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  radius: AutoEasingMethod.linear(500)
-                },
-                data: this.providers.TR,
-                picking: PickType.SINGLE,
-                scaleFactor: () => cameras.main.scale[0],
-                onTouchOver: this.handleTestDotOver,
-                onTouchOut: this.handleTestDotOut
-              })
-            }
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                radius: AutoEasingMethod.linear(500)
+              },
+              data: this.providers.TL,
+              picking: PickType.SINGLE,
+              scaleFactor: () => cameras.main.scale[0],
+              onTouchOver: this.handleTestDotOver,
+              onTouchOut: this.handleTestDotOut
+            })
+          }
+        },
+        TR: {
+          views: {
+            TR: createView(View2D, {
+              background: [0.1, 0.1, 0, 1],
+              camera: new Camera2D(),
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              viewport: {
+                left: "50%",
+                width: "50%",
+                height: "50%",
+                top: 0
+              }
+            })
           },
-          BL: {
-            views: {
-              BL: createView(View2D, {
-                background: [0.1, 0.1, 0.1, 1],
-                camera: new Camera2D(),
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-                viewport: {
-                  left: 0,
-                  width: "50%",
-                  height: "50%",
-                  top: "50%"
-                }
-              })
-            },
-            layers: {
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  radius: AutoEasingMethod.linear(500)
-                },
-                data: this.providers.BL,
-                picking: PickType.SINGLE,
-                scaleFactor: () => cameras.main.scale[0],
-                onTouchOver: this.handleTestDotOver,
-                onTouchOut: this.handleTestDotOut
-              })
-            }
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                radius: AutoEasingMethod.linear(500)
+              },
+              data: this.providers.TR,
+              picking: PickType.SINGLE,
+              scaleFactor: () => cameras.main.scale[0],
+              onTouchOver: this.handleTestDotOver,
+              onTouchOut: this.handleTestDotOut
+            })
+          }
+        },
+        BL: {
+          views: {
+            BL: createView(View2D, {
+              background: [0.1, 0.1, 0.1, 1],
+              camera: new Camera2D(),
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              viewport: {
+                left: 0,
+                width: "50%",
+                height: "50%",
+                top: "50%"
+              }
+            })
           },
-          BR: {
-            views: {
-              BR: createView(View2D, {
-                background: [0, 0.1, 0.1, 1],
-                camera: new Camera2D(),
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-                viewport: {
-                  left: "50%",
-                  width: "50%",
-                  height: "50%",
-                  top: "50%"
-                }
-              })
-            },
-            layers: {
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  radius: AutoEasingMethod.linear(500)
-                },
-                data: this.providers.BR,
-                picking: PickType.SINGLE,
-                scaleFactor: () => cameras.main.scale[0],
-                onTouchOver: this.handleTestDotOver,
-                onTouchOut: this.handleTestDotOut
-              })
-            }
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                radius: AutoEasingMethod.linear(500)
+              },
+              data: this.providers.BL,
+              picking: PickType.SINGLE,
+              scaleFactor: () => cameras.main.scale[0],
+              onTouchOver: this.handleTestDotOver,
+              onTouchOut: this.handleTestDotOut
+            })
+          }
+        },
+        BR: {
+          views: {
+            BR: createView(View2D, {
+              background: [0, 0.1, 0.1, 1],
+              camera: new Camera2D(),
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              viewport: {
+                left: "50%",
+                width: "50%",
+                height: "50%",
+                top: "50%"
+              }
+            })
           },
-          default: {
-            views: {
-              "default-view": createView(View2D, {
-                background: [0, 0, 0, 1],
-                camera: cameras.main,
-                clearFlags: [ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  color: AutoEasingMethod.linear(500),
-                  radius: AutoEasingMethod.linear(500)
-                },
-                data: providers.circles,
-                scaleFactor: () => cameras.main.scale[0]
-              }),
-              center: createLayer(CircleLayer, {
-                animate: {
-                  color: AutoEasingMethod.linear(500)
-                },
-                data: providers.center,
-                scaleFactor: () => cameras.main.scale[0]
-              })
-            }
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                radius: AutoEasingMethod.linear(500)
+              },
+              data: this.providers.BR,
+              picking: PickType.SINGLE,
+              scaleFactor: () => cameras.main.scale[0],
+              onTouchOver: this.handleTestDotOver,
+              onTouchOut: this.handleTestDotOut
+            })
+          }
+        },
+        default: {
+          views: {
+            "default-view": createView(View2D, {
+              background: [0, 0, 0, 1],
+              camera: cameras.main,
+              clearFlags: [ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                color: AutoEasingMethod.linear(500),
+                radius: AutoEasingMethod.linear(500)
+              },
+              data: providers.circles,
+              scaleFactor: () => cameras.main.scale[0]
+            }),
+            center: createLayer(CircleLayer, {
+              animate: {
+                color: AutoEasingMethod.linear(500)
+              },
+              data: providers.center,
+              scaleFactor: () => cameras.main.scale[0]
+            })
           }
         }
       })

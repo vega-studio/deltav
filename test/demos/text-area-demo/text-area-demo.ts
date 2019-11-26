@@ -257,26 +257,24 @@ export class TextAreaDemo extends BaseDemo {
           wheelShouldScroll: false
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          default: {
-            views: {
-              "default-view": createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              textArea: createLayer(TextAreaLayer, {
-                data: providers.textAreas,
-                resourceKey: resources.font.key,
-                scaling: ScaleMode.BOUND_MAX
-              }),
-              circles: createLayer(CircleLayer, {
-                data: providers.circles
-              })
-            }
+      scenes: (resources, providers, cameras) => ({
+        default: {
+          views: {
+            "default-view": createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            textArea: createLayer(TextAreaLayer, {
+              data: providers.textAreas,
+              resourceKey: resources.font.key,
+              scaling: ScaleMode.BOUND_MAX
+            }),
+            circles: createLayer(CircleLayer, {
+              data: providers.circles
+            })
           }
         }
       })

@@ -153,8 +153,8 @@ export class KitchenSink extends BaseDemo {
       },
       cameras: {},
       eventManagers: () => this.getEventManagers(),
-      pipeline: () => ({
-        scenes
+      scenes: () => ({
+        ...scenes
       })
     });
   }

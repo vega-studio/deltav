@@ -152,265 +152,262 @@ export class EaseDemo extends BaseDemo {
           startView: ["main.main"]
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              main: createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: [
-              // immediate
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.immediate(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles1,
-                key: `rectangles1`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // linear
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.linear(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles2,
-                key: `rectangles2`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInQuad
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles3,
-                key: `rectangles3`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeOutQuad
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeOutQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles4,
-                key: `rectangles4`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInOutQuad
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInOutQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles5,
-                key: `rectangles5`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInCubic
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles6,
-                key: `rectangles6`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeOutCubic
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeOutCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles7,
-                key: `rectangles7`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInOutCubic
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInOutCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles8,
-                key: `rectangles8`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInQuart
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles9,
-                key: `rectangles9`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeOutQuart
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeOutQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles10,
-                key: `rectangles10`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInOutQuart
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInOutQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles11,
-                key: `rectangles11`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeInQuint
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeInQuint(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles12,
-                key: `rectangles12`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeOutQuint
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeOutQuint(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles13,
-                key: `rectangles13`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeOutElastic
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeOutElastic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles14,
-                key: `rectangles14`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeBackIn
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeBackIn(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles15,
-                key: `rectangles15`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeBackOut
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeBackOut(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles16,
-                key: `rectangles16`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // easeBackInOut
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.easeBackInOut(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles17,
-                key: `rectangles17`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              // continuousSinusoidal
-              createLayer(RectangleLayer, {
-                animate: {
-                  location: AutoEasingMethod.continuousSinusoidal(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.rectangles18,
-                key: `rectangles`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              }),
-              createLayer(LabelLayer, {
-                data: providers.labels,
-                key: `labels`,
-                resourceKey: resources.font.key,
-                scaleMode: ScaleMode.ALWAYS
-              }),
-              createLayer(EdgeLayer, {
-                data: this.providers.lines,
-                key: "lines",
-                type: EdgeType.LINE
-              })
-            ]
-          }
+      scenes: (resources, providers, cameras) => ({
+        main: {
+          views: {
+            main: createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: [
+            // immediate
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.immediate(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles1,
+              key: `rectangles1`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // linear
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.linear(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles2,
+              key: `rectangles2`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInQuad
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles3,
+              key: `rectangles3`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeOutQuad
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeOutQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles4,
+              key: `rectangles4`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInOutQuad
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInOutQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles5,
+              key: `rectangles5`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInCubic
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles6,
+              key: `rectangles6`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeOutCubic
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeOutCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles7,
+              key: `rectangles7`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInOutCubic
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInOutCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles8,
+              key: `rectangles8`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInQuart
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles9,
+              key: `rectangles9`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeOutQuart
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeOutQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles10,
+              key: `rectangles10`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInOutQuart
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInOutQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles11,
+              key: `rectangles11`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeInQuint
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInQuint(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles12,
+              key: `rectangles12`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeOutQuint
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeOutQuint(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles13,
+              key: `rectangles13`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeOutElastic
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeOutElastic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles14,
+              key: `rectangles14`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeBackIn
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeBackIn(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles15,
+              key: `rectangles15`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeBackOut
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeBackOut(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles16,
+              key: `rectangles16`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // easeBackInOut
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.easeBackInOut(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles17,
+              key: `rectangles17`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            // continuousSinusoidal
+            createLayer(RectangleLayer, {
+              animate: {
+                location: AutoEasingMethod.continuousSinusoidal(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.rectangles18,
+              key: `rectangles`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            }),
+            createLayer(LabelLayer, {
+              data: providers.labels,
+              key: `labels`,
+              resourceKey: resources.font.key,
+              scaleMode: ScaleMode.ALWAYS
+            }),
+            createLayer(EdgeLayer, {
+              data: this.providers.lines,
+              key: "lines",
+              type: EdgeType.LINE
+            })
+          ]
         }
       })
     });

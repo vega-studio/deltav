@@ -6,9 +6,9 @@ This project has also been born to prevent you from needing to be a rocket scien
 
 ---
 
-## ULTRA QUICK GUIDE: Gimme code NOW!
+## ULTRA QUICK GUIDE: Gimme code NOW! (Technically isn't even a guide)
 
-Me even writing this small text header runs the risk of you leaving. That's what this code snippet is for: The code crunching death machine that is you! If you are mortal like the rest of us, go to the Quick Guide :)
+Me even writing this small text header runs the risk of you leaving. That's what this code snippet is for: The code crunching death machine that is you! If you are mortal like the rest of us, go to the Quick Guide section below this :)
 
 To see this example with comments and a more complex usage: [Quick Start](./quick-start)
 

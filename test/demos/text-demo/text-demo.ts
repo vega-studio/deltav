@@ -167,26 +167,24 @@ export class TextDemo extends BaseDemo {
           wheelShouldScroll: true
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          default: {
-            views: {
-              "default-view": createView(View2D, {
-                background: [0, 0, 0, 1],
-                camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              labels: createLayer(LabelLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
-                },
-                data: providers.labels,
-                resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode
-              })
-            }
+      scenes: (resources, providers, cameras) => ({
+        default: {
+          views: {
+            "default-view": createView(View2D, {
+              background: [0, 0, 0, 1],
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            labels: createLayer(LabelLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: providers.labels,
+              resourceKey: resources.font.key,
+              scaleMode: this.parameters.scaleMode
+            })
           }
         }
       })

@@ -159,232 +159,229 @@ export class QuatEaseDemo extends BaseDemo {
         font: DEFAULT_RESOURCES.font
       },
       eventManagers: _cameras => ({}),
-      pipeline: (resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: [
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.continuousSinusoidal(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes0,
-                key: "cubes0"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatLinear(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes1,
-                key: "cubes1"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes2,
-                key: "cubes2"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatOutQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes3,
-                key: "cubes3"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInOutQuad(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes4,
-                key: "cubes4"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes5,
-                key: "cubes5"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatOutCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes6,
-                key: "cubes6"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInOutCubic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes7,
-                key: "cubes7"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes8,
-                key: "cubes8"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatOutQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes9,
-                key: "cubes9"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInOutQuart(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes10,
-                key: "cubes10"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInQuint(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes11,
-                key: "cubes11"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatOutQuint(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes12,
-                key: "cubes12"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatInOutQuint(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes13,
-                key: "cubes13"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatOutElastic(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes14,
-                key: "cubes14"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatBackIn(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes15,
-                key: "cubes15"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatBackOut(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes16,
-                key: "cubes16"
-              }),
-              createLayer(CubeLayer, {
-                animate: {
-                  rotation: AutoEasingMethod.slerpQuatBackInOut(
-                    this.duration,
-                    this.delay,
-                    this.loopStyle
-                  )
-                },
-                data: providers.cubes17,
-                key: "cubes17"
-              })
-            ]
+      scenes: (resources, providers, cameras) => ({
+        main: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
           },
-          overlay: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
-                data: providers.labels,
-                resourceKey: resources.font.key,
-                control2D: cameras.xz.control2D,
-                scaleMode: ScaleMode.NEVER
-              })
-            }
+          layers: [
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.continuousSinusoidal(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes0,
+              key: "cubes0"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatLinear(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes1,
+              key: "cubes1"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes2,
+              key: "cubes2"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatOutQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes3,
+              key: "cubes3"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInOutQuad(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes4,
+              key: "cubes4"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes5,
+              key: "cubes5"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatOutCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes6,
+              key: "cubes6"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInOutCubic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes7,
+              key: "cubes7"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes8,
+              key: "cubes8"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatOutQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes9,
+              key: "cubes9"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInOutQuart(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes10,
+              key: "cubes10"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInQuint(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes11,
+              key: "cubes11"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatOutQuint(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes12,
+              key: "cubes12"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatInOutQuint(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes13,
+              key: "cubes13"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatOutElastic(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes14,
+              key: "cubes14"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatBackIn(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes15,
+              key: "cubes15"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatBackOut(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes16,
+              key: "cubes16"
+            }),
+            createLayer(CubeLayer, {
+              animate: {
+                rotation: AutoEasingMethod.slerpQuatBackInOut(
+                  this.duration,
+                  this.delay,
+                  this.loopStyle
+                )
+              },
+              data: providers.cubes17,
+              key: "cubes17"
+            })
+          ]
+        },
+        overlay: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
+              data: providers.labels,
+              resourceKey: resources.font.key,
+              control2D: cameras.xz.control2D,
+              scaleMode: ScaleMode.NEVER
+            })
           }
         }
       })

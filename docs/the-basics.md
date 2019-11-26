@@ -41,7 +41,7 @@ const container = new BasicSurface({
   providers: {},
   cameras: {},
   eventManagers: () => ({}),
-  pipeline: () => ({})
+  scenes: () => ({})
 });
 ```
 

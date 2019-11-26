@@ -161,8 +161,8 @@ export class BasicDemo extends BaseDemo {
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
             })
           },
-          layers: [
-            createLayer(CircleLayer, {
+          layers: {
+            circles: createLayer(CircleLayer, {
               animate: {
                 center: AutoEasingMethod.easeInOutCubic(
                   2000,
@@ -171,11 +171,10 @@ export class BasicDemo extends BaseDemo {
                 )
               },
               data: providers.circles,
-              key: `circles`,
               scaleFactor: () => cameras.main.scale2D[0],
               usePoints: true
             })
-          ]
+          }
         }
       })
     });

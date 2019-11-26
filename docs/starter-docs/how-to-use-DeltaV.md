@@ -45,7 +45,7 @@ This is a list of resources that developers will use in layers for labels, image
 
 Pipeline is a callBack that will return a list of scenes. A scene is a world space to inject items into. Each scene can have multiple views and layers. View defines the angle to look at the scene. Layer is the way to inject elements into the scene. A typical list of scene will be like the following codes.
 
-```
+```javascript
 scenes: {
   default: {
     views: {

@@ -6,11 +6,125 @@ This project has also been born to prevent you from needing to be a rocket scien
 
 ---
 
-## QUICK GUIDE: For those who tldr;
+## ULTRA QUICK GUIDE: Gimme code NOW!
 
-- The Basics: Learn some terms
-- Quick Start: Look at a minimal example that renders something to the screen
--
+Me even writing this small text header runs the risk of you leaving. That's what this code snippet is for: The code crunching death machine that is you! If you are mortal like the rest of us, go to the Quick Guide :)
+
+To see this example with comments and a more complex useage: [Quick Start](./quick-start)
+
+`I RECOMMEND USING THIS PROJECT WITH TYPESCRIPT!`
+
+```sh
+npm install -DE deltav
+```
+
+```javascript
+import {
+  BasicSurface,
+  View2D,
+  Camera2D,
+  CircleLayer,
+  createView,
+  createLayer,
+  CircleInstance,
+  InstanceProvider,
+  scale2,
+  add2,
+  multiply2,
+  Vec2,
+  nextFrame,
+  onFrame,
+  AutoEasingMethod,
+  EasingUtil,
+} from 'deltav';
+
+const container = document.createElement('div');
+document.body.appendChild(container);
+container.style.width = '100%';
+container.style.height = '100%';
+
+const providers = {
+  circles: new InstanceProvider<CircleInstance>()
+}
+
+function makeSurface() {
+  const surface = new BasicSurface({
+    container,
+    providers,
+    cameras: {
+      main: new Camera2D()
+    },
+    eventManagers: (cameras) => ({
+      main: new BasicCamera2DController({
+        camera: cameras.main,
+        startView: ["main.main"]
+      }),
+    }),
+    scenes: () => ({
+      main: {
+        views: {
+          fullscreen: createView(View2D, {
+            camera: cameras.main,
+            background: [0, 0, 0, 1],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+          }),
+        },
+        layers: {
+          circles: createLayer(CircleLayer, {
+            animate: {
+              center: AutoEasingMethod.easeInOutCubic(
+                1000, 0, AutoEasingLoopStyle.NONE
+              )
+            },
+            data: providers.circles,
+            usePoints: true
+          })
+        }
+      }
+    })
+  });
+}
+
+async function doStuff() {
+  const { width. height } = container
+  const screenSize: Vec2 = [width, height];
+  const { circles } = providers.circles;
+  const all = [];
+
+  function makeCircle(opts) {
+    const c = new CircleInstance(opts);
+    all.push(c);
+    this.surface.providers.circles.add(circle);
+
+    return c;
+  }
+
+  let circle = makeCircle({
+    center: scale2(screenSize, 0.1),
+    radius: 25,
+    color: [0, 0.8, 1, 1],
+  });
+
+  await wait(1000);
+
+  circle.center = scale2(screenSize, 0.5);
+}
+
+doStuff();
+makeSurface();
+```
+
+## QUICK GUIDE: Start learning fast!
+
+- [The Basics](./the-basics): Learn some terms. Get cozy. Settle in.
+- [Quick Start](./quick-start): Look at a minimal example that renders something to the screen
+- [Instances](./instances.md): Instances. Instances everywhere and anywhere.
+- [Interaction](./interaction): Exploring the rendering and probing around.
+- [Working With Layers](./working-with-layers): Really dig into the power of your GPU!
+- [The Shader](./the-shader): The lair of the Shader. Enter here. Leave born anew.
+- [Animation](./animation): You're starting to use this framework like a pro. Make your products reflect that!
+- [Optimization](./optimization): The south is already a sauna. Your CPU doesn't need to help with that situation.
+- [Project Considerations](project-considerations): There are MANY ways to bundle a cat. Here's some thoughts to make your life easier.
 
 ---
 
@@ -26,7 +140,7 @@ DeltaV IS a graphics framework! It gives you:
 - Basic Graphics Library (Shapes, Images, Text, Video)
 - Shader Simplification and Shader Module manager
 - Will not become a speed bump to your goals. This framework tries really hard to meet your processing demands for rendering LOADS of data and possibly even animating it.
-- Very modular to add functionality or dev convenience as your needs demands. Things you create will/should be VERY versatile and useable across projects.
+- Very modular to add functionality or convenience as your needs demands. Things you create will/should be VERY versatile and useable across projects.
 - Speeds up custom GPU development so you can create optimal handling of your visuals with ease.
 
 DeltaV IS NOT a one stop solution to everything you hoped and dreamed of, but it WILL ENABLE you to achieve your dreams!

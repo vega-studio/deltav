@@ -106,26 +106,24 @@ export class WordSandDemo extends BaseDemo {
           startView: ["default.default-view"]
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        scenes: {
-          main: {
-            views: {
-              view: createView(View2D, {
-                camera: cameras.main,
-                clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
-              })
-            },
-            layers: [
-              createLayer(CircleLayer, {
-                animate: {
-                  center: AutoEasingMethod.easeInOutQuad(250)
-                },
-                data: providers.circles,
-                key: "circles",
-                scaleFactor: () => cameras.main.scale[0]
-              })
-            ]
-          }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            view: createView(View2D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
+            })
+          },
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutQuad(250)
+              },
+              data: providers.circles,
+              key: "circles",
+              scaleFactor: () => cameras.main.scale[0]
+            })
+          ]
         }
       })
     });

@@ -125,61 +125,58 @@ export class VideoDemo extends BaseDemo {
           startView: ["main.main"]
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              main: createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              video: createLayer(ImageLayer, {
-                data: providers.images,
-                atlas: resources.atlas.key
-              })
-            }
+      scenes: (resources, providers, cameras) => ({
+        main: {
+          views: {
+            main: createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
           },
-          screen: {
-            views: {
-              main: createView(View2D, {
-                camera: new Camera2D(),
-                clearFlags: [ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              boxes: createLayer(ImageLayer, {
-                data: providers.controls,
-                picking: PickType.SINGLE,
-                atlas: resources.atlas.key,
+          layers: {
+            video: createLayer(ImageLayer, {
+              data: providers.images,
+              atlas: resources.atlas.key
+            })
+          }
+        },
+        screen: {
+          views: {
+            main: createView(View2D, {
+              camera: new Camera2D(),
+              clearFlags: [ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            boxes: createLayer(ImageLayer, {
+              data: providers.controls,
+              picking: PickType.SINGLE,
+              atlas: resources.atlas.key,
 
-                onMouseClick: info => {
-                  const instance = info.instances[0];
+              onMouseClick: info => {
+                const instance = info.instances[0];
 
-                  if (this.video && instance === this.controls.mute) {
-                    this.video.muted = !this.video.muted;
-                    this.updateMuteState();
-                  } else if (instance === this.controls.play) {
-                    if (this.video) {
-                      if (this.video.paused) {
-                        this.video.play().catch(_err => {
-                          if (this.video) {
-                            this.video.load();
-                          }
-                        });
-                      } else {
-                        this.video.pause();
-                      }
+                if (this.video && instance === this.controls.mute) {
+                  this.video.muted = !this.video.muted;
+                  this.updateMuteState();
+                } else if (instance === this.controls.play) {
+                  if (this.video) {
+                    if (this.video.paused) {
+                      this.video.play().catch(_err => {
+                        if (this.video) {
+                          this.video.load();
+                        }
+                      });
                     } else {
-                      this.videoInstance.videoLoad();
+                      this.video.pause();
                     }
+                  } else {
+                    this.videoInstance.videoLoad();
                   }
                 }
-              })
-            }
+              }
+            })
           }
         }
       })

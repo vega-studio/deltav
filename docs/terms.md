@@ -9,11 +9,11 @@
 
 ## InstanceProvider
 
-* An instanceProvider is the glue between rendering pipeline and the manipulated instances.
+* An InstanceProvider is the glue between rendering pipeline and the manipulated instances.
 * It is the data source of all the layers and the data holder of all the instances.
-* During the rendering process, instances can be added or removed at any time.
-* An instanceProvider can be constructed by instances or as an empty holder which will be expected data to be added later.
-* An instanceProvider can be cleared and destroyed by simply calling clear() and destroy() functions.
+* Instances can be added or removed at any time.
+* An InstanceProvider can be constructed with instances or as an empty holder which will be expected data to be added later.
+* An InstanceProvider can be cleared quickly by calling clear()
 
 ## Layer
 

@@ -56,7 +56,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     Math.sin(this.angleV) * Math.sin(this.angleH)
   ];
   zoomingDistance: number = 10;
-  width: number = 20;
+  width: number = 500;
   viewWidth: number = 8;
   scaleX: number = 1;
   dragX: number = 0;
@@ -65,6 +65,7 @@ export class BucketDepthChartDemo extends BaseDemo {
   bdc: BucketDepthChart;
   padding: number = 0.4;
   topView: boolean = false;
+  gui: dat.GUI;
 
   parameters = {
     frontView: () => {
@@ -104,6 +105,10 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
       let i = 0;
       let deltai = 0.01;
+      const oldAngleH = this.angleH;
+      const oldAngleV = this.angleV;
+      const deltaH = -this.angleH;
+      const deltaV = -this.angleV;
       const timeId = onAnimationLoop(() => {
         camera.position = [
           oldPosition[0] + delta[0] * i,
@@ -111,11 +116,27 @@ export class BucketDepthChartDemo extends BaseDemo {
           oldPosition[2] + delta[2] * i
         ];
         camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
+
+        const angleH = oldAngleH + deltaH * i;
+        const angleV = oldAngleV + deltaV * i;
+
+        this.lightDirection = [
+          Math.sin(angleV) * Math.cos(angleH),
+          Math.cos(angleV),
+          Math.sin(angleV) * Math.sin(angleH)
+        ];
+
         if (i >= 1) stopAnimationLoop(timeId);
         i += deltai;
         if (i >= 0.8) deltai = 0.005;
       });
       this.cameraPosition = newPosition;
+
+      this.angleH = 0;
+      this.angleV = 0;
+      // this.parameters.lightAngleH = 0;
+      // this.parameters.lightAngleV = 0;
+      this.gui.updateDisplay();
     },
     angledView: () => {
       if (!this.surface) return;
@@ -183,6 +204,8 @@ export class BucketDepthChartDemo extends BaseDemo {
       }
       camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
     });
+
+    this.gui = gui;
   }
 
   async init() {
@@ -207,7 +230,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     // bar 0 data
     for (let j = 0; j <= 500; j++) {
       const point1: Vec3 = [
-        j / 100,
+        j / 500,
         j % 100 < 40
           ? heightFilter.stream(1 + 3 * Math.random())
           : heightFilter.stream(6 + 4 * Math.random()),
@@ -220,7 +243,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     // bar 1 data
     for (let j = 0; j <= 700; j++) {
       const point1: Vec3 = [
-        j / 100,
+        j / 700,
         j % 100 > 80
           ? heightFilter.stream(2 + 3 * Math.random())
           : heightFilter.stream(9 + 4 * Math.random()),
@@ -232,7 +255,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     // bar 2 data
     for (let j = 0; j <= 1000; j++) {
       const point1: Vec3 = [
-        j / 100,
+        j / 1000,
         j % 100 > 30 && j % 100 < 50
           ? heightFilter.stream(3 + 3 * Math.random())
           : heightFilter.stream(7 + 4 * Math.random()),
@@ -244,7 +267,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     // bar 3 data
     for (let j = 0; j <= 200; j++) {
       const point1: Vec3 = [
-        j / 100,
+        j / 200,
         j % 100 < 15
           ? heightFilter.stream(Math.random())
           : heightFilter.stream(4 + 4 * Math.random()),
@@ -256,10 +279,10 @@ export class BucketDepthChartDemo extends BaseDemo {
       datas[3].push(point1);
     }
     // bar 4 data
-    for (let j = 0; j <= 400; j++) {
+    for (let j = 0; j <= 2000; j++) {
       const point1: Vec3 = [
-        j / 100,
-        j % 100 < 70 && j % 100 > 60
+        j / 2000,
+        j % 50 < 35
           ? heightFilter.stream(4 + 3 * Math.random())
           : heightFilter.stream(4 * Math.random()),
         0
@@ -330,6 +353,11 @@ export class BucketDepthChartDemo extends BaseDemo {
             this.mouseX = e.mouse.currentPosition[0];
           },
           handleMouseMove: (e: IMouseInteraction) => {
+            if (!this.surface) return;
+            this.topView = false;
+            // const camera = this.surface.cameras.perspective;
+            // const screen = e.start.view.projection.worldToScreen([4, 0, 0]);
+            // console.warn(e.mouse.currentPosition, screen);
             if (this.mouseDown) {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
               this.dragX = Math.max(
@@ -354,23 +382,46 @@ export class BucketDepthChartDemo extends BaseDemo {
           },
           handleWheel: (e: IMouseInteraction) => {
             this.zoomingDistance += e.mouse.wheel.delta[1] * 60 / 1000;
-            this.zoomingDistance = Math.min(
+            /*this.zoomingDistance = Math.min(
               Math.max(0, this.zoomingDistance),
               70
-            );
+            );*/
+
             // this.bdc.updateByCameraPosition([0, 0, this.zoomingDistance]);
             // ScaleX
-            this.scaleX -= e.mouse.wheel.delta[1] * 0.6 / 1000;
-            this.scaleX = Math.min(Math.max(this.scaleX, 0.4), 1.0);
+            const preScale = this.scaleX;
+            this.scaleX -= e.mouse.wheel.delta[1] / 10000;
+            this.scaleX = Math.min(
+              Math.max(this.scaleX, this.viewWidth / this.width),
+              1.0
+            );
+
+            // mouseX
+            const p1 = e.start.view.projection.worldToScreen([-4, 0, 0]);
+            const p2 = e.start.view.projection.worldToScreen([4, 0, 0]);
+            const mouseX = e.mouse.currentPosition[0];
+            const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
+            const anchorX = -this.viewWidth / 2 + anchorScale * this.viewWidth;
+            // left end
+            const leftEnd = this.dragX;
+            const newLeftEnd =
+              anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
+
+            this.dragX = newLeftEnd;
+
+            // right end
+
+            // drag after scale
+
             // Drag X update
-            this.dragX = Math.max(
+            /*this.dragX = Math.max(
               Math.min(this.dragX, 0),
               this.viewWidth - this.width * this.scaleX
-            );
+            );*/
             // Resolution update
-            const resolution = getResolutionByDistance(this.zoomingDistance);
+            // const resolution = getResolutionByDistance(this.zoomingDistance);
 
-            this.bdc.updateByScaleX(this.scaleX, this.dragX, resolution);
+            this.bdc.updateByScaleX(this.scaleX, this.dragX, 100);
           }
         })
       }),

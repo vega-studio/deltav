@@ -393,7 +393,11 @@ export class Bar {
       });
 
       if (x1 < rightBound && x2 > leftBound) {
-        interval.status = IntervalStatus.IN;
+        if (x1 >= leftBound && x2 <= rightBound) {
+          interval.status = IntervalStatus.IN;
+        } else {
+          interval.status = IntervalStatus.INSECT;
+        }
 
         interval.createInstance(
           baseX,
@@ -653,21 +657,23 @@ export class Bar {
     });
   }
 
-  updateByScaleX(scaleX: number, dragX: number, resolution: number) {
+  updateByScaleX(scaleX: number, dragX: number, resolution?: number) {
     this.scaleX = scaleX;
     this.dragX = dragX;
 
     const oldSegments = this.segments;
 
-    if (resolution > this.data.length) {
+    const newRes = resolution || this._resolution;
+
+    if (newRes > this.data.length) {
       this.segments = this.data.length;
-    } else if (resolution < 2) {
+    } else if (newRes < 2) {
       this.segments = 2;
     } else {
-      this.segments = resolution;
+      this.segments = newRes;
     }
 
-    this._resolution = resolution;
+    this._resolution = newRes;
 
     if (this.segments !== oldSegments) {
       this.clearAllInstances();

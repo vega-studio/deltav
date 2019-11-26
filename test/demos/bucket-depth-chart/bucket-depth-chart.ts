@@ -201,7 +201,7 @@ export class BucketDepthChart {
     }
   }
 
-  updateByScaleX(scaleX: number, dragX: number, resolution: number) {
+  updateByScaleX(scaleX: number, dragX: number, resolution?: number) {
     for (let i = 0, endi = this.bars.length; i < endi; i++) {
       const bar = this.bars[i];
       bar.updateByScaleX(scaleX, dragX, resolution);

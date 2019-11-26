@@ -27,6 +27,8 @@ export interface IBarOptions {
   provider: InstanceProvider<BlockInstance>;
   // Provider for plateEndInstance
   endProvider: InstanceProvider<PlateEndInstance>;
+
+  maxDepth?: number;
 }
 
 function generateBuckets(data: Vec3[], segments: number): Bucket[] {
@@ -122,6 +124,7 @@ export class Bar {
   data: Vec3[];
   buckets: Bucket[];
   intervals: Interval[] = [];
+  maxDepth: number = 0;
 
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
@@ -134,6 +137,7 @@ export class Bar {
     this.endProvider = options.endProvider;
     this.data = options.barData;
     this.data.sort((a, b) => a[0] - b[0]);
+    this.maxDepth = options.maxDepth || this.maxDepth;
 
     if (options.resolution) {
       this._resolution = options.resolution;
@@ -348,6 +352,14 @@ export class Bar {
     this.buckets = [];
 
     this.intervals = [];
+
+    if (this.leftEnd) {
+      this.endProvider.remove(this.leftEnd);
+    }
+
+    if (this.rightEnd) {
+      this.endProvider.remove(this.rightEnd);
+    }
   }
 
   private generateInstances(data: Vec3[]) {
@@ -459,20 +471,6 @@ export class Bar {
 
       this.intervals.push(interval);
     }
-  }
-
-  updateByCameraPosition(pos: Vec3) {
-    const barPos = [this.bottomCenter[0], this.bottomCenter[1], this.baseZ]; // will be changed
-    let distance = Math.sqrt(
-      (pos[0] - barPos[0]) ** 2 +
-        (pos[1] - barPos[1]) ** 2 +
-        (pos[2] - barPos[2]) ** 2
-    );
-
-    distance = Math.max(0, distance);
-    // Will be changed according to requirements
-    this.resolution = 60 - 10 * Math.floor(distance / 11);
-    this.resolution = Math.max(2, this.resolution);
   }
 
   updateByDragX2(dragX: number) {

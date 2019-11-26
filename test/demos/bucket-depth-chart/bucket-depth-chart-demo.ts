@@ -23,11 +23,17 @@ import { BucketDepthChart } from "./bucket-depth-chart";
 import { PlateEndInstance, PlateEndLayer } from "./plateEnd";
 
 function getResolutionByDistance(distance: number) {
-  if (distance < 60) return 60 - 5 * Math.floor(distance / 6);
+  if (distance < 500) return 1000;
 
-  if (distance < 69) return 70 - Math.floor(distance);
+  if (distance < 570) return 500;
 
-  return 2;
+  if (distance < 600) return 250;
+
+  if (distance < 620) return 125;
+
+  if (distance < 640) return 100;
+
+  return 80;
 }
 
 export class BucketDepthChartDemo extends BaseDemo {
@@ -37,11 +43,21 @@ export class BucketDepthChartDemo extends BaseDemo {
     blocks3: new InstanceProvider<BlockInstance>(),
     blocks4: new InstanceProvider<BlockInstance>(),
     blocks5: new InstanceProvider<BlockInstance>(),
+    blocks6: new InstanceProvider<BlockInstance>(),
+    blocks7: new InstanceProvider<BlockInstance>(),
+    blocks8: new InstanceProvider<BlockInstance>(),
+    blocks9: new InstanceProvider<BlockInstance>(),
+    blocks10: new InstanceProvider<BlockInstance>(),
     ends1: new InstanceProvider<PlateEndInstance>(),
     ends2: new InstanceProvider<PlateEndInstance>(),
     ends3: new InstanceProvider<PlateEndInstance>(),
     ends4: new InstanceProvider<PlateEndInstance>(),
-    ends5: new InstanceProvider<PlateEndInstance>()
+    ends5: new InstanceProvider<PlateEndInstance>(),
+    ends6: new InstanceProvider<PlateEndInstance>(),
+    ends7: new InstanceProvider<PlateEndInstance>(),
+    ends8: new InstanceProvider<PlateEndInstance>(),
+    ends9: new InstanceProvider<PlateEndInstance>(),
+    ends10: new InstanceProvider<PlateEndInstance>()
   };
 
   front: boolean = true;
@@ -66,6 +82,17 @@ export class BucketDepthChartDemo extends BaseDemo {
   padding: number = 0.4;
   topView: boolean = false;
   gui: dat.GUI;
+  numOfBars: number = 5;
+
+  heightFilter = new FIRFilter(
+    [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+    1
+  );
+
+  depthFilter = new FIRFilter(
+    [[0.3, 0], [0.2, 0], [0.1, 0], [0.15, 0], [0.25, 0]],
+    1
+  );
 
   parameters = {
     frontView: () => {
@@ -130,12 +157,10 @@ export class BucketDepthChartDemo extends BaseDemo {
         i += deltai;
         if (i >= 0.8) deltai = 0.005;
       });
-      this.cameraPosition = newPosition;
 
+      this.cameraPosition = newPosition;
       this.angleH = 0;
       this.angleV = 0;
-      // this.parameters.lightAngleH = 0;
-      // this.parameters.lightAngleV = 0;
       this.gui.updateDisplay();
     },
     angledView: () => {
@@ -167,7 +192,8 @@ export class BucketDepthChartDemo extends BaseDemo {
     },
     lightAngleV: this.angleV * 180 / Math.PI,
     lightAngleH: this.angleH * 180 / Math.PI,
-    padding: this.padding
+    padding: this.padding,
+    numOfBars: this.numOfBars
   };
 
   buildConsole(gui: datGUI.GUI): void {
@@ -204,22 +230,25 @@ export class BucketDepthChartDemo extends BaseDemo {
       }
       camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
     });
+    gui.add(this.parameters, "numOfBars", 0, 10, 1).onChange((val: number) => {
+      if (val > this.numOfBars) {
+        this.addBar(this.numOfBars, val);
+      } else if (val < this.numOfBars) {
+        this.reduceBar(this.numOfBars, val);
+      }
+
+      if (!this.surface) return;
+      const camera = this.surface.cameras.perspective;
+      camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
+
+      this.numOfBars = val;
+    });
 
     this.gui = gui;
   }
 
   async init() {
     if (!this.surface) return;
-
-    const heightFilter = new FIRFilter(
-      [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-      1
-    );
-
-    const depthFilter = new FIRFilter(
-      [[0.3, 0], [0.2, 0], [0.1, 0], [0.15, 0], [0.25, 0]],
-      1
-    );
 
     const camera = this.surface.cameras.perspective;
     camera.position = [0, 0, 10];
@@ -232,9 +261,9 @@ export class BucketDepthChartDemo extends BaseDemo {
       const point1: Vec3 = [
         j / 500,
         j % 100 < 40
-          ? heightFilter.stream(1 + 3 * Math.random())
-          : heightFilter.stream(6 + 4 * Math.random()),
-        depthFilter.stream(0.5 + 0.5 * Math.random())
+          ? this.heightFilter.stream(1 + 3 * Math.random())
+          : this.heightFilter.stream(6 + 4 * Math.random()),
+        this.depthFilter.stream(0.5 + 0.5 * Math.random())
       ];
 
       datas[0].push(point1);
@@ -245,9 +274,9 @@ export class BucketDepthChartDemo extends BaseDemo {
       const point1: Vec3 = [
         j / 700,
         j % 100 > 80
-          ? heightFilter.stream(2 + 3 * Math.random())
-          : heightFilter.stream(9 + 4 * Math.random()),
-        depthFilter.stream(0.1 + 0.6 * Math.random())
+          ? this.heightFilter.stream(2 + 3 * Math.random())
+          : this.heightFilter.stream(9 + 4 * Math.random()),
+        this.depthFilter.stream(0.1 + 0.6 * Math.random())
       ];
 
       datas[1].push(point1);
@@ -257,9 +286,9 @@ export class BucketDepthChartDemo extends BaseDemo {
       const point1: Vec3 = [
         j / 1000,
         j % 100 > 30 && j % 100 < 50
-          ? heightFilter.stream(3 + 3 * Math.random())
-          : heightFilter.stream(7 + 4 * Math.random()),
-        depthFilter.stream(0.05 + 0.9 * Math.random())
+          ? this.heightFilter.stream(3 + 3 * Math.random())
+          : this.heightFilter.stream(7 + 4 * Math.random()),
+        this.depthFilter.stream(0.05 + 0.9 * Math.random())
       ];
 
       datas[2].push(point1);
@@ -269,11 +298,11 @@ export class BucketDepthChartDemo extends BaseDemo {
       const point1: Vec3 = [
         j / 200,
         j % 100 < 15
-          ? heightFilter.stream(Math.random())
-          : heightFilter.stream(4 + 4 * Math.random()),
+          ? this.heightFilter.stream(Math.random())
+          : this.heightFilter.stream(4 + 4 * Math.random()),
         j % 100 < 50
-          ? depthFilter.stream(0.6 + 0.1 * Math.random())
-          : depthFilter.stream(0.1 + 0.1 * Math.random())
+          ? this.depthFilter.stream(0.6 + 0.1 * Math.random())
+          : this.depthFilter.stream(0.1 + 0.1 * Math.random())
       ];
 
       datas[3].push(point1);
@@ -283,8 +312,8 @@ export class BucketDepthChartDemo extends BaseDemo {
       const point1: Vec3 = [
         j / 2000,
         j % 50 < 35
-          ? heightFilter.stream(4 + 3 * Math.random())
-          : heightFilter.stream(4 * Math.random()),
+          ? this.heightFilter.stream(4 + 3 * Math.random())
+          : this.heightFilter.stream(4 * Math.random()),
         0
       ];
 
@@ -305,7 +334,12 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.providers.blocks2,
       this.providers.blocks3,
       this.providers.blocks4,
-      this.providers.blocks5
+      this.providers.blocks5,
+      this.providers.blocks6,
+      this.providers.blocks7,
+      this.providers.blocks8,
+      this.providers.blocks9,
+      this.providers.blocks10
     ];
 
     const endPlateProviders: InstanceProvider<PlateEndInstance>[] = [
@@ -313,7 +347,12 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.providers.ends2,
       this.providers.ends3,
       this.providers.ends4,
-      this.providers.ends5
+      this.providers.ends5,
+      this.providers.ends6,
+      this.providers.ends7,
+      this.providers.ends8,
+      this.providers.ends9,
+      this.providers.ends10
     ];
 
     this.bdc = new BucketDepthChart({
@@ -322,12 +361,44 @@ export class BucketDepthChartDemo extends BaseDemo {
       heightScale: 0.3,
       colors: colors,
       chartData: datas,
-      resolution: 100,
+      resolution: 1000,
       viewWidth: this.viewWidth,
       padding: this.padding,
       providers: blockProviders,
       endProviders: endPlateProviders
     });
+  }
+
+  addBar(pre: number, now: number) {
+    for (let i = pre; i < now; i++) {
+      // data
+      const barData = [];
+      const a = Math.floor(Math.random() * 50) + 20;
+      const b = Math.floor(Math.random() * 10) + 10;
+
+      for (let j = 0; j <= 2000; j++) {
+        const point: Vec3 = [
+          j / 2000,
+          j % a < b
+            ? this.heightFilter.stream(4 + 3 * Math.random())
+            : this.heightFilter.stream(4 * Math.random()),
+          this.depthFilter.stream(4 * Math.random())
+        ];
+
+        barData.push(point);
+      }
+
+      // color
+      const color: Vec4 = [Math.random(), Math.random(), Math.random(), 0.9];
+
+      this.bdc.addBar(barData, color, i);
+    }
+  }
+
+  reduceBar(pre: number, now: number) {
+    for (let i = pre; i > now; i--) {
+      this.bdc.reduceBar();
+    }
   }
 
   makeSurface(container: HTMLElement) {
@@ -355,9 +426,7 @@ export class BucketDepthChartDemo extends BaseDemo {
           handleMouseMove: (e: IMouseInteraction) => {
             if (!this.surface) return;
             this.topView = false;
-            // const camera = this.surface.cameras.perspective;
-            // const screen = e.start.view.projection.worldToScreen([4, 0, 0]);
-            // console.warn(e.mouse.currentPosition, screen);
+
             if (this.mouseDown) {
               this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
               this.dragX = Math.max(
@@ -382,12 +451,11 @@ export class BucketDepthChartDemo extends BaseDemo {
           },
           handleWheel: (e: IMouseInteraction) => {
             this.zoomingDistance += e.mouse.wheel.delta[1] * 60 / 1000;
-            /*this.zoomingDistance = Math.min(
+            this.zoomingDistance = Math.min(
               Math.max(0, this.zoomingDistance),
-              70
-            );*/
+              700
+            );
 
-            // this.bdc.updateByCameraPosition([0, 0, this.zoomingDistance]);
             // ScaleX
             const preScale = this.scaleX;
             this.scaleX -= e.mouse.wheel.delta[1] / 10000;
@@ -396,32 +464,35 @@ export class BucketDepthChartDemo extends BaseDemo {
               1.0
             );
 
+            // Real ends
+            const leftEnd = this.dragX - this.viewWidth / 2;
+            const rightEnd = leftEnd + this.width;
+
             // mouseX
-            const p1 = e.start.view.projection.worldToScreen([-4, 0, 0]);
-            const p2 = e.start.view.projection.worldToScreen([4, 0, 0]);
+            const p1 = e.start.view.projection.worldToScreen([leftEnd, 0, 0]);
+            const p2 = e.start.view.projection.worldToScreen([rightEnd, 0, 0]);
             const mouseX = e.mouse.currentPosition[0];
+
+            // anchor position
             const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
-            const anchorX = -this.viewWidth / 2 + anchorScale * this.viewWidth;
-            // left end
-            const leftEnd = this.dragX;
+            const anchorX = leftEnd + anchorScale * this.width;
+
+            // new left end
             const newLeftEnd =
               anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
 
-            this.dragX = newLeftEnd;
-
-            // right end
-
-            // drag after scale
+            this.dragX = newLeftEnd + this.viewWidth / 2;
 
             // Drag X update
-            /*this.dragX = Math.max(
+            this.dragX = Math.max(
               Math.min(this.dragX, 0),
               this.viewWidth - this.width * this.scaleX
-            );*/
-            // Resolution update
-            // const resolution = getResolutionByDistance(this.zoomingDistance);
+            );
 
-            this.bdc.updateByScaleX(this.scaleX, this.dragX, 100);
+            // Resolution update
+            const resolution = getResolutionByDistance(this.zoomingDistance);
+
+            this.bdc.updateByScaleX(this.scaleX, this.dragX, resolution);
           }
         })
       }),
@@ -493,6 +564,66 @@ export class BucketDepthChartDemo extends BaseDemo {
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
+              }),
+              blocks6: createLayer(BlockLayer, {
+                data: providers.blocks6,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
+              }),
+              end6: createLayer(PlateEndLayer, {
+                data: providers.ends6,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
+              }),
+              blocks7: createLayer(BlockLayer, {
+                data: providers.blocks7,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
+              }),
+              end7: createLayer(PlateEndLayer, {
+                data: providers.ends7,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
+              }),
+              blocks8: createLayer(BlockLayer, {
+                data: providers.blocks8,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
+              }),
+              end8: createLayer(PlateEndLayer, {
+                data: providers.ends8,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
+              }),
+              blocks9: createLayer(BlockLayer, {
+                data: providers.blocks9,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
+              }),
+              end9: createLayer(PlateEndLayer, {
+                data: providers.ends9,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection
+              }),
+              blocks10: createLayer(BlockLayer, {
+                data: providers.blocks10,
+                bottomCenter: () => this.bottomCenter,
+                lightDirection: () => this.lightDirection,
+                dragX: () => this.dragX,
+                scaleX: () => this.scaleX
+              }),
+              end10: createLayer(PlateEndLayer, {
+                data: providers.ends10,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection
               })

@@ -63,7 +63,7 @@ simplistic internally and highly agnostic to what is done with them.
 Internally, the layers know how to use them and can squeeze the info out of them and pipe hat info
 where it needs to go.
 
-But for all of us who could care less, the important part of instance providers is:
+But for all of us who couldn't care less, the important part of instance providers is:
 
 ```javascript
 const provider = new InstanceProvider<MyInstance>();

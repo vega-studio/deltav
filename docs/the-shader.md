@@ -37,7 +37,7 @@ nice syntax highlighting.
 
 ## Writing a Shader
 
-So now that you have a pipeline for writng and bundling your shader. We can now add the shader to
+So now that you have a pipeline for writing and bundling your shader. We can now add the shader to
 the project super easy (See [The Layer](./working-with-layers) to get more details on this):
 
 ```javascript

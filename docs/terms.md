@@ -4,7 +4,7 @@
 
 * An instance is a single element of certain shape or item that will be displayed in given environment.
 * It should have some basic properties of a shape such as size, position, color and so on.
-* Every time a developer needs to extends the customized instance from Instance class and set the necessary properties that can describe the shape.
+* Every time a developer needs to extend the customized instance from Instance class and set the necessary properties that can describe the shape.
 * Instances are very easy to use and completely detached from rendering process. Developers can create, add, modify and remove instances at any phase of a rendering process.
 
 ## InstanceProvider

@@ -12,7 +12,7 @@ DeltaV requires at *minimum* the following to get something to render to the scr
 - A Layer
 - Some data (Instance and InstanceProvider)
 
-Note: As a web developer you should be familiar with HTML and basic DOM manipulation. If not: You need to know how too use it to feed a container to the framework.
+Note: As a web developer you should be familiar with HTML and basic DOM manipulation. If not: You need to know how to use it to feed a container to the framework.
 
 Follow this guide in a downward fashion to see the code example grow slowly into a fully functional surface.
 
@@ -24,7 +24,7 @@ Follow this guide in a downward fashion to see the code example grow slowly into
 
 The Surface is the base part of the framework for DeltaV. Everything is built on top of it as a foundation.
 
-It ranges from simple and easy, to deep and complex depending how much involvement you need to make your project a
+It ranges from simple and easy, to deep and complex depending on how much involvement you need to make your project a
 success.
 
 For now, let's take a look at simple and easy using the convenience of the included "BasicSurface".
@@ -160,7 +160,7 @@ inner mechanisms to work with.
 Enter: The View!
 
 This is where we depict what we are rendering to! We say: What do your fair camera eyes see? And we tell it to scribe
-it's sightings upon a scroll! Well, not a scroll...but a screen or a render target of some sort.
+it's sightings' upon a scroll! Well, not a scroll...but a screen or a render target of some sort.
 
 The view let's us depict yon scroll and it's properties upon which we scribe!
 
@@ -313,7 +313,7 @@ Layers. Go ahead. Take it in. Breathe for a moment.
 
 Layers are where you set up geometry to be injected into your scene. It takes your data, does magnificent miracles with
 your instances, and causes your camera to suddenly see those items, which causes your view to start drawing like a
-crazed painting gnome seeing the morning sun for the first time in it's life.
+crazed painting gnome seeing the morning sun for the first time in its life.
 
 Layers are the heart of where most of your customization can happen so you may wrangle the GPU to do your bidding.
 

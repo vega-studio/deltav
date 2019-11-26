@@ -25,7 +25,7 @@ providing an `animate` property for the `Layer`. Each property in the animate wi
 property in the Instance it manages.
 
 When you set up an animated property, simply change an instance property value to have it animate
-from it's current value ot the next! You don't even have to wait for the animation to complete
+from it's current value to the next! You don't even have to wait for the animation to complete
 to change the value and see it move from it's mid animation value to the next!
 
 ```typescript
@@ -50,7 +50,7 @@ Prebaked animations ARE THAT EASY!
 ## Customizing a Layer to accept animations
 
 Now, let's go deeper into the Layer itself. Making your own animations is probably a horrifying
-mystical atrocity that no man shall ever comprehend, right?
+mystical atrocity that no one shall ever comprehend, right?
 
 Nope: still easy. Let's take a look at our own Layer (using the example
 from [The Layer](./working-with-layers))
@@ -136,7 +136,7 @@ So deltav does 'packing' and 'destructuring' for you to optimize the utilization
 (this is one of the major reasons you can ONLY use attributes in the main method.)
 
 SO LASTLY BE AWARE:
-Animations come at the cost of increasing your vertex useage by times 2 + a bit! Why? because
+Animations come at the cost of increasing your vertex usage by times 2 + a bit! Why? because
 easing requires additional information: a start value, an end value, a duration, and a start time.
 
 So KEEP THIS IN MIND AND USE WISELY!

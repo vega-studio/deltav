@@ -5,7 +5,7 @@ This section feels like a betrayal! You said this should just work and be great!
 Well it DOES just work and it IS great! But we all can always do our part to make sure things
 run well for our lower budgeted brethern and we must always look out for our laptop batteries.
 
-Also, you will soon realize how not betrayed you are when you realize how eay it is to keep things
+Also, you will soon realize how not betrayed you are when you realize how easy it is to keep things
 optimal.
 
 ## Use Layer properties

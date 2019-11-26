@@ -35,7 +35,7 @@ createLayer(MyLayer, { ...props });
 
 In our layer we specify which props our layer expects. Here it should also be noted: a layer has to be configured to
 expect a certain type of instance data to render. In this case, our example layer will be expecting 'MyInstance' style
-objects in it's data provider.
+objects in its data provider.
 
 ```javascript
 import { Layer2D, ILayer2DProps, MyInstance, InstanceProvider } from 'deltav';
@@ -155,7 +155,7 @@ function initShader(): IShaderInitialization<MyInstance> {
     // This is the string content of the fragment shader
     fs: string,
     // This is how our vertices are to be drawn
-    // (triangles, triangls trip, lines, points, etc)
+    // (triangles, triangles trip, lines, points, etc)
     drawMode: GLSettings.Model.DrawMode;
   };
 }

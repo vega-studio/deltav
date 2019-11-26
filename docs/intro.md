@@ -10,7 +10,7 @@ This project has also been born to prevent you from needing to be a rocket scien
 
 Me even writing this small text header runs the risk of you leaving. That's what this code snippet is for: The code crunching death machine that is you! If you are mortal like the rest of us, go to the Quick Guide :)
 
-To see this example with comments and a more complex useage: [Quick Start](./quick-start)
+To see this example with comments and a more complex usage: [Quick Start](./quick-start)
 
 `I RECOMMEND USING THIS PROJECT WITH TYPESCRIPT!`
 
@@ -132,7 +132,7 @@ makeSurface();
 
 DeltaV IS a graphics framework! It gives you:
 
-- Math utlilities (2D and 3D)
+- Math utilities (2D and 3D)
 - A means to run programs on the GPU
 - A way to split your rendering from your processing
 - Optimized handling of updates to the GPU
@@ -140,7 +140,7 @@ DeltaV IS a graphics framework! It gives you:
 - Basic Graphics Library (Shapes, Images, Text, Video)
 - Shader Simplification and Shader Module manager
 - Will not become a speed bump to your goals. This framework tries really hard to meet your processing demands for rendering LOADS of data and possibly even animating it.
-- Very modular to add functionality or convenience as your needs demands. Things you create will/should be VERY versatile and useable across projects.
+- Very modular to add functionality or convenience as your needs demands. Things you create will/should be VERY versatile and usable across projects.
 - Speeds up custom GPU development so you can create optimal handling of your visuals with ease.
 
 DeltaV IS NOT a one stop solution to everything you hoped and dreamed of, but it WILL ENABLE you to achieve your dreams!
@@ -149,7 +149,7 @@ DeltaV IS NOT a one stop solution to everything you hoped and dreamed of, but it
 - Not a layout solution (Combine with d3 or your favorite library for easy amazing results!)
 - Not a complete game platform (Just makes everything you want to do EASY)
 - No sound handling
-- Does not force you to make great/perfect choices. But that's ok! Sometimes not great choices are what we're stuck with and we always need something to support us through our rough times! DeltaV will take on the weight of a bad set up and try to make your job easier!
+- Does not force you to make great/perfect choices. But that's ok! Sometimes not great choices are what we're stuck with, and we always need something to support us through our rough times! DeltaV will take on the weight of a bad set up and try to make your job easier!
 
 ---
 
@@ -176,7 +176,7 @@ So, what comes in the box?! Read On!
 
 - `Shader extending`: Analyze and modify a shader
 
-- `Color Picking`: Easily set up a layer to have it's instances rendered to a color buffer to have feedback in mouse interactions with the instance.
+- `Color Picking`: Easily set up a layer to have its instances rendered to a color buffer to have feedback in mouse interactions with the instance.
 
 - `Resource Management` Pipeline: You can create your own resource managers for different types of assets! Or you can use the built in Image and Font Resource manager to get MOST tasks done!
 

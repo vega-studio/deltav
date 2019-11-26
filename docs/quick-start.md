@@ -91,7 +91,7 @@ function makeSurface() {
             },
             // This layer renders data provided by the circles provider
             data: providers.circles,
-            // A propery of the layer that can improve performance with certain
+            // A property of the layer that can improve performance with certain
             // limitations.
             usePoints: true
           })

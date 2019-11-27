@@ -20,7 +20,7 @@ export declare function fromEulerAxisAngleToQuat(axis: Vec3, angle: number, out?
 export declare function fromOrderedEulerToQuat(angles: Vec3, order: EulerOrder, out?: Quaternion): Quaternion;
 export declare function toEulerXYZfromOrderedEuler(euler: Vec3, order: EulerOrder, out?: EulerRotation): EulerRotation;
 export declare function toEulerFromQuat(q: Quaternion, out?: EulerRotation): [number, number, number];
-export declare function toOrderedEulerFromQuat(q: Quaternion, order: EulerOrder, out?: Vec3): Vec3;
+export declare function toOrderedEulerFromQuat(q: Quaternion, order: EulerOrder, out?: Vec3): EulerRotation;
 export declare function toOrderedEulerFromQuat2(quat: Quaternion, order: EulerOrder, out?: Vec3): void;
 export declare function angleQuat(quat: Quaternion): number;
 export declare function axisQuat(quat: Quaternion): Vec3;

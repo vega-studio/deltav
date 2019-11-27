@@ -5,7 +5,7 @@
     "url": "http://vega.studio"
   },
   "name": "deltav",
-  "version": "1.34.0",
+  "version": "1.35.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "MIT",

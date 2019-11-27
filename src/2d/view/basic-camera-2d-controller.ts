@@ -668,7 +668,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
   }
 
   /**
-   * Used to aid in handling the pan effect. Stops panning operations for the
+   * Used to aid in handling the pan effect. Stops panning operations when mouse is up.
    */
   handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;

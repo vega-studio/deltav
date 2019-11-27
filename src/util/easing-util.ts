@@ -1,6 +1,6 @@
 import { Instance } from "../instance-provider";
 import { IEasingControl, NOOP } from "../types";
-import { nextFrame } from "./frame";
+import { onFrame } from "./frame";
 
 /** Handler type for discovered easing controls using the all() method */
 export type EasingUtilAllHandler<T extends Instance> = (
@@ -29,7 +29,6 @@ export class EasingUtil {
     let resolver: Function = NOOP;
     const promise = new Promise(resolve => (resolver = resolve));
     let finishedTime = 0;
-    let start = 0;
 
     for (let i = 0, iMax = layerAttributes.length; i < iMax; ++i) {
       const attr = layerAttributes[i];
@@ -40,21 +39,24 @@ export class EasingUtil {
 
         if (easing) {
           if (adjust) adjust(easing, instance, k, i);
-          finishedTime = Math.max((easing.delay || 0) + easing.duration);
+          finishedTime = Math.max(
+            (easing.delay || 0) + easing.duration,
+            finishedTime
+          );
         }
       }
     }
 
     // Keep looking at next frame until the animations are complete
     const checkNextFrame = (t: number) => {
-      if (t - start < finishedTime) {
-        nextFrame(checkNextFrame);
+      if (t < finishedTime) {
+        onFrame(checkNextFrame);
       } else resolver();
     };
 
     if (wait) {
-      requestAnimationFrame(t => {
-        start = t;
+      onFrame(t => {
+        finishedTime += t;
         checkNextFrame(t);
       });
     } else {

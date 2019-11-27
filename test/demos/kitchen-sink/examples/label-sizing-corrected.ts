@@ -7,7 +7,7 @@ import {
   LabelLayer,
   LayerInitializer,
   ReferenceCamera2D
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelSizingCorrected extends BaseExample {

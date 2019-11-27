@@ -10,13 +10,13 @@ import {
   LayerInitializer,
   Vec4,
   View2D
-} from "src";
+} from "../../../src";
 
 import * as datGUI from "dat.gui";
 import { BaseDemo } from "../../common/base-demo";
 
-import { Blending } from "test/demos/kitchen-sink/examples/blending";
-import { DEFAULT_RESOURCES } from "test/types";
+import { Blending } from "../../demos/kitchen-sink/examples/blending";
+import { DEFAULT_RESOURCES } from "../../types";
 import { AnimateDeleteAdd } from "./examples/animate-delete-add";
 import { Arcs } from "./examples/arcs";
 import { BaseExample } from "./examples/base-example";
@@ -153,8 +153,8 @@ export class KitchenSink extends BaseDemo {
       },
       cameras: {},
       eventManagers: () => this.getEventManagers(),
-      pipeline: () => ({
-        scenes
+      scenes: () => ({
+        ...scenes
       })
     });
   }

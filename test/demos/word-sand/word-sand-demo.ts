@@ -11,7 +11,7 @@ import {
   createView,
   InstanceProvider,
   View2D
-} from "src";
+} from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
 import { textPositions } from "../../common/text-positions";
@@ -106,26 +106,24 @@ export class WordSandDemo extends BaseDemo {
           startView: ["default.default-view"]
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        scenes: {
-          main: {
-            views: {
-              view: createView(View2D, {
-                camera: cameras.main,
-                clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
-              })
-            },
-            layers: [
-              createLayer(CircleLayer, {
-                animate: {
-                  center: AutoEasingMethod.easeInOutQuad(250)
-                },
-                data: providers.circles,
-                key: "circles",
-                scaleFactor: () => cameras.main.scale[0]
-              })
-            ]
-          }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            view: createView(View2D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
+            })
+          },
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutQuad(250)
+              },
+              data: providers.circles,
+              key: "circles",
+              scaleFactor: () => cameras.main.scale[0]
+            })
+          ]
         }
       })
     });
@@ -199,7 +197,7 @@ export class WordSandDemo extends BaseDemo {
 
         if (circle && pos) {
           circle.center = [pos[0], pos[1]];
-          circle.radius = 0.5;
+          circle.radius = 1;
           circle.color = [random(), random(), 1.0, 1.0];
 
           const easing = circle.getEasing(CircleLayer.attributeNames.center);

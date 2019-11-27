@@ -14,9 +14,9 @@ export interface ICubeOptions extends IInstance3DOptions {
  * Represents a cube model within 3D space.
  */
 export class CubeInstance extends Instance3D {
-  /** Sets the dimensions of the cube */
+  /** Dimensions of the cube */
   @observable size: Size = [1, 1, 1];
-  /** Sets the color of the cube */
+  /** Color of the cube */
   @observable color: Color = [1, 1, 1, 1];
 
   constructor(options: ICubeOptions) {

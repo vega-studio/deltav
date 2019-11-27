@@ -1,8 +1,6 @@
 // Shader for rendering simple circles on a quad, using the fragment shader to create the 'roundness' of the shape.
 precision highp float;
 
-
-
 varying vec4 vertexColor;
 varying float edgeSharpness;
 varying float edgeSharpnessBase;

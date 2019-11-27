@@ -12,7 +12,7 @@ import {
   scale4,
   ScaleMode,
   uid
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class VertexAttributePacking extends BaseExample {

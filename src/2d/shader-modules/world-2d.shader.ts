@@ -15,7 +15,7 @@ ShaderModule.register([
     uniforms: (layer: Layer<any, any>) => {
       if (!(layer instanceof Layer2D)) {
         console.warn(
-          "A shader requesed the module world2D; however, the layer the shader comes from is NOT a Layer2D which is",
+          "A shader requested the module world2D; however, the layer the shader comes from is NOT a Layer2D which is",
           "required for the module to work."
         );
         return [];

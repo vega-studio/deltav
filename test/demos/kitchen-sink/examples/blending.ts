@@ -9,7 +9,7 @@ import {
   LabelLayer,
   LayerInitializer,
   Vec4
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Blending extends BaseExample {

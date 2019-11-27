@@ -6,7 +6,7 @@ import {
   PickType,
   RingInstance,
   RingLayer
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoxOfRings extends BaseExample {

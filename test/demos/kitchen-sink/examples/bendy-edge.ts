@@ -6,7 +6,7 @@ import {
   InstanceProvider,
   LayerInitializer,
   nextFrame
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BendyEdge extends BaseExample {

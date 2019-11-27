@@ -37,7 +37,7 @@ import {
   Size,
   Vec4,
   View2D
-} from "src";
+} from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
 import { DEFAULT_RESOURCES, WORDS } from "../../types";
@@ -277,60 +277,58 @@ export class NodesEdges extends BaseDemo {
           wheelShouldScroll: false
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          main: {
-            views: {
-              view: createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              arcs: createLayer(ArcLayer, {
-                animate: {
-                  angleOffset: AutoEasingMethod.linear(
-                    1000,
-                    0,
-                    AutoEasingLoopStyle.REPEAT
-                  )
-                },
-                data: providers.arcs
-              }),
-              edges: createLayer(EdgeLayer, {
-                animate: {
-                  startColor: AutoEasingMethod.easeInOutCubic(500),
-                  endColor: AutoEasingMethod.easeInOutCubic(500)
-                },
-                data: providers.edges,
-                type: EdgeType.LINE
-              }),
-              circles: createLayer(CircleLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(1000, 0)
-                },
-                data: providers.circles,
-                scaleFactor: () => cameras.main.scale2D[0],
-                picking: PickType.SINGLE,
+      scenes: (resources, providers, cameras) => ({
+        main: {
+          views: {
+            view: createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            arcs: createLayer(ArcLayer, {
+              animate: {
+                angleOffset: AutoEasingMethod.linear(
+                  1000,
+                  0,
+                  AutoEasingLoopStyle.REPEAT
+                )
+              },
+              data: providers.arcs
+            }),
+            edges: createLayer(EdgeLayer, {
+              animate: {
+                startColor: AutoEasingMethod.easeInOutCubic(500),
+                endColor: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: providers.edges,
+              type: EdgeType.LINE
+            }),
+            circles: createLayer(CircleLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(1000, 0)
+              },
+              data: providers.circles,
+              scaleFactor: () => cameras.main.scale2D[0],
+              picking: PickType.SINGLE,
 
-                onMouseOver: this.handleCircleOver,
-                onMouseOut: this.handleCircleOut,
-                onMouseClick: this.handleCircleClick
-              }),
-              rects: createLayer(RectangleLayer, {
-                data: providers.rectangles,
-                scaleFactor: () => cameras.main.scale[0]
-              }),
-              labels: createLayer(LabelLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
-                },
-                data: providers.labels,
-                resourceKey: resources.font.key,
-                scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
-              })
-            }
+              onMouseOver: this.handleCircleOver,
+              onMouseOut: this.handleCircleOut,
+              onMouseClick: this.handleCircleClick
+            }),
+            rects: createLayer(RectangleLayer, {
+              data: providers.rectangles,
+              scaleFactor: () => cameras.main.scale[0]
+            }),
+            labels: createLayer(LabelLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: providers.labels,
+              resourceKey: resources.font.key,
+              scaleMode: Number.parseFloat(`${this.parameters.scaleMode}`)
+            })
           }
         }
       })

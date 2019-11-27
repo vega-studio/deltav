@@ -23,9 +23,9 @@ export interface IBasicSurfaceOptions<T extends Lookup<InstanceProvider<Instance
     handlesWheelEvents?: boolean;
     providers: T;
     rendererOptions?: ISurfaceOptions["rendererOptions"];
-    resources: W;
+    resources?: W;
     eventManagers(cameras: U): V;
-    pipeline(resources: W, providers: T, cameras: U, managers: V): IBasicSurfacePipeline;
+    scenes(resources: W, providers: T, cameras: U, managers: V): Lookup<BasicSurfaceSceneOptions>;
     onNoWebGL?(): void;
 }
 export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, U extends Lookup<Camera>, V extends Lookup<EventManager>, W extends Lookup<BaseResourceOptions>> {
@@ -52,7 +52,7 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
     getViewScreenSize(viewId: string): Size;
     getViewScreenBounds(viewId: string): Bounds<View<IViewProps>>;
     getViewWorldBounds(viewId: string): Bounds<View<IViewProps>>;
-    pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["pipeline"]): Promise<void>;
+    pipeline(callback: IBasicSurfaceOptions<T, U, V, W>["scenes"]): Promise<void>;
     rebuild(): Promise<void>;
     rebuild(clearProviders?: boolean): Promise<void>;
     rebuild(options?: IBasicSurfaceOptions<T, U, V, W>): Promise<void>;

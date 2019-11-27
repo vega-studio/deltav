@@ -56,7 +56,7 @@ export interface ITextAreaInstanceOptions extends ILabelInstanceOptions {
   /* This sets the distance from line to next line of text */
   lineHeight?: number;
   /**
-   * This sets how tall the text area can render. Any text beyond this point will not be rendered
+   * This sets max height the text area can render. Any text beyond this point will not be rendered
    * This also establishes the borders' height to be rendered if included
    */
   maxHeight?: number;
@@ -93,12 +93,12 @@ export class TextAreaInstance extends LabelInstance {
   @observable alignment: TextAlignment = TextAlignment.LEFT;
   /**
    * When onReady is called, this will be populated with all of the labels used to compose this text area
-   * SpecialLetter will be used when layoutint labels, it may indicates a new line
+   * SpecialLetter will be used when layouting labels, it may indicates a new line
    */
   labels: TextAreaLabel[] = [];
   /** This will be used to hold new labels when a label should be divided into two labels because label is at the end a line */
   newLabels: LabelInstance[] = [];
-  /** This holds the border of textArea */
+  /** This holds the borders of textArea */
   borders: BorderInstance[] = [];
   /** This stores the old origin which is used to calculate the new positions of labels */
   oldOrigin: [number, number];

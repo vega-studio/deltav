@@ -14,7 +14,8 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "paths": {
-      "src": ["./src"]
+      "src": ["./src"],
+      "test": ["./test"]
     },
     "sourceMap": true,
     "noUnusedParameters": true,

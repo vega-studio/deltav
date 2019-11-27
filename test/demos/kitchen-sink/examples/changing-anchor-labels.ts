@@ -7,7 +7,7 @@ import {
   LabelLayer,
   LayerInitializer,
   nextFrame
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class ChangingAnchorLabels extends BaseExample {

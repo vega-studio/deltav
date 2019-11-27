@@ -31,6 +31,9 @@ export class EdgeInstance extends Instance {
   @observable startColor: Vec4 = [1.0, 1.0, 1.0, 1.0];
   @observable thickness: Vec2 = [1.0, 1.0];
 
+  /**
+   * Calculates length from beginning point to end point
+   */
   get length() {
     const delta = [this.end[0] - this.start[0], this.end[1] - this.start[1]];
 

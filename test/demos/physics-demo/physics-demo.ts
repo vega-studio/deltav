@@ -13,7 +13,7 @@ import {
   InstanceProvider,
   LabelInstance,
   View2D
-} from "src";
+} from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 
 import * as Matter from "matter-js";
@@ -104,26 +104,24 @@ export class PhysicsDemo extends BaseDemo {
           camera: cameras.main
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        scenes: {
-          main: {
-            views: {
-              view: createView(View2D, {
-                camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: [
-              createLayer(CircleLayer, {
-                animate: {
-                  center: AutoEasingMethod.linear(PHYSICS_FRAME)
-                },
-                data: providers.circles,
-                key: `circles`,
-                scaleFactor: () => cameras.main.scale2D[0]
-              })
-            ]
-          }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            view: createView(View2D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: [
+            createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.linear(PHYSICS_FRAME)
+              },
+              data: providers.circles,
+              key: `circles`,
+              scaleFactor: () => cameras.main.scale2D[0]
+            })
+          ]
         }
       })
     });

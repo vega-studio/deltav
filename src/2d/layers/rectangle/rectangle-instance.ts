@@ -91,7 +91,7 @@ const anchorCalculator: {
 export class RectangleInstance extends Instance {
   /** This is the rendered color of the rectangle */
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
-  /** Depth sorting of the rectangle (or the z value of the lable) */
+  /** Depth sorting of the rectangle (or the z value of the rectangle) */
   @observable depth: number = 0;
   /** When in BOUND_MAX mode, this allows the rectangle to scale up beyond it's max size */
   @observable maxScale: number = 1;

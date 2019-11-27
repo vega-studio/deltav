@@ -1,3 +1,9 @@
+## 1.35.0
+
+## Added
+
+- [`ADDED`]: The project has been prepared for the open source community. MIT license added. Initial Docs added. npmignore updated to only include relevant items.
+
 ## 1.34.0
 
 ## Added

@@ -14,7 +14,7 @@ export interface IArcInstanceOptions extends IInstanceOptions {
   colorEnd?: Vec4;
   /** This is the start color of the arc */
   colorStart?: Vec4;
-  /** Depth sorting of the arc (or the z value of the lable) */
+  /** Depth sorting of the arc (or the z value of the arc) */
   depth?: number;
   /** The radius of how far the middle of the arc is from the center point */
   radius: number;
@@ -36,7 +36,7 @@ export class ArcInstance extends Instance {
   @observable colorStart: Vec4 = [1, 1, 1, 1];
   /** The center point where the arc wraps around */
   @observable center: Vec2 = [0, 0];
-  /** Depth sorting of the arc (or the z value of the lable) */
+  /** Depth sorting of the arc (or the z value of the arc) */
   @observable depth: number = 0;
   /** An offset to apply to the angle. This makes it easy to animate the arc or set a point of reference for angle 0 */
   @observable angleOffset: number = 0;

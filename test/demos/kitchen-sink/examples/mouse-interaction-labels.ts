@@ -10,7 +10,7 @@ import {
   LayerInitializer,
   PickType,
   ReferenceCamera2D
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionLabels extends BaseExample {

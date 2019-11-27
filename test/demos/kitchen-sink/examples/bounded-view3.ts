@@ -12,7 +12,7 @@ import {
   RectangleInstance,
   RectangleLayer,
   ScaleMode
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView3 extends BaseExample {

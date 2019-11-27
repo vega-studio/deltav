@@ -11,17 +11,15 @@ import {
   createView,
   InstanceProvider,
   ScaleMode,
-  Vec1Compat,
-  View2D
-} from "src";
-import {
   TextAlignment,
   TextAreaInstance,
+  TextAreaLayer,
+  Vec1Compat,
+  View2D,
   WordWrap
-} from "src/2d/layers/labels/text-area-instance";
-import { TextAreaLayer } from "src/2d/layers/labels/text-area-layer";
-import { DEFAULT_RESOURCES, STORY } from "test/types";
+} from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
+import { DEFAULT_RESOURCES, STORY } from "../../types";
 
 const texts = [
   `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg,
@@ -259,26 +257,24 @@ export class TextAreaDemo extends BaseDemo {
           wheelShouldScroll: false
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          default: {
-            views: {
-              "default-view": createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              textArea: createLayer(TextAreaLayer, {
-                data: providers.textAreas,
-                resourceKey: resources.font.key,
-                scaling: ScaleMode.BOUND_MAX
-              }),
-              circles: createLayer(CircleLayer, {
-                data: providers.circles
-              })
-            }
+      scenes: (resources, providers, cameras) => ({
+        default: {
+          views: {
+            "default-view": createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            textArea: createLayer(TextAreaLayer, {
+              data: providers.textAreas,
+              resourceKey: resources.font.key,
+              scaling: ScaleMode.BOUND_MAX
+            }),
+            circles: createLayer(CircleLayer, {
+              data: providers.circles
+            })
           }
         }
       })

@@ -6,7 +6,7 @@ import {
   Instance,
   LayerInitializer,
   Surface
-} from "src";
+} from "../../../../src";
 
 export type TestResourceKeys = {
   atlas: string;

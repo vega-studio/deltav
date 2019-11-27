@@ -5,7 +5,7 @@ import {
   LabelInstance,
   LabelLayer,
   LayerInitializer
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class LabelAnimatedScale extends BaseExample {

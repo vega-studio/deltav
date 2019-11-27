@@ -17,7 +17,7 @@ export interface IImageInstanceOptions extends IInstanceOptions {
    * which the image will be scaled around.
    */
   anchor?: Anchor;
-  /** Depth sorting of the image (or the z value of the lable) */
+  /** Depth sorting of the image (or the z value of the image) */
   depth?: number;
   /** This is the HTMLImageElement that the image is to render. This element MUST be loaded completely before this instance is created. */
   source: ImageInstanceResource;
@@ -104,7 +104,7 @@ const anchorCalculator: {
 export class ImageInstance extends Instance {
   /** This is the rendered color of the image */
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
-  /** Depth sorting of the image (or the z value of the lable) */
+  /** Depth sorting of the image (or the z value of the image) */
   @observable depth: number = 0;
   /**
    * The height of the image as it is to be rendered in world space.

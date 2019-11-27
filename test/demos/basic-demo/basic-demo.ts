@@ -17,12 +17,13 @@ import {
   ITouchInteraction,
   length2,
   nextFrame,
+  onFrame,
   scale2,
   Size,
   Vec2,
   Vec2Compat,
   View2D
-} from "src";
+} from "../../../src";
 import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -132,7 +133,6 @@ export class BasicDemo extends BaseDemo {
       cameras: {
         main: new Camera2D()
       },
-      resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
@@ -153,32 +153,28 @@ export class BasicDemo extends BaseDemo {
           }
         })
       }),
-      pipeline: (_resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              main: createView(View2D, {
-                camera: cameras.main,
-                background: [0, 0, 0, 1],
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: [
-              createLayer(CircleLayer, {
-                animate: {
-                  center: AutoEasingMethod.easeInOutCubic(
-                    2000,
-                    0,
-                    AutoEasingLoopStyle.NONE
-                  )
-                },
-                data: providers.circles,
-                key: `circles`,
-                scaleFactor: () => cameras.main.scale2D[0],
-                usePoints: true
-              })
-            ]
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            main: createView(View2D, {
+              camera: cameras.main,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            circles: createLayer(CircleLayer, {
+              animate: {
+                center: AutoEasingMethod.easeInOutCubic(
+                  2000,
+                  0,
+                  AutoEasingLoopStyle.NONE
+                )
+              },
+              data: providers.circles,
+              scaleFactor: () => cameras.main.scale2D[0],
+              usePoints: true
+            })
           }
         }
       })
@@ -242,8 +238,12 @@ export class BasicDemo extends BaseDemo {
         }
       );
 
-      await nextFrame();
+      await onFrame();
     }
+
+    await EasingUtil.all(true, this.circles, [
+      CircleLayer.attributeNames.center
+    ]);
 
     this.currentLocation = location;
   }

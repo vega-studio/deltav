@@ -1,4 +1,4 @@
-import { AnchorType, BasicCamera2DController, Bounds, CameraBoundsAnchor, Camera2D, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleMode } from 'src';
+import { AnchorType, BasicCamera2DController, Bounds, CameraBoundsAnchor, Camera2D, createLayer, EventManager, ICameraBoundsOptions, InstanceProvider, LayerInitializer, RectangleInstance, RectangleLayer, ScaleMode } from '../../../../src';
 import { BaseExample, TestResourceKeys } from './base-example';
 
 export class BoundedView2 extends BaseExample {

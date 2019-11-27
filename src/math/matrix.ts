@@ -202,7 +202,7 @@ const TEMP_M33 = identity3();
  *
  * 3 OPS
  */
-export function determinant2x2(mat: Mat2x2) {
+export function determinant2x2(mat: Mat2x2): number {
   return mat[3] * mat[0] - mat[1] * mat[2];
 }
 

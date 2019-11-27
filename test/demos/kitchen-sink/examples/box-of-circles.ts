@@ -14,7 +14,7 @@ import {
   Surface,
   Vec,
   Vec2
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 const { min, max, random } = Math;

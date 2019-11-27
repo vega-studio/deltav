@@ -29,7 +29,7 @@ export interface ILabelInstanceOptions extends IInstanceOptions {
   scale?: number;
   /** The text rendered by this label*/
   text: string;
-  /** The x coordinate where the label will be anchored to in world space */
+  /** The xy coordinate where the label will be anchored to in world space */
   origin: Vec2;
   /**
    * Special flag for the instance that will cause the instance to not render any glyphs but will ensure the label's

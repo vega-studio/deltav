@@ -11,7 +11,7 @@ import {
   ReferenceCamera2D,
   ScaleMode,
   uid
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class SingleAxisLabelScaling extends BaseExample {

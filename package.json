@@ -1,14 +1,14 @@
 {
   "author": {
-    "name": "A Maker of Things",
-    "email": "diniden@outlook.com",
-    "url": "http://diniden.com"
+    "name": "Vega Studio",
+    "email": "opensource@vega.studio",
+    "url": "http://vega.studio"
   },
-  "name": "@vega-studio/deltav",
+  "name": "deltav",
   "version": "1.34.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "scripts": {
     "dev": "node scripts/dev",
     "eslint": "eslint",
@@ -17,7 +17,10 @@
     "auto": "auto",
     "runner": "runner",
     "unit-test": "mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'",
-    "unit-test-dev": "nodemon -e ts -x \"mocha --file unit-test/test-bootstrap.js unit-test/**/*.ts\""
+    "unit-test-dev": "nodemon -e ts -x \"mocha --file unit-test/test-bootstrap.js unit-test/**/*.ts\"",
+    "parcel": "runner run client server --no-docker",
+    "clean": "runner clean",
+    "build": "runner run lib"
   },
   "dependencies": {},
   "devDependencies": {
@@ -28,7 +31,6 @@
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.2",
     "@types/debug": "4.1.4",
-    "@types/html2canvas": "0.0.35",
     "@types/matter-js": "0.10.2",
     "@types/mocha": "5.2.7",
     "@types/node": "8.0.58",
@@ -43,6 +45,7 @@
     "base64-image-loader": "1.2.1",
     "circular-dependency-plugin": "5.0.2",
     "commander": "2.19.0",
+    "compression": "1.7.4",
     "copy-webpack-plugin": "4.5.2",
     "css-loader": "0.28.11",
     "d3-color": "1.2.3",
@@ -52,16 +55,20 @@
     "dts-bundle": "0.7.3",
     "eslint": "4.19.1",
     "eslint-config-voidray": "github:voidrayco/eslint-config-voidray",
+    "express": "4.17.1",
     "file-loader": "1.1.11",
     "fs-extra": "4.0.3",
     "glob": "7.1.4",
-    "html2canvas": "1.0.0-alpha.8",
+    "hiredis": "0.5.0",
     "less": "3.8.1",
     "less-loader": "4.1.0",
     "matter-js": "0.14.2",
     "mkdirp": "0.5.1",
     "mocha": "6.1.4",
     "nodemon": "1.19.1",
+    "parcel-bundler": "1.12.4",
+    "parcel-plugin-prettier": "github:tarwich/parcel-plugin-prettier",
+    "parcel-plugin-shader-compression": "github:diniden/parcel-plugin-shader-compression",
     "preact": "8.2.7",
     "prettier": "1.12.1",
     "random": "github:tarwich/node-random#1.0.0",
@@ -84,5 +91,47 @@
   },
   "eslintIgnore": [
     "**/*.min.js"
-  ]
+  ],
+  "runner": {
+    "sources": [
+      {
+        "name": "client",
+        "entry": "test/index.html",
+        "parcel": {
+          "outDir": "./build/client",
+          "hmr": false
+        }
+      },
+      {
+        "name": "server",
+        "entry": "test/server.js",
+        "run": true,
+        "parcel": {
+          "cacheDir": "./.cache/server",
+          "outDir": "./build/server",
+          "outFile": "index.js",
+          "target": "node",
+          "minify": false,
+          "hmr": false
+        }
+      },
+      {
+        "name": "lib",
+        "entry": "src/index.ts",
+        "run": false,
+        "parcel": {
+          "build": true,
+          "outDir": "./dist",
+          "outFile": "index.js",
+          "sourceMaps": true
+        }
+      }
+    ]
+  },
+  "shader": {
+    "ext": [
+      "fs",
+      "vs"
+    ]
+  }
 }

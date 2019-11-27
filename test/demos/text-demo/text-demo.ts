@@ -16,12 +16,12 @@ import {
   LabelLayer,
   nextFrame,
   ScaleMode,
-  View2D
-} from "src";
-import { DEFAULT_RESOURCES, WORDS } from "test/types";
-import { wait } from "../../../src/util/wait";
+  View2D,
+  wait
+} from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
+import { DEFAULT_RESOURCES, WORDS } from "../../types";
 
 const { random } = Math;
 
@@ -167,34 +167,24 @@ export class TextDemo extends BaseDemo {
           wheelShouldScroll: true
         })
       }),
-      pipeline: (resources, providers, cameras) => ({
-        scenes: {
-          default: {
-            views: {
-              "default-view": createView(View2D, {
-                background: [0, 0, 0, 1],
-                camera: cameras.main,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              hey: createLayer(LabelLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
-                },
-                data: new InstanceProvider(),
-                resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode
-              }),
-              labels: createLayer(LabelLayer, {
-                animate: {
-                  color: AutoEasingMethod.easeInOutCubic(500)
-                },
-                data: providers.labels,
-                resourceKey: resources.font.key,
-                scaleMode: this.parameters.scaleMode
-              })
-            }
+      scenes: (resources, providers, cameras) => ({
+        default: {
+          views: {
+            "default-view": createView(View2D, {
+              background: [0, 0, 0, 1],
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            labels: createLayer(LabelLayer, {
+              animate: {
+                color: AutoEasingMethod.easeInOutCubic(500)
+              },
+              data: providers.labels,
+              resourceKey: resources.font.key,
+              scaleMode: this.parameters.scaleMode
+            })
           }
         }
       })

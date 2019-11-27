@@ -7,9 +7,9 @@ import {
   Bounds,
   createLayer,
   InstanceProvider,
-  LayerInitializer
-} from "src";
-import { nextFrame } from "src/util/frame";
+  LayerInitializer,
+  nextFrame
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class Arcs extends BaseExample {

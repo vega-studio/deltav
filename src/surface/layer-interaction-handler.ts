@@ -1,8 +1,4 @@
 import {
-  mapGetWithDefault,
-  mapInjectDefault
-} from "src/util/common-operations";
-import {
   IMouseInteraction,
   ISingleTouchInteraction,
   ITouchInteraction
@@ -15,6 +11,7 @@ import {
   ITouchPickInfo,
   PickType
 } from "../types";
+import { mapGetWithDefault, mapInjectDefault } from "../util";
 import { UniformColorDiffProcessor } from "./buffer-management/uniform-buffering/uniform-color-diff-processor";
 import { ILayerProps, Layer } from "./layer";
 

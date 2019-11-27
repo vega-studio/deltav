@@ -10,7 +10,7 @@ import {
   TextureSize,
   View2D,
   WebGLStat
-} from "src";
+} from "../src";
 
 /**
  * Scenes to generate when no specialized scenes are specified.

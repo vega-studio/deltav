@@ -2,8 +2,10 @@
 node_modules
 # The actual build files
 build
-# We're going to use yarn
+# No lock files. They cause confusion. We just don't allow carats in our package
 package-lock.json
+# Remove cache
+.cache
 
 # -----[ Metadata ]---------------------------------------------
 # macOS

@@ -1,18 +1,16 @@
 import * as datGUI from "dat.gui";
 import {
-  // add3,
   add3,
   BasicSurface,
   ClearFlags,
   createLayer,
   createView,
-  // onAnimationLoop,
   InstanceProvider,
   onAnimationLoop,
   stopAnimationLoop,
   Transform,
   View3D
-} from "src";
+} from "../../../src";
 import { Camera } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { CubeInstance } from "./cube/cube-instance";
@@ -57,21 +55,18 @@ export class CubeDemo3D extends BaseDemo {
       },
       resources: {},
       eventManagers: _cameras => ({}),
-      pipeline: (_resources, providers, cameras) => ({
-        resources: [],
-        scenes: {
-          main: {
-            views: {
-              perspective: createView(View3D, {
-                camera: cameras.perspective,
-                clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-              })
-            },
-            layers: {
-              cubes: createLayer(CubeLayer, {
-                data: providers.cubes
-              })
-            }
+      scenes: (_resources, providers, cameras) => ({
+        main: {
+          views: {
+            perspective: createView(View3D, {
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            })
+          },
+          layers: {
+            cubes: createLayer(CubeLayer, {
+              data: providers.cubes
+            })
           }
         }
       })

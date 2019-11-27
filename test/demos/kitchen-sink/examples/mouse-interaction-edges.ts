@@ -8,7 +8,7 @@ import {
   IPickInfo,
   LayerInitializer,
   PickType
-} from "src";
+} from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class MouseInteractionEdges extends BaseExample {

@@ -447,7 +447,7 @@ export function toOrderedEulerFromQuat(
   q: Quaternion,
   order: EulerOrder,
   out?: Vec3
-): Vec3 {
+): EulerRotation {
   out = out || [0, 0, 0];
 
   const q0 = q[0],

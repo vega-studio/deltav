@@ -21,6 +21,8 @@ export interface IBarOptions {
   width: number;
   // Sets the width of viewport
   viewWidth?: number;
+  viewPortNear?: number;
+  viewPortFar?: number;
   // Sets the number of data groups to form the bar
   resolution?: number;
   // Provider for block instance
@@ -97,7 +99,7 @@ export class Bar {
   // Center of bottom line of the chart
   private _bottomCenter: Vec2 = [0, 0];
   // Color of the chart including opacity
-  private _color: Vec4 = [1, 1, 1, 1];
+  color: Vec4 = [1, 1, 1, 1];
   // Depth of the chart
   private _baseZ: number = 0;
   // Scale that will be applied for the height of each value
@@ -108,6 +110,9 @@ export class Bar {
   private _width: number;
   /** Width of the viewport */
   viewWidth: number;
+
+  viewPortNear: number = Number.MIN_SAFE_INTEGER;
+  viewPortFar: number = Number.MAX_SAFE_INTEGER;
   /**Number of data groups that make up each line*/
   private _resolution: number;
   private segments: number;
@@ -128,11 +133,13 @@ export class Bar {
 
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
-    this._color = options.color || this._color;
+    this.color = options.color || this.color;
     this._baseZ = options.baseZ || this._baseZ;
     this._heightScale = options.heightScale || this._heightScale;
     this._width = options.width;
     this.viewWidth = options.viewWidth || options.width;
+    this.viewPortNear = options.viewPortNear || this.viewPortNear;
+    this.viewPortFar = options.viewPortFar || this.viewPortFar;
     this.provider = options.provider;
     this.endProvider = options.endProvider;
     this.data = options.barData;
@@ -234,14 +241,14 @@ export class Bar {
     this._width = val;
   }
 
-  get color() {
+  /*get color() {
     return this._color;
   }
 
   set color(val: Vec4) {
     this.blockInstances.forEach(instance => (instance.color = val));
     this._color = val;
-  }
+  }*/
 
   get baseZ() {
     return this._baseZ;
@@ -355,10 +362,12 @@ export class Bar {
 
     if (this.leftEnd) {
       this.endProvider.remove(this.leftEnd);
+      this.leftEnd = null;
     }
 
     if (this.rightEnd) {
       this.endProvider.remove(this.rightEnd);
+      this.rightEnd = null;
     }
   }
 
@@ -551,6 +560,20 @@ export class Bar {
       if (x1 <= leftBound && x2 > leftBound) {
         if (this.leftEnd) {
           this.leftEnd.update(interval, leftBound, scaleX, dragX);
+        } else {
+          const leftScale = (leftBound - x1) / (x2 - x1);
+          const y1 = interval.leftY;
+          const y2 = interval.rightY;
+          const depth1 = interval.leftDepth;
+          const depth2 = interval.rightDepth;
+          const height = (1 - leftScale) * y1 + leftScale * y2;
+          const width = (1 - leftScale) * depth1 + leftScale * depth2;
+          this.leftEnd = new PlateEndInstance({
+            width,
+            height,
+            base: [leftBound + baseX, baseZ],
+            normal: [-1, 0, 0]
+          });
         }
       }
 
@@ -558,6 +581,20 @@ export class Bar {
       if (x2 >= rightBound && x1 < rightBound) {
         if (this.rightEnd) {
           this.rightEnd.update(interval, rightBound, scaleX, dragX);
+        } else {
+          const rightScale = (rightBound - x1) / (x2 - x1);
+          const y1 = interval.leftY;
+          const y2 = interval.rightY;
+          const depth1 = interval.leftDepth;
+          const depth2 = interval.rightDepth;
+          const height = (1 - rightScale) * y1 + rightScale * y2;
+          const width = (1 - rightScale) * depth1 + rightScale * depth2;
+          this.leftEnd = new PlateEndInstance({
+            width,
+            height,
+            base: [rightBound + baseX, baseZ],
+            normal: [1, 0, 0]
+          });
         }
       }
     });
@@ -679,5 +716,25 @@ export class Bar {
     }
 
     this.updateByDragX2(dragX);
+  }
+
+  updateByDragZ(dragZ: number) {
+    const fadePadding = 1;
+
+    const nearFadeStart = this.viewPortNear + fadePadding;
+    const farFadeStart = this.viewPortFar - fadePadding;
+
+    const posZ = this.baseZ + dragZ;
+    let alpha = 0.0;
+
+    if (posZ > farFadeStart && posZ < this.viewPortFar) {
+      alpha = 0.9 * (this.viewPortFar - posZ) / fadePadding;
+    } else if (posZ > this.viewPortNear && posZ < nearFadeStart) {
+      alpha = 0.9 * (posZ - this.viewPortNear) / fadePadding;
+    } else if (posZ >= nearFadeStart && posZ <= farFadeStart) {
+      alpha = 0.9;
+    }
+
+    this.color = [this.color[0], this.color[1], this.color[2], alpha];
   }
 }

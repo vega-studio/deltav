@@ -1,5 +1,5 @@
 import { GLSettings } from "../../../../src/gl";
-import { Vec2, Vec3 } from "../../../../src/math/vector";
+import { Vec2, Vec3, Vec4 } from "../../../../src/math/vector";
 import { ILayerProps, Layer } from "../../../../src/surface/layer";
 import {
   ILayerMaterialOptions,
@@ -13,14 +13,23 @@ export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   bottomCenter?(): Vec2;
   lightDirection?(): Vec3;
   dragX?(): number;
+  dragZ?(): number;
   scaleX?(): number;
+  color?(): Vec4;
 }
 /**
  * Renders blocks of data with adjustable start and end values
  */
 export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   initShader(): IShaderInitialization<BlockInstance> {
-    const { bottomCenter, lightDirection, dragX, scaleX } = this.props;
+    const {
+      bottomCenter,
+      lightDirection,
+      dragX,
+      dragZ,
+      scaleX,
+      color
+    } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
     const BRT: Vec3 = [1, 1, -1];
@@ -74,11 +83,6 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "endValue",
           size: InstanceAttributeSize.THREE,
           update: o => o.endValue
-        },
-        {
-          name: "color",
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.color
         },
         {
           name: "baseX",
@@ -135,9 +139,19 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           update: () => (lightDirection ? lightDirection() : [1, 1, 1])
         },
         {
+          name: "color",
+          size: UniformSize.FOUR,
+          update: () => (color ? color() : [0, 0, 0, 0])
+        },
+        {
           name: "dragX",
           size: UniformSize.ONE,
           update: () => (dragX ? dragX() : 0)
+        },
+        {
+          name: "dragZ",
+          size: UniformSize.ONE,
+          update: () => (dragZ ? dragZ() : 0)
         },
         {
           name: "scaleX",

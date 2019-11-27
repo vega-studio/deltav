@@ -10,7 +10,7 @@ void main() {
   );
 
   // Position
-  float depth = baseZ + position.z * value.z * 0.5;
+  float depth = baseZ + dragZ + position.z * value.z * 0.5;
   float distanceToCenter = distance(cameraPosition, vec3(bottomCenter, depth));
   float distanceToOrigin = distance(cameraPosition, vec3(bottomCenter, 0.0));
   float scale =  distanceToCenter / distanceToOrigin; 

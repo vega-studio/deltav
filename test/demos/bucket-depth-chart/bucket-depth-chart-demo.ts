@@ -63,7 +63,7 @@ export class BucketDepthChartDemo extends BaseDemo {
   front: boolean = true;
   bottomCenter: Vec2 = [0, 0];
   cameraCenter: Vec3 = [0, 0, 0];
-  cameraPosition: Vec3 = [0, 0, 10];
+  cameraPosition: Vec3 = [0, 0, 15];
   angleV: number = 100 * Math.PI / 180;
   angleH: number = 245 * Math.PI / 180;
   lightDirection: Vec3 = [
@@ -76,8 +76,10 @@ export class BucketDepthChartDemo extends BaseDemo {
   viewWidth: number = 8;
   scaleX: number = 1;
   dragX: number = 0;
+  dragZ: number = 0;
   mouseDown: boolean = false;
   mouseX: number = 0;
+  mouseY: number = 0;
   bdc: BucketDepthChart;
   padding: number = 0.4;
   topView: boolean = false;
@@ -100,7 +102,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.topView = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [0, 0, 10];
+      const newPosition: Vec3 = [0, 0, 15];
       const delta = [
         newPosition[0] - oldPosition[0],
         newPosition[1] - oldPosition[1],
@@ -251,7 +253,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     if (!this.surface) return;
 
     const camera = this.surface.cameras.perspective;
-    camera.position = [0, 0, 10];
+    camera.position = [0, 0, 15];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
     const datas: Vec3[][] = [[], [], [], [], []];
@@ -363,10 +365,15 @@ export class BucketDepthChartDemo extends BaseDemo {
       chartData: datas,
       resolution: 1000,
       viewWidth: this.viewWidth,
+      viewPortNear: -10,
+      viewPortFar: 9,
       padding: this.padding,
       providers: blockProviders,
       endProviders: endPlateProviders
     });
+
+    const color = this.bdc.bars[10];
+    console.warn(color);
   }
 
   addBar(pre: number, now: number) {
@@ -422,20 +429,33 @@ export class BucketDepthChartDemo extends BaseDemo {
           handleMouseDown: (e: IMouseInteraction) => {
             this.mouseDown = true;
             this.mouseX = e.mouse.currentPosition[0];
+            this.mouseY = e.mouse.currentPosition[1];
           },
           handleMouseMove: (e: IMouseInteraction) => {
             if (!this.surface) return;
             this.topView = false;
 
             if (this.mouseDown) {
-              this.dragX += (e.mouse.currentPosition[0] - this.mouseX) / 100;
-              this.dragX = Math.max(
-                Math.min(this.dragX, 0),
-                this.viewWidth - this.width * this.scaleX
-              );
+              const currentMouseX = e.mouse.currentPosition[0];
+              const currentMouseY = e.mouse.currentPosition[1];
 
-              this.bdc.updateByDragX(this.dragX);
-              this.mouseX = e.mouse.currentPosition[0];
+              if (
+                Math.abs(currentMouseX - this.mouseX) >
+                Math.abs(currentMouseY - this.mouseY)
+              ) {
+                this.dragX += (currentMouseX - this.mouseX) / 100;
+                this.dragX = Math.max(
+                  Math.min(this.dragX, 0),
+                  this.viewWidth - this.width * this.scaleX
+                );
+                this.bdc.updateByDragX(this.dragX);
+              } else {
+                this.dragZ += (currentMouseY - this.mouseY) / 100;
+                this.bdc.updateByDragZ(this.dragZ);
+              }
+
+              this.mouseX = currentMouseX;
+              this.mouseY = currentMouseY;
             }
           },
           handleMouseUp: (e: IMouseInteraction) => {
@@ -512,120 +532,180 @@ export class BucketDepthChartDemo extends BaseDemo {
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0]
               }),
               end1: createLayer(PlateEndLayer, {
                 data: providers.ends1,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0]
               }),
               blocks2: createLayer(BlockLayer, {
                 data: providers.blocks2,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0]
               }),
               end2: createLayer(PlateEndLayer, {
                 data: providers.ends2,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0]
               }),
               blocks3: createLayer(BlockLayer, {
                 data: providers.blocks3,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0]
               }),
               end3: createLayer(PlateEndLayer, {
                 data: providers.ends3,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0]
               }),
               blocks4: createLayer(BlockLayer, {
                 data: providers.blocks4,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0]
               }),
               end4: createLayer(PlateEndLayer, {
                 data: providers.ends4,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0]
               }),
               blocks5: createLayer(BlockLayer, {
                 data: providers.blocks5,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0]
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0]
               }),
               blocks6: createLayer(BlockLayer, {
                 data: providers.blocks6,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0]
               }),
               end6: createLayer(PlateEndLayer, {
                 data: providers.ends6,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0]
               }),
               blocks7: createLayer(BlockLayer, {
                 data: providers.blocks7,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0]
               }),
               end7: createLayer(PlateEndLayer, {
                 data: providers.ends7,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0]
               }),
               blocks8: createLayer(BlockLayer, {
                 data: providers.blocks8,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0]
               }),
               end8: createLayer(PlateEndLayer, {
                 data: providers.ends8,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0]
               }),
               blocks9: createLayer(BlockLayer, {
                 data: providers.blocks9,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0]
               }),
               end9: createLayer(PlateEndLayer, {
                 data: providers.ends9,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0]
               }),
               blocks10: createLayer(BlockLayer, {
                 data: providers.blocks10,
                 bottomCenter: () => this.bottomCenter,
                 lightDirection: () => this.lightDirection,
                 dragX: () => this.dragX,
-                scaleX: () => this.scaleX
+                dragZ: () => this.dragZ,
+                scaleX: () => this.scaleX,
+                color: () =>
+                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0]
               }),
               end10: createLayer(PlateEndLayer, {
                 data: providers.ends10,
                 bottomCenter: () => this.bottomCenter,
-                lightDirection: () => this.lightDirection
+                lightDirection: () => this.lightDirection,
+                dragZ: () => this.dragZ,
+                color: () =>
+                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0]
               })
             }
           }

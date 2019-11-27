@@ -10,6 +10,8 @@ export interface IBucketDepthChartOptions {
   baseDepth?: number;
   width: number;
   viewWidth?: number;
+  viewPortNear?: number;
+  viewPortFar?: number;
   padding?: number;
   heightScale?: number;
   resolution?: number;
@@ -25,8 +27,11 @@ export class BucketDepthChart {
   private _bottomCenter: Vec2 = [0, 0];
   private _width: number;
   _dragX: number = 0;
+  _dragZ: number = 0;
   _scaleX: number = 1;
   viewWidth: number;
+  viewPortNear: number = Number.MIN_SAFE_INTEGER;
+  viewPortFar: number = Number.MAX_SAFE_INTEGER;
   private _heightScale: number = 1;
   private _padding: number = 0;
   resolution: number = 100;
@@ -38,6 +43,8 @@ export class BucketDepthChart {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this._width = options.width;
     this.viewWidth = options.viewWidth || options.width;
+    this.viewPortNear = options.viewPortNear || this.viewPortNear;
+    this.viewPortFar = options.viewPortFar || this.viewPortFar;
     this._padding = options.padding || this._padding;
     this._heightScale = options.heightScale || this._heightScale;
     this.resolution = options.resolution || this.resolution;
@@ -163,6 +170,8 @@ export class BucketDepthChart {
         provider: this.providers[0],
         endProvider: this.endProviders[0],
         viewWidth: this.viewWidth,
+        viewPortFar: this.viewPortFar,
+        viewPortNear: this.viewPortNear,
         resolution: this.resolution
       });
 
@@ -189,6 +198,8 @@ export class BucketDepthChart {
           provider: this.providers[i],
           endProvider: this.endProviders[i],
           viewWidth: this.viewWidth,
+          viewPortFar: this.viewPortFar,
+          viewPortNear: this.viewPortNear,
           maxDepth: curDepth
         });
 
@@ -217,6 +228,14 @@ export class BucketDepthChart {
     }
   }
 
+  updateByDragZ(dragZ: number) {
+    this._dragZ = dragZ;
+    for (let i = 0, endi = this.bars.length; i < endi; i++) {
+      const bar = this.bars[i];
+      bar.updateByDragZ(dragZ);
+    }
+  }
+
   addBar(data: Vec3[], color: Vec4, index: number) {
     let curDepth = 0;
     data.forEach(d => (curDepth = Math.max(curDepth, d[2])));
@@ -234,11 +253,14 @@ export class BucketDepthChart {
       provider: this.providers[index],
       endProvider: this.endProviders[index],
       viewWidth: this.viewWidth,
+      viewPortFar: this.viewPortFar,
+      viewPortNear: this.viewPortNear,
       maxDepth: curDepth
     });
 
     this.bars.push(bar);
     bar.updateByScaleX(this._scaleX, this._dragX, this.resolution);
+    bar.updateByDragZ(this._dragZ);
     this._maxDepth = baseZ + curDepth / 2;
     this._middleDepth = (this._minDepth + this._maxDepth) / 2;
   }

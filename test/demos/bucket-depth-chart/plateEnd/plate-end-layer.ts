@@ -7,6 +7,7 @@ import {
   UniformSize,
   Vec2,
   Vec3,
+  Vec4,
   VertexAttributeSize
 } from "src";
 import { PlateEndInstance } from "./plate-end-instance";
@@ -14,6 +15,8 @@ import { PlateEndInstance } from "./plate-end-instance";
 export interface IPlateEndLayerProps extends ILayerProps<PlateEndInstance> {
   bottomCenter?(): Vec2;
   lightDirection?(): Vec3;
+  color?(): Vec4;
+  dragZ?(): number;
 }
 
 export class PlateEndLayer extends Layer<
@@ -21,7 +24,7 @@ export class PlateEndLayer extends Layer<
   IPlateEndLayerProps
 > {
   initShader(): IShaderInitialization<PlateEndInstance> {
-    const { bottomCenter, lightDirection } = this.props;
+    const { bottomCenter, lightDirection, color, dragZ } = this.props;
 
     const LB: Vec2 = [-1, 0];
     const RB: Vec2 = [1, 0];
@@ -54,11 +57,6 @@ export class PlateEndLayer extends Layer<
           name: "normal",
           size: InstanceAttributeSize.THREE,
           update: o => o.normal
-        },
-        {
-          name: "color",
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.color
         }
       ],
       vertexAttributes: [
@@ -78,6 +76,16 @@ export class PlateEndLayer extends Layer<
           name: "lightDirection",
           size: UniformSize.THREE,
           update: () => (lightDirection ? lightDirection() : [0, 0, 0])
+        },
+        {
+          name: "color",
+          size: UniformSize.FOUR,
+          update: () => (color ? color() : [0, 0, 0, 0])
+        },
+        {
+          name: "dragZ",
+          size: UniformSize.ONE,
+          update: () => (dragZ ? dragZ() : 0)
         }
       ],
       vertexCount: 6

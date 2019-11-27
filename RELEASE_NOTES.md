@@ -1,3 +1,9 @@
+## 1.35.2
+
+## Fixed
+
+- [`FIXED`]: README improvements
+
 ## 1.35.1
 
 ## Fixed

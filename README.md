@@ -24,3 +24,21 @@ rolling!
 
 [The Guide](./docs/intro)
 
+## Run Demos and modify the source code
+
+Lots of demos available! Used to test and visualize the framework as development is executed on it!
+
+```sh
+npm run dev
+```
+
+Then visit http://localhost:8080
+
+## Contributing
+
+Make a PR. Make a very verbose description of what your changes accomplish.
+
+You should probably file an issue as well for discussion and additional tracking.
+
+Do NOT commit lock files.
+

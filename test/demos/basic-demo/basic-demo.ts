@@ -17,6 +17,7 @@ import {
   ITouchInteraction,
   length2,
   nextFrame,
+  onFrame,
   scale2,
   Size,
   Vec2,
@@ -237,8 +238,12 @@ export class BasicDemo extends BaseDemo {
         }
       );
 
-      await nextFrame();
+      await onFrame();
     }
+
+    await EasingUtil.all(true, this.circles, [
+      CircleLayer.attributeNames.center
+    ]);
 
     this.currentLocation = location;
   }

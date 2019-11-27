@@ -22,11 +22,13 @@ dist/index.js.map
 # Remove any development Code
 src
 docs
+loaders
 # Ensure distribution sources are included
 !dist/src
 !dist/docs
 # Remove any tests
 test
+unit-test
 # Clear out any uneeded config files of any sort
 tsconfig.json
 tslint.json
@@ -38,3 +40,9 @@ dts-bundle.tmp.voidgl.d.ts
 .eslintrc.js
 .nvmrc
 package-lock.json
+Procfile
+prettier-loader.js
+app.json
+.prettierignore
+.eslintignore
+.aws-local.js

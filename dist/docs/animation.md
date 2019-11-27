@@ -53,7 +53,7 @@ Now, let's go deeper into the Layer itself. Making your own animations is probab
 mystical atrocity that no one shall ever comprehend, right?
 
 Nope: still easy. Let's take a look at our own Layer (using the example
-from [The Layer](./working-with-layers))
+from [The Layer](./working-with-layers.md))
 
 ```javascript
 export class MyLayer<T extends MyInstance, U extends IProps> extends Layer2D<T, U> {

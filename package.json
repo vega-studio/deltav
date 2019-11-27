@@ -1,11 +1,15 @@
 {
+  "name": "deltav",
   "author": {
     "name": "Vega Studio",
     "email": "opensource@vega.studio",
     "url": "http://vega.studio"
   },
-  "name": "deltav",
-  "version": "1.35.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vega-studio/deltav"
+  },
+  "version": "1.35.1",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "MIT",

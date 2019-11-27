@@ -8,7 +8,7 @@ javascript.
 
 This can be a tough layer to master, but again DeltaV is here to help you be a happy individual.
 
-Make sure you understand [The Layer](./working-with-layers) FIRST!
+Make sure you understand [The Layer](./working-with-layers.md) FIRST!
 
 ALSO: before you dig, I HIGHLY recommend you learn about shaders in general. Look up shaders for the
 ES 2.0 standard for now. We're working on upgrading to the ES 3.0 features soon.
@@ -38,7 +38,7 @@ nice syntax highlighting.
 ## Writing a Shader
 
 So now that you have a pipeline for writing and bundling your shader. We can now add the shader to
-the project super easy (See [The Layer](./working-with-layers) to get more details on this):
+the project super easy (See [The Layer](./working-with-layers.md) to get more details on this):
 
 ```javascript
 export class MyLayer<T extends MyInstance, U extends IProps> extends Layer2D<T, U> {
@@ -60,7 +60,7 @@ export class MyLayer<T extends MyInstance, U extends IProps> extends Layer2D<T, 
 ```
 
 With that getting you rolling in a happier direction let's look at the example provided in
-[The Layer](./working-with-layers) to get a breakdown what is happening.
+[The Layer](./working-with-layers.md) to get a breakdown what is happening.
 
 ```glsl
 precision highp float;

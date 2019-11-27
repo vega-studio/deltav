@@ -1,6 +1,6 @@
 # Quick Start Example
 
-This is the basic example provided on the intro page. Here we have added comments to explain line by line what is happening to help you see [The Basics](./the-basics) in action.
+This is the basic example provided on the intro page. Here we have added comments to explain line by line what is happening to help you see [The Basics](./the-basics.md) in action.
 
 ```javascript
 import {

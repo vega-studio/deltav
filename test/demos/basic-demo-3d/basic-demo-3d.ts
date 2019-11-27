@@ -18,6 +18,7 @@ import {
   InstanceProvider,
   LabelInstance,
   nextFrame,
+  onAnimationLoop,
   onFrame,
   PickType,
   Projection3D,
@@ -343,7 +344,7 @@ export class BasicDemo3D extends BaseDemo {
     // Initialize the tiles to be positioned to the perlin map
     this.moveTilesToPerlin(tilesFlattened);
     // Draw the axis
-    this.makeAxis();
+    // this.makeAxis();
 
     // Move the camera around
     let t = 0;
@@ -362,7 +363,7 @@ export class BasicDemo3D extends BaseDemo {
       // this.surface.cameras.perspective.position = [midX * 2, 3000, -midZ * 2];
 
       // View from afar opposite
-      this.surface.cameras.perspective.position = [-midX * 2, 3000, midZ * 2];
+      // this.surface.cameras.perspective.position = [-midX * 2, 3000, midZ * 2];
 
       // Observe the origin from above
       // this.surface.cameras.perspective.position = [0, 1000, 0];
@@ -374,11 +375,9 @@ export class BasicDemo3D extends BaseDemo {
 
       // Look at the middle of the data
       this.surface.cameras.perspective.lookAt([midX, 0, -midZ], [0, 1, 0]);
-
-      requestAnimationFrame(loop);
     };
 
-    requestAnimationFrame(loop);
+    onAnimationLoop(loop);
 
     await nextFrame();
   }

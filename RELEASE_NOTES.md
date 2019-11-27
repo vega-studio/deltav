@@ -1,3 +1,10 @@
+## 1.35.1
+
+## Fixed
+
+- [`FIXED`]: Fixed links within docs to work correctly within npm and git.
+- [`FIXED`]: Added the github repo to the package.
+
 ## 1.35.0
 
 ## Added

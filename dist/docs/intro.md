@@ -10,7 +10,7 @@ This project has also been born to prevent you from needing to be a rocket scien
 
 Me even writing this small text header runs the risk of you leaving. That's what this code snippet is for: The code crunching death machine that is you! If you are mortal like the rest of us, go to the Quick Guide section below this :)
 
-To see this example with comments and a more complex usage: [Quick Start](./quick-start)
+To see this example with comments and a more complex usage: [Quick Start](./quick-start.md)
 
 `I RECOMMEND USING THIS PROJECT WITH TYPESCRIPT!`
 
@@ -116,15 +116,15 @@ makeSurface();
 
 ## QUICK GUIDE: Start learning fast!
 
-- [The Basics](./the-basics): Learn some terms. Get cozy. Settle in.
-- [Quick Start](./quick-start): Look at a minimal example that renders something to the screen
-- [Instances](./instances.md): Instances. Instances everywhere and anywhere.
-- [Interaction](./interaction): Exploring the rendering and probing around.
-- [Working With Layers](./working-with-layers): Really dig into the power of your GPU!
-- [The Shader](./the-shader): The lair of the Shader. Enter here. Leave born anew.
-- [Animation](./animation): You're starting to use this framework like a pro. Make your products reflect that!
-- [Optimization](./optimization): The south is already a sauna. Your CPU doesn't need to help with that situation.
-- [Project Considerations](project-considerations): There are MANY ways to bundle a cat. Here's some thoughts to make your life easier.
+- [The Basics](./the-basics.md): Learn some terms. Get cozy. Settle in.
+- [Quick Start](./quick-start.md): Look at a minimal example that renders something to the screen
+- [Instances](./instances.md.md): Instances. Instances everywhere and anywhere.
+- [Interaction](./interaction.md): Exploring the rendering and probing around.
+- [Working With Layers](./working-with-layers.md): Really dig into the power of your GPU!
+- [The Shader](./the-shader.md): The lair of the Shader. Enter here. Leave born anew.
+- [Animation](./animation.md): You're starting to use this framework like a pro. Make your products reflect that!
+- [Optimization](./optimization.md): The south is already a sauna. Your CPU doesn't need to help with that situation.
+- [Project Considerations](project-considerations.md): There are MANY ways to bundle a cat. Here's some thoughts to make your life easier.
 
 ---
 

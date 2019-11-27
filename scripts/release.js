@@ -87,7 +87,7 @@ catch (err) {
   process.exit(1);
 }
 
-try  {
+try {
   copySync(resolve('docs'), resolve('dist/docs'));
 }
 catch (err) {

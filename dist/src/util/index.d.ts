@@ -12,3 +12,4 @@ export * from "./reactive-diff";
 export * from "./shader-templating";
 export * from "./shallow-compare";
 export * from "./uid";
+export * from "./wait";

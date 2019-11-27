@@ -61,8 +61,8 @@ update() {
 
 ## Spread out updates over time
 
-When you're dealing with HUGE datasets you shouldn't be soo aggressive with your updates if you plan
-on moving or changingg everything. ALWAYS consider spreading oout your updates over time.
+When you're dealing with HUGE datasets you shouldn't be too aggressive with your updates if you plan
+on moving or changing everything. ALWAYS consider spreading out your updates over time.
 
 This is VERY easy to do with DeltaV too:
 

@@ -140,7 +140,7 @@ DeltaV IS a graphics framework! It gives you:
 - Basic Graphics Library (Shapes, Images, Text, Video)
 - Shader Simplification and Shader Module manager
 - Will not become a speed bump to your goals. This framework tries really hard to meet your processing demands for rendering LOADS of data and possibly even animating it.
-- Very modular to add functionality or convenience as your needs demands. Things you create will/should be VERY versatile and usable across projects.
+- Very modular to add functionality or convenience as your needs demand. Things you create will/should be VERY versatile and usable across projects.
 - Speeds up custom GPU development so you can create optimal handling of your visuals with ease.
 
 DeltaV IS NOT a one stop solution to everything you hoped and dreamed of, but it WILL ENABLE you to achieve your dreams!
@@ -157,7 +157,7 @@ DeltaV IS NOT a one stop solution to everything you hoped and dreamed of, but it
 
 We'll be forward with what you get out of the box right now. If a desired feature is not here: don't panic! Still give this a shot. You'll be AMAZED what DeltaV will do for you! It can quickly make you realize you did NOT need x-y-z feature as this can open the door to a 'better way'!
 
-Also, know this framework is actively being used AND developed! New features are being added all the time!
+Also know, this framework is actively being used AND developed! New features are being added all the time!
 
 So, what comes in the box?! Read On!
 
@@ -178,7 +178,7 @@ So, what comes in the box?! Read On!
 
 - `Color Picking`: Easily set up a layer to have its instances rendered to a color buffer to have feedback in mouse interactions with the instance.
 
-- `Resource Management` Pipeline: You can create your own resource managers for different types of assets! Or you can use the built in Image and Font Resource manager to get MOST tasks done!
+- `Resource Management` Pipeline: You can create your own resource managers for different types of assets! Or you can use the built-in Image and Font Resource manager to get MOST tasks done!
 
 - `Basic Surfaces`: Get started with your visualization QUICKLY and with helpful intellisense feedback. We wrapped some common concepts like animation loops and project structure into simple classes to get you rolling FAST!
 
@@ -221,7 +221,7 @@ So, what comes in the box?! Read On!
 
 - `Multiple Render Targets`: This will be seamlessly integrated to support MRT for systems that do and DON'T have MRT enabled hardware.
 
-- `More 3D` is a tricky realm to get involved in. Essentially creating our own layers for 3D with lighting systems etc means we'd be developing our own internal engine for rendering, which is something I'd like to NOT do with this project as this is a platform for essentially 'making' engines or pipelines. There will be some helpful starting points with Math, Projections, and Updates in this library; however, in depth rendering systems for 3D will be made in other projects that will be shared and built upon DeltaV
+- `More 3D` is a tricky realm to get involved in. Essentially creating our own layers for 3D with lighting systems etc means we'd be developing our own internal engine for rendering, which is something I'd like to NOT do with this project as this is a platform for essentially 'making' engines or pipelines. There will be some helpful starting points with Math, Projections, and Updates in this library; however, in-depth rendering systems for 3D will be made in other projects that will be shared and built upon DeltaV
 
 - `More Geometry` There will be geometry helpers added aplenty as the framework evolves.
 

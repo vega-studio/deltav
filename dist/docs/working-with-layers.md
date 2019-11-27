@@ -354,7 +354,7 @@ So *hopefully* reading the break down gives you a really good feel for how to ma
 There's a LOT to pull apart for the shader itself, so we made an entire article breaking it down for
 you!
 
-[The Shader](./the-shader)
+[The Shader](./the-shader.md)
 
 My only warning this early: DO NOT ACCESS ATTRIBUTES OUTSIDE OF `void main()`. Suffer you will, if do
 this you must.

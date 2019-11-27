@@ -1,9 +1,11 @@
+![A DeltaV Rendering](./assets/splash.png)
+
 # Delta-V
 
-Chicken Soup for the large data visualization's soul.
+A minty breath freshner for the large data visualization.
 
 This framework simplifies some VERY difficult issues to address in handling graphics for
-`large dynamic` visualizations.
+`large dynamic visualizations`.
 
 ## Installing
 

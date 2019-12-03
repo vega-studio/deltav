@@ -72,6 +72,7 @@ function generateBuckets(data: Vec3[], segments: number): Bucket[] {
   const minTime = nodes[0][0];
   const maxTime = nodes[nodes.length - 1][0];
   const delta = maxTime - minTime;
+
   // Adjust time
   for (let i = 0; i < nodes.length; i++) {
     nodes[i][0] = (nodes[i][0] - minTime) / delta;
@@ -130,6 +131,8 @@ export class Bar {
   buckets: Bucket[];
   intervals: Interval[] = [];
   maxDepth: number = 0;
+  minTime: number = Number.MAX_SAFE_INTEGER;
+  maxTime: number = Number.MIN_SAFE_INTEGER;
 
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
@@ -144,6 +147,8 @@ export class Bar {
     this.endProvider = options.endProvider;
     this.data = options.barData;
     this.data.sort((a, b) => a[0] - b[0]);
+    this.minTime = this.data[0][0];
+    this.maxTime = this.data[this.data.length - 1][0];
     this.maxDepth = options.maxDepth || this.maxDepth;
 
     if (options.resolution) {
@@ -322,6 +327,27 @@ export class Bar {
     this.reDraw();
   }
 
+  addStreamData() {
+    const time = this.maxTime + 0.01;
+
+    const height = 3 + 3 * Math.random();
+    const depth = 1;
+
+    this.data.push([time, height, depth]);
+
+    if (this.resolution > this.data.length) {
+      this.segments = this.data.length;
+    } else if (this.resolution < 2) {
+      this.segments = 2;
+    } else {
+      this.segments = this.resolution;
+    }
+
+    this.reDraw();
+
+    this.maxTime = time;
+  }
+
   removeDataAt(index: number) {
     if (index < 0 || index >= this.data.length) {
       console.error("Index is outside the bound");
@@ -393,12 +419,14 @@ export class Bar {
     const leftBound = 0;
     const rightBound = viewWidth;
 
+    const timeLength = this.maxTime - this.minTime;
+
     for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
       const bucket = this.buckets[i];
       const nextBucket = this.buckets[i + 1];
 
-      const x1 = bucket.time * width * scaleX + dragX;
-      const x2 = nextBucket.time * width * scaleX + dragX;
+      const x1 = bucket.time * width * scaleX / timeLength + dragX;
+      const x2 = nextBucket.time * width * scaleX / timeLength + dragX;
       const y1 = bucket.value * heightScale;
       const y2 = nextBucket.value * heightScale;
       const depth1 = bucket.depth;

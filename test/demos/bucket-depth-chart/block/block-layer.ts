@@ -16,6 +16,7 @@ export interface IBlockLayerProps extends ILayerProps<BlockInstance> {
   dragZ?(): number;
   scaleX?(): number;
   color?(): Vec4;
+  timeLength?(): number;
 }
 /**
  * Renders blocks of data with adjustable start and end values
@@ -28,7 +29,8 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
       dragX,
       dragZ,
       scaleX,
-      color
+      color,
+      timeLength
     } = this.props;
 
     const FRT: Vec3 = [1, 1, 1];
@@ -157,6 +159,11 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
           name: "scaleX",
           size: UniformSize.ONE,
           update: () => (scaleX ? scaleX() : 1)
+        },
+        {
+          name: "timeLength",
+          size: UniformSize.ONE,
+          update: () => (timeLength ? timeLength() : 1)
         }
       ],
       vertexCount: 18

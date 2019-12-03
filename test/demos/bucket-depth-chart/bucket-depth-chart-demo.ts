@@ -81,7 +81,7 @@ export class BucketDepthChartDemo extends BaseDemo {
   mouseX: number = 0;
   mouseY: number = 0;
   bdc: BucketDepthChart;
-  padding: number = 0.4;
+  padding: number = 1;
   topView: boolean = false;
   gui: dat.GUI;
   numOfBars: number = 5;
@@ -190,7 +190,31 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.cameraPosition = newPosition;
     },
     addData: () => {
-      this.bdc.bars[4].addData([Math.random(), 3 + 3 * Math.random(), 0]);
+      this.bdc.bars.forEach(bar =>
+        bar.addData([Math.random(), 3 + 3 * Math.random(), 0])
+      );
+    },
+    stream: () => {
+      const dragEnd = this.viewWidth - this.scaleX * this.width;
+      const dragStart = this.dragX;
+      const delta = dragEnd - dragStart;
+
+      let i = 0;
+      const timeId = onAnimationLoop(() => {
+        this.dragX = dragStart + delta * i;
+        this.bdc.updateByDragX(this.dragX);
+        if (i >= 1) {
+          stopAnimationLoop(timeId);
+
+          // Add data
+          onAnimationLoop(() => {
+            this.bdc.bars.forEach(bar => bar.addStreamData());
+          }, 1000);
+        }
+        i += 0.01;
+      });
+
+      // this.dragX = dragEnd;
     },
     lightAngleV: this.angleV * 180 / Math.PI,
     lightAngleH: this.angleH * 180 / Math.PI,
@@ -202,7 +226,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     gui.add(this.parameters, "frontView");
     gui.add(this.parameters, "topView");
     gui.add(this.parameters, "angledView");
-    gui.add(this.parameters, "addData");
+    gui.add(this.parameters, "stream");
     gui
       .add(this.parameters, "lightAngleV", 0, 180)
       .onChange((angleV: number) => {
@@ -371,9 +395,6 @@ export class BucketDepthChartDemo extends BaseDemo {
       providers: blockProviders,
       endProviders: endPlateProviders
     });
-
-    const color = this.bdc.bars[10];
-    console.warn(color);
   }
 
   addBar(pre: number, now: number) {
@@ -535,7 +556,17 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0]
+                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0],
+                timeLength: () => {
+                  if (this.bdc.bars[0]) {
+                    const length =
+                      this.bdc.bars[0].maxTime - this.bdc.bars[0].minTime;
+                    console.warn(length);
+                    return length;
+                  }
+
+                  return 1;
+                }
               }),
               end1: createLayer(PlateEndLayer, {
                 data: providers.ends1,
@@ -553,7 +584,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0]
+                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[1]
+                    ? this.bdc.bars[1].maxTime - this.bdc.bars[1].minTime
+                    : 1
               }),
               end2: createLayer(PlateEndLayer, {
                 data: providers.ends2,
@@ -571,7 +606,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0]
+                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[2]
+                    ? this.bdc.bars[2].maxTime - this.bdc.bars[2].minTime
+                    : 1
               }),
               end3: createLayer(PlateEndLayer, {
                 data: providers.ends3,
@@ -589,7 +628,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0]
+                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[3]
+                    ? this.bdc.bars[3].maxTime - this.bdc.bars[3].minTime
+                    : 1
               }),
               end4: createLayer(PlateEndLayer, {
                 data: providers.ends4,
@@ -607,7 +650,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0]
+                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[4]
+                    ? this.bdc.bars[4].maxTime - this.bdc.bars[4].minTime
+                    : 1
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,
@@ -625,7 +672,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0]
+                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[5]
+                    ? this.bdc.bars[5].maxTime - this.bdc.bars[5].minTime
+                    : 1
               }),
               end6: createLayer(PlateEndLayer, {
                 data: providers.ends6,
@@ -643,7 +694,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0]
+                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[6]
+                    ? this.bdc.bars[6].maxTime - this.bdc.bars[6].minTime
+                    : 1
               }),
               end7: createLayer(PlateEndLayer, {
                 data: providers.ends7,
@@ -661,7 +716,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0]
+                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[7]
+                    ? this.bdc.bars[7].maxTime - this.bdc.bars[7].minTime
+                    : 1
               }),
               end8: createLayer(PlateEndLayer, {
                 data: providers.ends8,
@@ -679,7 +738,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0]
+                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[8]
+                    ? this.bdc.bars[8].maxTime - this.bdc.bars[8].minTime
+                    : 1
               }),
               end9: createLayer(PlateEndLayer, {
                 data: providers.ends9,
@@ -697,7 +760,11 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0]
+                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0],
+                timeLength: () =>
+                  this.bdc.bars[9]
+                    ? this.bdc.bars[9].maxTime - this.bdc.bars[9].minTime
+                    : 1
               }),
               end10: createLayer(PlateEndLayer, {
                 data: providers.ends10,

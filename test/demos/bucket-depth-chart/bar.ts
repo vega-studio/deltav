@@ -89,7 +89,7 @@ function generateBuckets2(data: Vec3[], groupSize: number) {
   return buckets;
 }
 
-function generateBuckets(data: Vec3[], segments: number): Bucket[] {
+/*function generateBuckets(data: Vec3[], segments: number): Bucket[] {
   const num = data.length;
   const base = Math.floor(num / segments);
   const extra = num - base * segments;
@@ -149,7 +149,7 @@ function generateBuckets(data: Vec3[], segments: number): Bucket[] {
   }
 
   return buckets;
-}
+}*/
 
 /** A chart which shows data change over time, the chart will always face to the positive Z direction*/
 export class Bar {
@@ -206,9 +206,13 @@ export class Bar {
     this.provider = options.provider;
     this.endProvider = options.endProvider;
     this.data = options.barData;
-    this.data.sort((a, b) => a[0] - b[0]);
-    this.minTime = this.data[0][0];
-    this.maxTime = this.data[this.data.length - 1][0];
+
+    if (this.data.length > 0) {
+      this.data.sort((a, b) => a[0] - b[0]);
+      this.minTime = this.data[0][0];
+      this.maxTime = this.data[this.data.length - 1][0];
+    }
+
     this.maxDepth = options.maxDepth || this.maxDepth;
 
     this.groupSize = options.groupSize || this.groupSize;
@@ -243,6 +247,13 @@ export class Bar {
   }
 
   get width() {
+    if (
+      this.maxTime === Number.MIN_SAFE_INTEGER ||
+      this.minTime === Number.MAX_SAFE_INTEGER
+    ) {
+      return 0;
+    }
+
     return (this.maxTime - this.minTime) * this._unitWidth;
   }
 
@@ -344,7 +355,8 @@ export class Bar {
   }
 
   addStreamData() {
-    const time = this.maxTime + 0.01;
+    const time = this.maxTime + 1;
+    this.maxTime = time;
 
     const height = 3 + 3 * Math.random();
     const depth = 1;
@@ -536,15 +548,14 @@ export class Bar {
   }
 
   private generateInstances(data: Vec3[]) {
-    if (data.length <= 1) {
+    /*if (data.length <= 1) {
       console.error(
         "A bucket depth chart needs at least two elements in data array"
       );
-    }
+    }*/
 
     this.buckets = generateBuckets2(data, this.groupSize);
 
-    // const width = this.width;
     const unitWidth = this._unitWidth;
     const viewWidth = this.viewWidth;
     const heightScale = this.heightScale;
@@ -558,98 +569,158 @@ export class Bar {
     const leftBound = 0;
     const rightBound = viewWidth;
 
-    // const timeLength = this.maxTime - this.minTime;
+    if (this.buckets.length === 0) {
+      const basicHeight = 1;
+      const basicDepth = 0.5;
+      if (this.headBlock) {
+        this.headBlock.startValue = [
+          (leftBound - dragX) / scaleX,
+          basicHeight,
+          basicDepth
+        ];
 
-    for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
-      const bucket = this.buckets[i];
-      const nextBucket = this.buckets[i + 1];
-
-      const x1 = bucket.time * unitWidth * scaleX + dragX;
-      const x2 = nextBucket.time * unitWidth * scaleX + dragX;
-      const y1 = bucket.value * heightScale;
-      const y2 = nextBucket.value * heightScale;
-      const depth1 = bucket.depth;
-      const depth2 = nextBucket.depth;
-
-      const interval = new Interval({
-        leftX: bucket.time * unitWidth,
-        rightX: nextBucket.time * unitWidth,
-        leftY: y1,
-        rightY: y2,
-        leftDepth: depth1,
-        rightDepth: depth2
-      });
-
-      if (x1 < rightBound && x2 > leftBound) {
-        if (x1 >= leftBound && x2 <= rightBound) {
-          interval.status = IntervalStatus.IN;
-        } else {
-          interval.status = IntervalStatus.INSECT;
-        }
-
-        interval.createInstance(
+        this.headBlock.endValue = [
+          (rightBound - dragX) / scaleX,
+          basicHeight,
+          basicDepth
+        ];
+      } else {
+        this.headBlock = new BlockInstance({
+          startValue: [(leftBound - dragX) / scaleX, basicHeight, basicDepth],
+          endValue: [(rightBound - dragX) / scaleX, basicHeight, basicDepth],
           baseX,
           baseY,
           baseZ,
           color,
-          scaleX,
-          dragX,
-          // unitWidth,
-          viewWidth,
-          this.provider
-        );
+          normal1: [0, 0, -1],
+          normal2: [0, 1, 0],
+          normal3: [0, 0, 1]
+        });
 
-        // End plate on the left
-        if (x1 <= leftBound && x2 > leftBound) {
-          const leftX = Math.max(x1, leftBound);
-          const leftScale = (leftX - x1) / (x2 - x1);
-          const leftY = (1 - leftScale) * y1 + leftScale * y2;
-          const leftDepth = (1 - leftScale) * depth1 + leftScale * depth2;
-
-          if (this.leftEnd) {
-            this.leftEnd.width = leftDepth;
-            this.leftEnd.height = leftY;
-          } else {
-            this.leftEnd = new PlateEndInstance({
-              width: leftDepth,
-              height: leftY,
-              base: [leftBound + baseX, baseZ],
-              normal: [-1, 0, 0],
-              color
-            });
-
-            this.endProvider.add(this.leftEnd);
-          }
-        }
-
-        // End plate on the right
-        if (x2 >= rightBound && x1 < rightBound) {
-          const rightX = Math.min(x2, rightBound);
-          const rightScale = (rightX - x1) / (x2 - x1);
-          const rightY = (1 - rightScale) * y1 + rightScale * y2;
-          const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
-
-          if (this.rightEnd) {
-            this.rightEnd.width = rightDepth;
-            this.rightEnd.height = rightY;
-          } else {
-            this.rightEnd = new PlateEndInstance({
-              width: rightDepth,
-              height: rightY,
-              base: [rightBound + baseX, baseZ],
-              normal: [1, 0, 0],
-              color
-            });
-
-            this.endProvider.add(this.rightEnd);
-          }
-        }
+        this.provider.add(this.headBlock);
       }
 
-      this.intervals.push(interval);
-    }
+      if (this.leftEnd) {
+        this.leftEnd.width = basicDepth;
+        this.leftEnd.height = basicHeight;
+      } else {
+        this.leftEnd = new PlateEndInstance({
+          width: basicDepth,
+          height: basicHeight,
+          base: [leftBound + baseX, baseZ],
+          normal: [-1, 0, 0],
+          color
+        });
 
-    this.updateEndBlocks();
+        this.endProvider.add(this.leftEnd);
+      }
+
+      if (this.rightEnd) {
+        this.rightEnd.width = basicDepth;
+        this.rightEnd.height = basicHeight;
+      } else {
+        this.rightEnd = new PlateEndInstance({
+          width: basicDepth,
+          height: basicHeight,
+          base: [rightBound + baseX, baseZ],
+          normal: [1, 0, 0],
+          color
+        });
+
+        this.endProvider.add(this.rightEnd);
+      }
+    } else {
+      for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
+        const bucket = this.buckets[i];
+        const nextBucket = this.buckets[i + 1];
+
+        const x1 = bucket.time * unitWidth * scaleX + dragX;
+        const x2 = nextBucket.time * unitWidth * scaleX + dragX;
+        const y1 = bucket.value * heightScale;
+        const y2 = nextBucket.value * heightScale;
+        const depth1 = bucket.depth;
+        const depth2 = nextBucket.depth;
+
+        const interval = new Interval({
+          leftX: bucket.time * unitWidth,
+          rightX: nextBucket.time * unitWidth,
+          leftY: y1,
+          rightY: y2,
+          leftDepth: depth1,
+          rightDepth: depth2
+        });
+
+        if (x1 < rightBound && x2 > leftBound) {
+          if (x1 >= leftBound && x2 <= rightBound) {
+            interval.status = IntervalStatus.IN;
+          } else {
+            interval.status = IntervalStatus.INSECT;
+          }
+
+          interval.createInstance(
+            baseX,
+            baseY,
+            baseZ,
+            color,
+            scaleX,
+            dragX,
+            // unitWidth,
+            viewWidth,
+            this.provider
+          );
+
+          // End plate on the left
+          if (x1 <= leftBound && x2 > leftBound) {
+            const leftX = Math.max(x1, leftBound);
+            const leftScale = (leftX - x1) / (x2 - x1);
+            const leftY = (1 - leftScale) * y1 + leftScale * y2;
+            const leftDepth = (1 - leftScale) * depth1 + leftScale * depth2;
+
+            if (this.leftEnd) {
+              this.leftEnd.width = leftDepth;
+              this.leftEnd.height = leftY;
+            } else {
+              this.leftEnd = new PlateEndInstance({
+                width: leftDepth,
+                height: leftY,
+                base: [leftBound + baseX, baseZ],
+                normal: [-1, 0, 0],
+                color
+              });
+
+              this.endProvider.add(this.leftEnd);
+            }
+          }
+
+          // End plate on the right
+          if (x2 >= rightBound && x1 < rightBound) {
+            const rightX = Math.min(x2, rightBound);
+            const rightScale = (rightX - x1) / (x2 - x1);
+            const rightY = (1 - rightScale) * y1 + rightScale * y2;
+            const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
+
+            if (this.rightEnd) {
+              this.rightEnd.width = rightDepth;
+              this.rightEnd.height = rightY;
+            } else {
+              this.rightEnd = new PlateEndInstance({
+                width: rightDepth,
+                height: rightY,
+                base: [rightBound + baseX, baseZ],
+                normal: [1, 0, 0],
+                color
+              });
+
+              this.endProvider.add(this.rightEnd);
+            }
+          }
+        }
+
+        this.intervals.push(interval);
+      }
+
+      this.updateEndBlocks();
+    }
   }
 
   updateByDragX2(dragX: number) {
@@ -664,114 +735,132 @@ export class Bar {
     const leftBound = 0;
     const rightBound = viewWidth;
 
-    this.intervals.forEach(interval => {
-      const x1 = interval.leftX * scaleX + dragX;
-      const x2 = interval.rightX * scaleX + dragX;
-      // Inside bound
-      if (x1 >= leftBound && x2 <= rightBound) {
-        // update
-        if (interval.status === IntervalStatus.INSECT) {
-          interval.updateInstance(dragX, scaleX, viewWidth);
-        }
-        // create
-        else if (interval.status === IntervalStatus.OUT) {
-          interval.createInstance(
-            baseX,
-            baseY,
-            baseZ,
-            color,
-            scaleX,
-            dragX,
-            // this._unitWidth,
-            viewWidth,
-            this.provider
-          );
-        }
+    if (this.intervals.length === 0) {
+      const basicHeight = 1;
+      const basicDepth = 0.5;
+      if (this.headBlock) {
+        this.headBlock.startValue = [
+          (leftBound - dragX) / scaleX,
+          basicHeight,
+          basicDepth
+        ];
 
-        interval.status = IntervalStatus.IN;
+        this.headBlock.endValue = [
+          (rightBound - dragX) / scaleX,
+          basicHeight,
+          basicDepth
+        ];
       }
+    } else if (this.intervals.length !== 0) {
+      this.intervals.forEach(interval => {
+        const x1 = interval.leftX * scaleX + dragX;
+        const x2 = interval.rightX * scaleX + dragX;
+        // Inside bound
+        if (x1 >= leftBound && x2 <= rightBound) {
+          // update
+          if (interval.status === IntervalStatus.INSECT) {
+            interval.updateInstance(dragX, scaleX, viewWidth);
+          }
+          // create
+          else if (interval.status === IntervalStatus.OUT) {
+            interval.createInstance(
+              baseX,
+              baseY,
+              baseZ,
+              color,
+              scaleX,
+              dragX,
+              // this._unitWidth,
+              viewWidth,
+              this.provider
+            );
+          }
 
-      // Insect bound
-      else if (
-        (x1 < leftBound && x2 > leftBound) ||
-        (x1 < rightBound && x2 > rightBound)
-      ) {
-        // update
-        if (interval.status !== IntervalStatus.OUT) {
-          interval.updateInstance(dragX, scaleX, viewWidth);
+          interval.status = IntervalStatus.IN;
         }
-        // create
+
+        // Insect bound
+        else if (
+          (x1 < leftBound && x2 > leftBound) ||
+          (x1 < rightBound && x2 > rightBound)
+        ) {
+          // update
+          if (interval.status !== IntervalStatus.OUT) {
+            interval.updateInstance(dragX, scaleX, viewWidth);
+          }
+          // create
+          else {
+            interval.createInstance(
+              baseX,
+              baseY,
+              baseZ,
+              color,
+              scaleX,
+              dragX,
+              // this._unitWidth,
+              viewWidth,
+              this.provider
+            );
+          }
+
+          interval.status = IntervalStatus.INSECT;
+        }
+
+        // Outside bound
         else {
-          interval.createInstance(
-            baseX,
-            baseY,
-            baseZ,
-            color,
-            scaleX,
-            dragX,
-            // this._unitWidth,
-            viewWidth,
-            this.provider
-          );
+          // Remove
+          if (interval.status !== IntervalStatus.OUT) {
+            interval.removeInstance(this.provider);
+          }
+
+          interval.status = IntervalStatus.OUT;
         }
 
-        interval.status = IntervalStatus.INSECT;
-      }
-
-      // Outside bound
-      else {
-        // Remove
-        if (interval.status !== IntervalStatus.OUT) {
-          interval.removeInstance(this.provider);
+        // End plate on the left
+        if (x1 <= leftBound && x2 > leftBound) {
+          if (this.leftEnd) {
+            this.leftEnd.update(interval, leftBound, scaleX, dragX);
+          } else {
+            const leftScale = (leftBound - x1) / (x2 - x1);
+            const y1 = interval.leftY;
+            const y2 = interval.rightY;
+            const depth1 = interval.leftDepth;
+            const depth2 = interval.rightDepth;
+            const height = (1 - leftScale) * y1 + leftScale * y2;
+            const width = (1 - leftScale) * depth1 + leftScale * depth2;
+            this.leftEnd = new PlateEndInstance({
+              width,
+              height,
+              base: [leftBound + baseX, baseZ],
+              normal: [-1, 0, 0]
+            });
+          }
         }
 
-        interval.status = IntervalStatus.OUT;
-      }
-
-      // End plate on the left
-      if (x1 <= leftBound && x2 > leftBound) {
-        if (this.leftEnd) {
-          this.leftEnd.update(interval, leftBound, scaleX, dragX);
-        } else {
-          const leftScale = (leftBound - x1) / (x2 - x1);
-          const y1 = interval.leftY;
-          const y2 = interval.rightY;
-          const depth1 = interval.leftDepth;
-          const depth2 = interval.rightDepth;
-          const height = (1 - leftScale) * y1 + leftScale * y2;
-          const width = (1 - leftScale) * depth1 + leftScale * depth2;
-          this.leftEnd = new PlateEndInstance({
-            width,
-            height,
-            base: [leftBound + baseX, baseZ],
-            normal: [-1, 0, 0]
-          });
+        // End plate on the right
+        if (x2 >= rightBound && x1 < rightBound) {
+          if (this.rightEnd) {
+            this.rightEnd.update(interval, rightBound, scaleX, dragX);
+          } else {
+            const rightScale = (rightBound - x1) / (x2 - x1);
+            const y1 = interval.leftY;
+            const y2 = interval.rightY;
+            const depth1 = interval.leftDepth;
+            const depth2 = interval.rightDepth;
+            const height = (1 - rightScale) * y1 + rightScale * y2;
+            const width = (1 - rightScale) * depth1 + rightScale * depth2;
+            this.leftEnd = new PlateEndInstance({
+              width,
+              height,
+              base: [rightBound + baseX, baseZ],
+              normal: [1, 0, 0]
+            });
+          }
         }
-      }
+      });
 
-      // End plate on the right
-      if (x2 >= rightBound && x1 < rightBound) {
-        if (this.rightEnd) {
-          this.rightEnd.update(interval, rightBound, scaleX, dragX);
-        } else {
-          const rightScale = (rightBound - x1) / (x2 - x1);
-          const y1 = interval.leftY;
-          const y2 = interval.rightY;
-          const depth1 = interval.leftDepth;
-          const depth2 = interval.rightDepth;
-          const height = (1 - rightScale) * y1 + rightScale * y2;
-          const width = (1 - rightScale) * depth1 + rightScale * depth2;
-          this.leftEnd = new PlateEndInstance({
-            width,
-            height,
-            base: [rightBound + baseX, baseZ],
-            normal: [1, 0, 0]
-          });
-        }
-      }
-    });
-
-    this.updateEndBlocks();
+      this.updateEndBlocks();
+    }
   }
 
   updateByDragX(dragX: number) {

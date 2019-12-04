@@ -22,20 +22,6 @@ import { BlockInstance } from "./block";
 import { BucketDepthChart } from "./bucket-depth-chart";
 import { PlateEndInstance, PlateEndLayer } from "./plateEnd";
 
-function getResolutionByDistance(distance: number) {
-  if (distance < 500) return 1000;
-
-  if (distance < 570) return 500;
-
-  if (distance < 600) return 250;
-
-  if (distance < 620) return 125;
-
-  if (distance < 640) return 100;
-
-  return 80;
-}
-
 function getGroupSizeByDistance(distance: number) {
   if (distance <= 500) return 1;
 
@@ -212,7 +198,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       );
     },
     stream: () => {
-      const dragEnd = this.viewWidth - this.scaleX; // * this.width;
+      const dragEnd = this.viewWidth - this.scaleX * this.bdc.width;
       const dragStart = this.dragX;
       const delta = dragEnd - dragStart;
 
@@ -226,6 +212,8 @@ export class BucketDepthChartDemo extends BaseDemo {
           // Add data
           onAnimationLoop(() => {
             this.bdc.bars.forEach(bar => bar.addStreamData());
+            this.dragX -= this.bdc.unitWidth;
+            this.bdc.updateByDragX(this.dragX);
           }, 1000);
         }
         i += 0.01;
@@ -527,35 +515,40 @@ export class BucketDepthChartDemo extends BaseDemo {
               const leftEnd = this.dragX - this.viewWidth / 2;
               const rightEnd = leftEnd + this.bdc.width;
 
-              // mouseX
-              const p1 = e.start.view.projection.worldToScreen([leftEnd, 0, 0]);
-              const p2 = e.start.view.projection.worldToScreen([
-                rightEnd,
-                0,
-                0
-              ]);
-              const mouseX = e.mouse.currentPosition[0];
+              if (rightEnd > leftEnd) {
+                // mouseX
+                const p1 = e.start.view.projection.worldToScreen([
+                  leftEnd,
+                  0,
+                  0
+                ]);
+                const p2 = e.start.view.projection.worldToScreen([
+                  rightEnd,
+                  0,
+                  0
+                ]);
+                const mouseX = e.mouse.currentPosition[0];
 
-              // anchor position
-              const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
-              const anchorX = leftEnd + anchorScale * this.bdc.width;
+                // anchor position
+                const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
+                const anchorX = leftEnd + anchorScale * this.bdc.width;
 
-              // new left end
-              const newLeftEnd =
-                anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
+                // new left end
+                const newLeftEnd =
+                  anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
 
-              this.dragX = newLeftEnd + this.viewWidth / 2;
+                this.dragX = newLeftEnd + this.viewWidth / 2;
+              }
+
+              // Drag X update
+              this.dragX = Math.max(
+                Math.min(this.dragX, 0),
+                this.viewWidth - this.bdc.width * this.scaleX
+              );
             }
 
             // Resolution update
             const groupSize = getGroupSizeByDistance(this.zoomingDistance);
-
-            // Drag X update
-            this.dragX = Math.max(
-              Math.min(this.dragX, 0),
-              this.viewWidth - this.bdc.width * this.scaleX
-            );
-
             this.bdc.updateByScaleX(this.scaleX, this.dragX, groupSize);
           }
         })

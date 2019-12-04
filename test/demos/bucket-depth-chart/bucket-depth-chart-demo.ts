@@ -36,6 +36,20 @@ function getResolutionByDistance(distance: number) {
   return 80;
 }
 
+function getGroupSizeByDistance(distance: number) {
+  if (distance <= 500) return 1;
+
+  if (distance <= 570) return 2;
+
+  if (distance <= 600) return 4;
+
+  if (distance <= 620) return 8;
+
+  if (distance <= 640) return 12;
+
+  return 16;
+}
+
 export class BucketDepthChartDemo extends BaseDemo {
   providers = {
     blocks1: new InstanceProvider<BlockInstance>(),
@@ -100,6 +114,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     frontView: () => {
       if (!this.surface) return;
       this.topView = false;
+      this.front = true;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
       const newPosition: Vec3 = [0, 0, 15];
@@ -124,6 +139,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     topView: () => {
       if (!this.surface) return;
       this.topView = true;
+      this.front = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
       const newPosition: Vec3 = [0, 10, this.bdc.middleDepth + 0.5];
@@ -168,6 +184,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     angledView: () => {
       if (!this.surface) return;
       this.topView = false;
+      this.front = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
       const newPosition: Vec3 = [10, 10, 10];
@@ -387,7 +404,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       heightScale: 0.3,
       colors: colors,
       chartData: datas,
-      resolution: 1000,
+
       viewWidth: this.viewWidth,
       viewPortNear: -10,
       viewPortFar: 9,
@@ -505,24 +522,33 @@ export class BucketDepthChartDemo extends BaseDemo {
               1.0
             );
 
-            // Real ends
-            const leftEnd = this.dragX - this.viewWidth / 2;
-            const rightEnd = leftEnd + this.bdc.width;
+            if (this.front) {
+              // Real ends
+              const leftEnd = this.dragX - this.viewWidth / 2;
+              const rightEnd = leftEnd + this.bdc.width;
 
-            // mouseX
-            const p1 = e.start.view.projection.worldToScreen([leftEnd, 0, 0]);
-            const p2 = e.start.view.projection.worldToScreen([rightEnd, 0, 0]);
-            const mouseX = e.mouse.currentPosition[0];
+              // mouseX
+              const p1 = e.start.view.projection.worldToScreen([leftEnd, 0, 0]);
+              const p2 = e.start.view.projection.worldToScreen([
+                rightEnd,
+                0,
+                0
+              ]);
+              const mouseX = e.mouse.currentPosition[0];
 
-            // anchor position
-            const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
-            const anchorX = leftEnd + anchorScale * this.bdc.width;
+              // anchor position
+              const anchorScale = (mouseX - p1[0]) / (p2[0] - p1[0]);
+              const anchorX = leftEnd + anchorScale * this.bdc.width;
 
-            // new left end
-            const newLeftEnd =
-              anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
+              // new left end
+              const newLeftEnd =
+                anchorX + (leftEnd - anchorX) * this.scaleX / preScale;
 
-            this.dragX = newLeftEnd + this.viewWidth / 2;
+              this.dragX = newLeftEnd + this.viewWidth / 2;
+            }
+
+            // Resolution update
+            const groupSize = getGroupSizeByDistance(this.zoomingDistance);
 
             // Drag X update
             this.dragX = Math.max(
@@ -530,10 +556,7 @@ export class BucketDepthChartDemo extends BaseDemo {
               this.viewWidth - this.bdc.width * this.scaleX
             );
 
-            // Resolution update
-            const resolution = getResolutionByDistance(this.zoomingDistance);
-
-            this.bdc.updateByScaleX(this.scaleX, this.dragX, resolution);
+            this.bdc.updateByScaleX(this.scaleX, this.dragX, groupSize);
           }
         })
       }),

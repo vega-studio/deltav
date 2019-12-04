@@ -23,8 +23,7 @@ export interface IBarOptions {
   viewWidth?: number;
   viewPortNear?: number;
   viewPortFar?: number;
-  // Sets the number of data groups to form the bar
-  resolution?: number;
+  groupSize?: number;
   // Provider for block instance
   provider: InstanceProvider<BlockInstance>;
   // Provider for plateEndInstance
@@ -172,9 +171,8 @@ export class Bar {
 
   viewPortNear: number = Number.MIN_SAFE_INTEGER;
   viewPortFar: number = Number.MAX_SAFE_INTEGER;
-  /**Number of data groups that make up each line*/
-  private _resolution: number;
-  private segments: number;
+
+  groupSize: number = 1;
 
   provider: InstanceProvider<BlockInstance>;
   endProvider: InstanceProvider<PlateEndInstance>;
@@ -213,45 +211,9 @@ export class Bar {
     this.maxTime = this.data[this.data.length - 1][0];
     this.maxDepth = options.maxDepth || this.maxDepth;
 
-    if (options.resolution) {
-      this._resolution = options.resolution;
-      if (options.resolution > options.barData.length) {
-        this.segments = options.barData.length;
-      } else {
-        this.segments = options.resolution;
-      }
-    } else {
-      this._resolution = options.barData.length;
-      this.segments = options.barData.length;
-    }
+    this.groupSize = options.groupSize || this.groupSize;
 
     this.generateInstances(options.barData);
-  }
-
-  get resolution() {
-    return this._resolution;
-  }
-
-  set resolution(val: number) {
-    if (val !== this._resolution) {
-      this._resolution = val;
-
-      const oldSegments = this.segments;
-
-      if (val > this.data.length) {
-        this.segments = this.data.length;
-      } else if (val < 2) {
-        this.segments = 2;
-      } else {
-        this.segments = val;
-      }
-
-      if (this.segments !== oldSegments) {
-        this.clearAllInstances();
-        this.generateInstances(this.data);
-        // this.insertToProvider(this.provider);
-      }
-    }
   }
 
   get bottomCenter() {
@@ -378,14 +340,6 @@ export class Bar {
 
     if (d[0] >= this.data[endi - 1][0]) this.data.push(d);
 
-    if (this.resolution > this.data.length) {
-      this.segments = this.data.length;
-    } else if (this.resolution < 2) {
-      this.segments = 2;
-    } else {
-      this.segments = this.resolution;
-    }
-
     this.reDraw();
   }
 
@@ -397,17 +351,7 @@ export class Bar {
 
     this.data.push([time, height, depth]);
 
-    if (this.resolution > this.data.length) {
-      this.segments = this.data.length;
-    } else if (this.resolution < 2) {
-      this.segments = 2;
-    } else {
-      this.segments = this.resolution;
-    }
-
     this.reDraw();
-
-    this.maxTime = time;
   }
 
   removeDataAt(index: number) {
@@ -416,14 +360,6 @@ export class Bar {
     }
 
     this.data.splice(index, 1);
-
-    if (this.resolution > this.data.length) {
-      this.segments = this.data.length;
-    } else if (this.resolution < 2) {
-      this.segments = 2;
-    } else {
-      this.segments = this.resolution;
-    }
 
     this.reDraw();
   }
@@ -459,6 +395,146 @@ export class Bar {
     }
   }
 
+  updateEndBlocks() {
+    const dragX = this.dragX;
+    const scaleX = this.scaleX;
+    const unitWidth = this._unitWidth;
+    const heightScale = this.heightScale;
+    const leftBound = 0;
+    const rightBound = this.viewWidth;
+    const baseX = this.bottomCenter[0] - this.viewWidth / 2;
+    const baseY = this.bottomCenter[1];
+    const baseZ = this.baseZ;
+    const color = this.color;
+
+    const len = this.buckets.length;
+    const leftBucket = this.buckets[0];
+    const rightBucket = this.buckets[len - 1];
+    const leftTime = leftBucket.time;
+    const rightTime = rightBucket.time;
+
+    const leftEndX = leftTime * unitWidth * scaleX + dragX;
+    const leftEndHeight = leftBucket.value * heightScale;
+    const leftEndDepth = leftBucket.depth;
+
+    const rightEndX = rightTime * unitWidth * scaleX + dragX;
+    const rightEndHeight = rightBucket.value * heightScale;
+    const rightEndDepth = rightBucket.depth;
+
+    if (leftEndX > leftBound) {
+      const rightX = Math.min(leftEndX, rightBound);
+      if (this.headBlock) {
+        this.headBlock.startValue = [
+          (leftBound - dragX) / scaleX,
+          leftEndHeight,
+          leftEndDepth
+        ];
+
+        this.headBlock.endValue = [
+          (rightX - dragX) / scaleX,
+          leftEndHeight,
+          leftEndDepth
+        ];
+      } else {
+        this.headBlock = new BlockInstance({
+          startValue: [
+            (leftBound - dragX) / scaleX,
+            leftEndHeight,
+            leftEndDepth
+          ],
+          endValue: [(leftEndX - dragX) / scaleX, leftEndHeight, leftEndDepth],
+          baseX,
+          baseY,
+          baseZ,
+          color,
+          normal1: [0, 0, -1],
+          normal2: [0, 1, 0],
+          normal3: [0, 0, 1]
+        });
+
+        this.provider.add(this.headBlock);
+      }
+
+      if (this.leftEnd) {
+        this.leftEnd.width = leftEndDepth;
+        this.leftEnd.height = leftEndHeight;
+      } else {
+        this.leftEnd = new PlateEndInstance({
+          width: leftEndDepth,
+          height: leftEndHeight,
+          base: [leftBound + baseX, baseZ],
+          normal: [-1, 0, 0],
+          color
+        });
+
+        this.endProvider.add(this.leftEnd);
+      }
+    } else {
+      if (this.headBlock) {
+        this.provider.remove(this.headBlock);
+        this.headBlock = null;
+      }
+    }
+
+    if (rightEndX < rightBound) {
+      const leftX = Math.max(leftBound, rightEndX);
+      if (this.tailBlcok) {
+        this.tailBlcok.startValue = [
+          (leftX - dragX) / scaleX,
+          rightEndHeight,
+          rightEndDepth
+        ];
+        this.tailBlcok.endValue = [
+          (rightBound - dragX) / scaleX,
+          rightEndHeight,
+          rightEndDepth
+        ];
+      } else {
+        this.tailBlcok = new BlockInstance({
+          startValue: [
+            (rightEndX - dragX) / scaleX,
+            rightEndHeight,
+            rightEndDepth
+          ],
+          endValue: [
+            (rightBound - dragX) / scaleX,
+            rightEndHeight,
+            rightEndDepth
+          ],
+          baseX,
+          baseY,
+          baseZ,
+          color,
+          normal1: [0, 0, -1],
+          normal2: [0, 1, 0],
+          normal3: [0, 0, 1]
+        });
+
+        this.provider.add(this.tailBlcok);
+      }
+
+      if (this.rightEnd) {
+        this.rightEnd.width = rightEndDepth;
+        this.rightEnd.height = rightEndHeight;
+      } else {
+        this.rightEnd = new PlateEndInstance({
+          width: rightEndDepth,
+          height: rightEndHeight,
+          base: [rightBound + baseX, baseZ],
+          normal: [1, 0, 0],
+          color
+        });
+
+        this.endProvider.add(this.rightEnd);
+      }
+    } else {
+      if (this.tailBlcok) {
+        this.provider.remove(this.tailBlcok);
+        this.tailBlcok = null;
+      }
+    }
+  }
+
   private generateInstances(data: Vec3[]) {
     if (data.length <= 1) {
       console.error(
@@ -466,7 +542,7 @@ export class Bar {
       );
     }
 
-    this.buckets = generateBuckets2(data, 1);
+    this.buckets = generateBuckets2(data, this.groupSize);
 
     // const width = this.width;
     const unitWidth = this._unitWidth;
@@ -572,6 +648,8 @@ export class Bar {
 
       this.intervals.push(interval);
     }
+
+    this.updateEndBlocks();
   }
 
   updateByDragX2(dragX: number) {
@@ -692,6 +770,8 @@ export class Bar {
         }
       }
     });
+
+    this.updateEndBlocks();
   }
 
   updateByDragX(dragX: number) {
@@ -786,27 +866,13 @@ export class Bar {
     });
   }
 
-  updateByScaleX(scaleX: number, dragX: number, resolution?: number) {
+  updateByScaleX(scaleX: number, dragX: number, groupSize?: number) {
     this.scaleX = scaleX;
     this.dragX = dragX;
 
-    const oldSegments = this.segments;
-
-    const newRes = resolution || this._resolution;
-
-    if (newRes > this.data.length) {
-      this.segments = this.data.length;
-    } else if (newRes < 2) {
-      this.segments = 2;
-    } else {
-      this.segments = newRes;
-    }
-
-    this._resolution = newRes;
-
-    if (this.segments !== oldSegments) {
-      this.clearAllInstances();
-      this.generateInstances(this.data);
+    if (groupSize && groupSize !== this.groupSize) {
+      this.groupSize = groupSize || this.groupSize;
+      this.reDraw();
     }
 
     this.updateByDragX2(dragX);

@@ -17,8 +17,8 @@ export interface IBarOptions {
   baseZ?: number;
   // Height scale that will be applied to the value in data array
   heightScale?: number;
-  // Sets the width of the chart
-  width: number;
+  // Sets the unit width, will be applied with duration of each interval
+  unitWidth?: number;
   // Sets the width of viewport
   viewWidth?: number;
   viewPortNear?: number;
@@ -31,6 +31,63 @@ export interface IBarOptions {
   endProvider: InstanceProvider<PlateEndInstance>;
 
   maxDepth?: number;
+}
+
+function generateBuckets2(data: Vec3[], groupSize: number) {
+  const len = data.length;
+  if (len === 0) {
+    return [];
+  }
+
+  const numOfGroups = Math.floor(len / groupSize);
+  const buckets = [];
+
+  if (numOfGroups === 0) {
+    let time = 0;
+    let value = 0;
+    let depth = 0;
+
+    data.forEach(d => {
+      time += d[0];
+      value = Math.max(value, d[1]);
+      depth = Math.max(depth, d[2]);
+    });
+
+    const bucket = new Bucket({
+      time: time / len,
+      value,
+      data,
+      depth
+    });
+
+    buckets.push(bucket);
+  } else {
+    for (let i = 0; i < numOfGroups; i++) {
+      let time = 0;
+      let value = 0;
+      let depth = 0;
+
+      for (let j = 0; j < groupSize; j++) {
+        const index = i * groupSize + j;
+        time += data[index][0];
+        value = Math.max(value, data[index][1]);
+        depth = Math.max(depth, data[index][2]);
+      }
+
+      // time /= groupSize;
+
+      const bucket = new Bucket({
+        time: time / groupSize,
+        value,
+        data,
+        depth
+      });
+
+      buckets.push(bucket);
+    }
+  }
+
+  return buckets;
 }
 
 function generateBuckets(data: Vec3[], segments: number): Bucket[] {
@@ -71,11 +128,11 @@ function generateBuckets(data: Vec3[], segments: number): Bucket[] {
 
   const minTime = nodes[0][0];
   const maxTime = nodes[nodes.length - 1][0];
-  const delta = maxTime - minTime;
+  // const delta = maxTime - minTime;
 
   // Adjust time
   for (let i = 0; i < nodes.length; i++) {
-    nodes[i][0] = (nodes[i][0] - minTime) / delta;
+    nodes[i][0] = nodes[i][0] - minTime;
   }
 
   // Generate buckets
@@ -108,9 +165,10 @@ export class Bar {
   /** Instances that will be generated */
   private blockInstances: BlockInstance[] = [];
   /** Width of the chart */
-  private _width: number;
+  // private _width: number;
+  private _unitWidth: number = 1;
   /** Width of the viewport */
-  viewWidth: number;
+  viewWidth: number = 10;
 
   viewPortNear: number = Number.MIN_SAFE_INTEGER;
   viewPortFar: number = Number.MAX_SAFE_INTEGER;
@@ -120,6 +178,9 @@ export class Bar {
 
   provider: InstanceProvider<BlockInstance>;
   endProvider: InstanceProvider<PlateEndInstance>;
+
+  headBlock: BlockInstance | null = null;
+  tailBlcok: BlockInstance | null = null;
 
   leftEnd: PlateEndInstance | null = null;
   rightEnd: PlateEndInstance | null = null;
@@ -139,8 +200,9 @@ export class Bar {
     this.color = options.color || this.color;
     this._baseZ = options.baseZ || this._baseZ;
     this._heightScale = options.heightScale || this._heightScale;
-    this._width = options.width;
-    this.viewWidth = options.viewWidth || options.width;
+    // this._width = options.width;
+    this._unitWidth = options.unitWidth || this._unitWidth;
+    this.viewWidth = options.viewWidth || this.viewWidth;
     this.viewPortNear = options.viewPortNear || this.viewPortNear;
     this.viewPortFar = options.viewPortFar || this.viewPortFar;
     this.provider = options.provider;
@@ -219,10 +281,10 @@ export class Bar {
   }
 
   get width() {
-    return this._width;
+    return (this.maxTime - this.minTime) * this._unitWidth;
   }
 
-  set width(val: number) {
+  /* set width(val: number) {
     const scale = val / this._width;
     const bottomCenter = this.bottomCenter;
     const oldBaseX = bottomCenter[0] - this._width / 2;
@@ -244,7 +306,7 @@ export class Bar {
     }
 
     this._width = val;
-  }
+  }*/
 
   /*get color() {
     return this._color;
@@ -404,9 +466,10 @@ export class Bar {
       );
     }
 
-    this.buckets = generateBuckets(data, this.segments);
+    this.buckets = generateBuckets2(data, 1);
 
-    const width = this.width;
+    // const width = this.width;
+    const unitWidth = this._unitWidth;
     const viewWidth = this.viewWidth;
     const heightScale = this.heightScale;
     const bottomCenter = this.bottomCenter;
@@ -419,22 +482,22 @@ export class Bar {
     const leftBound = 0;
     const rightBound = viewWidth;
 
-    const timeLength = this.maxTime - this.minTime;
+    // const timeLength = this.maxTime - this.minTime;
 
     for (let i = 0, endi = this.buckets.length; i < endi - 1; i++) {
       const bucket = this.buckets[i];
       const nextBucket = this.buckets[i + 1];
 
-      const x1 = bucket.time * width * scaleX / timeLength + dragX;
-      const x2 = nextBucket.time * width * scaleX / timeLength + dragX;
+      const x1 = bucket.time * unitWidth * scaleX + dragX;
+      const x2 = nextBucket.time * unitWidth * scaleX + dragX;
       const y1 = bucket.value * heightScale;
       const y2 = nextBucket.value * heightScale;
       const depth1 = bucket.depth;
       const depth2 = nextBucket.depth;
 
       const interval = new Interval({
-        leftX: bucket.time * width,
-        rightX: nextBucket.time * width,
+        leftX: bucket.time * unitWidth,
+        rightX: nextBucket.time * unitWidth,
         leftY: y1,
         rightY: y2,
         leftDepth: depth1,
@@ -455,6 +518,7 @@ export class Bar {
           color,
           scaleX,
           dragX,
+          // unitWidth,
           viewWidth,
           this.provider
         );
@@ -540,6 +604,7 @@ export class Bar {
             color,
             scaleX,
             dragX,
+            // this._unitWidth,
             viewWidth,
             this.provider
           );
@@ -566,6 +631,7 @@ export class Bar {
             color,
             scaleX,
             dragX,
+            // this._unitWidth,
             viewWidth,
             this.provider
           );

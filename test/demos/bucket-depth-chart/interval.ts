@@ -47,6 +47,7 @@ export class Interval {
     color: Vec4,
     scaleX: number,
     dragX: number,
+    // unitWidth: number,
     viewWidth: number,
     provider: InstanceProvider<BlockInstance>
   ) {

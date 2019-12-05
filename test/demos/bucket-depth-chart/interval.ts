@@ -47,12 +47,13 @@ export class Interval {
     color: Vec4,
     scaleX: number,
     dragX: number,
-    // unitWidth: number,
+    unitWidth: number,
     viewWidth: number,
+    startTime: number,
     provider: InstanceProvider<BlockInstance>
   ) {
-    const x1 = this.leftX * scaleX + dragX;
-    const x2 = this.rightX * scaleX + dragX;
+    const x1 = (this.leftX - startTime) * scaleX * unitWidth + dragX;
+    const x2 = (this.rightX - startTime) * scaleX * unitWidth + dragX;
     const y1 = this.leftY;
     const y2 = this.rightY;
     const depth1 = this.leftDepth;
@@ -91,8 +92,16 @@ export class Interval {
       const normal3 = cross3([0, -1, 0], vector1);
 
       const block = new BlockInstance({
-        startValue: [(leftX - dragX) / scaleX, leftY, leftDepth],
-        endValue: [(rightX - dragX) / scaleX, rightY, rightDepth],
+        startValue: [
+          (leftX - dragX) / (scaleX * unitWidth) + startTime,
+          leftY,
+          leftDepth
+        ],
+        endValue: [
+          (rightX - dragX) / (scaleX * unitWidth) + startTime,
+          rightY,
+          rightDepth
+        ],
         baseX,
         baseY,
         baseZ,
@@ -107,10 +116,16 @@ export class Interval {
     }
   }
 
-  updateInstance(dragX: number, scaleX: number, viewWidth: number) {
+  updateInstance(
+    dragX: number,
+    scaleX: number,
+    unitWidth: number,
+    viewWidth: number,
+    startTime: number
+  ) {
     if (this.blockInstance) {
-      const x1 = this.leftX * scaleX + dragX;
-      const x2 = this.rightX * scaleX + dragX;
+      const x1 = (this.leftX - startTime) * scaleX * unitWidth + dragX;
+      const x2 = (this.rightX - startTime) * scaleX * unitWidth + dragX;
       const y1 = this.leftY;
       const y2 = this.rightY;
       const depth1 = this.leftDepth;
@@ -133,12 +148,12 @@ export class Interval {
         const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
 
         this.blockInstance.startValue = [
-          (leftX - dragX) / scaleX,
+          (leftX - dragX) / (scaleX * unitWidth) + startTime,
           leftY,
           leftDepth
         ];
         this.blockInstance.endValue = [
-          (rightX - dragX) / scaleX,
+          (rightX - dragX) / (scaleX * unitWidth) + startTime,
           rightY,
           rightDepth
         ];

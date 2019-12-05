@@ -30,6 +30,8 @@ export interface IBarOptions {
   endProvider: InstanceProvider<PlateEndInstance>;
 
   maxDepth?: number;
+
+  startTime: number;
 }
 
 function generateBuckets2(data: Vec3[], groupSize: number) {
@@ -169,6 +171,8 @@ export class Bar {
   /** Width of the viewport */
   viewWidth: number = 10;
 
+  startTime: number;
+
   viewPortNear: number = Number.MIN_SAFE_INTEGER;
   viewPortFar: number = Number.MAX_SAFE_INTEGER;
 
@@ -198,7 +202,7 @@ export class Bar {
     this.color = options.color || this.color;
     this._baseZ = options.baseZ || this._baseZ;
     this._heightScale = options.heightScale || this._heightScale;
-    // this._width = options.width;
+    this.startTime = options.startTime;
     this._unitWidth = options.unitWidth || this._unitWidth;
     this.viewWidth = options.viewWidth || this.viewWidth;
     this.viewPortNear = options.viewPortNear || this.viewPortNear;
@@ -340,16 +344,9 @@ export class Bar {
   }
 
   addData(d: Vec3) {
-    const endi = this.data.length;
+    this.data.push(d);
 
-    for (let i = 0; i < endi; i++) {
-      if (d[0] < this.data[i][0]) {
-        this.data.splice(i, 0, d);
-        break;
-      }
-    }
-
-    if (d[0] >= this.data[endi - 1][0]) this.data.push(d);
+    if (d[0] > this.maxTime) this.maxTime = d[0];
 
     this.reDraw();
   }
@@ -425,11 +422,11 @@ export class Bar {
     const leftTime = leftBucket.time;
     const rightTime = rightBucket.time;
 
-    const leftEndX = leftTime * unitWidth * scaleX + dragX;
+    const leftEndX = (leftTime - this.startTime) * unitWidth * scaleX + dragX;
     const leftEndHeight = leftBucket.value * heightScale;
     const leftEndDepth = leftBucket.depth;
 
-    const rightEndX = rightTime * unitWidth * scaleX + dragX;
+    const rightEndX = (rightTime - this.startTime) * unitWidth * scaleX + dragX;
     const rightEndHeight = rightBucket.value * heightScale;
     const rightEndDepth = rightBucket.depth;
 
@@ -437,24 +434,28 @@ export class Bar {
       const rightX = Math.min(leftEndX, rightBound);
       if (this.headBlock) {
         this.headBlock.startValue = [
-          (leftBound - dragX) / scaleX,
+          (leftBound - dragX) / (scaleX * unitWidth) + this.startTime,
           leftEndHeight,
           leftEndDepth
         ];
 
         this.headBlock.endValue = [
-          (rightX - dragX) / scaleX,
+          (rightX - dragX) / (scaleX * unitWidth) + this.startTime,
           leftEndHeight,
           leftEndDepth
         ];
       } else {
         this.headBlock = new BlockInstance({
           startValue: [
-            (leftBound - dragX) / scaleX,
+            (leftBound - dragX) / (scaleX * unitWidth) + this.startTime,
             leftEndHeight,
             leftEndDepth
           ],
-          endValue: [(leftEndX - dragX) / scaleX, leftEndHeight, leftEndDepth],
+          endValue: [
+            (rightX - dragX) / (scaleX * unitWidth) + this.startTime,
+            leftEndHeight,
+            leftEndDepth
+          ],
           baseX,
           baseY,
           baseZ,
@@ -481,6 +482,23 @@ export class Bar {
 
         this.endProvider.add(this.leftEnd);
       }
+
+      if (leftEndX > rightBound) {
+        if (this.rightEnd) {
+          this.rightEnd.width = leftEndDepth;
+          this.rightEnd.height = leftEndHeight;
+        } else {
+          this.rightEnd = new PlateEndInstance({
+            width: leftEndDepth,
+            height: leftEndHeight,
+            base: [rightBound + baseX, baseZ],
+            normal: [1, 0, 0],
+            color
+          });
+
+          this.endProvider.add(this.rightEnd);
+        }
+      }
     } else {
       if (this.headBlock) {
         this.provider.remove(this.headBlock);
@@ -492,24 +510,24 @@ export class Bar {
       const leftX = Math.max(leftBound, rightEndX);
       if (this.tailBlcok) {
         this.tailBlcok.startValue = [
-          (leftX - dragX) / scaleX,
+          (leftX - dragX) / (scaleX * unitWidth) + this.startTime,
           rightEndHeight,
           rightEndDepth
         ];
         this.tailBlcok.endValue = [
-          (rightBound - dragX) / scaleX,
+          (rightBound - dragX) / (scaleX * unitWidth) + this.startTime,
           rightEndHeight,
           rightEndDepth
         ];
       } else {
         this.tailBlcok = new BlockInstance({
           startValue: [
-            (rightEndX - dragX) / scaleX,
+            (leftX - dragX) / (scaleX * unitWidth) + this.startTime,
             rightEndHeight,
             rightEndDepth
           ],
           endValue: [
-            (rightBound - dragX) / scaleX,
+            (rightBound - dragX) / (scaleX * unitWidth) + this.startTime,
             rightEndHeight,
             rightEndDepth
           ],
@@ -538,6 +556,23 @@ export class Bar {
         });
 
         this.endProvider.add(this.rightEnd);
+      }
+
+      if (rightEndX < leftBound) {
+        if (this.leftEnd) {
+          this.leftEnd.width = rightEndDepth;
+          this.leftEnd.height = rightEndHeight;
+        } else {
+          this.leftEnd = new PlateEndInstance({
+            width: rightEndDepth,
+            height: rightEndHeight,
+            base: [leftBound + baseX, baseZ],
+            normal: [-1, 0, 0],
+            color
+          });
+
+          this.endProvider.add(this.leftEnd);
+        }
       }
     } else {
       if (this.tailBlcok) {
@@ -569,25 +604,39 @@ export class Bar {
     const leftBound = 0;
     const rightBound = viewWidth;
 
-    if (this.buckets.length === 0) {
-      const basicHeight = 1;
-      const basicDepth = 0.5;
+    // console.warn(this.buckets.length);
+
+    if (this.buckets.length <= 1) {
+      const len = this.buckets.length;
+      const basicHeight = len === 0 ? 1 : this.buckets[0].value * heightScale;
+      const basicDepth = len === 0 ? 0.5 : this.buckets[0].depth;
+
+      // console.warn(this.buckets[0]);
+
       if (this.headBlock) {
         this.headBlock.startValue = [
-          (leftBound - dragX) / scaleX,
+          (leftBound - dragX) / (scaleX * unitWidth) + this.startTime,
           basicHeight,
           basicDepth
         ];
 
         this.headBlock.endValue = [
-          (rightBound - dragX) / scaleX,
+          (rightBound - dragX) / (scaleX * unitWidth) + this.startTime,
           basicHeight,
           basicDepth
         ];
       } else {
         this.headBlock = new BlockInstance({
-          startValue: [(leftBound - dragX) / scaleX, basicHeight, basicDepth],
-          endValue: [(rightBound - dragX) / scaleX, basicHeight, basicDepth],
+          startValue: [
+            (leftBound - dragX) / (scaleX * unitWidth) + this.startTime,
+            basicHeight,
+            basicDepth
+          ],
+          endValue: [
+            (rightBound - dragX) / (scaleX * unitWidth) + this.startTime,
+            basicHeight,
+            basicDepth
+          ],
           baseX,
           baseY,
           baseZ,
@@ -634,16 +683,17 @@ export class Bar {
         const bucket = this.buckets[i];
         const nextBucket = this.buckets[i + 1];
 
-        const x1 = bucket.time * unitWidth * scaleX + dragX;
-        const x2 = nextBucket.time * unitWidth * scaleX + dragX;
+        const x1 = (bucket.time - this.startTime) * unitWidth * scaleX + dragX;
+        const x2 =
+          (nextBucket.time - this.startTime) * unitWidth * scaleX + dragX;
         const y1 = bucket.value * heightScale;
         const y2 = nextBucket.value * heightScale;
         const depth1 = bucket.depth;
         const depth2 = nextBucket.depth;
 
         const interval = new Interval({
-          leftX: bucket.time * unitWidth,
-          rightX: nextBucket.time * unitWidth,
+          leftX: bucket.time,
+          rightX: nextBucket.time,
           leftY: y1,
           rightY: y2,
           leftDepth: depth1,
@@ -664,8 +714,9 @@ export class Bar {
             color,
             scaleX,
             dragX,
-            // unitWidth,
+            unitWidth,
             viewWidth,
+            this.startTime,
             this.provider
           );
 
@@ -734,32 +785,43 @@ export class Bar {
     const color = this.color;
     const leftBound = 0;
     const rightBound = viewWidth;
+    const unitWidth = this._unitWidth;
 
     if (this.intervals.length === 0) {
-      const basicHeight = 1;
-      const basicDepth = 0.5;
+      const len = this.buckets.length;
+      const basicHeight =
+        len === 0 ? 1 : this.buckets[0].value * this.heightScale;
+      const basicDepth = len === 0 ? 0.5 : this.buckets[0].depth;
       if (this.headBlock) {
         this.headBlock.startValue = [
-          (leftBound - dragX) / scaleX,
+          (leftBound - dragX) / (scaleX * unitWidth) + this.startTime,
           basicHeight,
           basicDepth
         ];
 
         this.headBlock.endValue = [
-          (rightBound - dragX) / scaleX,
+          (rightBound - dragX) / (scaleX * unitWidth) + this.startTime,
           basicHeight,
           basicDepth
         ];
       }
     } else if (this.intervals.length !== 0) {
       this.intervals.forEach(interval => {
-        const x1 = interval.leftX * scaleX + dragX;
-        const x2 = interval.rightX * scaleX + dragX;
+        const x1 =
+          (interval.leftX - this.startTime) * unitWidth * scaleX + dragX;
+        const x2 =
+          (interval.rightX - this.startTime) * unitWidth * scaleX + dragX;
         // Inside bound
         if (x1 >= leftBound && x2 <= rightBound) {
           // update
           if (interval.status === IntervalStatus.INSECT) {
-            interval.updateInstance(dragX, scaleX, viewWidth);
+            interval.updateInstance(
+              dragX,
+              scaleX,
+              unitWidth,
+              viewWidth,
+              this.startTime
+            );
           }
           // create
           else if (interval.status === IntervalStatus.OUT) {
@@ -770,8 +832,9 @@ export class Bar {
               color,
               scaleX,
               dragX,
-              // this._unitWidth,
+              unitWidth,
               viewWidth,
+              this.startTime,
               this.provider
             );
           }
@@ -786,7 +849,13 @@ export class Bar {
         ) {
           // update
           if (interval.status !== IntervalStatus.OUT) {
-            interval.updateInstance(dragX, scaleX, viewWidth);
+            interval.updateInstance(
+              dragX,
+              scaleX,
+              unitWidth,
+              viewWidth,
+              this.startTime
+            );
           }
           // create
           else {
@@ -797,8 +866,9 @@ export class Bar {
               color,
               scaleX,
               dragX,
-              // this._unitWidth,
+              unitWidth,
               viewWidth,
+              this.startTime,
               this.provider
             );
           }
@@ -819,7 +889,14 @@ export class Bar {
         // End plate on the left
         if (x1 <= leftBound && x2 > leftBound) {
           if (this.leftEnd) {
-            this.leftEnd.update(interval, leftBound, scaleX, dragX);
+            this.leftEnd.update(
+              interval,
+              leftBound,
+              scaleX,
+              dragX,
+              unitWidth,
+              this.startTime
+            );
           } else {
             const leftScale = (leftBound - x1) / (x2 - x1);
             const y1 = interval.leftY;
@@ -840,7 +917,14 @@ export class Bar {
         // End plate on the right
         if (x2 >= rightBound && x1 < rightBound) {
           if (this.rightEnd) {
-            this.rightEnd.update(interval, rightBound, scaleX, dragX);
+            this.rightEnd.update(
+              interval,
+              rightBound,
+              scaleX,
+              dragX,
+              unitWidth,
+              this.startTime
+            );
           } else {
             const rightScale = (rightBound - x1) / (x2 - x1);
             const y1 = interval.leftY;

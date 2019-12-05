@@ -72,7 +72,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     Math.sin(this.angleV) * Math.sin(this.angleH)
   ];
   zoomingDistance: number = 10;
-  // width: number = 500;
+  unitWidth: number = 1;
   viewWidth: number = 8;
   scaleX: number = 1;
   dragX: number = 0;
@@ -85,6 +85,10 @@ export class BucketDepthChartDemo extends BaseDemo {
   topView: boolean = false;
   gui: dat.GUI;
   numOfBars: number = 5;
+
+  startTime: number = 10;
+  curTime: number = 10;
+  streamId: number = -1;
 
   heightFilter = new FIRFilter(
     [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
@@ -201,6 +205,26 @@ export class BucketDepthChartDemo extends BaseDemo {
       const dragEnd = this.viewWidth - this.scaleX * this.bdc.width;
       const dragStart = this.dragX;
       const delta = dragEnd - dragStart;
+      const heightFilter0 = new FIRFilter(
+        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+        1
+      );
+      const heightFilter1 = new FIRFilter(
+        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+        1
+      );
+      const heightFilter2 = new FIRFilter(
+        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+        1
+      );
+      const heightFilter3 = new FIRFilter(
+        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+        1
+      );
+      const heightFilter4 = new FIRFilter(
+        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
+        1
+      );
 
       let i = 0;
       const timeId = onAnimationLoop(() => {
@@ -210,16 +234,67 @@ export class BucketDepthChartDemo extends BaseDemo {
           stopAnimationLoop(timeId);
 
           // Add data
-          onAnimationLoop(() => {
-            this.bdc.bars.forEach(bar => bar.addStreamData());
-            this.dragX -= this.bdc.unitWidth;
+          this.streamId = onAnimationLoop(() => {
+            this.curTime += Math.random();
+            this.bdc.bars.forEach((bar, i) => {
+              if (i === 0) {
+                bar.addData([
+                  this.curTime,
+                  heightFilter0.stream(
+                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
+                  ),
+                  0.5 + 0.5 * Math.random()
+                ]);
+              }
+              if (i === 1) {
+                bar.addData([
+                  this.curTime,
+                  heightFilter1.stream(
+                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
+                  ),
+                  0.5 + 0.5 * Math.random()
+                ]);
+              }
+              if (i === 2) {
+                bar.addData([
+                  this.curTime,
+                  heightFilter2.stream(
+                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
+                  ),
+                  0.5 + 0.5 * Math.random()
+                ]);
+              }
+              if (i === 3) {
+                bar.addData([
+                  this.curTime,
+                  heightFilter3.stream(
+                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
+                  ),
+                  0.5 + 0.5 * Math.random()
+                ]);
+              }
+              if (i === 4) {
+                bar.addData([
+                  this.curTime,
+                  heightFilter4.stream(
+                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
+                  ),
+                  0.5 + 0.5 * Math.random()
+                ]);
+              }
+            });
+
+            this.dragX =
+              this.viewWidth -
+              (this.curTime - this.startTime) * this.unitWidth * this.scaleX;
             this.bdc.updateByDragX(this.dragX);
-          }, 1000);
+          }, 100);
         }
         i += 0.01;
       });
-
-      // this.dragX = dragEnd;
+    },
+    stopStream: () => {
+      stopAnimationLoop(this.streamId);
     },
     lightAngleV: this.angleV * 180 / Math.PI,
     lightAngleH: this.angleH * 180 / Math.PI,
@@ -232,6 +307,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     gui.add(this.parameters, "topView");
     gui.add(this.parameters, "angledView");
     gui.add(this.parameters, "stream");
+    gui.add(this.parameters, "stopStream");
     gui
       .add(this.parameters, "lightAngleV", 0, 180)
       .onChange((angleV: number) => {
@@ -288,9 +364,9 @@ export class BucketDepthChartDemo extends BaseDemo {
     const datas: Vec3[][] = [[], [], [], [], []];
 
     // bar 0 data
-    for (let j = 0; j <= 250; j++) {
+    for (let j = 10; j < 250; j++) {
       const point1: Vec3 = [
-        j,
+        this.startTime + j,
         j % 100 < 40
           ? this.heightFilter.stream(1 + 3 * Math.random())
           : this.heightFilter.stream(6 + 4 * Math.random()),
@@ -298,12 +374,14 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
 
       datas[0].push(point1);
+
+      this.curTime = Math.max(this.curTime, this.startTime + j);
     }
 
     // bar 1 data
-    for (let j = 0; j <= 150; j++) {
+    for (let j = 5; j < 150; j++) {
       const point1: Vec3 = [
-        j,
+        this.startTime + j,
         j % 100 > 80
           ? this.heightFilter.stream(2 + 3 * Math.random())
           : this.heightFilter.stream(9 + 4 * Math.random()),
@@ -311,11 +389,12 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
 
       datas[1].push(point1);
+      this.curTime = Math.max(this.curTime, this.startTime + j);
     }
     // bar 2 data
-    for (let j = 0; j <= 300; j++) {
+    for (let j = 0; j < 300; j++) {
       const point1: Vec3 = [
-        j,
+        this.startTime + j,
         j % 100 > 30 && j % 100 < 50
           ? this.heightFilter.stream(3 + 3 * Math.random())
           : this.heightFilter.stream(7 + 4 * Math.random()),
@@ -323,11 +402,12 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
 
       datas[2].push(point1);
+      this.curTime = Math.max(this.curTime, this.startTime + j);
     }
     // bar 3 data
-    for (let j = 0; j <= 200; j++) {
+    for (let j = 15; j < 200; j++) {
       const point1: Vec3 = [
-        j,
+        this.startTime + j,
         j % 100 < 15
           ? this.heightFilter.stream(Math.random())
           : this.heightFilter.stream(4 + 4 * Math.random()),
@@ -337,11 +417,12 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
 
       datas[3].push(point1);
+      this.curTime = Math.max(this.curTime, this.startTime + j);
     }
     // bar 4 data
-    for (let j = 0; j <= 100; j++) {
+    for (let j = 0; j < 100; j++) {
       const point1: Vec3 = [
-        j,
+        this.startTime + j,
         j % 50 < 35
           ? this.heightFilter.stream(4 + 3 * Math.random())
           : this.heightFilter.stream(4 * Math.random()),
@@ -349,6 +430,7 @@ export class BucketDepthChartDemo extends BaseDemo {
       ];
 
       datas[4].push(point1);
+      this.curTime = Math.max(this.curTime, this.startTime + j);
     }
 
     const alpha = 0.9;
@@ -388,11 +470,11 @@ export class BucketDepthChartDemo extends BaseDemo {
 
     this.bdc = new BucketDepthChart({
       baseDepth: 0,
-      unitWidth: 1,
+      startTime: this.startTime,
+      unitWidth: this.unitWidth,
       heightScale: 0.3,
       colors: colors,
       chartData: datas,
-
       viewWidth: this.viewWidth,
       viewPortNear: -10,
       viewPortFar: 9,
@@ -572,7 +654,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0]
+                  this.bdc.bars[0] ? this.bdc.bars[0].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end1: createLayer(PlateEndLayer, {
                 data: providers.ends1,
@@ -590,7 +674,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0]
+                  this.bdc.bars[1] ? this.bdc.bars[1].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end2: createLayer(PlateEndLayer, {
                 data: providers.ends2,
@@ -608,7 +694,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0]
+                  this.bdc.bars[2] ? this.bdc.bars[2].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end3: createLayer(PlateEndLayer, {
                 data: providers.ends3,
@@ -626,7 +714,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0]
+                  this.bdc.bars[3] ? this.bdc.bars[3].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end4: createLayer(PlateEndLayer, {
                 data: providers.ends4,
@@ -644,7 +734,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0]
+                  this.bdc.bars[4] ? this.bdc.bars[4].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end5: createLayer(PlateEndLayer, {
                 data: providers.ends5,
@@ -662,7 +754,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0]
+                  this.bdc.bars[5] ? this.bdc.bars[5].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end6: createLayer(PlateEndLayer, {
                 data: providers.ends6,
@@ -680,7 +774,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0]
+                  this.bdc.bars[6] ? this.bdc.bars[6].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end7: createLayer(PlateEndLayer, {
                 data: providers.ends7,
@@ -698,7 +794,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0]
+                  this.bdc.bars[7] ? this.bdc.bars[7].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end8: createLayer(PlateEndLayer, {
                 data: providers.ends8,
@@ -716,7 +814,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0]
+                  this.bdc.bars[8] ? this.bdc.bars[8].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end9: createLayer(PlateEndLayer, {
                 data: providers.ends9,
@@ -734,7 +834,9 @@ export class BucketDepthChartDemo extends BaseDemo {
                 dragZ: () => this.dragZ,
                 scaleX: () => this.scaleX,
                 color: () =>
-                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0]
+                  this.bdc.bars[9] ? this.bdc.bars[9].color : [0, 0, 0, 0],
+                startTime: () => this.startTime,
+                unitWidth: () => this.unitWidth
               }),
               end10: createLayer(PlateEndLayer, {
                 data: providers.ends10,

@@ -16,7 +16,7 @@ npm install -DE deltav
 OR
 
 ```sh
-yarn deltav
+yarn add deltav
 ```
 
 ## Guide

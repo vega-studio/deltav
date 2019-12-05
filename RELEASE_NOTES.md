@@ -1,3 +1,9 @@
+## 1.35.3
+
+## Fixed
+
+- [`FIXED`]: README updated to reflect proper yarn instructions
+
 ## 1.35.2
 
 ## Fixed

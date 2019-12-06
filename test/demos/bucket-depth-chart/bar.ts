@@ -887,16 +887,18 @@ export class Bar {
   updateByDragZ(dragZ: number) {
     const fadePadding = 1;
 
-    const nearFadeStart = this.viewPortNear + fadePadding;
-    const farFadeStart = this.viewPortFar - fadePadding;
+    const nearFadeStart = this.viewPortNear;
+    const nearFadeEnd = this.viewPortNear - fadePadding;
+    const farFadeStart = this.viewPortFar;
+    const farFadeEnd = this.viewPortFar + fadePadding;
 
     const posZ = this.baseZ + dragZ;
     let alpha = 0.0;
 
-    if (posZ > farFadeStart && posZ < this.viewPortFar) {
-      alpha = 0.9 * (this.viewPortFar - posZ) / fadePadding;
-    } else if (posZ > this.viewPortNear && posZ < nearFadeStart) {
-      alpha = 0.9 * (posZ - this.viewPortNear) / fadePadding;
+    if (posZ > farFadeStart && posZ < farFadeEnd) {
+      alpha = 0.9 * (farFadeEnd - posZ) / fadePadding;
+    } else if (posZ > nearFadeEnd && posZ < nearFadeStart) {
+      alpha = 0.9 * (posZ - nearFadeEnd) / fadePadding;
     } else if (posZ >= nearFadeStart && posZ <= farFadeStart) {
       alpha = 0.9;
     }

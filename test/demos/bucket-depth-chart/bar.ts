@@ -1,4 +1,5 @@
-import { cross3, InstanceProvider, normalize3, Vec2, Vec3, Vec4 } from "src";
+import { FIRFilter } from "@diniden/signal-processing";
+import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { BlockInstance } from "./block";
 import { Bucket } from "./bucket";
 import { Interval, IntervalStatus } from "./interval";
@@ -32,9 +33,12 @@ export interface IBarOptions {
   maxDepth?: number;
 
   startTime: number;
+
+  heightFilter: FIRFilter;
+  depthFilter: FIRFilter;
 }
 
-function generateBuckets2(data: Vec3[], groupSize: number) {
+function generateBuckets(data: Vec3[], groupSize: number) {
   const len = data.length;
   if (len === 0) {
     return [];
@@ -91,68 +95,6 @@ function generateBuckets2(data: Vec3[], groupSize: number) {
   return buckets;
 }
 
-/*function generateBuckets(data: Vec3[], segments: number): Bucket[] {
-  const num = data.length;
-  const base = Math.floor(num / segments);
-  const extra = num - base * segments;
-
-  const groups = [];
-
-  for (let i = 0; i < segments; i++) {
-    groups.push(i < extra ? base + 1 : base);
-  }
-
-  const nodes: Vec3[] = [];
-  const bucketDatas: Vec3[][] = [];
-  let index = 0;
-
-  for (let i = 0; i < groups.length; i++) {
-    // Get average time and max value in each group
-    let time = 0;
-    let value = data[index][1];
-    let depth = data[index][2];
-    const groupDatas = [];
-
-    for (let j = 0; j < groups[i]; j++) {
-      time += data[index][0];
-      value = Math.max(value, data[index][1]);
-      depth = Math.max(depth, data[index][2]);
-      groupDatas.push(data[index]);
-      index++;
-    }
-
-    time /= groups[i];
-
-    nodes.push([time, value, depth]);
-    bucketDatas.push(groupDatas);
-  }
-
-  const minTime = nodes[0][0];
-  const maxTime = nodes[nodes.length - 1][0];
-  // const delta = maxTime - minTime;
-
-  // Adjust time
-  for (let i = 0; i < nodes.length; i++) {
-    nodes[i][0] = nodes[i][0] - minTime;
-  }
-
-  // Generate buckets
-  const buckets = [];
-
-  for (let i = 0; i < nodes.length; i++) {
-    const bucket = new Bucket({
-      time: nodes[i][0],
-      value: nodes[i][1],
-      data: bucketDatas[i],
-      depth: nodes[i][2]
-    });
-
-    buckets.push(bucket);
-  }
-
-  return buckets;
-}*/
-
 /** A chart which shows data change over time, the chart will always face to the positive Z direction*/
 export class Bar {
   // Center of bottom line of the chart
@@ -197,6 +139,9 @@ export class Bar {
   minTime: number = Number.MAX_SAFE_INTEGER;
   maxTime: number = Number.MIN_SAFE_INTEGER;
 
+  heightFilter: FIRFilter = new FIRFilter([]);
+  depthFilter: FIRFilter = new FIRFilter([]);
+
   constructor(options: IBarOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
     this.color = options.color || this.color;
@@ -210,6 +155,8 @@ export class Bar {
     this.provider = options.provider;
     this.endProvider = options.endProvider;
     this.data = options.barData;
+    this.heightFilter = options.heightFilter || this.heightFilter;
+    this.depthFilter = options.depthFilter || this.depthFilter;
 
     if (this.data.length > 0) {
       this.data.sort((a, b) => a[0] - b[0]);
@@ -261,39 +208,6 @@ export class Bar {
     return (this.maxTime - this.minTime) * this._unitWidth;
   }
 
-  /* set width(val: number) {
-    const scale = val / this._width;
-    const bottomCenter = this.bottomCenter;
-    const oldBaseX = bottomCenter[0] - this._width / 2;
-    const baseX = bottomCenter[0] - val / 2;
-
-    for (let i = 0, endi = this.blockInstances.length; i < endi; i++) {
-      const instance = this.blockInstances[i];
-      instance.startValue = [
-        baseX + (instance.startValue[0] - oldBaseX) * scale,
-        instance.startValue[1],
-        instance.startValue[2]
-      ];
-
-      instance.endValue = [
-        baseX + (instance.endValue[0] - oldBaseX) * scale,
-        instance.endValue[1],
-        instance.endValue[2]
-      ];
-    }
-
-    this._width = val;
-  }*/
-
-  /*get color() {
-    return this._color;
-  }
-
-  set color(val: Vec4) {
-    this.blockInstances.forEach(instance => (instance.color = val));
-    this._color = val;
-  }*/
-
   get baseZ() {
     return this._baseZ;
   }
@@ -314,6 +228,15 @@ export class Bar {
 
     if (this.rightEnd) {
       this.rightEnd.base = [this.rightEnd.base[0], val];
+    }
+
+    // Blocks
+    if (this.headBlock) {
+      this.headBlock.baseZ = val;
+    }
+
+    if (this.tailBlcok) {
+      this.tailBlcok.baseZ = val;
     }
 
     this._baseZ = val;
@@ -344,21 +267,13 @@ export class Bar {
   }
 
   addData(d: Vec3) {
-    this.data.push(d);
+    this.data.push([
+      d[0],
+      this.heightFilter.stream(d[1]),
+      this.depthFilter.stream(d[2])
+    ]);
 
     if (d[0] > this.maxTime) this.maxTime = d[0];
-
-    this.reDraw();
-  }
-
-  addStreamData() {
-    const time = this.maxTime + 1;
-    this.maxTime = time;
-
-    const height = 3 + 3 * Math.random();
-    const depth = 1;
-
-    this.data.push([time, height, depth]);
 
     this.reDraw();
   }
@@ -401,6 +316,16 @@ export class Bar {
     if (this.rightEnd) {
       this.endProvider.remove(this.rightEnd);
       this.rightEnd = null;
+    }
+
+    if (this.headBlock) {
+      this.provider.remove(this.headBlock);
+      this.headBlock = null;
+    }
+
+    if (this.tailBlcok) {
+      this.provider.remove(this.tailBlcok);
+      this.tailBlcok = null;
     }
   }
 
@@ -589,7 +514,7 @@ export class Bar {
       );
     }*/
 
-    this.buckets = generateBuckets2(data, this.groupSize);
+    this.buckets = generateBuckets(data, this.groupSize);
 
     const unitWidth = this._unitWidth;
     const viewWidth = this.viewWidth;
@@ -774,7 +699,7 @@ export class Bar {
     }
   }
 
-  updateByDragX2(dragX: number) {
+  updateByDragX(dragX: number) {
     this.dragX = dragX;
     const scaleX = this.scaleX;
     const viewWidth = this.viewWidth;
@@ -947,98 +872,6 @@ export class Bar {
     }
   }
 
-  updateByDragX(dragX: number) {
-    this.dragX = dragX;
-    const viewWidth = this.viewWidth;
-    const bottomCenter = this.bottomCenter;
-    const baseX = bottomCenter[0] - viewWidth / 2;
-    const baseZ = this.baseZ;
-    const baseY = bottomCenter[1];
-    const color = this.color;
-
-    const leftBound = baseX;
-    const rightBound = baseX + viewWidth;
-
-    this.intervals.forEach(interval => {
-      const x1 = baseX + interval.leftX + dragX;
-      const x2 = baseX + interval.rightX + dragX;
-      const y1 = interval.leftY;
-      const y2 = interval.rightY;
-      const depth1 = interval.leftDepth;
-      const depth2 = interval.rightDepth;
-
-      if (x1 < rightBound && x2 > leftBound) {
-        const leftX = Math.max(x1, leftBound);
-        const rightX = Math.min(x2, rightBound);
-
-        const leftScale = (leftX - x1) / (x2 - x1);
-        const rightScale = (rightX - x1) / (x2 - x1);
-
-        const leftY = (1 - leftScale) * y1 + leftScale * y2;
-        const rightY = (1 - rightScale) * y1 + rightScale * y2;
-
-        const leftDepth = (1 - leftScale) * depth1 + leftScale * depth2;
-        const rightDepth = (1 - rightScale) * depth1 + rightScale * depth2;
-
-        if (interval.blockInstance) {
-          interval.blockInstance.startValue = [leftX, leftY, leftDepth];
-          interval.blockInstance.endValue = [rightX, rightY, rightDepth];
-        } else {
-          const vector1 = normalize3([
-            rightX - leftX,
-            rightY - leftY,
-            (rightDepth - leftDepth) / 2
-          ]);
-
-          const vector2 = normalize3([
-            rightX - leftX,
-            rightY - leftY,
-            -(rightDepth - leftDepth) / 2
-          ]);
-
-          const normal1 = cross3(vector2, [0, -1, 0]);
-          const normal2 = cross3(vector1, [0, 0, -1]);
-          const normal3 = cross3([0, -1, 0], vector1);
-
-          const block = new BlockInstance({
-            startValue: [leftX, leftY, leftDepth],
-            endValue: [rightX, rightY, rightDepth],
-            baseY,
-            baseZ,
-            color,
-            normal1,
-            normal2,
-            normal3
-          });
-
-          this.provider.add(block);
-          interval.blockInstance = block;
-        }
-
-        // End plate on the left
-        if (x1 <= leftBound && x2 > leftBound) {
-          if (this.leftEnd) {
-            this.leftEnd.width = leftDepth;
-            this.leftEnd.height = leftY;
-          }
-        }
-
-        // End plate on the right
-        if (x2 >= rightBound && x1 < rightBound) {
-          if (this.rightEnd) {
-            this.rightEnd.width = rightDepth;
-            this.rightEnd.height = rightY;
-          }
-        }
-      } else {
-        if (interval.blockInstance) {
-          this.provider.remove(interval.blockInstance);
-          interval.blockInstance = null;
-        }
-      }
-    });
-  }
-
   updateByScaleX(scaleX: number, dragX: number, groupSize?: number) {
     this.scaleX = scaleX;
     this.dragX = dragX;
@@ -1048,7 +881,7 @@ export class Bar {
       this.reDraw();
     }
 
-    this.updateByDragX2(dragX);
+    this.updateByDragX(dragX);
   }
 
   updateByDragZ(dragZ: number) {

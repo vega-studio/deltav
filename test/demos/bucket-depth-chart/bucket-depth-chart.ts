@@ -1,3 +1,4 @@
+import { FIRFilter } from "@diniden/signal-processing";
 import { InstanceProvider, Vec2, Vec3, Vec4 } from "src";
 import { Bar } from "./bar";
 import { BlockInstance } from "./block";
@@ -17,6 +18,8 @@ export interface IBucketDepthChartOptions {
   heightScale?: number;
   providers: InstanceProvider<BlockInstance>[];
   endProviders: InstanceProvider<PlateEndInstance>[];
+  heightFilter: FIRFilter;
+  depthFilter: FIRFilter;
 }
 
 export class BucketDepthChart {
@@ -39,6 +42,8 @@ export class BucketDepthChart {
   bars: Bar[] = [];
   providers: InstanceProvider<BlockInstance>[];
   endProviders: InstanceProvider<PlateEndInstance>[];
+  heightFilter: FIRFilter = new FIRFilter([]);
+  depthFilter: FIRFilter = new FIRFilter([]);
 
   constructor(options: IBucketDepthChartOptions) {
     this._bottomCenter = options.bottomCenter || this._bottomCenter;
@@ -53,49 +58,11 @@ export class BucketDepthChart {
     this.endProviders = options.endProviders;
     this._baseDepth = options.baseDepth || this._baseDepth;
     this._middleDepth = this._baseDepth;
+    this.heightFilter = options.heightFilter || this.heightFilter;
+    this.depthFilter = options.depthFilter || this.depthFilter;
 
     this.generateBars(options.chartData, options.colors);
   }
-
-  /*get maxDepth() {
-    return this._maxDepth;
-  }
-
-  set maxDepth(val: number) {
-    if (this.bars.length === 0) return;
-
-    if (this.bars.length === 1) {
-      this.bars[0].baseZ = (val + this._minDepth) / 2;
-    } else {
-      const deltaDepth = (val - this.minDepth) / (this.bars.length - 1);
-
-      for (let i = 0, endi = this.bars.length; i < endi; i++) {
-        this.bars[i].baseZ = this.minDepth + deltaDepth * i;
-      }
-    }
-
-    this._maxDepth = val;
-  }
-
-  get minDepth() {
-    return this._minDepth;
-  }
-
-  set minDepth(val: number) {
-    if (this.bars.length === 0) return;
-
-    if (this.bars.length === 1) {
-      this.bars[0].baseZ = (this._maxDepth + val) / 2;
-    } else {
-      const deltaDepth = (this._maxDepth - val) / (this.bars.length - 1);
-
-      for (let i = 0, endi = this.bars.length; i < endi; i++) {
-        this.bars[i].baseZ = val + deltaDepth * i;
-      }
-    }
-
-    this._minDepth = val;
-  }*/
 
   get padding() {
     return this._padding;
@@ -133,12 +100,6 @@ export class BucketDepthChart {
 
     return maxWidth;
   }
-
-  /*set width(val: number) {
-    this.bars.forEach(bar => (bar.width = val));
-
-    this._width = val;
-  }*/
 
   get heightScale() {
     return this._heightScale;
@@ -195,7 +156,9 @@ export class BucketDepthChart {
         endProvider: this.endProviders[0],
         viewWidth: this.viewWidth,
         viewPortFar: this.viewPortFar,
-        viewPortNear: this.viewPortNear
+        viewPortNear: this.viewPortNear,
+        heightFilter: this.heightFilter,
+        depthFilter: this.depthFilter
       });
 
       this.bars.push(bar);
@@ -223,7 +186,9 @@ export class BucketDepthChart {
           viewWidth: this.viewWidth,
           viewPortFar: this.viewPortFar,
           viewPortNear: this.viewPortNear,
-          maxDepth: curDepth
+          maxDepth: curDepth,
+          heightFilter: this.heightFilter,
+          depthFilter: this.depthFilter
         });
 
         this.bars.push(bar);
@@ -237,7 +202,7 @@ export class BucketDepthChart {
     this._dragX = dragX;
     for (let i = 0, endi = this.bars.length; i < endi; i++) {
       const bar = this.bars[i];
-      bar.updateByDragX2(dragX);
+      bar.updateByDragX(dragX);
     }
   }
 
@@ -270,17 +235,20 @@ export class BucketDepthChart {
       startTime: this.startTime,
       unitWidth: this.unitWidth,
       heightScale: this.heightScale,
-      color: color,
+      color,
       baseZ,
       provider: this.providers[index],
       endProvider: this.endProviders[index],
       viewWidth: this.viewWidth,
       viewPortFar: this.viewPortFar,
       viewPortNear: this.viewPortNear,
-      maxDepth: curDepth
+      maxDepth: curDepth,
+      heightFilter: this.heightFilter,
+      depthFilter: this.depthFilter
     });
 
     this.bars.push(bar);
+
     bar.updateByScaleX(this._scaleX, this._dragX, this.groupSize);
     bar.updateByDragZ(this._dragZ);
     this._maxDepth = baseZ + curDepth / 2;
@@ -289,12 +257,13 @@ export class BucketDepthChart {
 
   reduceBar() {
     const bar = this.bars.pop();
-    if (bar) {
-      bar.clearAllInstances();
 
+    if (bar) {
       const curDepth = bar.maxDepth;
       this._maxDepth -= curDepth + this.padding;
       this._middleDepth = (this._minDepth + this._maxDepth) / 2;
+
+      bar.clearAllInstances();
     }
   }
 }

@@ -205,27 +205,6 @@ export class BucketDepthChartDemo extends BaseDemo {
       const dragEnd = this.viewWidth - this.scaleX * this.bdc.width;
       const dragStart = this.dragX;
       const delta = dragEnd - dragStart;
-      const heightFilter0 = new FIRFilter(
-        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-        1
-      );
-      const heightFilter1 = new FIRFilter(
-        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-        1
-      );
-      const heightFilter2 = new FIRFilter(
-        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-        1
-      );
-      const heightFilter3 = new FIRFilter(
-        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-        1
-      );
-      const heightFilter4 = new FIRFilter(
-        [[0.15, 0], [0.1, 0], [0.5, 0], [0.15, 0], [0.15, 0]],
-        1
-      );
-
       let i = 0;
       const timeId = onAnimationLoop(() => {
         this.dragX = dragStart + delta * i;
@@ -236,52 +215,12 @@ export class BucketDepthChartDemo extends BaseDemo {
           // Add data
           this.streamId = onAnimationLoop(() => {
             this.curTime += Math.random();
-            this.bdc.bars.forEach((bar, i) => {
-              if (i === 0) {
-                bar.addData([
-                  this.curTime,
-                  heightFilter0.stream(
-                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
-                  ),
-                  0.5 + 0.5 * Math.random()
-                ]);
-              }
-              if (i === 1) {
-                bar.addData([
-                  this.curTime,
-                  heightFilter1.stream(
-                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
-                  ),
-                  0.5 + 0.5 * Math.random()
-                ]);
-              }
-              if (i === 2) {
-                bar.addData([
-                  this.curTime,
-                  heightFilter2.stream(
-                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
-                  ),
-                  0.5 + 0.5 * Math.random()
-                ]);
-              }
-              if (i === 3) {
-                bar.addData([
-                  this.curTime,
-                  heightFilter3.stream(
-                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
-                  ),
-                  0.5 + 0.5 * Math.random()
-                ]);
-              }
-              if (i === 4) {
-                bar.addData([
-                  this.curTime,
-                  heightFilter4.stream(
-                    Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random()
-                  ),
-                  0.5 + 0.5 * Math.random()
-                ]);
-              }
+            this.bdc.bars.forEach(bar => {
+              bar.addData([
+                this.curTime,
+                Math.random() > 0.5 ? 3 + 2 * Math.random() : Math.random(),
+                0.5 + 0.5 * Math.random()
+              ]);
             });
 
             this.dragX =
@@ -480,7 +419,9 @@ export class BucketDepthChartDemo extends BaseDemo {
       viewPortFar: 9,
       padding: this.padding,
       providers: blockProviders,
-      endProviders: endPlateProviders
+      endProviders: endPlateProviders,
+      heightFilter: this.heightFilter,
+      depthFilter: this.depthFilter
     });
   }
 
@@ -491,9 +432,9 @@ export class BucketDepthChartDemo extends BaseDemo {
       const a = Math.floor(Math.random() * 50) + 20;
       const b = Math.floor(Math.random() * 10) + 10;
 
-      for (let j = 0; j <= 2000; j++) {
+      for (let j = 0; j <= 200; j++) {
         const point: Vec3 = [
-          j / 2000,
+          j + this.startTime,
           j % a < b
             ? this.heightFilter.stream(4 + 3 * Math.random())
             : this.heightFilter.stream(4 * Math.random()),

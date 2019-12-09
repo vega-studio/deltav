@@ -102,29 +102,9 @@ export class BucketDepthChartDemo extends BaseDemo {
 
   parameters = {
     frontView: () => {
-      if (!this.surface) return;
       this.topView = false;
       this.front = true;
-      const camera = this.surface.cameras.perspective;
-      const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [0, 0, 15];
-      const delta = [
-        newPosition[0] - oldPosition[0],
-        newPosition[1] - oldPosition[1],
-        newPosition[2] - oldPosition[2]
-      ];
-      let i = 0;
-      const timeId = onAnimationLoop(() => {
-        camera.position = [
-          oldPosition[0] + delta[0] * i,
-          oldPosition[1] + delta[1] * i,
-          oldPosition[2] + delta[2] * i
-        ];
-        camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
-        if (i >= 1) stopAnimationLoop(timeId);
-        i += 0.01;
-      });
-      this.cameraPosition = newPosition;
+      this.moveCameraTo([0, 0, this.bdc.maxDepth + 5]);
     },
     topView: () => {
       if (!this.surface) return;
@@ -132,7 +112,8 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.front = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [0, 10, this.bdc.middleDepth + 0.5];
+      const distance = (this.bdc.maxDepth - this.bdc.minDepth) / 2;
+      const newPosition: Vec3 = [0, distance, this.bdc.middleDepth + 0.5];
       const delta = [
         newPosition[0] - oldPosition[0],
         newPosition[1] - oldPosition[1],
@@ -172,29 +153,18 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.gui.updateDisplay();
     },
     angledView: () => {
-      if (!this.surface) return;
       this.topView = false;
       this.front = false;
-      const camera = this.surface.cameras.perspective;
-      const oldPosition = this.cameraPosition;
-      const newPosition: Vec3 = [10, 10, 10];
-      const delta = [
-        newPosition[0] - oldPosition[0],
-        newPosition[1] - oldPosition[1],
-        newPosition[2] - oldPosition[2]
-      ];
-      let i = 0;
-      const timeId = onAnimationLoop(() => {
-        camera.position = [
-          oldPosition[0] + delta[0] * i,
-          oldPosition[1] + delta[1] * i,
-          oldPosition[2] + delta[2] * i
-        ];
-        camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
-        if (i >= 1) stopAnimationLoop(timeId);
-        i += 0.01;
-      });
-      this.cameraPosition = newPosition;
+      const distance = this.bdc.maxDepth - this.bdc.minDepth;
+      if (this.bdc.bars.length === 1) {
+        this.moveCameraTo([5, 5, this.bdc.middleDepth + 5]);
+      } else {
+        this.moveCameraTo([
+          distance,
+          distance,
+          this.bdc.middleDepth + distance
+        ]);
+      }
     },
     addData: () => {
       this.bdc.bars.forEach(bar =>
@@ -283,11 +253,30 @@ export class BucketDepthChartDemo extends BaseDemo {
         this.reduceBar(this.numOfBars, val);
       }
 
-      if (!this.surface) return;
-      const camera = this.surface.cameras.perspective;
-      camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
-
+      this.bdc.viewPortFar = this.bdc.maxDepth;
+      this.bdc.viewPortNear = this.bdc.minDepth;
       this.numOfBars = val;
+
+      const distance = this.bdc.maxDepth - this.bdc.minDepth;
+      if (this.surface) {
+        const camera = this.surface.cameras.perspective;
+
+        if (this.front) {
+          camera.position = [0, 0, this.bdc.maxDepth + 5];
+        } else if (this.topView) {
+          camera.position = [0, distance, this.bdc.middleDepth + 0.5];
+        } else {
+          if (this.bdc.bars.length === 1) {
+            camera.position = [4, 4, this.bdc.middleDepth + 4];
+          } else {
+            camera.position = [
+              distance,
+              distance,
+              this.bdc.middleDepth + distance
+            ];
+          }
+        }
+      }
     });
 
     this.gui = gui;
@@ -423,6 +412,34 @@ export class BucketDepthChartDemo extends BaseDemo {
       heightFilter: this.heightFilter,
       depthFilter: this.depthFilter
     });
+  }
+
+  moveCameraTo(pos: Vec3) {
+    if (!this.surface) return;
+    const camera = this.surface.cameras.perspective;
+    const oldPosition = this.cameraPosition;
+    const newPosition: Vec3 = pos;
+    const delta = [
+      newPosition[0] - oldPosition[0],
+      newPosition[1] - oldPosition[1],
+      newPosition[2] - oldPosition[2]
+    ];
+
+    let i = 0;
+    const deltai = 0.01;
+
+    const timeId = onAnimationLoop(() => {
+      camera.position = [
+        oldPosition[0] + delta[0] * i,
+        oldPosition[1] + delta[1] * i,
+        oldPosition[2] + delta[2] * i
+      ];
+      camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
+      if (i >= 1) stopAnimationLoop(timeId);
+      i += deltai;
+    });
+
+    this.cameraPosition = newPosition;
   }
 
   addBar(pre: number, now: number) {

@@ -115,8 +115,8 @@ export class Bar {
 
   startTime: number;
 
-  viewPortNear: number = Number.MIN_SAFE_INTEGER;
-  viewPortFar: number = Number.MAX_SAFE_INTEGER;
+  _viewPortNear: number = Number.MIN_SAFE_INTEGER;
+  _viewPortFar: number = Number.MAX_SAFE_INTEGER;
 
   groupSize: number = 1;
 
@@ -130,6 +130,7 @@ export class Bar {
   rightEnd: PlateEndInstance | null = null;
 
   dragX: number = 0;
+  dragZ: number = 0;
   scaleX: number = 1;
 
   data: Vec3[];
@@ -150,8 +151,8 @@ export class Bar {
     this.startTime = options.startTime;
     this._unitWidth = options.unitWidth || this._unitWidth;
     this.viewWidth = options.viewWidth || this.viewWidth;
-    this.viewPortNear = options.viewPortNear || this.viewPortNear;
-    this.viewPortFar = options.viewPortFar || this.viewPortFar;
+    this._viewPortNear = options.viewPortNear || this._viewPortNear;
+    this._viewPortFar = options.viewPortFar || this._viewPortFar;
     this.provider = options.provider;
     this.endProvider = options.endProvider;
     this.data = options.barData;
@@ -169,6 +170,24 @@ export class Bar {
     this.groupSize = options.groupSize || this.groupSize;
 
     this.generateInstances(options.barData);
+  }
+
+  get viewPortNear() {
+    return this._viewPortNear;
+  }
+
+  set viewPortNear(val: number) {
+    this._viewPortNear = val;
+    this.updateByDragZ(this.dragZ);
+  }
+
+  get viewPortFar() {
+    return this._viewPortFar;
+  }
+
+  set viewPortFar(val: number) {
+    this._viewPortFar = val;
+    this.updateByDragZ(this.dragZ);
   }
 
   get bottomCenter() {
@@ -885,12 +904,13 @@ export class Bar {
   }
 
   updateByDragZ(dragZ: number) {
+    this.dragZ = dragZ;
     const fadePadding = 1;
 
     const nearFadeStart = this.viewPortNear;
     const nearFadeEnd = this.viewPortNear - fadePadding;
-    const farFadeStart = this.viewPortFar;
-    const farFadeEnd = this.viewPortFar + fadePadding;
+    const farFadeStart = this._viewPortFar;
+    const farFadeEnd = this._viewPortFar + fadePadding;
 
     const posZ = this.baseZ + dragZ;
     let alpha = 0.0;

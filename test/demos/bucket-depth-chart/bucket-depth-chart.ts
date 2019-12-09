@@ -34,8 +34,8 @@ export class BucketDepthChart {
   _scaleX: number = 1;
   unitWidth: number = 10;
   viewWidth: number = 10;
-  viewPortNear: number = Number.MIN_SAFE_INTEGER;
-  viewPortFar: number = Number.MAX_SAFE_INTEGER;
+  _viewPortNear: number = Number.MIN_SAFE_INTEGER;
+  _viewPortFar: number = Number.MAX_SAFE_INTEGER;
   private _heightScale: number = 1;
   private _padding: number = 0;
   groupSize: number = 1;
@@ -50,8 +50,8 @@ export class BucketDepthChart {
     this.startTime = options.startTime;
     this.unitWidth = options.unitWidth || this.unitWidth;
     this.viewWidth = options.viewWidth || this.viewWidth;
-    this.viewPortNear = options.viewPortNear || this.viewPortNear;
-    this.viewPortFar = options.viewPortFar || this.viewPortFar;
+    this._viewPortNear = options.viewPortNear || this._viewPortNear;
+    this._viewPortFar = options.viewPortFar || this._viewPortFar;
     this._padding = options.padding || this._padding;
     this._heightScale = options.heightScale || this._heightScale;
     this.providers = options.providers;
@@ -62,6 +62,30 @@ export class BucketDepthChart {
     this.depthFilter = options.depthFilter || this.depthFilter;
 
     this.generateBars(options.chartData, options.colors);
+  }
+
+  get maxDepth() {
+    return this._maxDepth;
+  }
+
+  get minDepth() {
+    return this._minDepth;
+  }
+
+  get viewPortNear() {
+    return this._viewPortNear;
+  }
+  set viewPortNear(val: number) {
+    this._viewPortNear = val;
+    this.bars.forEach(bar => (bar.viewPortNear = val));
+  }
+
+  get viewPortFar() {
+    return this._viewPortFar;
+  }
+  set viewPortFar(val: number) {
+    this._viewPortFar = val;
+    this.bars.forEach(bar => (bar.viewPortFar = val));
   }
 
   get padding() {
@@ -81,6 +105,7 @@ export class BucketDepthChart {
 
     // Update center
     this.middleDepth += (this.bars.length - 1) * delta / 2;
+    this._maxDepth += (this.bars.length - 1) * delta;
   }
 
   get middleDepth() {

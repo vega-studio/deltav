@@ -104,7 +104,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     frontView: () => {
       this.topView = false;
       this.front = true;
-      this.moveCameraTo([0, 0, this.bdc.maxDepth + 5]);
+      this.moveCameraTo([0, 0, this.bdc.maxDepth + 2]);
     },
     topView: () => {
       if (!this.surface) return;
@@ -155,7 +155,10 @@ export class BucketDepthChartDemo extends BaseDemo {
     angledView: () => {
       this.topView = false;
       this.front = false;
-      const distance = this.bdc.maxDepth - this.bdc.minDepth;
+      const distance = Math.min(
+        Math.max(this.bdc.maxDepth - this.bdc.minDepth, 5),
+        12
+      );
       if (this.bdc.bars.length === 1) {
         this.moveCameraTo([5, 5, this.bdc.middleDepth + 5]);
       } else {
@@ -257,7 +260,10 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.bdc.viewPortNear = this.bdc.minDepth;
       this.numOfBars = val;
 
-      const distance = this.bdc.maxDepth - this.bdc.minDepth;
+      const distance = Math.min(
+        Math.max(this.bdc.maxDepth - this.bdc.minDepth, 5),
+        12
+      );
       if (this.surface) {
         const camera = this.surface.cameras.perspective;
 

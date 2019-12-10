@@ -254,37 +254,40 @@ export class BucketDepthChartDemo extends BaseDemo {
       camera.lookAt([0, 0, this.bdc.middleDepth], [0, 1, 0]);
     });
     gui.add(this.parameters, "numOfBars", 0, 10, 1).onChange((val: number) => {
-      if (val > this.numOfBars) {
-        this.addBar(this.numOfBars, val);
-      } else if (val < this.numOfBars) {
-        this.reduceBar(this.numOfBars, val);
-      }
+      if (val !== this.numOfBars) {
+        if (val > this.numOfBars) {
+          this.addBar(this.numOfBars, val);
+        } else if (val < this.numOfBars) {
+          this.reduceBar(this.numOfBars, val);
+        }
 
-      this.bdc.viewPortFar = this.bdc.maxDepth;
-      this.bdc.viewPortNear = this.bdc.minDepth;
-      this.bdc.updateByDragZ(this.dragZ);
-      this.numOfBars = val;
+        this.bdc.viewPortFar = this.bdc.maxDepth;
+        this.bdc.viewPortNear = this.bdc.minDepth;
+        this.bdc.updateByDragZ(this.dragZ);
+        this.numOfBars = val;
 
-      const distance = Math.min(
-        Math.max(this.bdc.maxDepth - this.bdc.minDepth, 5),
-        12
-      );
-      if (this.surface) {
-        const camera = this.surface.cameras.perspective;
+        const distance = Math.min(
+          Math.max(this.bdc.maxDepth - this.bdc.minDepth, 5),
+          12
+        );
 
-        if (this.front) {
-          camera.position = [0, 0, 15];
-        } else if (this.topView) {
-          camera.position = [0, distance, this.bdc.middleDepth + 0.5];
-        } else {
-          if (this.bdc.bars.length === 1) {
-            camera.position = [4, 4, this.bdc.middleDepth + 4];
+        if (this.surface) {
+          const camera = this.surface.cameras.perspective;
+
+          if (this.front) {
+            camera.position = [0, 0, 15];
+          } else if (this.topView) {
+            camera.position = [0, distance, this.bdc.middleDepth + 0.5];
           } else {
-            camera.position = [
-              distance,
-              distance,
-              this.bdc.middleDepth + distance
-            ];
+            if (this.bdc.bars.length === 1) {
+              camera.position = [4, 4, this.bdc.middleDepth + 4];
+            } else {
+              camera.position = [
+                distance,
+                distance,
+                this.bdc.middleDepth + distance
+              ];
+            }
           }
         }
       }
@@ -510,7 +513,6 @@ export class BucketDepthChartDemo extends BaseDemo {
           },
           handleMouseMove: (e: IMouseInteraction) => {
             if (!this.surface) return;
-            this.topView = false;
 
             if (this.mouseDown) {
               const currentMouseX = e.mouse.currentPosition[0];

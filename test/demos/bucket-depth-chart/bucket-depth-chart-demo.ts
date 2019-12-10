@@ -104,7 +104,7 @@ export class BucketDepthChartDemo extends BaseDemo {
     frontView: () => {
       this.topView = false;
       this.front = true;
-      this.moveCameraTo([0, 0, this.bdc.maxDepth + 2]);
+      this.moveCameraTo([0, 0, 10]);
     },
     topView: () => {
       if (!this.surface) return;
@@ -112,7 +112,11 @@ export class BucketDepthChartDemo extends BaseDemo {
       this.front = false;
       const camera = this.surface.cameras.perspective;
       const oldPosition = this.cameraPosition;
-      const distance = (this.bdc.maxDepth - this.bdc.minDepth) / 2;
+      // const distance = (this.bdc.maxDepth - this.bdc.minDepth) / 2;
+      const distance = Math.min(
+        Math.max(this.bdc.maxDepth - this.bdc.minDepth, 5),
+        12
+      );
       const newPosition: Vec3 = [0, distance, this.bdc.middleDepth + 0.5];
       const delta = [
         newPosition[0] - oldPosition[0],
@@ -258,6 +262,7 @@ export class BucketDepthChartDemo extends BaseDemo {
 
       this.bdc.viewPortFar = this.bdc.maxDepth;
       this.bdc.viewPortNear = this.bdc.minDepth;
+      this.bdc.updateByDragZ(this.dragZ);
       this.numOfBars = val;
 
       const distance = Math.min(
@@ -268,7 +273,7 @@ export class BucketDepthChartDemo extends BaseDemo {
         const camera = this.surface.cameras.perspective;
 
         if (this.front) {
-          camera.position = [0, 0, this.bdc.maxDepth + 5];
+          camera.position = [0, 0, 15];
         } else if (this.topView) {
           camera.position = [0, distance, this.bdc.middleDepth + 0.5];
         } else {

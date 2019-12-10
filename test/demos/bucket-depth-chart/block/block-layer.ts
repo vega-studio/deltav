@@ -178,6 +178,8 @@ export class BlockLayer extends Layer<BlockInstance, IBlockLayerProps> {
   }
 
   getMaterialOptions(): ILayerMaterialOptions {
-    return {};
+    return {
+      // depthTest: false
+    };
   }
 }

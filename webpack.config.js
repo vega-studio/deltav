@@ -101,7 +101,7 @@ module.exports = {
       { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       { test: /\.html$/, use: { loader: 'file-loader', options: { name: '[name].html' } } },
       { test: /\.png$/, loader: 'base64-image-loader' },
-      { test: /\.[fv]s$/, use: IS_PRODUCTION ? ['shader-compress-loader'] : ['raw-loader'] },
+      { test: /\.[fv]s$/, use: IS_PRODUCTION ? ['compress-shader-loader'] : ['raw-loader'] },
       {
         test: /\.(mp4|mov)$/,
         loader: 'file-loader',

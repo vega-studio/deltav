@@ -49,6 +49,7 @@
     "base64-image-loader": "1.2.1",
     "circular-dependency-plugin": "5.0.2",
     "commander": "2.19.0",
+    "compress-shader-loader": "1.0.0",
     "compression": "1.7.4",
     "copy-webpack-plugin": "4.5.2",
     "css-loader": "0.28.11",

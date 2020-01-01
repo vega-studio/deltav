@@ -1,3 +1,9 @@
+## 1.35.4
+
+## Fixed
+
+- [`FIXED`]: Moved the shader compression loader to a separate project so it can be utilized within other projects that use deltav.
+
 ## 1.35.3
 
 ## Fixed

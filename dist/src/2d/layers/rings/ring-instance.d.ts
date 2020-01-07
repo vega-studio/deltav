@@ -1,10 +1,15 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
 import { Vec2 } from "../../../math";
 export interface IRingInstanceOptions extends IInstanceOptions {
+    /** The center of the ring */
     center?: Vec2;
+    /** The color of this ring */
     color?: [number, number, number, number];
+    /** The z depth of the ring (for draw ordering) */
     depth?: number;
+    /** The outer radius of the ring */
     radius?: number;
+    /** The thickness of the ring */
     thickness?: number;
 }
 export declare class RingInstance extends Instance {

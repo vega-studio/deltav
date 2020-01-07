@@ -3,6 +3,7 @@ import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { RingInstance } from "./ring-instance";
 export interface IRingLayerProps<T extends RingInstance> extends ILayer2DProps<T> {
+    /** This sets a scaling factor for the circle's radius */
     scaleFactor?(): number;
     animate?: {
         color?: IAutoEasingMethod<Vec>;
@@ -10,6 +11,10 @@ export interface IRingLayerProps<T extends RingInstance> extends ILayer2DProps<T
         radius?: IAutoEasingMethod<Vec>;
     };
 }
+/**
+ * This layer displays circles and provides as many controls as possible for displaying
+ * them in interesting ways.
+ */
 export declare class RingLayer<T extends RingInstance, U extends IRingLayerProps<T>> extends Layer2D<T, U> {
     static defaultProps: IRingLayerProps<RingInstance>;
     static attributeNames: {
@@ -19,6 +24,9 @@ export declare class RingLayer<T extends RingInstance, U extends IRingLayerProps
         color: string;
         thickness: string;
     };
+    /**
+     * Define our shader and it's inputs
+     */
     initShader(): IShaderInitialization<RingInstance>;
     getMaterialOptions(): ILayerMaterialOptions;
 }

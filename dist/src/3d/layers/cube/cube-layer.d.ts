@@ -4,6 +4,9 @@ import { IShaderInitialization } from "../../../types";
 import { CubeInstance } from "./cube-instance";
 export interface ICubeLayerProps<TInstance extends CubeInstance> extends ILayerProps<TInstance> {
 }
+/**
+ * Layer for rendering simple cube primitives
+ */
 export declare class CubeLayer<TInstance extends CubeInstance, TProps extends ICubeLayerProps<TInstance>> extends Layer<TInstance, TProps> {
     static defaultProps: ICubeLayerProps<CubeInstance>;
     initShader(): IShaderInitialization<TInstance> | null;

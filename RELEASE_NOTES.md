@@ -1,3 +1,9 @@
+## 1.35.5
+
+## Fixed
+
+- [`FIXED`]: Output now provides better typescript docs and also has its source maps.
+
 ## 1.35.4
 
 ## Fixed

@@ -1,5 +1,8 @@
 import { EventManager } from "./event-manager";
 import { IMouseInteraction, ITouchInteraction } from "./types";
+/**
+ * This is a simple way to access the events executing on the chart.
+ */
 export declare class SimpleEventHandler extends EventManager {
     constructor(handlers: Partial<EventManager>);
     handleMouseDown(_e: IMouseInteraction): void;

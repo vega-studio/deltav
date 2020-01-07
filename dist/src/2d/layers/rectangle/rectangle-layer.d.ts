@@ -7,8 +7,13 @@ export interface IRectangleLayerProps<T extends RectangleInstance> extends ILaye
         color?: IAutoEasingMethod<Vec>;
         location?: IAutoEasingMethod<Vec>;
     };
+    /** Scale factor determining the scale size of the rectangle */
     scaleFactor?(): number;
 }
+/**
+ * This layer displays Rectangles and provides as many controls as possible for displaying
+ * them in interesting ways.
+ */
 export declare class RectangleLayer<T extends RectangleInstance, U extends IRectangleLayerProps<T>> extends Layer2D<T, U> {
     static defaultProps: IRectangleLayerProps<RectangleInstance>;
     static attributeNames: {
@@ -21,6 +26,9 @@ export declare class RectangleLayer<T extends RectangleInstance, U extends IRect
         scaling: string;
         size: string;
     };
+    /**
+     * Define our shader and it's inputs
+     */
     initShader(): IShaderInitialization<RectangleInstance>;
     getMaterialOptions(): ILayerMaterialOptions;
 }

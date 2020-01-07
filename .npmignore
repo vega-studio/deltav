@@ -17,8 +17,6 @@ npm*log-*
 # -----[ Distribution ] -------------------------------------------
 # scripts
 scripts
-# The non-obfuscated Distribution
-dist/index.js.map
 # Remove any development Code
 src
 docs

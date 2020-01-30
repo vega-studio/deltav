@@ -60,7 +60,7 @@ export function analyzeColorPickingRendering(
     }
   }
 
-  // Apply all o fthe unique colors that were discovered within the rendering
+  // Apply all of the unique colors that were discovered within the rendering
   pickingData.allColors = Array.from(uniqueColors.keys());
   // The nearest color will be the element in the middle of the array of colors
   pickingData.nearestColor = nearestColor;

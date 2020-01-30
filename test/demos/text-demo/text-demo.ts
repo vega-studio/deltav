@@ -15,6 +15,7 @@ import {
   LabelInstance,
   LabelLayer,
   nextFrame,
+  PickType,
   ScaleMode,
   View2D,
   wait
@@ -183,7 +184,28 @@ export class TextDemo extends BaseDemo {
               },
               data: providers.labels,
               resourceKey: resources.font.key,
-              scaleMode: this.parameters.scaleMode
+              scaleMode: this.parameters.scaleMode,
+              picking: PickType.SINGLE,
+
+              onMouseClick: info => {
+                info.instances.forEach(label => {
+                  label.color = [1, 1, 1, 1];
+
+                  EasingUtil.all(
+                    true,
+                    label.glyphs,
+                    [GlyphLayer.attributeNames.color],
+                    (
+                      easing: IEasingControl,
+                      instance: GlyphInstance,
+                      _instanceIndex: number,
+                      _attrIndex: number
+                    ) => {
+                      easing.setTiming(instance.offset[0]);
+                    }
+                  );
+                });
+              }
             })
           }
         }

@@ -128,7 +128,7 @@ if (!TEST) {
   }
 
   // Tag the commit with the version number
-  if (shell.exec(`git tag -a ${version} -m Release ${version}`).code !== 0) {
+  if (shell.exec(`git tag -a ${version} -m "Release ${version}"`).code !== 0) {
     console.log('Could not make tag for git commit');
     process.exit(1);
   }

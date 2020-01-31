@@ -68,15 +68,8 @@ if (!TEST) {
 
 // Build declaration files
 if (
-  sh(
-    'npx',
-    'tsc',
-    '-d',
-    '--emitDeclarationOnly',
-    '--outDir',
-    'dist',
-    '--project',
-    './tsconfig.json'
+  shell.exec(
+    'tsc -d --emitDeclarationOnly --outDir dist --project ./tsconfig.json'
   ).code !== 0
 ) {
   console.log('Failed to compile type declarations');

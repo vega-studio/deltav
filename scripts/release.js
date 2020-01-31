@@ -1,6 +1,7 @@
 const { sh } = require('./lib/exec');
-const { removeSync, copySync, existsSync } = require('fs-extra');
+const { removeSync, copySync } = require('fs-extra');
 const { resolve } = require('path');
+const shell = require('shelljs');
 
 const TEST = process.env.TEST;
 const ENSURE_REMOTE = 'origin';
@@ -14,7 +15,7 @@ if (TEST) {
 console.log("Note: the release script REQUIRES npx to be available.");
 
 if (
-  sh('npx', '-v').code !== 0
+  shell.exec('npx -v').code !== 0
 ) {
   console.log('Failed to validate npx on your machine. Please install npx "npm i -g npx"');
   process.exit(1);

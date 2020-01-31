@@ -1,5 +1,5 @@
 const { sh } = require('./lib/exec');
-const { removeSync, copySync } = require('fs-extra');
+const { removeSync, copySync, existsSync } = require('fs-extra');
 const { resolve } = require('path');
 
 const TEST = process.env.TEST;
@@ -56,10 +56,20 @@ if (!TEST) {
   }
 }
 
+const isWindows = (
+  process &&
+  (
+    process.platform === 'win32' ||
+    /^(msys|cygwin)$/.test(process.env.OSTYPE)
+  )
+);
+const tscCommand = resolve(`node_modules/.bin/tsc${isWindows ? '.cmd' : ''}`);
+
 // Build declaration files
 if (
+  !existsSync(tscCommand) ||
   sh(
-    'tsc',
+    tscCommand,
     '-d',
     '--emitDeclarationOnly',
     '--outDir',

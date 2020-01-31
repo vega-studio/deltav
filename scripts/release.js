@@ -11,6 +11,15 @@ if (TEST) {
   console.log('Building files without any git changes');
 }
 
+console.log("Note: the release script REQUIRES npx to be available.");
+
+if (
+  sh('npx', '-v').code !== 0
+) {
+  console.log('Failed to validate npx on your machine. Please install npx "npm i -g npx"');
+  process.exit(1);
+}
+
 if (!TEST) {
   // We check our remote to ensure we have a projected with expected values
   const remoteListProcess = sh('git', 'remote', '-v');
@@ -56,20 +65,11 @@ if (!TEST) {
   }
 }
 
-const isWindows = (
-  process &&
-  (
-    process.platform === 'win32' ||
-    /^(msys|cygwin)$/.test(process.env.OSTYPE)
-  )
-);
-const tscCommand = resolve(`node_modules/.bin/tsc${isWindows ? '.cmd' : ''}`);
-
 // Build declaration files
 if (
-  !existsSync(tscCommand) ||
   sh(
-    tscCommand,
+    'npx',
+    'tsc',
     '-d',
     '--emitDeclarationOnly',
     '--outDir',

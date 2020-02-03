@@ -8,7 +8,8 @@ import {
   ILayerConstructionClass,
   LayerInitializer
 } from "../../../surface/layer";
-import { InstanceDiffType, ResourceType } from "../../../types";
+import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types";
+import { isDefined } from "../../../util";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";
@@ -123,10 +124,23 @@ const paddingCalculator: {
 };
 
 /**
+ * Converts a Glyph interaction event to a Label interaction event
+ */
+function mapHandler(handler?: (info: IPickInfo<LabelInstance>) => void) {
+  if (!handler) return undefined;
+  return (info: IPickInfo<GlyphInstance>) => {
+    handler({
+      ...info,
+      instances: info.instances.map(g => g.parentLabel).filter(isDefined)
+    } as IPickInfo<LabelInstance>);
+  };
+}
+
+/**
  * Constructor props for making a new label layer
  */
-export interface ILabelLayerProps<T extends LabelInstance>
-  extends ILayer2DProps<T> {
+export interface ILabelLayerProps<TInstance extends LabelInstance>
+  extends ILayer2DProps<TInstance> {
   /** Animation methods for various properties of the glyphs */
   animate?: {
     anchor?: IAutoEasingMethod<Vec>;
@@ -150,6 +164,8 @@ export interface ILabelLayerProps<T extends LabelInstance>
   truncation?: string;
   /** This indicates whether a label is in a textarea */
   inTextArea?: boolean;
+
+  onMouseClick?(info: IPickInfo<TInstance>): void;
 }
 
 /**
@@ -159,9 +175,9 @@ export interface ILabelLayerProps<T extends LabelInstance>
  * into Glyphs to render.
  */
 export class LabelLayer<
-  T extends LabelInstance,
-  U extends ILabelLayerProps<T>
-> extends Layer2D<T, U> {
+  TInstance extends LabelInstance,
+  TProps extends ILabelLayerProps<TInstance>
+> extends Layer2D<TInstance, TProps> {
   static defaultProps: ILabelLayerProps<LabelInstance> = {
     key: "",
     data: new InstanceProvider<LabelInstance>()
@@ -215,7 +231,25 @@ export class LabelLayer<
         key: `${this.id}.glyphs`,
         resourceKey: this.props.resourceKey,
         scaleMode: this.props.scaleMode || ScaleMode.BOUND_MAX,
-        inTextArea: this.props.inTextArea
+        inTextArea: this.props.inTextArea,
+
+        picking: this.props.picking,
+        onMouseClick: mapHandler(this.props.onMouseClick),
+        onMouseUp: mapHandler(this.props.onMouseUp),
+        onMouseDown: mapHandler(this.props.onMouseDown),
+        onMouseOut: mapHandler(this.props.onMouseOut),
+        onMouseOver: mapHandler(this.props.onMouseOver),
+        onMouseMove: mapHandler(this.props.onMouseMove),
+        onMouseUpOutside: mapHandler(this.props.onMouseUpOutside),
+        onTap: mapHandler(this.props.onTap),
+        onTouchDown: mapHandler(this.props.onTouchDown),
+        onTouchUp: mapHandler(this.props.onTouchUp),
+        onTouchUpOutside: mapHandler(this.props.onTouchUpOutside),
+        onTouchMove: mapHandler(this.props.onTouchMove),
+        onTouchOut: mapHandler(this.props.onTouchOut),
+        onTouchOver: mapHandler(this.props.onTouchOver),
+        onTouchAllEnd: mapHandler(this.props.onTouchAllEnd),
+        onTouchAllOut: mapHandler(this.props.onTouchAllOut)
       })
     ];
   }
@@ -340,7 +374,7 @@ export class LabelLayer<
   /**
    * Handles first insertion operation for the label
    */
-  private insert(instance: T) {
+  private insert(instance: TInstance) {
     // Our management flag is dependent on if the label has glyph storage or not
     if (!instance.preload) {
       const storage = this.labelToGlyphs.get(instance);
@@ -393,7 +427,7 @@ export class LabelLayer<
   /**
    * Unmounts all of the glyphs that make the lable
    */
-  hideGlyphs(instance: T) {
+  hideGlyphs(instance: TInstance) {
     const glyphs = this.labelToGlyphs.get(instance);
     if (!glyphs) return;
 
@@ -413,7 +447,7 @@ export class LabelLayer<
    * This invalidates the request for the instance thus requiring a new request to be made
    * to trigger the layout of the label.
    */
-  invalidateRequest(instance: T) {
+  invalidateRequest(instance: TInstance) {
     this.labelToKerningRequest.delete(instance);
   }
 
@@ -422,7 +456,7 @@ export class LabelLayer<
    * The first glyph will use metrics of the glyphs drop down amount to determine where the glyph
    * will be placed.
    */
-  layoutGlyphs(instance: T) {
+  layoutGlyphs(instance: TInstance) {
     // Make sure the kerning is ready
     if (!this.updateKerning(instance)) return;
     // Instance must be active
@@ -472,14 +506,14 @@ export class LabelLayer<
    * This layer does not have or use a buffer manager thus it must track management of an instance
    * in it's own way.
    */
-  managesInstance(instance: T) {
+  managesInstance(instance: TInstance) {
     return Boolean(this.labelToGlyphs.get(instance));
   }
 
   /**
    * This makes a label's glyphs visible by adding them to the glyph layer rendering the glyphs.
    */
-  showGlyphs(instance: T) {
+  showGlyphs(instance: TInstance) {
     const glyphs = this.labelToGlyphs.get(instance);
     if (!glyphs) return;
 
@@ -491,7 +525,7 @@ export class LabelLayer<
   /**
    * Updates the anchor position of the instance when set
    */
-  updateAnchor(instance: T) {
+  updateAnchor(instance: TInstance) {
     const glyphs = instance.glyphs;
     if (!glyphs) return;
 
@@ -510,7 +544,7 @@ export class LabelLayer<
   /**
    * This ensures the correct number of glyphs is being provided for the label indicated.
    */
-  updateGlyphs(instance: T, layout: KernedLayout) {
+  updateGlyphs(instance: TInstance, layout: KernedLayout) {
     // Get the current glyphs rendering for the label
     let currentGlyphs = this.labelToGlyphs.get(instance);
 
@@ -600,7 +634,7 @@ export class LabelLayer<
   /**
    * Updates the glyph colors to match the label's glyph colors
    */
-  updateGlyphColors(instance: T) {
+  updateGlyphColors(instance: TInstance) {
     const glyphs = instance.glyphs;
     if (!glyphs) return;
 
@@ -613,7 +647,7 @@ export class LabelLayer<
    * This updates all of the glyphs for the label to have the same position
    * as the label.
    */
-  updateGlyphOrigins(instance: T) {
+  updateGlyphOrigins(instance: TInstance) {
     const glyphs = instance.glyphs;
     if (!glyphs) return;
     const origin = instance.origin;
@@ -627,7 +661,7 @@ export class LabelLayer<
    * This updates all of the glyphs for the label to have the same position
    * as the label.
    */
-  updateGlyphMaxScales(instance: T) {
+  updateGlyphMaxScales(instance: TInstance) {
     const glyphs = instance.glyphs;
     if (!glyphs) return;
     const maxScale = instance.maxScale;
@@ -642,7 +676,7 @@ export class LabelLayer<
    *
    * Returns true when the kerning information is already available
    */
-  updateKerning(instance: T) {
+  updateKerning(instance: TInstance) {
     // A change in glyphs requires a potential kerning request
     let labelKerningRequest = this.labelToKerningRequest.get(instance);
     // This is the text the label will be making for the request
@@ -736,7 +770,7 @@ export class LabelLayer<
    * If our resource changes, we need a full update of all instances.
    * If our provider changes, we probably want to ensure our property identifiers are correct.
    */
-  willUpdateProps(newProps: U) {
+  willUpdateProps(newProps: TProps) {
     if (newProps.data !== this.props.data) {
       delete this.propertyIds;
     }

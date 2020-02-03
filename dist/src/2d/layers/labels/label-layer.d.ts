@@ -4,6 +4,7 @@ import { Vec } from "../../../math/vector";
 import { IFontResourceRequest } from "../../../resources";
 import { KernedLayout } from "../../../resources/text/font-map";
 import { ILayerConstructionClass, LayerInitializer } from "../../../surface/layer";
+import { IPickInfo } from "../../../types";
 import { ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";
@@ -12,7 +13,7 @@ import { LabelInstance } from "./label-instance";
 /**
  * Constructor props for making a new label layer
  */
-export interface ILabelLayerProps<T extends LabelInstance> extends ILayer2DProps<T> {
+export interface ILabelLayerProps<TInstance extends LabelInstance> extends ILayer2DProps<TInstance> {
     /** Animation methods for various properties of the glyphs */
     animate?: {
         anchor?: IAutoEasingMethod<Vec>;
@@ -33,6 +34,7 @@ export interface ILabelLayerProps<T extends LabelInstance> extends ILayer2DProps
     truncation?: string;
     /** This indicates whether a label is in a textarea */
     inTextArea?: boolean;
+    onMouseClick?(info: IPickInfo<TInstance>): void;
 }
 /**
  * This is a composite layer that will take in and manage Label Instances. The true instance
@@ -40,7 +42,7 @@ export interface ILabelLayerProps<T extends LabelInstance> extends ILayer2DProps
  * this is a composite layer that is merely a manager to split up the label's requested string
  * into Glyphs to render.
  */
-export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerProps<T>> extends Layer2D<T, U> {
+export declare class LabelLayer<TInstance extends LabelInstance, TProps extends ILabelLayerProps<TInstance>> extends Layer2D<TInstance, TProps> {
     static defaultProps: ILabelLayerProps<LabelInstance>;
     /**
      * When this is flagged, we must do a complete recomputation of all our label's glyphs positions and kernings.
@@ -100,7 +102,7 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
     /**
      * Unmounts all of the glyphs that make the lable
      */
-    hideGlyphs(instance: T): void;
+    hideGlyphs(instance: TInstance): void;
     /**
      * Tell the system this layer is not providing any rendering IO information for the GPU to render.
      */
@@ -109,53 +111,53 @@ export declare class LabelLayer<T extends LabelInstance, U extends ILabelLayerPr
      * This invalidates the request for the instance thus requiring a new request to be made
      * to trigger the layout of the label.
      */
-    invalidateRequest(instance: T): void;
+    invalidateRequest(instance: TInstance): void;
     /**
      * This uses calculated kerning information to place the glyph relative to it's left character neighbor.
      * The first glyph will use metrics of the glyphs drop down amount to determine where the glyph
      * will be placed.
      */
-    layoutGlyphs(instance: T): void;
+    layoutGlyphs(instance: TInstance): void;
     /**
      * This layer does not have or use a buffer manager thus it must track management of an instance
      * in it's own way.
      */
-    managesInstance(instance: T): boolean;
+    managesInstance(instance: TInstance): boolean;
     /**
      * This makes a label's glyphs visible by adding them to the glyph layer rendering the glyphs.
      */
-    showGlyphs(instance: T): void;
+    showGlyphs(instance: TInstance): void;
     /**
      * Updates the anchor position of the instance when set
      */
-    updateAnchor(instance: T): void;
+    updateAnchor(instance: TInstance): void;
     /**
      * This ensures the correct number of glyphs is being provided for the label indicated.
      */
-    updateGlyphs(instance: T, layout: KernedLayout): void;
+    updateGlyphs(instance: TInstance, layout: KernedLayout): void;
     /**
      * Updates the glyph colors to match the label's glyph colors
      */
-    updateGlyphColors(instance: T): void;
+    updateGlyphColors(instance: TInstance): void;
     /**
      * This updates all of the glyphs for the label to have the same position
      * as the label.
      */
-    updateGlyphOrigins(instance: T): void;
+    updateGlyphOrigins(instance: TInstance): void;
     /**
      * This updates all of the glyphs for the label to have the same position
      * as the label.
      */
-    updateGlyphMaxScales(instance: T): void;
+    updateGlyphMaxScales(instance: TInstance): void;
     /**
      * Checks the label to ensure calculated kerning supports the text specified.
      *
      * Returns true when the kerning information is already available
      */
-    updateKerning(instance: T): boolean;
+    updateKerning(instance: TInstance): boolean;
     /**
      * If our resource changes, we need a full update of all instances.
      * If our provider changes, we probably want to ensure our property identifiers are correct.
      */
-    willUpdateProps(newProps: U): void;
+    willUpdateProps(newProps: TProps): void;
 }

@@ -12,5 +12,5 @@ void main() {
   // Perform the smoothing for the SDF rendering to calculate the transparency of the fragment
   float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, sdf);
   // Apply the color the glyph will render with at the given calculated transparency the SDF provided
-  gl_FragColor = vec4(vertexColor.rgb, vertexColor.a * alpha);
+  setColor(vec4(vertexColor.rgb, vertexColor.a * alpha));
 }

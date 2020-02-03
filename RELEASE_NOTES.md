@@ -1,3 +1,11 @@
+## 1.35.6
+
+## Fixed
+
+- [`FIXED`]: Fixed release script by requiring npx to be available. Makes the script more reliable in differing environments.
+- [`FIXED`]: Release script now works better cross-platform by fixing some pathing issues.
+- [`FIXED`]: Label interactions now properly work when you set events to the LabelLayer
+
 ## 1.35.5
 
 ## Fixed

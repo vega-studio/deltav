@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/vega-studio/deltav"
   },
-  "version": "1.35.5",
+  "version": "1.35.6",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "license": "MIT",
@@ -79,6 +79,7 @@
     "random": "github:tarwich/node-random#1.0.0",
     "raw-loader": "0.5.1",
     "rimraf": "2.6.2",
+    "shelljs": "0.8.3",
     "spectorjs": "0.9.7",
     "style-loader": "0.20.3",
     "tiny-sdf": "github:diniden/tiny-sdf",

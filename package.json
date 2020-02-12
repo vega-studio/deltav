@@ -27,7 +27,7 @@
     "build": "runner run lib"
   },
   "dependencies": {
-    "@types/webgl2": "0.0.5"
+    "@types/webgl2": "^0.0.5"
   },
   "devDependencies": {
     "@diniden/signal-processing": "github:diniden/signal-processing",

@@ -1,3 +1,9 @@
+## 1.35.7
+
+## Fixed
+
+- [`FIXED`]: Type references will now resolve properly for distributed type files.
+
 ## 1.35.6
 
 ## Fixed

@@ -1,4 +1,4 @@
-import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "src/event-management";
+import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "./event-management";
 import { Attribute, GLSettings, IMaterialUniform, MaterialOptions, MaterialUniformType, Texture } from "./gl";
 import { Instance } from "./instance-provider/instance";
 import { BaseProjection } from "./math";

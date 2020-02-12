@@ -2,7 +2,7 @@ import {
   IMouseInteraction,
   ISingleTouchInteraction,
   ITouchInteraction
-} from "src/event-management";
+} from "./event-management";
 import {
   Attribute,
   GLSettings,

@@ -1,3 +1,9 @@
+## 1.35.8
+
+## Fixed
+
+- [`FIXED`]: Publish problem with tarball. This effectively is v1.35.7 but with a version bump to fix the publishing problem.
+
 ## 1.35.7
 
 ## Fixed

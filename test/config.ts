@@ -1,6 +1,7 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
+import { ChartDemo } from "./demos/chart-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
@@ -22,6 +23,7 @@ export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";
 
 demos.set("basic-demo", BasicDemo);
 demos.set("basic-demo-3d", BasicDemo3D);
+demos.set("chart-demo", ChartDemo);
 demos.set("cube-demo-3d", CubeDemo3D);
 demos.set("text-area", TextAreaDemo);
 demos.set("text-demo", TextDemo);

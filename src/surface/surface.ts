@@ -749,6 +749,8 @@ export class Surface {
     // another requested from mouse interactions
     delete this.updateColorPick;
 
+    // Uncomment this to see a minimap of the picking render target in real time. Crashes performance, but makes it much
+    // easier to fix underlying bugs when you can see the output pipeline properly.
     // debugRenderTarget(this.renderer, this.pickingTarget);
 
     // Dequeue rendering debugs
@@ -798,7 +800,7 @@ export class Surface {
       let viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
         view.props.viewport,
         screenBounds,
-        this.pixelRatio
+        1.0
       );
 
       // We must perform any operations necessary to make the view camera fit the viewport

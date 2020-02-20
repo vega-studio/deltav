@@ -1,3 +1,9 @@
+## 1.35.9
+
+## Fixed
+
+- [`FIXED`]: Mouse picking was picking with an offset if the view was not rendered with its edges at the edges of the screen. This has been resolved and now the mouse triggers events on instances no matter the View's offset from the surface's edges.
+
 ## 1.35.8
 
 ## Fixed

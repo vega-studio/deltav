@@ -31,7 +31,7 @@ void main() {
     unequalZooms
   );
 
-  // Destructure threejs's bug with the position requirement
+  // Destructure normals attribute
   float normal = normals.x;
   float side = normals.y;
 

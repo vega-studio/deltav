@@ -1,4 +1,5 @@
-import { Instance, InstanceDiff } from "../../instance-provider";
+import { Instance } from "../../instance-provider";
+import { InstanceDiff } from "../../types";
 import {
   BufferManagerBase,
   IBufferLocation,

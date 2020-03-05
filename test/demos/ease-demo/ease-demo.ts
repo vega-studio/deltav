@@ -513,7 +513,7 @@ export class EaseDemo extends BaseDemo {
         new RectangleInstance({
           position: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 +
+            (window.innerHeight * i) / 18 +
               window.innerHeight / 36 +
               window.innerHeight / 100
           ],
@@ -526,7 +526,7 @@ export class EaseDemo extends BaseDemo {
         new RectangleInstance({
           position: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 +
+            (window.innerHeight * i) / 18 +
               window.innerHeight / 36 +
               window.innerHeight / 100
           ],
@@ -539,7 +539,7 @@ export class EaseDemo extends BaseDemo {
         new LabelInstance({
           origin: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            (window.innerHeight * i) / 18 + window.innerHeight / 100
           ],
           fontSize: 20,
           text: labelTexts[i],
@@ -551,11 +551,11 @@ export class EaseDemo extends BaseDemo {
         new EdgeInstance({
           start: [
             window.innerWidth * 0.05,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            (window.innerHeight * i) / 18 + window.innerHeight / 100
           ],
           end: [
             window.innerWidth * 0.86,
-            window.innerHeight * i / 18 + window.innerHeight / 100
+            (window.innerHeight * i) / 18 + window.innerHeight / 100
           ],
           startColor: [1, 1, 1, 1],
           endColor: [1, 1, 1, 1]

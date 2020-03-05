@@ -62,7 +62,10 @@ export class MouseInteractionEdges extends BaseExample {
       const edge = new EdgeInstance({
         startColor: [Math.random(), 1.0, Math.random(), 1.0],
         endColor: [Math.random(), 1.0, Math.random(), 0.01],
-        control: [[60, 20 * i - 40], [160, 20 * i - 40]],
+        control: [
+          [60, 20 * i - 40],
+          [160, 20 * i - 40]
+        ],
         end: [200, 20 * i + 20],
         start: [20, 20 * i + 20],
         thickness: [10, 10]

@@ -28,7 +28,7 @@ function value(val: number | string, ref: number, scaleRatio: number) {
 
   // If this is a percentage use the reference as the num to multiply against
   if (parse.indexOf("%") > -1) {
-    return num / 100.0 * ref;
+    return (num / 100.0) * ref;
   }
 
   return num * scaleRatio;

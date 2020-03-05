@@ -1,6 +1,5 @@
 import { Instance, InstanceProvider } from "../instance-provider";
 import {
-  createLayer,
   ILayerConstructable,
   ILayerProps,
   Layer,
@@ -9,6 +8,7 @@ import {
   Surface
 } from "../surface";
 import { Omit } from "../types";
+import { createLayer } from "../util/create-util";
 
 /**
  * Options for generating a Logging layer

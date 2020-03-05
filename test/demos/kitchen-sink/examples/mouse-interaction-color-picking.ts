@@ -126,7 +126,10 @@ export class MouseInteractionColorPicking extends BaseExample {
       const edge = new EdgeInstance({
         startColor: [Math.random(), 1.0, Math.random(), 1.0],
         endColor: [Math.random(), 1.0, Math.random(), 0.1],
-        control: [[60, 20 * i + 20], [180, 20 * i + 20]],
+        control: [
+          [60, 20 * i + 20],
+          [180, 20 * i + 20]
+        ],
         end: [300, 20 * i + 20],
         id: `edge-interaction-${i}`,
         start: [20, 20 * i + 20],

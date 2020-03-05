@@ -1,6 +1,12 @@
 import { EventManager } from "../event-management/event-manager";
 import { UserInputEventManager } from "../event-management/user-input-event-manager";
-import { GLSettings, RenderTarget, Scene, Texture } from "../gl";
+import {
+  GLSettings,
+  isOffscreenCanvas,
+  RenderTarget,
+  Scene,
+  Texture
+} from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { BaseProjection } from "../math";
@@ -193,7 +199,7 @@ export class Surface {
   pickingTarget: RenderTarget;
   /** This is the density the rendering renders for the surface */
   pixelRatio: number = window.devicePixelRatio;
-  /** This is the THREE render system we use to render scenes with views */
+  /** This is the GL render system we use to render scenes with views */
   renderer: WebGLRenderer;
   /** This is the resource manager that handles resource requests for instances */
   resourceManager: ResourceRouter;
@@ -584,7 +590,7 @@ export class Surface {
 
             for (let i = 0, iMax = changes.length; i < iMax; ++i) {
               const [instance] = changes[i];
-              layer.instanceAttributes.forEach(attr => {
+              layer.shaderIOInfo.instanceAttributes.forEach(attr => {
                 const check = attr.update(instance);
                 if (check.length !== attr.size) {
                   if (!singleMessage) {
@@ -1104,7 +1110,7 @@ export class Surface {
    * This initializes the Canvas GL contexts needed for rendering.
    */
   private initGL(options: ISurfaceOptions) {
-    // Get the canvas of our context to set up our Three settings
+    // Get the canvas of our context to set up our GL settings
     const canvas = options.context;
     if (!canvas) return null;
 
@@ -1130,7 +1136,7 @@ export class Surface {
       alpha: rendererOptions.alpha,
       // Yes to antialias! Make it preeeeetty!
       antialias: rendererOptions.antialias,
-      // Make three use an existing canvas rather than generate another
+      // Make the GL use an existing canvas rather than generate another
       canvas,
       // If it's true it allows us to snapshot the rendering in the canvas
       // But we dont' always want it as it makes performance drop a bit.
@@ -1271,6 +1277,7 @@ export class Surface {
    * dimensions for handling all of our rendered elements.
    */
   fitContainer(_pixelRatio?: number) {
+    if (isOffscreenCanvas(this.context.canvas)) return;
     const container = this.context.canvas.parentElement;
 
     if (container) {

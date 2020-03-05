@@ -113,9 +113,7 @@ export class ShaderModule {
 
     if (fs && isFSCompatible) {
       if (fs.isFinal) {
-        return `Module ID: ${
-          unit.moduleId
-        } Can not override the module's existing Fragment registration as the exisitng module is marked as final`;
+        return `Module ID: ${unit.moduleId} Can not override the module's existing Fragment registration as the exisitng module is marked as final`;
       }
 
       debug(
@@ -126,9 +124,7 @@ export class ShaderModule {
 
     if (vs && isVSCompatible) {
       if (vs.isFinal) {
-        return `Module ID: ${
-          unit.moduleId
-        } Can not override the module's existing Vertex registration as the exisitng module is marked as final`;
+        return `Module ID: ${unit.moduleId} Can not override the module's existing Vertex registration as the exisitng module is marked as final`;
       }
 
       debug(
@@ -482,8 +478,8 @@ export class ShaderModule {
         target === ShaderInjectionTarget.ALL
           ? "fs vs"
           : target === ShaderInjectionTarget.VERTEX
-            ? "vs"
-            : "fs"
+          ? "vs"
+          : "fs"
       }`
     });
 

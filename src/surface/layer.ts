@@ -3,28 +3,31 @@ import { Material } from "../gl/material";
 import { Model } from "../gl/model";
 import { WebGLStat } from "../gl/webgl-stat";
 import { Instance } from "../instance-provider/instance";
-import { InstanceDiff } from "../instance-provider/instance-provider";
 import { ObservableMonitoring } from "../instance-provider/observable";
 import { ResourceRouter } from "../resources";
 import { ShaderProcessor } from "../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
+  IInstanceProvider,
+  ILayerEasingManager,
   ILayerMaterialOptions,
+  ILayerRef,
   INonePickingMetrics,
+  InstanceAttributeSize,
   instanceAttributeSizeFloatCount,
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
-  IUniform,
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal,
   LayerBufferType,
-  Omit,
   PickType,
+  StreamChangeStrategy,
   UniformIOValue
 } from "../types";
-import { uid } from "../util";
+import { onFrame, PromiseResolver, uid } from "../util";
+import { createAttribute } from "../util/create-util";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import {
   InstanceAttributeBufferManager,
@@ -88,67 +91,6 @@ export type LayerInitializerInternal = {
 };
 
 /**
- * Makes it easier to type out and get better editor help in establishing initShader
- */
-export function createAttribute<T extends Instance>(
-  options: IInstanceAttribute<T>
-) {
-  return options;
-}
-
-/**
- * Makes it easier to type out and get better editor help in establishing initShader
- */
-export function createUniform(options: IUniform) {
-  return options;
-}
-
-/**
- * Makes it easier to type out and get better editor help in establishing initShader
- */
-export function createVertex(options: IVertexAttribute) {
-  return options;
-}
-
-/**
- * Used for reactive layer generation and updates.
- */
-export function createLayer<T extends Instance, U extends ILayerProps<T>>(
-  layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">>
-): LayerInitializer {
-  const keyedProps = Object.assign(props, { key: props.key || "" });
-
-  return {
-    get key() {
-      return props.key || "";
-    },
-    init: [layerClass, keyedProps]
-  };
-}
-
-/**
- * Bare minimum required features a provider must provide to be the data for the layer.
- */
-export interface IInstanceProvider<T extends Instance> {
-  /**
-   * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
-   * so we use this to detect when multiple contexts have attempted use of this provider.
-   */
-  resolveContext: string;
-  /** A unique number making it easier to identify this object */
-  uid: number;
-  /** A list of changes to instances */
-  changeList: InstanceDiff<T>[];
-  /** Removes an instance from the list */
-  remove(instance: T): void;
-  /** Resolves the changes as consumed */
-  resolve(context: string): void;
-  /** Forces the provider to make a change list that ensures all elements are added */
-  sync(): void;
-}
-
-/**
  * Constructor options when generating a layer.
  */
 export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
@@ -163,12 +105,15 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /** This is the data provider where the instancing data is injected and modified. */
   data: IInstanceProvider<T>;
   /**
+   * This allows an easing ref to be applied to the layer. This ref can be used for detailed information regarding
+   * easing values, which allows for easier management of timings and feedback for animations being piped to the GPU.
+   */
+  ref?: ILayerRef;
+  /**
    * Any pipeline declaring a layer cn manipulate a layer's default material settings as every pipeline
    * can have some specific and significant needs the layer does not provide as a default.
    */
   materialOptions?: ILayerMaterialOptions;
-  /** Helps guarantee a rendering order for the layers. Lower numbers render first */
-  order?: number;
   /**
    * This sets how instances can be picked via the mouse. This activates the mouse events for the layer IFF
    * the value is not NONE.
@@ -178,6 +123,26 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * Used for debugging. Logs the generated shader for the layer in the console.
    */
   printShader?: boolean;
+  /**
+   * This is a property that allows for changes to stream in batches instead of commit in one giant push. This helps if
+   * you have 100's of 1000's of instances you need to update. Updating all the instances can put extreme pressure on
+   * your RAM and can cause massive frame lag. Picking a streaming strategy and amount to commit per frame can greatly
+   * improve user experience and can even help to prevent crashes from RAM over use.
+   *
+   * WARNING: Once changes start committing for a batch of changes, future changes will NOT be rendered or able to
+   * affect the GPU state UNTIL the streaming completes. Once the stream is completed, all edits that happen
+   * subsequently will begin streaming in as the next batch of changes.
+   *
+   * You are allowed to change the instance's properties while waiting for a set of changes to finish streaming.
+   */
+  streamChanges?: {
+    /**
+     * This is the amount of instance updates that can stream through per frame. This defaults to 10000 if not provided
+     */
+    count?: number;
+    /** This is the strategy for pulling the next set of instances to update to the GPU. Defaults to LINEAR */
+    strategy?: StreamChangeStrategy;
+  };
 
   // ---- EVENTS ----
   /** Executes when the mouse is down on instances (Picking type must be set) */
@@ -229,6 +194,34 @@ export interface ILayerPropsInternal<T extends Instance>
 }
 
 /**
+ * This is the information a layer stores regarding its shader configuration information
+ */
+export interface ILayerShaderIOInfo<T extends Instance> {
+  /** This is the attribute that specifies the _active flag for an instance */
+  activeAttribute: IInstanceAttribute<T>;
+  /** This is the GL geometry filled with the vertex information */
+  geometry: Geometry;
+  /** This is all of the instance attributes generated for the layer */
+  instanceAttributes: IInstanceAttribute<T>[];
+  /** Provides the number of vertices a single instance spans */
+  instanceVertexCount: number;
+  /** The official shader material generated for the layer */
+  material: Material;
+  /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
+  maxInstancesPerBuffer: number;
+  /** Default model configuration for rendering in the gl layer */
+  model: Model;
+  /** This is all of the uniforms generated for the layer */
+  uniforms: IUniformInternal[];
+  /** This is all of the vertex attributes generated for the layer */
+  vertexAttributes: IVertexAttributeInternal[];
+}
+
+interface ILayerEasingManagerInternal extends ILayerEasingManager {
+  easingComplete: PromiseResolver<void>;
+}
+
+/**
  * A base class for generating drawable content
  */
 export class Layer<
@@ -238,23 +231,24 @@ export class Layer<
   /** This MUST be implemented by sublayers in order for proper code hinting to happen */
   static defaultProps: any = {};
 
-  /** This is the attribute that specifies the _active flag for an instance */
-  activeAttribute: IInstanceAttribute<T>;
   /**
    * Calculated end time of all animations that will take place. This will cause the system to keep rendering
    * and not go into an idle state until the time of the last rendered frame has exceeded the time flagged
    * here.
    */
   animationEndTime: number = 0;
-  /** This matches an instance to the list of Three uniforms that the instance is responsible for updating */
-  private _bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** Buffer manager is read only. Must use setBufferManager */
+  private _bufferManager: BufferManagerBase<T, IBufferLocation>;
+  /**
+   * This matches an instance to the data buffers and positions to stream to the GPU for direct updates. Use
+   * setBufferManager to change this element.
+   */
   get bufferManager() {
     return this._bufferManager;
   }
-  /** This is the determined buffering strategy of the layer */
-  private _bufferType: LayerBufferType;
   /** Buffer type is private and should not be directly modified */
+  private _bufferType: LayerBufferType;
+  /** This is the determined buffering strategy of the layer */
   get bufferType() {
     return this._bufferType;
   }
@@ -269,24 +263,22 @@ export class Layer<
    * subsequently gets applied to instances when they get added to the layer.
    */
   easingId: { [key: string]: number };
-  /** This is the threejs geometry filled with the vertex information */
-  geometry: Geometry;
+  /** This is a manager used to monitor and handle the easing operations of the layer */
+  private _easingManager: ILayerEasingManagerInternal = {
+    easingComplete: new PromiseResolver(),
+    complete: () => this._easingManager.easingComplete.promise
+  };
+
+  get easingManager(): ILayerEasingManager {
+    return this._easingManager;
+  }
+
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
-  /** This is all of the instance attributes generated for the layer */
-  instanceAttributes: IInstanceAttribute<T>[] = [];
-  /** Provides the number of vertices a single instance spans */
-  instanceVertexCount: number = 0;
   /** This is the handler that manages interactions for the layer */
   interactions: LayerInteractionHandler<T, U>;
   /** The last time stamp this layer had its contents rendered */
   lastFrameTime: number = 0;
-  /** The official shader material generated for the layer */
-  material: Material;
-  /** INTERNAL: For the given shader IO provided this is how many instances can be present per buffer. */
-  maxInstancesPerBuffer: number;
-  /** Default model configuration for rendering in the gl layer */
-  model: Model;
   /** This indicates whether this layer needs to draw */
   needsViewDrawn: boolean = false;
   /** Helps assert rendering order. Lower numbers render first. */
@@ -297,25 +289,74 @@ export class Layer<
   picking: ISinglePickingMetrics<T> | INonePickingMetrics;
   /** Properties handed to the Layer during a Surface render */
   props: U;
-  /** This is the system provided resource manager that lets a layer request Atlas resources */
+  /** This is the system provided resource manager that lets a layer request resources */
   resource: ResourceRouter;
   /** This is the layer scene this layer feeds into */
   scene: LayerScene;
+  /** This contains the shader IO information generated when the layer was created */
+  shaderIOInfo: ILayerShaderIOInfo<T> = {} as ILayerShaderIOInfo<T>;
+  /**
+   * This is populated with the current streaming state for committing changes to the GPU. See ILayerProps for how the
+   * configuration happens for this object.
+   */
+  streamChanges: {
+    /** When locked this layer will NOT stream in new changes as it has a current stream it is completing first. */
+    locked: boolean;
+    /** When defined, this is the list of items currently being streamed to the GPU. */
+    stream?: U["data"]["changeList"];
+    /** The index our stream has iterated through for the current stream */
+    streamIndex: number;
+  } = {
+    locked: false,
+    streamIndex: 0
+  };
   /** This is the surface this layer is generated under */
   surface: Surface;
-  /** This is all of the uniforms generated for the layer */
-  uniforms: IUniformInternal[] = [];
+
   /** A uid provided to the layer to give it some uniqueness as an object */
   get uid() {
     return this._uid;
   }
   private _uid: number = uid();
-  /** This is all of the vertex attributes generated for the layer */
-  vertexAttributes: IVertexAttributeInternal[] = [];
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View<IViewProps>;
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
   willRebuildLayer: boolean = false;
+
+  /**
+   * This is a hook for the layer to respond to an instance being added via the diff manager. This is a simple
+   * opportunity to set some expectations of the instance and tie it directly to the layer it is processing under.
+   *
+   * By default for best performance, this method is undefined for the layer. One must be applied for the hook to take
+   * effect.
+   *
+   * For example: the primary case this arose was from instances needing the easing id mapping to allow for retrieval
+   * of the instance's easing information for a given layer association.
+   *
+   * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
+   * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
+   */
+  onDiffManagerAdd?(instance: T): void;
+
+  /**
+   * This is an opportunity to clean up any instance's association with the layer it was originally a part of.
+   *
+   * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
+   * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
+   *
+   * EXTRA WARNING: You better make sure you instantiate this if you instantiated onDiffManagerAdd so you can clean out
+   * any bad memory allocation choices you made.
+   */
+  onDiffManagerRemove?(instance: T): void;
+
+  /**
+   * Generates a reference object that can be used to retrieve layer specific metrics associated with the layer.
+   */
+  static createRef<T extends ILayerRef>(): T {
+    return {
+      easing: null
+    } as T;
+  }
 
   constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
@@ -428,14 +469,27 @@ export class Layer<
     const model = generateLayerModel(geometry, material, shaderIO.drawMode);
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
-    this.geometry = geometry;
-    this.instanceAttributes = instanceAttributes;
-    this.instanceVertexCount = shaderIO.vertexCount;
-    this.material = material;
-    this.maxInstancesPerBuffer = shaderMetrics.maxInstancesPerBuffer;
-    this.model = model;
-    this.uniforms = uniforms;
-    this.vertexAttributes = vertexAttributes;
+    this.shaderIOInfo = Object.assign<
+      ILayerShaderIOInfo<T>,
+      ILayerShaderIOInfo<T>
+    >(
+      {
+        activeAttribute: createAttribute({
+          name: "active",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.active ? 1 : 0]
+        }),
+        geometry,
+        instanceAttributes,
+        instanceVertexCount: shaderIO.vertexCount,
+        material,
+        maxInstancesPerBuffer: shaderMetrics.maxInstancesPerBuffer,
+        model,
+        uniforms,
+        vertexAttributes
+      },
+      this.shaderIOInfo
+    );
 
     // Generate the correct buffering strategy for the layer
     this.makeLayerBufferManager(this.surface.gl, this.scene);
@@ -450,6 +504,29 @@ export class Layer<
       );
       console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
       console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+    }
+
+    // See if there are any attributes that have  auto easing involved
+    const easing = (shaderIO.instanceAttributes || []).find(check =>
+      Boolean(check && check.easing)
+    );
+
+    // Establish the diff processing this layer needs to do based on the Easing IO present
+    // This will ensure there is not already some diff manager handling already established as a base layer's
+    // implementation.
+    if (easing) {
+      if (!this.onDiffManagerAdd) {
+        this.onDiffManagerAdd = this.handleDiffManagerAdd;
+      }
+
+      if (!this.onDiffManagerRemove) {
+        this.onDiffManagerRemove = this.handleDiffManagerRemove;
+      }
+    }
+
+    // Establish initial ref needs
+    if (this.props.ref) {
+      this.props.ref.easing = this.easingManager;
     }
 
     return true;
@@ -527,8 +604,11 @@ export class Layer<
    * This is where global uniforms should update their values. Executes every frame.
    */
   draw() {
+    // Make sure the stream lock is up to date before processing the next set of changes
+    this.updateStreamLock();
     // Consume the diffs for the instances to update each element
-    const changeList = this.props.data.changeList;
+    const changeList = this.getChangeList();
+
     // Set needsViewDrawn to be true if there is any change
     if (changeList.length > 0) this.needsViewDrawn = true;
     // Make some holder variables to prevent declaration within the loop
@@ -562,10 +642,145 @@ export class Layer<
     processor.commit();
     // Tell the manager changes are processed to allow it to free up resources
     this.bufferManager.changesProcessed();
-    // Flag the changes as resolved
-    this.props.data.resolve(this.id);
+    // Update our easing management
+    this.updateEasingManager();
     // Trigger uniform updates
     this.updateUniforms();
+  }
+
+  /**
+   * This handles updating our easingManager so references can properly react to easing completion times.
+   */
+  private updateEasingManager() {
+    // If we're streaming changes, then we have to wait for the stream to be finished before we can use the animation
+    // end time of the layer to establish the true end of all animations piped to the GPU.
+    if (this.props.streamChanges) {
+      // Wait for the stream to be emptied so we can
+      if (!this.streamChanges.stream || this.streamChanges.stream.length <= 0) {
+        // Get the existing resolver that is waiting for the animations to complete
+        const resolver = this._easingManager.easingComplete;
+        // Make a new resolver for next processes waiting for a current change set to complete
+        this._easingManager.easingComplete = new PromiseResolver<void>();
+
+        // Set a timer to complete when the layer has finished it's animation cycle
+        onFrame(() => {
+          resolver.resolve();
+        }, this.animationEndTime - this.surface.frameMetrics.currentTime);
+      }
+    }
+
+    // If this is a non-streamed change, then we simply wait until the layer's animation timer is resolved
+    else {
+      // Get the existing resolver that is waiting for the animations to complete
+      const resolver = this._easingManager.easingComplete;
+      // Make a new resolver for next processes waiting for a current change set to complete
+      this._easingManager.easingComplete = new PromiseResolver<void>();
+
+      // Set a timer to complete when the layer has finished it's animation cycle
+      onFrame(() => {
+        resolver.resolve();
+      }, this.animationEndTime - this.surface.frameMetrics.currentTime);
+    }
+  }
+
+  /**
+   * This gets the next changes that should be retrieved from a change stream. A stream is when changes are streamed
+   * in batches instead of committing all changes in a single update.
+   */
+  private getNextStreamChanges() {
+    let out: U["data"]["changeList"];
+
+    // Get the stream changes settings from our props
+    const {
+      streamChanges = {
+        count: 10000,
+        strategy: StreamChangeStrategy.LINEAR
+      }
+    } = this.props;
+    // Get the stream that is currently in progress
+    const { stream = [], streamIndex } = this.streamChanges;
+
+    // Ensure we have a count set for the number of items to stream down
+    if (streamChanges.count === void 0) {
+      streamChanges.count = 10000;
+    }
+
+    // Validate the number of items to stream. Any number at 0 or less indicates a desire to stream all remaining
+    // changes.
+    if (streamChanges.count <= 0) {
+      streamChanges.count = Number.MAX_SAFE_INTEGER;
+    }
+
+    // Pick the strategy for pulling the next changes from the stream
+    switch (streamChanges.strategy) {
+      // Linear just pulls out changes as they came in
+      case StreamChangeStrategy.LINEAR:
+      default: {
+        out = stream.slice(streamIndex, streamIndex + streamChanges.count);
+        this.streamChanges.streamIndex += streamChanges.count;
+        break;
+      }
+    }
+
+    // If we hit the end of the stream, we need to dump the stream from memory.
+    if (
+      this.streamChanges.stream &&
+      this.streamChanges.streamIndex >= this.streamChanges.stream.length
+    ) {
+      delete this.streamChanges.stream;
+    }
+
+    return out;
+  }
+
+  /**
+   * This checks the status of the stream and determines if this layer is locked into a stream or is done processing
+   * the stream.
+   */
+  private updateStreamLock() {
+    this.streamChanges.locked = Boolean(
+      this.streamChanges.stream &&
+        this.streamChanges.streamIndex < this.streamChanges.stream.length
+    );
+  }
+
+  /**
+   * This gets the next instance changes to push to the GPU.
+   */
+  private getChangeList() {
+    let changeList: U["data"]["changeList"];
+
+    // If we are streaming changes we do not accept new changes coming down but instead work on resolving the
+    // current stream
+    if (this.streamChanges.locked) {
+      changeList = this.getNextStreamChanges();
+    } else {
+      // If streaming changes is declared for the properties of the layer, then we need to gather the current change
+      // list into a stream and pull a set of the changes.
+      if (this.props.streamChanges) {
+        // We start a new stream so we have to begin at it's start index
+        this.streamChanges.streamIndex = 0;
+        // We lock the layer for the streaming changes so the stream will complete before new changes are applied
+        this.streamChanges.locked = true;
+        // Create the new stream from the existing changes.
+        this.streamChanges.stream = this.props.data.changeList;
+        // We provide no changes the first frame. There is some set up that can cause a spike in utilization, so we
+        // don't want the first changes to be too far ahead of the changes of others.
+        changeList = [];
+        // Since we retrieved all the current changes and applied it to our stream, we resolve the changes from the provider
+        // so new changes can be gathered whilst the stream resolves.
+        this.props.data.resolve(this.id);
+      } else {
+        // This is simply full copying all current changes as the next set of changes to be applied
+        changeList = this.props.data.changeList;
+        // Flag the changes as resolved since we gathered all changes and the changes will be immediately applied
+        this.props.data.resolve(this.id);
+      }
+    }
+
+    this.updateStreamLock();
+
+    return changeList;
   }
 
   /**
@@ -605,7 +820,7 @@ export class Layer<
   }
 
   /**
-   * The options for a three material without uniforms.
+   * The options for a GL Material without uniforms.
    */
   getMaterialOptions(): ILayerMaterialOptions {
     return {};
@@ -748,8 +963,8 @@ export class Layer<
     // Esnure the buffering type has been calculated for the layer
     const type = this.getLayerBufferType(
       gl,
-      this.vertexAttributes,
-      this.instanceAttributes
+      this.shaderIOInfo.vertexAttributes,
+      this.shaderIOInfo.instanceAttributes
     );
 
     switch (type) {
@@ -773,6 +988,22 @@ export class Layer<
         break;
       }
     }
+  }
+
+  /**
+   * This is the default implementation for onDiffManagerAdd that gets applied if easing is present in the layer's IO.
+   */
+  private handleDiffManagerAdd(instance: T) {
+    instance.easingId = this.easingId;
+  }
+
+  /**
+   * This is the default implementation for onDiffManagerRemove that gets applied if easing is present in the layer's
+   * IO
+   */
+  private handleDiffManagerRemove(instance: T) {
+    if (instance.easing) delete instance.easing;
+    delete instance.easingId;
   }
 
   /**
@@ -876,8 +1107,8 @@ export class Layer<
     let value: UniformIOValue;
 
     // Loop through the uniforms that are across all instances
-    for (let i = 0, end = this.uniforms.length; i < end; ++i) {
-      uniform = this.uniforms[i];
+    for (let i = 0, end = this.shaderIOInfo.uniforms.length; i < end; ++i) {
+      uniform = this.shaderIOInfo.uniforms[i];
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(
         materialUniform => (materialUniform.value = value)
@@ -890,9 +1121,14 @@ export class Layer<
    * respond to diff changes.
    */
   willUpdateProps(newProps: ILayerProps<T>) {
-    // Pick type changes needs to trigger layer rebuilds currently for how color picking is handled.
+    // Pick type changes needs to trigger layer rebuild.
     if (newProps.picking !== this.props.picking) {
       this.rebuildLayer();
+    }
+
+    // Populate the ref with the information of this layer
+    if (newProps.ref !== this.props.ref && this.props.ref) {
+      this.props.ref.easing = this.easingManager;
     }
   }
 }

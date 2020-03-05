@@ -54,8 +54,8 @@ export class GLState {
   }
   private _blendSrcFactor:
     | GLSettings.Material.BlendingSrcFactor
-    | GLSettings.Material.BlendingDstFactor = GLSettings.Material
-    .BlendingDstFactor.One;
+    | GLSettings.Material.BlendingDstFactor =
+    GLSettings.Material.BlendingDstFactor.One;
 
   /** The current equation used in the blend mode */
   get blendEquation() {
@@ -67,8 +67,8 @@ export class GLState {
   get cullFace() {
     return this._cullFace;
   }
-  private _cullFace: GLSettings.Material.CullSide = GLSettings.Material.CullSide
-    .NONE;
+  private _cullFace: GLSettings.Material.CullSide =
+    GLSettings.Material.CullSide.NONE;
 
   /** The channels in the color buffer a fragment is allowed to write to */
   get colorMask() {

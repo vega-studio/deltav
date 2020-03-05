@@ -1,3 +1,4 @@
+import { CanvasElement, isOffscreenCanvas } from "../gl";
 import { Bounds } from "../math/primitives";
 import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
 import { LayerScene } from "../surface/layer-scene";
@@ -46,7 +47,7 @@ function sortByIdentifier(a: ITouchMetrics, b: ITouchMetrics) {
  */
 export class UserInputEventManager {
   /** This is the canvas context we are rendering to */
-  context: HTMLCanvasElement;
+  context: CanvasElement;
   /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
   controllers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
@@ -94,7 +95,7 @@ export class UserInputEventManager {
   }
 
   constructor(
-    canvas: HTMLCanvasElement,
+    canvas: CanvasElement,
     surface: Surface,
     controllers: EventManager[],
     handlesWheelEvents?: boolean
@@ -122,6 +123,8 @@ export class UserInputEventManager {
    */
   private addMouseContextListeners(handlesWheelEvents?: boolean) {
     const element = this.context;
+    // If we are working with an offscreen canvas, there are no mouse events to be applied
+    if (isOffscreenCanvas(element)) return;
     // This will store the metrics calculated and found for the mouse
     let mouseMetrics: IMouseMetrics | undefined;
     // This is a special flag that aids in managing when the mouse is moving over a document AND the element. Both can
@@ -359,6 +362,8 @@ export class UserInputEventManager {
   private addTouchContextListeners() {
     // This is the element we are listening to for touch events
     const element = this.context;
+    // If this is an offscreen canvas, no interactions will happen
+    if (isOffscreenCanvas(element)) return;
     // This stores the most recent touch metrics associated with a touch by the touch's identifier
     const trackedTouches = new Map<number, ITouchMetrics>();
     // This is the most recent touch interaction event recorded for the touch, identifiable by the touch's identifier
@@ -1143,9 +1148,12 @@ export class UserInputEventManager {
 
   destroy() {
     delete this.quadTree;
-    this.context.onmousedown = null;
-    this.context.onmousemove = null;
-    this.context.onmouseleave = null;
+
+    if (!isOffscreenCanvas(this.context)) {
+      this.context.onmousedown = null;
+      this.context.onmousemove = null;
+      this.context.onmouseleave = null;
+    }
 
     const experimental = this.context as any;
 

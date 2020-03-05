@@ -452,7 +452,7 @@ export class NodesEdges extends BaseDemo {
   }
 
   makeColor(i: number): Vec4 {
-    const c = hsl(360 * i / this.circles.length, 100, 0.5).rgb();
+    const c = hsl((360 * i) / this.circles.length, 100, 0.5).rgb();
     return [c.r / 255, c.g / 255, c.b / 255, 1.0];
   }
 
@@ -463,8 +463,8 @@ export class NodesEdges extends BaseDemo {
       this.circles.forEach((circle, i) => {
         circle.center = add2(
           [
-            Math.cos(i / this.circles.length * Math.PI * 2) * distance,
-            Math.sin(i / this.circles.length * Math.PI * 2) * distance
+            Math.cos((i / this.circles.length) * Math.PI * 2) * distance,
+            Math.sin((i / this.circles.length) * Math.PI * 2) * distance
           ],
           this.center.center
         );
@@ -489,10 +489,10 @@ export class NodesEdges extends BaseDemo {
       });
 
       this.labels.forEach((lbl, i) => {
-        const angle = i / this.circles.length * Math.PI * 2;
+        const angle = (i / this.circles.length) * Math.PI * 2;
         lbl.origin = copy2(this.circles[i].center);
 
-        if (angle > Math.PI / 2 && angle < Math.PI * 3 / 2) {
+        if (angle > Math.PI / 2 && angle < (Math.PI * 3) / 2) {
           lbl.anchor = {
             type: AnchorType.MiddleRight,
             padding: this.circles[i].radius + 4

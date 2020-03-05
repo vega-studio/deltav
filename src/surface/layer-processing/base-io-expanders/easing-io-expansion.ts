@@ -148,7 +148,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         currentTime: number,
         frameMetrics: FrameMetrics,
         values: IEasingProps | undefined,
-        vecMethods: VecMethods<Vec>;
+        vecMethods: VecMethods<Vec>,
+        instanceEasing: Map<number, IEasingProps>;
 
       // Hijack the update from the attribute to a new update method which will
       // Be able to interact with the values for the easing methodology
@@ -161,7 +162,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         end = update(instance);
         currentTime = frameMetrics.currentTime;
         // Get the easing values specific to an instance.
-        values = instance.easing.get(easingUID);
+        instance.easing = instanceEasing = instance.easing || new Map();
+        values = instanceEasing.get(easingUID);
 
         // If the easing values do not exist yet, make them now
         if (!vecMethods || !values) {
@@ -176,7 +178,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
           });
 
           // Make sure the instance contains the current easing values
-          instance.easing.set(easingUID, values);
+          instanceEasing.set(easingUID, values);
         }
 
         // On instance reactivation we want the easing to just be at it's end value
@@ -217,7 +219,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
               const timePassed =
                 (currentTime - easingValues.startTime) / duration;
               // This is a triangle wave for an input
-              timeValue = abs((timePassed / 2.0) % 1 - 0.5) * 2.0;
+              timeValue = abs(((timePassed / 2.0) % 1) - 0.5) * 2.0;
               break;
 
             // No loop means just linear time

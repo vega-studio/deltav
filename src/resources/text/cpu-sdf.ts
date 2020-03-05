@@ -96,7 +96,7 @@ function normalizedDistanceField(
 
     for (let y = 0, yMax = col.length; y < yMax; ++y) {
       distance = distanceBuffer[x][y];
-      distanceBuffer[x][y] = distance / maxDistance * 255 * sign;
+      distanceBuffer[x][y] = (distance / maxDistance) * 255 * sign;
     }
   }
 

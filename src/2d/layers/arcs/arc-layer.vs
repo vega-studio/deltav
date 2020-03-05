@@ -13,7 +13,7 @@ void main() {
   float endAngle = angle.y + angleOffset;
   float widthStart = thickness.x;
   float widthEnd = thickness.y;
-  // Destructure threejs's bug with the position requirement
+  // Destructure vertex attribute
   float normal = vertex.x;
   float interpolationTime = vertex.y;
   float interpolationIncrement = 1.0 / vertex.z;

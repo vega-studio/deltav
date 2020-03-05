@@ -78,22 +78,22 @@ export function isUniformFloat(
 export type MaterialUniformValue<T> = T extends MaterialUniformType.FLOAT
   ? number
   : T extends MaterialUniformType.VEC2
-    ? Vec2
-    : T extends MaterialUniformType.VEC3
-      ? Vec3
-      : T extends MaterialUniformType.VEC4
-        ? Vec4
-        : T extends MaterialUniformType.VEC4_ARRAY
-          ? Vec4[]
-          : T extends MaterialUniformType.MATRIX3x3
-            ? Mat3x3
-            : T extends MaterialUniformType.MATRIX4x4
-              ? Mat4x4
-              : T extends MaterialUniformType.TEXTURE
-                ? Texture
-                : T extends MaterialUniformType.FLOAT_ARRAY
-                  ? (number[] | Float32Array)
-                  : number;
+  ? Vec2
+  : T extends MaterialUniformType.VEC3
+  ? Vec3
+  : T extends MaterialUniformType.VEC4
+  ? Vec4
+  : T extends MaterialUniformType.VEC4_ARRAY
+  ? Vec4[]
+  : T extends MaterialUniformType.MATRIX3x3
+  ? Mat3x3
+  : T extends MaterialUniformType.MATRIX4x4
+  ? Mat4x4
+  : T extends MaterialUniformType.TEXTURE
+  ? Texture
+  : T extends MaterialUniformType.FLOAT_ARRAY
+  ? number[] | Float32Array
+  : number;
 
 /**
  * Defines a uniform applied to a material
@@ -116,7 +116,22 @@ export interface IMaterialUniform<T extends MaterialUniformType> {
   >;
 }
 
+/** The GL Context which will be either WebGL1 or WebGL2 */
 export type GLContext = WebGLRenderingContext | WebGL2RenderingContext;
+/**
+ * There are now two types of Canvas Element that should be considered. So we harmonize those two into a single type
+ * for whenever a canvas of any sort is needed.
+ */
+export type CanvasElement = HTMLCanvasElement | OffscreenCanvas;
+
+/**
+ * Typeguards to see if the canvas is specifically an offscreen canvas or not.
+ */
+export function isOffscreenCanvas(
+  canvas: CanvasElement
+): canvas is OffscreenCanvas {
+  return canvas instanceof OffscreenCanvas;
+}
 
 /**
  * This defines the extensions the framework works with

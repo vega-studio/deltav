@@ -52,7 +52,7 @@ export class InstanceAttributePackingBufferManager<
   /** This is the number of instances the buffer currently supports */
   private maxInstancedCount: number = 1000;
 
-  // These are the only Three objects that must be monitored for disposal
+  // These are the only GL objects that must be monitored for disposal
   private geometry?: Geometry;
   private material?: Material;
   private model?: Model;
@@ -108,7 +108,7 @@ export class InstanceAttributePackingBufferManager<
   private doAddWithRegistration(instance: T) {
     // We need to find out how an instance interacts with the attributes, so we will
     // loop through the instances, call their updates and get feedback
-    this.layer.instanceAttributes.forEach(attribute => {
+    this.layer.shaderIOInfo.instanceAttributes.forEach(attribute => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
       // Activate monitoring of ids, this also resets the monitor's list
@@ -124,7 +124,7 @@ export class InstanceAttributePackingBufferManager<
 
       // If this is the active attribute, then we track the property id that modifies it
       // for handling internal instance management.
-      if (attribute === this.layer.activeAttribute) {
+      if (attribute === this.layer.shaderIOInfo.activeAttribute) {
         this.activePropertyId = propertyIdsForAttribute[0];
       }
     });
@@ -185,10 +185,13 @@ export class InstanceAttributePackingBufferManager<
       );
 
       if (this.model) {
-        this.model.vertexDrawRange = [0, this.layer.instanceVertexCount];
+        this.model.vertexDrawRange = [
+          0,
+          this.layer.shaderIOInfo.instanceVertexCount
+        ];
         this.model.drawInstances = this.currentInstancedCount;
 
-        if (this.layer.instanceVertexCount === 0) {
+        if (this.layer.shaderIOInfo.instanceVertexCount === 0) {
           this.model.vertexDrawRange[1] = this.model.drawInstances;
         }
       }
@@ -294,6 +297,9 @@ export class InstanceAttributePackingBufferManager<
    * The individual properties are then packed into each of these blocks.
    */
   private resizeBuffer() {
+    // Get the shader io information from the layer to reduce deep references
+    const shaderIOInfo = this.layer.shaderIOInfo;
+    // This stores how much the buffer will be able to regrow
     let growth = 0;
     // Each attribute will generate lists of new buffer locations after being created or expanded
     const attributeToNewBufferLocations = new Map<
@@ -339,7 +345,7 @@ export class InstanceAttributePackingBufferManager<
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
       // These are static non-dynamic buffers for the instance.
-      for (const attribute of this.layer.vertexAttributes) {
+      for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
@@ -362,11 +368,11 @@ export class InstanceAttributePackingBufferManager<
       this.blockSubAttributesLookup = blockSubAttributesLookup;
 
       for (
-        let i = 0, iMax = this.layer.instanceAttributes.length;
+        let i = 0, iMax = shaderIOInfo.instanceAttributes.length;
         i < iMax;
         ++i
       ) {
-        const attribute = this.layer.instanceAttributes[i];
+        const attribute = shaderIOInfo.instanceAttributes[i];
         const block = attribute.block || 0;
         let blockSize = blockSizes.get(block) || 0;
         // Determine the bigger of the block sizes (incoming attribute or previously checked attribute)
@@ -406,7 +412,7 @@ export class InstanceAttributePackingBufferManager<
           console.warn(
             "Instance Attribute Packing Error: The system tried to build an attribute with a size of zero.",
             "These are the attributes used:",
-            this.layer.instanceAttributes,
+            shaderIOInfo.instanceAttributes,
             "These are the block sizes calculated",
             blockSizes,
             "This is the block to attribute lookup generated",
@@ -444,14 +450,16 @@ export class InstanceAttributePackingBufferManager<
             const allLocations = this.allBufferLocations[attribute.name] || [];
             this.allBufferLocations[attribute.name] = allLocations;
 
-            const internalAttribute: IInstanceAttributeInternal<
-              T
-            > = Object.assign({}, attribute, {
-              uid: block,
-              packUID: blockAttributeUID,
-              bufferAttribute,
-              size: blockSize
-            });
+            const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
+              {},
+              attribute,
+              {
+                uid: block,
+                packUID: blockAttributeUID,
+                bufferAttribute,
+                size: blockSize
+              }
+            );
 
             const startAttributeIndex = attribute.blockIndex || 0;
             const attributeSize = attribute.size || 1;
@@ -490,7 +498,7 @@ export class InstanceAttributePackingBufferManager<
           console.warn(
             "Instance Attribute Packing Buffer Error: Somehow there are no attributes associated with a block.",
             "These are the attributes used:",
-            this.layer.instanceAttributes,
+            shaderIOInfo.instanceAttributes,
             "These are the block sizes calculated",
             blockSizes,
             "This is the block to attribute lookup generated",
@@ -503,19 +511,17 @@ export class InstanceAttributePackingBufferManager<
       this.geometry.maxInstancedCount = 0;
       // This is the material that is generated for the layer that utilizes all of the generated and
       // Injected shader IO and shader fragments
-      this.material = this.layer.material.clone();
+      this.material = shaderIOInfo.material.clone();
 
       // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
       // We can keep uniforms consistent across all Instances
-      for (let i = 0, end = this.layer.uniforms.length; i < end; ++i) {
-        const uniform = this.layer.uniforms[i];
+      for (let i = 0, end = shaderIOInfo.uniforms.length; i < end; ++i) {
+        const uniform = shaderIOInfo.uniforms[i];
         uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
       }
     } else {
       debug(
-        `Info: Vertex packing buffer is being resized for layer ${
-          this.layer.id
-        }`
+        `Info: Vertex packing buffer is being resized for layer ${this.layer.id}`
       );
       // If the geometry is already created, then we will expand each instanced attribute to the next growth
       // level and generate the new buffer locations based on the expansion
@@ -525,7 +531,7 @@ export class InstanceAttributePackingBufferManager<
       const previousInstanceAmount = this.maxInstancedCount;
 
       // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
-      for (const attribute of this.layer.vertexAttributes) {
+      for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
@@ -590,13 +596,15 @@ export class InstanceAttributePackingBufferManager<
                 this.allBufferLocations[subAttribute.name] || [];
               this.allBufferLocations[subAttribute.name] = allLocations;
 
-              const internalAttribute: IInstanceAttributeInternal<
-                T
-              > = Object.assign({}, subAttribute, {
-                uid: uid(),
-                packUID: attribute.packUID,
-                bufferAttribute
-              });
+              const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
+                {},
+                subAttribute,
+                {
+                  uid: uid(),
+                  packUID: attribute.packUID,
+                  bufferAttribute
+                }
+              );
 
               const startAttributeIndex = subAttribute.blockIndex || 0;
               const attributeSize = subAttribute.size || 1;
@@ -644,12 +652,12 @@ export class InstanceAttributePackingBufferManager<
     }
 
     // Ensure material is defined
-    this.material = this.material || this.layer.material.clone();
+    this.material = this.material || this.layer.shaderIOInfo.material.clone();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.geometry,
       this.material,
-      this.layer.model.drawMode
+      this.layer.shaderIOInfo.model.drawMode
     );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
@@ -804,9 +812,7 @@ export class InstanceAttributePackingBufferManager<
                       `${id}: A child attribute does not have a buffer location available. Error count: ${count}`
                     );
                     console.warn(
-                      `Parent Attribute: ${attribute.name} Child Attribute: ${
-                        childAttribute.name
-                      }`
+                      `Parent Attribute: ${attribute.name} Child Attribute: ${childAttribute.name}`
                     );
                   }
                 );

@@ -1,12 +1,12 @@
 import { Instance } from "../../instance-provider/instance";
 import { ResourceRouter } from "../../resources";
 import {
-  IInstanceAttribute,
   INonePickingMetrics,
   ISinglePickingMetrics,
   LayerBufferType,
   PickType
 } from "../../types";
+import { ILayerShaderIOInfo } from "../layer";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
@@ -30,12 +30,8 @@ export type DiffLookup<T extends Instance> = DiffHandler<T>[];
  * uniform changes. We don't use a Layer as a target explicitly to avoid circular/hard dependencies
  */
 export interface IInstanceDiffManagerTarget<T extends Instance> {
-  /** This is the attribute for the target that represents the _active injected value */
-  activeAttribute: IInstanceAttribute<T>;
-  /** This is used by the automated easing system and is the easing Ids used by the layer for given attributes */
-  easingId: { [key: string]: number };
-  /** This is all of the instance attributes applied to the target */
-  instanceAttributes: IInstanceAttribute<T>[];
+  /** Contains the shader IO information available in the target */
+  shaderIOInfo: ILayerShaderIOInfo<T>;
   /** This is the picking metrics for how Instances are picked with the mouse */
   picking: ISinglePickingMetrics<T> | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
@@ -44,6 +40,29 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
   bufferManager: BufferManagerBase<T, IBufferLocation>;
   /** This is the buffering strategy being used */
   bufferType: LayerBufferType;
+
+  /**
+   * This is a hook for the layer to respond to an instance being added via the diff manager. This is a simple
+   * opportunity to set some expectations of the instance and tie it directly to the layer it is processing under.
+   *
+   * For example: the primary case this arose was from instances needing the easing id mapping to allow for retrieval
+   * of the instance's easing information for a given layer association.
+   *
+   * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
+   * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
+   */
+  onDiffManagerAdd?(instance: T): void;
+
+  /**
+   * This is an opportunity to clean up any instance's association with the layer it was originally a part of.
+   *
+   * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
+   * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
+   *
+   * EXTRA WARNING: You better make sure you instantiate this if you instantiated onDiffManagerAdd so you can clean out
+   * any bad memory allocation choices you made.
+   */
+  onDiffManagerRemove?(instance: T): void;
 }
 
 /**

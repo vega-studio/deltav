@@ -23,7 +23,10 @@ export interface IEdgeInstanceOptions extends IInstanceOptions {
 }
 
 export class EdgeInstance extends Instance {
-  @observable control: Vec2[] = [[0, 0], [0, 0]];
+  @observable control: Vec2[] = [
+    [0, 0],
+    [0, 0]
+  ];
   @observable depth: number = 0;
   @observable end: Vec2 = [0, 0];
   @observable endColor: Vec4 = [1.0, 1.0, 1.0, 1.0];

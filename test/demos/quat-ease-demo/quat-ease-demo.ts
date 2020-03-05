@@ -151,7 +151,7 @@ export class QuatEaseDemo extends BaseDemo {
       cameras: {
         xz: new Camera2D(),
         perspective: Camera.makePerspective({
-          fov: 60 * Math.PI / 180,
+          fov: (60 * Math.PI) / 180,
           far: 100000
         })
       },

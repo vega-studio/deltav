@@ -1,7 +1,6 @@
 import { Instance } from "../../../instance-provider/instance";
-import { InstanceDiff } from "../../../instance-provider/instance-provider";
 import { Mat4x4, Vec } from "../../../math";
-import { IInstanceAttributeInternal } from "../../../types";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import {
   IBufferLocation,
@@ -72,7 +71,10 @@ export class InstanceAttributeDiffProcessor<
 
       if (isBufferLocationGroup(newBufferLocations)) {
         instance.active = true;
-        instance.easingId = manager.layer.easingId;
+
+        if (manager.layer.onDiffManagerAdd) {
+          manager.layer.onDiffManagerAdd(instance);
+        }
 
         manager.updateInstance(
           manager.layer,
@@ -114,8 +116,12 @@ export class InstanceAttributeDiffProcessor<
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
-      // Remove the easing information the instance gained from being apart of the layer
-      instance.clearEasing();
+
+      // Execute the remove hook for the instance on behalf of the layer
+      if (manager.layer.onDiffManagerRemove) {
+        manager.layer.onDiffManagerRemove(instance);
+      }
+
       // We do one last update on the instance to update to it's deactivated state
       manager.updateInstance(manager.layer, instance, EMPTY, bufferLocations);
       // Unlink the instance from the uniform cluster

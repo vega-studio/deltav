@@ -1,5 +1,6 @@
-import { Instance, InstanceDiff } from "../../../instance-provider";
+import { Instance } from "../../../instance-provider";
 import { Vec4 } from "../../../math/vector";
+import { InstanceDiff } from "../../../types";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 import {
@@ -34,7 +35,11 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       if (isUniformBufferLocation(uniforms)) {
         instance.active = true;
-        instance.easingId = manager.layer.easingId;
+
+        if (manager.layer.onDiffManagerAdd) {
+          manager.layer.onDiffManagerAdd(instance);
+        }
+
         manager.updateInstance(manager.layer, instance, uniforms);
       }
     }
@@ -70,8 +75,12 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
     if (uniformCluster) {
       // We deactivate the instance so it does not render anymore
       instance.active = false;
-      // Remove the easing information the instance gained from being apart of the layer
-      instance.clearEasing();
+
+      // Execute the remove hook for the instance on behalf of the layer
+      if (manager.layer.onDiffManagerRemove) {
+        manager.layer.onDiffManagerRemove(instance);
+      }
+
       // We do one last update on the instance to update to it's deactivated state
       manager.updateInstance(manager.layer, instance, uniformCluster);
       // Unlink the instance from the uniform cluster
@@ -98,8 +107,12 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       // Loop through the instance attributes and update the uniform cluster with the values
       // Calculated for the instance
-      for (let i = 0, end = layer.instanceAttributes.length; i < end; ++i) {
-        instanceUniform = layer.instanceAttributes[i];
+      for (
+        let i = 0, end = layer.shaderIOInfo.instanceAttributes.length;
+        i < end;
+        ++i
+      ) {
+        instanceUniform = layer.shaderIOInfo.instanceAttributes[i];
         value = instanceUniform.update(instance);
         block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
         start = instanceUniform.blockIndex;
@@ -123,7 +136,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
       // Point to updating any other uniform
-      instanceUniform = layer.activeAttribute;
+      instanceUniform = layer.shaderIOInfo.activeAttribute;
       value = instanceUniform.update(instance);
       block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
       start = instanceUniform.blockIndex;

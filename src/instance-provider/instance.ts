@@ -36,7 +36,7 @@ export class Instance implements IdentifiableById {
    */
   easingId: { [key: string]: number } | undefined;
   /** This is an internal easing object to track properties for automated easing */
-  private _easing = new Map<number, IEasingProps>();
+  easing?: Map<number, IEasingProps>;
   /** Internal, non-changeable id */
   private _id: string;
   /** This is the observer of the Instance's observable properties */
@@ -72,27 +72,12 @@ export class Instance implements IdentifiableById {
 
     // If we're switching observers, then we have to dump out assumptions made within other observers
     if (oldObserver && oldObserver !== val) {
-      this._easing.clear();
+      if (this.easing) this.easing.clear();
       oldObserver.remove(this);
     }
 
     // Apply the new observer as the current observer
     this._observer = val;
-  }
-
-  /**
-   * This clears any lingering easing information that may have been registered with the instance.
-   */
-  clearEasing() {
-    this._easing.clear();
-    delete this.easingId;
-  }
-
-  /**
-   * Retrieves easing properties for the observables that are associated with easing.
-   */
-  get easing() {
-    return this._easing;
   }
 
   /**
@@ -122,8 +107,8 @@ export class Instance implements IdentifiableById {
       // _{base name}_end format.
       const easingId = this.easingId[`_${attributeName}_end`];
 
-      if (easingId) {
-        const easing = this._easing.get(easingId);
+      if (easingId && this.easing) {
+        const easing = this.easing.get(easingId);
 
         if (easing instanceof EasingProps) {
           return easing;

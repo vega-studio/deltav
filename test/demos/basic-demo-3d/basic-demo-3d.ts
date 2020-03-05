@@ -88,7 +88,7 @@ export class BasicDemo3D extends BaseDemo {
       cameras: {
         xz: new Camera2D(),
         perspective: Camera.makePerspective({
-          fov: 60 * Math.PI / 180,
+          fov: (60 * Math.PI) / 180,
           far: 100000
         })
       },
@@ -217,7 +217,7 @@ export class BasicDemo3D extends BaseDemo {
 
   makeAxis(showXYZ?: boolean) {
     const tickColor: Vec4 = [1, 1, 1, 1];
-    const tickLength = DATA_SIZE / 128 * 25;
+    const tickLength = (DATA_SIZE / 128) * 25;
 
     for (let i = 0; i < DATA_SIZE / 10; ++i) {
       this.providers.ticks.add(
@@ -305,8 +305,8 @@ export class BasicDemo3D extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    const midX = DATA_SIZE / 2 * 10;
-    const midZ = DATA_SIZE / 2 * 10;
+    const midX = (DATA_SIZE / 2) * 10;
+    const midZ = (DATA_SIZE / 2) * 10;
 
     // Set the camera initial orientation
     this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
@@ -388,7 +388,13 @@ export class BasicDemo3D extends BaseDemo {
         width: DATA_SIZE,
         height: DATA_SIZE,
         blendPasses: 5,
-        octaves: [[16, 64], [128, 16], [128, 128], [256, 256], [512, 512]],
+        octaves: [
+          [16, 64],
+          [128, 16],
+          [128, 128],
+          [256, 256],
+          [512, 512]
+        ],
         valueRange: [0, 1]
       });
 

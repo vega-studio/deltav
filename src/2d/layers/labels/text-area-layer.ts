@@ -3,11 +3,11 @@ import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import {
-  createLayer,
   ILayerConstructionClass,
   LayerInitializer
 } from "../../../surface/layer";
 import { InstanceDiffType, newLineRegEx } from "../../../types";
+import { createLayer } from "../../../util/create-util";
 import { AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { BorderInstance } from "./border-instance";

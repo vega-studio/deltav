@@ -4,12 +4,11 @@ import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { KernedLayout } from "../../../resources/text/font-map";
 import {
-  createLayer,
   ILayerConstructionClass,
   LayerInitializer
 } from "../../../surface/layer";
 import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types";
-import { isDefined } from "../../../util";
+import { createLayer, isDefined } from "../../../util";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { GlyphInstance } from "./glyph-instance";

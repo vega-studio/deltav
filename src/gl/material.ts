@@ -31,8 +31,8 @@ export class Material {
   /** Sets the cull mode of GL for the polygons */
   culling: GLSettings.Material.CullSide = GLSettings.Material.CullSide.CCW;
   /** The comparator used to classify when a fragment will be rendered vs discarded when tested against the depth buffer */
-  depthFunc: GLSettings.Material.DepthFunctions = GLSettings.Material
-    .DepthFunctions.LESS_OR_EQUAL;
+  depthFunc: GLSettings.Material.DepthFunctions =
+    GLSettings.Material.DepthFunctions.LESS_OR_EQUAL;
   /**
    * Enable / disable depth test (determines if the fragment depth is compared to the depth buffer before writing). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable

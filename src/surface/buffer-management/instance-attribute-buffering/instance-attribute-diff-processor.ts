@@ -72,8 +72,8 @@ export class InstanceAttributeDiffProcessor<
       if (isBufferLocationGroup(newBufferLocations)) {
         instance.active = true;
 
-        if (manager.layer.onDiffManagerAdd) {
-          manager.layer.onDiffManagerAdd(instance);
+        if (manager.layer.onDiffAdd) {
+          manager.layer.onDiffAdd(instance);
         }
 
         manager.updateInstance(
@@ -118,8 +118,8 @@ export class InstanceAttributeDiffProcessor<
       instance.active = false;
 
       // Execute the remove hook for the instance on behalf of the layer
-      if (manager.layer.onDiffManagerRemove) {
-        manager.layer.onDiffManagerRemove(instance);
+      if (manager.layer.onDiffRemove) {
+        manager.layer.onDiffRemove(instance);
       }
 
       // We do one last update on the instance to update to it's deactivated state

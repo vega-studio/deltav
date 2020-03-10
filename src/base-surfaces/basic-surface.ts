@@ -461,8 +461,6 @@ export class BasicSurface<
     // Set our ready marker so contructors of the surface have an easy async pattern
     this.ready = resolver.promise;
     // Initialize this surface
-    this.init();
-    this.init();
     await this.init();
     // Resolve anything awaiting the ready marker for the basic surface. This is
     // primarily for the contructor to have an easy async pattern.

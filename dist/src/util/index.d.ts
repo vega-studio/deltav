@@ -14,3 +14,4 @@ export * from "./shallow-compare";
 export * from "./uid";
 export * from "./wait";
 export * from "./create-util";
+export * from "./wait-for-valid-dimensions";

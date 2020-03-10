@@ -1,3 +1,9 @@
+## 1.37.0
+
+## Added
+
+- [`ADDED`]: Made waiting for valid dimensions an available utility. This provides a pattern for improving re-entrant single executing methods that need valid dimensions of an HTML Element be available before continuing.
+
 ## 1.36.0
 
 ## Added

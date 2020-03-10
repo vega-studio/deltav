@@ -18,7 +18,7 @@ export declare class Projection3D extends BaseProjection<any> {
     /**
      * Maps a coordinate found within the world to a relative coordinate within the screen space.
      */
-    worldToScreen(point: Vec3, out?: Vec2): [number, number];
+    worldToScreen(point: Vec3, out?: Vec2): Vec2;
     /**
      * Maps a coordinate relative to the view to the pixel's location within the 3D world. Remember that a camera with
      * a view creates a frustum to work within the 3D world. This frustum has a near clipping plane and a far clipping
@@ -30,9 +30,9 @@ export declare class Projection3D extends BaseProjection<any> {
      * To make a ray from this point simply: const ray = rayFromPoints(camera.position, screenToWorld([x, y]))
      * To get a point located a distance from the camera: rayToLocation(ray, distance);
      */
-    viewToWorld(point: Vec2, out?: Vec3): [number, number, number];
+    viewToWorld(point: Vec2, out?: Vec3): Vec3;
     /**
      * Maps a coordinate found within the world to a relative coordinate within the view's viewport.
      */
-    worldToView(point: Vec3, out?: Vec2): [number, number];
+    worldToView(point: Vec3, out?: Vec2): Vec2;
 }

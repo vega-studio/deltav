@@ -1,4 +1,5 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider";
+import { Vec3 } from "../../../math";
 import { Transform } from "../../scene-graph";
 export interface IInstance3DOptions extends IInstanceOptions {
     /** The transform object that will manage this instance */
@@ -10,14 +11,15 @@ export interface IInstance3DOptions extends IInstanceOptions {
 export declare class Instance3D extends Instance {
     /** This is the 3D transform that will place this object within the 3D world. */
     private _transform;
-    transform: Transform;
+    get transform(): Transform;
+    set transform(val: Transform);
     /** World position of the Instance */
-    readonly position: [number, number, number];
+    get position(): Vec3;
     private _position;
     /** Rotation of the Instance */
-    readonly rotation: [number, number, number, number];
+    get rotation(): import("../../../math").Vec4;
     private _rotation;
-    readonly scale: [number, number, number];
+    get scale(): Vec3;
     private _scale;
     constructor(options: IInstance3DOptions);
 }

@@ -88,7 +88,7 @@ export interface IBasicCamera2DControllerOptions {
  */
 export declare class BasicCamera2DController extends SimpleEventHandler {
     /** Unique identifier of this controller */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /**
      * If total bounds of worldbounds + screenpadding is smaller
@@ -96,7 +96,7 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
      */
     bounds?: ICameraBoundsOptions;
     /** This is the camera that this controller will manipulate */
-    readonly camera: Camera2D;
+    get camera(): Camera2D;
     private _camera;
     /** When this is set to true, the start view can be targetted even when behind other views */
     ignoreCoverViews?: boolean;
@@ -238,11 +238,11 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
     /**
      * Retrieves the current pan of the controlled camera
      */
-    readonly pan: Vec3;
+    get pan(): Vec3;
     /**
      * Retrieves the current scale of the camera
      */
-    readonly scale: Vec3;
+    get scale(): Vec3;
     /**
      * Sets bounds applicable to the supplied view.
      * If no view is supplied, it uses the first in the startViews array

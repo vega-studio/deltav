@@ -18,7 +18,7 @@ export declare class LayerMouseEvents extends SimpleEventHandler {
     /** This tracks which views have touches over them */
     isTouchOver: Map<number, Set<View<IViewProps>>>;
     /** This is the surface this manager is aiding with broadcasting events to layers */
-    readonly scenes: LayerScene[];
+    get scenes(): LayerScene[];
     constructor();
     getSceneViewsUnderMouse(e: IEventInteraction): View<IViewProps>[];
     handleClick(e: IMouseInteraction): void;

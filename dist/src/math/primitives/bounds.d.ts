@@ -29,12 +29,12 @@ export declare class Bounds<T> {
     width: number;
     height: number;
     d?: T;
-    readonly area: number;
-    readonly bottom: number;
-    readonly left: number;
-    readonly mid: Vec2;
-    readonly right: number;
-    readonly top: number;
+    get area(): number;
+    get bottom(): number;
+    get left(): number;
+    get mid(): Vec2;
+    get right(): number;
+    get top(): number;
     static emptyBounds<T>(): Bounds<T>;
     /**
      * Create a new instance
@@ -87,7 +87,7 @@ export declare class Bounds<T> {
     /**
      * Top left position of the bounds
      */
-    readonly location: Vec2;
+    get location(): Vec2;
     /**
      * Easy readout of this Bounds object.
      */

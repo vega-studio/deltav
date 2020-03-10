@@ -30,7 +30,8 @@ export declare class AtlasResourceManager extends BaseResourceManager<IAtlasReso
      */
     private requestLookup;
     /** Override the get and set of the webgl renderer so we can also apply it to the atlas manager object */
-    webGLRenderer: WebGLRenderer | undefined;
+    get webGLRenderer(): WebGLRenderer | undefined;
+    set webGLRenderer(val: WebGLRenderer | undefined);
     private _webGLRenderer?;
     constructor(options?: IAtlasResourceManagerOptions);
     /**

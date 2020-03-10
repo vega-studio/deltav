@@ -62,7 +62,7 @@ export declare function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
  */
 export declare function cross1(_left: Vec1Compat, _right: Vec1Compat, out?: Vec1Compat): Vec1;
 export declare function divide1(top: Vec1Compat, bottom: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function empty1(out?: Vec1): [number];
+export declare function empty1(out?: Vec1): Vec1;
 export declare function flatten1(list: Vec1Compat[], out?: number[]): number[];
 export declare function floor1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
 export declare function inverse1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
@@ -90,7 +90,7 @@ export declare function cross2(_left: Vec2Compat, _right: Vec2Compat, out?: Vec2
 export declare function compare2(left: Vec2Compat, right: Vec2Compat): boolean;
 export declare function fuzzyCompare2(left: Vec2Compat, right: Vec2Compat, epsilon: number): boolean;
 export declare function divide2(top: Vec2Compat, bottom: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function empty2(out?: Vec2): [number, number];
+export declare function empty2(out?: Vec2): Vec2;
 export declare function flatten2(list: Vec2Compat[], out?: number[]): number[];
 export declare function floor2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function inverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
@@ -112,7 +112,7 @@ export declare function compare3(left: Vec3Compat, right: Vec3Compat): boolean;
 export declare function fuzzyCompare3(left: Vec3Compat, right: Vec3Compat, epsilon: number): boolean;
 export declare function cross3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function divide3(top: Vec3Compat, bottom: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function empty3(out?: Vec3): [number, number, number];
+export declare function empty3(out?: Vec3): Vec3;
 export declare function flatten3(list: Vec3Compat[], out?: number[]): number[];
 export declare function floor3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function inverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
@@ -130,22 +130,22 @@ export declare function vec3(values: number[] | number, ...args: (number | numbe
  * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
  * the forward vector)
  */
-export declare function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): [number, number, number];
+export declare function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export declare function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): [number, number, number];
+export declare function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export declare function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): [number, number, number];
+export declare function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is straight down from the provided reference vectors (90 degress declined from
  * the forward vector)
  */
-export declare function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): [number, number, number];
+export declare function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function apply4(v: Vec4Compat | undefined, v0: number, v1: number, v2: number, v3: number): Vec4;
 export declare function add4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
 export declare function add4by3(left: Vec4, right: Vec3Compat, out?: Vec4Compat): Vec4;
@@ -159,7 +159,7 @@ export declare function fuzzyCompare4(left: Vec4Compat, right: Vec4Compat, epsil
  */
 export declare function cross4(_left: Vec4, _right: Vec4, out?: Vec4Compat): Vec4;
 export declare function divide4(top: Vec4Compat, bottom: Vec4Compat, out?: Vec4Compat): Vec4;
-export declare function empty4(out?: Vec4): [number, number, number, number];
+export declare function empty4(out?: Vec4): Vec4;
 export declare function flatten4(list: Vec4Compat[], out?: number[]): number[];
 export declare function floor4(vec: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function inverse4(vec: Vec4, out?: Vec4Compat): Vec4;
@@ -173,8 +173,8 @@ export declare function max4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Comp
 export declare function min4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function normalize4(left: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function vec4(values: number[] | number, ...args: (number | number[])[]): Vec4;
-export declare function color4FromHex3(hex: number, out?: Vec4): [number, number, number, number];
-export declare function color4FromHex4(hex: number, out?: Vec4): [number, number, number, number];
+export declare function color4FromHex3(hex: number, out?: Vec4): Vec4;
+export declare function color4FromHex4(hex: number, out?: Vec4): Vec4;
 export declare function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4;
 export declare type VecMethods<T extends Vec> = {
     add(left: T, right: T, out?: T): T;

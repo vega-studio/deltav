@@ -4,9 +4,11 @@ declare type Command = (t: number) => void;
  */
 export declare function nextFrame(command?: Command): Promise<number>;
 /**
- * Method that queues up a command to be executed on the upcoming animation frame
+ * Method that queues up a command to be executed on the upcoming animation frame.
+ *
+ * If a time interval is specified, the command will not execute until AT LEAST the specified amount of time has lapsed.
  */
-export declare function onFrame(command?: Command): Promise<number>;
+export declare function onFrame(command?: Command, interval?: number): Promise<number>;
 /**
  * Method that queues a command to fire every animation loop. Does not stop until the returned id for the command is
  * called with stopAnimationLoop(id).

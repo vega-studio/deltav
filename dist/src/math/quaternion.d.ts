@@ -82,7 +82,7 @@ export declare function toEulerXYZfromOrderedEuler(euler: Vec3, order: EulerOrde
 /**
  * Produces a XYZ Euler angle from the provided Quaternion.
  */
-export declare function toEulerFromQuat(q: Quaternion, out?: EulerRotation): [number, number, number];
+export declare function toEulerFromQuat(q: Quaternion, out?: EulerRotation): Vec3;
 /**
  * Converts a quaternion to an ordered Euler angle.
  *

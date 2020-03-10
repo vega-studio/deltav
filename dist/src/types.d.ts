@@ -193,7 +193,7 @@ export interface IVertexAttribute {
     update(vertex: number): ShaderIOValue;
 }
 export interface IVertexAttributeInternal extends IVertexAttribute {
-    /** This is the actual attribute generated internally for the ThreeJS interfacing */
+    /** This is the actual attribute generated internally for the GL interfacing */
     materialAttribute: Attribute | null;
 }
 export interface IInstanceAttribute<T extends Instance> {
@@ -744,4 +744,58 @@ export declare enum LayerBufferType {
      * get dereferenced in the shader.
      */
     INSTANCE_ATTRIBUTE_PACKING = 2
+}
+/**
+ * This is an entry within the change list of the provider. It represents the type of change
+ * and stores the property id's of the properties on the instance that have changed.
+ */
+export declare type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {
+    [key: number]: number;
+}];
+/**
+ * Bare minimum required features a provider must provide to be the data for the layer.
+ */
+export interface IInstanceProvider<T extends Instance> {
+    /**
+     * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
+     * so we use this to detect when multiple contexts have attempted use of this provider.
+     */
+    resolveContext: string;
+    /** A unique number making it easier to identify this object */
+    uid: number;
+    /** A list of changes to instances */
+    changeList: InstanceDiff<T>[];
+    /** Removes an instance from the list */
+    remove(instance: T): void;
+    /** Resolves the changes as consumed */
+    resolve(context: string): void;
+    /** Forces the provider to make a change list that ensures all elements are added */
+    sync(): void;
+}
+/**
+ * This is the types of strategies available for streaming in changes to the GPU.
+ */
+export declare enum StreamChangeStrategy {
+    /** This takes the changes as they are discovered  */
+    LINEAR = 0
+}
+/**
+ * This is a reference to pass into a layer which will provide insight into the layer's easing timing information so
+ * there can be better control and better informed decisions on the rendering of elements that animate on the GPU.
+ */
+export interface ILayerEasingManager {
+    /**
+     * This is an async method that resolves when the current batch or stream has completed it's easing animation in full.
+     */
+    complete(): Promise<void>;
+}
+/**
+ * This is a reference object that is populated with controllers and relevant exposed information regarding a layer.
+ */
+export interface ILayerRef {
+    /**
+     * The easing controller for the layer. This can be used to get precise timings for completion of easing animations
+     * and other easing metrics.
+     */
+    easing: ILayerEasingManager | null;
 }

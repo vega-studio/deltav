@@ -12,13 +12,9 @@ import {
   ViewInitializer
 } from "../surface";
 import { IPipeline, Lookup, Omit, Size, SurfaceErrorType } from "../types";
-import {
-  nextFrame,
-  onAnimationLoop,
-  PromiseResolver,
-  stopAnimationLoop
-} from "../util";
+import { onAnimationLoop, PromiseResolver, stopAnimationLoop } from "../util";
 import { Camera } from "../util/camera";
+import { waitForValidDimensions } from "../util/wait-for-valid-dimensions";
 
 /**
  * This gets all of the values of a Lookup
@@ -196,7 +192,7 @@ export class BasicSurface<
   /** This is the timer id for resize events. This is used to debounce resize events */
   private resizeTimer: number = 0;
   /** This is the context  */
-  private waitForSizeContext: number = 0;
+  private waitForSize = waitForValidDimensions();
 
   /** The cameras specified for this surface */
   cameras: U;
@@ -280,7 +276,7 @@ export class BasicSurface<
     // If the base is established, then this is initialized
     if (this.base) return;
     // We wait for the DOM container to establish a size we can work with
-    const valid = await this.waitForValidDimensions(this.options.container);
+    const valid = await this.waitForSize(this.options.container);
     // If the waiting process returns false it means we canceled the operation from overlapping calls into init()
     if (!valid) return;
     // Make the canvas context we wish to render into
@@ -577,57 +573,5 @@ export class BasicSurface<
     };
 
     return await this.base.pipeline(pipeline);
-  }
-
-  /**
-   * Sets up some polling to watch the container. Returns true if execution AFTER this method is still
-   * valid. Returns false if execution after the method should be halted.
-   */
-  private async waitForValidDimensions(container: HTMLElement) {
-    const waitForSizeId = ++this.waitForSizeContext;
-    const resolver = new PromiseResolver<boolean>();
-    let box = container.getBoundingClientRect();
-
-    // Check to ensure the box width and height is valid
-    if (box.width === 0 || box.height === 0) {
-      let observing = true;
-      const toWatch = {
-        attributes: true
-      };
-
-      const observer = new MutationObserver(mutationsList => {
-        if (!observing) return;
-
-        for (const mutation of mutationsList) {
-          if (mutation.type === "attributes") {
-            box = container.getBoundingClientRect();
-
-            if (box.width !== 0 && box.height !== 0) {
-              observer.disconnect();
-              observing = false;
-              resolver.resolve(waitForSizeId === this.waitForSizeContext);
-            }
-          }
-        }
-      });
-
-      observer.observe(container, toWatch);
-
-      // Give the system an additional way to check for a valid sizing if the observer fails
-      await nextFrame();
-      box = container.getBoundingClientRect();
-
-      if (observing && box.width !== 0 && box.height !== 0) {
-        observer.disconnect();
-        observing = false;
-        resolver.resolve(waitForSizeId === this.waitForSizeContext);
-      }
-    } else {
-      // Both calls awaiting a size must be async in order for this method to work
-      await nextFrame();
-      resolver.resolve(waitForSizeId === this.waitForSizeContext);
-    }
-
-    return await resolver.promise;
   }
 }

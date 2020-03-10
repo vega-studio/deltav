@@ -87,7 +87,7 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
     /** This is the timer id for resize events. This is used to debounce resize events */
     private resizeTimer;
     /** This is the context  */
-    private waitForSizeContext;
+    private waitForSize;
     /** The cameras specified for this surface */
     cameras: U;
     /** The surface we are implementing */
@@ -164,9 +164,4 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
      * Calls the pipeline callback to retrieve an updated pipeline for the surface
      */
     updatePipeline(): Promise<void>;
-    /**
-     * Sets up some polling to watch the container. Returns true if execution AFTER this method is still
-     * valid. Returns false if execution after the method should be halted.
-     */
-    private waitForValidDimensions;
 }

@@ -3,16 +3,13 @@ import { ResourceRouter } from "../../resources";
 import {
   INonePickingMetrics,
   ISinglePickingMetrics,
-  LayerBufferType,
-  PickType
+  LayerBufferType
 } from "../../types";
 import { ILayerShaderIOInfo } from "../layer";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
-import { InstanceAttributeColorDiffProcessor } from "./instance-attribute-buffering/instance-attribute-color-diff-processor";
 import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor";
-import { UniformColorDiffProcessor } from "./uniform-buffering/uniform-color-diff-processor";
 import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
 
 /** Signature of a method that handles a diff */
@@ -51,7 +48,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
    * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
    * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
    */
-  onDiffManagerAdd?(instance: T): void;
+  onDiffAdd?(instance: T): void;
 
   /**
    * This is an opportunity to clean up any instance's association with the layer it was originally a part of.
@@ -62,71 +59,34 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
    * EXTRA WARNING: You better make sure you instantiate this if you instantiated onDiffManagerAdd so you can clean out
    * any bad memory allocation choices you made.
    */
-  onDiffManagerRemove?(instance: T): void;
+  onDiffRemove?(instance: T): void;
 }
 
 /**
- * This class manages the process of taking the diffs of a layer and executing methods on those diffs to perform
- * updates to the uniforms that control those instances.
+ * This is a simple organizational class that generates a diff processor and provides a processing tuple that is used
+ * in processing the diffs.
  */
 export class InstanceDiffManager<T extends Instance> {
-  bufferManager: BufferManagerBase<T, IBufferLocation>;
   processor: BaseDiffProcessor<T>;
   processing: DiffLookup<T>;
-  layer: IInstanceDiffManagerTarget<T>;
-
-  constructor(
-    layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>
-  ) {
-    this.layer = layer;
-    this.bufferManager = bufferManager;
-  }
 
   /**
    * This returns the proper diff processor for handling diffs
    */
-  makeProcessor(): DiffLookup<T> {
+  makeProcessor(
+    layer: IInstanceDiffManagerTarget<T>,
+    bufferManager: BufferManagerBase<T, IBufferLocation>
+  ): DiffLookup<T> {
     // If this manager has already figured out which processor to use. Just return that processor.
     if (this.processing) return this.processing;
 
     if (
-      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
-      this.layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
+      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
+      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
     ) {
-      // Now we look at the state of the layer to determine the best diff processor strategy
-      if (this.layer.picking) {
-        if (this.layer.picking.type === PickType.SINGLE) {
-          this.processor = new InstanceAttributeColorDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
-        }
-      }
-
-      if (!this.processor) {
-        this.processor = new InstanceAttributeDiffProcessor(
-          this.layer,
-          this.bufferManager
-        );
-      }
+      this.processor = new InstanceAttributeDiffProcessor(layer, bufferManager);
     } else {
-      // Now we look at the state of the layer to determine the best diff processor strategy
-      if (this.layer.picking) {
-        if (this.layer.picking.type === PickType.SINGLE) {
-          this.processor = new UniformColorDiffProcessor(
-            this.layer,
-            this.bufferManager
-          );
-        }
-      }
-
-      if (!this.processor) {
-        this.processor = new UniformDiffProcessor(
-          this.layer,
-          this.bufferManager
-        );
-      }
+      this.processor = new UniformDiffProcessor(layer, bufferManager);
     }
 
     this.processing = [

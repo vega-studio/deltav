@@ -12,14 +12,7 @@ import {
   PickType
 } from "../types";
 import { mapGetWithDefault, mapInjectDefault } from "../util";
-import { UniformColorDiffProcessor } from "./buffer-management/uniform-buffering/uniform-color-diff-processor";
 import { ILayerProps, Layer } from "./layer";
-
-function isColorProcessor<T extends Instance>(
-  val: any
-): val is UniformColorDiffProcessor<T> {
-  return val && val.colorPicking;
-}
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
@@ -53,12 +46,8 @@ export class LayerInteractionHandler<
    * Retrieves the color picking instance determined for the procedure.
    */
   getColorPickInstance() {
-    if (
-      this.colorPicking &&
-      this.layer.diffManager &&
-      isColorProcessor<T>(this.layer.diffManager.processor)
-    ) {
-      return this.layer.diffManager.processor.colorPicking.uidToInstance.get(
+    if (this.colorPicking && this.layer.picking.type === PickType.SINGLE) {
+      return this.layer.uidToInstance.get(
         0xffffff - this.colorPicking.nearestColor
       );
     }

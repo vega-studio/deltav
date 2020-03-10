@@ -318,6 +318,11 @@ export class Layer<
     return this._uid;
   }
   private _uid: number = uid();
+  /**
+   * This maps a uid to the instance. This is only populated if it's needed for the processes the layer uses
+   * (such as color picking).
+   */
+  uidToInstance = new Map<number, T>();
   /** This is the view the layer is applied to. The system sets this, modifying will only cause sorrow. */
   view: View<IViewProps>;
   /** This flag indicates if the layer will be reconstructed from scratch next layer rendering cycle */
@@ -336,7 +341,7 @@ export class Layer<
    * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
    * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
    */
-  onDiffManagerAdd?(instance: T): void;
+  onDiffAdd?(instance: T): void;
 
   /**
    * This is an opportunity to clean up any instance's association with the layer it was originally a part of.
@@ -347,7 +352,7 @@ export class Layer<
    * EXTRA WARNING: You better make sure you instantiate this if you instantiated onDiffManagerAdd so you can clean out
    * any bad memory allocation choices you made.
    */
-  onDiffManagerRemove?(instance: T): void;
+  onDiffRemove?(instance: T): void;
 
   /**
    * Generates a reference object that can be used to retrieve layer specific metrics associated with the layer.
@@ -506,23 +511,8 @@ export class Layer<
       console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
     }
 
-    // See if there are any attributes that have  auto easing involved
-    const easing = (shaderIO.instanceAttributes || []).find(check =>
-      Boolean(check && check.easing)
-    );
-
-    // Establish the diff processing this layer needs to do based on the Easing IO present
-    // This will ensure there is not already some diff manager handling already established as a base layer's
-    // implementation.
-    if (easing) {
-      if (!this.onDiffManagerAdd) {
-        this.onDiffManagerAdd = this.handleDiffManagerAdd;
-      }
-
-      if (!this.onDiffManagerRemove) {
-        this.onDiffManagerRemove = this.handleDiffManagerRemove;
-      }
-    }
+    // Establish diff handlers based on the settings of the layer
+    this.updateDiffHandlers();
 
     // Establish initial ref needs
     if (this.props.ref) {
@@ -991,9 +981,55 @@ export class Layer<
   }
 
   /**
+   * This checks the state of the layer and determines how it should handle it's diff event handlers
+   */
+  updateDiffHandlers() {
+    // See if there are any attributes that have  auto easing involved
+    const easing = (this.shaderIOInfo.instanceAttributes || []).find(check =>
+      Boolean(check && check.easing)
+    );
+
+    // Establish the diff processing this layer needs to do based on the Easing IO present
+    // This will ensure there is not already some diff manager handling already established as a base layer's
+    // implementation.
+    if (easing) {
+      if (this.picking.type === PickType.SINGLE) {
+        this.onDiffAdd = this.handleDiffAddWithPickingAndEasing;
+        this.onDiffRemove = this.handleDiffRemoveWithPickingAndEasing;
+      } else {
+        this.onDiffAdd = this.handleDiffAddWithEasing;
+        this.onDiffRemove = this.handleDiffRemoveWithEasing;
+      }
+    } else {
+      if (this.picking.type === PickType.SINGLE) {
+        this.onDiffAdd = this.handleDiffAddWithPicking;
+        this.onDiffRemove = this.handleDiffRemoveWithPicking;
+      }
+    }
+  }
+
+  /**
    * This is the default implementation for onDiffManagerAdd that gets applied if easing is present in the layer's IO.
    */
-  private handleDiffManagerAdd(instance: T) {
+  private handleDiffAddWithEasing(instance: T) {
+    instance.easingId = this.easingId;
+  }
+
+  /**
+   * Handles diff manager add operations when the layer has picking enabled
+   */
+  private handleDiffAddWithPicking(instance: T) {
+    // Make sure the instance is mapped to it's UID
+    this.uidToInstance.set(instance.uid, instance);
+  }
+
+  /**
+   * Handles diff manager add operations when the layer has picking AND easing enabled
+   */
+  private handleDiffAddWithPickingAndEasing(instance: T) {
+    // Make sure the instance is mapped to it's UID
+    this.uidToInstance.set(instance.uid, instance);
+    // Make sure the instance has it's easing identifiers available for it's use within this layer
     instance.easingId = this.easingId;
   }
 
@@ -1001,7 +1037,26 @@ export class Layer<
    * This is the default implementation for onDiffManagerRemove that gets applied if easing is present in the layer's
    * IO
    */
-  private handleDiffManagerRemove(instance: T) {
+  private handleDiffRemoveWithEasing(instance: T) {
+    if (instance.easing) delete instance.easing;
+    delete instance.easingId;
+  }
+
+  /**
+   * Handles diff manager remove operations when the layer has picking enabled
+   */
+  private handleDiffRemoveWithPicking(instance: T) {
+    // Remove the instance from our identifier list to prevent memory zombies
+    this.uidToInstance.delete(instance.uid);
+  }
+
+  /**
+   * Handles diff manager remove operations when the layer has picking AND easing enabled
+   */
+  private handleDiffRemoveWithPickingAndEasing(instance: T) {
+    // Remove the instance from our identifier list to prevent memory zombies
+    this.uidToInstance.delete(instance.uid);
+    // Remove the reference to the easing identifiers to prevent memory zombies
     if (instance.easing) delete instance.easing;
     delete instance.easingId;
   }
@@ -1058,8 +1113,8 @@ export class Layer<
   setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>) {
     if (!this._bufferManager) {
       this._bufferManager = bufferManager;
-      this.diffManager = new InstanceDiffManager<T>(this, bufferManager);
-      this.diffManager.makeProcessor();
+      this.diffManager = new InstanceDiffManager<T>();
+      this.diffManager.makeProcessor(this, bufferManager);
     } else {
       console.warn(
         "You can not change a layer's buffer strategy once it has been instantiated."

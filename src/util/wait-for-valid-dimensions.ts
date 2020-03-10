@@ -50,7 +50,7 @@ export function waitForValidDimensions(container?: HTMLElement) {
   // should change. If we're waiting for a new container with the same context, then we should assume the others that
   // are waiting are no longer valid as only the most recent will resolve as a valid result (which, again, will be
   // against a new container)
-  const resolvers: PromiseResolver<boolean>[] = [];
+  let resolvers: PromiseResolver<boolean>[] = [];
 
   // This is the gate method that is used to await upon to receive a result from waiting for the dimensions.
   const gate: Function & { cancel: Function } = Object.assign(
@@ -128,6 +128,11 @@ export function waitForValidDimensions(container?: HTMLElement) {
         observer = void 0;
       }
 
+      if (result) {
+        resolvers.forEach(r => r.resolve(false));
+        resolvers = [];
+      }
+
       return result;
     },
 
@@ -136,6 +141,7 @@ export function waitForValidDimensions(container?: HTMLElement) {
     {
       cancel: () => {
         resolvers.forEach(r => r.resolve(false));
+        resolvers = [];
       }
     }
   );

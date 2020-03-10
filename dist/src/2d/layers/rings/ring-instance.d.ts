@@ -19,7 +19,7 @@ export declare class RingInstance extends Instance {
     thickness: number;
     center: Vec2;
     constructor(options: IRingInstanceOptions);
-    readonly width: number;
-    readonly height: number;
-    readonly innerRadius: number;
+    get width(): number;
+    get height(): number;
+    get innerRadius(): number;
 }

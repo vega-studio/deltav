@@ -6,7 +6,7 @@ import { Vec2, Vec2Compat } from "./vector";
  */
 export declare abstract class BaseProjection<T> {
     /** Provides a numerical UID for this object */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /** Allows for a sensical identifier to be applied to this projection. */
     id: string;
@@ -22,21 +22,21 @@ export declare abstract class BaseProjection<T> {
     /**
      * This projects a point to be relative to the rendering dimensions of the view.
      */
-    screenToRenderSpace(point: Vec2, out?: Vec2): [number, number];
+    screenToRenderSpace(point: Vec2, out?: Vec2): Vec2;
     /**
      * This projects a point relative to the render space of the view to the screen coordinates
      */
-    renderSpaceToScreen(point: Vec2, out?: Vec2): [number, number];
+    renderSpaceToScreen(point: Vec2, out?: Vec2): Vec2;
     /**
      * Takes a coordinate in screen coordinates and maps it to a point that is relative to a view's viewport on
      * the screen.
      */
-    screenToView(point: Vec2, out?: Vec2): [number, number];
+    screenToView(point: Vec2, out?: Vec2): Vec2;
     /**
      * Takes a coordinate that is relative to a view's viewport within the screen and maps it to a coordinate relative to
      * the screen.
      */
-    viewToScreen(point: Vec2, out?: Vec2): [number, number];
+    viewToScreen(point: Vec2, out?: Vec2): Vec2;
     /**
      * Maps a coordinate relative to the screen to a coordinate found within the world space.
      */

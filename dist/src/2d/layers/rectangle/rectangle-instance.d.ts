@@ -51,7 +51,7 @@ export declare class RectangleInstance extends Instance {
     /** This is the anchor location on the  */
     private _anchor;
     constructor(options: IRectangleInstanceOptions);
-    readonly anchor: Anchor;
+    get anchor(): Anchor;
     /**
      * This applies a new anchor to this rectangle and properly determines it's anchor position on the rectangle
      */

@@ -1,4 +1,5 @@
-import { Instance, InstanceDiff } from "../../../instance-provider";
+import { Instance } from "../../../instance-provider";
+import { InstanceDiff } from "../../../types";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
 import { IUniformBufferLocation } from "./uniform-buffer-manager";

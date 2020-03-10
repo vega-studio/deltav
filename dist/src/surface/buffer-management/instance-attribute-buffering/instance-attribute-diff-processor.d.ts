@@ -1,6 +1,5 @@
 import { Instance } from "../../../instance-provider/instance";
-import { InstanceDiff } from "../../../instance-provider/instance-provider";
-import { IInstanceAttributeInternal } from "../../../types";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types";
 import { BaseDiffProcessor } from "../base-diff-processor";
 import { IBufferLocation, IBufferLocationGroup } from "../buffer-manager-base";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager";

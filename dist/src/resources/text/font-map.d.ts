@@ -49,7 +49,7 @@ export declare type KernedLayout = {
  */
 export declare class FontMap extends IdentifyByKey implements IFontResourceOptions {
     /** Makes a CSS font string from the font properties in the map */
-    readonly fontString: string;
+    get fontString(): string;
     /**
      * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
      */

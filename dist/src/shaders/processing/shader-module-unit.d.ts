@@ -16,20 +16,23 @@ export declare class ShaderModuleUnit {
     /**
      * This is the content that replaces shader imports
      */
-    content: string;
+    get content(): string;
+    set content(val: string);
     /**
      * This defines which shader type the content is compatible with. You can only have one content assigned
      * per each ShaderInjectionTarget type. Thus you can have a module such as 'picking' with two unique implementations
      * one for Fragment and one for Vertex shaders. Or you can assign it to both.
      */
-    compatibility: ShaderInjectionTarget;
+    get compatibility(): ShaderInjectionTarget;
+    set compatibility(val: ShaderInjectionTarget);
     /**
      * This is the list of module id dependents this unit will need. We store
      * this here so the module can be analyzed once. Import statements will be stripped and the sub module contents will
      * be added to the top of the contents of the shader. This only stores ids, as the ids will still need to be analyzed
      * so duplication can be prevented.
      */
-    dependents: string[] | null;
+    get dependents(): string[] | null;
+    set dependents(val: string[] | null);
     /**
      * Method for the unit to provide instance attributes for the module
      */
@@ -44,7 +47,8 @@ export declare class ShaderModuleUnit {
      */
     isFinal?: boolean;
     /** This is the string ID a shader must use to include the provided content. */
-    moduleId: string;
+    get moduleId(): string;
+    set moduleId(val: string);
     /**
      * Method so the unit can provide uniforms for the module.
      */

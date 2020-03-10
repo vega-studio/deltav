@@ -25,20 +25,20 @@ export declare class Attribute {
      * The optimization state for frequently changing buffers. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
      */
-    readonly isDynamic: boolean;
+    get isDynamic(): boolean;
     private _isDynamic;
     /**
      * Indicates the data in this attribute is structured per instance rather than per vertex.
      */
-    readonly isInstanced: boolean;
+    get isInstanced(): boolean;
     private _isInstanced;
     /** Indicates a full update of the buffer will happen. This is managed internally to determine when needed */
-    readonly fullUpdate: boolean;
+    get fullUpdate(): boolean;
     private _fullUpdate;
     /** Indicates if the data should be normalized when provided to the shader. */
     normalize: boolean;
     /** This flags the attribute as needing to commit updates to it's buffer */
-    readonly needsUpdate: boolean;
+    get needsUpdate(): boolean;
     private _needsUpdate;
     /**
      * The packing size of the vertex attribute (how many floats per attribute). See:
@@ -52,7 +52,8 @@ export declare class Attribute {
      * Although these properties represent vertex indicies it directly ties to all implications of:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferSubData
      */
-    updateRange: Attribute["_updateRange"];
+    get updateRange(): Attribute["_updateRange"];
+    set updateRange(val: Attribute["_updateRange"]);
     private _updateRange;
     /**
      * The data provided is the array that holds all of the information that should be pushed to

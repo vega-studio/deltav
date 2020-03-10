@@ -9,7 +9,7 @@ import { UserInputEventManager } from "./user-input-event-manager";
 export declare abstract class EventManager {
     private userInputManager;
     /** Allows an event manager to access it's governing surface */
-    readonly surface: import("..").Surface;
+    get surface(): import("..").Surface;
     abstract handleMouseDown(e: IMouseInteraction): void;
     abstract handleMouseUp(e: IMouseInteraction): void;
     abstract handleMouseOver(e: IMouseInteraction): void;

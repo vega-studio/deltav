@@ -7,9 +7,10 @@ export interface IInstanceOptions {
     id?: string;
 }
 export declare class Instance implements IdentifiableById {
-    static readonly newUID: number;
+    static get newUID(): number;
     /** This indicates when the instance is active / rendering */
-    active: boolean;
+    get active(): boolean;
+    set active(val: boolean);
     _active: boolean;
     /** The property changes on the instance */
     changes: {
@@ -25,7 +26,7 @@ export declare class Instance implements IdentifiableById {
         [key: string]: number;
     } | undefined;
     /** This is an internal easing object to track properties for automated easing */
-    private _easing;
+    easing?: Map<number, IEasingProps>;
     /** Internal, non-changeable id */
     private _id;
     /** This is the observer of the Instance's observable properties */
@@ -39,22 +40,15 @@ export declare class Instance implements IdentifiableById {
     /**
      * Retrieves a method for disposing the link between observables and observer.
      */
-    readonly observableDisposer: () => void;
+    get observableDisposer(): () => void;
     /**
      * Retrieves the observer of the observables.
      */
+    get observer(): InstanceProvider<this> | null;
     /**
-    * Applies an observer for changes to the observables.
-    */
-    observer: InstanceProvider<this> | null;
-    /**
-     * This clears any lingering easing information that may have been registered with the instance.
+     * Applies an observer for changes to the observables.
      */
-    clearEasing(): void;
-    /**
-     * Retrieves easing properties for the observables that are associated with easing.
-     */
-    readonly easing: Map<number, IEasingProps>;
+    set observer(val: InstanceProvider<this> | null);
     /**
      * This attempts to get the easing object for this instance for a given attribute that it MIGHT be associated with.
      *
@@ -80,11 +74,11 @@ export declare class Instance implements IdentifiableById {
     /**
      * Get the applied id of this instance
      */
-    readonly id: string;
+    get id(): string;
     /**
      * Get the auto generated ID of this instance
      */
-    readonly uid: number;
+    get uid(): number;
     /**
      * This method is utilized internally to indicate when requested resources are ready.
      * If you have a property that will be requesting a resource, you should implement this method

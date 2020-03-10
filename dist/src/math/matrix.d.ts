@@ -65,19 +65,19 @@ export declare const M433 = 15;
  * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
-export declare function apply2x2(m: Mat2x2 | undefined, m00: number, m01: number, m10: number, m11: number): [number, number, number, number];
+export declare function apply2x2(m: Mat2x2 | undefined, m00: number, m01: number, m10: number, m11: number): Mat2x2;
 /**
  * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
  * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
-export declare function apply3x3(m: Mat3x3 | undefined, m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number): [number, number, number, number, number, number, number, number, number];
+export declare function apply3x3(m: Mat3x3 | undefined, m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number): Mat3x3;
 /**
  * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
  * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
-export declare function apply4x4(m: Mat4x4 | undefined, m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number): [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+export declare function apply4x4(m: Mat4x4 | undefined, m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number): Mat4x4;
 /**
  * Determinant value of a 2x2 matrix
  *
@@ -307,12 +307,12 @@ export declare function toString4x4(mat: Mat4x4): string;
  * have to use the transpose and do a little extra math to make it happen or hand craft your own method for generating
  * rotational matrices.
  */
-export declare function rotation4x4(x: number, y: number, z: number, out?: Mat4x4): [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+export declare function rotation4x4(x: number, y: number, z: number, out?: Mat4x4): Mat4x4;
 /**
  * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
  * receive a matrix that will perform rotations by that amount in that order.
  */
-export declare function rotation4x4by3(v: Vec3, out?: Mat4x4): [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+export declare function rotation4x4by3(v: Vec3, out?: Mat4x4): Mat4x4;
 /**
  * Creates a scaling matrix from a vector
  */
@@ -338,7 +338,7 @@ export declare function translation4x4(x: number, y: number, z: number, out?: Ma
  * b: bottom,
  * t: top
  */
-export declare function perspectiveFrustum4x4(n: number, f: number, l: number, r: number, t: number, b: number, out?: Mat4x4): [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+export declare function perspectiveFrustum4x4(n: number, f: number, l: number, r: number, t: number, b: number, out?: Mat4x4): Mat4x4;
 /**
  * Generate a projection matrix with perspective.
  * The provided FOV is for the horizontal FOV.
@@ -366,7 +366,7 @@ export declare function projectToScreen(proj: Mat4x4, point: Vec4, width: number
  * and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and
  * far planes.
  */
-export declare function project3As4ToScreen(proj: Mat4x4, point: Vec3Compat, width: number, height: number, out?: Vec4): [number, number, number, number];
+export declare function project3As4ToScreen(proj: Mat4x4, point: Vec3Compat, width: number, height: number, out?: Vec4): Vec4;
 /**
  * Determines equality of two 2x2 matrices
  */

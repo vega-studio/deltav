@@ -83,7 +83,7 @@ export declare class InstanceAttributeBufferManager<T extends Instance> extends 
      * This retireves the buffer locations associated with an instance, or returns nothing
      * if the instance has not been associated yet.
      */
-    getBufferLocations(instance: T): IBufferLocationGroup<IInstanceAttributeBufferLocation>;
+    getBufferLocations(instance: T): IInstanceAttributeBufferLocationGroup;
     /**
      * This is the property id of the active attribute.
      */

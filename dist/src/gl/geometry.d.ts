@@ -7,7 +7,7 @@ import { Attribute } from "./attribute";
 export declare class Geometry {
     /** The attributes bound to this geometry.  */
     private _attributes;
-    readonly attributes: Map<string, Attribute>;
+    get attributes(): Map<string, Attribute>;
     /** This contains any gl specific state associated with this object */
     gl: {};
     /** Number of instances this geometry covers */

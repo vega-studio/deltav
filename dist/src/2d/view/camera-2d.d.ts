@@ -10,7 +10,7 @@ import { Control2D, IControl2DOptions } from "./control-2d";
 export declare class Camera2D extends Camera {
     /** These are the 2d controls to make manipulating a 2D world easier */
     control2D: Control2D;
-    readonly scale2D: [number, number, number];
-    readonly offset: [number, number, number];
+    get scale2D(): import("../..").Vec3;
+    get offset(): import("../..").Vec3;
     constructor(options?: IControl2DOptions);
 }

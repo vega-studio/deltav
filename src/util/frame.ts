@@ -4,16 +4,22 @@ import { uid } from "./uid";
 type Command = (t: number) => void;
 
 let animationFrameId = -1;
+let currentTime = 0;
 
+/** Contains the commands to be executed after the next animation cycle (ie- not this frame, but next frame) */
 let nextQueuedCommands: Command[] = [];
-let immediateQueuedCommands: Command[] = [];
+/** Contains the commands to be executed immediately on next animation cycle */
+let immediateQueuedCommands: [Command, number, number][] = [];
+/** After a frame has passed, the next queued commands filter into this queue to be executed next frame */
 let nextFrameCommands: Command[] = [];
+/** Commands that are going to be executed repeatedly on the animation loop */
 const animationLoopCommands = new Map<number, [Command, number, number]>();
 
 /**
  * Frame loop that executes queued commands
  */
 const loop = (time: number) => {
+  currentTime = time;
   let keepLooping = false;
 
   // Execute all of the animation loop commands
@@ -45,11 +51,24 @@ const loop = (time: number) => {
 
   // Execute all imeediately queued commands
   for (let i = 0, iMax = immediate.length; i < iMax; ++i) {
-    const command = immediate[i];
+    const [command, interval, startTime] = immediate[i];
 
-    if (command) {
-      keepLooping = true;
-      command(time);
+    // If an interval is not specified, then we simply execute the command immediately
+    if (interval <= 0) {
+      if (command) {
+        keepLooping = true;
+        command(time);
+      }
+    }
+
+    // If we have a specified interval, then we need to see if a certain amount of time has lapsed to satisfy the
+    // interval. If the interval is not satisfied, then the command is requeued to be checked next execution loop.
+    else {
+      if (time - startTime > interval) {
+        command(time);
+      } else {
+        immediateQueuedCommands.push(immediate[i]);
+      }
     }
   }
 
@@ -98,15 +117,18 @@ export function nextFrame(command?: Command) {
 }
 
 /**
- * Method that queues up a command to be executed on the upcoming animation frame
+ * Method that queues up a command to be executed on the upcoming animation frame.
+ *
+ * If a time interval is specified, the command will not execute until AT LEAST the specified amount of time has lapsed.
  */
-export function onFrame(command?: Command) {
+export function onFrame(command?: Command, interval?: number) {
   const resolver = new PromiseResolver<number>();
-
-  immediateQueuedCommands.push((t: number) => {
+  const wrappedCommand: Command = (t: number) => {
     if (command) command(t);
     resolver.resolve(t);
-  });
+  };
+
+  immediateQueuedCommands.push([wrappedCommand, interval || -1, currentTime]);
 
   if (animationFrameId === -1) {
     animationFrameId = requestAnimationFrame(loop);

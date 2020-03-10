@@ -97,10 +97,11 @@ function initStats() {
       const canvas = document.createElement("canvas");
       return (
         (window as any).WebGLRenderingContext &&
-        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+        (canvas.getContext("webgl") ||
+          (canvas.getContext("experimental-webgl") as WebGLRenderingContext))
       );
     } catch (e) {
-      return false;
+      return null;
     }
   }
 

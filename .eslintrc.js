@@ -13,6 +13,7 @@ module.exports = {
     "default-case": [0],
     "quotes": [0],
     "valid-jsdoc": [0],
-    "curly": [0]
+    "curly": [0],
+    "no-unused-vars": [0]
   },
 };

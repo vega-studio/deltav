@@ -918,7 +918,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       cpu: (start: T, end: T, t: number, out?: T) => {
         t = clamp(t, 0, 1);
         const p = 0.3;
-        const time = pow(2, -10 * t) * sin((t - p / 4) * (2 * PI) / p) + 1;
+        const time = pow(2, -10 * t) * sin(((t - p / 4) * (2 * PI)) / p) + 1;
         const { add, scale, subtract } = VecMath(start);
         return add(scale(subtract(end, start), time), start, out);
       },
@@ -1449,7 +1449,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         }
         t = clamp(t, 0, 1);
         const p = 0.3;
-        const time = pow(2, -10 * t) * sin((t - p / 4) * (2 * PI) / p) + 1;
+        const time = pow(2, -10 * t) * sin(((t - p / 4) * (2 * PI)) / p) + 1;
         const { slerpQuat, vec } = VecMath(start);
         if (!slerpQuat) return vec(1, 0, 0, 0);
         return slerpQuat(start, end, time, out);

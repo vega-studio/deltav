@@ -128,7 +128,7 @@ export declare class Surface {
     pickingTarget: RenderTarget;
     /** This is the density the rendering renders for the surface */
     pixelRatio: number;
-    /** This is the THREE render system we use to render scenes with views */
+    /** This is the GL render system we use to render scenes with views */
     renderer: WebGLRenderer;
     /** This is the resource manager that handles resource requests for instances */
     resourceManager: ResourceRouter;
@@ -160,9 +160,9 @@ export declare class Surface {
     sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
     constructor(options?: ISurfaceOptions);
     /** Read only getter for the gl context */
-    readonly gl: WebGLRenderingContext;
+    get gl(): WebGLRenderingContext;
     /** Get all of the scenes for this surface */
-    readonly scenes: LayerScene[];
+    get scenes(): LayerScene[];
     /**
      * Retrieves all IO Expanders applied to this surface
      */

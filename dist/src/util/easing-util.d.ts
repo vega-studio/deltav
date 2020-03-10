@@ -7,10 +7,14 @@ export declare type EasingUtilAllHandler<T extends Instance> = (easing: IEasingC
  */
 export declare class EasingUtil {
     /**
+     * This retrieves all easing metrics for every instance for every specified eased attribute.
+     */
+    static modify<T extends Instance>(instances: T[], layerAttributes: string[], adjust: EasingUtilAllHandler<T>): Promise<void>;
+    /**
      * This finds all easing controls requested for all instances.
      *
      * If wait is true, then this method's returned promise will resolve AFTER the time
      * of all discovered easing objects has passed.
      */
-    static all<T extends Instance>(wait: boolean, instances: T[], layerAttributes: string[], adjust?: EasingUtilAllHandler<T>): Promise<{}>;
+    static all<T extends Instance>(wait: boolean, instances: T[], layerAttributes: string[], adjust?: EasingUtilAllHandler<T>): Promise<unknown>;
 }

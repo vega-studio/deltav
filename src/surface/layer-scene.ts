@@ -44,7 +44,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
 export class LayerScene extends IdentifyByKey {
   static DEFAULT_SCENE_ID = "__default__";
 
-  /** This is the three scene which actually sets up the rendering objects */
+  /** This is the GL scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
   /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
   layerDiffs: ReactiveDiff<
@@ -98,12 +98,10 @@ export class LayerScene extends IdentifyByKey {
           this,
           Object.assign({}, layerClass.defaultProps, props)
         );
-        // Set the ordering value
-        layer.order = initializer.init[1].order || Number.MAX_SAFE_INTEGER;
         // Keep the initializer object that generated the layer for reference and debugging
         layer.initializer = initializer;
         // Sync the data provider applied to the layer in case the provider has existing data
-        // before being applied tot he layer
+        // before being applied to the layer
         layer.props.data.sync();
         // Look in the props of the layer for the parent of the layer
         layer.parent = props.parent;
@@ -127,13 +125,6 @@ export class LayerScene extends IdentifyByKey {
 
         // Get the children for the layer
         const children = layer.childLayers();
-
-        // Make the child layer be just slightly larger than the parent layer to keep it nearby in the render order
-        for (let i = 0, iMax = children.length; i < iMax; ++i) {
-          const child = children[i];
-          child.init[1].order = layer.order + 0.01 * i;
-        }
-
         // Add in the children of the layer
         this.layerDiffs.inline(children);
 
@@ -156,8 +147,6 @@ export class LayerScene extends IdentifyByKey {
         const props: ILayerPropsInternal<Instance> = initializer.init[1];
         // Execute lifecycle method
         layer.willUpdateProps(props);
-        // Apply the potential new ordering.
-        layer.order = props.order;
 
         // If we have a provider that is about to be newly set to the layer, then the provider
         // needs to do a full sync in order to have existing elements in the provider

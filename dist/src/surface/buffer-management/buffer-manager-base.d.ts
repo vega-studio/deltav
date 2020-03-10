@@ -1,7 +1,6 @@
 import { Instance } from "../../instance-provider/instance";
-import { InstanceDiff } from "../../instance-provider/instance-provider";
 import { Vec2, Vec4 } from "../../math";
-import { IInstanceAttributeInternal } from "../../types";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
 export declare function isBufferLocation(val: any): val is IBufferLocation;

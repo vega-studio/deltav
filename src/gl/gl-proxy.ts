@@ -1203,6 +1203,7 @@ export class GLProxy {
           texelFormat(gl, texture.format),
           texelFormat(gl, texture.format),
           inputImageFormat(gl, texture.type),
+          // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason
           texture.data
         );
       }
@@ -1284,6 +1285,7 @@ export class GLProxy {
             bounds.y,
             texelFormat(gl, texture.format),
             inputImageFormat(gl, texture.type),
+            // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason
             buffer
           );
         }

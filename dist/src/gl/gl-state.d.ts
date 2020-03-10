@@ -27,65 +27,65 @@ export declare class GLState {
     /** This holds which texture units are free for use and have no Texture assigned to them */
     private _freeUnits;
     /** Indicates if blending is enabled */
-    readonly blendingEnabled: boolean;
+    get blendingEnabled(): boolean;
     private _blendingEnabled;
     /** The current destination factor used in the blending equation */
-    readonly blendDstFactor: GLSettings.Material.BlendingDstFactor;
+    get blendDstFactor(): GLSettings.Material.BlendingDstFactor;
     private _blendDstFactor;
     /** The current destination factor used in the blending equation */
-    readonly blendSrcFactor: GLSettings.Material.BlendingDstFactor | GLSettings.Material.BlendingSrcFactor;
+    get blendSrcFactor(): GLSettings.Material.BlendingDstFactor | GLSettings.Material.BlendingSrcFactor;
     private _blendSrcFactor;
     /** The current equation used in the blend mode */
-    readonly blendEquation: GLSettings.Material.BlendingEquations;
+    get blendEquation(): GLSettings.Material.BlendingEquations;
     private _blendEquation;
     /** Indicates which faces will be culled */
-    readonly cullFace: GLSettings.Material.CullSide;
+    get cullFace(): GLSettings.Material.CullSide;
     private _cullFace;
     /** The channels in the color buffer a fragment is allowed to write to */
-    readonly colorMask: TypeVec<boolean>;
+    get colorMask(): TypeVec<boolean>;
     private _colorMask;
     /** The current color the context will clear when clear with the color buffer bit is called */
-    readonly clearColor: [number, number, number, number];
+    get clearColor(): Vec4;
     private _clearColor;
     /** Comparator used when testing a fragment against the depth buffer */
-    readonly depthFunc: GLSettings.Material.DepthFunctions;
+    get depthFunc(): GLSettings.Material.DepthFunctions;
     private _depthFunc;
     /** Indicates if fragments are tested against the depth buffer or not */
-    readonly depthTestEnabled: boolean;
+    get depthTestEnabled(): boolean;
     private _depthTestEnabled;
     /** Indicates if the fragment will write to the depth buffer or not */
-    readonly depthMask: boolean;
+    get depthMask(): boolean;
     private _depthMask;
     /** Indicates if dithering is enabled */
-    readonly ditheringEnabled: boolean;
+    get ditheringEnabled(): boolean;
     private _ditheringEnabled;
     /** The currently bound frame buffer object. null if nothing bound. */
-    readonly boundFBO: WebGLFramebuffer | null;
+    get boundFBO(): WebGLFramebuffer | null;
     private _boundFBO;
     /** The currently bound render buffer object. null if nothing bound. */
-    readonly boundRBO: WebGLRenderbuffer | null;
+    get boundRBO(): WebGLRenderbuffer | null;
     private _boundRBO;
     /** The current id of the current bound vbo. If null, nothing is bound */
-    readonly boundVBO: WebGLBuffer | null;
+    get boundVBO(): WebGLBuffer | null;
     private _boundVBO;
     /**
      * The current texture object bound. If null, nothing is bound. This also tracks
      * the texture unit to which it was bound. The unit and the texture object must match for
      * a binding call to be skipped.
      */
-    readonly boundTexture: {
+    get boundTexture(): {
         id: WebGLTexture | null;
         unit: number;
     };
     private _boundTexture;
     /** The current program in use */
-    readonly currentProgram: WebGLProgram | null;
+    get currentProgram(): WebGLProgram | null;
     private _currentProgram;
     /** Indicates if the scissor test is enabled in the context */
-    readonly scissorTestEnabled: boolean;
+    get scissorTestEnabled(): boolean;
     private _scissorTestEnabled;
     /** The current bounds of the scissor test */
-    readonly scissorBounds: {
+    get scissorBounds(): {
         x: number;
         y: number;
         width: number;
@@ -93,22 +93,22 @@ export declare class GLState {
     };
     private _scissorBounds;
     /** These are the current uniforms uploaded to the GPU */
-    readonly currentUniforms: {
+    get currentUniforms(): {
         [name: string]: IMaterialUniform<MaterialUniformType>;
     };
     private _currentUniforms;
     /** This is the texture unit currently active */
-    readonly activeTextureUnit: number;
+    get activeTextureUnit(): number;
     private _activeTextureUnit;
     /**
      * This contains all of the textures that are are needing to be utilized for next draw.
      * Textures are used by either uniforms or by RenderTargets in a single draw call. Thus
      * we track the uniforms or the render targets awaiting use of the texture.
      */
-    readonly textureWillBeUsed: Map<Texture, RenderTarget | Set<WebGLUniformLocation>>;
+    get textureWillBeUsed(): Map<Texture, RenderTarget | Set<WebGLUniformLocation>>;
     private _textureWillBeUsed;
     /** The current viewport gl is using */
-    readonly viewport: {
+    get viewport(): {
         x: number;
         y: number;
         width: number;
@@ -116,7 +116,7 @@ export declare class GLState {
     };
     private _viewport;
     /** This contains all of the currently enabled vertex attribute pointers */
-    readonly enabledVertexAttributeArray: number[];
+    get enabledVertexAttributeArray(): number[];
     private _enabledVertexAttributeArray;
     private _willUseVertexAttributeArray;
     /** Tracks the current divisor set to a given vertex array location. */

@@ -11,9 +11,9 @@ export declare class IdentifyByKey {
     /** Internal key held by the object */
     private _key;
     /** READONLY id of the object. */
-    readonly id: string;
+    get id(): string;
     /** READONLY key of the object */
-    readonly key: string;
+    get key(): string;
     constructor(options: IdentifyByKeyOptions);
 }
 export declare class IdentifiableData<T> extends IdentifyByKey {

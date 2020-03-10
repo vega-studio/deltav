@@ -9,7 +9,7 @@ export declare class Transform {
      * Flag indicating this transform has changed properties. Will remain in a changed state until the transform has it's
      * resolve() called.
      */
-    readonly changed: boolean;
+    get changed(): boolean;
     private _changed;
     /** Flag that indicates if the transform needs to be updated */
     private needsUpdate;
@@ -22,26 +22,29 @@ export declare class Transform {
      * is invalid and will cause undefined behavior if the elements of this matrix are modified. You should use the
      * provided methods of this Transform class to manipulate this matrix.
      */
-    readonly matrix: Mat4x4;
+    get matrix(): Mat4x4;
     private _matrix;
     /**
      * This is the transform matrix that contains the operations in reverse order. This produces a 'view matrix' for the
      * transform and shouldn't be considered an inverse matrix.
      */
-    readonly viewMatrix: Mat4x4;
+    get viewMatrix(): Mat4x4;
     private _viewMatrix?;
     /** Orientation of this transform */
-    rotation: Quaternion;
+    get rotation(): Quaternion;
+    set rotation(val: Quaternion);
     private _rotation;
     private rotationMatrix;
     private needsRotationUpdate;
     /** Scaling transform of this matrix */
-    scale: Vec3;
+    get scale(): Vec3;
+    set scale(val: Vec3);
     private _scale;
     private scaleMatrix;
     private needsScaleUpdate;
     /** Translation of this transform */
-    position: Vec3;
+    get position(): Vec3;
+    set position(val: Vec3);
     private _translation;
     private translationMatrix;
     private needsTranslationUpdate;

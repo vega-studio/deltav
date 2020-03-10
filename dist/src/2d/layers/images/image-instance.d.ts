@@ -70,7 +70,8 @@ export declare class ImageInstance extends Instance {
      * This means if you set this value to 100 at least the width or the height will be 100
      * depending on the aspect ratio of the image.
      */
-    maxSize: number;
+    get maxSize(): number;
+    set maxSize(value: number);
     /** Event called when there is an error attempting to load and render the image */
     onError?: IImageInstanceOptions["onError"];
     /** Event called when the instance has it's resource loaded and ready for use */
@@ -87,7 +88,7 @@ export declare class ImageInstance extends Instance {
      */
     private _anchor;
     constructor(options: IImageInstanceOptions);
-    readonly anchor: Anchor;
+    get anchor(): Anchor;
     /**
      * In the event that video auto play is not permitted, one may have to respond to a user input gesture to begin
      * loading and playing the video. While your video is not ready to play, the ImageInstance will NOT fire the onReady

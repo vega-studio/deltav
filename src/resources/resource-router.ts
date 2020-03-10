@@ -61,9 +61,7 @@ export class ResourceRouter {
 
     if (!manager) {
       console.warn(
-        `A Resource is trying to be destroyed but has no manager to facilitate the operation: ${
-          resource.type
-        }`
+        `A Resource is trying to be destroyed but has no manager to facilitate the operation: ${resource.type}`
       );
 
       return;
@@ -120,9 +118,7 @@ export class ResourceRouter {
 
     if (!manager) {
       console.warn(
-        `A Resource is trying to be created but has no manager to facilitate the operation: ${
-          resource.type
-        }`
+        `A Resource is trying to be created but has no manager to facilitate the operation: ${resource.type}`
       );
 
       return;
@@ -160,9 +156,7 @@ export class ResourceRouter {
 
     if (!manager) {
       console.warn(
-        `A Layer is requesting a resource for which there is no manager set. Please make sure a Resource Manager is set for resource of type: ${
-          resource.type
-        }`
+        `A Layer is requesting a resource for which there is no manager set. Please make sure a Resource Manager is set for resource of type: ${resource.type}`
       );
       return [-1, -1, -1, -1];
     }
@@ -204,9 +198,7 @@ export class ResourceRouter {
 
     if (!manager) {
       console.warn(
-        `A Resource is trying to be updated but has no manager to facilitate the operation: ${
-          resource.type
-        }`
+        `A Resource is trying to be updated but has no manager to facilitate the operation: ${resource.type}`
       );
 
       return;

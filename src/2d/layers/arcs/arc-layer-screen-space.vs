@@ -21,7 +21,7 @@ void main() {
   // Convert world points to screen space
   vec4 centerClip = clipSpace(vec3(center, depth));
   vec2 centerScreen = (centerClip.xy + vec2(1.0, 1.0)) * vec2(0.5, 0.5) * viewSize;
-  // Destructure threejs's bug with the position requirement
+  // Destructure position attribute
   float normal = position.x;
   float interpolationTime = position.y;
   float interpolationIncrement = 1.0 / position.z;

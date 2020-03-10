@@ -85,12 +85,12 @@ export class VertexAttributePacking extends BaseExample {
           endColor: [0.0, 1.0, 1.0, 0.1],
           control: [[bounds.width / 2, bounds.height / 2]],
           end: [
-            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
+            Math.cos(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) * 100 +
               bounds.width / 2,
             bounds.height - 5
           ],
           start: [
-            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) * 100 +
+            Math.sin(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) * 100 +
               bounds.width / 2,
             5
           ],
@@ -109,14 +109,14 @@ export class VertexAttributePacking extends BaseExample {
           edge.startColor = [
             0.0,
             1.0,
-            (Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            (Math.cos(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2) /
               totalWidth,
             0.01
           ];
           edge.endColor = [
-            (Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            (Math.sin(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2) /
               totalWidth,
@@ -125,13 +125,13 @@ export class VertexAttributePacking extends BaseExample {
             1.0
           ];
           edge.start = [
-            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            Math.sin(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
             edge.start[1]
           ];
           edge.end = [
-            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            Math.cos(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
             edge.end[1]

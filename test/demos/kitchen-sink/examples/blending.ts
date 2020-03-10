@@ -41,13 +41,13 @@ export class Blending extends BaseExample {
     const edges = [];
 
     for (let i = 0; i < sections; ++i) {
-      const rgb = hsl(i / sections * 360, 1, 0.5, 0.2).rgb();
+      const rgb = hsl((i / sections) * 360, 1, 0.5, 0.2).rgb();
       const color: Vec4 = [rgb.r / 255, rgb.g / 255, rgb.b / 255, rgb.opacity];
 
-      const sx = Math.cos(i / sections * Math.PI) * 100 + 200;
-      const sy = Math.sin(i / sections * Math.PI) * 100 + 200;
-      const ex = Math.cos(i / sections * Math.PI + Math.PI) * 100 + 200;
-      const ey = Math.sin(i / sections * Math.PI + Math.PI) * 100 + 200;
+      const sx = Math.cos((i / sections) * Math.PI) * 100 + 200;
+      const sy = Math.sin((i / sections) * Math.PI) * 100 + 200;
+      const ex = Math.cos((i / sections) * Math.PI + Math.PI) * 100 + 200;
+      const ey = Math.sin((i / sections) * Math.PI + Math.PI) * 100 + 200;
 
       edges.push(
         new EdgeInstance({

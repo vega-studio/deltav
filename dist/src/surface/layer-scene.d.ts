@@ -32,7 +32,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
  */
 export declare class LayerScene extends IdentifyByKey {
     static DEFAULT_SCENE_ID: string;
-    /** This is the three scene which actually sets up the rendering objects */
+    /** This is the GL scene which actually sets up the rendering objects */
     container: Scene | undefined;
     /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
     layerDiffs: ReactiveDiff<Layer<Instance, ILayerProps<Instance>>, LayerInitializer>;
@@ -43,9 +43,9 @@ export declare class LayerScene extends IdentifyByKey {
     /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
     viewDiffs: ReactiveDiff<View<IViewProps>, ViewInitializer<IViewProps>>;
     /** This is all of the layers attached to the scene */
-    readonly layers: Layer<any, any>[];
+    get layers(): Layer<any, any>[];
     /** This is all of the views attached to the scene */
-    readonly views: View<IViewProps>[];
+    get views(): View<IViewProps>[];
     constructor(surface: Surface | undefined, options: ISceneOptions);
     /**
      * Initialize all that needs to be initialized

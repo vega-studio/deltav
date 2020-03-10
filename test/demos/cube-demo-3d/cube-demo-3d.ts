@@ -49,7 +49,7 @@ export class CubeDemo3D extends BaseDemo {
       providers: this.providers,
       cameras: {
         perspective: Camera.makePerspective({
-          fov: 60 * Math.PI / 180,
+          fov: (60 * Math.PI) / 180,
           far: 100000
         })
       },
@@ -89,7 +89,7 @@ export class CubeDemo3D extends BaseDemo {
     );
 
     this.loopId = onAnimationLoop((t: number) => {
-      const theta = t / 1400 * Math.PI * 2;
+      const theta = (t / 1400) * Math.PI * 2;
       transform.position = [Math.sin(theta) * 3, 0, Math.cos(theta) * 3];
       transform.lookAt(
         add3(transform.position, [

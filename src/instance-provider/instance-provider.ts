@@ -1,17 +1,6 @@
-import { IInstanceProvider } from "../surface/layer";
-import { InstanceDiffType } from "../types";
+import { IInstanceProvider, InstanceDiff, InstanceDiffType } from "../types";
 import { uid } from "../util/uid";
 import { Instance } from "./instance";
-
-/**
- * This is an entry within the change list of the provider. It represents the type of change
- * and stores the property id's of the properties on the instance that have changed.
- */
-export type InstanceDiff<T extends Instance> = [
-  T,
-  InstanceDiffType,
-  { [key: number]: number }
-];
 
 type InstanceDisposer<T extends Instance> = [T, Function];
 

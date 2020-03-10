@@ -101,9 +101,11 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     super(layer, scene);
 
     let maxUniformBlock: number = 0;
-    layer.instanceAttributes.forEach((attributes: IInstanceAttribute<T>) => {
-      maxUniformBlock = Math.max(attributes.block || 0, maxUniformBlock);
-    });
+    layer.shaderIOInfo.instanceAttributes.forEach(
+      (attributes: IInstanceAttribute<T>) => {
+        maxUniformBlock = Math.max(attributes.block || 0, maxUniformBlock);
+      }
+    );
 
     this.uniformBlocksPerInstance = maxUniformBlock + 1;
   }
@@ -233,11 +235,12 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * This generates a new buffer of uniforms to associate instances with.
    */
   makeNewBuffer() {
+    const shaderIOInfo = this.layer.shaderIOInfo;
     // We generate a new geometry object for the buffer as the geometry
     // Needs to have it's own unique draw range per buffer for optimal
     // Performance
     const newGeometry = new Geometry();
-    this.layer.vertexAttributes.forEach(attribute => {
+    shaderIOInfo.vertexAttributes.forEach(attribute => {
       if (attribute.materialAttribute) {
         newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
       }
@@ -245,17 +248,17 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
-    const newMaterial = this.layer.material.clone();
+    const newMaterial = shaderIOInfo.material.clone();
     // Now make a Model for the buffer so it can be rendered withn the scene
     const newModel = generateLayerModel(
       newGeometry,
       newMaterial,
-      this.layer.model.drawMode
+      shaderIOInfo.model.drawMode
     );
     // Ensure the draw range covers every instance in the geometry.
     newModel.vertexDrawRange = [
       0,
-      this.layer.maxInstancesPerBuffer * this.layer.instanceVertexCount
+      shaderIOInfo.maxInstancesPerBuffer * shaderIOInfo.instanceVertexCount
     ];
 
     // Make our new buffer which will manage the geometry and everything necessary
@@ -295,12 +298,16 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     }
 
     // A fake attribute to satisfy type requirements
-    const fakeAttribute = Object.assign({}, this.layer.instanceAttributes[0], {
-      bufferAttribute: new Attribute(new Float32Array(1), 1),
-      uid: uid()
-    });
+    const fakeAttribute = Object.assign(
+      {},
+      shaderIOInfo.instanceAttributes[0],
+      {
+        bufferAttribute: new Attribute(new Float32Array(1), 1),
+        uid: uid()
+      }
+    );
 
-    for (let i = 0, end = this.layer.maxInstancesPerBuffer; i < end; ++i) {
+    for (let i = 0, end = shaderIOInfo.maxInstancesPerBuffer; i < end; ++i) {
       const cluster: IUniformBufferLocation = {
         attribute: fakeAttribute, // TODO: This is not needed for the uniform method yet. When we break down
         // the uniform updates into attributes, this will be utilized.
@@ -319,8 +326,8 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
     // We can keep uniforms consistent across all Instances
-    for (let i = 0, end = this.layer.uniforms.length; i < end; ++i) {
-      const uniform = this.layer.uniforms[i];
+    for (let i = 0, end = shaderIOInfo.uniforms.length; i < end; ++i) {
+      const uniform = shaderIOInfo.uniforms[i];
       uniform.materialUniforms.push(newMaterial.uniforms[uniform.name]);
     }
 

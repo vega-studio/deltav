@@ -27,15 +27,15 @@ export declare class EdgeInstance extends Instance {
     /**
      * Calculates length from beginning point to end point
      */
-    readonly length: number;
+    get length(): number;
     /**
      * Calculates the midpoint of the edge
      */
-    readonly midpoint: number;
+    get midpoint(): number;
     /**
      * Calculates a perpendicular direction vector to the edge
      */
-    readonly perpendicular: Vec2;
+    get perpendicular(): Vec2;
     /**
      * Applies the edge width to the start and end
      */

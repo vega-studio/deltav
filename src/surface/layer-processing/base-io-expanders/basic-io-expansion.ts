@@ -67,9 +67,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     this.setDeclaration(
       declarations,
       uniformBufferInstanceBufferName,
-      `\n// Instance Attributes as a packed Uniform Buffer\nuniform vec4 ${uniformBufferInstanceBufferName}[${
-        metrics.totalInstanceUniformBlocks
-      }];\n`,
+      `\n// Instance Attributes as a packed Uniform Buffer\nuniform vec4 ${uniformBufferInstanceBufferName}[${metrics.totalInstanceUniformBlocks}];\n`,
       debugCtx
     );
     // Add the number of blocks an instance utilizes

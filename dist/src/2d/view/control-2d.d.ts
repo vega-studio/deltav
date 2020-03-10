@@ -12,7 +12,7 @@ export interface IControl2DOptions {
  * Controls for 2D world manipulation
  */
 export declare class Control2D {
-    readonly id: number;
+    get id(): number;
     private _id;
     /** The animation set to this camera to animate it's scale and offset */
     animation: IAutoEasingMethod<Vec3>;
@@ -58,17 +58,17 @@ export declare class Control2D {
     /**
      * Gets the source offset value
      */
-    getOffset(): [number, number, number];
+    getOffset(): Vec3;
     /**
      * Gets the source scale value
      */
-    getScale(): [number, number, number];
-    readonly needsViewDrawn: boolean;
+    getScale(): Vec3;
+    get needsViewDrawn(): boolean;
     /**
      * Retrieves the animated value of the offset of the camera.
      * To get a non-animated version of the offset use getOffset()
      */
-    readonly offset: [number, number, number];
+    get offset(): Vec3;
     /**
      * Sets the id of this camera
      */
@@ -81,7 +81,7 @@ export declare class Control2D {
     /**
      * Retrieves the animated scale. If you want straight end scale value, use getScale()
      */
-    readonly scale: [number, number, number];
+    get scale(): Vec3;
     /**
      * Applies the handler for broadcasting view changes from the camera.
      */

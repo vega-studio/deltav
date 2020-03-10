@@ -76,7 +76,7 @@ export declare class InstanceAttributePackingBufferManager<T extends Instance> e
      * This retireves the buffer locations associated with an instance, or returns nothing
      * if the instance has not been associated yet.
      */
-    getBufferLocations(instance: T): IBufferLocationGroup<IInstanceAttributePackingBufferLocation>;
+    getBufferLocations(instance: T): IInstanceAttributePackingBufferLocationGroup;
     /**
      * This is the property id of the active attribute.
      */

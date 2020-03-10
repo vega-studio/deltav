@@ -13,3 +13,4 @@ export * from "./shader-templating";
 export * from "./shallow-compare";
 export * from "./uid";
 export * from "./wait";
+export * from "./create-util";

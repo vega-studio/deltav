@@ -15,7 +15,7 @@ export declare function subTextureIOValue(texture?: SubTexture | null): Instance
  */
 export declare class SubTexture {
     /** A unique identifier for the sub texture to aid in debugging issues */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /** Stores the aspect ratio of the image for quick reference */
     aspectRatio: number;

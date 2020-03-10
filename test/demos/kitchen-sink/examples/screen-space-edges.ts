@@ -87,7 +87,10 @@ export class ScreenSpaceEdges extends BaseExample {
     let edge = new EdgeInstance({
       startColor: [Math.random(), 1.0, Math.random(), 1.0],
       endColor: [Math.random(), 1.0, Math.random(), 0.25],
-      control: [[45, 45], [45, -45]],
+      control: [
+        [45, 45],
+        [45, -45]
+      ],
       end: [20, 200],
       id: `edge-interaction-0`,
       start: [20, 20],
@@ -99,7 +102,10 @@ export class ScreenSpaceEdges extends BaseExample {
     edge = new EdgeInstance({
       startColor: [Math.random(), 1.0, Math.random(), 1.0],
       endColor: [Math.random(), 1.0, Math.random(), 0.25],
-      control: [[20, 45], [-20, 45]],
+      control: [
+        [20, 45],
+        [-20, 45]
+      ],
       end: [200, 20],
       id: `edge-interaction-1`,
       start: [20, 20],
@@ -111,7 +117,10 @@ export class ScreenSpaceEdges extends BaseExample {
     edge = new EdgeInstance({
       startColor: [Math.random(), 1.0, Math.random(), 1.0],
       endColor: [Math.random(), 1.0, Math.random(), 0.25],
-      control: [[20, 20], [-20, -20]],
+      control: [
+        [20, 20],
+        [-20, -20]
+      ],
       end: [200, 200],
       id: `edge-interaction-2`,
       start: [20, 20],

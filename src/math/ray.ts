@@ -28,7 +28,10 @@ export function rayToLocation(ray: Ray, distance: number, out?: Vec3): Vec3 {
  * Generates a ray from two points. Ray starts at 'origin' and points toward 'destination'
  */
 export function rayFromPoints(origin: Vec3, destination: Vec3, out?: Ray): Ray {
-  out = out || [[0, 0, 0], [0, 0, 0]];
+  out = out || [
+    [0, 0, 0],
+    [0, 0, 0]
+  ];
   copy3(origin, out[0]);
   normalize3(subtract3(destination, origin), out[1]);
 

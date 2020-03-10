@@ -50,13 +50,13 @@ export class BendyEdge extends BaseExample {
         for (let i = 0; i < TOTAL_EDGES; ++i) {
           const edge = edges[i];
           edge.start = [
-            Math.sin(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            Math.sin(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
             edge.start[1]
           ];
           edge.end = [
-            Math.cos(Date.now() / 4e2 + i * Math.PI * 2 / TOTAL_EDGES) *
+            Math.cos(Date.now() / 4e2 + (i * Math.PI * 2) / TOTAL_EDGES) *
               (bounds.width / 4) +
               bounds.width / 2,
             edge.end[1]

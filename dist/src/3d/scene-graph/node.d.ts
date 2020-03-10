@@ -5,10 +5,10 @@
  */
 export declare abstract class Node<TSibling extends Node<any>> {
     /** Unique numerical identifier to make identification of this object easier */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /** These are the siblings related to this specified node */
-    readonly siblings: ReadonlyMap<number, TSibling>;
+    get siblings(): ReadonlyMap<number, TSibling>;
     private _siblings;
     /**
      * This adds a child node to this node's list of children

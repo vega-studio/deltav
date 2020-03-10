@@ -9,14 +9,15 @@ export declare type TextureOptions = Omit<Partial<Texture>, "dispose" | "update"
  */
 export declare class Texture {
     /** Unique identifier of the texture to aid in debugging and referencing */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /**
      * Anisotropic filtering level. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      * https://blog.tojicode.com/2012/03/anisotropic-filtering-in-webgl.html
      */
-    anisotropy: Texture["_anisotropy"];
+    get anisotropy(): Texture["_anisotropy"];
+    set anisotropy(val: Texture["_anisotropy"]);
     private _anisotropy;
     /**
      * The data to apply to the GPU for the image. If no data is to be uploaded to the texture,
@@ -24,24 +25,28 @@ export declare class Texture {
      * or color buffer textures where the GPU writes the initial data into the texture. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
-    data: Texture["_data"];
+    get data(): Texture["_data"];
+    set data(val: Texture["_data"]);
     private _data?;
     /**
      * Indicates the data gets flipped vertically when uploaded to the GPU.
      */
-    flipY: boolean;
+    get flipY(): boolean;
+    set flipY(val: boolean);
     private _flipY;
     /**
      * Source format of the input. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
-    format: Texture["_format"];
+    get format(): Texture["_format"];
+    set format(val: Texture["_format"]);
     private _format;
     /**
      * Auto generates mipmaps. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
      */
-    generateMipMaps: Texture["_generateMipmaps"];
+    get generateMipMaps(): Texture["_generateMipmaps"];
+    set generateMipMaps(val: Texture["_generateMipmaps"]);
     private _generateMipmaps;
     /**
      * This stores any gl state associated with this object. Modifying this object will cause the system to get out
@@ -59,13 +64,15 @@ export declare class Texture {
      * Filter used when sampling has to magnify the image see:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
-    magFilter: Texture["_magFilter"];
+    get magFilter(): Texture["_magFilter"];
+    set magFilter(val: Texture["_magFilter"]);
     private _magFilter;
     /**
      * Filter used when sampling has to shrink the image. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
-    minFilter: Texture["_minFilter"];
+    get minFilter(): Texture["_minFilter"];
+    set minFilter(val: Texture["_minFilter"]);
     private _minFilter;
     /** Flag indicates if the texture object needs to have it's data modified */
     needsDataUpload: boolean;
@@ -78,32 +85,36 @@ export declare class Texture {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
      * https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glPixelStorei.xml
      */
-    packAlignment: Texture["_packAlignment"];
+    get packAlignment(): Texture["_packAlignment"];
+    set packAlignment(val: Texture["_packAlignment"]);
     private _packAlignment;
     /**
      * Tells the input packing to premultiply the alpha values with the other channels as the texture is generated. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
      */
-    premultiplyAlpha: Texture["_premultiplyAlpha"];
+    get premultiplyAlpha(): Texture["_premultiplyAlpha"];
+    set premultiplyAlpha(val: Texture["_premultiplyAlpha"]);
     private _premultiplyAlpha;
     /**
      * The source pixel data type.
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
-    type: Texture["_type"];
+    get type(): Texture["_type"];
+    set type(val: Texture["_type"]);
     private _type;
     /**
      * Sets the data alignment for packing the pixels. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
      * https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glPixelStorei.xml
      */
-    unpackAlignment: Texture["_unpackAlignment"];
+    get unpackAlignment(): Texture["_unpackAlignment"];
+    set unpackAlignment(val: Texture["_unpackAlignment"]);
     private _unpackAlignment;
     /**
      * These are the regions that have been requested to be applied to the Texture along
      * with the data that should be buffered into that region.
      */
-    readonly updateRegions: [HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData | {
+    get updateRegions(): [HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas | ImageData | {
         width: number;
         height: number;
         buffer: ArrayBufferView | null;
@@ -118,13 +129,15 @@ export declare class Texture {
      * Specifies sample wrapping for when samples fall outside the 0 - 1 range See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
-    wrapHorizontal: Texture["_wrapHorizontal"];
+    get wrapHorizontal(): Texture["_wrapHorizontal"];
+    set wrapHorizontal(val: Texture["_wrapHorizontal"]);
     private _wrapHorizontal;
     /**
      * Specifies sample wrapping for when samples fall outside the 0 - 1 range. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
-    wrapVertical: Texture["_wrapVertical"];
+    get wrapVertical(): Texture["_wrapVertical"];
+    set wrapVertical(val: Texture["_wrapVertical"]);
     private _wrapVertical;
     constructor(options: TextureOptions);
     /**

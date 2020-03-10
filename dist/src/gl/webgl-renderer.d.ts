@@ -62,11 +62,11 @@ export interface IWebGLRendererState {
  */
 export declare class WebGLRenderer {
     /** When this is set this creates */
-    debugContext: string;
+    set debugContext(val: string);
     /** The context the renderer is managing */
     private _gl?;
     /** The readonly gl context the renderer determined for use */
-    readonly gl: WebGLRenderingContext | undefined;
+    get gl(): WebGLRenderingContext | undefined;
     /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
     glProxy: GLProxy;
     /** This handles anything related to state changes in the GL state */

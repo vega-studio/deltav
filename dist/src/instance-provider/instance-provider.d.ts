@@ -1,20 +1,12 @@
-import { IInstanceProvider } from "../surface/layer";
-import { InstanceDiffType } from "../types";
+import { IInstanceProvider, InstanceDiff } from "../types";
 import { Instance } from "./instance";
-/**
- * This is an entry within the change list of the provider. It represents the type of change
- * and stores the property id's of the properties on the instance that have changed.
- */
-export declare type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {
-    [key: number]: number;
-}];
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.
  */
 export declare class InstanceProvider<T extends Instance> implements IInstanceProvider<T> {
     /** A uid provided to this object to give it some easy to identify uniqueness */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /** Stores the disposers that are called when the instance is no longer listened to */
     private cleanObservation;
@@ -31,7 +23,7 @@ export declare class InstanceProvider<T extends Instance> implements IInstancePr
     /**
      * Retrieve all of the changes applied to instances
      */
-    readonly changeList: InstanceDiff<T>[];
+    get changeList(): InstanceDiff<T>[];
     /**
      * Adds an instance to the provider which will stream observable changes of the instance to
      * the framework.

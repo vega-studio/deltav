@@ -93,12 +93,14 @@ export declare abstract class View<TViewProps extends IViewProps> extends Identi
     scene: LayerScene;
     /** This establishes the projection methods that can be used to project geometry between the screen and the world */
     projection: BaseProjection<View<TViewProps>>;
-    screenBounds: Bounds<View<TViewProps>>;
-    viewBounds: Bounds<View<TViewProps>>;
+    get screenBounds(): Bounds<View<TViewProps>>;
+    set screenBounds(val: Bounds<View<TViewProps>>);
+    get viewBounds(): Bounds<View<TViewProps>>;
+    set viewBounds(val: Bounds<View<TViewProps>>);
     /** Retrieves the clearflag prop assigned to the view and provides a default */
-    readonly clearFlags: ClearFlags[];
+    get clearFlags(): ClearFlags[];
     /** Retrieves the order prop assigned to the view and provides a default */
-    readonly order: number;
+    get order(): number;
     constructor(scene: LayerScene, props: TViewProps);
     /**
      * This operation makes sure we have the view camera adjusted to the new viewport's needs.

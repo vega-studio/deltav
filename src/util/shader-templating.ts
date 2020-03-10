@@ -106,21 +106,15 @@ export function shaderTemplate(
     // This will ensure that BOTH the parameter input AND the shader provided the required options.
     required.values.forEach(require => {
       if (results.unresolvedProvidedOptions.get(require)) {
-        const msg = `${
-          required.name
-        }: Could not resolve all the required inputs. Input: ${require}`;
+        const msg = `${required.name}: Could not resolve all the required inputs. Input: ${require}`;
         if (onError) onError(msg);
         else console.error(msg);
       } else if (results.unresolvedShaderOptions.get(require)) {
-        const msg = `${
-          required.name
-        }: A required option was not provided in the options parameter. Option: ${require}`;
+        const msg = `${required.name}: A required option was not provided in the options parameter. Option: ${require}`;
         if (onError) onError(msg);
         else console.error(msg);
       } else if (!results.resolvedShaderOptions.get(require)) {
-        const msg = `${
-          required.name
-        }: A required option was not provided in the options parameter. Option: ${require}`;
+        const msg = `${required.name}: A required option was not provided in the options parameter. Option: ${require}`;
         if (onError) onError(msg);
         else console.error(msg);
       }

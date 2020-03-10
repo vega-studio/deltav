@@ -147,7 +147,7 @@ export function exponentQuat(q: Quaternion, out?: Quaternion): Quaternion {
 
   const norm = sqrt(b * b + c * c + d * d);
   const wExp = exp(a);
-  const scale = wExp / norm * sin(norm);
+  const scale = (wExp / norm) * sin(norm);
 
   if (norm === 0) {
     out[0] = exp(a);

@@ -50,7 +50,7 @@ export function generateLayerMaterial<
   materialParams.fragmentShader = fs;
   materialParams.name = layer.id;
 
-  // We must convert all of the uniforms to actual Three material initialization uniforms
+  // We must convert all of the uniforms to actual GL material initialization uniforms
   materialParams.uniforms = {};
 
   // Convert our non-instancing uniforms to our material uniforms

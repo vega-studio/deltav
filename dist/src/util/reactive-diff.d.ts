@@ -53,7 +53,7 @@ export declare class ReactiveDiff<U extends IdentifiableById | null, T extends R
      */
     private deferredInlining?;
     /** A list of all the items currently alive and managed by this diff */
-    readonly items: U[];
+    get items(): U[];
     constructor(options: IReactiveDiffOptions<U, T>);
     /**
      * This triggers all resources currently managed by this diff manager to process their destroy procedure

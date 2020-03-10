@@ -213,6 +213,6 @@ normalizeWheel.getEventType = function() /*string*/ {
   return UserAgent_DEPRECATED.firefox()
     ? "DOMMouseScroll"
     : isEventSupported("wheel")
-      ? "wheel"
-      : "mousewheel";
+    ? "wheel"
+    : "mousewheel";
 };

@@ -15,6 +15,28 @@ export type EasingUtilAllHandler<T extends Instance> = (
  */
 export class EasingUtil {
   /**
+   * This retrieves all easing metrics for every instance for every specified eased attribute.
+   */
+  static async modify<T extends Instance>(
+    instances: T[],
+    layerAttributes: string[],
+    adjust: EasingUtilAllHandler<T>
+  ) {
+    for (let i = 0, iMax = layerAttributes.length; i < iMax; ++i) {
+      const attr = layerAttributes[i];
+
+      for (let k = 0, kMax = instances.length; k < kMax; ++k) {
+        const instance = instances[k];
+        const easing = instance.getEasing(attr);
+
+        if (easing) {
+          adjust(easing, instance, k, i);
+        }
+      }
+    }
+  }
+
+  /**
    * This finds all easing controls requested for all instances.
    *
    * If wait is true, then this method's returned promise will resolve AFTER the time

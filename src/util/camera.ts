@@ -59,7 +59,8 @@ export interface ICameraPerspectiveOptions {
  */
 export type ICameraOptions = (
   | ICameraOrthographicOptions
-  | ICameraPerspectiveOptions) & {
+  | ICameraPerspectiveOptions
+) & {
   onViewChange?(camera: Camera, viewId: string): void;
 };
 
@@ -145,7 +146,7 @@ export class Camera {
           type: CameraProjectionType.PERSPECTIVE,
           far: 10000,
           near: 1,
-          fov: 90 * Math.PI / 180,
+          fov: (90 * Math.PI) / 180,
           height: 1000,
           width: 1000
         },

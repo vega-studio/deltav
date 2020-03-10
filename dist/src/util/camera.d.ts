@@ -1,4 +1,5 @@
 import { Transform } from "../3d/scene-graph/transform";
+import { Mat4x4 } from "../math/matrix";
 import { Vec3 } from "../math/vector";
 export declare enum CameraProjectionType {
     PERSPECTIVE = 0,
@@ -61,7 +62,7 @@ export declare function isPerspective(camera: Camera): camera is IPerspectiveCam
  */
 export declare class Camera {
     /** Provide an identifier for the camera to follow the pattern of most everything in this framework. */
-    readonly id: number;
+    get id(): number;
     private _id;
     /** This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates */
     animationEndTime: number;
@@ -89,17 +90,18 @@ export declare class Camera {
      */
     static makePerspective(options?: Partial<ICameraPerspectiveOptions>): Camera;
     /** The expected projection style of the Camera. */
-    readonly projectionType: CameraProjectionType;
+    get projectionType(): CameraProjectionType;
     /** The computed projection of the camera. */
-    readonly projection: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+    get projection(): Mat4x4;
     private _projection;
     /** The computed view transform of the camera. */
-    readonly view: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+    get view(): Mat4x4;
     /** Flag indicating the transforms for this camera need updating. */
-    readonly needsUpdate: boolean;
+    get needsUpdate(): boolean;
     private _needsUpdate;
     /** This is the position of the camera within the world. */
-    position: Vec3;
+    get position(): Vec3;
+    set position(val: Vec3);
     /**
      * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
      * of the camera viewing the world.
@@ -113,17 +115,19 @@ export declare class Camera {
      * This also has the added benefit of quickly and easily swapping axis directions by simply making the scale -1 for
      * any of the axis.
      */
-    scale: Vec3;
+    get scale(): Vec3;
+    set scale(val: Vec3);
     /**
      * Options used for making the projection of the camera. Set new options to update the projection.
      * Getting the options returns a copy of the object and is not the internal object itself.
      */
-    projectionOptions: ICameraOptions;
+    get projectionOptions(): ICameraOptions;
+    set projectionOptions(val: ICameraOptions);
     private _projectionOptions;
     /**
      * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
      */
-    readonly viewProjection: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+    get viewProjection(): Mat4x4;
     private _viewProjection;
     constructor(options: ICameraOptions);
     /**

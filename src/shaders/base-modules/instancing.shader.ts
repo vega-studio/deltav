@@ -26,7 +26,7 @@ ShaderModule.register({
     };
 
     // Set the active attribute to the layer for quick reference
-    layer.activeAttribute = activeAttribute;
+    layer.shaderIOInfo.activeAttribute = activeAttribute;
 
     return [activeAttribute];
   },

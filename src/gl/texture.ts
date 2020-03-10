@@ -79,8 +79,8 @@ export class Texture {
     this.needsDataUpload = true;
     this._format = val;
   }
-  private _format: GLSettings.Texture.TexelDataType = GLSettings.Texture
-    .TexelDataType.RGBA;
+  private _format: GLSettings.Texture.TexelDataType =
+    GLSettings.Texture.TexelDataType.RGBA;
 
   /**
    * Auto generates mipmaps. See:
@@ -119,8 +119,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._magFilter = val;
   }
-  private _magFilter: GLSettings.Texture.TextureMagFilter = GLSettings.Texture
-    .TextureMagFilter.Linear;
+  private _magFilter: GLSettings.Texture.TextureMagFilter =
+    GLSettings.Texture.TextureMagFilter.Linear;
 
   /**
    * Filter used when sampling has to shrink the image. See:
@@ -133,8 +133,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._minFilter = val;
   }
-  private _minFilter: GLSettings.Texture.TextureMinFilter = GLSettings.Texture
-    .TextureMinFilter.LinearMipMapLinear;
+  private _minFilter: GLSettings.Texture.TextureMinFilter =
+    GLSettings.Texture.TextureMinFilter.LinearMipMapLinear;
 
   /** Flag indicates if the texture object needs to have it's data modified */
   needsDataUpload: boolean = false;
@@ -155,8 +155,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._packAlignment = val;
   }
-  private _packAlignment: GLSettings.Texture.PackAlignment = GLSettings.Texture
-    .PackAlignment.FOUR;
+  private _packAlignment: GLSettings.Texture.PackAlignment =
+    GLSettings.Texture.PackAlignment.FOUR;
 
   /**
    * Tells the input packing to premultiply the alpha values with the other channels as the texture is generated. See:
@@ -196,8 +196,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._unpackAlignment = val;
   }
-  private _unpackAlignment: GLSettings.Texture.UnpackAlignment = GLSettings
-    .Texture.UnpackAlignment.FOUR;
+  private _unpackAlignment: GLSettings.Texture.UnpackAlignment =
+    GLSettings.Texture.UnpackAlignment.FOUR;
 
   /**
    * These are the regions that have been requested to be applied to the Texture along
@@ -222,8 +222,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._wrapHorizontal = val;
   }
-  private _wrapHorizontal: GLSettings.Texture.Wrapping = GLSettings.Texture
-    .Wrapping.CLAMP_TO_EDGE;
+  private _wrapHorizontal: GLSettings.Texture.Wrapping =
+    GLSettings.Texture.Wrapping.CLAMP_TO_EDGE;
 
   /**
    * Specifies sample wrapping for when samples fall outside the 0 - 1 range. See:
@@ -236,8 +236,8 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._wrapVertical = val;
   }
-  private _wrapVertical: GLSettings.Texture.Wrapping = GLSettings.Texture
-    .Wrapping.CLAMP_TO_EDGE;
+  private _wrapVertical: GLSettings.Texture.Wrapping =
+    GLSettings.Texture.Wrapping.CLAMP_TO_EDGE;
 
   constructor(options: TextureOptions) {
     this.anisotropy = options.anisotropy || this.anisotropy;

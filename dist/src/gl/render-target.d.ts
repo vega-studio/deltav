@@ -39,10 +39,10 @@ export interface IRenderTargetOptions {
  */
 export declare class RenderTarget {
     /** UID for the object */
-    readonly uid: number;
+    get uid(): number;
     private _uid;
     /** The buffer settings utilized in rendering this target */
-    readonly buffers: {
+    get buffers(): {
         color: GLSettings.RenderTarget.ColorBufferFormat | Texture | (GLSettings.RenderTarget.ColorBufferFormat | Texture)[] | undefined;
         depth: Texture | GLSettings.RenderTarget.DepthBufferFormat | undefined;
         stencil: Texture | GLSettings.RenderTarget.StencilBufferFormat | undefined;
@@ -52,18 +52,18 @@ export declare class RenderTarget {
      * The height of the render target. This is automatically set if any of the buffers are a Texture
      * object. Otherwise, this reflects the value provided in the options.
      */
-    readonly height: number;
+    get height(): number;
     private _height;
     /**
      * The width of the render target. This is automatically set if any of the buffers are a Texture
      * object. Otherwise, this reflects the value provided in the options.
      */
-    readonly width: number;
+    get width(): number;
     private _width;
     /**
      * This is a flag indicating if the render target passed it's frame buffer status check
      */
-    readonly validFramebuffer: boolean;
+    get validFramebuffer(): boolean;
     private _validFramebuffer;
     /** Flag indicating whether or not to preserve render targets that are textures or not. */
     retainTextureTargets: boolean;
@@ -75,7 +75,7 @@ export declare class RenderTarget {
      *
      * TODO: We have not implemented split render buffers yet.
      */
-    readonly splitRenderBuffers: RenderTarget[] | null;
+    get splitRenderBuffers(): RenderTarget[] | null;
     private _splitRenderBuffers;
     /**
      * This contains gl state that is processed and identified for the render target.

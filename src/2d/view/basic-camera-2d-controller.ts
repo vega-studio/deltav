@@ -872,8 +872,8 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const targetView = this.getTargetView(e);
 
         const deltaScale: [number, number, number] = [
-          e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomX,
-          e.mouse.wheel.delta[1] / this.scaleFactor * currentZoomY,
+          (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomX,
+          (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomY,
           1
         ];
 

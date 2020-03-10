@@ -4,9 +4,9 @@ import {
   AtlasResource,
   IAtlasResourceRequest
 } from "../../../resources";
-import { createLayer, LayerInitializer } from "../../../surface/layer";
+import { LayerInitializer } from "../../../surface/layer";
 import { InstanceDiffType } from "../../../types";
-import { mapInjectDefault } from "../../../util";
+import { createLayer, mapInjectDefault } from "../../../util";
 import { PromiseResolver } from "../../../util/promise-resolver";
 import { Layer2D } from "../../view/layer-2d";
 import { debugVideoEvents } from "./debug-video";

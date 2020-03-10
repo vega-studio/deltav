@@ -12,7 +12,7 @@ varying vec4 vertexColor;
 ${interpolation}
 
 void main() {
-  // Destructure threejs's bug with the position requirement
+  // Destructure vertex attribute
   float normal = vertex.x;
   float interpolationTime = vertex.y;
   float interpolationIncrement = 1.0 / vertex.z;

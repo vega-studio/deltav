@@ -1,3 +1,15 @@
+## 1.36.0
+
+## Added
+
+- [`ADDED`]: Stream changes by setting a simple property on a layer now. Allows for changes to not cause intense pressure on the CPU or RAM when working with massive amounts of data.
+- [`ADDED`]: Layer refs added. You can now get deeper inspection into created layers by setting a reference to the layer. The current feature this supports is greater insight to completion of easing animations.
+
+## Fixed
+
+- [`FIXED`]: Made color picking integration simpler to understand by moving elements from the diff processing portion to the layer level of logic. This cleaned out some excess and confusing files and made higher flexibility for the layer or customized layers.
+- [`FIXED`]: Typescript and typings updated to most recent versions, allowing for latest TS features as well as ensuring the library is compatible with the latest standards.
+
 ## 1.35.9
 
 ## Fixed

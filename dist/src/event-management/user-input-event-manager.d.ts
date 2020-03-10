@@ -1,3 +1,4 @@
+import { CanvasElement } from "../gl";
 import { Bounds } from "../math/primitives";
 import { Vec2 } from "../math/vector";
 import { LayerScene } from "../surface/layer-scene";
@@ -12,7 +13,7 @@ import { IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInter
  */
 export declare class UserInputEventManager {
     /** This is the canvas context we are rendering to */
-    context: HTMLCanvasElement;
+    context: CanvasElement;
     /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
     controllers: EventManager[];
     /** This is the quad tree for finding intersections with the mouse */
@@ -26,9 +27,10 @@ export declare class UserInputEventManager {
      * No Mouse interations will happen while this is set to true.
      */
     private _waitingForRender;
-    waitingForRender: boolean;
-    readonly scenes: LayerScene[];
-    constructor(canvas: HTMLCanvasElement, surface: Surface, controllers: EventManager[], handlesWheelEvents?: boolean);
+    get waitingForRender(): boolean;
+    set waitingForRender(val: boolean);
+    get scenes(): LayerScene[];
+    constructor(canvas: CanvasElement, surface: Surface, controllers: EventManager[], handlesWheelEvents?: boolean);
     /**
      * This sets up the DOM events to listen to the events that are broadcasted by the canvas.
      * These events are set up in such a way as to continue some events when the user
@@ -68,7 +70,7 @@ export declare class UserInputEventManager {
      * Retrieves the views underneath the mouse with the top most view as
      * the first view in the list.
      */
-    getViewsUnderPosition: (mouse: [number, number]) => Bounds<View<IViewProps>>[];
+    getViewsUnderPosition: (mouse: Vec2) => Bounds<View<IViewProps>>[];
     /**
      * This makes the metrics for interactions with the views.
      */

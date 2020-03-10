@@ -20,6 +20,6 @@ export declare class CircleInstance extends Instance {
     /** Center position of the circle */
     center: Vec2;
     constructor(options: ICircleInstanceOptions);
-    readonly width: number;
-    readonly height: number;
+    get width(): number;
+    get height(): number;
 }

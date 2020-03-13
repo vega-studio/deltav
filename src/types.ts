@@ -836,9 +836,7 @@ export type NumberId = number;
  *   }
  * }
  */
-export type Lookup<T> =
-  | { [key: number]: T | Lookup<T> }
-  | { [key: string]: T | Lookup<T> };
+export type Lookup<T> = { [key: string]: T | Lookup<T> };
 
 /**
  * This expresses determined buffer types that already exists within the framework.

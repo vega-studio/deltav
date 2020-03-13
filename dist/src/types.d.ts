@@ -719,8 +719,6 @@ export declare type NumberId = number;
  * }
  */
 export declare type Lookup<T> = {
-    [key: number]: T | Lookup<T>;
-} | {
     [key: string]: T | Lookup<T>;
 };
 /**

@@ -1,3 +1,9 @@
+## 1.37.1
+
+## Fixed
+
+- [`FIXED`]: The Lookup type now is a string keyed type. This is more in line with typescript identifying all keys as strings and simplifies the use of the type.
+
 ## 1.37.0
 
 ## Added

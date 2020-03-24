@@ -1,3 +1,9 @@
+## 1.37.2
+
+## Fixed
+
+- [`FIXED`]: The version deltav is using is now embedded into the canvas it generates as a data attribute. Will be useful for debugging purposes.
+
 ## 1.37.1
 
 ## Fixed

@@ -127,6 +127,32 @@ if (!TEST) {
     process.exit(1);
   }
 
+  // Update the release version json in the source
+  if (existsSync(resolve('src/release.json'))) {
+    try {
+      const contents = readJSONSync(resolve('src/release.json'));
+      contents.version = version;
+      writeJSONSync(resolve('src/release.json'), contents);
+    }
+
+    catch (err) {
+      console.log('Could not update the release.json file with current library version.');
+      process.exit(1);
+    }
+
+    // Add the changes to the release json file
+    if (shell.exec('git add -A').code !== 0) {
+      console.log('Could not ensure the release json was updated for the new version.');
+      process.exit(1);
+    }
+
+    // Amend the release commit
+    if (shell.exec('git commit --amend --no-edit').code !== 0) {
+      console.log('Could not amend the release commit to include the release json file.');
+      process.exit(1);
+    }
+  }
+
   // Tag the commit with the version number
   if (shell.exec(`git tag -a ${version} -m "Release ${version}"`).code !== 0) {
     console.log('Could not make tag for git commit');
@@ -143,19 +169,5 @@ if (!TEST) {
   if (shell.exec(`git push ${ENSURE_REMOTE} ${version}`).code !== 0) {
     console.log('Could not push tag to the remote repository');
     process.exit(1);
-  }
-
-  // Update the release version json in the source
-  if (existsSync(resolve('src/release.json'))) {
-    try {
-      const contents = readJSONSync(resolve('src/release.json'));
-      contents.version = version;
-      writeJSONSync(resolve('src/release.json'), contents);
-    }
-
-    catch (err) {
-      console.log('Could not update the release.json file with current library version.');
-      process.exit(1);
-    }
   }
 }

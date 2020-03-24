@@ -1114,6 +1114,13 @@ export class Surface {
     const canvas = options.context;
     if (!canvas) return null;
 
+    // Apply the deltav version to the attributes of the canvas so we have more debugging information available
+    try {
+      canvas.setAttribute("data-deltav", require("../release").version);
+    } catch (err) {
+      // NOOP - We want the application of the version to happen, but it is not application critical
+    }
+
     // Get the starting width and height so adjustments don't affect it
     const width = canvas.width;
     const height = canvas.height;

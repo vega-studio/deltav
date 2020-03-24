@@ -1,4 +1,4 @@
-const { removeSync, copySync } = require('fs-extra');
+const { removeSync, copySync, existsSync, writeJSONSync, readJSONSync } = require('fs-extra');
 const { resolve } = require('path');
 const shell = require('shelljs');
 
@@ -143,5 +143,19 @@ if (!TEST) {
   if (shell.exec(`git push ${ENSURE_REMOTE} ${version}`).code !== 0) {
     console.log('Could not push tag to the remote repository');
     process.exit(1);
+  }
+
+  // Update the release version json in the source
+  if (existsSync(resolve('src/release.json'))) {
+    try {
+      const contents = readJSONSync(resolve('src/release.json'));
+      contents.version = version;
+      writeJSONSync(resolve('src/release.json'), contents);
+    }
+
+    catch (err) {
+      console.log('Could not update the release.json file with current library version.');
+      process.exit(1);
+    }
   }
 }

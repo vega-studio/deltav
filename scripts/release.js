@@ -1,4 +1,4 @@
-const { removeSync, copySync } = require('fs-extra');
+const { removeSync, copySync, existsSync, writeJSONSync, readJSONSync } = require('fs-extra');
 const { resolve } = require('path');
 const shell = require('shelljs');
 
@@ -125,6 +125,32 @@ if (!TEST) {
   if (!version) {
     console.log('Could not determine release version from the last commit');
     process.exit(1);
+  }
+
+  // Update the release version json in the source
+  if (existsSync(resolve('src/release.json'))) {
+    try {
+      const contents = readJSONSync(resolve('src/release.json'));
+      contents.version = version;
+      writeJSONSync(resolve('src/release.json'), contents);
+    }
+
+    catch (err) {
+      console.log('Could not update the release.json file with current library version.');
+      process.exit(1);
+    }
+
+    // Add the changes to the release json file
+    if (shell.exec('git add -A').code !== 0) {
+      console.log('Could not ensure the release json was updated for the new version.');
+      process.exit(1);
+    }
+
+    // Amend the release commit
+    if (shell.exec('git commit --amend --no-edit').code !== 0) {
+      console.log('Could not amend the release commit to include the release json file.');
+      process.exit(1);
+    }
   }
 
   // Tag the commit with the version number

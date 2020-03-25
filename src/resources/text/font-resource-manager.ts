@@ -12,7 +12,7 @@ import {
   Omit,
   ResourceType
 } from "../../types";
-import { nextFrame, shallowEqual } from "../../util";
+import { nextFrame, shallowCompare } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions
@@ -302,7 +302,7 @@ export class FontResourceManager extends BaseResourceManager<
     if (!isFontResource(options)) return;
     const resource = this.resourceLookup.get(options.key);
     if (!resource) return;
-    if (shallowEqual(options.fontSource, resource.fontSource)) return;
+    if (shallowCompare(options.fontSource, resource.fontSource)) return;
 
     debug(
       "Font resources currently do not update. To update their properties simply destroy and recreate for now."

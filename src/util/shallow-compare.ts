@@ -1,7 +1,7 @@
 /**
  * Shallow comparison of two objects
  */
-export function shallowEqual(objA: any, objB: any) {
+export function shallowCompare(objA: any, objB: any) {
   if (!objA || !objB) {
     return objA === objB;
   }

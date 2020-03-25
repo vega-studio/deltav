@@ -45,8 +45,6 @@ export class Control2D {
   private startScale: Vec3 = [1, 1, 1];
   private startScaleTime: number = 0;
   private scaleEndTime: number = 0;
-  /** This indicates whether the view where the camera is in needs drawn */
-  private _needsViewDrawn: boolean = true;
   /** This is the surface the camera is controlled by */
   surface: Surface;
   /** When set, this will broadcast any change in the camera that will affect the view range */
@@ -123,10 +121,6 @@ export class Control2D {
     return this._scale;
   }
 
-  get needsViewDrawn() {
-    return this._needsViewDrawn;
-  }
-
   /**
    * Retrieves the animated value of the offset of the camera.
    * To get a non-animated version of the offset use getOffset()
@@ -153,7 +147,7 @@ export class Control2D {
    */
   setId(id: number) {
     this._id = id;
-    this._needsViewDrawn = true;
+    this.camera.needsViewDrawn = true;
   }
 
   /**
@@ -172,7 +166,7 @@ export class Control2D {
     // The total animation end time will be the max end time of all animateable properties
     this.updateEndTime();
     // Flag the view for a redraw
-    this._needsViewDrawn = true;
+    this.camera.needsViewDrawn = true;
 
     // Broadcast change
     if (this.onViewChange) {
@@ -224,7 +218,7 @@ export class Control2D {
     // Update end animation time
     this.updateEndTime();
     // Flag this as needing a redraw so all views using it will update.
-    this._needsViewDrawn = true;
+    this.camera.needsViewDrawn = true;
 
     // Broadcast change
     if (this.onViewChange) {
@@ -237,12 +231,12 @@ export class Control2D {
    * Resolves all flags indicating updates needed.
    */
   resolve() {
-    this._needsViewDrawn = false;
+    this.camera.needsViewDrawn = false;
     this.needsBroadcast = false;
   }
 
   update() {
-    this._needsViewDrawn = true;
+    this.camera.needsViewDrawn = true;
   }
 
   private updateEndTime() {

@@ -1,5 +1,6 @@
 import * as datGUI from "dat.gui";
 import {
+  AutoEasingMethod,
   BasicCamera2DController,
   BasicSurface,
   Camera2D,
@@ -150,6 +151,9 @@ export class VideoDemo extends BaseDemo {
           },
           layers: {
             boxes: createLayer(ImageLayer, {
+              animate: {
+                location: AutoEasingMethod.easeInOutCubic(2000)
+              },
               data: providers.controls,
               picking: PickType.SINGLE,
               atlas: resources.atlas.key,

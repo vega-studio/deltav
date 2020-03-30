@@ -2,7 +2,6 @@ import { EventManager } from "../event-management/event-manager";
 import { UserInputEventManager } from "../event-management/user-input-event-manager";
 import { RenderTarget } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
-import { Instance } from "../instance-provider/instance";
 import { BaseProjection } from "../math";
 import { Bounds } from "../math/primitives/bounds";
 import { Vec2 } from "../math/vector";
@@ -11,7 +10,7 @@ import { FrameMetrics } from "../types";
 import { IdentifiableById, IPipeline, IResourceType } from "../types";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { BaseIOSorting } from "./base-io-sorting";
-import { ILayerProps, Layer } from "./layer";
+import { Layer } from "./layer";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { ISceneOptions, LayerScene } from "./layer-scene";
 import { IViewProps, View } from "./view";
@@ -120,8 +119,6 @@ export declare class Surface {
      * generated that are needed
      */
     ioSorting: BaseIOSorting;
-    /** This is all of the layers in this manager by their id */
-    layers: Map<string, Layer<Instance, ILayerProps<Instance>>>;
     /** This manages the mouse events for the current canvas context */
     mouseManager: UserInputEventManager;
     /** This is a target used to perform rendering our picking pass */
@@ -265,6 +262,10 @@ export declare class Surface {
      * This resizes the canvas and retains pixel ratios amongst all of the resources involved.
      */
     resize(width: number, height: number, pixelRatio?: number): void;
+    /**
+     * This flags all views to fully re-render
+     */
+    redraw(): void;
     /**
      * This applies a new size to the renderer and resizes any additional resources that requires being
      * sized along with the renderer.

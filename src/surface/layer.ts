@@ -237,6 +237,8 @@ export class Layer<
    * here.
    */
   animationEndTime: number = 0;
+  /** This is a flag that allows a system to indicate this layer should always re-render */
+  isAnimationContinuous: boolean = false;
   /** Buffer manager is read only. Must use setBufferManager */
   private _bufferManager: BufferManagerBase<T, IBufferLocation>;
   /**

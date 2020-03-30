@@ -1,12 +1,15 @@
 import { Transform } from "../3d/scene-graph/transform";
 import {
+  compare4x4,
+  copy4x4,
   identity4,
   Mat4x4,
   multiply4x4,
   orthographic4x4,
   perspective4x4
 } from "../math/matrix";
-import { Vec3 } from "../math/vector";
+import { compare3, Vec3 } from "../math/vector";
+import { shallowCompare } from "./shallow-compare";
 import { uid } from "./uid";
 
 export enum CameraProjectionType {
@@ -183,7 +186,8 @@ export class Camera {
     return this.transform.position;
   }
   set position(val: Vec3) {
-    this._needsUpdate = true;
+    this._needsUpdate =
+      this._needsUpdate || !compare3(val, this.transform.position);
     this.transform.position = val;
   }
 
@@ -192,8 +196,10 @@ export class Camera {
    * of the camera viewing the world.
    */
   lookAt(position: Vec3, up: Vec3) {
-    this._needsUpdate = true;
+    const old: Mat4x4 = copy4x4(this.transform.matrix);
     this.transform.lookAt(position, up);
+    this._needsUpdate =
+      this._needsUpdate || !compare4x4(old, this.transform.matrix);
   }
 
   /**
@@ -208,7 +214,8 @@ export class Camera {
     return this.transform.scale;
   }
   set scale(val: Vec3) {
-    this._needsUpdate = true;
+    this._needsUpdate =
+      this._needsUpdate || !compare3(val, this.transform.scale);
     this.transform.scale = val;
   }
 
@@ -220,8 +227,9 @@ export class Camera {
     return this._projectionOptions;
   }
   set projectionOptions(val: ICameraOptions) {
+    this._needsUpdate =
+      this._needsUpdate || !shallowCompare(val, this._projectionOptions);
     this._projectionOptions = val;
-    this._needsUpdate = true;
   }
   private _projectionOptions: ICameraOptions;
 
@@ -260,6 +268,7 @@ export class Camera {
     if (this._needsUpdate || force) {
       this.updateProjection();
       this._needsUpdate = false;
+      this.needsViewDrawn = true;
     }
   }
 

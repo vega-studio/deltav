@@ -35,7 +35,7 @@ import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
-import { ILayerProps, Layer } from "./layer";
+import { Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
@@ -191,8 +191,6 @@ export class Surface {
    * generated that are needed
    */
   ioSorting = new BaseIOSorting();
-  /** This is all of the layers in this manager by their id */
-  layers = new Map<string, Layer<Instance, ILayerProps<Instance>>>();
   /** This manages the mouse events for the current canvas context */
   mouseManager: UserInputEventManager;
   /** This is a target used to perform rendering our picking pass */
@@ -478,7 +476,9 @@ export class Surface {
             layer.draw();
             // If any of the layers under the view need a redraw
             // Then the view needs a redraw
-            if (layer.needsViewDrawn) view.needsDraw = true;
+            if (layer.needsViewDrawn || layer.isAnimationContinuous) {
+              view.needsDraw = true;
+            }
             // Flag the layer as valid
             validLayers[layer.id] = layer;
             // The view's animationEndTime is the largest end time found on one of the view's child layers.
@@ -507,8 +507,8 @@ export class Surface {
         if (
           view.needsDraw ||
           (time && time < view.lastFrameTime) ||
-          view.props.camera.needsViewDrawn ||
-          true
+          (time && time < view.animationEndTime) ||
+          view.props.camera.needsViewDrawn
         ) {
           view.needsDraw = true;
           needsDraw = true;
@@ -629,7 +629,6 @@ export class Surface {
    * Free all resources consumed by this surface that gets applied to the GPU.
    */
   destroy() {
-    this.layers.forEach(layer => layer.destroy());
     this.resourceManager.destroy();
     this.mouseManager.destroy();
     this.sceneDiffs.destroy();
@@ -712,19 +711,19 @@ export class Surface {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
 
+      // Resolve view renders
       for (let i = 0, iMax = scene.views.length; i < iMax; ++i) {
         const view = scene.views[i];
         view.needsDraw = false;
         view.props.camera.resolve();
       }
-    }
 
-    // Set all layers draw needs back to false, also, resolve all of the data providers
-    // so their changelists are considered consumed.
-    this.layers.forEach(layer => {
-      layer.needsViewDrawn = false;
-      layer.props.data.resolveContext = "";
-    });
+      // Resolve layer renders
+      for (let i = 0, iMax = scene.layers.length; i < iMax; ++i) {
+        const layer = scene.layers[i];
+        layer.needsViewDrawn = false;
+      }
+    }
 
     // We render color picking to our color picking render target, but we save it's result for the beginning of next
     // frame. The longest delay picking can cause is from the readPixels operation being CPU blocking. Additionally, the
@@ -1334,6 +1333,20 @@ export class Surface {
 
     // After the resize happens, the view draw dependencies may change as the views will cover different region sizes
     this.gatherViewDrawDependencies();
+  }
+
+  /**
+   * This flags all views to fully re-render
+   */
+  redraw() {
+    for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
+      const viewLayers = this.sceneDiffs.items[i];
+
+      for (let k = 0, kMax = viewLayers.views.length; k < kMax; ++k) {
+        const view = viewLayers.views[k];
+        view.needsDraw = true;
+      }
+    }
   }
 
   /**

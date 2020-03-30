@@ -83,6 +83,10 @@ export declare class ImageLayer<T extends ImageInstance, U extends IImageLayerPr
      */
     private prepareVideo;
     /**
+     * This asserts whether or not the layer should be triggering redraws or not.
+     */
+    private updateAnimationState;
+    /**
      * Parent layer has no rendering needs
      */
     initShader(): null;

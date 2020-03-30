@@ -19,6 +19,9 @@ import {
   compare3x3,
   compare4x4,
   concat4x4,
+  copy2x2,
+  copy3x3,
+  copy4x4,
   identity2,
   identity3,
   identity4,
@@ -2727,6 +2730,37 @@ describe("Matrix Library", () => {
       );
 
       assert4(transform4(m, v), [33, 22, -11, 1]);
+    });
+  });
+
+  describe('Clone', () => {
+    it ('Should copy the matrix', () => {
+      const m2: Mat2x2 = [1, 2, 3, 4];
+      const m3: Mat3x3 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const m4: Mat4x4 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+      const c2 = copy2x2(m2);
+      assert2x2(c2, m2);
+
+      const c3 = copy3x3(m3);
+      assert3x3(c3, m3);
+
+      const c4 = copy4x4(m4);
+      assert4x4(c4, m4);
+    });
+    it ('Should be a new object pointer', () => {
+      const m2: Mat2x2 = [1, 2, 3, 4];
+      const m3: Mat3x3 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const m4: Mat4x4 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+      const c2 = copy2x2(m2);
+      assert(c2 !== m2);
+
+      const c3 = copy3x3(m3);
+      assert(c3 !== m3);
+
+      const c4 = copy4x4(m4);
+      assert(c4 !== m4);
     });
   });
 });

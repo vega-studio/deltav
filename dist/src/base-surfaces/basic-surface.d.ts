@@ -86,6 +86,8 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
     private options;
     /** This is the timer id for resize events. This is used to debounce resize events */
     private resizeTimer;
+    /** Tracks the last visibility state the browser is in */
+    private visibility;
     /** This is the context  */
     private waitForSize;
     /** The cameras specified for this surface */
@@ -117,6 +119,10 @@ export declare class BasicSurface<T extends Lookup<InstanceProvider<Instance>>, 
      * This is a handler that responds to varying resize events
      */
     private handleResize;
+    /**
+     * This is a handler that responds to the browser window losing visibility
+     */
+    private handleVisibility;
     /**
      * Initializes all elements for the surface
      */

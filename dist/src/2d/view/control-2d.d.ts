@@ -34,8 +34,6 @@ export declare class Control2D {
     private startScale;
     private startScaleTime;
     private scaleEndTime;
-    /** This indicates whether the view where the camera is in needs drawn */
-    private _needsViewDrawn;
     /** This is the surface the camera is controlled by */
     surface: Surface;
     /** When set, this will broadcast any change in the camera that will affect the view range */
@@ -63,7 +61,6 @@ export declare class Control2D {
      * Gets the source scale value
      */
     getScale(): Vec3;
-    get needsViewDrawn(): boolean;
     /**
      * Retrieves the animated value of the offset of the camera.
      * To get a non-animated version of the offset use getOffset()

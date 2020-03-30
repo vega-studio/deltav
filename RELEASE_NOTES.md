@@ -1,3 +1,9 @@
+## 1.37.3
+
+## Fixed
+
+- [`FIXED`]: Draws halt when nothing is animating or changing within a view. Previous changes had broken this behavior, so this should be resolved now.
+
 ## 1.37.2
 
 ## Fixed

@@ -129,6 +129,8 @@ export class ImageLayer<
     // Get the changes we need to handle. We make sure the provider's changes remain in tact for
     // the child layer to process them.
     const changes = this.resolveChanges(true);
+    // Make sure we are triggering redraws appropriately
+    this.updateAnimationState();
     // No changes, do nadda
     if (changes.length <= 0) return;
 
@@ -522,6 +524,23 @@ export class ImageLayer<
       .catch(() => {
         removeListeners();
       });
+  }
+
+  /**
+   * This asserts whether or not the layer should be triggering redraws or not.
+   */
+  private updateAnimationState() {
+    // We should check to see if any of the video sources are playing or not
+    let isVideoPlaying = false;
+
+    this.sourceToVideo.forEach(video => {
+      if (!video.paused) {
+        isVideoPlaying = true;
+      }
+    });
+
+    // When videos are in use AND playing, this layer should be on continuous redraws to ensure the video renders continuously.
+    this.isAnimationContinuous = this.usingVideo.size > 0 && isVideoPlaying;
   }
 
   /**

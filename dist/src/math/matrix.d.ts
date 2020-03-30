@@ -379,3 +379,15 @@ export declare function compare3x3(m1: Mat3x3, m2: Mat3x3): boolean;
  * Determines equality of two 4x4 matrices.
  */
 export declare function compare4x4(m1: Mat4x4, m2: Mat4x4): boolean;
+/**
+ * Copies a Mat2x2 into a new storage object
+ */
+export declare function copy2x2(m: Mat2x2): Mat2x2;
+/**
+ * Copies a Mat3x3 into a new storage object
+ */
+export declare function copy3x3(m: Mat3x3): Mat3x3;
+/**
+ * Copies a Mat4x4 into a new storage object
+ */
+export declare function copy4x4(m: Mat4x4): Mat4x4;

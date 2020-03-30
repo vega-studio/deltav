@@ -149,7 +149,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         frameMetrics: FrameMetrics,
         values: IEasingProps | undefined,
         vecMethods: VecMethods<Vec>,
-        instanceEasing: Map<number, IEasingProps>;
+        instanceEasing: Map<number, IEasingProps>,
+        isContinuous: boolean;
 
       // Hijack the update from the attribute to a new update method which will
       // Be able to interact with the values for the easing methodology
@@ -206,12 +207,14 @@ export class EasingIOExpansion extends BaseIOExpansion {
             // Continuous means we start at 0 and let the time go to infinity
             case AutoEasingLoopStyle.CONTINUOUS:
               timeValue = (currentTime - easingValues.startTime) / duration;
+              isContinuous = true;
               break;
 
             // Repeat means going from 0 to 1 then 0 to 1 etc etc
             case AutoEasingLoopStyle.REPEAT:
               timeValue =
                 ((currentTime - easingValues.startTime) / duration) % 1;
+              isContinuous = true;
               break;
 
             // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
@@ -220,12 +223,14 @@ export class EasingIOExpansion extends BaseIOExpansion {
                 (currentTime - easingValues.startTime) / duration;
               // This is a triangle wave for an input
               timeValue = abs(((timePassed / 2.0) % 1) - 0.5) * 2.0;
+              isContinuous = true;
               break;
 
             // No loop means just linear time
             case AutoEasingLoopStyle.NONE:
             default:
               timeValue = (currentTime - easingValues.startTime) / duration;
+              isContinuous = false;
               break;
           }
 
@@ -245,11 +250,14 @@ export class EasingIOExpansion extends BaseIOExpansion {
         // Update the information shared between this attribute and it's children
         attributeDataShare.values = easingValues;
 
-        /** Set layer's animation end time */
+        // Set the layer's animation end time
         layer.animationEndTime = max(
           layer.animationEndTime,
           easingValues.startTime + duration + frameMetrics.frameDuration
         );
+
+        // Flag the layer's continuous animation so continuous easing loop styles will keep rendering indefinitely
+        layer.isAnimationContinuous = isContinuous;
 
         return end;
       };

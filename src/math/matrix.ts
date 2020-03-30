@@ -1231,3 +1231,41 @@ export function compare4x4(m1: Mat4x4, m2: Mat4x4): boolean {
     Math.abs(m1[15] - m2[15]) <= 1e-7
   );
 }
+
+/**
+ * Copies a Mat2x2 into a new storage object
+ */
+export function copy2x2(m: Mat2x2): Mat2x2 {
+  return [m[0], m[1], m[2], m[3]];
+}
+
+/**
+ * Copies a Mat3x3 into a new storage object
+ */
+export function copy3x3(m: Mat3x3): Mat3x3 {
+  return [m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]];
+}
+
+/**
+ * Copies a Mat4x4 into a new storage object
+ */
+export function copy4x4(m: Mat4x4): Mat4x4 {
+  return [
+    m[0],
+    m[1],
+    m[2],
+    m[3],
+    m[4],
+    m[5],
+    m[6],
+    m[7],
+    m[8],
+    m[9],
+    m[10],
+    m[11],
+    m[12],
+    m[13],
+    m[14],
+    m[15]
+  ];
+}

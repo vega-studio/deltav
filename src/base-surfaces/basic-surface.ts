@@ -191,6 +191,8 @@ export class BasicSurface<
   private options: IBasicSurfaceOptions<T, U, V, W>;
   /** This is the timer id for resize events. This is used to debounce resize events */
   private resizeTimer: number = 0;
+  /** Tracks the last visibility state the browser is in */
+  private visibility: VisibilityState = "visible";
   /** This is the context  */
   private waitForSize = waitForValidDimensions();
 
@@ -270,6 +272,19 @@ export class BasicSurface<
   };
 
   /**
+   * This is a handler that responds to the browser window losing visibility
+   */
+  private handleVisibility = () => {
+    if (document.visibilityState === "visible") {
+      if (this.visibility !== document.visibilityState) {
+        this.base?.redraw();
+      }
+    }
+
+    this.visibility = document.visibilityState;
+  };
+
+  /**
    * Initializes all elements for the surface
    */
   async init() {
@@ -326,6 +341,7 @@ export class BasicSurface<
       await this.updatePipeline();
       // Establish event listeners
       window.addEventListener("resize", this.handleResize);
+      document.addEventListener("visibilitychange", this.handleVisibility);
     } catch (err) {
       // We catch any initialization errors from the surface
       if (err.error === SurfaceErrorType.NO_WEBGL_CONTEXT) {

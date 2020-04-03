@@ -9,7 +9,6 @@ import {
   InstanceIOValue,
   IResourceContext,
   IResourceInstanceAttribute,
-  Omit,
   ResourceType
 } from "../../types";
 import { nextFrame, shallowCompare } from "../../util";
@@ -37,18 +36,6 @@ export interface IFontResourceRequestInternal extends IFontResourceRequest {
    * similar resources without generating two request lifecycles.
    */
   isRequested?: boolean;
-}
-
-/**
- * Wrapper method to create a font resource request to make typings and intellisense work better.
- */
-export function fontRequest(
-  options: Omit<IFontResourceRequest, "type">
-): IFontResourceRequest {
-  return {
-    type: ResourceType.FONT,
-    ...options
-  };
 }
 
 /**

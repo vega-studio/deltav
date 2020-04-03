@@ -57,3 +57,32 @@ export interface IFontResourceRequest extends BaseResourceRequest {
   /** Establish the only type that this request shall be is a FONT type */
   type: ResourceType.FONT;
 }
+
+/**
+ * Wrapper method to create a font resource request to make typings and intellisense work better.
+ */
+export function fontRequest(
+  options: Omit<IFontResourceRequest, "type">
+): IFontResourceRequest {
+  return {
+    type: ResourceType.FONT,
+    ...options
+  };
+}
+
+/**
+ * Provides a Preload string that can be applied to 'preload' in a FontMapSource that will cause all numbers to be able
+ * to render without interruption.
+ */
+export function preloadNumber() {
+  return (
+    ".101112131415161718191.202122232425262728292.303132333435363738393.404142434445464748494.505152535455565758595." +
+    "606162636465666768696.707172737475767778797.808182838485868788898.909192939495969798999.000102030405060708090." +
+    "$0$1$2$3$4$5$6$7$8$9$" +
+    "%0%1%2%3%4%5%6%7%8%9%" +
+    "-0-1-2-3-4-5-6-7-8-9-" +
+    "+0+1+2+3+4+5+6+7+8+9+" +
+    ")0)1)2)3)4)5)6)7)8)9)" +
+    "(0(1(2(3(4(5(6(7(8(9("
+  );
+}

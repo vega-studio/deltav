@@ -28,7 +28,7 @@ export class CubeDemo3D extends BaseDemo {
   /** GUI properties */
   parameters = {};
 
-  loopId: number;
+  loopId: Promise<number>;
 
   buildConsole(_gui: datGUI.GUI): void {
     // const parameters = gui.addFolder("Parameters");

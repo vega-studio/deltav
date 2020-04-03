@@ -4,6 +4,7 @@ import { BasicDemo3D } from "./demos/basic-demo-3d";
 import { ChartDemo } from "./demos/chart-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
+import { FrameCommandDemo } from "./demos/frame-command-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
@@ -37,5 +38,6 @@ demos.set("video-demo", VideoDemo);
 demos.set("ease-demo", EaseDemo);
 demos.set("quat-ease-demo", QuatEaseDemo);
 demos.set("stream-demo", StreamDemo);
+demos.set("frame-command-demo", FrameCommandDemo);
 
 export const demoKeys = Array.from(demos.keys());

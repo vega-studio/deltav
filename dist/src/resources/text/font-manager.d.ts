@@ -33,6 +33,8 @@ export interface IFontMapMetrics {
     family: string;
     /** Font weight of the font to be rendered to the font map */
     weight: string | number;
+    /** Applies pre-computed strings to warm up kerning pairs and glyph renderings before any label is generated. */
+    preload?: string;
 }
 export interface ISimpleFontMapMetrics extends IFontMapMetrics {
     type: undefined;

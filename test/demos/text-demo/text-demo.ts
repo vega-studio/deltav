@@ -11,11 +11,14 @@ import {
   GlyphInstance,
   GlyphLayer,
   IEasingControl,
+  IFontResourceOptions,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
   nextFrame,
+  onAnimationLoop,
   PickType,
+  preloadNumber,
   ScaleMode,
   View2D,
   wait
@@ -52,7 +55,9 @@ const copyToClipboard = (str: string) => {
  * A demo demonstrating particles collecting within the bounds of text.
  */
 export class TextDemo extends BaseDemo {
-  /** All circles created for this demo */
+  /** A number label demonstrating ability to smoothely render without hiccup due to preloaded number glyphs */
+  numberLabel: LabelInstance;
+  /** All labels created for this demo */
   labels: LabelInstance[] = [];
   /** Timer used to debounce the shake circle operation */
   shakeTimer: number;
@@ -121,6 +126,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
+        this.numberLabel.fontSize = value;
         this.layoutLabels();
       }, 250)
     );
@@ -128,6 +134,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "maxWidth", 0, 1200, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.maxWidth = value));
+        this.numberLabel.maxWidth = value;
       }, 250)
     );
 
@@ -144,6 +151,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "letterSpacing", -5, 20, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.letterSpacing = value));
+        this.numberLabel.letterSpacing = value;
       }, 250)
     );
   }
@@ -152,6 +160,14 @@ export class TextDemo extends BaseDemo {
    * Render pipeline for this demo
    */
   makeSurface(container: HTMLElement) {
+    const font: IFontResourceOptions = {
+      ...DEFAULT_RESOURCES.font,
+      fontSource: {
+        ...DEFAULT_RESOURCES.font.fontSource,
+        preload: preloadNumber()
+      }
+    };
+
     return new BasicSurface({
       container,
       providers: this.providers,
@@ -159,7 +175,7 @@ export class TextDemo extends BaseDemo {
         main: new Camera2D()
       },
       resources: {
-        font: DEFAULT_RESOURCES.font
+        font: font
       },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
@@ -233,6 +249,19 @@ export class TextDemo extends BaseDemo {
       resolver();
     });
 
+    this.numberLabel = new LabelInstance({
+      color: [1, 1, 1, 1],
+      text: "0",
+      origin: [5, 5],
+      fontSize: this.parameters.fontSize
+    });
+
+    onAnimationLoop(() => {
+      this.numberLabel.text = `${Math.random()}`;
+    });
+
+    this.providers.labels.add(this.numberLabel);
+
     await promise;
   }
 
@@ -268,7 +297,12 @@ export class TextDemo extends BaseDemo {
     }
 
     const label = new LabelInstance({
-      origin: [20, this.parameters.fontSize * this.labels.length],
+      origin: [
+        5,
+        this.parameters.fontSize * this.labels.length +
+          this.parameters.fontSize +
+          5
+      ],
       color: [0, random(), random(), 0.0],
       text: txt !== undefined ? txt : words.join(" "),
       fontSize: this.parameters.fontSize,
@@ -286,7 +320,10 @@ export class TextDemo extends BaseDemo {
    */
   layoutLabels() {
     this.labels.forEach((lbl, i) => {
-      lbl.origin = [20, i * this.parameters.fontSize];
+      lbl.origin = [
+        5,
+        i * this.parameters.fontSize + this.parameters.fontSize + 5
+      ];
     });
   }
 

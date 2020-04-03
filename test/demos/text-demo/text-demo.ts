@@ -126,6 +126,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.fontSize = value));
+        this.numberLabel.fontSize = value;
         this.layoutLabels();
       }, 250)
     );
@@ -133,6 +134,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "maxWidth", 0, 1200, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.maxWidth = value));
+        this.numberLabel.maxWidth = value;
       }, 250)
     );
 
@@ -149,6 +151,7 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "letterSpacing", -5, 20, 1).onChange(
       debounce(async (value: number) => {
         this.labels.forEach(lbl => (lbl.letterSpacing = value));
+        this.numberLabel.letterSpacing = value;
       }, 250)
     );
   }
@@ -317,7 +320,10 @@ export class TextDemo extends BaseDemo {
    */
   layoutLabels() {
     this.labels.forEach((lbl, i) => {
-      lbl.origin = [20, i * this.parameters.fontSize];
+      lbl.origin = [
+        5,
+        i * this.parameters.fontSize + this.parameters.fontSize + 5
+      ];
     });
   }
 

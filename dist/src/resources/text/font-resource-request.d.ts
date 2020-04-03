@@ -55,3 +55,12 @@ export interface IFontResourceRequest extends BaseResourceRequest {
     /** Establish the only type that this request shall be is a FONT type */
     type: ResourceType.FONT;
 }
+/**
+ * Wrapper method to create a font resource request to make typings and intellisense work better.
+ */
+export declare function fontRequest(options: Omit<IFontResourceRequest, "type">): IFontResourceRequest;
+/**
+ * Provides a Preload string that can be applied to 'preload' in a FontMapSource that will cause all numbers to be able
+ * to render without interruption.
+ */
+export declare function preloadNumber(): string;

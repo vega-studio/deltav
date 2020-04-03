@@ -1,3 +1,10 @@
+## 1.38.0
+
+## Added
+
+- [`ADDED`]: Ability to preload strings into a font resource to improve initial render times with no perceived flicker.
+- [`ADDED`]: OnAnimationLoop now includes a duration option so the command will only execute for a provided amount of time.
+
 ## 1.37.3
 
 ## Fixed

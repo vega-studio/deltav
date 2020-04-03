@@ -1,7 +1,7 @@
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, IResourceInstanceAttribute, Omit } from "../../types";
+import { InstanceIOValue, IResourceContext, IResourceInstanceAttribute } from "../../types";
 import { BaseResourceManager, BaseResourceOptions } from "../base-resource-manager";
 import { IFontResourceOptions } from "./font-manager";
 import { FontMap } from "./font-map";
@@ -13,10 +13,6 @@ export interface IFontResourceRequestInternal extends IFontResourceRequest {
      */
     isRequested?: boolean;
 }
-/**
- * Wrapper method to create a font resource request to make typings and intellisense work better.
- */
-export declare function fontRequest(options: Omit<IFontResourceRequest, "type">): IFontResourceRequest;
 /**
  * This manager controls and manages Font type resources that are requested for generation. This manager
  * will utilize the request given to it to provide the best possible solution in both load times and

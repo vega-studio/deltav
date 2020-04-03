@@ -5,7 +5,7 @@ import { BaseResourceOptions } from "../base-resource-manager";
 import { SubTexture } from "../texture/sub-texture";
 import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
-import { IFontResourceRequest } from "./font-resource-request";
+import { fontRequest, IFontResourceRequest } from "./font-resource-request";
 
 const debug = require("debug")("performance");
 
@@ -40,6 +40,8 @@ export interface IFontMapMetrics {
   family: string;
   /** Font weight of the font to be rendered to the font map */
   weight: string | number;
+  /** Applies pre-computed strings to warm up kerning pairs and glyph renderings before any label is generated. */
+  preload?: string;
 }
 
 export interface ISimpleFontMapMetrics extends IFontMapMetrics {
@@ -271,6 +273,23 @@ export class FontManager {
     await this.updateFontMapCharacters(characters, fontMap);
     // Keep the generated font map as our resource
     this.fontMaps.set(resourceOptions.key, fontMap);
+
+    // Check if the font source has some preload characters needed to update the fontmap with to improve initial render
+    // times of resources making requests
+    if (resourceOptions.fontSource.preload) {
+      this.updateFontMap(resourceOptions.key, [
+        fontRequest({
+          key: resourceOptions.key,
+          character: "",
+          kerningPairs: [resourceOptions.fontSource.preload],
+          metrics: {
+            fontSize: 12,
+            text: resourceOptions.fontSource.preload,
+            letterSpacing: 0
+          }
+        })
+      ]);
+    }
 
     return fontMap;
   }

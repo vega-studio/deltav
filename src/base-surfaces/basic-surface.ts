@@ -186,7 +186,7 @@ export class BasicSurface<
   /** This is the last known time this surface executed it's draw loop */
   private currentTime: number = 0;
   /** This is the identifier of the requestAnimationFrame, used for canceling */
-  private drawRequestId: number = 0;
+  private drawRequestId: Promise<number>;
   /** The target canvas to render on */
   private options: IBasicSurfaceOptions<T, U, V, W>;
   /** This is the timer id for resize events. This is used to debounce resize events */

@@ -131,7 +131,11 @@ module.exports = {
 
   resolveLoader: {
     modules: ['node_modules', 'loaders']
-  }
+  },
+
+  optimization: IS_DEVELOPMENT ? {
+    minimize: false,
+  } : undefined
 };
 
 if (IS_DEVELOPMENT) {

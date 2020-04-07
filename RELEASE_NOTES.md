@@ -1,3 +1,10 @@
+## 1.38.1
+
+## Fixed
+
+- [`FIXED`]: OffscreenCanvas no longer breaks browsers that did not implement the OffscreenCanvas class.
+- [`FIXED`]: Ensured minifying does not happen during development to improve build times.
+
 ## 1.38.0
 
 ## Added

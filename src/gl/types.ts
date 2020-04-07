@@ -1,4 +1,5 @@
 import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
+import { NOOP } from "../types";
 import { Texture } from "./texture";
 
 export enum MaterialUniformType {
@@ -123,6 +124,12 @@ export type GLContext = WebGLRenderingContext | WebGL2RenderingContext;
  * for whenever a canvas of any sort is needed.
  */
 export type CanvasElement = HTMLCanvasElement | OffscreenCanvas;
+
+/**
+ * There is no strong support for OffscreenCanvas in browsers yet, so we must warily utilize the feature and ensure we
+ * don't have an undefined variable get used.
+ */
+const OffscreenCanvas = window.OffscreenCanvas || NOOP;
 
 /**
  * Typeguards to see if the canvas is specifically an offscreen canvas or not.

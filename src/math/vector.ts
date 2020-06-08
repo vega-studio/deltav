@@ -108,6 +108,10 @@ export function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, vec[0]);
 }
 
+export function forward1(): Vec1 {
+  return [0];
+}
+
 /**
  * Cross product of 1 dimensional vectors could be easiest to visualize as two
  * parallel or anti-parallel vectors that are in the 2D plane. This would result in a vector that is of zero magnitude
@@ -266,6 +270,10 @@ export function ceil2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
 
 export function copy2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, vec[0], vec[1]);
+}
+
+export function forward2(out?: Vec2Compat) {
+  return apply2(out, 1, 0);
 }
 
 /**
@@ -470,6 +478,10 @@ export function fuzzyCompare3(
     abs(left[1] - right[1]) <= epsilon &&
     abs(left[2] - right[2]) <= epsilon
   );
+}
+
+export function forward3(out?: Vec3Compat): Vec3 {
+  return apply3(out, 0, 0, -1);
 }
 
 export function cross3(
@@ -738,6 +750,10 @@ export function fuzzyCompare4(
   );
 }
 
+export function forward4(out?: Vec4Compat): Vec4 {
+  return apply4(out, 0, 0, -1, 0);
+}
+
 /**
  * 4D cross product? Lots of issues here. If you need a proper cross product for 3D, please use cross3. What
  * this method should do is up for debate for now and will return a unit 4D vector.
@@ -991,6 +1007,7 @@ export type VecMethods<T extends Vec> = {
   empty(out?: T): T;
   flatten(list: T[], out?: number[]): number[];
   floor(vec: T, out?: T): T;
+  forward(vec: T, out?: T): T;
   inverse(vec: T, out?: T): T;
   length(vec: T): number;
   linear(start: T, end: T, t: number, out?: T): T;
@@ -1015,6 +1032,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   empty: empty1,
   flatten: flatten1,
   floor: floor1,
+  forward: forward1,
   inverse: inverse1,
   length: length1,
   linear: linear1,
@@ -1038,6 +1056,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   empty: empty2,
   flatten: flatten2,
   floor: floor2,
+  forward: forward2,
   inverse: inverse2,
   length: length2,
   linear: linear2,
@@ -1061,6 +1080,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   empty: empty3,
   flatten: flatten3,
   floor: floor3,
+  forward: forward3,
   inverse: inverse3,
   length: length3,
   linear: linear3,
@@ -1084,6 +1104,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   empty: empty4,
   flatten: flatten4,
   floor: floor4,
+  forward: forward4,
   inverse: inverse4,
   length: length4,
   linear: linear4,

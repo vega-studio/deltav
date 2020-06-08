@@ -138,13 +138,11 @@ export class TextDemo extends BaseDemo {
       }, 250)
     );
 
-    parameters
-      .add(this.parameters, "scaleMode", {
-        Always: ScaleMode.ALWAYS,
-        BoundMax: ScaleMode.BOUND_MAX,
-        Never: ScaleMode.NEVER
-      })
-      .onChange();
+    parameters.add(this.parameters, "scaleMode", {
+      Always: ScaleMode.ALWAYS,
+      BoundMax: ScaleMode.BOUND_MAX,
+      Never: ScaleMode.NEVER
+    });
 
     parameters.add(this.parameters, "copy");
 

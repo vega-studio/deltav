@@ -7,11 +7,11 @@ import {
   createView,
   InstanceProvider,
   onAnimationLoop,
+  scale3,
   stopAnimationLoop,
-  Transform,
   View3D
 } from "../../../src";
-import { Camera } from "../../../src/util/camera";
+import { Camera, CameraProjectionType } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { CubeInstance } from "./cube/cube-instance";
 import { CubeLayer } from "./cube/cube-layer";
@@ -26,18 +26,43 @@ export class CubeDemo3D extends BaseDemo {
   };
 
   /** GUI properties */
-  parameters = {};
+  parameters = {
+    cameraMode: "Orthographic"
+  };
 
   loopId: Promise<number>;
 
-  buildConsole(_gui: datGUI.GUI): void {
-    // const parameters = gui.addFolder("Parameters");
-    // parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
+  buildConsole(gui: datGUI.GUI): void {
+    const parameters = gui.addFolder("Parameters");
+    parameters
+      .add(this.parameters, "cameraMode", {
+        orthographic: "Orthographic",
+        perspective: "Perspective"
+      })
+      .onFinishChange(() => {
+        this.reset();
+      });
   }
 
   destroy(): void {
     super.destroy();
     stopAnimationLoop(this.loopId);
+  }
+
+  reset() {
+    if (this.surface) {
+      this.destroy();
+      this.providers.cubes.clear();
+      this.surface.cameras.main =
+        this.parameters.cameraMode === "Perspective"
+          ? Camera.makePerspective({
+              fov: (60 * Math.PI) / 180,
+              far: 100000
+            })
+          : Camera.makeOrthographic();
+      this.surface.rebuild();
+      this.init();
+    }
   }
 
   makeSurface(container: HTMLElement) {
@@ -48,10 +73,13 @@ export class CubeDemo3D extends BaseDemo {
       },
       providers: this.providers,
       cameras: {
-        perspective: Camera.makePerspective({
-          fov: (60 * Math.PI) / 180,
-          far: 100000
-        })
+        main:
+          this.parameters.cameraMode === "Perspective"
+            ? Camera.makePerspective({
+                fov: (60 * Math.PI) / 180,
+                far: 100000
+              })
+            : Camera.makeOrthographic()
       },
       resources: {},
       eventManagers: _cameras => ({}),
@@ -59,7 +87,7 @@ export class CubeDemo3D extends BaseDemo {
         main: {
           views: {
             perspective: createView(View3D, {
-              camera: cameras.perspective,
+              camera: cameras.main,
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
             })
           },
@@ -76,30 +104,33 @@ export class CubeDemo3D extends BaseDemo {
   async init() {
     if (!this.surface) return;
 
-    const transform = new Transform();
-    const camera = this.surface.cameras.perspective;
-    camera.position = [0, 10, 10];
-    camera.lookAt([0, 0, 0], [0, 1, 0]);
+    const camera = this.surface.cameras.main;
+    camera.position = [0, 10, 15];
+    camera.lookAt([0, 0, -20], [0, 1, 0]);
+    const factor =
+      camera.projectionType === CameraProjectionType.PERSPECTIVE ? 1 : 100;
 
     const cube = this.providers.cubes.add(
       new CubeInstance({
-        transform,
-        color: [0.9, 0.56, 0.2, 1]
+        color: [0.9, 0.56, 0.2, 1],
+        size: scale3([1, 1, 1], factor)
       })
     );
 
     this.loopId = onAnimationLoop((t: number) => {
       const theta = (t / 1400) * Math.PI * 2;
-      transform.position = [Math.sin(theta) * 3, 0, Math.cos(theta) * 3];
-      transform.lookAt(
-        add3(transform.position, [
+      cube.transform.position = add3(
+        [Math.sin(theta) * 10 * factor, 0, Math.cos(theta) * 10 * factor],
+        [0, 0, -20]
+      );
+      cube.transform.lookAt(
+        add3(cube.transform.position, [
           Math.cos(-theta),
           Math.sin(-theta / 20),
           Math.sin(-theta)
         ]),
         [0, 1, 0]
       );
-      cube.transform = transform;
     }, 1000);
   }
 }

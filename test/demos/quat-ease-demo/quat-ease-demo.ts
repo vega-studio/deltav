@@ -15,6 +15,7 @@ import {
   InstanceProvider,
   LabelInstance,
   LabelLayer,
+  onFrame,
   ScaleMode,
   Transform,
   View3D
@@ -28,8 +29,6 @@ export class QuatEaseDemo extends BaseDemo {
   duration: number = 2000;
   delay: number = 0;
   loopStyle: AutoEasingLoopStyle = AutoEasingLoopStyle.REFLECT;
-
-  cubes: CubeInstance[] = [];
 
   providers = {
     cubes0: new InstanceProvider<CubeInstance>(),
@@ -440,7 +439,7 @@ export class QuatEaseDemo extends BaseDemo {
     camera.position = [0, 0, -10];
     camera.lookAt([0, 0, 0], [0, 1, 0]);
 
-    const cube0 = this.providers.cubes0.add(
+    this.providers.cubes0.add(
       new CubeInstance({
         transform: transforms[0],
         size: [0.35, 0.35, 0.35],
@@ -448,7 +447,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube1 = this.providers.cubes1.add(
+    this.providers.cubes1.add(
       new CubeInstance({
         transform: transforms[1],
         size: [0.35, 0.35, 0.35],
@@ -456,7 +455,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube2 = this.providers.cubes2.add(
+    this.providers.cubes2.add(
       new CubeInstance({
         transform: transforms[2],
         size: [0.35, 0.35, 0.35],
@@ -464,21 +463,21 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube3 = this.providers.cubes3.add(
+    this.providers.cubes3.add(
       new CubeInstance({
         transform: transforms[3],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube4 = this.providers.cubes4.add(
+    this.providers.cubes4.add(
       new CubeInstance({
         transform: transforms[4],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube5 = this.providers.cubes5.add(
+    this.providers.cubes5.add(
       new CubeInstance({
         transform: transforms[5],
         size: [0.35, 0.35, 0.35],
@@ -486,7 +485,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube6 = this.providers.cubes6.add(
+    this.providers.cubes6.add(
       new CubeInstance({
         transform: transforms[6],
         size: [0.35, 0.35, 0.35],
@@ -494,7 +493,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube7 = this.providers.cubes7.add(
+    this.providers.cubes7.add(
       new CubeInstance({
         transform: transforms[7],
         size: [0.35, 0.35, 0.35],
@@ -502,7 +501,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube8 = this.providers.cubes8.add(
+    this.providers.cubes8.add(
       new CubeInstance({
         transform: transforms[8],
         size: [0.35, 0.35, 0.35],
@@ -510,21 +509,21 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube9 = this.providers.cubes9.add(
+    this.providers.cubes9.add(
       new CubeInstance({
         transform: transforms[9],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube10 = this.providers.cubes10.add(
+    this.providers.cubes10.add(
       new CubeInstance({
         transform: transforms[10],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube11 = this.providers.cubes11.add(
+    this.providers.cubes11.add(
       new CubeInstance({
         transform: transforms[11],
         size: [0.35, 0.35, 0.35],
@@ -532,7 +531,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube12 = this.providers.cubes12.add(
+    this.providers.cubes12.add(
       new CubeInstance({
         transform: transforms[12],
         size: [0.35, 0.35, 0.35],
@@ -540,7 +539,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube13 = this.providers.cubes13.add(
+    this.providers.cubes13.add(
       new CubeInstance({
         transform: transforms[13],
         size: [0.35, 0.35, 0.35],
@@ -548,7 +547,7 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube14 = this.providers.cubes14.add(
+    this.providers.cubes14.add(
       new CubeInstance({
         transform: transforms[14],
         size: [0.35, 0.35, 0.35],
@@ -556,21 +555,21 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    const cube15 = this.providers.cubes15.add(
+    this.providers.cubes15.add(
       new CubeInstance({
         transform: transforms[15],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube16 = this.providers.cubes16.add(
+    this.providers.cubes16.add(
       new CubeInstance({
         transform: transforms[16],
         size: [0.35, 0.35, 0.35],
         color: [0.9, 0.56, 0.2, 1]
       })
     );
-    const cube17 = this.providers.cubes17.add(
+    this.providers.cubes17.add(
       new CubeInstance({
         transform: transforms[17],
         size: [0.35, 0.35, 0.35],
@@ -578,79 +577,26 @@ export class QuatEaseDemo extends BaseDemo {
       })
     );
 
-    this.cubes.push(cube0);
-    this.cubes.push(cube1);
-    this.cubes.push(cube2);
-    this.cubes.push(cube3);
-    this.cubes.push(cube4);
-    this.cubes.push(cube5);
-    this.cubes.push(cube6);
-    this.cubes.push(cube7);
-    this.cubes.push(cube8);
-    this.cubes.push(cube9);
-    this.cubes.push(cube10);
-    this.cubes.push(cube11);
-    this.cubes.push(cube12);
-    this.cubes.push(cube13);
-    this.cubes.push(cube14);
-    this.cubes.push(cube15);
-    this.cubes.push(cube16);
-    this.cubes.push(cube17);
+    // Wait for the cubes to get added before setting their destination value
+    await onFrame();
 
-    setTimeout(() => {
-      transforms[0].rotation = q;
-      cube0.transform = transforms[0];
-
-      transforms[1].rotation = q;
-      cube1.transform = transforms[1];
-
-      transforms[2].rotation = q;
-      cube2.transform = transforms[2];
-
-      transforms[3].rotation = q;
-      cube3.transform = transforms[3];
-
-      transforms[4].rotation = q;
-      cube4.transform = transforms[4];
-
-      transforms[5].rotation = q;
-      cube5.transform = transforms[5];
-
-      transforms[6].rotation = q;
-      cube6.transform = transforms[6];
-
-      transforms[7].rotation = q;
-      cube7.transform = transforms[7];
-
-      transforms[8].rotation = q;
-      cube8.transform = transforms[8];
-
-      transforms[9].rotation = q;
-      cube9.transform = transforms[9];
-
-      transforms[10].rotation = q;
-      cube10.transform = transforms[10];
-
-      transforms[11].rotation = q;
-      cube11.transform = transforms[11];
-
-      transforms[12].rotation = q;
-      cube12.transform = transforms[12];
-
-      transforms[13].rotation = q;
-      cube13.transform = transforms[13];
-
-      transforms[14].rotation = q;
-      cube14.transform = transforms[14];
-
-      transforms[15].rotation = q;
-      cube15.transform = transforms[15];
-
-      transforms[16].rotation = q;
-      cube16.transform = transforms[16];
-
-      transforms[17].rotation = q;
-      cube17.transform = transforms[17];
-    }, 1500);
+    transforms[0].rotation = q;
+    transforms[1].rotation = q;
+    transforms[2].rotation = q;
+    transforms[3].rotation = q;
+    transforms[4].rotation = q;
+    transforms[5].rotation = q;
+    transforms[6].rotation = q;
+    transforms[7].rotation = q;
+    transforms[8].rotation = q;
+    transforms[9].rotation = q;
+    transforms[10].rotation = q;
+    transforms[11].rotation = q;
+    transforms[12].rotation = q;
+    transforms[13].rotation = q;
+    transforms[14].rotation = q;
+    transforms[15].rotation = q;
+    transforms[16].rotation = q;
+    transforms[17].rotation = q;
   }
 }

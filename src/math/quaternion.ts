@@ -20,7 +20,18 @@ import {
   Mat3x3,
   Mat4x4
 } from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+import {
+  add3,
+  cross3,
+  dot3,
+  dot4,
+  normalize3,
+  scale3,
+  Vec3,
+  vec3,
+  Vec3Compat,
+  Vec4
+} from "./vector";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 
@@ -380,8 +391,9 @@ export function fromOrderedEulerToQuat(
 }
 
 /**
- * This converts a euler angle of any ordering and turns it into an euler of XYZ orientation which is the expected
- * rotation of most elements in this framework.
+ * This converts a euler angle of any ordering and turns it into an euler of XYZ
+ * orientation which is the expected rotation of most elements in this
+ * framework.
  */
 export function toEulerXYZfromOrderedEuler(
   euler: Vec3,
@@ -440,8 +452,9 @@ export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
 /**
  * Converts a quaternion to an ordered Euler angle.
  *
- * NOTE: It is best to convert to XYZ ordering if using with this framework's 3D system, or simply use toEulerFromQuat
- * if this is desired. Only use this if you specifically need an Euler angle for a known purpose.
+ * NOTE: It is best to convert to XYZ ordering if using with this framework's 3D
+ * system, or simply use toEulerFromQuat if this is desired. Only use this if
+ * you specifically need an Euler angle for a known purpose.
  */
 export function toOrderedEulerFromQuat(
   q: Quaternion,
@@ -896,8 +909,9 @@ export function axisQuat(quat: Quaternion): Vec3 {
 }
 
 /**
- * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'models' perspective
- * where the model orients itself to match the orientation.
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'models' perspective where the model orients itself to match
+ * the orientation.
  */
 export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
   let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
@@ -941,8 +955,8 @@ export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
 }
 
 /**
- * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'views' perspective
- * where the world orients to match the view.
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'views' perspective where the world orients to match the view.
  */
 export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
   let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
@@ -1014,7 +1028,8 @@ export function eulerToQuat(
 }
 
 /**
- * This produces a quaternion that creates an orientation that will look in the direction specified.
+ * This produces a quaternion that creates an orientation that will look in the
+ * direction specified.
  */
 export function lookAtQuat(
   forward: Vec3Compat,
@@ -1231,8 +1246,23 @@ export function lookAtMatrix(
 }
 
 /**
- * SLERP interpolation between two quaternion orientations. The Quaternions MUST be unit quats for this to be valid.
- * If the quat has gotten out of normalization from precision errors, consider renormalizing the quaternion.
+ * Rotates a vector using some nice tricks with a quaternion's value.
+ */
+export function rotateVectorByUnitQuat(v: Vec3, q: Quaternion, out?: Vec3) {
+  const u = vec3(q[1], q[2], q[3]);
+  const s = q[0];
+
+  return add3(
+    add3(scale3(u, 2 * dot3(u, v)), scale3(v, s * s - dot3(u, u))),
+    scale3(cross3(u, v), 2 * s),
+    out
+  );
+}
+
+/**
+ * SLERP interpolation between two quaternion orientations. The Quaternions MUST
+ * be unit quats for this to be valid. If the quat has gotten out of
+ * normalization from precision errors, consider renormalizing the quaternion.
  */
 export function slerpUnitQuat(
   from: Quaternion,
@@ -1258,7 +1288,8 @@ export function slerpUnitQuat(
     to1[3] = to[0];
   }
 
-  // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
+  // Calculate coefficients for final values. We use SLERP if the difference
+  // between the two angles isn't too big.
   if (1.0 - cosom > 0.0000001) {
     omega = acos(cosom);
     sinom = sin(omega);
@@ -1266,7 +1297,8 @@ export function slerpUnitQuat(
     scale1 = sin(t * omega) / sinom;
   }
 
-  // We linear interpolate for quaternions that are very close together in angle.
+  // We linear interpolate for quaternions that are very close together in
+  // angle.
   else {
     scale0 = 1.0 - t;
     scale1 = t;

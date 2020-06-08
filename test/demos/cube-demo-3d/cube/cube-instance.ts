@@ -29,7 +29,6 @@ export class CubeInstance extends Instance3D {
 
   constructor(options: ICubeOptions) {
     super(options);
-    this.transform = options.transform;
     this.size = options.size || this.size;
     this.color = options.color || this.color;
     this.frontColor = options.frontColor || this.frontColor;

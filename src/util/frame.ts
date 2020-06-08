@@ -27,6 +27,7 @@ const animationLoopCommands = new Map<
  * Frame loop that executes queued commands
  */
 const loop = (time: number) => {
+  console.log(time);
   currentTime = time;
   let keepLooping = false;
   const stopAnimationLoops: Promise<number>[] = [];
@@ -97,7 +98,6 @@ const loop = (time: number) => {
     // If an interval is not specified, then we simply execute the command immediately
     if (interval <= 0) {
       if (command) {
-        keepLooping = true;
         command(time);
       }
     }
@@ -108,6 +108,7 @@ const loop = (time: number) => {
       if (time - startTime > interval) {
         command(time);
       } else {
+        keepLooping = true;
         immediateQueuedCommands.push(immediate[i]);
       }
     }

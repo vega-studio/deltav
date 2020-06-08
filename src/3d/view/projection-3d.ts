@@ -2,6 +2,9 @@ import {
   Mat4x4,
   multiply4x4,
   project3As4ToScreen,
+  ray,
+  Ray,
+  rayFromPoints,
   transform4
 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
@@ -12,6 +15,7 @@ import {
   subtract2,
   Vec2,
   Vec3,
+  vec3,
   vec4
 } from "../../math/vector";
 import { Camera, CameraProjectionType } from "../../util/camera";
@@ -26,9 +30,17 @@ export class Projection3D extends BaseProjection<any> {
    * plane.
    *
    * This method provides a point located in front of the camera that would be located on a ray eminating from the
-   * camera to the world.
+   * camera to the world. See screenRay
    *
-   * To make a ray from this point simply: rayFromPoints(camera.position, screenToWorld([x, y]))
+   * For a perspective camera:
+   * - To make a ray from this point simply:
+   *
+   * `const ray = rayFromPoints(camera.position, screenToWorld([x, y]))`
+   *
+   * For an orthographic camera:
+   * - To make a ray from this point:
+   *
+   * `const ray = ray(screenToWorld([x, y]), camera.forward)`
    */
   screenToWorld(point: Vec2, out?: Vec3): Vec3 {
     out = out || [0, 0, 0];
@@ -36,6 +48,22 @@ export class Projection3D extends BaseProjection<any> {
     this.viewToWorld(this.screenToView(point), out);
 
     return out;
+  }
+
+  /**
+   * Generates a ray from screen coordinates that emanates out into the 3D world
+   * space.
+   */
+  screenRay(point: Vec2): Ray {
+    if (this.camera.projectionType === CameraProjectionType.ORTHOGRAPHIC) {
+      const world: Vec3 = vec3(this.screenToWorld(point));
+
+      return ray(world, this.camera.transform.forward);
+    } else {
+      const world: Vec3 = vec3(this.screenToWorld(point));
+
+      return rayFromPoints(vec3(this.camera.transform.position), world);
+    }
   }
 
   /**
@@ -73,6 +101,8 @@ export class Projection3D extends BaseProjection<any> {
    * located on a ray eminating from the camera to the world in such a way, that
    * the ray traveling to infinity would appear, from the screen's perspective,
    * to stay on the same pixel.
+   *
+   * See screenRay
    *
    * For a perspective camera:
    * - To make a ray from this point simply:
@@ -113,12 +143,12 @@ export class Projection3D extends BaseProjection<any> {
       );
       apply3(out, world[0], world[1], world[2]);
     } else {
-      const cameraSpace = subtract2(renderSpace, [width / 2, height / 2]);
+      const middleToPoint = subtract2(renderSpace, [width / 2, height / 2]);
       const world = transform4(
-        this.camera.transform.matrix,
-        vec4(cameraSpace, 1)
+        this.camera.transform.viewMatrix,
+        vec4(middleToPoint, -projectionOptions.near)
       );
-      apply3(out, world[0], world[1], world[2]);
+      apply3(out, world[0], -world[1], world[2]);
     }
 
     return out;

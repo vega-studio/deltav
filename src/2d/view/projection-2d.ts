@@ -1,4 +1,4 @@
-import { BaseProjection, Vec2 } from "../../math";
+import { BaseProjection, Ray, Vec2 } from "../../math";
 import { Camera2D } from "./camera-2d";
 
 export class Projection2D extends BaseProjection<any> {
@@ -19,6 +19,21 @@ export class Projection2D extends BaseProjection<any> {
       this.camera.scale2D[1];
 
     return world;
+  }
+
+  /**
+   * Makes a ray from the provided point that emanates into 3D space straight
+   * into the screen. Since our spaces have 3D tendencies, this can have some
+   * useful applications for interacting with the 2D elements in interesting and
+   * new ways.
+   */
+  screenRay(point: Vec2): Ray {
+    const world = this.screenToWorld(point);
+
+    return [
+      [world[0], world[1], 0],
+      [world[0], world[1], -1]
+    ];
   }
 
   /**

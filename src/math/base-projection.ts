@@ -1,5 +1,6 @@
 import { uid } from "../util/uid";
 import { Bounds } from "./primitives/bounds";
+import { Ray } from "./ray";
 import { apply2, Vec2, Vec2Compat } from "./vector";
 
 /**
@@ -81,6 +82,13 @@ export abstract class BaseProjection<T> {
   abstract screenToWorld(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
 
   /**
+   * Maps a coordinate relative to the screen to a ray that emanates from the
+   * selected coordinate such that the ray extending to infinity would be
+   * projected to the same point.
+   */
+  abstract screenRay(point: Vec2Compat): Ray;
+
+  /**
    * Maps a coordinate found within the world to a relative coordinate within the screen space.
    */
   abstract worldToScreen(point: Vec2Compat, out?: Vec2Compat): Vec2Compat;
@@ -102,6 +110,13 @@ export abstract class BaseProjection<T> {
 export class SimpleProjection extends BaseProjection<any> {
   screenToWorld(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {
     return point;
+  }
+
+  screenRay(_point: Vec2Compat): Ray {
+    return [
+      [0, 0, -1],
+      [0, 0, -2]
+    ];
   }
 
   worldToScreen(point: Vec2Compat, _out?: Vec2Compat): Vec2Compat {

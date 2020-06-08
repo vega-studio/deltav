@@ -27,7 +27,6 @@ const animationLoopCommands = new Map<
  * Frame loop that executes queued commands
  */
 const loop = (time: number) => {
-  console.log(time);
   currentTime = time;
   let keepLooping = false;
   const stopAnimationLoops: Promise<number>[] = [];

@@ -1,4 +1,5 @@
 import * as datGUI from "dat.gui";
+
 import {
   add3,
   BasicSurface,
@@ -118,11 +119,12 @@ export class CubeDemo3D extends BaseDemo {
     );
 
     this.loopId = onAnimationLoop((t: number) => {
-      const theta = (t / 1400) * Math.PI * 2;
+      const theta = (t / 2) * Math.PI * 2;
       cube.transform.position = add3(
         [Math.sin(theta) * 10 * factor, 0, Math.cos(theta) * 10 * factor],
         [0, 0, -20]
       );
+
       cube.transform.lookAt(
         add3(cube.transform.position, [
           Math.cos(-theta),

@@ -186,7 +186,7 @@ export class CubeLayer<
           update: o => o.scale
         }),
         createAttribute({
-          easing: AutoEasingMethod.slerpQuatInOutCubic(1000),
+          easing: AutoEasingMethod.slerpQuatInQuint(1000),
           name: "r",
           size: InstanceAttributeSize.FOUR,
           update: o => o.rotation

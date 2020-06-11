@@ -85,8 +85,9 @@ export const M432 = 14;
 export const M433 = 15;
 
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export function apply2x2(
@@ -106,8 +107,9 @@ export function apply2x2(
 }
 
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export function apply3x3(
@@ -137,8 +139,9 @@ export function apply3x3(
 }
 
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export function apply4x4(
@@ -186,10 +189,11 @@ export function apply4x4(
 }
 
 /**
- * In many of these methods, there are moments that temporary matrices are needed to store some results. Rather than
- * allot and consume memory for temp matrices and degrade performance, these will provide some containers to work with.
- * The values in these containers should never be assumed upon entry of a method, nor shall these be used to make two
- * methods operate together.
+ * In many of these methods, there are moments that temporary matrices are
+ * needed to store some results. Rather than allot and consume memory for temp
+ * matrices and degrade performance, these will provide some containers to work
+ * with. The values in these containers should never be assumed upon entry of a
+ * method, nor shall these be used to make two methods operate together.
  */
 
 const TEMP_M30 = identity3();
@@ -265,8 +269,9 @@ export function determinant4x4(mat: Mat4x4): number {
 }
 
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 9 OPS, 1 method call
  */
@@ -282,8 +287,9 @@ export function affineInverse2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 | null {
 }
 
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 56 OPS, 10 method calls
  */
@@ -312,8 +318,9 @@ export function affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null {
 }
 
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 164 OPS + 3 temp 3x3 uses + 13 method calls
  */
@@ -460,12 +467,92 @@ export function multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
  */
 export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
   // prettier-ignore
-  return apply4x4(out,
-        right[0] * left[0] + right[1] * left[4] + right[2] * left[8] + right[3] * left[12],     right[0] * left[1] + right[1] * left[5] + right[2] * left[9] + right[3] * left[13],     right[0] * left[2] + right[1] * left[6] + right[2] * left[10] + right[3] * left[14],     right[0] * left[3] + right[1] * left[7] + right[2] * left[11] + right[3] * left[15],
-        right[4] * left[0] + right[5] * left[4] + right[6] * left[8] + right[7] * left[12],     right[4] * left[1] + right[5] * left[5] + right[6] * left[9] + right[7] * left[13],     right[4] * left[2] + right[5] * left[6] + right[6] * left[10] + right[7] * left[14],     right[4] * left[3] + right[5] * left[7] + right[6] * left[11] + right[7] * left[15],
-      right[8] * left[0] + right[9] * left[4] + right[10] * left[8] + right[11] * left[12],   right[8] * left[1] + right[9] * left[5] + right[10] * left[9] + right[11] * left[13],   right[8] * left[2] + right[9] * left[6] + right[10] * left[10] + right[11] * left[14],   right[8] * left[3] + right[9] * left[7] + right[10] * left[11] + right[11] * left[15],
-    right[12] * left[0] + right[13] * left[4] + right[14] * left[8] + right[15] * left[12], right[12] * left[1] + right[13] * left[5] + right[14] * left[9] + right[15] * left[13], right[12] * left[2] + right[13] * left[6] + right[14] * left[10] + right[15] * left[14], right[12] * left[3] + right[13] * left[7] + right[14] * left[11] + right[15] * left[15]
-  );
+  out = out || ([] as any as Mat4x4);
+  out[0] =
+    right[0] * left[0] +
+    right[1] * left[4] +
+    right[2] * left[8] +
+    right[3] * left[12];
+  out[1] =
+    right[0] * left[1] +
+    right[1] * left[5] +
+    right[2] * left[9] +
+    right[3] * left[13];
+  out[2] =
+    right[0] * left[2] +
+    right[1] * left[6] +
+    right[2] * left[10] +
+    right[3] * left[14];
+  out[3] =
+    right[0] * left[3] +
+    right[1] * left[7] +
+    right[2] * left[11] +
+    right[3] * left[15];
+
+  out[4] =
+    right[4] * left[0] +
+    right[5] * left[4] +
+    right[6] * left[8] +
+    right[7] * left[12];
+  out[5] =
+    right[4] * left[1] +
+    right[5] * left[5] +
+    right[6] * left[9] +
+    right[7] * left[13];
+  out[6] =
+    right[4] * left[2] +
+    right[5] * left[6] +
+    right[6] * left[10] +
+    right[7] * left[14];
+  out[7] =
+    right[4] * left[3] +
+    right[5] * left[7] +
+    right[6] * left[11] +
+    right[7] * left[15];
+
+  out[8] =
+    right[8] * left[0] +
+    right[9] * left[4] +
+    right[10] * left[8] +
+    right[11] * left[12];
+  out[9] =
+    right[8] * left[1] +
+    right[9] * left[5] +
+    right[10] * left[9] +
+    right[11] * left[13];
+  out[10] =
+    right[8] * left[2] +
+    right[9] * left[6] +
+    right[10] * left[10] +
+    right[11] * left[14];
+  out[11] =
+    right[8] * left[3] +
+    right[9] * left[7] +
+    right[10] * left[11] +
+    right[11] * left[15];
+
+  out[12] =
+    right[12] * left[0] +
+    right[13] * left[4] +
+    right[14] * left[8] +
+    right[15] * left[12];
+  out[13] =
+    right[12] * left[1] +
+    right[13] * left[5] +
+    right[14] * left[9] +
+    right[15] * left[13];
+  out[14] =
+    right[12] * left[2] +
+    right[13] * left[6] +
+    right[14] * left[10] +
+    right[15] * left[14];
+  out[15] =
+    right[12] * left[3] +
+    right[13] * left[7] +
+    right[14] * left[11] +
+    right[15] * left[15];
+
+  return out;
 }
 
 /**
@@ -473,7 +560,8 @@ export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * concat4x4(A, B, C, D, E, ..., N);
  * T = A * B * C * E * ... * N
  *
- * Thus the far right is considered the 'first' operation and the far left is the last.
+ * Thus the far right is considered the 'first' operation and the far left is
+ * the last.
  */
 export function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4 {
   if (m.length <= 0) return identity4();
@@ -567,8 +655,8 @@ export function subtract4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 4 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 4 OPS
  */
 export function Hadamard2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
   // prettier-ignore
@@ -579,8 +667,8 @@ export function Hadamard2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
 }
 
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 9 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 9 OPS
  */
 export function Hadamard3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
   // prettier-ignore
@@ -592,8 +680,8 @@ export function Hadamard3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
 }
 
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 16 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 16 OPS
  */
 export function Hadamard4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
   // prettier-ignore
@@ -651,9 +739,10 @@ export function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
- * This makes a shear 2d matrix that shears parallel to the x-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 2d matrix that shears parallel to the x-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
@@ -670,9 +759,10 @@ export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
 }
 
 /**
- * This makes a shear 2d matrix that shears parallel to the y-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 2d matrix that shears parallel to the y-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
@@ -689,9 +779,10 @@ export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
 }
 
 /**
- * This makes a shear 3d matrix that shears parallel to the x-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the x-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
@@ -712,9 +803,10 @@ export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
 }
 
 /**
- * This makes a shear 3d matrix that shears parallel to the y-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the y-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
@@ -735,9 +827,10 @@ export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
 }
 
 /**
- * This makes a shear 3d matrix that shears parallel to the z-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the z-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
   if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
@@ -781,7 +874,8 @@ export function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3 {
 }
 
 /**
- * Transforms a Vec3 by the provided matrix but treats the Vec3 as a [x, y, z, 1] Vec4.
+ * Transforms a Vec3 by the provided matrix but treats the Vec3 as a
+ * [x, y, z, 1] Vec4.
  */
 export function transform3as4(m: Mat4x4, v: Vec3, out?: Vec4): Vec4 {
   return apply4(
@@ -843,23 +937,23 @@ export function toString4x4(mat: Mat4x4): string {
 }
 
 /**
- * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
- * receive a matrix that will perform rotations by that amount in that order.
+ * We only support Euler X then Y then Z rotations. Specify the rotation values
+ * for each axis to receive a matrix that will perform rotations by that amount
+ * in that order.
  *
- * All of these rotations follow the right hand rule. If you need a different mixture of ordered
- * rotations, then consider simply concatenating 3 rotations like so (for a ZYZ example):
+ * All of these rotations follow the right hand rule. If you need a different
+ * mixture of ordered rotations, then consider simply concatenating 3 rotations
+ * like so (for a ZYZ example):
  *
- * multiply4x4(
+ * multiply4x4(rotation4x4(0, 0, Z), multiply4x4(rotation4x4(0, Y, 0),
  *   rotation4x4(0, 0, Z),
- *   multiply4x4(
- *     rotation4x4(0, Y, 0),
- *     rotation4x4(0, 0, Z),
  *   )
  * );
  *
- * This will create a ZYZ rotation (with the right handed rule). If you need the operations to be left handed you will
- * have to use the transpose and do a little extra math to make it happen or hand craft your own method for generating
- * rotational matrices.
+ * This will create a ZYZ rotation (with the right handed rule). If you need the
+ * operations to be left handed you will have to use the transpose and do a
+ * little extra math to make it happen or hand craft your own method for
+ * generating rotational matrices.
  */
 export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
   if (x) {
@@ -981,8 +1075,9 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
 }
 
 /**
- * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
- * receive a matrix that will perform rotations by that amount in that order.
+ * We only support Euler X then Y then Z rotations. Specify the rotation values
+ * for each axis to receive a matrix that will perform rotations by that amount
+ * in that order.
  */
 export function rotation4x4by3(v: Vec3, out?: Mat4x4) {
   return rotation4x4(v[0], v[1], v[2], out);
@@ -1058,8 +1153,8 @@ export function perspectiveFrustum4x4(
 ) {
   out = out || identity4();
 
-  // This is a column major matrix that should homogenize coordinates to within unit cube if the specified point is
-  // within the expressed frustum.
+  // This is a column major matrix that should homogenize coordinates to within
+  // unit cube if the specified point is within the expressed frustum.
   // prettier-ignore
   return apply4x4(out,
       2 * n / (r - l),                 0,                      0,  0,
@@ -1112,8 +1207,8 @@ export function perspectiveFOVY4x4(
 }
 
 /**
- * Generate a projection matrix with no perspective. Useful for flat 2D or isometric rendering or other similar special
- * case renderings.
+ * Generate a projection matrix with no perspective. Useful for flat 2D or
+ * isometric rendering or other similar special case renderings.
  */
 export function orthographic4x4(
   left: number,
@@ -1134,9 +1229,10 @@ export function orthographic4x4(
 }
 
 /**
- * Performs the operations to project a Vec4 to screen coordinates using a projection matrix. The x and y of the out
- * Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogenous coordinates
- * where -1 <= z <= 1 iff z lies within frustum near and far planes.
+ * Performs the operations to project a Vec4 to screen coordinates using a
+ * projection matrix. The x and y of the out Vec4 will be the final projection,
+ * w should be resolved to 1, and the z coordinate will be in homogenous
+ * coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
  */
 export function projectToScreen(
   proj: Mat4x4,
@@ -1158,10 +1254,11 @@ export function projectToScreen(
 }
 
 /**
- * Performs the operations to project a Vec3 to screen coordinates as a Vec4 with a w of value 1.
- * using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1,
- * and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and
- * far planes.
+ * Performs the operations to project a Vec3 to screen coordinates as a Vec4
+ * with a w of value 1. using a projection matrix. The x and y of the out Vec4
+ * will be the final projection, w should be resolved to 1, and the z coordinate
+ * will be in homogenous coordinates where -1 <= z <= 1 iff z lies within
+ * frustum near and far planes.
  */
 export function project3As4ToScreen(
   proj: Mat4x4,

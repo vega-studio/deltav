@@ -245,6 +245,7 @@ export function stopAnimationLoop(id: Promise<number>) {
  * animation loops, nextFrame, and onFrame commands.
  */
 export function stopAllFrameCommands() {
+  animationLoopCommands.forEach(cmd => cmd[0](currentTime, currentTime));
   animationLoopCommands.clear();
   immediateQueuedCommands = [];
   nextQueuedCommands = [];

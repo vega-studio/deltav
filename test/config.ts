@@ -8,7 +8,7 @@ import { FrameCommandDemo } from "./demos/frame-command-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
-import { ProjectionDemo3D } from "./demos/project-demo-3d";
+import { ProjectionDemo3D } from "./demos/projection-demo-3d";
 import { QuatEaseDemo } from "./demos/quat-ease-demo";
 import { StreamDemo } from "./demos/stream-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";

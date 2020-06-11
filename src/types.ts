@@ -89,10 +89,10 @@ export enum VertexAttributeSize {
 
 /**
  * These are valid atlas sizes available. We force a power of 2 to be utilized.
- * We do not allow crazy large sizes as browsers have very real caps on resources.
- * This helps implementations be a little smarter about what they are using. Future
- * versions may increase this number as GPUs improve and standards allow greater
- * flexibility.
+ * We do not allow crazy large sizes as browsers have very real caps on
+ * resources. This helps implementations be a little smarter about what they are
+ * using. Future versions may increase this number as GPUs improve and standards
+ * allow greater flexibility.
  */
 export enum TextureSize {
   _2 = 0x01 << 1,
@@ -110,7 +110,8 @@ export enum TextureSize {
 }
 
 /**
- * Types of reesources that can be generated and provided via the resource manager
+ * Types of reesources that can be generated and provided via the resource
+ * manager
  */
 export enum ResourceType {
   ATLAS = 0,
@@ -125,7 +126,8 @@ export interface IResourceType {
 }
 
 /**
- * This represents a color in the VoidGL system. Ranges are [0 - 1, 0 - 1, 0 - 1, 0 - 1]
+ * This represents a color in the VoidGL system. Ranges are
+ * [0 - 1, 0 - 1, 0 - 1, 0 - 1]
  */
 export type Color = Vec4;
 
@@ -169,8 +171,8 @@ export interface IdentifiableByKey {
 }
 
 /**
- * Information provided in user interaction events interacting with instances and
- * layers.
+ * Information provided in user interaction events interacting with instances
+ * and layers.
  */
 export interface IPickInfo<T extends Instance> {
   /** The interaction that created this picking information */
@@ -179,9 +181,15 @@ export interface IPickInfo<T extends Instance> {
   readonly layer: string;
   /** This is the list of instances that were detected in the interaction */
   readonly instances: T[];
-  /** This is the screen coordinates of the interaction point that interacted with the instances */
+  /**
+   * This is the screen coordinates of the interaction point that interacted
+   * with the instances
+   */
   readonly screen: Vec2;
-  /** This is the world coordinates of the ineraction point that interacted with the instances */
+  /**
+   * This is the world coordinates of the ineraction point that interacted with
+   * the instances
+   */
   readonly world: Vec2Compat;
   /** Projection methods to easily go between coordinate spaces */
   readonly projection: BaseProjection<any>;
@@ -199,7 +207,10 @@ export interface IMousePickInfo<T extends Instance> extends IPickInfo<T> {
  * Picking info associated with touch events
  */
 export interface ITouchPickInfo<T extends Instance> extends IPickInfo<T> {
-  /** The touch interaction that created this picking information. Contains all touch interactive information for the event */
+  /**
+   * The touch interaction that created this picking information. Contains all
+   * touch interactive information for the event
+   */
   readonly interaction: ITouchInteraction;
   /** The specific touch that caused the event to occur */
   readonly touch: ISingleTouchInteraction;
@@ -207,19 +218,20 @@ export interface ITouchPickInfo<T extends Instance> extends IPickInfo<T> {
 
 export interface IVertexAttribute {
   /**
-   * When initWithBuffer and customFill are not specified, this is was the system will initially
-   * load each vertex attribute with.
+   * When initWithBuffer and customFill are not specified, this is was the
+   * system will initially load each vertex attribute with.
    */
   defaults?: number[];
   /**
-   * When this is specified it will initialize the model's attribute with the data in this buffer.
+   * When this is specified it will initialize the model's attribute with the
+   * data in this buffer.
    */
   initWithBuffer?: Float32Array;
   /**
-   * When generating this attribute in the shader this will be the prefix to the attribute:
-   * For instance, if you specify 'highp' as the modifier, then the attribute that appears
-   * in the shader will be:
-   * attribute highp vec3 position;
+   * When generating this attribute in the shader this will be the prefix to the
+   * attribute: For instance, if you specify 'highp' as the modifier, then the
+   * attribute that appears in the shader will be: attribute highp vec3
+   * position;
    */
   qualifier?: string;
   /**
@@ -227,32 +239,41 @@ export interface IVertexAttribute {
    */
   name: string;
   /**
-   * This is the number of floats the attribute will consume. For now, we only allow for up
-   * to four floats per attribute.
+   * This is the number of floats the attribute will consume. For now, we only
+   * allow for up to four floats per attribute.
    */
   size: VertexAttributeSize;
   /**
-   * This lets you populate the buffer with an automatically called method. This will fire when
-   * necessary updates are detected or on initialization.
+   * This lets you populate the buffer with an automatically called method. This
+   * will fire when necessary updates are detected or on initialization.
    */
   update(vertex: number): ShaderIOValue;
 }
 
 export interface IVertexAttributeInternal extends IVertexAttribute {
-  /** This is the actual attribute generated internally for the GL interfacing */
+  /**
+   * This is the actual attribute generated internally for the GL interfacing
+   */
   materialAttribute: Attribute | null;
 }
 
 export interface IInstanceAttribute<T extends Instance> {
   /**
-   * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading atlas resources.
-   * The value provided for this property should be the name of the atlas that is created.
+   * If this is specified, this attribute becomes a size of 4 and will have a
+   * block index of 0. This makes this attribute and layer become compatible
+   * with reading atlas resources. The value provided for this property should
+   * be the name of the atlas that is created.
    */
   resource?: {
-    /** This is a method that should return the string key identifier of the resource to be used */
+    /**
+     * This is a method that should return the string key identifier of the
+     * resource to be used
+     */
     key(): string;
-    /** Specify the name that will be injected that will be the sampler2D in the shader */
+    /**
+     * Specify the name that will be injected that will be the sampler2D in the
+     * shader
+     */
     name: string;
     /**
      * This specifies which of the shaders the sampler2D will be injected into.
@@ -261,13 +282,13 @@ export interface IInstanceAttribute<T extends Instance> {
     shaderInjection?: ShaderInjectionTarget;
   };
   /**
-   * This is a block index helping describe the instancing process. It can be any number as
-   * the system will sort and organize them for you. This only helps the system detect when
-   * you cram too much info into a single block. The tighter you pack your blocks the better
-   * your program will perform.
+   * This is a block index helping describe the instancing process. It can be
+   * any number as the system will sort and organize them for you. This only
+   * helps the system detect when you cram too much info into a single block.
+   * The tighter you pack your blocks the better your program will perform.
    *
-   * Note: It's best to leave this blank as the system now packs your attributes for you and
-   * will determine this number for you.
+   * Note: It's best to leave this blank as the system now packs your attributes
+   * for you and will determine this number for you.
    */
   block?: number;
   /**
@@ -275,66 +296,71 @@ export interface IInstanceAttribute<T extends Instance> {
    */
   blockIndex?: InstanceBlockIndex;
   /**
-   * Child attributes are attributes that are guaranteed to update when the parent attribute
-   * is updated. This is useful for attributes with special properties that get expanded to
-   * other types of attributes such as easing attributes which gain start, duration, and other values
-   * to make the attribute work.
+   * Child attributes are attributes that are guaranteed to update when the
+   * parent attribute is updated. This is useful for attributes with special
+   * properties that get expanded to other types of attributes such as easing
+   * attributes which gain start, duration, and other values to make the
+   * attribute work.
    *
-   * If the settings on this attrubute spawns additional attributes, those attributes shall
-   * be populated here. Otherwise this remains undefined.
+   * If the settings on this attrubute spawns additional attributes, those
+   * attributes shall be populated here. Otherwise this remains undefined.
    */
   childAttributes?: IInstanceAttribute<T>[];
   /**
-   * When this is set, the system will automatically inject necessary Shader IO to facilitate
-   * performing the easing on the GPU, which saves enormous amounts of CPU processing time
-   * trying to calcuate animations and tweens for properties.
+   * When this is set, the system will automatically inject necessary Shader IO
+   * to facilitate performing the easing on the GPU, which saves enormous
+   * amounts of CPU processing time trying to calcuate animations and tweens for
+   * properties.
    *
-   * NOTE: Setting this increases the amount of data per instance by: size * 2 + ;
-   * as it injects in a start value, start time, and duration
+   * NOTE: Setting this increases the amount of data per instance by: size * 2 +
+   * ; as it injects in a start value, start time, and duration
    */
   easing?: IAutoEasingMethod<Vec>;
   /**
-   * This is the name that will be available in your shader for use. This will only be
-   * available after the ${attributes} declaration.
+   * This is the name that will be available in your shader for use. This will
+   * only be available after the ${attributes} declaration.
    */
   name: string;
   /**
-   * If this attribute is created automatically by the system based on the settings of another
-   * attribute, that parent attribute will be set here. Otherwise this remains undefined.
+   * If this attribute is created automatically by the system based on the
+   * settings of another attribute, that parent attribute will be set here.
+   * Otherwise this remains undefined.
    */
   parentAttribute?: IInstanceAttribute<T>;
   /**
-   * When generating this attribute in the shader this will be the prefix to the attribute:
-   * For instance, if you specify 'highp' as the modifier, then the attribute that appears
-   * in the shader will be:
-   * attribute highp vec3 position;
+   * When generating this attribute in the shader this will be the prefix to the
+   * attribute: For instance, if you specify 'highp' as the modifier, then the
+   * attribute that appears in the shader will be: attribute highp vec3
+   * position;
    */
   qualifier?: string;
   /**
-   * This is how many floats the instance attribute takes up. Due to how instancing is
-   * implemented, we can only take up to 4 floats per variable right now.
+   * This is how many floats the instance attribute takes up. Due to how
+   * instancing is implemented, we can only take up to 4 floats per variable
+   * right now.
    */
   size?: InstanceAttributeSize;
   /**
-   * This is the accessor that executes when the instance needs updating. Simply return the
-   * value that should be populated for this attribute.
+   * This is the accessor that executes when the instance needs updating. Simply
+   * return the value that should be populated for this attribute.
    */
   update(instance: T): InstanceIOValue;
 }
 
 /**
- * Internal Instance Attributes are ones that actually map to an attribute in the shader and use
- * hardware instancing.
+ * Internal Instance Attributes are ones that actually map to an attribute in
+ * the shader and use hardware instancing.
  */
 export interface IInstanceAttributeInternal<T extends Instance>
   extends IInstanceAttribute<T> {
   /** We will keep an internal uid for the  */
   uid: number;
   /**
-   * Sometimes an attribute is actually a sub attribute to another attribute, such as in the cases of
-   * attribute packing (in uniforms or in attribute packing). This UID indicates the parental attribute
-   * UID. This parent identifier may be an actual InstanceAttribute or not. It could just indicate this
-   * attribute is packed into SOMETHING.
+   * Sometimes an attribute is actually a sub attribute to another attribute,
+   * such as in the cases of attribute packing (in uniforms or in attribute
+   * packing). This UID indicates the parental attribute UID. This parent
+   * identifier may be an actual InstanceAttribute or not. It could just
+   * indicate this attribute is packed into SOMETHING.
    */
   packUID?: number;
   /** This is the actual attribute mapped to a buffer */
@@ -342,8 +368,9 @@ export interface IInstanceAttributeInternal<T extends Instance>
 }
 
 /**
- * This is specifically a deduced type of instance attribute that is specially dealing with Vec1-4 values. These types
- * of vectors can be dealt with in special ways, thus they get this special case.
+ * This is specifically a deduced type of instance attribute that is specially
+ * dealing with Vec1-4 values. These types of vectors can be dealt with in
+ * special ways, thus they get this special case.
  */
 export interface IInstanceAttributeVector<T extends Instance>
   extends IInstanceAttribute<T> {
@@ -351,7 +378,8 @@ export interface IInstanceAttributeVector<T extends Instance>
 }
 
 /**
- * Typeguard to determine if an instance attribute provides vectors or something larger
+ * Typeguard to determine if an instance attribute provides vectors or something
+ * larger
  */
 export function isInstanceAttributeVector<T extends Instance>(
   val: IInstanceAttribute<T>
@@ -365,14 +393,21 @@ export function isInstanceAttributeVector<T extends Instance>(
 export interface IResourceInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
-   * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading resources.
-   * The value provided for this property should be the name of the resource that is created.
+   * If this is specified, this attribute becomes a size of 4 and will have a
+   * block index of 0. This makes this attribute and layer become compatible
+   * with reading resources. The value provided for this property should be the
+   * name of the resource that is created.
    */
   resource: {
-    /** This retrieves the key of the resource that is to be used by the attribute */
+    /**
+     * This retrieves the key of the resource that is to be used by the
+     * attribute
+     */
     key(): string;
-    /** Specify the name that will be injected that will be the sampler2D in the shader */
+    /**
+     * Specify the name that will be injected that will be the sampler2D in the
+     * shader
+     */
     name: string;
     /**
      * This specifies which of the shaders the sampler2D will be injected into.
@@ -388,7 +423,10 @@ export interface IResourceInstanceAttribute<T extends Instance>
 export interface IResourceContext {
   /** Indicates a resource is specified */
   resource: {
-    /** The resource type. This is the type a manager is registered with when setting up a surface. */
+    /**
+     * The resource type. This is the type a manager is registered with when
+     * setting up a surface.
+     */
     type: number;
     /** This is the identifier of the specific resource within the manager */
     key: string;
@@ -417,7 +455,10 @@ export interface IEasingInstanceAttribute<T extends Instance>
    * Easing attributes requires size to be present
    */
   size: InstanceAttributeSize;
-  /** If this is an easing attribute, then the instance will only provide Vec1-4 values */
+  /**
+   * If this is an easing attribute, then the instance will only provide Vec1-4
+   * values
+   */
   update(o: T): InstanceIOVectorValue;
 }
 
@@ -427,14 +468,19 @@ export interface IEasingInstanceAttribute<T extends Instance>
 export interface IValueInstanceAttribute<T extends Instance>
   extends IInstanceAttribute<T> {
   /**
-   * If this is specified, this attribute becomes a size of 4 and will have a block index of
-   * 0. This makes this attribute and layer become compatible with reading atlas resources.
-   * The value provided for this property should be the name of the atlas that is created.
+   * If this is specified, this attribute becomes a size of 4 and will have a
+   * block index of
+   * 0. This makes this attribute and layer become compatible with reading atlas
+   *    resources. The value provided for this property should be the name of
+   *    the atlas that is created.
    */
   atlas: undefined;
 }
 
-/** These are flags for indicating which shaders receive certain injection elements */
+/**
+ * These are flags for indicating which shaders receive certain injection
+ * elements
+ */
 export enum ShaderInjectionTarget {
   /** ONLY the vertex shader will receive the injection */
   VERTEX = 1,
@@ -446,8 +492,8 @@ export enum ShaderInjectionTarget {
 
 export interface IUniform {
   /**
-   * This lets you specify which of the shaders will receive this uniform as available.
-   * This defaults to only injecting into the vertex shader.
+   * This lets you specify which of the shaders will receive this uniform as
+   * available. This defaults to only injecting into the vertex shader.
    */
   shaderInjection?: ShaderInjectionTarget;
   /** Name of the uniform as will be available in the shaders */
@@ -455,25 +501,25 @@ export interface IUniform {
   /** How many floats the uniform shall encompass */
   size: UniformSize;
   /**
-   * When generating this uniform in the shader this will be the prefix to the uniform:
-   * For instance, if you specify 'highp' as the modifier, then the uniform that appears
-   * in the shader will be:
-   * uniform highp vec3 position;
+   * When generating this uniform in the shader this will be the prefix to the
+   * uniform: For instance, if you specify 'highp' as the modifier, then the
+   * uniform that appears in the shader will be: uniform highp vec3 position;
    */
   qualifier?: string;
   /**
-   * This is the accessor that executes every frame before this layer is drawn. It gives
-   * opportunity to update the uniform's value before every draw.
+   * This is the accessor that executes every frame before this layer is drawn.
+   * It gives opportunity to update the uniform's value before every draw.
    */
   update(uniform: IUniform): UniformIOValue;
 }
 
 export interface IUniformInternal extends IUniform {
   /**
-   * All layers will have many many ShaderMaterials generated per each instance buffer as a single buffer
-   * can only render so many instances. This tracks across all generated ShaderMaterials for each buffer
-   * the material uniforms that need to be updated as a Uniform for a layer is dictated as uniform across
-   * all instances.
+   * All layers will have many many ShaderMaterials generated per each instance
+   * buffer as a single buffer can only render so many instances. This tracks
+   * across all generated ShaderMaterials for each buffer the material uniforms
+   * that need to be updated as a Uniform for a layer is dictated as uniform
+   * across all instances.
    */
   materialUniforms: IMaterialUniform<MaterialUniformType>[];
 }
@@ -504,7 +550,10 @@ export interface IShaders {
  * Represents an element that has a full list of projection methods
  */
 export interface IProjection {
-  /** SInce projections are the views (just interface stripping functionality) we should provide the id for added flexibility to events */
+  /**
+   * Since projections are the views (just interface stripping functionality) we
+   * should provide the id for added flexibility to events
+   */
   id: string;
   /** This is the chart camera utilized in the projection of elements */
   props: IViewProps;
@@ -562,52 +611,54 @@ export function createMaterialOptions(options: ILayerMaterialOptions) {
 }
 
 /**
- * This is the type of picking assigned to a layer. Each mode has performance and functionality
- * tradeoffs.
+ * This is the type of picking assigned to a layer. Each mode has performance
+ * and functionality tradeoffs.
  */
 export enum PickType {
   /** Disable any picking methodology */
   NONE,
   /**
-   * NOTE: NOT IMPLEMENTED YET
-   *
-   * Uses highly efficient color rendering method to detect an instance on a pixel by pixel check. Since it is
-   * based on rendering, it will only select the 'visually' top most rendered instance. This means instances can be occluded
-   * by other instances is an instance renders behind another.
-   *
-   * This is vastly more efficient and accurate than ALL. This also will be more readily supported than ALL.
+   * Uses highly useable color rendering method to detect an instance on a
+   * pixel by pixel check. Since it is based on rendering, it will only select
+   * the 'visually' top most rendered instance. This means instances can be
+   * occluded by other instances if an instance renders behind another.
    */
   SINGLE
 }
 
 /**
- * This represents the settings and objects used to facilitate picking in a layer.
+ * This represents the settings and objects used to facilitate picking in a
+ * layer.
  */
 export interface IPickingMetrics {
-  /** This is the current pick mode that is active during the draw pass of the layer */
+  /**
+   * This is the current pick mode that is active during the draw pass of the
+   * layer
+   */
   currentPickMode: PickType;
   /** This is the picking style to be used */
   type: PickType;
 }
 
 /**
- * This is the picking settings and objects to facilitate PickType.SINGLE so we can get
- * a single instance underneath the mouse.
+ * This is the picking settings and objects to facilitate PickType.SINGLE so we
+ * can get a single instance underneath the mouse.
  */
 export interface ISinglePickingMetrics<T extends Instance>
   extends IPickingMetrics {
   /** Set the enum for the type */
   type: PickType.SINGLE;
   /**
-   * This is a lookup of the instance by it's UID which is all that is needed to decode a color to an instance
-   * The color UINT8 components composited into a single UINT32 IS the UID of the instance
+   * This is a lookup of the instance by it's UID which is all that is needed to
+   * decode a color to an instance The color UINT8 components composited into a
+   * single UINT32 IS the UID of the instance
    */
   uidToInstance: Map<number, T>;
 }
 
 /**
- * This is the picking settings and objects to facilitate PickType.NONE where no information
- * is retrieved for mouse interactions.
+ * This is the picking settings and objects to facilitate PickType.NONE where no
+ * information is retrieved for mouse interactions.
  */
 export interface INonePickingMetrics extends IPickingMetrics {
   // Single Picking does not require any special helper information
@@ -632,8 +683,8 @@ export interface IColorPickingData {
 }
 
 /**
- * Diff types that an instance can go through. Used to help the system consume the diff
- * and apply it to the GL framework.
+ * Diff types that an instance can go through. Used to help the system consume
+ * the diff and apply it to the GL framework.
  */
 export enum InstanceDiffType {
   CHANGE = 0,
@@ -642,7 +693,8 @@ export enum InstanceDiffType {
 }
 
 /**
- * This is the metrics associated with a frame. Mostly dealing with timing values.
+ * This is the metrics associated with a frame. Mostly dealing with timing
+ * values.
  */
 export type FrameMetrics = {
   /** The frame number rendered. Increases by 1 every surface draw */
@@ -659,7 +711,10 @@ export type FrameMetrics = {
  * This represents controls that can be utilized when adjustig easing
  */
 export interface IEasingControl {
-  /** A value in ms that expresses how long the system should wait before beginning the animation */
+  /**
+   * A value in ms that expresses how long the system should wait before
+   * beginning the animation
+   */
   readonly delay?: number;
   /** Indicates how long the easing should take to complete in ms */
   readonly duration: number;
@@ -671,24 +726,25 @@ export interface IEasingControl {
   readonly startTime: number;
 
   /**
-   * If you manually set values for the easing properties, then you use this to return
-   * the easing object back to an automated state which is where the start value is
-   * the calculated current position of the output and the delay and duration is determined
-   * by the easing set to the layer's IAutomatedEasingMethod value set to the layer.
+   * If you manually set values for the easing properties, then you use this to
+   * return the easing object back to an automated state which is where the
+   * start value is the calculated current position of the output and the delay
+   * and duration is determined by the easing set to the layer's
+   * IAutomatedEasingMethod value set to the layer.
    */
   setAutomatic(): void;
 
   /**
-   * This controls the start value of the easing. This should be used to force a starting
-   * value of the animation.
+   * This controls the start value of the easing. This should be used to force a
+   * starting value of the animation.
    *
    * Use setAutomatic() to return to default easing behavior.
    */
   setStart(start?: Vec): void;
 
   /**
-   * This controls of the timing of the easing equation. This should be used to adjust
-   * when a value is to be adjusted
+   * This controls of the timing of the easing equation. This should be used to
+   * adjust when a value is to be adjusted
    *
    * Use setAutomatic() to return to default easing behavior.
    */
@@ -699,15 +755,24 @@ export interface IEasingControl {
  * This is the minimum properties required to make all easing functions operate.
  */
 export interface IEasingProps {
-  /** A value in ms that expresses how long the system should wait before beginning the animation */
+  /**
+   * A value in ms that expresses how long the system should wait before
+   * beginning the animation
+   */
   delay?: number;
   /** Indicates how long the easing should take to complete in ms */
   duration: number;
   /** The end value the easing should approach */
   end: Vec;
-  /** A flag indicating if the easing start value is manually set, thus prioritizing the values already set in this object */
+  /**
+   * A flag indicating if the easing start value is manually set, thus
+   * prioritizing the values already set in this object
+   */
   isManualStart?: boolean;
-  /** A flag indicating if the easing timing is manually set, thus prioritizing the values already set in this object */
+  /**
+   * A flag indicating if the easing timing is manually set, thus prioritizing
+   * the values already set in this object
+   */
   isTimeSet?: boolean;
   /** The starting value of the easing object */
   start: Vec;
@@ -719,18 +784,31 @@ export interface IEasingProps {
  * This is the Shader IO information a layer will provide.
  */
 export interface IShaderInputs<T extends Instance> {
-  /** Specifies how the vertices are laid out in the model. This defaults to Triangle Strip if not specified */
+  /**
+   * Specifies how the vertices are laid out in the model. This defaults to
+   * Triangle Strip if not specified
+   */
   drawMode?: GLSettings.Model.DrawMode;
-  /** These are very frequently changing attributes and are uniform across all vertices in the model */
+  /**
+   * These are very frequently changing attributes and are uniform across all
+   * vertices in the model
+   */
   instanceAttributes?: (IInstanceAttribute<T> | null)[];
-  /** These are attributes that should be static on a vertex. These are considered unique per vertex. */
+  /**
+   * These are attributes that should be static on a vertex. These are
+   * considered unique per vertex.
+   */
   vertexAttributes?: (IVertexAttribute | null)[];
   /**
-   * Specify how many vertices there are per instance. If vertex count is 0, then the layer will render without
-   * instancing and draw the buffers straight.
+   * Specify how many vertices there are per instance. If vertex count is 0,
+   * then the layer will render without instancing and draw the buffers
+   * straight.
    */
   vertexCount: number;
-  /** These are uniforms in the shader. These are uniform across all vertices and all instances for this layer. */
+  /**
+   * These are uniforms in the shader. These are uniform across all vertices and
+   * all instances for this layer.
+   */
   uniforms?: (IUniform | null)[];
 }
 
@@ -756,8 +834,8 @@ export type IShaderIOExtension<T extends Instance> = Partial<
 };
 
 /**
- * A convenience for making short lists of items that are of the same type, such as the
- * common scenario of [boolean, boolean, boolean, boolean]
+ * A convenience for making short lists of items that are of the same type, such
+ * as the common scenario of [boolean, boolean, boolean, boolean]
  */
 export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
 
@@ -768,25 +846,25 @@ export type TypeVec<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T];
 export type Size = Vec2 | Vec3;
 
 /**
- * When creating a surface you must make it declare a pipeline. This makes a centralized easy
- * entry point for expressively declaring how the application will utilize resources to render
- * to various scenes and contexts.
+ * When creating a surface you must make it declare a pipeline. This makes a
+ * centralized easy entry point for expressively declaring how the application
+ * will utilize resources to render to various scenes and contexts.
  *
- * This is also used in a reactive diff manner so elements can be easily updated/added/removed
- * by providing all of the initializer elements. Thus to add an item call the method including
- * the element you wish to create. To remove an element, simply exclude the element next time
- * you call the method.
+ * This is also used in a reactive diff manner so elements can be easily
+ * updated/added/removed by providing all of the initializer elements. Thus to
+ * add an item call the method including the element you wish to create. To
+ * remove an element, simply exclude the element next time you call the method.
  */
 export interface IPipeline {
   /**
-   * These are the resources we want available that our layers can be provided to utilize
-   * for their internal processes.
+   * These are the resources we want available that our layers can be provided
+   * to utilize for their internal processes.
    */
   resources?: BaseResourceOptions[];
   /**
-   * This sets up the available scenes the surface will have to work with. Layers then can
-   * reference the scene by it's scene property. The order of the scenes here is the drawing
-   * order of the scenes.
+   * This sets up the available scenes the surface will have to work with.
+   * Layers then can reference the scene by it's scene property. The order of
+   * the scenes here is the drawing order of the scenes.
    */
   scenes?: ISceneOptions[];
 }
@@ -795,7 +873,9 @@ export interface IPipeline {
  * Errors emitted by the surface
  */
 export enum SurfaceErrorType {
-  /** Error is thrown when no web gl context can be established for the canvas */
+  /**
+   * Error is thrown when no web gl context can be established for the canvas
+   */
   NO_WEBGL_CONTEXT
 }
 
@@ -808,63 +888,75 @@ export type SurfaceError = {
 };
 
 /**
- * A numerical or string identifier. Use this type to make your intent a little clearer when you want a resource
- * identified.
+ * A numerical or string identifier. Use this type to make your intent a little
+ * clearer when you want a resource identified.
  */
 export type SimpleId = string | number;
 
 /**
- * An alias for a string. Use this type to make your intent a little clearer when you want a string specifically for
- * identifying a resource.
+ * An alias for a string. Use this type to make your intent a little clearer
+ * when you want a string specifically for identifying a resource.
  */
 export type StringId = string;
 
 /**
- * An alias for a number. Use this type to make your intent a little clearer when you want a number specifically for
- * identifying a resource.
+ * An alias for a number. Use this type to make your intent a little clearer
+ * when you want a number specifically for identifying a resource.
  */
 export type NumberId = number;
 
 /**
- * This is a massively useful type to express an object that can have numeric or sttring identifiers in recursive
- * amounts to define an object with many pathways to various items of the same type (that can be varied by generic)
+ * This is a massively useful type to express an object that can have numeric or
+ * string identifiers in recursive amounts to define an object with many
+ * pathways to various items of the same type (that can be varied by generic)
  *
+ * ```
  * const o: Lookup<InstanceProvider<Instance>> = {
- *   circles: new InstanceProvider<CircleInstance>(),
- *   category: {
- *     special: new InstanceProvider<LabelInstance>(),
- *   }
+ *  circles: new InstanceProvider<CircleInstance>(),
+ *  category: {
+ *    special: new InstanceProvider<LabelInstance>(),
+ *  }
  * }
+ * ```
  */
 export type Lookup<T> = { [key: string]: T | Lookup<T> };
 
 /**
- * This expresses determined buffer types that already exists within the framework.
+ * This expresses determined buffer types that already exists within the
+ * framework.
  */
 export enum LayerBufferType {
   /**
    * This is a compatibility mode for instance attributes. This is used when:
    * 1. It would perform better
-   * 2. When instance attributes are not available for the gl context (ANGLE draw instanced arrays)
-   * 3. When the instance attributes + vertex attributes exceeds the max Vertex Attributes for the hardware and Attribute
-   *    packing still can not fit all of the attributes for the item.
+   * 2. When instance attributes are not available for the gl context (ANGLE
+   *    draw instanced arrays)
+   * 3. When the instance attributes + vertex attributes exceeds the max Vertex
+   *    Attributes for the hardware and Attribute packing still can not fit all
+   *    of the attributes for the item.
    */
   UNIFORM = 0,
-  /* This is a fast and zippy buffering strategy used when the hardware supports it for a provided layer!  */
+  /**
+   * This is a fast and zippy buffering strategy used when the hardware supports
+   * it for a provided layer!
+   */
   INSTANCE_ATTRIBUTE = 1,
   /**
-   * This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering strategy. If provided attributes do
-   * not fit the limited amount of vertex attributes supported by the hardware, then we have one last strategy
-   * to utilize the highly optimized hardware instancing, which is to cram multiple attributes within single
-   * attribute blocks. An attribute block is considered to be 4 32 bit floats. These packed attributes will then
-   * get dereferenced in the shader.
+   * This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering
+   * strategy. If provided attributes do not fit the limited amount of vertex
+   * attributes supported by the hardware, then we have one last strategy to
+   * utilize the highly optimized hardware instancing, which is to cram multiple
+   * attributes within single attribute blocks. An attribute block is considered
+   * to be 4 32 bit floats. These packed attributes will then get dereferenced
+   * in the shader.
    */
   INSTANCE_ATTRIBUTE_PACKING = 2
 }
 
 /**
- * This is an entry within the change list of the provider. It represents the type of change
- * and stores the property id's of the properties on the instance that have changed.
+ * This is an entry within the change list of the provider. It represents the
+ * type of change and stores the property id's of the properties on the instance
+ * that have changed.
  */
 export type InstanceDiff<T extends Instance> = [
   T,
@@ -873,12 +965,14 @@ export type InstanceDiff<T extends Instance> = [
 ];
 
 /**
- * Bare minimum required features a provider must provide to be the data for the layer.
+ * Bare minimum required features a provider must provide to be the data for the
+ * layer.
  */
 export interface IInstanceProvider<T extends Instance> {
   /**
-   * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
-   * so we use this to detect when multiple contexts have attempted use of this provider.
+   * This indicates the context this provider was handled within. Currently,
+   * only one context is allowed per provider, so we use this to detect when
+   * multiple contexts have attempted use of this provider.
    */
   resolveContext: string;
   /** A unique number making it easier to identify this object */
@@ -889,40 +983,49 @@ export interface IInstanceProvider<T extends Instance> {
   remove(instance: T): void;
   /** Resolves the changes as consumed */
   resolve(context: string): void;
-  /** Forces the provider to make a change list that ensures all elements are added */
+  /**
+   * Forces the provider to make a change list that ensures all elements are
+   * added
+   */
   sync(): void;
 }
 
 /**
- * This is the types of strategies available for streaming in changes to the GPU.
+ * This is the types of strategies available for streaming in changes to the
+ * GPU.
  */
 export enum StreamChangeStrategy {
   /** This takes the changes as they are discovered  */
   LINEAR
-  // TODO: There currently isn't a good solution to make the randomized streaming happen without some serious
-  // performance concerns. Some strategies are in mind but aren't great. So we'll leave this commented out while
+  // TODO: There currently isn't a good solution to make the randomized
+  // streaming happen without some serious performance concerns. Some strategies
+  // are in mind but aren't great. So we'll leave this commented out while
   // strategies are considered.
+
   // RANDOM
 }
 
 /**
- * This is a reference to pass into a layer which will provide insight into the layer's easing timing information so
- * there can be better control and better informed decisions on the rendering of elements that animate on the GPU.
+ * This is a reference to pass into a layer which will provide insight into the
+ * layer's easing timing information so there can be better control and better
+ * informed decisions on the rendering of elements that animate on the GPU.
  */
 export interface ILayerEasingManager {
   /**
-   * This is an async method that resolves when the current batch or stream has completed it's easing animation in full.
+   * This is an async method that resolves when the current batch or stream has
+   * completed it's easing animation in full.
    */
   complete(): Promise<void>;
 }
 
 /**
- * This is a reference object that is populated with controllers and relevant exposed information regarding a layer.
+ * This is a reference object that is populated with controllers and relevant
+ * exposed information regarding a layer.
  */
 export interface ILayerRef {
   /**
-   * The easing controller for the layer. This can be used to get precise timings for completion of easing animations
-   * and other easing metrics.
+   * The easing controller for the layer. This can be used to get precise
+   * timings for completion of easing animations and other easing metrics.
    */
   easing: ILayerEasingManager | null;
 }

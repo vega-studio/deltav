@@ -197,7 +197,7 @@ export class Camera {
    */
   lookAt(position: Vec3, up: Vec3) {
     const old: Mat4x4 = copy4x4(this.transform.matrix);
-    this.transform.lookAt(position, up);
+    this.transform.lookAtLocal(position, up);
     this._needsUpdate =
       this._needsUpdate || !compare4x4(old, this.transform.matrix);
   }
@@ -237,7 +237,7 @@ export class Camera {
    * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
    */
   get viewProjection() {
-    if (this.transform.changed || this._needsUpdate) {
+    if (this.transform.needsUpdate || this._needsUpdate) {
       this.update(true);
     }
 

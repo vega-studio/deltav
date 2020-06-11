@@ -194,6 +194,29 @@ export function scaleQuat(
 }
 
 /**
+ * This provides a sort of "directional" unit quaternion such that:
+ * q2 - q1 = diff
+ * where
+ * diff * q1 = q2
+ *
+ * The math for this is:
+ * diff = q2 * inverse(q1)
+ *
+ * Optimzied for Unit quats:
+ * inverse(q1) = conjugate(q1) / abs(q1)
+ * where
+ * abs(q1) = 1 for unit quats
+ */
+export function diffUnitQuat(
+  q1: Quaternion,
+  q2: Quaternion,
+  out?: Quaternion
+): Quaternion {
+  out = out || zeroQuat();
+  return multiplyQuat(q2, conjugateQuat(q1), out);
+}
+
+/**
  * Computes the conjugate of a quaternion.
  */
 export function conjugateQuat(q: Quaternion, out?: Quaternion): Quaternion {
@@ -1162,6 +1185,82 @@ export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
   const m20 = mat[2];
   const m21 = mat[6];
   const m22 = mat[10];
+
+  const tr = m00 + m11 + m22;
+
+  if (tr > 0.0) {
+    const s = sqrt(tr + 1.0) * 2;
+    q[0] = 0.25 * s;
+    // num = 0.5 / num;
+    q[1] = (m21 - m12) / s;
+    q[2] = (m02 - m20) / s;
+    q[3] = (m10 - m01) / s;
+
+    return q;
+  }
+
+  if (m00 > m11 && m00 > m22) {
+    // const num7 = sqrt(1.0 + m00 - m11 - m22);
+    // const num4 = 0.5 / num7;
+    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
+    q[0] = (m21 - m12) / s;
+    q[1] = 0.25 * s;
+    q[2] = (m01 + m10) / s;
+    q[3] = (m02 + m20) / s;
+
+    return q;
+  }
+
+  if (m11 > m22) {
+    // const num6 = sqrt(1.0 + m11 - m00 - m22);
+    // const num3 = 0.5 / num6;
+    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
+
+    q[0] = (m02 - m20) / s;
+    q[1] = (m10 + m01) / s;
+    q[2] = 0.25 * s;
+    q[3] = (m21 + m12) / s;
+
+    return q;
+  }
+
+  // const num5 = sqrt(1.0 + m22 - m00 - m11);
+  // const num2 = 0.5 / num5;
+  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
+  q[0] = (m10 - m01) / s;
+  q[1] = (m20 + m02) / s;
+  q[2] = (m21 + m12) / s;
+  q[3] = 0.25 * s;
+
+  return q;
+}
+
+/**
+ * This decomposes the rotational component of a matrix into a quaternion.
+ * You must provide the scale magnitudes of the matrix for the operation to
+ * work. This means getting:
+ * sx = length4(row0);
+ * sy = length4(row1);
+ * sz = length4(row2);
+ */
+export function decomposeRotation(
+  mat: Mat4x4,
+  sx: number,
+  sy: number,
+  sz: number,
+  q?: Quaternion
+) {
+  q = q || zeroQuat();
+
+  const m00 = mat[0] / sx;
+  const m01 = mat[4] / sy;
+  const m02 = mat[8] / sz;
+  const m10 = mat[1] / sx;
+  const m11 = mat[5] / sy;
+  const m12 = mat[9] / sz;
+  const m20 = mat[2] / sx;
+  const m21 = mat[6] / sy;
+  const m22 = mat[10] / sz;
 
   const tr = m00 + m11 + m22;
 

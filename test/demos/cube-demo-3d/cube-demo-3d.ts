@@ -123,7 +123,7 @@ export class CubeDemo3D extends BaseDemo {
         [Math.sin(theta) * 10 * factor, 0, Math.cos(theta) * 10 * factor],
         [0, 0, -20]
       );
-      cube.transform.lookAt(
+      cube.transform.lookAtLocal(
         add3(cube.transform.position, [
           Math.cos(-theta),
           Math.sin(-theta / 20),

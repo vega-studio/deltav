@@ -960,15 +960,15 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
 
   if (cosom < 0.0) {
     cosom = -cosom;
-    to1[0] = -to[1];
-    to1[1] = -to[2];
-    to1[2] = -to[3];
-    to1[3] = -to[0];
+    to1[0] = -to[0];
+    to1[1] = -to[1];
+    to1[2] = -to[2];
+    to1[3] = -to[3];
   } else {
-    to1[0] = to[1];
-    to1[1] = to[2];
-    to1[2] = to[3];
-    to1[3] = to[0];
+    to1[0] = to[0];
+    to1[1] = to[1];
+    to1[2] = to[2];
+    to1[3] = to[3];
   }
 
   // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
@@ -986,16 +986,15 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
   }
 
   // calculate final values
-  out[1] = scale0 * from[1] + scale1 * to1[0];
-  out[2] = scale0 * from[2] + scale1 * to1[1];
-  out[3] = scale0 * from[3] + scale1 * to1[2];
-  out[0] = scale0 * from[0] + scale1 * to1[3];
+  out[1] = scale0 * from[1] + scale1 * to1[1];
+  out[2] = scale0 * from[2] + scale1 * to1[2];
+  out[3] = scale0 * from[3] + scale1 * to1[3];
+  out[0] = scale0 * from[0] + scale1 * to1[0];
 
   return out;
 }
 
 // Vec method aggregations
-
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T, out?: T): T;
   ceil(vec: T, out?: T): T;

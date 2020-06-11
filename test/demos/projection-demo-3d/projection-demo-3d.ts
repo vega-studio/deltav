@@ -1,9 +1,11 @@
 import * as datGUI from "dat.gui";
 import {
+  axisQuat,
   BasicSurface,
   ClearFlags,
   createLayer,
   createView,
+  eulerToQuat,
   InstanceProvider,
   onAnimationLoop,
   PickType,
@@ -139,7 +141,8 @@ export class ProjectionDemo3D extends BaseDemo {
     let theta = 0;
 
     onAnimationLoop(() => {
-      this.cube.transform.lookAtLocal([0, 0, 0], [0, 1, 0]);
+      // this.cube.transform.lookAtLocal([0, 0, 0], [0, 1, 0]);
+      this.cube.rotation = eulerToQuat([0, theta, 0]);
       children.forEach((cube, i) => {
         const offset = i * ((Math.PI * 12) / children.length);
         cube.localPosition = [

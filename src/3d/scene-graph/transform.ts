@@ -130,7 +130,7 @@ export class Transform extends TreeNode<Transform> {
   }
   set rotation(val: Quaternion) {
     if (!this.parent) {
-      this._localRotation.value = val;
+      this.localRotation = val;
     } else {
       console.warn(
         "NOT IMPLEMENTED: Setting world rotation when a parent is present is not supported yet. Use localRotation for now."

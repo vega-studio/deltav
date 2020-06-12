@@ -101,7 +101,7 @@ describe('Transforms', () => {
 
     it('Should be identity after lookAt', () => {
       const t = new Transform();
-      t.lookAt([0, 0, -1], [0, 1, 0]);
+      t.lookAtLocal([0, 0, -1], [0, 1, 0]);
       assert4x4(t.matrix, identity4());
     });
 
@@ -114,7 +114,7 @@ describe('Transforms', () => {
   describe('Vector', () => {
     it('Should rotate model on the y-axis', () => {
       const t = new Transform();
-      t.lookAt([-1, 0, -1], [0, 1, 0]);
+      t.lookAtLocal([-1, 0, -1], [0, 1, 0]);
       const v: Vec4 = [0, 0, -1, 1];
 
       fuzzyAssert4(transform4(t.matrix, v), [-sqrt(0.5), 0, -sqrt(0.5), 1]);

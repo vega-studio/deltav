@@ -127,16 +127,21 @@ export class Camera {
    * Quick generation of a camera with properties. None make any sense and should be set appropriately.
    * ie - View2D handles setting these values correctly for you.
    */
-  static makeOrthographic() {
-    return new Camera({
-      left: -100,
-      right: 100,
-      top: -100,
-      bottom: 100,
-      near: -100,
-      far: 100000,
-      type: CameraProjectionType.ORTHOGRAPHIC
-    });
+  static makeOrthographic(options?: Partial<ICameraOrthographicOptions>) {
+    return new Camera(
+      Object.assign(
+        {
+          left: -100,
+          right: 100,
+          top: -100,
+          bottom: 100,
+          near: -100,
+          far: 100000,
+          type: CameraProjectionType.ORTHOGRAPHIC
+        },
+        options
+      )
+    );
   }
 
   /**
@@ -195,9 +200,9 @@ export class Camera {
    * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
    * of the camera viewing the world.
    */
-  lookAt(position: Vec3, up: Vec3) {
+  lookAt(position: Vec3, up?: Vec3) {
     const old: Mat4x4 = copy4x4(this.transform.matrix);
-    this.transform.lookAtLocal(position, up);
+    this.transform.lookAtLocal(position, up || [0, 1, 0]);
     this._needsUpdate =
       this._needsUpdate || !compare4x4(old, this.transform.matrix);
   }

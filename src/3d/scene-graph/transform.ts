@@ -1,5 +1,6 @@
 import {
   apply3,
+  apply4,
   concat4x4,
   decomposeRotation,
   forward3,
@@ -7,6 +8,7 @@ import {
   inverse3,
   length4,
   lookAtQuat,
+  M4R,
   Mat4x4,
   matrix4x4FromUnitQuatModel,
   matrix4x4FromUnitQuatView,
@@ -24,6 +26,10 @@ import { onAnimationLoop } from "../../util/frame";
 import { Instance3D } from "../layers";
 import { TreeNode } from "./tree-node";
 
+/**
+ * Type of transform prop that needs to track whether or not it has been
+ * updated.
+ */
 type UpdateProp<T> = {
   didUpdate?: boolean;
   value: T;
@@ -37,6 +43,20 @@ type UpdateProp<T> = {
  * waiting without interaction.
  */
 const updateTransform = new Set<Transform>();
+
+/**
+ * The initial properties of the transform on creation
+ */
+export interface ITransform {
+  /** Starting position in local space */
+  localPosition?: Vec3;
+  /** Starting rotation in local space */
+  localRotation?: Quaternion;
+  /** Starting scale in local space */
+  localScale?: Vec3;
+  /** A parent transform relative to this transform */
+  parent?: Transform;
+}
 
 /**
  * This is a wrapper for a 3D matrix for transforming coordinates from one
@@ -145,7 +165,7 @@ export class Transform extends TreeNode<Transform> {
     return this._localRotation.value;
   }
   set localRotation(val: Quaternion) {
-    apply3(this._localRotation.value, val[0], val[1], val[2]);
+    apply4(this._localRotation.value, val[0], val[1], val[2], val[3]);
     this._localRotation.didUpdate = true;
     this.invalidate();
     this.needsForwardUpdate = true;
@@ -263,6 +283,15 @@ export class Transform extends TreeNode<Transform> {
   private _localForward: UpdateProp<Vec3> = { value: this._forward.value };
   private needsForwardUpdate: boolean = false;
 
+  constructor(options?: ITransform) {
+    super();
+    if (!options) return;
+    if (options.localPosition) this.localPosition = options.localPosition;
+    if (options.localRotation) this.localRotation = options.localRotation;
+    if (options.localScale) this.localScale = options.localScale;
+    if (options.parent) this.parent = options.parent;
+  }
+
   /**
    * Adjusts the transform's properties all at once to shave off a little bit of
    * overhead.
@@ -328,10 +357,10 @@ export class Transform extends TreeNode<Transform> {
    * position relative to this transform. When no parent is present, lookAt and
    * lookAtLocal behaves exactly the same.
    */
-  lookAtLocal(position: Vec3, up: Vec3) {
+  lookAtLocal(position: Vec3, up?: Vec3) {
     this.localRotation = lookAtQuat(
       subtract3(position, this._localPosition.value),
-      up
+      up || [0, 1, 0]
     );
     this._localRotation.didUpdate = true;
   }
@@ -440,11 +469,7 @@ export class Transform extends TreeNode<Transform> {
       // Concat the SRT transform in this order Scale -> Rotation -> Translation
       // We utilize our existing matrix to reduce redundant allocations of
       // matrix information.
-      multiply4x4(
-        T,
-        multiply4x4(R, S, this._localMatrix.value),
-        this._localMatrix.value
-      );
+      multiply4x4(T, multiply4x4(R, S, M4R[0]), this._localMatrix.value);
       this._localMatrix.didUpdate = true;
       // Since we updated the local matrix, let's make sure the world matrix
       // gets updated as well
@@ -461,14 +486,27 @@ export class Transform extends TreeNode<Transform> {
         // Thus the world is being moved for the sake of the camera, the camera
         // itself is not moving. THUS: all operations to make this matrix will
         // be the INVERSE of where the camera is physically located and oriented
+        // multiply4x4(
+        //   // The world condenses and expands to fit the camera
+        //   scale4x4by3(inverse3(this._localScale.value)),
+        //   multiply4x4(
+        //     // The world looks at the camera. The camera does not look at the world
+        //     matrix4x4FromUnitQuatView(this._localRotation.value),
+        //     // The world moves to align itself with the camera's position
+        //     translation4x4by3(scale3(this._localPosition.value, -1)),
+        //     // Use a temp register storage to prevent allocations
+        //     M4R1
+        //   ),
+        //   this._viewMatrix
+        // );
         concat4x4(
           this._viewMatrix,
-          // The world looks at the camera. The camera does not look at the world
-          matrix4x4FromUnitQuatView(this._localRotation.value),
-          // The world moves to align itself with the camera's position
-          translation4x4by3(scale3(this._localPosition.value, -1)),
           // The world condenses and expands to fit the camera
-          scale4x4by3(inverse3(this._localScale.value))
+          scale4x4by3(inverse3(this._localScale.value), M4R[0]),
+          // The world looks at the camera. The camera does not look at the world
+          matrix4x4FromUnitQuatView(this._localRotation.value, M4R[1]),
+          // The world moves to align itself with the camera's position
+          translation4x4by3(scale3(this._localPosition.value, -1), M4R[2])
         );
       }
     }
@@ -506,8 +544,8 @@ export class Transform extends TreeNode<Transform> {
         this.needsWorldDecomposition = true;
         // Apply the world change
         multiply4x4(
-          this._localMatrix.value,
           this.parent._matrix.value,
+          this._localMatrix.value,
           this._matrix.value
         );
         this._matrix.didUpdate = true;

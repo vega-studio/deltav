@@ -53,6 +53,24 @@ export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 /** This type defines any possible vector */
 export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 
+/** Temp Vec3 register. Can be used for intermediate operations */
+export const V3R1: Vec3 = [0, 0, 0];
+/** Temp Vec3 register. Can be used for intermediate operations */
+export const V3R2: Vec3 = [0, 0, 0];
+/** Temp Vec3 register. Can be used for intermediate operations */
+export const V3R3: Vec3 = [0, 0, 0];
+/** Temp Vec3 register. Can be used for intermediate operations */
+export const V3R4: Vec3 = [0, 0, 0];
+
+/** Temp Vec4 register. Can be used for intermediate operations */
+export const V4R1: Vec4 = [0, 0, 0, 0];
+/** Temp Vec4 register. Can be used for intermediate operations */
+export const V4R2: Vec4 = [0, 0, 0, 0];
+/** Temp Vec4 register. Can be used for intermediate operations */
+export const V4R3: Vec4 = [0, 0, 0, 0];
+/** Temp Vec4 register. Can be used for intermediate operations */
+export const V4R4: Vec4 = [0, 0, 0, 0];
+
 // Type guards for Vecs
 
 export function isVec1(val: any): val is Vec1 {

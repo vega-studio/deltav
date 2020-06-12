@@ -1,11 +1,9 @@
 import * as datGUI from "dat.gui";
 import {
-  axisQuat,
   BasicSurface,
   ClearFlags,
   createLayer,
   createView,
-  eulerToQuat,
   InstanceProvider,
   onAnimationLoop,
   PickType,
@@ -29,18 +27,25 @@ export class ProjectionDemo3D extends BaseDemo {
 
   /** GUI properties */
   parameters = {
-    cameraMode: "Orthographic"
+    cameraMode: Camera.makePerspective({
+      fov: (60 * Math.PI) / 180,
+      far: 10000
+    })
   };
 
-  /**  */
   cube: CubeInstance;
 
   buildConsole(gui: datGUI.GUI): void {
     const parameters = gui.addFolder("Parameters");
     parameters
       .add(this.parameters, "cameraMode", {
-        orthographic: "Orthographic",
-        perspective: "Perspective"
+        orthographic: Camera.makeOrthographic({
+          far: 10000
+        }),
+        perspective: Camera.makePerspective({
+          fov: (60 * Math.PI) / 180,
+          far: 10000
+        })
       })
       .onFinishChange(() => {
         this.reset();
@@ -55,13 +60,7 @@ export class ProjectionDemo3D extends BaseDemo {
     if (this.surface) {
       this.destroy();
       this.providers.cubes.clear();
-      this.surface.cameras.main =
-        this.parameters.cameraMode === "Perspective"
-          ? Camera.makePerspective({
-              fov: (60 * Math.PI) / 180,
-              far: 100000
-            })
-          : Camera.makeOrthographic();
+      this.surface.cameras.main = this.parameters.cameraMode;
       this.surface.rebuild();
       this.init();
     }
@@ -75,13 +74,7 @@ export class ProjectionDemo3D extends BaseDemo {
       },
       providers: this.providers,
       cameras: {
-        main:
-          this.parameters.cameraMode === "Perspective"
-            ? Camera.makePerspective({
-                fov: (60 * Math.PI) / 180,
-                far: 100000
-              })
-            : Camera.makeOrthographic()
+        main: this.parameters.cameraMode
       },
       resources: {},
       eventManagers: _cameras => ({}),
@@ -114,7 +107,7 @@ export class ProjectionDemo3D extends BaseDemo {
 
     const children: CubeInstance[] = [];
     const camera = this.surface.cameras.main;
-    camera.position = [0, 10, 15];
+    camera.position = [0, 0, 15];
     camera.lookAt([0, 0, -20], [0, 1, 0]);
     const factor =
       camera.projectionType === CameraProjectionType.PERSPECTIVE ? 1 : 100;
@@ -141,8 +134,9 @@ export class ProjectionDemo3D extends BaseDemo {
     let theta = 0;
 
     onAnimationLoop(() => {
-      // this.cube.transform.lookAtLocal([0, 0, 0], [0, 1, 0]);
-      this.cube.rotation = eulerToQuat([0, theta, 0]);
+      this.cube.transform.lookAtLocal(
+        this.surface?.cameras.main.position || [0, 0, 0]
+      );
       children.forEach((cube, i) => {
         const offset = i * ((Math.PI * 12) / children.length);
         cube.localPosition = [
@@ -150,7 +144,7 @@ export class ProjectionDemo3D extends BaseDemo {
           Math.cos((theta + offset) / 2) * factor * 2,
           Math.sin((theta + offset) / 3) * factor * 2
         ];
-        // cube.transform.lookAtLocal([0, 0, 0], [0, 1, 0]);
+        cube.transform.lookAtLocal([0, 0, 0], [0, 1, 0]);
       });
 
       theta += Math.PI / 120;

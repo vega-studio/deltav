@@ -38,6 +38,24 @@ const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
 
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR1 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR2 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR3 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR4 = zeroQuat();
+
+/** Helper index to make index selection more readable if desired */
+export const QX = 1;
+/** Helper index to make index selection more readable if desired */
+export const QY = 2;
+/** Helper index to make index selection more readable if desired */
+export const QZ = 3;
+/** Helper index to make index selection more readable if desired */
+export const QW = 0;
+
 export function clamp(x: number, min: number, max: number) {
   if (x > max) return max;
   if (x < min) return min;
@@ -282,7 +300,7 @@ export function normalizeQuat(q: Quaternion, out?: Quaternion): Quaternion {
   out = out || zeroQuat();
   const len = lengthQuat(q);
   if (len === 0) return [0, 0, 0, 0];
-  const rlen = 1 / lengthQuat(q);
+  const rlen = 1 / len;
 
   return scaleQuat(q, rlen, out);
 }
@@ -1030,7 +1048,7 @@ export function eulerToQuat(
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
-  let cr, cp, cy, sr, sp, sy, cpcy, spsy;
+  let cr, cp, cy, sr, sp, sy, cpcy, spsy, cpsy, spcy;
   const [roll, pitch, yaw] = angles;
 
   // calculate trig identities
@@ -1042,10 +1060,12 @@ export function eulerToQuat(
   sy = sin(yaw / 2);
   cpcy = cp * cy;
   spsy = sp * sy;
+  cpsy = cp * sy;
+  spcy = sp * cy;
   out[0] = cr * cpcy + sr * spsy;
   out[1] = sr * cpcy - cr * spsy;
-  out[2] = cr * sp * cy + sr * cp * sy;
-  out[3] = cr * cp * sy - sr * sp * cy;
+  out[2] = cr * spcy + sr * cpsy;
+  out[3] = cr * cpsy - sr * spcy;
 
   return out;
 }
@@ -1060,60 +1080,55 @@ export function lookAtQuat(
   q?: Quaternion
 ): Quaternion {
   q = q || zeroQuat();
-  forward = normalize3(forward);
+  const z: Vec3 = normalize3([-forward[0], -forward[1], -forward[2]]);
+  const x = normalize3(cross3(up, z));
+  const y = cross3(z, x);
 
-  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
-  const l = normalize3(cross3(up, f));
-  const u = normalize3(cross3(f, l));
+  const m11 = x[0];
+  const m12 = y[0];
+  const m13 = z[0];
+  const m21 = x[1];
+  const m22 = y[1];
+  const m23 = z[1];
+  const m31 = x[2];
+  const m32 = y[2];
+  const m33 = z[2];
 
-  const m00 = l[0];
-  const m01 = l[1];
-  const m02 = l[2];
-  const m10 = u[0];
-  const m11 = u[1];
-  const m12 = u[2];
-  const m20 = f[0];
-  const m21 = f[1];
-  const m22 = f[2];
+  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+  // article "Quaternion Calculus and Fast Animation".
+  let w = (1 + m11 + m22 + m33) * 0.25; // w^2
 
-  const tr = m00 + m11 + m22;
+  if (w > 0.0) {
+    w = Math.sqrt(w);
+    q[0] = w;
+    w = 1 / (4 * w);
+    q[1] = (m23 - m32) * w;
+    q[2] = (m31 - m13) * w;
+    q[3] = (m12 - m21) * w;
+  } else {
+    q[0] = 0;
+    w = -0.5 * (m22 + m33); // x^2
 
-  if (tr > 0.0) {
-    const s = sqrt(tr + 1.0) * 2;
-    q[0] = 0.25 * s;
-    q[1] = (m21 - m12) / s;
-    q[2] = (m02 - m20) / s;
-    q[3] = (m10 - m01) / s;
+    if (w > 0) {
+      w = Math.sqrt(w);
+      q[1] = w;
+      w *= 2;
+      q[2] = m12 / w;
+      q[3] = m13 / w;
+    } else {
+      q[1] = 0;
+      w = 0.5 * (1 - m33); // y^2
 
-    return q;
+      if (w > 0) {
+        w = Math.sqrt(w);
+        q[2] = w;
+        q[3] = m23 / (2 * w);
+      } else {
+        q[2] = 0;
+        q[3] = 1;
+      }
+    }
   }
-
-  if (m00 > m11 && m00 > m22) {
-    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
-    q[0] = (m21 - m12) / s;
-    q[1] = 0.25 * s;
-    q[2] = (m01 + m10) / s;
-    q[3] = (m02 + m20) / s;
-
-    return q;
-  }
-
-  if (m11 > m22) {
-    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
-
-    q[0] = (m02 - m20) / s;
-    q[1] = (m10 + m01) / s;
-    q[2] = 0.25 * s;
-    q[3] = (m21 + m12) / s;
-
-    return q;
-  }
-
-  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
-  q[0] = (m10 - m01) / s;
-  q[1] = (m20 + m02) / s;
-  q[2] = (m21 + m12) / s;
-  q[3] = 0.25 * s;
 
   return q;
 }
@@ -1252,61 +1267,51 @@ export function decomposeRotation(
 ) {
   q = q || zeroQuat();
 
-  const m00 = mat[0] / sx;
-  const m01 = mat[4] / sy;
-  const m02 = mat[8] / sz;
-  const m10 = mat[1] / sx;
-  const m11 = mat[5] / sy;
-  const m12 = mat[9] / sz;
-  const m20 = mat[2] / sx;
-  const m21 = mat[6] / sy;
-  const m22 = mat[10] / sz;
+  const m11 = mat[0] / sx;
+  const m12 = mat[4] / sy;
+  const m13 = mat[8] / sz;
+  const m21 = mat[1] / sx;
+  const m22 = mat[5] / sy;
+  const m23 = mat[9] / sz;
+  const m31 = mat[2] / sx;
+  const m32 = mat[6] / sy;
+  const m33 = mat[10] / sz;
 
-  const tr = m00 + m11 + m22;
+  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+  // article "Quaternion Calculus and Fast Animation".
+  let w = (1 + m11 + m22 + m33) * 0.25; // w^2
 
-  if (tr > 0.0) {
-    const s = sqrt(tr + 1.0) * 2;
-    q[0] = 0.25 * s;
-    // num = 0.5 / num;
-    q[1] = (m21 - m12) / s;
-    q[2] = (m02 - m20) / s;
-    q[3] = (m10 - m01) / s;
+  if (w > 0.0) {
+    w = Math.sqrt(w);
+    q[0] = w;
+    w = 1 / (4 * w);
+    q[1] = (m23 - m32) * w;
+    q[2] = (m31 - m13) * w;
+    q[3] = (m12 - m21) * w;
+  } else {
+    q[0] = 0;
+    w = -0.5 * (m22 + m33); // x^2
 
-    return q;
+    if (w > 0) {
+      w = Math.sqrt(w);
+      q[1] = w;
+      w *= 2;
+      q[2] = m12 / w;
+      q[3] = m13 / w;
+    } else {
+      q[1] = 0;
+      w = 0.5 * (1 - m33); // y^2
+
+      if (w > 0) {
+        w = Math.sqrt(w);
+        q[2] = w;
+        q[3] = m23 / (2 * w);
+      } else {
+        q[2] = 0;
+        q[3] = 1;
+      }
+    }
   }
-
-  if (m00 > m11 && m00 > m22) {
-    // const num7 = sqrt(1.0 + m00 - m11 - m22);
-    // const num4 = 0.5 / num7;
-    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
-    q[0] = (m21 - m12) / s;
-    q[1] = 0.25 * s;
-    q[2] = (m01 + m10) / s;
-    q[3] = (m02 + m20) / s;
-
-    return q;
-  }
-
-  if (m11 > m22) {
-    // const num6 = sqrt(1.0 + m11 - m00 - m22);
-    // const num3 = 0.5 / num6;
-    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
-
-    q[0] = (m02 - m20) / s;
-    q[1] = (m10 + m01) / s;
-    q[2] = 0.25 * s;
-    q[3] = (m21 + m12) / s;
-
-    return q;
-  }
-
-  // const num5 = sqrt(1.0 + m22 - m00 - m11);
-  // const num2 = 0.5 / num5;
-  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
-  q[0] = (m10 - m01) / s;
-  q[1] = (m20 + m02) / s;
-  q[2] = (m21 + m12) / s;
-  q[3] = 0.25 * s;
 
   return q;
 }
@@ -1318,23 +1323,23 @@ export function lookAtMatrix(
 ): Mat4x4 {
   m = m || identity4();
 
-  forward = normalize3(forward);
+  const z = normalize3([-forward[0], -forward[1], -forward[2]]);
+  const x = normalize3(cross3(up, z));
+  // No need to normalize the cross product as z and x are unit vectors at this
+  // point
+  const y = cross3(z, x);
 
-  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
-  const l = normalize3(cross3(up, f));
-  const u = normalize3(cross3(f, l));
-
-  m[0] = l[0];
-  m[1] = u[0];
-  m[2] = f[0];
+  m[0] = x[0];
+  m[1] = y[0];
+  m[2] = z[0];
   m[3] = 0.0;
-  m[4] = l[1];
-  m[5] = u[1];
-  m[6] = f[1];
+  m[4] = x[1];
+  m[5] = y[1];
+  m[6] = z[1];
   m[7] = 0.0;
-  m[8] = l[2];
-  m[9] = u[2];
-  m[10] = f[2];
+  m[8] = x[2];
+  m[9] = y[2];
+  m[10] = z[2];
   m[11] = 0.0;
   m[12] = 0.0;
   m[13] = 0.0;

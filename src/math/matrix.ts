@@ -85,6 +85,23 @@ export const M432 = 14;
 export const M433 = 15;
 
 /**
+ * Temp Matrix 4x4 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any exepcted value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const M4R: Mat4x4[] = new Array(20).fill(0).map(_ => identity4());
+
+/**
  * It's often much faster to apply values to an existing matrix than to declare
  * a new matrix inline. But it can be annoying and bulky to write the complete
  * array to value sequence to perform such an application. Thus, this method
@@ -559,21 +576,35 @@ export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * Concat a list of matrices in this order:
  * concat4x4(A, B, C, D, E, ..., N);
  * T = A * B * C * E * ... * N
- *
- * Thus the far right is considered the 'first' operation and the far left is
- * the last.
  */
 export function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4 {
   if (m.length <= 0) return identity4();
   out = out || identity4();
-  apply4x4.call(null, out, ...m[m.length - 1]);
+  if (m.length === 1) return copy4x4(m[0], out);
 
-  for (let i = m.length - 2; i >= 0; --i) {
-    const next = m[i];
-    multiply4x4(next, out, out);
+  // Get the first multiplication value for the left hand side of the operation
+  let l = m[0];
+  // We use a register to reduce allocations and overhead
+  let register1 = M4R[M4R.length - 1];
+  let register2 = M4R[M4R.length - 2];
+  // Make sure our output doesn't clash with one of the registeres
+  if (out === register1) register1 = M4R[M4R.length - 3];
+  if (out === register2) register2 = M4R[M4R.length - 3];
+  let register = register1;
+
+  for (let i = 1, iMax = m.length - 1; i < iMax; ++i) {
+    // Each new matrix will be the right hand side of the operation
+    const r = m[i];
+    // Do the multiplication storing the result into a register
+    l = multiply4x4(l, r, register);
+    // Toggle to a new register for the next operation so we don't output into
+    // an input
+    register = register === register1 ? register2 : register1;
   }
 
-  return out;
+  // Do the final operation with the last matrix, but this time store in our
+  // output value.
+  return multiply4x4(l, m[m.length - 1], out);
 }
 
 /**
@@ -1346,7 +1377,27 @@ export function copy3x3(m: Mat3x3): Mat3x3 {
 /**
  * Copies a Mat4x4 into a new storage object
  */
-export function copy4x4(m: Mat4x4): Mat4x4 {
+export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
+  if (out) {
+    out[0] = m[0];
+    out[1] = m[1];
+    out[2] = m[2];
+    out[3] = m[3];
+    out[4] = m[4];
+    out[5] = m[5];
+    out[6] = m[6];
+    out[7] = m[7];
+    out[8] = m[8];
+    out[9] = m[9];
+    out[10] = m[10];
+    out[11] = m[11];
+    out[12] = m[12];
+    out[13] = m[13];
+    out[14] = m[14];
+    out[15] = m[15];
+    return out;
+  }
+
   return [
     m[0],
     m[1],

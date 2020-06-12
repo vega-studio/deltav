@@ -25,42 +25,44 @@ export class ProjectionDemo3D extends BaseDemo {
     cubes: new InstanceProvider<CubeInstance>()
   };
 
-  /** GUI properties */
-  parameters = {
-    cameraMode: Camera.makePerspective({
-      fov: (60 * Math.PI) / 180,
-      far: 10000
-    })
-  };
-
   cube: CubeInstance;
 
-  buildConsole(gui: datGUI.GUI): void {
-    const parameters = gui.addFolder("Parameters");
-    parameters
-      .add(this.parameters, "cameraMode", {
-        orthographic: Camera.makeOrthographic({
+  /** GUI properties */
+  parameters = {
+    orthographic: () => {
+      this.reset(
+        Camera.makeOrthographic({
           far: 10000
-        }),
-        perspective: Camera.makePerspective({
+        })
+      );
+    },
+    perspective: () => {
+      this.reset(
+        Camera.makePerspective({
           fov: (60 * Math.PI) / 180,
           far: 10000
         })
-      })
-      .onFinishChange(() => {
-        this.reset();
-      });
+      );
+    }
+  };
+
+  loopId: Promise<number>;
+
+  buildConsole(gui: datGUI.GUI): void {
+    const parameters = gui.addFolder("Parameters");
+    parameters.add(this.parameters, "orthographic");
+    parameters.add(this.parameters, "perspective");
   }
 
   destroy(): void {
     super.destroy();
   }
 
-  reset() {
+  reset(camera: Camera) {
     if (this.surface) {
       this.destroy();
       this.providers.cubes.clear();
-      this.surface.cameras.main = this.parameters.cameraMode;
+      this.surface.cameras.main = camera;
       this.surface.rebuild();
       this.init();
     }
@@ -74,7 +76,11 @@ export class ProjectionDemo3D extends BaseDemo {
       },
       providers: this.providers,
       cameras: {
-        main: this.parameters.cameraMode
+        main: Camera.makePerspective({
+          near: 1,
+          far: 1000,
+          fov: (60 * Math.PI) / 180
+        })
       },
       resources: {},
       eventManagers: _cameras => ({}),
@@ -119,7 +125,7 @@ export class ProjectionDemo3D extends BaseDemo {
       })
     );
 
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < 25; ++i) {
       children.push(
         this.providers.cubes.add(
           new CubeInstance({

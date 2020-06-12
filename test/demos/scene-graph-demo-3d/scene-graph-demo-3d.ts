@@ -129,7 +129,7 @@ export class SceneGraphDemo3D extends BaseDemo {
       })
     );
 
-    const count = 300;
+    const count = 200;
     const cubes: CubeInstance[] = [];
 
     let parent = root;

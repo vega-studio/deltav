@@ -85,6 +85,23 @@ export const M432 = 14;
 export const M433 = 15;
 
 /**
+ * Temp Matrix 3x3 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any exepcted value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const M3R: Mat3x3[] = new Array(20).fill(0).map(_ => identity3());
+
+/**
  * Temp Matrix 4x4 registers. Can be used for intermediate operations. These
  * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
  * don't expect them to retain any exepcted value.
@@ -114,7 +131,7 @@ export function apply2x2(
   m10: number,
   m11: number
 ) {
-  m = m || (([] as any) as Mat2x2);
+  m = m || ((new Array(4) as any) as Mat2x2);
   m[0] = m00;
   m[1] = m01;
   m[2] = m10;
@@ -141,7 +158,7 @@ export function apply3x3(
   m21: number,
   m22: number
 ) {
-  m = m || (([] as any) as Mat3x3);
+  m = m || ((new Array(9) as any) as Mat3x3);
   m[0] = m00;
   m[1] = m01;
   m[2] = m02;
@@ -180,7 +197,7 @@ export function apply4x4(
   m32: number,
   m33: number
 ) {
-  m = m || (([] as any) as Mat4x4);
+  m = m || ((new Array(16) as any) as Mat4x4);
 
   m[0] = m00;
   m[1] = m01;
@@ -1416,4 +1433,94 @@ export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
     m[14],
     m[15]
   ];
+}
+
+/**
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t                 | b u                 | c v                 | 0
+ * d t                 | e u                 | f v                 | 0
+ * g t                 | h u                 | i v                 | 0
+ * t (a x + d y + g z) | u (b x + e y + h z) | v (c x + f y + i z) | 1
+ */
+export function SRT4x4(
+  scale: Vec3,
+  rotation: Mat3x3,
+  translation: Vec3,
+  out?: Mat4x4
+) {
+  out = out || (([] as any) as Mat4x4);
+  const [t, u, v] = scale;
+  const [x, y, z] = translation;
+  const [a, b, c, d, e, f, g, h, i] = rotation;
+
+  out[M400] = a * t;
+  out[M401] = b * u;
+  out[M402] = c * v;
+  out[M403] = 0;
+
+  out[M410] = d * t;
+  out[M411] = e * u;
+  out[M412] = f * v;
+  out[M413] = 0;
+
+  out[M420] = g * t;
+  out[M421] = h * u;
+  out[M422] = i * v;
+  out[M423] = 0;
+
+  out[M430] = t * (a * x + d * y + g * z);
+  out[M431] = u * (b * x + e * y + h * z);
+  out[M432] = v * (c * x + f * y + i * z);
+  out[M433] = 1;
+}
+
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ *
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t | b t | c t | 0
+ * d u | e u | f u | 0
+ * g v | h v | i v | 0
+ * x   | y   | z   | 1)
+ */
+export function TRS4x4(
+  scale: Vec3,
+  rotation: Mat3x3,
+  translation: Vec3,
+  out?: Mat4x4
+) {
+  out = out || (([] as any) as Mat4x4);
+  const [t, u, v] = scale;
+  const [x, y, z] = translation;
+  const [a, b, c, d, e, f, g, h, i] = rotation;
+
+  out[M400] = a * t;
+  out[M401] = b * t;
+  out[M402] = c * t;
+  out[M403] = 0;
+
+  out[M410] = d * u;
+  out[M411] = e * u;
+  out[M412] = f * u;
+  out[M413] = 0;
+
+  out[M420] = g * v;
+  out[M421] = h * v;
+  out[M422] = i * v;
+  out[M423] = 0;
+
+  out[M430] = x;
+  out[M431] = y;
+  out[M432] = z;
+  out[M433] = 1;
 }

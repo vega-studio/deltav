@@ -17,8 +17,9 @@ function isOrthographic(val: Camera): val is Camera {
 }
 
 /**
- * A View renders a perspective of a scene to a given surface or surfaces. The 3D view system assumes a y-axis
- * up system. The view also assumes the camera is located in the middle of the viewport.
+ * A View renders a perspective of a scene to a given surface or surfaces. The
+ * 3D view system assumes a y-axis up system. The view also assumes the camera
+ * is located in the middle of the viewport.
  */
 export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   static defaultProps: IView3DProps = {
@@ -49,7 +50,8 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   }
 
   /**
-   * This operation makes sure we have the view camera adjusted to the new viewport's needs.
+   * This operation makes sure we have the view camera adjusted to the new
+   * viewport's needs.
    */
   fitViewtoViewport(
     _surfaceDimensions: Bounds<never>,

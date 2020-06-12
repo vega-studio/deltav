@@ -53,23 +53,39 @@ export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 /** This type defines any possible vector */
 export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 
-/** Temp Vec3 register. Can be used for intermediate operations */
-export const V3R1: Vec3 = [0, 0, 0];
-/** Temp Vec3 register. Can be used for intermediate operations */
-export const V3R2: Vec3 = [0, 0, 0];
-/** Temp Vec3 register. Can be used for intermediate operations */
-export const V3R3: Vec3 = [0, 0, 0];
-/** Temp Vec3 register. Can be used for intermediate operations */
-export const V3R4: Vec3 = [0, 0, 0];
+/**
+ * Temp Vec3 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any expected value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const V3R: Vec3[] = new Array(20).fill(0).map(_ => [0, 0, 0]);
 
-/** Temp Vec4 register. Can be used for intermediate operations */
-export const V4R1: Vec4 = [0, 0, 0, 0];
-/** Temp Vec4 register. Can be used for intermediate operations */
-export const V4R2: Vec4 = [0, 0, 0, 0];
-/** Temp Vec4 register. Can be used for intermediate operations */
-export const V4R3: Vec4 = [0, 0, 0, 0];
-/** Temp Vec4 register. Can be used for intermediate operations */
-export const V4R4: Vec4 = [0, 0, 0, 0];
+/**
+ * Temp Vec4 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any expected value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const V4R: Vec4[] = new Array(20).fill(0).map(_ => [0, 0, 0, 0]);
 
 // Type guards for Vecs
 
@@ -228,7 +244,11 @@ export function linear1(
 }
 
 export function length1(start: Vec1Compat): number {
-  return sqrt(dot1(start, start));
+  return start[0];
+}
+
+export function length1Components(x: number): number {
+  return x;
 }
 
 export function vec1(
@@ -413,7 +433,11 @@ export function linear2(
 }
 
 export function length2(start: Vec2Compat): number {
-  return sqrt(dot2(start, start));
+  return length2Components(start[0], start[1]);
+}
+
+export function length2Components(x: number, y: number): number {
+  return sqrt(x * x + y * y);
 }
 
 export function vec2(
@@ -453,7 +477,7 @@ export function apply3(
   v1: number,
   v2: number
 ): Vec3 {
-  v = v || (([] as any) as Vec3);
+  v = v || ((new Array(3) as any) as Vec3);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -507,12 +531,12 @@ export function cross3(
   right: Vec3Compat,
   out?: Vec3Compat
 ): Vec3 {
-  return apply3(
-    out,
-    left[1] * right[2] - left[2] * right[1],
-    left[2] * right[0] - left[0] * right[2],
-    left[0] * right[1] - left[1] * right[0]
-  );
+  out = out || ((new Array(3) as any) as Vec3);
+  out[0] = left[1] * right[2] - left[2] * right[1];
+  out[1] = left[2] * right[0] - left[0] * right[2];
+  out[2] = left[0] * right[1] - left[1] * right[0];
+
+  return out as Vec3;
 }
 
 export function divide3(
@@ -597,7 +621,11 @@ export function linear3(
 }
 
 export function length3(start: Vec3Compat): number {
-  return sqrt(dot3(start, start));
+  return length3Components(start[0], start[1], start[2]);
+}
+
+export function length3Components(x: number, y: number, z: number): number {
+  return sqrt(x * x + y * y + z * z);
 }
 
 export function max3(
@@ -627,8 +655,13 @@ export function min3(
 }
 
 export function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3 {
+  out = out || ((new Array(3) as any) as Vec3);
   const length = length3(left);
-  return apply3(out, left[0] / length, left[1] / length, left[2] / length);
+  out[0] = left[0] / length;
+  out[1] = left[1] / length;
+  out[2] = left[2] / length;
+
+  return out as Vec3;
 }
 
 export function dot3(left: Vec3Compat, right: Vec3Compat): number {
@@ -709,7 +742,7 @@ export function apply4(
   v2: number,
   v3: number
 ): Vec4 {
-  v = v || (([] as any) as Vec4);
+  v = v || ((new Array(4) as any) as Vec4);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -875,7 +908,16 @@ export function linear4(
 }
 
 export function length4(start: Vec4): number {
-  return sqrt(dot4(start, start));
+  return length4Components(start[0], start[1], start[2], start[3]);
+}
+
+export function length4Components(
+  x: number,
+  y: number,
+  z: number,
+  w: number
+): number {
+  return sqrt(x * x + y * y + z * z + w * w);
 }
 
 export function max4(

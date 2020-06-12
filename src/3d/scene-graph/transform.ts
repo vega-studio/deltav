@@ -1,25 +1,26 @@
 import {
   apply3,
   apply4,
-  concat4x4,
   decomposeRotation,
   forward3,
+  identity3,
   identity4,
   inverse3,
-  length4,
+  length4Components,
   lookAtQuat,
-  M4R,
+  M3R,
   Mat4x4,
-  matrix4x4FromUnitQuatModel,
-  matrix4x4FromUnitQuatView,
+  matrix3x3FromUnitQuatModel,
   multiply4x4,
   oneQuat,
   Quaternion,
   rotateVectorByUnitQuat,
   scale3,
-  scale4x4by3,
+  SRT4x4,
   subtract3,
-  translation4x4by3,
+  transpose3x3,
+  TRS4x4,
+  V3R,
   Vec3
 } from "../../math";
 import { onAnimationLoop } from "../../util/frame";
@@ -175,7 +176,7 @@ export class Transform extends TreeNode<Transform> {
   private _localRotation: UpdateProp<Quaternion> = {
     value: this._rotation.value
   };
-  private localRotationMatrix: Mat4x4 = identity4();
+  private localRotationMatrix = identity3();
 
   /**
    * The scale of the Transform in world space. When there is no parent,
@@ -208,7 +209,6 @@ export class Transform extends TreeNode<Transform> {
   }
   private _scale: UpdateProp<Vec3> = { value: [1, 1, 1] };
   private _localScale: UpdateProp<Vec3> = { value: this._scale.value };
-  private scaleMatrix: Mat4x4 = identity4();
 
   /**
    * Translation of this transform in world space. When there is no parent,
@@ -245,7 +245,6 @@ export class Transform extends TreeNode<Transform> {
   private _localPosition: UpdateProp<Vec3> = {
     value: this._position.value
   };
-  private translationMatrix: Mat4x4 = identity4();
 
   /**
    * The forward vector for this particular transform in world space. When no
@@ -313,7 +312,7 @@ export class Transform extends TreeNode<Transform> {
    * so we can view the Transform's orientation relative to world space.
    */
   private decomposeWorldMatrix() {
-    // If something triggered an
+    // If no triggers occurred, we need to not decompose
     if (!this.parent || !this.needsWorldDecomposition) {
       return;
     }
@@ -334,9 +333,9 @@ export class Transform extends TreeNode<Transform> {
     }
 
     // Scale is the magnitude of each row vector
-    const sx = length4([m[0], m[1], m[2], m[3]]);
-    const sy = length4([m[4], m[5], m[6], m[7]]);
-    const sz = length4([m[8], m[9], m[10], m[11]]);
+    const sx = length4Components(m[0], m[1], m[2], m[3]);
+    const sy = length4Components(m[4], m[5], m[6], m[7]);
+    const sz = length4Components(m[8], m[9], m[10], m[11]);
     this._scale.didUpdate =
       scale[0] !== sx || scale[1] !== sy || scale[2] !== sz;
     apply3(scale, sx, sy, sz);
@@ -358,11 +357,15 @@ export class Transform extends TreeNode<Transform> {
    * lookAtLocal behaves exactly the same.
    */
   lookAtLocal(position: Vec3, up?: Vec3) {
-    this.localRotation = lookAtQuat(
-      subtract3(position, this._localPosition.value),
-      up || [0, 1, 0]
+    lookAtQuat(
+      subtract3(position, this._localPosition.value, V3R[0]),
+      up || [0, 1, 0],
+      this._localRotation.value
     );
     this._localRotation.didUpdate = true;
+    this.invalidate();
+    this.needsForwardUpdate = true;
+    this.needsWorldDecomposition = true;
   }
 
   /**
@@ -448,28 +451,21 @@ export class Transform extends TreeNode<Transform> {
 
     // If this node directly needs an update we should update our local matrix
     if (this.needsUpdate) {
-      const S = this.scaleMatrix;
-
-      if (this._localScale.didUpdate) {
-        scale4x4by3(this._localScale.value, S);
-      }
-
       const R = this.localRotationMatrix;
 
       if (this._localRotation.didUpdate) {
-        matrix4x4FromUnitQuatModel(this._localRotation.value, R);
-      }
-
-      const T = this.translationMatrix;
-
-      if (this._localPosition.didUpdate) {
-        translation4x4by3(this._localPosition.value, T);
+        matrix3x3FromUnitQuatModel(this._localRotation.value, R);
       }
 
       // Concat the SRT transform in this order Scale -> Rotation -> Translation
       // We utilize our existing matrix to reduce redundant allocations of
       // matrix information.
-      multiply4x4(T, multiply4x4(R, S, M4R[0]), this._localMatrix.value);
+      TRS4x4(
+        this._localScale.value,
+        R,
+        this._localPosition.value,
+        this._localMatrix.value
+      );
       this._localMatrix.didUpdate = true;
       // Since we updated the local matrix, let's make sure the world matrix
       // gets updated as well
@@ -479,6 +475,7 @@ export class Transform extends TreeNode<Transform> {
         if (this._viewMatrix === void 0) {
           this._viewMatrix = identity4();
         }
+
         // When generating this transform, it is important to remember that when
         // you envision the camera looking at something, everything else is in
         // the exact opposite orientation to the camera. Remember: this view
@@ -486,27 +483,11 @@ export class Transform extends TreeNode<Transform> {
         // Thus the world is being moved for the sake of the camera, the camera
         // itself is not moving. THUS: all operations to make this matrix will
         // be the INVERSE of where the camera is physically located and oriented
-        // multiply4x4(
-        //   // The world condenses and expands to fit the camera
-        //   scale4x4by3(inverse3(this._localScale.value)),
-        //   multiply4x4(
-        //     // The world looks at the camera. The camera does not look at the world
-        //     matrix4x4FromUnitQuatView(this._localRotation.value),
-        //     // The world moves to align itself with the camera's position
-        //     translation4x4by3(scale3(this._localPosition.value, -1)),
-        //     // Use a temp register storage to prevent allocations
-        //     M4R1
-        //   ),
-        //   this._viewMatrix
-        // );
-        concat4x4(
-          this._viewMatrix,
-          // The world condenses and expands to fit the camera
-          scale4x4by3(inverse3(this._localScale.value), M4R[0]),
-          // The world looks at the camera. The camera does not look at the world
-          matrix4x4FromUnitQuatView(this._localRotation.value, M4R[1]),
-          // The world moves to align itself with the camera's position
-          translation4x4by3(scale3(this._localPosition.value, -1), M4R[2])
+        SRT4x4(
+          inverse3(this._localScale.value, V3R[0]),
+          transpose3x3(R, M3R[1]),
+          scale3(this._localPosition.value, -1, V3R[1]),
+          this._viewMatrix
         );
       }
     }
@@ -599,7 +580,9 @@ export class Transform extends TreeNode<Transform> {
       }
 
       // Trigger updates for the instance
-      this._instance.transform = this;
+      if (this._matrix.didUpdate || this._localMatrix.didUpdate) {
+        this._instance.transform = this;
+      }
     }
 
     this._localScale.didUpdate = false;
@@ -608,6 +591,8 @@ export class Transform extends TreeNode<Transform> {
     this._rotation.didUpdate = false;
     this._scale.didUpdate = false;
     this._position.didUpdate = false;
+    this._matrix.didUpdate = false;
+    this._localMatrix.didUpdate = false;
 
     this.resolve();
   }

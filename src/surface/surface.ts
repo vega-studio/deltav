@@ -967,6 +967,7 @@ export class Surface {
         );
 
         view.fitViewtoViewport(screenBounds, viewportBounds);
+        view.props.camera.update(true);
       }
     }
 
@@ -1315,6 +1316,10 @@ export class Surface {
       this.pixelRatio = 1.0;
     }
 
+    this.setRendererSize(width, height);
+    this.renderer.setPixelRatio(this.pixelRatio);
+    this.mouseManager.resize();
+
     if (this.sceneDiffs) {
       const scenes = this.sceneDiffs.items;
       for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
@@ -1323,13 +1328,10 @@ export class Surface {
         for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
           const view = scene.views[k];
           view.pixelRatio = this.pixelRatio;
+          view.props.camera.update(true);
         }
       }
     }
-
-    this.setRendererSize(width, height);
-    this.renderer.setPixelRatio(this.pixelRatio);
-    this.mouseManager.resize();
 
     // After the resize happens, the view draw dependencies may change as the views will cover different region sizes
     this.gatherViewDrawDependencies();

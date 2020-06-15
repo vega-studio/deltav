@@ -611,6 +611,10 @@ export class Transform extends TreeNode<Transform> {
 
       if (this._localMatrix.didUpdate) {
         (this._instance as any)._localMatrix = this._localMatrix.value;
+
+        if (!this.parent) {
+          (this._instance as any)._matrix = this._matrix.value;
+        }
       }
     }
 

@@ -40,8 +40,6 @@ export class Instance {
    * This is an internal easing object to track properties for automated easing
    */
   easing?: Map<number, IEasingProps>;
-  /** Internal, non-changeable id */
-  private _id: string;
   /** This is the observer of the Instance's observable properties */
   private _observer: InstanceProvider<this> | null;
   /** This is where observables store their data for the instance */
@@ -139,13 +137,6 @@ export class Instance {
   }
 
   /**
-   * Get the applied id of this instance
-   */
-  get id() {
-    return this._id;
-  }
-
-  /**
    * Get the auto generated ID of this instance
    */
   get uid() {
@@ -167,7 +158,6 @@ export class Instance {
   }
 
   constructor(options: IInstanceOptions) {
-    this._id = options.id || "";
     this.active = options.active || this.active;
   }
 }

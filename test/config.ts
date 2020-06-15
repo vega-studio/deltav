@@ -1,6 +1,7 @@
 import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
+import { CameraControllerDemo3D } from "./demos/camera-controller-demo-3d";
 import { ChartDemo } from "./demos/chart-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
@@ -27,6 +28,7 @@ export const startDemoKey = localStorage.getItem("deltaV_currentDemo") || "";
 
 demos.set("basic-demo-3d", BasicDemo3D);
 demos.set("basic-demo", BasicDemo);
+demos.set("camera-controller-demo-3d", CameraControllerDemo3D);
 demos.set("chart-demo", ChartDemo);
 demos.set("cube-demo-3d", CubeDemo3D);
 demos.set("ease-demo", EaseDemo);

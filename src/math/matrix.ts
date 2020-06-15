@@ -1,4 +1,13 @@
-import { apply2, apply3, apply4, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
+import {
+  apply2,
+  apply3,
+  apply4,
+  Vec2,
+  Vec2Compat,
+  Vec3,
+  Vec3Compat,
+  Vec4
+} from "./vector";
 
 const { cos, sin, tan } = Math;
 
@@ -985,6 +994,24 @@ export function toString4x4(mat: Mat4x4): string {
 }
 
 /**
+ * Makes a 2x2 rotation matrix based on a single rotational value. Good for
+ * rotating 2 dimensional values with as little information and operations as
+ * possible.
+ */
+export function rotation2x2(radians: number, out?: Mat2x2): Mat2x2 {
+  out = out || (new Array(4) as Mat2x2);
+  const c = Math.cos(radians);
+  const s = Math.sin(radians);
+
+  out[M200] = c;
+  out[M201] = -s;
+  out[M210] = s;
+  out[M211] = c;
+
+  return out;
+}
+
+/**
  * We only support Euler X then Y then Z rotations. Specify the rotation values
  * for each axis to receive a matrix that will perform rotations by that amount
  * in that order.
@@ -1436,6 +1463,7 @@ export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
 }
 
 /**
+ * This performs the order multiplication of SRT in reverse as TRS.
  * This is a MAX speed SRT Matrix generation method that optimizing the
  * computations needed to create an SRT from separate smaller components.
  *
@@ -1447,7 +1475,7 @@ export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
  * g t                 | h u                 | i v                 | 0
  * t (a x + d y + g z) | u (b x + e y + h z) | v (c x + f y + i z) | 1
  */
-export function SRT4x4(
+export function TRS4x4(
   scale: Vec3,
   rotation: Mat3x3,
   translation: Vec3,
@@ -1480,9 +1508,7 @@ export function SRT4x4(
 }
 
 /**
- * This performs the order multiplication of SRT in reverse as TRS.
- *
- * This is a MAX speed SRT Matrix generation method that optimizing the
+ * This is a MAX speed TRS Matrix generation method that optimizing the
  * computations needed to create an SRT from separate smaller components.
  *
  * NOTE: The rotation is injected
@@ -1493,7 +1519,7 @@ export function SRT4x4(
  * g v | h v | i v | 0
  * x   | y   | z   | 1)
  */
-export function TRS4x4(
+export function SRT4x4(
   scale: Vec3,
   rotation: Mat3x3,
   translation: Vec3,
@@ -1522,5 +1548,101 @@ export function TRS4x4(
   out[M430] = x;
   out[M431] = y;
   out[M432] = z;
+  out[M433] = 1;
+}
+
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ *
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t           | b u           | 0 | 0
+ * c t           | d u           | 0 | 0
+ * 0             | 0             | 0 | 0
+ * t (a x + c y) | u (b x + d y) | 0 | 1
+ */
+export function TRS4x4_2D(
+  scale: Vec2,
+  rotation: Mat2x2,
+  translation: Vec2,
+  out?: Mat4x4
+) {
+  out = out || (([] as any) as Mat4x4);
+  const [t, u] = scale;
+  const [x, y] = translation;
+  const [a, b, c, d] = rotation;
+
+  out[M400] = a * t;
+  out[M401] = b * u;
+  out[M402] = 0;
+  out[M403] = 0;
+
+  out[M410] = c * t;
+  out[M411] = d * u;
+  out[M412] = 0;
+  out[M413] = 0;
+
+  out[M420] = 0;
+  out[M421] = 0;
+  out[M422] = 1;
+  out[M423] = 0;
+
+  out[M430] = t * (a * x + c * y);
+  out[M431] = u * (b * x + d * y);
+  out[M432] = 0;
+  out[M433] = 1;
+}
+
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ *
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * This specifically creates a full transform for 3D computations by creating
+ * the appropriate 4x4 that properly represents the complete transform to world
+ * space.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t | b t | 0 | 0
+ * c u | d u | 0 | 0
+ * 0   | 0   | 1 | 0
+ * x   | y   | 0 | 1
+ */
+export function SRT4x4_2D(
+  scale: Vec2Compat,
+  rotation: Mat2x2,
+  translation: Vec2Compat,
+  out?: Mat4x4
+) {
+  out = out || (([] as any) as Mat4x4);
+  const [t, u] = scale;
+  const [x, y] = translation;
+  const [a, b, c, d] = rotation;
+
+  out[M400] = a * t;
+  out[M401] = b * t;
+  out[M402] = 0;
+  out[M403] = 0;
+
+  out[M410] = c * u;
+  out[M411] = d * u;
+  out[M412] = 0;
+  out[M413] = 0;
+
+  out[M420] = 0;
+  out[M421] = 0;
+  out[M422] = 1;
+  out[M423] = 0;
+
+  out[M430] = x;
+  out[M431] = y;
+  out[M432] = 0;
   out[M433] = 1;
 }

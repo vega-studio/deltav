@@ -9,8 +9,11 @@ import { ISceneGraphLayerProps, SceneGraphLayer } from "./scene-graph-layer";
 ShaderModule.register({
   moduleId: "parent-transform",
   compatibility: ShaderInjectionTarget.VERTEX,
+  content: "",
   uniforms: layer => {
-    const moduleLayer: SceneGraphLayer<Instance, ISceneGraphLayerProps<Instance>> | Layer<Instance, ILayerProps<Instance>> = layer;
+    const moduleLayer:
+      | SceneGraphLayer<Instance, ISceneGraphLayerProps<Instance>>
+      | Layer<Instance, ILayerProps<Instance>> = layer;
 
     if (!(moduleLayer instanceof SceneGraphLayer)) {
       console.warn(
@@ -25,9 +28,9 @@ ShaderModule.register({
 
     return [
       createUniform({
-        name: 'parentTransform',
+        name: "parentTransform",
         size: UniformSize.MATRIX4,
-        update: () => moduleLayer.props.parent?.transform.matrix || identity
+        update: () => moduleLayer.props.parent?.matrix || identity
       })
     ];
   }

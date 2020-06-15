@@ -1482,6 +1482,7 @@ export class GLProxy {
           0,
           0
         );
+
         if (
           geometry.isInstanced &&
           attribute.isInstanced &&

@@ -120,13 +120,14 @@ export class InstanceAttributeBufferManager<
    * First instance to be added to this manager will be heavily analyzed for used observables per attribute.
    */
   private doAddWithRegistration(instance: T) {
+    // Activate monitoring of ids, this also resets the monitor's list
+    ObservableMonitoring.setObservableMonitor(true);
+
     // We need to find out how an instance interacts with the attributes, so we will
     // loop through the instances, call their updates and get feedback
     this.layer.shaderIOInfo.instanceAttributes.forEach(attribute => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
-      // Activate monitoring of ids, this also resets the monitor's list
-      ObservableMonitoring.setObservableMonitor(true);
       // Access the update which accesses an instances properties (usually)
       attribute.update(instance);
       // We now have all of the ids of the properties that were used in updating the attributes
@@ -134,7 +135,16 @@ export class InstanceAttributeBufferManager<
         true
       );
       // Store the mapping of the property ids
-      this.attributeToPropertyIds.set(attribute, propertyIdsForAttribute);
+      // TODO: We currently only support ONE property id per change
+      this.attributeToPropertyIds.set(attribute, [
+        propertyIdsForAttribute[propertyIdsForAttribute.length - 1]
+      ]);
+
+      if (propertyIdsForAttribute.length > 1) {
+        debug(
+          "Property has multiple observables. Only the last trigger will be retained as the feature is not complete yet"
+        );
+      }
 
       // If this is the active attribute, then we track the property id that modifies it
       // for handling internal instance management.
@@ -258,7 +268,7 @@ export class InstanceAttributeBufferManager<
    */
   managesInstance(instance: T) {
     // We know this instance is managed if the instance has buffer location real estate assigned to it
-    return this.instanceToBufferLocation[instance.uid] !== undefined;
+    return this.instanceToBufferLocation[instance.uid] !== void 0;
   }
 
   /**

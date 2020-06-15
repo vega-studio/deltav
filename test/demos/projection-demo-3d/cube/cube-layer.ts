@@ -180,19 +180,9 @@ export class CubeLayer<
       fs: require("./cube-layer.fs"),
       instanceAttributes: [
         createAttribute({
-          name: "s",
-          size: InstanceAttributeSize.THREE,
-          update: o => o.scale
-        }),
-        createAttribute({
-          name: "r",
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.rotation
-        }),
-        createAttribute({
-          name: "t",
-          size: InstanceAttributeSize.THREE,
-          update: o => o.position
+          name: "m",
+          size: InstanceAttributeSize.MAT4X4,
+          update: o => o.transform.matrix
         }),
         createAttribute({
           name: "size",

@@ -29,20 +29,27 @@ export class ObservableMonitoring {
 }
 
 /**
- * This is a custom decorator intended for single properties on Instances only! It will
- * facilitate automatic updates and stream the updates through an InstanceProvider to properly
- * update the Instances values in the appropriate and corresponding buffers that will get committed
- * to the GPU.
+ * Shorthand for the Observable Monitor as this has a hard time getting
+ * compressed properly in minification.
+ */
+const m = ObservableMonitoring;
+
+/**
+ * This is a custom decorator intended for single properties on Instances only!
+ * It will facilitate automatic updates and stream the updates through an
+ * InstanceProvider to properly update the Instances values in the appropriate
+ * and corresponding buffers that will get committed to the GPU.
  */
 export function observable<T extends Instance>(target: T, key: string) {
-  // Here we store the name of the observable to a UID. This mapping allows us to have a UID
-  // per NAME of an observable. A UID for a name can produce MUCH faster lookups than the name itself.
-  // Matching against the name allows us to have instances with their own property sets but have matching
-  // name mappings to improve compatibility of Instances with varying Layers.
+  // Here we store the name of the observable to a UID. This mapping allows us
+  // to have a UID per NAME of an observable. A UID for a name can produce MUCH
+  // faster lookups than the name itself. Matching against the name allows us to
+  // have instances with their own property sets but have matching name mappings
+  // to improve compatibility of Instances with varying Layers.
   let propertyUID: number =
     ObservableMonitoring.observableNamesToUID.get(key) || 0;
 
-  if (!propertyUID) {
+  if (propertyUID === 0) {
     propertyUID = uid();
     ObservableMonitoring.observableNamesToUID.set(key, propertyUID);
   }
@@ -52,8 +59,8 @@ export function observable<T extends Instance>(target: T, key: string) {
    * the initial storage with a custom getter and setter.
    */
   function getter(this: T) {
-    if (ObservableMonitoring.gatherIds) {
-      ObservableMonitoring.observableIds.push(propertyUID);
+    if (m.gatherIds) {
+      m.observableIds.push(propertyUID);
     }
     return this.observableStorage[propertyUID];
   }

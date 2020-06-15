@@ -1029,3 +1029,12 @@ export interface ILayerRef {
    */
   easing: ILayerEasingManager | null;
 }
+
+/**
+ * Type of transform prop that needs to track whether or not it has been
+ * updated.
+ */
+export type UpdateProp<T> = {
+  didUpdate?: boolean;
+  value: T;
+};

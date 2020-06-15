@@ -23,27 +23,10 @@ import {
   V3R,
   Vec3
 } from "../../math";
-import { onAnimationLoop } from "../../util/frame";
-import { Instance3D } from "../layers";
+import { UpdateProp } from "../../types";
+import { Instance3D } from "./instance-3d";
+import { resolveUpdate, scheduleUpdate } from "./transform-base";
 import { TreeNode } from "./tree-node";
-
-/**
- * Type of transform prop that needs to track whether or not it has been
- * updated.
- */
-type UpdateProp<T> = {
-  didUpdate?: boolean;
-  value: T;
-};
-
-/**
- * Stores transforms that MUST be updated for the sake of instances waiting for
- * updates from the transform. Due to our instances being passive and our
- * TreeNode structure being passive, this is our glue that detects the instances
- * that WOULD have actively requested the update but won't due to passively
- * waiting without interaction.
- */
-const updateTransform = new Set<Transform>();
 
 /**
  * The initial properties of the transform on creation
@@ -74,6 +57,16 @@ export interface ITransform {
 export class Transform extends TreeNode<Transform> {
   /** Indicates this transform is queued for an update in the update loop */
   private isQueuedForUpdate = false;
+  /**
+   * Helper flag indicating it is relevant to have the world orientation
+   * decomposed from the world transform.
+   */
+  private needsWorldOrientation = false;
+  /**
+   * Flag indicates the world matrix has been updated but has not been through
+   * a decomposition yet.
+   */
+  private needsWorldDecomposition = false;
 
   /**
    * Flag that indicates this transform has a matrix that performs the
@@ -115,12 +108,6 @@ export class Transform extends TreeNode<Transform> {
    * performs which does NOT include the parent transforms to this transform.
    */
   private _localMatrix: UpdateProp<Mat4x4> = { value: this._matrix.value };
-  /**
-   * When this is set, this means the values located within the rotation,
-   * position, and scale need to be calculated via decomposition from the world
-   * matrix.
-   */
-  private needsWorldDecomposition: boolean = false;
 
   /**
    * This is the transform matrix that contains the operations in reverse order.
@@ -146,6 +133,7 @@ export class Transform extends TreeNode<Transform> {
    * rotation === localRotation.
    */
   get rotation() {
+    this.needsWorldOrientation = true;
     this.update();
     return this._rotation.value;
   }
@@ -170,7 +158,6 @@ export class Transform extends TreeNode<Transform> {
     this._localRotation.didUpdate = true;
     this.invalidate();
     this.needsForwardUpdate = true;
-    this.needsWorldDecomposition = true;
   }
   private _rotation: UpdateProp<Quaternion> = { value: oneQuat() };
   private _localRotation: UpdateProp<Quaternion> = {
@@ -183,6 +170,7 @@ export class Transform extends TreeNode<Transform> {
    * localScale === scale.
    */
   get scale() {
+    this.needsWorldOrientation = true;
     this.update();
     return this._scale.value;
   }
@@ -215,6 +203,7 @@ export class Transform extends TreeNode<Transform> {
    * position === localPosition.
    */
   get position() {
+    this.needsWorldOrientation = true;
     this.update();
     return this._position.value;
   }
@@ -313,11 +302,26 @@ export class Transform extends TreeNode<Transform> {
    */
   private decomposeWorldMatrix() {
     // If no triggers occurred, we need to not decompose
-    if (!this.parent || !this.needsWorldDecomposition) {
+    if (
+      !this.needsWorldDecomposition ||
+      !this.parent ||
+      !this._matrix.didUpdate ||
+      this._matrix.value === this._localMatrix.value
+    ) {
       return;
     }
 
-    // Indicate the decomposition has been updated for the current world matrix
+    // Check to see if something is utilizing world orientation from either this
+    // transform or from the instance itself. If neither are, then we should not
+    // decompose the matrix as nothing is reading the value.
+    if (this._instance) {
+      if (!this._instance.needsWorldUpdate || !this.needsWorldOrientation) {
+        return;
+      }
+    } else if (!this.needsWorldOrientation) {
+      return;
+    }
+
     this.needsWorldDecomposition = false;
     const m = this._matrix.value;
     const translation = this._position.value;
@@ -365,7 +369,6 @@ export class Transform extends TreeNode<Transform> {
     this._localRotation.didUpdate = true;
     this.invalidate();
     this.needsForwardUpdate = true;
-    this.needsWorldDecomposition = true;
   }
 
   /**
@@ -383,7 +386,6 @@ export class Transform extends TreeNode<Transform> {
       this._rotation = this._localRotation;
       this._scale = this._localScale;
       this._position = this._localPosition;
-      this.needsWorldDecomposition = false;
     }
 
     // Once we set a parent matrix, this transform must handle a dividing moment
@@ -417,6 +419,21 @@ export class Transform extends TreeNode<Transform> {
   }
 
   /**
+   * This is an ambiguous but simple method that attempts to re-optimize this
+   * transform. If you have maybe a one time analysis of properties over the
+   * course of a lengthy period of time, consider calling this.
+   *
+   * Instances and transforms take the approach of "shifting gears" toward world
+   * decomposition after world orientations are queried. However, you may not
+   * always need or rarely need a specific world orientation. Thus calling this
+   * method will make the instance and transform assume it no longer needs world
+   * orientations once again until something queries for it.
+   */
+  optimize() {
+    this.needsWorldOrientation = false;
+  }
+
+  /**
    * Ensures this transform WILL receive an update if it fits requirements for
    * potentially missing an update that may be needed by passive elements.
    */
@@ -427,7 +444,7 @@ export class Transform extends TreeNode<Transform> {
     // trigger the resource updates for the instance.
     if (!this.isQueuedForUpdate && this._instance && this._instance.active) {
       this.isQueuedForUpdate = true;
-      updateTransform.add(this);
+      scheduleUpdate(this);
     }
   }
 
@@ -445,7 +462,7 @@ export class Transform extends TreeNode<Transform> {
     // If this is queued for an update, we can remove it now as it's definitely
     // up to date at this point.
     if (this.isQueuedForUpdate) {
-      updateTransform.delete(this);
+      resolveUpdate(this);
       this.isQueuedForUpdate = false;
     }
 
@@ -460,7 +477,7 @@ export class Transform extends TreeNode<Transform> {
       // Concat the SRT transform in this order Scale -> Rotation -> Translation
       // We utilize our existing matrix to reduce redundant allocations of
       // matrix information.
-      TRS4x4(
+      SRT4x4(
         this._localScale.value,
         R,
         this._localPosition.value,
@@ -483,7 +500,7 @@ export class Transform extends TreeNode<Transform> {
         // Thus the world is being moved for the sake of the camera, the camera
         // itself is not moving. THUS: all operations to make this matrix will
         // be the INVERSE of where the camera is physically located and oriented
-        SRT4x4(
+        TRS4x4(
           inverse3(this._localScale.value, V3R[0]),
           transpose3x3(R, M3R[1]),
           scale3(this._localPosition.value, -1, V3R[1]),
@@ -520,9 +537,6 @@ export class Transform extends TreeNode<Transform> {
       // If something changed that required the world matrix to be recalculated,
       // then let's update it.
       if (updateWorldMatrix) {
-        // Flag our world orientation calculations for needing an update by
-        // decomposing our new world matrix
-        this.needsWorldDecomposition = true;
         // Apply the world change
         multiply4x4(
           this.parent._matrix.value,
@@ -530,6 +544,7 @@ export class Transform extends TreeNode<Transform> {
           this._matrix.value
         );
         this._matrix.didUpdate = true;
+        this.needsWorldDecomposition = true;
       }
     }
 
@@ -538,44 +553,55 @@ export class Transform extends TreeNode<Transform> {
     this.decomposeWorldMatrix();
 
     // Perform all of the triggers needed to update the instance to the latest
-    if (this._instance && this._instance.active) {
-      if (this._localRotation.didUpdate) {
-        (this._instance as any)._localRotation = this._localRotation.value;
-      }
+    // information. If neither matrix had an update, then there is nothing that
+    // needs to update for the instance as the matrices are the culmination of
+    // all changes that could be made
+    if (
+      this._instance &&
+      this._instance.active &&
+      (this._localMatrix.didUpdate || this._matrix.didUpdate)
+    ) {
+      if (this._instance.needsLocalUpdate) {
+        if (this._localRotation.didUpdate) {
+          (this._instance as any)._localRotation = this._localRotation.value;
+        }
 
-      if (this._localPosition.didUpdate) {
-        (this._instance as any)._localPosition = this._localPosition.value;
-      }
+        if (this._localPosition.didUpdate) {
+          (this._instance as any)._localPosition = this._localPosition.value;
+        }
 
-      if (this._localScale.didUpdate) {
-        (this._instance as any)._localScale = this._localScale.value;
+        if (this._localScale.didUpdate) {
+          (this._instance as any)._localScale = this._localScale.value;
+        }
       }
 
       // If we don't have a parent, then the local and the world positioning is
       // merged and thus the world needs to be updated based on the local
-      if (!this.parent) {
-        if (this._localRotation.didUpdate) {
-          (this._instance as any)._rotation = this._localRotation.value;
-        }
+      if (this._instance.needsWorldUpdate) {
+        if (this.parent) {
+          if (this._rotation.didUpdate) {
+            (this._instance as any)._rotation = this._rotation.value;
+          }
 
-        if (this._localPosition.didUpdate) {
-          (this._instance as any)._position = this._localPosition.value;
-        }
+          if (this._scale.didUpdate) {
+            (this._instance as any)._scale = this._scale.value;
+          }
 
-        if (this._localScale.didUpdate) {
-          (this._instance as any)._scale = this._localScale.value;
-        }
-      } else {
-        if (this._rotation.didUpdate) {
-          (this._instance as any)._rotation = this._rotation.value;
-        }
+          if (this._position.didUpdate) {
+            (this._instance as any)._position = this._position.value;
+          }
+        } else {
+          if (this._localRotation.didUpdate) {
+            (this._instance as any)._rotation = this._localRotation.value;
+          }
 
-        if (this._scale.didUpdate) {
-          (this._instance as any)._scale = this._scale.value;
-        }
+          if (this._localPosition.didUpdate) {
+            (this._instance as any)._position = this._localPosition.value;
+          }
 
-        if (this._position.didUpdate) {
-          (this._instance as any)._position = this._position.value;
+          if (this._localScale.didUpdate) {
+            (this._instance as any)._scale = this._localScale.value;
+          }
         }
       }
 
@@ -597,27 +623,5 @@ export class Transform extends TreeNode<Transform> {
     this.resolve();
   }
 }
-
-/**
- * We create a looping function to ensure the transforms that MUST be updated
- * for instances are dequeued and properly updated.
- */
-const updateLoop = async () => {
-  // This pattern guarantees an always running loop that can not be stopped. The
-  // animation loop will continue forever and also cause a Promise that will
-  // never resolve. The Promise resolves only when the loop is stopped somehow,
-  // which we then immediately start our loop back up again.
-  await onAnimationLoop(
-    () => {
-      updateTransform.forEach(t => t.update());
-    },
-    undefined,
-    Number.POSITIVE_INFINITY
-  );
-
-  updateLoop();
-};
-
-updateLoop();
 
 export const IdentityTransform: Readonly<Transform> = new Transform();

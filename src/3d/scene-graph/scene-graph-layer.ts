@@ -1,14 +1,15 @@
 import { Instance } from "../../instance-provider";
+import { Mat4x4 } from "../../math/matrix";
 import { ILayerProps, Layer } from "../../surface";
 import { IShaderInitialization } from "../../types";
-import { Instance3D } from "../layers";
 
-export interface ISceneGraphLayerProps<TInstance extends Instance> extends ILayerProps<TInstance> {
+export interface ISceneGraphLayerProps<TInstance extends Instance>
+  extends ILayerProps<TInstance> {
   /**
    * If this is sepcified, this will be the parent transform this layer
    * renders it's objects relative to.
    */
-  parent?: Instance3D;
+  parent?: { matrix: Mat4x4 };
 }
 
 /**
@@ -33,7 +34,7 @@ export class SceneGraphLayer<
    */
   baseShaderModules(shaderIO: IShaderInitialization<TInstance>) {
     const baseModules = super.baseShaderModules(shaderIO);
-    baseModules.vs.push('parent-transform');
+    baseModules.vs.push("parent-transform");
 
     return baseModules;
   }

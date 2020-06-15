@@ -287,7 +287,7 @@ export function apply2(
   v0: number,
   v1: number
 ): Vec2 {
-  v = v || (([] as any) as Vec2);
+  v = v || ((new Array(2) as any) as Vec2);
   v[0] = v0;
   v[1] = v1;
 
@@ -355,12 +355,12 @@ export function empty2(out?: Vec2) {
 }
 
 export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(list.length * 2);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 2) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
   }
 
   return out;
@@ -557,13 +557,13 @@ export function empty3(out?: Vec3) {
 }
 
 export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(list.length * 3);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 3) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
-    out.push(v[2]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
+    out[index + 2] = v[2];
   }
 
   return out;
@@ -832,14 +832,14 @@ export function empty4(out?: Vec4) {
 }
 
 export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(4);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 4) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
-    out.push(v[2]);
-    out.push(v[3]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
+    out[index + 2] = v[2];
+    out[index + 3] = v[3];
   }
 
   return out;

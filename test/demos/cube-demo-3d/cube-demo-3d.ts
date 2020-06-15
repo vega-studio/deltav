@@ -120,7 +120,7 @@ export class CubeDemo3D extends BaseDemo {
 
     this.loopId = onAnimationLoop((t: number) => {
       const theta = (t / 1400) * Math.PI * 2;
-      cube.transform.position = add3(
+      cube.position = add3(
         [Math.sin(theta) * 10 * factor, 0, Math.cos(theta) * 10 * factor],
         [0, 0, -20]
       );

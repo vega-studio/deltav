@@ -182,7 +182,7 @@ export class CubeLayer<
         createAttribute({
           name: "m",
           size: InstanceAttributeSize.MAT4X4,
-          update: o => o.transform.matrix
+          update: o => o.matrix
         }),
         createAttribute({
           name: "size",

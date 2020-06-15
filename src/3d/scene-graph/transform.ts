@@ -98,15 +98,15 @@ export class Transform extends TreeNode<Transform> {
     this.update();
     return this._matrix.value;
   }
-  /**
-   * This is the culminated matrix for world space which includes this
-   * Transform's changes plus it's parent's changes.
-   */
   private _matrix: UpdateProp<Mat4x4> = { value: identity4() };
   /**
    * This is the local matrix which represents the transform this Transform
    * performs which does NOT include the parent transforms to this transform.
    */
+  get localMatrix(): Mat4x4 {
+    this.update();
+    return this._localMatrix.value;
+  }
   private _localMatrix: UpdateProp<Mat4x4> = { value: this._matrix.value };
 
   /**
@@ -605,9 +605,12 @@ export class Transform extends TreeNode<Transform> {
         }
       }
 
-      // Trigger updates for the instance
-      if (this._matrix.didUpdate || this._localMatrix.didUpdate) {
-        this._instance.transform = this;
+      if (this._matrix.didUpdate) {
+        (this._instance as any)._matrix = this._matrix.value;
+      }
+
+      if (this._localMatrix.didUpdate) {
+        (this._instance as any)._localMatrix = this._localMatrix.value;
       }
     }
 

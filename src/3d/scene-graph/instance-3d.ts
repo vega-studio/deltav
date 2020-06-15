@@ -3,7 +3,7 @@ import {
   Instance,
   observable
 } from "../../instance-provider";
-import { Quaternion, Vec3 } from "../../math";
+import { Mat4x4, Quaternion, Vec3 } from "../../math";
 import { Transform } from "./transform";
 
 export interface IInstance3DOptions extends IInstanceOptions {
@@ -25,7 +25,6 @@ export class Instance3D extends Instance {
   /**
    * This is the 3D transform that will place this object within the 3D world.
    */
-  @observable private _transform: Transform;
   get transform() {
     return this._transform;
   }
@@ -37,11 +36,35 @@ export class Instance3D extends Instance {
       this._localPosition = val.localPosition;
       this._localRotation = val.localRotation;
       this._localScale = val.localScale;
+      this._matrix = val.matrix;
+      this._localMatrix = val.localMatrix;
     }
 
     val.instance = this;
     this._transform = val;
   }
+  private _transform: Transform;
+
+  /**
+   * Matrix representing the transform needed to put this instance into world
+   * space. Should never edit this directly. Use the transform property or the
+   * orientation properties to mutate this transform.
+   */
+  get matrix(): Mat4x4 {
+    this._transform.update();
+    return this._matrix;
+  }
+  @observable private _matrix: Mat4x4;
+
+  /**
+   * Matrix used to represent the transform this object places on itself.
+   * Anything using this matrix as it's basis
+   */
+  get localMatrix(): Mat4x4 {
+    this._transform.update();
+    return this._localMatrix;
+  }
+  @observable private _localMatrix: Mat4x4;
 
   /** Local position of the Instance */
   get localPosition() {

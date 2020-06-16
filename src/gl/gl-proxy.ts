@@ -1017,7 +1017,8 @@ export class GLProxy {
    * Retrieves the gl context from the canvas
    */
   static getContext(canvas: HTMLCanvasElement, options: {}) {
-    // TODO: Let's make sure webgl works before we attempt any webgl 2 shenanigans
+    // Try grabbing webgl context by order of most desireable to least
+    // desireable
     const names = ["webgl2", "webgl", "experimental-webgl"];
     let context: GLContext | null = null;
     let extensions: IExtensions = {};

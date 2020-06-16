@@ -170,7 +170,7 @@ export class Camera {
 
   /** The computed projection of the camera. */
   get projection() {
-    this.update();
+    this.update(true);
     return this._projection;
   }
   private _projection: Mat4x4 = identity4();
@@ -242,10 +242,7 @@ export class Camera {
    * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
    */
   get viewProjection() {
-    if (this.transform.needsUpdate || this._needsUpdate) {
-      this.update(true);
-    }
-
+    this.update(true);
     return this._viewProjection;
   }
   private _viewProjection: Mat4x4 = identity4();

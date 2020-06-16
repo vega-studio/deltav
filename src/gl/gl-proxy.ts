@@ -1018,7 +1018,7 @@ export class GLProxy {
    */
   static getContext(canvas: HTMLCanvasElement, options: {}) {
     // TODO: Let's make sure webgl works before we attempt any webgl 2 shenanigans
-    const names = [/** "webgl2", */ "webgl", "experimental-webgl"];
+    const names = ["webgl2", "webgl", "experimental-webgl"];
     let context: GLContext | null = null;
     let extensions: IExtensions = {};
 
@@ -1166,7 +1166,10 @@ export class GLProxy {
     this.updateTextureSettings(texture);
 
     // First set the data in the texture
-    if (gl instanceof WebGLRenderingContext) {
+    if (
+      gl instanceof WebGLRenderingContext ||
+      (gl as any) instanceof WebGL2RenderingContext
+    ) {
       if (isDataBuffer(texture.data)) {
         if (
           !isPowerOf2(texture.data.width) ||
@@ -1264,7 +1267,10 @@ export class GLProxy {
       const bounds = region[1];
 
       // First set the data in the texture
-      if (gl instanceof WebGLRenderingContext) {
+      if (
+        gl instanceof WebGLRenderingContext ||
+        (gl as any) instanceof WebGL2RenderingContext
+      ) {
         if (isDataBuffer(buffer)) {
           gl.texSubImage2D(
             gl.TEXTURE_2D,
@@ -1370,11 +1376,18 @@ export class GLProxy {
     // Apply the anistropic extension (if available)
     if (this.extensions.anisotropicFiltering) {
       const { ext, stat } = this.extensions.anisotropicFiltering;
-      gl.texParameterf(
-        gl.TEXTURE_2D,
-        ext.TEXTURE_MAX_ANISOTROPY_EXT,
-        Math.min(stat.maxAnistropicFilter, Math.floor(texture.anisotropy))
+      const anisotropy = Math.min(
+        stat.maxAnistropicFilter,
+        Math.floor(texture.anisotropy)
       );
+
+      if (!isNaN(anisotropy)) {
+        gl.texParameterf(
+          gl.TEXTURE_2D,
+          ext.TEXTURE_MAX_ANISOTROPY_EXT,
+          anisotropy
+        );
+      }
     }
 
     // Clear the flag for updates

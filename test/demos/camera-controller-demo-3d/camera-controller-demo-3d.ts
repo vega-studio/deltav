@@ -12,6 +12,7 @@ import {
   stopAnimationLoop,
   View3D
 } from "../../../src";
+import { MouseSwivelCameraController } from "../../../src/3d/view/mouse-swivel-camera-controller";
 import { Camera, CameraProjectionType } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { CubeInstance } from "./cube/cube-instance";
@@ -83,7 +84,12 @@ export class CameraControllerDemo3D extends BaseDemo {
             : Camera.makeOrthographic()
       },
       resources: {},
-      eventManagers: _cameras => ({}),
+      eventManagers: cameras => ({
+        main: new MouseSwivelCameraController({
+          view: "main.perspective",
+          camera: cameras.main
+        })
+      }),
       scenes: (_resources, providers, cameras) => ({
         main: {
           views: {

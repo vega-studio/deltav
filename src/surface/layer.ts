@@ -599,7 +599,10 @@ export class Layer<
         newFragmentShaders = outputFragmentShader;
       }
 
+      // If there are no new configurations for the fragment shaders, then we
+      // just move on.
       if (newFragmentShaders.length === 0) {
+        continue;
       }
 
       // Generate the actual shaders to be used by injecting all of the

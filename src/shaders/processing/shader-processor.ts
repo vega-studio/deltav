@@ -422,6 +422,7 @@ export class ShaderProcessor {
   process<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
     shaderIO: IShaderInitialization<T>,
+    fragmentShaders: OutputFragmentShader,
     ioExpansion: BaseIOExpansion[],
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {

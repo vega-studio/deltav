@@ -10,7 +10,8 @@ const debugModuleVS = require("debug")("shader-module-vs");
 const debugModuleFS = require("debug")("shader-module-fs");
 
 /**
- * This is the results expected from a compile() operation from the ShaderModule.
+ * This is the results expected from a compile() operation from the
+ * ShaderModule.
  */
 export interface IShaderCompileResults {
   /** Error messages generated from analyzing the shaders */
@@ -27,10 +28,12 @@ export interface IShaderCompileResults {
  */
 const IMPORT_TOKEN = "import";
 /**
- * This is a delimiter between the import token and the identifying import id value
- * provided. This must be the next non-whitespace character found after the import token.
+ * This is a delimiter between the import token and the identifying import id
+ * value provided. This must be the next non-whitespace character found after
+ * the import token.
  *
- * We allow whitespace between the token and it's delimiter to allow for style preference
+ * We allow whitespace between the token and it's delimiter to allow for style
+ * preference
  *
  * import: id
  * import:id
@@ -41,7 +44,8 @@ const IMPORT_TOKEN = "import";
 const IMPORT_DELIMITER = ":";
 
 /**
- * Tests to see if a ShaderModuleUnit is compatible with a provided Shader Target
+ * Tests to see if a ShaderModuleUnit is compatible with a provided Shader
+ * Target
  */
 function isUnitCompatible(
   unit: ShaderModuleUnit,
@@ -55,27 +59,32 @@ function isUnitCompatible(
 }
 
 /**
- * This file defines modules for shaders. Shader modules are global to the window context.
+ * This file defines modules for shaders. Shader modules are global to the
+ * window context.
  */
 export class ShaderModule {
-  /** These are all of the currently registered modules for the Shader Modules */
+  /**
+   * These are all of the currently registered modules for the Shader Modules
+   */
   static modules = new Map<
     string,
     { fs?: ShaderModuleUnit; vs?: ShaderModuleUnit }
   >();
 
   /**
-   * This registers a new ShaderModuleUnit. It makes the module available by it's importId within shaders
-   * using this framework.
+   * This registers a new ShaderModuleUnit. It makes the module available by
+   * it's importId within shaders using this framework.
    *
-   * If the module is registered with no returned output, the registration was a success. Any returned output
-   * indicates issues encountered while registering the module.
+   * If the module is registered with no returned output, the registration was a
+   * success. Any returned output indicates issues encountered while registering
+   * the module.
    */
   static register(
     unit: ShaderModuleUnit | ShaderModuleUnitOptions | ShaderModuleUnitOptions[]
   ): string | null {
-    // If the input is just Shader Module Unit options injected, then we simply handle wrapping
-    // the options into a ShaderModuleUnit and do a registration.
+    // If the input is just Shader Module Unit options injected, then we simply
+    // handle wrapping the options into a ShaderModuleUnit and do a
+    // registration.
     if (!(unit instanceof ShaderModuleUnit)) {
       if (Array.isArray(unit)) {
         let out = "";
@@ -85,7 +94,8 @@ export class ShaderModule {
           if (output) out += `${output}\n`;
         });
 
-        // If there was no output at any time, let's be sure to return a simple null
+        // If there was no output at any time, let's be sure to return a simple
+        // null
         if (!out) {
           return null;
         }
@@ -149,12 +159,12 @@ export class ShaderModule {
   }
 
   /**
-   * This gathers all of the dependents for the module as ids. This also causes the contents of the module to
-   * be stripped of it's import statements.
+   * This gathers all of the dependents for the module as ids. This also causes
+   * the contents of the module to be stripped of it's import statements.
    */
   static analyzeDependents(unit: ShaderModuleUnit) {
-    // If the dependents are already established for this unit and it can not be modified further,
-    // then we do not bother to analyze the dependents again.
+    // If the dependents are already established for this unit and it can not be
+    // modified further, then we do not bother to analyze the dependents again.
     if (unit.dependents && unit.isLocked) {
       return [];
     }
@@ -165,36 +175,40 @@ export class ShaderModule {
     const dependents: string[] = [];
     // Stores all of the unique dependents found for this module
     const dependentSet = new Set<string>();
-    // Get then compatibility target of the module unit so we can properly see what modules are available
-    // to the unit and what is not.
+    // Get then compatibility target of the module unit so we can properly see
+    // what modules are available to the unit and what is not.
     const target = unit.compatibility;
     // This is the identifier of the module requesting it's dependents
     const id = unit.moduleId;
 
-    // Here we process the module contents and look for additional import statements.
+    // Here we process the module contents and look for additional import
+    // statements.
     const templateResults = shaderTemplate({
-      // We do not want any direct replacement options, we will handle token analyzing
-      // via our onToken callback so we can find our special "import:" case
+      // We do not want any direct replacement options, we will handle token
+      // analyzing via our onToken callback so we can find our special "import:"
+      // case
       options: {},
       // Provide the shader to our template processor
       shader: unit.content,
 
-      // We do not want to remove any template macros that do not deal with extension
+      // We do not want to remove any template macros that do not deal with
+      // extension
       onToken: token => {
         const trimmedToken = token.trim();
 
         // See if the token is the first thing to appear
         if (trimmedToken.indexOf(IMPORT_TOKEN) === 0) {
-          // Analyze the remainder of the token to find the necessary colon to be the NEXT
-          // Non-whitespace character
+          // Analyze the remainder of the token to find the necessary colon to
+          // be the NEXT Non-whitespace character
           const afterToken = trimmedToken.substr(IMPORT_TOKEN.length).trim();
 
           // Make sure the character IS a colon
           if (afterToken[0] === IMPORT_DELIMITER) {
             // Indicates if content was properly found for the requested ID
             let moduleContentFound = false;
-            // At this point, ANYTHING after the colon is the module id being requested (with white space trimmed)
-            // We allow comma delimited module ids to be specified
+            // At this point, ANYTHING after the colon is the module id being
+            // requested (with white space trimmed) We allow comma delimited
+            // module ids to be specified
             const moduleIds = afterToken
               .substr(IMPORT_DELIMITER.length)
               .trim()
@@ -212,8 +226,9 @@ export class ShaderModule {
               // Get the requested module
               const mod = ShaderModule.modules.get(moduleId);
 
-              // If we found the module, great! We can store the identifier as a module associated with this shader
-              // string thus reducing processing time needed for next processing.
+              // If we found the module, great! We can store the identifier as a
+              // module associated with this shader string thus reducing
+              // processing time needed for next processing.
               if (mod) {
                 if (
                   target === ShaderInjectionTarget.FRAGMENT ||
@@ -279,20 +294,23 @@ export class ShaderModule {
 
     // Update the content to be stripped of it's import statements
     unit.applyAnalyzedContent(templateResults.shader);
-    // Update the dependents to include the modules found that this module requested
+    // Update the dependents to include the modules found that this module
+    // requested
     unit.dependents = dependents;
 
     return errors;
   }
 
   /**
-   * This examines a shader string and replaces all import statements with any existing registered modules.
-   * This will also output any issues such as requested modules that don't exist and detect circular dependencies
-   * and such ilk.
+   * This examines a shader string and replaces all import statements with any
+   * existing registered modules. This will also output any issues such as
+   * requested modules that don't exist and detect circular dependencies and
+   * such ilk.
    *
    * @param shader The content of the shader to analyze for import statements
    * @param target The shader target type to consider
-   * @param additionalModules Additional modules to include in the shader regardless if the shader requested it or not
+   * @param additionalModules Additional modules to include in the shader
+   *                          regardless if the shader requested it or not
    */
   static process(
     id: string,
@@ -313,7 +331,8 @@ export class ShaderModule {
       target === ShaderInjectionTarget.VERTEX ? debugModuleVS : debugModuleFS;
     debugTarget("Processing Shader for id %o:", id);
 
-    // Internal checking method of the state of the process to find circular dependencies
+    // Internal checking method of the state of the process to find circular
+    // dependencies
     function checkCircularDependency(unit: ShaderModuleUnit) {
       // Get the id of the module being processed for quick reference
       const id = unit.moduleId;
@@ -327,15 +346,16 @@ export class ShaderModule {
           .join(" -> ")
       );
 
-      // First look to see if the identifier is already in the processing queue. If it is, we
-      // have a heinous circular dependency.
+      // First look to see if the identifier is already in the processing queue.
+      // If it is, we have a heinous circular dependency.
       const queueIndex = processing.indexOf(id);
       // Queue up this id as being processed
       processing.unshift(id);
 
       // See if the circular dependency is found.
       if (queueIndex > -1) {
-        // Since we have a queue of our processing path, we can show the circular dependency path
+        // Since we have a queue of our processing path, we can show the
+        // circular dependency path
         const circularPath = processing.slice(0, queueIndex + 2).reverse();
         // Spew the blood
         errors.push(
@@ -353,11 +373,14 @@ export class ShaderModule {
       return true;
     }
 
-    // We place this method as an internal recursive strategy to solving this issue due to the complexities of
-    // the problem at hand. We have shaders that have tokens analyzed that MUST be immediately resolved
-    // to a correct value. Thus we can not use a process queue to remove the need for the recursion. Also, as
-    // this is a static method, this provides some needed properties within the context of the function that we
-    // do not want exposed at all, which is impossible to hide within a static context (private static is not supported).
+    // We place this method as an internal recursive strategy to solving this
+    // issue due to the complexities of the problem at hand. We have shaders
+    // that have tokens analyzed that MUST be immediately resolved to a correct
+    // value. Thus we can not use a process queue to remove the need for the
+    // recursion. Also, as this is a static method, this provides some needed
+    // properties within the context of the function that we do not want exposed
+    // at all, which is impossible to hide within a static context (private
+    // static is not supported).
     function process(unit: ShaderModuleUnit): string | null {
       // This is the id of the module unit  currently being processed
       const id = unit.moduleId;
@@ -367,8 +390,9 @@ export class ShaderModule {
         return null;
       }
 
-      // At this point we need to determine if the id has already been included in the module imports
-      // Each import should only be included once so we prevent duplicate items from showing up
+      // At this point we need to determine if the id has already been included
+      // in the module imports Each import should only be included once so we
+      // prevent duplicate items from showing up
       if (id && included.has(id)) {
         // Remove the id from the queue
         processing.shift();
@@ -377,7 +401,8 @@ export class ShaderModule {
         return "";
       }
 
-      // This will store all of the module content that should be injected as the header
+      // This will store all of the module content that should be injected as
+      // the header
       let includedModuleContent = "";
       // Make sure the dependents for the module are properly analyzed
       const dependentsErrors = ShaderModule.analyzeDependents(unit);
@@ -393,7 +418,8 @@ export class ShaderModule {
           // Get the requested module
           const mod = ShaderModule.modules.get(moduleId);
 
-          // If we found the module, great! We can see if the found module has a compatible target for this module.
+          // If we found the module, great! We can see if the found module has a
+          // compatible target for this module.
           if (mod) {
             let moduleContent;
 
@@ -452,12 +478,13 @@ export class ShaderModule {
       // Add the id to the list of items that have been included
       included.add(id || "");
 
-      // Place the included module content at the top of the shader and return this module with it's necessary
-      // inclusions
+      // Place the included module content at the top of the shader and return
+      // this module with it's necessary inclusions
       return `${includedModuleContent.trim()}\n\n${unit.content.trim()}`;
     }
 
-    // We throw in the additional imports  at the top of the shader being analyzed
+    // We throw in the additional imports  at the top of the shader being
+    // analyzed
     let modifedShader = shader;
 
     if (additionalModules) {
@@ -470,7 +497,8 @@ export class ShaderModule {
       modifedShader = imports + shader;
     }
 
-    // Make our shader a temp module unit to make it compatible with the rest of the shader module processing
+    // Make our shader a temp module unit to make it compatible with the rest of
+    // the shader module processing
     const tempShaderModuleUnit = new ShaderModuleUnit({
       content: modifedShader,
       compatibility: target,

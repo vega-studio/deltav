@@ -871,7 +871,8 @@ export class Surface {
   }
 
   /**
-   * This finalizes everything and sets up viewports and clears colors and performs the actual render step
+   * This finalizes everything and sets up viewports and clears colors and
+   * performs the actual render step
    */
   private drawSceneView(
     scene: Scene,
@@ -885,8 +886,9 @@ export class Surface {
     const background = view.props.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
 
-    // Make sure the correct render target is applied
-    renderer.setRenderTarget(target || null);
+    // If the view has an output target to render into, then we shift our target
+    // focus to that target Make sure the correct render target is applied
+    renderer.setRenderTarget(target || view.outputTarget || null);
 
     // Set the scissor rectangle.
     renderer.setScissor(
@@ -950,8 +952,8 @@ export class Surface {
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const view = scene.views[k];
 
-        // To look for the overlaps of the view in screen space, we must calculate the view's viewport bounds
-        // relative to the screenspace.
+        // To look for the overlaps of the view in screen space, we must
+        // calculate the view's viewport bounds relative to the screenspace.
         const screenBounds = new Bounds<never>({
           height: this.context.canvas.height,
           width: this.context.canvas.width,
@@ -959,7 +961,8 @@ export class Surface {
           y: 0
         });
 
-        // Calculate the bounds the viewport will occupy relative to the screen space
+        // Calculate the bounds the viewport will occupy relative to the screen
+        // space
         const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
           view.props.viewport,
           screenBounds,
@@ -999,8 +1002,8 @@ export class Surface {
   }
 
   /**
-   * This allws for querying a view's screen bounds. Null i;s returned if the view id
-   * specified does not exist.
+   * This allws for querying a view's screen bounds. Null i;s returned if the
+   * view id specified does not exist.
    */
   getViewSize(viewId: string): Bounds<View<IViewProps>> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
@@ -1044,8 +1047,8 @@ export class Surface {
   }
 
   /**
-   * Retrieves the projection methods for a given view, null if the view id does not exist
-   * in the surface
+   * Retrieves the projection methods for a given view, null if the view id does
+   * not exist in the surface
    */
   getProjections(viewId: string): BaseProjection<any> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
@@ -1059,11 +1062,13 @@ export class Surface {
   }
 
   /**
-   * This is the beginning of the system. This should be called immediately after the surface is constructed.
-   * We make this mandatory outside of the constructor so we can make it follow an async pattern.
+   * This is the beginning of the system. This should be called immediately
+   * after the surface is constructed. We make this mandatory outside of the
+   * constructor so we can make it follow an async pattern.
    */
   async init(options: ISurfaceOptions) {
-    // If this already has initialized it's context, then there's nothing to be done
+    // If this already has initialized it's context, then there's nothing to be
+    // done
     if (this.context) return this;
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
@@ -1088,12 +1093,15 @@ export class Surface {
     this.context = context;
 
     if (this.gl) {
-      // Initialize our event manager that handles mouse interactions/gestures with the canvas
+      // Initialize our event manager that handles mouse interactions/gestures
+      // with the canvas
       this.initMouseManager(options);
-      // Initialize any resources requested or needed, such as textures or rendering surfaces
+      // Initialize any resources requested or needed, such as textures or
+      // rendering surfaces
       await this.initResources(options);
-      // Initialize any io expanders requested or needed. This must happen after resource initialization
-      // as resource managers can produce their own expanders.
+      // Initialize any io expanders requested or needed. This must happen after
+      // resource initialization as resource managers can produce their own
+      // expanders.
       await this.initIOExpanders(options);
     } else {
       console.warn(
@@ -1114,11 +1122,13 @@ export class Surface {
     const canvas = options.context;
     if (!canvas) return null;
 
-    // Apply the deltav version to the attributes of the canvas so we have more debugging information available
+    // Apply the deltav version to the attributes of the canvas so we have more
+    // debugging information available
     try {
       canvas.setAttribute("data-deltav", require("../release").version);
     } catch (err) {
-      // NOOP - We want the application of the version to happen, but it is not application critical
+      // NOOP - We want the application of the version to happen, but it is not
+      // application critical
     }
 
     // Get the starting width and height so adjustments don't affect it
@@ -1138,8 +1148,8 @@ export class Surface {
 
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
-      // Context supports rendering to an alpha canvas only if the background color has a transparent
-      // Alpha value.
+      // Context supports rendering to an alpha canvas only if the background
+      // color has a transparent Alpha value.
       alpha: rendererOptions.alpha,
       // Yes to antialias! Make it preeeeetty!
       antialias: rendererOptions.antialias,
@@ -1148,8 +1158,9 @@ export class Surface {
       // If it's true it allows us to snapshot the rendering in the canvas
       // But we dont' always want it as it makes performance drop a bit.
       preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
-      // This indicates if the information written to the canvas is going to be written as premultiplied values
-      // or if they will be standard rgba values. Helps with compositing with the DOM.
+      // This indicates if the information written to the canvas is going to be
+      // written as premultiplied values or if they will be standard rgba
+      // values. Helps with compositing with the DOM.
       premultipliedAlpha: rendererOptions.premultipliedAlpha,
 
       // Let's us know if there is no valid webgl context to work with or not
@@ -1178,7 +1189,8 @@ export class Surface {
         }),
         depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
-      // We want a target with a pixel ratio of just 1, which will be more than enough accuracy for mouse picking
+      // We want a target with a pixel ratio of just 1, which will be more than
+      // enough accuracy for mouse picking
       width,
       height
     });
@@ -1192,7 +1204,8 @@ export class Surface {
   }
 
   /**
-   * Initializes the expanders that should be applied to the surface for layer processing.
+   * Initializes the expanders that should be applied to the surface for layer
+   * processing.
    */
   private initIOExpanders(options: ISurfaceOptions) {
     // Handle expanders passed in as an array or blank
@@ -1222,7 +1235,8 @@ export class Surface {
    * Initializes elements for handling mouse interactions with the canvas.
    */
   private initMouseManager(options: ISurfaceOptions) {
-    // We must inject an event manager to broadcast events through the layers themselves
+    // We must inject an event manager to broadcast events through the layers
+    // themselves
     const eventManagers: EventManager[] = ([
       new LayerMouseEvents()
     ] as EventManager[]).concat(options.eventManagers || []);
@@ -1237,7 +1251,8 @@ export class Surface {
   }
 
   /**
-   * This initializes resources needed or requested such as textures or render surfaces.
+   * This initializes resources needed or requested such as textures or render
+   * surfaces.
    */
   private async initResources(options: ISurfaceOptions) {
     // Create the controller for handling all resource managers
@@ -1258,11 +1273,13 @@ export class Surface {
   }
 
   /**
-   * Use this to establish the rendering pipeline the application should be using at the current time.
+   * Use this to establish the rendering pipeline the application should be
+   * using at the current time.
    *
-   * NOTE: If you update the pipeline on a loop of any sort, you will want to await the pipeline to complete
-   * it's diff before you issue a draw command. Failure to do so invites undefined behavior which often causes
-   * elements tobe comepltely not rendered at all in many cases.
+   * NOTE: If you update the pipeline on a loop of any sort, you will want to
+   * await the pipeline to complete it's diff before you issue a draw command.
+   * Failure to do so invites undefined behavior which often causes elements
+   * tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
     if (pipeline.resources) {
@@ -1273,15 +1290,17 @@ export class Surface {
       await this.sceneDiffs.diff(pipeline.scenes);
     }
 
-    // This gathers the draw dependencies of the views (which views overlap other views.)
-    // This will let the system know when a view is needing re-rendering how it can preserve other views
-    // and prevent them from needing a redraw
+    // This gathers the draw dependencies of the views (which views overlap
+    // other views.) This will let the system know when a view is needing
+    // re-rendering how it can preserve other views and prevent them from
+    // needing a redraw
     this.gatherViewDrawDependencies();
   }
 
   /**
-   * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
-   * dimensions for handling all of our rendered elements.
+   * This must be executed when the canvas changes size so that we can
+   * re-calculate the scenes and views dimensions for handling all of our
+   * rendered elements.
    */
   fitContainer(_pixelRatio?: number) {
     if (isOffscreenCanvas(this.context.canvas)) return;
@@ -1307,7 +1326,8 @@ export class Surface {
   }
 
   /**
-   * This resizes the canvas and retains pixel ratios amongst all of the resources involved.
+   * This resizes the canvas and retains pixel ratios amongst all of the
+   * resources involved.
    */
   resize(width: number, height: number, pixelRatio?: number) {
     this.pixelRatio = pixelRatio || this.pixelRatio;
@@ -1333,7 +1353,8 @@ export class Surface {
       }
     }
 
-    // After the resize happens, the view draw dependencies may change as the views will cover different region sizes
+    // After the resize happens, the view draw dependencies may change as the
+    // views will cover different region sizes
     this.gatherViewDrawDependencies();
   }
 

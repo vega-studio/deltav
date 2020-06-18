@@ -18,6 +18,7 @@ import {
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
+  isString,
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal,
@@ -45,7 +46,7 @@ import { generateLayerMaterial } from "./layer-processing/generate-layer-materia
 import { generateLayerModel } from "./layer-processing/generate-layer-model";
 import { LayerScene } from "./layer-scene";
 import { Surface } from "./surface";
-import { IViewProps, View } from "./view";
+import { IViewProps, View, ViewOutputInformationType } from "./view";
 
 const debug = require("debug")("performance");
 
@@ -413,8 +414,12 @@ export class Layer<
    */
   uidToInstance = new Map<number, T>();
   /**
-   * This is the view the layer is applied to. The system sets this, modifying
-   * will only cause sorrow.
+   * This is the view the layer is applied to. This changes as the rendering
+   * progresses. A configuration of the surface can specify several views for a
+   * set of layers. So, this will change with the current view being rendered
+   * during a draw pass.
+   *
+   * NOTE: The system sets this, modifying it yourself will only cause sorrow.
    */
   view: View<IViewProps>;
   /**
@@ -482,7 +487,7 @@ export class Layer<
    * generates a material and injects special automated uniforms and attributes
    * to make instancing work for the shader.
    */
-  init() {
+  init(views: View<IViewProps>[]) {
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 
@@ -534,8 +539,17 @@ export class Layer<
     );
     shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
 
-    // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
-    // Instancing fragments
+    // We must analyze our fragment shaders and views to determine which
+    // processing output we are going to actually output for the sake of the
+    // view. Each view that declares a unique output for the layer requires it's
+    // own shader or group of shaders.
+    for (let i = 0, iMax = views.length; i < iMax; ++i) {
+      const view = views[i];
+      ShaderProcessor.makeFragmentOutputs(view.props.output, shaderIO.fs);
+    }
+
+    // Generate the actual shaders to be used by injecting all of the necessary
+    // fragments and injecting Instancing fragments
     const shaderMetrics = new ShaderProcessor().process(
       this,
       shaderIO,
@@ -543,7 +557,8 @@ export class Layer<
       this.surface.getIOSorting()
     );
 
-    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    // Check to see if the Shader Processing failed. If so, return null as a
+    // failure flag.
     if (!shaderMetrics) {
       console.warn(
         "The shader processor did not produce metrics for the layer."
@@ -551,8 +566,19 @@ export class Layer<
       return false;
     }
 
-    // Retrieve all of the attributes created as a result of layer input and module processing.
+    // Retrieve all of the attributes created as a result of layer input and
+    // module processing.
     const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
+
+    // This is the material that is generated for the layer that utilizes all of
+    // the generated and Injected shader IO and shader fragments
+    const material = generateLayerMaterial(
+      this,
+      shaderMetrics.vs,
+      shaderMetrics.fs,
+      uniforms,
+      shaderMetrics.materialUniforms
+    );
 
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(
@@ -560,16 +586,6 @@ export class Layer<
       shaderMetrics.maxInstancesPerBuffer,
       vertexAttributes,
       shaderIO.vertexCount
-    );
-
-    // This is the material that is generated for the layer that utilizes all of the generated and
-    // Injected shader IO and shader fragments
-    const material = generateLayerMaterial(
-      this,
-      shaderMetrics.vs,
-      shaderMetrics.fs,
-      uniforms,
-      shaderMetrics.materialUniforms
     );
 
     // And now we can now generate the mesh that will be added to the scene

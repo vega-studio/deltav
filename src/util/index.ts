@@ -3,7 +3,6 @@ export * from "./common-filters";
 export * from "./common-operations";
 export * from "./common-options";
 export * from "./easing-util";
-export * from "./extend-shader";
 export * from "./frame";
 export * from "./mouse";
 export * from "./promise-resolver";

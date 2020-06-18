@@ -1,15 +1,21 @@
+import { WebGLStat } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
+import { ViewOutputInformationType } from "../../surface/view";
 import {
   IInstanceAttribute,
   IInstancingUniform,
   IShaderInitialization,
   IShaders,
+  isString,
   IUniformInternal,
   IVertexAttributeInternal,
+  OutputFragmentShader,
+  OutputFragmentShaderSource,
+  OutputFragmentShaderTarget,
   ShaderInjectionTarget
 } from "../../types";
 import { shaderTemplate } from "../../util/shader-templating";
@@ -24,7 +30,9 @@ import { ShaderModuleUnit } from "./shader-module-unit";
  */
 export interface IShaderProcessingResults<T extends Instance> {
   /** The resulting fragment shader from processing the module */
-  fs: string;
+  fs:
+    | string
+    | { outputType: ViewOutputInformationType | number; source: string }[];
   /** Any additional system uniforms that arose from the processing */
   materialUniforms: IInstancingUniform[];
   /** Calculated max instances per buffer (mostly for uniform packing procedures) */
@@ -47,6 +55,17 @@ export type ProcessShaderImportResults =
   | null;
 
 /**
+ * This is the expected token to be found within the shader content to indicate
+ * a fragment output.
+ */
+const OUT_TOKEN: string = "out";
+/**
+ * Seperator token between an out token and the variable name it's supposed to
+ * become.
+ */
+const OUT_DELIMITER: string = ":";
+
+/**
  * The intent of this processor is to analyze a layer's Shader IO elements and produce a functional
  * shader from those elements. This includes supporting a layer's capabilties with the client systems
  * capabilities and matching compatibilities.
@@ -64,8 +83,213 @@ export class ShaderProcessor {
   metricsProcessing: MetricsProcessing = new MetricsProcessing();
 
   /**
-   * This processes a layer, it's Shader IO requirements, and it's shaders to produce a fully functional
-   * shader that is compatible with the client's system.
+   * This takes in multiple shaders and merges them together based on their
+   * main() methods. All elements outside of the main() method will be merged as
+   * header information in the order they are discovered.
+   *
+   * All contents of the main's will be merged together as well in the order
+   * they are discovered.
+   */
+  static mergeFragmentOutputs(shaders: string[]) {
+    let headers = "";
+    let bodies = "";
+    const outputNames: string[] = [];
+
+    // When MRT is implemented as an extension, we need the extension header in
+    // the shader, and the outputs are mapped to gl_FragData[]
+    if (WebGLStat.MRT_EXTENSION) {
+    }
+
+    shaders.forEach(s => {
+      shaderTemplate({
+        shader: s,
+
+        /**
+         * Analyze
+         */
+        onToken(token) {
+          const trimmedToken = token.trim();
+
+          if (trimmedToken.indexOf(OUT_TOKEN) === 0) {
+            // Analyze the remainder of the token to find the necessary colon to
+            // be the NEXT Non-whitespace character
+            const afterToken = trimmedToken.substr(OUT_TOKEN.length).trim();
+
+            // Make sure the character IS a colon
+            if (afterToken[0] === OUT_DELIMITER) {
+              // At this point, ANYTHING after the colon is the output property
+              // being requested (with white space trimmed). If the name isn't
+              // valid, that's not our fault.
+              const outputName = afterToken.substr(OUT_DELIMITER.length).trim();
+
+              // We now have the output name this output will utilize
+              outputNames.push(outputName);
+
+              // Replace the token with just the name
+              return `${outputName}`;
+            }
+          }
+
+          // Leave unprocessed tokens alone
+          return `$\{${token}}`;
+        },
+
+        /**
+         * We use this to aggregate all of our main bodies and headers together
+         */
+        onMain(body, header) {
+          headers += header || "";
+          bodies += body || "";
+          return body || "";
+        }
+      });
+    });
+
+    return {
+      output
+    };
+  }
+
+  /**
+   * This analyzes desired target outputs and available outputs that output to
+   * certain output types. This will match the targets with the available
+   * outputs and produce pre-compiled shaders that reflect the capabilities
+   * available of both target and provided.
+   *
+   * This also takes into account the capabilities of the hardware. If MRT is
+   * supported, the generated shaders will be combined as best as possible. If
+   * MRT is NOT supported, this will generate MULTIPLE SHADERS, a shader for
+   * each output capable of delivering the targetted output specified.
+   */
+  static makeOutputFragmentShader(
+    targetOutputs?: OutputFragmentShaderTarget,
+    outputs?: OutputFragmentShaderSource
+  ): OutputFragmentShader | null {
+    // If the view only is a simple string, then we assume the COLOR output of
+    // the layer. If the layer does not specify a specific COLOR output, then
+    // we assume the culminated output of all outputs of the layer is the
+    // target.
+    // NOTE: All results under this branch will be for SINGLE TARGET outputs, so
+    // we don't need to worry about MRT here. The final fragment output IS the
+    // only output.
+    if (!targetOutputs || isString(targetOutputs)) {
+      // View expects a color output, layer only outputs a color, we are good
+      // to simply output the layer to the view.
+      if (isString(outputs)) {
+        return outputs;
+      }
+
+      // Look through the layer's fragment outputs for something that is
+      // labeled as a color. We prioritize that.
+      else if (Array.isArray(outputs)) {
+        const colorOutput = outputs.find(
+          s => s.outputType === ViewOutputInformationType.COLOR
+        );
+
+        let outputIndex = -1;
+
+        // If our layer outputs a color, this is the output element that will
+        // output for our COLOR target.
+        if (colorOutput) {
+          outputIndex = outputs.indexOf(colorOutput);
+        }
+
+        // With no specified color, we render the final output of the layer as
+        // the output to the view.
+        else {
+          outputIndex = outputs.length - 1;
+        }
+
+        // We take the found index of the output we need to output for our COLOR
+        // target and aggregate all of the preceding outputs as the dependencies
+        // needed for this output to work properly.
+        return this.mergeFragmentOutputs(
+          outputs.slice(0, outputIndex + 1).map(s => s.source)
+        );
+      }
+
+      // It's invalid to not have output sources so we just return a null object
+      // to indicate there is no fragment shader that can be inferred for the
+      // targets specified.
+      else {
+        return null;
+      }
+    }
+
+    // If the targets SPECIFIES any EXPECTED output types, then the outputs will
+    // be filtered based on ONLY outputting IFF they have outputs that match the
+    // target outputs.
+    // NOTE: The outputs for this branch are expected to be MRT related. So,
+    // this will produce a merged output if MRT is supported or it will produce
+    // multiple shader outputs to support each individual target output if MRT
+    // is not available.
+    else if (Array.isArray(targetOutputs)) {
+      // If we have multiple outputs, let's find indices of each output that
+      // matches a target and create our shader(s) with that
+      if (Array.isArray(outputs)) {
+        const typeToIndex = new Map<number, number>();
+
+        for (let i = 0, iMax = targetOutputs.length; i < iMax; ++i) {
+          const target = targetOutputs[i];
+
+          // Find the index of an output that supports this target
+          for (let k = 0, kMax = outputs.length; k < kMax; ++k) {
+            const output = outputs[k];
+
+            if (output.outputType === target.outputType) {
+              typeToIndex.set(target.outputType, k);
+              break;
+            }
+          }
+        }
+
+        // After we have discovered an index for types. We see which combination
+        // method we are allowed to do based on our system's hardware.
+        // For MRT capable hardware, we take in the largest index we found and
+        // combine all dependencies before it and declare that shader output as
+        // capable of handling all target outputs
+        if (WebGLStat.MRT) {
+          let maxIndex = -1;
+          const types: number[] = [];
+          typeToIndex.forEach((index, type) => {
+            types.push(type);
+            maxIndex = Math.max(index, maxIndex);
+          });
+
+          // No valid index found is considered an error
+          if (maxIndex === -1) return null;
+
+          return {
+            source: this.mergeFragmentOutputs(
+              outputs.slice(0, maxIndex + 1).map(s => s.source)
+            ),
+            outputType: types
+          };
+        }
+      }
+
+      // If we have a single output, then we only look for a target that wants
+      // COLOR and map it to that. If no target wants COLOR, then we don't need
+      // any shaders for this configuration.
+      else {
+        const targetColor = targetOutputs.find(
+          t => t.outputType === ViewOutputInformationType.COLOR
+        );
+
+        if (targetColor) {
+          return outputs || null;
+        }
+      }
+    }
+
+    // If this is reached, nothing was a valid output for the
+    return null;
+  }
+
+  /**
+   * This processes a layer, it's Shader IO requirements, and it's shaders to
+   * produce a fully functional shader that is compatible with the client's
+   * system.
    */
   process<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
@@ -74,7 +298,9 @@ export class ShaderProcessor {
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
-      // First process imports to retrieve the requested IO the shader modules would be requiring
+      // We analyze the fragment shader
+
+      // Process imports to retrieve the requested IO the shader modules would be requiring
       const shadersWithImports = this.processImports(layer, shaderIO);
       if (!shadersWithImports) return null;
 
@@ -265,10 +491,12 @@ export class ShaderProcessor {
   }
 
   /**
-   * This applies the imports for the specified layer and generates the appropriate shaders from the output.
-   * Upon failure, this will just return null.
+   * This applies the imports for the specified layer and generates the
+   * appropriate shaders from the output. Upon failure, this will just return
+   * null.
    *
-   * This also does some additional work to add in some modules based on the layer's preferences
+   * This also does some additional work to add in some modules based on the
+   * layer's preferences
    */
   private processImports<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,

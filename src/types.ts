@@ -539,10 +539,97 @@ export interface IInstancingUniform {
 }
 
 /**
+ * This represents a target resource that expects a given information type.
+ * OutputFragmentShaderSource's can be associated to these target types via
+ * matching on the outputType.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * A target of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export type OutputFragmentShaderTarget =
+  | string
+  | {
+      /**
+       * The form of information this output will provide. This is mostly an
+       * arbitrary number to help make associations between an output target and the
+       * type of information a layer can provide.
+       */
+      outputType: number;
+      /** The resource key that the output will target */
+      resource: string;
+    }[];
+
+/**
+ * This represents a fragment shader that has been processed to include all of
+ * it's potential outputs.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * An output of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export type OutputFragmentShader =
+  | string
+  | { source: string; outputType: number | number[] }
+  | { source: string; outputType: number | number[] }[];
+
+/**
+ * Defines a fragment shader source declaration that indicates fragment shader
+ * renderings that can output for various information types.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * An output of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export type OutputFragmentShaderSource =
+  | string
+  | { source: string; outputType: number }[];
+
+/**
  * Represents a complete shader object set.
  */
 export interface IShaders {
-  fs: string;
+  /**
+   * This provides the fragment rendering outputs this layer will perform. If
+   * specify a single output source this will assume you are providing a COLOR
+   * output type.
+   *
+   * If multiple sources are included, this will map each output type to an
+   * available matching output. If a matching output is not available, this will
+   * render the marked COLOR output. If no COLOR output is available, then this
+   * will assume the full processing of all outputs will be utilized and the
+   * FINAL output in the list will output as the COLOR regardless of what it is
+   * flagged as.
+   *
+   * IMPORTANT: Each source is a dependent of the sources before it. So if you
+   * have operations in the main() method of a preceding action, ALL values
+   * declared in that source is available in the next source. So, it is an error
+   * to declare any same properties in the next source. The program outside of
+   * the main() of each output is aggregated together, so if you have external
+   * methods, you only need to declare the methods in the top most shader.
+   *
+   * Each source can have it's own set of imports as imports get resolved all at
+   * once anyways.
+   *
+   * Be mindful how you set up your sources. If you do this wisely, you can have
+   * this layer have a higher or smaller performance footprint based on how the
+   * layer is being used. A well written layer for your application can adapt to
+   * several scenarios AND provide maximum performance.
+   */
+  fs: OutputFragmentShaderSource;
+  /** This is the shader source for your vertex shader. */
   vs: string;
 }
 
@@ -1038,3 +1125,10 @@ export type UpdateProp<T> = {
   didUpdate?: boolean;
   value: T;
 };
+
+/**
+ * Speedy check to see if a value is a string type or not
+ */
+export function isString(val: any): val is string {
+  return val.charCodeAt !== void 0;
+}

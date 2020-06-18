@@ -1,4 +1,4 @@
-import { Omit, TypeVec } from "../types";
+import { IShaders, Omit, TypeVec } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { IMaterialUniform, MaterialUniformType } from "./types";
@@ -9,8 +9,8 @@ export type MaterialOptions = Omit<
 >;
 
 /**
- * This represents a Shader configuration and a state for the configuration to be applied
- * when a model is rendered.
+ * This represents a Shader configuration and a state for the configuration to
+ * be applied when a model is rendered.
  */
 export class Material {
   /** This is the computed blend mode state. Set to null to deactivate */
@@ -48,11 +48,14 @@ export class Material {
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    */
   dithering: boolean = true;
-  /** The fragment shader in raw text format that will be compiled to run as the program to use when this material is used */
-  fragmentShader: string = "";
   /**
-   * Stores any gl state associated with this object. Modifying this outside the framework
-   * is almost guaranteed to break something.
+   * The fragment shader in raw text format that will be compiled to run as the
+   * program to use when this material is used
+   */
+  fragmentShader: IShaders["fs"];
+  /**
+   * Stores any gl state associated with this object. Modifying this outside the
+   * framework is almost guaranteed to break something.
    */
   gl?: {
     fsId: WebGLShader;
@@ -60,7 +63,10 @@ export class Material {
     programId: WebGLProgram;
     proxy: GLProxy;
   };
-  /** A name for the  */
+  /**
+   * A name for the material. Helps with identifying the material and aids in
+   * debugging
+   */
   name: string = "";
   /**
    * TODO: This is NOT IN USE YET
@@ -75,33 +81,38 @@ export class Material {
 
   /** Uniforms that will be synced with the GPU when this material is used */
   uniforms: { [key: string]: IMaterialUniform<MaterialUniformType> } = {};
-  /** The vertex shader that will be compiled to run as the program to use when this material is used */
+  /**
+   * The vertex shader that will be compiled to run as the program to use when
+   * this material is used.
+   */
   vertexShader: string = "";
 
   constructor(options: MaterialOptions) {
     // Take in the properties
     Object.assign(this, options);
-    // Ensure the gl property did not get copied in if using the copy constructor new Material(Material)
+    // Ensure the gl property did not get copied in if using the copy
+    // constructor new Material(Material)
     delete this.gl;
   }
 
   /**
-   * Makes a duplicate material with identical settings as this material. It provides the
-   * benefit of being able to adjust uniform values for the new material while sharing the same
-   * programs and shaders.
+   * Makes a duplicate material with identical settings as this material. It
+   * provides the benefit of being able to adjust uniform values for the new
+   * material while sharing the same programs and shaders.
    */
   clone() {
-    // Make a new copy material container and copy over the properties (shallow copy)
+    // Make a new copy material container and copy over the properties (shallow
+    // copy)
     const copy = new Material(this);
     // Now we deeper copy any sub objects
     copy.blending = Object.assign({}, this.blending);
     copy.polygonOffset = Object.assign({}, this.polygonOffset);
-    // And last we need a deep copy of uniforms, such that we get new uniform objects
+    // And last we need a deep copy of uniforms, such that we get new uniform
+    // objects
     copy.uniforms = Object.assign({}, this.uniforms);
 
-    // Deeper copy objects
-    // We DO NOT copy the data object as it is expected to be able to share data buffers
-    // between uniforms.
+    // Deeper copy objects We DO NOT copy the data object as it is expected to
+    // be able to share data buffers between uniforms.
     for (const name in copy.uniforms) {
       const uniform: IMaterialUniform<MaterialUniformType> =
         copy.uniforms[name];

@@ -1,3 +1,4 @@
+import { isString } from "../types";
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import {
@@ -1094,10 +1095,11 @@ export class GLProxy {
   }
 
   /**
-   * Prints a shader broken down by lines
+   * Breaks down a string into a multiline structure. Helps pretty print some
+   * items.
    */
-  lineFormatShader(shader: string) {
-    const lines = shader.split("\n");
+  lineFormat(str: string) {
+    const lines = str.split("\n");
     const lineChars = String(lines.length).length + 1;
 
     return `\n${lines
@@ -1106,6 +1108,22 @@ export class GLProxy {
           `${Array(lineChars - String(i + 1).length).join(" ")}${i + 1}: ${l}`
       )
       .join("\n")}`;
+  }
+
+  /**
+   * Prints a shader broken down by lines
+   */
+  lineFormatShader(shader: Material["fragmentShader"]) {
+    if (isString(shader)) {
+      this.lineFormat(shader);
+    } else {
+      shader.forEach(
+        s =>
+          `\nSHADER FOR OUTPUT TYPE: ${s.outputType} ${this.lineFormat(
+            s.source
+          )}`
+      );
+    }
   }
 
   /**

@@ -113,7 +113,7 @@ export class LayerScene extends IdentifyByKey {
         }
 
         // Add the layer to this surface
-        if (!layer.init()) {
+        if (!layer.init(this.views)) {
           console.warn(
             "Error initializing layer:",
             props.key,

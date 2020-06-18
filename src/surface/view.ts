@@ -88,6 +88,11 @@ export enum ViewOutputInformationType {
    */
   NORMAL,
   /**
+   * Indicates it will provide color information that coincides with instance
+   * IDs used in the COLOR PICKING routines the system provides.
+   */
+  PICKING,
+  /**
    * This indicates it will provide eye-space position information per fragment
    */
   POSITION,

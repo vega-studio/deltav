@@ -1,4 +1,5 @@
 import { uniformBufferInstanceBufferName } from "../../../constants";
+import { WebGLStat } from "../../../gl";
 import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
 import { Vec4 } from "../../../math/vector";
@@ -277,7 +278,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * This processes the declarations needed to set up the Input for the shader from the layer.
+   * This processes the declarations needed to set up the Input for the shader
+   * from the layer.
    *
    * This handles the buffer strategies of:
    *
@@ -422,12 +424,23 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     instanceAttributes: IInstanceAttribute<T>[]
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     instanceAttributes.forEach(attribute => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `attribute ${sizeToType[attribute.size || 1]} ${attribute.qualifier ||
-          ""}${(attribute.qualifier && " ") || ""} ${attribute.name};\n`,
+        `${attrDeclaration} ${
+          sizeToType[attribute.size || 1]
+        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""} ${
+          attribute.name
+        };\n`,
         debugCtx
       );
     });
@@ -443,12 +456,22 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     maxBlock: number
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     // Now print out blocks up to that block
     for (let i = 0, iMax = maxBlock + 1; i < iMax; ++i) {
       this.setDeclaration(
         declarations,
         `block${i}`,
-        `attribute ${sizeToType[InstanceAttributeSize.FOUR]} block${i};\n`,
+        `${attrDeclaration} ${
+          sizeToType[InstanceAttributeSize.FOUR]
+        } block${i};\n`,
         debugCtx
       );
     }
@@ -463,13 +486,24 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     vertexAttributes: IVertexAttribute[]
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     // No matter what, vertex attributes listed are strictly vertex attributes
     vertexAttributes.forEach(attribute => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-          ""}${(attribute.qualifier && " ") || ""}${attribute.name};\n`,
+        `${attrDeclaration} ${
+          sizeToType[attribute.size]
+        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""}${
+          attribute.name
+        };\n`,
         debugCtx
       );
     });

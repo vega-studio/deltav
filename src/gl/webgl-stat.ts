@@ -90,6 +90,7 @@ export class WebGLStat {
   static MRT_EXTENSION = false;
   static MRT = false;
   static MAX_COLOR_ATTACHMENTS = 0;
+  static SHADERS_3_0 = false;
 }
 
 function initStats() {
@@ -114,6 +115,7 @@ function initStats() {
   // If the context exists, then we know gl is supported and we can fill in some metrics
   if (gl) {
     WebGLStat.WEBGL_SUPPORTED = true;
+    WebGLStat.SHADERS_3_0 = gl instanceof WebGL2RenderingContext;
     WebGLStat.MAX_VERTEX_UNIFORMS = gl.getParameter(
       gl.MAX_VERTEX_UNIFORM_VECTORS
     );

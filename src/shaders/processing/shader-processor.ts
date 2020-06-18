@@ -29,10 +29,8 @@ import { ShaderModuleUnit } from "./shader-module-unit";
  * This is the expected results from processing the shader and it's layer's attributes.
  */
 export interface IShaderProcessingResults<T extends Instance> {
-  /** The resulting fragment shader from processing the module */
-  fs:
-    | string
-    | { outputType: ViewOutputInformationType | number; source: string }[];
+  /** The resulting fragment shaders from processing the module */
+  fs: OutputFragmentShader;
   /** Any additional system uniforms that arose from the processing */
   materialUniforms: IInstancingUniform[];
   /** Calculated max instances per buffer (mostly for uniform packing procedures) */
@@ -83,29 +81,66 @@ export class ShaderProcessor {
   metricsProcessing: MetricsProcessing = new MetricsProcessing();
 
   /**
-   * This takes in multiple shaders and merges them together based on their
-   * main() methods. All elements outside of the main() method will be merged as
-   * header information in the order they are discovered.
+   * This takes in multiple fragment shaders and merges them together based on
+   * their main() methods. All elements outside of the main() method will be
+   * merged as header information in the order they are discovered.
    *
    * All contents of the main's will be merged together as well in the order
    * they are discovered.
+   *
+   * Additionally, this discovers outputs declared in the shader in the form of
+   * ${out: <name>} tokens. These will be used to aid in making a shader that
+   * will be compatible with ES 3.0 AND 2.0 shaders.
    */
-  static mergeFragmentOutputs(shaders: string[]) {
+  static mergeFragmentOutputs(
+    shaders: { source: string; outputType: number }[],
+    typeFilter?: number[],
+    singleOutput?: boolean
+  ) {
     let headers = "";
     let bodies = "";
+    let fragmentOutput = "";
+    let declaration = "vec4 ";
+    let fragDataIndex = -1;
     const outputNames: string[] = [];
+    const outputTypes: number[] = [];
 
     // When MRT is implemented as an extension, we need the extension header in
     // the shader, and the outputs are mapped to gl_FragData[]
     if (WebGLStat.MRT_EXTENSION) {
+      headers += "#extension GL_EXT_draw_buffers : require";
+    } else if (WebGLStat.SHADERS_3_0) {
+      headers += "#version 300 es";
     }
 
-    shaders.forEach(s => {
+    // When MRT isn't enabled at all, then our fragment output simply writes
+    // directly to gl_FragColor
+    if (!WebGLStat.MRT) {
+      fragmentOutput = " = gl_FragColor";
+    }
+
+    // When this is NOT an extension, we do NOT need a declaration header as the
+    // output will be declared in the header of the shader
+    else if (WebGLStat.MRT_EXTENSION) {
+      declaration = "";
+    }
+
+    shaders.forEach((s, i) => {
+      let allowOutput = true;
+
+      if (typeFilter && typeFilter.indexOf(s.outputType) < 0) {
+        allowOutput = false;
+      }
+
+      if (singleOutput && i < shaders.length - 1) {
+        allowOutput = false;
+      }
+
       shaderTemplate({
-        shader: s,
+        shader: s.source,
 
         /**
-         * Analyze
+         * Analyze each token for "out" tokens indicating output
          */
         onToken(token) {
           const trimmedToken = token.trim();
@@ -122,11 +157,37 @@ export class ShaderProcessor {
               // valid, that's not our fault.
               const outputName = afterToken.substr(OUT_DELIMITER.length).trim();
 
-              // We now have the output name this output will utilize
-              outputNames.push(outputName);
+              if (!outputName) {
+                throw new Error(
+                  "Output in a shader requires an identifier ${out: <name required>}"
+                );
+              }
 
-              // Replace the token with just the name
-              return `${outputName}`;
+              // Check our type filter. If the current outputType of the shader
+              // is NOT in the filter, then we have to exclude the name from the
+              // output names AND we have to ensure the name specified has a
+              // declaration as it will never be declared in the header.
+              let declare = declaration;
+              if (allowOutput) {
+                // We now have the output name this output will utilize
+                outputNames.push(outputName);
+                outputTypes.push(s.outputType);
+              } else {
+                declare = "vec4 ";
+              }
+
+              // Handle the special case of the MRT extension
+              if (WebGLStat.MRT_EXTENSION && allowOutput) {
+                fragmentOutput = ` = gl_FragData[${++fragDataIndex}]`;
+              }
+
+              // Replace the token with just the name of the variable being
+              // declared with the proper type sizing.
+              return `${declare}${outputName}${fragmentOutput} = `;
+            } else {
+              throw new Error(
+                "Output in a shader requires an identifier ${out: <name required>}"
+              );
             }
           }
 
@@ -146,7 +207,9 @@ export class ShaderProcessor {
     });
 
     return {
-      output
+      output: `${headers}\nvoid main() {\n${bodies}\n}`,
+      outputNames,
+      outputTypes
     };
   }
 
@@ -176,7 +239,20 @@ export class ShaderProcessor {
       // View expects a color output, layer only outputs a color, we are good
       // to simply output the layer to the view.
       if (isString(outputs)) {
-        return outputs;
+        const processed = this.mergeFragmentOutputs([
+          {
+            source: outputs,
+            outputType: ViewOutputInformationType.COLOR
+          }
+        ]);
+
+        return [
+          {
+            source: processed.output,
+            outputTypes: [ViewOutputInformationType.COLOR],
+            outputNames: processed.outputNames
+          }
+        ];
       }
 
       // Look through the layer's fragment outputs for something that is
@@ -195,7 +271,7 @@ export class ShaderProcessor {
         }
 
         // With no specified color, we render the final output of the layer as
-        // the output to the view.
+        // the output to the view but we dub it as a COLOR anyways.
         else {
           outputIndex = outputs.length - 1;
         }
@@ -203,9 +279,19 @@ export class ShaderProcessor {
         // We take the found index of the output we need to output for our COLOR
         // target and aggregate all of the preceding outputs as the dependencies
         // needed for this output to work properly.
-        return this.mergeFragmentOutputs(
-          outputs.slice(0, outputIndex + 1).map(s => s.source)
+        const processed = this.mergeFragmentOutputs(
+          outputs.slice(0, outputIndex + 1),
+          undefined,
+          true
         );
+
+        return [
+          {
+            source: processed.output,
+            outputNames: processed.outputNames,
+            outputTypes: [ViewOutputInformationType.COLOR]
+          }
+        ];
       }
 
       // It's invalid to not have output sources so we just return a null object
@@ -259,12 +345,41 @@ export class ShaderProcessor {
           // No valid index found is considered an error
           if (maxIndex === -1) return null;
 
-          return {
-            source: this.mergeFragmentOutputs(
-              outputs.slice(0, maxIndex + 1).map(s => s.source)
-            ),
-            outputType: types
-          };
+          const processed = this.mergeFragmentOutputs(
+            outputs.slice(0, maxIndex + 1),
+            types
+          );
+
+          return [
+            {
+              source: processed.output,
+              outputNames: processed.outputNames,
+              outputTypes: processed.outputTypes
+            }
+          ];
+        }
+
+        // For non-MRT capable hardware, we need to generate a shader per each
+        // output type we matched on
+        else {
+          const generated: OutputFragmentShader = [];
+          typeToIndex.forEach(index => {
+            // Merge in the shaders to one shader, but only mark a single type
+            // as the output.
+            const processed = this.mergeFragmentOutputs(
+              outputs.slice(0, index + 1),
+              undefined,
+              true
+            );
+
+            generated.push({
+              source: processed.output,
+              outputNames: processed.outputNames,
+              outputTypes: processed.outputTypes
+            });
+          });
+
+          return generated;
         }
       }
 
@@ -276,8 +391,21 @@ export class ShaderProcessor {
           t => t.outputType === ViewOutputInformationType.COLOR
         );
 
-        if (targetColor) {
-          return outputs || null;
+        if (targetColor && outputs) {
+          const processed = this.mergeFragmentOutputs([
+            {
+              source: outputs,
+              outputType: ViewOutputInformationType.COLOR
+            }
+          ]);
+
+          return [
+            {
+              source: processed.output,
+              outputNames: processed.outputNames,
+              outputTypes: processed.outputTypes
+            }
+          ];
         }
       }
     }

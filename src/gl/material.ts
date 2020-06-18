@@ -1,4 +1,4 @@
-import { IShaders, Omit, TypeVec } from "../types";
+import { Omit, OutputFragmentShader, TypeVec } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { IMaterialUniform, MaterialUniformType } from "./types";
@@ -50,15 +50,29 @@ export class Material {
   dithering: boolean = true;
   /**
    * The fragment shader in raw text format that will be compiled to run as the
-   * program to use when this material is used
+   * program to use when this material is used.
+   *
+   * This is more complex than just a simple raw text format. Fragment shaders
+   * can output to multiple targets or be divided into multiple fragments for
+   * the sake of outputting to multiple targets.
+   *
+   * Thus, each fragment is asociated with one or more outputTypes to indicate
+   * the type of information the fragments can offer. This works in conjunction
+   * with RenderTargets who have expected information types to be written to
+   * them.
+   *
+   * The system will examine the current render target (which can be a custom
+   * target OR can be the SCREEN) and look at these fragment shader style
+   * outputs and determine which shader is most efficient and appropriate for
+   * rendering to the current RenderTarget.
    */
-  fragmentShader: IShaders["fs"];
+  fragmentShader: OutputFragmentShader;
   /**
    * Stores any gl state associated with this object. Modifying this outside the
    * framework is almost guaranteed to break something.
    */
   gl?: {
-    fsId: WebGLShader;
+    fsId: { id: WebGLShader; outputTypes: number[] };
     vsId: WebGLShader;
     programId: WebGLProgram;
     proxy: GLProxy;

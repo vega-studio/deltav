@@ -572,14 +572,12 @@ export type OutputFragmentShaderTarget =
  * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
  * that is used extensively in the system to default an output to a target in
  * simplified cases.
- *
- * An output of type "string" will have an inferred default outputType of COLOR
- * or "0".
  */
-export type OutputFragmentShader =
-  | string
-  | { source: string; outputType: number | number[] }
-  | { source: string; outputType: number | number[] }[];
+export type OutputFragmentShader = {
+  source: string;
+  outputTypes: number[];
+  outputNames: string[];
+}[];
 
 /**
  * Defines a fragment shader source declaration that indicates fragment shader

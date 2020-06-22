@@ -551,7 +551,7 @@ export class Layer<
     for (let i = 0, iMax = views.length; i < iMax; ++i) {
       const view = views[i];
       const outputFragmentShader = ShaderProcessor.makeOutputFragmentShader(
-        view.props.output,
+        view.props.output?.buffers,
         shaderIO.fs
       );
 

@@ -4,7 +4,6 @@ import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
-import { ViewOutputInformationType } from "../../surface/view";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -16,8 +15,10 @@ import {
   OutputFragmentShader,
   OutputFragmentShaderSource,
   OutputFragmentShaderTarget,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
+  ViewOutputInformationType
 } from "../../types";
+import { isDefined } from "../../util";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
 import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
@@ -104,14 +105,6 @@ export class ShaderProcessor {
     let fragDataIndex = -1;
     const outputNames: string[] = [];
     const outputTypes: number[] = [];
-
-    // When MRT is implemented as an extension, we need the extension header in
-    // the shader, and the outputs are mapped to gl_FragData[]
-    if (WebGLStat.MRT_EXTENSION) {
-      headers += "#extension GL_EXT_draw_buffers : require";
-    } else if (WebGLStat.SHADERS_3_0) {
-      headers += "#version 300 es";
-    }
 
     // When MRT isn't enabled at all, then our fragment output simply writes
     // directly to gl_FragColor
@@ -427,15 +420,19 @@ export class ShaderProcessor {
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
-      // We analyze the fragment shader
-
-      // Process imports to retrieve the requested IO the shader modules would be requiring
-      const shadersWithImports = this.processImports(layer, shaderIO);
+      // Process imports to retrieve the requested IO the shader modules would
+      // be requiring
+      const shadersWithImports = this.processImports(
+        layer,
+        shaderIO,
+        fragmentShaders
+      );
       if (!shadersWithImports) return null;
 
-      // After processing our imports, we can now fully aggregate the needed shader IO to make our layer
-      // operate properly. Process all of the attributes and apply IO expansion to all of the discovered
-      // shader IO the layer will need to execute.
+      // After processing our imports, we can now fully aggregate the needed
+      // shader IO to make our layer operate properly. Process all of the
+      // attributes and apply IO expansion to all of the discovered shader IO
+      // the layer will need to execute.
       const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
         layer.surface.gl,
         layer,
@@ -444,8 +441,8 @@ export class ShaderProcessor {
         sortIO,
         shadersWithImports
       );
-      // After all of the shader IO is established, let's calculate the appropriate buffering strategy
-      // For the layer.
+      // After all of the shader IO is established, let's calculate the
+      // appropriate buffering strategy For the layer.
       layer.getLayerBufferType(
         layer.surface.gl,
         vertexAttributes,
@@ -453,14 +450,19 @@ export class ShaderProcessor {
       );
 
       // Calculate needed metrics that may be used by any of the processors
+      // These metrics include information regarding block allotments reltive to
+      // each instance.
       this.metricsProcessing.process(instanceAttributes, uniforms);
 
-      // We are going to gather headers for both vertex and fragment from our processors
+      // We are going to gather headers for both vertex and fragment from our
+      // processors
       let vsHeader = "";
       let fsHeader = "";
-      // We will also gather the destructuring structure for the attributes from our processor
+      // We will also gather the destructuring structure for the attributes from
+      // our processor
       let destructuring = "";
-      // In processing, this may generate changes to the Material to accommodate features required
+      // In processing, this may generate changes to the Material to accommodate
+      // features required
       const materialChanges: ShaderIOHeaderInjectionResult["material"] = {
         uniforms: []
       };
@@ -469,7 +471,8 @@ export class ShaderProcessor {
       const fsHeaderDeclarations = new Map();
       const destructureDeclarations = new Map();
 
-      // Loop through all of our processors that handle expanding all IO into headers for the shader
+      // Loop through all of our processors that handle expanding all IO into
+      // headers for the shader
       for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
         const processor = ioExpansion[i];
 
@@ -522,7 +525,8 @@ export class ShaderProcessor {
         );
       }
 
-      // After we have aggregated all of our declarations, we now piece them together
+      // After we have aggregated all of our declarations, we now piece them
+      // together
       let declarations = "";
 
       vsHeaderDeclarations.forEach(declaration => {
@@ -545,19 +549,25 @@ export class ShaderProcessor {
 
       destructuring = declarations + destructuring;
 
+      // Establish all extensions to be applied to the shader. Extensions are
+      // essentially any directive that looks like:
+      // ```#directive and stuff```
+      const extensions = this.processExtensions();
       // Create a default precision modifier for now
       const precision = "precision highp float;\n\n";
-      // Now we concatenate the shader pieces into one glorious shader of compatibility and happiness
-      const fullShaderVS = precision + vsHeader + shadersWithImports.vs;
-      const fullShaderFS = precision + fsHeader + shadersWithImports.fs;
+      // Now we concatenate the shader pieces into one glorious shader of
+      // compatibility and happiness
+      const fullShaderVS =
+        extensions + precision + vsHeader + shadersWithImports.vs;
 
       // Last we replace any templating variables with their relevant values
       let templateOptions: { [key: string]: string } = {
         [templateVars.attributes]: destructuring
       };
 
-      // This flag will determine if the attributes are manually placed in the shader. If this is not true, then the
-      // attributes will get injected into the main() method.
+      // This flag will determine if the attributes are manually placed in the
+      // shader. If this is not true, then the attributes will get injected into
+      // the main() method.
       let hasAttributes = false;
 
       const processedShaderVS = shaderTemplate({
@@ -585,18 +595,26 @@ export class ShaderProcessor {
         }
       });
 
-      // We process the Fragment shader as well, currently with nothing to replace
-      // aside from removing any superfluous template requests
+      // We process the Fragment shader as well, currently with nothing to
+      // replace aside from removing any superfluous template requests
       templateOptions = {};
 
-      const processShaderFS = shaderTemplate({
-        options: templateOptions,
-        required: undefined,
-        shader: fullShaderFS
+      // Loop through all of the fragment shaders and perform the final
+      // aggregation of changes on all the fragments involved.
+      shadersWithImports.fs.forEach(shader => {
+        const fullShaderFS = extensions + precision + fsHeader + shader.source;
+
+        const processShaderFS = shaderTemplate({
+          options: templateOptions,
+          required: undefined,
+          shader: fullShaderFS
+        });
+
+        shader.source = processShaderFS.shader.trim();
       });
 
       const results = {
-        fs: processShaderFS.shader.trim(),
+        fs: shadersWithImports.fs,
         materialUniforms: materialChanges.uniforms,
         maxInstancesPerBuffer: this.metricsProcessing
           .maxInstancesPerUniformBuffer,
@@ -620,6 +638,30 @@ export class ShaderProcessor {
   }
 
   /**
+   * This processes all information available about the shader to determine
+   * which extensions must be available for the shader to work.
+   */
+  private processExtensions(): string {
+    let extensions = "";
+
+    // This MUST be the absolute FIRST item in the shader for it to work
+    if (WebGLStat.SHADERS_3_0) {
+      extensions += "#version 300 es";
+    }
+
+    // When MRT is implemented as an extension, we need the extension header in
+    // the shader, and the outputs are mapped to gl_FragData[]
+    if (WebGLStat.MRT_EXTENSION) {
+      extensions += "#extension GL_EXT_draw_buffers : require";
+    }
+
+    // Add some buffer for readability
+    if (extensions) extensions += "\n\n";
+
+    return extensions;
+  }
+
+  /**
    * This applies the imports for the specified layer and generates the
    * appropriate shaders from the output. Upon failure, this will just return
    * null.
@@ -629,7 +671,8 @@ export class ShaderProcessor {
    */
   private processImports<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
-    shaders: IShaderInitialization<T>
+    shaders: IShaderInitialization<T>,
+    fragmentShaders: OutputFragmentShader
   ): ProcessShaderImportResults {
     const shaderModuleUnits = new Set<ShaderModuleUnit>();
     let baseModules = layer.baseShaderModules(shaders);
@@ -658,34 +701,45 @@ export class ShaderProcessor {
     }
 
     // Process imports for the fragment shader
-    const fs = ShaderModule.process(
-      layer.id,
-      shaders.fs,
-      ShaderInjectionTarget.FRAGMENT,
-      baseModules.fs
-    );
+    const fs = fragmentShaders
+      .map(shader => {
+        const result = ShaderModule.process(
+          layer.id,
+          shader.source,
+          ShaderInjectionTarget.FRAGMENT,
+          baseModules.fs
+        );
 
-    if (fs.errors.length > 0) {
-      console.warn(
-        "Error processing imports for the fragment shader of layer:",
-        layer.id,
-        "Errors",
-        ...fs.errors.reverse()
-      );
+        if (result.errors.length > 0) {
+          console.warn(
+            "Error processing imports for the fragment shader of layer:",
+            layer.id,
+            "Errors",
+            ...result.errors.reverse()
+          );
 
-      return null;
-    }
+          return null;
+        }
+
+        result.shaderModuleUnits.forEach(moduleUnit =>
+          shaderModuleUnits.add(moduleUnit)
+        );
+
+        return {
+          source: result.shader || "",
+          outputTypes: shader.outputTypes,
+          outputNames: shader.outputNames
+        };
+      })
+      .filter(isDefined);
 
     // Gather all discovered Shader Module Units
     vs.shaderModuleUnits.forEach(moduleUnit =>
       shaderModuleUnits.add(moduleUnit)
     );
-    fs.shaderModuleUnits.forEach(moduleUnit =>
-      shaderModuleUnits.add(moduleUnit)
-    );
 
     return {
-      fs: fs.shader || "",
+      fs,
       vs: vs.shader || "",
       shaderModuleUnits
     };

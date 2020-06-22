@@ -1,8 +1,9 @@
 /**
- * This file is dedicted to the all important step of processing desired inputs from the layer
- * and coming up with automated generated uniforms and attributes that the shader's will need
- * in order to operate with the conveniences the library offers. This includes things such as
- * injecting camera projection uniforms, resource uniforms, animation adjustments etc etc.
+ * This file is dedicted to the all important step of processing desired inputs
+ * from the layer and coming up with automated generated uniforms and attributes
+ * that the shader's will need in order to operate with the conveniences the
+ * library offers. This includes things such as injecting camera projection
+ * uniforms, resource uniforms, animation adjustments etc etc.
  */
 import { Instance } from "../../instance-provider/instance";
 import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
@@ -43,7 +44,8 @@ function isUniform(attr: any): attr is IUniform {
 }
 
 /**
- * Converts a layer's vertex to the internal vertex structure used by the framework.
+ * Converts a layer's vertex to the internal vertex structure used by the
+ * framework.
  */
 function toVertexAttributeInternal(
   attribute: IVertexAttribute
@@ -52,15 +54,16 @@ function toVertexAttributeInternal(
 }
 
 /**
- * Converts a layer's uniform to the internal uniform structure used by the framework.
+ * Converts a layer's uniform to the internal uniform structure used by the
+ * framework.
  */
 function toUniformInternal(uniform: IUniform): IUniformInternal {
   return Object.assign({}, uniform, { materialUniforms: [] });
 }
 
 /**
- * This processes instance attributes and performs some basic validation on them to ensure their
- * properties are sane and expected for rendering.
+ * This processes instance attributes and performs some basic validation on them
+ * to ensure their properties are sane and expected for rendering.
  */
 function validateInstanceAttributes<T extends Instance>(
   layer: Layer<T, any>,
@@ -104,8 +107,8 @@ function validateInstanceAttributes<T extends Instance>(
 }
 
 /**
- * This processes the results of shaders importing modules by gathering the attributes
- * and uniforms that arose from them.
+ * This processes the results of shaders importing modules by gathering the
+ * attributes and uniforms that arose from them.
  */
 function gatherIOFromShaderModules<
   T extends Instance,
@@ -210,15 +213,17 @@ function gatherIOFromShaderModules<
 }
 
 /**
- * This is the primary method that analyzes all shader IO and determines which elements needs to be automatically injected
- * into the shader.
+ * This is the primary method that analyzes all shader IO and determines which
+ * elements needs to be automatically injected into the shader.
  *
  * @param gl The WebGL context this is being utilized on behalf of.
  * @param layer The layer who's ShaderIO we're analyzing and developing.
  * @param shaderIO The initial ShaderIO the layer has provided.
- * @param ioExpansion The list of BaseIOExpansion objects we will use to expand and process the layer's initial Shader IO
+ * @param ioExpansion The list of BaseIOExpansion objects we will use to expand
+ *                    and process the layer's initial Shader IO
  * @param sortIO  The methods to sort the IO configurations
- * @param importResults The Shader IO object provided by the layer after it's had it's imports analyzed from the provided shader.
+ * @param importResults The Shader IO object provided by the layer after it's
+ *                      had it's imports analyzed from the provided shader.
  */
 export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   gl: WebGLRenderingContext,
@@ -228,9 +233,11 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   sortIO: BaseIOSorting,
   importResults: ProcessShaderImportResults
 ) {
-  // After processing imports, we can now include any uniforms, or attributes the shader modules requested to be included in the
-  // layer so that the modules can operate properly. This mostly includes items such as times, projection matrices etc
-  // that the system should be providing rather than the layer
+  // After processing imports, we can now include any uniforms, or attributes
+  // the shader modules requested to be included in the layer so that the
+  // modules can operate properly. This mostly includes items such as times,
+  // projection matrices etc that the system should be providing rather than the
+  // layer
   gatherIOFromShaderModules(layer, shaderIO, importResults);
 
   // All of the instance attributes with nulls filtered out
@@ -244,15 +251,17 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
 
-  // Now we process all of the custom attribute expansion specified by the surface
-  // to process the layer's IO to make special features with the attributes operate correctly.
+  // Now we process all of the custom attribute expansion specified by the
+  // surface to process the layer's IO to make special features with the
+  // attributes operate correctly.
   for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
     const expansion = ioExpansion[i];
 
-    // Do special expansion validation for attributes that may meet the criteria of the expander.
-    // If the validation fails, then we skip performing the expansion as it would result in
-    // invalid or undefined behavior. This validation method should provide all of the logged
-    // output necessary to determine why the configuration was wrong.
+    // Do special expansion validation for attributes that may meet the criteria
+    // of the expander. If the validation fails, then we skip performing the
+    // expansion as it would result in invalid or undefined behavior. This
+    // validation method should provide all of the logged output necessary to
+    // determine why the configuration was wrong.
     if (
       expansion.validate(layer, instanceAttributes, vertexAttributes, uniforms)
     ) {
@@ -274,7 +283,8 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
     }
   }
 
-  // Do a final validation pass of the attributes injected so we can provide feedback as to why things behave odd
+  // Do a final validation pass of the attributes injected so we can provide
+  // feedback as to why things behave odd
   validateInstanceAttributes(
     layer,
     instanceAttributes,
@@ -296,9 +306,11 @@ export function injectShaderIO<T extends Instance, U extends ILayerProps<T>>(
   allUniforms.sort(sortIO.sortUniforms);
   allVertexAttributes.sort(sortIO.sortVertexAttributes);
 
-  // Let's pack in our attributes automagically so we can determine block and block indices.
+  // Let's pack in our attributes automagically so we can determine block and
+  // block indices.
   packAttributes(allInstanceAttributes);
-  // Before we make the vertex attributes, we must determine the buffering strategy our layer will utilize
+  // Before we make the vertex attributes, we must determine the buffering
+  // strategy our layer will utilize
   layer.getLayerBufferType(gl, vertexAttributes, allInstanceAttributes);
 
   return {

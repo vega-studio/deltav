@@ -77,7 +77,7 @@ export enum UniformSize {
   MATRIX3 = 9,
   MATRIX4 = 16,
   VEC4_ARRAY = 98,
-  ATLAS = 99
+  TEXTURE = 99
 }
 
 export enum VertexAttributeSize {
@@ -115,7 +115,8 @@ export enum TextureSize {
  */
 export enum ResourceType {
   ATLAS = 0,
-  FONT = 1
+  FONT = 1,
+  TEXTURE = 2
 }
 
 /**
@@ -596,7 +597,46 @@ export type OutputFragmentShaderSource =
   | { source: string; outputType: number }[];
 
 /**
- * Represents a complete shader object set.
+ * Represents a complete shader object set with raw source information. The
+ * fragment shaders here can provide hints to what output targets they are
+ * compatible with.
+ */
+export interface IShadersSource {
+  /**
+   * This provides the fragment rendering outputs this layer will perform. If
+   * specify a single output source this will assume you are providing a COLOR
+   * output type.
+   *
+   * If multiple sources are included, this will map each output type to an
+   * available matching output. If a matching output is not available, this will
+   * render the marked COLOR output. If no COLOR output is available, then this
+   * will assume the full processing of all outputs will be utilized and the
+   * FINAL output in the list will output as the COLOR regardless of what it is
+   * flagged as.
+   *
+   * IMPORTANT: Each source is a dependent of the sources before it. So if you
+   * have operations in the main() method of a preceding action, ALL values
+   * declared in that source is available in the next source. So, it is an error
+   * to declare any same properties in the next source. The program outside of
+   * the main() of each output is aggregated together, so if you have external
+   * methods, you only need to declare the methods in the top most shader.
+   *
+   * Each source can have it's own set of imports as imports get resolved all at
+   * once anyways.
+   *
+   * Be mindful how you set up your sources. If you do this wisely, you can have
+   * this layer have a higher or smaller performance footprint based on how the
+   * layer is being used. A well written layer for your application can adapt to
+   * several scenarios AND provide maximum performance.
+   */
+  fs: OutputFragmentShaderSource;
+  /** This is the shader source for your vertex shader. */
+  vs: string;
+}
+
+/**
+ * Represents a complete shader object set with analyzed fragment shaders that
+ * are compatible with target outputs.
  */
 export interface IShaders {
   /**
@@ -626,7 +666,7 @@ export interface IShaders {
    * layer is being used. A well written layer for your application can adapt to
    * several scenarios AND provide maximum performance.
    */
-  fs: OutputFragmentShaderSource;
+  fs: OutputFragmentShader;
   /** This is the shader source for your vertex shader. */
   vs: string;
 }
@@ -901,7 +941,7 @@ export interface IShaderInputs<T extends Instance> {
  * This is the initialization of the shader.
  */
 export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
-  IShaders;
+  IShadersSource;
 
 export interface IShaderExtension {
   header?: string;
@@ -1127,6 +1167,116 @@ export type UpdateProp<T> = {
 /**
  * Speedy check to see if a value is a string type or not
  */
-export function isString(val: any): val is string {
-  return val.charCodeAt !== void 0;
+export function isString(val?: any): val is string {
+  return val ?? val.charCodeAt !== void 0;
+}
+
+/**
+ * This is a listing of suggested Output information styles.
+ *
+ * NOTE: Information styles are merely suggestions of information types. It does
+ * NOT guarantee any specific type of data. These are merely flags to aid in
+ * wiring available layer outputs to output render targets.
+ *
+ * You could theoretically use arbitrary numbers to match the two together, it
+ * is recommended to utilize labeled enums though for readability.
+ */
+export enum ViewOutputInformationType {
+  /**
+   * This is the most common information output style. It provides a color per
+   * fragment
+   */
+  COLOR = 0,
+  /**
+   * This indicates it will provide a depth value per fragment
+   */
+  DEPTH = -998,
+  /**
+   * This indicates it will provide eye-space normal information per fragment
+   */
+  NORMAL,
+  /**
+   * Indicates it will provide color information that coincides with instance
+   * IDs used in the COLOR PICKING routines the system provides.
+   */
+  PICKING,
+  /**
+   * This indicates it will provide eye-space position information per fragment
+   */
+  POSITION,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS2,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS3,
+  /**
+   * This indicates it will provide Alpha information
+   */
+  ALPHA,
+  /**
+   * This indicates it will provide Beta information
+   */
+  BETA,
+  /**
+   * This indicates it will provide Gamma information
+   */
+  GAMMA,
+  /**
+   * This indicates it will provide Delta information
+   */
+  DELTA,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT1,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT2,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT3,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT4,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE1,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE2,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE3,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE4,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR2,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR3,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR4
 }

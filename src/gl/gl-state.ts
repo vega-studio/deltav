@@ -10,7 +10,8 @@ import {
   IExtensions,
   IMaterialUniform,
   MaterialUniformType,
-  MaterialUniformValue
+  MaterialUniformValue,
+  UseMaterialStatus
 } from "./types";
 
 const debug = require("debug")("performance");
@@ -111,6 +112,15 @@ export class GLState {
     return this._boundFBO;
   }
   private _boundFBO: WebGLFramebuffer | null = null;
+
+  /**
+   * This is the current render target who's FBO is bound. A null render target
+   * indicates the target is the screen.
+   */
+  get renderTarget() {
+    return this._renderTarget;
+  }
+  private _renderTarget: RenderTarget | null;
 
   /** The currently bound render buffer object. null if nothing bound. */
   get boundRBO() {
@@ -449,28 +459,105 @@ export class GLState {
   /**
    * Sets all current gl state to match the materials settings.
    */
-  useMaterial(material: Material) {
+  useMaterial(material: Material): UseMaterialStatus {
     // Make sure the material is compiled
     if (!material.gl) {
       if (!this.glProxy.compileMaterial(material)) {
-        return false;
+        return UseMaterialStatus.INVALID;
       }
 
       if (!material.gl) {
-        return false;
+        return UseMaterialStatus.INVALID;
       }
     }
 
-    if (!material.gl.programId) {
-      return false;
+    if (!material.gl.programId || material.gl.programId.length === 0) {
+      return UseMaterialStatus.INVALID;
     }
 
+    // After determining we have a material that is capable of rendering, we now
+    // look to match the material's program to the current output target output
+    // types as best as possible
+    const programId = this.findMaterialProgram(material);
+    // We do the same for finding an ideal FBO to work with based on the current
+    // render target
+    const fbo = this.findMaterialFBO(material);
+
+    // Last check to ensure we have determined the proper FBO to target for
+    // rendering.
+    if (fbo === void 0) {
+      console.warn('Could NOT determine a FBO for the given material that would appropriately match with the current RenderTarget');
+      return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
+    }
+
+    // Last check to make sure our process did find a program to run from the
+    // material.
+    if (programId === void 0) {
+      console.warn('Could NOT determine a program for the given material that would appropriately match with the current RenderTarget');
+      return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
+    }
+
+    // Use the appropriate FBO
+    this.bindFBO(fbo);
     // Use the material's program
-    this.useProgram(material.gl.programId);
+    this.useProgram(programId);
     // Synchronize the material's settings to the gl state
     this.syncMaterial(material);
 
-    return true;
+    return UseMaterialStatus.VALID;
+  }
+
+  /**
+   * This examines a given material to find the most appropriate program to run
+   * based on the current RenderTarget
+   */
+  private findMaterialProgram(material: Material): WebGLProgram | void {
+    if (!material.gl) return;
+    if (!this._renderTarget.gl) return;
+
+    // If the program is defined already, then we simply return that program as
+    // the program to use
+    let programId: WebGLProgram | void = material.gl.programByTarget.get(this._renderTarget);
+    if (programId !== void 0) return programId;
+
+    // If we have not determined the most appropriate program for the provided
+    // render target to material combination, then we need to analyze and figure
+    // that out. The best match will be a program that has the most output types
+    // that matches the current render target's output types.
+    const allOutputs = new Set<number>();
+
+    if (this._renderTarget) {
+
+    }
+
+
+    if (material.fragmentShader.length === 1 && ) {
+
+    }
+
+    if (Array.isArray(this._renderTarget.gl.colorBufferId)) {
+      for (let i = 0, iMax = this._renderTarget.gl.colorBufferId.length; i < iMax; ++i) {
+        const buffer = this._renderTarget.gl.colorBufferId[i];
+        allOutputs.add(buffer.outputType);
+      }
+
+
+    }
+
+    else {
+
+    }
+
+    return programId;
+  }
+
+  /**
+   * This examines a given material to find the most appropriate FBO to bind
+   * based on the current RenderTarget. This may resolve to the current render
+   * target just fine, or it may discover a more streamlined FBO to utilize.
+   */
+  private findMaterialFBO(material: Material): WebGLFramebuffer | null | void {
+
   }
 
   /**
@@ -479,6 +566,7 @@ export class GLState {
   useRenderTarget(target: RenderTarget | null) {
     if (!target) {
       this.bindFBO(null);
+      this._renderTarget = null;
       return true;
     }
 
@@ -486,12 +574,16 @@ export class GLState {
     if (!target.gl) return false;
     // Bind the FBO of the target as the current item we are rendering into
     this.bindFBO(target.gl.fboId);
+    // Set the render target as our current render target that we are outputting
+    // to.
+    this._renderTarget = target;
 
     return true;
   }
 
   /**
-   * This syncs the state of the GL context with the requested state of a material
+   * This syncs the state of the GL context with the requested state of a
+   * material
    */
   syncMaterial(material: Material) {
     const gl = this.gl;

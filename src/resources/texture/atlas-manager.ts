@@ -572,16 +572,22 @@ export class AtlasManager {
       uniforms: {
         texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture }
       },
-      fragmentShader: `
-        precision highp float;
+      fragmentShader: [
+        {
+          outputNames: [],
+          outputTypes: [0],
+          source: `
+          precision highp float;
 
-        uniform sampler2D texture;
-        varying vec2 _texCoord;
+          uniform sampler2D texture;
+          varying vec2 _texCoord;
 
-        void main() {
-          gl_FragColor = texture2D(texture, _texCoord);
+          void main() {
+            gl_FragColor = texture2D(texture, _texCoord);
+          }
+        `
         }
-      `,
+      ],
       vertexShader: `
         precision highp float;
 
@@ -603,7 +609,7 @@ export class AtlasManager {
     // Now we create a render target that will render to our new texture
     const renderTarget = new RenderTarget({
       buffers: {
-        color: newAtlasTexture
+        color: { buffer: newAtlasTexture, outputType: 0 }
       },
       retainTextureTargets: true
     });

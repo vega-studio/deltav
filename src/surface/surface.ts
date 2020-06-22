@@ -638,25 +638,29 @@ export class Surface {
   }
 
   /**
-   * This is the draw loop that must be called per frame for updates to take effect and display.
+   * This is the draw loop that must be called per frame for updates to take
+   * effect and display.
    *
-   * @param time This is an optional time flag so one can manually control the time flag for the frame.
-   *             This will affect animations and other automated gpu processes.
+   * @param time This is an optional time flag so one can manually control the
+   *             time flag for the frame. This will affect animations and other
+   *             automated gpu processes.
    */
   async draw(time?: number) {
     if (!this.gl) return;
 
-    // The theoretically least blocking moment for pixels to be read is the beginning of the next frame
-    // right before next frame is rendered. This will have given optimal time for the GPU to have finished
-    // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
-    // GPU intensive operation.
+    // The theoretically least blocking moment for pixels to be read is the
+    // beginning of the next frame right before next frame is rendered. This
+    // will have given optimal time for the GPU to have finished flushing it's
+    // commands. If the GPU has not completed it's tasks by this time, then
+    // we're in a major GPU intensive operation.
     this.analyzePickRendering();
-    // Gather all of our picking calls to call at the end to prevent readPixels from
-    // becoming a major blocking operation
+    // Gather all of our picking calls to call at the end to prevent readPixels
+    // from becoming a major blocking operation
     const toPick: [LayerScene, View<IViewProps>, Layer<any, any>[]][] = [];
 
-    // Before we draw the frame, we must have every camera resolve broadcasting changes so everything can respond
-    // to the change before all of the drawing operations take place.
+    // Before we draw the frame, we must have every camera resolve broadcasting
+    // changes so everything can respond to the change before all of the drawing
+    // operations take place.
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
 
@@ -666,8 +670,8 @@ export class Surface {
       }
     }
 
-    // Make the layers commit their changes to the buffers then draw each scene view on
-    // Completion.
+    // Make the layers commit their changes to the buffers then draw each scene
+    // view on Completion.
     await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
@@ -678,7 +682,8 @@ export class Surface {
       }
 
       // If a layer needs a picking pass, then perform a picking draw pass only
-      // if a request for the color pick has been made, then we query the pixels rendered to our picking target
+      // if a request for the color pick has been made, then we query the pixels
+      // rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
         toPick.push([scene, view, pickingPass]);
       }
@@ -690,24 +695,24 @@ export class Surface {
       this.mouseManager.waitingForRender = false;
     }
 
-    // Now that all of our layers have performed updates to everything, we can now dequeue
-    // All resource requests
-    // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
+    // Now that all of our layers have performed updates to everything, we can
+    // now dequeue All resource requests We create this gate in case multiple
+    // draw calls flow through before a buffer operation is completed
     if (!this.isBufferingResources) {
       this.isBufferingResources = true;
       const didBuffer = await this.resourceManager.dequeueRequests();
       this.isBufferingResources = false;
 
-      // If buffering did occur and completed, then we should be performing a draw to ensure all of the
-      // Changes are committed and pushed out.
+      // If buffering did occur and completed, then we should be performing a
+      // draw to ensure all of the Changes are committed and pushed out.
       if (didBuffer) {
         this.draw(await onFrame());
       }
     }
 
-    // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
-    // be considered resolved for the current set of changes.
-    // Set draw needs of cameras and views back to false
+    // Each frame needs to analyze if draws are needed or not. Thus we reset all
+    // draw needs so they will be considered resolved for the current set of
+    // changes. Set draw needs of cameras and views back to false
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
 
@@ -888,7 +893,7 @@ export class Surface {
 
     // If the view has an output target to render into, then we shift our target
     // focus to that target Make sure the correct render target is applied
-    renderer.setRenderTarget(target || view.outputTarget || null);
+    renderer.setRenderTarget(target || view.renderTarget || null);
 
     // Set the scissor rectangle.
     renderer.setScissor(
@@ -1179,14 +1184,17 @@ export class Surface {
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
       buffers: {
-        color: new Texture({
-          generateMipMaps: false,
-          data: {
-            width,
-            height,
-            buffer: null
-          }
-        }),
+        color: {
+          buffer: new Texture({
+            generateMipMaps: false,
+            data: {
+              width,
+              height,
+              buffer: null
+            }
+          }),
+          outputType: 0
+        },
         depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
       // We want a target with a pixel ratio of just 1, which will be more than

@@ -223,49 +223,8 @@ export class GLProxy {
     // If the gl object exists, then this is considered finished
     if (material.gl) return;
 
-    // Check for existing shader programs for the fragment shader
-    let fs = this.fragmentShaders.get(material.fragmentShader) || null;
-
-    // If none exists, then we create and compile the fragments shader
-    if (!fs) {
-      fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-
-      if (!fs) {
-        console.warn(
-          this.debugContext,
-          "Could not create a Fragment WebGLShader. Printing GL Errors:"
-        );
-        this.printError();
-        return;
-      }
-
-      this.gl.shaderSource(fs, material.fragmentShader);
-      this.gl.compileShader(fs);
-
-      if (this.gl.isContextLost()) {
-        console.warn("Context was lost during compilation");
-      }
-
-      if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
-        console.error(
-          this.debugContext,
-          "FRAGMENT SHADER COMPILER ERROR:",
-          material.name
-        );
-        console.warn(
-          "Could not compile provided shader. Printing logs and errors:"
-        );
-        console.warn(this.lineFormatShader(material.fragmentShader));
-        console.warn("LOGS:");
-        console.warn(this.gl.getShaderInfoLog(fs));
-        this.printError();
-        this.gl.deleteShader(fs);
-
-        return;
-      }
-    }
-
-    // Check for existing vertex shader object
+    // Check for existing vertex shader object FIRST. Vertex shaders are common
+    // across all fragment shader outputs for our MRT structure.
     let vs = this.vertexShaders.get(material.vertexShader) || null;
 
     // If none exists, then compile
@@ -307,6 +266,7 @@ export class GLProxy {
       }
     }
 
+    // Retrieve the Programs available for this vertex shader
     let vertexPrograms = this.programs.get(vs);
 
     if (!vertexPrograms) {
@@ -314,89 +274,160 @@ export class GLProxy {
       this.programs.set(vs, vertexPrograms);
     }
 
-    let useMetrics = vertexPrograms.get(fs) || null;
-
-    if (!useMetrics) {
-      const program = this.gl.createProgram();
-
-      if (!program) {
-        console.warn(
-          this.debugContext,
-          "Could not create a WebGLProgram. Printing GL Errors:"
-        );
-        this.printError();
-
-        return;
-      }
-
-      useMetrics = {
-        useCount: 1,
-        program
-      };
-
-      this.gl.attachShader(program, vs);
-      this.gl.attachShader(program, fs);
-
-      // Make the shaders operate together
-      this.gl.linkProgram(program);
-      this.gl.validateProgram(program);
-
-      if (
-        !this.gl.getProgramParameter(program, this.gl.LINK_STATUS) ||
-        !this.gl.getProgramParameter(program, this.gl.VALIDATE_STATUS)
-      ) {
-        const info = this.gl.getProgramInfoLog(program);
-        console.warn(
-          this.debugContext,
-          "Could not compile WebGL program. \n\n",
-          info
-        );
-        this.gl.deleteProgram(program);
-
-        return;
-      }
-
-      vertexPrograms.set(fs, useMetrics);
-    } else {
-      // Up the use count of the program for like programs that are found
-      useMetrics.useCount++;
-    }
-
-    // Establish the gl context info that makes this material tick.
-    material.gl = {
-      fsId: fs,
+    const materialGL: Material["gl"] = {
       vsId: vs,
-      programId: useMetrics.program,
-      proxy: this
+      fsId: [],
+      programId: [],
+      proxy: this,
+      programByTarget: new WeakMap()
     };
 
-    // Let's get a list of all uniforms the shaders are demanding and make sure the material is
-    // supplying them. If not, then the shader will not have all of the information it may need
-    // and thus would be considered invalid rendering.
-
-    // Switch to the program and clean up any uniform mismatches
-    this.state.useProgram(useMetrics.program);
-    // Get the current program applied to our state
-    const program = this.state.currentProgram;
-    if (!program) return false;
-
-    // Get the total uniforms requested by the program so we can loop through them
-    const totalProgramUniforms = this.gl.getProgramParameter(
-      program,
-      this.gl.ACTIVE_UNIFORMS
-    );
+    // We use this to aggregate all uniforms across all programs generated to
+    // analyze if we are missing uniforms or need to strip out uniforms
     const usedUniforms = new Set<string>();
 
-    for (let i = 0; i < totalProgramUniforms; i++) {
-      const uniformInfo = this.gl.getActiveUniform(program, i);
+    // We must loop through all of the fragment shaders the material can
+    // provide. Each fragment shader is designed for specific outputs to match a
+    // render target's configuration.
+    for (let i = 0, iMax = material.fragmentShader.length; i < iMax; ++i) {
+      const fragmentShader = material.fragmentShader[i];
+      // Check for existing shader programs for the fragment shader
+      let fs = this.fragmentShaders.get(fragmentShader.source) || null;
 
-      if (uniformInfo) {
-        usedUniforms.add(uniformInfo.name);
+      // If none exists, then we create and compile the fragments shader
+      if (!fs) {
+        fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+
+        if (!fs) {
+          console.warn(
+            this.debugContext,
+            "Could not create a Fragment WebGLShader. Printing GL Errors:"
+          );
+          this.printError();
+          return;
+        }
+
+        this.gl.shaderSource(fs, fragmentShader.source);
+        this.gl.compileShader(fs);
+
+        if (this.gl.isContextLost()) {
+          console.warn("Context was lost during compilation");
+        }
+
+        if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
+          console.error(
+            this.debugContext,
+            "FRAGMENT SHADER COMPILER ERROR:",
+            material.name
+          );
+          console.warn(
+            "Could not compile provided shader. Printing logs and errors:"
+          );
+          console.warn(this.lineFormatShader(material.fragmentShader));
+          console.warn("LOGS:");
+          console.warn(this.gl.getShaderInfoLog(fs));
+          this.printError();
+          this.gl.deleteShader(fs);
+
+          return;
+        }
+      }
+
+      // Get the use metrics for the program the vs and fs shader create
+      let useMetrics = vertexPrograms.get(fs) || null;
+
+      // No use metrics yet means we must generate the program
+      if (!useMetrics) {
+        const program = this.gl.createProgram();
+
+        if (!program) {
+          console.warn(
+            this.debugContext,
+            "Could not create a WebGLProgram. Printing GL Errors:"
+          );
+          this.printError();
+
+          return;
+        }
+
+        useMetrics = {
+          useCount: 1,
+          program
+        };
+
+        this.gl.attachShader(program, vs);
+        this.gl.attachShader(program, fs);
+
+        // Make the shaders operate together
+        this.gl.linkProgram(program);
+        this.gl.validateProgram(program);
+
+        if (
+          !this.gl.getProgramParameter(program, this.gl.LINK_STATUS) ||
+          !this.gl.getProgramParameter(program, this.gl.VALIDATE_STATUS)
+        ) {
+          const info = this.gl.getProgramInfoLog(program);
+          console.warn(
+            this.debugContext,
+            "Could not compile WebGL program. \n\n",
+            info
+          );
+          this.gl.deleteProgram(program);
+
+          return;
+        }
+
+        vertexPrograms.set(fs, useMetrics);
+      }
+
+      // Existing use metrics simply means: we have a program for the vs and fs
+      // shader combo, so simply incremenet it's use count.
+      else {
+        useMetrics.useCount++;
+      }
+
+      // Establish the gl context info that makes this material tick.
+      materialGL.fsId?.push({
+        id: fs,
+        outputTypes: fragmentShader.outputTypes
+      });
+      materialGL.programId?.push({
+        id: useMetrics.program,
+        outputTypes: fragmentShader.outputTypes
+      });
+
+      // Switch to the program so we can aggregate all of the uniforms the
+      // program will utilize.
+      this.state.useProgram(useMetrics.program);
+      // Get the current program applied to our state
+      const program = this.state.currentProgram;
+      if (!program) return false;
+
+      // Get the total uniforms requested by the program so we can loop through them
+      const totalProgramUniforms = this.gl.getProgramParameter(
+        program,
+        this.gl.ACTIVE_UNIFORMS
+      );
+
+      for (let i = 0; i < totalProgramUniforms; i++) {
+        const uniformInfo = this.gl.getActiveUniform(program, i);
+
+        if (uniformInfo) {
+          usedUniforms.add(uniformInfo.name);
+        }
       }
     }
 
-    // We now delete any uniforms that are not matched between material and program as they are not needed
-    // and will just be lingering unused clutter.
+    // Set the generated GL identifiers to our material
+    material.gl = materialGL;
+
+    // Let's get a list of all uniforms the shaders are demanding and make sure
+    // the material is supplying them. If not, then the shader will not have all
+    // of the information it may need and thus would be considered invalid
+    // rendering.
+
+    // We now delete any uniforms that are not matched between material and
+    // program as they are not needed and will just be lingering unused clutter.
     const uniformToRemove = new Set<string>();
 
     Object.keys(material.uniforms).forEach(name => {
@@ -429,9 +460,6 @@ export class GLProxy {
   /**
    * This does what is needed to generate a GPU FBO that we can utilize as a render target
    * for subsequent draw calls.
-   *
-   * TODO: For MRT (using extensions or webgl 2) Our current set up is ok. However, we need
-   * to change this to compile out split buffers for compatibility MRT.
    */
   compileRenderTarget(target: RenderTarget) {
     // If the gl target exists, then this is considered to be compiled already
@@ -457,26 +485,30 @@ export class GLProxy {
     // Generate the context to be attached to the render target
     const glContext: RenderTarget["gl"] = {
       fboId: fbo,
-      proxy: this
+      proxy: this,
+      fboByMaterial: new WeakMap()
     };
 
     // Color buffer
     if (Array.isArray(target.buffers.color)) {
-      const buffers: (WebGLRenderbuffer | Texture)[] = [];
+      const buffers: {
+        data: WebGLRenderbuffer | Texture;
+        outputType: number;
+      }[] = [];
       let isReady = true;
       glContext.colorBufferId = buffers;
 
       target.buffers.color.forEach((buffer, i) => {
         if (!isReady) return;
-        if (buffer instanceof Texture) {
-          buffers.push(buffer);
+        if (buffer.buffer instanceof Texture) {
+          buffers.push({ data: buffer.buffer, outputType: buffer.outputType });
 
-          if (isTextureReady(buffer)) {
+          if (isTextureReady(buffer.buffer)) {
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
               indexToColorAttachment(gl, this.extensions, i, true),
               gl.TEXTURE_2D,
-              buffer.gl.textureId,
+              buffer.buffer.gl.textureId,
               0
             );
           } else {
@@ -488,13 +520,13 @@ export class GLProxy {
           }
         } else {
           const rboId = this.compileColorBuffer(
-            buffer,
+            buffer.buffer,
             target.width,
             target.height
           );
 
           if (rboId) {
-            buffers.push(rboId);
+            buffers.push({ data: rboId, outputType: buffer.outputType });
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
               indexToColorAttachment(gl, this.extensions, i, true),
@@ -511,15 +543,18 @@ export class GLProxy {
     } else if (target.buffers.color !== undefined) {
       const buffer = target.buffers.color;
 
-      if (buffer instanceof Texture) {
-        glContext.colorBufferId = buffer;
+      if (buffer.buffer instanceof Texture) {
+        glContext.colorBufferId = {
+          data: buffer.buffer,
+          outputType: buffer.outputType
+        };
 
-        if (isTextureReady(buffer)) {
+        if (isTextureReady(buffer.buffer)) {
           gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
             indexToColorAttachment(gl, this.extensions, 0, true),
             gl.TEXTURE_2D,
-            buffer.gl.textureId,
+            buffer.buffer.gl.textureId,
             0
           );
         } else {
@@ -531,13 +566,16 @@ export class GLProxy {
         }
       } else {
         const rboId = this.compileColorBuffer(
-          buffer,
+          buffer.buffer,
           target.width,
           target.height
         );
 
         if (rboId) {
-          glContext.colorBufferId = rboId;
+          glContext.colorBufferId = {
+            data: rboId,
+            outputType: buffer.outputType
+          };
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
             indexToColorAttachment(gl, this.extensions, 0, true),
@@ -895,7 +933,7 @@ export class GLProxy {
    */
   disposeMaterial(material: Material) {
     if (material.gl) {
-      const { vsId, fsId, programId } = material.gl;
+      const { vsId, fsId: fsIds, programId } = material.gl;
       let fsLookup = this.programs.get(vsId);
 
       // If nothing is found we have something with odd state. Just delete the vertex
@@ -905,42 +943,45 @@ export class GLProxy {
         this.gl.deleteShader(vsId);
       }
 
-      let useMetrics = fsLookup.get(fsId);
+      for (let i = 0, iMax = fsIds.length; i < iMax; ++i) {
+        const fsId = fsIds[i];
+        let useMetrics = fsLookup.get(fsId);
 
-      // No use metrics means odd state, make a fake object to continue the process normally
-      if (!useMetrics) {
-        useMetrics = {
-          useCount: 0,
-          program: programId
-        };
-      }
-
-      // We're removing a material from utilizing this program, thus reduce it's useage
-      useMetrics.useCount--;
-
-      // If the useage is at or drops below zero, the program is no longer valid and not in use
-      if (useMetrics.useCount < 1) {
-        this.gl.deleteProgram(useMetrics.program);
-        fsLookup.delete(fsId);
-
-        // If removing this fragment shader reference reduces the lookups to zero, then the
-        // vertex shader is not paired with anything and has no programs. It is ready for
-        // removal as well
-        if (fsLookup.size <= 0) {
-          this.gl.deleteShader(vsId);
+        // No use metrics means odd state, make a fake object to continue the process normally
+        if (!useMetrics) {
+          useMetrics = {
+            useCount: 0,
+            program: programId
+          };
         }
-      }
 
-      // The fragment shader is a bit trickier, we must go through all vertex shader lookups and see
-      // if the fragment shader exists in any of them. If not: the fragment shader is ready for removal
-      let found = false;
-      this.programs.forEach(fsLookup => {
-        if (fsLookup.has(fsId)) found = true;
-      });
+        // We're removing a material from utilizing this program, thus reduce it's useage
+        useMetrics.useCount--;
 
-      // If no fragment shader references remain: delete it.
-      if (!found) {
-        this.gl.deleteShader(fsId);
+        // If the useage is at or drops below zero, the program is no longer valid and not in use
+        if (useMetrics.useCount < 1) {
+          this.gl.deleteProgram(useMetrics.program);
+          fsLookup.delete(fsId);
+
+          // If removing this fragment shader reference reduces the lookups to zero, then the
+          // vertex shader is not paired with anything and has no programs. It is ready for
+          // removal as well
+          if (fsLookup.size <= 0) {
+            this.gl.deleteShader(vsId);
+          }
+        }
+
+        // The fragment shader is a bit trickier, we must go through all vertex shader lookups and see
+        // if the fragment shader exists in any of them. If not: the fragment shader is ready for removal
+        let found = false;
+        this.programs.forEach(fsLookup => {
+          if (fsLookup.has(fsId)) found = true;
+        });
+
+        // If no fragment shader references remain: delete it.
+        if (!found) {
+          this.gl.deleteShader(fsId);
+        }
       }
     }
 
@@ -962,19 +1003,20 @@ export class GLProxy {
       // List of color buffers for MRT
       if (Array.isArray(target.gl.colorBufferId)) {
         target.gl.colorBufferId.forEach(buffer => {
-          if (buffer instanceof Texture && !target.retainTextureTargets) {
-            this.disposeTexture(buffer);
+          if (buffer.data instanceof Texture && !target.retainTextureTargets) {
+            this.disposeTexture(buffer.data);
           } else {
-            this.disposeRenderBuffer(buffer);
+            this.disposeRenderBuffer(buffer.data);
           }
         });
       } else if (
-        target.gl.colorBufferId instanceof Texture &&
+        target.gl.colorBufferId &&
+        target.gl.colorBufferId.data instanceof Texture &&
         !target.retainTextureTargets
       ) {
-        this.disposeTexture(target.gl.colorBufferId);
+        this.disposeTexture(target.gl.colorBufferId.data);
       } else if (target.gl.colorBufferId instanceof WebGLRenderbuffer) {
-        this.disposeRenderBuffer(target.gl.colorBufferId);
+        this.disposeRenderBuffer(target.gl.colorBufferId.data);
       }
 
       // Dispose of depth buffer
@@ -1113,13 +1155,15 @@ export class GLProxy {
   /**
    * Prints a shader broken down by lines
    */
-  lineFormatShader(shader: Material["fragmentShader"]) {
+  lineFormatShader(
+    shader: Material["fragmentShader"] | Material["vertexShader"]
+  ) {
     if (isString(shader)) {
       this.lineFormat(shader);
     } else {
       shader.forEach(
         s =>
-          `\nSHADER FOR OUTPUT TYPE: ${s.outputType} ${this.lineFormat(
+          `\nSHADER FOR OUTPUT TYPES: ${s.outputTypes} ${this.lineFormat(
             s.source
           )}`
       );

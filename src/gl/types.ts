@@ -156,3 +156,18 @@ export interface IExtensions {
   /** Extension for hardware instancing */
   instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
 }
+
+/**
+ * These are the state responses for using a material
+ */
+export enum UseMaterialStatus {
+  /** The material had an error when being used */
+  INVALID = 0,
+  /** The material is now in use and ready for draws */
+  VALID = 1,
+  /**
+   * The current render target and the material specified have no matching
+   * output types, thus drawing with the provided material will result in
+   */
+  NO_RENDER_TARGET_MATCHES,
+}

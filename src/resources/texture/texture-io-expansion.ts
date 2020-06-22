@@ -50,7 +50,8 @@ function isTextureAttribute<T extends Instance>(
 }
 
 /**
- * Minimal information a resource is required to have to operate for this expander.
+ * Minimal information a resource is required to have to operate for this
+ * expander.
  */
 interface ITextureIOExpansionResource extends IResourceType {
   texture: Texture;
@@ -67,8 +68,8 @@ interface ITextureResourceManager {
 }
 
 /**
- * This is an expansion handler for resource attributes that requires a texture to be
- * included as a uniform on behalf of the attribute.
+ * This is an expansion handler for resource attributes that requires a texture
+ * to be included as a uniform on behalf of the attribute.
  */
 export class TextureIOExpansion extends BaseIOExpansion {
   /** The manager which will contain the texture object to be used */
@@ -108,18 +109,21 @@ export class TextureIOExpansion extends BaseIOExpansion {
         if (
           isTextureAttribute(attribute, this.manager.router, this.resourceType)
         ) {
-          // Auto set the size of the attribute. Attribute's that are a resource automatically
-          // Consume a size of four unless otherwise stated by the attribute
+          // Auto set the size of the attribute. Attribute's that are a resource
+          // automatically Consume a size of four unless otherwise stated by the
+          // attribute
           if (attribute.size === undefined) {
             attribute.size = InstanceAttributeSize.FOUR;
           }
 
-          // Get the atlas resource uniform (sampler2D) injection targets. We default to only the
-          // Fragment shader as it's the most commonly used location for sampler2Ds
+          // Get the atlas resource uniform (sampler2D) injection targets. We
+          // default to only the Fragment shader as it's the most commonly used
+          // location for sampler2Ds
           const injection: number =
             attribute.resource.shaderInjection ||
             ShaderInjectionTarget.FRAGMENT;
-          // See if we already have an injection for the given injected uniform name for an atlas resource.
+          // See if we already have an injection for the given injected uniform
+          // name for an atlas resource.
           const injections = requestedTextureInjections.get(
             attribute.resource.name
           );
@@ -170,11 +174,12 @@ export class TextureIOExpansion extends BaseIOExpansion {
         }
 
         return [
-          // This injects the sampler that the shader will use for sampling texels
+          // This injects the sampler that the shader will use for sampling
+          // texels
           {
             name: instanceAttribute.resource.name,
             shaderInjection: injection,
-            size: UniformSize.ATLAS,
+            size: UniformSize.TEXTURE,
             update: () => {
               const resource = manager.getResource(
                 instanceAttribute.resource.key()
@@ -187,7 +192,8 @@ export class TextureIOExpansion extends BaseIOExpansion {
               return emptyTexture;
             }
           },
-          // This provides the size of the texture that is applied to the sampler.
+          // This provides the size of the texture that is applied to the
+          // sampler.
           {
             name: `${instanceAttribute.resource.name}_size`,
             shaderInjection: injection,
@@ -249,8 +255,9 @@ export class TextureIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * For texture resources, we need the uniforms with a size of ATLAS to be injected as a sampler2D instead
-   * of a vector sizing which the basic io expansion can only provide.
+   * For texture resources, we need the uniforms with a size of ATLAS to be
+   * injected as a sampler2D instead of a vector sizing which the basic io
+   * expansion can only provide.
    */
   processHeaderInjection(
     target: ShaderInjectionTarget,
@@ -269,7 +276,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
       const uniform = uniforms[i];
       const injection = uniform.shaderInjection || ShaderInjectionTarget.VERTEX;
 
-      if (uniform.size === UniformSize.ATLAS && injection === target) {
+      if (uniform.size === UniformSize.TEXTURE && injection === target) {
         this.setDeclaration(
           declarations,
           uniform.name,

@@ -7,7 +7,10 @@ import { GLState } from "./gl-state";
 import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
+import { UseMaterialStatus } from "./types";
 import { WebGLStat } from "./webgl-stat";
+
+const debug = require('debug')('performance');
 
 /**
  * Options used to create or update the renderer.
@@ -51,7 +54,7 @@ export interface IWebGLRendererState {
   /** Sets up a clear mask to ensure the clear operation only happens once per draw */
   clearMask: [boolean, boolean, boolean];
   /** Stores which render target is in focus for the current operations on the renderer */
-  currentRenderTarget: RenderTarget | null;
+  currentRenderTarget: RenderTarget | RenderTarget[] | null;
   /** The current display size of the canvas */
   displaySize: Size;
   /** The current pixel ratio in use */
@@ -79,7 +82,10 @@ export class WebGLRenderer {
   get gl() {
     return this._gl;
   }
-  /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
+  /**
+   * This is the compiler that performs all actions related to creating and
+   * updating buffers and objects on the GPU
+   */
   glProxy: GLProxy;
   /** This handles anything related to state changes in the GL state */
   glState: GLState;
@@ -129,7 +135,8 @@ export class WebGLRenderer {
   }
 
   /**
-   * Clears the color either set with setClearColor, or clears the color specified.
+   * Clears the color either set with setClearColor, or clears the color
+   * specified.
    */
   clearColor(color?: Vec4) {
     if (color) {
@@ -138,9 +145,11 @@ export class WebGLRenderer {
   }
 
   /**
-   * Free all resources this renderer utilized. Make sure textures and frame/render/geometry
-   * buffers are all deleted. We may even use aggressive buffer removal that force resizes the buffers
-   * so their resources are immediately reduced instead of waiting for the JS engine to free up resources.
+   * Free all resources this renderer utilized. Make sure textures and
+   * frame/render/geometry buffers are all deleted. We may even use aggressive
+   * buffer removal that force resizes the buffers so their resources are
+   * immediately reduced instead of waiting for the JS engine to free up
+   * resources.
    */
   dispose() {
     // TODO
@@ -203,13 +212,22 @@ export class WebGLRenderer {
   /**
    * Returns the full viewport for the current target.
    *
-   * If a RenderTarget is not set, then this returns the viewport of the canvas ignoring
-   * the current pixel ratio.
+   * If a RenderTarget is not set, then this returns the viewport of the canvas
+   * ignoring the current pixel ratio.
    */
   getFullViewport() {
     const target = this.state.currentRenderTarget;
 
-    if (target) {
+    // Multiple render targets MUST have the same dimensions so it's valid to
+    // use a single target.
+    if (Array.isArray(target)) {
+      return {
+        x: 0,
+        y: 0,
+        width: target[0].width,
+        height: target[0].height
+      };
+    } else if (target) {
       return {
         x: 0,
         y: 0,
@@ -232,13 +250,14 @@ export class WebGLRenderer {
    * Prepares the specified attribute
    */
   prepareAttribute(geometry: Geometry, attribute: Attribute, name: string) {
-    // If we successfully update/compile the attribute, then we enable it's vertex array
+    // If we successfully update/compile the attribute, then we enable it's
+    // vertex array
     if (this.glProxy.updateAttribute(attribute)) {
       this.glProxy.useAttribute(name, attribute, geometry);
     }
 
-    // Otherwise, we flag this as invalid geometry so we don't cause errors or undefined
-    // behavior while rendering
+    // Otherwise, we flag this as invalid geometry so we don't cause errors or
+    // undefined behavior while rendering
     else {
       console.warn("Could not update attribute", attribute);
       return false;
@@ -250,35 +269,70 @@ export class WebGLRenderer {
   /**
    * Renders the Scene specified
    */
-  render(scene: Scene, target: RenderTarget | null = null) {
+  render(scene: Scene, target: RenderTarget | RenderTarget[] | null = null) {
     // Context must be established to render
     if (!this.gl) return;
-
-    // Establish the rendering state we're in right now
+    // Establish the rendering output we are going to use
     this.setRenderTarget(target);
-
-    // Apply the last clear mask provided for the render
-    const clear = this.state.clearMask;
-    if (clear[0] || clear[1] || clear[2]) {
-      this.glProxy.clear(clear[0], clear[1], clear[2]);
-      this.state.clearMask = [false, false, false];
-    }
-
-    // If the fbo is not ready, we're not drawing
-    if (target && !target.gl) {
-      console.warn(
-        "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
-        { scene, target }
-      );
-      return;
-    }
-
     // We'll remove any models that have errored from the scene
     const toRemove: Model[] = [];
-    // Loop through all of the models of the scene and process them for rendering
-    scene.models.forEach((model: Model) => {
-      this.renderModel(model, toRemove);
-    });
+
+    // With multiple render targets we have to render the whole scene per target
+    if (Array.isArray(target)) {
+      for (let i = 0, iMax = target.length; i < iMax; ++i) {
+        const renderTarget = target[i];
+        this.glState.useRenderTarget(renderTarget);
+
+        // Apply the last clear mask provided for the render
+        const clear = this.state.clearMask;
+        if (clear[0] || clear[1] || clear[2]) {
+          this.glProxy.clear(clear[0], clear[1], clear[2]);
+          this.state.clearMask = [false, false, false];
+        }
+
+        // If the fbo is not ready, we're not drawing
+        if (renderTarget && !renderTarget.gl) {
+          console.warn(
+            "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
+            { scene, target }
+          );
+          return;
+        }
+
+        // Loop through all of the models of the scene and process them for
+        // rendering
+        scene.models.forEach((model: Model) => {
+          this.renderModel(model, toRemove);
+        });
+      }
+    }
+
+    // Single render target, we render the scene a single time (even if there
+    // are multiple buffers, it will just enable MRT based on the material in
+    // use)
+    else {
+      // Apply the last clear mask provided for the render
+      const clear = this.state.clearMask;
+      if (clear[0] || clear[1] || clear[2]) {
+        this.glProxy.clear(clear[0], clear[1], clear[2]);
+        this.state.clearMask = [false, false, false];
+      }
+
+      // If the fbo is not ready, we're not drawing
+      if (target && !target.gl) {
+        console.warn(
+          "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
+          { scene, target }
+        );
+        return;
+      }
+
+      // Loop through all of the models of the scene and process them for
+      // rendering
+      scene.models.forEach((model: Model) => {
+        this.renderModel(model, toRemove);
+      });
+    }
 
     // Clear out any failed models from the scene
     toRemove.forEach(model => {
@@ -293,62 +347,121 @@ export class WebGLRenderer {
     const geometry = model.geometry;
     const material = model.material;
 
-    // Let's put the material's program in use first so we can have the attribute information
-    // available to us.
-    if (this.glState.useMaterial(material)) {
-      let geometryIsValid = true;
+    // Let's put the material's program in use first so we can have the
+    // attribute information available to us.
+    switch (this.glState.useMaterial(material)) {
+      case UseMaterialStatus.VALID: {
+        let geometryIsValid = true;
 
-      // Faster to use defined functions rather than closures for loops
-      const attributeLoop = function(attribute: Attribute, name: string) {
-        geometryIsValid =
-          this.prepareAttribute(geometry, attribute, name) && geometryIsValid;
-      };
+        // Faster to use defined functions rather than closures for loops
+        const attributeLoop = function(attribute: Attribute, name: string) {
+          geometryIsValid =
+            this.prepareAttribute(geometry, attribute, name) && geometryIsValid;
+        };
 
-      // First update/compile all aspects of the geometry
-      geometry.attributes.forEach(attributeLoop, this);
-      // Now all of our attributes are established, we must make sure our vertex arrays are cleaned up
-      this.glState.applyVertexAttributeArrays();
+        // First update/compile all aspects of the geometry
+        geometry.attributes.forEach(attributeLoop, this);
+        // Now all of our attributes are established, we must make sure our vertex
+        // arrays are cleaned up
+        this.glState.applyVertexAttributeArrays();
 
-      // If all of the attribute updates passed correctly, then we can use the established state
-      // to make our draw call
-      if (geometryIsValid) {
-        this.glProxy.draw(model);
-      } else {
+        // If all of the attribute updates passed correctly, then we can use the
+        // established state to make our draw call
+        if (geometryIsValid) {
+          this.glProxy.draw(model);
+        } else {
+          console.warn(
+            "Geometry was unable to update correctly, thus we are skipping the drawing of",
+            model
+          );
+
+          toRemove.push(model);
+        }
+        break;
+      }
+
+      case UseMaterialStatus.INVALID: {
         console.warn(
-          "Geometry was unable to update correctly, thus we are skipping the drawing of",
-          model
+          "Could not utilize material. Skipping draw call for:",
+          material,
+          geometry
         );
 
         toRemove.push(model);
+        break;
       }
-    } else {
-      console.warn(
-        "Could not utilize material. Skipping draw call for:",
-        material,
-        geometry
-      );
 
-      toRemove.push(model);
+      case UseMaterialStatus.NO_RENDER_TARGET_MATCHES: {
+        debug("Skipped draw for material due to no output matches for the current render target");
+        break;
+      }
+
+      default:
+        debug("Skipped draw for material due to unknown reasons");
+        break;
     }
   }
 
   /**
-   * Reads the pixels from the current Render Target (or more specifically from the current framebuffer)
+   * Reads the pixels from the current Render Target (or more specifically from
+   * the current framebuffer)
    *
-   * By default the viewport is set based on the canvas being rendered into. Include a render target
-   * to make the viewport be applied with the target considered rather than needing pixel density considerations.
+   * By default the viewport is set based on the canvas being rendered into.
+   * Include a render target to make the viewport be applied with the target
+   * considered rather than needing pixel density considerations.
+   *
+   * When the current render target has multiple buffers or IS multiple buffers,
+   * then you have the ability to use bufferType to target a buffer based on
+   * it's outputType to specify that buffer from which you wish to read.
    */
   readPixels(
     x: number,
     y: number,
     width: number,
     height: number,
-    out: ArrayBufferView
+    out: ArrayBufferView,
+    bufferType: number = 0
   ) {
     if (!this.gl) return;
-    const target = this.state.currentRenderTarget;
+    const allTargets = this.state.currentRenderTarget;
     let canRead = true;
-    if (target) canRead = target.validFramebuffer;
+    let target: RenderTarget | null | undefined;
+
+    // When our render target is multiple render targets, let's find one that
+    // has a colorBuffer with an outputType that matches our parameter
+    if (Array.isArray(allTargets)) {
+      target = allTargets.find(t => {
+        if (Array.isArray(t.buffers.color)) {
+          return t.buffers.color.find(b => b.outputType === bufferType);
+        } else {
+          return t.buffers.color?.outputType === bufferType;
+        }
+      });
+    }
+
+    // If we have a single render target with multiple color buffers, then we
+    // have the need to make an FBO that places the correct targeted color
+    // buffer as the COLOR_ATTACHMENT0 for the readPixels operation to apply to
+    // it.
+    //
+    // TODO:
+    //
+    // It looks like picking a COLOR ATTACHMENT can be done using the
+    // readBuffer() method. However, readBuffer is not always available so we
+    // will have to use the additional FBO as a fallback.
+    else if (Array.isArray(allTargets?.buffers.color)) {
+      this.gl.getExtension('read_v').
+      console.warn(
+        "It is not yet implemented to read the pixels from a RenderTarget with multiple color buffers"
+      );
+      return;
+    } else {
+      target = allTargets;
+    }
+
+    if (target) {
+      canRead = target.validFramebuffer;
+    }
 
     if (!canRead) {
       console.warn(
@@ -414,24 +527,39 @@ export class WebGLRenderer {
   }
 
   /**
-   * Sets the region the scissor test will accept as visible. Anything outside the region
-   * will be clipped.
+   * Sets the region the scissor test will accept as visible. Anything outside
+   * the region will be clipped.
    *
-   * By default the scissor region is set based on the canvas being rendered into. Include a render target
-   * to make the scissor region be applied with the target considered rather than needing pixel density considerations.
+   * By default the scissor region is set based on the canvas being rendered
+   * into. Include a render target to make the scissor region be applied with
+   * the target considered rather than needing pixel density considerations.
    */
   setScissor(
     bounds?: { x: number; y: number; width: number; height: number },
-    target?: RenderTarget
+    target?: RenderTarget | RenderTarget[]
   ) {
     target = target || this.state.currentRenderTarget || undefined;
 
-    if (target) {
+    // Multiple render targets are required to be the same height so we just
+    // examine the first
+    if (Array.isArray(target)) {
+      const _height = target[0].height;
+
+      if (bounds) {
+        const { x, y, width, height } = bounds;
+        // Apply the viewport in a fashion that is more web dev friendly where
+        // top left is 0, 0
+        this.glState.setScissor({ x, y: _height - y - height, width, height });
+      } else {
+        this.glState.setScissor(null);
+      }
+    } else if (target) {
       const _height = target.height;
 
       if (bounds) {
         const { x, y, width, height } = bounds;
-        // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+        // Apply the viewport in a fashion that is more web dev friendly where
+        // top left is 0, 0
         this.glState.setScissor({ x, y: _height - y - height, width, height });
       } else {
         this.glState.setScissor(null);
@@ -477,11 +605,20 @@ export class WebGLRenderer {
   /**
    * This sets the context to render into the indicated target
    */
-  setRenderTarget(target: RenderTarget | null) {
+  setRenderTarget(target: RenderTarget | RenderTarget[] | null) {
     // Don't need to do anything forsame render targets
     if (this.state.currentRenderTarget === target) return;
 
-    if (!this.glState.useRenderTarget(target) && target) {
+    // If we have multiple targets for MRT then make sure
+    if (Array.isArray(target)) {
+      // If our render target approach is multiple render targets, then we only
+      // need to ensure the targets have their FBO generated appropriately
+      target.forEach(renderTarget => {
+        if (!renderTarget.gl) {
+          this.glProxy.compileRenderTarget(renderTarget);
+        }
+      });
+    } else if (!this.glState.useRenderTarget(target) && target) {
       // If unable to use yet, this indicates the FBO needs to be compiled
       // Probably due to uncompiled texture objects that the FBO needs.
       // First flag all textures as needing a texture unit
@@ -514,7 +651,13 @@ export class WebGLRenderer {
     const target = this.state.currentRenderTarget;
     const { x, y, width, height } = bounds;
 
-    if (target) {
+    // Multiple render targets are required to be the same dimensions
+    if (Array.isArray(target)) {
+      const _height = target[0].height;
+
+      // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0
+      this.glState.setViewport(x, _height - y - height, width, height);
+    } else if (target) {
       const _height = target.height;
 
       // Apply the viewport in a fashion that is more web dev friendly where top left is 0, 0

@@ -21,30 +21,40 @@ export type BaseResourceOptions = IResourceType & { key: string };
 export type BaseResourceRequest = IResourceType & { key: string };
 
 /**
- * This represents a manager that is capable of handling requests for resources that come from Layers
- * that needs the resaource for updating it's Shader IO.
+ * This represents a manager that is capable of handling requests for resources
+ * that come from Layers that needs the resaource for updating it's Shader IO.
  */
 export abstract class BaseResourceManager<
   T extends IResourceType,
   S extends BaseResourceRequest
 > {
   /**
-   * Every resource manager will have access to the parent ResourceManager system that pipes resources and requests
-   * to the proper location.
+   * Every resource manager will have access to the parent ResourceManager
+   * system that pipes resources and requests to the proper location.
    */
   router: ResourceRouter;
-  /** Every resource manager will receive the utilized renderer so the manager can perform basic GL tasks if needed */
+  /**
+   * Every resource manager will receive the utilized renderer so the manager
+   * can perform basic GL tasks if needed
+   */
   webGLRenderer?: WebGLRenderer;
 
   /**
-   * This is called by the system for the manager to dequeue it's requests in an asynchronous
-   * manner, thus allowing the system to have it's resources changed and dequeued without hanging up
-   * the system.
+   * This is called by the system for the manager to dequeue it's requests in an
+   * asynchronous manner, thus allowing the system to have it's resources
+   * changed and dequeued without hanging up the system.
+   *
+   * The manager will return true when resources have been dequeued and will
+   * return false when nothing has been dequeued.
+   *
+   * If true was returned, this will trigger an additional draw operation to
+   * immediately have the dequeue triggers take place and render to the screen.
    */
   abstract async dequeueRequests(): Promise<boolean>;
 
   /**
-   * This expects a resource manager to free all of it's resources it is hanging onto.
+   * This expects a resource manager to free all of it's resources it is hanging
+   * onto.
    */
   abstract destroy(): void;
 
@@ -54,8 +64,8 @@ export abstract class BaseResourceManager<
   abstract destroyResource(resource: BaseResourceOptions): void;
 
   /**
-   * Allows a resource manager to provide it's own IO Expansion to handle special attributes
-   * the layer may have for handling.
+   * Allows a resource manager to provide it's own IO Expansion to handle
+   * special attributes the layer may have for handling.
    */
   getIOExpansion(): BaseIOExpansion[] {
     return [];
@@ -67,14 +77,16 @@ export abstract class BaseResourceManager<
   abstract getResource(resourceKey: string): T | null;
 
   /**
-   * This is called to initialize a resource that the system has determined needs to be constructed.
+   * This is called to initialize a resource that the system has determined
+   * needs to be constructed.
    */
   abstract async initResource(resource: BaseResourceOptions): Promise<void>;
 
   /**
-   * This will trigger a request of a resource to be generated. It will immediately return either a
-   * value refelecting the resource is in a Pending state (such as [0, 0, 0, 0]) or it will return
-   * metrics indicative of expected resource's metrics, but will always be in InstanceIOValue format.
+   * This will trigger a request of a resource to be generated. It will
+   * immediately return either a value refelecting the resource is in a Pending
+   * state (such as [0, 0, 0, 0]) or it will return metrics indicative of
+   * expected resource's metrics, but will always be in InstanceIOValue format.
    */
   abstract request<U extends Instance, V extends ILayerProps<U>>(
     layer: Layer<U, V>,
@@ -97,9 +109,9 @@ export abstract class BaseResourceManager<
 }
 
 /**
- * This is a resource manager that implements all of the functionality but returns
- * invalid empty results. This allows the system to have requests for a manager but
- * prevent returning null or undefined states.
+ * This is a resource manager that implements all of the functionality but
+ * returns invalid empty results. This allows the system to have requests for a
+ * manager but prevent returning null or undefined states.
  */
 export class InvalidResourceManager extends BaseResourceManager<
   IResourceType,

@@ -1,6 +1,7 @@
 import { Omit, OutputFragmentShader, TypeVec } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
+import { RenderTarget } from "./render-target";
 import { IMaterialUniform, MaterialUniformType } from "./types";
 
 export type MaterialOptions = Omit<
@@ -24,22 +25,26 @@ export class Material {
     blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
   };
   /**
-   * The write mask to the color buffer. Each channel can be toggled on or off as the color buffer is written to. See:
+   * The write mask to the color buffer. Each channel can be toggled on or off
+   * as the color buffer is written to. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
    */
   colorWrite: TypeVec<boolean> = [true, true, true, true];
   /** Sets the cull mode of GL for the polygons */
   culling: GLSettings.Material.CullSide = GLSettings.Material.CullSide.CCW;
-  /** The comparator used to classify when a fragment will be rendered vs discarded when tested against the depth buffer */
+  /** The comparator used to classify when a fragment will be rendered vs
+   * discarded when tested against the depth buffer */
   depthFunc: GLSettings.Material.DepthFunctions =
     GLSettings.Material.DepthFunctions.LESS_OR_EQUAL;
   /**
-   * Enable / disable depth test (determines if the fragment depth is compared to the depth buffer before writing). See:
+   * Enable / disable depth test (determines if the fragment depth is compared
+   * to the depth buffer before writing). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    */
   depthTest: boolean = true;
   /**
-   * Enable / disable depth mask (determines if fragments write to the depth buffer). See:
+   * Enable / disable depth mask (determines if fragments write to the depth
+   * buffer). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
    */
   depthWrite: boolean = true;
@@ -72,9 +77,19 @@ export class Material {
    * framework is almost guaranteed to break something.
    */
   gl?: {
-    fsId: { id: WebGLShader; outputTypes: number[] };
+    fsId: { id: WebGLShader; outputTypes: number[] }[];
     vsId: WebGLShader;
-    programId: WebGLProgram;
+    /**
+     * We create a program PER vertex + fragment shader combo. Thus a program is
+     * tied to output capabilities just as much as a fragment shader.
+     */
+    programId: { id: WebGLProgram; outputTypes: number[] }[];
+    /**
+     * This is a lookup reference for finding a program that best matches a
+     * render target. This is a weak reference so it will only help speed up
+     * lookups but won't require any additional clean up.
+     */
+    programByTarget: WeakMap<RenderTarget, WebGLProgram>;
     proxy: GLProxy;
   };
   /**
@@ -84,7 +99,9 @@ export class Material {
   name: string = "";
   /**
    * TODO: This is NOT IN USE YET
-   * GL Polygon offset settings. When set, enables polygon offset modes within the gl state. See:
+   *
+   * GL Polygon offset settings. When set, enables polygon offset modes within
+   * the gl state. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
    */

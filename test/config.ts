@@ -14,6 +14,7 @@ import { StreamDemo } from "./demos/stream-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";
 import { TextDemo } from "./demos/text-demo";
 import { TouchDemo } from "./demos/touch-demo";
+import { TriangleDemo } from "./demos/triangle-demo";
 import { VideoDemo } from "./demos/video-demo";
 import { WordSandDemo } from "./demos/word-sand";
 
@@ -41,5 +42,6 @@ demos.set("quat-ease-demo", QuatEaseDemo);
 demos.set("stream-demo", StreamDemo);
 demos.set("frame-command-demo", FrameCommandDemo);
 demos.set("projection-demo-3d", ProjectionDemo3D);
+demos.set("Triangle demo", TriangleDemo);
 
 export const demoKeys = Array.from(demos.keys());

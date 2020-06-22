@@ -50,13 +50,13 @@ export class ScreenSpaceEdges extends BaseExample {
 
   makeCamera(defaultCamera: Camera2D): Camera2D {
     this.camera = new ReferenceCamera2D({
-      base: defaultCamera,
-      offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
+      base: defaultCamera
+      /*offsetFilter: (offset: [number, number, number]) => [offset[0], 0, 0],
       scaleFilter: (scale: [number, number, number]) => [
         this.shiftIsDown ? 1 : scale[0],
         this.shiftIsDown ? scale[1] : 1,
         1
-      ]
+      ]*/
     });
 
     return this.camera;
@@ -75,8 +75,8 @@ export class ScreenSpaceEdges extends BaseExample {
       onMouseMove: this.handleMouseMove,
       onMouseOut: this.handleMouseOut,
       picking: PickType.SINGLE,
-      scaleFactor: () => this.camera.scale2D[1],
-      scaleType: EdgeScaleType.SCREEN_CURVE,
+      // scaleFactor: () => this.camera.scale2D[1],
+      scaleType: EdgeScaleType.NONE,
       type: EdgeType.BEZIER2
     });
   }
@@ -103,8 +103,8 @@ export class ScreenSpaceEdges extends BaseExample {
       startColor: [Math.random(), 1.0, Math.random(), 1.0],
       endColor: [Math.random(), 1.0, Math.random(), 0.25],
       control: [
-        [20, 45],
-        [-20, 45]
+        [100, 45],
+        [-100, 45]
       ],
       end: [200, 20],
       id: `edge-interaction-1`,

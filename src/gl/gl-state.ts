@@ -1,6 +1,10 @@
 import { compare4, copy4, flatten4, Vec4 } from "../math/vector";
-import { TypeVec } from "../types";
-import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
+import { TypeVec, ViewOutputInformationType } from "../types";
+import {
+  indexToColorAttachment,
+  indexToTextureUnit,
+  textureUnitToIndex
+} from "./gl-decode";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
@@ -179,10 +183,17 @@ export class GLState {
   }
   private _activeTextureUnit: number = -1;
 
+  /** This is the buffer state set and activated for the drawBuffers call */
+  get drawBuffers() {
+    return this._drawBuffers;
+  }
+  private _drawBuffers: number[] = [];
+
   /**
-   * This contains all of the textures that are are needing to be utilized for next draw.
-   * Textures are used by either uniforms or by RenderTargets in a single draw call. Thus
-   * we track the uniforms or the render targets awaiting use of the texture.
+   * This contains all of the textures that are are needing to be utilized for
+   * next draw. Textures are used by either uniforms or by RenderTargets in a
+   * single draw call. Thus we track the uniforms or the render targets awaiting
+   * use of the texture.
    */
   get textureWillBeUsed() {
     return this._textureWillBeUsed;
@@ -395,6 +406,52 @@ export class GLState {
   }
 
   /**
+   * Change the drawBuffer state, if it's available
+   *
+   * 0 - n specifies COLOR_ATTACHMENT
+   * -1 specifies NONE
+   * -2 specifies BACK
+   */
+  setDrawBuffers(buffers: number[]) {
+    const attachments = buffers.map(buffer =>
+      indexToColorAttachment(
+        this.gl,
+        this.glProxy.extensions,
+        buffer,
+        false,
+        false
+      )
+    );
+
+    // See if a state change really is necessary
+    let different = attachments.length !== this._drawBuffers.length;
+
+    if (!different) {
+      for (let i = 0, iMax = attachments.length; i < iMax; ++i) {
+        if (this._drawBuffers[i] !== attachments[i]) {
+          different = true;
+          break;
+        }
+      }
+    }
+
+    if (!different) return;
+
+    if (this.glProxy.extensions.drawBuffers instanceof WebGL2RenderingContext) {
+      this.glProxy.extensions.drawBuffers.drawBuffers(attachments);
+    } else if (this.glProxy.extensions.drawBuffers) {
+      this.glProxy.extensions.drawBuffers.drawBuffersWEBGL(attachments);
+    } else {
+      console.warn(
+        "Attempted to use drawBuffers for MRT, but MRT is NOT supported by this hardware. Use multiple render targets instead"
+      );
+      return;
+    }
+
+    this._drawBuffers = attachments;
+  }
+
+  /**
    * Sets the GPU proxy to be used to handle commands that call to the GPU but don't alter
    * global GL state.
    */
@@ -479,26 +536,60 @@ export class GLState {
     // look to match the material's program to the current output target output
     // types as best as possible
     const programId = this.findMaterialProgram(material);
-    // We do the same for finding an ideal FBO to work with based on the current
-    // render target
-    const fbo = this.findMaterialFBO(material);
-
-    // Last check to ensure we have determined the proper FBO to target for
-    // rendering.
-    if (fbo === void 0) {
-      console.warn('Could NOT determine a FBO for the given material that would appropriately match with the current RenderTarget');
-      return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
-    }
 
     // Last check to make sure our process did find a program to run from the
     // material.
     if (programId === void 0) {
-      console.warn('Could NOT determine a program for the given material that would appropriately match with the current RenderTarget');
+      console.warn(
+        "Could NOT determine a program for the given material that would appropriately match with the current RenderTarget"
+      );
       return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
     }
 
-    // Use the appropriate FBO
-    this.bindFBO(fbo);
+    // If we have a render target, we should set up a few elements
+    if (this._renderTarget) {
+      material.gl.programByTarget.set(this._renderTarget, programId);
+
+      // Next we check to see if multi render targets is enabled. If it is, we
+      // need to make sure our draw buffer state is set correctly.
+      if (this.glProxy.extensions.drawBuffers) {
+        // Look at each output the material is writing to. These outputs will be
+        // in the order of location[0] - location[n]
+        const fragOutputs = material.gl.outputsByProgram.get(programId);
+        const renderOutputs = this._renderTarget.getOutputTypes();
+
+        if (!fragOutputs || !renderOutputs) {
+          console.warn(
+            "Could not establish the buffers to utilize for the render target"
+          );
+          return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
+        }
+
+        const attachments: number[] = [];
+
+        // For each fragment output we must find the index of the corresponding
+        // target output
+        for (let i = 0, iMax = fragOutputs.length; i < iMax; ++i) {
+          const output = fragOutputs[i];
+          const targetIndex = renderOutputs.indexOf(output);
+
+          // The output type does not exist in the target outputs, thus we bind
+          // nothing
+          if (targetIndex < 0) {
+            attachments.push(-1);
+            continue;
+          }
+
+          // The output type exists so we use the index as the attachment
+          // location
+          attachments.push(targetIndex);
+        }
+
+        // Apply our draw buffers in the appropriate manner.
+        this.setDrawBuffers(attachments);
+      }
+    }
+
     // Use the material's program
     this.useProgram(programId);
     // Synchronize the material's settings to the gl state
@@ -513,11 +604,47 @@ export class GLState {
    */
   private findMaterialProgram(material: Material): WebGLProgram | void {
     if (!material.gl) return;
-    if (!this._renderTarget.gl) return;
+
+    // If we are rendering to the screen, then the material should render it's
+    // COLOR output to the screen. We find the program that has the LEAST number
+    // of targets AND outputs a COLOR target.
+    if (!this._renderTarget || this._renderTarget.isColorTarget()) {
+      let programId: WebGLProgram | void;
+
+      // If the program is defined already, then we simply return that program as
+      // the program to use
+      if (this._renderTarget) {
+        programId = material.gl.programByTarget.get(this._renderTarget);
+        if (programId !== void 0) return programId;
+      }
+
+      let targetCount = Number.MAX_SAFE_INTEGER;
+
+      for (let i = 0, iMax = material.gl.programId.length; i < iMax; ++i) {
+        const program = material.gl.programId[i];
+        if (program.outputTypes.length < targetCount) {
+          if (
+            program.outputTypes.indexOf(ViewOutputInformationType.COLOR) >= 0
+          ) {
+            programId = program.id;
+            targetCount = program.outputTypes.length;
+          }
+        }
+      }
+
+      // If no color output is found we just use the furthest out render target
+      if (!programId) {
+        programId = material.gl.programId[material.gl.programId.length - 1];
+      }
+
+      return programId;
+    }
 
     // If the program is defined already, then we simply return that program as
     // the program to use
-    let programId: WebGLProgram | void = material.gl.programByTarget.get(this._renderTarget);
+    let programId: WebGLProgram | void = material.gl.programByTarget.get(
+      this._renderTarget
+    );
     if (programId !== void 0) return programId;
 
     // If we have not determined the most appropriate program for the provided
@@ -525,39 +652,49 @@ export class GLState {
     // that out. The best match will be a program that has the most output types
     // that matches the current render target's output types.
     const allOutputs = new Set<number>();
+    const buffers = this._renderTarget.getBuffers();
 
-    if (this._renderTarget) {
-
+    for (let i = 0, iMax = buffers.length; i < iMax; ++i) {
+      const buffer = buffers[i];
+      if (!buffer) continue;
+      allOutputs.add(buffer.outputType);
     }
 
+    // With all of our render target's outputs established we now look through
+    // the material for the best match to the potential output. A best match
+    // will be material outputs closest to the number of outputs of the render
+    // target. If there are multiple material outputs that match the render
+    // target outputs, then the best match is the material with the least number
+    // of outputs.
+    let maxMatches = 0;
+    let pick: { id: WebGLProgram; outputTypes: number[] }[] = [];
 
-    if (material.fragmentShader.length === 1 && ) {
+    for (let i = 0, iMax = material.gl.programId.length; i < iMax; ++i) {
+      const fragment = material.gl.programId[i];
+      let matchCount = 0;
 
-    }
-
-    if (Array.isArray(this._renderTarget.gl.colorBufferId)) {
-      for (let i = 0, iMax = this._renderTarget.gl.colorBufferId.length; i < iMax; ++i) {
-        const buffer = this._renderTarget.gl.colorBufferId[i];
-        allOutputs.add(buffer.outputType);
+      for (let k = 0, kMax = fragment.outputTypes.length; k < kMax; ++k) {
+        const outputType = fragment.outputTypes[k];
+        if (allOutputs.has(outputType)) matchCount++;
       }
 
-
+      if (matchCount > maxMatches) {
+        maxMatches = matchCount;
+        pick = [fragment];
+      } else if (matchCount === maxMatches) {
+        pick.push(fragment);
+      }
     }
 
-    else {
-
+    if (pick.length === 0) return;
+    else if (pick.length === 1) programId = pick[0].id;
+    else if (pick.length > 1) {
+      programId = pick.reduce((p, n) =>
+        n.outputTypes.length < p.outputTypes.length ? n : p
+      );
     }
 
     return programId;
-  }
-
-  /**
-   * This examines a given material to find the most appropriate FBO to bind
-   * based on the current RenderTarget. This may resolve to the current render
-   * target just fine, or it may discover a more streamlined FBO to utilize.
-   */
-  private findMaterialFBO(material: Material): WebGLFramebuffer | null | void {
-
   }
 
   /**

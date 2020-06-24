@@ -1190,7 +1190,7 @@ export enum ViewOutputInformationType {
   /**
    * This indicates it will provide a depth value per fragment
    */
-  DEPTH = -998,
+  DEPTH,
   /**
    * This indicates it will provide eye-space normal information per fragment
    */

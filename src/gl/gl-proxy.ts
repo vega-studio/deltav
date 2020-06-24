@@ -101,7 +101,7 @@ export class GLProxy {
    */
   static addExtensions(gl: GLContext): IExtensions {
     const instancing = gl.getExtension("ANGLE_instanced_arrays");
-    const drawBuffers = gl.getExtension("WEBGL_draw_buffers");
+    const mrt = gl.getExtension("WEBGL_draw_buffers");
     const anisotropicFiltering = gl.getExtension(
       "EXT_texture_filter_anisotropic"
     );
@@ -118,7 +118,7 @@ export class GLProxy {
     }
 
     // This exists as an extension or as a webgl2 context
-    if (!drawBuffers && !(gl instanceof WebGL2RenderingContext)) {
+    if (!mrt && !(gl instanceof WebGL2RenderingContext)) {
       debug(
         "This device does not have hardware multi-render target capabilities. The system will have to fallback to multiple render passes to multiple FBOs to achieve the same result."
       );
@@ -139,7 +139,7 @@ export class GLProxy {
       instancing:
         (gl instanceof WebGL2RenderingContext ? gl : instancing) || undefined,
       drawBuffers:
-        (gl instanceof WebGL2RenderingContext ? gl : drawBuffers) || undefined,
+        (gl instanceof WebGL2RenderingContext ? gl : mrt) || undefined,
       anisotropicFiltering: anisotropicFiltering
         ? {
             ext: anisotropicFiltering,
@@ -279,7 +279,8 @@ export class GLProxy {
       fsId: [],
       programId: [],
       proxy: this,
-      programByTarget: new WeakMap()
+      programByTarget: new WeakMap(),
+      outputsByProgram: new WeakMap()
     };
 
     // We use this to aggregate all uniforms across all programs generated to
@@ -323,7 +324,7 @@ export class GLProxy {
           console.warn(
             "Could not compile provided shader. Printing logs and errors:"
           );
-          console.warn(this.lineFormatShader(material.fragmentShader));
+          console.warn(this.lineFormatShader(fragmentShader.source));
           console.warn("LOGS:");
           console.warn(this.gl.getShaderInfoLog(fs));
           this.printError();
@@ -395,6 +396,10 @@ export class GLProxy {
         id: useMetrics.program,
         outputTypes: fragmentShader.outputTypes
       });
+      materialGL.outputsByProgram.set(
+        useMetrics.program,
+        fragmentShader.outputTypes
+      );
 
       // Switch to the program so we can aggregate all of the uniforms the
       // program will utilize.
@@ -491,6 +496,15 @@ export class GLProxy {
 
     // Color buffer
     if (Array.isArray(target.buffers.color)) {
+      // Ensure MRT is enabled for this hardware. If it is not, we should not
+      // allow this branch to continue
+      if (!this.extensions.drawBuffers) {
+        console.warn(
+          "Attempted to manage a render target with MRT but the hardware does not support MRT. Use multiple render targets instead."
+        );
+        return false;
+      }
+
       const buffers: {
         data: WebGLRenderbuffer | Texture;
         outputType: number;
@@ -506,7 +520,7 @@ export class GLProxy {
           if (isTextureReady(buffer.buffer)) {
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(gl, this.extensions, i, true),
+              indexToColorAttachment(gl, this.extensions, i, true, false),
               gl.TEXTURE_2D,
               buffer.buffer.gl.textureId,
               0
@@ -529,7 +543,7 @@ export class GLProxy {
             buffers.push({ data: rboId, outputType: buffer.outputType });
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(gl, this.extensions, i, true),
+              indexToColorAttachment(gl, this.extensions, i, true, false),
               gl.RENDERBUFFER,
               rboId
             );
@@ -552,7 +566,7 @@ export class GLProxy {
         if (isTextureReady(buffer.buffer)) {
           gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, true),
+            indexToColorAttachment(gl, this.extensions, 0, true, false),
             gl.TEXTURE_2D,
             buffer.buffer.gl.textureId,
             0
@@ -578,7 +592,7 @@ export class GLProxy {
           };
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, true),
+            indexToColorAttachment(gl, this.extensions, 0, true, false),
             gl.RENDERBUFFER,
             rboId
           );
@@ -1159,9 +1173,9 @@ export class GLProxy {
     shader: Material["fragmentShader"] | Material["vertexShader"]
   ) {
     if (isString(shader)) {
-      this.lineFormat(shader);
+      return this.lineFormat(shader);
     } else {
-      shader.forEach(
+      return shader.map(
         s =>
           `\nSHADER FOR OUTPUT TYPES: ${s.outputTypes} ${this.lineFormat(
             s.source

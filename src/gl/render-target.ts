@@ -1,8 +1,9 @@
+import { ViewOutputInformationType } from "../types";
 import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
-import { Texture } from "./texture";
 import { Material } from "./material";
+import { Texture } from "./texture";
 
 /**
  * This specifies a buffer and matches it to a hinting output type. The buffer
@@ -169,6 +170,27 @@ export class RenderTarget {
   }
 
   /**
+   * Retrieves all color buffers associated with this target and returns them as
+   * a guaranteed list.
+   */
+  getBuffers() {
+    if (Array.isArray(this.buffers.color)) {
+      return this.buffers.color;
+    } else if (this.buffers.color) {
+      return [this.buffers.color];
+    }
+
+    return [];
+  }
+
+  /**
+   * Gets an ordered list of all output types this render target handles.
+   */
+  getOutputTypes() {
+    return this.getBuffers().map(buffer => buffer.outputType);
+  }
+
+  /**
    * This analyzes the buffers for Textures to infer the width and height. This
    * also ensures all Texture objects are the same size to prevent errors.
    */
@@ -251,6 +273,26 @@ export class RenderTarget {
     }
 
     return textures;
+  }
+
+  /**
+   * This is a simple check to see if this render target is merely a color
+   * buffer target type. This is a useful check for the renderer as being a
+   * simple single color buffer target has implications to matching the render
+   * target to materials.
+   */
+  isColorTarget() {
+    if (Array.isArray(this.buffers.color)) {
+      if (this.buffers.color.length === 1) {
+        return (
+          this.buffers.color[0].outputType === ViewOutputInformationType.COLOR
+        );
+      }
+    } else {
+      return this.buffers.color?.outputType === ViewOutputInformationType.COLOR;
+    }
+
+    return false;
   }
 
   /**

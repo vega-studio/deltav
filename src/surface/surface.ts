@@ -21,6 +21,7 @@ import {
   ResourceRouter
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
+import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
@@ -39,6 +40,7 @@ import { Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
+import { Shaders30CompatibilityTransform } from "./layer-processing/base-shader-transforms/shaders-30-compatibility-transform";
 import { ISceneOptions, LayerScene } from "./layer-scene";
 import { ClearFlags, IViewProps, View } from "./view";
 
@@ -51,10 +53,12 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
   new BasicIOExpansion(),
   // Expansion to write in the active attribute handler. Any expansion injected AFTER
   // this expander will have it's processes canceled out for the destructuring portion
-  // of the expansion when an instance is not active (if the instance has an active
+  // of the expansion when an instance is not active (if the instance has an
+  // active
   // attribute).
   new ActiveIOExpansion(),
-  // Expansion to handle easing IO attributes and write AutoEasingMethods to the shaders
+  // Expansion to handle easing IO attributes and write AutoEasingMethods to the
+  // shaders
   new EasingIOExpansion()
 ];
 
@@ -72,6 +76,13 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = 
   }
 ];
 
+export const DEFAULT_SHADER_TRANSFORM: BaseShaderTransform[] = [
+  // Transform that handles odds and ends of 3.0 and 2.0 inconsistencies and
+  // attempts tp unify them as best as possible depending on the current
+  // system's operating mode.
+  new Shaders30CompatibilityTransform()
+];
+
 /**
  * Options for generating a new layer surface.
  */
@@ -85,70 +96,96 @@ export interface ISurfaceOptions {
    */
   eventManagers?: EventManager[];
   /**
-   * Set to true to allow this surface to absorb and handle wheel events from the mouse.
+   * Set to true to allow this surface to absorb and handle wheel events from
+   * the mouse.
    */
   handlesWheelEvents?: boolean;
   /**
-   * Provides additional expansion controllers that will contribute to our Shader IO configuration
-   * for the layers. If this is not provided, this defaults to default system behaviors.
+   * Provides additional expansion controllers that will contribute to our
+   * Shader IO configuration for the layers. If this is not provided, this
+   * defaults to default system behaviors.
    *
-   * To add additional Expansion controllers and keep default system controllers utilize a Function
-   * instead:
+   * To add additional Expansion controllers and keep default system controllers
+   * utilize a Function instead:
    *
-   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders, <your own expanders>]
+   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders,
+   * <your own expanders>]
    *
-   * For instance: easing properties on attributes requires the attribute to be expanded to additional
-   * attributes + modified behavior of the base attribute. Thus the system by default adds in the
-   * EasinggIOExpansion controller when this is not provided to make those property types work.
+   * For instance: easing properties on attributes requires the attribute to be
+   * expanded to additional attributes + modified behavior of the base
+   * attribute. Thus the system by default adds in the EasinggIOExpansion
+   * controller when this is not provided to make those property types work.
    */
   ioExpansion?:
     | BaseIOExpansion[]
     | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
-   * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
-   * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
-   * have better performance if needed.
+   * This specifies the density of rendering in the surface. The default value
+   * is window.devicePixelRatio to match the monitor for optimal clarity. Using
+   * a value of 1 will be acceptable, will not get high density renders, but
+   * will have better performance if needed.
    */
   pixelRatio?: number;
-  /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
+  /**
+   * Sets some options for the renderer which deals with top level settings that
+   * can only be set when the context is retrieved
+   */
   rendererOptions?: {
     /**
-     * This indicates the back buffer for the webgl context will have an alpha channel. This affects performance some, but is mainly
-     * for the DOM compositing the canvas with the other DOM elements.
+     * This indicates the back buffer for the webgl context will have an alpha
+     * channel. This affects performance some, but is mainly for the DOM
+     * compositing the canvas with the other DOM elements.
      */
     alpha?: boolean;
-    /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
+    /**
+     * Hardware antialiasing. Disabled by default. Enabled makes things
+     * prettier but slower.
+     */
     antialias?: boolean;
     /**
-     * This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing
-     * the canvas with the rest of the DOM will be accomplished. This should match the color values being written to
-     * the final FBO target (render target null). If incorrect, bizarre color blending with the DOM can occur.
+     * This tells the browser what to expect from the colors rendered into the
+     * canvas. This will affect how compositing the canvas with the rest of the
+     * DOM will be accomplished. This should match the color values being
+     * written to the final FBO target (render target null). If incorrect,
+     * bizarre color blending with the DOM can occur.
      */
     premultipliedAlpha?: boolean;
     /**
-     * This sets what the browser will do with the target frame buffer object after it's done using it for compositing.
-     * If you wish to take a snap shot of the canvas being rendered into, this must be true. This has the potential
-     * to hurt performance, thus it is disabled by default.
+     * This sets what the browser will do with the target frame buffer object
+     * after it's done using it for compositing. If you wish to take a snap shot
+     * of the canvas being rendered into, this must be true. This has the
+     * potential to hurt performance, thus it is disabled by default.
      */
     preserveDrawingBuffer?: boolean;
   };
   /**
-   * This specifies the resource managers that will be applied to the surface. If this is not
-   * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
+   * This specifies the resource managers that will be applied to the surface.
+   * If this is not provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
    *
    * To add additional managers to the default framework:
    * [
-   *   ...DEFAULT_RESOURCE_MANAGEMENT,
-   *   <your own resource managers>
+   *   ...DEFAULT_RESOURCE_MANAGEMENT, <your own resource managers>
    * ]
    *
-   * Resource managers handle a layer's requests for a resource (this.resource.request(layer, instance, requestObject))
-   * during update cycles of the attributes.
+   * Resource managers handle a layer's requests for a resource
+   * (this.resource.request(layer, instance, requestObject)) during update
+   * cycles of the attributes.
    */
   resourceManagers?: {
     type: number;
     manager: BaseResourceManager<IResourceType, BaseResourceRequest>;
   }[];
+  /**
+   * Provides last step processing of shaders after all system adjustments and
+   * settings have been applied to the Shader.
+   *
+   * This is a raw string processing transformation and will NOT provide any
+   * insights into the settings of the Surface down to the layer that built this
+   * shader.
+   */
+  shaderTransforms?:
+    | BaseShaderTransform[]
+    | ((defaultExpanders: BaseShaderTransform[]) => BaseShaderTransform[]);
 }
 
 /**
@@ -182,13 +219,18 @@ export class Surface {
     frameDuration: 1000 / 60,
     previousTime: Date.now() | 0
   };
-  /** This is used to help resolve concurrent draws and resolving resource request dequeue operations. */
+  /**
+   * This is used to help resolve concurrent draws and resolving resource
+   * request dequeue operations.
+   */
   private isBufferingResources = false;
   /** These are the registered expanders of Shader IO configuration */
   private ioExpanders: BaseIOExpansion[] = [];
+  /** These are the registered transforms for shaders */
+  private shaderTransforms: BaseShaderTransform[] = [];
   /**
-   * This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been
-   * generated that are needed
+   * This is the sorting controller for sorting attributes/uniforms of a layer
+   * after all the attributes have been generated that are needed
    */
   ioSorting = new BaseIOSorting();
   /** This manages the mouse events for the current canvas context */
@@ -199,9 +241,14 @@ export class Surface {
   pixelRatio: number = window.devicePixelRatio;
   /** This is the GL render system we use to render scenes with views */
   renderer: WebGLRenderer;
-  /** This is the resource manager that handles resource requests for instances */
+  /**
+   * This is the resource manager that handles resource requests for instances
+   */
   resourceManager: ResourceRouter;
-  /** When set to true, the next render will make sure color picking is updated for layer interactions */
+  /**
+   * When defined, the next render will make sure color picking is updated
+   * for layer interactions
+   */
   updateColorPick?: {
     position: Vec2;
     views: View<IViewProps>[];
@@ -215,16 +262,16 @@ export class Surface {
     View<IViewProps>[]
   >();
   /**
-   * This is used to indicate the surface has loaded it's initial systems. This is complete after init has executed
-   * successfully for this surface.
+   * This is used to indicate the surface has loaded it's initial systems. This
+   * is complete after init has executed successfully for this surface.
    */
   ready: Promise<Surface>;
   /** This is used to reolve this surface as ready */
   private readyResolver: PromiseResolver<Surface>;
 
   /**
-   * Picking gets deferred to the beginning of next draw. Thus picking operations get queued till next
-   * frame using this store here.
+   * Picking gets deferred to the beginning of next draw. Thus picking
+   * operations get queued till next frame using this store here.
    */
   private queuedPicking?: [
     LayerScene,
@@ -316,6 +363,13 @@ export class Surface {
    */
   getIOSorting() {
     return this.ioSorting;
+  }
+
+  /**
+   * Retrieves all shader transforms applied to this surface.
+   */
+  getShaderTransforms() {
+    return this.shaderTransforms;
   }
 
   /**
@@ -1108,6 +1162,8 @@ export class Surface {
       // resource initialization as resource managers can produce their own
       // expanders.
       await this.initIOExpanders(options);
+      // Initialize the shader transformations requested or needed.
+      await this.initShaderTransforms(options);
     } else {
       console.warn(
         "Could not establish a GL context. Layer Surface will be unable to render"
@@ -1237,6 +1293,31 @@ export class Surface {
     const managerIOExpanders = this.resourceManager.getIOExpansion();
     // Add the expanders to our current handled list.
     this.ioExpanders = this.ioExpanders.concat(managerIOExpanders);
+  }
+
+  /**
+   * Initializes the shader transforms that will be applied to every shader
+   * rendered with this surface.
+   */
+  private initShaderTransforms(options: ISurfaceOptions) {
+    // Handle transforms passed in as an array or blank
+    if (
+      Array.isArray(options.shaderTransforms) ||
+      options.shaderTransforms === undefined
+    ) {
+      // Initialize the Shader IO expansion objects
+      this.shaderTransforms =
+        (options.shaderTransforms && options.shaderTransforms.slice(0)) ||
+        (DEFAULT_SHADER_TRANSFORM && DEFAULT_SHADER_TRANSFORM.slice(0)) ||
+        [];
+    }
+
+    // Handle expanders passed in as a method
+    else if (options.shaderTransforms instanceof Function) {
+      this.shaderTransforms = options.shaderTransforms(
+        DEFAULT_SHADER_TRANSFORM
+      );
+    }
   }
 
   /**

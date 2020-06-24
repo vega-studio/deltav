@@ -612,6 +612,7 @@ export class Layer<
         shaderIO,
         newFragmentShaders,
         this.surface.getIOExpanders(),
+        this.surface.getShaderTransforms(),
         this.surface.getIOSorting()
       );
 
@@ -752,7 +753,15 @@ export class Layer<
         shaderMetrics
       );
       console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
-      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+
+      shaderMetrics.fs.forEach(fs => {
+        console.warn(
+          `\n\nFRAGMENT SHADER:\n${JSON.stringify(
+            fs.outputNames
+          )}\n${JSON.stringify(fs.outputTypes)}\n--------------\n\n`,
+          fs.source
+        );
+      });
     }
 
     // Establish diff handlers based on the settings of the layer

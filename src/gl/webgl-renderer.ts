@@ -10,7 +10,7 @@ import { Scene } from "./scene";
 import { UseMaterialStatus } from "./types";
 import { WebGLStat } from "./webgl-stat";
 
-const debug = require('debug')('performance');
+const debug = require("debug")("performance");
 
 /**
  * Options used to create or update the renderer.
@@ -392,7 +392,9 @@ export class WebGLRenderer {
       }
 
       case UseMaterialStatus.NO_RENDER_TARGET_MATCHES: {
-        debug("Skipped draw for material due to no output matches for the current render target");
+        debug(
+          "Skipped draw for material due to no output matches for the current render target"
+        );
         break;
       }
 
@@ -450,10 +452,11 @@ export class WebGLRenderer {
     // readBuffer() method. However, readBuffer is not always available so we
     // will have to use the additional FBO as a fallback.
     else if (Array.isArray(allTargets?.buffers.color)) {
-      this.gl.getExtension('read_v').
-      console.warn(
-        "It is not yet implemented to read the pixels from a RenderTarget with multiple color buffers"
-      );
+      this.gl
+        .getExtension("read_v")
+        .console.warn(
+          "It is not yet implemented to read the pixels from a RenderTarget with multiple color buffers"
+        );
       return;
     } else {
       target = allTargets;

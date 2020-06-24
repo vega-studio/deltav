@@ -22,6 +22,7 @@ import { isDefined } from "../../util";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
 import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
+import { BaseShaderTransform } from "./base-shader-transform";
 import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
 import { ShaderModuleUnit } from "./shader-module-unit";
@@ -417,6 +418,7 @@ export class ShaderProcessor {
     shaderIO: IShaderInitialization<T>,
     fragmentShaders: OutputFragmentShader,
     ioExpansion: BaseIOExpansion[],
+    transforms: BaseShaderTransform[],
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
@@ -612,6 +614,17 @@ export class ShaderProcessor {
 
         shader.source = processShaderFS.shader.trim();
       });
+
+      // The final step: apply all shader transforms to the content
+      for (let i = 0, iMax = transforms.length; i < iMax; ++i) {
+        const transform = transforms[i];
+        processedShaderVS.shader = transform.vertex(processedShaderVS.shader);
+
+        for (let k = 0, kMax = shadersWithImports.fs.length; k < kMax; ++k) {
+          const fs = shadersWithImports.fs[k];
+          fs.source = transform.fragment(fs.source);
+        }
+      }
 
       const results = {
         fs: shadersWithImports.fs,

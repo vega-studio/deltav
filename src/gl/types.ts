@@ -169,5 +169,5 @@ export enum UseMaterialStatus {
    * The current render target and the material specified have no matching
    * output types, thus drawing with the provided material will result in
    */
-  NO_RENDER_TARGET_MATCHES,
+  NO_RENDER_TARGET_MATCHES
 }

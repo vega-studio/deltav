@@ -90,6 +90,11 @@ export class Material {
      * lookups but won't require any additional clean up.
      */
     programByTarget: WeakMap<RenderTarget, WebGLProgram>;
+    /**
+     * Easy lookup to find the output types of a given program. Used to help
+     * quickly determine our drawBuffers to utilize for MRT.
+     */
+    outputsByProgram: WeakMap<WebGLProgram, number[]>;
     proxy: GLProxy;
   };
   /**

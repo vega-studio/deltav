@@ -1,7 +1,6 @@
 import { copy4, IInstanceOptions, Instance, observable, Vec2, Vec4 } from "src";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
-  world: Vec2;
   position: Vec2[];
   size: number[];
   /** This is the list of control points  */
@@ -18,6 +17,8 @@ export interface IEdgeInstanceOptions extends IInstanceOptions {
   startColor?: Vec4;
   /** Start width of the edge. */
   thickness?: Vec2;
+
+  paddings?: [Vec2, Vec2];
 }
 
 export class EdgeInstance extends Instance {
@@ -31,6 +32,8 @@ export class EdgeInstance extends Instance {
   @observable start: Vec2 = [0, 0];
   @observable startColor: Vec4 = [1.0, 1.0, 1.0, 1.0];
   @observable thickness: Vec2 = [1.0, 1.0];
+  @observable startPadding: Vec2 = [0, 0];
+  @observable endPadding: Vec2 = [0, 0];
 
   anchor: Vec2 = [0, 0];
 
@@ -86,5 +89,9 @@ export class EdgeInstance extends Instance {
     this.end = options.position[1] || this.end;
     this.thickness = [options.size[0], options.size[1]] || this.thickness;
     this.start = options.position[0] || this.start;
+    this.startPadding = options.paddings
+      ? options.paddings[0]
+      : this.startPadding;
+    this.endPadding = options.paddings ? options.paddings[1] : this.endPadding;
   }
 }

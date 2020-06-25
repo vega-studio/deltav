@@ -14,7 +14,13 @@ import { BaseDemo } from "test/common/base-demo";
 
 import { CircleInstance, CircleLayer } from "./circles";
 import { EdgeInstance, EdgeLayer } from "./edges";
-import { ScaleMode } from "./type";
+import {
+  EdgeControlSpace,
+  EdgePadding,
+  EdgePositionSpace,
+  EdgeSizeSpace,
+  ScaleMode
+} from "./type";
 
 export class TriangleDemo extends BaseDemo {
   providers = {
@@ -63,7 +69,10 @@ export class TriangleDemo extends BaseDemo {
               scaleFactor: () => cameras.main.scale2D[1],
               data: providers.edges,
               type: EdgeType.LINE,
-              scaleMode: ScaleMode.BOUND_MAX,
+              positionSpace: EdgePositionSpace.WORLD,
+              sizeSpace: EdgeSizeSpace.WORLD,
+              controlSpace: EdgeControlSpace.WORLD,
+              padding: EdgePadding.NONE,
               maxScale: 3
             })
           }
@@ -86,6 +95,7 @@ export class TriangleDemo extends BaseDemo {
 
     const circle2 = new CircleInstance({
       world: [0, 0],
+
       position: pos2,
       size: 10,
       color: [1, 0, 0, 1]
@@ -99,23 +109,32 @@ export class TriangleDemo extends BaseDemo {
     });
 
     const edge1 = new EdgeInstance({
-      world: [0, 0],
-      position: [pos1, pos2],
+      control: [
+        [-20, 10],
+        [20, 10]
+      ],
+      position: [pos1, [20, -30]],
       size: [10, 10],
       start: [0, 0],
       end: [0, 0]
     });
 
     const edge2 = new EdgeInstance({
-      world: [0, 0],
-      position: [pos1, pos3],
+      control: [
+        [-20, 10],
+        [20, 10]
+      ],
+      position: [pos3, pos1],
       size: [10, 10],
       start: [0, 0],
       end: [0, 0]
     });
 
     const edge3 = new EdgeInstance({
-      world: [0, 0],
+      control: [
+        [-20, 10],
+        [20, 10]
+      ],
       position: [pos2, pos3],
       size: [10, 10],
       start: [0, 0],

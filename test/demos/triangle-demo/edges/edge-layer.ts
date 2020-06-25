@@ -18,7 +18,12 @@ import {
   VertexAttributeSize
 } from "src";
 
-import { ScaleMode } from "../type";
+import {
+  EdgeControlSpace,
+  EdgePadding,
+  EdgePositionSpace,
+  EdgeSizeSpace
+} from "../type";
 import { EdgeInstance } from "./edge-instance";
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
@@ -49,7 +54,10 @@ export interface IEdgeLayerProps<T extends EdgeInstance>
   /** Specifies how the edge is formed */
   type: EdgeType;
 
-  scaleMode?: ScaleMode;
+  positionSpace?: EdgePositionSpace;
+  sizeSpace?: EdgeSizeSpace;
+  controlSpace?: EdgeControlSpace;
+  padding?: EdgePadding;
 
   maxScale?: number;
 }
@@ -63,15 +71,49 @@ function toInstanceIOValue(value: [number, number][]): InstanceIOValue {
 
 /** This picks the appropriate shader for the edge type desired */
 const pickVS = {
-  [EdgeType.LINE]: require("./shader/edge-layer-line.vs"),
-  [EdgeType.BEZIER]: require("./shader/edge-layer-bezier.vs"),
-  [EdgeType.BEZIER2]: require("./shader/edge-layer-bezier2.vs")
+  [EdgeType.LINE]: require("./shader2/interpolation/edge-layer-line.vs"),
+  [EdgeType.BEZIER]: require("./shader2/interpolation/edge-layer-bezier.vs"),
+  [EdgeType.BEZIER2]: require("./shader2/interpolation/edge-layer-bezier2.vs")
+};
+
+const positionVS = {
+  [EdgePositionSpace.WORLD]: require("./shader2/position/edge-position-world.vs"),
+  [EdgePositionSpace.START_RELATIVE_TO_END]: require("./shader2/position/edge-position-start-relative-to-end.vs"),
+  [EdgePositionSpace.END_RELATIVE_TO_START]: require("./shader2/position/edge-position-end-relative-to-start.vs"),
+  ["screen"]: require("./shader2/position/edge-position-screen.vs")
+};
+
+const sizeVS = {
+  [EdgeSizeSpace.WORLD]: require("./shader2/size/edge-size-world.vs"),
+  [EdgeSizeSpace.SCREEN]: require("./shader2/size/edge-size-screen.vs"),
+  [EdgeSizeSpace.START_SCREEN_END_WORLD]: require("./shader2/size/edge-size-screen-world.vs"),
+  [EdgeSizeSpace.START_WORLD_END_SCREEN]: require("./shader2/size/edge-size-world-screen.vs")
+};
+
+const controlVS = {
+  [EdgeControlSpace.WORLD]: require("./shader2/control/edge-control-world.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_START]: require("./shader2/control/edge-control-start-world.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_END]: require("./shader2/control/edge-control-end-world.vs"),
+  [EdgeControlSpace.CONTROL2_RELATIVE_TO_START]: require("./shader2/control/edge-control-world-start.vs"),
+  [EdgeControlSpace.CONTROL2_RELATIVE_TO_END]: require("./shader2/control/edge-control-world-end.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_START_CONTROL2_RELATIVE_TO_END]: require("./shader2/control/edge-control-start-end.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_START_CONTROL2_RELATIVE_TO_START]: require("./shader2/control/edge-control-start-start.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_END_CONTROL2_RELATIVE_TO_END]: require("./shader2/control/edge-control-end-end.vs"),
+  [EdgeControlSpace.CONTROL1_RELATIVE_TO_END_CONTROL2_RELATIVE_TO_START]: require("./shader2/control/edge-control-end-start.vs"),
+  ["screen"]: require("./shader2/control/edge-control-screen.vs")
+};
+
+const paddingVS = {
+  [EdgePadding.NONE]: require("./shader2/padding/edge-padding-none.vs"),
+  [EdgePadding.START]: require("./shader2/padding/edge-padding-start.vs"),
+  [EdgePadding.END]: require("./shader2/padding/edge-padding-end.vs"),
+  [EdgePadding.BOTH]: require("./shader2/padding/edge-padding-both.vs")
 };
 
 /** This is the base edge layer which is a template that can be filled with the needed specifics for a given line type */
-// const baseVS = require("./shader/edge-layer.vs");
+const baseVS = require("./shader2/edge-layer.vs");
 const screenVS = require("./shader/edge-layer-screen-curve.vs");
-const edgeFS = require("./shader/edge-layer.fs");
+const edgeFS = require("./shader2/edge-layer.fs");
 
 /**
  * This layer displays edges and provides as many controls as possible for displaying
@@ -88,8 +130,11 @@ export class EdgeLayer<
     key: "none",
     scaleType: EdgeScaleType.NONE,
     type: EdgeType.LINE,
-    scaleMode: ScaleMode.ALWAYS,
-    maxScale: Number.MAX_SAFE_INTEGER
+    maxScale: Number.MAX_SAFE_INTEGER,
+    positionSpace: EdgePositionSpace.WORLD,
+    sizeSpace: EdgeSizeSpace.WORLD,
+    controlSpace: EdgeControlSpace.WORLD,
+    padding: EdgePadding.NONE
   };
 
   static attributeNames = {
@@ -100,7 +145,8 @@ export class EdgeLayer<
     endColor: "endColor",
     start: "start",
     startColor: "startColor",
-    thickness: "thickness"
+    thickness: "thickness",
+    paddings: "paddings"
   };
 
   /**
@@ -113,8 +159,11 @@ export class EdgeLayer<
       sizeScale = () => 1,
       type,
       scaleType = EdgeScaleType.NONE,
-      scaleMode = ScaleMode.ALWAYS,
-      maxScale = Number.MAX_SAFE_INTEGER
+      maxScale = Number.MAX_SAFE_INTEGER,
+      positionSpace = EdgePositionSpace.WORLD,
+      sizeSpace = EdgeSizeSpace.WORLD,
+      controlSpace = EdgeControlSpace.WORLD,
+      padding = EdgePadding.NONE
     } = this.props;
 
     const {
@@ -146,33 +195,51 @@ export class EdgeLayer<
       sign *= -1;
     }
 
-    const templateOptions = {
-      interpolation: pickVS[type]
-    };
-
-    let baseVS;
-    switch (scaleMode) {
-      case ScaleMode.ALWAYS: {
-        baseVS = require("./shader/edge-layer-always.vs");
+    let glPositionVS: string;
+    switch (positionSpace) {
+      case EdgePositionSpace.WORLD:
+        glPositionVS =
+          controlSpace === EdgeControlSpace.WORLD
+            ? require("./shader2/gl_Pos/edge-vertex-world.vs")
+            : require("./shader2/gl_Pos/edge-vertex-screen-start.vs");
         break;
-      }
-
-      case ScaleMode.NEVER: {
-        baseVS = require("./shader/edge-layer-never.vs");
+      case EdgePositionSpace.END_RELATIVE_TO_START:
+        glPositionVS = require("./shader2/gl_Pos/edge-vertex-screen-start.vs");
         break;
-      }
-
-      case ScaleMode.BOUND_MAX: {
-        baseVS = require("./shader/edge-layer-bound-max.vs");
+      case EdgePositionSpace.START_RELATIVE_TO_END:
+        glPositionVS = require("./shader2/gl_Pos/edge-vertex-screen-end.vs");
         break;
-      }
     }
+
+    const templateOptions = {
+      interpolation: pickVS[type],
+      getPositions:
+        positionSpace === EdgePositionSpace.WORLD &&
+        controlSpace !== EdgeControlSpace.WORLD
+          ? positionVS["screen"]
+          : positionVS[positionSpace],
+      getSizes: sizeVS[sizeSpace],
+      getControls:
+        controlSpace === EdgeControlSpace.WORLD &&
+        positionSpace !== EdgePositionSpace.WORLD
+          ? controlVS["screen"]
+          : controlVS[controlSpace],
+      addPaddings: paddingVS[padding],
+      getGl_Position: glPositionVS
+    };
 
     const vs = shaderTemplate({
       options: templateOptions,
       required: {
         name: "Edge Layer",
-        values: ["interpolation"]
+        values: [
+          "interpolation",
+          "getPositions",
+          "getSizes",
+          "getControls",
+          "addPaddings",
+          "getGl_Position"
+        ]
       },
       shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
 
@@ -185,6 +252,8 @@ export class EdgeLayer<
         return replace;
       }
     });
+
+    console.warn("Vs", vs);
 
     return {
       fs: edgeFS,
@@ -218,6 +287,16 @@ export class EdgeLayer<
           name: EdgeLayer.attributeNames.thickness,
           size: InstanceAttributeSize.TWO,
           update: o => o.thickness
+        },
+        {
+          name: EdgeLayer.attributeNames.paddings,
+          size: InstanceAttributeSize.FOUR,
+          update: o => [
+            o.startPadding[0],
+            o.startPadding[1],
+            o.endPadding[0],
+            o.endPadding[1]
+          ]
         },
         {
           name: EdgeLayer.attributeNames.depth,

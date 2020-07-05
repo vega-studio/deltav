@@ -1183,10 +1183,17 @@ export function isString(val?: any): val is string {
  */
 export enum ViewOutputInformationType {
   /**
+   * Indicates this does not have an output target. This is mostly used by the
+   * system to make sure our fragment outputs, drawBuffers, and frame buffer
+   * attachments stay aligned properly to not cause any GL errors or undefined
+   * outputs to occur.
+   */
+  NONE = 0,
+  /**
    * This is the most common information output style. It provides a color per
    * fragment
    */
-  COLOR = 0,
+  COLOR,
   /**
    * This indicates it will provide a depth value per fragment
    */

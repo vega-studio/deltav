@@ -3,16 +3,12 @@ import { add3 } from "../../math/vector";
 import { IViewProps, View } from "../../surface";
 import { LayerScene } from "../../surface/layer-scene";
 import { Camera, CameraProjectionType } from "../../util/camera";
-import { Camera2D } from "./camera-2d";
-import { Projection2D } from "./projection-2d";
+import { ProjectionScreen } from "./projection-screen";
 
 /**
  * Defines the input metrics of a view for a scene.
  */
-export interface IView2DProps extends IViewProps {
-  /** Redefine the camera applied to this view to ensure it's a 2D camera. */
-  camera: Camera2D;
-}
+export interface IViewScreenProps extends IViewProps {}
 
 /**s
  * Type guard to ensure the camera type is orthographic
@@ -24,10 +20,12 @@ function isOrthographic(val: Camera): val is Camera {
 /**
  * A View renders a perspective of a scene to a given surface or surfaces.
  */
-export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
-  static defaultProps: IView2DProps = {
+export class ViewScreen<TViewProps extends IViewScreenProps> extends View<
+  TViewProps
+> {
+  static defaultProps: IViewScreenProps = {
     key: "",
-    camera: new Camera2D(),
+    camera: Camera.makeOrthographic(),
     viewport: {
       left: 0,
       right: 0,
@@ -37,11 +35,10 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
   };
 
   /** These are the projection methods specific to rendering with this 2D system. */
-  projection: Projection2D = new Projection2D();
+  projection: ProjectionScreen = new ProjectionScreen();
 
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
-    this.projection.camera = options.camera || new Camera2D();
   }
 
   /**
@@ -94,11 +91,11 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
       });
       this.screenBounds.d = this;
     } else if (!isOrthographic(this.props.camera)) {
-      console.warn("View2D does not support non-orthographic cameras.");
+      console.warn("ViewScreen does not support non-orthographic cameras.");
     }
   }
 
-  willUpdateProps(newProps: IView2DProps) {
-    this.projection.camera = newProps.camera;
+  willUpdateProps(_newProps: IViewScreenProps) {
+    // NOOP
   }
 }

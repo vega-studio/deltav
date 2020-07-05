@@ -96,6 +96,7 @@ export class ShaderProcessor {
    */
   static mergeFragmentOutputs(
     shaders: { source: string; outputType: number }[],
+    targetOutputs: number[],
     typeFilter?: number[],
     singleOutput?: boolean
   ) {
@@ -103,9 +104,10 @@ export class ShaderProcessor {
     let bodies = "";
     let fragmentOutput = "";
     let declaration = "vec4 ";
-    let fragDataIndex = -1;
     const outputNames: string[] = [];
     const outputTypes: number[] = [];
+    const usedTypes = new Set<number>();
+    const typeToName = new Map<number, string>();
 
     // When MRT isn't enabled at all, then our fragment output simply writes
     // directly to gl_FragColor
@@ -120,7 +122,17 @@ export class ShaderProcessor {
     }
 
     shaders.forEach((s, i) => {
+      // If output is not allowed, then the found output in the sahder will
+      // simply map to a locally scoped variable instead of a specialized output
+      // variable.
       let allowOutput = true;
+      // We can only have one token per each shader. Declaring multiple ${out}
+      // tokens will be considered an error and unsupported.
+      let foundOutputToken = false;
+      // The correct output index will be the index found in the target outputs.
+      // If a match isn't made, then this particular shader is not going to be
+      // an output to the target.
+      const fragDataIndex = targetOutputs.indexOf(s.outputType);
 
       if (typeFilter && typeFilter.indexOf(s.outputType) < 0) {
         allowOutput = false;
@@ -129,6 +141,12 @@ export class ShaderProcessor {
       if (singleOutput && i < shaders.length - 1) {
         allowOutput = false;
       }
+
+      if (!singleOutput && fragDataIndex < 0) {
+        allowOutput = false;
+      }
+
+      usedTypes.add(s.outputType);
 
       shaderTemplate({
         shader: s.source,
@@ -140,6 +158,18 @@ export class ShaderProcessor {
           const trimmedToken = token.trim();
 
           if (trimmedToken.indexOf(OUT_TOKEN) === 0) {
+            if (foundOutputToken) {
+              console.error(
+                "Found multiple ${out} tokens in a single fragments shader. This is not supported nor logical",
+                "If you need to use the declared output multiple times, use the assigned name",
+                "and don't wrap it repeatedly in the shader."
+              );
+              throw new Error("Invalid Shader Format");
+            }
+
+            // Flag the token as discovered so we can make sure we don't have
+            // too many tokens show up.
+            foundOutputToken = true;
             // Analyze the remainder of the token to find the necessary colon to
             // be the NEXT Non-whitespace character
             const afterToken = trimmedToken.substr(OUT_TOKEN.length).trim();
@@ -150,6 +180,8 @@ export class ShaderProcessor {
               // being requested (with white space trimmed). If the name isn't
               // valid, that's not our fault.
               const outputName = afterToken.substr(OUT_DELIMITER.length).trim();
+              // Keep track of the name to the
+              typeToName.set(s.outputType, outputName);
 
               if (!outputName) {
                 throw new Error(
@@ -172,7 +204,7 @@ export class ShaderProcessor {
 
               // Handle the special case of the MRT extension
               if (WebGLStat.MRT_EXTENSION && allowOutput) {
-                fragmentOutput = ` = gl_FragData[${++fragDataIndex}]`;
+                fragmentOutput = ` = gl_FragData[${fragDataIndex}]`;
               }
 
               // Replace the token with just the name of the variable being
@@ -200,10 +232,21 @@ export class ShaderProcessor {
       });
     });
 
+    // We match our output names to keep in line with the used output types
+
+    // The output types we return needs to match up to the target types. If we
+    // didn't have an output for a type it needs to be NONE. The used target
+    // types need to line up to the order that appears in targetTypes and NOT
+    // lined up with how they appear in the shader.
+    const usedOutputTypes = targetOutputs.map(targetType => {
+      if (usedTypes.has(targetType)) return targetType;
+      return ViewOutputInformationType.NONE;
+    });
+
     return {
       output: `${headers}\nvoid main() {\n${bodies}\n}`,
       outputNames,
-      outputTypes
+      outputTypes: usedOutputTypes
     };
   }
 
@@ -238,7 +281,7 @@ export class ShaderProcessor {
             source: outputs,
             outputType: ViewOutputInformationType.COLOR
           }
-        ]);
+        ], [ViewOutputInformationType.COLOR]);
 
         return [
           {
@@ -275,6 +318,7 @@ export class ShaderProcessor {
         // needed for this output to work properly.
         const processed = this.mergeFragmentOutputs(
           outputs.slice(0, outputIndex + 1),
+          [ViewOutputInformationType.COLOR],
           undefined,
           true
         );
@@ -304,6 +348,10 @@ export class ShaderProcessor {
     // multiple shader outputs to support each individual target output if MRT
     // is not available.
     else if (Array.isArray(targetOutputs)) {
+      // Gather all of the actual output types in a list so we know the ordering
+      // and the mapping of types to specific outputs.
+      const targetTypes = targetOutputs.map(target => target.outputType);
+
       // If we have multiple outputs, let's find indices of each output that
       // matches a target and create our shader(s) with that
       if (Array.isArray(outputs)) {
@@ -341,6 +389,7 @@ export class ShaderProcessor {
 
           const processed = this.mergeFragmentOutputs(
             outputs.slice(0, maxIndex + 1),
+            targetTypes,
             types
           );
 
@@ -357,11 +406,12 @@ export class ShaderProcessor {
         // output type we matched on
         else {
           const generated: OutputFragmentShader = [];
-          typeToIndex.forEach(index => {
+          typeToIndex.forEach((index, type) => {
             // Merge in the shaders to one shader, but only mark a single type
             // as the output.
             const processed = this.mergeFragmentOutputs(
               outputs.slice(0, index + 1),
+              [type],
               undefined,
               true
             );
@@ -390,8 +440,8 @@ export class ShaderProcessor {
             {
               source: outputs,
               outputType: ViewOutputInformationType.COLOR
-            }
-          ]);
+            },
+          ], targetTypes);
 
           return [
             {

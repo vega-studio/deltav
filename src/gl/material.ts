@@ -95,6 +95,10 @@ export class Material {
      * quickly determine our drawBuffers to utilize for MRT.
      */
     outputsByProgram: WeakMap<WebGLProgram, number[]>;
+    /**
+     * Reference to the glProxy so this object can properly call the correct
+     * context to manage this resource.
+     */
     proxy: GLProxy;
   };
   /**

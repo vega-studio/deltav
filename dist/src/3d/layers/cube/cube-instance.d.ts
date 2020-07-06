@@ -1,5 +1,5 @@
 import { Color, Size } from "../../../types";
-import { IInstance3DOptions, Instance3D } from "../base/instance-3d";
+import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d";
 /** Customizes a new Cube instance */
 export interface ICubeOptions extends IInstance3DOptions {
     /** Sets the dimensions of the cube */

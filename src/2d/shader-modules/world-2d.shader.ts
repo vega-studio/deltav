@@ -34,6 +34,11 @@ ShaderModule.register([
           size: UniformSize.MATRIX4,
           update: () => layer.view.props.camera.view
         },
+        {
+          name: "viewProjection",
+          size: UniformSize.MATRIX4,
+          update: () => layer.view.props.camera.viewProjection
+        },
         // This injects a 2D camera's offset
         {
           name: "cameraOffset",

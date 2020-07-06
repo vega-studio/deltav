@@ -1,3 +1,21 @@
+## 1.39.0
+
+## Added
+
+- [`ADDED`]: Added initial Transform Scene Graph capabilities along with a pattern that integrates with Instances for automated updates.
+- [`ADDED`]: Enabled WebGL2 context. This does not include extra webgl2 features, but works with the new context.
+- [`ADDED`]: Added support for Orthographic cameras for View3D
+- [`ADDED`]: Better support for Transform and Instance3D triggering updates based on changes to the transform directly.
+
+## Fixed
+
+- [`FIXED`]: Rendering performance improvement for 2D assets by utilizing the combined view projection matrix for the clipSpace operation
+- [`FIXED`]: Camera on Firefox updates properly to changes
+- [`FIXED`]: Fixed issue with observables registering IDs during complex update loops where updating an attribute can trigger updates to the instance
+- [`FIXED`]: Performance improvements and fixes for camera
+- [`FIXED`]: Quaternion slerp animations were causing distortions in geometry instead of properly rotating. This has been resolved and you will no longer see flattened 3D animations.
+- [`FIXED`]: New demo showing the screenRay projection to aid in interactions with elements from the screen into the 3D world
+
 ## 1.38.1
 
 ## Fixed

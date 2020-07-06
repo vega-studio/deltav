@@ -1,6 +1,16 @@
 import { EulerOrder, EulerRotation } from "../types";
 import {
+  identity3,
   identity4,
+  M300,
+  M301,
+  M302,
+  M310,
+  M311,
+  M312,
+  M320,
+  M321,
+  M322,
   M400,
   M401,
   M402,
@@ -20,12 +30,78 @@ import {
   Mat3x3,
   Mat4x4
 } from "./matrix";
-import { cross3, dot4, normalize3, Vec3, Vec3Compat, Vec4 } from "./vector";
+import {
+  add3,
+  cross3,
+  dot3,
+  dot4,
+  normalize3,
+  scale3,
+  V3R,
+  Vec3,
+  vec3,
+  Vec3Compat,
+  Vec4
+} from "./vector";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 
+// We often need some variable registers that match matrix elements in a lot of
+// our quaternion algorithms. We keep them in the module scope so we don't have
+// to declare them in the scope of the method to reduce Garbage.
+let m00: number;
+let m01: number;
+let m02: number;
+// let m03: number;
+// let m04: number;
+let m10: number;
+let m11: number;
+let m12: number;
+let m13: number;
+// let m14: number;
+let m20: number;
+let m21: number;
+let m22: number;
+let m23: number;
+// let m24: number;
+// let m30: number;
+let m31: number;
+let m32: number;
+let m33: number;
+// let m34: number;
+
+// Other common registers are the components of the quat
+// let x: number;
+// let y: number;
+// let z: number;
+let w: number;
+
+// Vector registers for axes
+let vx: Vec3;
+let vy: Vec3;
+let vz: Vec3;
+// let vw: Vec3;
+
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
+
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR1 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR2 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR3 = zeroQuat();
+/** Temp Quaternion register. Can be used for intermediate operations */
+export const QR4 = zeroQuat();
+
+/** Helper index to make index selection more readable if desired */
+export const QX = 1;
+/** Helper index to make index selection more readable if desired */
+export const QY = 2;
+/** Helper index to make index selection more readable if desired */
+export const QZ = 3;
+/** Helper index to make index selection more readable if desired */
+export const QW = 0;
 
 export function clamp(x: number, min: number, max: number) {
   if (x > max) return max;
@@ -183,6 +259,29 @@ export function scaleQuat(
 }
 
 /**
+ * This provides a sort of "directional" unit quaternion such that:
+ * q2 - q1 = diff
+ * where
+ * diff * q1 = q2
+ *
+ * The math for this is:
+ * diff = q2 * inverse(q1)
+ *
+ * Optimzied for Unit quats:
+ * inverse(q1) = conjugate(q1) / abs(q1)
+ * where
+ * abs(q1) = 1 for unit quats
+ */
+export function diffUnitQuat(
+  q1: Quaternion,
+  q2: Quaternion,
+  out?: Quaternion
+): Quaternion {
+  out = out || zeroQuat();
+  return multiplyQuat(q2, conjugateQuat(q1), out);
+}
+
+/**
  * Computes the conjugate of a quaternion.
  */
 export function conjugateQuat(q: Quaternion, out?: Quaternion): Quaternion {
@@ -248,7 +347,7 @@ export function normalizeQuat(q: Quaternion, out?: Quaternion): Quaternion {
   out = out || zeroQuat();
   const len = lengthQuat(q);
   if (len === 0) return [0, 0, 0, 0];
-  const rlen = 1 / lengthQuat(q);
+  const rlen = 1 / len;
 
   return scaleQuat(q, rlen, out);
 }
@@ -380,8 +479,9 @@ export function fromOrderedEulerToQuat(
 }
 
 /**
- * This converts a euler angle of any ordering and turns it into an euler of XYZ orientation which is the expected
- * rotation of most elements in this framework.
+ * This converts a euler angle of any ordering and turns it into an euler of XYZ
+ * orientation which is the expected rotation of most elements in this
+ * framework.
  */
 export function toEulerXYZfromOrderedEuler(
   euler: Vec3,
@@ -440,8 +540,9 @@ export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
 /**
  * Converts a quaternion to an ordered Euler angle.
  *
- * NOTE: It is best to convert to XYZ ordering if using with this framework's 3D system, or simply use toEulerFromQuat
- * if this is desired. Only use this if you specifically need an Euler angle for a known purpose.
+ * NOTE: It is best to convert to XYZ ordering if using with this framework's 3D
+ * system, or simply use toEulerFromQuat if this is desired. Only use this if
+ * you specifically need an Euler angle for a known purpose.
  */
 export function toOrderedEulerFromQuat(
   q: Quaternion,
@@ -896,8 +997,47 @@ export function axisQuat(quat: Quaternion): Vec3 {
 }
 
 /**
- * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'models' perspective
- * where the model orients itself to match the orientation.
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'models' perspective where the model orients itself to match
+ * the orientation.
+ */
+export function matrix3x3FromUnitQuatModel(q: Quaternion, m?: Mat3x3): Mat3x3 {
+  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+  m = m || identity3();
+
+  // Calculate coefficients
+  x2 = q[1] + q[1];
+  y2 = q[2] + q[2];
+  z2 = q[3] + q[3];
+  xx = q[1] * x2;
+  xy = q[1] * y2;
+  xz = q[1] * z2;
+  yy = q[2] * y2;
+  yz = q[2] * z2;
+  zz = q[3] * z2;
+  wx = q[0] * x2;
+  wy = q[0] * y2;
+  wz = q[0] * z2;
+
+  m[M300] = 1.0 - (yy + zz);
+  m[M301] = xy - wz;
+  m[M302] = xz + wy;
+
+  m[M310] = xy + wz;
+  m[M311] = 1.0 - (xx + zz);
+  m[M312] = yz - wx;
+
+  m[M320] = xz - wy;
+  m[M321] = yz + wx;
+  m[M322] = 1.0 - (xx + yy);
+
+  return m;
+}
+
+/**
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'models' perspective where the model orients itself to match
+ * the orientation.
  */
 export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
   let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
@@ -941,8 +1081,45 @@ export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
 }
 
 /**
- * Produces a transform matrix from a returned unit quaternion. This is a matrix that is from a 'views' perspective
- * where the world orients to match the view.
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'views' perspective where the world orients to match the view.
+ */
+export function matrix3x3FromUnitQuatView(q: Quaternion, m?: Mat3x3): Mat3x3 {
+  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+  m = m || identity3();
+
+  // calculate coefficients
+  x2 = q[1] + q[1];
+  y2 = q[2] + q[2];
+  z2 = q[3] + q[3];
+  xx = q[1] * x2;
+  xy = q[1] * y2;
+  xz = q[1] * z2;
+  yy = q[2] * y2;
+  yz = q[2] * z2;
+  zz = q[3] * z2;
+  wx = q[0] * x2;
+  wy = q[0] * y2;
+  wz = q[0] * z2;
+
+  m[M300] = 1.0 - (yy + zz);
+  m[M310] = xy - wz;
+  m[M320] = xz + wy;
+
+  m[M301] = xy + wz;
+  m[M311] = 1.0 - (xx + zz);
+  m[M321] = yz - wx;
+
+  m[M302] = xz - wy;
+  m[M312] = yz + wx;
+  m[M322] = 1.0 - (xx + yy);
+
+  return m;
+}
+
+/**
+ * Produces a transform matrix from a returned unit quaternion. This is a matrix
+ * that is from a 'views' perspective where the world orients to match the view.
  */
 export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
   let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
@@ -993,7 +1170,7 @@ export function eulerToQuat(
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
-  let cr, cp, cy, sr, sp, sy, cpcy, spsy;
+  let cr, cp, cy, sr, sp, sy, cpcy, spsy, cpsy, spcy;
   const [roll, pitch, yaw] = angles;
 
   // calculate trig identities
@@ -1005,16 +1182,19 @@ export function eulerToQuat(
   sy = sin(yaw / 2);
   cpcy = cp * cy;
   spsy = sp * sy;
+  cpsy = cp * sy;
+  spcy = sp * cy;
   out[0] = cr * cpcy + sr * spsy;
   out[1] = sr * cpcy - cr * spsy;
-  out[2] = cr * sp * cy + sr * cp * sy;
-  out[3] = cr * cp * sy - sr * sp * cy;
+  out[2] = cr * spcy + sr * cpsy;
+  out[3] = cr * cpsy - sr * spcy;
 
   return out;
 }
 
 /**
- * This produces a quaternion that creates an orientation that will look in the direction specified.
+ * This produces a quaternion that creates an orientation that will look in the
+ * direction specified.
  */
 export function lookAtQuat(
   forward: Vec3Compat,
@@ -1022,60 +1202,55 @@ export function lookAtQuat(
   q?: Quaternion
 ): Quaternion {
   q = q || zeroQuat();
-  forward = normalize3(forward);
+  vz = normalize3([-forward[0], -forward[1], -forward[2]], V3R[V3R.length - 1]);
+  vx = normalize3(cross3(up, vz, V3R[V3R.length - 2]));
+  vy = cross3(vz, vx, V3R[V3R.length - 3]);
 
-  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
-  const l = normalize3(cross3(up, f));
-  const u = normalize3(cross3(f, l));
+  m11 = vx[0];
+  m12 = vy[0];
+  m13 = vz[0];
+  m21 = vx[1];
+  m22 = vy[1];
+  m23 = vz[1];
+  m31 = vx[2];
+  m32 = vy[2];
+  m33 = vz[2];
 
-  const m00 = l[0];
-  const m01 = l[1];
-  const m02 = l[2];
-  const m10 = u[0];
-  const m11 = u[1];
-  const m12 = u[2];
-  const m20 = f[0];
-  const m21 = f[1];
-  const m22 = f[2];
+  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+  // article "Quaternion Calculus and Fast Animation".
+  w = (1 + m11 + m22 + m33) * 0.25; // w^2
 
-  const tr = m00 + m11 + m22;
+  if (w > 0.0) {
+    w = Math.sqrt(w);
+    q[0] = w;
+    w = 1 / (4 * w);
+    q[1] = (m23 - m32) * w;
+    q[2] = (m31 - m13) * w;
+    q[3] = (m12 - m21) * w;
+  } else {
+    q[0] = 0;
+    w = -0.5 * (m22 + m33); // x^2
 
-  if (tr > 0.0) {
-    const s = sqrt(tr + 1.0) * 2;
-    q[0] = 0.25 * s;
-    q[1] = (m21 - m12) / s;
-    q[2] = (m02 - m20) / s;
-    q[3] = (m10 - m01) / s;
+    if (w > 0) {
+      w = Math.sqrt(w);
+      q[1] = w;
+      w *= 2;
+      q[2] = m12 / w;
+      q[3] = m13 / w;
+    } else {
+      q[1] = 0;
+      w = 0.5 * (1 - m33); // y^2
 
-    return q;
+      if (w > 0) {
+        w = Math.sqrt(w);
+        q[2] = w;
+        q[3] = m23 / (2 * w);
+      } else {
+        q[2] = 0;
+        q[3] = 1;
+      }
+    }
   }
-
-  if (m00 > m11 && m00 > m22) {
-    const s = sqrt(1.0 + m00 - m11 - m22) * 2;
-    q[0] = (m21 - m12) / s;
-    q[1] = 0.25 * s;
-    q[2] = (m01 + m10) / s;
-    q[3] = (m02 + m20) / s;
-
-    return q;
-  }
-
-  if (m11 > m22) {
-    const s = sqrt(1.0 + m11 - m00 - m22) * 2;
-
-    q[0] = (m02 - m20) / s;
-    q[1] = (m10 + m01) / s;
-    q[2] = 0.25 * s;
-    q[3] = (m21 + m12) / s;
-
-    return q;
-  }
-
-  const s = sqrt(1.0 + m22 - m00 - m11) * 2;
-  q[0] = (m10 - m01) / s;
-  q[1] = (m20 + m02) / s;
-  q[2] = (m21 + m12) / s;
-  q[3] = 0.25 * s;
 
   return q;
 }
@@ -1083,20 +1258,20 @@ export function lookAtQuat(
 export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
-  const m00 = mat[0];
-  const m01 = mat[3];
-  const m02 = mat[6];
-  const m10 = mat[1];
-  const m11 = mat[4];
-  const m12 = mat[7];
-  const m20 = mat[2];
-  const m21 = mat[5];
-  const m22 = mat[8];
+  m00 = mat[0];
+  m01 = mat[3];
+  m02 = mat[6];
+  m10 = mat[1];
+  m11 = mat[4];
+  m12 = mat[7];
+  m20 = mat[2];
+  m21 = mat[5];
+  m22 = mat[8];
 
-  const tr = m00 + m11 + m22;
+  w = m00 + m11 + m22;
 
-  if (tr > 0.0) {
-    const s = sqrt(tr + 1.0) * 2;
+  if (w > 0.0) {
+    const s = sqrt(w + 1.0) * 2;
     q[0] = 0.25 * s;
     q[1] = (m21 - m12) / s;
     q[2] = (m02 - m20) / s;
@@ -1138,20 +1313,20 @@ export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
 export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
   q = q || zeroQuat();
 
-  const m00 = mat[0];
-  const m01 = mat[4];
-  const m02 = mat[8];
-  const m10 = mat[1];
-  const m11 = mat[5];
-  const m12 = mat[9];
-  const m20 = mat[2];
-  const m21 = mat[6];
-  const m22 = mat[10];
+  m00 = mat[0];
+  m01 = mat[4];
+  m02 = mat[8];
+  m10 = mat[1];
+  m11 = mat[5];
+  m12 = mat[9];
+  m20 = mat[2];
+  m21 = mat[6];
+  m22 = mat[10];
 
-  const tr = m00 + m11 + m22;
+  w = m00 + m11 + m22;
 
-  if (tr > 0.0) {
-    const s = sqrt(tr + 1.0) * 2;
+  if (w > 0.0) {
+    const s = sqrt(w + 1.0) * 2;
     q[0] = 0.25 * s;
     // num = 0.5 / num;
     q[1] = (m21 - m12) / s;
@@ -1197,6 +1372,72 @@ export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
   return q;
 }
 
+/**
+ * This decomposes the rotational component of a matrix into a quaternion.
+ * You must provide the scale magnitudes of the matrix for the operation to
+ * work. This means getting:
+ * sx = length4(row0);
+ * sy = length4(row1);
+ * sz = length4(row2);
+ */
+export function decomposeRotation(
+  mat: Mat4x4,
+  sx: number,
+  sy: number,
+  sz: number,
+  q?: Quaternion
+) {
+  q = q || zeroQuat();
+
+  m11 = mat[0] / sx;
+  m12 = mat[4] / sy;
+  m13 = mat[8] / sz;
+  m21 = mat[1] / sx;
+  m22 = mat[5] / sy;
+  m23 = mat[9] / sz;
+  m31 = mat[2] / sx;
+  m32 = mat[6] / sy;
+  m33 = mat[10] / sz;
+
+  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+  // article "Quaternion Calculus and Fast Animation".
+  w = (1 + m11 + m22 + m33) * 0.25; // w^2
+
+  if (w > 0.0) {
+    w = Math.sqrt(w);
+    q[0] = w;
+    w = 1 / (4 * w);
+    q[1] = (m23 - m32) * w;
+    q[2] = (m31 - m13) * w;
+    q[3] = (m12 - m21) * w;
+  } else {
+    q[0] = 0;
+    w = -0.5 * (m22 + m33); // x^2
+
+    if (w > 0) {
+      w = Math.sqrt(w);
+      q[1] = w;
+      w *= 2;
+      q[2] = m12 / w;
+      q[3] = m13 / w;
+    } else {
+      q[1] = 0;
+      w = 0.5 * (1 - m33); // y^2
+
+      if (w > 0) {
+        w = Math.sqrt(w);
+        q[2] = w;
+        q[3] = m23 / (2 * w);
+      } else {
+        q[2] = 0;
+        q[3] = 1;
+      }
+    }
+  }
+
+  return q;
+}
+
 export function lookAtMatrix(
   forward: Vec3Compat,
   up: Vec3Compat,
@@ -1204,23 +1445,23 @@ export function lookAtMatrix(
 ): Mat4x4 {
   m = m || identity4();
 
-  forward = normalize3(forward);
+  const z = normalize3([-forward[0], -forward[1], -forward[2]]);
+  const x = normalize3(cross3(up, z));
+  // No need to normalize the cross product as z and x are unit vectors at this
+  // point
+  const y = cross3(z, x);
 
-  const f: Vec3 = [-forward[0], -forward[1], -forward[2]];
-  const l = normalize3(cross3(up, f));
-  const u = normalize3(cross3(f, l));
-
-  m[0] = l[0];
-  m[1] = u[0];
-  m[2] = f[0];
+  m[0] = x[0];
+  m[1] = y[0];
+  m[2] = z[0];
   m[3] = 0.0;
-  m[4] = l[1];
-  m[5] = u[1];
-  m[6] = f[1];
+  m[4] = x[1];
+  m[5] = y[1];
+  m[6] = z[1];
   m[7] = 0.0;
-  m[8] = l[2];
-  m[9] = u[2];
-  m[10] = f[2];
+  m[8] = x[2];
+  m[9] = y[2];
+  m[10] = z[2];
   m[11] = 0.0;
   m[12] = 0.0;
   m[13] = 0.0;
@@ -1231,8 +1472,23 @@ export function lookAtMatrix(
 }
 
 /**
- * SLERP interpolation between two quaternion orientations. The Quaternions MUST be unit quats for this to be valid.
- * If the quat has gotten out of normalization from precision errors, consider renormalizing the quaternion.
+ * Rotates a vector using some nice tricks with a quaternion's value.
+ */
+export function rotateVectorByUnitQuat(v: Vec3, q: Quaternion, out?: Vec3) {
+  vx = vec3(q[1], q[2], q[3]);
+  w = q[0];
+
+  return add3(
+    add3(scale3(vx, 2 * dot3(vx, v)), scale3(v, w * w - dot3(vx, vx))),
+    scale3(cross3(vx, v), 2 * w),
+    out
+  );
+}
+
+/**
+ * SLERP interpolation between two quaternion orientations. The Quaternions MUST
+ * be unit quats for this to be valid. If the quat has gotten out of
+ * normalization from precision errors, consider renormalizing the quaternion.
  */
 export function slerpUnitQuat(
   from: Quaternion,
@@ -1258,7 +1514,8 @@ export function slerpUnitQuat(
     to1[3] = to[0];
   }
 
-  // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
+  // Calculate coefficients for final values. We use SLERP if the difference
+  // between the two angles isn't too big.
   if (1.0 - cosom > 0.0000001) {
     omega = acos(cosom);
     sinom = sin(omega);
@@ -1266,7 +1523,8 @@ export function slerpUnitQuat(
     scale1 = sin(t * omega) / sinom;
   }
 
-  // We linear interpolate for quaternions that are very close together in angle.
+  // We linear interpolate for quaternions that are very close together in
+  // angle.
   else {
     scale0 = 1.0 - t;
     scale1 = t;

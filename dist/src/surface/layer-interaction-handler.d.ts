@@ -60,7 +60,8 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
      */
     handleTouchUp(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
-     * Mouse move events on the layer will detect when instances have their item newly over or just moved on
+     * Mouse move events on the layer will detect when instances have their item
+     * newly over or just moved on
      */
     handleMouseMove(view: BaseProjection<any>, interaction: IMouseInteraction): void;
     /**

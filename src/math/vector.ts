@@ -53,6 +53,40 @@ export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 /** This type defines any possible vector */
 export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 
+/**
+ * Temp Vec3 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any expected value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const V3R: Vec3[] = new Array(20).fill(0).map(_ => [0, 0, 0]);
+
+/**
+ * Temp Vec4 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any expected value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export const V4R: Vec4[] = new Array(20).fill(0).map(_ => [0, 0, 0, 0]);
+
 // Type guards for Vecs
 
 export function isVec1(val: any): val is Vec1 {
@@ -106,6 +140,10 @@ export function fuzzyCompare1(
 
 export function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, vec[0]);
+}
+
+export function forward1(): Vec1 {
+  return [0];
 }
 
 /**
@@ -206,7 +244,11 @@ export function linear1(
 }
 
 export function length1(start: Vec1Compat): number {
-  return sqrt(dot1(start, start));
+  return start[0];
+}
+
+export function length1Components(x: number): number {
+  return x;
 }
 
 export function vec1(
@@ -245,7 +287,7 @@ export function apply2(
   v0: number,
   v1: number
 ): Vec2 {
-  v = v || (([] as any) as Vec2);
+  v = v || ((new Array(2) as any) as Vec2);
   v[0] = v0;
   v[1] = v1;
 
@@ -266,6 +308,10 @@ export function ceil2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
 
 export function copy2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, vec[0], vec[1]);
+}
+
+export function forward2(out?: Vec2Compat) {
+  return apply2(out, 1, 0);
 }
 
 /**
@@ -309,12 +355,12 @@ export function empty2(out?: Vec2) {
 }
 
 export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(list.length * 2);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 2) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
   }
 
   return out;
@@ -387,7 +433,11 @@ export function linear2(
 }
 
 export function length2(start: Vec2Compat): number {
-  return sqrt(dot2(start, start));
+  return length2Components(start[0], start[1]);
+}
+
+export function length2Components(x: number, y: number): number {
+  return sqrt(x * x + y * y);
 }
 
 export function vec2(
@@ -427,7 +477,7 @@ export function apply3(
   v1: number,
   v2: number
 ): Vec3 {
-  v = v || (([] as any) as Vec3);
+  v = v || ((new Array(3) as any) as Vec3);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -472,17 +522,21 @@ export function fuzzyCompare3(
   );
 }
 
+export function forward3(out?: Vec3Compat): Vec3 {
+  return apply3(out, 0, 0, -1);
+}
+
 export function cross3(
   left: Vec3Compat,
   right: Vec3Compat,
   out?: Vec3Compat
 ): Vec3 {
-  return apply3(
-    out,
-    left[1] * right[2] - left[2] * right[1],
-    left[2] * right[0] - left[0] * right[2],
-    left[0] * right[1] - left[1] * right[0]
-  );
+  out = out || ((new Array(3) as any) as Vec3);
+  out[0] = left[1] * right[2] - left[2] * right[1];
+  out[1] = left[2] * right[0] - left[0] * right[2];
+  out[2] = left[0] * right[1] - left[1] * right[0];
+
+  return out as Vec3;
 }
 
 export function divide3(
@@ -503,13 +557,13 @@ export function empty3(out?: Vec3) {
 }
 
 export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(list.length * 3);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 3) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
-    out.push(v[2]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
+    out[index + 2] = v[2];
   }
 
   return out;
@@ -567,7 +621,11 @@ export function linear3(
 }
 
 export function length3(start: Vec3Compat): number {
-  return sqrt(dot3(start, start));
+  return length3Components(start[0], start[1], start[2]);
+}
+
+export function length3Components(x: number, y: number, z: number): number {
+  return sqrt(x * x + y * y + z * z);
 }
 
 export function max3(
@@ -597,8 +655,13 @@ export function min3(
 }
 
 export function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3 {
+  out = out || ((new Array(3) as any) as Vec3);
   const length = length3(left);
-  return apply3(out, left[0] / length, left[1] / length, left[2] / length);
+  out[0] = left[0] / length;
+  out[1] = left[1] / length;
+  out[2] = left[2] / length;
+
+  return out as Vec3;
 }
 
 export function dot3(left: Vec3Compat, right: Vec3Compat): number {
@@ -679,7 +742,7 @@ export function apply4(
   v2: number,
   v3: number
 ): Vec4 {
-  v = v || (([] as any) as Vec4);
+  v = v || ((new Array(4) as any) as Vec4);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -738,6 +801,10 @@ export function fuzzyCompare4(
   );
 }
 
+export function forward4(out?: Vec4Compat): Vec4 {
+  return apply4(out, 0, 0, -1, 0);
+}
+
 /**
  * 4D cross product? Lots of issues here. If you need a proper cross product for 3D, please use cross3. What
  * this method should do is up for debate for now and will return a unit 4D vector.
@@ -765,14 +832,14 @@ export function empty4(out?: Vec4) {
 }
 
 export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
-  out = out || [];
+  out = out || new Array(4);
 
-  for (let i = 0, iMax = list.length; i < iMax; ++i) {
+  for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 4) {
     const v = list[i];
-    out.push(v[0]);
-    out.push(v[1]);
-    out.push(v[2]);
-    out.push(v[3]);
+    out[index] = v[0];
+    out[index + 1] = v[1];
+    out[index + 2] = v[2];
+    out[index + 3] = v[3];
   }
 
   return out;
@@ -841,7 +908,16 @@ export function linear4(
 }
 
 export function length4(start: Vec4): number {
-  return sqrt(dot4(start, start));
+  return length4Components(start[0], start[1], start[2], start[3]);
+}
+
+export function length4Components(
+  x: number,
+  y: number,
+  z: number,
+  w: number
+): number {
+  return sqrt(x * x + y * y + z * z + w * w);
 }
 
 export function max4(
@@ -944,15 +1020,15 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
 
   if (cosom < 0.0) {
     cosom = -cosom;
-    to1[0] = -to[1];
-    to1[1] = -to[2];
-    to1[2] = -to[3];
-    to1[3] = -to[0];
+    to1[0] = -to[0];
+    to1[1] = -to[1];
+    to1[2] = -to[2];
+    to1[3] = -to[3];
   } else {
-    to1[0] = to[1];
-    to1[1] = to[2];
-    to1[2] = to[3];
-    to1[3] = to[0];
+    to1[0] = to[0];
+    to1[1] = to[1];
+    to1[2] = to[2];
+    to1[3] = to[3];
   }
 
   // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
@@ -970,16 +1046,15 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
   }
 
   // calculate final values
-  out[1] = scale0 * from[1] + scale1 * to1[0];
-  out[2] = scale0 * from[2] + scale1 * to1[1];
-  out[3] = scale0 * from[3] + scale1 * to1[2];
-  out[0] = scale0 * from[0] + scale1 * to1[3];
+  out[1] = scale0 * from[1] + scale1 * to1[1];
+  out[2] = scale0 * from[2] + scale1 * to1[2];
+  out[3] = scale0 * from[3] + scale1 * to1[3];
+  out[0] = scale0 * from[0] + scale1 * to1[0];
 
   return out;
 }
 
 // Vec method aggregations
-
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T, out?: T): T;
   ceil(vec: T, out?: T): T;
@@ -991,6 +1066,7 @@ export type VecMethods<T extends Vec> = {
   empty(out?: T): T;
   flatten(list: T[], out?: number[]): number[];
   floor(vec: T, out?: T): T;
+  forward(vec: T, out?: T): T;
   inverse(vec: T, out?: T): T;
   length(vec: T): number;
   linear(start: T, end: T, t: number, out?: T): T;
@@ -1015,6 +1091,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   empty: empty1,
   flatten: flatten1,
   floor: floor1,
+  forward: forward1,
   inverse: inverse1,
   length: length1,
   linear: linear1,
@@ -1038,6 +1115,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   empty: empty2,
   flatten: flatten2,
   floor: floor2,
+  forward: forward2,
   inverse: inverse2,
   length: length2,
   linear: linear2,
@@ -1061,6 +1139,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   empty: empty3,
   flatten: flatten3,
   floor: floor3,
+  forward: forward3,
   inverse: inverse3,
   length: length3,
   linear: linear3,
@@ -1084,6 +1163,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   empty: empty4,
   flatten: flatten4,
   floor: floor4,
+  forward: forward4,
   inverse: inverse4,
   length: length4,
   linear: linear4,

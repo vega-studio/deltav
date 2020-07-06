@@ -949,6 +949,7 @@ export class UserInputEventManager {
     if (!startView) startView = emptyView;
 
     return {
+      canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       mouse,
       screen: {
         position: mouse.currentPosition
@@ -994,6 +995,7 @@ export class UserInputEventManager {
     if (!startView) startView = emptyView;
 
     return {
+      canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       touch,
       screen: {
         position

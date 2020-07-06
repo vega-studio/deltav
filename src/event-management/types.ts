@@ -17,37 +17,53 @@ export enum MouseButton {
 }
 
 export interface IEventInteraction {
+  /**
+   * This is the root canvas element the events are related to. This allows us
+   * to have some additional information and unsafe controls over our context we
+   * are working with.
+   */
+  canvas?: HTMLCanvasElement;
   /** Metrics of the interaction in screen space */
   screen: {
     position: Vec2;
   };
   /**
-   * The View the touch was 'down' on. The position stored is the screen position relative to the view.
+   * The View the event was 'down' on. The position stored is the screen
+   * position relative to the view.
    */
   start: {
-    /** Position the touch started relative to the view */
+    /** Position the event started relative to the view */
     position: Vec2;
-    /** The immediate view beneath the touch when the touch started */
+    /** The immediate view beneath the event when the event started */
     view: View<IViewProps>;
-    /** All of the views beneath the touch when the touch started */
+    /** All of the views beneath the event when the event started */
     views: {
-      /** The position of the touch where it started relative to the view */
+      /** The position of the event where it started relative to the view */
       position: Vec2;
-      /** A view beneath the start position of the touch, but possibly not the immediate view */
+      /**
+       * A view beneath the start position of the event, but possibly not the
+       * immediate view
+       */
       view: View<IViewProps>;
     }[];
   };
-  /** The View Immediately underneath the touch. The position stored is the screen position relative to the view. */
+  /**
+   * The View Immediately underneath the event. The position stored is the
+   * screen position relative to the view.
+   */
   target: {
-    /** The position of the touch relative to the target */
+    /** The position of the event relative to the target */
     position: Vec2;
-    /** The view imeediately beneath the touch */
+    /** The view imeediately beneath the event */
     view: View<IViewProps>;
-    /** All views beneath the touch (views that may be overlapping within the area) */
+    /**
+     * All views beneath the event (views that may be overlapping within the
+     * area)
+     */
     views: {
-      /** The position of the touch relative to the view indicated */
+      /** The position of the event relative to the view indicated */
       position: Vec2;
-      /** One of the view's beneath the touch currently. */
+      /** One of the view's beneath the event currently. */
       view: View<IViewProps>;
     }[];
   };

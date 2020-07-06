@@ -1,5 +1,8 @@
 import { Instance } from "../../../instance-provider";
-import { AutoEasingLoopStyle } from "../../../math/auto-easing-method";
+import {
+  AutoEasingLoopStyle,
+  AutoEasingMethod
+} from "../../../math/auto-easing-method";
 import { Vec, VecMath, VecMethods } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
@@ -65,6 +68,21 @@ function isEasingAttribute<T extends Instance>(
   return (
     Boolean(attr) && attr.easing && attr.size !== undefined && attr.size <= 4
   );
+}
+
+/**
+ * Make a utility method to make easing attributes easier to understand how to
+ * construct.
+ */
+export function createEasingAttribute<T extends Instance>(
+  attr: Omit<
+    IInstanceAttribute<T>,
+    "resource" | "childAttributes" | "parentAttribute" | "block" | "blockIndex"
+  > & {
+    easing: AutoEasingMethod<Vec>;
+  }
+) {
+  return attr;
 }
 
 /**
@@ -343,7 +361,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * Easing provides some unique destructuring for the packed in vertex information.
+   * Easing provides some unique destructuring for the packed in vertex
+   * information.
    */
   processAttributeDestructuring(
     _layer: Layer<Instance, ILayerProps<Instance>>,
@@ -353,19 +372,22 @@ export class EasingIOExpansion extends BaseIOExpansion {
     instanceAttributes: IInstanceAttribute<Instance>[],
     _uniforms: IUniform[]
   ): string {
-    // We analyze our instance attributes for easing attributes. When we find an attribute with
-    // easing, we can make a quick assumption about the names of attributes provided that we can easily
-    // use to destructure a properly named attribute that contains the correct algorithm to produce
-    // the specified easing for the attribute.
+    // We analyze our instance attributes for easing attributes. When we find an
+    // attribute with easing, we can make a quick assumption about the names of
+    // attributes provided that we can easily use to destructure a properly
+    // named attribute that contains the correct algorithm to produce the
+    // specified easing for the attribute.
     const out = "";
 
     for (let i = 0, iMax = instanceAttributes.length; i < iMax; ++i) {
       const attribute = instanceAttributes[i];
 
-      // If this is the source easing attribute, we must add it in as an eased method along with a calculation for the
-      // Easing interpolation time value based on the current time and the injected start time of the change.
+      // If this is the source easing attribute, we must add it in as an eased
+      // method along with a calculation for the Easing interpolation time value
+      // based on the current time and the injected start time of the change.
       if (!attribute.easing || !attribute.size) continue;
-      // Get the base name of the attribute since the original name gets changed for the expansion process.
+      // Get the base name of the attribute since the original name gets changed
+      // for the expansion process.
       const baseName = this.baseAttributeName.get(attribute);
 
       if (!baseName) {
@@ -378,7 +400,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
       // Clear the basename out as it's only needed for this operation.
       this.baseAttributeName.delete(attribute);
 
-      // We first write in the time calculation based on the loop style of the easing method
+      // We first write in the time calculation based on the loop style of the
+      // easing method
       const time = `_${baseName}_time`;
       const duration = `_${baseName}_duration`;
       const startTime = `_${baseName}_start_time`;
@@ -448,8 +471,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         }
       }
 
-      // After the time calculation we inject the actual easing equation to calculate the value needed
-      // for the attribute in the shader
+      // After the time calculation we inject the actual easing equation to
+      // calculate the value needed for the attribute in the shader
       this.setDeclaration(
         declarations,
         baseName,

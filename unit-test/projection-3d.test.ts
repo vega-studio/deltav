@@ -35,6 +35,16 @@ const ORIGIN_CAMERA = new Camera({
   fov: 90 * TO_RADIANS,
 });
 
+const ORIGIN_CAMERA_ORTHO = new Camera({
+  type: CameraProjectionType.ORTHOGRAPHIC,
+  left: -SCREEN.renderWidth / 2,
+  right: SCREEN.renderWidth / 2,
+  top: SCREEN.renderHeight / 2,
+  bottom: -SCREEN.renderHeight / 2,
+  near: 1,
+  far: 1000
+});
+
 const ANGLED_CAMERA = new Camera({
   type: CameraProjectionType.PERSPECTIVE,
   width: SCREEN.renderWidth,
@@ -135,67 +145,109 @@ describe('View 3D projections', () => {
       const v: Vec4 = [0, 0, -1, 1];
       if (ORIGIN_CAMERA.projectionOptions.type !== CameraProjectionType.PERSPECTIVE) return;
 
-      projectToScreen(
+      let r = projectToScreen(
         ORIGIN_CAMERA.projection,
         v,
         ORIGIN_CAMERA.projectionOptions.width,
         ORIGIN_CAMERA.projectionOptions.height,
-        v
       );
 
-      assert2(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2]);
+      assert2(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      r = projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+      );
+
+      assert2(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2]);
     });
 
     it ("Should project to the middle of the screen near plane", () => {
       const v: Vec4 = [0, 0, -1, 1];
       if (ORIGIN_CAMERA.projectionOptions.type !== CameraProjectionType.PERSPECTIVE) return;
 
-      projectToScreen(
+      let r = projectToScreen(
         ORIGIN_CAMERA.projection,
         v,
         ORIGIN_CAMERA.projectionOptions.width,
         ORIGIN_CAMERA.projectionOptions.height,
-        v
       );
 
-      assert4(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, -1, 1]);
+      assert4(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, -1, 1]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      r = projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+      );
+
+      assert2(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, -1, 1]);
     });
 
     it ("Should project to the middle of the screen far plane", () => {
       const v: Vec4 = [0, 0, -1000, 1];
       if (ORIGIN_CAMERA.projectionOptions.type !== CameraProjectionType.PERSPECTIVE) return;
 
-      projectToScreen(
+      let r = projectToScreen(
         ORIGIN_CAMERA.projection,
         v,
         ORIGIN_CAMERA.projectionOptions.width,
-        ORIGIN_CAMERA.projectionOptions.height,
-        v
+        ORIGIN_CAMERA.projectionOptions.height
       );
 
-      assert4(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, 1, 1]);
+      assert4(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, 1, 1]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      r = projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+      );
+
+      assert2(r, [SCREEN.renderWidth / 2, SCREEN.renderHeight / 2, 1, 1]);
     });
 
     it ("Should project to the left of the screen", () => {
-      const v: Vec4 = [0, 0, -1, 1];
+      let v: Vec4 = [0, 0, -1, 1];
       const r = rotation4x4(0, 45 * TO_RADIANS, 0);
       transform4(r, v, v);
 
       if (ORIGIN_CAMERA.projectionOptions.type !== CameraProjectionType.PERSPECTIVE) return;
 
-      projectToScreen(
+      let t = projectToScreen(
         ORIGIN_CAMERA.projection,
         v,
         ORIGIN_CAMERA.projectionOptions.width,
-        ORIGIN_CAMERA.projectionOptions.height,
-        v
+        ORIGIN_CAMERA.projectionOptions.height
       );
 
-      assert2(v, [0, SCREEN.renderHeight / 2]);
+      assert2(t, [0, SCREEN.renderHeight / 2]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      v = [-SCREEN.renderWidth / 2, 0, -1, 1];
+
+      t = projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+      );
+
+      assert2(t, [0, SCREEN.renderHeight / 2]);
     });
 
     it ("Should project to the right of the screen", () => {
-      const v: Vec4 = [0, 0, -1, 1];
+      let v: Vec4 = [0, 0, -1, 1];
       const r = rotation4x4(0, -45 * TO_RADIANS, 0);
       transform4(r, v, v);
 
@@ -210,10 +262,24 @@ describe('View 3D projections', () => {
       );
 
       assert2(v, [SCREEN.renderWidth, SCREEN.renderHeight / 2]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      v = [SCREEN.renderWidth / 2, 0, -1, 1];
+
+      projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+        v
+      );
+
+      assert2(v, [SCREEN.renderWidth, SCREEN.renderHeight / 2]);
     });
 
     it ("Should project to the top of the screen", () => {
-      const v: Vec4 = [0, 0, -1, 1];
+      let v: Vec4 = [0, 0, -1, 1];
       const r = rotation4x4(26.5650511771 * TO_RADIANS, 0, 0);
       transform4(r, v, v);
 
@@ -228,10 +294,24 @@ describe('View 3D projections', () => {
       );
 
       assert2(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      v = [0, SCREEN.renderHeight / 2, -1, 1];
+
+      projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
+        v
+      );
+
+      assert2(v, [SCREEN.renderWidth / 2, SCREEN.renderHeight]);
     });
 
     it ("Should project to the bottom of the screen", () => {
-      const v: Vec4 = [0, 0, -1, 1];
+      let v: Vec4 = [0, 0, -1, 1];
       const r = rotation4x4(-26.5650511771 * TO_RADIANS, 0, 0);
       transform4(r, v, v);
 
@@ -242,6 +322,20 @@ describe('View 3D projections', () => {
         v,
         ORIGIN_CAMERA.projectionOptions.width,
         ORIGIN_CAMERA.projectionOptions.height,
+        v
+      );
+
+      assert2(v, [SCREEN.renderWidth / 2, 0]);
+
+      if (ORIGIN_CAMERA_ORTHO.projectionOptions.type !== CameraProjectionType.ORTHOGRAPHIC) return;
+
+      v = [0, -SCREEN.renderHeight / 2, -1, 1];
+
+      projectToScreen(
+        ORIGIN_CAMERA_ORTHO.projection,
+        v,
+        SCREEN.renderWidth,
+        SCREEN.renderHeight,
         v
       );
 

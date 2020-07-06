@@ -1,4 +1,4 @@
-import { Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4 } from "./vector";
 export declare type Mat2x2 = [number, number, number, number];
 export declare type Mat3x3 = [number, number, number, number, number, number, number, number, number];
 export declare type Mat4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
@@ -61,20 +61,55 @@ export declare const M432 = 14;
 /** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export declare const M433 = 15;
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * Temp Matrix 3x3 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any exepcted value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export declare const M3R: Mat3x3[];
+/**
+ * Temp Matrix 4x4 registers. Can be used for intermediate operations. These
+ * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
+ * don't expect them to retain any exepcted value.
+ *
+ * These are here more for
+ * nesting operations and providing the nested operation something to use so it
+ * doesn't need to allocate memory to operate.
+ *
+ * If you use too many registers, you can get weird behavior as some operations
+ * may use some registers as well.
+ *
+ * Again, this is EXTREMELY advanced useage and should NOT be your first
+ * inclination to utilize.
+ */
+export declare const M4R: Mat4x4[];
+/**
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export declare function apply2x2(m: Mat2x2 | undefined, m00: number, m01: number, m10: number, m11: number): Mat2x2;
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export declare function apply3x3(m: Mat3x3 | undefined, m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number): Mat3x3;
 /**
- * It's often much faster to apply values to an existing matrix than to declare a new matrix inline. But it can be
- * annoying and bulky to write the complete array to value sequence to perform such an application. Thus, this method
+ * It's often much faster to apply values to an existing matrix than to declare
+ * a new matrix inline. But it can be annoying and bulky to write the complete
+ * array to value sequence to perform such an application. Thus, this method
  * exists to make the process a little more bearable.
  */
 export declare function apply4x4(m: Mat4x4 | undefined, m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number): Mat4x4;
@@ -97,22 +132,25 @@ export declare function determinant3x3(mat: Mat3x3): number;
  */
 export declare function determinant4x4(mat: Mat4x4): number;
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 9 OPS, 1 method call
  */
 export declare function affineInverse2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 | null;
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 56 OPS, 10 method calls
  */
 export declare function affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null;
 /**
- * Calculates the inverse of ONLY purely affine transforms. A general inverse is considered too
- * computationally expensive and alternative strategies should be considered.
+ * Calculates the inverse of ONLY purely affine transforms. A general inverse is
+ * considered too computationally expensive and alternative strategies should be
+ * considered.
  *
  * 164 OPS + 3 temp 3x3 uses + 13 method calls
  */
@@ -160,8 +198,6 @@ export declare function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): 
  * Concat a list of matrices in this order:
  * concat4x4(A, B, C, D, E, ..., N);
  * T = A * B * C * E * ... * N
- *
- * Thus the far right is considered the 'first' operation and the far left is the last.
  */
 export declare function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4;
 /**
@@ -195,18 +231,18 @@ export declare function subtract3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): 
  */
 export declare function subtract4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4;
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 4 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 4 OPS
  */
 export declare function Hadamard2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2;
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 9 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 9 OPS
  */
 export declare function Hadamard3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3;
 /**
- * Hadamard product of two matrices. This is essentially multiplying each element by each element between the two.
- * 16 OPS
+ * Hadamard product of two matrices. This is essentially multiplying each
+ * element by each element between the two. 16 OPS
  */
 export declare function Hadamard4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4;
 /**
@@ -231,33 +267,38 @@ export declare function transpose3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3;
  */
 export declare function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4;
 /**
- * This makes a shear 2d matrix that shears parallel to the x-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 2d matrix that shears parallel to the x-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export declare function shearX2x2(radians: number, out?: Mat2x2): Mat2x2;
 /**
- * This makes a shear 2d matrix that shears parallel to the y-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 2d matrix that shears parallel to the y-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export declare function shearY2x2(radians: number, out?: Mat2x2): Mat2x2;
 /**
- * This makes a shear 3d matrix that shears parallel to the x-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the x-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export declare function shearX4x4(radians: number, out?: Mat4x4): Mat4x4;
 /**
- * This makes a shear 3d matrix that shears parallel to the y-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the y-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export declare function shearY4x4(radians: number, out?: Mat4x4): Mat4x4;
 /**
- * This makes a shear 3d matrix that shears parallel to the z-axis.
- * The radians should be input as a value between, non inclusive (-90 degrees, 90 degrees).
- * A shear >= 90 degrees is non-sensical as it would shear to infinity and beyond.
+ * This makes a shear 3d matrix that shears parallel to the z-axis. The radians
+ * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
+ * A shear >= 90 degrees is non-sensical as it would shear to infinity and
+ * beyond.
  */
 export declare function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4;
 /**
@@ -269,7 +310,8 @@ export declare function transform2(m: Mat2x2, v: Vec2, out?: Vec2): Vec2;
  */
 export declare function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3;
 /**
- * Transforms a Vec3 by the provided matrix but treats the Vec3 as a [x, y, z, 1] Vec4.
+ * Transforms a Vec3 by the provided matrix but treats the Vec3 as a
+ * [x, y, z, 1] Vec4.
  */
 export declare function transform3as4(m: Mat4x4, v: Vec3, out?: Vec4): Vec4;
 /**
@@ -289,28 +331,35 @@ export declare function toString3x3(mat: Mat3x3): string;
  */
 export declare function toString4x4(mat: Mat4x4): string;
 /**
- * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
- * receive a matrix that will perform rotations by that amount in that order.
+ * Makes a 2x2 rotation matrix based on a single rotational value. Good for
+ * rotating 2 dimensional values with as little information and operations as
+ * possible.
+ */
+export declare function rotation2x2(radians: number, out?: Mat2x2): Mat2x2;
+/**
+ * We only support Euler X then Y then Z rotations. Specify the rotation values
+ * for each axis to receive a matrix that will perform rotations by that amount
+ * in that order.
  *
- * All of these rotations follow the right hand rule. If you need a different mixture of ordered
- * rotations, then consider simply concatenating 3 rotations like so (for a ZYZ example):
+ * All of these rotations follow the right hand rule. If you need a different
+ * mixture of ordered rotations, then consider simply concatenating 3 rotations
+ * like so (for a ZYZ example):
  *
- * multiply4x4(
+ * multiply4x4(rotation4x4(0, 0, Z), multiply4x4(rotation4x4(0, Y, 0),
  *   rotation4x4(0, 0, Z),
- *   multiply4x4(
- *     rotation4x4(0, Y, 0),
- *     rotation4x4(0, 0, Z),
  *   )
  * );
  *
- * This will create a ZYZ rotation (with the right handed rule). If you need the operations to be left handed you will
- * have to use the transpose and do a little extra math to make it happen or hand craft your own method for generating
- * rotational matrices.
+ * This will create a ZYZ rotation (with the right handed rule). If you need the
+ * operations to be left handed you will have to use the transpose and do a
+ * little extra math to make it happen or hand craft your own method for
+ * generating rotational matrices.
  */
 export declare function rotation4x4(x: number, y: number, z: number, out?: Mat4x4): Mat4x4;
 /**
- * We only support Euler X then Y then Z rotations. Specify the rotation values for each axis to
- * receive a matrix that will perform rotations by that amount in that order.
+ * We only support Euler X then Y then Z rotations. Specify the rotation values
+ * for each axis to receive a matrix that will perform rotations by that amount
+ * in that order.
  */
 export declare function rotation4x4by3(v: Vec3, out?: Mat4x4): Mat4x4;
 /**
@@ -350,21 +399,23 @@ export declare function perspective4x4(fovRadians: number, width: number, height
  */
 export declare function perspectiveFOVY4x4(fovRadians: number, width: number, height: number, near: number, far: number, out?: Mat4x4): Mat4x4;
 /**
- * Generate a projection matrix with no perspective. Useful for flat 2D or isometric rendering or other similar special
- * case renderings.
+ * Generate a projection matrix with no perspective. Useful for flat 2D or
+ * isometric rendering or other similar special case renderings.
  */
 export declare function orthographic4x4(left: number, right: number, bottom: number, top: number, near: number, far: number, out?: Mat4x4): Mat4x4;
 /**
- * Performs the operations to project a Vec4 to screen coordinates using a projection matrix. The x and y of the out
- * Vec4 will be the final projection, w should be resolved to 1, and the z coordinate will be in homogenous coordinates
- * where -1 <= z <= 1 iff z lies within frustum near and far planes.
+ * Performs the operations to project a Vec4 to screen coordinates using a
+ * projection matrix. The x and y of the out Vec4 will be the final projection,
+ * w should be resolved to 1, and the z coordinate will be in homogenous
+ * coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
  */
 export declare function projectToScreen(proj: Mat4x4, point: Vec4, width: number, height: number, out?: Vec4): Vec4;
 /**
- * Performs the operations to project a Vec3 to screen coordinates as a Vec4 with a w of value 1.
- * using a projection matrix. The x and y of the out Vec4 will be the final projection, w should be resolved to 1,
- * and the z coordinate will be in homogenous coordinates where -1 <= z <= 1 iff z lies within frustum near and
- * far planes.
+ * Performs the operations to project a Vec3 to screen coordinates as a Vec4
+ * with a w of value 1. using a projection matrix. The x and y of the out Vec4
+ * will be the final projection, w should be resolved to 1, and the z coordinate
+ * will be in homogenous coordinates where -1 <= z <= 1 iff z lies within
+ * frustum near and far planes.
  */
 export declare function project3As4ToScreen(proj: Mat4x4, point: Vec3Compat, width: number, height: number, out?: Vec4): Vec4;
 /**
@@ -390,4 +441,65 @@ export declare function copy3x3(m: Mat3x3): Mat3x3;
 /**
  * Copies a Mat4x4 into a new storage object
  */
-export declare function copy4x4(m: Mat4x4): Mat4x4;
+export declare function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4;
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t                 | b u                 | c v                 | 0
+ * d t                 | e u                 | f v                 | 0
+ * g t                 | h u                 | i v                 | 0
+ * t (a x + d y + g z) | u (b x + e y + h z) | v (c x + f y + i z) | 1
+ */
+export declare function TRS4x4(scale: Vec3, rotation: Mat3x3, translation: Vec3, out?: Mat4x4): void;
+/**
+ * This is a MAX speed TRS Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t | b t | c t | 0
+ * d u | e u | f u | 0
+ * g v | h v | i v | 0
+ * x   | y   | z   | 1)
+ */
+export declare function SRT4x4(scale: Vec3, rotation: Mat3x3, translation: Vec3, out?: Mat4x4): void;
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ *
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t           | b u           | 0 | 0
+ * c t           | d u           | 0 | 0
+ * 0             | 0             | 0 | 0
+ * t (a x + c y) | u (b x + d y) | 0 | 1
+ */
+export declare function TRS4x4_2D(scale: Vec2, rotation: Mat2x2, translation: Vec2, out?: Mat4x4): void;
+/**
+ * This performs the order multiplication of SRT in reverse as TRS.
+ *
+ * This is a MAX speed SRT Matrix generation method that optimizing the
+ * computations needed to create an SRT from separate smaller components.
+ *
+ * This specifically creates a full transform for 3D computations by creating
+ * the appropriate 4x4 that properly represents the complete transform to world
+ * space.
+ *
+ * NOTE: The rotation is injected
+ *
+ * This optimization was computed utilizing wolfram alpha:
+ * a t | b t | 0 | 0
+ * c u | d u | 0 | 0
+ * 0   | 0   | 1 | 0
+ * x   | y   | 0 | 1
+ */
+export declare function SRT4x4_2D(scale: Vec2Compat, rotation: Mat2x2, translation: Vec2Compat, out?: Mat4x4): void;

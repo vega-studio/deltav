@@ -1,5 +1,4 @@
 import {
-  AutoEasingMethod,
   CommonMaterialOptions,
   createAttribute,
   GLSettings,
@@ -200,7 +199,6 @@ export class CubeLayer<
           update: o => o.rotation
         }),
         createAttribute({
-          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "t",
           size: InstanceAttributeSize.THREE,
           update: o => o.position

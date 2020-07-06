@@ -17,8 +17,9 @@ function isOrthographic(val: Camera): val is Camera {
 }
 
 /**
- * A View renders a perspective of a scene to a given surface or surfaces. The 3D view system assumes a y-axis
- * up system. The view also assumes the camera is located in the middle of the viewport.
+ * A View renders a perspective of a scene to a given surface or surfaces. The
+ * 3D view system assumes a y-axis up system. The view also assumes the camera
+ * is located in the middle of the viewport.
  */
 export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   static defaultProps: IView3DProps = {
@@ -49,9 +50,8 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
   }
 
   /**
-   * This operation makes sure we have the view camera adjusted to the new viewport's needs.
-   * For default behavior this ensures that the coordinate system has no distortion or perspective, orthographic,
-   * top left as 0,0 with +y axis pointing down.
+   * This operation makes sure we have the view camera adjusted to the new
+   * viewport's needs.
    */
   fitViewtoViewport(
     _surfaceDimensions: Bounds<never>,
@@ -87,8 +87,38 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         y: this.projection.viewBounds.y / this.pixelRatio
       });
       this.projection.screenBounds.d = this;
-    } else if (!isOrthographic(this.props.camera)) {
-      console.warn("View3D does not support orthographic cameras yet.");
+    } else if (isOrthographic(this.props.camera)) {
+      const width = viewBounds.width;
+      const height = viewBounds.height;
+
+      const viewport = {
+        near: 1,
+        far: 100000,
+        left: -width / 2,
+        right: width / 2,
+        top: height / 2,
+        bottom: -height / 2
+      };
+
+      const camera = this.props.camera;
+
+      camera.projectionOptions = Object.assign(
+        camera.projectionOptions,
+        viewport
+      );
+
+      camera.update();
+
+      this.projection.pixelRatio = this.pixelRatio;
+      this.projection.viewBounds = viewBounds;
+      this.projection.viewBounds.d = this;
+      this.projection.screenBounds = new Bounds<View<TViewProps>>({
+        height: this.projection.viewBounds.height / this.pixelRatio,
+        width: this.projection.viewBounds.width / this.pixelRatio,
+        x: this.projection.viewBounds.x / this.pixelRatio,
+        y: this.projection.viewBounds.y / this.pixelRatio
+      });
+      this.projection.screenBounds.d = this;
     }
   }
 

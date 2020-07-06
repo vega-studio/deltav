@@ -59,8 +59,8 @@ export class LayerInteractionHandler<
    * Handles mouse down gestures for a layer within a view
    */
   handleMouseOver(_view: BaseProjection<any>, _interaction: IMouseInteraction) {
-    // This is the mouse over for the view itself. We should probably just let the mouse over events handle the interactions
-    // With the instances
+    // This is the mouse over for the view itself. We should probably just let
+    // the mouse over events handle the interactions With the instances
   }
 
   /**
@@ -71,8 +71,8 @@ export class LayerInteractionHandler<
     _interaction: ITouchInteraction,
     _touch: ISingleTouchInteraction
   ) {
-    // This is the touch over for the view itself. We should probably just let the touch over events handle the interactions
-    // With the instances
+    // This is the touch over for the view itself. We should probably just let
+    // the touch over events handle the interactions With the instances
   }
 
   /**
@@ -83,7 +83,8 @@ export class LayerInteractionHandler<
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseDown } = this.layer.props;
 
-      // If we have a listener for either event we should continue to process the event in more detail
+      // If we have a listener for either event we should continue to process
+      // the event in more detail
       if (onMouseDown) {
         const world = view.screenToWorld(interaction.screen.position);
         const instances: T[] = [];
@@ -125,7 +126,8 @@ export class LayerInteractionHandler<
   ) {
     const { onTouchDown, onTouchOver } = this.layer.props;
 
-    // Validate the conditions on the layer justifies having events be processed for the layer
+    // Validate the conditions on the layer justifies having events be processed
+    // for the layer
     if (
       !this.layer.picking ||
       this.layer.picking.type === PickType.NONE ||
@@ -157,8 +159,9 @@ export class LayerInteractionHandler<
     };
 
     // Add the instances involved in the touch down to our down state items.
-    // Being down also happens to cause the touch to be in an 'over' state as well
-    // This is more unique to touch as there is not a cursor following the event before the event happens
+    // Being down also happens to cause the touch to be in an 'over' state as
+    // well This is more unique to touch as there is not a cursor following the
+    // event before the event happens
     const isTouchDown = mapInjectDefault(
       this.isTouchDown,
       touch.touch.touch.identifier,
@@ -185,8 +188,8 @@ export class LayerInteractionHandler<
    * Handles mouse out events for a layer within the view
    */
   handleMouseOut(view: BaseProjection<any>, interaction: IMouseInteraction) {
-    // This will fire an instance mouse out for any over instances in the queue since we left the view
-    // Thus no instances shall be considered 'over'
+    // This will fire an instance mouse out for any over instances in the queue
+    // since we left the view Thus no instances shall be considered 'over'
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseOut } = this.layer.props;
 
@@ -242,7 +245,8 @@ export class LayerInteractionHandler<
 
     onTouchOut(info);
 
-    // We must clear out ALL touch over state for the touch as we are not even on the view anymore
+    // We must clear out ALL touch over state for the touch as we are not even
+    // on the view anymore
     this.isTouchOver.delete(touch.touch.touch.identifier);
   }
 
@@ -284,8 +288,8 @@ export class LayerInteractionHandler<
 
     // Broadcast the mouse up event to the layers
     onMouseUp(info);
-    // Now we look to see which of the mouse down instances were NOT in the mouse up instances to detect mouse up
-    // outside events
+    // Now we look to see which of the mouse down instances were NOT in the
+    // mouse up instances to detect mouse up outside events
     instances.forEach(instance => this.isMouseDown.delete(instance));
     // If no mouse downs remain, then we simply stop here
     if (this.isMouseDown.size <= 0 || !onMouseUpOutside) return;
@@ -360,8 +364,8 @@ export class LayerInteractionHandler<
       touch.touch.touch.identifier,
       new Set()
     );
-    // Now we look to see which of the touch down instances were NOT in the touch up instances to detect touch up
-    // outside events
+    // Now we look to see which of the touch down instances were NOT in the
+    // touch up instances to detect touch up outside events
     instances.forEach(instance => isTouchDown.delete(instance));
 
     // If no touch downs remain, then we simply stop here
@@ -384,7 +388,8 @@ export class LayerInteractionHandler<
     // Clear the touch down state information
     this.isTouchDown.delete(touch.touch.touch.identifier);
 
-    // If no more touches are considered down anymore, then we have an all end event
+    // If no more touches are considered down anymore, then we have an all end
+    // event
     if (this.isTouchDown.size <= 0 && onTouchAllEnd) {
       info = {
         interaction,
@@ -401,14 +406,16 @@ export class LayerInteractionHandler<
   }
 
   /**
-   * Mouse move events on the layer will detect when instances have their item newly over or just moved on
+   * Mouse move events on the layer will detect when instances have their item
+   * newly over or just moved on
    */
   handleMouseMove(view: BaseProjection<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     const { onMouseOver, onMouseMove, onMouseOut } = this.layer.props;
 
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
-      // If we have a listener for either event we should continue to process the event in more detail
+      // If we have a listener for either event we should continue to process
+      // the event in more detail
       if (onMouseOver || onMouseMove || onMouseOut) {
         let info: IMousePickInfo<T>;
         const world = view.screenToWorld(interaction.screen.position);
@@ -428,7 +435,8 @@ export class LayerInteractionHandler<
         const isCurrentlyOver = new Set<T>();
         instances.forEach(o => isCurrentlyOver.add(o));
 
-        // Broadcast the the picking info for all instances that the mouse moved off of
+        // Broadcast the the picking info for all instances that the mouse moved
+        // off of
         if (onMouseOut) {
           const noLongerOver: T[] = [];
 
@@ -451,8 +459,8 @@ export class LayerInteractionHandler<
           if (noLongerOver.length > 0) onMouseOut(info);
         }
 
-        // MOUSE OVER
-        // Broadcast the picking info for newly over instances to any of the layers listeners if needed
+        // MOUSE OVER Broadcast the picking info for newly over instances to any
+        // of the layers listeners if needed
         if (onMouseOver) {
           const notOverInstances = instances.filter(
             o => !this.isMouseOver.has(o)
@@ -469,8 +477,8 @@ export class LayerInteractionHandler<
           if (notOverInstances.length > 0) onMouseOver(info);
         }
 
-        // MOUSE MOVE
-        // Broadcast the the picking info for all instances that the mouse moved on
+        // MOUSE MOVE Broadcast the the picking info for all instances that the
+        // mouse moved on
         if (onMouseMove) {
           // This is the pick info object we will broadcast from the layer
           info = {
@@ -485,7 +493,8 @@ export class LayerInteractionHandler<
           onMouseMove(info);
         }
 
-        // We store the current hovered over items as our over item list for next interaction
+        // We store the current hovered over items as our over item list for
+        // next interaction
         this.isMouseOver = isCurrentlyOver;
       }
     }
@@ -503,7 +512,8 @@ export class LayerInteractionHandler<
     const { onTouchOver, onTouchMove, onTouchOut } = this.layer.props;
 
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
-      // If we have a listener for either event we should continue to process the event in more detail
+      // If we have a listener for either event we should continue to process
+      // the event in more detail
       if (onTouchOver || onTouchMove || onTouchOut) {
         let info: ITouchPickInfo<T>;
         const world = view.screenToWorld(touch.screen.position);
@@ -530,7 +540,8 @@ export class LayerInteractionHandler<
         const isCurrentlyOver = new Set<T>();
         instances.forEach(o => isCurrentlyOver.add(o));
 
-        // Broadcast the the picking info for all instances that the touch moved off of
+        // Broadcast the the picking info for all instances that the touch moved
+        // off of
         if (onTouchOut) {
           const noLongerOver: T[] = [];
 
@@ -554,8 +565,8 @@ export class LayerInteractionHandler<
           if (noLongerOver.length > 0) onTouchOut(info);
         }
 
-        // TOUCH OVER
-        // Broadcast the picking info for newly over instances to any of the layers listeners if needed
+        // TOUCH OVER Broadcast the picking info for newly over instances to any
+        // of the layers listeners if needed
         if (onTouchOver) {
           const notOverInstances = instances.filter(o => !isTouchOver.has(o));
           info = {
@@ -571,8 +582,8 @@ export class LayerInteractionHandler<
           if (notOverInstances.length > 0) onTouchOver(info);
         }
 
-        // TOUCH MOVE
-        // Broadcast the the picking info for all instances that the touch moved on
+        // TOUCH MOVE Broadcast the the picking info for all instances that the
+        // touch moved on
         if (onTouchMove) {
           // This is the pick info object we will broadcast from the layer
           info = {
@@ -588,7 +599,8 @@ export class LayerInteractionHandler<
           onTouchMove(info);
         }
 
-        // We store the current hovered over items as our over item list for next interaction
+        // We store the current hovered over items as our over item list for
+        // next interaction
         this.isMouseOver = isCurrentlyOver;
       }
     }

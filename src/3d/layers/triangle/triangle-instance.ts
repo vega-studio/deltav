@@ -1,6 +1,6 @@
 import { observable } from "../../../instance-provider";
 import { Color } from "../../../types";
-import { IInstance3DOptions, Instance3D } from "../base/instance-3d";
+import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d";
 
 /** Customizes a new Triangle instance */
 export interface ITriangleOptions extends IInstance3DOptions {

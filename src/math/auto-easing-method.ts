@@ -226,7 +226,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -246,7 +246,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -266,7 +266,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -286,7 +286,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -306,7 +306,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -327,7 +327,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -347,7 +347,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -367,7 +367,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -388,7 +388,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -409,7 +409,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -429,7 +429,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -450,7 +450,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -471,7 +471,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -492,7 +492,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -512,7 +512,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -534,7 +534,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 
@@ -561,7 +561,7 @@ $\{easingMethod} {
     float(1.0 - cosom > 0.0000001)
   );
 
-  return scale.x * start + scale.y * end;
+  return scale.x * start + scale.y * end1;
 }
 `;
 

@@ -21,7 +21,6 @@ import {
     eulerToQuat,
     exponentQuat,
     fromEulerAxisAngleToQuat,
-    fromOrderedEulerToQuat,
     imaginaryQuat,
     inverseQuat,
     iQuat,
@@ -37,6 +36,7 @@ import {
     oneQuat,
     Quaternion,
     realQuat,
+    rotateVectorByUnitQuat,
     scaleQuat,
     slerpUnitQuat,
     toEulerFromQuat,
@@ -48,6 +48,7 @@ import {
     compare1,
     compare3,
     compare4,
+    forward3,
     fuzzyCompare4,
     Vec1,
     Vec3,
@@ -1254,6 +1255,62 @@ describe("Quaternion", () => {
           -40 * TO_RADIANS,
           -180 * TO_RADIANS
         ]
+      );
+    });
+  });
+
+  describe("Transform Vector", () => {
+    it ('Should rotate on y-axis 90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([0, 1, 0], 90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [-1, 0, 0]
+      );
+    });
+
+    it ('Should rotate on y-axis -90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([0, 1, 0], -90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [1, 0, 0]
+      );
+    });
+
+    it ('Should rotate on x-axis 90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([1, 0, 0], 90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [0, 1, 0]
+      );
+    });
+
+    it ('Should rotate on x-axis -90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([1, 0, 0], -90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [0, -1, 0]
+      );
+    });
+
+    it ('Should rotate on z-axis 90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([0, 0, 1], 90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [0, 0, -1]
+      );
+    });
+
+    it ('Should rotate on z-axis -90 degress', () => {
+      const v = forward3();
+      const q = fromEulerAxisAngleToQuat([0, 0, 1], -90 * TO_RADIANS);
+      fuzzyAssert3(
+        rotateVectorByUnitQuat(v, q),
+        [0, 0, -1]
       );
     });
   });

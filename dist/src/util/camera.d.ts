@@ -84,7 +84,7 @@ export declare class Camera {
      * Quick generation of a camera with properties. None make any sense and should be set appropriately.
      * ie - View2D handles setting these values correctly for you.
      */
-    static makeOrthographic(): Camera;
+    static makeOrthographic(options?: Partial<ICameraOrthographicOptions>): Camera;
     /**
      * Quick generation of a camera with perspective properties.
      */
@@ -106,7 +106,7 @@ export declare class Camera {
      * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
      * of the camera viewing the world.
      */
-    lookAt(position: Vec3, up: Vec3): void;
+    lookAt(position: Vec3, up?: Vec3): void;
     /**
      * This is a scale distortion the camera views the world with. A scale of 2 along an axis, means the camera will view
      * 2x the amount of the world along that axis (thus having a visual compression if the screen dimensions do

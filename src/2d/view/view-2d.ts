@@ -75,11 +75,12 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         viewport
       );
       camera.position = [
-        viewBounds.width / 2.0,
-        -viewBounds.height / 2.0,
+        viewBounds.width / (2.0 * this.pixelRatio),
+        viewBounds.height / (2.0 * this.pixelRatio),
         camera.position[2]
       ];
       camera.scale = [scaleX, -scaleY, 1.0];
+      // Always face the -z direction
       camera.lookAt(add3(camera.position, [0, 0, -1]), [0, 1, 0]);
       camera.update();
 
@@ -93,7 +94,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
       });
       this.screenBounds.d = this;
     } else if (!isOrthographic(this.props.camera)) {
-      console.warn("View2D does not support non-orthographic cameras yet.");
+      console.warn("View2D does not support non-orthographic cameras.");
     }
   }
 

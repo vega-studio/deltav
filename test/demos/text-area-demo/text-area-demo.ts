@@ -22,8 +22,8 @@ import { BaseDemo } from "../../common/base-demo";
 import { DEFAULT_RESOURCES, STORY } from "../../types";
 
 const texts = [
-  `ohello imagination abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washington lol, NFL abcedefg,
-  how check it now, Valar Morghulis, Valar Dohaeris, mother of dragons7 blue, brown, green
+  `ohello imagination abcde\rfghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ yoyo, west virginia, washing\nton lol, NFL abcedefg,
+  how check it now, Valar Morg\n\rhulis, Valar Dohaeris, mother of dragons7 blue, brown, green
   are you`,
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz,.()*&^%$#@!<>?":"[]`,
   ` A B C D E F G a b c d e f g 1 2 3 4 5 6 7 8 9`,

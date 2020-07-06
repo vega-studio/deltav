@@ -105,8 +105,8 @@ function generateWords(text: string): string[] {
       }
     });
 
-    // Create an element with text "/n" to indicate a new line will be created
-    wordsToLayout.push("/n");
+    // Create an element with text "\n" to indicate a new line will be created
+    wordsToLayout.push("\n");
   }
 
   const lastLine = lines[lines.length - 1];
@@ -1399,7 +1399,7 @@ export class TextAreaLayer<
       ) {
         const word = wordsToLayout[i];
 
-        if (word === "/n") {
+        if (word === "\n") {
           currentLabels.push(NewLineCharacterMode.NEWLINE);
         } else {
           const label = new LabelInstance({

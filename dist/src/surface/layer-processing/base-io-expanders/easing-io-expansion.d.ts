@@ -1,9 +1,20 @@
 import { Instance } from "../../../instance-provider";
+import { AutoEasingMethod } from "../../../math/auto-easing-method";
+import { Vec } from "../../../math/vector";
 import { ShaderDeclarationStatements, ShaderIOHeaderInjectionResult } from "../../../shaders/processing/base-shader-io-injection";
 import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../../types";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
+/**
+ * Make a utility method to make easing attributes easier to understand how to
+ * construct.
+ */
+export declare function createEasingAttribute<T extends Instance>(attr: Omit<IInstanceAttribute<T>, "resource" | "childAttributes" | "parentAttribute" | "block" | "blockIndex"> & {
+    easing: AutoEasingMethod<Vec>;
+}): Pick<IInstanceAttribute<T>, "update" | "name" | "easing" | "qualifier" | "size"> & {
+    easing: AutoEasingMethod<import("../../../math/vector").Vec1Compat>;
+};
 /**
  * This is an expansion handler for easing attributes.
  */
@@ -26,7 +37,8 @@ export declare class EasingIOExpansion extends BaseIOExpansion {
      */
     validate<T extends Instance, U extends ILayerProps<T>>(_layer: Layer<T, U>, instanceAttributes: IInstanceAttribute<T>[], _vertexAttributes: IVertexAttribute[], _uniforms: IUniform[]): boolean;
     /**
-     * Easing provides some unique destructuring for the packed in vertex information.
+     * Easing provides some unique destructuring for the packed in vertex
+     * information.
      */
     processAttributeDestructuring(_layer: Layer<Instance, ILayerProps<Instance>>, declarations: ShaderDeclarationStatements, _metrics: MetricsProcessing, _vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<Instance>[], _uniforms: IUniform[]): string;
     /**

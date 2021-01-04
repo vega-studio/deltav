@@ -202,11 +202,13 @@ export class RenderTarget {
     }
 
     if (Array.isArray(this._buffers.color)) {
-      this._buffers.color.forEach(buffer => {
-        if (buffer instanceof Texture) {
-          textures.push(buffer);
+      for (let i = 0, iMax = this._buffers.color.length; i < iMax; ++i) {
+        const buffer = this._buffers.color[i];
+
+        if (buffer.buffer instanceof Texture) {
+          textures.push(buffer.buffer);
         }
-      });
+      }
     }
 
     if (this._buffers.depth instanceof Texture) {
@@ -217,10 +219,17 @@ export class RenderTarget {
       textures.push(this._buffers.stencil);
     }
 
+    // If we have textures specified, we now measure them all to ensure they are
+    // the same width and height dimensions. This width and height will also be
+    // used as this render target's dimensions. This is how the texture buffers
+    // specify the dimensions of the render target and ignores other set
+    // dimensions applied to the render target.
     if (textures.length > 0 && textures[0].data) {
       const { width, height } = textures[0].data;
 
-      textures.forEach(texture => {
+      for (let i = 0, iMax = textures.length; i < iMax; ++i) {
+        const texture = textures[i];
+
         if (!texture.data) return;
         const { width: checkWidth, height: checkHeight } = texture.data;
 
@@ -234,11 +243,14 @@ export class RenderTarget {
 
           this.removeTextureFromBuffer(texture);
         }
-      });
+      }
 
       this._width = width;
       this._height = height;
-    } else if (!this._width || !this._height) {
+    }
+
+    // Ensure valid dimensions were established for this render target.
+    if (!this._width || !this._height) {
       console.warn(
         "A RenderTarget was not able to establish valid dimensions. This target had no texture buffers and did not specify valid width and height values.",
         this

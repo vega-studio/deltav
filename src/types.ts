@@ -76,6 +76,7 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
+  FLOAT_ARRAY = 97,
   VEC4_ARRAY = 98,
   TEXTURE = 99
 }
@@ -88,13 +89,19 @@ export enum VertexAttributeSize {
 }
 
 /**
- * These are valid atlas sizes available. We force a power of 2 to be utilized.
+ * These are valid texture sizes available. We force a power of 2 to be utilized.
  * We do not allow crazy large sizes as browsers have very real caps on
  * resources. This helps implementations be a little smarter about what they are
  * using. Future versions may increase this number as GPUs improve and standards
  * allow greater flexibility.
  */
 export enum TextureSize {
+  /**
+   * Specialized sizing that makes the texture stick with the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  _SCREEN = -1,
   _2 = 0x01 << 1,
   _4 = 0x01 << 2,
   _8 = 0x01 << 3,
@@ -1168,7 +1175,7 @@ export type UpdateProp<T> = {
  * Speedy check to see if a value is a string type or not
  */
 export function isString(val?: any): val is string {
-  return val ?? val.charCodeAt !== void 0;
+  return val && val.charCodeAt !== void 0;
 }
 
 /**
@@ -1285,5 +1292,17 @@ export enum ViewOutputInformationType {
    * This is the most common information output style. It provides an
    * alternative color per fragment
    */
-  COLOR4
+  COLOR4,
+  /**
+   * This indicates this will output a fragment to a Glow filter target. Glow
+   * targets are used post processing to indicate which texels in the post
+   * operation should provide a bloom of a given color.
+   */
+  GLOW,
+  /**
+   * This indicates this will output a fragment to a Glow filter target. Blur
+   * targets are used post processing to indicate which texels in the post
+   * operation should be blurred.
+   */
+  BLUR
 }

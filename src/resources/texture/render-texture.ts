@@ -1,5 +1,6 @@
+import { WebGLRenderer } from "../../gl";
 import { Texture, TextureOptions } from "../../gl/texture";
-import { ResourceType } from "../../types";
+import { ResourceType, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { BaseResourceOptions } from "../base-resource-manager";
 
@@ -40,17 +41,20 @@ export function createTexture(
 /**
  * Type guard for the Render Texture resource type.
  */
-export function isRenderTextureResource(val: BaseResourceOptions): val is IRenderTextureResource {
-  return val && val.type === ResourceType.ATLAS;
+export function isRenderTextureResource(
+  val: any
+): val is IRenderTextureResource {
+  return val && val.key !== void 0 && val.type === ResourceType.TEXTURE;
 }
 
 /**
  * This defines a general purpose texture that can be rendered into and be
  * rendered.
  */
-export class RenderTexture extends IdentifyByKey implements IRenderTextureResource {
+export class RenderTexture extends IdentifyByKey
+  implements IRenderTextureResource {
   /** Set the type of the resource to explicitally be an atlas resource */
-  type: ResourceType.TEXTURE;
+  type: ResourceType.TEXTURE = ResourceType.TEXTURE;
   /** This is the height of the texture */
   height: number;
   /** This is the width of the texture */
@@ -65,10 +69,12 @@ export class RenderTexture extends IdentifyByKey implements IRenderTextureResour
   /** The actual texture resource generated */
   texture: Texture;
 
-  constructor(options: IRenderTextureResource) {
+  constructor(options: IRenderTextureResource, renderer?: WebGLRenderer) {
     super(options);
-    Object.assign(this, options);
-    this.createTexture();
+    this.height = options.height;
+    this.width = options.width;
+    this.textureSettings = options.textureSettings;
+    this.createTexture(renderer);
   }
 
   /**
@@ -83,7 +89,7 @@ export class RenderTexture extends IdentifyByKey implements IRenderTextureResour
   /**
    * This generates the texture object needed for this atlas.
    */
-  private createTexture() {
+  private createTexture(renderer?: WebGLRenderer) {
     if (this.texture) return;
 
     // Establish the settings to be applied to the Texture. Provide some default
@@ -95,12 +101,35 @@ export class RenderTexture extends IdentifyByKey implements IRenderTextureResour
     };
 
     let canvas;
+    let width, height;
+    const size = renderer?.getRenderSize() || [1, 1];
 
-    // If no data is provided in the settings
+    if (this.width === TextureSize._SCREEN) {
+      if (!renderer) {
+        throw new Error(
+          "Can not generate Render Texture with a dynamic width or height when the WebGLRenderer is not available"
+        );
+      }
+
+      width = size[0];
+    } else width = this.width;
+
+    if (this.height === TextureSize._SCREEN) {
+      if (!renderer) {
+        throw new Error(
+          "Can not generate Render Texture with a dynamic width or height when the WebGLRenderer is not available"
+        );
+      }
+
+      height = size[1];
+    } else height = this.height;
+
+    // If no data is provided in the settings, then this is an empty texture
+    // object with no initial state.
     if (!this.textureSettings?.data) {
       canvas = document.createElement("canvas");
-      canvas.width = this.width;
-      canvas.height = this.height;
+      canvas.width = width;
+      canvas.height = height;
     }
 
     // Generate the texture

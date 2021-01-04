@@ -539,9 +539,9 @@ export class WebGLRenderer {
    */
   setScissor(
     bounds?: { x: number; y: number; width: number; height: number },
-    target?: RenderTarget | RenderTarget[]
+    target?: RenderTarget | RenderTarget[] | null
   ) {
-    target = target || this.state.currentRenderTarget || undefined;
+    target = target || this.state.currentRenderTarget || null;
 
     // Multiple render targets are required to be the same height so we just
     // examine the first
@@ -609,7 +609,7 @@ export class WebGLRenderer {
    * This sets the context to render into the indicated target
    */
   setRenderTarget(target: RenderTarget | RenderTarget[] | null) {
-    // Don't need to do anything forsame render targets
+    // Don't need to do anything for same render targets
     if (this.state.currentRenderTarget === target) return;
 
     // If we have multiple targets for MRT then make sure

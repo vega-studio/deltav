@@ -21,6 +21,8 @@ import {
   ResourceRouter
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
+import { RenderTextureResourceManager } from "../resources/texture/render-texture-resource-manager";
+import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
 import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
@@ -34,7 +36,6 @@ import {
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
@@ -66,6 +67,10 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
  * Default resource managers the system will utilize to handle default / basic resources.
  */
 export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = [
+  {
+    type: ResourceType.TEXTURE,
+    manager: new RenderTextureResourceManager()
+  },
   {
     type: ResourceType.ATLAS,
     manager: new AtlasResourceManager({})
@@ -944,10 +949,11 @@ export class Surface {
     const size = view.viewBounds;
     const background = view.props.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
+    const renderTarget = target || view.renderTarget || null;
 
     // If the view has an output target to render into, then we shift our target
     // focus to that target Make sure the correct render target is applied
-    renderer.setRenderTarget(target || view.renderTarget || null);
+    renderer.setRenderTarget(renderTarget);
 
     // Set the scissor rectangle.
     renderer.setScissor(
@@ -957,7 +963,7 @@ export class Surface {
         width: size.width,
         height: size.height
       },
-      target
+      renderTarget
     );
     // If a background is established, we should clear the background color
     // Specified for this context
@@ -991,7 +997,7 @@ export class Surface {
     }
 
     // Render the scene with the provided view metrics
-    renderer.render(scene, target);
+    renderer.render(scene, renderTarget);
     // Indicate this view has been rendered for the given time allottment
     view.lastFrameTime = this.frameMetrics.currentTime;
   }
@@ -1428,6 +1434,7 @@ export class Surface {
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
+    this.resourceManager.resize();
 
     if (this.sceneDiffs) {
       const scenes = this.sceneDiffs.items;

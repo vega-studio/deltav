@@ -3,7 +3,6 @@ import * as datGUI from "dat.gui";
 import {
   add3,
   BasicSurface,
-  Camera2D,
   ClearFlags,
   createLayer,
   createView,
@@ -13,7 +12,6 @@ import {
   scale3,
   stopAnimationLoop,
   TextureSize,
-  View2D,
   View3D,
   ViewOutputInformationType,
 
@@ -23,14 +21,14 @@ import { Camera, CameraProjectionType } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
 import { CubeInstance } from "./cube/cube-instance";
 import { CubeLayer } from "./cube/cube-layer";
-import { RenderImageLayer } from "./render-image/render-image-layer";
 /**
  * A very basic demo proving the system is operating as expected
  */
 export class MultiRenderTargetDemo3D extends BaseDemo {
   /** Surface providers */
   providers = {
-    screenPass: new InstanceProvider<CubeInstance>()
+    screenPass: new InstanceProvider<CubeInstance>(),
+    cubes: new InstanceProvider<CubeInstance>()
   };
 
   /** GUI properties */
@@ -121,17 +119,16 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
 
         // Perform post processing with the resulting textures
         screen: {
-          views: {
-            main: createView(View2D, {
-              camera: new Camera2D(),
-              clearFlags: [],
-            })
-          },
-          layers: {
-            image: createLayer(RenderImageLayer, {
-              data
-            })
-          }
+          // views: {
+          //   main: createView(View2D, {
+          //     camera: new Camera2D(),
+          //     clearFlags: [],
+          //   })
+          // },
+          // layers: {
+          //   image: createLayer(RenderImageLayer, {
+          //   })
+          // }
         }
       })
     });

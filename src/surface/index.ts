@@ -1,4 +1,3 @@
-export * from "./base-io-sorting";
 export * from "./layer-interaction-handler";
 export * from "./layer-scene";
 export * from "./layer";

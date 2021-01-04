@@ -1,6 +1,11 @@
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
-import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
+import {
+  InstanceIOValue,
+  IResourceContext,
+  ResourceType,
+  TextureSize
+} from "../../types";
 import { BaseResourceManager } from "../base-resource-manager";
 import { IRenderTextureResource, RenderTexture } from "./render-texture";
 import { IRenderTextureResourceRequest } from "./render-texture-resource-request";
@@ -71,11 +76,14 @@ export class RenderTextureResourceManager extends BaseResourceManager<
     let resource = this.resources.get(options.key);
 
     if (resource) {
-      console.warn('Attempted to generate a RenderTexture that already exists for key', options.key);
+      console.warn(
+        "Attempted to generate a RenderTexture that already exists for key",
+        options.key
+      );
       return;
     }
 
-    resource = new RenderTexture(options);
+    resource = new RenderTexture(options, this.webGLRenderer);
     this.resources.set(options.key, resource);
   }
 
@@ -97,11 +105,47 @@ export class RenderTextureResourceManager extends BaseResourceManager<
   }
 
   /**
+   * Trigger that executes when the rendering context resizes. For this manager,
+   * we will update all textures with dimensions that are tied to the screen.
+   */
+  resize() {
+    const toUpdate = new Map<string, RenderTexture>();
+
+    this.resources.forEach((resource, key) => {
+      // Only do a resize of a texture if any of it's dimensions are tied to the
+      // screen.
+      if (
+        resource.width !== TextureSize._SCREEN &&
+        resource.height !== TextureSize._SCREEN
+      ) {
+        return;
+      }
+
+      // Remove the old texture
+      resource.texture.dispose();
+      const rendererSize = this.webGLRenderer?.getRenderSize() || [1, 1];
+
+      if (resource.width === TextureSize._SCREEN) {
+        resource.width = rendererSize[0];
+      }
+
+      if (resource.height === TextureSize._SCREEN) {
+        resource.height = rendererSize[1];
+      }
+
+      resource = new RenderTexture(resource, this.webGLRenderer);
+      toUpdate.set(key, resource);
+    });
+
+    toUpdate.forEach((resource, key) => this.resources.set(key, resource));
+  }
+
+  /**
    * This targets the specified resource and attempts to update it's settings.
    */
   updateResource(options: IRenderTextureResource) {
     const resource = this.resources.get(options.key);
     if (!resource) return;
-    console.warn('UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET');
+    console.warn("UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET");
   }
 }

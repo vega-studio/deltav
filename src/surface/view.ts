@@ -266,7 +266,7 @@ export abstract class View<
     // the outputType hullabaloo is moot.
     if (!output || !surface) return;
 
-    // We analyze the fragment shaders the layer has determined can provide
+    // We analyze the fragment shaders the layers have determined can provide
     // for this view for the indicated output types. Essentially, we use this
     // information to determine if all the layers provided can NOT provide for
     // specific outputTypes. We only create our RenderTarget based on what our
@@ -281,6 +281,14 @@ export abstract class View<
       );
     }
 
+    console.log(
+      "Supported buffer types our view provides",
+      Array.isArray(this.props.output?.buffers)
+        ? this.props.output?.buffers.map(b => b.outputType)
+        : this.props.output?.buffers
+    );
+    console.log("Supported output types from our layers", supportedOutputTypes);
+
     // Retrieve the RenderTextures for each buffer target we have specified
     let bufferTargets: ViewOutputTarget[] = [];
     const renderTextures = new Map<number, Texture>();
@@ -290,13 +298,15 @@ export abstract class View<
     });
     const dummyInstance = new Instance({});
 
-    if (isString(output)) {
+    if (isString(output.buffers)) {
       bufferTargets = [
         {
           outputType: ViewOutputInformationType.COLOR,
-          resource: output
+          resource: output.buffers
         }
       ];
+    } else {
+      bufferTargets = output.buffers;
     }
 
     for (let i = 0, iMax = bufferTargets.length; i < iMax; ++i) {
@@ -308,6 +318,11 @@ export abstract class View<
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
+        console.log(
+          "Render Target found for output type",
+          bufferTarget.outputType,
+          request
+        );
 
         if (!request.texture) {
           console.warn(
@@ -349,9 +364,11 @@ export abstract class View<
     let depthBuffer;
 
     if (output.depth) {
-      // Create a texture based output depth buffer
+      // Find the render target resource specified that is intended to store the
+      // depth buffer
       if (isString(output.depth)) {
-        // Create the depth buffer indicated
+        // Generate our request to retrieve the depth buffer from the manager
+        // handling the indicated texture.
         const request = textureRequest({
           key: output.depth
         });
@@ -403,6 +420,11 @@ export abstract class View<
         // on the surface
         retainTextureTargets: true
       });
+
+      console.log(
+        "GENERATED the render target for the view:",
+        this.renderTarget
+      );
     }
 
     // Non-MRT makes multiple render targets. One for each output type.

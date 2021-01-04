@@ -1,9 +1,7 @@
 import { WebGLStat } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
-import { BaseIOSorting } from "../../surface/base-io-sorting";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { injectShaderIO } from "../../surface/layer-processing/inject-shader-io";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -21,8 +19,10 @@ import {
 import { isDefined } from "../../util";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
+import { BaseIOSorting } from "./base-io-sorting";
 import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
 import { BaseShaderTransform } from "./base-shader-transform";
+import { injectShaderIO } from "./inject-shader-io";
 import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
 import { ShaderModuleUnit } from "./shader-module-unit";
@@ -100,29 +100,29 @@ export class ShaderProcessor {
     typeFilter?: number[],
     singleOutput?: boolean
   ) {
+    console.log("Merging fragment outputs:", shaders);
+
     let headers = "";
     let bodies = "";
     let fragmentOutput = "";
-    let declaration = "vec4 ";
-    const outputNames: string[] = [];
+    const outputNames = new Set<string>();
     const outputTypes: number[] = [];
     const usedTypes = new Set<number>();
     const typeToName = new Map<number, string>();
 
     // When MRT isn't enabled at all, then our fragment output simply writes
-    // directly to gl_FragColor
+    // directly to gl_FragColor (Our ES 3.0 converter will properly handle
+    // gl_FragColor later)
     if (!WebGLStat.MRT) {
       fragmentOutput = " = gl_FragColor";
     }
 
-    // When this is NOT an extension, we do NOT need a declaration header as the
-    // output will be declared in the header of the shader
-    else if (WebGLStat.MRT_EXTENSION) {
-      declaration = "";
-    }
+    // This aggregates all declarations that needed to be generated for the
+    // header so the
+    let outputDeclarations = "";
 
     shaders.forEach((s, i) => {
-      // If output is not allowed, then the found output in the sahder will
+      // If output is not allowed, then the found output in the shader will
       // simply map to a locally scoped variable instead of a specialized output
       // variable.
       let allowOutput = true;
@@ -132,7 +132,7 @@ export class ShaderProcessor {
       // The correct output index will be the index found in the target outputs.
       // If a match isn't made, then this particular shader is not going to be
       // an output to the target.
-      const fragDataIndex = targetOutputs.indexOf(s.outputType);
+      const outputLayoutLocation = targetOutputs.indexOf(s.outputType);
 
       if (typeFilter && typeFilter.indexOf(s.outputType) < 0) {
         allowOutput = false;
@@ -142,9 +142,14 @@ export class ShaderProcessor {
         allowOutput = false;
       }
 
-      if (!singleOutput && fragDataIndex < 0) {
+      if (!singleOutput && outputLayoutLocation < 0) {
         allowOutput = false;
       }
+
+      console.log(
+        `Output type ${s.outputType} is flagged for output?`,
+        allowOutput
+      );
 
       usedTypes.add(s.outputType);
 
@@ -162,7 +167,12 @@ export class ShaderProcessor {
               console.error(
                 "Found multiple ${out} tokens in a single fragments shader. This is not supported nor logical",
                 "If you need to use the declared output multiple times, use the assigned name",
-                "and don't wrap it repeatedly in the shader."
+                "and don't wrap it repeatedly in the shader.",
+                "eg-",
+                "void main() {",
+                "  ${out: myOutput} = value;",
+                "  vec4 somethingElse = myOutput;",
+                "}"
               );
               throw new Error("Invalid Shader Format");
             }
@@ -189,27 +199,48 @@ export class ShaderProcessor {
                 );
               }
 
+              if (outputNames.has(outputName)) {
+                throw new Error(
+                  "You can not declare the same output name in subsequent fragment shader outputs"
+                );
+              }
+
               // Check our type filter. If the current outputType of the shader
               // is NOT in the filter, then we have to exclude the name from the
               // output names AND we have to ensure the name specified has a
               // declaration as it will never be declared in the header.
-              let declare = declaration;
+              let declare = "";
               if (allowOutput) {
                 // We now have the output name this output will utilize
-                outputNames.push(outputName);
+                outputNames.add(outputName);
                 outputTypes.push(s.outputType);
+
+                // Handle the special case of the MRT extension where we output
+                // to the special case of gl_FragData
+                if (WebGLStat.MRT_EXTENSION) {
+                  fragmentOutput = ` = gl_FragData[${outputLayoutLocation}]`;
+                }
+
+                // Handle the MRT extension case where we have to create an
+                // 'out' declaration for the decalred output name.
+                else if (WebGLStat.MRT && WebGLStat.SHADERS_3_0) {
+                  // We don't handle the special case of glFragColor as that is
+                  // handled in the ES 3.0 transform.
+                  if (outputName !== "gl_FragColor") {
+                    outputDeclarations += `layout(location=${outputLayoutLocation}) out vec4 ${outputName};\n`;
+                  }
+                } else {
+                  throw new Error(
+                    `Could not generate a proper output declaration for the fragmnet shader output: ${outputName}`
+                  );
+                }
               } else {
                 declare = "vec4 ";
               }
 
-              // Handle the special case of the MRT extension
-              if (WebGLStat.MRT_EXTENSION && allowOutput) {
-                fragmentOutput = ` = gl_FragData[${fragDataIndex}]`;
-              }
-
               // Replace the token with just the name of the variable being
               // declared with the proper type sizing.
-              return `${declare}${outputName}${fragmentOutput} = `;
+              return `${declare}${outputName}${fragmentOutput}`;
             } else {
               throw new Error(
                 "Output in a shader requires an identifier ${out: <name required>}"
@@ -225,9 +256,9 @@ export class ShaderProcessor {
          * We use this to aggregate all of our main bodies and headers together
          */
         onMain(body, header) {
-          headers += header || "";
-          bodies += body || "";
-          return body || "";
+          headers += `\n${(header || "").trim()}`;
+          bodies += `\n  ${(body || "").trim()}`;
+          return (body || "").trim();
         }
       });
     });
@@ -243,9 +274,11 @@ export class ShaderProcessor {
       return ViewOutputInformationType.NONE;
     });
 
+    console.log("Merged Outputs", outputNames, outputTypes);
+
     return {
-      output: `${headers}\nvoid main() {\n${bodies}\n}`,
-      outputNames,
+      output: `${outputDeclarations}${headers}\nvoid main() {\n${bodies}\n}`,
+      outputNames: Array.from(outputNames.values()),
       outputTypes: usedOutputTypes
     };
   }
@@ -253,8 +286,8 @@ export class ShaderProcessor {
   /**
    * This analyzes desired target outputs and available outputs that output to
    * certain output types. This will match the targets with the available
-   * outputs and produce pre-compiled shaders that reflect the capabilities
-   * available of both target and provided.
+   * outputs and produce shaders that reflect the capabilities
+   * available of both target and provided outputs.
    *
    * This also takes into account the capabilities of the hardware. If MRT is
    * supported, the generated shaders will be combined as best as possible. If
@@ -265,6 +298,10 @@ export class ShaderProcessor {
     targetOutputs?: OutputFragmentShaderTarget,
     outputs?: OutputFragmentShaderSource
   ): OutputFragmentShader | null {
+    console.log("Processing layer fragment outputs", {
+      targetOutputs: JSON.parse(JSON.stringify(targetOutputs)),
+      outputs
+    });
     // If the view only is a simple string, then we assume the COLOR output of
     // the layer. If the layer does not specify a specific COLOR output, then
     // we assume the culminated output of all outputs of the layer is the
@@ -276,12 +313,15 @@ export class ShaderProcessor {
       // View expects a color output, layer only outputs a color, we are good
       // to simply output the layer to the view.
       if (isString(outputs)) {
-        const processed = this.mergeFragmentOutputs([
-          {
-            source: outputs,
-            outputType: ViewOutputInformationType.COLOR
-          }
-        ], [ViewOutputInformationType.COLOR]);
+        const processed = this.mergeFragmentOutputs(
+          [
+            {
+              source: outputs,
+              outputType: ViewOutputInformationType.COLOR
+            }
+          ],
+          [ViewOutputInformationType.COLOR]
+        );
 
         return [
           {
@@ -436,12 +476,15 @@ export class ShaderProcessor {
         );
 
         if (targetColor && outputs) {
-          const processed = this.mergeFragmentOutputs([
-            {
-              source: outputs,
-              outputType: ViewOutputInformationType.COLOR
-            },
-          ], targetTypes);
+          const processed = this.mergeFragmentOutputs(
+            [
+              {
+                source: outputs,
+                outputType: ViewOutputInformationType.COLOR
+              }
+            ],
+            targetTypes
+          );
 
           return [
             {
@@ -576,6 +619,8 @@ export class ShaderProcessor {
           uniforms
         );
       }
+
+      console.log({ vsHeaderDeclarations });
 
       // After we have aggregated all of our declarations, we now piece them
       // together

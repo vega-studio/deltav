@@ -900,6 +900,13 @@ export class GLState {
         this.gl.uniformMatrix4fv(location, false, v);
         break;
 
+      case MaterialUniformType.FLOAT_ARRAY:
+        v = uniform.value as MaterialUniformValue<
+          MaterialUniformType.FLOAT_ARRAY
+        >;
+        this.gl.uniform1fv(location, v);
+        break;
+
       case MaterialUniformType.TEXTURE:
         v = uniform.value as MaterialUniformValue<MaterialUniformType.TEXTURE>;
         this.willUseTextureUnit(v, location);

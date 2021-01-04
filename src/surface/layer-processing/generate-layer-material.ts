@@ -15,6 +15,7 @@ const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.FOUR]: MaterialUniformType.VEC4,
   [UniformSize.MATRIX3]: MaterialUniformType.MATRIX3x3,
   [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4,
+  [UniformSize.FLOAT_ARRAY]: MaterialUniformType.FLOAT_ARRAY,
   [UniformSize.TEXTURE]: MaterialUniformType.TEXTURE
 };
 

@@ -6,7 +6,8 @@
  * uniforms, resource uniforms, animation adjustments etc etc.
  */
 import { Instance } from "../../instance-provider/instance";
-import { ProcessShaderImportResults } from "../../shaders/processing/shader-processor";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
   IShaderInitialization,
@@ -15,10 +16,9 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal
 } from "../../types";
-import { BaseIOSorting } from "../base-io-sorting";
-import { ILayerProps, Layer } from "../layer";
-import { BaseIOExpansion } from "./base-io-expansion";
+import { BaseIOSorting } from "./base-io-sorting";
 import { packAttributes } from "./pack-attributes";
+import { ProcessShaderImportResults } from "./shader-processor";
 
 /**
  * Instance attribute typeguard

@@ -418,7 +418,9 @@ export class GLProxy {
         const uniformInfo = this.gl.getActiveUniform(program, i);
 
         if (uniformInfo) {
-          usedUniforms.add(uniformInfo.name);
+          // Special case for arrays where gl reports the name back with an
+          // array index appended
+          usedUniforms.add(uniformInfo.name.replace("[0]", ""));
         }
       }
     }
@@ -440,6 +442,8 @@ export class GLProxy {
         uniformToRemove.add(name);
       }
     });
+
+    console.log(material.uniforms, usedUniforms);
 
     uniformToRemove.forEach(name => {
       delete material.uniforms[name];
@@ -468,7 +472,7 @@ export class GLProxy {
    */
   compileRenderTarget(target: RenderTarget) {
     // If the gl target exists, then this is considered to be compiled already
-    if (target.gl) return;
+    if (target.gl) return true;
 
     // We will now create the frame buffer and render buffers and targets necessary
     // to make this render target work.
@@ -511,6 +515,7 @@ export class GLProxy {
       }[] = [];
       let isReady = true;
       glContext.colorBufferId = buffers;
+      const isSingleBuffer = target.buffers.color.length <= 1;
 
       target.buffers.color.forEach((buffer, i) => {
         if (!isReady) return;
@@ -520,7 +525,13 @@ export class GLProxy {
           if (isTextureReady(buffer.buffer)) {
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(gl, this.extensions, i, true, false),
+              indexToColorAttachment(
+                gl,
+                this.extensions,
+                i,
+                isSingleBuffer,
+                false
+              ),
               gl.TEXTURE_2D,
               buffer.buffer.gl.textureId,
               0
@@ -543,7 +554,13 @@ export class GLProxy {
             buffers.push({ data: rboId, outputType: buffer.outputType });
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(gl, this.extensions, i, true, false),
+              indexToColorAttachment(
+                gl,
+                this.extensions,
+                i,
+                isSingleBuffer,
+                false
+              ),
               gl.RENDERBUFFER,
               rboId
             );

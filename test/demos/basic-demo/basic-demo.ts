@@ -18,13 +18,18 @@ import {
   length2,
   nextFrame,
   onFrame,
+  PostEffect,
+  postProcess,
   scale2,
   Size,
+  TextureSize,
   Vec2,
   Vec2Compat,
-  View2D
+  View2D,
+  ViewOutputInformationType
 } from "../../../src";
 import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
+import { createTexture } from "../../../src/resources/texture/render-texture";
 import { BaseDemo } from "../../common/base-demo";
 
 const { random } = Math;
@@ -133,6 +138,20 @@ export class BasicDemo extends BaseDemo {
       cameras: {
         main: new Camera2D()
       },
+      resources: {
+        color: createTexture({
+          width: TextureSize._2048,
+          height: TextureSize._2048
+        }),
+        glow: createTexture({
+          width: TextureSize._2048,
+          height: TextureSize._2048
+        }),
+        blur: createTexture({
+          width: TextureSize._2048,
+          height: TextureSize._2048
+        })
+      },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
@@ -153,13 +172,26 @@ export class BasicDemo extends BaseDemo {
           }
         })
       }),
-      scenes: (_resources, providers, cameras) => ({
+      scenes: (resources, providers, cameras) => ({
         main: {
           views: {
             main: createView(View2D, {
               camera: cameras.main,
               background: [0, 0, 0, 1],
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              output: {
+                buffers: [
+                  {
+                    outputType: ViewOutputInformationType.COLOR,
+                    resource: resources.color.key
+                  },
+                  {
+                    outputType: ViewOutputInformationType.GLOW,
+                    resource: resources.glow.key
+                  }
+                ],
+                depth: true
+              }
             })
           },
           layers: {
@@ -177,6 +209,23 @@ export class BasicDemo extends BaseDemo {
               usePoints: true
             })
           }
+        },
+        postEffects: {
+          glowBlurHorizontal: PostEffect.gaussHorizontalBlur({
+            input: resources.glow,
+            output: resources.blur
+          }),
+          glowBlurVertical: PostEffect.gaussVerticalBlur({
+            input: resources.blur,
+            output: resources.glow
+          }),
+          combine: postProcess({
+            buffers: {
+              color: resources.color.key,
+              glow: resources.glow.key
+            },
+            shader: require("./example.fs")
+          })
         }
       })
     });

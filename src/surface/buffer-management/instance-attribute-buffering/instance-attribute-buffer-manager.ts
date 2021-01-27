@@ -425,7 +425,7 @@ export class InstanceAttributeBufferManager<
       this.geometry.maxInstancedCount = 0;
       // This is the material that is generated for the layer that utilizes all of the generated and
       // Injected shader IO and shader fragments
-      this.material = shaderIOInfo.material.clone();
+      this.material = this.makeLayerMaterial();
 
       // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
       // We can keep uniforms consistent across all Instances
@@ -528,12 +528,12 @@ export class InstanceAttributeBufferManager<
     }
 
     // Ensure material is defined
-    this.material = this.material || shaderIOInfo.material.clone();
+    this.material = this.material || this.makeLayerMaterial();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.geometry,
       this.material,
-      shaderIOInfo.model.drawMode
+      shaderIOInfo.drawMode
     );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.

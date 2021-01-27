@@ -90,10 +90,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     this.height = canvas.height = options.height;
     this.textureSettings = options.textureSettings;
 
-    if (
-      options.width === TextureSize._SCREEN ||
-      options.height === TextureSize._SCREEN
-    ) {
+    if (options.width < 0 || options.height < 0) {
       throw new Error(
         "TextureSize Error: An atlas does NOT support Screen Texture sizing."
       );

@@ -6,8 +6,8 @@ import {
   InstanceAttributeSize,
   InstanceDiffType
 } from "../../../types";
-import { uid } from "../../../util";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
+import { uid } from "../../../util/uid";
 import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
@@ -518,12 +518,13 @@ export class InstanceAttributePackingBufferManager<
 
       // Ensure the draw range covers every instance in the geometry.
       this.geometry.maxInstancedCount = 0;
-      // This is the material that is generated for the layer that utilizes all of the generated and
-      // Injected shader IO and shader fragments
-      this.material = shaderIOInfo.material.clone();
+      // This is the material that is generated for the layer that utilizes all
+      // of the generated and Injected shader IO and shader fragments
+      this.material = this.makeLayerMaterial();
 
-      // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
-      // We can keep uniforms consistent across all Instances
+      // Grab the global uniforms from the material and add it to the uniform's
+      // materialUniform list so that We can keep uniforms consistent across all
+      // Instances
       for (let i = 0, end = shaderIOInfo.uniforms.length; i < end; ++i) {
         const uniform = shaderIOInfo.uniforms[i];
         uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
@@ -661,12 +662,12 @@ export class InstanceAttributePackingBufferManager<
     }
 
     // Ensure material is defined
-    this.material = this.material || this.layer.shaderIOInfo.material.clone();
+    this.material = this.material || this.makeLayerMaterial();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.geometry,
       this.material,
-      this.layer.shaderIOInfo.model.drawMode
+      this.layer.shaderIOInfo.drawMode
     );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.

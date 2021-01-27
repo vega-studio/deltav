@@ -1,7 +1,9 @@
+import { Material } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { Vec2, Vec4 } from "../../math";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
 import { Layer } from "../layer";
+import { generateLayerMaterial } from "../layer-processing";
 import { LayerScene } from "../layer-scene";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
@@ -138,6 +140,23 @@ export abstract class BufferManagerBase<
    */
   incomingChangeList(changes: InstanceDiff<T>[]) {
     this.changeListContext = changes;
+  }
+
+  /**
+   * Default way to create the layer's material. This properly generates the
+   * material, mapping the fragment shaders over to the layer's view's render
+   * targetting system.
+   */
+  makeLayerMaterial(): Material {
+    const shaderInfo = this.layer.shaderIOInfo;
+
+    return generateLayerMaterial(
+      this.layer,
+      shaderInfo.vs,
+      shaderInfo.fs,
+      shaderInfo.uniforms,
+      shaderInfo.materialUniforms
+    );
   }
 
   /**

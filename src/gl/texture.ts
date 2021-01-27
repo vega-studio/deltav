@@ -1,5 +1,5 @@
 import { Omit } from "../types";
-import { uid } from "../util";
+import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 
@@ -20,6 +20,15 @@ export class Texture {
     return this._uid;
   }
   private _uid: number = uid();
+
+  /**
+   * Indicates this Texture has been disposed, meaning it is useless and invalid
+   * to use within the application.
+   */
+  public get disposed(): boolean {
+    return this._disposed;
+  }
+  private _disposed: boolean = false;
 
   /**
    * Anisotropic filtering level. See:
@@ -265,6 +274,8 @@ export class Texture {
       this.gl.proxy.disposeTexture(this);
     }
 
+    // Flag this texture as no longer useable.
+    this._disposed = true;
     // Ensure the large data object for the texture is cleared
     delete this._data;
   }

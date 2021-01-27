@@ -1,10 +1,6 @@
 import { compare4, copy4, flatten4, Vec4 } from "../math/vector";
-import { TypeVec, ViewOutputInformationType } from "../types";
-import {
-  indexToColorAttachment,
-  indexToTextureUnit,
-  textureUnitToIndex
-} from "./gl-decode";
+import { FragmentOutputType, TypeVec } from "../types";
+import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
@@ -412,17 +408,7 @@ export class GLState {
    * -1 specifies NONE
    * -2 specifies BACK
    */
-  setDrawBuffers(buffers: number[]) {
-    const attachments = buffers.map(buffer =>
-      indexToColorAttachment(
-        this.gl,
-        this.glProxy.extensions,
-        buffer,
-        false,
-        false
-      )
-    );
-
+  setDrawBuffers(attachments: number[]) {
     // See if a state change really is necessary
     let different = attachments.length !== this._drawBuffers.length;
 
@@ -556,7 +542,7 @@ export class GLState {
         // Look at each output the material is writing to. These outputs will be
         // in the order of location[0] - location[n]
         const fragOutputs = material.gl.outputsByProgram.get(programId);
-        const renderOutputs = this._renderTarget.getOutputTypes();
+        const renderOutputs = this._renderTarget.getGLBuffers();
 
         if (!fragOutputs || !renderOutputs) {
           console.warn(
@@ -569,20 +555,36 @@ export class GLState {
 
         // For each fragment output we must find the index of the corresponding
         // target output
-        for (let i = 0, iMax = fragOutputs.length; i < iMax; ++i) {
-          const output = fragOutputs[i];
-          const targetIndex = renderOutputs.indexOf(output);
+        for (let i = 0, iMax = renderOutputs.length; i < iMax; ++i) {
+          const renderOutput = renderOutputs[i];
+          const target = fragOutputs.find(
+            output => renderOutput?.outputType === output
+          );
 
           // The output type does not exist in the target outputs, thus we bind
-          // nothing
-          if (targetIndex < 0) {
-            attachments.push(-1);
-            continue;
+          // nothing. If a fragment has an output that does not exist, then no
+          // binding specification is needed (not even gl.NONE). If a render
+          // output exists, but the fragment has no output THEN we need a
+          // gl.NONE for that buffer.
+          if (target === void 0) {
+            attachments.push(this.gl.NONE);
+          }
+
+          // If our render target has specified the output target be disabled,
+          // then tell the buffer to render to nothing
+          else if (
+            this._renderTarget.disabledTargets.has(
+              renderOutput?.outputType || 0
+            )
+          ) {
+            attachments.push(this.gl.NONE);
           }
 
           // The output type exists so we use the index as the attachment
           // location
-          attachments.push(targetIndex);
+          else {
+            attachments.push(renderOutput?.attachment || this.gl.NONE);
+          }
         }
 
         // Apply our draw buffers in the appropriate manner.
@@ -623,9 +625,7 @@ export class GLState {
       for (let i = 0, iMax = material.gl.programId.length; i < iMax; ++i) {
         const program = material.gl.programId[i];
         if (program.outputTypes.length < targetCount) {
-          if (
-            program.outputTypes.indexOf(ViewOutputInformationType.COLOR) >= 0
-          ) {
+          if (program.outputTypes.indexOf(FragmentOutputType.COLOR) >= 0) {
             programId = program.id;
             targetCount = program.outputTypes.length;
           }
@@ -748,6 +748,7 @@ export class GLState {
     if (material.blending) {
       if (!this._blendingEnabled) {
         gl.enable(gl.BLEND);
+        this._blendingEnabled = true;
       }
 
       if (
@@ -766,6 +767,7 @@ export class GLState {
     } else {
       if (this._blendingEnabled) {
         gl.disable(gl.BLEND);
+        this._blendingEnabled = false;
       }
     }
 
@@ -1090,6 +1092,7 @@ export class GLState {
         "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
         needsUnit
       );
+      console.warn("Current GL State:", this);
       return needsUnit;
     }
 
@@ -1123,11 +1126,12 @@ export class GLState {
 
     // If by some voodoo we still have not provided a unit for a texture needing it, then we have a problem
     if (needsUnit.length > 0) {
-      console.warn(
+      console.error(
         this.debugContext,
         "There are too many textures being used for a single draw call. These textures will not be utilized on the GPU",
         needsUnit
       );
+      console.warn("Current GL State:", this);
     }
 
     return needsUnit;

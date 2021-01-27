@@ -6,3 +6,6 @@ export * from "./image-rasterizer";
 export * from "./pack-node";
 export * from "./sub-texture";
 export * from "./texture-io-expansion";
+export * from "./render-texture";
+export * from "./render-texture-resource-manager";
+export * from "./render-texture-resource-request";

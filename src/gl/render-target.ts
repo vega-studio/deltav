@@ -1,4 +1,4 @@
-import { ViewOutputInformationType } from "../types";
+import { FragmentOutputType } from "../types";
 import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
@@ -113,6 +113,18 @@ export class RenderTarget {
   private _validFramebuffer: boolean = false;
 
   /**
+   * This allows outputTargets to be specified as disabled so they will not
+   * receive rendering output.
+   */
+  public get disabledTargets(): Set<number> {
+    return this._disabledTargets;
+  }
+  public set disabledTargets(v: Set<number>) {
+    this._disabledTargets = v;
+  }
+  private _disabledTargets = new Set<number>();
+
+  /**
    * Flag indicating whether or not to preserve render targets that are textures
    * or not. This is set to true for when a RenderTarget is being disposed, thus
    * cleaning out the FBO and it's attachments, but we need the Texture to live
@@ -135,9 +147,13 @@ export class RenderTarget {
     fboByMaterial: WeakMap<Material, WebGLFramebuffer>;
     /** The color buffer(s) this target is rendering into */
     colorBufferId?:
-      | { data: WebGLRenderbuffer; outputType: number }
-      | { data: Texture; outputType: number }
-      | { data: WebGLRenderbuffer | Texture; outputType: number }[];
+      | { data: WebGLRenderbuffer; outputType: number; attachment: number }
+      | { data: Texture; outputType: number; attachment: number }
+      | {
+          data: WebGLRenderbuffer | Texture;
+          outputType: number;
+          attachment: number;
+        }[];
     /** The depth buffer this target is rendering into */
     depthBufferId?: WebGLRenderbuffer | Texture;
     /** The stencil buffer this target is rendering into */
@@ -157,44 +173,14 @@ export class RenderTarget {
     this._width = options.width || 0;
     this._height = options.height || 0;
     this.retainTextureTargets = options.retainTextureTargets || false;
-    this.getDimensions();
-  }
-
-  /**
-   * Free all resources associated with this render target.
-   */
-  dispose() {
-    if (this.gl) {
-      this.gl.proxy.disposeRenderTarget(this);
-    }
-  }
-
-  /**
-   * Retrieves all color buffers associated with this target and returns them as
-   * a guaranteed list.
-   */
-  getBuffers() {
-    if (Array.isArray(this.buffers.color)) {
-      return this.buffers.color;
-    } else if (this.buffers.color) {
-      return [this.buffers.color];
-    }
-
-    return [];
-  }
-
-  /**
-   * Gets an ordered list of all output types this render target handles.
-   */
-  getOutputTypes() {
-    return this.getBuffers().map(buffer => buffer.outputType);
+    this.calculateDimensions();
   }
 
   /**
    * This analyzes the buffers for Textures to infer the width and height. This
    * also ensures all Texture objects are the same size to prevent errors.
    */
-  private getDimensions() {
+  private calculateDimensions() {
     const textures: Texture[] = [];
 
     if (this._buffers.color instanceof Texture) {
@@ -259,6 +245,68 @@ export class RenderTarget {
   }
 
   /**
+   * Free all resources associated with this render target.
+   */
+  dispose() {
+    if (this.gl) {
+      this.gl.proxy.disposeRenderTarget(this);
+    }
+  }
+
+  /**
+   * Retrieves all color buffers associated with this target and returns them as
+   * a guaranteed list.
+   */
+  getBuffers() {
+    if (Array.isArray(this.buffers.color)) {
+      return this.buffers.color;
+    } else if (this.buffers.color) {
+      return [this.buffers.color];
+    }
+
+    return [];
+  }
+
+  /**
+   * Retrieves all generated GL buffers associated with this target and returns
+   * them as a guaranteed list.
+   *
+   * NOTE: This is NOT intended to be used outside of the GL rendering portions
+   * of the application. Messing with this or it's return values is EXTREMELY
+   * unadvised unless you absolutely know what you are doing. COnsider being
+   * safer with getBuffers instead.
+   */
+  getGLBuffers() {
+    if (!this.gl) {
+      console.warn(
+        "Attempted to retrieve gl buffers before the render target was compiled."
+      );
+      return [];
+    }
+
+    if (Array.isArray(this.gl.colorBufferId)) {
+      return this.gl.colorBufferId;
+    } else {
+      return [this.gl.colorBufferId];
+    }
+  }
+
+  /**
+   * Gets an ordered list of all output types this render target handles.
+   */
+  getOutputTypes() {
+    return this.getBuffers().map(buffer => buffer.outputType);
+  }
+
+  /**
+   * Retrieves the size of this render target (All buffers for this target will
+   * match these dimensions).
+   */
+  getSize() {
+    return [this._width, this._height];
+  }
+
+  /**
    * Retrieves all of the textures associated with this render target
    */
   getTextures() {
@@ -296,12 +344,10 @@ export class RenderTarget {
   isColorTarget() {
     if (Array.isArray(this.buffers.color)) {
       if (this.buffers.color.length === 1) {
-        return (
-          this.buffers.color[0].outputType === ViewOutputInformationType.COLOR
-        );
+        return this.buffers.color[0].outputType === FragmentOutputType.COLOR;
       }
     } else {
-      return this.buffers.color?.outputType === ViewOutputInformationType.COLOR;
+      return this.buffers.color?.outputType === FragmentOutputType.COLOR;
     }
 
     return false;

@@ -1,5 +1,5 @@
 import { ShaderInjectionTarget } from "../../types";
-import { shaderTemplate } from "../../util";
+import { shaderTemplate } from "../../util/shader-templating";
 import {
   ShaderModuleUnit,
   ShaderModuleUnitOptions
@@ -329,7 +329,7 @@ export class ShaderModule {
     // Pick a debugging target based on shader target
     const debugTarget =
       target === ShaderInjectionTarget.VERTEX ? debugModuleVS : debugModuleFS;
-    debugTarget("Processing Shader for id %o:", id);
+    debugTarget("Processing Shader for context %o:", id);
 
     // Internal checking method of the state of the process to find circular
     // dependencies
@@ -410,6 +410,7 @@ export class ShaderModule {
       dependentsErrors.forEach(error => errors.push(error));
       // Get the dependents for the module for processing
       const dependents = unit.dependents;
+      debugTarget("Module dependencies detected %o", dependents);
 
       if (dependents && dependents.length > 0) {
         for (let i = 0, iMax = dependents.length; i < iMax; ++i) {
@@ -490,9 +491,9 @@ export class ShaderModule {
     if (additionalModules) {
       let imports = "";
 
-      additionalModules.forEach(
-        moduleId => (imports += `$\{import: ${moduleId}}\n`)
-      );
+      additionalModules.forEach(moduleId => {
+        imports += `$\{import: ${moduleId}}\n`;
+      });
 
       modifedShader = imports + shader;
     }

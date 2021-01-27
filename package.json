@@ -15,6 +15,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "node scripts/dev",
+    "shader": "ts-node scripts/shader-module-snippets",
     "eslint": "eslint",
     "release": "node scripts/release",
     "start": "node scripts/heroku",
@@ -37,6 +38,7 @@
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.5",
     "@types/debug": "4.1.4",
+    "@types/fs-extra": "9.0.6",
     "@types/matter-js": "0.10.2",
     "@types/mocha": "5.2.7",
     "@types/node": "13.7.7",

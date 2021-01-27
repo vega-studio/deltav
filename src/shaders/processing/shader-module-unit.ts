@@ -23,6 +23,8 @@ export type ShaderModuleUnitOptions = Omit<Partial<ShaderModuleUnit>, "lock">;
  * system will use to resolve imports within a shader.
  */
 export class ShaderModuleUnit {
+  /** This description appears in the generated import snippets for writing GLSL */
+  description: string;
   private _isLocked: boolean;
   private _content: string;
   private _compatibility: ShaderInjectionTarget;

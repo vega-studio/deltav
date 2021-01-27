@@ -2,6 +2,7 @@ import {
   AutoEasingMethod,
   CommonMaterialOptions,
   createAttribute,
+  FragmentOutputType,
   GLSettings,
   ILayerProps,
   InstanceAttributeSize,
@@ -178,24 +179,60 @@ export class CubeLayer<
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
-      fs: require("./cube-layer.fs"),
+      vs: `
+        $\{import: projection, transform}
+        varying vec2 _texCoord;
+        varying vec4 _color;
+        varying vec4 _glow;
+
+        void main() {
+          vec4 pos = vec4(position * size, 1.0);
+          vec4 world = m * pos;
+          _texCoord = texCoord;
+          _glow = glow;
+          _color = color;
+
+          gl_Position = clipSpace(world.xyz);
+        }
+      `,
+      fs: [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: `
+            varying vec2 _texCoord;
+            varying vec4 _color;
+            varying vec4 _glow;
+
+            void main() {
+              float isBorder = float(_texCoord.x <= 0.05 || _texCoord.x > 0.95 || _texCoord.y < 0.05 || _texCoord.y > 0.95);
+
+              gl_FragColor = mix(
+                _color,
+                _glow,
+                isBorder
+              );
+            }
+          `
+        },
+        {
+          outputType: FragmentOutputType.GLOW,
+          source: `
+            void main() {
+              // Only write the front color to the glow filter
+              $\{out: glow} = mix(
+                vec4(0., 0., 0., 1.),
+                _glow,
+                isBorder
+              );
+            }
+          `
+        }
+      ],
       instanceAttributes: [
         createAttribute({
-          name: "s",
-          size: InstanceAttributeSize.THREE,
-          update: o => o.scale
-        }),
-        createAttribute({
-          easing: AutoEasingMethod.slerpQuatInOutCubic(1000),
-          name: "r",
-          size: InstanceAttributeSize.FOUR,
-          update: o => o.rotation
-        }),
-        createAttribute({
-          easing: AutoEasingMethod.easeInOutCubic(1000),
-          name: "t",
-          size: InstanceAttributeSize.THREE,
-          update: o => o.position
+          name: "m",
+          size: InstanceAttributeSize.MAT4X4,
+          update: o => o.matrix
         }),
         createAttribute({
           name: "size",
@@ -208,9 +245,10 @@ export class CubeLayer<
           update: o => o.color
         }),
         createAttribute({
-          name: "frontColor",
+          easing: AutoEasingMethod.easeInOutCubic(500),
+          name: "glow",
           size: InstanceAttributeSize.FOUR,
-          update: o => o.frontColor
+          update: o => o.glow
         })
       ],
       uniforms: [],
@@ -231,8 +269,7 @@ export class CubeLayer<
           update: (vertex: number) => tex[vertex]
         }
       ],
-      vertexCount: 36,
-      vs: require("./cube-layer.vs")
+      vertexCount: 36
     };
   }
 

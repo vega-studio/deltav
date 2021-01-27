@@ -1,4 +1,4 @@
-import { Omit, OutputFragmentShader, TypeVec } from "../types";
+import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { RenderTarget } from "./render-target";
@@ -7,6 +7,16 @@ import { IMaterialUniform, MaterialUniformType } from "./types";
 export type MaterialOptions = Omit<
   Partial<Material>,
   "clone" | "dispose" | "gl"
+>;
+
+/**
+ * For materials, we narrow the definition of a fragment shader mapping. It
+ * specifically maps RenderTargets (provided from the view) to the output
+ * fragment shader. This helps decouple our GL layer from the deltav constructs.
+ */
+export type MaterialFragmentShader = Map<
+  RenderTarget | null,
+  MapValueType<OutputFragmentShader>
 >;
 
 /**
@@ -71,7 +81,7 @@ export class Material {
    * outputs and determine which shader is most efficient and appropriate for
    * rendering to the current RenderTarget.
    */
-  fragmentShader: OutputFragmentShader;
+  fragmentShader: MaterialFragmentShader;
   /**
    * Stores any gl state associated with this object. Modifying this outside the
    * framework is almost guaranteed to break something.

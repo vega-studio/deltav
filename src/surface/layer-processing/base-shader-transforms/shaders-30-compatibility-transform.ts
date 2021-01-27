@@ -50,9 +50,14 @@ export class Shaders30CompatibilityTransform extends BaseShaderTransform {
 
       if (out.match(/gl_FragColor/g)) {
         out = out.replace(/gl_FragColor/g, "_FragColor");
-        const elements = out.split("\n");
-        elements.splice(3, 0, "layout(location = 0) out vec4 _FragColor;");
-        out = elements.join("\n");
+
+        // If no declaration was made for the frag color identifier, we must add
+        // one in as a special case.
+        if (!out.match("out vec4 _FragColor")) {
+          const elements = out.split("\n");
+          elements.splice(3, 0, "layout(location = 0) out vec4 _FragColor;");
+          out = elements.join("\n");
+        }
       }
     } else {
       out = out.replace(/^#version 300 es/g, "");

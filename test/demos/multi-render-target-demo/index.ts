@@ -1,1 +1,1 @@
-export * from './multi-render-target-demo';
+export * from "./multi-render-target-demo";

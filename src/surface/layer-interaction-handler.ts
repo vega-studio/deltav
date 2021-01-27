@@ -11,7 +11,7 @@ import {
   ITouchPickInfo,
   PickType
 } from "../types";
-import { mapGetWithDefault, mapInjectDefault } from "../util";
+import { mapGetWithDefault, mapInjectDefault } from "../util/common-operations";
 import { ILayerProps, Layer } from "./layer";
 
 /**

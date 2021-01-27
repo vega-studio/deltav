@@ -3,14 +3,14 @@ import { InstanceProvider } from "../../../instance-provider";
 import { Vec } from "../../../math";
 import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import {
+  FragmentOutputType,
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
   IVertexAttribute,
   UniformSize,
-  VertexAttributeSize,
-  ViewOutputInformationType
+  VertexAttributeSize
 } from "../../../types";
 import { CommonMaterialOptions } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
@@ -124,28 +124,28 @@ export class CircleLayer<
       fs: usePoints
         ? [
             {
-              outputType: ViewOutputInformationType.COLOR,
+              outputType: FragmentOutputType.COLOR,
               source: require("./circle-layer-points.fs")
             },
             {
-              outputType: ViewOutputInformationType.GLOW,
+              outputType: FragmentOutputType.GLOW,
               source: `
               void main() {
-                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+                $\{out: glow} = color;
               }
               `
             }
           ]
         : [
             {
-              outputType: ViewOutputInformationType.COLOR,
+              outputType: FragmentOutputType.COLOR,
               source: require("./circle-layer.fs")
             },
             {
-              outputType: ViewOutputInformationType.GLOW,
+              outputType: FragmentOutputType.GLOW,
               source: `
               void main() {
-                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+                $\{out: glow} = color;
               }
               `
             }

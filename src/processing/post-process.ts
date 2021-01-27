@@ -1,7 +1,11 @@
 import { Camera2D, IView2DProps, View2D } from "../2d";
 import { createView } from "../surface/view";
-import { IUniform, ShaderInjectionTarget } from "../types";
-import { createLayer } from "../util/create-util";
+import {
+  ILayerMaterialOptions,
+  IUniform,
+  ShaderInjectionTarget
+} from "../types";
+import { createLayer } from "../util/create-layer";
 import { PostProcessLayer } from "./layer/post-process-layer";
 
 export interface IPostProcess {
@@ -17,6 +21,11 @@ export interface IPostProcess {
    * provide the resource with the key "colorTextureKey".
    */
   buffers: Record<string, string>;
+  /**
+   * Custom material options to apply to the layer to aid in controlling
+   * blending etc.
+   */
+  material?: ILayerMaterialOptions;
   /** This is the shader program you will be using when you  */
   shader: string;
   /**
@@ -61,9 +70,11 @@ export function postProcess(options: IPostProcess) {
     layers: {
       screen: createLayer(PostProcessLayer, {
         printShader: options.printShader,
+        baseShaderModules: () => ({ fs: [], vs: [] }),
         buffers: options.buffers,
         fs: options.shader,
-        uniforms: options.uniforms
+        uniforms: options.uniforms,
+        materialOptions: options.material
       })
     }
   };

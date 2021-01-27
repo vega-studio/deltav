@@ -2,6 +2,7 @@ import { Attribute } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { IViewProps, View } from "../../surface/view";
 import {
   IInstanceAttribute,
   IInstancingUniform,
@@ -31,6 +32,12 @@ export type ShaderIOHeaderInjectionResult = {
 
 export type ShaderDeclarationStatements = Map<string, string>;
 
+export type ShaderDeclarationStatementLookup = {
+  fs: Map<View<IViewProps>, ShaderDeclarationStatements>;
+  vs: ShaderDeclarationStatements;
+  destructure: ShaderDeclarationStatements;
+};
+
 /**
  * This is the basis to allow the system to have additional shader injection capabilities.
  * This will cover an object or manager that wishes to inject elements into the header of the
@@ -47,7 +54,7 @@ export abstract class BaseShaderIOInjection {
     value: string,
     debugMessageCtx?: string
   ) {
-    if (declarations.get(key)) {
+    if (declarations.has(key)) {
       debug(
         "%s: Overriding declaration %s\nSetting new value: %s",
         debugMessageCtx || "Expand IO Declarations",

@@ -43,7 +43,15 @@ export function gaussHorizontalBlur(options: IGaussHorizontalBlur) {
       {
         name: "weight",
         size: UniformSize.FLOAT_ARRAY,
-        update: () => [0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216]
+        update: () => [
+          0.299478,
+          0.22598,
+          0.097046,
+          0.023687,
+          0.003279,
+          0.000257,
+          0.000011
+        ]
       }
     ]
   });

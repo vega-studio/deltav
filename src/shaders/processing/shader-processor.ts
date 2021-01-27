@@ -3,24 +3,27 @@ import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import {
+  FragmentOutputType,
   IInstanceAttribute,
   IInstancingUniform,
   IShaderInitialization,
-  IShaders,
   isString,
   IUniformInternal,
   IVertexAttributeInternal,
+  MapValueType,
   OutputFragmentShader,
   OutputFragmentShaderSource,
   OutputFragmentShaderTarget,
-  ShaderInjectionTarget,
-  ViewOutputInformationType
+  ShaderInjectionTarget
 } from "../../types";
-import { isDefined } from "../../util";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
 import { BaseIOSorting } from "./base-io-sorting";
-import { ShaderIOHeaderInjectionResult } from "./base-shader-io-injection";
+import {
+  ShaderDeclarationStatementLookup,
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult
+} from "./base-shader-io-injection";
 import { BaseShaderTransform } from "./base-shader-transform";
 import { injectShaderIO } from "./inject-shader-io";
 import { MetricsProcessing } from "./metrics-processing";
@@ -50,9 +53,11 @@ export interface IShaderProcessingResults<T extends Instance> {
 }
 
 /** Expected results from processing shader imports */
-export type ProcessShaderImportResults =
-  | (IShaders & { shaderModuleUnits: Set<ShaderModuleUnit> })
-  | null;
+export type ProcessShaderImportResults = {
+  fs: OutputFragmentShader;
+  vs: string;
+  shaderModuleUnits: Set<ShaderModuleUnit>;
+} | null;
 
 /**
  * This is the expected token to be found within the shader content to indicate
@@ -94,13 +99,15 @@ export class ShaderProcessor {
    * ${out: <name>} tokens. These will be used to aid in making a shader that
    * will be compatible with ES 3.0 AND 2.0 shaders.
    */
-  static mergeFragmentOutputs(
-    shaders: { source: string; outputType: number }[],
-    targetOutputs: number[],
+  static mergeFragmentOutputsForMRT(
+    _declarationsVS: ShaderDeclarationStatements,
+    declarationsFS: ShaderDeclarationStatements,
+    layerOutputs: { source: string; outputType: number }[],
+    viewOutputs: number[],
     typeFilter?: number[],
     singleOutput?: boolean
   ) {
-    console.log("Merging fragment outputs:", shaders);
+    console.log("Merging fragment outputs:", layerOutputs);
 
     let headers = "";
     let bodies = "";
@@ -108,7 +115,6 @@ export class ShaderProcessor {
     const outputNames = new Set<string>();
     const outputTypes: number[] = [];
     const usedTypes = new Set<number>();
-    const typeToName = new Map<number, string>();
 
     // When MRT isn't enabled at all, then our fragment output simply writes
     // directly to gl_FragColor (Our ES 3.0 converter will properly handle
@@ -117,11 +123,7 @@ export class ShaderProcessor {
       fragmentOutput = " = gl_FragColor";
     }
 
-    // This aggregates all declarations that needed to be generated for the
-    // header so the
-    let outputDeclarations = "";
-
-    shaders.forEach((s, i) => {
+    layerOutputs.forEach((layerOutput, i) => {
       // If output is not allowed, then the found output in the shader will
       // simply map to a locally scoped variable instead of a specialized output
       // variable.
@@ -129,32 +131,44 @@ export class ShaderProcessor {
       // We can only have one token per each shader. Declaring multiple ${out}
       // tokens will be considered an error and unsupported.
       let foundOutputToken = false;
-      // The correct output index will be the index found in the target outputs.
-      // If a match isn't made, then this particular shader is not going to be
-      // an output to the target.
-      const outputLayoutLocation = targetOutputs.indexOf(s.outputType);
 
-      if (typeFilter && typeFilter.indexOf(s.outputType) < 0) {
+      if (typeFilter && typeFilter.indexOf(layerOutput.outputType) < 0) {
         allowOutput = false;
       }
 
-      if (singleOutput && i < shaders.length - 1) {
+      if (singleOutput && i < layerOutputs.length - 1) {
         allowOutput = false;
       }
 
-      if (!singleOutput && outputLayoutLocation < 0) {
+      if (!singleOutput && viewOutputs.indexOf(layerOutput.outputType) < 0) {
         allowOutput = false;
       }
+
+      if (usedTypes.has(layerOutput.outputType)) {
+        throw new Error(
+          "Can not use the same Output Fragment type multiple times"
+        );
+      }
+
+      usedTypes.add(layerOutput.outputType);
+
+      // The view is going to only have a single render target to render against
+      // so we will only output against that given render target which will have
+      // a specific layout
+      // [COLOR_ATTACHMENT0, COLOR_ATTACHMENT1, ..., COLOR_ATTACHMENTN]
+      // And this will be in alignment with 'viewOutputs' so we need to make the
+      // layout target according to this.
+      const layoutOutputIndex = viewOutputs.indexOf(layerOutput.outputType);
 
       console.log(
-        `Output type ${s.outputType} is flagged for output?`,
-        allowOutput
+        `Output type ${layerOutput.outputType} is flagged for output?`,
+        allowOutput,
+        "Mapping to layout location",
+        layoutOutputIndex
       );
 
-      usedTypes.add(s.outputType);
-
       shaderTemplate({
-        shader: s.source,
+        shader: layerOutput.source,
 
         /**
          * Analyze each token for "out" tokens indicating output
@@ -165,7 +179,7 @@ export class ShaderProcessor {
           if (trimmedToken.indexOf(OUT_TOKEN) === 0) {
             if (foundOutputToken) {
               console.error(
-                "Found multiple ${out} tokens in a single fragments shader. This is not supported nor logical",
+                "Found multiple ${out} tokens in a single fragment shader. This is not supported nor logical",
                 "If you need to use the declared output multiple times, use the assigned name",
                 "and don't wrap it repeatedly in the shader.",
                 "eg-",
@@ -190,8 +204,6 @@ export class ShaderProcessor {
               // being requested (with white space trimmed). If the name isn't
               // valid, that's not our fault.
               const outputName = afterToken.substr(OUT_DELIMITER.length).trim();
-              // Keep track of the name to the
-              typeToName.set(s.outputType, outputName);
 
               if (!outputName) {
                 throw new Error(
@@ -205,6 +217,12 @@ export class ShaderProcessor {
                 );
               }
 
+              if (outputName === "gl_FragColor") {
+                throw new Error(
+                  "DO not use gl_FragColor as an identifier for an out. Choose something not used by the WebGL spec."
+                );
+              }
+
               // Check our type filter. If the current outputType of the shader
               // is NOT in the filter, then we have to exclude the name from the
               // output names AND we have to ensure the name specified has a
@@ -213,25 +231,25 @@ export class ShaderProcessor {
               if (allowOutput) {
                 // We now have the output name this output will utilize
                 outputNames.add(outputName);
-                outputTypes.push(s.outputType);
+                outputTypes.push(layerOutput.outputType);
 
                 // Handle the special case of the MRT extension where we output
                 // to the special case of gl_FragData
                 if (WebGLStat.MRT_EXTENSION) {
-                  fragmentOutput = ` = gl_FragData[${outputLayoutLocation}]`;
+                  fragmentOutput = ` = gl_FragData[${layoutOutputIndex}]`;
+                  declare = "vec4 ";
                 }
 
                 // Handle the MRT extension case where we have to create an
                 // 'out' declaration for the decalred output name.
                 else if (WebGLStat.MRT && WebGLStat.SHADERS_3_0) {
-                  // We don't handle the special case of glFragColor as that is
-                  // handled in the ES 3.0 transform.
-                  if (outputName !== "gl_FragColor") {
-                    outputDeclarations += `layout(location=${outputLayoutLocation}) out vec4 ${outputName};\n`;
-                  }
+                  declarationsFS.set(
+                    outputName,
+                    `layout(location = ${layoutOutputIndex}) out vec4 ${outputName};\n`
+                  );
                 } else {
                   throw new Error(
-                    `Could not generate a proper output declaration for the fragmnet shader output: ${outputName}`
+                    `Could not generate a proper output declaration for the fragment shader output: ${outputName}`
                   );
                 }
               } else {
@@ -256,6 +274,48 @@ export class ShaderProcessor {
          * We use this to aggregate all of our main bodies and headers together
          */
         onMain(body, header) {
+          // In the event no output token was discovered, we look for
+          // gl_FragColor from our es 1.0 style shaders. If that is present,
+          // that is the output and it is mapped to FragmentOutputType.COLOR
+          if (!foundOutputToken && body) {
+            const findFragColor = body.match("gl_FragColor");
+
+            if (findFragColor) {
+              outputTypes.push(layerOutput.outputType);
+
+              if (WebGLStat.MRT) {
+                if (WebGLStat.SHADERS_3_0) {
+                  declarationsFS.set(
+                    "_FragColor",
+                    `layout(location = ${layoutOutputIndex}) out vec4 _FragColor;\n`
+                  );
+
+                  body = body.replace(/gl_FragColor/g, `_FragColor`);
+                } else {
+                  // Do first replacement with declaration
+                  body = body.replace(
+                    /gl_FragColor\s+=/,
+                    `vec4 _FragColor = gl_FragData[${layoutOutputIndex}] =`
+                  );
+
+                  // Do subsequent replacements without declaration
+                  body = body.replace(
+                    /gl_FragColor\s+=/g,
+                    `_FragColor = gl_FragData[${layoutOutputIndex}] =`
+                  );
+
+                  // Replace any useage of gl_FragColor that does not assign to
+                  // it
+                  body = body.replace(/gl_FragColor/g, `_FragColor`);
+                }
+              }
+
+              outputNames.add("_FragColor");
+            } else {
+              outputTypes.push(FragmentOutputType.NONE);
+            }
+          }
+
           headers += `\n${(header || "").trim()}`;
           bodies += `\n  ${(body || "").trim()}`;
           return (body || "").trim();
@@ -263,23 +323,154 @@ export class ShaderProcessor {
       });
     });
 
-    // We match our output names to keep in line with the used output types
+    return {
+      output: `${headers}\nvoid main() {\n${bodies}\n}`,
+      outputNames: Array.from(outputNames.values()),
+      outputTypes: outputTypes
+    };
+  }
 
-    // The output types we return needs to match up to the target types. If we
-    // didn't have an output for a type it needs to be NONE. The used target
-    // types need to line up to the order that appears in targetTypes and NOT
-    // lined up with how they appear in the shader.
-    const usedOutputTypes = targetOutputs.map(targetType => {
-      if (usedTypes.has(targetType)) return targetType;
-      return ViewOutputInformationType.NONE;
+  /**
+   * This merges output for the fragment shader when we are simply outputting to
+   * a single COLOR target the view specifies. This means we look for an output
+   * from the layer that is a COLOR output and merge all fragments up to that
+   * output, we clear out any templating variables, and for WebGL1 we make it
+   * output to gl_FragColor and for WebGL2 we output to _FragColor and make an
+   * out declarartion for it.
+   */
+  static mergeOutputFragmentShaderForColor(
+    layerOutputs: OutputFragmentShaderSource,
+    viewOutputs: number[]
+  ) {
+    // Our view output MUST only be a string or a single color target for this
+    // to be valid.
+    if (viewOutputs.length > 1 || viewOutputs[0] !== FragmentOutputType.COLOR) {
+      throw new Error(
+        "Merging fragment shaders for only COLOR output is only valid when the view has a single COLOR output target."
+      );
+    }
+
+    // If this output is just a string, we have our simple COLOR output.
+    if (isString(layerOutputs)) {
+      layerOutputs = [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: layerOutputs
+        }
+      ];
+    }
+
+    let bodies = "";
+    let headers = "";
+    const outputNames = new Set<string>();
+    const outputTypes: number[] = [];
+
+    layerOutputs.some(layerOutput => {
+      const isColor = layerOutput.outputType === FragmentOutputType.COLOR;
+      let foundOutputToken = false;
+
+      if (isColor) {
+        outputTypes.push(FragmentOutputType.COLOR);
+      }
+
+      shaderTemplate({
+        shader: layerOutput.source,
+
+        /**
+         * Analyze each token for "out" tokens indicating output
+         */
+        onToken(token) {
+          const trimmedToken = token.trim();
+
+          if (trimmedToken.indexOf(OUT_TOKEN) === 0) {
+            if (foundOutputToken) {
+              console.error(
+                "Found multiple ${out} tokens in a single fragment shader. This is not supported nor logical",
+                "If you need to use the declared output multiple times, use the assigned name",
+                "and don't wrap it repeatedly in the shader.",
+                "eg-",
+                "void main() {",
+                "  ${out: myOutput} = value;",
+                "  vec4 somethingElse = myOutput;",
+                "}"
+              );
+              throw new Error("Invalid Shader Format");
+            }
+
+            // Flag the token as discovered so we can make sure we don't have
+            // too many tokens show up.
+            foundOutputToken = true;
+            // Analyze the remainder of the token to find the necessary colon to
+            // be the NEXT Non-whitespace character
+            const afterToken = trimmedToken.substr(OUT_TOKEN.length).trim();
+
+            // Make sure the character IS a colon
+            if (afterToken[0] === OUT_DELIMITER) {
+              // At this point, ANYTHING after the colon is the output property
+              // being requested (with white space trimmed). If the name isn't
+              // valid, that's not our fault.
+              const outputName = afterToken.substr(OUT_DELIMITER.length).trim();
+
+              if (!outputName) {
+                throw new Error(
+                  "Output in a shader requires an identifier ${out: <name required>}"
+                );
+              }
+
+              if (outputNames.has(outputName)) {
+                throw new Error(
+                  "You can not declare the same output name in subsequent fragment shader outputs"
+                );
+              }
+
+              if (outputName === "gl_FragColor") {
+                throw new Error(
+                  "DO not use gl_FragColor as an identifier for an out. Choose something not used by the WebGL spec."
+                );
+              }
+
+              // If this is the color output of the layer, then we take the
+              // output token and simply map it to the proper ES version
+              // fragment output. Since we have an ES 3 transform later in the
+              // process we can ALWAYS set this to gl_FragColor, BUT we must
+              // make sure the token specified is properly declared so it is
+              // available in the rest of the exisitng program.
+              if (isColor) {
+                outputNames.add("gl_FragColor");
+
+                if (outputName !== "gl_FragColor") {
+                  return `vec4 ${outputName} = gl_FragColor`;
+                }
+
+                return "gl_FragColor";
+              }
+
+              // Replace the token with just the name of the variable being
+              // declared with the proper type sizing.
+              return `vec4 ${outputName}`;
+            }
+          }
+
+          // Leave unprocessed tokens alone
+          return `$\{${token}}`;
+        },
+
+        onMain(body, header) {
+          headers += `\n${(header || "").trim()}`;
+          bodies += `\n  ${(body || "").trim()}`;
+          return (body || "").trim();
+        }
+      });
+
+      // Stop when we find a COLOR output
+      if (isColor) return true;
+      return false;
     });
 
-    console.log("Merged Outputs", outputNames, outputTypes);
-
     return {
-      output: `${outputDeclarations}${headers}\nvoid main() {\n${bodies}\n}`,
+      output: `${headers}\nvoid main() {\n${bodies}\n}`,
       outputNames: Array.from(outputNames.values()),
-      outputTypes: usedOutputTypes
+      outputTypes: outputTypes
     };
   }
 
@@ -295,48 +486,52 @@ export class ShaderProcessor {
    * each output capable of delivering the targetted output specified.
    */
   static makeOutputFragmentShader(
-    targetOutputs?: OutputFragmentShaderTarget,
-    outputs?: OutputFragmentShaderSource
-  ): OutputFragmentShader | null {
+    declarationsVS: ShaderDeclarationStatements,
+    declarationsFS: ShaderDeclarationStatements,
+    viewOutputs?: OutputFragmentShaderTarget | null,
+    layerOutputs?: OutputFragmentShaderSource
+  ): MapValueType<OutputFragmentShader> | null {
     console.log("Processing layer fragment outputs", {
-      targetOutputs: JSON.parse(JSON.stringify(targetOutputs)),
-      outputs
+      targetOutputs: viewOutputs
+        ? JSON.parse(JSON.stringify(viewOutputs))
+        : void 0,
+      outputs: layerOutputs
     });
-    // If the view only is a simple string, then we assume the COLOR output of
-    // the layer. If the layer does not specify a specific COLOR output, then
-    // we assume the culminated output of all outputs of the layer is the
-    // target.
-    // NOTE: All results under this branch will be for SINGLE TARGET outputs, so
-    // we don't need to worry about MRT here. The final fragment output IS the
-    // only output.
-    if (!targetOutputs || isString(targetOutputs)) {
+
+    // If the layer output only is a simple string, then we assume the COLOR
+    // output of the layer. If the layer does not specify a specific COLOR
+    // output, then we assume the culminated output of all outputs of the layer
+    // is the target.
+    //
+    // NOTE: All results under this branch will be for SINGLE
+    // TARGET outputs, so we don't need to worry about MRT here. The final
+    // fragment output IS the only output.
+    if (!viewOutputs || isString(viewOutputs)) {
       // View expects a color output, layer only outputs a color, we are good
       // to simply output the layer to the view.
-      if (isString(outputs)) {
-        const processed = this.mergeFragmentOutputs(
+      if (isString(layerOutputs)) {
+        const processed = this.mergeOutputFragmentShaderForColor(
           [
             {
-              source: outputs,
-              outputType: ViewOutputInformationType.COLOR
+              source: layerOutputs,
+              outputType: FragmentOutputType.COLOR
             }
           ],
-          [ViewOutputInformationType.COLOR]
+          [FragmentOutputType.COLOR]
         );
 
-        return [
-          {
-            source: processed.output,
-            outputTypes: [ViewOutputInformationType.COLOR],
-            outputNames: processed.outputNames
-          }
-        ];
+        return {
+          source: processed.output,
+          outputTypes: [FragmentOutputType.COLOR],
+          outputNames: processed.outputNames
+        };
       }
 
       // Look through the layer's fragment outputs for something that is
       // labeled as a color. We prioritize that.
-      else if (Array.isArray(outputs)) {
-        const colorOutput = outputs.find(
-          s => s.outputType === ViewOutputInformationType.COLOR
+      else if (Array.isArray(layerOutputs)) {
+        const colorOutput = layerOutputs.find(
+          s => s.outputType === FragmentOutputType.COLOR
         );
 
         let outputIndex = -1;
@@ -344,32 +539,28 @@ export class ShaderProcessor {
         // If our layer outputs a color, this is the output element that will
         // output for our COLOR target.
         if (colorOutput) {
-          outputIndex = outputs.indexOf(colorOutput);
+          outputIndex = layerOutputs.indexOf(colorOutput);
         }
 
         // With no specified color, we render the final output of the layer as
         // the output to the view but we dub it as a COLOR anyways.
         else {
-          outputIndex = outputs.length - 1;
+          outputIndex = layerOutputs.length - 1;
         }
 
         // We take the found index of the output we need to output for our COLOR
         // target and aggregate all of the preceding outputs as the dependencies
         // needed for this output to work properly.
-        const processed = this.mergeFragmentOutputs(
-          outputs.slice(0, outputIndex + 1),
-          [ViewOutputInformationType.COLOR],
-          undefined,
-          true
+        const processed = this.mergeOutputFragmentShaderForColor(
+          layerOutputs.slice(0, outputIndex + 1),
+          [FragmentOutputType.COLOR]
         );
 
-        return [
-          {
-            source: processed.output,
-            outputNames: processed.outputNames,
-            outputTypes: [ViewOutputInformationType.COLOR]
-          }
-        ];
+        return {
+          source: processed.output,
+          outputNames: processed.outputNames,
+          outputTypes: [FragmentOutputType.COLOR]
+        };
       }
 
       // It's invalid to not have output sources so we just return a null object
@@ -387,22 +578,28 @@ export class ShaderProcessor {
     // this will produce a merged output if MRT is supported or it will produce
     // multiple shader outputs to support each individual target output if MRT
     // is not available.
-    else if (Array.isArray(targetOutputs)) {
+    else if (Array.isArray(viewOutputs)) {
+      if (!WebGLStat.MRT) {
+        throw new Error(
+          "Multiple Render Targets were specified, but are not natively supported by user's hardware! MRT also does not have a fallback in deltav yet!"
+        );
+      }
+
       // Gather all of the actual output types in a list so we know the ordering
       // and the mapping of types to specific outputs.
-      const targetTypes = targetOutputs.map(target => target.outputType);
+      const viewOutputTypes = viewOutputs.map(target => target.outputType);
 
       // If we have multiple outputs, let's find indices of each output that
       // matches a target and create our shader(s) with that
-      if (Array.isArray(outputs)) {
+      if (Array.isArray(layerOutputs)) {
         const typeToIndex = new Map<number, number>();
 
-        for (let i = 0, iMax = targetOutputs.length; i < iMax; ++i) {
-          const target = targetOutputs[i];
+        for (let i = 0, iMax = viewOutputs.length; i < iMax; ++i) {
+          const target = viewOutputs[i];
 
           // Find the index of an output that supports this target
-          for (let k = 0, kMax = outputs.length; k < kMax; ++k) {
-            const output = outputs[k];
+          for (let k = 0, kMax = layerOutputs.length; k < kMax; ++k) {
+            const output = layerOutputs[k];
 
             if (output.outputType === target.outputType) {
               typeToIndex.set(target.outputType, k);
@@ -427,43 +624,47 @@ export class ShaderProcessor {
           // No valid index found is considered an error
           if (maxIndex === -1) return null;
 
-          const processed = this.mergeFragmentOutputs(
-            outputs.slice(0, maxIndex + 1),
-            targetTypes,
+          const processed = this.mergeFragmentOutputsForMRT(
+            declarationsVS,
+            declarationsFS,
+            layerOutputs.slice(0, maxIndex + 1),
+            viewOutputTypes,
             types
           );
 
-          return [
-            {
-              source: processed.output,
-              outputNames: processed.outputNames,
-              outputTypes: processed.outputTypes
-            }
-          ];
+          return {
+            source: processed.output,
+            outputNames: processed.outputNames,
+            outputTypes: processed.outputTypes
+          };
         }
 
         // For non-MRT capable hardware, we need to generate a shader per each
         // output type we matched on
         else {
-          const generated: OutputFragmentShader = [];
-          typeToIndex.forEach((index, type) => {
-            // Merge in the shaders to one shader, but only mark a single type
-            // as the output.
-            const processed = this.mergeFragmentOutputs(
-              outputs.slice(0, index + 1),
-              [type],
-              undefined,
-              true
-            );
+          throw new Error(
+            "Fragment shader generation not supported for MRT systems on non MRT hardware...yet"
+          );
+          // const generated: MapValueType<OutputFragmentShader> = [];
+          // typeToIndex.forEach((index, type) => {
+          //   // Merge in the shaders to one shader, but only mark a single type
+          //   // as the output.
+          //   const processed = this.mergeFragmentOutputsForMRT(
+          //     declarations,
+          //     layerOutputs.slice(0, index + 1),
+          //     [type],
+          //     undefined,
+          //     true
+          //   );
 
-            generated.push({
-              source: processed.output,
-              outputNames: processed.outputNames,
-              outputTypes: processed.outputTypes
-            });
-          });
+          //   generated.push({
+          //     source: processed.output,
+          //     outputNames: processed.outputNames,
+          //     outputTypes: processed.outputTypes
+          //   });
+          // });
 
-          return generated;
+          // return generated;
         }
       }
 
@@ -471,28 +672,33 @@ export class ShaderProcessor {
       // COLOR and map it to that. If no target wants COLOR, then we don't need
       // any shaders for this configuration.
       else {
-        const targetColor = targetOutputs.find(
-          t => t.outputType === ViewOutputInformationType.COLOR
+        const targetColor = viewOutputs.find(
+          t => t.outputType === FragmentOutputType.COLOR
         );
 
-        if (targetColor && outputs) {
-          const processed = this.mergeFragmentOutputs(
-            [
-              {
-                source: outputs,
-                outputType: ViewOutputInformationType.COLOR
-              }
-            ],
-            targetTypes
+        if (targetColor && layerOutputs) {
+          console.log(
+            "MERGING FRAGMENT OUTPUTS FOR SINGLE SOURCE FRAGMENT SHADER",
+            viewOutputTypes
           );
 
-          return [
-            {
-              source: processed.output,
-              outputNames: processed.outputNames,
-              outputTypes: processed.outputTypes
-            }
-          ];
+          const processed = this.mergeFragmentOutputsForMRT(
+            declarationsVS,
+            declarationsFS,
+            [
+              {
+                source: layerOutputs,
+                outputType: FragmentOutputType.COLOR
+              }
+            ],
+            viewOutputTypes
+          );
+
+          return {
+            source: processed.output,
+            outputNames: processed.outputNames,
+            outputTypes: processed.outputTypes
+          };
         }
       }
     }
@@ -510,6 +716,7 @@ export class ShaderProcessor {
     layer: Layer<T, U>,
     shaderIO: IShaderInitialization<T>,
     fragmentShaders: OutputFragmentShader,
+    shaderDeclarations: ShaderDeclarationStatementLookup,
     ioExpansion: BaseIOExpansion[],
     transforms: BaseShaderTransform[],
     sortIO: BaseIOSorting
@@ -562,9 +769,12 @@ export class ShaderProcessor {
         uniforms: []
       };
 
-      const vsHeaderDeclarations = new Map();
-      const fsHeaderDeclarations = new Map();
-      const destructureDeclarations = new Map();
+      const vsHeaderDeclarations: ShaderDeclarationStatements =
+        shaderDeclarations.vs || new Map();
+      const fsHeaderDeclarations: ShaderDeclarationStatementLookup["fs"] =
+        shaderDeclarations.fs || new Map();
+      const destructureDeclarations: ShaderDeclarationStatements =
+        shaderDeclarations.destructure || new Map();
 
       // Loop through all of our processors that handle expanding all IO into
       // headers for the shader
@@ -590,25 +800,6 @@ export class ShaderProcessor {
           );
         }
 
-        // Generate fragment header declarations
-        const fsHeaderInfo = processor.processHeaderInjection(
-          ShaderInjectionTarget.FRAGMENT,
-          fsHeaderDeclarations,
-          layer,
-          this.metricsProcessing,
-          vertexAttributes,
-          instanceAttributes,
-          uniforms
-        );
-
-        fsHeader += fsHeaderInfo.injection;
-
-        if (fsHeaderInfo.material) {
-          materialChanges.uniforms = materialChanges.uniforms.concat(
-            fsHeaderInfo.material.uniforms || []
-          );
-        }
-
         // Destructure the elements
         destructuring += processor.processAttributeDestructuring(
           layer,
@@ -620,8 +811,6 @@ export class ShaderProcessor {
         );
       }
 
-      console.log({ vsHeaderDeclarations });
-
       // After we have aggregated all of our declarations, we now piece them
       // together
       let declarations = "";
@@ -631,13 +820,6 @@ export class ShaderProcessor {
       });
 
       vsHeader = declarations + vsHeader;
-      declarations = "";
-
-      fsHeaderDeclarations.forEach(declaration => {
-        declarations += declaration;
-      });
-
-      fsHeader = declarations + fsHeader;
       declarations = "";
 
       destructureDeclarations.forEach(declaration => {
@@ -694,12 +876,51 @@ export class ShaderProcessor {
 
       // We process the Fragment shader as well, currently with nothing to
       // replace aside from removing any superfluous template requests
-      templateOptions = {};
+      shadersWithImports.fs.forEach((fsShader, view) => {
+        templateOptions = {};
+        fsHeader = "";
+        declarations = "";
+        const fsDeclarations: ShaderDeclarationStatements =
+          fsHeaderDeclarations.get(view) || new Map();
 
-      // Loop through all of the fragment shaders and perform the final
-      // aggregation of changes on all the fragments involved.
-      shadersWithImports.fs.forEach(shader => {
-        const fullShaderFS = extensions + precision + fsHeader + shader.source;
+        for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
+          const processor = ioExpansion[i];
+          // Generate fragment header declarations
+          const fsHeaderInfo = processor.processHeaderInjection(
+            ShaderInjectionTarget.FRAGMENT,
+            fsDeclarations,
+            layer,
+            this.metricsProcessing,
+            vertexAttributes,
+            instanceAttributes,
+            uniforms
+          );
+
+          fsHeader += fsHeaderInfo.injection;
+
+          if (fsHeaderInfo.material) {
+            const currentUniformNames = new Set();
+            materialChanges.uniforms.forEach(uniform =>
+              currentUniformNames.add(uniform.name)
+            );
+            materialChanges.uniforms.forEach(uniform => {
+              if (!currentUniformNames.has(uniform.name)) {
+                materialChanges.uniforms.push(uniform);
+              }
+            });
+          }
+        }
+
+        fsDeclarations.forEach(declaration => {
+          declarations += declaration;
+        });
+
+        fsHeader = declarations + fsHeader;
+
+        // Loop through all of the fragment shaders and perform the final
+        // aggregation of changes on all the fragments involved.
+        const fullShaderFS =
+          extensions + precision + fsHeader + fsShader.source;
 
         const processShaderFS = shaderTemplate({
           options: templateOptions,
@@ -707,19 +928,16 @@ export class ShaderProcessor {
           shader: fullShaderFS
         });
 
-        shader.source = processShaderFS.shader.trim();
-      });
+        fsShader.source = processShaderFS.shader.trim();
 
-      // The final step: apply all shader transforms to the content
-      for (let i = 0, iMax = transforms.length; i < iMax; ++i) {
-        const transform = transforms[i];
-        processedShaderVS.shader = transform.vertex(processedShaderVS.shader);
+        // The final step: apply all shader transforms to the content
+        for (let i = 0, iMax = transforms.length; i < iMax; ++i) {
+          const transform = transforms[i];
+          processedShaderVS.shader = transform.vertex(processedShaderVS.shader);
 
-        for (let k = 0, kMax = shadersWithImports.fs.length; k < kMax; ++k) {
-          const fs = shadersWithImports.fs[k];
-          fs.source = transform.fragment(fs.source);
+          fsShader.source = transform.fragment(fsShader.source);
         }
-      }
+      });
 
       const results = {
         fs: shadersWithImports.fs,
@@ -790,65 +1008,67 @@ export class ShaderProcessor {
     }
 
     // Process imports for the vertex shader
-    const vs = ShaderModule.process(
+    const vsResult = ShaderModule.process(
       layer.id,
       shaders.vs,
       ShaderInjectionTarget.VERTEX,
       baseModules.vs
     );
 
-    if (vs.errors.length > 0) {
+    if (vsResult.errors.length > 0) {
       console.warn(
         "Error processing imports for the vertex shader of layer:",
         layer.id,
         "Errors",
-        ...vs.errors.reverse()
+        ...vsResult.errors.reverse()
       );
 
       return null;
     }
 
-    // Process imports for the fragment shader
-    const fs = fragmentShaders
-      .map(shader => {
-        const result = ShaderModule.process(
+    const processedFragmentShaders: OutputFragmentShader = new Map();
+
+    // Process imports for the fragment shaders
+    fragmentShaders.forEach((shader, view) => {
+      const fsResult = ShaderModule.process(
+        layer.id,
+        shader.source,
+        ShaderInjectionTarget.FRAGMENT,
+        baseModules.fs
+      );
+
+      if (fsResult.errors.length > 0) {
+        console.warn(
+          "Error processing imports for the fragment shader of layer:",
           layer.id,
-          shader.source,
-          ShaderInjectionTarget.FRAGMENT,
-          baseModules.fs
+          "Errors",
+          ...fsResult.errors.reverse()
         );
 
-        if (result.errors.length > 0) {
-          console.warn(
-            "Error processing imports for the fragment shader of layer:",
-            layer.id,
-            "Errors",
-            ...result.errors.reverse()
-          );
+        return;
+      }
 
-          return null;
-        }
+      fsResult.shaderModuleUnits.forEach(moduleUnit =>
+        shaderModuleUnits.add(moduleUnit)
+      );
 
-        result.shaderModuleUnits.forEach(moduleUnit =>
-          shaderModuleUnits.add(moduleUnit)
-        );
+      const fs = {
+        source: fsResult.shader || "",
+        outputTypes: shader.outputTypes,
+        outputNames: shader.outputNames
+      };
 
-        return {
-          source: result.shader || "",
-          outputTypes: shader.outputTypes,
-          outputNames: shader.outputNames
-        };
-      })
-      .filter(isDefined);
+      processedFragmentShaders.set(view, fs);
+    });
 
     // Gather all discovered Shader Module Units
-    vs.shaderModuleUnits.forEach(moduleUnit =>
+    vsResult.shaderModuleUnits.forEach(moduleUnit =>
       shaderModuleUnits.add(moduleUnit)
     );
 
     return {
-      fs,
-      vs: vs.shader || "",
+      fs: processedFragmentShaders,
+      vs: vsResult.shader || "",
       shaderModuleUnits
     };
   }

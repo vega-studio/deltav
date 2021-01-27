@@ -20,6 +20,7 @@ import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
 import { GLContext, IExtensions } from "./types";
+import { WebGLStat } from "./webgl-stat";
 
 const debug = require("debug")("performance");
 
@@ -290,8 +291,9 @@ export class GLProxy {
     // We must loop through all of the fragment shaders the material can
     // provide. Each fragment shader is designed for specific outputs to match a
     // render target's configuration.
-    for (let i = 0, iMax = material.fragmentShader.length; i < iMax; ++i) {
-      const fragmentShader = material.fragmentShader[i];
+    material.fragmentShader.forEach(fragmentShader => {
+      if (!vertexPrograms || !vs) return;
+
       // Check for existing shader programs for the fragment shader
       let fs = this.fragmentShaders.get(fragmentShader.source) || null;
 
@@ -423,7 +425,9 @@ export class GLProxy {
           usedUniforms.add(uniformInfo.name.replace("[0]", ""));
         }
       }
-    }
+
+      return;
+    });
 
     // Set the generated GL identifiers to our material
     material.gl = materialGL;
@@ -442,8 +446,6 @@ export class GLProxy {
         uniformToRemove.add(name);
       }
     });
-
-    console.log(material.uniforms, usedUniforms);
 
     uniformToRemove.forEach(name => {
       delete material.uniforms[name];
@@ -512,6 +514,7 @@ export class GLProxy {
       const buffers: {
         data: WebGLRenderbuffer | Texture;
         outputType: number;
+        attachment: number;
       }[] = [];
       let isReady = true;
       glContext.colorBufferId = buffers;
@@ -520,18 +523,23 @@ export class GLProxy {
       target.buffers.color.forEach((buffer, i) => {
         if (!isReady) return;
         if (buffer.buffer instanceof Texture) {
-          buffers.push({ data: buffer.buffer, outputType: buffer.outputType });
+          const bufferAttachment = indexToColorAttachment(
+            gl,
+            this.extensions,
+            i,
+            isSingleBuffer,
+            false
+          );
+          buffers.push({
+            data: buffer.buffer,
+            outputType: buffer.outputType,
+            attachment: bufferAttachment
+          });
 
           if (isTextureReady(buffer.buffer)) {
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(
-                gl,
-                this.extensions,
-                i,
-                isSingleBuffer,
-                false
-              ),
+              bufferAttachment,
               gl.TEXTURE_2D,
               buffer.buffer.gl.textureId,
               0
@@ -551,16 +559,21 @@ export class GLProxy {
           );
 
           if (rboId) {
-            buffers.push({ data: rboId, outputType: buffer.outputType });
+            const bufferAttachment = indexToColorAttachment(
+              gl,
+              this.extensions,
+              i,
+              isSingleBuffer,
+              false
+            );
+            buffers.push({
+              data: rboId,
+              outputType: buffer.outputType,
+              attachment: bufferAttachment
+            });
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
-              indexToColorAttachment(
-                gl,
-                this.extensions,
-                i,
-                isSingleBuffer,
-                false
-              ),
+              bufferAttachment,
               gl.RENDERBUFFER,
               rboId
             );
@@ -575,15 +588,23 @@ export class GLProxy {
       const buffer = target.buffers.color;
 
       if (buffer.buffer instanceof Texture) {
+        const bufferAttachment = indexToColorAttachment(
+          gl,
+          this.extensions,
+          0,
+          true,
+          false
+        );
         glContext.colorBufferId = {
           data: buffer.buffer,
-          outputType: buffer.outputType
+          outputType: buffer.outputType,
+          attachment: bufferAttachment
         };
 
         if (isTextureReady(buffer.buffer)) {
           gl.framebufferTexture2D(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, true, false),
+            bufferAttachment,
             gl.TEXTURE_2D,
             buffer.buffer.gl.textureId,
             0
@@ -603,13 +624,21 @@ export class GLProxy {
         );
 
         if (rboId) {
+          const bufferAttachment = indexToColorAttachment(
+            gl,
+            this.extensions,
+            0,
+            true,
+            false
+          );
           glContext.colorBufferId = {
             data: rboId,
-            outputType: buffer.outputType
+            outputType: buffer.outputType,
+            attachment: bufferAttachment
           };
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
-            indexToColorAttachment(gl, this.extensions, 0, true, false),
+            bufferAttachment,
             gl.RENDERBUFFER,
             rboId
           );
@@ -1036,7 +1065,7 @@ export class GLProxy {
         target.gl.colorBufferId.forEach(buffer => {
           if (buffer.data instanceof Texture && !target.retainTextureTargets) {
             this.disposeTexture(buffer.data);
-          } else {
+          } else if (buffer.data instanceof WebGLRenderbuffer) {
             this.disposeRenderBuffer(buffer.data);
           }
         });
@@ -1079,7 +1108,7 @@ export class GLProxy {
    * Destroys a texture's resources from the GL context
    */
   disposeTexture(texture: Texture) {
-    if (texture.gl) {
+    if (texture.gl && !texture.disposed) {
       this.gl.deleteTexture(texture.gl.textureId);
       this.state.freeTextureUnit(texture);
     }
@@ -1091,9 +1120,14 @@ export class GLProxy {
    * Retrieves the gl context from the canvas
    */
   static getContext(canvas: HTMLCanvasElement, options: {}) {
-    // Try grabbing webgl context by order of most desireable to least
-    // desireable
-    const names = ["webgl2", "webgl", "experimental-webgl"];
+    // Attempt to fetch the same webgl as webgl stat reports, if it fails,
+    // attempt to fetch in descending order a known version of webgl.
+    const names = [
+      WebGLStat.WEBGL_VERSION,
+      "webgl",
+      "webgl2",
+      "experimental-webgl"
+    ];
     let context: GLContext | null = null;
     let extensions: IExtensions = {};
 
@@ -1192,7 +1226,7 @@ export class GLProxy {
     if (isString(shader)) {
       return this.lineFormat(shader);
     } else {
-      return shader.map(
+      return shader.forEach(
         s =>
           `\nSHADER FOR OUTPUT TYPES: ${s.outputTypes} ${this.lineFormat(
             s.source

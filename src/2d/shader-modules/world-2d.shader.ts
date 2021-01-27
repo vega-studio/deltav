@@ -4,14 +4,40 @@ import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { Camera2D } from "../view/camera-2d";
 import { Layer2D } from "../view/layer-2d";
 
+const doc = `
+These are projection methods and camera
+related constants associated with a
+View2D.
+
+Methods:
+vec3 cameraSpace(vec3 world);
+vec3 cameraSpaceSize(vec3 worldSize);
+vec4 clipSpace(vec3 world);
+vec4 clipSpaceSize(vec3 worldSize);
+
+Constants:
+mat4 projection;
+mat4 view;
+mat4 viewProjection;
+vec3 cameraOffset;
+vec3 cameraPosition;
+vec3 cameraScale;
+vec3 cameraScale2D;
+vec3 cameraRotation;
+vec2 viewSize;
+float pixelRatio;
+`;
+
 /**
  * This module provides uniforms for retrieving camera propeerties within the shader.
  */
 ShaderModule.register([
   {
     moduleId: "world2D",
+    description: doc,
     content: require("./shader-fragments/world-2d-projection.vs"),
     compatibility: ShaderInjectionTarget.ALL,
+
     uniforms: (layer: Layer<any, any>) => {
       if (!(layer instanceof Layer2D)) {
         console.warn(

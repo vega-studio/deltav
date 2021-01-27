@@ -8,7 +8,7 @@ import {
   Surface
 } from "../surface";
 import { Omit } from "../types";
-import { createLayer } from "../util/create-util";
+import { createLayer } from "../util/create-layer";
 
 /**
  * Options for generating a Logging layer

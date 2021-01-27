@@ -6,3 +6,4 @@ export * from "./view";
 export * from "./buffer-management";
 export * from "./event-managers";
 export * from "./layer-processing";
+export * from "./command-layer";

@@ -1,4 +1,9 @@
-import { Material, MaterialOptions, MaterialUniformType } from "../../gl";
+import {
+  Material,
+  MaterialFragmentShader,
+  MaterialOptions,
+  MaterialUniformType
+} from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import {
   IInstancingUniform,
@@ -47,13 +52,24 @@ export function generateLayerMaterial<
 ): Material {
   // We now need to establish the material for the layer
   const materialParams: MaterialOptions = layer.getMaterialOptions();
+  const materialFS: MaterialFragmentShader = new Map();
+
+  fs.forEach((output, view) => {
+    materialFS.set(view.renderTarget || null, output);
+  });
 
   // The props applied to the layer has a material option declaration as well
   // these settings take priority over all settings
   Object.assign(materialParams, layer.props.materialOptions || {});
+  console.log(
+    layer.id,
+    "GENERATED LAYER MATERIAL WITH PARAMS",
+    materialParams,
+    layer.props.materialOptions
+  );
 
   materialParams.vertexShader = vs;
-  materialParams.fragmentShader = fs;
+  materialParams.fragmentShader = materialFS;
   materialParams.name = layer.id;
 
   // We must convert all of the uniforms to actual GL material initialization uniforms

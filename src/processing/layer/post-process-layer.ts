@@ -1,6 +1,10 @@
 import { GLSettings } from "../../gl";
 import { Texture } from "../../gl/texture";
-import { Instance, InstanceProvider } from "../../instance-provider";
+import {
+  Instance,
+  InstanceProvider,
+  observable
+} from "../../instance-provider";
 import { Vec2 } from "../../math/vector";
 import {
   IRenderTextureResourceRequest,
@@ -8,6 +12,8 @@ import {
 } from "../../resources/texture/render-texture-resource-request";
 import { ILayerProps, Layer } from "../../surface";
 import {
+  Color,
+  InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
   ShaderInjectionTarget,
@@ -18,6 +24,7 @@ import { CommonMaterialOptions } from "../../util";
 import { flatten2D } from "../../util/array";
 
 class PostProcessInstance extends Instance {
+  @observable tint: Color = [1, 1, 1, 1];
   request: IRenderTextureResourceRequest;
 }
 
@@ -117,7 +124,13 @@ export class PostProcessLayer extends Layer<
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
-      instanceAttributes: [],
+      instanceAttributes: [
+        {
+          name: "tint",
+          size: InstanceAttributeSize.FOUR,
+          update: o => o.tint
+        }
+      ],
       uniforms: resourceUniforms.concat(this.props.uniforms || []),
       vertexAttributes: [
         {

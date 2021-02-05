@@ -30,8 +30,6 @@ export class Geometry {
     this.isInstanced = false;
     let didChange: number | undefined;
 
-    console.log("GEOMETRY", this._attributes);
-
     // Check to see if the attributes are uniform or not in instancing
     Object.values(this._attributes).forEach(attr => {
       const check = attr.isInstanced ? 1 : 0;

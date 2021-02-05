@@ -185,9 +185,7 @@ export class RenderTarget {
 
     if (this._buffers.color instanceof Texture) {
       textures.push(this._buffers.color);
-    }
-
-    if (Array.isArray(this._buffers.color)) {
+    } else if (Array.isArray(this._buffers.color)) {
       for (let i = 0, iMax = this._buffers.color.length; i < iMax; ++i) {
         const buffer = this._buffers.color[i];
 
@@ -195,6 +193,11 @@ export class RenderTarget {
           textures.push(buffer.buffer);
         }
       }
+    } else if (
+      this._buffers.color &&
+      this._buffers.color.buffer instanceof Texture
+    ) {
+      textures.push(this._buffers.color.buffer);
     }
 
     if (this._buffers.depth instanceof Texture) {
@@ -216,7 +219,13 @@ export class RenderTarget {
       for (let i = 0, iMax = textures.length; i < iMax; ++i) {
         const texture = textures[i];
 
-        if (!texture.data) return;
+        if (!texture.data) {
+          console.warn(
+            "A texture specified for thie RenderTarget did not have any data associated with it."
+          );
+          return;
+        }
+
         const { width: checkWidth, height: checkHeight } = texture.data;
 
         if (checkWidth !== width || checkHeight !== height) {

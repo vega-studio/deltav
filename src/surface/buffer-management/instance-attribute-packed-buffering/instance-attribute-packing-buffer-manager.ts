@@ -3,7 +3,6 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  InstanceAttributeSize,
   InstanceDiffType
 } from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
@@ -366,9 +365,10 @@ export class InstanceAttributePackingBufferManager<
       this.attributes = [];
       this.blockAttributes = [];
 
-      // We have to determine how many blocks will be used to cram all of our instance properties into.
-      // So we calculate how big each block will be. The number of sizes calculated will be how many blocks
-      // need to be generated.
+      // We have to determine how many blocks will be used to cram all of our
+      // instance properties into. So we calculate how big each block will be.
+      // The number of sizes calculated will be how many blocks need to be
+      // generated.
       const blockSizes = new Map<number, number>();
       const blockSubAttributesLookup = new Map<
         number,
@@ -384,7 +384,8 @@ export class InstanceAttributePackingBufferManager<
         const attribute = shaderIOInfo.instanceAttributes[i];
         const block = attribute.block || 0;
         let blockSize = blockSizes.get(block) || 0;
-        // Determine the bigger of the block sizes (incoming attribute or previously checked attribute)
+        // Determine the bigger of the block sizes (incoming attribute or
+        // previously checked attribute)
         blockSize = Math.max(
           blockSize,
           (attribute.blockIndex || 0) + (attribute.size || 0)
@@ -402,19 +403,22 @@ export class InstanceAttributePackingBufferManager<
         blockAttributes.push(attribute);
       }
 
-      // Let's sort all of the attributes associated with each block by their index in the block
-      // so from here on out we can assume they are in ascending order
+      // Let's sort all of the attributes associated with each block by their
+      // index in the block so from here on out we can assume they are in
+      // ascending order
       blockSubAttributesLookup.forEach(attributes =>
         attributes.sort((a, b) => (a.blockIndex || 0) - (b.blockIndex || 0))
       );
 
-      // Now that we have the blocks that will be needed to accommodate the attributes, we will
-      // create these blocks as attributes attached to the geometry.
+      // Now that we have the blocks that will be needed to accommodate the
+      // attributes, we will create these blocks as attributes attached to the
+      // geometry.
       for (let block = 0, iMax = blockSizes.size; block < iMax; ++block) {
         // Get the size each attribute will be for the block
         const blockSize: number = blockSizes.get(block) || 0;
-        // This is an interesting case, the attributes that are generated are packed into other attributes
-        // for optimal use of the vertex attributes allotted for a systems resources.
+        // This is an interesting case, the attributes that are generated are
+        // packed into other attributes for optimal use of the vertex attributes
+        // allotted for a systems resources.
         const blockAttributeUID = uid();
 
         if (!blockSize) {
@@ -500,7 +504,7 @@ export class InstanceAttributePackingBufferManager<
             packUID: blockAttributeUID,
             bufferAttribute,
             name: `block${block}`,
-            size: InstanceAttributeSize.FOUR,
+            size: blockSize,
             update: () => [0]
           });
         } else {
@@ -533,14 +537,16 @@ export class InstanceAttributePackingBufferManager<
       debug(
         `Info: Vertex packing buffer is being resized for layer ${this.layer.id}`
       );
-      // If the geometry is already created, then we will expand each instanced attribute to the next growth
-      // level and generate the new buffer locations based on the expansion
-      // Since were are resizing the buffer, let's destroy the old buffer and make one anew
+      // If the geometry is already created, then we will expand each instanced
+      // attribute to the next growth level and generate the new buffer
+      // locations based on the expansion Since were are resizing the buffer,
+      // let's destroy the old buffer and make one anew
       this.geometry.dispose();
       this.geometry = new Geometry();
       const previousInstanceAmount = this.maxInstancedCount;
 
-      // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
+      // The geometry needs the vertex information (which should be shared
+      // amongst all instances of the layer)
       for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
@@ -552,7 +558,7 @@ export class InstanceAttributePackingBufferManager<
 
       this.maxInstancedCount += growth;
 
-      // Ensure attributes is still defined
+      // Ensure attributes are still defined
       this.attributes = this.attributes || [];
       this.blockAttributes = this.blockAttributes || [];
 
@@ -567,9 +573,19 @@ export class InstanceAttributePackingBufferManager<
 
         if (bufferAttribute.data instanceof Float32Array) {
           // Make a new buffer that is the proper size
-          const buffer: Float32Array = new Float32Array(
-            this.maxInstancedCount * size
-          );
+          let buffer: Float32Array = bufferAttribute.data;
+
+          // OPTIMIZATION:
+          // Sneaky trick. We do buffer doubling behind the scenes to reduce
+          // these mass allocations and destructions. The background buffer gets
+          // double space, but everything else in JS land operates as though
+          // it's a tightly fitted buffer.
+          if (buffer.length < this.maxInstancedCount * size) {
+            buffer = new Float32Array(this.maxInstancedCount * size * 2);
+            // Retain all of the information in the previous buffer
+            buffer.set(bufferAttribute.data, 0);
+          }
+
           // Retain all of the information in the previous buffer
           buffer.set(bufferAttribute.data, 0);
           // Make our new attribute based on the grown buffer
@@ -619,22 +635,30 @@ export class InstanceAttributePackingBufferManager<
               const startAttributeIndex = subAttribute.blockIndex || 0;
               const attributeSize = subAttribute.size || 1;
 
-              // Update all existing attribute locations with the new internal attribute and new buffer
+              // Update all existing attribute locations with the new internal
+              // attribute and new buffer
+              // let location;
+              let location;
               for (let j = 0, jMax = allLocations.length; j < jMax; ++j) {
-                const location = allLocations[j];
+                location = allLocations[j];
                 location.attribute = internalAttribute;
-                location.buffer = {
-                  value: buffer
-                };
+                location.buffer.value = buffer;
               }
+
+              // Set up some optimizations for this loop
+              let newLocation: IBufferLocation;
+              let index = newBufferLocations.length;
+              const added = this.maxInstancedCount - previousInstanceAmount;
+              newBufferLocations.length += added;
+              allLocations.length += added;
 
               // Create new locations for each new instance we will cover
               for (
                 let i = previousInstanceAmount;
                 i < this.maxInstancedCount;
-                ++i
+                ++i, ++index
               ) {
-                const newLocation: IBufferLocation = {
+                newLocation = {
                   attribute: internalAttribute,
                   block,
                   buffer: {
@@ -647,8 +671,8 @@ export class InstanceAttributePackingBufferManager<
                   ]
                 };
 
-                newBufferLocations.push(newLocation);
-                allLocations.push(newLocation);
+                newBufferLocations[index] = newLocation;
+                allLocations[i] = newLocation;
               }
             }
           }

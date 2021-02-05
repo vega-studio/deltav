@@ -461,13 +461,15 @@ export class WebGLRenderer {
     // It looks like picking a COLOR ATTACHMENT can be done using the
     // readBuffer() method. However, readBuffer is not always available so we
     // will have to use the additional FBO as a fallback.
-    else if (Array.isArray(allTargets?.buffers.color)) {
-      this.gl
-        .getExtension("read_v")
-        .console.warn(
+    else if (allTargets && Array.isArray(allTargets?.buffers.color)) {
+      if (allTargets.buffers.color.length > 1) {
+        console.warn(
           "It is not yet implemented to read the pixels from a RenderTarget with multiple color buffers"
         );
-      return;
+        return;
+      }
+
+      target = allTargets;
     } else {
       target = allTargets;
     }

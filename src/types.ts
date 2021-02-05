@@ -852,6 +852,8 @@ export interface INonePickingMetrics extends IPickingMetrics {
 }
 
 export interface IColorPickingData {
+  /** The view this color picking information is associated with */
+  view: View<IViewProps>;
   /** The mouse target position where the data is rendered */
   mouse: Vec2;
   /** The color data loaded for last picking rendering */

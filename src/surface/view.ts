@@ -149,6 +149,19 @@ export interface IViewProps extends IdentifyByKeyOptions {
    * If this is not specified, the entire canvas will be the viewport.
    */
   viewport: AbsolutePosition;
+  /**
+   * This helps resolve scaling differences between a View rendering to an
+   * offscreen target, which is then rendered the screen. This is commonly
+   * associated with the render target being a scaled version of the screen,
+   * then rendered to the screen.
+   */
+  screenScale?: Vec2;
+  /**
+   * If provided, this will manually set the pixel ratio of the view. THis is
+   * used to help adjust for differing render targets that may not directly
+   * render to the screen but rather in scaled modes.
+   */
+  pixelRatio?: number;
 }
 
 /**
@@ -185,7 +198,15 @@ export abstract class View<
    * This is set to ensure the projections that happen properly translates the
    * pixel ratio to normal Web coordinates
    */
-  pixelRatio: number = 1;
+  get pixelRatio() {
+    return this.props.pixelRatio ?? this._pixelRatio;
+  }
+
+  set pixelRatio(val: number) {
+    this._pixelRatio = val;
+  }
+
+  private _pixelRatio: number = 1;
   /**
    * This establishes the projection methods that can be used to project
    * geometry between the screen and the world
@@ -342,12 +363,6 @@ export abstract class View<
     const dummyInstance = new Instance({});
     const bufferTargets = this.getOutputTargets() || [];
 
-    console.log(
-      "Supported buffer types our view provides",
-      bufferTargets.map(b => b.outputType)
-    );
-    console.log("Supported output types from our layers", supportedOutputTypes);
-
     for (let i = 0, iMax = bufferTargets.length; i < iMax; ++i) {
       const bufferTarget = bufferTargets[i];
       if (supportedOutputTypes.has(bufferTarget.outputType)) {
@@ -357,11 +372,6 @@ export abstract class View<
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
-        console.log(
-          "Render Target found for output type",
-          bufferTarget.outputType,
-          request
-        );
 
         if (!request.texture) {
           console.warn(
@@ -459,38 +469,11 @@ export abstract class View<
         // on the surface
         retainTextureTargets: true
       });
-
-      console.log(
-        "GENERATED the render target for the view:",
-        this.renderTarget
-      );
     }
 
     // Non-MRT makes multiple render targets. One for each output type.
     else {
       throw new Error("MRT for non-MRT systems not supported yet.");
-      // const targets: RenderTarget[] = [];
-      // const depth = depthBuffer;
-      // this.renderTarget = targets;
-
-      // renderTextures.forEach((tex, type) => {
-      //   const color = {
-      //     buffer: tex,
-      //     outputType: type
-      //   };
-
-      //   targets.push(
-      //     new RenderTarget({
-      //       buffers: {
-      //         color: color,
-      //         depth
-      //       },
-      //       // Render target texture retention is governed by the resource set up
-      //       // on the surface
-      //       retainTextureTargets: true
-      //     })
-      //   );
-      // });
     }
   }
 
@@ -501,6 +484,10 @@ export abstract class View<
    */
   willUseView() {
     const targets = this.getRenderTargets();
+
+    if (this.props.screenScale) {
+      this.projection.screenScale = this.props.screenScale;
+    }
 
     const invalid = targets.some(target =>
       target.getBuffers().some(buffer => {

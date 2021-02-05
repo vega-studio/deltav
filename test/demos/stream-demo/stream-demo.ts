@@ -167,7 +167,6 @@ export class StreamDemo extends BaseDemo {
                 count: 2000
               },
               data: providers.circles,
-              scaleFactor: () => cameras.main.scale2D[0],
               usePoints: true
             })
           }

@@ -4,7 +4,6 @@ import {
   ITouchInteraction
 } from "../event-management/types";
 import { Instance } from "../instance-provider/instance";
-import { BaseProjection } from "../math/base-projection";
 import {
   IColorPickingData,
   IMousePickInfo,
@@ -13,6 +12,7 @@ import {
 } from "../types";
 import { mapGetWithDefault, mapInjectDefault } from "../util/common-operations";
 import { ILayerProps, Layer } from "./layer";
+import { IViewProps, View } from "./view";
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
@@ -45,8 +45,12 @@ export class LayerInteractionHandler<
   /**
    * Retrieves the color picking instance determined for the procedure.
    */
-  getColorPickInstance() {
-    if (this.colorPicking && this.layer.picking.type === PickType.SINGLE) {
+  getColorPickInstance(view: View<IViewProps>) {
+    if (
+      this.colorPicking &&
+      this.layer.picking.type === PickType.SINGLE &&
+      this.colorPicking.view === view
+    ) {
       return this.layer.uidToInstance.get(
         0xffffff - this.colorPicking.nearestColor
       );
@@ -58,7 +62,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseOver(_view: BaseProjection<any>, _interaction: IMouseInteraction) {
+  handleMouseOver(_view: View<any>, _interaction: IMouseInteraction) {
     // This is the mouse over for the view itself. We should probably just let
     // the mouse over events handle the interactions With the instances
   }
@@ -67,7 +71,7 @@ export class LayerInteractionHandler<
    * Handles touch down gestures for a layer within a view
    */
   handleTouchOver(
-    _view: BaseProjection<any>,
+    _view: View<any>,
     _interaction: ITouchInteraction,
     _touch: ISingleTouchInteraction
   ) {
@@ -78,7 +82,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse down gestures for a layer within a view
    */
-  handleMouseDown(view: BaseProjection<any>, interaction: IMouseInteraction) {
+  handleMouseDown(view: View<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseDown } = this.layer.props;
@@ -86,12 +90,14 @@ export class LayerInteractionHandler<
       // If we have a listener for either event we should continue to process
       // the event in more detail
       if (onMouseDown) {
-        const world = view.screenToWorld(interaction.screen.position);
+        const world = view.projection.screenToWorld(
+          interaction.screen.position
+        );
         const instances: T[] = [];
 
         if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
-          const instanceForColor = this.getColorPickInstance();
+          const instanceForColor = this.getColorPickInstance(view);
 
           if (instanceForColor) {
             instances.push(instanceForColor);
@@ -102,7 +108,7 @@ export class LayerInteractionHandler<
           interaction,
           instances,
           layer: this.layer.id,
-          projection: view,
+          projection: view.projection,
           screen: interaction.screen.position,
           world
         };
@@ -120,7 +126,7 @@ export class LayerInteractionHandler<
    * Handles touch events for instances for layers
    */
   handleTouchDown(
-    view: BaseProjection<any>,
+    view: View<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -136,12 +142,12 @@ export class LayerInteractionHandler<
       return;
     }
 
-    const world = view.screenToWorld(touch.screen.position);
+    const world = view.projection.screenToWorld(touch.screen.position);
     const instances: T[] = [];
 
     if (this.layer.picking.type === PickType.SINGLE) {
       // Get the instance for the nearest color
-      const instanceForColor = this.getColorPickInstance();
+      const instanceForColor = this.getColorPickInstance(view);
 
       if (instanceForColor) {
         instances.push(instanceForColor);
@@ -153,7 +159,7 @@ export class LayerInteractionHandler<
       touch,
       instances,
       layer: this.layer.id,
-      projection: view,
+      projection: view.projection,
       screen: touch.screen.position,
       world
     };
@@ -187,20 +193,22 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse out events for a layer within the view
    */
-  handleMouseOut(view: BaseProjection<any>, interaction: IMouseInteraction) {
+  handleMouseOut(view: View<any>, interaction: IMouseInteraction) {
     // This will fire an instance mouse out for any over instances in the queue
     // since we left the view Thus no instances shall be considered 'over'
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseOut } = this.layer.props;
 
       if (onMouseOut) {
-        const world = view.screenToWorld(interaction.screen.position);
+        const world = view.projection.screenToWorld(
+          interaction.screen.position
+        );
 
         const info: IMousePickInfo<T> = {
           interaction,
           instances: Array.from(this.isMouseOver.keys()),
           layer: this.layer.id,
-          projection: view,
+          projection: view.projection,
           screen: interaction.screen.position,
           world
         };
@@ -217,7 +225,7 @@ export class LayerInteractionHandler<
    * Handles touch events that have been dragged off of a view
    */
   handleTouchOut(
-    view: BaseProjection<any>,
+    view: View<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -231,14 +239,14 @@ export class LayerInteractionHandler<
       return;
     }
 
-    const world = view.screenToWorld(touch.screen.position);
+    const world = view.projection.screenToWorld(touch.screen.position);
 
     const info: ITouchPickInfo<T> = {
       interaction,
       touch,
       instances: Array.from(this.isMouseOver.keys()),
       layer: this.layer.id,
-      projection: view,
+      projection: view.projection,
       screen: touch.screen.position,
       world
     };
@@ -253,7 +261,7 @@ export class LayerInteractionHandler<
   /**
    * Handles mouse up gestures for the layer within the provided view
    */
-  handleMouseUp(view: BaseProjection<any>, interaction: IMouseInteraction) {
+  handleMouseUp(view: View<any>, interaction: IMouseInteraction) {
     const { onMouseUp, onMouseUpOutside } = this.layer.props;
 
     // Check to ensure the layer is configured to accept the events
@@ -265,12 +273,12 @@ export class LayerInteractionHandler<
       return;
     }
 
-    const world = view.screenToWorld(interaction.screen.position);
+    const world = view.projection.screenToWorld(interaction.screen.position);
     const instances: T[] = [];
 
     if (this.layer.picking.type === PickType.SINGLE) {
       // Get the instance for the nearest color
-      const instanceForColor = this.getColorPickInstance();
+      const instanceForColor = this.getColorPickInstance(view);
 
       if (instanceForColor) {
         instances.push(instanceForColor);
@@ -281,7 +289,7 @@ export class LayerInteractionHandler<
       interaction,
       instances,
       layer: this.layer.id,
-      projection: view,
+      projection: view.projection,
       screen: interaction.screen.position,
       world
     };
@@ -299,7 +307,7 @@ export class LayerInteractionHandler<
       interaction,
       instances: Array.from(this.isMouseDown.values()),
       layer: this.layer.id,
-      projection: view,
+      projection: view.projection,
       screen: interaction.screen.position,
       world
     };
@@ -312,7 +320,7 @@ export class LayerInteractionHandler<
    * Handles touch up events that occur over a view
    */
   handleTouchUp(
-    view: BaseProjection<any>,
+    view: View<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -332,12 +340,12 @@ export class LayerInteractionHandler<
       return;
     }
 
-    const world = view.screenToWorld(touch.screen.position);
+    const world = view.projection.screenToWorld(touch.screen.position);
     const instances: T[] = [];
 
     if (this.layer.picking.type === PickType.SINGLE) {
       // Get the instance for the nearest color
-      const instanceForColor = this.getColorPickInstance();
+      const instanceForColor = this.getColorPickInstance(view);
 
       if (instanceForColor) {
         instances.push(instanceForColor);
@@ -349,7 +357,7 @@ export class LayerInteractionHandler<
       touch,
       instances,
       layer: this.layer.id,
-      projection: view,
+      projection: view.projection,
       screen: touch.screen.position,
       world
     };
@@ -376,7 +384,7 @@ export class LayerInteractionHandler<
         touch,
         instances: Array.from(isTouchDown.values()),
         layer: this.layer.id,
-        projection: view,
+        projection: view.projection,
         screen: touch.screen.position,
         world
       };
@@ -396,7 +404,7 @@ export class LayerInteractionHandler<
         touch,
         instances: [],
         layer: this.layer.id,
-        projection: view,
+        projection: view.projection,
         screen: touch.screen.position,
         world
       };
@@ -409,7 +417,7 @@ export class LayerInteractionHandler<
    * Mouse move events on the layer will detect when instances have their item
    * newly over or just moved on
    */
-  handleMouseMove(view: BaseProjection<any>, interaction: IMouseInteraction) {
+  handleMouseMove(view: View<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     const { onMouseOver, onMouseMove, onMouseOut } = this.layer.props;
 
@@ -418,12 +426,14 @@ export class LayerInteractionHandler<
       // the event in more detail
       if (onMouseOver || onMouseMove || onMouseOut) {
         let info: IMousePickInfo<T>;
-        const world = view.screenToWorld(interaction.screen.position);
+        const world = view.projection.screenToWorld(
+          interaction.screen.position
+        );
         const instances: T[] = [];
 
         if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
-          const instanceForColor = this.getColorPickInstance();
+          const instanceForColor = this.getColorPickInstance(view);
 
           if (instanceForColor) {
             instances.push(instanceForColor);
@@ -451,7 +461,7 @@ export class LayerInteractionHandler<
             interaction,
             instances: noLongerOver,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: interaction.screen.position,
             world
           };
@@ -469,7 +479,7 @@ export class LayerInteractionHandler<
             interaction,
             instances: notOverInstances,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: interaction.screen.position,
             world
           };
@@ -485,7 +495,7 @@ export class LayerInteractionHandler<
             interaction,
             instances,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: interaction.screen.position,
             world
           };
@@ -504,7 +514,7 @@ export class LayerInteractionHandler<
    * Handles touches that are moving along the screen
    */
   handleTouchMove(
-    view: BaseProjection<any>,
+    view: View<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -516,12 +526,12 @@ export class LayerInteractionHandler<
       // the event in more detail
       if (onTouchOver || onTouchMove || onTouchOut) {
         let info: ITouchPickInfo<T>;
-        const world = view.screenToWorld(touch.screen.position);
+        const world = view.projection.screenToWorld(touch.screen.position);
         const instances: T[] = [];
 
         if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
-          const instanceForColor = this.getColorPickInstance();
+          const instanceForColor = this.getColorPickInstance(view);
 
           if (instanceForColor) {
             instances.push(instanceForColor);
@@ -557,7 +567,7 @@ export class LayerInteractionHandler<
             touch,
             instances: noLongerOver,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: touch.screen.position,
             world
           };
@@ -574,7 +584,7 @@ export class LayerInteractionHandler<
             touch,
             instances: notOverInstances,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: touch.screen.position,
             world
           };
@@ -591,7 +601,7 @@ export class LayerInteractionHandler<
             touch,
             instances,
             layer: this.layer.id,
-            projection: view,
+            projection: view.projection,
             screen: touch.screen.position,
             world
           };
@@ -609,19 +619,21 @@ export class LayerInteractionHandler<
   /**
    * Handles click gestures on the layer within a view
    */
-  handleMouseClick(view: BaseProjection<any>, interaction: IMouseInteraction) {
+  handleMouseClick(view: View<any>, interaction: IMouseInteraction) {
     // This handles interactions for PickType ALL layers
     if (this.layer.picking && this.layer.picking.type !== PickType.NONE) {
       const { onMouseClick } = this.layer.props;
 
       // If we have a listener for either event we should continue to process the event in more detail
       if (onMouseClick) {
-        const world = view.screenToWorld(interaction.screen.position);
+        const world = view.projection.screenToWorld(
+          interaction.screen.position
+        );
         const instances: T[] = [];
 
         if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
-          const instanceForColor = this.getColorPickInstance();
+          const instanceForColor = this.getColorPickInstance(view);
 
           if (instanceForColor) {
             instances.push(instanceForColor);
@@ -632,7 +644,7 @@ export class LayerInteractionHandler<
           interaction,
           instances,
           layer: this.layer.id,
-          projection: view,
+          projection: view.projection,
           screen: interaction.screen.position,
           world
         };
@@ -646,7 +658,7 @@ export class LayerInteractionHandler<
    * Handles tap interactions with the view
    */
   handleTap(
-    view: BaseProjection<any>,
+    view: View<any>,
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
@@ -656,12 +668,12 @@ export class LayerInteractionHandler<
 
       // If we have a listener for either event we should continue to process the event in more detail
       if (onTap) {
-        const world = view.screenToWorld(touch.screen.position);
+        const world = view.projection.screenToWorld(touch.screen.position);
         const instances: T[] = [];
 
         if (this.layer.picking.type === PickType.SINGLE) {
           // Get the instance for the nearest color
-          const instanceForColor = this.getColorPickInstance();
+          const instanceForColor = this.getColorPickInstance(view);
 
           if (instanceForColor) {
             instances.push(instanceForColor);
@@ -673,7 +685,7 @@ export class LayerInteractionHandler<
           touch,
           instances,
           layer: this.layer.id,
-          projection: view,
+          projection: view.projection,
           screen: touch.screen.position,
           world
         };
@@ -686,7 +698,7 @@ export class LayerInteractionHandler<
   /**
    * Handles drag gestures for the layer within the view
    */
-  handleMouseDrag(_view: BaseProjection<any>, _interaction: IMouseInteraction) {
+  handleMouseDrag(_view: View<any>, _interaction: IMouseInteraction) {
     // We probably should not broadcast drag events for the sake of instances. Instance dragging should be handled on
     // An instance by instance basis rather than coming from the view's gestures
   }

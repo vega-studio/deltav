@@ -33,8 +33,8 @@ import {
   UniformIOValue
 } from "../types";
 import { isBoolean } from "../types";
-import { mapInjectDefault } from "../util";
 import { isDefined } from "../util/common-filters";
+import { mapInjectDefault } from "../util/common-operations";
 import { createAttribute } from "../util/create-attribute";
 import { onFrame } from "../util/frame";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -51,6 +51,7 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
+import { generateLayerGeometry } from "./layer-processing";
 import { LayerScene } from "./layer-scene";
 import { Surface } from "./surface";
 import { IViewProps, View } from "./view";
@@ -733,11 +734,6 @@ export class Layer<
         shaderIO.fs
       );
 
-      console.log(
-        `OUTPUT FRAGMENT SHADER (layer: ${this.id}, view: ${view.id})`,
-        outputFragmentShader
-      );
-
       if (!outputFragmentShader) {
         console.warn(
           "Could not generate output fragment shaders for the view specified."
@@ -787,8 +783,6 @@ export class Layer<
       return false;
     }
 
-    console.log("SHADER METRICS", shaderMetrics);
-
     // Now that all of the elements of the layer are complete, let us apply them to the layer
     this.shaderIOInfo = Object.assign<
       ILayerShaderIOInfo<T>,
@@ -815,6 +809,19 @@ export class Layer<
     );
 
     return;
+  }
+
+  /**
+   * Processes the static vertex information and applies GL Attributes for each
+   * item.
+   */
+  private processVertexAttributes(shaderIO: IShaderInitialization<T>) {
+    generateLayerGeometry(
+      this,
+      this.shaderIOInfo.maxInstancesPerBuffer,
+      this.shaderIOInfo.vertexAttributes,
+      shaderIO.vertexCount
+    );
   }
 
   /**
@@ -872,6 +879,10 @@ export class Layer<
       result.outputFragmentShaders,
       result.declarations
     );
+    if (isBoolean(result)) return result;
+    // After all processing is complete, let's initialize our vertex attributes
+    // which are used in our base geometry
+    result = this.processVertexAttributes(shaderIO);
     if (isBoolean(result)) return result;
     // Generate the correct buffering strategy for the layer
     result = this.makeLayerBufferManager(this.surface.gl, this.scene);

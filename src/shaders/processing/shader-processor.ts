@@ -107,8 +107,6 @@ export class ShaderProcessor {
     typeFilter?: number[],
     singleOutput?: boolean
   ) {
-    console.log("Merging fragment outputs:", layerOutputs);
-
     let headers = "";
     let bodies = "";
     let fragmentOutput = "";
@@ -159,13 +157,6 @@ export class ShaderProcessor {
       // And this will be in alignment with 'viewOutputs' so we need to make the
       // layout target according to this.
       const layoutOutputIndex = viewOutputs.indexOf(layerOutput.outputType);
-
-      console.log(
-        `Output type ${layerOutput.outputType} is flagged for output?`,
-        allowOutput,
-        "Mapping to layout location",
-        layoutOutputIndex
-      );
 
       shaderTemplate({
         shader: layerOutput.source,
@@ -491,13 +482,6 @@ export class ShaderProcessor {
     viewOutputs?: OutputFragmentShaderTarget | null,
     layerOutputs?: OutputFragmentShaderSource
   ): MapValueType<OutputFragmentShader> | null {
-    console.log("Processing layer fragment outputs", {
-      targetOutputs: viewOutputs
-        ? JSON.parse(JSON.stringify(viewOutputs))
-        : void 0,
-      outputs: layerOutputs
-    });
-
     // If the layer output only is a simple string, then we assume the COLOR
     // output of the layer. If the layer does not specify a specific COLOR
     // output, then we assume the culminated output of all outputs of the layer
@@ -677,11 +661,6 @@ export class ShaderProcessor {
         );
 
         if (targetColor && layerOutputs) {
-          console.log(
-            "MERGING FRAGMENT OUTPUTS FOR SINGLE SOURCE FRAGMENT SHADER",
-            viewOutputTypes
-          );
-
           const processed = this.mergeFragmentOutputsForMRT(
             declarationsVS,
             declarationsFS,

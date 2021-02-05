@@ -965,6 +965,16 @@ export class GLProxy {
       instancing = this.extensions.instancing;
     }
 
+    // Optimization: No draw valid draw buffers when a render target is
+    // established and MRT is enabled: then don't don't
+    if (WebGLStat.MRT || WebGLStat.MRT_EXTENSION) {
+      if (this.state.renderTarget) {
+        if (!this.state.drawBuffers.find(target => target !== this.gl.NONE)) {
+          return;
+        }
+      }
+    }
+
     if (instancing && instancing instanceof WebGL2RenderingContext) {
       instancing.drawArraysInstanced(
         drawMode(this.gl, model.drawMode),
@@ -986,6 +996,10 @@ export class GLProxy {
         drawRange[1]
       );
     }
+
+    // Without committing to the GPU, we set the draw buffer to require a state
+    // change again.
+    this.state.setDrawBuffers([], true);
   }
 
   /**
@@ -1098,6 +1112,9 @@ export class GLProxy {
       } else if (target.gl.stencilBufferId instanceof WebGLRenderbuffer) {
         this.disposeRenderBuffer(target.gl.stencilBufferId);
       }
+
+      // Delete the framebuffer object associated with this render target
+      this.gl.deleteFramebuffer(target.gl.fboId);
 
       // Clean up the context generated for the render target
       delete target.gl;

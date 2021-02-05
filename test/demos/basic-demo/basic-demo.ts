@@ -9,6 +9,7 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  commands,
   createLayer,
   createTexture,
   createView,
@@ -23,6 +24,7 @@ import {
   PickType,
   PostEffect,
   scale2,
+  SimpleEventHandler,
   Size,
   TextureSize,
   Vec2,
@@ -30,8 +32,6 @@ import {
   Vec4,
   View2D
 } from "../../../src";
-import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
-import { commands } from "../../../src/processing/commands";
 import { BaseDemo } from "../../common/base-demo";
 
 const { random } = Math;
@@ -129,8 +129,8 @@ export class BasicDemo extends BaseDemo {
           }
         }),
         picking: createTexture({
-          width: TextureSize.SCREEN,
-          height: TextureSize.SCREEN,
+          width: TextureSize.SCREEN_QUARTER,
+          height: TextureSize.SCREEN_QUARTER,
           textureSettings: {
             generateMipMaps: false
           }
@@ -139,7 +139,8 @@ export class BasicDemo extends BaseDemo {
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["main.main"]
+          startView: ["main.main"],
+          ignoreCoverViews: true
         }),
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction) => {
@@ -175,8 +176,10 @@ export class BasicDemo extends BaseDemo {
             }),
             pick: createView(View2D, {
               camera: cameras.main,
+              screenScale: [4, 4],
               background: [0, 0, 0, 1],
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              pixelRatio: 0.5,
               output: {
                 buffers: {
                   [FragmentOutputType.PICKING]: resources.picking
@@ -195,18 +198,23 @@ export class BasicDemo extends BaseDemo {
                   AutoEasingLoopStyle.NONE
                 )
               },
+
               data: providers.circles,
-              scaleFactor: () => cameras.main.scale2D[0],
-              usePoints: false,
+              usePoints: true,
               picking: PickType.SINGLE,
+
               onMouseOver: info => {
+                info.instances.forEach(i => (i.color = [1, 1, 1, 1]));
+              },
+
+              onMouseOut: info => {
                 info.instances.forEach(i => (i.color = this.makeColor()));
               }
             })
           }
         },
         postEffects: {
-          render: PostEffect.draw({
+          toScreen: PostEffect.draw({
             input: resources.color
           })
         }

@@ -408,7 +408,7 @@ export class GLState {
    * -1 specifies NONE
    * -2 specifies BACK
    */
-  setDrawBuffers(attachments: number[]) {
+  setDrawBuffers(attachments: number[], preventCommit?: boolean) {
     // See if a state change really is necessary
     let different = attachments.length !== this._drawBuffers.length;
 
@@ -424,9 +424,13 @@ export class GLState {
     if (!different) return;
 
     if (this.glProxy.extensions.drawBuffers instanceof WebGL2RenderingContext) {
-      this.glProxy.extensions.drawBuffers.drawBuffers(attachments);
+      if (!preventCommit) {
+        this.glProxy.extensions.drawBuffers.drawBuffers(attachments);
+      }
     } else if (this.glProxy.extensions.drawBuffers) {
-      this.glProxy.extensions.drawBuffers.drawBuffersWEBGL(attachments);
+      if (!preventCommit) {
+        this.glProxy.extensions.drawBuffers.drawBuffersWEBGL(attachments);
+      }
     } else {
       console.warn(
         "Attempted to use drawBuffers for MRT, but MRT is NOT supported by this hardware. Use multiple render targets instead"
@@ -532,7 +536,8 @@ export class GLState {
       return UseMaterialStatus.NO_RENDER_TARGET_MATCHES;
     }
 
-    // If we have a render target, we should set up a few elements
+    // If we have a render target, we should set up a few elements such as draw
+    // buffer arrangement.
     if (this._renderTarget) {
       material.gl.programByTarget.set(this._renderTarget, programId);
 

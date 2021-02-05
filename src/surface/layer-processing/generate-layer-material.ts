@@ -61,12 +61,6 @@ export function generateLayerMaterial<
   // The props applied to the layer has a material option declaration as well
   // these settings take priority over all settings
   Object.assign(materialParams, layer.props.materialOptions || {});
-  console.log(
-    layer.id,
-    "GENERATED LAYER MATERIAL WITH PARAMS",
-    materialParams,
-    layer.props.materialOptions
-  );
 
   materialParams.vertexShader = vs;
   materialParams.fragmentShader = materialFS;

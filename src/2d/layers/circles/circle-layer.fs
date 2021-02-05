@@ -23,4 +23,6 @@ void main() {
     vertexColor,
     step_factor
   );
+
+  if (color.a == 0.0) discard;
 }

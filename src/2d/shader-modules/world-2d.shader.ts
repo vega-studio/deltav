@@ -110,8 +110,9 @@ ShaderModule.register([
             layer.view.viewBounds.height
           ]
         },
-        // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
-        // Things like gl_PointSize will need this metric if not working in clip space
+        // This injects the current layer's pixel ratio so pixel ratio dependent
+        // items can react to it Things like gl_PointSize will need this metric
+        // if not working in clip space
         {
           name: "pixelRatio",
           size: UniformSize.ONE,

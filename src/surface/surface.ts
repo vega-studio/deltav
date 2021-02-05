@@ -6,7 +6,7 @@ import { Instance } from "../instance-provider/instance";
 import { BaseProjection } from "../math";
 import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
 import { Bounds } from "../math/primitives/bounds";
-import { Vec2, Vec4 } from "../math/vector";
+import { Vec4 } from "../math/vector";
 import {
   BaseResourceManager,
   BaseResourceOptions,
@@ -29,11 +29,9 @@ import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
-  IResourceType,
-  PickType
+  IResourceType
 } from "../types";
 import { onFrame, PromiseResolver } from "../util";
-import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { Layer } from "./layer";
@@ -125,6 +123,11 @@ export interface ISurfaceOptions {
     | BaseIOExpansion[]
     | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
+   * If this is defined, this causes the specified targets to NOT render UNLESS
+   * expressly told to render utilizing enableOutput
+   */
+  optimizedOutputTargets?: number[];
+  /**
    * This specifies the density of rendering in the surface. The default value
    * is window.devicePixelRatio to match the monitor for optimal clarity. Using
    * a value of 1 will be acceptable, will not get high density renders, but
@@ -200,6 +203,14 @@ export interface ISurfaceOptions {
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
 
 /**
+ * Helper enum to select which method to broadcast.
+ */
+enum EventManagerBroadcastCycle {
+  WILL_RENDER,
+  DID_RENDER
+}
+
+/**
  * Sort method for any object with an 'order' property
  */
 function sortByOrder<T extends { order?: number }>(a: T, b: T) {
@@ -239,12 +250,17 @@ export class Surface {
   /** These are the registered transforms for shaders */
   private shaderTransforms: BaseShaderTransform[] = [];
   /**
+   * These are the registered output targets that get disabled by default. They
+   * must be explicitly enabled with the method enableOptimizedOutput.
+   */
+  private optimizedOutputs = new Set<number>([FragmentOutputType.PICKING]);
+  /**
    * This is the sorting controller for sorting attributes/uniforms of a layer
    * after all the attributes have been generated that are needed
    */
   ioSorting = new BaseIOSorting();
   /** This manages the mouse events for the current canvas context */
-  mouseManager: UserInputEventManager;
+  userInputManager: UserInputEventManager;
   /** This is the density the rendering renders for the surface */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the GL render system we use to render scenes with views */
@@ -257,10 +273,7 @@ export class Surface {
    * When defined, the next render will make sure color picking is updated
    * for layer interactions
    */
-  updateColorPick?: {
-    position: Vec2;
-    views: View<IViewProps>[];
-  };
+  private enabledOptimizedOutputs = new Set<number>();
   /**
    * This map is a quick look up for a view to determine other views that
    * would need to be redrawn as a consequence of the key view needing a redraw.
@@ -276,17 +289,6 @@ export class Surface {
   ready: Promise<Surface>;
   /** This is used to reolve this surface as ready */
   private readyResolver: PromiseResolver<Surface>;
-
-  /**
-   * Picking gets deferred to the beginning of next draw. Thus picking
-   * operations get queued till next frame using this store here.
-   */
-  private queuedPicking?: [
-    LayerScene,
-    View<IViewProps>,
-    Layer<any, any>[],
-    Vec2
-  ][];
 
   /** Diff manager to handle diffing resource objects for the pipeline */
   resourceDiffs: ReactiveDiff<
@@ -360,75 +362,27 @@ export class Surface {
   }
 
   /**
-   * Retrieves all IO Expanders applied to this surface
+   * Broadcasts a cycle event to all event managers.
    */
-  getIOExpanders() {
-    return this.ioExpanders;
-  }
+  private broadcastEventManagerCycle(event: EventManagerBroadcastCycle) {
+    // Resolve event managers reaction cycles
+    for (
+      let i = 0, iMax = this.userInputManager.eventManagers.length;
+      i < iMax;
+      ++i
+    ) {
+      const eventManager = this.userInputManager.eventManagers[i];
 
-  /**
-   * Retrieves the controller for sorting the IO for the layers.
-   */
-  getIOSorting() {
-    return this.ioSorting;
-  }
+      switch (event) {
+        case EventManagerBroadcastCycle.DID_RENDER:
+          eventManager.didRender();
+          break;
 
-  /**
-   * Retrieves all shader transforms applied to this surface.
-   */
-  getShaderTransforms() {
-    return this.shaderTransforms;
-  }
-
-  /**
-   * This processes what is rendered into the picking render target to see if the mouse interacted with
-   * any elements.
-   */
-  private analyzePickRendering() {
-    if (!this.queuedPicking) return;
-
-    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
-      const [, view, pickingPass, mouse] = this.queuedPicking[i];
-
-      // Optimized rendering of the view will make the view discard picking rendering
-      if (view.optimizeRendering) {
-        continue;
-      }
-
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      this.renderer.readPixels(
-        Math.floor(mouse[0] - pickWidth / 2),
-        Math.floor(mouse[1] - pickHeight / 2),
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
+        case EventManagerBroadcastCycle.WILL_RENDER:
+          eventManager.willRender();
+          break;
       }
     }
-
-    delete this.queuedPicking;
   }
 
   /**
@@ -491,7 +445,6 @@ export class Surface {
       const scene = scenes[i];
       const views = scene.views;
       const layers = scene.layers;
-      const validLayers: { [key: string]: Layer<any, any> } = {};
 
       // Make sure the views and layers are ordered such that they render in the
       // appropriate order
@@ -501,6 +454,7 @@ export class Surface {
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
+        const validLayers: { [key: string]: Layer<any, any> } = {};
 
         // If this view has information to use, then we should perform steps to
         // prepare the view for use.
@@ -605,100 +559,38 @@ export class Surface {
             });
           }
         }
-      }
 
-      // Re-render but only include non-errored layers
-      const keepLayers = Object.values(validLayers);
-      if (layers.length !== keepLayers.length) {
-        scene.layerDiffs.diff(keepLayers.map(layer => layer.initializer));
-      }
-    }
+        // Only include non-errored layers for the scene. We filter the scenes
+        // layer PER view because context can change with a given view thus
+        // making it possible for a layer to error within each view's context.
+        // We render each view after completion of updates, thus the scene needs
+        // to be cleared of errored layers immediately after the view context
+        // has updated.
+        const keepLayers = Object.values(validLayers);
+        if (layers.length !== keepLayers.length) {
+          scene.layerDiffs.diff(keepLayers.map(layer => layer.initializer));
+        }
 
-    // If any draw need was detected, redraw the surface
-    for (let i = 0, end = scenes.length; i < end; ++i) {
-      const scene = scenes[i];
-      // Our scene must have a valid container to operate
-      if (!scene.container) continue;
-      const views = scene.views;
+        // Our scene must have a valid container to operate
+        if (!scene.container) continue;
 
-      for (let k = 0, endk = views.length; k < endk; ++k) {
-        const view = views[k];
-
-        // Now perform the rendering
+        // Now perform the rendering for the view.
+        // WHY WE RENDER NOW:
+        // Each layer has a single material representing it. This means uniforms
+        // based on view only get updated when the layer performs it's draw in
+        // the context of each view. So, we have to render the view immediately
+        // after the layer draws in context of it's view and has it's uniforms
+        // updated in that context.
         if (onViewReady) {
           onViewReady(needsDraw, scene, view);
         }
       }
     }
 
-    // Get the layers with errors flagged for them
+    // Get the layers with errors flagged for them and output the issues to the
+    // console.
     const errors = Object.values(erroredLayers);
-
-    if (errors.length > 0) {
-      console.warn(
-        "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
-        errors.map(err => err[0].id)
-      );
-
-      // Output each layer and why it errored
-      errors.forEach(err => {
-        console.warn(`Layer ${err[0].id} removed for the following error:`);
-
-        if (err[1]) {
-          const message = err[1].stack || err[1].message;
-          console.error(message);
-
-          // This is a specific error to instances updating an attribute but
-          // returning a value that is larger than the attribute size. The only
-          // way to debug this is to run every instance in the layer and
-          // retrieve it's update value and compare the return to the expected
-          // size.
-          if (
-            message.indexOf("RangeError") > -1 ||
-            message.indexOf("Source is too large") > -1
-          ) {
-            const layer = err[0];
-            const changes = layer.bufferManager.changeListContext;
-            let singleMessage:
-              | [string, Instance, IInstanceAttribute<Instance>]
-              | undefined;
-            let errorCount = 0;
-
-            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
-              const [instance] = changes[i];
-              layer.shaderIOInfo.instanceAttributes.forEach(attr => {
-                const check = attr.update(instance);
-                if (check.length !== attr.size) {
-                  if (!singleMessage) {
-                    singleMessage = [
-                      "Example instance returned the wrong sized value for an attribute:",
-                      instance,
-                      attr
-                    ];
-                  }
-
-                  errorCount++;
-                }
-              });
-            }
-
-            if (singleMessage) {
-              console.error(
-                "The following output shows discovered issues related to the specified error"
-              );
-              console.error(
-                "Instances are returning too large IO for an attribute\n",
-                singleMessage[0],
-                singleMessage[1],
-                singleMessage[2],
-                "Total errors for too large IO values",
-                errorCount
-              );
-            }
-          }
-        }
-      });
-    }
+    this.printLayerErrors(errors);
   }
 
   /**
@@ -706,7 +598,7 @@ export class Surface {
    */
   destroy() {
     this.resourceManager.destroy();
-    this.mouseManager.destroy();
+    this.userInputManager.destroy();
     this.sceneDiffs.destroy();
     this.renderer.dispose();
     delete this.context;
@@ -723,12 +615,8 @@ export class Surface {
   async draw(time?: number) {
     if (!this.gl) return;
 
-    // The theoretically least blocking moment for pixels to be read is the
-    // beginning of the next frame right before next frame is rendered. This
-    // will have given optimal time for the GPU to have finished flushing it's
-    // commands. If the GPU has not completed it's tasks by this time, then
-    // we're in a major GPU intensive operation.
-    this.analyzePickRendering();
+    // Update all event managers with the current cycle event.
+    this.broadcastEventManagerCycle(EventManagerBroadcastCycle.WILL_RENDER);
 
     // Before we draw the frame, we must have every camera resolve broadcasting
     // changes so everything can respond to the change before all of the drawing
@@ -757,8 +645,8 @@ export class Surface {
     // After we have drawn our views of our scenes, we can now ensure all of the
     // bounds Are updated in the interactions and flag our interactions ready
     // for mouse input
-    if (this.mouseManager.waitingForRender) {
-      this.mouseManager.waitingForRender = false;
+    if (this.userInputManager.waitingForRender) {
+      this.userInputManager.waitingForRender = false;
     }
 
     // Now that all of our layers have performed updates to everything, we can
@@ -796,9 +684,11 @@ export class Surface {
       }
     }
 
+    // Update all event managers with the current cycle event.
+    this.broadcastEventManagerCycle(EventManagerBroadcastCycle.DID_RENDER);
     // Clear out the flag requesting a pick pass so we don't perform a pick
     // render pass unless we have another requested from mouse interactions
-    delete this.updateColorPick;
+    this.enabledOptimizedOutputs.clear();
   }
 
   /**
@@ -820,19 +710,24 @@ export class Surface {
 
     // If the update color pick is flagged, we make sure the view's picking
     // output type is enabled.
-    if (view.renderTarget && this.updateColorPick) {
+    if (view.renderTarget) {
+      // Disable all optimized output targets
       const targets = view.getRenderTargets();
       targets.forEach(target =>
-        target.disabledTargets.delete(FragmentOutputType.PICKING)
+        this.optimizedOutputs.forEach(outputTarget =>
+          target.disabledTargets.add(outputTarget)
+        )
       );
-    }
 
-    // Otherwise, ensure the target does not get rendered to
-    else {
-      const targets = view.getRenderTargets();
-      targets.forEach(target =>
-        target.disabledTargets.add(FragmentOutputType.PICKING)
-      );
+      // Enable any targets that were specified
+      if (this.enabledOptimizedOutputs.size > 0) {
+        const targets = view.getRenderTargets();
+        targets.forEach(target =>
+          this.enabledOptimizedOutputs.forEach(outputTarget =>
+            target.disabledTargets.delete(outputTarget)
+          )
+        );
+      }
     }
 
     // If the view has an output target to render into, then we shift our target
@@ -884,6 +779,34 @@ export class Surface {
     renderer.render(scene, renderTarget);
     // Indicate this view has been rendered for the given time allottment
     view.lastFrameTime = this.frameMetrics.currentTime;
+  }
+
+  /**
+   * This must be executed when the canvas changes size so that we can
+   * re-calculate the scenes and views dimensions for handling all of our
+   * rendered elements.
+   */
+  fitContainer(_pixelRatio?: number) {
+    if (isOffscreenCanvas(this.context.canvas)) return;
+    const container = this.context.canvas.parentElement;
+
+    if (container) {
+      const canvas = this.context.canvas;
+      canvas.className = "";
+      canvas.setAttribute("style", "");
+      container.style.position = "relative";
+      canvas.style.position = "absolute";
+      canvas.style.left = "0xp";
+      canvas.style.top = "0xp";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.setAttribute("width", "");
+      canvas.setAttribute("height", "");
+      const containerBox = container.getBoundingClientRect();
+      const box = canvas.getBoundingClientRect();
+
+      this.resize(box.width || 100, containerBox.height || 100);
+    }
   }
 
   /**
@@ -966,6 +889,42 @@ export class Surface {
         this.viewDrawDependencies.set(sourceView, overlapViews);
       }
     }
+  }
+
+  /**
+   * As users interact with the surface, this provides a quick way to view the
+   * latest interaction that occurred from User events.
+   */
+  getCurrentInteraction() {
+    return this.userInputManager.currentInteraction;
+  }
+
+  /**
+   * Retrieves all IO Expanders applied to this surface
+   */
+  getIOExpanders() {
+    return this.ioExpanders;
+  }
+
+  /**
+   * Retrieves the controller for sorting the IO for the layers.
+   */
+  getIOSorting() {
+    return this.ioSorting;
+  }
+
+  /**
+   * Retrieves all shader transforms applied to this surface.
+   */
+  getShaderTransforms() {
+    return this.shaderTransforms;
+  }
+
+  /**
+   * Retrieves all outputs the surface
+   */
+  getOptimizedOutputs() {
+    return this.enabledOptimizedOutputs;
   }
 
   /**
@@ -1064,9 +1023,13 @@ export class Surface {
     this.context = context;
 
     if (this.gl) {
+      // Add in the specified optimized output targets
+      options.optimizedOutputTargets?.forEach(target =>
+        this.optimizedOutputs.add(target)
+      );
       // Initialize our event manager that handles mouse interactions/gestures
       // with the canvas
-      this.initMouseManager(options);
+      this.initUserInputManager(options);
       // Initialize any resources requested or needed, such as textures or
       // rendering surfaces
       await this.initResources(options);
@@ -1213,7 +1176,7 @@ export class Surface {
   /**
    * Initializes elements for handling mouse interactions with the canvas.
    */
-  private initMouseManager(options: ISurfaceOptions) {
+  private initUserInputManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers
     // themselves
     const eventManagers: EventManager[] = ([
@@ -1221,7 +1184,7 @@ export class Surface {
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer
-    this.mouseManager = new UserInputEventManager(
+    this.userInputManager = new UserInputEventManager(
       this.context.canvas,
       this,
       eventManagers,
@@ -1277,30 +1240,74 @@ export class Surface {
   }
 
   /**
-   * This must be executed when the canvas changes size so that we can
-   * re-calculate the scenes and views dimensions for handling all of our
-   * rendered elements.
+   * Handles printing discovered issues with layers to the console to help with
+   * transparency for developing and debugging.
    */
-  fitContainer(_pixelRatio?: number) {
-    if (isOffscreenCanvas(this.context.canvas)) return;
-    const container = this.context.canvas.parentElement;
+  private printLayerErrors(errors: [Layer<any, any>, Error][]) {
+    if (errors.length > 0) {
+      console.warn(
+        "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
+        errors.map(err => err[0].id)
+      );
 
-    if (container) {
-      const canvas = this.context.canvas;
-      canvas.className = "";
-      canvas.setAttribute("style", "");
-      container.style.position = "relative";
-      canvas.style.position = "absolute";
-      canvas.style.left = "0xp";
-      canvas.style.top = "0xp";
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      canvas.setAttribute("width", "");
-      canvas.setAttribute("height", "");
-      const containerBox = container.getBoundingClientRect();
-      const box = canvas.getBoundingClientRect();
+      // Output each layer and why it errored
+      errors.forEach(err => {
+        console.warn(`Layer ${err[0].id} removed for the following error:`);
 
-      this.resize(box.width || 100, containerBox.height || 100);
+        if (err[1]) {
+          const message = err[1].stack || err[1].message;
+          console.error(message);
+
+          // This is a specific error to instances updating an attribute but
+          // returning a value that is larger than the attribute size. The only
+          // way to debug this is to run every instance in the layer and
+          // retrieve it's update value and compare the return to the expected
+          // size.
+          if (
+            message.indexOf("RangeError") > -1 ||
+            message.indexOf("Source is too large") > -1
+          ) {
+            const layer = err[0];
+            const changes = layer.bufferManager.changeListContext;
+            let singleMessage:
+              | [string, Instance, IInstanceAttribute<Instance>]
+              | undefined;
+            let errorCount = 0;
+
+            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+              const [instance] = changes[i];
+              layer.shaderIOInfo.instanceAttributes.forEach(attr => {
+                const check = attr.update(instance);
+                if (check.length !== attr.size) {
+                  if (!singleMessage) {
+                    singleMessage = [
+                      "Example instance returned the wrong sized value for an attribute:",
+                      instance,
+                      attr
+                    ];
+                  }
+
+                  errorCount++;
+                }
+              });
+            }
+
+            if (singleMessage) {
+              console.error(
+                "The following output shows discovered issues related to the specified error"
+              );
+              console.error(
+                "Instances are returning too large IO for an attribute\n",
+                singleMessage[0],
+                singleMessage[1],
+                singleMessage[2],
+                "Total errors for too large IO values",
+                errorCount
+              );
+            }
+          }
+        }
+      });
     }
   }
 
@@ -1317,7 +1324,7 @@ export class Surface {
 
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
-    this.mouseManager.resize();
+    this.userInputManager.resize();
     this.resourceManager.resize();
 
     if (this.sceneDiffs) {
@@ -1365,14 +1372,10 @@ export class Surface {
   }
 
   /**
-   * This triggers an update to all of the layers that perform picking, the
-   * pixel data within the specified mouse range.
+   * This allows a specified optimized output target to render next draw.
    */
-  updateColorPickPosition(position: Vec2, views: View<IViewProps>[]) {
+  enableOptimizedOutput(output: number) {
     // We will flag the color range as needing an update
-    this.updateColorPick = {
-      position,
-      views
-    };
+    this.enabledOptimizedOutputs.add(output);
   }
 }

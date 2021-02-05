@@ -21,6 +21,9 @@ import {
   ResourceRouter
 } from "../resources";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
+import { RenderTextureResourceManager } from "../resources/texture/render-texture-resource-manager";
+import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
+import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
 import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
 import {
@@ -33,12 +36,12 @@ import {
 import { onFrame, PromiseResolver } from "../util";
 import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { BaseIOSorting } from "./base-io-sorting";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { Layer } from "./layer";
 import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
 import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
+import { Shaders30CompatibilityTransform } from "./layer-processing/base-shader-transforms/shaders-30-compatibility-transform";
 import { ISceneOptions, LayerScene } from "./layer-scene";
 import { ClearFlags, IViewProps, View } from "./view";
 
@@ -51,10 +54,12 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
   new BasicIOExpansion(),
   // Expansion to write in the active attribute handler. Any expansion injected AFTER
   // this expander will have it's processes canceled out for the destructuring portion
-  // of the expansion when an instance is not active (if the instance has an active
+  // of the expansion when an instance is not active (if the instance has an
+  // active
   // attribute).
   new ActiveIOExpansion(),
-  // Expansion to handle easing IO attributes and write AutoEasingMethods to the shaders
+  // Expansion to handle easing IO attributes and write AutoEasingMethods to the
+  // shaders
   new EasingIOExpansion()
 ];
 
@@ -63,6 +68,10 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
  */
 export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = [
   {
+    type: ResourceType.TEXTURE,
+    manager: new RenderTextureResourceManager()
+  },
+  {
     type: ResourceType.ATLAS,
     manager: new AtlasResourceManager({})
   },
@@ -70,6 +79,13 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = 
     type: ResourceType.FONT,
     manager: new FontResourceManager()
   }
+];
+
+export const DEFAULT_SHADER_TRANSFORM: BaseShaderTransform[] = [
+  // Transform that handles odds and ends of 3.0 and 2.0 inconsistencies and
+  // attempts tp unify them as best as possible depending on the current
+  // system's operating mode.
+  new Shaders30CompatibilityTransform()
 ];
 
 /**
@@ -85,70 +101,96 @@ export interface ISurfaceOptions {
    */
   eventManagers?: EventManager[];
   /**
-   * Set to true to allow this surface to absorb and handle wheel events from the mouse.
+   * Set to true to allow this surface to absorb and handle wheel events from
+   * the mouse.
    */
   handlesWheelEvents?: boolean;
   /**
-   * Provides additional expansion controllers that will contribute to our Shader IO configuration
-   * for the layers. If this is not provided, this defaults to default system behaviors.
+   * Provides additional expansion controllers that will contribute to our
+   * Shader IO configuration for the layers. If this is not provided, this
+   * defaults to default system behaviors.
    *
-   * To add additional Expansion controllers and keep default system controllers utilize a Function
-   * instead:
+   * To add additional Expansion controllers and keep default system controllers
+   * utilize a Function instead:
    *
-   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders, <your own expanders>]
+   * ioExpansion: (defaultExpanders: BaseIOExpansion) => [...defaultExpanders,
+   * <your own expanders>]
    *
-   * For instance: easing properties on attributes requires the attribute to be expanded to additional
-   * attributes + modified behavior of the base attribute. Thus the system by default adds in the
-   * EasinggIOExpansion controller when this is not provided to make those property types work.
+   * For instance: easing properties on attributes requires the attribute to be
+   * expanded to additional attributes + modified behavior of the base
+   * attribute. Thus the system by default adds in the EasinggIOExpansion
+   * controller when this is not provided to make those property types work.
    */
   ioExpansion?:
     | BaseIOExpansion[]
     | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
-   * This specifies the density of rendering in the surface. The default value is window.devicePixelRatio to match the
-   * monitor for optimal clarity. Using a value of 1 will be acceptable, will not get high density renders, but will
-   * have better performance if needed.
+   * This specifies the density of rendering in the surface. The default value
+   * is window.devicePixelRatio to match the monitor for optimal clarity. Using
+   * a value of 1 will be acceptable, will not get high density renders, but
+   * will have better performance if needed.
    */
   pixelRatio?: number;
-  /** Sets some options for the renderer which deals with top level settings that can only be set when the context is retrieved */
+  /**
+   * Sets some options for the renderer which deals with top level settings that
+   * can only be set when the context is retrieved
+   */
   rendererOptions?: {
     /**
-     * This indicates the back buffer for the webgl context will have an alpha channel. This affects performance some, but is mainly
-     * for the DOM compositing the canvas with the other DOM elements.
+     * This indicates the back buffer for the webgl context will have an alpha
+     * channel. This affects performance some, but is mainly for the DOM
+     * compositing the canvas with the other DOM elements.
      */
     alpha?: boolean;
-    /** Hardware antialiasing. Disabled by default. Enabled makes things prettier but slower. */
+    /**
+     * Hardware antialiasing. Disabled by default. Enabled makes things
+     * prettier but slower.
+     */
     antialias?: boolean;
     /**
-     * This tells the browser what to expect from the colors rendered into the canvas. This will affect how compositing
-     * the canvas with the rest of the DOM will be accomplished. This should match the color values being written to
-     * the final FBO target (render target null). If incorrect, bizarre color blending with the DOM can occur.
+     * This tells the browser what to expect from the colors rendered into the
+     * canvas. This will affect how compositing the canvas with the rest of the
+     * DOM will be accomplished. This should match the color values being
+     * written to the final FBO target (render target null). If incorrect,
+     * bizarre color blending with the DOM can occur.
      */
     premultipliedAlpha?: boolean;
     /**
-     * This sets what the browser will do with the target frame buffer object after it's done using it for compositing.
-     * If you wish to take a snap shot of the canvas being rendered into, this must be true. This has the potential
-     * to hurt performance, thus it is disabled by default.
+     * This sets what the browser will do with the target frame buffer object
+     * after it's done using it for compositing. If you wish to take a snap shot
+     * of the canvas being rendered into, this must be true. This has the
+     * potential to hurt performance, thus it is disabled by default.
      */
     preserveDrawingBuffer?: boolean;
   };
   /**
-   * This specifies the resource managers that will be applied to the surface. If this is not
-   * provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
+   * This specifies the resource managers that will be applied to the surface.
+   * If this is not provided, this will default to DEFAULT_RESOURCE_MANAGEMENT.
    *
    * To add additional managers to the default framework:
    * [
-   *   ...DEFAULT_RESOURCE_MANAGEMENT,
-   *   <your own resource managers>
+   *   ...DEFAULT_RESOURCE_MANAGEMENT, <your own resource managers>
    * ]
    *
-   * Resource managers handle a layer's requests for a resource (this.resource.request(layer, instance, requestObject))
-   * during update cycles of the attributes.
+   * Resource managers handle a layer's requests for a resource
+   * (this.resource.request(layer, instance, requestObject)) during update
+   * cycles of the attributes.
    */
   resourceManagers?: {
     type: number;
     manager: BaseResourceManager<IResourceType, BaseResourceRequest>;
   }[];
+  /**
+   * Provides last step processing of shaders after all system adjustments and
+   * settings have been applied to the Shader.
+   *
+   * This is a raw string processing transformation and will NOT provide any
+   * insights into the settings of the Surface down to the layer that built this
+   * shader.
+   */
+  shaderTransforms?:
+    | BaseShaderTransform[]
+    | ((defaultExpanders: BaseShaderTransform[]) => BaseShaderTransform[]);
 }
 
 /**
@@ -182,13 +224,18 @@ export class Surface {
     frameDuration: 1000 / 60,
     previousTime: Date.now() | 0
   };
-  /** This is used to help resolve concurrent draws and resolving resource request dequeue operations. */
+  /**
+   * This is used to help resolve concurrent draws and resolving resource
+   * request dequeue operations.
+   */
   private isBufferingResources = false;
   /** These are the registered expanders of Shader IO configuration */
   private ioExpanders: BaseIOExpansion[] = [];
+  /** These are the registered transforms for shaders */
+  private shaderTransforms: BaseShaderTransform[] = [];
   /**
-   * This is the sorting controller for sorting attributes/uniforms of a layer after all the attributes have been
-   * generated that are needed
+   * This is the sorting controller for sorting attributes/uniforms of a layer
+   * after all the attributes have been generated that are needed
    */
   ioSorting = new BaseIOSorting();
   /** This manages the mouse events for the current canvas context */
@@ -199,9 +246,14 @@ export class Surface {
   pixelRatio: number = window.devicePixelRatio;
   /** This is the GL render system we use to render scenes with views */
   renderer: WebGLRenderer;
-  /** This is the resource manager that handles resource requests for instances */
+  /**
+   * This is the resource manager that handles resource requests for instances
+   */
   resourceManager: ResourceRouter;
-  /** When set to true, the next render will make sure color picking is updated for layer interactions */
+  /**
+   * When defined, the next render will make sure color picking is updated
+   * for layer interactions
+   */
   updateColorPick?: {
     position: Vec2;
     views: View<IViewProps>[];
@@ -215,16 +267,16 @@ export class Surface {
     View<IViewProps>[]
   >();
   /**
-   * This is used to indicate the surface has loaded it's initial systems. This is complete after init has executed
-   * successfully for this surface.
+   * This is used to indicate the surface has loaded it's initial systems. This
+   * is complete after init has executed successfully for this surface.
    */
   ready: Promise<Surface>;
   /** This is used to reolve this surface as ready */
   private readyResolver: PromiseResolver<Surface>;
 
   /**
-   * Picking gets deferred to the beginning of next draw. Thus picking operations get queued till next
-   * frame using this store here.
+   * Picking gets deferred to the beginning of next draw. Thus picking
+   * operations get queued till next frame using this store here.
    */
   private queuedPicking?: [
     LayerScene,
@@ -316,6 +368,13 @@ export class Surface {
    */
   getIOSorting() {
     return this.ioSorting;
+  }
+
+  /**
+   * Retrieves all shader transforms applied to this surface.
+   */
+  getShaderTransforms() {
+    return this.shaderTransforms;
   }
 
   /**
@@ -638,25 +697,29 @@ export class Surface {
   }
 
   /**
-   * This is the draw loop that must be called per frame for updates to take effect and display.
+   * This is the draw loop that must be called per frame for updates to take
+   * effect and display.
    *
-   * @param time This is an optional time flag so one can manually control the time flag for the frame.
-   *             This will affect animations and other automated gpu processes.
+   * @param time This is an optional time flag so one can manually control the
+   *             time flag for the frame. This will affect animations and other
+   *             automated gpu processes.
    */
   async draw(time?: number) {
     if (!this.gl) return;
 
-    // The theoretically least blocking moment for pixels to be read is the beginning of the next frame
-    // right before next frame is rendered. This will have given optimal time for the GPU to have finished
-    // flushing it's commands. If the GPU has not completed it's tasks by this time, then we're in a major
-    // GPU intensive operation.
+    // The theoretically least blocking moment for pixels to be read is the
+    // beginning of the next frame right before next frame is rendered. This
+    // will have given optimal time for the GPU to have finished flushing it's
+    // commands. If the GPU has not completed it's tasks by this time, then
+    // we're in a major GPU intensive operation.
     this.analyzePickRendering();
-    // Gather all of our picking calls to call at the end to prevent readPixels from
-    // becoming a major blocking operation
+    // Gather all of our picking calls to call at the end to prevent readPixels
+    // from becoming a major blocking operation
     const toPick: [LayerScene, View<IViewProps>, Layer<any, any>[]][] = [];
 
-    // Before we draw the frame, we must have every camera resolve broadcasting changes so everything can respond
-    // to the change before all of the drawing operations take place.
+    // Before we draw the frame, we must have every camera resolve broadcasting
+    // changes so everything can respond to the change before all of the drawing
+    // operations take place.
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
 
@@ -666,8 +729,8 @@ export class Surface {
       }
     }
 
-    // Make the layers commit their changes to the buffers then draw each scene view on
-    // Completion.
+    // Make the layers commit their changes to the buffers then draw each scene
+    // view on Completion.
     await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
@@ -678,7 +741,8 @@ export class Surface {
       }
 
       // If a layer needs a picking pass, then perform a picking draw pass only
-      // if a request for the color pick has been made, then we query the pixels rendered to our picking target
+      // if a request for the color pick has been made, then we query the pixels
+      // rendered to our picking target
       if (pickingPass.length > 0 && this.updateColorPick) {
         toPick.push([scene, view, pickingPass]);
       }
@@ -690,24 +754,24 @@ export class Surface {
       this.mouseManager.waitingForRender = false;
     }
 
-    // Now that all of our layers have performed updates to everything, we can now dequeue
-    // All resource requests
-    // We create this gate in case multiple draw calls flow through before a buffer opertion is completed
+    // Now that all of our layers have performed updates to everything, we can
+    // now dequeue All resource requests We create this gate in case multiple
+    // draw calls flow through before a buffer operation is completed
     if (!this.isBufferingResources) {
       this.isBufferingResources = true;
       const didBuffer = await this.resourceManager.dequeueRequests();
       this.isBufferingResources = false;
 
-      // If buffering did occur and completed, then we should be performing a draw to ensure all of the
-      // Changes are committed and pushed out.
+      // If buffering did occur and completed, then we should be performing a
+      // draw to ensure all of the Changes are committed and pushed out.
       if (didBuffer) {
         this.draw(await onFrame());
       }
     }
 
-    // Each frame needs to analyze if draws are needed or not. Thus we reset all draw needs so they will
-    // be considered resolved for the current set of changes.
-    // Set draw needs of cameras and views back to false
+    // Each frame needs to analyze if draws are needed or not. Thus we reset all
+    // draw needs so they will be considered resolved for the current set of
+    // changes. Set draw needs of cameras and views back to false
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
 
@@ -871,7 +935,8 @@ export class Surface {
   }
 
   /**
-   * This finalizes everything and sets up viewports and clears colors and performs the actual render step
+   * This finalizes everything and sets up viewports and clears colors and
+   * performs the actual render step
    */
   private drawSceneView(
     scene: Scene,
@@ -884,9 +949,11 @@ export class Surface {
     const size = view.viewBounds;
     const background = view.props.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
+    const renderTarget = target || view.renderTarget || null;
 
-    // Make sure the correct render target is applied
-    renderer.setRenderTarget(target || null);
+    // If the view has an output target to render into, then we shift our target
+    // focus to that target Make sure the correct render target is applied
+    renderer.setRenderTarget(renderTarget);
 
     // Set the scissor rectangle.
     renderer.setScissor(
@@ -896,7 +963,7 @@ export class Surface {
         width: size.width,
         height: size.height
       },
-      target
+      renderTarget
     );
     // If a background is established, we should clear the background color
     // Specified for this context
@@ -930,7 +997,7 @@ export class Surface {
     }
 
     // Render the scene with the provided view metrics
-    renderer.render(scene, target);
+    renderer.render(scene, renderTarget);
     // Indicate this view has been rendered for the given time allottment
     view.lastFrameTime = this.frameMetrics.currentTime;
   }
@@ -950,8 +1017,8 @@ export class Surface {
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const view = scene.views[k];
 
-        // To look for the overlaps of the view in screen space, we must calculate the view's viewport bounds
-        // relative to the screenspace.
+        // To look for the overlaps of the view in screen space, we must
+        // calculate the view's viewport bounds relative to the screenspace.
         const screenBounds = new Bounds<never>({
           height: this.context.canvas.height,
           width: this.context.canvas.width,
@@ -959,7 +1026,8 @@ export class Surface {
           y: 0
         });
 
-        // Calculate the bounds the viewport will occupy relative to the screen space
+        // Calculate the bounds the viewport will occupy relative to the screen
+        // space
         const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
           view.props.viewport,
           screenBounds,
@@ -999,8 +1067,8 @@ export class Surface {
   }
 
   /**
-   * This allws for querying a view's screen bounds. Null i;s returned if the view id
-   * specified does not exist.
+   * This allws for querying a view's screen bounds. Null i;s returned if the
+   * view id specified does not exist.
    */
   getViewSize(viewId: string): Bounds<View<IViewProps>> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
@@ -1044,8 +1112,8 @@ export class Surface {
   }
 
   /**
-   * Retrieves the projection methods for a given view, null if the view id does not exist
-   * in the surface
+   * Retrieves the projection methods for a given view, null if the view id does
+   * not exist in the surface
    */
   getProjections(viewId: string): BaseProjection<any> | null {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
@@ -1059,11 +1127,13 @@ export class Surface {
   }
 
   /**
-   * This is the beginning of the system. This should be called immediately after the surface is constructed.
-   * We make this mandatory outside of the constructor so we can make it follow an async pattern.
+   * This is the beginning of the system. This should be called immediately
+   * after the surface is constructed. We make this mandatory outside of the
+   * constructor so we can make it follow an async pattern.
    */
   async init(options: ISurfaceOptions) {
-    // If this already has initialized it's context, then there's nothing to be done
+    // If this already has initialized it's context, then there's nothing to be
+    // done
     if (this.context) return this;
     // Make sure our desired pixel ratio is set up
     this.pixelRatio = options.pixelRatio || this.pixelRatio;
@@ -1088,13 +1158,18 @@ export class Surface {
     this.context = context;
 
     if (this.gl) {
-      // Initialize our event manager that handles mouse interactions/gestures with the canvas
+      // Initialize our event manager that handles mouse interactions/gestures
+      // with the canvas
       this.initMouseManager(options);
-      // Initialize any resources requested or needed, such as textures or rendering surfaces
+      // Initialize any resources requested or needed, such as textures or
+      // rendering surfaces
       await this.initResources(options);
-      // Initialize any io expanders requested or needed. This must happen after resource initialization
-      // as resource managers can produce their own expanders.
+      // Initialize any io expanders requested or needed. This must happen after
+      // resource initialization as resource managers can produce their own
+      // expanders.
       await this.initIOExpanders(options);
+      // Initialize the shader transformations requested or needed.
+      await this.initShaderTransforms(options);
     } else {
       console.warn(
         "Could not establish a GL context. Layer Surface will be unable to render"
@@ -1114,11 +1189,13 @@ export class Surface {
     const canvas = options.context;
     if (!canvas) return null;
 
-    // Apply the deltav version to the attributes of the canvas so we have more debugging information available
+    // Apply the deltav version to the attributes of the canvas so we have more
+    // debugging information available
     try {
       canvas.setAttribute("data-deltav", require("../release").version);
     } catch (err) {
-      // NOOP - We want the application of the version to happen, but it is not application critical
+      // NOOP - We want the application of the version to happen, but it is not
+      // application critical
     }
 
     // Get the starting width and height so adjustments don't affect it
@@ -1138,8 +1215,8 @@ export class Surface {
 
     // Generate the renderer along with it's properties
     this.renderer = new WebGLRenderer({
-      // Context supports rendering to an alpha canvas only if the background color has a transparent
-      // Alpha value.
+      // Context supports rendering to an alpha canvas only if the background
+      // color has a transparent Alpha value.
       alpha: rendererOptions.alpha,
       // Yes to antialias! Make it preeeeetty!
       antialias: rendererOptions.antialias,
@@ -1148,8 +1225,9 @@ export class Surface {
       // If it's true it allows us to snapshot the rendering in the canvas
       // But we dont' always want it as it makes performance drop a bit.
       preserveDrawingBuffer: rendererOptions.preserveDrawingBuffer,
-      // This indicates if the information written to the canvas is going to be written as premultiplied values
-      // or if they will be standard rgba values. Helps with compositing with the DOM.
+      // This indicates if the information written to the canvas is going to be
+      // written as premultiplied values or if they will be standard rgba
+      // values. Helps with compositing with the DOM.
       premultipliedAlpha: rendererOptions.premultipliedAlpha,
 
       // Let's us know if there is no valid webgl context to work with or not
@@ -1168,17 +1246,21 @@ export class Surface {
     // Generate a target for the picking pass
     this.pickingTarget = new RenderTarget({
       buffers: {
-        color: new Texture({
-          generateMipMaps: false,
-          data: {
-            width,
-            height,
-            buffer: null
-          }
-        }),
+        color: {
+          buffer: new Texture({
+            generateMipMaps: false,
+            data: {
+              width,
+              height,
+              buffer: null
+            }
+          }),
+          outputType: 0
+        },
         depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
       },
-      // We want a target with a pixel ratio of just 1, which will be more than enough accuracy for mouse picking
+      // We want a target with a pixel ratio of just 1, which will be more than
+      // enough accuracy for mouse picking
       width,
       height
     });
@@ -1192,7 +1274,8 @@ export class Surface {
   }
 
   /**
-   * Initializes the expanders that should be applied to the surface for layer processing.
+   * Initializes the expanders that should be applied to the surface for layer
+   * processing.
    */
   private initIOExpanders(options: ISurfaceOptions) {
     // Handle expanders passed in as an array or blank
@@ -1219,10 +1302,36 @@ export class Surface {
   }
 
   /**
+   * Initializes the shader transforms that will be applied to every shader
+   * rendered with this surface.
+   */
+  private initShaderTransforms(options: ISurfaceOptions) {
+    // Handle transforms passed in as an array or blank
+    if (
+      Array.isArray(options.shaderTransforms) ||
+      options.shaderTransforms === undefined
+    ) {
+      // Initialize the Shader IO expansion objects
+      this.shaderTransforms =
+        (options.shaderTransforms && options.shaderTransforms.slice(0)) ||
+        (DEFAULT_SHADER_TRANSFORM && DEFAULT_SHADER_TRANSFORM.slice(0)) ||
+        [];
+    }
+
+    // Handle expanders passed in as a method
+    else if (options.shaderTransforms instanceof Function) {
+      this.shaderTransforms = options.shaderTransforms(
+        DEFAULT_SHADER_TRANSFORM
+      );
+    }
+  }
+
+  /**
    * Initializes elements for handling mouse interactions with the canvas.
    */
   private initMouseManager(options: ISurfaceOptions) {
-    // We must inject an event manager to broadcast events through the layers themselves
+    // We must inject an event manager to broadcast events through the layers
+    // themselves
     const eventManagers: EventManager[] = ([
       new LayerMouseEvents()
     ] as EventManager[]).concat(options.eventManagers || []);
@@ -1237,7 +1346,8 @@ export class Surface {
   }
 
   /**
-   * This initializes resources needed or requested such as textures or render surfaces.
+   * This initializes resources needed or requested such as textures or render
+   * surfaces.
    */
   private async initResources(options: ISurfaceOptions) {
     // Create the controller for handling all resource managers
@@ -1258,11 +1368,13 @@ export class Surface {
   }
 
   /**
-   * Use this to establish the rendering pipeline the application should be using at the current time.
+   * Use this to establish the rendering pipeline the application should be
+   * using at the current time.
    *
-   * NOTE: If you update the pipeline on a loop of any sort, you will want to await the pipeline to complete
-   * it's diff before you issue a draw command. Failure to do so invites undefined behavior which often causes
-   * elements tobe comepltely not rendered at all in many cases.
+   * NOTE: If you update the pipeline on a loop of any sort, you will want to
+   * await the pipeline to complete it's diff before you issue a draw command.
+   * Failure to do so invites undefined behavior which often causes elements
+   * tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
     if (pipeline.resources) {
@@ -1273,15 +1385,17 @@ export class Surface {
       await this.sceneDiffs.diff(pipeline.scenes);
     }
 
-    // This gathers the draw dependencies of the views (which views overlap other views.)
-    // This will let the system know when a view is needing re-rendering how it can preserve other views
-    // and prevent them from needing a redraw
+    // This gathers the draw dependencies of the views (which views overlap
+    // other views.) This will let the system know when a view is needing
+    // re-rendering how it can preserve other views and prevent them from
+    // needing a redraw
     this.gatherViewDrawDependencies();
   }
 
   /**
-   * This must be executed when the canvas changes size so that we can re-calculate the scenes and views
-   * dimensions for handling all of our rendered elements.
+   * This must be executed when the canvas changes size so that we can
+   * re-calculate the scenes and views dimensions for handling all of our
+   * rendered elements.
    */
   fitContainer(_pixelRatio?: number) {
     if (isOffscreenCanvas(this.context.canvas)) return;
@@ -1307,7 +1421,8 @@ export class Surface {
   }
 
   /**
-   * This resizes the canvas and retains pixel ratios amongst all of the resources involved.
+   * This resizes the canvas and retains pixel ratios amongst all of the
+   * resources involved.
    */
   resize(width: number, height: number, pixelRatio?: number) {
     this.pixelRatio = pixelRatio || this.pixelRatio;
@@ -1319,6 +1434,7 @@ export class Surface {
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.mouseManager.resize();
+    this.resourceManager.resize();
 
     if (this.sceneDiffs) {
       const scenes = this.sceneDiffs.items;
@@ -1333,7 +1449,8 @@ export class Surface {
       }
     }
 
-    // After the resize happens, the view draw dependencies may change as the views will cover different region sizes
+    // After the resize happens, the view draw dependencies may change as the
+    // views will cover different region sizes
     this.gatherViewDrawDependencies();
   }
 

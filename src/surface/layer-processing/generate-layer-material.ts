@@ -1,6 +1,11 @@
 import { Material, MaterialOptions, MaterialUniformType } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
-import { IInstancingUniform, IUniform, UniformSize } from "../../types";
+import {
+  IInstancingUniform,
+  IUniform,
+  OutputFragmentShader,
+  UniformSize
+} from "../../types";
 import { ILayerProps, Layer } from "../layer";
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
@@ -10,7 +15,8 @@ const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.FOUR]: MaterialUniformType.VEC4,
   [UniformSize.MATRIX3]: MaterialUniformType.MATRIX3x3,
   [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4,
-  [UniformSize.ATLAS]: MaterialUniformType.TEXTURE
+  [UniformSize.FLOAT_ARRAY]: MaterialUniformType.FLOAT_ARRAY,
+  [UniformSize.TEXTURE]: MaterialUniformType.TEXTURE
 };
 
 const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
@@ -35,7 +41,7 @@ export function generateLayerMaterial<
 >(
   layer: Layer<T, U>,
   vs: string,
-  fs: string,
+  fs: OutputFragmentShader,
   layerUniforms: IUniform[],
   instancingUniforms: IInstancingUniform[]
 ): Material {

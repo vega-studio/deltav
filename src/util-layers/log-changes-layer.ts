@@ -121,7 +121,7 @@ class LogChangesLayer<
  */
 export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
   layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">>
+  props: Omit<U, "key" | "data"> & Partial<Pick<U, "key" | "data">>
 ): LayerInitializer {
   const initializer: LayerInitializer = createLayer(LogChangesLayer, {
     messageHeader: () => `CHANGES FOR: ${initializer.init[1].key}`,

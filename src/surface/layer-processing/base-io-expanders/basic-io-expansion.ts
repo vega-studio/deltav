@@ -1,4 +1,5 @@
 import { uniformBufferInstanceBufferName } from "../../../constants";
+import { WebGLStat } from "../../../gl";
 import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
 import { Vec4 } from "../../../math/vector";
@@ -16,7 +17,8 @@ import {
   IVertexAttribute,
   LayerBufferType,
   PickType,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
+  UniformSize
 } from "../../../types";
 
 /** Provides a label for performance debugging */
@@ -25,16 +27,61 @@ const debugCtx = "BasicIOExpansion";
 const VECTOR_COMPONENTS = ["x", "y", "z", "w"];
 
 /** Converts a size to a shader type */
-const sizeToType: { [key: number]: string } = {
-  1: "float",
-  2: "vec2",
-  3: "vec3",
-  4: "vec4",
-  9: "mat3",
-  16: "mat4",
+const sizeToType: Record<UniformSize, string> = {
+  [UniformSize.ONE]: "float",
+  [UniformSize.TWO]: "vec2",
+  [UniformSize.THREE]: "vec3",
+  [UniformSize.FOUR]: "vec4",
+  [UniformSize.MATRIX3]: "mat3",
+  [UniformSize.MATRIX4]: "mat4",
+  [UniformSize.FLOAT_ARRAY]: "float",
+  [UniformSize.VEC4_ARRAY]: "vec4",
   /** This is the special case for instance attributes that want an atlas resource */
-  99: "vec4"
+  [UniformSize.TEXTURE]: "vec4"
 };
+
+/**
+ * Specific type guard to help with uniform value outputs
+ */
+function isArray(val: any): val is number[] | Float32Array {
+  return val && val.length;
+}
+
+/**
+ * Generates a define statement to hold the length of the uniform array to help
+ * with writing slightly more dynamic shaders.
+ */
+function makeArrayLength(uniform: IUniform) {
+  const size = uniform.size;
+
+  if (size === UniformSize.FLOAT_ARRAY || size === UniformSize.VEC4_ARRAY) {
+    const value = uniform.update(uniform);
+
+    if (isArray(value)) {
+      return `#define ${uniform.name}_length ${value.length}\n`;
+    }
+  }
+
+  return "";
+}
+
+/**
+ * Examines a uniform size and determines if it should have an array declaration
+ * or not.
+ */
+function makeArrayDeclaration(uniform: IUniform) {
+  const size = uniform.size;
+
+  if (size === UniformSize.FLOAT_ARRAY || size === UniformSize.VEC4_ARRAY) {
+    const value = uniform.update(uniform);
+
+    if (isArray(value)) {
+      return `[${uniform.name}_length]`;
+    }
+  }
+
+  return "";
+}
 
 /**
  * This method properly provides a vector's chunk of data based on a swizzle. So a size of 2
@@ -277,7 +324,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * This processes the declarations needed to set up the Input for the shader from the layer.
+   * This processes the declarations needed to set up the Input for the shader
+   * from the layer.
    *
    * This handles the buffer strategies of:
    *
@@ -404,9 +452,11 @@ export class BasicIOExpansion extends BaseIOExpansion {
         this.setDeclaration(
           declarations,
           uniform.name,
-          `uniform ${uniform.qualifier || ""}${uniform.qualifier ? " " : ""}${
-            sizeToType[uniform.size]
-          } ${uniform.name};\n`,
+          `${makeArrayLength(uniform)}uniform ${uniform.qualifier || ""}${
+            uniform.qualifier ? " " : ""
+          }${sizeToType[uniform.size]} ${uniform.name}${makeArrayDeclaration(
+            uniform
+          )};\n`,
           debugCtx
         );
       }
@@ -422,12 +472,23 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     instanceAttributes: IInstanceAttribute<T>[]
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     instanceAttributes.forEach(attribute => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `attribute ${sizeToType[attribute.size || 1]} ${attribute.qualifier ||
-          ""}${(attribute.qualifier && " ") || ""} ${attribute.name};\n`,
+        `${attrDeclaration} ${
+          sizeToType[attribute.size || 1]
+        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""} ${
+          attribute.name
+        };\n`,
         debugCtx
       );
     });
@@ -443,12 +504,22 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     maxBlock: number
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     // Now print out blocks up to that block
     for (let i = 0, iMax = maxBlock + 1; i < iMax; ++i) {
       this.setDeclaration(
         declarations,
         `block${i}`,
-        `attribute ${sizeToType[InstanceAttributeSize.FOUR]} block${i};\n`,
+        `${attrDeclaration} ${
+          sizeToType[InstanceAttributeSize.FOUR]
+        } block${i};\n`,
         debugCtx
       );
     }
@@ -463,13 +534,24 @@ export class BasicIOExpansion extends BaseIOExpansion {
     declarations: ShaderDeclarationStatements,
     vertexAttributes: IVertexAttribute[]
   ) {
+    // Our declaration for an attribute is different between Shader 20 and
+    // Shader 30
+    let attrDeclaration = "attribute";
+
+    if (WebGLStat.SHADERS_3_0) {
+      attrDeclaration = "in";
+    }
+
     // No matter what, vertex attributes listed are strictly vertex attributes
     vertexAttributes.forEach(attribute => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `attribute ${sizeToType[attribute.size]} ${attribute.qualifier ||
-          ""}${(attribute.qualifier && " ") || ""}${attribute.name};\n`,
+        `${attrDeclaration} ${
+          sizeToType[attribute.size]
+        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""}${
+          attribute.name
+        };\n`,
         debugCtx
       );
     });

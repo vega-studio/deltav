@@ -76,8 +76,9 @@ export enum UniformSize {
   FOUR = 4,
   MATRIX3 = 9,
   MATRIX4 = 16,
+  FLOAT_ARRAY = 97,
   VEC4_ARRAY = 98,
-  ATLAS = 99
+  TEXTURE = 99
 }
 
 export enum VertexAttributeSize {
@@ -88,13 +89,19 @@ export enum VertexAttributeSize {
 }
 
 /**
- * These are valid atlas sizes available. We force a power of 2 to be utilized.
+ * These are valid texture sizes available. We force a power of 2 to be utilized.
  * We do not allow crazy large sizes as browsers have very real caps on
  * resources. This helps implementations be a little smarter about what they are
  * using. Future versions may increase this number as GPUs improve and standards
  * allow greater flexibility.
  */
 export enum TextureSize {
+  /**
+   * Specialized sizing that makes the texture stick with the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  _SCREEN = -1,
   _2 = 0x01 << 1,
   _4 = 0x01 << 2,
   _8 = 0x01 << 3,
@@ -115,7 +122,8 @@ export enum TextureSize {
  */
 export enum ResourceType {
   ATLAS = 0,
-  FONT = 1
+  FONT = 1,
+  TEXTURE = 2
 }
 
 /**
@@ -539,10 +547,134 @@ export interface IInstancingUniform {
 }
 
 /**
- * Represents a complete shader object set.
+ * This represents a target resource that expects a given information type.
+ * OutputFragmentShaderSource's can be associated to these target types via
+ * matching on the outputType.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * A target of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export type OutputFragmentShaderTarget =
+  | string
+  | {
+      /**
+       * The form of information this output will provide. This is mostly an
+       * arbitrary number to help make associations between an output target and the
+       * type of information a layer can provide.
+       */
+      outputType: number;
+      /** The resource key that the output will target */
+      resource: string;
+    }[];
+
+/**
+ * This represents a fragment shader that has been processed to include all of
+ * it's potential outputs.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ */
+export type OutputFragmentShader = {
+  source: string;
+  outputTypes: number[];
+  outputNames: string[];
+}[];
+
+/**
+ * Defines a fragment shader source declaration that indicates fragment shader
+ * renderings that can output for various information types.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * An output of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export type OutputFragmentShaderSource =
+  | string
+  | { source: string; outputType: number }[];
+
+/**
+ * Represents a complete shader object set with raw source information. The
+ * fragment shaders here can provide hints to what output targets they are
+ * compatible with.
+ */
+export interface IShadersSource {
+  /**
+   * This provides the fragment rendering outputs this layer will perform. If
+   * specify a single output source this will assume you are providing a COLOR
+   * output type.
+   *
+   * If multiple sources are included, this will map each output type to an
+   * available matching output. If a matching output is not available, this will
+   * render the marked COLOR output. If no COLOR output is available, then this
+   * will assume the full processing of all outputs will be utilized and the
+   * FINAL output in the list will output as the COLOR regardless of what it is
+   * flagged as.
+   *
+   * IMPORTANT: Each source is a dependent of the sources before it. So if you
+   * have operations in the main() method of a preceding action, ALL values
+   * declared in that source is available in the next source. So, it is an error
+   * to declare any same properties in the next source. The program outside of
+   * the main() of each output is aggregated together, so if you have external
+   * methods, you only need to declare the methods in the top most shader.
+   *
+   * Each source can have it's own set of imports as imports get resolved all at
+   * once anyways.
+   *
+   * Be mindful how you set up your sources. If you do this wisely, you can have
+   * this layer have a higher or smaller performance footprint based on how the
+   * layer is being used. A well written layer for your application can adapt to
+   * several scenarios AND provide maximum performance.
+   */
+  fs: OutputFragmentShaderSource;
+  /** This is the shader source for your vertex shader. */
+  vs: string;
+}
+
+/**
+ * Represents a complete shader object set with analyzed fragment shaders that
+ * are compatible with target outputs.
  */
 export interface IShaders {
-  fs: string;
+  /**
+   * This provides the fragment rendering outputs this layer will perform. If
+   * specify a single output source this will assume you are providing a COLOR
+   * output type.
+   *
+   * If multiple sources are included, this will map each output type to an
+   * available matching output. If a matching output is not available, this will
+   * render the marked COLOR output. If no COLOR output is available, then this
+   * will assume the full processing of all outputs will be utilized and the
+   * FINAL output in the list will output as the COLOR regardless of what it is
+   * flagged as.
+   *
+   * IMPORTANT: Each source is a dependent of the sources before it. So if you
+   * have operations in the main() method of a preceding action, ALL values
+   * declared in that source is available in the next source. So, it is an error
+   * to declare any same properties in the next source. The program outside of
+   * the main() of each output is aggregated together, so if you have external
+   * methods, you only need to declare the methods in the top most shader.
+   *
+   * Each source can have it's own set of imports as imports get resolved all at
+   * once anyways.
+   *
+   * Be mindful how you set up your sources. If you do this wisely, you can have
+   * this layer have a higher or smaller performance footprint based on how the
+   * layer is being used. A well written layer for your application can adapt to
+   * several scenarios AND provide maximum performance.
+   */
+  fs: OutputFragmentShader;
+  /** This is the shader source for your vertex shader. */
   vs: string;
 }
 
@@ -816,7 +948,7 @@ export interface IShaderInputs<T extends Instance> {
  * This is the initialization of the shader.
  */
 export type IShaderInitialization<T extends Instance> = IShaderInputs<T> &
-  IShaders;
+  IShadersSource;
 
 export interface IShaderExtension {
   header?: string;
@@ -1038,3 +1170,139 @@ export type UpdateProp<T> = {
   didUpdate?: boolean;
   value: T;
 };
+
+/**
+ * Speedy check to see if a value is a string type or not
+ */
+export function isString(val?: any): val is string {
+  return val && val.charCodeAt !== void 0;
+}
+
+/**
+ * This is a listing of suggested Output information styles.
+ *
+ * NOTE: Information styles are merely suggestions of information types. It does
+ * NOT guarantee any specific type of data. These are merely flags to aid in
+ * wiring available layer outputs to output render targets.
+ *
+ * You could theoretically use arbitrary numbers to match the two together, it
+ * is recommended to utilize labeled enums though for readability.
+ */
+export enum ViewOutputInformationType {
+  /**
+   * Indicates this does not have an output target. This is mostly used by the
+   * system to make sure our fragment outputs, drawBuffers, and frame buffer
+   * attachments stay aligned properly to not cause any GL errors or undefined
+   * outputs to occur.
+   */
+  NONE = 0,
+  /**
+   * This is the most common information output style. It provides a color per
+   * fragment
+   */
+  COLOR,
+  /**
+   * This indicates it will provide a depth value per fragment
+   */
+  DEPTH,
+  /**
+   * This indicates it will provide eye-space normal information per fragment
+   */
+  NORMAL,
+  /**
+   * Indicates it will provide color information that coincides with instance
+   * IDs used in the COLOR PICKING routines the system provides.
+   */
+  PICKING,
+  /**
+   * This indicates it will provide eye-space position information per fragment
+   */
+  POSITION,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS2,
+  /**
+   * This indicates it will provide Lighting information
+   */
+  LIGHTS3,
+  /**
+   * This indicates it will provide Alpha information
+   */
+  ALPHA,
+  /**
+   * This indicates it will provide Beta information
+   */
+  BETA,
+  /**
+   * This indicates it will provide Gamma information
+   */
+  GAMMA,
+  /**
+   * This indicates it will provide Delta information
+   */
+  DELTA,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT1,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT2,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT3,
+  /**
+   * This indicates it will provide Coefficient information
+   */
+  COEFFICIENT4,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE1,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE2,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE3,
+  /**
+   * This indicates it will provide Angular information
+   */
+  ANGLE4,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR2,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR3,
+  /**
+   * This is the most common information output style. It provides an
+   * alternative color per fragment
+   */
+  COLOR4,
+  /**
+   * This indicates this will output a fragment to a Glow filter target. Glow
+   * targets are used post processing to indicate which texels in the post
+   * operation should provide a bloom of a given color.
+   */
+  GLOW,
+  /**
+   * This indicates this will output a fragment to a Glow filter target. Blur
+   * targets are used post processing to indicate which texels in the post
+   * operation should be blurred.
+   */
+  BLUR
+}

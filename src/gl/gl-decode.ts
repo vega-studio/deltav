@@ -224,7 +224,8 @@ export function indexToColorAttachment(
   gl: GLContext,
   extensions: IExtensions,
   index: number,
-  isSingleBuffer: boolean
+  isSingleBuffer: boolean,
+  isDrawBufferAttachment: boolean
 ) {
   if (isSingleBuffer) {
     return gl.COLOR_ATTACHMENT0;
@@ -232,75 +233,173 @@ export function indexToColorAttachment(
 
   const glExt = extensions.drawBuffers;
 
-  if (glExt instanceof WebGL2RenderingContext) {
-    switch (index) {
-      case 0:
-        return glExt.COLOR_ATTACHMENT0;
-      case 1:
-        return glExt.COLOR_ATTACHMENT1;
-      case 2:
-        return glExt.COLOR_ATTACHMENT2;
-      case 3:
-        return glExt.COLOR_ATTACHMENT3;
-      case 4:
-        return glExt.COLOR_ATTACHMENT4;
-      case 5:
-        return glExt.COLOR_ATTACHMENT5;
-      case 6:
-        return glExt.COLOR_ATTACHMENT6;
-      case 7:
-        return glExt.COLOR_ATTACHMENT7;
-      case 8:
-        return glExt.COLOR_ATTACHMENT8;
-      case 9:
-        return glExt.COLOR_ATTACHMENT9;
-      case 10:
-        return glExt.COLOR_ATTACHMENT10;
-      case 11:
-        return glExt.COLOR_ATTACHMENT11;
-      case 12:
-        return glExt.COLOR_ATTACHMENT12;
-      case 13:
-        return glExt.COLOR_ATTACHMENT13;
-      case 14:
-        return glExt.COLOR_ATTACHMENT14;
-      case 15:
-        return glExt.COLOR_ATTACHMENT15;
+  if (isDrawBufferAttachment) {
+    if (glExt instanceof WebGL2RenderingContext) {
+      switch (index) {
+        case -2:
+          return glExt.BACK;
+        case -1:
+          return glExt.NONE;
+        case 0:
+          return glExt.DRAW_BUFFER0;
+        case 1:
+          return glExt.DRAW_BUFFER1;
+        case 2:
+          return glExt.DRAW_BUFFER2;
+        case 3:
+          return glExt.DRAW_BUFFER3;
+        case 4:
+          return glExt.DRAW_BUFFER4;
+        case 5:
+          return glExt.DRAW_BUFFER5;
+        case 6:
+          return glExt.DRAW_BUFFER6;
+        case 7:
+          return glExt.DRAW_BUFFER7;
+        case 8:
+          return glExt.DRAW_BUFFER8;
+        case 9:
+          return glExt.DRAW_BUFFER9;
+        case 10:
+          return glExt.DRAW_BUFFER10;
+        case 11:
+          return glExt.DRAW_BUFFER11;
+        case 12:
+          return glExt.DRAW_BUFFER12;
+        case 13:
+          return glExt.DRAW_BUFFER13;
+        case 14:
+          return glExt.DRAW_BUFFER14;
+        case 15:
+          return glExt.DRAW_BUFFER15;
+        default:
+          console.warn("Attachments are only available for -2 - 15");
+      }
+    } else if (glExt) {
+      switch (index) {
+        case -2:
+          return gl.BACK;
+        case -1:
+          return gl.NONE;
+        case 0:
+          return glExt.DRAW_BUFFER0_WEBGL;
+        case 1:
+          return glExt.DRAW_BUFFER1_WEBGL;
+        case 2:
+          return glExt.DRAW_BUFFER2_WEBGL;
+        case 3:
+          return glExt.DRAW_BUFFER3_WEBGL;
+        case 4:
+          return glExt.DRAW_BUFFER4_WEBGL;
+        case 5:
+          return glExt.DRAW_BUFFER5_WEBGL;
+        case 6:
+          return glExt.DRAW_BUFFER6_WEBGL;
+        case 7:
+          return glExt.DRAW_BUFFER7_WEBGL;
+        case 8:
+          return glExt.DRAW_BUFFER8_WEBGL;
+        case 9:
+          return glExt.DRAW_BUFFER9_WEBGL;
+        case 10:
+          return glExt.DRAW_BUFFER10_WEBGL;
+        case 11:
+          return glExt.DRAW_BUFFER11_WEBGL;
+        case 12:
+          return glExt.DRAW_BUFFER12_WEBGL;
+        case 13:
+          return glExt.DRAW_BUFFER13_WEBGL;
+        case 14:
+          return glExt.DRAW_BUFFER14_WEBGL;
+        case 15:
+          return glExt.DRAW_BUFFER15_WEBGL;
+        default:
+          console.warn("Attachments are only available for 0 - 15");
+      }
     }
-  } else if (glExt) {
-    switch (index) {
-      case 0:
-        return glExt.COLOR_ATTACHMENT0_WEBGL;
-      case 1:
-        return glExt.COLOR_ATTACHMENT1_WEBGL;
-      case 2:
-        return glExt.COLOR_ATTACHMENT2_WEBGL;
-      case 3:
-        return glExt.COLOR_ATTACHMENT3_WEBGL;
-      case 4:
-        return glExt.COLOR_ATTACHMENT4_WEBGL;
-      case 5:
-        return glExt.COLOR_ATTACHMENT5_WEBGL;
-      case 6:
-        return glExt.COLOR_ATTACHMENT6_WEBGL;
-      case 7:
-        return glExt.COLOR_ATTACHMENT7_WEBGL;
-      case 8:
-        return glExt.COLOR_ATTACHMENT8_WEBGL;
-      case 9:
-        return glExt.COLOR_ATTACHMENT9_WEBGL;
-      case 10:
-        return glExt.COLOR_ATTACHMENT10_WEBGL;
-      case 11:
-        return glExt.COLOR_ATTACHMENT11_WEBGL;
-      case 12:
-        return glExt.COLOR_ATTACHMENT12_WEBGL;
-      case 13:
-        return glExt.COLOR_ATTACHMENT13_WEBGL;
-      case 14:
-        return glExt.COLOR_ATTACHMENT14_WEBGL;
-      case 15:
-        return glExt.COLOR_ATTACHMENT15_WEBGL;
+  } else {
+    if (glExt instanceof WebGL2RenderingContext) {
+      switch (index) {
+        case -2:
+          return glExt.BACK;
+        case -1:
+          return glExt.NONE;
+        case 0:
+          return glExt.COLOR_ATTACHMENT0;
+        case 1:
+          return glExt.COLOR_ATTACHMENT1;
+        case 2:
+          return glExt.COLOR_ATTACHMENT2;
+        case 3:
+          return glExt.COLOR_ATTACHMENT3;
+        case 4:
+          return glExt.COLOR_ATTACHMENT4;
+        case 5:
+          return glExt.COLOR_ATTACHMENT5;
+        case 6:
+          return glExt.COLOR_ATTACHMENT6;
+        case 7:
+          return glExt.COLOR_ATTACHMENT7;
+        case 8:
+          return glExt.COLOR_ATTACHMENT8;
+        case 9:
+          return glExt.COLOR_ATTACHMENT9;
+        case 10:
+          return glExt.COLOR_ATTACHMENT10;
+        case 11:
+          return glExt.COLOR_ATTACHMENT11;
+        case 12:
+          return glExt.COLOR_ATTACHMENT12;
+        case 13:
+          return glExt.COLOR_ATTACHMENT13;
+        case 14:
+          return glExt.COLOR_ATTACHMENT14;
+        case 15:
+          return glExt.COLOR_ATTACHMENT15;
+        default:
+          console.warn("Attachments are only available for -2 - 15");
+      }
+    } else if (glExt) {
+      switch (index) {
+        case -2:
+          return gl.BACK;
+        case -1:
+          return gl.NONE;
+        case 0:
+          return glExt.COLOR_ATTACHMENT0_WEBGL;
+        case 1:
+          return glExt.COLOR_ATTACHMENT1_WEBGL;
+        case 2:
+          return glExt.COLOR_ATTACHMENT2_WEBGL;
+        case 3:
+          return glExt.COLOR_ATTACHMENT3_WEBGL;
+        case 4:
+          return glExt.COLOR_ATTACHMENT4_WEBGL;
+        case 5:
+          return glExt.COLOR_ATTACHMENT5_WEBGL;
+        case 6:
+          return glExt.COLOR_ATTACHMENT6_WEBGL;
+        case 7:
+          return glExt.COLOR_ATTACHMENT7_WEBGL;
+        case 8:
+          return glExt.COLOR_ATTACHMENT8_WEBGL;
+        case 9:
+          return glExt.COLOR_ATTACHMENT9_WEBGL;
+        case 10:
+          return glExt.COLOR_ATTACHMENT10_WEBGL;
+        case 11:
+          return glExt.COLOR_ATTACHMENT11_WEBGL;
+        case 12:
+          return glExt.COLOR_ATTACHMENT12_WEBGL;
+        case 13:
+          return glExt.COLOR_ATTACHMENT13_WEBGL;
+        case 14:
+          return glExt.COLOR_ATTACHMENT14_WEBGL;
+        case 15:
+          return glExt.COLOR_ATTACHMENT15_WEBGL;
+        default:
+          console.warn("Attachments are only available for 0 - 15");
+      }
     }
   }
 

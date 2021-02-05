@@ -9,7 +9,8 @@ import {
   IUniform,
   IVertexAttribute,
   UniformSize,
-  VertexAttributeSize
+  VertexAttributeSize,
+  ViewOutputInformationType
 } from "../../../types";
 import { CommonMaterialOptions } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
@@ -121,8 +122,34 @@ export class CircleLayer<
         ? GLSettings.Model.DrawMode.POINTS
         : GLSettings.Model.DrawMode.TRIANGLE_STRIP,
       fs: usePoints
-        ? require("./circle-layer-points.fs")
-        : require("./circle-layer.fs"),
+        ? [
+            {
+              outputType: ViewOutputInformationType.COLOR,
+              source: require("./circle-layer-points.fs")
+            },
+            {
+              outputType: ViewOutputInformationType.GLOW,
+              source: `
+              void main() {
+                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+              }
+              `
+            }
+          ]
+        : [
+            {
+              outputType: ViewOutputInformationType.COLOR,
+              source: require("./circle-layer.fs")
+            },
+            {
+              outputType: ViewOutputInformationType.GLOW,
+              source: `
+              void main() {
+                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+              }
+              `
+            }
+          ],
       instanceAttributes: [
         {
           easing: animateCenter,

@@ -36,9 +36,10 @@ export class Texture {
   private _anisotropy: number;
 
   /**
-   * The data to apply to the GPU for the image. If no data is to be uploaded to the texture,
-   * use width and height object. You would do this for render target textures such as depth textures
-   * or color buffer textures where the GPU writes the initial data into the texture. See:
+   * The data to apply to the GPU for the image. If no data is to be uploaded to
+   * the texture, use width and height object. You would do this for render
+   * target textures such as depth textures or color buffer textures where the
+   * GPU writes the initial data into the texture. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
    */
   get data() {

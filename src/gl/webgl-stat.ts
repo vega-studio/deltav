@@ -87,7 +87,10 @@ export class WebGLStat {
   static WEBGL_SUPPORTED: boolean = false;
   static MAX_TEXTURE_SIZE = 0;
   static HARDWARE_INSTANCING = false;
-  static HARDWARE_INSTANCING_ANGLE = false;
+  static MRT_EXTENSION = false;
+  static MRT = false;
+  static MAX_COLOR_ATTACHMENTS = 0;
+  static SHADERS_3_0 = false;
 }
 
 function initStats() {
@@ -97,7 +100,8 @@ function initStats() {
       const canvas = document.createElement("canvas");
       return (
         (window as any).WebGLRenderingContext &&
-        (canvas.getContext("webgl") ||
+        (canvas.getContext("webgl2") ||
+          canvas.getContext("webgl") ||
           (canvas.getContext("experimental-webgl") as WebGLRenderingContext))
       );
     } catch (e) {
@@ -111,6 +115,7 @@ function initStats() {
   // If the context exists, then we know gl is supported and we can fill in some metrics
   if (gl) {
     WebGLStat.WEBGL_SUPPORTED = true;
+    WebGLStat.SHADERS_3_0 = gl instanceof WebGL2RenderingContext;
     WebGLStat.MAX_VERTEX_UNIFORMS = gl.getParameter(
       gl.MAX_VERTEX_UNIFORM_VECTORS
     );
@@ -119,10 +124,24 @@ function initStats() {
     );
     WebGLStat.MAX_VERTEX_ATTRIBUTES = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
     WebGLStat.MAX_TEXTURE_SIZE = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    WebGLStat.HARDWARE_INSTANCING_ANGLE = Boolean(
-      gl.getExtension("ANGLE_instanced_arrays")
-    );
-    WebGLStat.HARDWARE_INSTANCING = WebGLStat.HARDWARE_INSTANCING_ANGLE;
+    const instancingExt = Boolean(gl.getExtension("ANGLE_instanced_arrays"));
+    WebGLStat.HARDWARE_INSTANCING =
+      instancingExt || gl instanceof WebGL2RenderingContext;
+    const MRT_EXT = gl.getExtension("WEBGL_draw_buffers");
+    WebGLStat.MRT_EXTENSION = Boolean(MRT_EXT);
+    WebGLStat.MRT = Boolean(MRT_EXT) || gl instanceof WebGL2RenderingContext;
+
+    if (WebGLStat.MRT) {
+      if (MRT_EXT) {
+        WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(
+          MRT_EXT.MAX_COLOR_ATTACHMENTS_WEBGL
+        );
+      } else if (gl instanceof WebGL2RenderingContext) {
+        WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(
+          gl.MAX_COLOR_ATTACHMENTS
+        );
+      }
+    }
   }
 }
 

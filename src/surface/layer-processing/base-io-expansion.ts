@@ -22,18 +22,21 @@ export type ShaderIOExpansion<T extends Instance> = {
 };
 
 /**
- * When processing attributes, uniforms, etc, it is a common event that special ShaderIO types
- * can be declared that requires additional ShaderIO configuration to be added.
+ * When processing attributes, uniforms, etc, it is a common event that special
+ * ShaderIO types can be declared that requires additional ShaderIO
+ * configuration to be added.
  *
- * This type of object can be added to the layer surface to provide a means to process special
- * attributes the current system or customized system will want to handle.
+ * This type of object can be added to the layer surface to provide a means to
+ * process special attributes the current system or customized system will want
+ * to handle.
  */
 export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   /**
    * This is called with the Layer's currently declared Shader IO configuration.
-   * The returned IO configuration will be added to the existing IO.
-   * Each BaseIOExpansion object will receive the expanded IO configuration of other
-   * expansion objects if the object is processed after another expansion object.
+   * The returned IO configuration will be added to the existing IO. Each
+   * BaseIOExpansion object will receive the expanded IO configuration of other
+   * expansion objects if the object is processed after another expansion
+   * object.
    *
    * NOTE: The inputs should NOT be modified in any way
    */
@@ -51,15 +54,18 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   }
 
   /**
-   * Every expansion object will be given the opportunity to validate the IO presented to it
-   * here, thus allowing unique IO configuration types to be confirmed before getting  completely processed.
+   * Every expansion object will be given the opportunity to validate the IO
+   * presented to it here, thus allowing unique IO configuration types to be
+   * confirmed before getting  completely processed.
    *
-   * It will be expected that a unique Expansion object will have special requirements centered around the
-   * configuration object, thus it is expected this be implemented in a meaningful way to make devlopment
-   * clearer by making mistakes clearer to the developer.
+   * It will be expected that a unique Expansion object will have special
+   * requirements centered around the configuration object, thus it is expected
+   * this be implemented in a meaningful way to make devlopment clearer by
+   * making mistakes clearer to the developer.
    *
-   * Messages should be logged within this method as warnings or errors when validations fail and
-   * then this method should return false indicating the validation failed.
+   * Messages should be logged within this method as warnings or errors when
+   * validations fail and then this method should return false indicating the
+   * validation failed.
    *
    * NOTE: The inputs should NOT be modified in any way
    */
@@ -75,13 +81,15 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   /**
    * This allows for injection into the header of the shader.
    *
-   * The order these controllers are injected
-   * into the system determines the order the contents are written to the header. So dependent injections
-   * must be sorted appropriately.
+   * The order these controllers are injected into the system determines the
+   * order the contents are written to the header. So dependent injections must
+   * be sorted appropriately.
    *
-   * @param target The targetted shader object to receive the header. This will be VERTEX or FRAGMENT but never ALL
+   * @param target The targetted shader object to receive the header. This will
+   *               be VERTEX or FRAGMENT but never ALL
    * @param layer The layer that is currently being processed
-   * @param metrics Some metrics processed that are useful for making decisions about buffering strategies etc.
+   * @param metrics Some metrics processed that are useful for making decisions
+   *                about buffering strategies etc.
    */
   processHeaderInjection(
     _target: ShaderInjectionTarget,
@@ -98,14 +106,16 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   }
 
   /**
-   * This allows for injection into the shader AFTER attribute destructuring has taken place.
+   * This allows for injection into the shader AFTER attribute destructuring has
+   * taken place.
    *
-   * The order these controllers are injected
-   * into the system determines the order the contents are written to the header. So dependent injections
-   * must be sorted appropriately.
+   * The order these controllers are injected into the system determines the
+   * order the contents are written to the header. So dependent injections must
+   * be sorted appropriately.
    *
    * @param layer The layer that is currently being processed
-   * @param metrics Some metrics processed that are useful for making decisions about buffering strategies etc.
+   * @param metrics Some metrics processed that are useful for making decisions
+   *                about buffering strategies etc.
    */
   processAttributeDestructuring(
     _layer: Layer<Instance, ILayerProps<Instance>>,

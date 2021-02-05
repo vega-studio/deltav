@@ -113,7 +113,7 @@ export class LayerScene extends IdentifyByKey {
         }
 
         // Add the layer to this surface
-        if (!layer.init()) {
+        if (!layer.init(this.views)) {
           console.warn(
             "Error initializing layer:",
             props.key,
@@ -206,6 +206,7 @@ export class LayerScene extends IdentifyByKey {
         const newView = new initializer.init[0](this, initializer.init[1]);
         newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
+        newView.resource = this.surface.resourceManager;
         this.surface.mouseManager.waitingForRender = true;
 
         return newView;
@@ -272,5 +273,9 @@ export class LayerScene extends IdentifyByKey {
     this.order = options.order;
     await this.viewDiffs.diff(options.views);
     await this.layerDiffs.diff(options.layers);
+    // After the views and layers have been updated and created, we can now tell
+    // the views to establish their render targets as creating the render
+    // targets is dependent on how the layer's analyzed the output of the views
+    this.views.forEach(view => view.createRenderTarget());
   }
 }

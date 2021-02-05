@@ -41,7 +41,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
 
   constructor(scene: LayerScene, options: TViewProps) {
     super(scene, options);
-    this.projection.camera = options.camera;
+    this.projection.camera = options.camera || new Camera2D();
   }
 
   /**

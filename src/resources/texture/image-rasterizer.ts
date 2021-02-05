@@ -28,8 +28,9 @@ export class ImageRasterizer {
   }
 
   /**
-   * This ensures an image is renderable at the current moment. This draws the image to a canvas partially
-   * to help the image 'warm up' within some browser contexts to ensure the image can be used as a drawable item.
+   * This ensures an image is renderable at the current moment. This draws the
+   * image to a canvas partially to help the image 'warm up' within some browser
+   * contexts to ensure the image can be used as a drawable item.
    */
   static async calculateImageSize(image: HTMLImageElement) {
     await this.awaitContext();
@@ -51,8 +52,9 @@ export class ImageRasterizer {
     // Just make sure th canvas is available
     canvas.canvas.width = 100;
     canvas.canvas.height = 100;
-    // Render the image into our canvas merely to ensure the image can be rendered
-    // This action often 'warms up' images such as images that have a data URL instead of a path
+    // Render the image into our canvas merely to ensure the image can be
+    // rendered This action often 'warms up' images such as images that have a
+    // data URL instead of a path
     canvas.drawImage(image, 0, 0, 1, 1);
 
     return [image.width, image.height];

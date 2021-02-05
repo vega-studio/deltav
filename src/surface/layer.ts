@@ -5,7 +5,10 @@ import { WebGLStat } from "../gl/webgl-stat";
 import { Instance } from "../instance-provider/instance";
 import { ObservableMonitoring } from "../instance-provider/observable";
 import { ResourceRouter } from "../resources";
-import { ShaderProcessor } from "../shaders/processing/shader-processor";
+import {
+  IShaderProcessingResults,
+  ShaderProcessor
+} from "../shaders/processing/shader-processor";
 import {
   IInstanceAttribute,
   IInstanceProvider,
@@ -22,6 +25,7 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal,
   LayerBufferType,
+  OutputFragmentShader,
   PickType,
   StreamChangeStrategy,
   UniformIOValue
@@ -413,8 +417,12 @@ export class Layer<
    */
   uidToInstance = new Map<number, T>();
   /**
-   * This is the view the layer is applied to. The system sets this, modifying
-   * will only cause sorrow.
+   * This is the view the layer is applied to. This changes as the rendering
+   * progresses. A configuration of the surface can specify several views for a
+   * set of layers. So, this will change with the current view being rendered
+   * during a draw pass.
+   *
+   * NOTE: The system sets this, modifying it yourself will only cause sorrow.
    */
   view: View<IViewProps>;
   /**
@@ -482,7 +490,7 @@ export class Layer<
    * generates a material and injects special automated uniforms and attributes
    * to make instancing work for the shader.
    */
-  init() {
+  init(views: View<IViewProps>[]) {
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 
@@ -534,45 +542,180 @@ export class Layer<
     );
     shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
 
-    // Generate the actual shaders to be used by injecting all of the necessary fragments and injecting
-    // Instancing fragments
-    const shaderMetrics = new ShaderProcessor().process(
-      this,
-      shaderIO,
-      this.surface.getIOExpanders(),
-      this.surface.getIOSorting()
-    );
+    let shaderMetrics: IShaderProcessingResults<T> | null = null;
 
-    // Check to see if the Shader Processing failed. If so, return null as a failure flag.
+    // We must analyze our fragment shaders and views to determine which
+    // processing output we are going to actually output for the sake of the
+    // view. Each view that declares a unique output for the layer requires it's
+    // own shader or group of shaders.
+    for (let i = 0, iMax = views.length; i < iMax; ++i) {
+      const view = views[i];
+      const outputFragmentShader = ShaderProcessor.makeOutputFragmentShader(
+        view.props.output?.buffers,
+        shaderIO.fs
+      );
+
+      if (!outputFragmentShader) {
+        console.warn(
+          "Could not generate output fragment shaders for the view specified."
+        );
+        return false;
+      }
+
+      let newFragmentShaders: OutputFragmentShader = [];
+
+      // We need to now check the output fragment shader configuration and find
+      // new fragment type outputs that are not already accounted for by other
+      // views.
+      if (shaderMetrics) {
+        for (let k = 0, kMax = outputFragmentShader.length; k < kMax; ++k) {
+          const output = outputFragmentShader[k];
+
+          // Find an exact match of a fragment shader to output types it
+          // provides. If none is present, this is a necessary fragment output
+          // needed to handle a given RenderTarget as efficiently as possible.
+          const findMatchingTypes = shaderMetrics.fs.find(f => {
+            if (f.outputTypes.length === output.outputTypes.length) {
+              // Look for a type that is missing
+              for (let j = 0, jMax = output.outputTypes.length; j < jMax; ++j) {
+                const type = output.outputTypes[j];
+                if (f.outputTypes.indexOf(type) < 0) {
+                  return false;
+                }
+              }
+
+              return true;
+            }
+
+            return false;
+          });
+
+          if (!findMatchingTypes) {
+            newFragmentShaders.push(output);
+            shaderMetrics.fs.push(output);
+          }
+        }
+      } else {
+        newFragmentShaders = outputFragmentShader;
+      }
+
+      // If there are no new configurations for the fragment shaders, then we
+      // just move on.
+      if (newFragmentShaders.length === 0) {
+        continue;
+      }
+
+      // Generate the actual shaders to be used by injecting all of the
+      // necessary fragments from all modules
+      const metrics = new ShaderProcessor().process(
+        this,
+        shaderIO,
+        newFragmentShaders,
+        this.surface.getIOExpanders(),
+        this.surface.getShaderTransforms(),
+        this.surface.getIOSorting()
+      );
+
+      // Check to see if the Shader Processing failed. If so, return null as a
+      // failure flag.
+      if (!metrics) {
+        console.warn(
+          "The shader processor did not produce metrics for the layer."
+        );
+        return false;
+      }
+
+      // Retrieve all of the attributes created as a result of layer input and
+      // module processing.
+      const {
+        vertexAttributes,
+        instanceAttributes,
+        uniforms,
+        materialUniforms
+      } = metrics;
+
+      // We take our first metrics output and set that as our base. After this,
+      // we will aggregate the metrics output into a single shader metrics. We
+      // take this approach on the basis that across all of the fragment
+      // shaders, each fragment + vertex will be a subset of attributes of the
+      // total of all the fragments and vertex shader's attributes.
+      if (!shaderMetrics) {
+        shaderMetrics = metrics;
+      } else {
+        shaderMetrics.maxInstancesPerBuffer = Math.min(
+          shaderMetrics.maxInstancesPerBuffer,
+          metrics.maxInstancesPerBuffer
+        );
+
+        // We want to aggregate all attribute information by name into our
+        // output shader metric
+        for (let k = 0, kMax = vertexAttributes.length; k < kMax; ++k) {
+          const vertex = vertexAttributes[k];
+
+          if (
+            !shaderMetrics.vertexAttributes.find(v => vertex.name === v.name)
+          ) {
+            shaderMetrics.vertexAttributes.push(vertex);
+          }
+        }
+
+        for (let k = 0, kMax = instanceAttributes.length; k < kMax; ++k) {
+          const attr = instanceAttributes[k];
+
+          if (
+            !shaderMetrics.instanceAttributes.find(v => attr.name === v.name)
+          ) {
+            shaderMetrics.instanceAttributes.push(attr);
+          }
+        }
+
+        for (let k = 0, kMax = uniforms.length; k < kMax; ++k) {
+          const uniform = uniforms[k];
+
+          if (!shaderMetrics.uniforms.find(v => uniform.name === v.name)) {
+            shaderMetrics.uniforms.push(uniform);
+          }
+        }
+
+        for (let k = 0, kMax = materialUniforms.length; k < kMax; ++k) {
+          const uniform = materialUniforms[k];
+
+          if (
+            !shaderMetrics.materialUniforms.find(v => uniform.name === v.name)
+          ) {
+            shaderMetrics.materialUniforms.push(uniform);
+          }
+        }
+      }
+    }
+
+    // Validate we came out with metrics for the shader
     if (!shaderMetrics) {
       console.warn(
-        "The shader processor did not produce metrics for the layer."
+        "Did not generate shader metrics for the layer for the views"
       );
       return false;
     }
 
-    // Retrieve all of the attributes created as a result of layer input and module processing.
-    const { vertexAttributes, instanceAttributes, uniforms } = shaderMetrics;
+    // This is the material that is generated for the layer that utilizes all of
+    // the generated and Injected shader IO and shader fragments
+    const material = generateLayerMaterial(
+      this,
+      shaderMetrics.vs,
+      shaderMetrics.fs,
+      shaderMetrics.uniforms,
+      shaderMetrics.materialUniforms
+    );
 
     // Generate the geometry this layer will be utilizing
     const geometry = generateLayerGeometry(
       this,
       shaderMetrics.maxInstancesPerBuffer,
-      vertexAttributes,
+      shaderMetrics.vertexAttributes,
       shaderIO.vertexCount
     );
 
-    // This is the material that is generated for the layer that utilizes all of the generated and
-    // Injected shader IO and shader fragments
-    const material = generateLayerMaterial(
-      this,
-      shaderMetrics.vs,
-      shaderMetrics.fs,
-      uniforms,
-      shaderMetrics.materialUniforms
-    );
-
-    // And now we can now generate the mesh that will be added to the scene
+    // And now we can now generate the model that will be added to the scene
     const model = generateLayerModel(geometry, material, shaderIO.drawMode);
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
@@ -587,13 +730,13 @@ export class Layer<
           update: o => [o.active ? 1 : 0]
         }),
         geometry,
-        instanceAttributes,
+        instanceAttributes: shaderMetrics.instanceAttributes,
         instanceVertexCount: shaderIO.vertexCount,
         material,
         maxInstancesPerBuffer: shaderMetrics.maxInstancesPerBuffer,
         model,
-        uniforms,
-        vertexAttributes
+        uniforms: shaderMetrics.uniforms,
+        vertexAttributes: shaderMetrics.vertexAttributes
       },
       this.shaderIOInfo
     );
@@ -610,7 +753,15 @@ export class Layer<
         shaderMetrics
       );
       console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
-      console.warn("\n\nFRAGMENT SHADER\n--------------\n\n", shaderMetrics.fs);
+
+      shaderMetrics.fs.forEach(fs => {
+        console.warn(
+          `\n\nFRAGMENT SHADER:\n${JSON.stringify(
+            fs.outputNames
+          )}\n${JSON.stringify(fs.outputTypes)}\n--------------\n\n`,
+          fs.source
+        );
+      });
     }
 
     // Establish diff handlers based on the settings of the layer

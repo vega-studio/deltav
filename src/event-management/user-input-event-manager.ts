@@ -9,6 +9,7 @@ import { eventElementPosition, normalizeWheel } from "../util/mouse";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import {
+  IEventInteraction,
   IMouseInteraction,
   IMouseMetrics,
   IMultiTouchInteraction,
@@ -19,7 +20,8 @@ import {
   IWheelMetrics
 } from "./types";
 
-// If a mouse up after a mouse down happens before this many milliseconds, a click gesture will happen
+// If a mouse up after a mouse down happens before this many milliseconds, a
+// click gesture will happen
 const VALID_CLICK_DELAY = 1e3;
 const VALID_TAP_DELAY = 200;
 const emptyView: View<IViewProps> = new NoView();
@@ -42,24 +44,30 @@ function sortByIdentifier(a: ITouchMetrics, b: ITouchMetrics) {
 }
 
 /**
- * This manages mouse events on the provided canvas and provides some higher level
- * interactions with the surface.
+ * This manages mouse events on the provided canvas and provides some higher
+ * level interactions with the surface.
  */
 export class UserInputEventManager {
   /** This is the canvas context we are rendering to */
   context: CanvasElement;
-  /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
-  controllers: EventManager[];
+  /**
+   * This is list of Event Managers that receive the events and gestures which
+   * respond to the events and perform actions.
+   */
+  eventManagers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
   quadTree: QuadTree<Bounds<View<IViewProps>>>;
   /** The parent layer surface this event manager is beneath */
   surface: Surface;
   /** The events created that need to be removed */
   eventCleanup: [string, EventListenerOrEventListenerObject][] = [];
+  /** This is the most recent event interaction produced by this manager */
+  currentInteraction?: IEventInteraction;
 
   /**
-   * This flag is set when the system is waiting to render the elements to establish bounds.
-   * No Mouse interations will happen while this is set to true.
+   * This flag is set when the system is waiting to render the elements to
+   * establish bounds. No Mouse interations will happen while this is set to
+   * true.
    */
   private _waitingForRender: boolean = true;
 
@@ -70,7 +78,8 @@ export class UserInputEventManager {
   set waitingForRender(val: boolean) {
     this._waitingForRender = val;
 
-    // When we're no longer waiting for render to occur we update all of our views in the quad tree
+    // When we're no longer waiting for render to occur we update all of our
+    // views in the quad tree
     if (!val) {
       this.quadTree = new QuadTree(0, 0, 0, 0);
       const scenes = this.scenes;
@@ -153,7 +162,7 @@ export class UserInputEventManager {
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleWheel(interaction);
         });
 
@@ -184,7 +193,7 @@ export class UserInputEventManager {
       mouseMetrics.currentPosition = mouse;
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.controllers.forEach(controller => {
+      this.eventManagers.forEach(controller => {
         controller.handleMouseOut(interaction);
       });
     };
@@ -220,7 +229,7 @@ export class UserInputEventManager {
       mouseMetrics.canClick = false;
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.controllers.forEach(controller => {
+      this.eventManagers.forEach(controller => {
         controller.handleMouseMove(interaction);
       });
 
@@ -254,7 +263,7 @@ export class UserInputEventManager {
 
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.controllers.forEach(controller => {
+      this.eventManagers.forEach(controller => {
         controller.handleMouseDown(interaction);
       });
 
@@ -276,7 +285,7 @@ export class UserInputEventManager {
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleDrag(interaction);
         });
 
@@ -306,7 +315,7 @@ export class UserInputEventManager {
         mouseMetrics.currentPosition = mouse;
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleMouseOver(interaction);
         });
 
@@ -325,7 +334,7 @@ export class UserInputEventManager {
         mouseMetrics.button = event.button;
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleMouseUp(interaction);
         });
 
@@ -334,7 +343,7 @@ export class UserInputEventManager {
           mouseMetrics.canClick &&
           Date.now() - mouseMetrics.startTime < VALID_CLICK_DELAY
         ) {
-          this.controllers.forEach(controller => {
+          this.eventManagers.forEach(controller => {
             controller.handleClick(interaction);
           });
         }
@@ -615,7 +624,7 @@ export class UserInputEventManager {
         };
 
         // Broadcast to the controllers
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleTouchDown(downEvent);
         });
       }
@@ -667,7 +676,7 @@ export class UserInputEventManager {
           };
 
           // Broadcast to the controllers
-          this.controllers.forEach(controller => {
+          this.eventManagers.forEach(controller => {
             controller.handleTap(tapEvent);
           });
         }
@@ -690,7 +699,7 @@ export class UserInputEventManager {
         };
 
         // Broadcast to the controllers
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleTouchUp(moveEvent);
         });
       }
@@ -754,7 +763,7 @@ export class UserInputEventManager {
         };
 
         // Broadcast to the controllers
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleTouchDrag(moveEvent);
         });
       }
@@ -792,7 +801,7 @@ export class UserInputEventManager {
         };
 
         // Broadcast to the controllers
-        this.controllers.forEach(controller => {
+        this.eventManagers.forEach(controller => {
           controller.handleTouchCancelled(moveEvent);
         });
       }
@@ -948,7 +957,7 @@ export class UserInputEventManager {
     let startView = mouse.startView;
     if (!startView) startView = emptyView;
 
-    return {
+    const interaction = {
       canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       mouse,
       screen: {
@@ -981,6 +990,10 @@ export class UserInputEventManager {
         })
       }
     };
+
+    this.currentInteraction = interaction;
+
+    return interaction;
   }
 
   /**
@@ -994,7 +1007,7 @@ export class UserInputEventManager {
     let startView = touch.startView;
     if (!startView) startView = emptyView;
 
-    return {
+    const interaction = {
       canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       touch,
       screen: {
@@ -1025,6 +1038,10 @@ export class UserInputEventManager {
         })
       }
     };
+
+    this.currentInteraction = interaction;
+
+    return interaction;
   }
 
   /**
@@ -1141,9 +1158,9 @@ export class UserInputEventManager {
    * Sets the controllers to receive events from this manager.
    */
   setControllers(controllers: EventManager[]) {
-    this.controllers = controllers;
+    this.eventManagers = controllers;
 
-    for (const controller of this.controllers) {
+    for (const controller of this.eventManagers) {
       controller.setUserInputManager(this);
     }
   }

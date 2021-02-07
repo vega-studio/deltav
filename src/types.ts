@@ -25,8 +25,8 @@ import {
 } from "./math";
 import { IAutoEasingMethod } from "./math/auto-easing-method";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
-import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
+import { IViewProps, View } from "./surface/view";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } &
   { [P in U]: never } & { [x: string]: never })[T];
@@ -97,11 +97,59 @@ export enum VertexAttributeSize {
  */
 export enum TextureSize {
   /**
+   * Specialized sizing that makes the texture stick with a 256th the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_256TH = -256,
+  /**
+   * Specialized sizing that makes the texture stick with a 128th the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_128TH = -128,
+  /**
+   * Specialized sizing that makes the texture stick with a 64th the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_64TH = -64,
+  /**
+   * Specialized sizing that makes the texture stick with a 32nd the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_32ND = -32,
+  /**
+   * Specialized sizing that makes the texture stick with a sixteenth the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_16TH = -16,
+  /**
+   * Specialized sizing that makes the texture stick with an eigth the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_8TH = -8,
+  /**
+   * Specialized sizing that makes the texture stick with a quarter the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_QUARTER = -4,
+  /**
+   * Specialized sizing that makes the texture stick with half the size of the
+   * canvas/screen being rendered to. This sizing is only valid for managers
+   * that properly watch the screen such as the render texture resource manager.
+   */
+  SCREEN_HALF = -2,
+  /**
    * Specialized sizing that makes the texture stick with the size of the
    * canvas/screen being rendered to. This sizing is only valid for managers
    * that properly watch the screen such as the render texture resource manager.
    */
-  _SCREEN = -1,
+  SCREEN = -1,
   _2 = 0x01 << 1,
   _4 = 0x01 << 2,
   _8 = 0x01 << 3,
@@ -579,13 +627,19 @@ export type OutputFragmentShaderTarget =
  * While outputType is mostly arbitrary to the implementation, the outputType of
  * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
  * that is used extensively in the system to default an output to a target in
- * simplified cases.
+ * simplified cases which includes the SCREEN.
  */
-export type OutputFragmentShader = {
-  source: string;
-  outputTypes: number[];
-  outputNames: string[];
-}[];
+export type OutputFragmentShader = Map<
+  View<IViewProps>,
+  {
+    source: string;
+    outputTypes: number[];
+    outputNames: string[];
+  }
+>;
+
+/** Provides the value type of a Map */
+export type MapValueType<A> = A extends Map<any, infer V> ? V : never;
 
 /**
  * Defines a fragment shader source declaration that indicates fragment shader
@@ -798,6 +852,8 @@ export interface INonePickingMetrics extends IPickingMetrics {
 }
 
 export interface IColorPickingData {
+  /** The view this color picking information is associated with */
+  view: View<IViewProps>;
   /** The mouse target position where the data is rendered */
   mouse: Vec2;
   /** The color data loaded for last picking rendering */
@@ -1179,6 +1235,22 @@ export function isString(val?: any): val is string {
 }
 
 /**
+ * Speedy check to see if the target object is a method or not. This avoids
+ * string comparison with 'function'.
+ */
+export function isFunction<T extends Function>(val?: any): val is T {
+  return val && val.call !== void 0 && val.apply !== void 0;
+}
+
+/**
+ * Checks if a value is strictly a boolean type. This avoids typeof and string
+ * comparison.
+ */
+export function isBoolean(val?: any): val is Boolean {
+  return val === true || val === false;
+}
+
+/**
  * This is a listing of suggested Output information styles.
  *
  * NOTE: Information styles are merely suggestions of information types. It does
@@ -1188,7 +1260,7 @@ export function isString(val?: any): val is string {
  * You could theoretically use arbitrary numbers to match the two together, it
  * is recommended to utilize labeled enums though for readability.
  */
-export enum ViewOutputInformationType {
+export enum FragmentOutputType {
   /**
    * Indicates this does not have an output target. This is mostly used by the
    * system to make sure our fragment outputs, drawBuffers, and frame buffer
@@ -1246,6 +1318,22 @@ export enum ViewOutputInformationType {
    * This indicates it will provide Delta information
    */
   DELTA,
+  /**
+   * This indicates it will provide some form of accumulation information
+   */
+  ACCUMULATION1,
+  /**
+   * This indicates it will provide some form of accumulation information
+   */
+  ACCUMULATION2,
+  /**
+   * This indicates it will provide some form of accumulation information
+   */
+  ACCUMULATION3,
+  /**
+   * This indicates it will provide some form of accumulation information
+   */
+  ACCUMULATION4,
   /**
    * This indicates it will provide Coefficient information
    */

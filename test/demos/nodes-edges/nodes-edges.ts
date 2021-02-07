@@ -308,7 +308,6 @@ export class NodesEdges extends BaseDemo {
                 color: AutoEasingMethod.easeInOutCubic(1000, 0)
               },
               data: providers.circles,
-              scaleFactor: () => cameras.main.scale2D[0],
               picking: PickType.SINGLE,
 
               onMouseOver: this.handleCircleOver,

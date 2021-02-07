@@ -207,7 +207,7 @@ export class LayerScene extends IdentifyByKey {
         newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
         newView.resource = this.surface.resourceManager;
-        this.surface.mouseManager.waitingForRender = true;
+        this.surface.userInputManager.waitingForRender = true;
 
         return newView;
       },
@@ -234,7 +234,7 @@ export class LayerScene extends IdentifyByKey {
         view.didUpdateProps();
 
         if (this.surface) {
-          this.surface.mouseManager.waitingForRender = true;
+          this.surface.userInputManager.waitingForRender = true;
         }
       }
     });

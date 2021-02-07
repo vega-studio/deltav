@@ -104,24 +104,24 @@ export class RenderTexture extends IdentifyByKey
     let width, height;
     const size = renderer?.getRenderSize() || [1, 1];
 
-    if (this.width === TextureSize._SCREEN) {
+    if (this.width <= TextureSize.SCREEN) {
       if (!renderer) {
         throw new Error(
           "Can not generate Render Texture with a dynamic width or height when the WebGLRenderer is not available"
         );
       }
 
-      width = size[0];
+      width = size[0] / -this.width;
     } else width = this.width;
 
-    if (this.height === TextureSize._SCREEN) {
+    if (this.height <= TextureSize.SCREEN) {
       if (!renderer) {
         throw new Error(
           "Can not generate Render Texture with a dynamic width or height when the WebGLRenderer is not available"
         );
       }
 
-      height = size[1];
+      height = size[1] / -this.width;
     } else height = this.height;
 
     // If no data is provided in the settings, then this is an empty texture

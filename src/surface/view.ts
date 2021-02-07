@@ -10,9 +10,9 @@ import { Vec2 } from "../math";
 import { BaseProjection, SimpleProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../math/primitives/absolute-position";
 import { Bounds } from "../math/primitives/bounds";
-import { ResourceRouter } from "../resources";
+import { IRenderTextureResource, ResourceRouter } from "../resources";
 import { textureRequest } from "../resources/texture/render-texture-resource-request";
-import { Color, isString, Omit, ViewOutputInformationType } from "../types";
+import { Color, FragmentOutputType, isString, Omit } from "../types";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { Layer } from "./layer";
@@ -49,6 +49,20 @@ export type ViewInitializer<TViewProps extends IViewProps> = {
 };
 
 /**
+ * This describes a target resource for the view to output into.
+ */
+export type ViewOutputTarget = {
+  /**
+   * The form of information this output will provide. This is mostly an
+   * arbitrary number to help make associations between an output target and the
+   * type of information a layer can provide.
+   */
+  outputType: FragmentOutputType | number;
+  /** The resource key that the output will target */
+  resource: string;
+};
+
+/**
  * Used for reactive view generation and updates.
  */
 export function createView<TViewProps extends IViewProps>(
@@ -73,20 +87,6 @@ export function createView<TViewProps extends IViewProps>(
     init: [viewClass, keyedProps]
   };
 }
-
-/**
- * This describes a target resource for the view to output into.
- */
-export type ViewOutputTarget = {
-  /**
-   * The form of information this output will provide. This is mostly an
-   * arbitrary number to help make associations between an output target and the
-   * type of information a layer can provide.
-   */
-  outputType: ViewOutputInformationType | number;
-  /** The resource key that the output will target */
-  resource: string;
-};
 
 /**
  * Defines the input metrics of a view for a scene.
@@ -134,7 +134,7 @@ export interface IViewProps extends IdentifyByKeyOptions {
      * These should be targets specifying resource keys and provide outputTypes
      * to match information potentially provided by the layers.
      */
-    buffers: string | ViewOutputTarget[];
+    buffers: Record<number, string | IRenderTextureResource>;
     /**
      * Set to true to include a depth buffer the system will generate for you.
      * Set to a resource id to target an output texture to store the depth
@@ -149,6 +149,19 @@ export interface IViewProps extends IdentifyByKeyOptions {
    * If this is not specified, the entire canvas will be the viewport.
    */
   viewport: AbsolutePosition;
+  /**
+   * This helps resolve scaling differences between a View rendering to an
+   * offscreen target, which is then rendered the screen. This is commonly
+   * associated with the render target being a scaled version of the screen,
+   * then rendered to the screen.
+   */
+  screenScale?: Vec2;
+  /**
+   * If provided, this will manually set the pixel ratio of the view. THis is
+   * used to help adjust for differing render targets that may not directly
+   * render to the screen but rather in scaled modes.
+   */
+  pixelRatio?: number;
 }
 
 /**
@@ -185,7 +198,15 @@ export abstract class View<
    * This is set to ensure the projections that happen properly translates the
    * pixel ratio to normal Web coordinates
    */
-  pixelRatio: number = 1;
+  get pixelRatio() {
+    return this.props.pixelRatio ?? this._pixelRatio;
+  }
+
+  set pixelRatio(val: number) {
+    this._pixelRatio = val;
+  }
+
+  private _pixelRatio: number = 1;
   /**
    * This establishes the projection methods that can be used to project
    * geometry between the screen and the world
@@ -203,7 +224,7 @@ export abstract class View<
    * If this is set, then this view is outputting its rendering somewhere that
    * is not the direct screen buffer.
    */
-  renderTarget?: RenderTarget | RenderTarget[];
+  renderTarget?: RenderTarget;
   /** The scene this view is displaying */
   scene: LayerScene;
 
@@ -241,6 +262,53 @@ export abstract class View<
   }
 
   /**
+   * retrieves this view's targets for outputting fragment information. This
+   * provides a simple list of the target's keys with their output type.
+   */
+  getOutputTargets() {
+    const { output } = this.props;
+    let bufferTargets: ViewOutputTarget[] = [];
+    if (!output) return null;
+
+    // A string simply matches the output to the default COLOR information type.
+    if (isString(output.buffers)) {
+      bufferTargets = [
+        {
+          outputType: FragmentOutputType.COLOR,
+          resource: output.buffers
+        }
+      ];
+    }
+
+    // A Record causes us to pull out the necessary pieces of the outputs and
+    // resource keys or strings as the keys.
+    else {
+      Object.keys(output.buffers).forEach(outputTypeKey => {
+        const outputType = Number.parseFloat(outputTypeKey);
+        const resource = output.buffers[outputType];
+
+        bufferTargets.push({
+          outputType,
+          resource: isString(resource) ? resource : resource.key
+        });
+      });
+    }
+
+    return bufferTargets;
+  }
+
+  /**
+   * The view can have one or multiple render targets. This helps by always
+   * returning a list containing all of the render targets. Returns an empty
+   * list if there is no render target associated with the view.
+   */
+  getRenderTargets() {
+    if (!this.renderTarget) return [];
+
+    return [this.renderTarget];
+  }
+
+  /**
    * This generates the render target needed to handle the output configuration
    * specified by the props and the layer configuration.
    *
@@ -275,39 +343,25 @@ export abstract class View<
 
     for (let i = 0, iMax = this.scene.layers.length; i < iMax; ++i) {
       const layer = this.scene.layers[i];
-      const shaders = layer.shaderIOInfo.material.fragmentShader;
-      shaders.forEach(shader =>
-        shader.outputTypes.forEach(type => supportedOutputTypes.add(type))
+      const fragmentOutputs = layer.shaderIOInfo.fs.get(this);
+
+      if (!fragmentOutputs) {
+        continue;
+      }
+
+      fragmentOutputs.outputTypes.forEach(type =>
+        supportedOutputTypes.add(type)
       );
     }
 
-    console.log(
-      "Supported buffer types our view provides",
-      Array.isArray(this.props.output?.buffers)
-        ? this.props.output?.buffers.map(b => b.outputType)
-        : this.props.output?.buffers
-    );
-    console.log("Supported output types from our layers", supportedOutputTypes);
-
     // Retrieve the RenderTextures for each buffer target we have specified
-    let bufferTargets: ViewOutputTarget[] = [];
     const renderTextures = new Map<number, Texture>();
     const dummyLayer = new Layer(surface, this.scene, {
       key: "",
       data: new InstanceProvider()
     });
     const dummyInstance = new Instance({});
-
-    if (isString(output.buffers)) {
-      bufferTargets = [
-        {
-          outputType: ViewOutputInformationType.COLOR,
-          resource: output.buffers
-        }
-      ];
-    } else {
-      bufferTargets = output.buffers;
-    }
+    const bufferTargets = this.getOutputTargets() || [];
 
     for (let i = 0, iMax = bufferTargets.length; i < iMax; ++i) {
       const bufferTarget = bufferTargets[i];
@@ -318,11 +372,6 @@ export abstract class View<
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
-        console.log(
-          "Render Target found for output type",
-          bufferTarget.outputType,
-          request
-        );
 
         if (!request.texture) {
           console.warn(
@@ -420,37 +469,39 @@ export abstract class View<
         // on the surface
         retainTextureTargets: true
       });
-
-      console.log(
-        "GENERATED the render target for the view:",
-        this.renderTarget
-      );
     }
 
     // Non-MRT makes multiple render targets. One for each output type.
     else {
-      const targets: RenderTarget[] = [];
-      const depth = depthBuffer;
-      this.renderTarget = targets;
+      throw new Error("MRT for non-MRT systems not supported yet.");
+    }
+  }
 
-      renderTextures.forEach((tex, type) => {
-        const color = {
-          buffer: tex,
-          outputType: type
-        };
+  /**
+   * This let's the view do anything it needs to be ready for next render. Some
+   * tasks this may include is checking if it's render target is still valid.
+   * It's buffer outputs can get invalidated for any number of reasons.
+   */
+  willUseView() {
+    const targets = this.getRenderTargets();
 
-        targets.push(
-          new RenderTarget({
-            buffers: {
-              color: color,
-              depth
-            },
-            // Render target texture retention is governed by the resource set up
-            // on the surface
-            retainTextureTargets: true
-          })
-        );
-      });
+    if (this.props.screenScale) {
+      this.projection.screenScale = this.props.screenScale;
+    }
+
+    const invalid = targets.some(target =>
+      target.getBuffers().some(buffer => {
+        if (buffer.buffer instanceof Texture) {
+          if (buffer.buffer.disposed) return true;
+        }
+
+        return false;
+      })
+    );
+
+    if (invalid) {
+      console.error("REBUILDING VIEW RENDER TARGET");
+      this.createRenderTarget();
     }
   }
 

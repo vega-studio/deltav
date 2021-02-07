@@ -3,14 +3,14 @@ import { InstanceProvider } from "../../../instance-provider";
 import { Vec } from "../../../math";
 import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import {
+  FragmentOutputType,
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
   IVertexAttribute,
   UniformSize,
-  VertexAttributeSize,
-  ViewOutputInformationType
+  VertexAttributeSize
 } from "../../../types";
 import { CommonMaterialOptions } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
@@ -30,8 +30,6 @@ export interface ICircleLayerProps<T extends CircleInstance>
     radius?: IAutoEasingMethod<Vec>;
     color?: IAutoEasingMethod<Vec>;
   };
-  /** This sets a scaling factor for the circle's radius */
-  scaleFactor?(): number;
   /** Opacity of the layer as a whole */
   opacity?(): number;
   /**
@@ -56,8 +54,7 @@ export class CircleLayer<
 > extends Layer2D<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
-    key: "",
-    scaleFactor: () => 1
+    key: ""
   };
 
   static attributeNames = {
@@ -71,12 +68,7 @@ export class CircleLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<CircleInstance> {
-    const {
-      animate = {},
-      scaleFactor = () => 1,
-      usePoints = false,
-      opacity = () => 1
-    } = this.props;
+    const { animate = {}, usePoints = false, opacity = () => 1 } = this.props;
 
     const {
       center: animateCenter,
@@ -124,28 +116,28 @@ export class CircleLayer<
       fs: usePoints
         ? [
             {
-              outputType: ViewOutputInformationType.COLOR,
+              outputType: FragmentOutputType.COLOR,
               source: require("./circle-layer-points.fs")
             },
             {
-              outputType: ViewOutputInformationType.GLOW,
+              outputType: FragmentOutputType.GLOW,
               source: `
               void main() {
-                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+                $\{out: glow} = color;
               }
               `
             }
           ]
         : [
             {
-              outputType: ViewOutputInformationType.COLOR,
+              outputType: FragmentOutputType.COLOR,
               source: require("./circle-layer.fs")
             },
             {
-              outputType: ViewOutputInformationType.GLOW,
+              outputType: FragmentOutputType.GLOW,
               source: `
               void main() {
-                $\{out: glow} = vec4(1.0, 0.0, 0.0, 1.0);
+                $\{out: glow} = color;
               }
               `
             }
@@ -176,11 +168,6 @@ export class CircleLayer<
         }
       ],
       uniforms: [
-        {
-          name: "scaleFactor",
-          size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [scaleFactor()]
-        },
         {
           name: "layerOpacity",
           size: UniformSize.ONE,

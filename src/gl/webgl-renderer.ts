@@ -277,18 +277,32 @@ export class WebGLRenderer {
     // We'll remove any models that have errored from the scene
     const toRemove: Model[] = [];
 
+    // We must analyze the render target for MRT so we can set ALL of the
+    // buffers for the draw buffers so they will be cleared by the clear command
+    if (
+      target &&
+      !Array.isArray(target) &&
+      (WebGLStat.MRT || WebGLStat.MRT_EXTENSION)
+    ) {
+      const buffers = target.getGLBuffers();
+      this.glState.setDrawBuffers(
+        buffers.map(buffer => buffer?.attachment || 0)
+      );
+    }
+
+    // After the draw buffer state has been set we can now clear the selection
+    // Apply the last clear mask provided for the render
+    const clear = this.state.clearMask;
+    if (clear[0] || clear[1] || clear[2]) {
+      this.glProxy.clear(clear[0], clear[1], clear[2]);
+      this.state.clearMask = [false, false, false];
+    }
+
     // With multiple render targets we have to render the whole scene per target
     if (Array.isArray(target)) {
       for (let i = 0, iMax = target.length; i < iMax; ++i) {
         const renderTarget = target[i];
         this.glState.useRenderTarget(renderTarget);
-
-        // Apply the last clear mask provided for the render
-        const clear = this.state.clearMask;
-        if (clear[0] || clear[1] || clear[2]) {
-          this.glProxy.clear(clear[0], clear[1], clear[2]);
-          this.state.clearMask = [false, false, false];
-        }
 
         // If the fbo is not ready, we're not drawing
         if (renderTarget && !renderTarget.gl) {
@@ -311,13 +325,6 @@ export class WebGLRenderer {
     // are multiple buffers, it will just enable MRT based on the material in
     // use)
     else {
-      // Apply the last clear mask provided for the render
-      const clear = this.state.clearMask;
-      if (clear[0] || clear[1] || clear[2]) {
-        this.glProxy.clear(clear[0], clear[1], clear[2]);
-        this.state.clearMask = [false, false, false];
-      }
-
       // If the fbo is not ready, we're not drawing
       if (target && !target.gl) {
         console.warn(
@@ -347,9 +354,12 @@ export class WebGLRenderer {
     const geometry = model.geometry;
     const material = model.material;
 
+    // Specify we want a new material state to be in effect
+    const materialStatus = this.glState.useMaterial(material);
+
     // Let's put the material's program in use first so we can have the
     // attribute information available to us.
-    switch (this.glState.useMaterial(material)) {
+    switch (materialStatus) {
       case UseMaterialStatus.VALID: {
         let geometryIsValid = true;
 
@@ -451,13 +461,15 @@ export class WebGLRenderer {
     // It looks like picking a COLOR ATTACHMENT can be done using the
     // readBuffer() method. However, readBuffer is not always available so we
     // will have to use the additional FBO as a fallback.
-    else if (Array.isArray(allTargets?.buffers.color)) {
-      this.gl
-        .getExtension("read_v")
-        .console.warn(
+    else if (allTargets && Array.isArray(allTargets?.buffers.color)) {
+      if (allTargets.buffers.color.length > 1) {
+        console.warn(
           "It is not yet implemented to read the pixels from a RenderTarget with multiple color buffers"
         );
-      return;
+        return;
+      }
+
+      target = allTargets;
     } else {
       target = allTargets;
     }
@@ -629,9 +641,10 @@ export class WebGLRenderer {
         this.glState.willUseTextureUnit(texture, target);
       });
 
-      // Now apply those textures (compile them while utilizing the texture units requested)
-      // This will also trigger the compilation of the target since the textures used
-      // This will also ensure the FBO is in use for the next draw call
+      // Now apply those textures (compile them while utilizing the texture
+      // units requested) This will also trigger the compilation of the target
+      // since the textures used are flagged for use This will also ensure the
+      // FBO is in use for the next draw call
       this.glState.applyUsedTextures();
 
       // Compile the render target then use if successful

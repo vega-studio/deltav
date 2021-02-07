@@ -3,6 +3,7 @@ import { InstanceProvider } from "../../../instance-provider";
 import { Vec2, Vec3 } from "../../../math/vector";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import {
+  FragmentOutputType,
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize
@@ -175,7 +176,12 @@ export class CubeLayer<
 
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
-      fs: require("./cube-layer.fs"),
+      fs: [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: require("./cube-layer.fs")
+        }
+      ],
       instanceAttributes: [
         createAttribute({
           name: "transform",

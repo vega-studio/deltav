@@ -1,17 +1,18 @@
-import { Geometry } from "../gl/geometry";
-import { Material } from "../gl/material";
-import { Model } from "../gl/model";
+import { GLSettings } from "../gl";
 import { WebGLStat } from "../gl/webgl-stat";
 import { Instance } from "../instance-provider/instance";
 import { ObservableMonitoring } from "../instance-provider/observable";
 import { ResourceRouter } from "../resources";
+import { ShaderDeclarationStatementLookup } from "../shaders";
 import {
   IShaderProcessingResults,
   ShaderProcessor
 } from "../shaders/processing/shader-processor";
 import {
+  FragmentOutputType,
   IInstanceAttribute,
   IInstanceProvider,
+  IInstancingUniform,
   ILayerEasingManager,
   ILayerMaterialOptions,
   ILayerRef,
@@ -21,6 +22,7 @@ import {
   IPickInfo,
   IShaderInitialization,
   ISinglePickingMetrics,
+  isString,
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal,
@@ -30,9 +32,14 @@ import {
   StreamChangeStrategy,
   UniformIOValue
 } from "../types";
-import { onFrame, PromiseResolver, uid } from "../util";
-import { createAttribute } from "../util/create-util";
+import { isBoolean } from "../types";
+import { isDefined } from "../util/common-filters";
+import { mapInjectDefault } from "../util/common-operations";
+import { createAttribute } from "../util/create-attribute";
+import { onFrame } from "../util/frame";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+import { PromiseResolver } from "../util/promise-resolver";
+import { uid } from "../util/uid";
 import {
   InstanceAttributeBufferManager,
   InstanceAttributePackingBufferManager,
@@ -44,9 +51,7 @@ import {
 } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
 import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { generateLayerGeometry } from "./layer-processing/generate-layer-geometry";
-import { generateLayerMaterial } from "./layer-processing/generate-layer-material";
-import { generateLayerModel } from "./layer-processing/generate-layer-model";
+import { generateLayerGeometry } from "./layer-processing";
 import { LayerScene } from "./layer-scene";
 import { Surface } from "./surface";
 import { IViewProps, View } from "./view";
@@ -115,11 +120,20 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    */
   data: IInstanceProvider<T>;
   /**
-   * This allows an easing ref to be applied to the layer. This ref can be used
-   * for detailed information regarding easing values, which allows for easier
-   * management of timings and feedback for animations being piped to the GPU.
+   * This allows you to remap a layer's fragment output to an output your system
+   * needs. For example: a layer may output a color to the glow buffer, but we
+   * need that information in a different destination view output:
+   *
+   * [FragmentOutput.GLOW]: FragmentOutput.COLOR
+   *
+   * Or we can use this to just disable a layer's output to a buffer:
+   *
+   * [FragmentOutput.GLOW]: FragmentOutput.NONE
+   *
+   * You should be careful to not accidentally map an output to the same output
+   * name the layer may already have in place.
    */
-  ref?: ILayerRef;
+  mapOutput?: Record<number, number>;
   /**
    * Any pipeline declaring a layer cn manipulate a layer's default material
    * settings as every pipeline can have some specific and significant needs the
@@ -135,6 +149,12 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * Used for debugging. Logs the generated shader for the layer in the console.
    */
   printShader?: boolean;
+  /**
+   * This allows an easing ref to be applied to the layer. This ref can be used
+   * for detailed information regarding easing values, which allows for easier
+   * management of timings and feedback for animations being piped to the GPU.
+   */
+  ref?: ILayerRef;
   /**
    * This is a property that allows for changes to stream in batches instead of
    * commit in one giant push. This helps if you have 100's of 1000's of
@@ -261,25 +281,35 @@ export interface ILayerPropsInternal<T extends Instance>
 export interface ILayerShaderIOInfo<T extends Instance> {
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
-  /** This is the GL geometry filled with the vertex information */
-  geometry: Geometry;
+  /**
+   * These are the fragment shaders associated with each View that is available.
+   */
+  fs: OutputFragmentShader;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
   /** Provides the number of vertices a single instance spans */
   instanceVertexCount: number;
-  /** The official shader material generated for the layer */
-  material: Material;
   /**
    * INTERNAL: For the given shader IO provided this is how many instances can
    * be present per buffer.
    */
   maxInstancesPerBuffer: number;
-  /** Default model configuration for rendering in the gl layer */
-  model: Model;
+  /**
+   * Default model configuration for rendering in the gl layer. Since there is a
+   * material per view, it goes to follow that there is a model per view.
+   */
+  drawMode: GLSettings.Model.DrawMode;
   /** This is all of the uniforms generated for the layer */
   uniforms: IUniformInternal[];
+  /** Uniforms generated or discovered during shader processing. */
+  materialUniforms: IInstancingUniform[];
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[];
+  /**
+   * This is the vertex shader this layer has produced for processing it's
+   * geometry.
+   */
+  vs: string;
 }
 
 interface ILayerEasingManagerInternal extends ILayerEasingManager {
@@ -386,7 +416,7 @@ export class Layer<
    * to the GPU. See ILayerProps for how the configuration happens for this
    * object.
    */
-  streamChanges: {
+  private streamChanges: {
     /**
      * When locked this layer will NOT stream in new changes as it has a current
      * stream it is completing first.
@@ -486,6 +516,315 @@ export class Layer<
   }
 
   /**
+   * Validates the shader initialization object from the layer.
+   */
+  private validateShaderIO(shaderIO: IShaderInitialization<T> | null) {
+    // If no metrics are provided, this layer is merely a shell layer and will
+    // not receive any GPU handling objects.
+    if (!shaderIO) {
+      this.picking.type = PickType.NONE;
+      debug(
+        "Shell layer initialized. Nothing will be rendered for this layer",
+        this.id
+      );
+      return true;
+    }
+
+    if (!shaderIO.fs || !shaderIO.vs) {
+      console.warn(
+        "Layer needs to specify the fragment and vertex shaders:",
+        this.id
+      );
+      return false;
+    }
+
+    return;
+  }
+
+  /**
+   * Performs clean ups on the data provided by the layer for the Shader
+   * Initialization to make it easier and more reliable to work with when
+   * processing.
+   */
+  private cleanShaderIOElements(shaderIO: IShaderInitialization<T>) {
+    // Clean out nulls provided as a convenience to the layer
+    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
+      isDefined
+    );
+    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
+      isDefined
+    );
+    shaderIO.uniforms = (shaderIO.uniforms || []).filter(isDefined);
+  }
+
+  /**
+   * When the layer declares it's shader intiialization, it can specify multiple
+   * fragment shader fragments each with their own output target type. We do NOT
+   * allow two fragments to point to the same type. This performs a thorough
+   * check to ensure that does not happen.
+   */
+  private checkForDuplicateOutputTypes(shaderIO: IShaderInitialization<T>) {
+    let { mapOutput } = this.props;
+
+    // If the fragment is just a string, then it's output source is the default
+    // COLOR target.
+    if (isString(shaderIO.fs)) {
+      shaderIO.fs = [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: shaderIO.fs
+        }
+      ];
+    }
+
+    // Use the layer's output mapping to transform the target outputs of the
+    // fragment shader
+    mapOutput = mapOutput || {};
+    const outputTypeCheck = new Set<number>();
+    let hasDuplicateType = false;
+    let nothingTarget = Number.MIN_SAFE_INTEGER;
+
+    // Perform fragment output mapping changes AND check for duplicate output
+    // targets which will be considered invalid.
+    for (let i = 0, iMax = shaderIO.fs.length; i < iMax; ++i) {
+      const output = shaderIO.fs[i];
+      const newOutput = mapOutput[output.outputType];
+
+      if (newOutput === void 0) {
+        if (outputTypeCheck.has(output.outputType)) {
+          hasDuplicateType = true;
+        }
+
+        outputTypeCheck.add(output.outputType);
+        continue;
+      }
+
+      // When mapped to nothing, we can not remove the fragment as it may be a
+      // requirement for later fragments, so we just map it's type to a
+      // non-sensical number.
+      if (newOutput === FragmentOutputType.NONE) {
+        output.outputType = nothingTarget++;
+      } else {
+        output.outputType = newOutput;
+      }
+
+      if (outputTypeCheck.has(output.outputType)) {
+        hasDuplicateType = true;
+      }
+
+      outputTypeCheck.add(output.outputType);
+    }
+
+    if (hasDuplicateType) {
+      console.warn("Layer has duplicate fragment shader output types");
+      return false;
+    }
+
+    return;
+  }
+
+  /**
+   * Processes the fragment outputs a layer provides against each view and
+   * generates a merged fragment shader with those fragments optimized for each
+   * view.
+   */
+  private processFragmentShadersForEachView(
+    shaderIO: IShaderInitialization<T>,
+    views: View<IViewProps>[]
+  ) {
+    // If the fragment is just a string, then it's output source is the default
+    // COLOR target. THis also simplifies our data type to guarantee a list.
+    if (isString(shaderIO.fs)) {
+      shaderIO.fs = [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: shaderIO.fs
+        }
+      ];
+    }
+
+    // We inject automated picking items if the user has not defined their own
+    // picking output type.
+    const doAutomatedPicking =
+      this.picking.type === PickType.SINGLE &&
+      !Boolean(
+        shaderIO.fs.find(
+          output => output.outputType === FragmentOutputType.PICKING
+        )
+      );
+
+    if (this.picking.type === PickType.SINGLE && !doAutomatedPicking) {
+      throw new Error(
+        "Do NOT specify picking prop on a layer when you have your own Picking output declared."
+      );
+    }
+
+    const pickingFragmentOutput = {
+      outputType: FragmentOutputType.PICKING,
+      source: require("../shaders/base-modules/shader-fragments/picking.fs")
+    };
+
+    // We will store each fragment shader created per view
+    const outputFragmentShaders: OutputFragmentShader = new Map();
+    // Any of our processes from here on out can require and generate
+    // declarations that need to go into the application. This provides a means
+    // of passing those declarations to the shader processor when it builds the
+    // headers of our shader files.
+    const declarations: ShaderDeclarationStatementLookup = {
+      fs: new Map(),
+      vs: new Map(),
+      destructure: new Map()
+    };
+
+    // We must analyze our fragment shaders and views to determine which
+    // processing output we are going to actually output for the sake of the
+    // view. Each view that declares a unique output for the layer requires it's
+    // own shader or group of shaders.
+    for (let i = 0, iMax = views.length; i < iMax; ++i) {
+      const view = views[i];
+      console.warn("GENERATING OUTPUT FRAGMENT SHADER FOR", view.id, this.id);
+
+      // Delete previously existing picking fragment output so it can be
+      // injected in the correct location.
+      if (doAutomatedPicking) {
+        const index = shaderIO.fs.findIndex(
+          layerOutput => layerOutput.outputType === FragmentOutputType.PICKING
+        );
+
+        if (index > -1) {
+          shaderIO.fs.splice(index, 1);
+        }
+      }
+
+      // See which fragment output is the LAST needed output in the list
+      const viewOutputTargets = view.getOutputTargets();
+      let maxLayerOutputIndex = 0;
+      shaderIO.fs.forEach((layerOutput, i) => {
+        if (
+          viewOutputTargets?.find(
+            viewTarget => viewTarget.outputType === layerOutput.outputType
+          )
+        ) {
+          maxLayerOutputIndex = i;
+        }
+      });
+
+      // If Picking is enabled, we force inject a picking target for the
+      // fragement shader AFTER the last major output index so we don't
+      // accidentally cause needless fragment shader outputs to get bundled in.
+      if (doAutomatedPicking) {
+        shaderIO.fs.splice(maxLayerOutputIndex + 1, 0, pickingFragmentOutput);
+      }
+
+      // Retrieve and ensure
+      let declarationsFS = mapInjectDefault(declarations.fs, view, new Map());
+
+      if (!declarationsFS) {
+        declarationsFS = new Map();
+        declarations.fs.set(view, declarationsFS);
+      }
+
+      // This processes the fragment shader's fragments written for the layer
+      // and combines all of the fragments that matches with the current view's
+      // output target types.
+      const outputFragmentShader = ShaderProcessor.makeOutputFragmentShader(
+        declarations.vs,
+        declarationsFS,
+        viewOutputTargets,
+        shaderIO.fs
+      );
+
+      if (!outputFragmentShader) {
+        console.warn(
+          "Could not generate output fragment shaders for the view specified."
+        );
+        return false;
+      }
+
+      // Store the output fragment shaders for the given view
+      outputFragmentShaders.set(view, outputFragmentShader);
+    }
+
+    return { outputFragmentShaders, declarations };
+  }
+
+  /**
+   * This performs the actual generation of the vertex and fragment shaders this
+   * layer will use. Each fragment shader is now associated with it's respective
+   * view and will be generated accordingly.
+   */
+  private processLayerShaders(
+    shaderIO: IShaderInitialization<T>,
+    outputFragmentShaders: OutputFragmentShader,
+    declarations: ShaderDeclarationStatementLookup
+  ) {
+    let shaderMetrics:
+      | (Omit<IShaderProcessingResults<T>, "fs"> & { fs: OutputFragmentShader })
+      | null = null;
+
+    // Generate the actual shaders to be used by injecting all of the
+    // necessary fragments from all modules
+    shaderMetrics = new ShaderProcessor().process(
+      this,
+      shaderIO,
+      outputFragmentShaders,
+      declarations,
+      this.surface.getIOExpanders(),
+      this.surface.getShaderTransforms(),
+      this.surface.getIOSorting()
+    );
+
+    // Check to see if the Shader Processing failed. If so, return null as a
+    // failure flag.
+    if (!shaderMetrics) {
+      console.warn(
+        "The shader processor did not produce metrics for the layer."
+      );
+      return false;
+    }
+
+    // Now that all of the elements of the layer are complete, let us apply them to the layer
+    this.shaderIOInfo = Object.assign<
+      ILayerShaderIOInfo<T>,
+      ILayerShaderIOInfo<T>
+    >(
+      {
+        // This is a filler active attribute. It gets replaced.
+        activeAttribute: createAttribute({
+          name: "active",
+          size: InstanceAttributeSize.ONE,
+          update: o => [o.active ? 1 : 0]
+        }),
+        instanceAttributes: shaderMetrics.instanceAttributes,
+        instanceVertexCount: shaderIO.vertexCount,
+        vs: shaderMetrics.vs,
+        fs: shaderMetrics.fs,
+        materialUniforms: shaderMetrics.materialUniforms,
+        maxInstancesPerBuffer: shaderMetrics.maxInstancesPerBuffer,
+        drawMode: shaderIO.drawMode || GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+        uniforms: shaderMetrics.uniforms,
+        vertexAttributes: shaderMetrics.vertexAttributes
+      },
+      this.shaderIOInfo
+    );
+
+    return;
+  }
+
+  /**
+   * Processes the static vertex information and applies GL Attributes for each
+   * item.
+   */
+  private processVertexAttributes(shaderIO: IShaderInitialization<T>) {
+    generateLayerGeometry(
+      this,
+      this.shaderIOInfo.maxInstancesPerBuffer,
+      this.shaderIOInfo.vertexAttributes,
+      shaderIO.vertexCount
+    );
+  }
+
+  /**
    * This does special initialization by gathering the layers shader IO,
    * generates a material and injects special automated uniforms and attributes
    * to make instancing work for the shader.
@@ -514,258 +853,46 @@ export class Layer<
     // Ensure the layer has interaction handling applied to it
     this.interactions = new LayerInteractionHandler(this);
 
-    // If no metrics are provided, this layer is merely a shell layer and will
-    // not receive any GPU handling objects.
-    if (!shaderIO) {
-      this.picking.type = PickType.NONE;
-      debug(
-        "Shell layer initialized. Nothing will be rendered for this layer",
-        this.id
-      );
-      return true;
-    }
+    // Perform validation checks and see if we need to quick exit with a layer
+    // construction flag.
+    const ioValidation = this.validateShaderIO(shaderIO);
+    if (ioValidation !== void 0) return ioValidation;
+    if (!shaderIO) return false;
 
-    if (!shaderIO.fs || !shaderIO.vs) {
-      console.warn(
-        "Layer needs to specify the fragment and vertex shaders:",
-        this.id
-      );
-      return false;
-    }
+    let result;
 
-    // Clean out nulls provided as a convenience to the layer
-    shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
-      Boolean
+    // Shader initialization can be a little sloppy which creates some
+    // convenience in writing layers. This helps ensures some data types are
+    // established.
+    result = this.cleanShaderIOElements(shaderIO);
+    if (isBoolean(result)) return result;
+    // Layer fragments can not output to the same output targets.
+    result = this.checkForDuplicateOutputTypes(shaderIO);
+    if (isBoolean(result)) return result;
+    // Our fragment shaders are
+    result = this.processFragmentShadersForEachView(shaderIO, views);
+    if (isBoolean(result)) return result;
+    // Now take all of the information gathered and generate the actual shaders
+    // this layer will need to handle all of the views and attributes used
+    result = this.processLayerShaders(
+      shaderIO,
+      result.outputFragmentShaders,
+      result.declarations
     );
-    shaderIO.vertexAttributes = (shaderIO.vertexAttributes || []).filter(
-      Boolean
-    );
-    shaderIO.uniforms = (shaderIO.uniforms || []).filter(Boolean);
-
-    let shaderMetrics: IShaderProcessingResults<T> | null = null;
-
-    // We must analyze our fragment shaders and views to determine which
-    // processing output we are going to actually output for the sake of the
-    // view. Each view that declares a unique output for the layer requires it's
-    // own shader or group of shaders.
-    for (let i = 0, iMax = views.length; i < iMax; ++i) {
-      const view = views[i];
-      const outputFragmentShader = ShaderProcessor.makeOutputFragmentShader(
-        view.props.output?.buffers,
-        shaderIO.fs
-      );
-
-      if (!outputFragmentShader) {
-        console.warn(
-          "Could not generate output fragment shaders for the view specified."
-        );
-        return false;
-      }
-
-      let newFragmentShaders: OutputFragmentShader = [];
-
-      // We need to now check the output fragment shader configuration and find
-      // new fragment type outputs that are not already accounted for by other
-      // views.
-      if (shaderMetrics) {
-        for (let k = 0, kMax = outputFragmentShader.length; k < kMax; ++k) {
-          const output = outputFragmentShader[k];
-
-          // Find an exact match of a fragment shader to output types it
-          // provides. If none is present, this is a necessary fragment output
-          // needed to handle a given RenderTarget as efficiently as possible.
-          const findMatchingTypes = shaderMetrics.fs.find(f => {
-            if (f.outputTypes.length === output.outputTypes.length) {
-              // Look for a type that is missing
-              for (let j = 0, jMax = output.outputTypes.length; j < jMax; ++j) {
-                const type = output.outputTypes[j];
-                if (f.outputTypes.indexOf(type) < 0) {
-                  return false;
-                }
-              }
-
-              return true;
-            }
-
-            return false;
-          });
-
-          if (!findMatchingTypes) {
-            newFragmentShaders.push(output);
-            shaderMetrics.fs.push(output);
-          }
-        }
-      } else {
-        newFragmentShaders = outputFragmentShader;
-      }
-
-      // If there are no new configurations for the fragment shaders, then we
-      // just move on.
-      if (newFragmentShaders.length === 0) {
-        continue;
-      }
-
-      // Generate the actual shaders to be used by injecting all of the
-      // necessary fragments from all modules
-      const metrics = new ShaderProcessor().process(
-        this,
-        shaderIO,
-        newFragmentShaders,
-        this.surface.getIOExpanders(),
-        this.surface.getShaderTransforms(),
-        this.surface.getIOSorting()
-      );
-
-      // Check to see if the Shader Processing failed. If so, return null as a
-      // failure flag.
-      if (!metrics) {
-        console.warn(
-          "The shader processor did not produce metrics for the layer."
-        );
-        return false;
-      }
-
-      // Retrieve all of the attributes created as a result of layer input and
-      // module processing.
-      const {
-        vertexAttributes,
-        instanceAttributes,
-        uniforms,
-        materialUniforms
-      } = metrics;
-
-      // We take our first metrics output and set that as our base. After this,
-      // we will aggregate the metrics output into a single shader metrics. We
-      // take this approach on the basis that across all of the fragment
-      // shaders, each fragment + vertex will be a subset of attributes of the
-      // total of all the fragments and vertex shader's attributes.
-      if (!shaderMetrics) {
-        shaderMetrics = metrics;
-      } else {
-        shaderMetrics.maxInstancesPerBuffer = Math.min(
-          shaderMetrics.maxInstancesPerBuffer,
-          metrics.maxInstancesPerBuffer
-        );
-
-        // We want to aggregate all attribute information by name into our
-        // output shader metric
-        for (let k = 0, kMax = vertexAttributes.length; k < kMax; ++k) {
-          const vertex = vertexAttributes[k];
-
-          if (
-            !shaderMetrics.vertexAttributes.find(v => vertex.name === v.name)
-          ) {
-            shaderMetrics.vertexAttributes.push(vertex);
-          }
-        }
-
-        for (let k = 0, kMax = instanceAttributes.length; k < kMax; ++k) {
-          const attr = instanceAttributes[k];
-
-          if (
-            !shaderMetrics.instanceAttributes.find(v => attr.name === v.name)
-          ) {
-            shaderMetrics.instanceAttributes.push(attr);
-          }
-        }
-
-        for (let k = 0, kMax = uniforms.length; k < kMax; ++k) {
-          const uniform = uniforms[k];
-
-          if (!shaderMetrics.uniforms.find(v => uniform.name === v.name)) {
-            shaderMetrics.uniforms.push(uniform);
-          }
-        }
-
-        for (let k = 0, kMax = materialUniforms.length; k < kMax; ++k) {
-          const uniform = materialUniforms[k];
-
-          if (
-            !shaderMetrics.materialUniforms.find(v => uniform.name === v.name)
-          ) {
-            shaderMetrics.materialUniforms.push(uniform);
-          }
-        }
-      }
-    }
-
-    // Validate we came out with metrics for the shader
-    if (!shaderMetrics) {
-      console.warn(
-        "Did not generate shader metrics for the layer for the views"
-      );
-      return false;
-    }
-
-    // This is the material that is generated for the layer that utilizes all of
-    // the generated and Injected shader IO and shader fragments
-    const material = generateLayerMaterial(
-      this,
-      shaderMetrics.vs,
-      shaderMetrics.fs,
-      shaderMetrics.uniforms,
-      shaderMetrics.materialUniforms
-    );
-
-    // Generate the geometry this layer will be utilizing
-    const geometry = generateLayerGeometry(
-      this,
-      shaderMetrics.maxInstancesPerBuffer,
-      shaderMetrics.vertexAttributes,
-      shaderIO.vertexCount
-    );
-
-    // And now we can now generate the model that will be added to the scene
-    const model = generateLayerModel(geometry, material, shaderIO.drawMode);
-
-    // Now that all of the elements of the layer are complete, let us apply them to the layer
-    this.shaderIOInfo = Object.assign<
-      ILayerShaderIOInfo<T>,
-      ILayerShaderIOInfo<T>
-    >(
-      {
-        activeAttribute: createAttribute({
-          name: "active",
-          size: InstanceAttributeSize.ONE,
-          update: o => [o.active ? 1 : 0]
-        }),
-        geometry,
-        instanceAttributes: shaderMetrics.instanceAttributes,
-        instanceVertexCount: shaderIO.vertexCount,
-        material,
-        maxInstancesPerBuffer: shaderMetrics.maxInstancesPerBuffer,
-        model,
-        uniforms: shaderMetrics.uniforms,
-        vertexAttributes: shaderMetrics.vertexAttributes
-      },
-      this.shaderIOInfo
-    );
-
+    if (isBoolean(result)) return result;
+    // After all processing is complete, let's initialize our vertex attributes
+    // which are used in our base geometry
+    result = this.processVertexAttributes(shaderIO);
+    if (isBoolean(result)) return result;
     // Generate the correct buffering strategy for the layer
-    this.makeLayerBufferManager(this.surface.gl, this.scene);
-
-    if (this.props.printShader) {
-      console.warn(
-        "A Layer requested its shader be debugged. Do not leave this active for production:",
-        "Layer:",
-        this.props.key,
-        "Shader Metrics",
-        shaderMetrics
-      );
-      console.warn("\n\nVERTEX SHADER\n--------------\n\n", shaderMetrics.vs);
-
-      shaderMetrics.fs.forEach(fs => {
-        console.warn(
-          `\n\nFRAGMENT SHADER:\n${JSON.stringify(
-            fs.outputNames
-          )}\n${JSON.stringify(fs.outputTypes)}\n--------------\n\n`,
-          fs.source
-        );
-      });
-    }
-
+    result = this.makeLayerBufferManager(this.surface.gl, this.scene);
+    if (isBoolean(result)) return result;
     // Establish diff handlers based on the settings of the layer
-    this.updateDiffHandlers();
+    result = this.updateDiffHandlers();
+    if (isBoolean(result)) return result;
+    // Handle debugging calls so we can print useful information about this
+    // layer
+    this.layerShaderDebugging();
 
     // Establish initial ref needs
     if (this.props.ref) {
@@ -773,6 +900,33 @@ export class Layer<
     }
 
     return true;
+  }
+
+  private layerShaderDebugging() {
+    if (this.props.printShader) {
+      console.warn(
+        "A Layer requested its shader be debugged. Do not leave this active for production:",
+        "Layer:",
+        this.props.key,
+        "Shader Metrics",
+        this.shaderIOInfo
+      );
+      console.warn(
+        "\n\nVERTEX SHADER\n--------------\n\n",
+        this.shaderIOInfo.vs
+      );
+
+      this.shaderIOInfo.fs.forEach((fs, view) => {
+        console.warn(
+          `\n\nFRAGMENT SHADER (view: ${
+            view.id
+          }):\nOutput Targets${JSON.stringify(
+            fs.outputNames
+          )}\n${JSON.stringify(fs.outputTypes)}\n--------------\n\n`,
+          fs.source
+        );
+      });
+    }
   }
 
   /**
@@ -783,8 +937,8 @@ export class Layer<
   baseShaderModules(
     shaderIO: IShaderInitialization<T>
   ): { fs: string[]; vs: string[] } {
-    const additionalImportsVS = [];
-    const additionalImportsFS = [];
+    const additionalImportsVS: string[] = [];
+    const additionalImportsFS: string[] = [];
 
     // All layers need the basic instancing functionality
     additionalImportsVS.push("instancing");
@@ -792,10 +946,6 @@ export class Layer<
     // See if the layer needs picking modules
     if (this.picking.type === PickType.SINGLE) {
       additionalImportsVS.push("picking");
-      additionalImportsFS.push("picking");
-    } else {
-      additionalImportsVS.push("no-picking");
-      additionalImportsFS.push("no-picking");
     }
 
     // See if there are any attributes that have  auto easing involved

@@ -1,4 +1,4 @@
-import { ViewOutputInformationType } from "../types";
+import { FragmentOutputType } from "../types";
 import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
@@ -113,6 +113,18 @@ export class RenderTarget {
   private _validFramebuffer: boolean = false;
 
   /**
+   * This allows outputTargets to be specified as disabled so they will not
+   * receive rendering output.
+   */
+  public get disabledTargets(): Set<number> {
+    return this._disabledTargets;
+  }
+  public set disabledTargets(v: Set<number>) {
+    this._disabledTargets = v;
+  }
+  private _disabledTargets = new Set<number>();
+
+  /**
    * Flag indicating whether or not to preserve render targets that are textures
    * or not. This is set to true for when a RenderTarget is being disposed, thus
    * cleaning out the FBO and it's attachments, but we need the Texture to live
@@ -135,9 +147,13 @@ export class RenderTarget {
     fboByMaterial: WeakMap<Material, WebGLFramebuffer>;
     /** The color buffer(s) this target is rendering into */
     colorBufferId?:
-      | { data: WebGLRenderbuffer; outputType: number }
-      | { data: Texture; outputType: number }
-      | { data: WebGLRenderbuffer | Texture; outputType: number }[];
+      | { data: WebGLRenderbuffer; outputType: number; attachment: number }
+      | { data: Texture; outputType: number; attachment: number }
+      | {
+          data: WebGLRenderbuffer | Texture;
+          outputType: number;
+          attachment: number;
+        }[];
     /** The depth buffer this target is rendering into */
     depthBufferId?: WebGLRenderbuffer | Texture;
     /** The stencil buffer this target is rendering into */
@@ -157,7 +173,84 @@ export class RenderTarget {
     this._width = options.width || 0;
     this._height = options.height || 0;
     this.retainTextureTargets = options.retainTextureTargets || false;
-    this.getDimensions();
+    this.calculateDimensions();
+  }
+
+  /**
+   * This analyzes the buffers for Textures to infer the width and height. This
+   * also ensures all Texture objects are the same size to prevent errors.
+   */
+  private calculateDimensions() {
+    const textures: Texture[] = [];
+
+    if (this._buffers.color instanceof Texture) {
+      textures.push(this._buffers.color);
+    } else if (Array.isArray(this._buffers.color)) {
+      for (let i = 0, iMax = this._buffers.color.length; i < iMax; ++i) {
+        const buffer = this._buffers.color[i];
+
+        if (buffer.buffer instanceof Texture) {
+          textures.push(buffer.buffer);
+        }
+      }
+    } else if (
+      this._buffers.color &&
+      this._buffers.color.buffer instanceof Texture
+    ) {
+      textures.push(this._buffers.color.buffer);
+    }
+
+    if (this._buffers.depth instanceof Texture) {
+      textures.push(this._buffers.depth);
+    }
+
+    if (this._buffers.stencil instanceof Texture) {
+      textures.push(this._buffers.stencil);
+    }
+
+    // If we have textures specified, we now measure them all to ensure they are
+    // the same width and height dimensions. This width and height will also be
+    // used as this render target's dimensions. This is how the texture buffers
+    // specify the dimensions of the render target and ignores other set
+    // dimensions applied to the render target.
+    if (textures.length > 0 && textures[0].data) {
+      const { width, height } = textures[0].data;
+
+      for (let i = 0, iMax = textures.length; i < iMax; ++i) {
+        const texture = textures[i];
+
+        if (!texture.data) {
+          console.warn(
+            "A texture specified for thie RenderTarget did not have any data associated with it."
+          );
+          return;
+        }
+
+        const { width: checkWidth, height: checkHeight } = texture.data;
+
+        if (checkWidth !== width || checkHeight !== height) {
+          console.warn(
+            "Texture applied to the render target is invalid as it does not match dimensions of all textures applied:",
+            texture,
+            textures,
+            "The texture will be removed as a target for the render target"
+          );
+
+          this.removeTextureFromBuffer(texture);
+        }
+      }
+
+      this._width = width;
+      this._height = height;
+    }
+
+    // Ensure valid dimensions were established for this render target.
+    if (!this._width || !this._height) {
+      console.warn(
+        "A RenderTarget was not able to establish valid dimensions. This target had no texture buffers and did not specify valid width and height values.",
+        this
+      );
+    }
   }
 
   /**
@@ -184,6 +277,30 @@ export class RenderTarget {
   }
 
   /**
+   * Retrieves all generated GL buffers associated with this target and returns
+   * them as a guaranteed list.
+   *
+   * NOTE: This is NOT intended to be used outside of the GL rendering portions
+   * of the application. Messing with this or it's return values is EXTREMELY
+   * unadvised unless you absolutely know what you are doing. COnsider being
+   * safer with getBuffers instead.
+   */
+  getGLBuffers() {
+    if (!this.gl) {
+      console.warn(
+        "Attempted to retrieve gl buffers before the render target was compiled."
+      );
+      return [];
+    }
+
+    if (Array.isArray(this.gl.colorBufferId)) {
+      return this.gl.colorBufferId;
+    } else {
+      return [this.gl.colorBufferId];
+    }
+  }
+
+  /**
    * Gets an ordered list of all output types this render target handles.
    */
   getOutputTypes() {
@@ -191,71 +308,11 @@ export class RenderTarget {
   }
 
   /**
-   * This analyzes the buffers for Textures to infer the width and height. This
-   * also ensures all Texture objects are the same size to prevent errors.
+   * Retrieves the size of this render target (All buffers for this target will
+   * match these dimensions).
    */
-  private getDimensions() {
-    const textures: Texture[] = [];
-
-    if (this._buffers.color instanceof Texture) {
-      textures.push(this._buffers.color);
-    }
-
-    if (Array.isArray(this._buffers.color)) {
-      for (let i = 0, iMax = this._buffers.color.length; i < iMax; ++i) {
-        const buffer = this._buffers.color[i];
-
-        if (buffer.buffer instanceof Texture) {
-          textures.push(buffer.buffer);
-        }
-      }
-    }
-
-    if (this._buffers.depth instanceof Texture) {
-      textures.push(this._buffers.depth);
-    }
-
-    if (this._buffers.stencil instanceof Texture) {
-      textures.push(this._buffers.stencil);
-    }
-
-    // If we have textures specified, we now measure them all to ensure they are
-    // the same width and height dimensions. This width and height will also be
-    // used as this render target's dimensions. This is how the texture buffers
-    // specify the dimensions of the render target and ignores other set
-    // dimensions applied to the render target.
-    if (textures.length > 0 && textures[0].data) {
-      const { width, height } = textures[0].data;
-
-      for (let i = 0, iMax = textures.length; i < iMax; ++i) {
-        const texture = textures[i];
-
-        if (!texture.data) return;
-        const { width: checkWidth, height: checkHeight } = texture.data;
-
-        if (checkWidth !== width || checkHeight !== height) {
-          console.warn(
-            "Texture applied to the render target is invalid as it does not match dimensions of all textures applied:",
-            texture,
-            textures,
-            "The texture will be removed as a target for the render target"
-          );
-
-          this.removeTextureFromBuffer(texture);
-        }
-      }
-
-      this._width = width;
-      this._height = height;
-    }
-
-    // Ensure valid dimensions were established for this render target.
-    if (!this._width || !this._height) {
-      console.warn(
-        "A RenderTarget was not able to establish valid dimensions. This target had no texture buffers and did not specify valid width and height values.",
-        this
-      );
-    }
+  getSize() {
+    return [this._width, this._height];
   }
 
   /**
@@ -296,12 +353,10 @@ export class RenderTarget {
   isColorTarget() {
     if (Array.isArray(this.buffers.color)) {
       if (this.buffers.color.length === 1) {
-        return (
-          this.buffers.color[0].outputType === ViewOutputInformationType.COLOR
-        );
+        return this.buffers.color[0].outputType === FragmentOutputType.COLOR;
       }
     } else {
-      return this.buffers.color?.outputType === ViewOutputInformationType.COLOR;
+      return this.buffers.color?.outputType === FragmentOutputType.COLOR;
     }
 
     return false;

@@ -18,9 +18,11 @@ float circle(vec2 coord, float radius){
 void main() {
   float step_factor = circle(pointCoord, 1.0);
 
-  ${out: gl_FragColor} = setColor(mix(
+  ${out: color} = mix(
     vec4(0.0, 0.0, 0.0, 0.0),
     vertexColor,
     step_factor
-  ));
+  );
+
+  if (color.a == 0.0) discard;
 }

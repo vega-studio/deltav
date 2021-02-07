@@ -1,18 +1,12 @@
 import { EventManager } from "../event-management/event-manager";
 import { UserInputEventManager } from "../event-management/user-input-event-manager";
-import {
-  GLSettings,
-  isOffscreenCanvas,
-  RenderTarget,
-  Scene,
-  Texture
-} from "../gl";
+import { isOffscreenCanvas, RenderTarget, Scene } from "../gl";
 import { WebGLRenderer } from "../gl/webgl-renderer";
 import { Instance } from "../instance-provider/instance";
 import { BaseProjection } from "../math";
 import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
 import { Bounds } from "../math/primitives/bounds";
-import { copy4, Vec2, Vec4 } from "../math/vector";
+import { Vec4 } from "../math/vector";
 import {
   BaseResourceManager,
   BaseResourceOptions,
@@ -25,16 +19,19 @@ import { RenderTextureResourceManager } from "../resources/texture/render-textur
 import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
 import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
-import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types";
+import {
+  FragmentOutputType,
+  FrameMetrics,
+  ResourceType,
+  SurfaceErrorType
+} from "../types";
 import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
-  IResourceType,
-  PickType
+  IResourceType
 } from "../types";
 import { onFrame, PromiseResolver } from "../util";
-import { analyzeColorPickingRendering } from "../util/color-picking-analysis";
 import { ReactiveDiff } from "../util/reactive-diff";
 import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { Layer } from "./layer";
@@ -43,6 +40,7 @@ import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-i
 import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
 import { Shaders30CompatibilityTransform } from "./layer-processing/base-shader-transforms/shaders-30-compatibility-transform";
 import { ISceneOptions, LayerScene } from "./layer-scene";
+import { SurfaceCommands } from "./surface-commands";
 import { ClearFlags, IViewProps, View } from "./view";
 
 /**
@@ -125,6 +123,11 @@ export interface ISurfaceOptions {
     | BaseIOExpansion[]
     | ((defaultExpanders: BaseIOExpansion[]) => BaseIOExpansion[]);
   /**
+   * If this is defined, this causes the specified targets to NOT render UNLESS
+   * expressly told to render utilizing enableOutput
+   */
+  optimizedOutputTargets?: number[];
+  /**
    * This specifies the density of rendering in the surface. The default value
    * is window.devicePixelRatio to match the monitor for optimal clarity. Using
    * a value of 1 will be acceptable, will not get high density renders, but
@@ -200,6 +203,14 @@ export interface ISurfaceOptions {
 const DEFAULT_BACKGROUND_COLOR: Vec4 = [0.0, 0.0, 0.0, 0.0];
 
 /**
+ * Helper enum to select which method to broadcast.
+ */
+enum EventManagerBroadcastCycle {
+  WILL_RENDER,
+  DID_RENDER
+}
+
+/**
  * Sort method for any object with an 'order' property
  */
 function sortByOrder<T extends { order?: number }>(a: T, b: T) {
@@ -215,6 +226,11 @@ function sortByOrder<T extends { order?: number }>(a: T, b: T) {
 export class Surface {
   /** This is the gl context this surface is rendering to */
   private context: WebGLRenderingContext;
+  /**
+   * Available commands from the surface that triggers events or triggers
+   * direct GPU operations.
+   */
+  commands = new SurfaceCommands({ surface: this });
   /**
    * This is the metrics of the current running frame
    */
@@ -234,14 +250,17 @@ export class Surface {
   /** These are the registered transforms for shaders */
   private shaderTransforms: BaseShaderTransform[] = [];
   /**
+   * These are the registered output targets that get disabled by default. They
+   * must be explicitly enabled with the method enableOptimizedOutput.
+   */
+  private optimizedOutputs = new Set<number>([FragmentOutputType.PICKING]);
+  /**
    * This is the sorting controller for sorting attributes/uniforms of a layer
    * after all the attributes have been generated that are needed
    */
   ioSorting = new BaseIOSorting();
   /** This manages the mouse events for the current canvas context */
-  mouseManager: UserInputEventManager;
-  /** This is a target used to perform rendering our picking pass */
-  pickingTarget: RenderTarget;
+  userInputManager: UserInputEventManager;
   /** This is the density the rendering renders for the surface */
   pixelRatio: number = window.devicePixelRatio;
   /** This is the GL render system we use to render scenes with views */
@@ -254,10 +273,7 @@ export class Surface {
    * When defined, the next render will make sure color picking is updated
    * for layer interactions
    */
-  updateColorPick?: {
-    position: Vec2;
-    views: View<IViewProps>[];
-  };
+  private enabledOptimizedOutputs = new Set<number>();
   /**
    * This map is a quick look up for a view to determine other views that
    * would need to be redrawn as a consequence of the key view needing a redraw.
@@ -273,17 +289,6 @@ export class Surface {
   ready: Promise<Surface>;
   /** This is used to reolve this surface as ready */
   private readyResolver: PromiseResolver<Surface>;
-
-  /**
-   * Picking gets deferred to the beginning of next draw. Thus picking
-   * operations get queued till next frame using this store here.
-   */
-  private queuedPicking?: [
-    LayerScene,
-    View<IViewProps>,
-    Layer<any, any>[],
-    Vec2
-  ][];
 
   /** Diff manager to handle diffing resource objects for the pipeline */
   resourceDiffs: ReactiveDiff<
@@ -357,75 +362,27 @@ export class Surface {
   }
 
   /**
-   * Retrieves all IO Expanders applied to this surface
+   * Broadcasts a cycle event to all event managers.
    */
-  getIOExpanders() {
-    return this.ioExpanders;
-  }
+  private broadcastEventManagerCycle(event: EventManagerBroadcastCycle) {
+    // Resolve event managers reaction cycles
+    for (
+      let i = 0, iMax = this.userInputManager.eventManagers.length;
+      i < iMax;
+      ++i
+    ) {
+      const eventManager = this.userInputManager.eventManagers[i];
 
-  /**
-   * Retrieves the controller for sorting the IO for the layers.
-   */
-  getIOSorting() {
-    return this.ioSorting;
-  }
+      switch (event) {
+        case EventManagerBroadcastCycle.DID_RENDER:
+          eventManager.didRender();
+          break;
 
-  /**
-   * Retrieves all shader transforms applied to this surface.
-   */
-  getShaderTransforms() {
-    return this.shaderTransforms;
-  }
-
-  /**
-   * This processes what is rendered into the picking render target to see if the mouse interacted with
-   * any elements.
-   */
-  private analyzePickRendering() {
-    if (!this.queuedPicking) return;
-
-    for (let i = 0, iMax = this.queuedPicking.length; i < iMax; ++i) {
-      const [, view, pickingPass, mouse] = this.queuedPicking[i];
-
-      // Optimized rendering of the view will make the view discard picking rendering
-      if (view.optimizeRendering) {
-        continue;
-      }
-
-      // Make our metrics for how much of the image we wish to analyze
-      const pickWidth = 5;
-      const pickHeight = 5;
-      const numBytesPerColor = 4;
-      const out = new Uint8Array(pickWidth * pickHeight * numBytesPerColor);
-
-      // Read the pixels out
-      this.renderer.readPixels(
-        Math.floor(mouse[0] - pickWidth / 2),
-        Math.floor(mouse[1] - pickHeight / 2),
-        pickWidth,
-        pickHeight,
-        out
-      );
-
-      // Analyze the rendered color data for the picking routine
-      const pickingData = analyzeColorPickingRendering(
-        [mouse[0] - view.screenBounds.x, mouse[1] - view.screenBounds.y],
-        out,
-        pickWidth,
-        pickHeight
-      );
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-
-        if (layer.picking.type === PickType.SINGLE) {
-          layer.interactions.colorPicking = pickingData;
-        }
+        case EventManagerBroadcastCycle.WILL_RENDER:
+          eventManager.willRender();
+          break;
       }
     }
-
-    delete this.queuedPicking;
   }
 
   /**
@@ -445,8 +402,7 @@ export class Surface {
     onViewReady?: (
       needsDraw: boolean,
       scene: LayerScene,
-      view: View<IViewProps>,
-      pickingPass: Layer<any, any>[]
+      view: View<IViewProps>
     ) => void
   ) {
     if (!this.gl) return;
@@ -483,43 +439,67 @@ export class Surface {
     const scenes = this.sceneDiffs.items;
     scenes.sort(sortByOrder);
     const erroredLayers: { [key: string]: [Layer<any, any>, Error] } = {};
-    const pickingPassByView = new Map<View<IViewProps>, Layer<any, any>[]>();
 
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
       const scene = scenes[i];
       const views = scene.views;
       const layers = scene.layers;
-      const validLayers: { [key: string]: Layer<any, any> } = {};
 
-      // Make sure the views and layers are ordered such that they render in the appropriate order
+      // Make sure the views and layers are ordered such that they render in the
+      // appropriate order
       views.sort(sortByOrder);
       layers.sort(sortByOrder);
 
       // Loop through the views
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
-        // When this flags true, a picking pass will be rendered for the provided scene / view
-        const pickingPass: Layer<any, any>[] = [];
+        const validLayers: { [key: string]: Layer<any, any> } = {};
 
-        // Get the bounds of the screen to hand to the view
-        const screenBounds = new Bounds<never>({
-          height: this.context.canvas.height,
-          width: this.context.canvas.width,
+        // If this view has information to use, then we should perform steps to
+        // prepare the view for use.
+        if (layers.length > 0) {
+          // Prepare to use the view
+          view.willUseView();
+        }
+
+        // Get the bounds of the current rendering target to aid in calculating
+        // the correct viewport.
+        const rendererSize = this.renderer.getRenderSize();
+
+        let renderTargetBounds = new Bounds<never>({
+          width: rendererSize[0],
+          height: rendererSize[1],
           x: 0,
           y: 0
         });
 
+        // If the view is outputting to target output buffers, then our render
+        // target bounds is that of the buffer and NOT the renderer's size.
+        if (view.renderTarget) {
+          const target = Array.isArray(view.renderTarget)
+            ? view.renderTarget[0]
+            : view.renderTarget;
+          const size = target.getSize();
+
+          renderTargetBounds = new Bounds<never>({
+            width: size[0],
+            height: size[1],
+            x: 0,
+            y: 0
+          });
+        }
+
         // Calculate the bounds of the viewport relative to the screen
         const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
           view.props.viewport,
-          screenBounds,
+          renderTargetBounds,
           this.pixelRatio
         );
 
-        // We must perform any operations necessary to make the view camera fit the viewport
-        // Correctly
-        view.fitViewtoViewport(screenBounds, viewportBounds);
+        // We must perform any operations necessary to make the view camera fit
+        // the viewport Correctly
+        view.fitViewtoViewport(renderTargetBounds, viewportBounds);
 
         // Let the layers update their uniforms before the draw
         for (let j = 0, endj = layers.length; j < endj; ++j) {
@@ -528,8 +508,9 @@ export class Surface {
           // Update the layer with the view it is about to be rendered with
           layer.view = view;
 
-          // Make sure the layer is given the opportunity to update all of it's uniforms
-          // To match the view state and update any unresolved diffs internally
+          // Make sure the layer is given the opportunity to update all of it's
+          // uniforms To match the view state and update any unresolved diffs
+          // internally
           try {
             // Update uniforms, resolve diff changes
             layer.draw();
@@ -540,7 +521,8 @@ export class Surface {
             }
             // Flag the layer as valid
             validLayers[layer.id] = layer;
-            // The view's animationEndTime is the largest end time found on one of the view's child layers.
+            // The view's animationEndTime is the largest end time found on one
+            // of the view's child layers.
             view.animationEndTime = Math.max(
               view.animationEndTime,
               layer.animationEndTime,
@@ -553,16 +535,11 @@ export class Surface {
               erroredLayers[layer.id] = [layer, err];
             }
           }
-
-          // If this layer specifies a picking draw pass, then we shall store it in the current draw order
-          // For that next step
-          if (layer.picking.type === PickType.SINGLE) {
-            pickingPass.push(layer);
-          }
         }
 
-        // Analyze the view's animation end timings and the camera to see if there are view changes
-        // that will trigger a redraw outside of our layer changes
+        // Analyze the view's animation end timings and the camera to see if
+        // there are view changes that will trigger a redraw outside of our
+        // layer changes
         if (
           view.needsDraw ||
           (time && time < view.lastFrameTime) ||
@@ -583,105 +560,37 @@ export class Surface {
           }
         }
 
-        // Store the picking pass for the view to use when the view is ready to draw
-        pickingPassByView.set(view, pickingPass);
-      }
+        // Only include non-errored layers for the scene. We filter the scenes
+        // layer PER view because context can change with a given view thus
+        // making it possible for a layer to error within each view's context.
+        // We render each view after completion of updates, thus the scene needs
+        // to be cleared of errored layers immediately after the view context
+        // has updated.
+        const keepLayers = Object.values(validLayers);
+        if (layers.length !== keepLayers.length) {
+          scene.layerDiffs.diff(keepLayers.map(layer => layer.initializer));
+        }
 
-      // Re-render but only include non-errored layers
-      const keepLayers = Object.values(validLayers);
-      if (layers.length !== keepLayers.length) {
-        scene.layerDiffs.diff(keepLayers.map(layer => layer.initializer));
-      }
-    }
+        // Our scene must have a valid container to operate
+        if (!scene.container) continue;
 
-    // If any draw need was detected, redraw the surface
-    for (let i = 0, end = scenes.length; i < end; ++i) {
-      const scene = scenes[i];
-      // Our scene must have a valid container to operate
-      if (!scene.container) continue;
-      const views = scene.views;
-
-      for (let k = 0, endk = views.length; k < endk; ++k) {
-        const view = views[k];
-
-        // Now perform the rendering
+        // Now perform the rendering for the view.
+        // WHY WE RENDER NOW:
+        // Each layer has a single material representing it. This means uniforms
+        // based on view only get updated when the layer performs it's draw in
+        // the context of each view. So, we have to render the view immediately
+        // after the layer draws in context of it's view and has it's uniforms
+        // updated in that context.
         if (onViewReady) {
-          onViewReady(
-            needsDraw,
-            scene,
-            view,
-            pickingPassByView.get(view) || []
-          );
+          onViewReady(needsDraw, scene, view);
         }
       }
     }
 
-    // Get the layers with errors flagged for them
+    // Get the layers with errors flagged for them and output the issues to the
+    // console.
     const errors = Object.values(erroredLayers);
-
-    if (errors.length > 0) {
-      console.warn(
-        "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
-        errors.map(err => err[0].id)
-      );
-
-      // Output each layer and why it errored
-      errors.forEach(err => {
-        console.warn(`Layer ${err[0].id} removed for the following error:`);
-
-        if (err[1]) {
-          const message = err[1].stack || err[1].message;
-          console.error(message);
-
-          // This is a specific error to instances updating an attribute but returning a value that is larger
-          // than the attribute size. The only way to debug this is to run every instance in the layer and
-          // retrieve it's update value and compare the return to the expected size.
-          if (
-            message.indexOf("RangeError") > -1 ||
-            message.indexOf("Source is too large") > -1
-          ) {
-            const layer = err[0];
-            const changes = layer.bufferManager.changeListContext;
-            let singleMessage:
-              | [string, Instance, IInstanceAttribute<Instance>]
-              | undefined;
-            let errorCount = 0;
-
-            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
-              const [instance] = changes[i];
-              layer.shaderIOInfo.instanceAttributes.forEach(attr => {
-                const check = attr.update(instance);
-                if (check.length !== attr.size) {
-                  if (!singleMessage) {
-                    singleMessage = [
-                      "Example instance returned the wrong sized value for an attribute:",
-                      instance,
-                      attr
-                    ];
-                  }
-
-                  errorCount++;
-                }
-              });
-            }
-
-            if (singleMessage) {
-              console.error(
-                "The following output shows discovered issues related to the specified error"
-              );
-              console.error(
-                "Instances are returning too large IO for an attribute\n",
-                singleMessage[0],
-                singleMessage[1],
-                singleMessage[2],
-                "Total errors for too large IO values",
-                errorCount
-              );
-            }
-          }
-        }
-      });
-    }
+    this.printLayerErrors(errors);
   }
 
   /**
@@ -689,10 +598,9 @@ export class Surface {
    */
   destroy() {
     this.resourceManager.destroy();
-    this.mouseManager.destroy();
+    this.userInputManager.destroy();
     this.sceneDiffs.destroy();
     this.renderer.dispose();
-    this.pickingTarget.dispose();
     delete this.context;
   }
 
@@ -707,15 +615,8 @@ export class Surface {
   async draw(time?: number) {
     if (!this.gl) return;
 
-    // The theoretically least blocking moment for pixels to be read is the
-    // beginning of the next frame right before next frame is rendered. This
-    // will have given optimal time for the GPU to have finished flushing it's
-    // commands. If the GPU has not completed it's tasks by this time, then
-    // we're in a major GPU intensive operation.
-    this.analyzePickRendering();
-    // Gather all of our picking calls to call at the end to prevent readPixels
-    // from becoming a major blocking operation
-    const toPick: [LayerScene, View<IViewProps>, Layer<any, any>[]][] = [];
+    // Update all event managers with the current cycle event.
+    this.broadcastEventManagerCycle(EventManagerBroadcastCycle.WILL_RENDER);
 
     // Before we draw the frame, we must have every camera resolve broadcasting
     // changes so everything can respond to the change before all of the drawing
@@ -731,7 +632,7 @@ export class Surface {
 
     // Make the layers commit their changes to the buffers then draw each scene
     // view on Completion.
-    await this.commit(time, true, (needsDraw, scene, view, pickingPass) => {
+    await this.commit(time, true, (needsDraw, scene, view) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
 
@@ -739,19 +640,13 @@ export class Surface {
         // Now perform the rendering
         this.drawSceneView(scene.container, view);
       }
-
-      // If a layer needs a picking pass, then perform a picking draw pass only
-      // if a request for the color pick has been made, then we query the pixels
-      // rendered to our picking target
-      if (pickingPass.length > 0 && this.updateColorPick) {
-        toPick.push([scene, view, pickingPass]);
-      }
     });
 
-    // After we have drawn our views of our scenes, we can now ensure all of the bounds
-    // Are updated in the interactions and flag our interactions ready for mouse input
-    if (this.mouseManager.waitingForRender) {
-      this.mouseManager.waitingForRender = false;
+    // After we have drawn our views of our scenes, we can now ensure all of the
+    // bounds Are updated in the interactions and flag our interactions ready
+    // for mouse input
+    if (this.userInputManager.waitingForRender) {
+      this.userInputManager.waitingForRender = false;
     }
 
     // Now that all of our layers have performed updates to everything, we can
@@ -789,149 +684,11 @@ export class Surface {
       }
     }
 
-    // We render color picking to our color picking render target, but we save it's result for the beginning of next
-    // frame. The longest delay picking can cause is from the readPixels operation being CPU blocking. Additionally, the
-    // block will cause a full GPU sync to happen before the picels are read which means the CPU and GPU  are blocked
-    // from adiditional operations UNTIL ALL of the current operations are completed first. Thus, readPixels at the
-    // beginning of next frame makes the most sense as all operations should be assurred to be completed before then.
-    for (let i = 0, iMax = toPick.length; i < iMax; ++i) {
-      const picking = toPick[i];
-      const didDraw = this.drawPicking(picking[0], picking[1], picking[2]);
-
-      if (
-        didDraw &&
-        picking.length > 0 &&
-        !picking[1].optimizeRendering &&
-        this.updateColorPick
-      ) {
-        if (!this.queuedPicking) this.queuedPicking = [];
-        this.queuedPicking.push([
-          picking[0],
-          picking[1],
-          picking[2],
-          this.updateColorPick.position
-        ]);
-      }
-    }
-
-    // Clear out the flag requesting a pick pass so we don't perform a pick render pass unless we have
-    // another requested from mouse interactions
-    delete this.updateColorPick;
-
-    // Uncomment this to see a minimap of the picking render target in real time. Crashes performance, but makes it much
-    // easier to fix underlying bugs when you can see the output pipeline properly.
-    // debugRenderTarget(this.renderer, this.pickingTarget);
-
-    // Dequeue rendering debugs
-    // flushDebug();
-  }
-
-  /**
-   * NOTE: This is a temp way to handle picking. Picking will be handled with MRT once that pipeline is set up.
-   *
-   * This renders a selected scene/view into our picking target. Settings get adjusted
-   */
-  private drawPicking(
-    scene: LayerScene,
-    view: View<IViewProps>,
-    pickingPass: Layer<any, any>[]
-  ) {
-    if (!this.updateColorPick) return false;
-    if (!scene.container) return false;
-    // Optimized rendering of the view will make the view discard picking rendering
-    if (view.optimizeRendering) return false;
-
-    // Get the requested metrics for the pick
-    const views = this.updateColorPick.views;
-
-    // Ensure the view provided is a view that is registered with this surface
-    if (views.indexOf(view) > -1) {
-      // Picking uses a pixel ratio of 1
-      view.pixelRatio = 1.0;
-      // Get the current flags for the view
-      const flags = view.clearFlags.slice(0);
-      // Store the current background of the view
-      const background = view.props.background && copy4(view.props.background);
-      // Set color rendering flag
-      view.props.clearFlags = [ClearFlags.COLOR, ClearFlags.DEPTH];
-      // Set the view's background to a solid black so we don't interfere with color encoding
-      view.props.background = [0, 0, 0, 0];
-
-      // We change the bounds for the view to occupy relative to the render target
-      let screenBounds = new Bounds<never>({
-        height: this.pickingTarget.height,
-        width: this.pickingTarget.width,
-        x: 0,
-        y: 0
-      });
-
-      // Calculate the bounds the viewport will occupy relative to the render target's space
-      let viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
-        view.props.viewport,
-        screenBounds,
-        1.0
-      );
-
-      // We must perform any operations necessary to make the view camera fit the viewport
-      // Correctly with the possibly adjusted pixel ratio
-      view.fitViewtoViewport(screenBounds, viewportBounds);
-
-      // We must redraw the layers so they will update their uniforms to adapt to a picking pass
-      for (let j = 0, endj = pickingPass.length; j < endj; ++j) {
-        const layer = pickingPass[j];
-        // Adjust the layer to utilize the proper pick mode, thus causing the layer to properly
-        // Set it's uniforms into a pick mode.
-        layer.picking.currentPickMode = PickType.SINGLE;
-
-        // Update the layer's material uniforms and avoid causing the changelist to attempt updates again
-        try {
-          layer.updateUniforms();
-        } catch (err) {
-          /** No-op, the first draw should have output an error for bad draw calls */
-          console.warn(err);
-        }
-
-        layer.picking.currentPickMode = PickType.NONE;
-      }
-
-      // Draw the scene with our picking target as the target
-      this.drawSceneView(
-        scene.container,
-        view,
-        this.renderer,
-        this.pickingTarget
-      );
-
-      // Return the pixel ratio back to the rendered ratio
-      view.pixelRatio = this.pixelRatio;
-      // Return the view's clear flags
-      view.props.clearFlags = flags;
-      // Return the view's background color
-      view.props.background = background;
-
-      // Revert the bounds back to being relative to the screen space
-      screenBounds = new Bounds<never>({
-        height: this.context.canvas.height,
-        width: this.context.canvas.width,
-        x: 0,
-        y: 0
-      });
-
-      // Calculate the bounds the viewport will occupy relative to the screen space
-      viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
-        view.props.viewport,
-        screenBounds,
-        this.pixelRatio
-      );
-
-      // After reverting the pixel ratio, we must return to the state we came from so that mouse interactions
-      // will work properly
-      view.fitViewtoViewport(screenBounds, viewportBounds);
-
-      return true;
-    }
-
-    return false;
+    // Update all event managers with the current cycle event.
+    this.broadcastEventManagerCycle(EventManagerBroadcastCycle.DID_RENDER);
+    // Clear out the flag requesting a pick pass so we don't perform a pick
+    // render pass unless we have another requested from mouse interactions
+    this.enabledOptimizedOutputs.clear();
   }
 
   /**
@@ -950,6 +707,28 @@ export class Surface {
     const background = view.props.background || DEFAULT_BACKGROUND_COLOR;
     const willClearColorBuffer = view.clearFlags.indexOf(ClearFlags.COLOR) > -1;
     const renderTarget = target || view.renderTarget || null;
+
+    // If the update color pick is flagged, we make sure the view's picking
+    // output type is enabled.
+    if (view.renderTarget) {
+      // Disable all optimized output targets
+      const targets = view.getRenderTargets();
+      targets.forEach(target =>
+        this.optimizedOutputs.forEach(outputTarget =>
+          target.disabledTargets.add(outputTarget)
+        )
+      );
+
+      // Enable any targets that were specified
+      if (this.enabledOptimizedOutputs.size > 0) {
+        const targets = view.getRenderTargets();
+        targets.forEach(target =>
+          this.enabledOptimizedOutputs.forEach(outputTarget =>
+            target.disabledTargets.delete(outputTarget)
+          )
+        );
+      }
+    }
 
     // If the view has an output target to render into, then we shift our target
     // focus to that target Make sure the correct render target is applied
@@ -1003,12 +782,41 @@ export class Surface {
   }
 
   /**
+   * This must be executed when the canvas changes size so that we can
+   * re-calculate the scenes and views dimensions for handling all of our
+   * rendered elements.
+   */
+  fitContainer(_pixelRatio?: number) {
+    if (isOffscreenCanvas(this.context.canvas)) return;
+    const container = this.context.canvas.parentElement;
+
+    if (container) {
+      const canvas = this.context.canvas;
+      canvas.className = "";
+      canvas.setAttribute("style", "");
+      container.style.position = "relative";
+      canvas.style.position = "absolute";
+      canvas.style.left = "0xp";
+      canvas.style.top = "0xp";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.setAttribute("width", "");
+      canvas.setAttribute("height", "");
+      const containerBox = container.getBoundingClientRect();
+      const box = canvas.getBoundingClientRect();
+
+      this.resize(box.width || 100, containerBox.height || 100);
+    }
+  }
+
+  /**
    * This gathers all the overlap views of every view
    */
   private gatherViewDrawDependencies() {
     if (!this.sceneDiffs) return;
     this.viewDrawDependencies.clear();
     const scenes = this.sceneDiffs.items;
+    const rendererSize = this.renderer.getRenderSize();
 
     // Fit all views to viewport
     for (let i = 0, endi = scenes.length; i < endi; i++) {
@@ -1016,25 +824,42 @@ export class Surface {
 
       for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
         const view = scene.views[k];
+        view.willUseView();
 
         // To look for the overlaps of the view in screen space, we must
         // calculate the view's viewport bounds relative to the screenspace.
-        const screenBounds = new Bounds<never>({
-          height: this.context.canvas.height,
-          width: this.context.canvas.width,
+        let renderTargetBounds = new Bounds<never>({
+          width: rendererSize[0],
+          height: rendererSize[1],
           x: 0,
           y: 0
         });
+
+        // If the view is outputting to target output buffers, then our render
+        // target bounds is that of the buffer and NOT the renderer's size.
+        if (view.renderTarget) {
+          const target = Array.isArray(view.renderTarget)
+            ? view.renderTarget[0]
+            : view.renderTarget;
+          const size = target.getSize();
+
+          renderTargetBounds = new Bounds<never>({
+            width: size[0],
+            height: size[1],
+            x: 0,
+            y: 0
+          });
+        }
 
         // Calculate the bounds the viewport will occupy relative to the screen
         // space
         const viewportBounds = getAbsolutePositionBounds<View<IViewProps>>(
           view.props.viewport,
-          screenBounds,
+          renderTargetBounds,
           this.pixelRatio
         );
 
-        view.fitViewtoViewport(screenBounds, viewportBounds);
+        view.fitViewtoViewport(renderTargetBounds, viewportBounds);
         view.props.camera.update(true);
       }
     }
@@ -1067,6 +892,42 @@ export class Surface {
   }
 
   /**
+   * As users interact with the surface, this provides a quick way to view the
+   * latest interaction that occurred from User events.
+   */
+  getCurrentInteraction() {
+    return this.userInputManager.currentInteraction;
+  }
+
+  /**
+   * Retrieves all IO Expanders applied to this surface
+   */
+  getIOExpanders() {
+    return this.ioExpanders;
+  }
+
+  /**
+   * Retrieves the controller for sorting the IO for the layers.
+   */
+  getIOSorting() {
+    return this.ioSorting;
+  }
+
+  /**
+   * Retrieves all shader transforms applied to this surface.
+   */
+  getShaderTransforms() {
+    return this.shaderTransforms;
+  }
+
+  /**
+   * Retrieves all outputs the surface
+   */
+  getOptimizedOutputs() {
+    return this.enabledOptimizedOutputs;
+  }
+
+  /**
    * This allws for querying a view's screen bounds. Null i;s returned if the
    * view id specified does not exist.
    */
@@ -1074,7 +935,11 @@ export class Surface {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
       const view = scene.viewDiffs.getByKey(viewId);
-      if (view) return view.screenBounds;
+
+      if (view) {
+        if (view.renderTarget) return view.viewBounds;
+        return view.screenBounds;
+      }
     }
 
     return null;
@@ -1158,9 +1023,13 @@ export class Surface {
     this.context = context;
 
     if (this.gl) {
+      // Add in the specified optimized output targets
+      options.optimizedOutputTargets?.forEach(target =>
+        this.optimizedOutputs.add(target)
+      );
       // Initialize our event manager that handles mouse interactions/gestures
       // with the canvas
-      this.initMouseManager(options);
+      this.initUserInputManager(options);
       // Initialize any resources requested or needed, such as textures or
       // rendering surfaces
       await this.initResources(options);
@@ -1243,28 +1112,6 @@ export class Surface {
       this.resourceManager.setWebGLRenderer(this.renderer);
     }
 
-    // Generate a target for the picking pass
-    this.pickingTarget = new RenderTarget({
-      buffers: {
-        color: {
-          buffer: new Texture({
-            generateMipMaps: false,
-            data: {
-              width,
-              height,
-              buffer: null
-            }
-          }),
-          outputType: 0
-        },
-        depth: GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16
-      },
-      // We want a target with a pixel ratio of just 1, which will be more than
-      // enough accuracy for mouse picking
-      width,
-      height
-    });
-
     // This sets the pixel ratio to handle differing pixel densities in screens
     this.setRendererSize(width, height);
     // Set the pixel ratio to match the pixel density of the monitor in use
@@ -1329,7 +1176,7 @@ export class Surface {
   /**
    * Initializes elements for handling mouse interactions with the canvas.
    */
-  private initMouseManager(options: ISurfaceOptions) {
+  private initUserInputManager(options: ISurfaceOptions) {
     // We must inject an event manager to broadcast events through the layers
     // themselves
     const eventManagers: EventManager[] = ([
@@ -1337,7 +1184,7 @@ export class Surface {
     ] as EventManager[]).concat(options.eventManagers || []);
 
     // Generate the mouse manager for the layer
-    this.mouseManager = new UserInputEventManager(
+    this.userInputManager = new UserInputEventManager(
       this.context.canvas,
       this,
       eventManagers,
@@ -1393,30 +1240,74 @@ export class Surface {
   }
 
   /**
-   * This must be executed when the canvas changes size so that we can
-   * re-calculate the scenes and views dimensions for handling all of our
-   * rendered elements.
+   * Handles printing discovered issues with layers to the console to help with
+   * transparency for developing and debugging.
    */
-  fitContainer(_pixelRatio?: number) {
-    if (isOffscreenCanvas(this.context.canvas)) return;
-    const container = this.context.canvas.parentElement;
+  private printLayerErrors(errors: [Layer<any, any>, Error][]) {
+    if (errors.length > 0) {
+      console.warn(
+        "Some layers errored during their draw update. These layers will be removed. They can be re-added if render() is called again:",
+        errors.map(err => err[0].id)
+      );
 
-    if (container) {
-      const canvas = this.context.canvas;
-      canvas.className = "";
-      canvas.setAttribute("style", "");
-      container.style.position = "relative";
-      canvas.style.position = "absolute";
-      canvas.style.left = "0xp";
-      canvas.style.top = "0xp";
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      canvas.setAttribute("width", "");
-      canvas.setAttribute("height", "");
-      const containerBox = container.getBoundingClientRect();
-      const box = canvas.getBoundingClientRect();
+      // Output each layer and why it errored
+      errors.forEach(err => {
+        console.warn(`Layer ${err[0].id} removed for the following error:`);
 
-      this.resize(box.width || 100, containerBox.height || 100);
+        if (err[1]) {
+          const message = err[1].stack || err[1].message;
+          console.error(message);
+
+          // This is a specific error to instances updating an attribute but
+          // returning a value that is larger than the attribute size. The only
+          // way to debug this is to run every instance in the layer and
+          // retrieve it's update value and compare the return to the expected
+          // size.
+          if (
+            message.indexOf("RangeError") > -1 ||
+            message.indexOf("Source is too large") > -1
+          ) {
+            const layer = err[0];
+            const changes = layer.bufferManager.changeListContext;
+            let singleMessage:
+              | [string, Instance, IInstanceAttribute<Instance>]
+              | undefined;
+            let errorCount = 0;
+
+            for (let i = 0, iMax = changes.length; i < iMax; ++i) {
+              const [instance] = changes[i];
+              layer.shaderIOInfo.instanceAttributes.forEach(attr => {
+                const check = attr.update(instance);
+                if (check.length !== attr.size) {
+                  if (!singleMessage) {
+                    singleMessage = [
+                      "Example instance returned the wrong sized value for an attribute:",
+                      instance,
+                      attr
+                    ];
+                  }
+
+                  errorCount++;
+                }
+              });
+            }
+
+            if (singleMessage) {
+              console.error(
+                "The following output shows discovered issues related to the specified error"
+              );
+              console.error(
+                "Instances are returning too large IO for an attribute\n",
+                singleMessage[0],
+                singleMessage[1],
+                singleMessage[2],
+                "Total errors for too large IO values",
+                errorCount
+              );
+            }
+          }
+        }
+      });
     }
   }
 
@@ -1433,7 +1324,7 @@ export class Surface {
 
     this.setRendererSize(width, height);
     this.renderer.setPixelRatio(this.pixelRatio);
-    this.mouseManager.resize();
+    this.userInputManager.resize();
     this.resourceManager.resize();
 
     if (this.sceneDiffs) {
@@ -1469,8 +1360,8 @@ export class Surface {
   }
 
   /**
-   * This applies a new size to the renderer and resizes any additional resources that requires being
-   * sized along with the renderer.
+   * This applies a new size to the renderer and resizes any additional
+   * resources that requires being sized along with the renderer.
    */
   private setRendererSize(width: number, height: number) {
     width = width || 100;
@@ -1478,19 +1369,13 @@ export class Surface {
 
     // Set the canvas size for the renderer
     this.renderer.setSize(width, height);
-    // Set the picking target size to be the dimensions of our renderer as well
-    this.pickingTarget.setSize(width, height);
   }
 
   /**
-   * This triggers an update to all of the layers that perform picking, the pixel data
-   * within the specified mouse range.
+   * This allows a specified optimized output target to render next draw.
    */
-  updateColorPickPosition(position: Vec2, views: View<IViewProps>[]) {
+  enableOptimizedOutput(output: number) {
     // We will flag the color range as needing an update
-    this.updateColorPick = {
-      position,
-      views
-    };
+    this.enabledOptimizedOutputs.add(output);
   }
 }

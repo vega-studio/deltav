@@ -6,8 +6,19 @@ import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { createUniform } from "../../util";
 import { ISceneGraphLayerProps, SceneGraphLayer } from "./scene-graph-layer";
 
+const doc = `
+When working with SceneGraphLayers, the
+layer can have a transform applied to
+the layer. This makes that transform
+available in the parentTransform
+constant.
+
+mat4 parentTransform;
+`;
+
 ShaderModule.register({
   moduleId: "parent-transform",
+  description: doc,
   compatibility: ShaderInjectionTarget.VERTEX,
   content: "",
   uniforms: layer => {

@@ -237,9 +237,9 @@ export function indexToColorAttachment(
     if (glExt instanceof WebGL2RenderingContext) {
       switch (index) {
         case -2:
-          return glExt.BACK;
+          return gl.BACK;
         case -1:
-          return glExt.NONE;
+          return gl.NONE;
         case 0:
           return glExt.DRAW_BUFFER0;
         case 1:
@@ -321,9 +321,9 @@ export function indexToColorAttachment(
     if (glExt instanceof WebGL2RenderingContext) {
       switch (index) {
         case -2:
-          return glExt.BACK;
+          return gl.BACK;
         case -1:
-          return glExt.NONE;
+          return gl.NONE;
         case 0:
           return glExt.COLOR_ATTACHMENT0;
         case 1:

@@ -148,8 +148,7 @@ export class BoxOfCircles extends BaseExample {
     return createLayer(CircleLayer, {
       animate: this.animationControl,
       data: provider,
-      key: "box-of-circles",
-      scaleFactor: () => this.camera.scale2D[0]
+      key: "box-of-circles"
     });
   }
 

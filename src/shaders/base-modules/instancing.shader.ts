@@ -8,11 +8,23 @@ import {
 } from "../../types";
 import { ShaderModule } from "../processing";
 
+const doc = `
+This is an internal shader module that
+helps establish the instancing system.
+Not recommended for use unless you
+really know how to utilize it properly.
+
+Attributes:
+float _active;
+float instance;
+`;
+
 /**
  * This module contains the basic needs required to facilitate instancing for our shaders
  */
 ShaderModule.register({
   moduleId: "instancing",
+  description: doc,
   content: "",
   compatibility: ShaderInjectionTarget.ALL,
 

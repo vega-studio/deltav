@@ -86,8 +86,7 @@ export class MouseInteractionColorPicking extends BaseExample {
         onMouseOut: this.handleCircleOut,
         onMouseOver: this.handleCircleOver,
         opacity: () => 0.5,
-        picking: PickType.SINGLE,
-        scaleFactor: () => 1
+        picking: PickType.SINGLE
       }),
       createLayer(EdgeLayer, {
         animate: {

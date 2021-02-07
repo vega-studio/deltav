@@ -115,24 +115,15 @@ export class RenderTextureResourceManager extends BaseResourceManager<
       // Only do a resize of a texture if any of it's dimensions are tied to the
       // screen.
       if (
-        resource.width !== TextureSize._SCREEN &&
-        resource.height !== TextureSize._SCREEN
+        resource.width > TextureSize.SCREEN &&
+        resource.height > TextureSize.SCREEN
       ) {
         return;
       }
 
       // Remove the old texture
       resource.texture.dispose();
-      const rendererSize = this.webGLRenderer?.getRenderSize() || [1, 1];
-
-      if (resource.width === TextureSize._SCREEN) {
-        resource.width = rendererSize[0];
-      }
-
-      if (resource.height === TextureSize._SCREEN) {
-        resource.height = rendererSize[1];
-      }
-
+      // Regenerate the resource with the new dimensions
       resource = new RenderTexture(resource, this.webGLRenderer);
       toUpdate.set(key, resource);
     });

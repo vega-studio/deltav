@@ -4,18 +4,27 @@ import { ShaderModule } from "../../shaders";
 import { Layer } from "../../surface/layer";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
 
+const doc = `
+This is a special helper module used by
+the system to map View2D content into
+a 3D world space. The system utilizes
+this module automatically for you when
+you utilize createLayer2Din3D.
+`;
+
 /**
  * This module changes the projections for Layer2D style layers to map [x, y] -> [x, z]
  */
 ShaderModule.register([
   {
     moduleId: "world2DXY",
+    description: doc,
     content: require("../../2d/shader-modules/shader-fragments/world-2d-projection.vs"),
     compatibility: ShaderInjectionTarget.ALL,
     uniforms: (layer: Layer<any, any>) => {
       if (!(layer instanceof Layer2D)) {
         console.warn(
-          "A shader requesed the module world2DXZ; however, the layer the shader comes from is NOT a Layer2D which is",
+          "A shader requested the module world2DXZ; however, the layer the shader comes from is NOT a Layer2D which is",
           "required for the module to work."
         );
         return [];

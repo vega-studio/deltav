@@ -7,7 +7,7 @@ import {
   LayerInitializer
 } from "../../../surface/layer";
 import { InstanceDiffType, newLineRegEx } from "../../../types";
-import { createLayer } from "../../../util/create-util";
+import { createLayer } from "../../../util/create-layer";
 import { AnchorType, ScaleMode } from "../../types";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { BorderInstance } from "./border-instance";

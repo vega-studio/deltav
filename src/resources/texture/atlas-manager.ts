@@ -566,22 +566,39 @@ export class AtlasManager {
     geometry.addAttribute("position", positionAttr);
     geometry.addAttribute("texCoord", texAttr);
 
+    // Now we create a render target that will render to our new texture
+    const renderTarget = new RenderTarget({
+      buffers: {
+        color: { buffer: newAtlasTexture, outputType: 0 }
+      },
+      retainTextureTargets: true
+    });
+
     // Make a simple material that will handle the
     const material = new Material({
       culling: GLSettings.Material.CullSide.NONE,
       uniforms: {
         texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture }
       },
-      fragmentShader: `
-        precision highp float;
+      fragmentShader: new Map([
+        [
+          renderTarget,
+          {
+            outputNames: [],
+            outputTypes: [0],
+            source: `
+          precision highp float;
 
-        uniform sampler2D texture;
-        varying vec2 _texCoord;
+          uniform sampler2D texture;
+          varying vec2 _texCoord;
 
-        void main() {
-          gl_FragColor = texture2D(texture, _texCoord);
-        }
-      `,
+          void main() {
+            gl_FragColor = texture2D(texture, _texCoord);
+          }
+        `
+          }
+        ]
+      ]),
       vertexShader: `
         precision highp float;
 
@@ -599,14 +616,6 @@ export class AtlasManager {
     const model = new Model(geometry, material);
     model.vertexCount = allNodes.length * 6;
     model.drawMode = GLSettings.Model.DrawMode.TRIANGLES;
-
-    // Now we create a render target that will render to our new texture
-    const renderTarget = new RenderTarget({
-      buffers: {
-        color: newAtlasTexture
-      },
-      retainTextureTargets: true
-    });
 
     // Make a dummy scene to cram our model into
     const scene = new Scene();

@@ -1,3 +1,23 @@
+## 2.0.0
+
+## Breaking
+
+- [`BREAKING`]: Color picking is now controlled by the implementation so decisions on when the GPU executes read pixels is now controlled. Additionally, color picking is integrated into the concepts of MRT so layers benefit from single draw call outputs.
+- [`BREAKING`]: For some cases, writing gl_FragColor is no longer supported. You must write in an output in your main method ${out: color} = something.
+
+## Added
+
+- [`ADDED`]: Float array now supported by uniforms.
+- [`ADDED`]: Render Target and Multiple Render Target support to render output to a specified Texture utilizing Views. This includes upgrades to how Layers are written so they can be compatible with a multiple Render Target types but still optimize themselves to only compute what is needed for available and compatible render targets for a given pipeline.
+- [`ADDED`]: Optimize output targets for your MRT system. You can now make specific target types disabled by default and will not be enabled unless expressly called to do so.
+- [`ADDED`]: Post processing is available along with helper methods for some common techniques, as well as helpers to create your own post processing effects to combine Texture information into another destination.
+- [`ADDED`]: Shader support for MRT. Write multiple fragment shaders that will be optimally combined and utilized in rendering, but write only what you need per output.
+- [`ADDED`]: Script for generating shader modules snippets for your VSCode environment. Makes import statements available in your code hinting for ShaderModules created.
+
+## Fixed
+
+- [`FIXED`]: Double rendering per frame has been removed. Major performance boost from fixing this major oversight.
+
 ## 1.39.0
 
 ## Added

@@ -118,8 +118,7 @@ export class PhysicsDemo extends BaseDemo {
                 center: AutoEasingMethod.linear(PHYSICS_FRAME)
               },
               data: providers.circles,
-              key: `circles`,
-              scaleFactor: () => cameras.main.scale2D[0]
+              key: `circles`
             })
           ]
         }

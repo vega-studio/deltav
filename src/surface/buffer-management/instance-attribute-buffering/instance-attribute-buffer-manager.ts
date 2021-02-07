@@ -319,6 +319,7 @@ export class InstanceAttributeBufferManager<
    * This generates a new buffer of uniforms to associate instances with.
    */
   private resizeBuffer() {
+    debug("Gathering resize growth amount...");
     // Get the shader io information from the layer to reduce deep references
     const shaderIOInfo = this.layer.shaderIOInfo;
     // This stores how much the buffer will be able to regrow
@@ -425,7 +426,7 @@ export class InstanceAttributeBufferManager<
       this.geometry.maxInstancedCount = 0;
       // This is the material that is generated for the layer that utilizes all of the generated and
       // Injected shader IO and shader fragments
-      this.material = shaderIOInfo.material.clone();
+      this.material = this.makeLayerMaterial();
 
       // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
       // We can keep uniforms consistent across all Instances
@@ -462,11 +463,19 @@ export class InstanceAttributeBufferManager<
 
         if (bufferAttribute.data instanceof Float32Array) {
           // Make a new buffer that is the proper size
-          const buffer: Float32Array = new Float32Array(
-            this.maxInstancedCount * size
-          );
-          // Retain all of the information in the previous buffer
-          buffer.set(bufferAttribute.data, 0);
+          let buffer: Float32Array = bufferAttribute.data;
+
+          // OPTIMIZATION:
+          // Sneaky trick. We do buffer doubling behind the scenes to reduce
+          // these mass allocations and destructions. The background buffer gets
+          // double space, but everything else in JS land operates as though
+          // it's a tightly fitted buffer.
+          if (buffer.length < this.maxInstancedCount * size) {
+            buffer = new Float32Array(this.maxInstancedCount * size * 2);
+            // Retain all of the information in the previous buffer
+            buffer.set(bufferAttribute.data, 0);
+          }
+
           // Make our new attribute based on the grown buffer
           const newAttribute = new Attribute(buffer, size, true, true);
           // Set the attribute to dynamic so we can update ranges within it
@@ -498,12 +507,19 @@ export class InstanceAttributeBufferManager<
             );
           }
 
+          // Set up some optimizations for this loop
+          let newLocation: IInstanceAttributeBufferLocation;
+          let index = newBufferLocations.length;
+          const added = this.maxInstancedCount - previousInstanceAmount;
+          newBufferLocations.length += added;
+          allLocations.length += added;
+
           for (
             let i = previousInstanceAmount, end = this.maxInstancedCount;
             i < end;
-            ++i
+            ++i, ++index
           ) {
-            const newLocation: IInstanceAttributeBufferLocation = {
+            newLocation = {
               attribute,
               buffer: {
                 value: buffer
@@ -512,8 +528,8 @@ export class InstanceAttributeBufferManager<
               range: [i * size, i * size + size]
             };
 
-            newBufferLocations.push(newLocation);
-            allLocations.push(newLocation);
+            newBufferLocations[index] = newLocation;
+            allLocations[i] = newLocation;
           }
         }
       }
@@ -528,12 +544,12 @@ export class InstanceAttributeBufferManager<
     }
 
     // Ensure material is defined
-    this.material = this.material || shaderIOInfo.material.clone();
+    this.material = this.material || this.makeLayerMaterial();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.geometry,
       this.material,
-      shaderIOInfo.model.drawMode
+      shaderIOInfo.drawMode
     );
 
     // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.

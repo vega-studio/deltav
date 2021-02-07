@@ -9,22 +9,29 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  commands,
   createLayer,
+  createTexture,
   createView,
   EasingUtil,
+  FragmentOutputType,
   IMouseInteraction,
   InstanceProvider,
   ITouchInteraction,
   length2,
   nextFrame,
   onFrame,
+  PickType,
+  PostEffect,
   scale2,
+  SimpleEventHandler,
   Size,
+  TextureSize,
   Vec2,
   Vec2Compat,
+  Vec4,
   View2D
 } from "../../../src";
-import { SimpleEventHandler } from "../../../src/event-management/simple-event-handler";
 import { BaseDemo } from "../../common/base-demo";
 
 const { random } = Math;
@@ -106,26 +113,6 @@ export class BasicDemo extends BaseDemo {
     this.providers.circles.clear();
   }
 
-  /**
-   * I wanted to see what a JSX version of this config would look like to see if it was more
-   * readable than JS objects or if it was too verbose:
-
-    <Scene key='default'>
-      <Views>
-        <View key='default' camera={this.camera} background={[0, 0, 0, 1]} viewPort={{left: 0, right: '100%', top: 0, bottom: '100%'}} />
-      </Views>
-      <Layers>
-        <Layer
-          type={CircleLayer}
-          key='circles'
-          animate={{center: AutoEasingMethod.easeInOutQuad(1000, 100, AutoEasingLoopStyle.NONE)}}
-          data={{this.providers.circle}}
-          scaleFactor={() => this.camera.scale[0]}
-        />
-      </Layers>
-    </Scene>
-
-  */
   makeSurface(container: HTMLElement) {
     return new BasicSurface({
       container,
@@ -133,10 +120,27 @@ export class BasicDemo extends BaseDemo {
       cameras: {
         main: new Camera2D()
       },
+      resources: {
+        color: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false
+          }
+        }),
+        picking: createTexture({
+          width: TextureSize.SCREEN_QUARTER,
+          height: TextureSize.SCREEN_QUARTER,
+          textureSettings: {
+            generateMipMaps: false
+          }
+        })
+      },
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["main.main"]
+          startView: ["main.main"],
+          ignoreCoverViews: true
         }),
         clickScreen: new SimpleEventHandler({
           handleClick: (e: IMouseInteraction) => {
@@ -153,17 +157,40 @@ export class BasicDemo extends BaseDemo {
           }
         })
       }),
-      scenes: (_resources, providers, cameras) => ({
+      scenes: (resources, providers, cameras) => ({
+        preRender: commands(surface => {
+          surface.commands.decodePicking();
+        }),
         main: {
           views: {
             main: createView(View2D, {
               camera: cameras.main,
               background: [0, 0, 0, 1],
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              output: {
+                buffers: {
+                  [FragmentOutputType.COLOR]: resources.color
+                },
+                depth: true
+              }
+            }),
+            pick: createView(View2D, {
+              camera: cameras.main,
+              screenScale: [4, 4],
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              pixelRatio: 0.5,
+              output: {
+                buffers: {
+                  [FragmentOutputType.PICKING]: resources.picking
+                },
+                depth: true
+              }
             })
           },
           layers: {
             circles: createLayer(CircleLayer, {
+              printShader: true,
               animate: {
                 center: AutoEasingMethod.easeInOutCubic(
                   2000,
@@ -171,11 +198,25 @@ export class BasicDemo extends BaseDemo {
                   AutoEasingLoopStyle.NONE
                 )
               },
+
               data: providers.circles,
-              scaleFactor: () => cameras.main.scale2D[0],
-              usePoints: true
+              usePoints: true,
+              picking: PickType.SINGLE,
+
+              onMouseOver: info => {
+                info.instances.forEach(i => (i.color = [1, 1, 1, 1]));
+              },
+
+              onMouseOut: info => {
+                info.instances.forEach(i => (i.color = this.makeColor()));
+              }
             })
           }
+        },
+        postEffects: {
+          toScreen: PostEffect.draw({
+            input: resources.color
+          })
         }
       })
     });
@@ -185,13 +226,17 @@ export class BasicDemo extends BaseDemo {
     if (!this.surface) return;
     await this.surface.ready;
 
-    this.screen = this.surface.getViewScreenSize("main.main");
+    this.screen = this.surface.getViewScreenSize(
+      scenes => scenes.main.views.main
+    );
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeCircle();
     }
+  }
 
-    this.shakeCircles();
+  makeColor(): Vec4 {
+    return [0, random(), random(), 1.0];
   }
 
   makeCircle() {
@@ -199,7 +244,7 @@ export class BasicDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * this.screen[0], random() * this.screen[1]],
         radius: random() * 10 + 2,
-        color: [0, random(), random(), 1.0]
+        color: this.makeColor()
       })
     );
 
@@ -251,18 +296,5 @@ export class BasicDemo extends BaseDemo {
   removeCircle() {
     const circle = this.circles.pop();
     if (circle) this.providers.circles.remove(circle);
-  }
-
-  shakeCircles() {
-    clearTimeout(this.shakeTimer);
-
-    this.shakeTimer = window.setTimeout(() => {
-      this.circles.forEach(circle => {
-        circle.center = [
-          circle.center[0] + random() * 10 - 5,
-          circle.center[1] + random() * 10 - 5
-        ];
-      });
-    }, 100);
   }
 }

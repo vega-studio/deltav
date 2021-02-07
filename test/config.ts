@@ -7,6 +7,7 @@ import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
 import { FrameCommandDemo } from "./demos/frame-command-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
+import { MultiRenderTargetDemo3D } from "./demos/multi-render-target-demo";
 import { NodesEdges } from "./demos/nodes-edges";
 import { PhysicsDemo } from "./demos/physics-demo";
 import { ProjectionDemo3D } from "./demos/projection-demo-3d";
@@ -45,5 +46,6 @@ demos.set("text-demo", TextDemo);
 demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
 demos.set("word-sand", WordSandDemo);
+demos.set("multiple-render-targets", MultiRenderTargetDemo3D);
 
 export const demoKeys = Array.from(demos.keys());

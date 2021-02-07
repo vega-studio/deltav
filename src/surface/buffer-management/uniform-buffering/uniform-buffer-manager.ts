@@ -8,7 +8,7 @@ import {
 import { Instance } from "../../../instance-provider";
 import { Vec2, Vec4 } from "../../../math";
 import { IInstanceAttribute } from "../../../types";
-import { uid } from "../../../util";
+import { uid } from "../../../util/uid";
 import { Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
@@ -248,12 +248,12 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
 
     // This is the material that is generated for the layer that utilizes all of the generated and
     // Injected shader IO and shader fragments
-    const newMaterial = shaderIOInfo.material.clone();
+    const newMaterial = this.makeLayerMaterial();
     // Now make a Model for the buffer so it can be rendered withn the scene
     const newModel = generateLayerModel(
       newGeometry,
       newMaterial,
-      shaderIOInfo.model.drawMode
+      shaderIOInfo.drawMode
     );
     // Ensure the draw range covers every instance in the geometry.
     newModel.vertexDrawRange = [

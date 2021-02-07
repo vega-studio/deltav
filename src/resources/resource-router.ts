@@ -165,6 +165,15 @@ export class ResourceRouter {
   }
 
   /**
+   * Triggers when the context we are rendering into has resized. This simply
+   * passes the resize trigger down to the managers so they can adjust context
+   * specific resources for the adjustment.
+   */
+  resize() {
+    this.managers.forEach(manager => manager.resize());
+  }
+
+  /**
    * Every resource type needs a manager associated with it so it can have requests processed. This
    * allows a manager to be set for a resource type.
    */

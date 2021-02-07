@@ -12,6 +12,12 @@ export declare class Texture {
     get uid(): number;
     private _uid;
     /**
+     * Indicates this Texture has been disposed, meaning it is useless and invalid
+     * to use within the application.
+     */
+    get disposed(): boolean;
+    private _disposed;
+    /**
      * Anisotropic filtering level. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      * https://blog.tojicode.com/2012/03/anisotropic-filtering-in-webgl.html
@@ -20,9 +26,10 @@ export declare class Texture {
     set anisotropy(val: Texture["_anisotropy"]);
     private _anisotropy;
     /**
-     * The data to apply to the GPU for the image. If no data is to be uploaded to the texture,
-     * use width and height object. You would do this for render target textures such as depth textures
-     * or color buffer textures where the GPU writes the initial data into the texture. See:
+     * The data to apply to the GPU for the image. If no data is to be uploaded to
+     * the texture, use width and height object. You would do this for render
+     * target textures such as depth textures or color buffer textures where the
+     * GPU writes the initial data into the texture. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
     get data(): Texture["_data"];

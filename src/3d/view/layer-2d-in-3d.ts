@@ -2,7 +2,7 @@ import { Control2D, Layer2D } from "../../2d";
 import { Instance } from "../../instance-provider/instance";
 import { ILayerConstructable, ILayerProps } from "../../surface/layer";
 import { IShaderInitialization, Omit } from "../../types";
-import { createLayer } from "../../util/create-util";
+import { createLayer } from "../../util/create-layer";
 
 /**
  * Specifies a 2D axis system within a 3D world.
@@ -32,7 +32,8 @@ export enum Axis2D {
 export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
   axis2D: Axis2D,
   classType: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key"> & Partial<Pick<U, "key">> & { control2D: Control2D }
+  props: Omit<U, "key" | "data"> &
+    Partial<Pick<U, "key" | "data">> & { control2D: Control2D }
 ) {
   const doesInheritLayer2D =
     classType === Layer2D || classType.prototype instanceof Layer2D;

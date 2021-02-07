@@ -1,40 +1,36 @@
 import { PerlinNoise } from "@diniden/signal-processing";
 import * as datGUI from "dat.gui";
 import {
-  AnchorType,
-  Axis2D,
   BasicSurface,
   Camera,
   Camera2D,
   ClearFlags,
   color4FromHex3,
+  commands,
   createLayer,
-  createLayer2Din3D,
+  createTexture,
   createView,
-  EdgeInstance,
-  EdgeLayer,
-  EdgeScaleType,
-  EdgeType,
+  FragmentOutputType,
   InstanceProvider,
-  LabelInstance,
   nextFrame,
   onAnimationLoop,
   onFrame,
   PickType,
-  Projection3D,
-  rayFromPoints,
-  rayToLocation,
-  Vec4,
+  TextureSize,
   View3D
 } from "../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { DEFAULT_RESOURCES } from "../../types";
-import { Line3DInstance } from "./line-3d/line-3d-instance";
-import { Line3DLayer } from "./line-3d/line-3d-layer";
 import { SurfaceTileInstance } from "./surface-tile/surface-tile-instance";
 import { SurfaceTileLayer } from "./surface-tile/surface-tile-layer";
 
 const DATA_SIZE = 256;
+const HEIGHT = 200;
+
+enum ColorMode {
+  PERLIN,
+  HUE
+}
 
 /**
  * A very basic demo proving the system is operating as expected
@@ -42,21 +38,28 @@ const DATA_SIZE = 256;
 export class BasicDemo3D extends BaseDemo {
   /** Surface providers */
   providers = {
-    tiles: new InstanceProvider<SurfaceTileInstance>(),
-    lines: new InstanceProvider<Line3DInstance>(),
-    ticks: new InstanceProvider<EdgeInstance>(),
-    labels: new InstanceProvider<LabelInstance>()
+    tiles: new InstanceProvider<SurfaceTileInstance>()
   };
 
   /** GUI properties */
   parameters = {
-    count: 1000,
-    radius: 100,
-    moveAtOnce: 10000,
-    addAtOnce: 10000,
+    colorMode: ColorMode.PERLIN,
 
-    previous: {
-      count: 1000
+    toggleColor: () => {
+      if (this.parameters.colorMode === ColorMode.PERLIN) {
+        this.parameters.colorMode = ColorMode.HUE;
+      } else {
+        this.parameters.colorMode = ColorMode.PERLIN;
+      }
+
+      this.spread(
+        this.tiles[Math.floor(this.tiles.length / 2)][
+          Math.floor(this.tiles[0].length / 2)
+        ],
+        tiles => {
+          tiles.forEach(t => this.colorizeTile(t));
+        }
+      );
     }
   };
 
@@ -69,9 +72,9 @@ export class BasicDemo3D extends BaseDemo {
   perlin: PerlinNoise;
   perlinData: number[][];
 
-  buildConsole(_gui: datGUI.GUI): void {
-    // const parameters = gui.addFolder("Parameters");
-    // parameters.add(this.parameters, "addAtOnce", 0, 100000, 1);
+  buildConsole(gui: datGUI.GUI): void {
+    const parameters = gui.addFolder("Parameters");
+    parameters.add(this.parameters, "toggleColor");
   }
 
   destroy(): void {
@@ -93,19 +96,37 @@ export class BasicDemo3D extends BaseDemo {
         })
       },
       resources: {
-        font: DEFAULT_RESOURCES.font
+        font: DEFAULT_RESOURCES.font,
+        pick: createTexture({
+          width: TextureSize.SCREEN_QUARTER,
+          height: TextureSize.SCREEN_QUARTER
+        })
       },
       eventManagers: _cameras => ({}),
-      scenes: (_resources, providers, cameras) => ({
+      scenes: (resources, providers, cameras) => ({
+        preRender: commands(surface => {
+          surface.commands.decodePicking();
+        }),
         main: {
           views: {
             perspective: createView(View3D, {
               camera: cameras.perspective,
               clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
+            }),
+            pick: createView(View3D, {
+              screenScale: [4, 4],
+              pixelRatio: 0.5,
+              camera: cameras.perspective,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              output: {
+                buffers: { [FragmentOutputType.PICKING]: resources.pick },
+                depth: true
+              }
             })
           },
           layers: {
             squares: createLayer(SurfaceTileLayer, {
+              printShader: true,
               data: providers.tiles,
               picking: PickType.SINGLE,
 
@@ -117,13 +138,12 @@ export class BasicDemo3D extends BaseDemo {
 
               onMouseOut: info => {
                 info.instances.forEach(i => {
-                  const index = this.tileToIndex.get(i.uid);
-                  if (!index) return;
-                  i.color = color4FromHex3(0xffffff - index[2]);
+                  this.colorizeTile(i);
                 });
               },
 
-              onMouseClick: async info => {
+              onMouseDown: async info => {
+                if (info.instances.length <= 0) return;
                 if (this.isSpreading || info.instances.length <= 0) return;
                 if (!this.isFlattened) {
                   this.isFlattened = true;
@@ -152,51 +172,6 @@ export class BasicDemo3D extends BaseDemo {
               }
             })
           }
-        },
-        overlay: {
-          views: {
-            perspective: createView(View3D, {
-              camera: cameras.perspective,
-              clearFlags: [ClearFlags.DEPTH]
-            })
-          },
-          layers: {
-            ticks: createLayer2Din3D(Axis2D.XZ, EdgeLayer, {
-              data: providers.ticks,
-              type: EdgeType.LINE,
-              control2D: cameras.xz.control2D,
-              scaleType: EdgeScaleType.NONE
-            }),
-            lines: createLayer(Line3DLayer, {
-              data: providers.lines,
-              // Toggle this to SINGLE to draw rays that eminate from the camera
-              picking: PickType.NONE,
-
-              onMouseClick: info => {
-                if (!(info.projection instanceof Projection3D)) return;
-                const ray = rayFromPoints(
-                  cameras.perspective.position,
-                  info.projection.screenToWorld(info.screen)
-                );
-                this.providers.lines.add(
-                  new Line3DInstance({
-                    start: rayToLocation(ray, -10),
-                    end: rayToLocation(ray, 300),
-                    colorEnd: [0, 1, 0, 1],
-                    colorStart: [1, 0, 0, 1]
-                  })
-                );
-              }
-            })
-            // TODO: Labels don't render quite as expected. The Desire is to render the anchor with the 3D world in mind
-            // after projecting that to the screen we'd want the labels to render relativeto that 2D projected point.
-            // labels: createLayer2Din3D(Axis2D.XZ, LabelLayer, {
-            //   data: providers.labels,
-            //   resourceKey: resources.font.key,
-            //   control2D: cameras.xz.control2D,
-            //   scaleMode: ScaleMode.NEVER
-            // })
-          }
         }
       })
     });
@@ -215,92 +190,6 @@ export class BasicDemo3D extends BaseDemo {
     bucket.push({ tile, corner });
   }
 
-  makeAxis(showXYZ?: boolean) {
-    const tickColor: Vec4 = [1, 1, 1, 1];
-    const tickLength = (DATA_SIZE / 128) * 25;
-
-    for (let i = 0; i < DATA_SIZE / 10; ++i) {
-      this.providers.ticks.add(
-        new EdgeInstance({
-          start: [i * 10 * 10, 0],
-          end: [i * 10 * 10, tickLength],
-          startColor: tickColor,
-          endColor: tickColor,
-          thickness: [10, 10],
-          depth: 0
-        })
-      );
-
-      this.providers.labels.add(
-        new LabelInstance({
-          text: `${i}`,
-          anchor: {
-            type: AnchorType.MiddleRight,
-            padding: 0
-          },
-          color: tickColor,
-          origin: [i * 10 * 10, tickLength],
-          fontSize: 100
-        })
-      );
-    }
-
-    for (let i = 0; i < DATA_SIZE / 10; ++i) {
-      this.providers.ticks.add(
-        new EdgeInstance({
-          start: [0, -i * 10 * 10],
-          end: [-tickLength, -i * 10 * 10],
-          startColor: tickColor,
-          endColor: tickColor,
-          thickness: [10, 10],
-          depth: 0
-        })
-      );
-
-      this.providers.labels.add(
-        new LabelInstance({
-          text: `${i}`,
-          anchor: {
-            type: AnchorType.MiddleLeft,
-            padding: 0
-          },
-          color: tickColor,
-          origin: [-tickLength, -i * 10 * 10],
-          fontSize: 100
-        })
-      );
-    }
-
-    if (showXYZ) {
-      this.providers.lines.add(
-        new Line3DInstance({
-          start: [0, 0, 0],
-          end: [0, 1000, 0],
-          colorStart: [0, 1, 0, 1],
-          colorEnd: [0, 1, 0, 1]
-        })
-      );
-
-      this.providers.lines.add(
-        new Line3DInstance({
-          start: [0, 0, 0],
-          end: [1000, 0, 0],
-          colorStart: [1, 0, 0, 1],
-          colorEnd: [1, 0, 0, 1]
-        })
-      );
-
-      this.providers.lines.add(
-        new Line3DInstance({
-          start: [0, 0, 0],
-          end: [0, 0, 1000],
-          colorStart: [0, 0, 1, 1],
-          colorEnd: [0, 0, 1, 1]
-        })
-      );
-    }
-  }
-
   async init() {
     if (!this.surface) return;
     await this.surface.ready;
@@ -308,75 +197,32 @@ export class BasicDemo3D extends BaseDemo {
     const midX = (DATA_SIZE / 2) * 10;
     const midZ = (DATA_SIZE / 2) * 10;
 
-    // Set the camera initial orientation
-    this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
-    // Make the initial perlin data
-    await this.generatePerlinData();
-    // Generate all of the tiles for our perlin data size
-    const tilesFlattened = [];
-
-    for (let i = 0, iMax = this.perlin.data.length; i < iMax; ++i) {
-      const row = this.perlin.data[i];
-      this.tiles.push([]);
-
-      for (let k = 0, kMax = row.length; k < kMax; ++k) {
-        const tile = this.providers.tiles.add(
-          new SurfaceTileInstance({
-            corners: [
-              [i * 10, 0, -k * 10],
-              [(i + 1) * 10, 0, -k * 10],
-              [(i + 1) * 10, 0, -(k + 1) * 10],
-              [i * 10, 0, -(k + 1) * 10]
-            ],
-            color: color4FromHex3(0xffffff - tilesFlattened.length)
-          })
-        );
-
-        this.addToCorner(i, k, 1, tile);
-        this.addToCorner(i + 1, k, 2, tile);
-
-        this.tiles[i][k] = tile;
-        this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
-        tilesFlattened.push(tile);
-      }
-    }
-
-    // Initialize the tiles to be positioned to the perlin map
-    this.moveTilesToPerlin(tilesFlattened);
-    // Draw the axis
-    // this.makeAxis();
-
     // Move the camera around
-    let t = 0;
-    const loop = () => {
+    const loop = (t: number) => {
       if (!this.surface) return;
-      t += Math.PI / 120;
 
       // Spin in the middle of the data!
       this.surface.cameras.perspective.position = [
-        Math.sin(t / 5) * midX + midX,
+        Math.sin(t / 2000) * midX + midX,
         300,
-        Math.cos(t / 5) * midX - midZ
+        Math.cos(t / 2000) * midX - midZ
       ];
-
-      // Good view from afar
-      // this.surface.cameras.perspective.position = [midX * 2, 3000, -midZ * 2];
-
-      // View from afar opposite
-      // this.surface.cameras.perspective.position = [-midX * 2, 3000, midZ * 2];
-
-      // Observe the origin from above
-      // this.surface.cameras.perspective.position = [0, 1000, 0];
-      // this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 0, -1]);
-
-      // Observe the origin XY
-      // this.surface.cameras.perspective.position = [0, 0, 100];
-      // this.surface.cameras.perspective.lookAt([0, 0, 0], [0, 1, 0]);
 
       // Look at the middle of the data
       this.surface.cameras.perspective.lookAt([midX, 0, -midZ], [0, 1, 0]);
     };
 
+    // Set the camera initial orientation
+    this.surface.cameras.perspective.lookAt([midX, 50, -midZ], [0, 1, 0]);
+    // Make the initial perlin data
+    await this.generatePerlinData();
+    // Run the camera positioning once
+    loop(0);
+    // Generate all of the tiles for our perlin data size
+    const tilesFlattened = await this.generateTiles();
+    // Initialize the tiles to be positioned to the perlin map
+    this.moveTilesToPerlin(tilesFlattened);
+    // Begin animating the camera
     onAnimationLoop(loop);
 
     await nextFrame();
@@ -415,6 +261,56 @@ export class BasicDemo3D extends BaseDemo {
     this.perlinData = data;
   }
 
+  async generateTiles() {
+    // Generate all of the tiles for our perlin data size
+    const tilesFlattened = [];
+    let i = 0;
+
+    for (const row of this.perlin.data) {
+      this.tiles.push([]);
+
+      for (let k = 0, kMax = row.length; k < kMax; ++k) {
+        const tile = this.providers.tiles.add(
+          new SurfaceTileInstance({
+            corners: [
+              [i * 10, 0, -k * 10],
+              [(i + 1) * 10, 0, -k * 10],
+              [(i + 1) * 10, 0, -(k + 1) * 10],
+              [i * 10, 0, -(k + 1) * 10]
+            ],
+            color: color4FromHex3(0xffffff - tilesFlattened.length)
+          })
+        );
+
+        this.addToCorner(i, k, 1, tile);
+        this.addToCorner(i + 1, k, 2, tile);
+
+        this.tiles[i][k] = tile;
+        this.tileToIndex.set(tile.uid, [i, k, tilesFlattened.length]);
+        tilesFlattened.push(tile);
+      }
+
+      this.moveTilesToPerlin(this.tiles[i]);
+      i++;
+      if (i % 224 === 0) await nextFrame();
+    }
+
+    return tilesFlattened;
+  }
+
+  colorizeTile(tile: SurfaceTileInstance) {
+    const [i, k, index] = this.tileToIndex.get(tile.uid) || [0, 0, 0];
+
+    if (this.parameters.colorMode === ColorMode.PERLIN) {
+      const data = this.perlinData;
+      const c =
+        (data[i][k] + data[i + 1][k] + data[i + 1][k + 1] + data[i][k + 1]) / 4;
+      tile.color = [c, c, c, 1];
+    } else {
+      tile.color = color4FromHex3(0xffffff - index);
+    }
+  }
+
   moveTilesToPerlin(tiles: SurfaceTileInstance[]) {
     const data = this.perlinData;
 
@@ -424,14 +320,15 @@ export class BasicDemo3D extends BaseDemo {
       if (!index) continue;
       const [i, k] = index;
 
-      tile.c1 = [i * 10, Math.pow(data[i][k] * 200, 1.1), -k * 10];
-      tile.c2 = [(i + 1) * 10, Math.pow(data[i + 1][k] * 200, 1.1), -k * 10];
+      tile.c1 = [i * 10, Math.pow(data[i][k] * HEIGHT, 1.1), -k * 10];
+      tile.c2 = [(i + 1) * 10, Math.pow(data[i + 1][k] * HEIGHT, 1.1), -k * 10];
       tile.c3 = [
         (i + 1) * 10,
-        Math.pow(data[i + 1][k + 1] * 200, 1.1),
+        Math.pow(data[i + 1][k + 1] * HEIGHT, 1.1),
         -(k + 1) * 10
       ];
-      tile.c4 = [i * 10, Math.pow(data[i][k + 1] * 200, 1.1), -(k + 1) * 10];
+      tile.c4 = [i * 10, Math.pow(data[i][k + 1] * HEIGHT, 1.1), -(k + 1) * 10];
+      this.colorizeTile(tile);
     }
   }
 
@@ -458,34 +355,35 @@ export class BasicDemo3D extends BaseDemo {
         const index = this.tileToIndex.get(tile.uid);
 
         if (index) {
-          neighborRow = this.tiles[index[0]];
+          const [x, y] = index;
+          neighborRow = this.tiles[x];
 
           if (neighborRow) {
-            neighbor = neighborRow[index[1] - 1];
+            neighbor = neighborRow[y - 1];
             if (neighbor) gather.push(neighbor);
-            neighbor = neighborRow[index[1] + 1];
+            neighbor = neighborRow[y + 1];
             if (neighbor) gather.push(neighbor);
           }
 
-          neighborRow = this.tiles[index[0] - 1];
+          neighborRow = this.tiles[x - 1];
 
           if (neighborRow) {
-            neighbor = neighborRow[index[1]];
+            neighbor = neighborRow[y];
             if (neighbor) gather.push(neighbor);
-            neighbor = neighborRow[index[1] - 1];
+            neighbor = neighborRow[y - 1];
             if (neighbor) gather.push(neighbor);
-            neighbor = neighborRow[index[1] + 1];
+            neighbor = neighborRow[y + 1];
             if (neighbor) gather.push(neighbor);
           }
 
-          neighborRow = this.tiles[index[0] + 1];
+          neighborRow = this.tiles[x + 1];
 
           if (neighborRow) {
-            neighbor = neighborRow[index[1]];
+            neighbor = neighborRow[y];
             if (neighbor) gather.push(neighbor);
-            neighbor = neighborRow[index[1] - 1];
+            neighbor = neighborRow[y - 1];
             if (neighbor) gather.push(neighbor);
-            neighbor = neighborRow[index[1] + 1];
+            neighbor = neighborRow[y + 1];
             if (neighbor) gather.push(neighbor);
           }
         }

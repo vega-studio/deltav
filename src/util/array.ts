@@ -4,9 +4,9 @@
  * a goal.
  */
 
- /**
-  * This method flattens a 2D depth of data.
-  */
+/**
+ * This method flattens a 2D depth of data.
+ */
 export function flatten2D<T>(array: T[][]) {
   const c = [];
 

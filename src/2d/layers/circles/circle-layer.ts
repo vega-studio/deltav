@@ -3,6 +3,7 @@ import { InstanceProvider } from "../../../instance-provider";
 import { Vec } from "../../../math";
 import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import {
+  FragmentOutputType,
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
@@ -29,8 +30,6 @@ export interface ICircleLayerProps<T extends CircleInstance>
     radius?: IAutoEasingMethod<Vec>;
     color?: IAutoEasingMethod<Vec>;
   };
-  /** This sets a scaling factor for the circle's radius */
-  scaleFactor?(): number;
   /** Opacity of the layer as a whole */
   opacity?(): number;
   /**
@@ -55,8 +54,7 @@ export class CircleLayer<
 > extends Layer2D<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
-    key: "",
-    scaleFactor: () => 1
+    key: ""
   };
 
   static attributeNames = {
@@ -70,12 +68,7 @@ export class CircleLayer<
    * Define our shader and it's inputs
    */
   initShader(): IShaderInitialization<CircleInstance> {
-    const {
-      animate = {},
-      scaleFactor = () => 1,
-      usePoints = false,
-      opacity = () => 1
-    } = this.props;
+    const { animate = {}, usePoints = false, opacity = () => 1 } = this.props;
 
     const {
       center: animateCenter,
@@ -121,8 +114,34 @@ export class CircleLayer<
         ? GLSettings.Model.DrawMode.POINTS
         : GLSettings.Model.DrawMode.TRIANGLE_STRIP,
       fs: usePoints
-        ? require("./circle-layer-points.fs")
-        : require("./circle-layer.fs"),
+        ? [
+            {
+              outputType: FragmentOutputType.COLOR,
+              source: require("./circle-layer-points.fs")
+            },
+            {
+              outputType: FragmentOutputType.GLOW,
+              source: `
+              void main() {
+                $\{out: glow} = color;
+              }
+              `
+            }
+          ]
+        : [
+            {
+              outputType: FragmentOutputType.COLOR,
+              source: require("./circle-layer.fs")
+            },
+            {
+              outputType: FragmentOutputType.GLOW,
+              source: `
+              void main() {
+                $\{out: glow} = color;
+              }
+              `
+            }
+          ],
       instanceAttributes: [
         {
           easing: animateCenter,
@@ -149,11 +168,6 @@ export class CircleLayer<
         }
       ],
       uniforms: [
-        {
-          name: "scaleFactor",
-          size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [scaleFactor()]
-        },
         {
           name: "layerOpacity",
           size: UniformSize.ONE,

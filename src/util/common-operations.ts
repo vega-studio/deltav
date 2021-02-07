@@ -1,5 +1,5 @@
 function isFunction(val: any): val is Function {
-  return val && val.constructor === Function;
+  return val && val.call !== void 0 && val.apply !== void 0;
 }
 
 /**

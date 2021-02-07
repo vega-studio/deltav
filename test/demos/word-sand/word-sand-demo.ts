@@ -120,8 +120,7 @@ export class WordSandDemo extends BaseDemo {
                 center: AutoEasingMethod.easeInOutQuad(250)
               },
               data: providers.circles,
-              key: "circles",
-              scaleFactor: () => cameras.main.scale[0]
+              key: "circles"
             })
           ]
         }

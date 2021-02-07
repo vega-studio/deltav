@@ -153,8 +153,8 @@ const loop = (time: number) => {
   else animationFrameId = -1;
 };
 
-// Start the next frame command loop
-requestAnimationFrame(loop);
+// Start the command loop
+animationFrameId = requestAnimationFrame(loop);
 
 /**
  * Method that queues up a command to be executed not on this animation frame,

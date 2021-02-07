@@ -36,7 +36,7 @@ quadGeometry.addAttribute("texCoord", texCoord);
 /** Height of each view that is rendered */
 const debugViewHeight = 200;
 /** This stores deferred debug statements which will be emptied when flushDebug is called */
-const debugQueue: [WebGLRenderer, RenderTarget | null, Function, any[]][] = [];
+const debugQueue: [WebGLRenderer, RenderTarget | RenderTarget[] | null, Function, any[]][] = [];
 
 function getContainer(context: HTMLCanvasElement) {
   let container = document.getElementById(`__debug_read_pixels__`);
@@ -134,7 +134,7 @@ export function debugTexture(
 
   const debugFBO = new RenderTarget({
     buffers: {
-      color: texture
+      color: { buffer: texture, outputType: 0 }
     }
   });
 

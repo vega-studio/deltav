@@ -2,6 +2,7 @@ import * as datGUI from "dat.gui";
 import {
   BaseResourceOptions,
   BasicSurface,
+  BasicSurfaceSceneOptions,
   Camera2D,
   EventManager,
   IBasicSurfaceOptions,
@@ -15,9 +16,10 @@ export type DemoPipeline<
   T extends Lookup<InstanceProvider<Instance>>,
   U extends Lookup<Camera2D>,
   V extends Lookup<EventManager>,
-  W extends Lookup<BaseResourceOptions>
+  W extends Lookup<BaseResourceOptions>,
+  TScenes extends Lookup<BasicSurfaceSceneOptions> | BasicSurfaceSceneOptions[]
 > = Omit<
-  IBasicSurfaceOptions<T, U, V, W>,
+  IBasicSurfaceOptions<T, U, V, W, TScenes>,
   "container" | "onNoWebGL" | "handlesWheelEvents" | "rendererOptions"
 >;
 
@@ -59,7 +61,7 @@ export abstract class BaseDemo {
    */
   abstract makeSurface(
     container: HTMLElement
-  ): BasicSurface<any, any, any, any>;
+  ): BasicSurface<any, any, any, any, any>;
 
   /**
    * This is called when everything for the demo should be ready.

@@ -166,7 +166,6 @@ export class TouchDemo extends BaseDemo {
               },
               data: this.providers.TL,
               picking: PickType.SINGLE,
-              scaleFactor: () => cameras.main.scale[0],
               onTouchOver: this.handleTestDotOver,
               onTouchOut: this.handleTestDotOut
             })
@@ -193,7 +192,6 @@ export class TouchDemo extends BaseDemo {
               },
               data: this.providers.TR,
               picking: PickType.SINGLE,
-              scaleFactor: () => cameras.main.scale[0],
               onTouchOver: this.handleTestDotOver,
               onTouchOut: this.handleTestDotOut
             })
@@ -220,7 +218,6 @@ export class TouchDemo extends BaseDemo {
               },
               data: this.providers.BL,
               picking: PickType.SINGLE,
-              scaleFactor: () => cameras.main.scale[0],
               onTouchOver: this.handleTestDotOver,
               onTouchOut: this.handleTestDotOut
             })
@@ -247,7 +244,6 @@ export class TouchDemo extends BaseDemo {
               },
               data: this.providers.BR,
               picking: PickType.SINGLE,
-              scaleFactor: () => cameras.main.scale[0],
               onTouchOver: this.handleTestDotOver,
               onTouchOut: this.handleTestDotOut
             })
@@ -267,15 +263,13 @@ export class TouchDemo extends BaseDemo {
                 color: AutoEasingMethod.linear(500),
                 radius: AutoEasingMethod.linear(500)
               },
-              data: providers.circles,
-              scaleFactor: () => cameras.main.scale[0]
+              data: providers.circles
             }),
             center: createLayer(CircleLayer, {
               animate: {
                 color: AutoEasingMethod.linear(500)
               },
-              data: providers.center,
-              scaleFactor: () => cameras.main.scale[0]
+              data: providers.center
             })
           }
         }

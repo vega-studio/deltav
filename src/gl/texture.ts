@@ -1,5 +1,5 @@
 import { Omit } from "../types";
-import { uid } from "../util";
+import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 
@@ -22,6 +22,15 @@ export class Texture {
   private _uid: number = uid();
 
   /**
+   * Indicates this Texture has been disposed, meaning it is useless and invalid
+   * to use within the application.
+   */
+  public get disposed(): boolean {
+    return this._disposed;
+  }
+  private _disposed: boolean = false;
+
+  /**
    * Anisotropic filtering level. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
    * https://blog.tojicode.com/2012/03/anisotropic-filtering-in-webgl.html
@@ -36,9 +45,10 @@ export class Texture {
   private _anisotropy: number;
 
   /**
-   * The data to apply to the GPU for the image. If no data is to be uploaded to the texture,
-   * use width and height object. You would do this for render target textures such as depth textures
-   * or color buffer textures where the GPU writes the initial data into the texture. See:
+   * The data to apply to the GPU for the image. If no data is to be uploaded to
+   * the texture, use width and height object. You would do this for render
+   * target textures such as depth textures or color buffer textures where the
+   * GPU writes the initial data into the texture. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
    */
   get data() {
@@ -264,6 +274,8 @@ export class Texture {
       this.gl.proxy.disposeTexture(this);
     }
 
+    // Flag this texture as no longer useable.
+    this._disposed = true;
     // Ensure the large data object for the texture is cleared
     delete this._data;
   }

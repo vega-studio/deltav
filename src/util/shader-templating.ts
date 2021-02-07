@@ -33,10 +33,13 @@ export interface IShaderTemplateOptions {
    *
    * If the body in the callback is null, then that means a main() method could NOT be determined.
    */
-  onMain?(body: string | null): string | { main: string; header: string };
+  onMain?(
+    body: string | null,
+    header?: string
+  ): string | { main: string; header: string };
 
   /** This is a key value pair the template uses to match tokens found to replacement values */
-  options: { [key: string]: string };
+  options?: { [key: string]: string };
   /** This is used to indicate which tokens are required both within the shader AND within the 'options' */
   required?: IShaderTemplateRequirements;
   /** This is the shader written with templating information */
@@ -55,7 +58,7 @@ export function shaderTemplate(
 ): IShaderTemplateResults {
   const {
     shader,
-    options,
+    options = {},
     required,
     onError,
     onToken,
@@ -120,10 +123,13 @@ export function shaderTemplate(
       }
     });
   }
-  // If onMain is specified, then the caller is wanting to manipulate the body of the main method of the shader
+
+  // If onMain is specified, then the caller is wanting to manipulate the body
+  // of the main method of the shader
   if (onMain) {
     const shader = results.shader;
-    // Use this regex to find the beginning of the main method up to it's opening bracket.
+    // Use this regex to find the beginning of the main method up to it's
+    // opening bracket.
     const found = shader.match(
       /void((.+)|\s)(main(\s+)\(\)|main\(\))(((.+)(\s*)\{)|(\s*)\{)/gm
     );
@@ -131,18 +137,21 @@ export function shaderTemplate(
       const start = shader.indexOf(found[0]);
       // Validate we found something useful
       if (start < 0) onMain(null);
-      // At this point, we can take the shader and get a string that starts with the body of the void main() method.
+      // At this point, we can take the shader and get a string that starts with
+      // the body of the void main() method.
       else {
+        const header = shader.substr(0, start);
         const bodyStart = shader.substr(start + found[0].length);
-        // We now must count valid context brackets till we find a bracket that would close the context of the main
-        // body.
+        // We now must count valid context brackets till we find a bracket that
+        // would close the context of the main body.
         let insideMultiLine = false;
         let insideSingleLine = false;
         let openBracket = 1;
         let closeBracket = 0;
         let endBody = -1;
 
-        // When openBracket === close bracket, we have the location of the end of the body of the main method
+        // When openBracket === close bracket, we have the location of the end
+        // of the body of the main method
         for (let i = 0, iMax = bodyStart.length; i < iMax; ++i) {
           const char = bodyStart[i];
           const nextChar = bodyStart[i + 1];
@@ -208,7 +217,8 @@ export function shaderTemplate(
 
         if (endBody !== -1) {
           const body = bodyStart.substr(0, endBody);
-          const modifiedBody = onMain(body);
+          const footer = bodyStart.substr(endBody + 1);
+          const modifiedBody = onMain(body, `${header}\n${footer}`);
 
           if (typeof modifiedBody === "string") {
             results.shader =

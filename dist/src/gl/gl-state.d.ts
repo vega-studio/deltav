@@ -5,7 +5,7 @@ import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
-import { IExtensions, IMaterialUniform, MaterialUniformType } from "./types";
+import { IExtensions, IMaterialUniform, MaterialUniformType, UseMaterialStatus } from "./types";
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
  * helps to decide when to make gl calls to alter the state and not do so unecessarily.
@@ -62,6 +62,12 @@ export declare class GLState {
     /** The currently bound frame buffer object. null if nothing bound. */
     get boundFBO(): WebGLFramebuffer | null;
     private _boundFBO;
+    /**
+     * This is the current render target who's FBO is bound. A null render target
+     * indicates the target is the screen.
+     */
+    get renderTarget(): RenderTarget | null;
+    private _renderTarget;
     /** The currently bound render buffer object. null if nothing bound. */
     get boundRBO(): WebGLRenderbuffer | null;
     private _boundRBO;
@@ -100,10 +106,14 @@ export declare class GLState {
     /** This is the texture unit currently active */
     get activeTextureUnit(): number;
     private _activeTextureUnit;
+    /** This is the buffer state set and activated for the drawBuffers call */
+    get drawBuffers(): number[];
+    private _drawBuffers;
     /**
-     * This contains all of the textures that are are needing to be utilized for next draw.
-     * Textures are used by either uniforms or by RenderTargets in a single draw call. Thus
-     * we track the uniforms or the render targets awaiting use of the texture.
+     * This contains all of the textures that are are needing to be utilized for
+     * next draw. Textures are used by either uniforms or by RenderTargets in a
+     * single draw call. Thus we track the uniforms or the render targets awaiting
+     * use of the texture.
      */
     get textureWillBeUsed(): Map<Texture, RenderTarget | Set<WebGLUniformLocation>>;
     private _textureWillBeUsed;
@@ -169,6 +179,14 @@ export declare class GLState {
      */
     setClearColor(color: Vec4): void;
     /**
+     * Change the drawBuffer state, if it's available
+     *
+     * 0 - n specifies COLOR_ATTACHMENT
+     * -1 specifies NONE
+     * -2 specifies BACK
+     */
+    setDrawBuffers(attachments: number[], preventCommit?: boolean): void;
+    /**
      * Sets the GPU proxy to be used to handle commands that call to the GPU but don't alter
      * global GL state.
      */
@@ -193,13 +211,19 @@ export declare class GLState {
     /**
      * Sets all current gl state to match the materials settings.
      */
-    useMaterial(material: Material): boolean;
+    useMaterial(material: Material): UseMaterialStatus;
+    /**
+     * This examines a given material to find the most appropriate program to run
+     * based on the current RenderTarget
+     */
+    private findMaterialProgram;
     /**
      * Sets all current gl state to match the render target specified
      */
     useRenderTarget(target: RenderTarget | null): boolean;
     /**
-     * This syncs the state of the GL context with the requested state of a material
+     * This syncs the state of the GL context with the requested state of a
+     * material
      */
     syncMaterial(material: Material): boolean;
     /**

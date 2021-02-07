@@ -17,11 +17,11 @@ float circle(vec2 coord, float radius){
 void main() {
   float step_factor = circle(gl_PointCoord, 1.0);
 
-  setColor(mix(
+  ${out: color} = mix(
     vec4(0.0, 0.0, 0.0, 0.0),
     vertexColor,
     step_factor
-  ));
+  );
 
-  if (gl_FragColor.a <= 0.0) discard;
+  if (color.a == 0.0) discard;
 }

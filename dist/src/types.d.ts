@@ -5,8 +5,8 @@ import { BaseProjection } from "./math";
 import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec2Compat, Vec3, Vec4 } from "./math";
 import { IAutoEasingMethod } from "./math/auto-easing-method";
 import { BaseResourceOptions } from "./resources/base-resource-manager";
-import { IViewProps } from "./surface";
 import { ISceneOptions } from "./surface/layer-scene";
+import { IViewProps, View } from "./surface/view";
 export declare type Diff<T extends string, U extends string> = ({
     [P in T]: P;
 } & {
@@ -44,8 +44,9 @@ export declare enum UniformSize {
     FOUR = 4,
     MATRIX3 = 9,
     MATRIX4 = 16,
+    FLOAT_ARRAY = 97,
     VEC4_ARRAY = 98,
-    ATLAS = 99
+    TEXTURE = 99
 }
 export declare enum VertexAttributeSize {
     ONE = 1,
@@ -54,13 +55,67 @@ export declare enum VertexAttributeSize {
     FOUR = 4
 }
 /**
- * These are valid atlas sizes available. We force a power of 2 to be utilized.
+ * These are valid texture sizes available. We force a power of 2 to be utilized.
  * We do not allow crazy large sizes as browsers have very real caps on
  * resources. This helps implementations be a little smarter about what they are
  * using. Future versions may increase this number as GPUs improve and standards
  * allow greater flexibility.
  */
 export declare enum TextureSize {
+    /**
+     * Specialized sizing that makes the texture stick with a 256th the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_256TH = -256,
+    /**
+     * Specialized sizing that makes the texture stick with a 128th the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_128TH = -128,
+    /**
+     * Specialized sizing that makes the texture stick with a 64th the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_64TH = -64,
+    /**
+     * Specialized sizing that makes the texture stick with a 32nd the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_32ND = -32,
+    /**
+     * Specialized sizing that makes the texture stick with a sixteenth the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_16TH = -16,
+    /**
+     * Specialized sizing that makes the texture stick with an eigth the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_8TH = -8,
+    /**
+     * Specialized sizing that makes the texture stick with a quarter the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_QUARTER = -4,
+    /**
+     * Specialized sizing that makes the texture stick with half the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN_HALF = -2,
+    /**
+     * Specialized sizing that makes the texture stick with the size of the
+     * canvas/screen being rendered to. This sizing is only valid for managers
+     * that properly watch the screen such as the render texture resource manager.
+     */
+    SCREEN = -1,
     _2 = 2,
     _4 = 4,
     _8 = 8,
@@ -80,7 +135,8 @@ export declare enum TextureSize {
  */
 export declare enum ResourceType {
     ATLAS = 0,
-    FONT = 1
+    FONT = 1,
+    TEXTURE = 2
 }
 /**
  * Base options needed for a resource to be considered a viable resource
@@ -463,10 +519,131 @@ export interface IInstancingUniform {
     value: ShaderIOValue;
 }
 /**
- * Represents a complete shader object set.
+ * This represents a target resource that expects a given information type.
+ * OutputFragmentShaderSource's can be associated to these target types via
+ * matching on the outputType.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * A target of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export declare type OutputFragmentShaderTarget = string | {
+    /**
+     * The form of information this output will provide. This is mostly an
+     * arbitrary number to help make associations between an output target and the
+     * type of information a layer can provide.
+     */
+    outputType: number;
+    /** The resource key that the output will target */
+    resource: string;
+}[];
+/**
+ * This represents a fragment shader that has been processed to include all of
+ * it's potential outputs.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases which includes the SCREEN.
+ */
+export declare type OutputFragmentShader = Map<View<IViewProps>, {
+    source: string;
+    outputTypes: number[];
+    outputNames: string[];
+}>;
+/** Provides the value type of a Map */
+export declare type MapValueType<A> = A extends Map<any, infer V> ? V : never;
+/**
+ * Defines a fragment shader source declaration that indicates fragment shader
+ * renderings that can output for various information types.
+ *
+ * While outputType is mostly arbitrary to the implementation, the outputType of
+ * "0" is defaulted to the concept of COLOR. COLOR is a default type of output
+ * that is used extensively in the system to default an output to a target in
+ * simplified cases.
+ *
+ * An output of type "string" will have an inferred default outputType of COLOR
+ * or "0".
+ */
+export declare type OutputFragmentShaderSource = string | {
+    source: string;
+    outputType: number;
+}[];
+/**
+ * Represents a complete shader object set with raw source information. The
+ * fragment shaders here can provide hints to what output targets they are
+ * compatible with.
+ */
+export interface IShadersSource {
+    /**
+     * This provides the fragment rendering outputs this layer will perform. If
+     * specify a single output source this will assume you are providing a COLOR
+     * output type.
+     *
+     * If multiple sources are included, this will map each output type to an
+     * available matching output. If a matching output is not available, this will
+     * render the marked COLOR output. If no COLOR output is available, then this
+     * will assume the full processing of all outputs will be utilized and the
+     * FINAL output in the list will output as the COLOR regardless of what it is
+     * flagged as.
+     *
+     * IMPORTANT: Each source is a dependent of the sources before it. So if you
+     * have operations in the main() method of a preceding action, ALL values
+     * declared in that source is available in the next source. So, it is an error
+     * to declare any same properties in the next source. The program outside of
+     * the main() of each output is aggregated together, so if you have external
+     * methods, you only need to declare the methods in the top most shader.
+     *
+     * Each source can have it's own set of imports as imports get resolved all at
+     * once anyways.
+     *
+     * Be mindful how you set up your sources. If you do this wisely, you can have
+     * this layer have a higher or smaller performance footprint based on how the
+     * layer is being used. A well written layer for your application can adapt to
+     * several scenarios AND provide maximum performance.
+     */
+    fs: OutputFragmentShaderSource;
+    /** This is the shader source for your vertex shader. */
+    vs: string;
+}
+/**
+ * Represents a complete shader object set with analyzed fragment shaders that
+ * are compatible with target outputs.
  */
 export interface IShaders {
-    fs: string;
+    /**
+     * This provides the fragment rendering outputs this layer will perform. If
+     * specify a single output source this will assume you are providing a COLOR
+     * output type.
+     *
+     * If multiple sources are included, this will map each output type to an
+     * available matching output. If a matching output is not available, this will
+     * render the marked COLOR output. If no COLOR output is available, then this
+     * will assume the full processing of all outputs will be utilized and the
+     * FINAL output in the list will output as the COLOR regardless of what it is
+     * flagged as.
+     *
+     * IMPORTANT: Each source is a dependent of the sources before it. So if you
+     * have operations in the main() method of a preceding action, ALL values
+     * declared in that source is available in the next source. So, it is an error
+     * to declare any same properties in the next source. The program outside of
+     * the main() of each output is aggregated together, so if you have external
+     * methods, you only need to declare the methods in the top most shader.
+     *
+     * Each source can have it's own set of imports as imports get resolved all at
+     * once anyways.
+     *
+     * Be mindful how you set up your sources. If you do this wisely, you can have
+     * this layer have a higher or smaller performance footprint based on how the
+     * layer is being used. A well written layer for your application can adapt to
+     * several scenarios AND provide maximum performance.
+     */
+    fs: OutputFragmentShader;
+    /** This is the shader source for your vertex shader. */
     vs: string;
 }
 /**
@@ -520,7 +697,7 @@ export declare type ILayerMaterialOptions = Partial<Omit<MaterialOptions, "unifo
 /**
  * A wrapper to make declaring layer material options easier and clearer
  */
-export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Pick<Pick<Partial<import("./gl").Material>, "name" | "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "polygonOffset" | "uniforms" | "vertexShader">, "name" | "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "polygonOffset">>;
+export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Pick<Pick<Partial<import("./gl").Material>, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "name" | "polygonOffset" | "uniforms" | "vertexShader">, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "name" | "polygonOffset">>;
 /**
  * This is the type of picking assigned to a layer. Each mode has performance
  * and functionality tradeoffs.
@@ -571,6 +748,8 @@ export interface INonePickingMetrics extends IPickingMetrics {
     type: PickType.NONE;
 }
 export interface IColorPickingData {
+    /** The view this color picking information is associated with */
+    view: View<IViewProps>;
     /** The mouse target position where the data is rendered */
     mouse: Vec2;
     /** The color data loaded for last picking rendering */
@@ -711,7 +890,7 @@ export interface IShaderInputs<T extends Instance> {
 /**
  * This is the initialization of the shader.
  */
-export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShaders;
+export declare type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShadersSource;
 export interface IShaderExtension {
     header?: string;
     main?: {
@@ -907,3 +1086,161 @@ export declare type UpdateProp<T> = {
     didUpdate?: boolean;
     value: T;
 };
+/**
+ * Speedy check to see if a value is a string type or not
+ */
+export declare function isString(val?: any): val is string;
+/**
+ * Speedy check to see if the target object is a method or not. This avoids
+ * string comparison with 'function'.
+ */
+export declare function isFunction<T extends Function>(val?: any): val is T;
+/**
+ * Checks if a value is strictly a boolean type. This avoids typeof and string
+ * comparison.
+ */
+export declare function isBoolean(val?: any): val is Boolean;
+/**
+ * This is a listing of suggested Output information styles.
+ *
+ * NOTE: Information styles are merely suggestions of information types. It does
+ * NOT guarantee any specific type of data. These are merely flags to aid in
+ * wiring available layer outputs to output render targets.
+ *
+ * You could theoretically use arbitrary numbers to match the two together, it
+ * is recommended to utilize labeled enums though for readability.
+ */
+export declare enum FragmentOutputType {
+    /**
+     * Indicates this does not have an output target. This is mostly used by the
+     * system to make sure our fragment outputs, drawBuffers, and frame buffer
+     * attachments stay aligned properly to not cause any GL errors or undefined
+     * outputs to occur.
+     */
+    NONE = 0,
+    /**
+     * This is the most common information output style. It provides a color per
+     * fragment
+     */
+    COLOR = 1,
+    /**
+     * This indicates it will provide a depth value per fragment
+     */
+    DEPTH = 2,
+    /**
+     * This indicates it will provide eye-space normal information per fragment
+     */
+    NORMAL = 3,
+    /**
+     * Indicates it will provide color information that coincides with instance
+     * IDs used in the COLOR PICKING routines the system provides.
+     */
+    PICKING = 4,
+    /**
+     * This indicates it will provide eye-space position information per fragment
+     */
+    POSITION = 5,
+    /**
+     * This indicates it will provide Lighting information
+     */
+    LIGHTS = 6,
+    /**
+     * This indicates it will provide Lighting information
+     */
+    LIGHTS2 = 7,
+    /**
+     * This indicates it will provide Lighting information
+     */
+    LIGHTS3 = 8,
+    /**
+     * This indicates it will provide Alpha information
+     */
+    ALPHA = 9,
+    /**
+     * This indicates it will provide Beta information
+     */
+    BETA = 10,
+    /**
+     * This indicates it will provide Gamma information
+     */
+    GAMMA = 11,
+    /**
+     * This indicates it will provide Delta information
+     */
+    DELTA = 12,
+    /**
+     * This indicates it will provide some form of accumulation information
+     */
+    ACCUMULATION1 = 13,
+    /**
+     * This indicates it will provide some form of accumulation information
+     */
+    ACCUMULATION2 = 14,
+    /**
+     * This indicates it will provide some form of accumulation information
+     */
+    ACCUMULATION3 = 15,
+    /**
+     * This indicates it will provide some form of accumulation information
+     */
+    ACCUMULATION4 = 16,
+    /**
+     * This indicates it will provide Coefficient information
+     */
+    COEFFICIENT1 = 17,
+    /**
+     * This indicates it will provide Coefficient information
+     */
+    COEFFICIENT2 = 18,
+    /**
+     * This indicates it will provide Coefficient information
+     */
+    COEFFICIENT3 = 19,
+    /**
+     * This indicates it will provide Coefficient information
+     */
+    COEFFICIENT4 = 20,
+    /**
+     * This indicates it will provide Angular information
+     */
+    ANGLE1 = 21,
+    /**
+     * This indicates it will provide Angular information
+     */
+    ANGLE2 = 22,
+    /**
+     * This indicates it will provide Angular information
+     */
+    ANGLE3 = 23,
+    /**
+     * This indicates it will provide Angular information
+     */
+    ANGLE4 = 24,
+    /**
+     * This is the most common information output style. It provides an
+     * alternative color per fragment
+     */
+    COLOR2 = 25,
+    /**
+     * This is the most common information output style. It provides an
+     * alternative color per fragment
+     */
+    COLOR3 = 26,
+    /**
+     * This is the most common information output style. It provides an
+     * alternative color per fragment
+     */
+    COLOR4 = 27,
+    /**
+     * This indicates this will output a fragment to a Glow filter target. Glow
+     * targets are used post processing to indicate which texels in the post
+     * operation should provide a bloom of a given color.
+     */
+    GLOW = 28,
+    /**
+     * This indicates this will output a fragment to a Glow filter target. Blur
+     * targets are used post processing to indicate which texels in the post
+     * operation should be blurred.
+     */
+    BLUR = 29
+}

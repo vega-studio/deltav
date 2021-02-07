@@ -99,4 +99,20 @@ export abstract class EventManager {
   setUserInputManager(mouseManager: UserInputEventManager) {
     this.userInputManager = mouseManager;
   }
+
+  /**
+   * This is called by the surface so the manager can choose a moment in the
+   * render cycle when to perform certain actions.
+   */
+  willRender() {
+    // Default noop
+  }
+
+  /**
+   * This is called by the surface so the manager can choose a moment in the
+   * render cycle when to perform certain actions.
+   */
+  didRender() {
+    // Default noop
+  }
 }

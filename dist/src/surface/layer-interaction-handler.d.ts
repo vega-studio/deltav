@@ -1,8 +1,8 @@
 import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../event-management/types";
 import { Instance } from "../instance-provider/instance";
-import { BaseProjection } from "../math/base-projection";
 import { IColorPickingData } from "../types";
 import { ILayerProps, Layer } from "./layer";
+import { IViewProps, View } from "./view";
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
  * how to make the interaction translate to picking events for the layer's instances.
@@ -26,58 +26,58 @@ export declare class LayerInteractionHandler<T extends Instance, U extends ILaye
     /**
      * Retrieves the color picking instance determined for the procedure.
      */
-    getColorPickInstance(): T | null | undefined;
+    getColorPickInstance(view: View<IViewProps>): T | null | undefined;
     /**
      * Handles mouse down gestures for a layer within a view
      */
-    handleMouseOver(_view: BaseProjection<any>, _interaction: IMouseInteraction): void;
+    handleMouseOver(_view: View<any>, _interaction: IMouseInteraction): void;
     /**
      * Handles touch down gestures for a layer within a view
      */
-    handleTouchOver(_view: BaseProjection<any>, _interaction: ITouchInteraction, _touch: ISingleTouchInteraction): void;
+    handleTouchOver(_view: View<any>, _interaction: ITouchInteraction, _touch: ISingleTouchInteraction): void;
     /**
      * Handles mouse down gestures for a layer within a view
      */
-    handleMouseDown(view: BaseProjection<any>, interaction: IMouseInteraction): void;
+    handleMouseDown(view: View<any>, interaction: IMouseInteraction): void;
     /**
      * Handles touch events for instances for layers
      */
-    handleTouchDown(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
+    handleTouchDown(view: View<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
      * Handles mouse out events for a layer within the view
      */
-    handleMouseOut(view: BaseProjection<any>, interaction: IMouseInteraction): void;
+    handleMouseOut(view: View<any>, interaction: IMouseInteraction): void;
     /**
      * Handles touch events that have been dragged off of a view
      */
-    handleTouchOut(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
+    handleTouchOut(view: View<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
      * Handles mouse up gestures for the layer within the provided view
      */
-    handleMouseUp(view: BaseProjection<any>, interaction: IMouseInteraction): void;
+    handleMouseUp(view: View<any>, interaction: IMouseInteraction): void;
     /**
      * Handles touch up events that occur over a view
      */
-    handleTouchUp(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
+    handleTouchUp(view: View<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
      * Mouse move events on the layer will detect when instances have their item
      * newly over or just moved on
      */
-    handleMouseMove(view: BaseProjection<any>, interaction: IMouseInteraction): void;
+    handleMouseMove(view: View<any>, interaction: IMouseInteraction): void;
     /**
      * Handles touches that are moving along the screen
      */
-    handleTouchMove(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
+    handleTouchMove(view: View<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
      * Handles click gestures on the layer within a view
      */
-    handleMouseClick(view: BaseProjection<any>, interaction: IMouseInteraction): void;
+    handleMouseClick(view: View<any>, interaction: IMouseInteraction): void;
     /**
      * Handles tap interactions with the view
      */
-    handleTap(view: BaseProjection<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
+    handleTap(view: View<any>, interaction: ITouchInteraction, touch: ISingleTouchInteraction): void;
     /**
      * Handles drag gestures for the layer within the view
      */
-    handleMouseDrag(_view: BaseProjection<any>, _interaction: IMouseInteraction): void;
+    handleMouseDrag(_view: View<any>, _interaction: IMouseInteraction): void;
 }

@@ -2,11 +2,21 @@ import { Layer } from "../../surface/layer";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { ShaderModule } from "../processing";
 
+const doc = `
+This provides frame timing information
+or how many frames have been rendered.
+
+Constants:
+float currentTime;
+float currentFrame;
+`;
+
 /**
  * This module provides uniforms for retrieving camera propeerties within the shader.
  */
 ShaderModule.register({
   moduleId: "frame",
+  description: doc,
   content: "",
   compatibility: ShaderInjectionTarget.ALL,
   uniforms: (layer: Layer<any, any>) => [

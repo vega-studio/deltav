@@ -80,6 +80,7 @@ export class SurfaceTileLayer extends Layer<
           update: o => o.c4
         }),
         createAttribute({
+          easing: AutoEasingMethod.easeInOutCubic(500),
           name: "color",
           size: InstanceAttributeSize.FOUR,
           update: o => o.color

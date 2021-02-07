@@ -42,7 +42,7 @@ export declare function wrapMode(gl: GLContext, mode: GLSettings.Texture.Wrappin
 /**
  * Decodes an index to an appropriate color attachment for a frame buffer
  */
-export declare function indexToColorAttachment(gl: GLContext, extensions: IExtensions, index: number, isSingleBuffer: boolean): number;
+export declare function indexToColorAttachment(gl: GLContext, extensions: IExtensions, index: number, isSingleBuffer: boolean, isDrawBufferAttachment: boolean): number;
 /**
  * Maps an index to a texture units Enum key to use on a WebGLRenderingContext object
  */

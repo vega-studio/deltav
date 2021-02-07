@@ -31,12 +31,12 @@ export interface IShaderTemplateOptions {
      *
      * If the body in the callback is null, then that means a main() method could NOT be determined.
      */
-    onMain?(body: string | null): string | {
+    onMain?(body: string | null, header?: string): string | {
         main: string;
         header: string;
     };
     /** This is a key value pair the template uses to match tokens found to replacement values */
-    options: {
+    options?: {
         [key: string]: string;
     };
     /** This is used to indicate which tokens are required both within the shader AND within the 'options' */

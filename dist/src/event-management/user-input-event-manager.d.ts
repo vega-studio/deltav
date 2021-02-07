@@ -6,25 +6,31 @@ import { Surface } from "../surface/surface";
 import { IViewProps, View } from "../surface/view";
 import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
-import { IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types";
+import { IEventInteraction, IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types";
 /**
- * This manages mouse events on the provided canvas and provides some higher level
- * interactions with the surface.
+ * This manages mouse events on the provided canvas and provides some higher
+ * level interactions with the surface.
  */
 export declare class UserInputEventManager {
     /** This is the canvas context we are rendering to */
     context: CanvasElement;
-    /** This is list of Event Managers that receive the events and gestures which perform the nexessary actions */
-    controllers: EventManager[];
+    /**
+     * This is list of Event Managers that receive the events and gestures which
+     * respond to the events and perform actions.
+     */
+    eventManagers: EventManager[];
     /** This is the quad tree for finding intersections with the mouse */
     quadTree: QuadTree<Bounds<View<IViewProps>>>;
     /** The parent layer surface this event manager is beneath */
     surface: Surface;
     /** The events created that need to be removed */
     eventCleanup: [string, EventListenerOrEventListenerObject][];
+    /** This is the most recent event interaction produced by this manager */
+    currentInteraction?: IEventInteraction;
     /**
-     * This flag is set when the system is waiting to render the elements to establish bounds.
-     * No Mouse interations will happen while this is set to true.
+     * This flag is set when the system is waiting to render the elements to
+     * establish bounds. No Mouse interations will happen while this is set to
+     * true.
      */
     private _waitingForRender;
     get waitingForRender(): boolean;

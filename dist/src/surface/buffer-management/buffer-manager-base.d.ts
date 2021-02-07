@@ -1,3 +1,4 @@
+import { Material } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { Vec2, Vec4 } from "../../math";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
@@ -109,6 +110,12 @@ export declare abstract class BufferManagerBase<T extends Instance, U extends IB
      * resize operations.
      */
     incomingChangeList(changes: InstanceDiff<T>[]): void;
+    /**
+     * Default way to create the layer's material. This properly generates the
+     * material, mapping the fragment shaders over to the layer's view's render
+     * targetting system.
+     */
+    makeLayerMaterial(): Material;
     /**
      * This method checks to see if this buffer manager has linked an instance to a buffer
      * location managed by this object.

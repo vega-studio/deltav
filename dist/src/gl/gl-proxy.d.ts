@@ -56,11 +56,8 @@ export declare class GLProxy {
     /**
      * This does what is needed to generate a GPU FBO that we can utilize as a render target
      * for subsequent draw calls.
-     *
-     * TODO: For MRT (using extensions or webgl 2) Our current set up is ok. However, we need
-     * to change this to compile out split buffers for compatibility MRT.
      */
-    compileRenderTarget(target: RenderTarget): boolean | undefined;
+    compileRenderTarget(target: RenderTarget): boolean;
     /**
      * Produces a render buffer object intended for a render target for the depth buffer attachment
      */
@@ -110,9 +107,14 @@ export declare class GLProxy {
      */
     printError(): void;
     /**
+     * Breaks down a string into a multiline structure. Helps pretty print some
+     * items.
+     */
+    lineFormat(str: string): string;
+    /**
      * Prints a shader broken down by lines
      */
-    lineFormatShader(shader: string): string;
+    lineFormatShader(shader: Material["fragmentShader"] | Material["vertexShader"]): string | void;
     /**
      * Ensures a texture object is compiled and/or updated.
      */

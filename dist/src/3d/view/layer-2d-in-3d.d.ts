@@ -28,6 +28,6 @@ export declare enum Axis2D {
  */
 export declare function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(axis2D: Axis2D, classType: ILayerConstructable<T> & {
     defaultProps: U;
-}, props: Omit<U, "key"> & Partial<Pick<U, "key">> & {
+}, props: Omit<U, "key" | "data"> & Partial<Pick<U, "key" | "data">> & {
     control2D: Control2D;
 }): import("../../surface/layer").LayerInitializer;

@@ -2,6 +2,7 @@ import { Attribute } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { IViewProps, View } from "../../surface/view";
 import { IInstanceAttribute, IInstancingUniform, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
 /**
  * The result of an injection into the header of a shader. Allows for injection content into the header
@@ -22,6 +23,11 @@ export declare type ShaderIOHeaderInjectionResult = {
     };
 };
 export declare type ShaderDeclarationStatements = Map<string, string>;
+export declare type ShaderDeclarationStatementLookup = {
+    fs: Map<View<IViewProps>, ShaderDeclarationStatements>;
+    vs: ShaderDeclarationStatements;
+    destructure: ShaderDeclarationStatements;
+};
 /**
  * This is the basis to allow the system to have additional shader injection capabilities.
  * This will cover an object or manager that wishes to inject elements into the header of the

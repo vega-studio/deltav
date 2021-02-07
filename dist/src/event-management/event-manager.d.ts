@@ -66,4 +66,14 @@ export declare abstract class EventManager {
      * EventManager.
      */
     setUserInputManager(mouseManager: UserInputEventManager): void;
+    /**
+     * This is called by the surface so the manager can choose a moment in the
+     * render cycle when to perform certain actions.
+     */
+    willRender(): void;
+    /**
+     * This is called by the surface so the manager can choose a moment in the
+     * render cycle when to perform certain actions.
+     */
+    didRender(): void;
 }

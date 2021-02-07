@@ -56,7 +56,8 @@ export declare class BasicIOExpansion extends BaseIOExpansion {
      */
     private processDestructureBlocks;
     /**
-     * This processes the declarations needed to set up the Input for the shader from the layer.
+     * This processes the declarations needed to set up the Input for the shader
+     * from the layer.
      *
      * This handles the buffer strategies of:
      *

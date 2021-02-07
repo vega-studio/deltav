@@ -1,9 +1,7 @@
-import { Geometry } from "../gl/geometry";
-import { Material } from "../gl/material";
-import { Model } from "../gl/model";
+import { GLSettings } from "../gl";
 import { Instance } from "../instance-provider/instance";
 import { ResourceRouter } from "../resources";
-import { IInstanceAttribute, IInstanceProvider, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, PickType, StreamChangeStrategy } from "../types";
+import { IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
@@ -62,11 +60,20 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
      */
     data: IInstanceProvider<T>;
     /**
-     * This allows an easing ref to be applied to the layer. This ref can be used
-     * for detailed information regarding easing values, which allows for easier
-     * management of timings and feedback for animations being piped to the GPU.
+     * This allows you to remap a layer's fragment output to an output your system
+     * needs. For example: a layer may output a color to the glow buffer, but we
+     * need that information in a different destination view output:
+     *
+     * [FragmentOutput.GLOW]: FragmentOutput.COLOR
+     *
+     * Or we can use this to just disable a layer's output to a buffer:
+     *
+     * [FragmentOutput.GLOW]: FragmentOutput.NONE
+     *
+     * You should be careful to not accidentally map an output to the same output
+     * name the layer may already have in place.
      */
-    ref?: ILayerRef;
+    mapOutput?: Record<number, number>;
     /**
      * Any pipeline declaring a layer cn manipulate a layer's default material
      * settings as every pipeline can have some specific and significant needs the
@@ -82,6 +89,12 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
      * Used for debugging. Logs the generated shader for the layer in the console.
      */
     printShader?: boolean;
+    /**
+     * This allows an easing ref to be applied to the layer. This ref can be used
+     * for detailed information regarding easing values, which allows for easier
+     * management of timings and feedback for animations being piped to the GPU.
+     */
+    ref?: ILayerRef;
     /**
      * This is a property that allows for changes to stream in batches instead of
      * commit in one giant push. This helps if you have 100's of 1000's of
@@ -202,25 +215,35 @@ export interface ILayerPropsInternal<T extends Instance> extends ILayerProps<T> 
 export interface ILayerShaderIOInfo<T extends Instance> {
     /** This is the attribute that specifies the _active flag for an instance */
     activeAttribute: IInstanceAttribute<T>;
-    /** This is the GL geometry filled with the vertex information */
-    geometry: Geometry;
+    /**
+     * These are the fragment shaders associated with each View that is available.
+     */
+    fs: OutputFragmentShader;
     /** This is all of the instance attributes generated for the layer */
     instanceAttributes: IInstanceAttribute<T>[];
     /** Provides the number of vertices a single instance spans */
     instanceVertexCount: number;
-    /** The official shader material generated for the layer */
-    material: Material;
     /**
      * INTERNAL: For the given shader IO provided this is how many instances can
      * be present per buffer.
      */
     maxInstancesPerBuffer: number;
-    /** Default model configuration for rendering in the gl layer */
-    model: Model;
+    /**
+     * Default model configuration for rendering in the gl layer. Since there is a
+     * material per view, it goes to follow that there is a model per view.
+     */
+    drawMode: GLSettings.Model.DrawMode;
     /** This is all of the uniforms generated for the layer */
     uniforms: IUniformInternal[];
+    /** Uniforms generated or discovered during shader processing. */
+    materialUniforms: IInstancingUniform[];
     /** This is all of the vertex attributes generated for the layer */
     vertexAttributes: IVertexAttributeInternal[];
+    /**
+     * This is the vertex shader this layer has produced for processing it's
+     * geometry.
+     */
+    vs: string;
 }
 /**
  * A base class for generating drawable content
@@ -309,20 +332,7 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
      * to the GPU. See ILayerProps for how the configuration happens for this
      * object.
      */
-    streamChanges: {
-        /**
-         * When locked this layer will NOT stream in new changes as it has a current
-         * stream it is completing first.
-         */
-        locked: boolean;
-        /**
-         * When defined, this is the list of items currently being streamed to the
-         * GPU.
-         */
-        stream?: U["data"]["changeList"];
-        /** The index our stream has iterated through for the current stream */
-        streamIndex: number;
-    };
+    private streamChanges;
     /** This is the surface this layer is generated under */
     surface: Surface;
     /** A uid provided to the layer to give it some uniqueness as an object */
@@ -334,8 +344,12 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
      */
     uidToInstance: Map<number, T>;
     /**
-     * This is the view the layer is applied to. The system sets this, modifying
-     * will only cause sorrow.
+     * This is the view the layer is applied to. This changes as the rendering
+     * progresses. A configuration of the surface can specify several views for a
+     * set of layers. So, this will change with the current view being rendered
+     * during a draw pass.
+     *
+     * NOTE: The system sets this, modifying it yourself will only cause sorrow.
      */
     view: View<IViewProps>;
     /**
@@ -380,11 +394,46 @@ export declare class Layer<T extends Instance, U extends ILayerProps<T>> extends
     static createRef<T extends ILayerRef>(): T;
     constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>);
     /**
+     * Validates the shader initialization object from the layer.
+     */
+    private validateShaderIO;
+    /**
+     * Performs clean ups on the data provided by the layer for the Shader
+     * Initialization to make it easier and more reliable to work with when
+     * processing.
+     */
+    private cleanShaderIOElements;
+    /**
+     * When the layer declares it's shader intiialization, it can specify multiple
+     * fragment shader fragments each with their own output target type. We do NOT
+     * allow two fragments to point to the same type. This performs a thorough
+     * check to ensure that does not happen.
+     */
+    private checkForDuplicateOutputTypes;
+    /**
+     * Processes the fragment outputs a layer provides against each view and
+     * generates a merged fragment shader with those fragments optimized for each
+     * view.
+     */
+    private processFragmentShadersForEachView;
+    /**
+     * This performs the actual generation of the vertex and fragment shaders this
+     * layer will use. Each fragment shader is now associated with it's respective
+     * view and will be generated accordingly.
+     */
+    private processLayerShaders;
+    /**
+     * Processes the static vertex information and applies GL Attributes for each
+     * item.
+     */
+    private processVertexAttributes;
+    /**
      * This does special initialization by gathering the layers shader IO,
      * generates a material and injects special automated uniforms and attributes
      * to make instancing work for the shader.
      */
-    init(): boolean;
+    init(views: View<IViewProps>[]): boolean | (void & Boolean);
+    private layerShaderDebugging;
     /**
      * This establishes basic modules required by the layer for the shaders. At
      * it's core functionality, it will support the basic properties a layer has

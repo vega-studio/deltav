@@ -4,10 +4,12 @@ import { IInstanceAttribute, IUniform, IVertexAttribute, Omit, ShaderInjectionTa
 /** Options for the constructor for a new ShaderModuleUnit */
 export declare type ShaderModuleUnitOptions = Omit<Partial<ShaderModuleUnit>, "lock">;
 /**
- * This is a module unit that can be registered as a ShaderModule which the system will use to resolve
- * imports within a shader.
+ * This is a module unit that can be registered as a ShaderModule which the
+ * system will use to resolve imports within a shader.
  */
 export declare class ShaderModuleUnit {
+    /** This description appears in the generated import snippets for writing GLSL */
+    description: string;
     private _isLocked;
     private _content;
     private _compatibility;
@@ -19,17 +21,19 @@ export declare class ShaderModuleUnit {
     get content(): string;
     set content(val: string);
     /**
-     * This defines which shader type the content is compatible with. You can only have one content assigned
-     * per each ShaderInjectionTarget type. Thus you can have a module such as 'picking' with two unique implementations
-     * one for Fragment and one for Vertex shaders. Or you can assign it to both.
+     * This defines which shader type the content is compatible with. You can only
+     * have one content assigned per each ShaderInjectionTarget type. Thus you can
+     * have a module such as 'picking' with two unique implementations one for
+     * Fragment and one for Vertex shaders. Or you can assign it to both.
      */
     get compatibility(): ShaderInjectionTarget;
     set compatibility(val: ShaderInjectionTarget);
     /**
-     * This is the list of module id dependents this unit will need. We store
-     * this here so the module can be analyzed once. Import statements will be stripped and the sub module contents will
-     * be added to the top of the contents of the shader. This only stores ids, as the ids will still need to be analyzed
-     * so duplication can be prevented.
+     * This is the list of module id dependents this unit will need. We store this
+     * here so the module can be analyzed once. Import statements will be stripped
+     * and the sub module contents will be added to the top of the contents of the
+     * shader. This only stores ids, as the ids will still need to be analyzed so
+     * duplication can be prevented.
      */
     get dependents(): string[] | null;
     set dependents(val: string[] | null);
@@ -42,11 +46,13 @@ export declare class ShaderModuleUnit {
      */
     isLocked(): boolean;
     /**
-     * Allows a module to prevent overrides by another module using the same moduleId.
-     * Attempted overrides will throw warnings.
+     * Allows a module to prevent overrides by another module using the same
+     * moduleId. Attempted overrides will throw warnings.
      */
     isFinal?: boolean;
-    /** This is the string ID a shader must use to include the provided content. */
+    /**
+     * This is the string ID a shader must use to include the provided content.
+     */
     get moduleId(): string;
     set moduleId(val: string);
     /**
@@ -58,12 +64,13 @@ export declare class ShaderModuleUnit {
      */
     vertexAttributes?<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>): IVertexAttribute[];
     /**
-     * Default ctor for creating a new Shader Module Unit to be registered with the system.
+     * Default ctor for creating a new Shader Module Unit to be registered with
+     * the system.
      */
     constructor(options: ShaderModuleUnitOptions);
     /**
-     * Applies the content after it's been processed for import statements. You can not set the content this way
-     * again after processing has happened.
+     * Applies the content after it's been processed for import statements. You
+     * can not set the content this way again after processing has happened.
      */
     applyAnalyzedContent(content: string): void;
     /**

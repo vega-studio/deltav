@@ -16,8 +16,6 @@ export interface ICircleLayerProps<T extends CircleInstance> extends ILayer2DPro
         radius?: IAutoEasingMethod<Vec>;
         color?: IAutoEasingMethod<Vec>;
     };
-    /** This sets a scaling factor for the circle's radius */
-    scaleFactor?(): number;
     /** Opacity of the layer as a whole */
     opacity?(): number;
     /**

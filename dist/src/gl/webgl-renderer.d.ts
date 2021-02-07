@@ -46,7 +46,7 @@ export interface IWebGLRendererState {
     /** Sets up a clear mask to ensure the clear operation only happens once per draw */
     clearMask: [boolean, boolean, boolean];
     /** Stores which render target is in focus for the current operations on the renderer */
-    currentRenderTarget: RenderTarget | null;
+    currentRenderTarget: RenderTarget | RenderTarget[] | null;
     /** The current display size of the canvas */
     displaySize: Size;
     /** The current pixel ratio in use */
@@ -67,7 +67,10 @@ export declare class WebGLRenderer {
     private _gl?;
     /** The readonly gl context the renderer determined for use */
     get gl(): WebGLRenderingContext | undefined;
-    /** This is the compiler that performs all actions related to creating and updating buffers and objects on the GPU */
+    /**
+     * This is the compiler that performs all actions related to creating and
+     * updating buffers and objects on the GPU
+     */
     glProxy: GLProxy;
     /** This handles anything related to state changes in the GL state */
     glState: GLState;
@@ -81,13 +84,16 @@ export declare class WebGLRenderer {
      */
     clear(color?: boolean, depth?: boolean, stencil?: boolean): void;
     /**
-     * Clears the color either set with setClearColor, or clears the color specified.
+     * Clears the color either set with setClearColor, or clears the color
+     * specified.
      */
     clearColor(color?: Vec4): void;
     /**
-     * Free all resources this renderer utilized. Make sure textures and frame/render/geometry
-     * buffers are all deleted. We may even use aggressive buffer removal that force resizes the buffers
-     * so their resources are immediately reduced instead of waiting for the JS engine to free up resources.
+     * Free all resources this renderer utilized. Make sure textures and
+     * frame/render/geometry buffers are all deleted. We may even use aggressive
+     * buffer removal that force resizes the buffers so their resources are
+     * immediately reduced instead of waiting for the JS engine to free up
+     * resources.
      */
     dispose(): void;
     /**
@@ -110,8 +116,8 @@ export declare class WebGLRenderer {
     /**
      * Returns the full viewport for the current target.
      *
-     * If a RenderTarget is not set, then this returns the viewport of the canvas ignoring
-     * the current pixel ratio.
+     * If a RenderTarget is not set, then this returns the viewport of the canvas
+     * ignoring the current pixel ratio.
      */
     getFullViewport(): {
         x: number;
@@ -126,18 +132,24 @@ export declare class WebGLRenderer {
     /**
      * Renders the Scene specified
      */
-    render(scene: Scene, target?: RenderTarget | null): void;
+    render(scene: Scene, target?: RenderTarget | RenderTarget[] | null): void;
     /**
      * Renders the specified model
      */
     private renderModel;
     /**
-     * Reads the pixels from the current Render Target (or more specifically from the current framebuffer)
+     * Reads the pixels from the current Render Target (or more specifically from
+     * the current framebuffer)
      *
-     * By default the viewport is set based on the canvas being rendered into. Include a render target
-     * to make the viewport be applied with the target considered rather than needing pixel density considerations.
+     * By default the viewport is set based on the canvas being rendered into.
+     * Include a render target to make the viewport be applied with the target
+     * considered rather than needing pixel density considerations.
+     *
+     * When the current render target has multiple buffers or IS multiple buffers,
+     * then you have the ability to use bufferType to target a buffer based on
+     * it's outputType to specify that buffer from which you wish to read.
      */
-    readPixels(x: number, y: number, width: number, height: number, out: ArrayBufferView): void;
+    readPixels(x: number, y: number, width: number, height: number, out: ArrayBufferView, bufferType?: number): void;
     /**
      * Sets the clear color to be used when the clear operation executes.
      */
@@ -147,18 +159,19 @@ export declare class WebGLRenderer {
      */
     setPixelRatio(ratio: number): void;
     /**
-     * Sets the region the scissor test will accept as visible. Anything outside the region
-     * will be clipped.
+     * Sets the region the scissor test will accept as visible. Anything outside
+     * the region will be clipped.
      *
-     * By default the scissor region is set based on the canvas being rendered into. Include a render target
-     * to make the scissor region be applied with the target considered rather than needing pixel density considerations.
+     * By default the scissor region is set based on the canvas being rendered
+     * into. Include a render target to make the scissor region be applied with
+     * the target considered rather than needing pixel density considerations.
      */
     setScissor(bounds?: {
         x: number;
         y: number;
         width: number;
         height: number;
-    }, target?: RenderTarget): void;
+    }, target?: RenderTarget | RenderTarget[] | null): void;
     /**
      * Resizes the render area to the specified amount.
      */
@@ -166,7 +179,7 @@ export declare class WebGLRenderer {
     /**
      * This sets the context to render into the indicated target
      */
-    setRenderTarget(target: RenderTarget | null): void;
+    setRenderTarget(target: RenderTarget | RenderTarget[] | null): void;
     /**
      * Sets the viewport we render into.
      *

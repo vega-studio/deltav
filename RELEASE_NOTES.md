@@ -1,3 +1,9 @@
+## 2.0.1
+
+## Fixed
+
+- [`FIXED`]: Fixed Transform view matrix parenting.
+
 ## 2.0.0
 
 ## Breaking

@@ -72,11 +72,22 @@ export declare class Transform extends TreeNode<Transform> {
      * orientation is reverse to the world (the camera would exist in world space
      * using the normal world matrix, but the operations to transform everything
      * to the cameras perspective is in the exact opposite order.)
-     *
-     * Currently, the viewMatrix does NOT consider parenting.
      */
     get viewMatrix(): Mat4x4;
     private _viewMatrix?;
+    /**
+     * This excludes any parent transform information and is the view matrix
+     * specific to this transform.
+     *
+     * This is the transform matrix that contains the operations in reverse order.
+     * This produces a 'view matrix' for the transform and shouldn't be considered
+     * an inverse matrix. This is commonly used for Camera constructs whos
+     * orientation is reverse to the world (the camera would exist in world space
+     * using the normal world matrix, but the operations to transform everything
+     * to the cameras perspective is in the exact opposite order.)
+     */
+    get localViewMatrix(): Mat4x4;
+    private _localViewMatrix?;
     /**
      * Orientation of this transform in world space. When no parent is present
      * rotation === localRotation.

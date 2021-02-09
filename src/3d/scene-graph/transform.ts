@@ -9,6 +9,7 @@ import {
   length4Components,
   lookAtQuat,
   M3R,
+  M4R,
   Mat4x4,
   matrix3x3FromUnitQuatModel,
   multiply4x4,
@@ -67,12 +68,12 @@ export class Transform extends TreeNode<Transform> {
    * a decomposition yet.
    */
   private needsWorldDecomposition = false;
-
   /**
    * Flag that indicates this transform has a matrix that performs the
    * operations in reverse (such as for a camera.)
    */
   private hasViewMatrix: boolean = false;
+
   /** This is a special instance listener for the transform */
   private _instance: Instance3D | null = null;
   set instance(val: Instance3D | null) {
@@ -99,6 +100,7 @@ export class Transform extends TreeNode<Transform> {
     return this._matrix.value;
   }
   private _matrix: UpdateProp<Mat4x4> = { value: identity4() };
+
   /**
    * This is the local matrix which represents the transform this Transform
    * performs which does NOT include the parent transforms to this transform.
@@ -116,17 +118,35 @@ export class Transform extends TreeNode<Transform> {
    * orientation is reverse to the world (the camera would exist in world space
    * using the normal world matrix, but the operations to transform everything
    * to the cameras perspective is in the exact opposite order.)
-   *
-   * Currently, the viewMatrix does NOT consider parenting.
    */
   get viewMatrix(): Mat4x4 {
     this.hasViewMatrix = true;
     if (this._viewMatrix === void 0) this.invalidate();
     this.update();
     if (this._viewMatrix === void 0) return identity4();
-    return this._viewMatrix;
+    return this._viewMatrix.value;
   }
-  private _viewMatrix?: Mat4x4;
+  private _viewMatrix?: UpdateProp<Mat4x4>;
+
+  /**
+   * This excludes any parent transform information and is the view matrix
+   * specific to this transform.
+   *
+   * This is the transform matrix that contains the operations in reverse order.
+   * This produces a 'view matrix' for the transform and shouldn't be considered
+   * an inverse matrix. This is commonly used for Camera constructs whos
+   * orientation is reverse to the world (the camera would exist in world space
+   * using the normal world matrix, but the operations to transform everything
+   * to the cameras perspective is in the exact opposite order.)
+   */
+  get localViewMatrix(): Mat4x4 {
+    this.hasViewMatrix = true;
+    if (this._localViewMatrix === void 0) this.invalidate();
+    this.update();
+    if (this._localViewMatrix === void 0) return identity4();
+    return this._localViewMatrix.value;
+  }
+  private _localViewMatrix?: UpdateProp<Mat4x4>;
 
   /**
    * Orientation of this transform in world space. When no parent is present
@@ -146,6 +166,7 @@ export class Transform extends TreeNode<Transform> {
       );
     }
   }
+
   /**
    * Orientation of this transform without it's parent's orientation. When no
    * parent is present rotation === localRotation.
@@ -216,6 +237,7 @@ export class Transform extends TreeNode<Transform> {
       );
     }
   }
+
   /**
    * The position this transform applies ignoring the parent Transform. When
    * there is no parent, position === localPosition.
@@ -381,11 +403,15 @@ export class Transform extends TreeNode<Transform> {
     // If we are going into an undefined parent state, then we can merge our
     // world and local values to save on RAM
     if (!v) {
-      this._forward = this._localForward;
-      this._matrix = this._localMatrix;
-      this._rotation = this._localRotation;
-      this._scale = this._localScale;
-      this._position = this._localPosition;
+      this._forward.value = this._localForward.value;
+      this._matrix.value = this._localMatrix.value;
+      this._rotation.value = this._localRotation.value;
+      this._scale.value = this._localScale.value;
+      this._position.value = this._localPosition.value;
+
+      if (this.hasViewMatrix && this._viewMatrix && this._localViewMatrix) {
+        this._viewMatrix.value = this._localViewMatrix.value;
+      }
     }
 
     // Once we set a parent matrix, this transform must handle a dividing moment
@@ -396,6 +422,10 @@ export class Transform extends TreeNode<Transform> {
       this._rotation.value = oneQuat();
       this._scale.value = [1, 1, 1];
       this._position.value = [0, 0, 0];
+
+      if (this.hasViewMatrix && this._viewMatrix && this._localViewMatrix) {
+        this._viewMatrix.value = identity4();
+      }
     }
 
     // Set the parent and flag everything for update
@@ -490,7 +520,19 @@ export class Transform extends TreeNode<Transform> {
 
       if (this.hasViewMatrix) {
         if (this._viewMatrix === void 0) {
-          this._viewMatrix = identity4();
+          this._viewMatrix = { value: identity4() };
+        }
+
+        if (this._localViewMatrix === void 0) {
+          // We must merge the local and complete matrix depending on the parent
+          // status. If there is a parent, the local matrix gets it's own memory
+          // space, otherwise local and complete view matrix share the same
+          // matrix.
+          if (this.parent) {
+            this._localViewMatrix = { value: identity4() };
+          } else {
+            this._localViewMatrix = { value: this._viewMatrix.value };
+          }
         }
 
         // When generating this transform, it is important to remember that when
@@ -504,8 +546,9 @@ export class Transform extends TreeNode<Transform> {
           inverse3(this._localScale.value, V3R[0]),
           transpose3x3(R, M3R[1]),
           scale3(this._localPosition.value, -1, V3R[1]),
-          this._viewMatrix
+          this._localViewMatrix.value
         );
+        this._localViewMatrix.didUpdate = true;
       }
     }
 
@@ -545,6 +588,56 @@ export class Transform extends TreeNode<Transform> {
         );
         this._matrix.didUpdate = true;
         this.needsWorldDecomposition = true;
+
+        // Update view matrices as well if present. This is a little more costly
+        // than normal matrix chaining as we don't accidentally force parent
+        // matrices to support having their own view matrix. View matrices need
+        // to be a bit more isolated as they are a much rarer occurrence in
+        // these types of display trees. So, to prevent creation and chaining of
+        // view matrices, we simply calculate the parent's world view matrix for
+        // it, then apply that calculated matrix to our local view matrix.
+        if (this.hasViewMatrix && this._viewMatrix && this._localViewMatrix) {
+          // If our parent has a view matrix, awesome! Let's use that to speed
+          // up calculations.
+          if (
+            this.parent.hasViewMatrix &&
+            this.parent._viewMatrix &&
+            this.parent._localViewMatrix
+          ) {
+            multiply4x4(
+              this.parent._viewMatrix.value,
+              this._localViewMatrix.value,
+              this._viewMatrix.value
+            );
+          }
+
+          // Otherwise, don't attempt to retrieve the matrix lest we
+          // accidentally casue the parent to generate a view matrix which is
+          // not ideal.
+          else {
+            // Get a complete rotation transform in world space for the parent
+            matrix3x3FromUnitQuatModel(this.parent.rotation, M3R[0]);
+
+            // Generate a view matrix on behalf of the parent using the world
+            // orientation of the parent
+            TRS4x4(
+              inverse3(this.parent._scale.value, V3R[0]),
+              transpose3x3(M3R[0], M3R[1]),
+              scale3(this.parent._position.value, -1, V3R[1]),
+              M4R[0]
+            );
+
+            // Use our computed parent view matrix to make the total oriented
+            // view happen.
+            multiply4x4(
+              this._localViewMatrix.value,
+              M4R[0],
+              this._viewMatrix.value
+            );
+          }
+
+          this._viewMatrix.didUpdate = true;
+        }
       }
     }
 

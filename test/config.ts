@@ -2,6 +2,7 @@ import { BaseDemo } from "./common/base-demo";
 import { BasicDemo } from "./demos/basic-demo";
 import { BasicDemo3D } from "./demos/basic-demo-3d";
 import { CameraControllerDemo3D } from "./demos/camera-controller-demo-3d";
+import { CameraSceneGraphDemo } from "./demos/camera-scene-graph-demo";
 import { ChartDemo } from "./demos/chart-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
 import { EaseDemo } from "./demos/ease-demo";
@@ -47,5 +48,6 @@ demos.set("touch-demo", TouchDemo);
 demos.set("video-demo", VideoDemo);
 demos.set("word-sand", WordSandDemo);
 demos.set("multiple-render-targets", MultiRenderTargetDemo3D);
+demos.set("camera-scene-graph", CameraSceneGraphDemo);
 
 export const demoKeys = Array.from(demos.keys());

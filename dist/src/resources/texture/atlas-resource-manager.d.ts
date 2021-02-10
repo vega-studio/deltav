@@ -71,7 +71,7 @@ export declare class AtlasResourceManager extends BaseResourceManager<IAtlasReso
      */
     request<T extends Instance, U extends ILayerProps<T>>(layer: Layer<T, U>, instance: Instance, request: IAtlasResourceRequest, _context?: IResourceContext): InstanceIOValue;
     /**
-     * System is requesting properties for a resource should be updated.
+     * System is requesting properties for a resource to be updated.
      */
     updateResource(options: BaseResourceOptions): void;
 }

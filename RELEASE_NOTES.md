@@ -1,3 +1,9 @@
+## 2.0.3
+
+## Fixed
+
+- [`FIXED`]: Atlas texturing had some boundary issues for tightly packed elements
+
 ## 2.0.2
 
 ## Fixed

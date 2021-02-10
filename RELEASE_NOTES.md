@@ -1,3 +1,11 @@
+## 2.0.2
+
+## Fixed
+
+- [`FIXED`]: There was an issue with multiple textures per layer which affected instancing in strange ways. Instances now all render properly with their correctly loaded textures from the atlas resource manager.
+- [`FIXED`]: Atlas image sources can be loaded in as base64 strings again.
+- [`FIXED`]: Out tokens in fragment output comments will no longer break the shader building process
+
 ## 2.0.1
 
 ## Fixed

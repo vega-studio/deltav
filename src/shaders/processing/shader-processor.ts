@@ -16,6 +16,7 @@ import {
   OutputFragmentShaderTarget,
   ShaderInjectionTarget
 } from "../../types";
+import { removeComments } from "../../util/remove-comments";
 import { shaderTemplate } from "../../util/shader-templating";
 import { templateVars } from "../template-vars";
 import { BaseIOSorting } from "./base-io-sorting";
@@ -159,7 +160,7 @@ export class ShaderProcessor {
       const layoutOutputIndex = viewOutputs.indexOf(layerOutput.outputType);
 
       shaderTemplate({
-        shader: layerOutput.source,
+        shader: removeComments(layerOutput.source),
 
         /**
          * Analyze each token for "out" tokens indicating output
@@ -365,7 +366,7 @@ export class ShaderProcessor {
       }
 
       shaderTemplate({
-        shader: layerOutput.source,
+        shader: removeComments(layerOutput.source),
 
         /**
          * Analyze each token for "out" tokens indicating output

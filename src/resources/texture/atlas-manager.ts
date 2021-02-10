@@ -178,8 +178,8 @@ export class AtlasManager {
       };
 
       // Auto add a buffer in
-      dimensions.bounds.width += 1;
-      dimensions.bounds.height += 1;
+      dimensions.bounds.width += 0;
+      dimensions.bounds.height += 0;
       // Get the atlas map node
       let packing: PackNode<SubTexture> = atlas.packing;
       // Store the node resulting from the insert operation
@@ -214,10 +214,10 @@ export class AtlasManager {
 
         // Set our image's atlas properties
         PackNode.applyToSubTexture(packing, insertedNode, texture, {
-          top: 0,
-          left: 0,
-          right: 1,
-          bottom: 1
+          top: 0.5,
+          left: 0.5,
+          right: 0.5,
+          bottom: 0.5
         });
 
         // Track the subtexture with the source that created it.

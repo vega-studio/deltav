@@ -17,6 +17,7 @@ float circle(vec2 coord, float radius){
 void main() {
   float step_factor = circle(gl_PointCoord, 1.0);
 
+  // ${out: color} = hey
   ${out: color} = mix(
     vec4(0.0, 0.0, 0.0, 0.0),
     vertexColor,

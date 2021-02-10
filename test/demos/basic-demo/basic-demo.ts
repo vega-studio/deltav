@@ -11,22 +11,17 @@ import {
   ClearFlags,
   commands,
   createLayer,
-  createTexture,
   createView,
   EasingUtil,
-  FragmentOutputType,
   IMouseInteraction,
   InstanceProvider,
   ITouchInteraction,
   length2,
   nextFrame,
   onFrame,
-  PickType,
-  PostEffect,
   scale2,
   SimpleEventHandler,
   Size,
-  TextureSize,
   Vec2,
   Vec2Compat,
   Vec4,
@@ -120,22 +115,7 @@ export class BasicDemo extends BaseDemo {
       cameras: {
         main: new Camera2D()
       },
-      resources: {
-        color: createTexture({
-          width: TextureSize.SCREEN,
-          height: TextureSize.SCREEN,
-          textureSettings: {
-            generateMipMaps: false
-          }
-        }),
-        picking: createTexture({
-          width: TextureSize.SCREEN_QUARTER,
-          height: TextureSize.SCREEN_QUARTER,
-          textureSettings: {
-            generateMipMaps: false
-          }
-        })
-      },
+      resources: {},
       eventManagers: cameras => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
@@ -157,7 +137,7 @@ export class BasicDemo extends BaseDemo {
           }
         })
       }),
-      scenes: (resources, providers, cameras) => ({
+      scenes: (_resources, providers, cameras) => ({
         preRender: commands(surface => {
           surface.commands.decodePicking();
         }),
@@ -166,26 +146,7 @@ export class BasicDemo extends BaseDemo {
             main: createView(View2D, {
               camera: cameras.main,
               background: [0, 0, 0, 1],
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-              output: {
-                buffers: {
-                  [FragmentOutputType.COLOR]: resources.color
-                },
-                depth: true
-              }
-            }),
-            pick: createView(View2D, {
-              camera: cameras.main,
-              screenScale: [4, 4],
-              background: [0, 0, 0, 1],
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-              pixelRatio: 0.5,
-              output: {
-                buffers: {
-                  [FragmentOutputType.PICKING]: resources.picking
-                },
-                depth: true
-              }
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
             })
           },
           layers: {
@@ -200,23 +161,9 @@ export class BasicDemo extends BaseDemo {
               },
 
               data: providers.circles,
-              usePoints: true,
-              picking: PickType.SINGLE,
-
-              onMouseOver: info => {
-                info.instances.forEach(i => (i.color = [1, 1, 1, 1]));
-              },
-
-              onMouseOut: info => {
-                info.instances.forEach(i => (i.color = this.makeColor()));
-              }
+              usePoints: true
             })
           }
-        },
-        postEffects: {
-          toScreen: PostEffect.draw({
-            input: resources.color
-          })
         }
       })
     });

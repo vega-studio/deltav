@@ -120,31 +120,42 @@ export class TexturingDemo extends BaseDemo {
     camera.lookAt([0, 0, -20], [0, 1, 0]);
     const factor =
       camera.projectionType === CameraProjectionType.PERSPECTIVE ? 1 : 100;
+    const cubes: CubeInstance[] = [];
 
-    const cube = this.providers.cubes.add(
-      new CubeInstance({
-        topTexture: require("./assets/grass.png"),
-        sideTexture: require("./assets/dirt.png"),
-        color: [0.9, 0.56, 0.2, 1],
-        size: scale3([1, 1, 1], factor)
-      })
-    );
+    for (let i = -3; i < 3; ++i) {
+      const cube = this.providers.cubes.add(
+        new CubeInstance({
+          topTexture: require("./assets/grass.png"),
+          sideTexture: require("./assets/dirt.png"),
+          size: scale3([1, 1, 1], factor)
+        })
+      );
+
+      cube.transform.position = [factor * 2 * i + 5, 0, 0];
+      cubes.push(cube);
+    }
 
     this.loopId = onAnimationLoop((t: number) => {
       const theta = (t / 1400) * Math.PI * 2;
-      cube.position = add3(
-        [Math.sin(theta) * 10 * factor, 0, Math.cos(theta) * 10 * factor],
-        [0, 0, -20]
-      );
+      cubes.forEach((cube, i) => {
+        cube.position = add3(
+          [
+            Math.sin(theta + i) * 10 * factor,
+            0,
+            Math.cos(theta + i) * 10 * factor
+          ],
+          [0, 0, -20]
+        );
 
-      cube.transform.lookAtLocal(
-        add3(cube.transform.position, [
-          Math.cos(-theta),
-          Math.sin(-theta / 20),
-          Math.sin(-theta)
-        ]),
-        [0, 1, 0]
-      );
-    }, 1000);
+        cube.transform.lookAtLocal(
+          add3(cube.transform.position, [
+            Math.cos(-theta + i),
+            Math.sin(-(theta + i) / 20),
+            Math.sin(-theta + i)
+          ]),
+          [0, 1, 0]
+        );
+      });
+    }, 2000);
   }
 }

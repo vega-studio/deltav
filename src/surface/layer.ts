@@ -682,7 +682,6 @@ export class Layer<
     // own shader or group of shaders.
     for (let i = 0, iMax = views.length; i < iMax; ++i) {
       const view = views[i];
-      console.warn("GENERATING OUTPUT FRAGMENT SHADER FOR", view.id, this.id);
 
       // Delete previously existing picking fragment output so it can be
       // injected in the correct location.

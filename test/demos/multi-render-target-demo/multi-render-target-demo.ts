@@ -201,11 +201,9 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           },
           layers: {
             cubes: createLayer(CubeLayer, {
-              printShader: true,
               data: providers.cubes
             }),
             noColorCubes: createLayer(CubeLayer, {
-              printShader: true,
               data: providers.noColor,
               mapOutput: this.parameters.glow
                 ? {
@@ -214,7 +212,6 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
                 : void 0
             }),
             noGlowCubes: createLayer(CubeLayer, {
-              printShader: true,
               data: providers.noGlow,
               mapOutput: {
                 [FragmentOutputType.GLOW]: FragmentOutputType.NONE

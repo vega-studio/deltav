@@ -66,7 +66,6 @@ export class AtlasResourceManager extends BaseResourceManager<
   async dequeueRequests() {
     // This flag will be modified to reflect if a dequeue operation has occurred
     let didDequeue = false;
-
     const resourceRequestsWithKey: [string, IAtlasResourceRequest[]][] = [];
 
     this.requestQueue.forEach((requests, resourceKey) => {
@@ -90,6 +89,9 @@ export class AtlasResourceManager extends BaseResourceManager<
         const atlasRequests = this.requestLookup.get(targetAtlas);
 
         if (atlasRequests) {
+          // We will gather all unique instances for triggering next frame
+          const toTrigger = new Set<Instance>();
+
           // Once the manager has been updated, we can now flag all of the instances waiting for the resources
           // As active, which should thus trigger an update to the layers to perform a diff for each instance
           allRequests.forEach(request => {
@@ -105,24 +107,19 @@ export class AtlasResourceManager extends BaseResourceManager<
                   // Make sure the instance is active
                   instance.active = true;
                 }
+
+                toTrigger.add(instance);
               }
-
-              // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
-              // applied to the instance's rendering
-              nextFrame(() => {
-                const triggered = new Set();
-
-                for (let i = 0, iMax = requesters.length; i < iMax; ++i) {
-                  const instance = requesters[i][1];
-
-                  if (!triggered.has(instance)) {
-                    triggered.add(instance);
-                    instance.active = true;
-                    instance.resourceTrigger();
-                  }
-                }
-              });
             }
+          });
+
+          // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
+          // applied to the instance's rendering
+          nextFrame(() => {
+            toTrigger.forEach(instance => {
+              instance.active = true;
+              instance.resourceTrigger();
+            });
           });
         }
       }
@@ -215,8 +212,9 @@ export class AtlasResourceManager extends BaseResourceManager<
       if (existingRequests) {
         existingRequests.push([layer, instance]);
         instance.active = false;
+        // request.texture = EMPTY_SUBTEXTURE;
 
-        return subTextureIOValue(texture);
+        return subTextureIOValue(request.texture);
       }
     } else {
       atlasRequests = new Map();
@@ -237,6 +235,7 @@ export class AtlasResourceManager extends BaseResourceManager<
       this.requestQueue.set(resourceContext, requests);
     }
 
+    // request.texture = EMPTY_SUBTEXTURE;
     requests.push(request);
     atlasRequests.set(request, [[layer, instance]]);
 
@@ -245,7 +244,7 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * System is requesting properties for a resource should be updated.
+   * System is requesting properties for a resource to be updated.
    */
   updateResource(options: BaseResourceOptions) {
     if (!isAtlasResource(options)) return;

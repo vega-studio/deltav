@@ -31,8 +31,6 @@ export class CubeInstance extends Instance3D {
   @observable topTexture: TextureResource;
   /** Sets the dimensions of the cube */
   @observable size: Size = [1, 1, 1];
-  /** Sets the color of the cube */
-  @observable color: Color = [1, 0, 0, 1];
 
   topRequest?: IAtlasResourceRequest;
   sideRequest?: IAtlasResourceRequest;
@@ -40,7 +38,6 @@ export class CubeInstance extends Instance3D {
   constructor(options: ICubeOptions) {
     super(options);
     this.size = options.size || this.size;
-    this.color = options.color || this.color;
     this.topTexture = options.topTexture;
     this.sideTexture = options.sideTexture;
   }

@@ -26,6 +26,7 @@ export class Images extends BaseExample {
 
   makeProvider(): InstanceProvider<ImageInstance> {
     const imageProvider = new InstanceProvider<ImageInstance>();
+    const images = [];
 
     for (let i = 0; i < 25; ++i) {
       for (let k = 0; k < 25; ++k) {
@@ -45,7 +46,7 @@ export class Images extends BaseExample {
         // Store the index in the width and height until it gets established
         image.width = i;
         image.height = k;
-        imageProvider.add(image);
+        images.push(imageProvider.add(image));
       }
     }
 

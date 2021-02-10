@@ -151,7 +151,6 @@ export class BasicDemo extends BaseDemo {
           },
           layers: {
             circles: createLayer(CircleLayer, {
-              printShader: true,
               animate: {
                 center: AutoEasingMethod.easeInOutCubic(
                   2000,

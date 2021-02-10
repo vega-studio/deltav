@@ -13,6 +13,7 @@ import {
 import { Bounds } from "../../math/primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
+import { isString } from "../../types";
 import { Atlas, IAtlasResource } from "./atlas";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
 import { IPackNodeDimensions, PackNode } from "./pack-node";
@@ -298,6 +299,7 @@ export class AtlasManager {
           };
 
           image.onerror = function() {
+            console.error("Error generating Image element for source:", source);
             image.onload = null;
             resolve(null);
           };
@@ -336,25 +338,27 @@ export class AtlasManager {
 
       // Return the video here to indicate a successful load
       return source;
-    } else if (typeof source === "string") {
+    } else if (isString(source)) {
       const dataURL = source;
 
       let image = await new Promise<TexImageSource | null>(resolve => {
-        const image = new Image();
+        const generatingImage = new Image();
 
-        image.onload = function() {
-          subTexture.pixelWidth = image.width;
-          subTexture.pixelHeight = image.height;
-          subTexture.aspectRatio = image.width / image.height;
-          image.onload = null;
-          resolve(image);
+        generatingImage.onload = function() {
+          subTexture.pixelWidth = generatingImage.width;
+          subTexture.pixelHeight = generatingImage.height;
+          subTexture.aspectRatio =
+            generatingImage.width / generatingImage.height;
+          generatingImage.onload = null;
+          resolve(generatingImage);
         };
 
-        image.onerror = function() {
+        generatingImage.onerror = function() {
+          console.error("Error generating Image element for source:", source);
           resolve(null);
         };
 
-        image.src = dataURL;
+        generatingImage.src = dataURL;
       });
 
       if (
@@ -367,6 +371,8 @@ export class AtlasManager {
           resource.rasterizationScale || 1
         );
       }
+
+      return image;
     } else {
       let image: TexImageSource = source;
 
@@ -383,8 +389,6 @@ export class AtlasManager {
 
       return image;
     }
-
-    return null;
   }
 
   /**

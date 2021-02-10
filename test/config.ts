@@ -17,6 +17,7 @@ import { SceneGraphDemo3D } from "./demos/scene-graph-demo-3d";
 import { StreamDemo } from "./demos/stream-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";
 import { TextDemo } from "./demos/text-demo";
+import { TexturingDemo } from "./demos/texturing-demo";
 import { TouchDemo } from "./demos/touch-demo";
 import { VideoDemo } from "./demos/video-demo";
 import { WordSandDemo } from "./demos/word-sand";
@@ -49,5 +50,6 @@ demos.set("video-demo", VideoDemo);
 demos.set("word-sand", WordSandDemo);
 demos.set("multiple-render-targets", MultiRenderTargetDemo3D);
 demos.set("camera-scene-graph", CameraSceneGraphDemo);
+demos.set("texturing", TexturingDemo);
 
 export const demoKeys = Array.from(demos.keys());

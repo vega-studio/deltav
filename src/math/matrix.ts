@@ -10,6 +10,7 @@ import {
 } from "./vector";
 
 const { cos, sin, tan } = Math;
+const PI_2 = Math.PI / 2;
 
 // prettier-ignore
 export type Mat2x2 = [
@@ -841,20 +842,25 @@ export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
-  if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
+export function shearX4x4(
+  alongY: number,
+  alongZ: number,
+  out?: Mat4x4
+): Mat4x4 {
+  if (alongZ >= PI_2 || alongZ <= -PI_2 || alongY >= PI_2 || alongY <= -PI_2) {
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
   out = out || identity4();
-  const shear = tan(radians);
+  const shearZ = tan(alongZ);
+  const shearY = tan(alongY);
 
   // prettier-ignore
   return apply4x4(
     out,
-    1, shear, shear, 0,
-    shear, 1, 0, 0,
-    shear, 0, 1, 0,
+    1, 0, 0, 0,
+    shearY, 1, 0, 0,
+    shearZ, 0, 1, 0,
     0, 0, 0, 1
   );
 }
@@ -865,20 +871,25 @@ export function shearX4x4(radians: number, out?: Mat4x4): Mat4x4 {
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
-  if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
+export function shearY4x4(
+  alongX: number,
+  alongZ: number,
+  out?: Mat4x4
+): Mat4x4 {
+  if (alongZ >= PI_2 || alongZ <= -PI_2 || alongX >= PI_2 || alongX <= -PI_2) {
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
   out = out || identity4();
-  const shear = tan(radians);
+  const shearZ = tan(alongZ);
+  const shearX = tan(alongX);
 
   // prettier-ignore
   return apply4x4(
     out,
-    1, shear, 0, 0,
-    shear, 1, shear, 0,
-    0, shear, 1, 0,
+    1, shearX, 0, 0,
+    0, 1, 0, 0,
+    0, shearZ, 1, 0,
     0, 0, 0, 1
   );
 }
@@ -889,20 +900,25 @@ export function shearY4x4(radians: number, out?: Mat4x4): Mat4x4 {
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4 {
-  if (radians >= Math.PI / 2 || radians <= -Math.PI / 2) {
+export function shearZ4x4(
+  alongX: number,
+  alongY: number,
+  out?: Mat4x4
+): Mat4x4 {
+  if (alongY >= PI_2 || alongY <= -PI_2 || alongX >= PI_2 || alongX <= -PI_2) {
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
   out = out || identity4();
-  const shear = tan(radians);
+  const shearY = tan(alongY);
+  const shearX = tan(alongX);
 
   // prettier-ignore
   return apply4x4(
     out,
-    1, 0, shear, 0,
-    0, 1, shear, 0,
-    shear, shear, 1, 0,
+    1, 0, shearX, 0,
+    0, 1, shearY, 0,
+    0, 0, 1, 0,
     0, 0, 0, 1
   );
 }

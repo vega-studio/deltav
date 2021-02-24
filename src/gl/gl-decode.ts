@@ -54,7 +54,73 @@ export function texelFormat(
       return gl.RGBA;
 
     default:
-      console.warn("An Unsupported texel format was provided", format);
+      if (gl instanceof WebGL2RenderingContext) {
+        switch (format) {
+          case GLSettings.Texture.TexelDataType.R8:
+            return gl.R8;
+          case GLSettings.Texture.TexelDataType.R16F:
+            return gl.R16F;
+          case GLSettings.Texture.TexelDataType.R32F:
+            return gl.R32F;
+          case GLSettings.Texture.TexelDataType.R8UI:
+            return gl.R8UI;
+          case GLSettings.Texture.TexelDataType.RG8:
+            return gl.RG8;
+          case GLSettings.Texture.TexelDataType.RG16F:
+            return gl.RG16F;
+          case GLSettings.Texture.TexelDataType.RG32F:
+            return gl.RG32F;
+          case GLSettings.Texture.TexelDataType.RG8UI:
+            return gl.RG8UI;
+          case GLSettings.Texture.TexelDataType.RG16UI:
+            return gl.RG16UI;
+          case GLSettings.Texture.TexelDataType.RG32UI:
+            return gl.RG32UI;
+          case GLSettings.Texture.TexelDataType.RGB8:
+            return gl.RGB8;
+          case GLSettings.Texture.TexelDataType.SRGB8:
+            return gl.SRGB8;
+          case GLSettings.Texture.TexelDataType.RGB565:
+            return gl.RGB565;
+          case GLSettings.Texture.TexelDataType.R11F_G11F_B10F:
+            return gl.R11F_G11F_B10F;
+          case GLSettings.Texture.TexelDataType.RGB9_E5:
+            return gl.RGB9_E5;
+          case GLSettings.Texture.TexelDataType.RGB16F:
+            return gl.RGB16F;
+          case GLSettings.Texture.TexelDataType.RGB32F:
+            return gl.RGB32F;
+          case GLSettings.Texture.TexelDataType.RGB8UI:
+            return gl.RGB8UI;
+          case GLSettings.Texture.TexelDataType.RGBA8:
+            return gl.RGBA8;
+          case GLSettings.Texture.TexelDataType.SRGB8_ALPHA8:
+            return gl.SRGB8_ALPHA8;
+          case GLSettings.Texture.TexelDataType.RGB5_A1:
+            return gl.RGB5_A1;
+          case GLSettings.Texture.TexelDataType.RGB10_A2:
+            return gl.RGB10_A2;
+          case GLSettings.Texture.TexelDataType.RGBA4:
+            return gl.RGBA4;
+          case GLSettings.Texture.TexelDataType.RGBA16F:
+            return gl.RGBA16F;
+          case GLSettings.Texture.TexelDataType.RGBA32F:
+            return gl.RGBA32F;
+          case GLSettings.Texture.TexelDataType.RGBA8UI:
+            return gl.RGBA8UI;
+
+          default:
+            console.warn(
+              "An unsupported texel format was provided that is not supported in WebGL 1 or 2"
+            );
+            return gl.RGBA;
+        }
+      }
+
+      console.warn(
+        "An Unsupported texel format was provided. Some formats are only available in WebGL 2",
+        format
+      );
       return gl.RGBA;
   }
 }

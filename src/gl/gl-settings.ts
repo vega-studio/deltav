@@ -274,7 +274,60 @@ export namespace GLSettings {
        * Red, green, blue and alpha components are read from the color buffer.
        */
       RGBA = 6,
-      RGBE = 7
+      RGBE = 7,
+
+      /** WebGL 2 texel format */
+      R8 = 8,
+      /** WebGL 2 texel format */
+      R16F = 9,
+      /** WebGL 2 texel format */
+      R32F = 10,
+      /** WebGL 2 texel format */
+      R8UI = 11,
+      /** WebGL 2 texel format */
+      RG8 = 12,
+      /** WebGL 2 texel format */
+      RG16F = 13,
+      /** WebGL 2 texel format */
+      RG32F = 14,
+      /** WebGL 2 texel format */
+      RG8UI = 15,
+      /** WebGL 2 texel format */
+      RG16UI = 16,
+      /** WebGL 2 texel format */
+      RG32UI = 17,
+      /** WebGL 2 texel format */
+      RGB8 = 18,
+      /** WebGL 2 texel format */
+      SRGB8 = 19,
+      /** WebGL 2 texel format */
+      RGB565 = 20,
+      /** WebGL 2 texel format */
+      R11F_G11F_B10F = 21,
+      /** WebGL 2 texel format */
+      RGB9_E5 = 22,
+      /** WebGL 2 texel format */
+      RGB16F = 23,
+      /** WebGL 2 texel format */
+      RGB32F = 24,
+      /** WebGL 2 texel format */
+      RGB8UI = 25,
+      /** WebGL 2 texel format */
+      RGBA8 = 26,
+      /** WebGL 2 texel format */
+      SRGB8_ALPHA8 = 27,
+      /** WebGL 2 texel format */
+      RGB5_A1 = 28,
+      /** WebGL 2 texel format */
+      RGB10_A2 = 29,
+      /** WebGL 2 texel format */
+      RGBA4 = 30,
+      /** WebGL 2 texel format */
+      RGBA16F = 31,
+      /** WebGL 2 texel format */
+      RGBA32F = 32,
+      /** WebGL 2 texel format */
+      RGBA8UI = 33
     }
 
     /**

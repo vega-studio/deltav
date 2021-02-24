@@ -79,7 +79,7 @@ export class Texture {
   private _flipY: boolean = false;
 
   /**
-   * Source format of the input. See:
+   * Source format of the input data. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
    */
   get format() {
@@ -117,6 +117,20 @@ export class Texture {
     /** This is the proxy communicator with the context that generates and destroys Textures */
     proxy: GLProxy;
   };
+
+  /**
+   * Source format of the input data. See:
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+   */
+  get internalFormat() {
+    return this._internalFormat;
+  }
+  set internalFormat(val: Texture["_internalFormat"]) {
+    this.needsDataUpload = true;
+    this._internalFormat = val;
+  }
+  private _internalFormat: GLSettings.Texture.TexelDataType =
+    GLSettings.Texture.TexelDataType.RGBA;
 
   /**
    * Filter used when sampling has to magnify the image see:
@@ -254,6 +268,7 @@ export class Texture {
     this.data = options.data || this.data;
     this.flipY = options.flipY || this.flipY;
     this.format = options.format || this.format;
+    this.internalFormat = options.internalFormat || this.format;
     this.generateMipMaps = options.generateMipMaps || this.generateMipMaps;
     this.magFilter = options.magFilter || this.magFilter;
     this.minFilter = options.minFilter || this.minFilter;

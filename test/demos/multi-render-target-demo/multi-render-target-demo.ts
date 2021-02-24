@@ -95,7 +95,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         buffer: createTexture({
@@ -103,7 +104,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         glow: createTexture({
@@ -111,7 +113,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur1: createTexture({
@@ -119,7 +122,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_HALF,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur2: createTexture({
@@ -127,7 +131,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_QUARTER,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur3: createTexture({
@@ -135,7 +140,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_8TH,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur4: createTexture({
@@ -143,7 +149,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_16TH,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur5: createTexture({
@@ -151,7 +158,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_32ND,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur6: createTexture({
@@ -159,7 +167,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_64TH,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur7: createTexture({
@@ -167,7 +176,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_128TH,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         }),
         blur8: createTexture({
@@ -175,7 +185,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           height: TextureSize.SCREEN_256TH,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB
+            format: GLSettings.Texture.TexelDataType.RGB,
+            internalFormat: GLSettings.Texture.TexelDataType.RGB
           }
         })
       },

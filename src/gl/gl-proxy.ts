@@ -1323,14 +1323,25 @@ export class GLProxy {
           debug("Created a texture that is not using power of 2 dimensions.");
         }
 
+        const texFormat = texelFormat(gl, texture.internalFormat);
+        const dataFormat = texelFormat(gl, texture.format);
+
+        if (gl instanceof WebGLRenderingContext) {
+          if (texFormat !== dataFormat) {
+            console.warn(
+              "WebGL 1 requires format and data format to be identical"
+            );
+          }
+        }
+
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
-          texelFormat(gl, texture.format),
+          texFormat,
           texture.data.width,
           texture.data.height,
           0,
-          texelFormat(gl, texture.format),
+          dataFormat,
           inputImageFormat(gl, texture.type),
           texture.data.buffer
         );

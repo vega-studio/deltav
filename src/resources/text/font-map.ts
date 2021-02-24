@@ -639,6 +639,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.LinearMipMapLinear,
+          internalFormat: GLSettings.Texture.TexelDataType.LuminanceAlpha,
           format: GLSettings.Texture.TexelDataType.LuminanceAlpha
         };
         break;
@@ -648,6 +649,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
+          internalFormat: GLSettings.Texture.TexelDataType.Luminance,
           format: GLSettings.Texture.TexelDataType.Luminance
         };
         break;
@@ -658,6 +660,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         this.textureSettings = {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB,
           format: GLSettings.Texture.TexelDataType.RGB
         };
         break;

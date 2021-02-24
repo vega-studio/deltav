@@ -168,13 +168,8 @@ export function inputImageFormat(
  */
 export function magFilter(
   gl: GLContext,
-  filter: GLSettings.Texture.TextureMagFilter,
-  isPowerOf2: boolean
+  filter: GLSettings.Texture.TextureMagFilter
 ) {
-  if (!isPowerOf2) {
-    return gl.LINEAR;
-  }
-
   switch (filter) {
     case GLSettings.Texture.TextureMagFilter.Linear:
       return gl.LINEAR;
@@ -189,13 +184,8 @@ export function magFilter(
 export function minFilter(
   gl: GLContext,
   filter: GLSettings.Texture.TextureMinFilter,
-  isPowerOf2: boolean,
   hasMipMaps: boolean
 ) {
-  if (!isPowerOf2) {
-    return gl.LINEAR;
-  }
-
   switch (filter) {
     case GLSettings.Texture.TextureMinFilter.Linear:
       return gl.LINEAR;

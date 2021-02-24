@@ -263,6 +263,51 @@ export class Texture {
   private _wrapVertical: GLSettings.Texture.Wrapping =
     GLSettings.Texture.Wrapping.CLAMP_TO_EDGE;
 
+  /**
+   * This checks if any formatting of this texture makes it a half float texture
+   * or not.
+   */
+  get isHalfFloatTexture() {
+    switch (this.internalFormat) {
+      case GLSettings.Texture.TexelDataType.R16F:
+      case GLSettings.Texture.TexelDataType.RG16F:
+      case GLSettings.Texture.TexelDataType.RGB16F:
+        return true;
+    }
+
+    switch (this._type) {
+      case GLSettings.Texture.SourcePixelFormat.HalfFloat:
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * This checks if any formatting of this texture makes it a float texture
+   * or not.
+   */
+  get isFloatTexture() {
+    switch (this.internalFormat) {
+      case GLSettings.Texture.TexelDataType.R11F_G11F_B10F:
+      case GLSettings.Texture.TexelDataType.R16F:
+      case GLSettings.Texture.TexelDataType.RG16F:
+      case GLSettings.Texture.TexelDataType.R32F:
+      case GLSettings.Texture.TexelDataType.RG32F:
+      case GLSettings.Texture.TexelDataType.RGB16F:
+      case GLSettings.Texture.TexelDataType.RGB32F:
+        return true;
+    }
+
+    switch (this._type) {
+      case GLSettings.Texture.SourcePixelFormat.Float:
+      case GLSettings.Texture.SourcePixelFormat.HalfFloat:
+        return true;
+    }
+
+    return false;
+  }
+
   constructor(options: TextureOptions) {
     this.anisotropy = options.anisotropy || this.anisotropy;
     this.data = options.data || this.data;

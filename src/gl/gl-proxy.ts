@@ -1492,17 +1492,103 @@ export class GLProxy {
       GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
     );
 
+    let texMagFilter;
+    let texMinFilter;
+
+    // Handle special cases for floating textures and performance
+    if (texture.isHalfFloatTexture) {
+      if (WebGLStat.FLOAT_TEXTURE_READ.halfLinearFilter) {
+        texMagFilter = magFilter(gl, texture.magFilter);
+
+        switch (texture.minFilter) {
+          case GLSettings.Texture.TextureMinFilter.Nearest:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+
+          case GLSettings.Texture.TextureMinFilter.Linear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+        }
+      } else {
+        texMagFilter = magFilter(
+          gl,
+          GLSettings.Texture.TextureMagFilter.Nearest
+        );
+        texMinFilter = minFilter(
+          gl,
+          GLSettings.Texture.TextureMinFilter.Nearest,
+          texture.generateMipMaps
+        );
+      }
+    } else if (texture.isFloatTexture) {
+      if (WebGLStat.FLOAT_TEXTURE_READ.fullLinearFilter) {
+        texMagFilter = magFilter(gl, texture.magFilter);
+
+        switch (texture.minFilter) {
+          case GLSettings.Texture.TextureMinFilter.Nearest:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+
+          case GLSettings.Texture.TextureMinFilter.Linear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+        }
+      } else {
+        texMagFilter = magFilter(
+          gl,
+          GLSettings.Texture.TextureMagFilter.Nearest
+        );
+        texMinFilter = minFilter(
+          gl,
+          GLSettings.Texture.TextureMinFilter.Nearest,
+          texture.generateMipMaps
+        );
+      }
+    }
+
+    // Handle special case for NPOT textures and WebGL 1
+    else if (!isPower2 && gl instanceof WebGLRenderingContext) {
+      texMagFilter = magFilter(gl, GLSettings.Texture.TextureMagFilter.Linear);
+      texMinFilter = minFilter(
+        gl,
+        GLSettings.Texture.TextureMinFilter.Linear,
+        texture.generateMipMaps
+      );
+    }
+
+    // Otherwise, we should be good to use the settings specified!
+    else {
+      texMagFilter = magFilter(gl, texture.magFilter);
+      texMinFilter = minFilter(gl, texture.minFilter, texture.generateMipMaps);
+    }
+
     // Set filtering and other properties to the texture
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MAG_FILTER,
-      magFilter(gl, texture.magFilter, isPower2)
-    );
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MIN_FILTER,
-      minFilter(gl, texture.minFilter, isPower2, texture.generateMipMaps)
-    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, texMagFilter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, texMinFilter);
     gl.texParameteri(
       gl.TEXTURE_2D,
       gl.TEXTURE_WRAP_S,

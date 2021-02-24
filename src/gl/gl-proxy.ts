@@ -1359,7 +1359,7 @@ export class GLProxy {
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
-          texelFormat(gl, texture.format),
+          texelFormat(gl, texture.internalFormat),
           texelFormat(gl, texture.format),
           inputImageFormat(gl, texture.type),
           // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason

@@ -180,6 +180,9 @@ function initStats() {
       gl.getExtension("OES_texture_float") ||
       gl.getExtension("EXT_color_buffer_float");
 
+    // WebGL2 required extension
+    gl.getExtension("WEBGL_color_buffer_float");
+
     if (extensionEnabled) {
       const width = 2;
       const height = 2;

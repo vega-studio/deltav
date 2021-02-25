@@ -112,6 +112,7 @@ export class GLProxy {
     const anisotropicFiltering = gl.getExtension(
       "EXT_texture_filter_anisotropic"
     );
+    const renderFloatTexture = gl.getExtension("EXT_color_buffer_float");
 
     const anisotropicStats = {
       maxAnistropicFilter: 0
@@ -153,6 +154,7 @@ export class GLProxy {
             stat: anisotropicStats
           }
         : undefined,
+      renderFloatTexture: renderFloatTexture,
       floatTex:
         (gl instanceof WebGL2RenderingContext ? gl : floatTex) || undefined,
       floatTexFilterLinear:
@@ -556,7 +558,6 @@ export class GLProxy {
           });
 
           if (isTextureReady(buffer.buffer)) {
-            console.log("ATTACH", bufferAttachment, buffer.buffer.gl.textureId);
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
               bufferAttachment,
@@ -564,7 +565,6 @@ export class GLProxy {
               buffer.buffer.gl.textureId,
               0
             );
-            this.printError();
           } else {
             console.warn(
               this.debugContext,
@@ -1348,16 +1348,6 @@ export class GLProxy {
 
         const texFormat = texelFormat(gl, texture.internalFormat);
         const dataFormat = texelFormat(gl, texture.format);
-
-        console.log(
-          texture.uid,
-          GLSettings.Texture.TexelDataType[texture.internalFormat],
-          texFormat,
-          GLSettings.Texture.TexelDataType[texture.format],
-          dataFormat,
-          GLSettings.Texture.SourcePixelFormat[texture.type],
-          inputImageFormat(gl, texture.type)
-        );
 
         if (gl instanceof WebGLRenderingContext) {
           if (texFormat !== dataFormat) {

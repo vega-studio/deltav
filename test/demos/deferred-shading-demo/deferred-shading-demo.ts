@@ -27,7 +27,8 @@ import { CubeInstance } from "./cube/cube-instance";
 import { CubeLayer } from "./cube/cube-layer";
 
 /**
- * A very basic demo proving the system is operating as expected
+ * Shows off deferred shading using this engine. Showcases how configuration is
+ * flexible enough to make crazy complex systems work.
  */
 export class DeferredShadingDemo extends BaseDemo {
   light: Vec3 = [1000, 1000, 1000];

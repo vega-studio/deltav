@@ -155,6 +155,8 @@ export interface IExtensions {
   drawBuffers?: WebGL2RenderingContext | WEBGL_draw_buffers;
   /** Extension for hardware instancing */
   instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
+  /** Extension for float texture as a color buffer */
+  renderFloatTexture?: WEBGL_color_buffer_float;
   /** Extension for float textures */
   floatTex?: WebGL2RenderingContext | OES_texture_float;
   /** Extension for float textures linear filtering */

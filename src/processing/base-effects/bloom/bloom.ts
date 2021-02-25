@@ -28,8 +28,13 @@ export interface IBloom {
    * for all of the resource specifications.
    */
   resources: (string | IRenderTextureResource)[];
-  /** Specifies the output image the bloom effect will be composed with */
-  compose: string | IRenderTextureResource;
+  /**
+   * Specifies the output image the bloom effect will be composed with. If this
+   * is not specified, this will not do a final composition and just leave the
+   * result of the glow filter portion within the top level resource key
+   * provided.
+   */
+  compose?: string | IRenderTextureResource;
   /**
    * This specifies an alternative output to target with the results. If not
    * specified the output will render to the screen.
@@ -94,7 +99,10 @@ export function bloom(options: IBloom) {
       printShader: options.printShader,
       input: inputKeys[i],
       output: inputKeys[i + 1],
-      direction: BoxSampleDirection.DOWN
+      direction: BoxSampleDirection.DOWN,
+      material: {
+        blending: void 0
+      }
     });
 
     process[`downSample${i}`] = sample;
@@ -114,22 +122,26 @@ export function bloom(options: IBloom) {
   }
 
   // Generate the composition process
-  process.compose = postProcess({
-    printShader: options.printShader,
-    // Set the buffers we want to composite
-    buffers: {
-      color: composeKey,
-      glow: inputKeys[1]
-    },
-    // Turn off blending
-    material: {
-      blending: null
-    },
-    // Render to the screen, or to a potentially specified target
-    view: outputKey ? { output: { buffers: outputKey, depth: false } } : void 0,
-    // Utilize our composition shader
-    shader: require("./bloom.fs")
-  });
+  if (composeKey) {
+    process.compose = postProcess({
+      printShader: options.printShader,
+      // Set the buffers we want to composite
+      buffers: {
+        color: composeKey,
+        glow: inputKeys[1]
+      },
+      // Turn off blending
+      material: {
+        blending: null
+      },
+      // Render to the screen, or to a potentially specified target
+      view: outputKey
+        ? { output: { buffers: outputKey, depth: false } }
+        : void 0,
+      // Utilize our composition shader
+      shader: require("./bloom.fs")
+    });
+  }
 
   return process;
 }

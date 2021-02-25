@@ -44,7 +44,7 @@ export namespace GLSettings {
      * equation settings come into play
      */
     export enum Blending {
-      NoBlending = 0,
+      NoBlending = -1,
       NormalBlending = 1,
       AdditiveBlending = 2,
       SubtractiveBlending = 3,
@@ -56,7 +56,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     export enum BlendingDstFactor {
-      Zero = 0,
+      Zero = -1,
       One = 1,
       SrcColor = 2,
       OneMinusSrcColor = 3,
@@ -73,7 +73,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
      */
     export enum BlendingSrcFactor {
-      Zero = 0,
+      Zero = -1,
       One = 1,
       SrcColor = 2,
       OneMinusSrcColor = 3,
@@ -91,7 +91,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
      */
     export enum BlendingEquations {
-      Add = 0,
+      Add = -1,
       Subtract = 1,
       ReverseSubtract = 2
       /** Requires extension for Webgl 1.0 */
@@ -105,7 +105,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
      */
     export enum DepthFunctions {
-      NEVER = 0,
+      NEVER = -1,
       LESS = 1,
       EQUAL = 2,
       LESS_OR_EQUAL = 3,
@@ -121,7 +121,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
     export enum CullSide {
-      NONE = 0,
+      NONE = -1,
       CW = 1,
       CCW = 2,
       BOTH = 3
@@ -160,7 +160,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     export enum Wrapping {
-      REPEAT = 0,
+      REPEAT = -1,
       CLAMP_TO_EDGE = 1,
       MIRRORED_REPEAT = 2
     }
@@ -170,7 +170,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     export enum TextureMinFilter {
-      Nearest = 0,
+      Nearest = -1,
       NearestMipMapNearest = 1,
       NearestMipMapLinear = 2,
       Linear = 3,
@@ -183,7 +183,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     export enum TextureMagFilter {
-      Nearest = 0,
+      Nearest = -1,
       Linear = 1
     }
 
@@ -196,7 +196,7 @@ export namespace GLSettings {
        * Highly supported webgl 1
        * Pairs with: TexelDataType.RGBA, RGB, LuminanceAlpha, Luminance, Alpha
        */
-      UnsignedByte = 0,
+      UnsignedByte = -1,
       /**
        * Highly supported webgl 1
        * Pairs with: TexelDataType.RGB
@@ -247,7 +247,7 @@ export namespace GLSettings {
        * Discards the red, green and blue components and reads the alpha component.
        * Pairs with: UNSIGNED_BYTE
        */
-      Alpha = 0,
+      Alpha = -1,
       /**
        * Requires Depth extension or webgl2
        */
@@ -327,7 +327,14 @@ export namespace GLSettings {
       /** WebGL 2 texel format */
       RGBA32F = 32,
       /** WebGL 2 texel format */
-      RGBA8UI = 33
+      RGBA8UI = 33,
+
+      /** WebGL 2 texel format */
+      DEPTH_COMPONENT16 = 34,
+      /** WebGL 2 texel format */
+      DEPTH_COMPONENT24 = 35,
+      /** WebGL 2 texel format */
+      DEPTH_COMPONENT32F = 36
     }
 
     /**

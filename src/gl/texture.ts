@@ -268,7 +268,7 @@ export class Texture {
    * or not.
    */
   get isHalfFloatTexture() {
-    switch (this.internalFormat) {
+    switch (this._internalFormat) {
       case GLSettings.Texture.TexelDataType.R16F:
       case GLSettings.Texture.TexelDataType.RG16F:
       case GLSettings.Texture.TexelDataType.RGB16F:
@@ -288,7 +288,7 @@ export class Texture {
    * or not.
    */
   get isFloatTexture() {
-    switch (this.internalFormat) {
+    switch (this._internalFormat) {
       case GLSettings.Texture.TexelDataType.R11F_G11F_B10F:
       case GLSettings.Texture.TexelDataType.R16F:
       case GLSettings.Texture.TexelDataType.RG16F:

@@ -109,6 +109,13 @@ export function texelFormat(
           case GLSettings.Texture.TexelDataType.RGBA8UI:
             return gl.RGBA8UI;
 
+          case GLSettings.Texture.TexelDataType.DEPTH_COMPONENT16:
+            return gl.DEPTH_COMPONENT16;
+          case GLSettings.Texture.TexelDataType.DEPTH_COMPONENT24:
+            return gl.DEPTH_COMPONENT24;
+          case GLSettings.Texture.TexelDataType.DEPTH_COMPONENT32F:
+            return gl.DEPTH_COMPONENT32F;
+
           default:
             console.warn(
               "An unsupported texel format was provided that is not supported in WebGL 1 or 2"

@@ -5,6 +5,7 @@ import { CameraControllerDemo3D } from "./demos/camera-controller-demo-3d";
 import { CameraSceneGraphDemo } from "./demos/camera-scene-graph-demo";
 import { ChartDemo } from "./demos/chart-demo";
 import { CubeDemo3D } from "./demos/cube-demo-3d";
+import { DeferredShadingDemo } from "./demos/deferred-shading-demo";
 import { EaseDemo } from "./demos/ease-demo";
 import { FrameCommandDemo } from "./demos/frame-command-demo";
 import { KitchenSink } from "./demos/kitchen-sink";
@@ -53,5 +54,6 @@ demos.set("multiple-render-targets", MultiRenderTargetDemo3D);
 demos.set("camera-scene-graph", CameraSceneGraphDemo);
 demos.set("texturing", TexturingDemo);
 demos.set("specialized-transform", SpecializedTransformDemo);
+demos.set("deferred-shading", DeferredShadingDemo);
 
 export const demoKeys = Array.from(demos.keys());

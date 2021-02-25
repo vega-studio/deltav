@@ -155,6 +155,16 @@ export interface IExtensions {
   drawBuffers?: WebGL2RenderingContext | WEBGL_draw_buffers;
   /** Extension for hardware instancing */
   instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
+  /** Extension for float textures */
+  floatTex?: WebGL2RenderingContext | OES_texture_float;
+  /** Extension for float textures linear filtering */
+  floatTexFilterLinear?: WebGL2RenderingContext | OES_texture_float_linear;
+  /** Extension for half float textures */
+  halfFloatTex?: WebGL2RenderingContext | OES_texture_half_float;
+  /** Extension for half float textures linear filtering */
+  halfFloatTexFilterLinear?:
+    | WebGL2RenderingContext
+    | OES_texture_half_float_linear;
 }
 
 /**

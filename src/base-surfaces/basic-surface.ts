@@ -60,18 +60,25 @@ function mapLookupValues<T, U>(
       out.push(callback(next[0], next[1] as T));
     } else {
       let error = false;
+      const nextChunk: [string, T | Lookup<T>][] = [];
 
       Object.keys(next[1]).forEach(key => {
         const value = (next[1] as any)[key];
 
         if (!added.has(value)) {
-          toProcess.push([`${next[0]}.${key}`, value]);
+          nextChunk.push([`${next[0]}.${key}`, value]);
           added.add(value);
         } else {
           error = true;
           console.warn("Invalid lookup for BasicSurface detected:", label);
         }
       });
+
+      // Inject the next chunk of items at the place of the current process item
+      // So we retain the tree order that items appear in
+      if (nextChunk.length > 0) {
+        toProcess.splice(index + 1, 0, ...nextChunk);
+      }
 
       if (error) break;
     }

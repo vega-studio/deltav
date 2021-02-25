@@ -103,6 +103,12 @@ export class GLProxy {
   static addExtensions(gl: GLContext): IExtensions {
     const instancing = gl.getExtension("ANGLE_instanced_arrays");
     const mrt = gl.getExtension("WEBGL_draw_buffers");
+    const floatTex = gl.getExtension("OES_texture_float");
+    const floatTexFilterLinear = gl.getExtension("OES_texture_float_linear");
+    const halfFloatTex = gl.getExtension("OES_texture_half_float");
+    const halfFloatTexFilterLinear = gl.getExtension(
+      "OES_texture_half_float_linear"
+    );
     const anisotropicFiltering = gl.getExtension(
       "EXT_texture_filter_anisotropic"
     );
@@ -146,7 +152,18 @@ export class GLProxy {
             ext: anisotropicFiltering,
             stat: anisotropicStats
           }
-        : undefined
+        : undefined,
+      floatTex:
+        (gl instanceof WebGL2RenderingContext ? gl : floatTex) || undefined,
+      floatTexFilterLinear:
+        (gl instanceof WebGL2RenderingContext ? gl : floatTexFilterLinear) ||
+        undefined,
+      halfFloatTex:
+        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) || undefined,
+      halfFloatTexFilterLinear:
+        (gl instanceof WebGL2RenderingContext
+          ? gl
+          : halfFloatTexFilterLinear) || undefined
     };
   }
 
@@ -473,6 +490,8 @@ export class GLProxy {
    * for subsequent draw calls.
    */
   compileRenderTarget(target: RenderTarget) {
+    // Do not attempt recompiles and spewing out errors.
+    if (target.isInvalid) return false;
     // If the gl target exists, then this is considered to be compiled already
     if (target.gl) return true;
 
@@ -537,6 +556,7 @@ export class GLProxy {
           });
 
           if (isTextureReady(buffer.buffer)) {
+            console.log("ATTACH", bufferAttachment, buffer.buffer.gl.textureId);
             gl.framebufferTexture2D(
               gl.FRAMEBUFFER,
               bufferAttachment,
@@ -544,6 +564,7 @@ export class GLProxy {
               buffer.buffer.gl.textureId,
               0
             );
+            this.printError();
           } else {
             console.warn(
               this.debugContext,
@@ -783,8 +804,10 @@ export class GLProxy {
         "When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:"
       );
       console.warn(message);
+      this.printError();
       console.warn("FAILED RENDER TARGET:", target);
       delete target.gl;
+      target.isInvalid = true;
 
       return false;
     }
@@ -1326,6 +1349,16 @@ export class GLProxy {
         const texFormat = texelFormat(gl, texture.internalFormat);
         const dataFormat = texelFormat(gl, texture.format);
 
+        console.log(
+          texture.uid,
+          GLSettings.Texture.TexelDataType[texture.internalFormat],
+          texFormat,
+          GLSettings.Texture.TexelDataType[texture.format],
+          dataFormat,
+          GLSettings.Texture.SourcePixelFormat[texture.type],
+          inputImageFormat(gl, texture.type)
+        );
+
         if (gl instanceof WebGLRenderingContext) {
           if (texFormat !== dataFormat) {
             console.warn(
@@ -1589,31 +1622,36 @@ export class GLProxy {
     // Set filtering and other properties to the texture
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, texMagFilter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, texMinFilter);
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_WRAP_S,
-      wrapMode(gl, texture.wrapHorizontal)
-    );
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_WRAP_T,
-      wrapMode(gl, texture.wrapVertical)
-    );
+
+    if (!texture.isFloatTexture) {
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_WRAP_S,
+        wrapMode(gl, texture.wrapHorizontal)
+      );
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_WRAP_T,
+        wrapMode(gl, texture.wrapVertical)
+      );
+    }
 
     // NOTE: All pixelStorei with boolean settings:
     // The typescript definitions are wrong right now thus requiring some weird casting
     // voodoo. The correct value according to the webgl specs IS true right here and not a number
     // for this particular enum.
 
-    gl.pixelStorei(
-      gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-      (texture.premultiplyAlpha as unknown) as number
-    );
+    if (!texture.isFloatTexture) {
+      gl.pixelStorei(
+        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        (texture.premultiplyAlpha as unknown) as number
+      );
 
-    gl.pixelStorei(
-      gl.UNPACK_FLIP_Y_WEBGL,
-      (texture.flipY as unknown) as number
-    );
+      gl.pixelStorei(
+        gl.UNPACK_FLIP_Y_WEBGL,
+        (texture.flipY as unknown) as number
+      );
+    }
 
     // Apply the anistropic extension (if available)
     if (this.extensions.anisotropicFiltering) {
@@ -1623,7 +1661,7 @@ export class GLProxy {
         Math.floor(texture.anisotropy)
       );
 
-      if (!isNaN(anisotropy)) {
+      if (!isNaN(anisotropy) && !texture.isFloatTexture) {
         gl.texParameterf(
           gl.TEXTURE_2D,
           ext.TEXTURE_MAX_ANISOTROPY_EXT,

@@ -306,10 +306,6 @@ export class WebGLRenderer {
 
         // If the fbo is not ready, we're not drawing
         if (renderTarget && !renderTarget.gl) {
-          console.warn(
-            "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
-            { scene, target }
-          );
           return;
         }
 
@@ -327,10 +323,6 @@ export class WebGLRenderer {
     else {
       // If the fbo is not ready, we're not drawing
       if (target && !target.gl) {
-        console.warn(
-          "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
-          { scene, target }
-        );
         return;
       }
 

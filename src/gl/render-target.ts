@@ -68,6 +68,12 @@ export interface IRenderTargetOptions {
  * of old targets and create new ones.
  */
 export class RenderTarget {
+  /**
+   * This gets flagged as invalid and will not re-attempt compilation until
+   * something changes.
+   */
+  isInvalid: boolean = false;
+
   /** UID for the object */
   get uid() {
     return this._uid;
@@ -287,9 +293,13 @@ export class RenderTarget {
    */
   getGLBuffers() {
     if (!this.gl) {
-      console.warn(
-        "Attempted to retrieve gl buffers before the render target was compiled."
-      );
+      // We know what went wrong if this is marked as invalid. No need to spew
+      // death to the console.
+      if (!this.isInvalid) {
+        console.warn(
+          "Attempted to retrieve gl buffers before the render target was compiled."
+        );
+      }
       return [];
     }
 

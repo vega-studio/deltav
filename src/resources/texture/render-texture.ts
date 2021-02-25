@@ -96,7 +96,7 @@ export class RenderTexture extends IdentifyByKey
     // configuration.
     this.textureSettings = {
       generateMipMaps: true,
-      premultiplyAlpha: true,
+      premultiplyAlpha: false,
       ...this.textureSettings
     };
 

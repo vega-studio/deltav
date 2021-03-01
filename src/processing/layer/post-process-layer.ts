@@ -6,6 +6,7 @@ import {
   observable
 } from "../../instance-provider";
 import { Vec2 } from "../../math/vector";
+import { IRenderTextureResource } from "../../resources";
 import {
   IRenderTextureResourceRequest,
   textureRequest
@@ -20,7 +21,7 @@ import {
   UniformSize,
   VertexAttributeSize
 } from "../../types";
-import { CommonMaterialOptions } from "../../util";
+import { CommonMaterialOptions, isDefined } from "../../util";
 import { flatten2D } from "../../util/array";
 
 class PostProcessInstance extends Instance {
@@ -30,7 +31,7 @@ class PostProcessInstance extends Instance {
 
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
   /** List of resource names and their respective keys to apply  */
-  buffers: Record<string, string>;
+  buffers: Record<string, IRenderTextureResource | undefined>;
   /**
    * This is the fragment shader that will handle the operation to perform
    * computations against all of the input shaders.
@@ -91,35 +92,39 @@ export class PostProcessLayer extends Layer<
      * uniform names.
      */
     const resourceUniforms: IUniform[] = flatten2D<IUniform>(
-      Object.keys(buffers).map(uniformName => {
-        const resourceKey = buffers[uniformName];
+      Object.keys(buffers)
+        .map(uniformName => {
+          const buffer = buffers[uniformName];
+          if (!buffer) return void 0;
+          const resourceKey = buffer.key;
 
-        const request = textureRequest({
-          key: resourceKey
-        });
+          const request = textureRequest({
+            key: resourceKey
+          });
 
-        return [
-          {
-            name: uniformName,
-            shaderInjection: ShaderInjectionTarget.FRAGMENT,
-            size: UniformSize.TEXTURE,
-            update: () => {
-              this.resource.request(this, dummyInstance, request);
-              return request.texture || emptyTexture;
+          return [
+            {
+              name: uniformName,
+              shaderInjection: ShaderInjectionTarget.FRAGMENT,
+              size: UniformSize.TEXTURE,
+              update: () => {
+                this.resource.request(this, dummyInstance, request);
+                return request.texture || emptyTexture;
+              }
+            },
+            {
+              name: `${uniformName}_size`,
+              shaderInjection: ShaderInjectionTarget.FRAGMENT,
+              size: UniformSize.TWO,
+              update: () => {
+                this.resource.request(this, dummyInstance, request);
+                const data = (request.texture || emptyTexture).data;
+                return [data?.width || 1, data?.height || 1];
+              }
             }
-          },
-          {
-            name: `${uniformName}_size`,
-            shaderInjection: ShaderInjectionTarget.FRAGMENT,
-            size: UniformSize.TWO,
-            update: () => {
-              this.resource.request(this, dummyInstance, request);
-              const data = (request.texture || emptyTexture).data;
-              return [data?.width || 1, data?.height || 1];
-            }
-          }
-        ];
-      })
+          ];
+        })
+        .filter(isDefined)
     );
 
     return {

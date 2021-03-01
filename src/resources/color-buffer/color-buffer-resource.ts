@@ -1,5 +1,5 @@
-import { WebGLRenderer } from "../../gl";
-import { Texture, TextureOptions } from "../../gl/texture";
+import { GLSettings, WebGLRenderer } from "../../gl";
+import { ColorBuffer, ColorBufferOptions } from "../../gl/color-buffer";
 import { ResourceType, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { BaseResourceOptions } from "../base-resource-manager";
@@ -7,12 +7,18 @@ import { BaseResourceOptions } from "../base-resource-manager";
 /**
  * Options required for generating a RenderTexture.
  */
-export interface IRenderTextureResource extends BaseResourceOptions {
+export interface IColorBufferResource extends BaseResourceOptions {
   /** Set the type of the resource to explicitally be an atlas resource */
-  type: ResourceType.TEXTURE;
-  /** This is the height of the texture */
+  type: ResourceType.COLOR_BUFFER;
+  /**
+   * This is the height of the texture. Use the TextureSize to set a sensical
+   * size or set a specialized sizing based on screen dimensions.
+   */
   height: number;
-  /** This is the width of the texture */
+  /**
+   * This is the width of the texture. Use the TextureSize to set a sensical
+   * size or set a specialized sizing based on screen dimensions.
+   */
   width: number;
   /**
    * This applies any desired settings to the Texture.
@@ -20,20 +26,20 @@ export interface IRenderTextureResource extends BaseResourceOptions {
    *  - generateMipMaps is true and
    *  - premultiply alpha is true.
    */
-  textureSettings?: TextureOptions;
+  colorBufferSettings?: ColorBufferOptions;
 }
 
 /**
  * Use this to aid in creating a texture in the resources portion of configuring
  * your surface.
  */
-export function createTexture(
-  options: Omit<IRenderTextureResource, "type" | "key"> &
-    Partial<Pick<IRenderTextureResource, "key">>
-): IRenderTextureResource {
+export function createColorBuffer(
+  options: Omit<IColorBufferResource, "type" | "key"> &
+    Partial<Pick<IColorBufferResource, "key">>
+): IColorBufferResource {
   return {
     key: "",
-    type: ResourceType.TEXTURE,
+    type: ResourceType.COLOR_BUFFER,
     ...options
   };
 }
@@ -41,20 +47,21 @@ export function createTexture(
 /**
  * Type guard for the Render Texture resource type.
  */
-export function isRenderTextureResource(
-  val: any
-): val is IRenderTextureResource {
-  return val && val.key !== void 0 && val.type === ResourceType.TEXTURE;
+export function isColorBufferResource(val: any): val is IColorBufferResource {
+  return (
+    val !== void 0 &&
+    val.key !== void 0 &&
+    val.type === ResourceType.COLOR_BUFFER
+  );
 }
 
 /**
- * This defines a general purpose texture that can be rendered into and be
- * rendered.
+ * This defines a general purpose color buffer resource that can be rendered into.
  */
-export class RenderTexture extends IdentifyByKey
-  implements IRenderTextureResource {
+export class ColorBufferResource extends IdentifyByKey
+  implements IColorBufferResource {
   /** Set the type of the resource to explicitally be an atlas resource */
-  type: ResourceType.TEXTURE = ResourceType.TEXTURE;
+  type: ResourceType.COLOR_BUFFER = ResourceType.COLOR_BUFFER;
   /** This is the height of the texture */
   height: number;
   /** This is the width of the texture */
@@ -65,16 +72,16 @@ export class RenderTexture extends IdentifyByKey
    *  - generateMipMaps is true and
    *  - premultiply alpha is true.
    */
-  textureSettings?: TextureOptions;
+  colorBufferSettings?: ColorBufferOptions;
   /** The actual texture resource generated */
-  texture: Texture;
+  colorBuffer: ColorBuffer;
 
-  constructor(options: IRenderTextureResource, renderer?: WebGLRenderer) {
+  constructor(options: IColorBufferResource, renderer?: WebGLRenderer) {
     super(options);
     this.height = options.height;
     this.width = options.width;
-    this.textureSettings = options.textureSettings;
-    this.createTexture(renderer);
+    this.colorBufferSettings = options.colorBufferSettings;
+    this.createColorBuffer(renderer);
   }
 
   /**
@@ -83,21 +90,19 @@ export class RenderTexture extends IdentifyByKey
    * to use again.
    */
   destroy() {
-    this.texture.destroy();
+    this.colorBuffer.destroy();
   }
 
   /**
-   * This generates the texture object needed for this atlas.
+   * This generates the colorBuffer object needed for this atlas.
    */
-  private createTexture(renderer?: WebGLRenderer) {
-    if (this.texture) return;
+  private createColorBuffer(renderer?: WebGLRenderer) {
+    if (this.colorBuffer) return;
 
-    // Establish the settings to be applied to the Texture. Provide some default
+    // Establish the settings to be applied to the Color Buffer. Provide some default
     // configuration.
-    this.textureSettings = {
-      generateMipMaps: true,
-      premultiplyAlpha: false,
-      ...this.textureSettings
+    this.colorBufferSettings = {
+      ...this.colorBufferSettings
     };
 
     let width, height;
@@ -123,14 +128,11 @@ export class RenderTexture extends IdentifyByKey
       height = size[1] / -this.width;
     } else height = this.height;
 
-    // Generate the texture
-    this.texture = new Texture({
-      data: this.textureSettings?.data || {
-        width,
-        height,
-        buffer: null
-      },
-      ...this.textureSettings
+    // Generate the color buffer
+    this.colorBuffer = new ColorBuffer({
+      internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA4,
+      size: [width, height],
+      ...this.colorBufferSettings
     });
   }
 }

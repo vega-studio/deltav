@@ -157,7 +157,9 @@ export class Instance {
     );
   }
 
-  constructor(options: IInstanceOptions) {
-    this.active = options.active || this.active;
+  constructor(options?: IInstanceOptions) {
+    if (options) {
+      this.active = options.active || this.active;
+    }
   }
 }

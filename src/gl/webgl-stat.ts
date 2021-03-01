@@ -216,6 +216,7 @@ function initStats() {
         0
       );
       gl.bindTexture(gl.TEXTURE_2D, null);
+
       // Frame buffer complete signal means writing to the float texture is more
       // than likely supported
       if (

@@ -5,14 +5,25 @@ import {
   Texture,
   WebGLStat
 } from "../gl";
+import { ColorBuffer } from "../gl/color-buffer";
 import { Instance, InstanceProvider } from "../instance-provider";
 import { Vec2 } from "../math";
 import { BaseProjection, SimpleProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../math/primitives/absolute-position";
 import { Bounds } from "../math/primitives/bounds";
-import { IRenderTextureResource, ResourceRouter } from "../resources";
+import { BaseResourceOptions } from "../resources/base-resource-manager";
+import {
+  colorBufferRequest,
+  IColorBufferResource,
+  isColorBufferResource
+} from "../resources/color-buffer";
+import { ResourceRouter } from "../resources/resource-router";
+import {
+  IRenderTextureResource,
+  isRenderTextureResource
+} from "../resources/texture/render-texture";
 import { textureRequest } from "../resources/texture/render-texture-resource-request";
-import { Color, FragmentOutputType, isString, Omit } from "../types";
+import { Color, FragmentOutputType, Omit } from "../types";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { Layer } from "./layer";
@@ -59,7 +70,7 @@ export type ViewOutputTarget = {
    */
   outputType: FragmentOutputType | number;
   /** The resource key that the output will target */
-  resource: string;
+  resource: BaseResourceOptions;
 };
 
 /**
@@ -134,13 +145,16 @@ export interface IViewProps extends IdentifyByKeyOptions {
      * These should be targets specifying resource keys and provide outputTypes
      * to match information potentially provided by the layers.
      */
-    buffers: Record<number, string | IRenderTextureResource>;
+    buffers: Record<
+      number,
+      IRenderTextureResource | IColorBufferResource | undefined
+    >;
     /**
      * Set to true to include a depth buffer the system will generate for you.
      * Set to a resource id to target an output texture to store the depth
      * buffer. Set to false to not have the depth buffer used or calculated.
      */
-    depth: string | boolean;
+    depth: IRenderTextureResource | IColorBufferResource | boolean;
   };
   /**
    * This specifies the bounds on the canvas this camera will render to. This
@@ -271,7 +285,10 @@ export abstract class View<
     if (!output) return null;
 
     // A string simply matches the output to the default COLOR information type.
-    if (isString(output.buffers)) {
+    if (
+      isRenderTextureResource(output.buffers) ||
+      isColorBufferResource(output.buffers)
+    ) {
       bufferTargets = [
         {
           outputType: FragmentOutputType.COLOR,
@@ -286,10 +303,11 @@ export abstract class View<
       Object.keys(output.buffers).forEach(outputTypeKey => {
         const outputType = Number.parseFloat(outputTypeKey);
         const resource = output.buffers[outputType];
+        if (!resource) return;
 
         bufferTargets.push({
           outputType,
-          resource: isString(resource) ? resource : resource.key
+          resource
         });
       });
     }
@@ -355,7 +373,7 @@ export abstract class View<
     }
 
     // Retrieve the RenderTextures for each buffer target we have specified
-    const renderTextures = new Map<number, Texture>();
+    const renderBuffers = new Map<number, Texture | ColorBuffer>();
     const dummyLayer = new Layer(surface, this.scene, {
       key: "",
       data: new InstanceProvider()
@@ -365,48 +383,95 @@ export abstract class View<
 
     for (let i = 0, iMax = bufferTargets.length; i < iMax; ++i) {
       const bufferTarget = bufferTargets[i];
+      const resource = bufferTarget.resource;
+
       if (supportedOutputTypes.has(bufferTarget.outputType)) {
-        // Submit our request for the specified resource
-        const request = textureRequest({
-          key: bufferTarget.resource
-        });
+        if (isRenderTextureResource(resource)) {
+          // Submit our request for the specified resource
+          const request = textureRequest({
+            key: bufferTarget.resource.key
+          });
 
-        this.resource.request(dummyLayer, dummyInstance, request);
+          this.resource.request(dummyLayer, dummyInstance, request);
 
-        if (!request.texture) {
-          console.warn(
-            "A view has a buffer output target with key:",
-            bufferTarget.resource,
-            "however, no RenderTexture was found for the key.",
-            "Please ensure you have a 'resource' specified for the Surface with the proper key",
-            "Also ensure the resource is made via createTexture()"
-          );
-          throw new Error(
-            `Output target unable to be constructed for view ${this.id}`
-          );
+          if (!request.texture) {
+            console.warn(
+              "A view has a RenderTexture output target with key:",
+              bufferTarget.resource.key,
+              "however, no RenderTexture was found for the key.",
+              "Please ensure you have a 'resource' specified for the Surface with the proper key",
+              "Also ensure the resource is made via createTexture()"
+            );
+            throw new Error(
+              `Output target unable to be constructed for view ${this.id}`
+            );
+          }
+
+          renderBuffers.set(bufferTarget.outputType, request.texture);
+        } else {
+          const request = colorBufferRequest({
+            key: bufferTarget.resource.key
+          });
+
+          this.resource.request(dummyLayer, dummyInstance, request);
+
+          if (!request.colorBuffer) {
+            console.warn(
+              "A view has a ColorBuffer output target with key:",
+              bufferTarget.resource.key,
+              "however, no ColorBuffer was found for the key.",
+              "Please ensure you have a 'resource' specified for the Surface with the proper key",
+              "Also ensure the resource is made via createColorBuffer()"
+            );
+            throw new Error(
+              `Output target unable to be constructed for view ${this.id}`
+            );
+          }
+
+          renderBuffers.set(bufferTarget.outputType, request.colorBuffer);
         }
-
-        renderTextures.set(bufferTarget.outputType, request.texture);
       }
     }
 
     let checkW: number, checkH: number;
-    renderTextures.forEach(tex => {
-      if (checkW === void 0 || checkH === void 0) {
-        checkW = tex.data?.width || 0;
-        checkH = tex.data?.height || 0;
-      }
+    renderBuffers.forEach(resource => {
+      if (resource instanceof Texture) {
+        if (checkW === void 0 || checkH === void 0) {
+          checkW = resource.data?.width || 0;
+          checkH = resource.data?.height || 0;
+        }
 
-      if (checkW === 0 || checkH === 0) {
-        throw new Error(
-          "RenderTexture for View can NOT have a width or height of zero."
-        );
-      }
+        if (checkW === 0 || checkH === 0) {
+          throw new Error(
+            "RenderTexture for View can NOT have a width or height of zero."
+          );
+        }
 
-      if (tex.data?.width !== checkW || tex.data.height !== checkH) {
-        throw new Error(
-          "When a view has multiple output targets: ALL RenderTextures that a view references MUST have the same dimensions"
-        );
+        if (
+          resource.data?.width !== checkW ||
+          resource.data.height !== checkH
+        ) {
+          throw new Error(
+            "When a view has multiple output targets: ALL RenderTextures and ColorBuffers that a view references MUST have the same dimensions"
+          );
+        }
+      } else {
+        if (checkW === void 0 || checkH === void 0) {
+          checkW = resource.size[0] || 0;
+          checkH = resource.size[1] || 0;
+        }
+
+        if (checkW === 0 || checkH === 0) {
+          throw new Error(
+            "RenderTexture for View can NOT have a width or height of zero."
+          );
+        }
+
+        if (resource.size[0] !== checkW || resource.size[1] !== checkH) {
+          throw new Error(
+            "When a view has multiple output targets: ALL RenderTextures and ColorBuffers that a view references MUST have the same dimensions"
+          );
+        }
       }
     });
 
@@ -415,11 +480,11 @@ export abstract class View<
     if (output.depth) {
       // Find the render target resource specified that is intended to store the
       // depth buffer
-      if (isString(output.depth)) {
+      if (isRenderTextureResource(output.depth)) {
         // Generate our request to retrieve the depth buffer from the manager
         // handling the indicated texture.
         const request = textureRequest({
-          key: output.depth
+          key: output.depth.key
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
@@ -438,6 +503,29 @@ export abstract class View<
         }
 
         depthBuffer = request.texture;
+      } else if (isColorBufferResource(output.depth)) {
+        // Generate our request to retrieve the depth buffer from the manager
+        // handling the indicated texture.
+        const request = colorBufferRequest({
+          key: output.depth.key
+        });
+
+        this.resource.request(dummyLayer, dummyInstance, request);
+
+        if (!request.colorBuffer) {
+          console.warn(
+            "A view has a depth buffer output target with key:",
+            output.depth.key,
+            "however, no ColorBuffer was found for the key.",
+            "Please ensure you have a 'resource' specified for the Surface with the proper key",
+            "Also ensure the resource is made via createColorBuffer()"
+          );
+          throw new Error(
+            `Output target unable to be constructed for view ${this.id}`
+          );
+        }
+
+        depthBuffer = request.colorBuffer;
       }
 
       // Otherwise, just create a buffer format for the buffer
@@ -453,7 +541,7 @@ export abstract class View<
     // while non MRT systems will have multiple render targets
     if (WebGLStat.MRT) {
       const colorBuffers: RenderBufferOutputTarget[] = [];
-      renderTextures.forEach((tex, type) =>
+      renderBuffers.forEach((tex, type) =>
         colorBuffers.push({
           buffer: tex,
           outputType: type

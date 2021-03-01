@@ -1,5 +1,6 @@
 import { GLSettings } from "./gl-settings";
 import { GLContext, IExtensions } from "./types";
+import { WebGLStat } from "./webgl-stat";
 
 /**
  * This file contains all method used to decode/encode GLSettings to GL types
@@ -105,7 +106,14 @@ export function texelFormat(
           case GLSettings.Texture.TexelDataType.RGBA16F:
             return gl.RGBA16F;
           case GLSettings.Texture.TexelDataType.RGBA32F:
-            return gl.RGBA32F;
+            if (
+              WebGLStat.FLOAT_TEXTURE_READ.full &&
+              WebGLStat.FLOAT_TEXTURE_WRITE.full
+            ) {
+              return gl.RGBA32F;
+            } else {
+              return gl.RGBA16F;
+            }
           case GLSettings.Texture.TexelDataType.RGBA8UI:
             return gl.RGBA8UI;
 
@@ -115,6 +123,27 @@ export function texelFormat(
             return gl.DEPTH_COMPONENT24;
           case GLSettings.Texture.TexelDataType.DEPTH_COMPONENT32F:
             return gl.DEPTH_COMPONENT32F;
+
+          case GLSettings.Texture.TexelDataType.RGBA32UI:
+            return gl.RGBA32UI;
+          case GLSettings.Texture.TexelDataType.RGB32UI:
+            return gl.RGB32UI;
+          case GLSettings.Texture.TexelDataType.RGBA16UI:
+            return gl.RGBA16UI;
+          case GLSettings.Texture.TexelDataType.RGB16UI:
+            return gl.RGB16UI;
+          case GLSettings.Texture.TexelDataType.RGBA32I:
+            return gl.RGBA32I;
+          case GLSettings.Texture.TexelDataType.RGB32I:
+            return gl.RGB32I;
+          case GLSettings.Texture.TexelDataType.RGBA16I:
+            return gl.RGBA16I;
+          case GLSettings.Texture.TexelDataType.RGB16I:
+            return gl.RGB16I;
+          case GLSettings.Texture.TexelDataType.RGBA8I:
+            return gl.RGBA8I;
+          case GLSettings.Texture.TexelDataType.RGB8I:
+            return gl.RGB8I;
 
           default:
             console.warn(
@@ -214,10 +243,16 @@ export function minFilter(
 
 /**
  * Decodes a ColorBufferFormat to valid color render buffer storage formats
+ *
+ * Takes in any of the render buffer formats, but will default invalid color
+ * buffer formats to RGBA4
  */
 export function colorBufferFormat(
   gl: GLContext,
-  format: GLSettings.RenderTarget.ColorBufferFormat
+  format:
+    | GLSettings.RenderTarget.ColorBufferFormat
+    | GLSettings.RenderTarget.DepthBufferFormat
+    | GLSettings.RenderTarget.StencilBufferFormat
 ) {
   switch (format) {
     case GLSettings.RenderTarget.ColorBufferFormat.RGB565:
@@ -228,16 +263,77 @@ export function colorBufferFormat(
       return gl.RGBA4;
 
     default:
+      if (gl instanceof WebGL2RenderingContext) {
+        switch (format) {
+          case GLSettings.RenderTarget.ColorBufferFormat.R8:
+            return gl.R8;
+          case GLSettings.RenderTarget.ColorBufferFormat.R8UI:
+            return gl.R8UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.R8I:
+            return gl.R8I;
+          case GLSettings.RenderTarget.ColorBufferFormat.R16UI:
+            return gl.R16UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.R16I:
+            return gl.R16I;
+          case GLSettings.RenderTarget.ColorBufferFormat.R32UI:
+            return gl.R32UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.R32I:
+            return gl.R32I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG8:
+            return gl.RG8;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG8UI:
+            return gl.RG8UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG8I:
+            return gl.RG8I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG16UI:
+            return gl.RG16UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG16I:
+            return gl.RG16I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG32UI:
+            return gl.RG32UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG32I:
+            return gl.RG32I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGB8:
+            return gl.RGB8;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA8:
+            return gl.RGBA8;
+          case GLSettings.RenderTarget.ColorBufferFormat.SRGB8_ALPHA8:
+            return gl.SRGB8_ALPHA8;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGB10_A2:
+            return gl.RGB10_A2;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA8UI:
+            return gl.RGBA8UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA8I:
+            return gl.RGBA8I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGB10_A2UI:
+            return gl.RGB10_A2UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA16UI:
+            return gl.RGBA16UI;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA16I:
+            return gl.RGBA16I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA32I:
+            return gl.RGBA32I;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA32UI:
+            return gl.RGBA32UI;
+        }
+      }
+
       return gl.RGBA4;
   }
 }
 
 /**
- * Decodes a DepthBufferFormat to valid color depth buffer storage formats
+ * Decodes a DepthBufferFormat to valid color depth buffer storage formats.
+ *
+ * Takes in any of the render buffer formats, but will default invalid depth
+ * buffer formats to DEPTH_COMPONENT16
  */
 export function depthBufferFormat(
   gl: GLContext,
-  format: GLSettings.RenderTarget.DepthBufferFormat
+  format:
+    | GLSettings.RenderTarget.DepthBufferFormat
+    | GLSettings.RenderTarget.ColorBufferFormat
+    | GLSettings.RenderTarget.StencilBufferFormat
 ) {
   switch (format) {
     case GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16:
@@ -246,16 +342,35 @@ export function depthBufferFormat(
       return gl.DEPTH_STENCIL;
 
     default:
+      if (gl instanceof WebGL2RenderingContext) {
+        switch (format) {
+          case GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT24:
+            return gl.DEPTH_COMPONENT24;
+          case GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT32F:
+            return gl.DEPTH_COMPONENT32F;
+          case GLSettings.RenderTarget.DepthBufferFormat.DEPTH24_STENCIL8:
+            return gl.DEPTH24_STENCIL8;
+          case GLSettings.RenderTarget.DepthBufferFormat.DEPTH32F_STENCIL8:
+            return gl.DEPTH32F_STENCIL8;
+        }
+      }
+
       return gl.DEPTH_COMPONENT16;
   }
 }
 
 /**
  * Decodes a StencilBufferFormat to valid stencil render buffer storage formats
+ *
+ * Takes in any of the render buffer formats, but will default invalid stencil
+ * buffer formats to STENCIL_INDEX8
  */
 export function stencilBufferFormat(
   gl: GLContext,
-  format: GLSettings.RenderTarget.StencilBufferFormat
+  format:
+    | GLSettings.RenderTarget.ColorBufferFormat
+    | GLSettings.RenderTarget.DepthBufferFormat
+    | GLSettings.RenderTarget.StencilBufferFormat
 ) {
   switch (format) {
     case GLSettings.RenderTarget.StencilBufferFormat.STENCIL_INDEX8:

@@ -19,7 +19,8 @@ import {
   Transform,
   UniformSize,
   Vec3,
-  View3D
+  View3D,
+  WebGLStat
 } from "../../../src";
 import { Camera, CameraProjectionType } from "../../../src/util/camera";
 import { BaseDemo } from "../../common/base-demo";
@@ -83,6 +84,17 @@ export class DeferredShadingDemo extends BaseDemo {
   }
 
   makeSurface(container: HTMLElement) {
+    const hasFloat =
+      WebGLStat.FLOAT_TEXTURE_WRITE.full || WebGLStat.FLOAT_TEXTURE_WRITE.half;
+
+    if (!hasFloat) {
+      this.message(
+        "This device does not support FLOAT textures so it will not render properly."
+      );
+    } else {
+      this.message("TESTING.");
+    }
+
     return new BasicSurface({
       container,
       rendererOptions: {
@@ -236,9 +248,11 @@ export class DeferredShadingDemo extends BaseDemo {
                 buffers: {
                   [FragmentOutputType.COLOR]: resources.color,
                   [FragmentOutputType.NORMAL]: resources.normal,
-                  [FragmentOutputType.POSITION]: resources.position
+                  [FragmentOutputType.POSITION]: hasFloat
+                    ? resources.position
+                    : void 0
                 },
-                depth: resources.depth.key
+                depth: resources.depth
               }
             })
           },
@@ -258,7 +272,7 @@ export class DeferredShadingDemo extends BaseDemo {
                 buffers: {
                   [FragmentOutputType.GLOW]: resources.bloom.glow
                 },
-                depth: resources.depth.key
+                depth: resources.depth
               }
             })
           },
@@ -285,10 +299,10 @@ export class DeferredShadingDemo extends BaseDemo {
           }),
           output: postProcess({
             buffers: {
-              normals: resources.normal.key,
-              colors: resources.color.key,
-              positions: resources.position.key,
-              glows: resources.bloom.blur1.key
+              normals: resources.normal,
+              colors: resources.color,
+              positions: hasFloat ? resources.position : void 0,
+              glows: resources.bloom.blur1
             },
             uniforms: [
               {
@@ -302,7 +316,8 @@ export class DeferredShadingDemo extends BaseDemo {
                 update: () => [this.parameters.ambience]
               }
             ],
-            shader: `
+            shader: hasFloat
+              ? `
               varying vec2 texCoord;
 
               void main() {
@@ -324,6 +339,25 @@ export class DeferredShadingDemo extends BaseDemo {
                 vec4 glow = texture(glows, texCoord);
                 $\{out: color} = vec4(lighting, 1.0) + glow;
               }
+            `
+              : `
+            varying vec2 texCoord;
+
+            void main() {
+              // Retrieve data from G-buffer
+              vec3 Normal = texture(normals, texCoord).rgb;
+              vec3 Albedo = texture(colors, texCoord).rgb;
+
+              // Then calculate lighting as usual
+              vec3 lighting = Albedo * ambience; // hard-coded ambient component
+              float ambienceAdjust = 1.0 - ambience;
+
+              vec3 diffuse = max(dot(Normal, normalize(vec3(1., 1., 0.))), 0.0) * Albedo * vec3(1., 1., 1.) * ambienceAdjust;
+              lighting += diffuse;
+
+              vec4 glow = texture(glows, texCoord);
+              $\{out: color} = vec4(lighting, 1.0) + glow;
+            }
             `
           })
         }

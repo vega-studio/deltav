@@ -14,7 +14,58 @@ export namespace GLSettings {
     export enum ColorBufferFormat {
       RGBA4,
       RGB565,
-      RGB5_A1
+      RGB5_A1,
+
+      /** WebGL 2 Format */
+      R8,
+      /** WebGL 2 Format */
+      R8UI,
+      /** WebGL 2 Format */
+      R8I,
+      /** WebGL 2 Format */
+      R16UI,
+      /** WebGL 2 Format */
+      R16I,
+      /** WebGL 2 Format */
+      R32UI,
+      /** WebGL 2 Format */
+      R32I,
+      /** WebGL 2 Format */
+      RG8,
+      /** WebGL 2 Format */
+      RG8UI,
+      /** WebGL 2 Format */
+      RG8I,
+      /** WebGL 2 Format */
+      RG16UI,
+      /** WebGL 2 Format */
+      RG16I,
+      /** WebGL 2 Format */
+      RG32UI,
+      /** WebGL 2 Format */
+      RG32I,
+      /** WebGL 2 Format */
+      RGB8,
+      /** WebGL 2 Format */
+      RGBA8,
+      /** WebGL 2 Format */
+      SRGB8_ALPHA8,
+      /** WebGL 2 Format */
+      RGB10_A2,
+      /** WebGL 2 Format */
+      RGBA8UI,
+      /** WebGL 2 Format */
+      RGBA8I,
+      /** WebGL 2 Format */
+      RGB10_A2UI,
+      /** WebGL 2 Format */
+      RGBA16UI,
+      /** WebGL 2 Format */
+      RGBA16I,
+      /** WebGL 2 Format */
+      RGBA32I,
+      /** WebGL 2 Format */
+      RGBA32UI
     }
 
     /**
@@ -24,7 +75,16 @@ export namespace GLSettings {
      */
     export enum DepthBufferFormat {
       DEPTH_COMPONENT16,
-      DEPTH_STENCIL
+      DEPTH_STENCIL,
+
+      /** WebGL 2 Format */
+      DEPTH_COMPONENT24,
+      /** WebGL 2 Format */
+      DEPTH_COMPONENT32F,
+      /** WebGL 2 Format */
+      DEPTH24_STENCIL8,
+      /** WebGL 2 Format */
+      DEPTH32F_STENCIL8
     }
 
     /**
@@ -241,6 +301,12 @@ export namespace GLSettings {
     /**
      * This is the data format the texels in the texture will take on. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     *
+     * For valid combinations in WebGL 2 visit:
+     * https://www.khronos.org/registry/webgl/specs/latest/2.0/
+     *
+     * Search for [throws] void texImage2D to reach the table that shows all
+     * cobinations.
      */
     export enum TexelDataType {
       /**
@@ -328,13 +394,41 @@ export namespace GLSettings {
       RGBA32F = 32,
       /** WebGL 2 texel format */
       RGBA8UI = 33,
-
       /** WebGL 2 texel format */
       DEPTH_COMPONENT16 = 34,
       /** WebGL 2 texel format */
       DEPTH_COMPONENT24 = 35,
       /** WebGL 2 texel format */
-      DEPTH_COMPONENT32F = 36
+      DEPTH_COMPONENT32F = 36,
+      /** WebGL 2 texel format */
+      RGBA32UI = 37,
+      /** WebGL 2 texel format */
+      RGB32UI = 38,
+      /** WebGL 2 texel format */
+      RGBA16UI = 39,
+      /** WebGL 2 texel format */
+      RGB16UI = 40,
+      /** WebGL 2 texel format */
+      RGBA32I = 41,
+      /** WebGL 2 texel format */
+      RGB32I = 42,
+      /** WebGL 2 texel format */
+      RGBA16I = 43,
+      /** WebGL 2 texel format */
+      RGB16I = 44,
+      /** WebGL 2 texel format */
+      RGBA8I = 45,
+      /** WebGL 2 texel format */
+      RGB8I = 46,
+
+      /** WebGL 2 texel format */
+      RED_INTEGER = 47,
+      /** WebGL 2 texel format */
+      RG_INTEGER = 48,
+      /** WebGL 2 texel format */
+      RGB_INTEGER = 49,
+      /** WebGL 2 texel format */
+      RGBA_INTEGER = 50
     }
 
     /**

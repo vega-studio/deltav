@@ -242,7 +242,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * Free resources for this manager
    */
   destroy() {
-    this.texture.dispose();
+    this.texture.destroy();
   }
 
   /**

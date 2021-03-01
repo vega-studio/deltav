@@ -25,15 +25,6 @@ import { ResourceRouter } from "../resource-router";
 
 const debugCtx = "TextureIOExpansion";
 
-/** Empty texture that will default to the zero texture and unit */
-const emptyTexture = new Texture({
-  data: {
-    width: 2,
-    height: 2,
-    buffer: new Uint8Array(16)
-  }
-});
-
 /** Resource Attribute typeguard */
 function isTextureAttribute<T extends Instance>(
   attr: any,
@@ -186,10 +177,10 @@ export class TextureIOExpansion extends BaseIOExpansion {
               );
 
               if (resource) {
-                return resource.texture || emptyTexture;
+                return resource.texture || Texture.emptyTexture;
               }
 
-              return emptyTexture;
+              return Texture.emptyTexture;
             }
           },
           // This provides the size of the texture that is applied to the

@@ -171,7 +171,8 @@ export enum TextureSize {
 export enum ResourceType {
   ATLAS = 0,
   FONT = 1,
-  TEXTURE = 2
+  TEXTURE = 2,
+  COLOR_BUFFER = 3
 }
 
 /**
@@ -608,7 +609,7 @@ export interface IInstancingUniform {
  * or "0".
  */
 export type OutputFragmentShaderTarget =
-  | string
+  | BaseResourceOptions
   | {
       /**
        * The form of information this output will provide. This is mostly an
@@ -617,7 +618,7 @@ export type OutputFragmentShaderTarget =
        */
       outputType: number;
       /** The resource key that the output will target */
-      resource: string;
+      resource: BaseResourceOptions;
     }[];
 
 /**
@@ -1231,7 +1232,14 @@ export type UpdateProp<T> = {
  * Speedy check to see if a value is a string type or not
  */
 export function isString(val?: any): val is string {
-  return val && val.charCodeAt !== void 0;
+  return val !== void 0 && val.charCodeAt !== void 0;
+}
+
+/**
+ * Speedy check to see if a value is a number type or not
+ */
+export function isNumber(val?: any): val is number {
+  return val !== void 0 && val.toExponential !== void 0;
 }
 
 /**
@@ -1239,7 +1247,7 @@ export function isString(val?: any): val is string {
  * string comparison with 'function'.
  */
 export function isFunction<T extends Function>(val?: any): val is T {
-  return val && val.call !== void 0 && val.apply !== void 0;
+  return val !== void 0 && val.call !== void 0 && val.apply !== void 0;
 }
 
 /**
@@ -1269,6 +1277,12 @@ export enum FragmentOutputType {
    */
   NONE = 0,
   /**
+   * This is generally specified when a layer has a fragment output that is a
+   * no-op to allow for quickest rendering possible when performing operations
+   * like rendering a shadow map.
+   */
+  BLANK,
+  /**
    * This is the most common information output style. It provides a color per
    * fragment
    */
@@ -1287,9 +1301,31 @@ export enum FragmentOutputType {
    */
   PICKING,
   /**
-   * This indicates it will provide eye-space position information per fragment
+   * This indicates it will provide eye-space position information per fragment.
+   * Best used for a float texture when available.
    */
   POSITION,
+  /**
+   * Sometimes compatibility is a major need. Thus this is used when float
+   * textures are not available (which is often the case in Mobile). Instead of
+   * getting to use a float point texture, one can use MRT and output each
+   * positional component to separate textures.
+   */
+  POSITION_X,
+  /**
+   * Sometimes compatibility is a major need. Thus this is used when float
+   * textures are not available (which is often the case in Mobile). Instead of
+   * getting to use a float point texture, one can use MRT and output each
+   * positional component to separate textures.
+   */
+  POSITION_Y,
+  /**
+   * Sometimes compatibility is a major need. Thus this is used when float
+   * textures are not available (which is often the case in Mobile). Instead of
+   * getting to use a float point texture, one can use MRT and output each
+   * positional component to separate textures.
+   */
+  POSITION_Z,
   /**
    * This indicates it will provide Lighting information
    */

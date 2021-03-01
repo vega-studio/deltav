@@ -1,27 +1,24 @@
 import { Instance } from "../../instance-provider/instance";
 import { ILayerProps, Layer } from "../../surface/layer";
-import {
-  InstanceIOValue,
-  IResourceContext,
-  ResourceType,
-  TextureSize
-} from "../../types";
+import { InstanceIOValue, IResourceContext, TextureSize } from "../../types";
 import { BaseResourceManager } from "../base-resource-manager";
-import { IRenderTextureResource, RenderTexture } from "./render-texture";
-import { IRenderTextureResourceRequest } from "./render-texture-resource-request";
-import { TextureIOExpansion } from "./texture-io-expansion";
+import {
+  ColorBufferResource,
+  IColorBufferResource
+} from "./color-buffer-resource";
+import { IColorBufferResourceRequest } from "./color-buffer-resource-request";
 
 /**
  * This manager handles creation and destruction of simple Texture Resources.
  * Render Textures are more used on a higher level with the Surface
  * configuration, so we don't need robust memeory handling for it.
  */
-export class RenderTextureResourceManager extends BaseResourceManager<
-  IRenderTextureResource,
-  IRenderTextureResourceRequest
+export class ColorBufferResourceManager extends BaseResourceManager<
+  IColorBufferResource,
+  IColorBufferResourceRequest
 > {
   /** These are the generated resources this manager collects and monitors */
-  resources = new Map<string, RenderTexture>();
+  resources = new Map<string, ColorBufferResource>();
 
   /**
    * This manager does not need to dequeue requests as all requests will be
@@ -43,12 +40,11 @@ export class RenderTextureResourceManager extends BaseResourceManager<
   }
 
   /**
-   * We make an expander for when an attribute requests a TEXTURE resource. This
-   * will ensure attributes that require a TEXTURE type resource will have the
-   * resource added as a uniform.
+   * This resource has no special IO expansion as it can not be used within a
+   * shader's context. It can only be an output target.
    */
   getIOExpansion() {
-    return [new TextureIOExpansion(ResourceType.TEXTURE, this)];
+    return [];
   }
 
   /**
@@ -62,7 +58,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    * The system will inform this manager when a resource is no longer needed and
    * should be disposed.
    */
-  destroyResource(options: IRenderTextureResource) {
+  destroyResource(options: IColorBufferResource) {
     const resource = this.resources.get(options.key);
     if (!resource) return;
     resource.destroy();
@@ -72,7 +68,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
   /**
    * The system will inform this manager when a resource should be built.
    */
-  async initResource(options: IRenderTextureResource) {
+  async initResource(options: IColorBufferResource) {
     let resource = this.resources.get(options.key);
 
     if (resource) {
@@ -83,7 +79,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
       return;
     }
 
-    resource = new RenderTexture(options, this.webGLRenderer);
+    resource = new ColorBufferResource(options, this.webGLRenderer);
     this.resources.set(options.key, resource);
   }
 
@@ -94,12 +90,12 @@ export class RenderTextureResourceManager extends BaseResourceManager<
   request<U extends Instance, V extends ILayerProps<U>>(
     _layer: Layer<U, V>,
     _instance: Instance,
-    resourceRequest: IRenderTextureResourceRequest,
+    resourceRequest: IColorBufferResourceRequest,
     _context?: IResourceContext
   ): InstanceIOValue {
     const resource = this.resources.get(resourceRequest.key);
     if (!resource) return [0, 0, 0, 0];
-    resourceRequest.texture = resource.texture;
+    resourceRequest.colorBuffer = resource.colorBuffer;
 
     return [0, 0, 1, 1];
   }
@@ -109,7 +105,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    * we will update all textures with dimensions that are tied to the screen.
    */
   resize() {
-    const toUpdate = new Map<string, RenderTexture>();
+    const toUpdate = new Map<string, ColorBufferResource>();
 
     this.resources.forEach((resource, key) => {
       // Only do a resize of a texture if any of it's dimensions are tied to the
@@ -122,9 +118,9 @@ export class RenderTextureResourceManager extends BaseResourceManager<
       }
 
       // Remove the old texture
-      resource.texture.destroy();
+      resource.colorBuffer.destroy();
       // Regenerate the resource with the new dimensions
-      resource = new RenderTexture(resource, this.webGLRenderer);
+      resource = new ColorBufferResource(resource, this.webGLRenderer);
       toUpdate.set(key, resource);
     });
 
@@ -134,9 +130,9 @@ export class RenderTextureResourceManager extends BaseResourceManager<
   /**
    * This targets the specified resource and attempts to update it's settings.
    */
-  updateResource(options: IRenderTextureResource) {
+  updateResource(options: IColorBufferResource) {
     const resource = this.resources.get(options.key);
     if (!resource) return;
-    console.warn("UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET");
+    console.warn("UPDATING AN EXISTING COLOR BUFFER IS NOT SUPPORTED YET");
   }
 }

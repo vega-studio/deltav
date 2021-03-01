@@ -112,7 +112,12 @@ export interface IMaterialUniform<T extends MaterialUniformType> {
   gl?: Map<
     WebGLProgram,
     {
-      location: WebGLUniformLocation;
+      /**
+       * If this value is set to undefined, then no valid uniform was located
+       * to bind to. This is fine, we just need to appropriately react to this
+       * to prevent attempts to upload or analyze uneeded data.
+       */
+      location: WebGLUniformLocation | undefined;
     }
   >;
 }

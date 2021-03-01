@@ -1,5 +1,6 @@
 import { isString } from "../types";
 import { Attribute } from "./attribute";
+import { ColorBuffer } from "./color-buffer";
 import { Geometry } from "./geometry";
 import {
   colorBufferFormat,
@@ -683,6 +684,22 @@ export class GLProxy {
             0
           );
         }
+      } else if (buffer instanceof ColorBuffer) {
+        const rboId = this.compileDepthBuffer(
+          depthBufferFormat(gl, buffer.internalFormat),
+          target.width,
+          target.height
+        );
+
+        if (rboId) {
+          glContext.depthBufferId = rboId;
+          gl.framebufferRenderbuffer(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_ATTACHMENT,
+            gl.RENDERBUFFER,
+            rboId
+          );
+        }
       } else {
         const rboId = this.compileDepthBuffer(
           buffer,
@@ -882,10 +899,11 @@ export class GLProxy {
   }
 
   /**
-   * Produces a render buffer object intended for a render target for the color buffer attachment
+   * Produces a render buffer object intended for a render target for the color
+   * buffer attachment
    */
   private compileColorBuffer(
-    buffer: GLSettings.RenderTarget.ColorBufferFormat,
+    buffer: ColorBuffer,
     width: number,
     height: number
   ) {
@@ -906,21 +924,27 @@ export class GLProxy {
     // Set the storage format of the RBO
     gl.renderbufferStorage(
       gl.RENDERBUFFER,
-      colorBufferFormat(gl, buffer),
+      colorBufferFormat(gl, buffer.internalFormat),
       width,
       height
     );
+
+    buffer.gl = {
+      bufferId: rbo,
+      proxy: this
+    };
 
     return rbo;
   }
 
   /**
-   * This does what is needed to generate a GPU texture object and format it to the
-   * Texture object specifications.
+   * This does what is needed to generate a GPU texture object and format it to
+   * the Texture object specifications.
    */
   compileTexture(texture: Texture) {
     if (!texture.gl) return;
-    // If the id is already established, this does not need a compile but an update
+    // If the id is already established, this does not need a compile but an
+    // update
     if (texture.gl.textureId) return;
 
     // The texture must have a unit established in order to be compiled
@@ -950,13 +974,15 @@ export class GLProxy {
 
     // Establish the texture's generated gl context
     texture.gl.textureId = textureId;
-    // No matter what, when compiled both data and settings should be updated immediately
+    // No matter what, when compiled both data and settings should be updated
+    // immediately
     texture.needsDataUpload = true;
     texture.needsSettingsUpdate = true;
 
     // Upload the texture's data to the object
     this.updateTextureData(texture);
-    // Make sure the settings for the texture are set correctly to match the texture object
+    // Make sure the settings for the texture are set correctly to match the
+    // texture object
     this.updateTextureSettings(texture);
 
     return true;
@@ -983,7 +1009,8 @@ export class GLProxy {
       drawRange = [0, model.vertexCount];
     }
 
-    // Only if this geometry has instances requested will it attempt to render instances
+    // Only if this geometry has instances requested will it attempt to render
+    // instances
     if (model.drawInstances >= 0 && model.geometry.isInstanced) {
       instancing = this.extensions.instancing;
     }
@@ -1023,6 +1050,19 @@ export class GLProxy {
     // Without committing to the GPU, we set the draw buffer to require a state
     // change again.
     this.state.setDrawBuffers([], true);
+  }
+
+  /**
+   * Destroys a color buffer's resources from the GL Context
+   */
+  disposeColorBuffer(colorBuffer: ColorBuffer) {
+    if (colorBuffer.gl) {
+      if (colorBuffer.gl.bufferId) {
+        this.disposeRenderBuffer(colorBuffer.gl.bufferId);
+      }
+
+      delete colorBuffer.gl;
+    }
   }
 
   /**

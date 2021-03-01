@@ -8,13 +8,20 @@ import { GLSettings } from "./gl-settings";
  */
 export type TextureOptions = Omit<
   Partial<Texture>,
-  "dispose" | "update" | "updateRegions"
+  "destroy" | "update" | "updateRegions"
 >;
 
 /**
  * This represents a texture that is loaded into the GPU.
  */
 export class Texture {
+  /**
+   * Empty texture object to help resolve ambiguous texture values.
+   */
+  static get emptyTexture() {
+    return emptyTexture;
+  }
+
   /** Unique identifier of the texture to aid in debugging and referencing */
   get uid() {
     return this._uid;
@@ -26,9 +33,9 @@ export class Texture {
    * to use within the application.
    */
   public get disposed(): boolean {
-    return this._disposed;
+    return this._destroyed;
   }
-  private _disposed: boolean = false;
+  private _destroyed: boolean = false;
 
   /**
    * Anisotropic filtering level. See:
@@ -328,14 +335,14 @@ export class Texture {
   /**
    * Frees resources associated with this texture.
    */
-  dispose() {
+  destroy() {
     // Clear the gl context
     if (this.gl) {
       this.gl.proxy.disposeTexture(this);
     }
 
     // Flag this texture as no longer useable.
-    this._disposed = true;
+    this._destroyed = true;
     // Ensure the large data object for the texture is cleared
     delete this._data;
   }
@@ -365,3 +372,12 @@ export class Texture {
     this._updateRegions.push([data, region]);
   }
 }
+
+/** Empty texture that will default to the zero texture and unit */
+const emptyTexture = new Texture({
+  data: {
+    width: 2,
+    height: 2,
+    buffer: new Uint8Array(16)
+  }
+});

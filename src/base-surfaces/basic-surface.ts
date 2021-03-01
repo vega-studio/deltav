@@ -178,6 +178,14 @@ export interface IBasicSurfaceOptions<
 }
 
 /**
+ * Helper method to make surface configuration be easier to read and aid in
+ * better code hinting.
+ */
+export function createScene(options: BasicSurfaceSceneOptions) {
+  return options;
+}
+
+/**
  * This is a surface that has some concepts already set up within it, such as monitoring
  * resizing, waiting for a valid size to be present, a render loop tied into requestAnimationFrame.
  * Nothing here is difficult to set up in your own custom Surface implementation, this may provide

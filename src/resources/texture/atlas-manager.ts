@@ -649,7 +649,7 @@ export class AtlasManager {
     geometry.dispose();
     renderTarget.dispose();
     // The old texture is no longer needed now!
-    atlas.texture.dispose();
+    atlas.texture.destroy();
     // Apply the new texture to our atlas. The texture should already be applied to all of the valid
     // subtextures already.
     atlas.texture = newAtlasTexture;

@@ -14,6 +14,7 @@ import {
   FontResourceManager,
   ResourceRouter
 } from "../resources";
+import { ColorBufferResourceManager } from "../resources/color-buffer";
 import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
 import { RenderTextureResourceManager } from "../resources/texture/render-texture-resource-manager";
 import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
@@ -65,6 +66,10 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
  * Default resource managers the system will utilize to handle default / basic resources.
  */
 export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] = [
+  {
+    type: ResourceType.COLOR_BUFFER,
+    manager: new ColorBufferResourceManager()
+  },
   {
     type: ResourceType.TEXTURE,
     manager: new RenderTextureResourceManager()

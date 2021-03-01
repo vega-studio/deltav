@@ -20,7 +20,7 @@ import { ISingleTouchInteraction } from "../event-management/types";
  * WARNING: This WILL filter out FALSEY values. So if values like 0 or '' is VALID, then beware.
  */
 export function isDefined<T>(val: T | null | undefined): val is T {
-  return Boolean(val);
+  return val !== void 0 && val !== null;
 }
 
 /**

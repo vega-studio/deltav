@@ -1,10 +1,7 @@
 import { IView2DProps } from "../../../2d";
 import { GLSettings } from "../../../gl/gl-settings";
-import {
-  IRenderTextureResource,
-  isRenderTextureResource
-} from "../../../resources/texture/render-texture";
-import { ILayerMaterialOptions } from "../../../types";
+import { IRenderTextureResource } from "../../../resources/texture/render-texture";
+import { FragmentOutputType, ILayerMaterialOptions } from "../../../types";
 import { postProcess } from "../../post-process";
 import { boxSample, BoxSampleDirection } from "../box-sample/box-sample";
 
@@ -27,19 +24,19 @@ export interface IBloom {
    * This bloom effect down samples then up samples the results, thus the need
    * for all of the resource specifications.
    */
-  resources: (string | IRenderTextureResource)[];
+  resources: IRenderTextureResource[];
   /**
    * Specifies the output image the bloom effect will be composed with. If this
    * is not specified, this will not do a final composition and just leave the
    * result of the glow filter portion within the top level resource key
    * provided.
    */
-  compose?: string | IRenderTextureResource;
+  compose?: IRenderTextureResource;
   /**
    * This specifies an alternative output to target with the results. If not
    * specified the output will render to the screen.
    */
-  output?: string | IRenderTextureResource;
+  output?: IRenderTextureResource;
   /** For debugging only. Prints generated shader to the console. */
   printShader?: boolean;
   /** Options to send to the view */
@@ -57,31 +54,6 @@ export interface IBloom {
  */
 export function bloom(options: IBloom) {
   const { compose, output, resources } = options;
-  let outputKey, composeKey;
-
-  if (isRenderTextureResource(output)) {
-    outputKey = output.key;
-  } else {
-    outputKey = output;
-  }
-
-  if (isRenderTextureResource(compose)) {
-    composeKey = compose.key;
-  } else {
-    composeKey = compose;
-  }
-
-  const inputKeys = resources.map(resource => {
-    let resourceKey;
-
-    if (isRenderTextureResource(resource)) {
-      resourceKey = resource.key;
-    } else {
-      resourceKey = resource;
-    }
-
-    return resourceKey;
-  });
 
   const addBlend = {
     blending: {
@@ -97,8 +69,8 @@ export function bloom(options: IBloom) {
   for (let i = 0, iMax = options.samples; i < iMax; ++i) {
     const sample = boxSample({
       printShader: options.printShader,
-      input: inputKeys[i],
-      output: inputKeys[i + 1],
+      input: resources[i],
+      output: resources[i + 1],
       direction: BoxSampleDirection.DOWN,
       material: {
         blending: void 0
@@ -112,8 +84,8 @@ export function bloom(options: IBloom) {
   for (let i = options.samples - 1; i > 0; --i) {
     const sample = boxSample({
       printShader: options.printShader,
-      input: inputKeys[i + 1],
-      output: inputKeys[i],
+      input: resources[i + 1],
+      output: resources[i],
       direction: BoxSampleDirection.UP,
       material: addBlend
     });
@@ -122,21 +94,26 @@ export function bloom(options: IBloom) {
   }
 
   // Generate the composition process
-  if (composeKey) {
+  if (compose) {
     process.compose = postProcess({
       printShader: options.printShader,
       // Set the buffers we want to composite
       buffers: {
-        color: composeKey,
-        glow: inputKeys[1]
+        color: compose,
+        glow: resources[1]
       },
       // Turn off blending
       material: {
         blending: null
       },
       // Render to the screen, or to a potentially specified target
-      view: outputKey
-        ? { output: { buffers: outputKey, depth: false } }
+      view: output
+        ? {
+            output: {
+              buffers: { [FragmentOutputType.COLOR]: output },
+              depth: false
+            }
+          }
         : void 0,
       // Utilize our composition shader
       shader: require("./bloom.fs")

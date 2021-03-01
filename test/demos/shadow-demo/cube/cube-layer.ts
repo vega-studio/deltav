@@ -1,13 +1,23 @@
 import {
+  BaseResourceOptions,
+  Camera,
   CommonMaterialOptions,
   createAttribute,
   FragmentOutputType,
   GLSettings,
+  identity4,
   ILayerProps,
+  Instance,
   InstanceAttributeSize,
   InstanceProvider,
+  IRenderTextureResourceRequest,
   IShaderInitialization,
   Layer,
+  MatrixMath,
+  ShaderInjectionTarget,
+  Texture,
+  textureRequest,
+  UniformSize,
   Vec2,
   Vec3,
   VertexAttributeSize
@@ -15,7 +25,11 @@ import {
 import { CubeInstance } from "./cube-instance";
 
 export interface ICubeLayerProps<TInstance extends CubeInstance>
-  extends ILayerProps<TInstance> {}
+  extends ILayerProps<TInstance> {
+  shadowMap?: BaseResourceOptions;
+  lightCamera?: Camera;
+  shadowBias?(): number;
+}
 
 /**
  * Layer for rendering simple cube primitives
@@ -27,7 +41,8 @@ export class CubeLayer<
   static defaultProps: ICubeLayerProps<CubeInstance> = {
     data: new InstanceProvider<CubeInstance>(),
     key: "",
-    materialOptions: CommonMaterialOptions.transparentShapeBlending
+    materialOptions: CommonMaterialOptions.transparentShapeBlending,
+    shadowBias: () => 0.005
   };
 
   initShader(): IShaderInitialization<TInstance> | null {
@@ -176,44 +191,27 @@ export class CubeLayer<
       [0, 1]
     ];
 
+    const { lightCamera, shadowMap } = this.props;
+    let shadowMapRequest: IRenderTextureResourceRequest;
+    const dummyInstance = new Instance();
+
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLES,
       fs: [
+        // No fragment output to speed up Shadow map rendering. This must come
+        // first to ensure nothing else is a potential dependent.
+        {
+          outputType: FragmentOutputType.BLANK,
+          source: `
+            void main() {
+              // DO NOTHING
+              $\{out: blank};
+            }
+          `
+        },
         {
           outputType: FragmentOutputType.COLOR,
           source: require("./cube-layer.fs")
-        },
-        {
-          outputType: FragmentOutputType.GLOW,
-          source: `
-            void main() {
-              $\{out: glow} = color;
-            }
-          `
-        },
-        {
-          outputType: FragmentOutputType.POSITION,
-          source: `
-            $\{import: packFloat}
-            varying vec4 _position;
-
-            void main() {
-              $\{out: position} = _position;
-            }
-          `
-        },
-        {
-          outputType: FragmentOutputType.NORMAL,
-          source: `
-            varying vec3 _normal;
-
-            void main() {
-              // Normals can be negative. Our texture output can not. So
-              // normalize -1 : 1 to 0 : 1.
-              vec3 normal_ = (_normal + 1.) / 2.;
-              $\{out: normal} = vec4(normal_, 1.0);
-            }
-          `
         }
       ],
       instanceAttributes: [
@@ -238,7 +236,44 @@ export class CubeLayer<
           update: o => o.frontColor
         })
       ],
-      uniforms: [],
+      uniforms: [
+        {
+          name: "lightViewProj",
+          size: UniformSize.MATRIX4,
+          update: () => lightCamera?.viewProjection || identity4()
+        },
+        {
+          name: "lightDir",
+          size: UniformSize.THREE,
+          shaderInjection: ShaderInjectionTarget.FRAGMENT,
+          update: () =>
+            MatrixMath.transform4(
+              lightCamera?.transform.matrix || identity4(),
+              [0, 0, 1, 0]
+            )
+        },
+        {
+          name: "lightDepth",
+          size: UniformSize.TEXTURE,
+          shaderInjection: ShaderInjectionTarget.FRAGMENT,
+          update: () => {
+            if (!shadowMapRequest) {
+              shadowMapRequest = textureRequest({
+                key: shadowMap?.key || ""
+              });
+            }
+
+            this.resource.request(this, dummyInstance, shadowMapRequest);
+            return shadowMapRequest.texture || Texture.emptyTexture;
+          }
+        },
+        {
+          name: "shadowBias",
+          size: UniformSize.ONE,
+          shaderInjection: ShaderInjectionTarget.FRAGMENT,
+          update: () => this.props.shadowBias?.() || 0
+        }
+      ],
       vertexAttributes: [
         {
           name: "position",
@@ -263,7 +298,7 @@ export class CubeLayer<
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CW
+      cullSide: GLSettings.Material.CullSide.CCW
     });
   }
 }

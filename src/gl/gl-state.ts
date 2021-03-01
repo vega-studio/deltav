@@ -801,7 +801,6 @@ export class GLState {
 
     // Uniforms
     this._currentUniforms = material.uniforms;
-    let success = true;
 
     if (!this._currentProgram) {
       return false;
@@ -819,11 +818,15 @@ export class GLState {
         const location = this.gl.getUniformLocation(this._currentProgram, name);
 
         if (!location) {
-          console.warn(
+          glSettings = {
+            location: void 0
+          };
+
+          debug(
             this.debugContext,
             `A Material specified a uniform ${name}, but none was found in the current program.`
           );
-          success = false;
+
           return;
         }
 
@@ -835,16 +838,10 @@ export class GLState {
         uniform.gl.set(this._currentProgram, glSettings);
       }
 
-      // After locations for the uniforms are established, we must now copy the uniform
-      // info into the GPU
-      this.uploadUniform(glSettings.location, uniform);
+      // After locations for the uniforms are established, we must now copy the
+      // uniform info into the GPU
+      if (glSettings.location) this.uploadUniform(glSettings.location, uniform);
     });
-
-    if (!success) {
-      console.warn(material.vertexShader);
-      console.warn(material.fragmentShader);
-      return false;
-    }
 
     // Textures
     if (this._textureWillBeUsed.size > 0) {

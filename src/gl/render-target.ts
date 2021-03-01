@@ -1,5 +1,6 @@
 import { FragmentOutputType } from "../types";
 import { uid } from "../util/uid";
+import { ColorBuffer } from "./color-buffer";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
@@ -13,7 +14,7 @@ import { Texture } from "./texture";
  */
 export type RenderBufferOutputTarget = {
   outputType: number;
-  buffer: GLSettings.RenderTarget.ColorBufferFormat | Texture;
+  buffer: ColorBuffer | Texture;
 };
 
 /**
@@ -34,7 +35,7 @@ export interface IRenderTargetOptions {
      * The depth buffer attachment. Exclusion automatically makes depth testing
      * not work.
      */
-    depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture;
+    depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture | ColorBuffer;
     /**
      * The stencil buffer attachment. Exclusion automatically disables stencil
      * testing.

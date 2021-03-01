@@ -15,6 +15,7 @@ import { PhysicsDemo } from "./demos/physics-demo";
 import { ProjectionDemo3D } from "./demos/projection-demo-3d";
 import { QuatEaseDemo } from "./demos/quat-ease-demo";
 import { SceneGraphDemo3D } from "./demos/scene-graph-demo-3d";
+import { ShadowDemo } from "./demos/shadow-demo";
 import { SpecializedTransformDemo } from "./demos/specialized-transform-demo";
 import { StreamDemo } from "./demos/stream-demo";
 import { TextAreaDemo } from "./demos/text-area-demo";
@@ -55,5 +56,6 @@ demos.set("camera-scene-graph", CameraSceneGraphDemo);
 demos.set("texturing", TexturingDemo);
 demos.set("specialized-transform", SpecializedTransformDemo);
 demos.set("deferred-shading", DeferredShadingDemo);
+demos.set("shadow-demo", ShadowDemo);
 
 export const demoKeys = Array.from(demos.keys());

@@ -45,7 +45,12 @@ export interface IMaterialUniform<T extends MaterialUniformType> {
      * Modifying this outside of the framework is bound to break something.
      */
     gl?: Map<WebGLProgram, {
-        location: WebGLUniformLocation;
+        /**
+         * If this value is set to undefined, then no valid uniform was located
+         * to bind to. This is fine, we just need to appropriately react to this
+         * to prevent attempts to upload or analyze uneeded data.
+         */
+        location: WebGLUniformLocation | undefined;
     }>;
 }
 /** The GL Context which will be either WebGL1 or WebGL2 */
@@ -74,6 +79,18 @@ export interface IExtensions {
     drawBuffers?: WebGL2RenderingContext | WEBGL_draw_buffers;
     /** Extension for hardware instancing */
     instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
+    /** Extension for float texture as a color buffer */
+    renderFloatTexture?: WEBGL_color_buffer_float;
+    /** Extension for float textures */
+    floatTex?: WebGL2RenderingContext | OES_texture_float;
+    /** Extension for float textures linear filtering */
+    floatTexFilterLinear?: WebGL2RenderingContext | OES_texture_float_linear;
+    /** Extension for half float textures */
+    halfFloatTex?: WebGL2RenderingContext | OES_texture_half_float;
+    /** Extension for half float textures linear filtering */
+    halfFloatTexFilterLinear?: WebGL2RenderingContext | OES_texture_half_float_linear;
+    /** Extension support for Vertex Array Objects */
+    vao?: WebGL2RenderingContext | OES_vertex_array_object;
 }
 /**
  * These are the state responses for using a material

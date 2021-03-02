@@ -1,4 +1,5 @@
 import { Attribute } from "./attribute";
+import { ColorBuffer } from "./color-buffer";
 import { Geometry } from "./geometry";
 import { GLState } from "./gl-state";
 import { Material } from "./material";
@@ -48,7 +49,7 @@ export declare class GLProxy {
     /**
      * Takes a geometry object and ensures all of it's buffers are generated
      */
-    compileGeometry(geometry: Geometry): boolean;
+    compileGeometry(geometry: Geometry): true | undefined;
     /**
      * This creates the shaders and programs needed to create a material.
      */
@@ -67,18 +68,31 @@ export declare class GLProxy {
      */
     private compileStencilBuffer;
     /**
-     * Produces a render buffer object intended for a render target for the color buffer attachment
+     * Produces a render buffer object intended for a render target for the color
+     * buffer attachment
      */
     private compileColorBuffer;
     /**
-     * This does what is needed to generate a GPU texture object and format it to the
-     * Texture object specifications.
+     * This does what is needed to generate a GPU texture object and format it to
+     * the Texture object specifications.
      */
     compileTexture(texture: Texture): true | undefined;
     /**
      * Executes the draw operation for a given model
      */
     draw(model: Model): void;
+    /**
+     * Destroys an attribute's resources from the GL Context
+     */
+    disposeAttribute(attribute: Attribute): void;
+    /**
+     * Destroys a color buffer's resources from the GL Context
+     */
+    disposeColorBuffer(colorBuffer: ColorBuffer): void;
+    /**
+     * Destroys a geometry's resources from the GL Context
+     */
+    disposeGeometry(geometry: Geometry): void;
     /**
      * Destroys a material's resources from the GL Context.
      */

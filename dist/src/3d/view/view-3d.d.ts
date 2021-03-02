@@ -6,6 +6,7 @@ import { Projection3D } from "./projection-3d";
  * Defines the input metrics of a view for a scene.
  */
 export interface IView3DProps extends IViewProps {
+    preventCameraAdjustment?: boolean;
 }
 /**
  * A View renders a perspective of a scene to a given surface or surfaces. The

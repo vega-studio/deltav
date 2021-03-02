@@ -6,6 +6,7 @@ export declare function getProgramInfo(gl: WebGLRenderingContext, program: any):
 };
 export declare class WebGLStat {
     static VAO: boolean;
+    static DEPTH_TEXTURE: boolean;
     static MAX_VERTEX_UNIFORMS: number;
     static MAX_FRAGMENT_UNIFORMS: number;
     static MAX_VERTEX_ATTRIBUTES: number;

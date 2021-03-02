@@ -3,7 +3,10 @@ import { Vec2 } from "../math";
 import { BaseProjection, SimpleProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../math/primitives/absolute-position";
 import { Bounds } from "../math/primitives/bounds";
-import { IRenderTextureResource, ResourceRouter } from "../resources";
+import { BaseResourceOptions } from "../resources/base-resource-manager";
+import { IColorBufferResource } from "../resources/color-buffer";
+import { ResourceRouter } from "../resources/resource-router";
+import { IRenderTextureResource } from "../resources/texture/render-texture";
 import { Color, FragmentOutputType, Omit } from "../types";
 import { Camera } from "../util/camera";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
@@ -45,7 +48,7 @@ export declare type ViewOutputTarget = {
      */
     outputType: FragmentOutputType | number;
     /** The resource key that the output will target */
-    resource: string;
+    resource: BaseResourceOptions;
 };
 /**
  * Used for reactive view generation and updates.
@@ -99,13 +102,13 @@ export interface IViewProps extends IdentifyByKeyOptions {
          * These should be targets specifying resource keys and provide outputTypes
          * to match information potentially provided by the layers.
          */
-        buffers: Record<number, string | IRenderTextureResource>;
+        buffers: Record<number, IRenderTextureResource | IColorBufferResource | undefined>;
         /**
          * Set to true to include a depth buffer the system will generate for you.
          * Set to a resource id to target an output texture to store the depth
          * buffer. Set to false to not have the depth buffer used or calculated.
          */
-        depth: string | boolean;
+        depth: IRenderTextureResource | IColorBufferResource | boolean;
     };
     /**
      * This specifies the bounds on the canvas this camera will render to. This

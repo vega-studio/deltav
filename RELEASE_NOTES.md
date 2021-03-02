@@ -1,3 +1,22 @@
+## 2.1.0
+
+## Added
+
+- [`ADDED`]: VAO support added into the pipeline. Improves performance considerably for high draw call scenarios.
+- [`ADDED`]: Color Buffers added in thus making shadow maps fully implementable
+- [`ADDED`]: Deferred shading example added
+- [`ADDED`]: Transform now supports arbitrary transform inclusion.
+
+## Fixed
+
+- [`FIXED`]: Fixed issues with depth buffer auto resize. Fixed issue with no float compatibility for the deferred shading demo.
+- [`FIXED`]: Several issues were addressed in allowing for Depth and Float textures
+- [`FIXED`]: Fixed issue with min mag filter picking by making them more robust handling WebGL 1 and 2 scenarios
+- [`FIXED`]: Removed render textures from utilizing useless and heavy canvas object
+- [`FIXED`]: Fixed another issue with texture configuration for separating internal format and format parameters
+- [`FIXED`]: Textures need to have internal format and format spearated in a WebGL 2 capable system
+- [`FIXED`]: Fixed mat4x4 shear equations to properly include shear for an axis relative to an axis
+
 ## 2.0.3
 
 ## Fixed

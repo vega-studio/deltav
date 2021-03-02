@@ -1,3 +1,4 @@
+import { ColorBuffer } from "./color-buffer";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
@@ -10,7 +11,7 @@ import { Texture } from "./texture";
  */
 export declare type RenderBufferOutputTarget = {
     outputType: number;
-    buffer: GLSettings.RenderTarget.ColorBufferFormat | Texture;
+    buffer: ColorBuffer | Texture;
 };
 /**
  * These are the options available for creating a new RenderTarget.
@@ -30,7 +31,7 @@ export interface IRenderTargetOptions {
          * The depth buffer attachment. Exclusion automatically makes depth testing
          * not work.
          */
-        depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture;
+        depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture | ColorBuffer;
         /**
          * The stencil buffer attachment. Exclusion automatically disables stencil
          * testing.
@@ -63,14 +64,19 @@ export interface IRenderTargetOptions {
  * of old targets and create new ones.
  */
 export declare class RenderTarget {
+    /**
+     * This gets flagged as invalid and will not re-attempt compilation until
+     * something changes.
+     */
+    isInvalid: boolean;
     /** UID for the object */
     get uid(): number;
     private _uid;
     /** The buffer settings utilized in rendering this target */
     get buffers(): {
         color: RenderBufferOutputTarget | RenderBufferOutputTarget[] | undefined;
-        depth: Texture | GLSettings.RenderTarget.DepthBufferFormat | undefined;
-        stencil: Texture | GLSettings.RenderTarget.StencilBufferFormat | undefined;
+        depth: ColorBuffer | GLSettings.RenderTarget.DepthBufferFormat | Texture | undefined;
+        stencil: GLSettings.RenderTarget.StencilBufferFormat | Texture | undefined;
     };
     private _buffers;
     /**

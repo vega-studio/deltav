@@ -98,5 +98,5 @@ export declare class Instance {
      * activate such that the property will update it's buffer.
      */
     resourceTrigger(): void;
-    constructor(options: IInstanceOptions);
+    constructor(options?: IInstanceOptions);
 }

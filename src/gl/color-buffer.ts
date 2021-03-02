@@ -14,7 +14,7 @@ export type ColorBufferOptions = Omit<Partial<ColorBuffer>, "destroy">;
  */
 export class ColorBuffer {
   /**
-   * Indicates this Texture has been destroyed, meaning it is useless and
+   * Indicates this ColorBuffer has been destroyed, meaning it is useless and
    * invalid to use within the application.
    */
   public get destroyed(): boolean {

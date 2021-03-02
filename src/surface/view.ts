@@ -579,16 +579,12 @@ export abstract class View<
 
     const invalid = targets.some(target =>
       target.getBuffers().some(buffer => {
-        if (buffer.buffer instanceof Texture) {
-          if (buffer.buffer.disposed) return true;
-        }
-
+        if (buffer.buffer.destroyed) return true;
         return false;
       })
     );
 
     if (invalid) {
-      console.error("REBUILDING VIEW RENDER TARGET");
       this.createRenderTarget();
     }
   }

@@ -32,7 +32,7 @@ export class Texture {
    * Indicates this Texture has been disposed, meaning it is useless and invalid
    * to use within the application.
    */
-  public get disposed(): boolean {
+  public get destroyed(): boolean {
     return this._destroyed;
   }
   private _destroyed: boolean = false;

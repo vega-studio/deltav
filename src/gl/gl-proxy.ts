@@ -1260,7 +1260,7 @@ export class GLProxy {
    * Destroys a texture's resources from the GL context
    */
   disposeTexture(texture: Texture) {
-    if (texture.gl && !texture.disposed) {
+    if (texture.gl && !texture.destroyed) {
       this.gl.deleteTexture(texture.gl.textureId);
       this.state.freeTextureUnit(texture);
     }

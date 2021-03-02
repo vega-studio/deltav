@@ -372,7 +372,6 @@ export class WebGLRenderer {
         // If the geometry has a VAO then we just bind it and our geometry is
         // ready to go
         if (geometry.gl?.vao) {
-          this.glState.disableVertexAttributeArray();
           this.glState.bindVAO(geometry.gl.vao);
         } else {
           // Now all of our attributes are established, we must make sure our vertex

@@ -165,7 +165,7 @@ export class SurfaceCommands {
     this.pickingRenderTargets.forEach((target, view) => {
       const buffer = target.getBuffers()[0].buffer;
       if (buffer instanceof Texture) {
-        if (!buffer.gl || buffer.disposed) {
+        if (!buffer.gl || buffer.destroyed) {
           target.dispose();
           toRemove.add(view);
         }

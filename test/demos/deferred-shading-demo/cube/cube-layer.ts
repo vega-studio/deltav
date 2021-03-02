@@ -194,7 +194,6 @@ export class CubeLayer<
         {
           outputType: FragmentOutputType.POSITION,
           source: `
-            $\{import: packFloat}
             varying vec4 _position;
 
             void main() {
@@ -212,6 +211,36 @@ export class CubeLayer<
               // normalize -1 : 1 to 0 : 1.
               vec3 normal_ = (_normal + 1.) / 2.;
               $\{out: normal} = vec4(normal_, 1.0);
+            }
+          `
+        },
+        {
+          outputType: FragmentOutputType.POSITION_X,
+          source: `
+            $\{import: packFloat}
+
+            void main() {
+              $\{out: position_x} = packFloat(_position.x, 2600.);
+            }
+          `
+        },
+        {
+          outputType: FragmentOutputType.POSITION_Y,
+          source: `
+            $\{import: packFloat}
+
+            void main() {
+              $\{out: position_y} = packFloat(_position.y, 2600.);
+            }
+          `
+        },
+        {
+          outputType: FragmentOutputType.POSITION_Z,
+          source: `
+            $\{import: packFloat}
+
+            void main() {
+              $\{out: position_z} = packFloat(_position.z, 2600.);
             }
           `
         }

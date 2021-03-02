@@ -89,12 +89,18 @@ export class DeferredShadingDemo extends BaseDemo {
 
     if (!hasFloat) {
       this.message(
-        "This device does not support FLOAT textures so it will not render properly."
+        "This device does not support FLOAT textures so it is using a compatibility mode which may hinder performance significantly."
       );
-    } else {
-      this.message("TESTING.");
     }
 
+    if (hasFloat) return this.makeSurfaceFloat(container);
+    return this.makeSurfaceFloatCompat(container);
+  }
+
+  /**
+   * Makes a surface that is compatible with FLOAT texture support
+   */
+  makeSurfaceFloat(container: HTMLElement) {
     return new BasicSurface({
       container,
       rendererOptions: {
@@ -153,89 +159,7 @@ export class DeferredShadingDemo extends BaseDemo {
             magFilter: GLSettings.Texture.TextureMagFilter.Nearest
           }
         }),
-        bloom: {
-          glow: createTexture({
-            width: TextureSize.SCREEN,
-            height: TextureSize.SCREEN,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur1: createTexture({
-            width: TextureSize.SCREEN_HALF,
-            height: TextureSize.SCREEN_HALF,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur2: createTexture({
-            width: TextureSize.SCREEN_QUARTER,
-            height: TextureSize.SCREEN_QUARTER,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur3: createTexture({
-            width: TextureSize.SCREEN_8TH,
-            height: TextureSize.SCREEN_8TH,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur4: createTexture({
-            width: TextureSize.SCREEN_16TH,
-            height: TextureSize.SCREEN_16TH,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur5: createTexture({
-            width: TextureSize.SCREEN_32ND,
-            height: TextureSize.SCREEN_32ND,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur6: createTexture({
-            width: TextureSize.SCREEN_64TH,
-            height: TextureSize.SCREEN_64TH,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur7: createTexture({
-            width: TextureSize.SCREEN_128TH,
-            height: TextureSize.SCREEN_128TH,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          }),
-          blur8: createTexture({
-            width: TextureSize.SCREEN_256TH,
-            height: TextureSize.SCREEN_256TH,
-            textureSettings: {
-              generateMipMaps: false,
-              format: GLSettings.Texture.TexelDataType.RGB,
-              internalFormat: GLSettings.Texture.TexelDataType.RGB
-            }
-          })
-        }
+        bloom: this.makeBloomResources()
       },
       eventManagers: _cameras => ({}),
       scenes: (resources, providers, cameras) => ({
@@ -248,9 +172,7 @@ export class DeferredShadingDemo extends BaseDemo {
                 buffers: {
                   [FragmentOutputType.COLOR]: resources.color,
                   [FragmentOutputType.NORMAL]: resources.normal,
-                  [FragmentOutputType.POSITION]: hasFloat
-                    ? resources.position
-                    : void 0
+                  [FragmentOutputType.POSITION]: resources.position
                 },
                 depth: resources.depth
               }
@@ -301,7 +223,7 @@ export class DeferredShadingDemo extends BaseDemo {
             buffers: {
               normals: resources.normal,
               colors: resources.color,
-              positions: hasFloat ? resources.position : void 0,
+              positions: resources.position,
               glows: resources.bloom.blur1
             },
             uniforms: [
@@ -316,8 +238,7 @@ export class DeferredShadingDemo extends BaseDemo {
                 update: () => [this.parameters.ambience]
               }
             ],
-            shader: hasFloat
-              ? `
+            shader: `
               varying vec2 texCoord;
 
               void main() {
@@ -340,29 +261,317 @@ export class DeferredShadingDemo extends BaseDemo {
                 $\{out: color} = vec4(lighting, 1.0) + glow;
               }
             `
-              : `
-            varying vec2 texCoord;
+          })
+        }
+      })
+    });
+  }
 
-            void main() {
-              // Retrieve data from G-buffer
-              vec3 Normal = texture(normals, texCoord).rgb;
-              vec3 Albedo = texture(colors, texCoord).rgb;
+  /**
+   * Make a surface that is in a compatibility mode to make up for lack of float
+   * textures.
+   *
+   * Without a float texture we can cheat by using MRT and output to THREE
+   * textures that each take an axis for the positional information. We have a
+   * convenient shader module to help with this: packFloat which provides
+   *
+   * packFloat(float, range)
+   *
+   * and
+   *
+   * unpackFloat(float, range)
+   */
+  makeSurfaceFloatCompat(container: HTMLElement) {
+    return new BasicSurface({
+      container,
+      rendererOptions: {
+        antialias: true
+      },
+      providers: this.providers,
+      cameras: {
+        main:
+          this.parameters.cameraMode === "Perspective"
+            ? Camera.makePerspective({
+                fov: (60 * Math.PI) / 180,
+                far: 100000
+              })
+            : Camera.makeOrthographic()
+      },
+      resources: {
+        color: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest
+          }
+        }),
+        normal: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest
+          }
+        }),
+        positionX: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest,
+            premultiplyAlpha: false
+          }
+        }),
+        positionY: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest,
+            premultiplyAlpha: false
+          }
+        }),
+        positionZ: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest,
+            premultiplyAlpha: false
+          }
+        }),
+        depth: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            internalFormat: GLSettings.Texture.TexelDataType.DEPTH_COMPONENT16,
+            format: GLSettings.Texture.TexelDataType.DepthComponent,
+            type: GLSettings.Texture.SourcePixelFormat.UnsignedShort,
+            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+            magFilter: GLSettings.Texture.TextureMagFilter.Nearest
+          }
+        }),
+        bloom: this.makeBloomResources()
+      },
+      eventManagers: _cameras => ({}),
+      scenes: (resources, providers, cameras) => ({
+        main: {
+          views: {
+            // Let's assume no more than 4 color attachments for weaker devices
+            positions: createView(View3D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              output: {
+                buffers: {
+                  [FragmentOutputType.POSITION_X]: resources.positionX,
+                  [FragmentOutputType.POSITION_Y]: resources.positionY,
+                  [FragmentOutputType.POSITION_Z]: resources.positionZ
+                },
+                depth: resources.depth
+              }
+            }),
+            colorNormal: createView(View3D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR],
+              output: {
+                buffers: {
+                  [FragmentOutputType.COLOR]: resources.color,
+                  [FragmentOutputType.NORMAL]: resources.normal
+                },
+                depth: resources.depth
+              }
+            })
+          },
+          layers: {
+            blocks: createLayer(CubeLayer, {
+              data: providers.cubes,
+              materialOptions: {
+                blending: null
+              }
+            })
+          }
+        },
+        lights: {
+          views: {
+            world: createView(View3D, {
+              camera: cameras.main,
+              clearFlags: [ClearFlags.COLOR],
+              background: [0, 0, 0, 0],
+              output: {
+                buffers: {
+                  [FragmentOutputType.GLOW]: resources.bloom.glow
+                },
+                depth: resources.depth
+              }
+            })
+          },
+          layers: {
+            blocks: createLayer(CubeLayer, {
+              data: providers.lights
+            })
+          }
+        },
+        postProcessing: {
+          bloom: PostEffect.bloom({
+            samples: 6,
+            resources: [
+              resources.bloom.glow,
+              resources.bloom.blur1,
+              resources.bloom.blur2,
+              resources.bloom.blur3,
+              resources.bloom.blur4,
+              resources.bloom.blur5,
+              resources.bloom.blur6,
+              resources.bloom.blur7,
+              resources.bloom.blur8
+            ]
+          }),
+          output: postProcess({
+            buffers: {
+              normals: resources.normal,
+              colors: resources.color,
+              positionX: resources.positionX,
+              positionY: resources.positionY,
+              positionZ: resources.positionZ,
+              glows: resources.bloom.blur1
+            },
+            uniforms: [
+              {
+                name: "lightPosition",
+                size: UniformSize.THREE,
+                update: () => this.light
+              },
+              {
+                name: "ambience",
+                size: UniformSize.ONE,
+                update: () => [this.parameters.ambience]
+              }
+            ],
+            shader: `
+              $\{import: packFloat}
+              varying vec2 texCoord;
 
-              // Then calculate lighting as usual
-              vec3 lighting = Albedo * ambience; // hard-coded ambient component
-              float ambienceAdjust = 1.0 - ambience;
+              void main() {
+                // Retrieve data from G-buffer
+                vec3 FragPos = vec3(
+                  unpackFloat(texture(positionX, texCoord), 2600.),
+                  unpackFloat(texture(positionY, texCoord), 2600.),
+                  unpackFloat(texture(positionZ, texCoord), 2600.)
+                );
+                vec3 Normal = texture(normals, texCoord).rgb;
+                vec3 Albedo = texture(colors, texCoord).rgb;
 
-              vec3 diffuse = max(dot(Normal, normalize(vec3(1., 1., 0.))), 0.0) * Albedo * vec3(1., 1., 1.) * ambienceAdjust;
-              lighting += diffuse;
+                // Then calculate lighting as usual
+                vec3 lighting = Albedo * ambience; // hard-coded ambient component
+                float ambienceAdjust = 1.0 - ambience;
 
-              vec4 glow = texture(glows, texCoord);
-              $\{out: color} = vec4(lighting, 1.0) + glow;
-            }
+                vec3 dir = lightPosition - FragPos;
+                float distance = length(lightPosition - FragPos);
+                vec3 lightDir = dir / distance;
+                vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Albedo * vec3(1., 1., 1.) * ambienceAdjust;
+                lighting += diffuse;
+
+                vec4 glow = texture(glows, texCoord);
+                $\{out: color} = vec4(lighting, 1.0) + glow;
+              }
             `
           })
         }
       })
     });
+  }
+
+  makeBloomResources() {
+    return {
+      glow: createTexture({
+        width: TextureSize.SCREEN,
+        height: TextureSize.SCREEN,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur1: createTexture({
+        width: TextureSize.SCREEN_HALF,
+        height: TextureSize.SCREEN_HALF,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur2: createTexture({
+        width: TextureSize.SCREEN_QUARTER,
+        height: TextureSize.SCREEN_QUARTER,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur3: createTexture({
+        width: TextureSize.SCREEN_8TH,
+        height: TextureSize.SCREEN_8TH,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur4: createTexture({
+        width: TextureSize.SCREEN_16TH,
+        height: TextureSize.SCREEN_16TH,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur5: createTexture({
+        width: TextureSize.SCREEN_32ND,
+        height: TextureSize.SCREEN_32ND,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur6: createTexture({
+        width: TextureSize.SCREEN_64TH,
+        height: TextureSize.SCREEN_64TH,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur7: createTexture({
+        width: TextureSize.SCREEN_128TH,
+        height: TextureSize.SCREEN_128TH,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      }),
+      blur8: createTexture({
+        width: TextureSize.SCREEN_256TH,
+        height: TextureSize.SCREEN_256TH,
+        textureSettings: {
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGB,
+          internalFormat: GLSettings.Texture.TexelDataType.RGB
+        }
+      })
+    };
   }
 
   async init() {
@@ -386,7 +595,7 @@ export class DeferredShadingDemo extends BaseDemo {
       })
     );
 
-    for (let i = 0, iMax = 1000; i < iMax; ++i) {
+    for (let i = 0, iMax = 250; i < iMax; ++i) {
       const cube = this.providers.cubes.add(
         new CubeInstance({
           color: [0.9, 0.56, 0.2, 1],

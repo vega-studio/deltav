@@ -4,5 +4,6 @@ import "./hsv.shader";
 import "./instancing.shader";
 import "./math.shader";
 import "./matrix.shader";
+import "./pack-float";
 import "./picking.shader";
 import "./util.shader";

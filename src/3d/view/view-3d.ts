@@ -7,7 +7,9 @@ import { Projection3D } from "./projection-3d";
 /**
  * Defines the input metrics of a view for a scene.
  */
-export interface IView3DProps extends IViewProps {}
+export interface IView3DProps extends IViewProps {
+  preventCameraAdjustment?: boolean;
+}
 
 /**
  * Type guard to ensure the camera type is orthographic
@@ -60,22 +62,23 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
     if (isPerspective(this.props.camera)) {
       const width = viewBounds.width;
       const height = viewBounds.height;
+      const camera = this.props.camera;
 
       const viewport = {
-        near: 1,
-        far: 100000,
+        near: camera.projectionOptions.near,
+        far: camera.projectionOptions.far,
         width,
         height
       };
 
-      const camera = this.props.camera;
+      if (!this.props.preventCameraAdjustment) {
+        camera.projectionOptions = Object.assign(
+          camera.projectionOptions,
+          viewport
+        );
 
-      camera.projectionOptions = Object.assign(
-        camera.projectionOptions,
-        viewport
-      );
-
-      camera.update();
+        camera.update();
+      }
 
       this.projection.pixelRatio = this.pixelRatio;
       this.projection.viewBounds = viewBounds;
@@ -90,24 +93,25 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
     } else if (isOrthographic(this.props.camera)) {
       const width = viewBounds.width;
       const height = viewBounds.height;
+      const camera = this.props.camera;
 
       const viewport = {
-        near: 1,
-        far: 100000,
+        near: camera.projectionOptions.near,
+        far: camera.projectionOptions.far,
         left: -width / 2,
         right: width / 2,
         top: height / 2,
         bottom: -height / 2
       };
 
-      const camera = this.props.camera;
+      if (!this.props.preventCameraAdjustment) {
+        camera.projectionOptions = Object.assign(
+          camera.projectionOptions,
+          viewport
+        );
 
-      camera.projectionOptions = Object.assign(
-        camera.projectionOptions,
-        viewport
-      );
-
-      camera.update();
+        camera.update();
+      }
 
       this.projection.pixelRatio = this.pixelRatio;
       this.projection.viewBounds = viewBounds;

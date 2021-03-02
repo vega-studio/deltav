@@ -715,7 +715,6 @@ export class Layer<
         shaderIO.fs.splice(maxLayerOutputIndex + 1, 0, pickingFragmentOutput);
       }
 
-      // Retrieve and ensure
       let declarationsFS = mapInjectDefault(declarations.fs, view, new Map());
 
       if (!declarationsFS) {

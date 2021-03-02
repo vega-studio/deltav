@@ -14,7 +14,57 @@ export declare namespace GLSettings {
         enum ColorBufferFormat {
             RGBA4 = 0,
             RGB565 = 1,
-            RGB5_A1 = 2
+            RGB5_A1 = 2,
+            /** WebGL 2 Format */
+            R8 = 3,
+            /** WebGL 2 Format */
+            R8UI = 4,
+            /** WebGL 2 Format */
+            R8I = 5,
+            /** WebGL 2 Format */
+            R16UI = 6,
+            /** WebGL 2 Format */
+            R16I = 7,
+            /** WebGL 2 Format */
+            R32UI = 8,
+            /** WebGL 2 Format */
+            R32I = 9,
+            /** WebGL 2 Format */
+            RG8 = 10,
+            /** WebGL 2 Format */
+            RG8UI = 11,
+            /** WebGL 2 Format */
+            RG8I = 12,
+            /** WebGL 2 Format */
+            RG16UI = 13,
+            /** WebGL 2 Format */
+            RG16I = 14,
+            /** WebGL 2 Format */
+            RG32UI = 15,
+            /** WebGL 2 Format */
+            RG32I = 16,
+            /** WebGL 2 Format */
+            RGB8 = 17,
+            /** WebGL 2 Format */
+            RGBA8 = 18,
+            /** WebGL 2 Format */
+            SRGB8_ALPHA8 = 19,
+            /** WebGL 2 Format */
+            RGB10_A2 = 20,
+            /** WebGL 2 Format */
+            RGBA8UI = 21,
+            /** WebGL 2 Format */
+            RGBA8I = 22,
+            /** WebGL 2 Format */
+            RGB10_A2UI = 23,
+            /** WebGL 2 Format */
+            RGBA16UI = 24,
+            /** WebGL 2 Format */
+            RGBA16I = 25,
+            /** WebGL 2 Format */
+            RGBA32I = 26,
+            /** WebGL 2 Format */
+            RGBA32UI = 27
         }
         /**
          * Specifies the internal format of the depth buffer for a render target
@@ -23,7 +73,15 @@ export declare namespace GLSettings {
          */
         enum DepthBufferFormat {
             DEPTH_COMPONENT16 = 0,
-            DEPTH_STENCIL = 1
+            DEPTH_STENCIL = 1,
+            /** WebGL 2 Format */
+            DEPTH_COMPONENT24 = 2,
+            /** WebGL 2 Format */
+            DEPTH_COMPONENT32F = 3,
+            /** WebGL 2 Format */
+            DEPTH24_STENCIL8 = 4,
+            /** WebGL 2 Format */
+            DEPTH32F_STENCIL8 = 5
         }
         /**
          * Specifies the internal format of the stencil buffer for a render target
@@ -41,7 +99,7 @@ export declare namespace GLSettings {
          * equation settings come into play
          */
         enum Blending {
-            NoBlending = 0,
+            NoBlending = -1,
             NormalBlending = 1,
             AdditiveBlending = 2,
             SubtractiveBlending = 3,
@@ -52,7 +110,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
          */
         enum BlendingDstFactor {
-            Zero = 0,
+            Zero = -1,
             One = 1,
             SrcColor = 2,
             OneMinusSrcColor = 3,
@@ -68,7 +126,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
          */
         enum BlendingSrcFactor {
-            Zero = 0,
+            Zero = -1,
             One = 1,
             SrcColor = 2,
             OneMinusSrcColor = 3,
@@ -85,7 +143,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
          */
         enum BlendingEquations {
-            Add = 0,
+            Add = -1,
             Subtract = 1,
             ReverseSubtract = 2
             /** Requires extension for Webgl 1.0 */
@@ -96,7 +154,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
          */
         enum DepthFunctions {
-            NEVER = 0,
+            NEVER = -1,
             LESS = 1,
             EQUAL = 2,
             LESS_OR_EQUAL = 3,
@@ -111,7 +169,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
          */
         enum CullSide {
-            NONE = 0,
+            NONE = -1,
             CW = 1,
             CCW = 2,
             BOTH = 3
@@ -147,7 +205,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
          */
         enum Wrapping {
-            REPEAT = 0,
+            REPEAT = -1,
             CLAMP_TO_EDGE = 1,
             MIRRORED_REPEAT = 2
         }
@@ -156,7 +214,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
          */
         enum TextureMinFilter {
-            Nearest = 0,
+            Nearest = -1,
             NearestMipMapNearest = 1,
             NearestMipMapLinear = 2,
             Linear = 3,
@@ -168,7 +226,7 @@ export declare namespace GLSettings {
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
          */
         enum TextureMagFilter {
-            Nearest = 0,
+            Nearest = -1,
             Linear = 1
         }
         /**
@@ -180,7 +238,7 @@ export declare namespace GLSettings {
              * Highly supported webgl 1
              * Pairs with: TexelDataType.RGBA, RGB, LuminanceAlpha, Luminance, Alpha
              */
-            UnsignedByte = 0,
+            UnsignedByte = -1,
             /**
              * Highly supported webgl 1
              * Pairs with: TexelDataType.RGB
@@ -224,13 +282,19 @@ export declare namespace GLSettings {
         /**
          * This is the data format the texels in the texture will take on. See:
          * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+         *
+         * For valid combinations in WebGL 2 visit:
+         * https://www.khronos.org/registry/webgl/specs/latest/2.0/
+         *
+         * Search for [throws] void texImage2D to reach the table that shows all
+         * cobinations.
          */
         enum TexelDataType {
             /**
              * Discards the red, green and blue components and reads the alpha component.
              * Pairs with: UNSIGNED_BYTE
              */
-            Alpha = 0,
+            Alpha = -1,
             /**
              * Requires Depth extension or webgl2
              */
@@ -257,7 +321,93 @@ export declare namespace GLSettings {
              * Red, green, blue and alpha components are read from the color buffer.
              */
             RGBA = 6,
-            RGBE = 7
+            RGBE = 7,
+            /** WebGL 2 texel format */
+            R8 = 8,
+            /** WebGL 2 texel format */
+            R16F = 9,
+            /** WebGL 2 texel format */
+            R32F = 10,
+            /** WebGL 2 texel format */
+            R8UI = 11,
+            /** WebGL 2 texel format */
+            RG8 = 12,
+            /** WebGL 2 texel format */
+            RG16F = 13,
+            /** WebGL 2 texel format */
+            RG32F = 14,
+            /** WebGL 2 texel format */
+            RG8UI = 15,
+            /** WebGL 2 texel format */
+            RG16UI = 16,
+            /** WebGL 2 texel format */
+            RG32UI = 17,
+            /** WebGL 2 texel format */
+            RGB8 = 18,
+            /** WebGL 2 texel format */
+            SRGB8 = 19,
+            /** WebGL 2 texel format */
+            RGB565 = 20,
+            /** WebGL 2 texel format */
+            R11F_G11F_B10F = 21,
+            /** WebGL 2 texel format */
+            RGB9_E5 = 22,
+            /** WebGL 2 texel format */
+            RGB16F = 23,
+            /** WebGL 2 texel format */
+            RGB32F = 24,
+            /** WebGL 2 texel format */
+            RGB8UI = 25,
+            /** WebGL 2 texel format */
+            RGBA8 = 26,
+            /** WebGL 2 texel format */
+            SRGB8_ALPHA8 = 27,
+            /** WebGL 2 texel format */
+            RGB5_A1 = 28,
+            /** WebGL 2 texel format */
+            RGB10_A2 = 29,
+            /** WebGL 2 texel format */
+            RGBA4 = 30,
+            /** WebGL 2 texel format */
+            RGBA16F = 31,
+            /** WebGL 2 texel format */
+            RGBA32F = 32,
+            /** WebGL 2 texel format */
+            RGBA8UI = 33,
+            /** WebGL 2 texel format */
+            DEPTH_COMPONENT16 = 34,
+            /** WebGL 2 texel format */
+            DEPTH_COMPONENT24 = 35,
+            /** WebGL 2 texel format */
+            DEPTH_COMPONENT32F = 36,
+            /** WebGL 2 texel format */
+            RGBA32UI = 37,
+            /** WebGL 2 texel format */
+            RGB32UI = 38,
+            /** WebGL 2 texel format */
+            RGBA16UI = 39,
+            /** WebGL 2 texel format */
+            RGB16UI = 40,
+            /** WebGL 2 texel format */
+            RGBA32I = 41,
+            /** WebGL 2 texel format */
+            RGB32I = 42,
+            /** WebGL 2 texel format */
+            RGBA16I = 43,
+            /** WebGL 2 texel format */
+            RGB16I = 44,
+            /** WebGL 2 texel format */
+            RGBA8I = 45,
+            /** WebGL 2 texel format */
+            RGB8I = 46,
+            /** WebGL 2 texel format */
+            RED_INTEGER = 47,
+            /** WebGL 2 texel format */
+            RG_INTEGER = 48,
+            /** WebGL 2 texel format */
+            RGB_INTEGER = 49,
+            /** WebGL 2 texel format */
+            RGBA_INTEGER = 50
         }
         /**
          * This specifies hwo the texture data is unpacked when using gl.readPixels. See:

@@ -12,7 +12,7 @@ import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
  */
 export declare function createEasingAttribute<T extends Instance>(attr: Omit<IInstanceAttribute<T>, "resource" | "childAttributes" | "parentAttribute" | "block" | "blockIndex"> & {
     easing: AutoEasingMethod<Vec>;
-}): Pick<IInstanceAttribute<T>, "update" | "name" | "easing" | "qualifier" | "size"> & {
+}): Pick<IInstanceAttribute<T>, "update" | "size" | "name" | "easing" | "qualifier"> & {
     easing: AutoEasingMethod<import("../../../math/vector").Vec1Compat>;
 };
 /**

@@ -136,7 +136,8 @@ export declare enum TextureSize {
 export declare enum ResourceType {
     ATLAS = 0,
     FONT = 1,
-    TEXTURE = 2
+    TEXTURE = 2,
+    COLOR_BUFFER = 3
 }
 /**
  * Base options needed for a resource to be considered a viable resource
@@ -531,7 +532,7 @@ export interface IInstancingUniform {
  * A target of type "string" will have an inferred default outputType of COLOR
  * or "0".
  */
-export declare type OutputFragmentShaderTarget = string | {
+export declare type OutputFragmentShaderTarget = BaseResourceOptions | {
     /**
      * The form of information this output will provide. This is mostly an
      * arbitrary number to help make associations between an output target and the
@@ -539,7 +540,7 @@ export declare type OutputFragmentShaderTarget = string | {
      */
     outputType: number;
     /** The resource key that the output will target */
-    resource: string;
+    resource: BaseResourceOptions;
 }[];
 /**
  * This represents a fragment shader that has been processed to include all of
@@ -1091,6 +1092,10 @@ export declare type UpdateProp<T> = {
  */
 export declare function isString(val?: any): val is string;
 /**
+ * Speedy check to see if a value is a number type or not
+ */
+export declare function isNumber(val?: any): val is number;
+/**
  * Speedy check to see if the target object is a method or not. This avoids
  * string comparison with 'function'.
  */
@@ -1119,128 +1124,156 @@ export declare enum FragmentOutputType {
      */
     NONE = 0,
     /**
+     * This is generally specified when a layer has a fragment output that is a
+     * no-op to allow for quickest rendering possible when performing operations
+     * like rendering a shadow map.
+     */
+    BLANK = 1,
+    /**
      * This is the most common information output style. It provides a color per
      * fragment
      */
-    COLOR = 1,
+    COLOR = 2,
     /**
      * This indicates it will provide a depth value per fragment
      */
-    DEPTH = 2,
+    DEPTH = 3,
     /**
      * This indicates it will provide eye-space normal information per fragment
      */
-    NORMAL = 3,
+    NORMAL = 4,
     /**
      * Indicates it will provide color information that coincides with instance
      * IDs used in the COLOR PICKING routines the system provides.
      */
-    PICKING = 4,
+    PICKING = 5,
     /**
-     * This indicates it will provide eye-space position information per fragment
+     * This indicates it will provide eye-space position information per fragment.
+     * Best used for a float texture when available.
      */
-    POSITION = 5,
+    POSITION = 6,
+    /**
+     * Sometimes compatibility is a major need. Thus this is used when float
+     * textures are not available (which is often the case in Mobile). Instead of
+     * getting to use a float point texture, one can use MRT and output each
+     * positional component to separate textures.
+     */
+    POSITION_X = 7,
+    /**
+     * Sometimes compatibility is a major need. Thus this is used when float
+     * textures are not available (which is often the case in Mobile). Instead of
+     * getting to use a float point texture, one can use MRT and output each
+     * positional component to separate textures.
+     */
+    POSITION_Y = 8,
+    /**
+     * Sometimes compatibility is a major need. Thus this is used when float
+     * textures are not available (which is often the case in Mobile). Instead of
+     * getting to use a float point texture, one can use MRT and output each
+     * positional component to separate textures.
+     */
+    POSITION_Z = 9,
     /**
      * This indicates it will provide Lighting information
      */
-    LIGHTS = 6,
+    LIGHTS = 10,
     /**
      * This indicates it will provide Lighting information
      */
-    LIGHTS2 = 7,
+    LIGHTS2 = 11,
     /**
      * This indicates it will provide Lighting information
      */
-    LIGHTS3 = 8,
+    LIGHTS3 = 12,
     /**
      * This indicates it will provide Alpha information
      */
-    ALPHA = 9,
+    ALPHA = 13,
     /**
      * This indicates it will provide Beta information
      */
-    BETA = 10,
+    BETA = 14,
     /**
      * This indicates it will provide Gamma information
      */
-    GAMMA = 11,
+    GAMMA = 15,
     /**
      * This indicates it will provide Delta information
      */
-    DELTA = 12,
+    DELTA = 16,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION1 = 13,
+    ACCUMULATION1 = 17,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION2 = 14,
+    ACCUMULATION2 = 18,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION3 = 15,
+    ACCUMULATION3 = 19,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION4 = 16,
+    ACCUMULATION4 = 20,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT1 = 17,
+    COEFFICIENT1 = 21,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT2 = 18,
+    COEFFICIENT2 = 22,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT3 = 19,
+    COEFFICIENT3 = 23,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT4 = 20,
+    COEFFICIENT4 = 24,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE1 = 21,
+    ANGLE1 = 25,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE2 = 22,
+    ANGLE2 = 26,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE3 = 23,
+    ANGLE3 = 27,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE4 = 24,
+    ANGLE4 = 28,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR2 = 25,
+    COLOR2 = 29,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR3 = 26,
+    COLOR3 = 30,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR4 = 27,
+    COLOR4 = 31,
     /**
      * This indicates this will output a fragment to a Glow filter target. Glow
      * targets are used post processing to indicate which texels in the post
      * operation should provide a bloom of a given color.
      */
-    GLOW = 28,
+    GLOW = 32,
     /**
      * This indicates this will output a fragment to a Glow filter target. Blur
      * targets are used post processing to indicate which texels in the post
      * operation should be blurred.
      */
-    BLUR = 29
+    BLUR = 33
 }

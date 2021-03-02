@@ -286,21 +286,21 @@ export declare function shearY2x2(radians: number, out?: Mat2x2): Mat2x2;
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export declare function shearX4x4(radians: number, out?: Mat4x4): Mat4x4;
+export declare function shearX4x4(alongY: number, alongZ: number, out?: Mat4x4): Mat4x4;
 /**
  * This makes a shear 3d matrix that shears parallel to the y-axis. The radians
  * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export declare function shearY4x4(radians: number, out?: Mat4x4): Mat4x4;
+export declare function shearY4x4(alongX: number, alongZ: number, out?: Mat4x4): Mat4x4;
 /**
  * This makes a shear 3d matrix that shears parallel to the z-axis. The radians
  * should be input as a value between, non inclusive (-90 degrees, 90 degrees).
  * A shear >= 90 degrees is non-sensical as it would shear to infinity and
  * beyond.
  */
-export declare function shearZ4x4(radians: number, out?: Mat4x4): Mat4x4;
+export declare function shearZ4x4(alongX: number, alongY: number, out?: Mat4x4): Mat4x4;
 /**
  * Transforms a Vec2 by a matrix
  */

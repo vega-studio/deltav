@@ -131,6 +131,14 @@ export declare class Camera {
     private _viewProjection;
     constructor(options: ICameraOptions);
     /**
+     * Sets projection options with the camera as an orthographic projection.
+     */
+    setOrthographic(options: Partial<ICameraOrthographicOptions>): void;
+    /**
+     * Sets projection options with the camera as a perspective projection.
+     */
+    setPerspective(options: Partial<ICameraPerspectiveOptions>): void;
+    /**
      * This marks the camera's changes as resolved and responded to.
      */
     resolve(): void;

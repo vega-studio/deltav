@@ -253,7 +253,11 @@ export class WebGLRenderer {
     // If we successfully update/compile the attribute, then we enable it's
     // vertex array
     if (this.glProxy.updateAttribute(attribute)) {
-      this.glProxy.useAttribute(name, attribute, geometry);
+      // If our geometry has a vao, we do not need to set the state of the
+      // attribute every time we prepare for a draw call.
+      if (!geometry.gl || !geometry.gl.vao) {
+        this.glProxy.useAttribute(name, attribute, geometry);
+      }
     }
 
     // Otherwise, we flag this as invalid geometry so we don't cause errors or
@@ -306,10 +310,6 @@ export class WebGLRenderer {
 
         // If the fbo is not ready, we're not drawing
         if (renderTarget && !renderTarget.gl) {
-          console.warn(
-            "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
-            { scene, target }
-          );
           return;
         }
 
@@ -327,10 +327,6 @@ export class WebGLRenderer {
     else {
       // If the fbo is not ready, we're not drawing
       if (target && !target.gl) {
-        console.warn(
-          "FBO is not ready for drawing. Skipping the rendering of the scene and target:",
-          { scene, target }
-        );
         return;
       }
 
@@ -361,19 +357,27 @@ export class WebGLRenderer {
     // attribute information available to us.
     switch (materialStatus) {
       case UseMaterialStatus.VALID: {
+        this.glProxy.compileGeometry(geometry);
         let geometryIsValid = true;
 
         // Faster to use defined functions rather than closures for loops
-        const attributeLoop = function(attribute: Attribute, name: string) {
+        const attributeLoop = (attribute: Attribute, name: string) => {
           geometryIsValid =
             this.prepareAttribute(geometry, attribute, name) && geometryIsValid;
         };
 
         // First update/compile all aspects of the geometry
-        geometry.attributes.forEach(attributeLoop, this);
-        // Now all of our attributes are established, we must make sure our vertex
-        // arrays are cleaned up
-        this.glState.applyVertexAttributeArrays();
+        geometry.attributes.forEach(attributeLoop);
+
+        // If the geometry has a VAO then we just bind it and our geometry is
+        // ready to go
+        if (geometry.gl?.vao) {
+          this.glState.bindVAO(geometry.gl.vao);
+        } else {
+          // Now all of our attributes are established, we must make sure our vertex
+          // arrays are cleaned up
+          this.glState.applyVertexAttributeArrays();
+        }
 
         // If all of the attribute updates passed correctly, then we can use the
         // established state to make our draw call
@@ -387,6 +391,9 @@ export class WebGLRenderer {
 
           toRemove.push(model);
         }
+
+        // As good practice, stop using the VAO when it's done being used
+        this.glState.bindVAO(null);
         break;
       }
 

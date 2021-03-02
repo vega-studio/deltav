@@ -139,7 +139,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    */
   destroy() {
     // Delete the GPU's texture object
-    this.texture.dispose();
+    this.texture.destroy();
 
     // Invalidate the Sub textures so they don't start rendering wild colors. Instead
     // should render a single color at the 0, 0 mark of the texture.

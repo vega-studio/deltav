@@ -71,6 +71,9 @@ export declare class GLState {
     /** The currently bound render buffer object. null if nothing bound. */
     get boundRBO(): WebGLRenderbuffer | null;
     private _boundRBO;
+    /** The current id of the current bound vao. If null, nothing is bound */
+    get boundVAO(): WebGLVertexArrayObject | null;
+    private _boundVAO;
     /** The current id of the current bound vbo. If null, nothing is bound */
     get boundVBO(): WebGLBuffer | null;
     private _boundVBO;
@@ -136,6 +139,10 @@ export declare class GLState {
      */
     constructor(gl: WebGLRenderingContext, extensions: IExtensions);
     /**
+     * Sets the provided vertex array as the current bound item.
+     */
+    bindVAO(id: WebGLVertexArrayObject | null): void;
+    /**
      * Sets the provided buffer identifier as the current bound item.
      */
     bindVBO(id: WebGLBuffer | null): void;
@@ -152,6 +159,10 @@ export declare class GLState {
      * updates all stateful information to track that a texture is now utilizing a texture unit.
      */
     bindTexture(texture: Texture, target: GLSettings.Texture.TextureBindingTarget): void;
+    /**
+     * Disables all vertex attribute array indices enabled
+     */
+    disableVertexAttributeArray(): void;
     /**
      * Flags an attribute array as going to be used. Any attribute array location
      * no longer in use will be disabled when applyVertexAttributeArrays is called.

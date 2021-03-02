@@ -7,9 +7,9 @@ export declare enum BoxSampleDirection {
 }
 export interface IBoxSample {
     /** Specifies the resource taken in that will be blurred for the output */
-    input: string | IRenderTextureResource;
+    input: IRenderTextureResource;
     /** Specifies an output resource key to send the results to */
-    output?: string | IRenderTextureResource;
+    output?: IRenderTextureResource;
     /** For debugging only. Prints generated shader to the console. */
     printShader?: boolean;
     /** Set for down or up sampling */

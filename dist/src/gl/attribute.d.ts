@@ -1,3 +1,4 @@
+import { GLProxy } from "./gl-proxy";
 /**
  * Defines an attribute applied to a geometry object. This keeps track of a buffer associated
  * with the attribute to bind to attributes within the shader program.
@@ -20,6 +21,8 @@ export declare class Attribute {
         type: number;
         /** Stores the locations of each attribute discovered for each program identified */
         locations?: Map<WebGLProgram, number>;
+        /** Proxy communication with the GL context */
+        proxy: GLProxy;
     };
     /**
      * The optimization state for frequently changing buffers. See:
@@ -60,6 +63,10 @@ export declare class Attribute {
      * the GPU. The size defines how large the vertex attribute is defined in the shader.
      */
     constructor(data: Float32Array, size: number, isDynamic?: boolean, isInstanced?: boolean);
+    /**
+     * Destroys this resource and frees resources it consumes on the GPU.
+     */
+    destroy(): void;
     /**
      * Flags this attribute as completely resolved in it's needs for updates
      */

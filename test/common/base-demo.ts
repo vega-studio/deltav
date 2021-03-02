@@ -47,6 +47,13 @@ export abstract class BaseDemo {
    */
   abstract buildConsole(gui: datGUI.GUI): void;
 
+  constructor() {
+    const body = document.getElementsByTagName("body")[0];
+    const div = body?.getElementsByClassName("__message__")[0];
+
+    if (div) body.removeChild(div);
+  }
+
   /**
    * Called when the console and other resources for the demo should be removed.
    */
@@ -67,6 +74,25 @@ export abstract class BaseDemo {
    * This is called when everything for the demo should be ready.
    */
   abstract async init(): Promise<void>;
+
+  /**
+   * Generates a message that overlays the rendering using HTML
+   */
+  message(val: string, color?: string) {
+    const body = document.getElementsByTagName("body")[0];
+    const div =
+      body?.getElementsByClassName("__message__")[0] ||
+      document.createElement("div");
+    if (!div) return;
+    body.appendChild(div);
+    div.setAttribute("class", "__message__");
+    div.setAttribute(
+      "style",
+      `background: rgba(0, 0, 0, 0.8); position: absolute; left: 10px; right: 10px; bottom: 10px; color: ${color ||
+        "white"}`
+    );
+    div.innerHTML = val;
+  }
 
   /**
    * Creates an interval timer that will get cleared on destroy.

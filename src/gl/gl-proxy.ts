@@ -1,5 +1,6 @@
 import { isString } from "../types";
 import { Attribute } from "./attribute";
+import { ColorBuffer } from "./color-buffer";
 import { Geometry } from "./geometry";
 import {
   colorBufferFormat,
@@ -103,9 +104,17 @@ export class GLProxy {
   static addExtensions(gl: GLContext): IExtensions {
     const instancing = gl.getExtension("ANGLE_instanced_arrays");
     const mrt = gl.getExtension("WEBGL_draw_buffers");
+    const floatTex = gl.getExtension("OES_texture_float");
+    const floatTexFilterLinear = gl.getExtension("OES_texture_float_linear");
+    const halfFloatTex = gl.getExtension("OES_texture_half_float");
+    const halfFloatTexFilterLinear = gl.getExtension(
+      "OES_texture_half_float_linear"
+    );
     const anisotropicFiltering = gl.getExtension(
       "EXT_texture_filter_anisotropic"
     );
+    const renderFloatTexture = gl.getExtension("EXT_color_buffer_float");
+    const vao = gl.getExtension("OES_vertex_array_object");
 
     const anisotropicStats = {
       maxAnistropicFilter: 0
@@ -136,6 +145,12 @@ export class GLProxy {
       );
     }
 
+    if (!vao && !(gl instanceof WebGL2RenderingContext)) {
+      debug(
+        "This device does not support Vertex Array Objects. This could cause performance issues for high numbers of draw calls."
+      );
+    }
+
     return {
       instancing:
         (gl instanceof WebGL2RenderingContext ? gl : instancing) || undefined,
@@ -146,7 +161,20 @@ export class GLProxy {
             ext: anisotropicFiltering,
             stat: anisotropicStats
           }
-        : undefined
+        : undefined,
+      renderFloatTexture: renderFloatTexture,
+      floatTex:
+        (gl instanceof WebGL2RenderingContext ? gl : floatTex) || undefined,
+      floatTexFilterLinear:
+        (gl instanceof WebGL2RenderingContext ? gl : floatTexFilterLinear) ||
+        undefined,
+      halfFloatTex:
+        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) || undefined,
+      halfFloatTexFilterLinear:
+        (gl instanceof WebGL2RenderingContext
+          ? gl
+          : halfFloatTexFilterLinear) || undefined,
+      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || undefined
     };
   }
 
@@ -194,7 +222,8 @@ export class GLProxy {
 
     attribute.gl = {
       bufferId: buffer,
-      type: gl.ARRAY_BUFFER
+      type: gl.ARRAY_BUFFER,
+      proxy: this
     };
 
     // Indicate the attribute is updated to it's latest needs and concerns
@@ -207,7 +236,46 @@ export class GLProxy {
    * Takes a geometry object and ensures all of it's buffers are generated
    */
   compileGeometry(geometry: Geometry) {
+    // If the geometry's gl context is made, it is already compiled.
+    if (geometry.gl) return;
     let success = true;
+
+    // Make our geometry gl context
+    geometry.gl = {
+      proxy: this
+    };
+
+    // If we have the ability to have a vao, let's use this moment to fully
+    // establish it for this geometry
+    if (this.extensions.vao) {
+      let vao: WebGLVertexArrayObject | null;
+
+      if (this.extensions.vao instanceof WebGL2RenderingContext) {
+        vao = this.extensions.vao.createVertexArray();
+      } else {
+        vao = this.extensions.vao.createVertexArrayOES();
+      }
+
+      // If the vao can not be created, let's just harmlessly skip making it
+      // happen
+      if (vao) {
+        this.state.disableVertexAttributeArray();
+        this.state.bindVAO(vao);
+
+        geometry.attributes.forEach((attribute, name) => {
+          if (this.updateAttribute(attribute)) {
+            this.useAttribute(name, attribute, geometry);
+          }
+        });
+
+        geometry.gl.vao = vao;
+        this.state.bindVAO(null);
+      } else {
+        debug(
+          "WARNING: Could not make VAO for Geometry. This is fine, but this could cause a hit on performance."
+        );
+      }
+    }
 
     // Loop through each attribute of the geometry
     geometry.attributes.forEach(attribute => {
@@ -473,6 +541,8 @@ export class GLProxy {
    * for subsequent draw calls.
    */
   compileRenderTarget(target: RenderTarget) {
+    // Do not attempt recompiles and spewing out errors.
+    if (target.isInvalid) return false;
     // If the gl target exists, then this is considered to be compiled already
     if (target.gl) return true;
 
@@ -662,6 +732,22 @@ export class GLProxy {
             0
           );
         }
+      } else if (buffer instanceof ColorBuffer) {
+        const rboId = this.compileDepthBuffer(
+          depthBufferFormat(gl, buffer.internalFormat),
+          target.width,
+          target.height
+        );
+
+        if (rboId) {
+          glContext.depthBufferId = rboId;
+          gl.framebufferRenderbuffer(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_ATTACHMENT,
+            gl.RENDERBUFFER,
+            rboId
+          );
+        }
       } else {
         const rboId = this.compileDepthBuffer(
           buffer,
@@ -783,8 +869,10 @@ export class GLProxy {
         "When creating a new FrameBuffer Object, the check on the framebuffer failed. Printing Errors:"
       );
       console.warn(message);
+      this.printError();
       console.warn("FAILED RENDER TARGET:", target);
       delete target.gl;
+      target.isInvalid = true;
 
       return false;
     }
@@ -859,10 +947,11 @@ export class GLProxy {
   }
 
   /**
-   * Produces a render buffer object intended for a render target for the color buffer attachment
+   * Produces a render buffer object intended for a render target for the color
+   * buffer attachment
    */
   private compileColorBuffer(
-    buffer: GLSettings.RenderTarget.ColorBufferFormat,
+    buffer: ColorBuffer,
     width: number,
     height: number
   ) {
@@ -883,21 +972,27 @@ export class GLProxy {
     // Set the storage format of the RBO
     gl.renderbufferStorage(
       gl.RENDERBUFFER,
-      colorBufferFormat(gl, buffer),
+      colorBufferFormat(gl, buffer.internalFormat),
       width,
       height
     );
+
+    buffer.gl = {
+      bufferId: rbo,
+      proxy: this
+    };
 
     return rbo;
   }
 
   /**
-   * This does what is needed to generate a GPU texture object and format it to the
-   * Texture object specifications.
+   * This does what is needed to generate a GPU texture object and format it to
+   * the Texture object specifications.
    */
   compileTexture(texture: Texture) {
     if (!texture.gl) return;
-    // If the id is already established, this does not need a compile but an update
+    // If the id is already established, this does not need a compile but an
+    // update
     if (texture.gl.textureId) return;
 
     // The texture must have a unit established in order to be compiled
@@ -927,13 +1022,15 @@ export class GLProxy {
 
     // Establish the texture's generated gl context
     texture.gl.textureId = textureId;
-    // No matter what, when compiled both data and settings should be updated immediately
+    // No matter what, when compiled both data and settings should be updated
+    // immediately
     texture.needsDataUpload = true;
     texture.needsSettingsUpdate = true;
 
     // Upload the texture's data to the object
     this.updateTextureData(texture);
-    // Make sure the settings for the texture are set correctly to match the texture object
+    // Make sure the settings for the texture are set correctly to match the
+    // texture object
     this.updateTextureSettings(texture);
 
     return true;
@@ -960,7 +1057,8 @@ export class GLProxy {
       drawRange = [0, model.vertexCount];
     }
 
-    // Only if this geometry has instances requested will it attempt to render instances
+    // Only if this geometry has instances requested will it attempt to render
+    // instances
     if (model.drawInstances >= 0 && model.geometry.isInstanced) {
       instancing = this.extensions.instancing;
     }
@@ -1000,6 +1098,43 @@ export class GLProxy {
     // Without committing to the GPU, we set the draw buffer to require a state
     // change again.
     this.state.setDrawBuffers([], true);
+  }
+
+  /**
+   * Destroys an attribute's resources from the GL Context
+   */
+  disposeAttribute(attribute: Attribute) {
+    if (!attribute.gl) return;
+    this.gl.deleteBuffer(attribute.gl.bufferId);
+    delete attribute.gl;
+  }
+
+  /**
+   * Destroys a color buffer's resources from the GL Context
+   */
+  disposeColorBuffer(colorBuffer: ColorBuffer) {
+    if (colorBuffer.gl) {
+      if (colorBuffer.gl.bufferId) {
+        this.disposeRenderBuffer(colorBuffer.gl.bufferId);
+      }
+
+      delete colorBuffer.gl;
+    }
+  }
+
+  /**
+   * Destroys a geometry's resources from the GL Context
+   */
+  disposeGeometry(geometry: Geometry) {
+    if (geometry.gl) {
+      if (this.extensions.vao && geometry.gl.vao) {
+        if (this.extensions.vao instanceof WebGL2RenderingContext) {
+          this.extensions.vao.deleteVertexArray(geometry.gl.vao);
+        } else {
+          this.extensions.vao.deleteVertexArrayOES(geometry.gl.vao);
+        }
+      }
+    }
   }
 
   /**
@@ -1125,7 +1260,7 @@ export class GLProxy {
    * Destroys a texture's resources from the GL context
    */
   disposeTexture(texture: Texture) {
-    if (texture.gl && !texture.disposed) {
+    if (texture.gl && !texture.destroyed) {
       this.gl.deleteTexture(texture.gl.textureId);
       this.state.freeTextureUnit(texture);
     }
@@ -1323,14 +1458,25 @@ export class GLProxy {
           debug("Created a texture that is not using power of 2 dimensions.");
         }
 
+        const texFormat = texelFormat(gl, texture.internalFormat);
+        const dataFormat = texelFormat(gl, texture.format);
+
+        if (gl instanceof WebGLRenderingContext) {
+          if (texFormat !== dataFormat) {
+            console.warn(
+              "WebGL 1 requires format and data format to be identical"
+            );
+          }
+        }
+
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
-          texelFormat(gl, texture.format),
+          texFormat,
           texture.data.width,
           texture.data.height,
           0,
-          texelFormat(gl, texture.format),
+          dataFormat,
           inputImageFormat(gl, texture.type),
           texture.data.buffer
         );
@@ -1348,7 +1494,7 @@ export class GLProxy {
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
-          texelFormat(gl, texture.format),
+          texelFormat(gl, texture.internalFormat),
           texelFormat(gl, texture.format),
           inputImageFormat(gl, texture.type),
           // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason
@@ -1481,42 +1627,133 @@ export class GLProxy {
       GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
     );
 
+    let texMagFilter;
+    let texMinFilter;
+
+    // Handle special cases for floating textures and performance
+    if (texture.isHalfFloatTexture) {
+      if (WebGLStat.FLOAT_TEXTURE_READ.halfLinearFilter) {
+        texMagFilter = magFilter(gl, texture.magFilter);
+
+        switch (texture.minFilter) {
+          case GLSettings.Texture.TextureMinFilter.Nearest:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+
+          case GLSettings.Texture.TextureMinFilter.Linear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+        }
+      } else {
+        texMagFilter = magFilter(
+          gl,
+          GLSettings.Texture.TextureMagFilter.Nearest
+        );
+        texMinFilter = minFilter(
+          gl,
+          GLSettings.Texture.TextureMinFilter.Nearest,
+          texture.generateMipMaps
+        );
+      }
+    } else if (texture.isFloatTexture) {
+      if (WebGLStat.FLOAT_TEXTURE_READ.fullLinearFilter) {
+        texMagFilter = magFilter(gl, texture.magFilter);
+
+        switch (texture.minFilter) {
+          case GLSettings.Texture.TextureMinFilter.Nearest:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.NearestMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+
+          case GLSettings.Texture.TextureMinFilter.Linear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapLinear:
+          case GLSettings.Texture.TextureMinFilter.LinearMipMapNearest:
+            texMinFilter = minFilter(
+              gl,
+              GLSettings.Texture.TextureMinFilter.Nearest,
+              texture.generateMipMaps
+            );
+            break;
+        }
+      } else {
+        texMagFilter = magFilter(
+          gl,
+          GLSettings.Texture.TextureMagFilter.Nearest
+        );
+        texMinFilter = minFilter(
+          gl,
+          GLSettings.Texture.TextureMinFilter.Nearest,
+          texture.generateMipMaps
+        );
+      }
+    }
+
+    // Handle special case for NPOT textures and WebGL 1
+    else if (!isPower2 && gl instanceof WebGLRenderingContext) {
+      texMagFilter = magFilter(gl, GLSettings.Texture.TextureMagFilter.Linear);
+      texMinFilter = minFilter(
+        gl,
+        GLSettings.Texture.TextureMinFilter.Linear,
+        texture.generateMipMaps
+      );
+    }
+
+    // Otherwise, we should be good to use the settings specified!
+    else {
+      texMagFilter = magFilter(gl, texture.magFilter);
+      texMinFilter = minFilter(gl, texture.minFilter, texture.generateMipMaps);
+    }
+
     // Set filtering and other properties to the texture
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MAG_FILTER,
-      magFilter(gl, texture.magFilter, isPower2)
-    );
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MIN_FILTER,
-      minFilter(gl, texture.minFilter, isPower2, texture.generateMipMaps)
-    );
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_WRAP_S,
-      wrapMode(gl, texture.wrapHorizontal)
-    );
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_WRAP_T,
-      wrapMode(gl, texture.wrapVertical)
-    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, texMagFilter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, texMinFilter);
+
+    if (!texture.isFloatTexture) {
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_WRAP_S,
+        wrapMode(gl, texture.wrapHorizontal)
+      );
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_WRAP_T,
+        wrapMode(gl, texture.wrapVertical)
+      );
+    }
 
     // NOTE: All pixelStorei with boolean settings:
     // The typescript definitions are wrong right now thus requiring some weird casting
     // voodoo. The correct value according to the webgl specs IS true right here and not a number
     // for this particular enum.
 
-    gl.pixelStorei(
-      gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-      (texture.premultiplyAlpha as unknown) as number
-    );
+    if (!texture.isFloatTexture) {
+      gl.pixelStorei(
+        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        (texture.premultiplyAlpha as unknown) as number
+      );
 
-    gl.pixelStorei(
-      gl.UNPACK_FLIP_Y_WEBGL,
-      (texture.flipY as unknown) as number
-    );
+      gl.pixelStorei(
+        gl.UNPACK_FLIP_Y_WEBGL,
+        (texture.flipY as unknown) as number
+      );
+    }
 
     // Apply the anistropic extension (if available)
     if (this.extensions.anisotropicFiltering) {
@@ -1526,7 +1763,7 @@ export class GLProxy {
         Math.floor(texture.anisotropy)
       );
 
-      if (!isNaN(anisotropy)) {
+      if (!isNaN(anisotropy) && !texture.isFloatTexture) {
         gl.texParameterf(
           gl.TEXTURE_2D,
           ext.TEXTURE_MAX_ANISOTROPY_EXT,
@@ -1631,6 +1868,7 @@ export class GLProxy {
       case 4:
         // Enable the use of the vertex location
         this.state.willUseVertexAttributeArray(location);
+
         // Now we establish the metrics of the buffer
         this.gl.vertexAttribPointer(
           location,
@@ -1657,14 +1895,10 @@ export class GLProxy {
       default:
         const totalBlocks = Math.ceil(attribute.size / 4);
 
-        // ENable array for every location
         for (let i = 0; i < totalBlocks; ++i) {
           // Enable the use of the vertex location
           this.state.willUseVertexAttributeArray(location + i);
-        }
 
-        // Now we establish the metrics of the buffer
-        for (let i = 0; i < totalBlocks; ++i) {
           this.gl.vertexAttribPointer(
             location + i,
             4,
@@ -1673,9 +1907,7 @@ export class GLProxy {
             totalBlocks * 4 * 4,
             i * 16
           );
-        }
 
-        for (let i = 0; i < totalBlocks; ++i) {
           if (
             geometry.isInstanced &&
             attribute.isInstanced &&

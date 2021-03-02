@@ -1,5 +1,6 @@
 import { FragmentOutputType } from "../types";
 import { uid } from "../util/uid";
+import { ColorBuffer } from "./color-buffer";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
@@ -13,7 +14,7 @@ import { Texture } from "./texture";
  */
 export type RenderBufferOutputTarget = {
   outputType: number;
-  buffer: GLSettings.RenderTarget.ColorBufferFormat | Texture;
+  buffer: ColorBuffer | Texture;
 };
 
 /**
@@ -34,7 +35,7 @@ export interface IRenderTargetOptions {
      * The depth buffer attachment. Exclusion automatically makes depth testing
      * not work.
      */
-    depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture;
+    depth?: GLSettings.RenderTarget.DepthBufferFormat | Texture | ColorBuffer;
     /**
      * The stencil buffer attachment. Exclusion automatically disables stencil
      * testing.
@@ -68,6 +69,12 @@ export interface IRenderTargetOptions {
  * of old targets and create new ones.
  */
 export class RenderTarget {
+  /**
+   * This gets flagged as invalid and will not re-attempt compilation until
+   * something changes.
+   */
+  isInvalid: boolean = false;
+
   /** UID for the object */
   get uid() {
     return this._uid;
@@ -287,9 +294,13 @@ export class RenderTarget {
    */
   getGLBuffers() {
     if (!this.gl) {
-      console.warn(
-        "Attempted to retrieve gl buffers before the render target was compiled."
-      );
+      // We know what went wrong if this is marked as invalid. No need to spew
+      // death to the console.
+      if (!this.isInvalid) {
+        console.warn(
+          "Attempted to retrieve gl buffers before the render target was compiled."
+        );
+      }
       return [];
     }
 

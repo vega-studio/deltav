@@ -122,7 +122,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
       }
 
       // Remove the old texture
-      resource.texture.dispose();
+      resource.texture.destroy();
       // Regenerate the resource with the new dimensions
       resource = new RenderTexture(resource, this.webGLRenderer);
       toUpdate.set(key, resource);

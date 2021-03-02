@@ -8,13 +8,20 @@ import { GLSettings } from "./gl-settings";
  */
 export type TextureOptions = Omit<
   Partial<Texture>,
-  "dispose" | "update" | "updateRegions"
+  "destroy" | "update" | "updateRegions"
 >;
 
 /**
  * This represents a texture that is loaded into the GPU.
  */
 export class Texture {
+  /**
+   * Empty texture object to help resolve ambiguous texture values.
+   */
+  static get emptyTexture() {
+    return emptyTexture;
+  }
+
   /** Unique identifier of the texture to aid in debugging and referencing */
   get uid() {
     return this._uid;
@@ -25,10 +32,10 @@ export class Texture {
    * Indicates this Texture has been disposed, meaning it is useless and invalid
    * to use within the application.
    */
-  public get disposed(): boolean {
-    return this._disposed;
+  public get destroyed(): boolean {
+    return this._destroyed;
   }
-  private _disposed: boolean = false;
+  private _destroyed: boolean = false;
 
   /**
    * Anisotropic filtering level. See:
@@ -79,7 +86,7 @@ export class Texture {
   private _flipY: boolean = false;
 
   /**
-   * Source format of the input. See:
+   * Source format of the input data. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
    */
   get format() {
@@ -117,6 +124,20 @@ export class Texture {
     /** This is the proxy communicator with the context that generates and destroys Textures */
     proxy: GLProxy;
   };
+
+  /**
+   * Source format of the input data. See:
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+   */
+  get internalFormat() {
+    return this._internalFormat;
+  }
+  set internalFormat(val: Texture["_internalFormat"]) {
+    this.needsDataUpload = true;
+    this._internalFormat = val;
+  }
+  private _internalFormat: GLSettings.Texture.TexelDataType =
+    GLSettings.Texture.TexelDataType.RGBA;
 
   /**
    * Filter used when sampling has to magnify the image see:
@@ -249,11 +270,57 @@ export class Texture {
   private _wrapVertical: GLSettings.Texture.Wrapping =
     GLSettings.Texture.Wrapping.CLAMP_TO_EDGE;
 
+  /**
+   * This checks if any formatting of this texture makes it a half float texture
+   * or not.
+   */
+  get isHalfFloatTexture() {
+    switch (this._internalFormat) {
+      case GLSettings.Texture.TexelDataType.R16F:
+      case GLSettings.Texture.TexelDataType.RG16F:
+      case GLSettings.Texture.TexelDataType.RGB16F:
+        return true;
+    }
+
+    switch (this._type) {
+      case GLSettings.Texture.SourcePixelFormat.HalfFloat:
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * This checks if any formatting of this texture makes it a float texture
+   * or not.
+   */
+  get isFloatTexture() {
+    switch (this._internalFormat) {
+      case GLSettings.Texture.TexelDataType.R11F_G11F_B10F:
+      case GLSettings.Texture.TexelDataType.R16F:
+      case GLSettings.Texture.TexelDataType.RG16F:
+      case GLSettings.Texture.TexelDataType.R32F:
+      case GLSettings.Texture.TexelDataType.RG32F:
+      case GLSettings.Texture.TexelDataType.RGB16F:
+      case GLSettings.Texture.TexelDataType.RGB32F:
+        return true;
+    }
+
+    switch (this._type) {
+      case GLSettings.Texture.SourcePixelFormat.Float:
+      case GLSettings.Texture.SourcePixelFormat.HalfFloat:
+        return true;
+    }
+
+    return false;
+  }
+
   constructor(options: TextureOptions) {
     this.anisotropy = options.anisotropy || this.anisotropy;
     this.data = options.data || this.data;
     this.flipY = options.flipY || this.flipY;
     this.format = options.format || this.format;
+    this.internalFormat = options.internalFormat || this.format;
     this.generateMipMaps = options.generateMipMaps || this.generateMipMaps;
     this.magFilter = options.magFilter || this.magFilter;
     this.minFilter = options.minFilter || this.minFilter;
@@ -268,14 +335,14 @@ export class Texture {
   /**
    * Frees resources associated with this texture.
    */
-  dispose() {
+  destroy() {
     // Clear the gl context
     if (this.gl) {
       this.gl.proxy.disposeTexture(this);
     }
 
     // Flag this texture as no longer useable.
-    this._disposed = true;
+    this._destroyed = true;
     // Ensure the large data object for the texture is cleared
     delete this._data;
   }
@@ -305,3 +372,12 @@ export class Texture {
     this._updateRegions.push([data, region]);
   }
 }
+
+/** Empty texture that will default to the zero texture and unit */
+const emptyTexture = new Texture({
+  data: {
+    width: 2,
+    height: 2,
+    buffer: new Uint8Array(16)
+  }
+});

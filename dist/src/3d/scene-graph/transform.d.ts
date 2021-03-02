@@ -89,8 +89,47 @@ export declare class Transform extends TreeNode<Transform> {
     get localViewMatrix(): Mat4x4;
     private _localViewMatrix?;
     /**
+     * Transforms can have an additional modification for non-affine or
+     * specialized transforms that are generally considered too expensive to keep
+     * track of at all times.
+     *
+     * This is NOT applied to the viewMatrix output. Use localViewTransform for
+     * that.
+     *
+     * Applying this matrix to this Transform will make 'world space' values
+     * invalid.
+     *
+     * Why do world calculations stop working? Since this transform is so generic
+     * there is no good way to derive that information anymore.
+     */
+    get localTransform(): Mat4x4 | undefined;
+    set localTransform(val: Mat4x4 | undefined);
+    private _localTransform?;
+    /**
+     * This is the same as localTransform except it is ONLY applied to the view.
+     * We have a transform for the view and the node separated as there are more
+     * cases to have specialized view calculations, but require having the node be
+     * left unaffected. Such as having elements follow the Camera, but have the
+     * camera distort the final output space.
+     *
+     * Transforms can have an additional modification for non-affine or
+     * specialized transforms that are generally considered too expensive to keep
+     * track of at all times.
+     *
+     * Applying this matrix to this Transform will make 'world space' values
+     * invalid.
+     *
+     * Why do world calculations stop working? Since this transform is so generic
+     * there is no good way to derive that information anymore.
+     */
+    get localViewTransform(): Mat4x4 | undefined;
+    set localViewTransform(val: Mat4x4 | undefined);
+    private _localViewTransform?;
+    /**
      * Orientation of this transform in world space. When no parent is present
      * rotation === localRotation.
+     *
+     * If localTransform is present, this value may be incorrect.
      */
     get rotation(): Quaternion;
     set rotation(val: Quaternion);
@@ -106,6 +145,8 @@ export declare class Transform extends TreeNode<Transform> {
     /**
      * The scale of the Transform in world space. When there is no parent,
      * localScale === scale.
+     *
+     * If localTransform is present, this value may be incorrect.
      */
     get scale(): Vec3;
     set scale(val: Vec3);
@@ -120,6 +161,8 @@ export declare class Transform extends TreeNode<Transform> {
     /**
      * Translation of this transform in world space. When there is no parent,
      * position === localPosition.
+     *
+     * If localTransform is present, this value may be incorrect.
      */
     get position(): Vec3;
     set position(val: Vec3);
@@ -161,6 +204,15 @@ export declare class Transform extends TreeNode<Transform> {
      * lookAtLocal behaves exactly the same.
      */
     lookAtLocal(position: Vec3, up?: Vec3): void;
+    /**
+     * Makes world space and local space information have it's own memory
+     * allotment as they should be different after calling this method.
+     */
+    private divideMemory;
+    /**
+     * Merges local and world space information as they'll be identical.
+     */
+    private mergeMemory;
     /**
      * Changes the parent transform of this Transform. This triggers required
      * updates for this Transform.

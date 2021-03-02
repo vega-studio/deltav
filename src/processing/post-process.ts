@@ -1,4 +1,5 @@
 import { Camera2D, IView2DProps, View2D } from "../2d";
+import { IRenderTextureResource } from "../resources";
 import { createView } from "../surface/view";
 import {
   ILayerMaterialOptions,
@@ -20,7 +21,7 @@ export interface IPostProcess {
    * will make the uniform sampler "color" be available in your shader and will
    * provide the resource with the key "colorTextureKey".
    */
-  buffers: Record<string, string>;
+  buffers: Record<string, IRenderTextureResource | undefined>;
   /**
    * Custom material options to apply to the layer to aid in controlling
    * blending etc.

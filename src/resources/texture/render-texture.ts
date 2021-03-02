@@ -83,7 +83,7 @@ export class RenderTexture extends IdentifyByKey
    * to use again.
    */
   destroy() {
-    this.texture.dispose();
+    this.texture.destroy();
   }
 
   /**
@@ -96,11 +96,10 @@ export class RenderTexture extends IdentifyByKey
     // configuration.
     this.textureSettings = {
       generateMipMaps: true,
-      premultiplyAlpha: true,
+      premultiplyAlpha: false,
       ...this.textureSettings
     };
 
-    let canvas;
     let width, height;
     const size = renderer?.getRenderSize() || [1, 1];
 
@@ -124,17 +123,13 @@ export class RenderTexture extends IdentifyByKey
       height = size[1] / -this.width;
     } else height = this.height;
 
-    // If no data is provided in the settings, then this is an empty texture
-    // object with no initial state.
-    if (!this.textureSettings?.data) {
-      canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-    }
-
     // Generate the texture
     this.texture = new Texture({
-      data: canvas,
+      data: this.textureSettings?.data || {
+        width,
+        height,
+        buffer: null
+      },
       ...this.textureSettings
     });
   }

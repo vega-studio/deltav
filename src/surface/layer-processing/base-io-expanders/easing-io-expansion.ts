@@ -200,7 +200,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
           instanceEasing.set(easingUID, values);
         }
 
-        // On instance reactivation we want the easing to just be at it's end value
+        // On instance reactivation we want the easing to just be at it's end
+        // value
         else if (instance.reactivate) {
           vecMethods.copy(end, values.end);
           vecMethods.copy(end, values.end);
@@ -252,7 +253,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
               break;
           }
 
-          // Now get the value of where our instance currently is located this frame
+          // Now get the value of where our instance currently is located this
+          // frame
           easingValues.start = easing(
             easingValues.start,
             easingValues.end,
@@ -265,7 +267,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
         easingValues.startTime = currentTime + delay;
         // Set the provided value as our destination
         vecMethods.copy(end, easingValues.end);
-        // Update the information shared between this attribute and it's children
+        // Update the information shared between this attribute and it's
+        // children
         attributeDataShare.values = easingValues;
 
         // Set the layer's animation end time
@@ -274,7 +277,8 @@ export class EasingIOExpansion extends BaseIOExpansion {
           easingValues.startTime + duration + frameMetrics.frameDuration
         );
 
-        // Flag the layer's continuous animation so continuous easing loop styles will keep rendering indefinitely
+        // Flag the layer's continuous animation so continuous easing loop
+        // styles will keep rendering indefinitely
         layer.isAnimationContinuous = isContinuous;
 
         return end;

@@ -255,6 +255,41 @@ export class Camera {
   }
 
   /**
+   * Sets projection options with the camera as an orthographic projection.
+   */
+  setOrthographic(options: Partial<ICameraOrthographicOptions>) {
+    this._projectionOptions = Object.assign(
+      {
+        left: -100,
+        right: 100,
+        top: -100,
+        bottom: 100,
+        near: -100,
+        far: 100000,
+        type: CameraProjectionType.ORTHOGRAPHIC
+      },
+      options
+    );
+  }
+
+  /**
+   * Sets projection options with the camera as a perspective projection.
+   */
+  setPerspective(options: Partial<ICameraPerspectiveOptions>) {
+    this._projectionOptions = Object.assign(
+      {
+        type: CameraProjectionType.PERSPECTIVE,
+        far: 10000,
+        near: 1,
+        fov: (90 * Math.PI) / 180,
+        height: 1000,
+        width: 1000
+      },
+      options
+    );
+  }
+
+  /**
    * This marks the camera's changes as resolved and responded to.
    */
   resolve() {

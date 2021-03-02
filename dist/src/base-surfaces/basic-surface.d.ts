@@ -67,6 +67,11 @@ export interface IBasicSurfaceOptions<TProviders extends Lookup<InstanceProvider
     onNoWebGL?(): void;
 }
 /**
+ * Helper method to make surface configuration be easier to read and aid in
+ * better code hinting.
+ */
+export declare function createScene(options: BasicSurfaceSceneOptions): BasicSurfaceSceneOptions;
+/**
  * This is a surface that has some concepts already set up within it, such as monitoring
  * resizing, waiting for a valid size to be present, a render loop tied into requestAnimationFrame.
  * Nothing here is difficult to set up in your own custom Surface implementation, this may provide

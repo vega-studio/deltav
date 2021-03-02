@@ -82,6 +82,7 @@ export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
 
 export class WebGLStat {
   static VAO = false;
+  static DEPTH_TEXTURE = false;
   static MAX_VERTEX_UNIFORMS = 0;
   static MAX_FRAGMENT_UNIFORMS = 0;
   static MAX_VERTEX_ATTRIBUTES = 0;
@@ -179,6 +180,9 @@ function initStats() {
       gl.getExtension("OES_texture_float") ||
       gl.getExtension("EXT_color_buffer_float");
 
+    // WebGL2 required extension
+    gl.getExtension("WEBGL_color_buffer_float");
+
     if (extensionEnabled) {
       const width = 2;
       const height = 2;
@@ -212,6 +216,7 @@ function initStats() {
         0
       );
       gl.bindTexture(gl.TEXTURE_2D, null);
+
       // Frame buffer complete signal means writing to the float texture is more
       // than likely supported
       if (
@@ -317,6 +322,7 @@ function initStats() {
       WebGLStat.HARDWARE_INSTANCING = true;
       WebGLStat.SHADERS_3_0 = true;
       WebGLStat.HARDWARE_INSTANCING = true;
+      WebGLStat.DEPTH_TEXTURE = true;
 
       WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(
         gl.MAX_COLOR_ATTACHMENTS
@@ -332,6 +338,7 @@ function initStats() {
       const MRT_EXT = gl.getExtension("WEBGL_draw_buffers");
       WebGLStat.MRT_EXTENSION = Boolean(MRT_EXT);
       WebGLStat.MRT = Boolean(MRT_EXT);
+      WebGLStat.DEPTH_TEXTURE = Boolean(gl.getExtension("WEBGL_depth_texture"));
 
       if (MRT_EXT) {
         WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(

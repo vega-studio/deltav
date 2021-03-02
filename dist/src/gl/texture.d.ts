@@ -3,11 +3,15 @@ import { GLProxy } from "./gl-proxy";
 /**
  * This is the options to apply to a texture
  */
-export declare type TextureOptions = Omit<Partial<Texture>, "dispose" | "update" | "updateRegions">;
+export declare type TextureOptions = Omit<Partial<Texture>, "destroy" | "update" | "updateRegions">;
 /**
  * This represents a texture that is loaded into the GPU.
  */
 export declare class Texture {
+    /**
+     * Empty texture object to help resolve ambiguous texture values.
+     */
+    static get emptyTexture(): Texture;
     /** Unique identifier of the texture to aid in debugging and referencing */
     get uid(): number;
     private _uid;
@@ -15,8 +19,8 @@ export declare class Texture {
      * Indicates this Texture has been disposed, meaning it is useless and invalid
      * to use within the application.
      */
-    get disposed(): boolean;
-    private _disposed;
+    get destroyed(): boolean;
+    private _destroyed;
     /**
      * Anisotropic filtering level. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
@@ -42,7 +46,7 @@ export declare class Texture {
     set flipY(val: boolean);
     private _flipY;
     /**
-     * Source format of the input. See:
+     * Source format of the input data. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
      */
     get format(): Texture["_format"];
@@ -67,6 +71,13 @@ export declare class Texture {
         /** This is the proxy communicator with the context that generates and destroys Textures */
         proxy: GLProxy;
     };
+    /**
+     * Source format of the input data. See:
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    get internalFormat(): Texture["_internalFormat"];
+    set internalFormat(val: Texture["_internalFormat"]);
+    private _internalFormat;
     /**
      * Filter used when sampling has to magnify the image see:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
@@ -146,11 +157,21 @@ export declare class Texture {
     get wrapVertical(): Texture["_wrapVertical"];
     set wrapVertical(val: Texture["_wrapVertical"]);
     private _wrapVertical;
+    /**
+     * This checks if any formatting of this texture makes it a half float texture
+     * or not.
+     */
+    get isHalfFloatTexture(): boolean;
+    /**
+     * This checks if any formatting of this texture makes it a float texture
+     * or not.
+     */
+    get isFloatTexture(): boolean;
     constructor(options: TextureOptions);
     /**
      * Frees resources associated with this texture.
      */
-    dispose(): void;
+    destroy(): void;
     /**
      * Clears all update flags and clears out requested updates to the texture object.
      *

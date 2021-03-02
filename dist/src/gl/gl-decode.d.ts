@@ -18,23 +18,32 @@ export declare function inputImageFormat(gl: GLContext, format: GLSettings.Textu
 /**
  * Decodes TextureMagFilter to a GL setting
  */
-export declare function magFilter(gl: GLContext, filter: GLSettings.Texture.TextureMagFilter, isPowerOf2: boolean): number;
+export declare function magFilter(gl: GLContext, filter: GLSettings.Texture.TextureMagFilter): number;
 /**
  * Decodes TextureMinFilter to a GL setting
  */
-export declare function minFilter(gl: GLContext, filter: GLSettings.Texture.TextureMinFilter, isPowerOf2: boolean, hasMipMaps: boolean): number;
+export declare function minFilter(gl: GLContext, filter: GLSettings.Texture.TextureMinFilter, hasMipMaps: boolean): number;
 /**
  * Decodes a ColorBufferFormat to valid color render buffer storage formats
+ *
+ * Takes in any of the render buffer formats, but will default invalid color
+ * buffer formats to RGBA4
  */
-export declare function colorBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat): number;
+export declare function colorBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat | GLSettings.RenderTarget.DepthBufferFormat | GLSettings.RenderTarget.StencilBufferFormat): number;
 /**
- * Decodes a DepthBufferFormat to valid color depth buffer storage formats
+ * Decodes a DepthBufferFormat to valid color depth buffer storage formats.
+ *
+ * Takes in any of the render buffer formats, but will default invalid depth
+ * buffer formats to DEPTH_COMPONENT16
  */
-export declare function depthBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.DepthBufferFormat): number;
+export declare function depthBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.DepthBufferFormat | GLSettings.RenderTarget.ColorBufferFormat | GLSettings.RenderTarget.StencilBufferFormat): number;
 /**
  * Decodes a StencilBufferFormat to valid stencil render buffer storage formats
+ *
+ * Takes in any of the render buffer formats, but will default invalid stencil
+ * buffer formats to STENCIL_INDEX8
  */
-export declare function stencilBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.StencilBufferFormat): number;
+export declare function stencilBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat | GLSettings.RenderTarget.DepthBufferFormat | GLSettings.RenderTarget.StencilBufferFormat): number;
 /**
  * Decodes Wrapping to a GL setting
  */

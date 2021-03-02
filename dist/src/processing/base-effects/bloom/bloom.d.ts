@@ -20,14 +20,19 @@ export interface IBloom {
      * This bloom effect down samples then up samples the results, thus the need
      * for all of the resource specifications.
      */
-    resources: (string | IRenderTextureResource)[];
-    /** Specifies the output image the bloom effect will be composed with */
-    compose: string | IRenderTextureResource;
+    resources: IRenderTextureResource[];
+    /**
+     * Specifies the output image the bloom effect will be composed with. If this
+     * is not specified, this will not do a final composition and just leave the
+     * result of the glow filter portion within the top level resource key
+     * provided.
+     */
+    compose?: IRenderTextureResource;
     /**
      * This specifies an alternative output to target with the results. If not
      * specified the output will render to the screen.
      */
-    output?: string | IRenderTextureResource;
+    output?: IRenderTextureResource;
     /** For debugging only. Prints generated shader to the console. */
     printShader?: boolean;
     /** Options to send to the view */

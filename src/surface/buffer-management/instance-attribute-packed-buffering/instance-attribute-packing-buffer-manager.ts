@@ -216,7 +216,7 @@ export class InstanceAttributePackingBufferManager<
    * Destroy this manager and clear out all elements utilized within the scene.
    */
   destroy() {
-    if (this.geometry) this.geometry.dispose();
+    if (this.geometry) this.geometry.destroy();
     if (this.material) this.material.dispose();
 
     if (this.scene && this.scene.container && this.model) {
@@ -541,7 +541,7 @@ export class InstanceAttributePackingBufferManager<
       // attribute to the next growth level and generate the new buffer
       // locations based on the expansion Since were are resizing the buffer,
       // let's destroy the old buffer and make one anew
-      this.geometry.dispose();
+      this.geometry.destroy();
       this.geometry = new Geometry();
       const previousInstanceAmount = this.maxInstancedCount;
 

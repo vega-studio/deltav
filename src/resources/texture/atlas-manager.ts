@@ -646,7 +646,7 @@ export class AtlasManager {
     this.renderer.render(scene, renderTarget);
     // Clean up anything that will try to retain GPU resources
     material.dispose();
-    geometry.dispose();
+    geometry.destroy();
     renderTarget.dispose();
     // The old texture is no longer needed now!
     atlas.texture.destroy();

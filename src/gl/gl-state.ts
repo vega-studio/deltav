@@ -128,6 +128,12 @@ export class GLState {
   }
   private _boundRBO: WebGLRenderbuffer | null = null;
 
+  /** The current id of the current bound vao. If null, nothing is bound */
+  get boundVAO() {
+    return this._boundVAO;
+  }
+  private _boundVAO: WebGLVertexArrayObject | null = null;
+
   /** The current id of the current bound vbo. If null, nothing is bound */
   get boundVBO() {
     return this._boundVBO;
@@ -237,6 +243,23 @@ export class GLState {
   }
 
   /**
+   * Sets the provided vertex array as the current bound item.
+   */
+  bindVAO(id: WebGLVertexArrayObject | null) {
+    if (this._boundVAO !== id) {
+      this._boundVAO = id;
+
+      if (this.extensions.vao) {
+        if (this.extensions.vao instanceof WebGL2RenderingContext) {
+          this.extensions.vao.bindVertexArray(id);
+        } else {
+          this.extensions.vao.bindVertexArrayOES(id);
+        }
+      }
+    }
+  }
+
+  /**
    * Sets the provided buffer identifier as the current bound item.
    */
   bindVBO(id: WebGLBuffer | null) {
@@ -311,6 +334,24 @@ export class GLState {
   }
 
   /**
+   * Disables all vertex attribute array indices enabled
+   */
+  disableVertexAttributeArray() {
+    for (
+      let i = 0, iMax = this._enabledVertexAttributeArray.length;
+      i < iMax;
+      ++i
+    ) {
+      const index = this._enabledVertexAttributeArray[i];
+      this.gl.disableVertexAttribArray(index);
+    }
+
+    this._enabledVertexAttributeArray = [];
+    this._willUseVertexAttributeArray = [];
+    this._vertexAttributeArrayDivisor.clear();
+  }
+
+  /**
    * Flags an attribute array as going to be used. Any attribute array location
    * no longer in use will be disabled when applyVertexAttributeArrays is called.
    */
@@ -318,7 +359,7 @@ export class GLState {
     // Flag the index as will be used
     this._willUseVertexAttributeArray[index] = index;
     // If already enabled we're done
-    if (this._enabledVertexAttributeArray[index] !== undefined) return;
+    if (this._enabledVertexAttributeArray[index] !== void 0) return;
     // Flag the index as enabled
     this._enabledVertexAttributeArray[index] = index;
     // Otherwise, get this location enabled right away
@@ -338,8 +379,8 @@ export class GLState {
     ) {
       const index = this._enabledVertexAttributeArray[i];
 
-      if (index !== undefined) {
-        if (this._willUseVertexAttributeArray[index] !== undefined) return;
+      if (index !== void 0) {
+        if (this._willUseVertexAttributeArray[index] !== void 0) return;
         this.gl.disableVertexAttribArray(index);
         delete this._enabledVertexAttributeArray[index];
       }

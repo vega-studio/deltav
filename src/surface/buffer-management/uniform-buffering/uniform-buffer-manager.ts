@@ -138,7 +138,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    */
   destroy() {
     this.buffers.forEach(buffer => {
-      buffer.geometry.dispose();
+      buffer.geometry.destroy();
       buffer.material.dispose();
     });
   }

@@ -114,6 +114,7 @@ export class GLProxy {
       "EXT_texture_filter_anisotropic"
     );
     const renderFloatTexture = gl.getExtension("EXT_color_buffer_float");
+    const vao = gl.getExtension("OES_vertex_array_object");
 
     const anisotropicStats = {
       maxAnistropicFilter: 0
@@ -144,6 +145,12 @@ export class GLProxy {
       );
     }
 
+    if (!vao && !(gl instanceof WebGL2RenderingContext)) {
+      debug(
+        "This device does not support Vertex Array Objects. This could cause performance issues for high numbers of draw calls."
+      );
+    }
+
     return {
       instancing:
         (gl instanceof WebGL2RenderingContext ? gl : instancing) || undefined,
@@ -166,7 +173,8 @@ export class GLProxy {
       halfFloatTexFilterLinear:
         (gl instanceof WebGL2RenderingContext
           ? gl
-          : halfFloatTexFilterLinear) || undefined
+          : halfFloatTexFilterLinear) || undefined,
+      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || undefined
     };
   }
 
@@ -214,7 +222,8 @@ export class GLProxy {
 
     attribute.gl = {
       bufferId: buffer,
-      type: gl.ARRAY_BUFFER
+      type: gl.ARRAY_BUFFER,
+      proxy: this
     };
 
     // Indicate the attribute is updated to it's latest needs and concerns
@@ -227,7 +236,46 @@ export class GLProxy {
    * Takes a geometry object and ensures all of it's buffers are generated
    */
   compileGeometry(geometry: Geometry) {
+    // If the geometry's gl context is made, it is already compiled.
+    if (geometry.gl) return;
     let success = true;
+
+    // Make our geometry gl context
+    geometry.gl = {
+      proxy: this
+    };
+
+    // If we have the ability to have a vao, let's use this moment to fully
+    // establish it for this geometry
+    if (this.extensions.vao) {
+      let vao: WebGLVertexArrayObject | null;
+
+      if (this.extensions.vao instanceof WebGL2RenderingContext) {
+        vao = this.extensions.vao.createVertexArray();
+      } else {
+        vao = this.extensions.vao.createVertexArrayOES();
+      }
+
+      // If the vao can not be created, let's just harmlessly skip making it
+      // happen
+      if (vao) {
+        this.state.disableVertexAttributeArray();
+        this.state.bindVAO(vao);
+
+        geometry.attributes.forEach((attribute, name) => {
+          if (this.updateAttribute(attribute)) {
+            this.useAttribute(name, attribute, geometry);
+          }
+        });
+
+        geometry.gl.vao = vao;
+        this.state.bindVAO(null);
+      } else {
+        debug(
+          "WARNING: Could not make VAO for Geometry. This is fine, but this could cause a hit on performance."
+        );
+      }
+    }
 
     // Loop through each attribute of the geometry
     geometry.attributes.forEach(attribute => {
@@ -1053,6 +1101,15 @@ export class GLProxy {
   }
 
   /**
+   * Destroys an attribute's resources from the GL Context
+   */
+  disposeAttribute(attribute: Attribute) {
+    if (!attribute.gl) return;
+    this.gl.deleteBuffer(attribute.gl.bufferId);
+    delete attribute.gl;
+  }
+
+  /**
    * Destroys a color buffer's resources from the GL Context
    */
   disposeColorBuffer(colorBuffer: ColorBuffer) {
@@ -1062,6 +1119,21 @@ export class GLProxy {
       }
 
       delete colorBuffer.gl;
+    }
+  }
+
+  /**
+   * Destroys a geometry's resources from the GL Context
+   */
+  disposeGeometry(geometry: Geometry) {
+    if (geometry.gl) {
+      if (this.extensions.vao && geometry.gl.vao) {
+        if (this.extensions.vao instanceof WebGL2RenderingContext) {
+          this.extensions.vao.deleteVertexArray(geometry.gl.vao);
+        } else {
+          this.extensions.vao.deleteVertexArrayOES(geometry.gl.vao);
+        }
+      }
     }
   }
 
@@ -1796,6 +1868,7 @@ export class GLProxy {
       case 4:
         // Enable the use of the vertex location
         this.state.willUseVertexAttributeArray(location);
+
         // Now we establish the metrics of the buffer
         this.gl.vertexAttribPointer(
           location,
@@ -1822,14 +1895,10 @@ export class GLProxy {
       default:
         const totalBlocks = Math.ceil(attribute.size / 4);
 
-        // ENable array for every location
         for (let i = 0; i < totalBlocks; ++i) {
           // Enable the use of the vertex location
           this.state.willUseVertexAttributeArray(location + i);
-        }
 
-        // Now we establish the metrics of the buffer
-        for (let i = 0; i < totalBlocks; ++i) {
           this.gl.vertexAttribPointer(
             location + i,
             4,
@@ -1838,9 +1907,7 @@ export class GLProxy {
             totalBlocks * 4 * 4,
             i * 16
           );
-        }
 
-        for (let i = 0; i < totalBlocks; ++i) {
           if (
             geometry.isInstanced &&
             attribute.isInstanced &&

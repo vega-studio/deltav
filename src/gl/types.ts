@@ -172,6 +172,8 @@ export interface IExtensions {
   halfFloatTexFilterLinear?:
     | WebGL2RenderingContext
     | OES_texture_half_float_linear;
+  /** Extension support for Vertex Array Objects */
+  vao?: WebGL2RenderingContext | OES_vertex_array_object;
 }
 
 /**

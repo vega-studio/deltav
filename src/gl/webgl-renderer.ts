@@ -271,9 +271,13 @@ export class WebGLRenderer {
   }
 
   /**
-   * Renders the Scene specified
+   * Renders the Scene specified.
    */
-  render(scene: Scene, target: RenderTarget | RenderTarget[] | null = null) {
+  render(
+    scene: Scene,
+    target: RenderTarget | RenderTarget[] | null = null,
+    stateChange?: (glState: GLState, modelId: string) => void
+  ) {
     // Context must be established to render
     if (!this.gl) return;
     // Establish the rendering output we are going to use
@@ -316,7 +320,7 @@ export class WebGLRenderer {
         // Loop through all of the models of the scene and process them for
         // rendering
         scene.models.forEach((model: Model) => {
-          this.renderModel(model, toRemove);
+          this.renderModel(model, toRemove, stateChange);
         });
       }
     }
@@ -333,7 +337,7 @@ export class WebGLRenderer {
       // Loop through all of the models of the scene and process them for
       // rendering
       scene.models.forEach((model: Model) => {
-        this.renderModel(model, toRemove);
+        this.renderModel(model, toRemove, stateChange);
       });
     }
 
@@ -346,7 +350,11 @@ export class WebGLRenderer {
   /**
    * Renders the specified model
    */
-  private renderModel(model: Model, toRemove: Model[]) {
+  private renderModel(
+    model: Model,
+    toRemove: Model[],
+    stateChange?: (glState: GLState, modelId: string) => void
+  ) {
     const geometry = model.geometry;
     const material = model.material;
 
@@ -378,6 +386,12 @@ export class WebGLRenderer {
           // arrays are cleaned up
           this.glState.applyVertexAttributeArrays();
         }
+
+        // Just before the draw happens, we allow for a finalizing state
+        // adjustment to happen. This allows for interesting injections that
+        // don't fit the model flow exaclty or don't necessarily need a complete
+        // object modeling to represent the slight tweak needed.
+        stateChange?.(this.glState, model.id);
 
         // If all of the attribute updates passed correctly, then we can use the
         // established state to make our draw call

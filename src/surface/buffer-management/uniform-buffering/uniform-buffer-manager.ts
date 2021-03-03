@@ -251,6 +251,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     const newMaterial = this.makeLayerMaterial();
     // Now make a Model for the buffer so it can be rendered withn the scene
     const newModel = generateLayerModel(
+      this.layer.id,
       newGeometry,
       newMaterial,
       shaderIOInfo.drawMode

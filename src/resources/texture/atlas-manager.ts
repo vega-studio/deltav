@@ -631,7 +631,7 @@ export class AtlasManager {
       `
     });
 
-    const model = new Model(geometry, material);
+    const model = new Model("__atlas_manager__", geometry, material);
     model.vertexCount = allNodes.length * 6;
     model.drawMode = GLSettings.Model.DrawMode.TRIANGLES;
 

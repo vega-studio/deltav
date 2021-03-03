@@ -443,6 +443,7 @@ export class GLProxy {
             "Could not compile WebGL program. \n\n",
             info
           );
+          this.printError();
           this.gl.deleteProgram(program);
 
           return;

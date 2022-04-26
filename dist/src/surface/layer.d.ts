@@ -28,7 +28,10 @@ export declare type ILayerConstructionClass<T extends Instance, U extends ILayer
  */
 export declare type LayerInitializer = {
     key: string;
-    init: [ILayerConstructionClass<Instance, ILayerProps<Instance>>, ILayerProps<Instance>];
+    init: [
+        ILayerConstructionClass<Instance, ILayerProps<Instance>>,
+        ILayerProps<Instance>
+    ];
 };
 /**
  * The internal system layer initializer that hides additional properties the
@@ -36,7 +39,10 @@ export declare type LayerInitializer = {
  */
 export declare type LayerInitializerInternal = {
     key: string;
-    init: [ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>, ILayerPropsInternal<Instance>];
+    init: [
+        ILayerConstructionClass<Instance, ILayerPropsInternal<Instance>>,
+        ILayerPropsInternal<Instance>
+    ];
 };
 /**
  * Constructor options when generating a layer.

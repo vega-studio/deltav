@@ -1,3 +1,4 @@
+/// <reference types="offscreencanvas" />
 import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
 import { Texture } from "./texture";
 export declare enum MaterialUniformType {
@@ -80,7 +81,7 @@ export interface IExtensions {
     /** Extension for hardware instancing */
     instancing?: WebGL2RenderingContext | ANGLE_instanced_arrays;
     /** Extension for float texture as a color buffer */
-    renderFloatTexture?: WEBGL_color_buffer_float;
+    renderFloatTexture?: WEBGL_color_buffer_float | EXT_color_buffer_float;
     /** Extension for float textures */
     floatTex?: WebGL2RenderingContext | OES_texture_float;
     /** Extension for float textures linear filtering */

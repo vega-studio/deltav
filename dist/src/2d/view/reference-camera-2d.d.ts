@@ -38,7 +38,6 @@ export interface IReferenceCamera2DOptions {
  */
 export declare class ReferenceCamera2D extends Camera2D {
     private base;
-    private _control2D;
     set control2D(_val: Control2D);
     get control2D(): Control2D;
     constructor(options: IReferenceCamera2DOptions);

@@ -1,4 +1,4 @@
-import { RenderTarget } from "../gl";
+import { GLState, RenderTarget } from "../gl";
 import { Vec2 } from "../math";
 import { BaseProjection, SimpleProjection } from "../math/base-projection";
 import { AbsolutePosition } from "../math/primitives/absolute-position";
@@ -130,6 +130,12 @@ export interface IViewProps extends IdentifyByKeyOptions {
      * render to the screen but rather in scaled modes.
      */
     pixelRatio?: number;
+    /**
+     * This is a hook to allow gl state changes JUST BEFORE drawing a layer. This
+     * allows for view specific tweaks to how a lyer gets drawn which is a common
+     * occurrence in many rendering pipelines.
+     */
+    glState?(glState: GLState, layerId: string): void;
 }
 /**
  * A View renders a perspective of a scene to a given surface or surfaces.

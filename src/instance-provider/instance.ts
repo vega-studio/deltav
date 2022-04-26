@@ -1,7 +1,7 @@
 import { IEasingControl, IEasingProps } from "../types";
 import { EasingProps } from "../util/easing-props";
 import { InstanceProvider } from "./instance-provider";
-import { observable } from "./observable";
+import { makeObservable, observable } from "./observable";
 
 let instanceUID = 0;
 
@@ -158,6 +158,8 @@ export class Instance {
   }
 
   constructor(options?: IInstanceOptions) {
+    makeObservable(this, Instance);
+
     if (options) {
       this.active = options.active || this.active;
     }

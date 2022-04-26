@@ -27,6 +27,7 @@ export class RingInstance extends Instance {
 
   constructor(options: IRingInstanceOptions) {
     super(options);
+    makeObservable(this, RingInstance);
 
     this.color = options.color || this.color;
     this.depth = options.depth || this.depth;

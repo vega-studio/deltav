@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider/observable";
+import { makeObservable, observable } from "../../../instance-provider/observable";
 import { Vec1Compat } from "../../../math";
 import { BorderInstance } from "./border-instance";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
@@ -113,6 +113,7 @@ export class TextAreaInstance extends LabelInstance {
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);
+    makeObservable(this, TextAreaInstance);
 
     this.color = options.color;
     this.origin = options.origin;

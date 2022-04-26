@@ -3,6 +3,7 @@ import { Texture } from "../../gl/texture";
 import {
   Instance,
   InstanceProvider,
+  makeObservable,
   observable
 } from "../../instance-provider";
 import { Vec2 } from "../../math/vector";
@@ -27,6 +28,11 @@ import { flatten2D } from "../../util/array";
 class PostProcessInstance extends Instance {
   @observable tint: Color = [1, 1, 1, 1];
   request: IRenderTextureResourceRequest;
+
+  constructor() {
+    super();
+    makeObservable(this, PostProcessInstance);
+  }
 }
 
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {

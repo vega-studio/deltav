@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance
@@ -164,6 +164,7 @@ export class ImageInstance extends Instance {
 
   constructor(options: IImageInstanceOptions) {
     super(options);
+    makeObservable(this, ImageInstance);
 
     this.depth = options.depth || this.depth;
     this.tint = options.tint || this.tint;

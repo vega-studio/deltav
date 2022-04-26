@@ -2,6 +2,7 @@ import {
   Color,
   IInstanceOptions,
   Instance,
+  makeObservable,
   observable,
   Vec3,
   Vec4
@@ -24,6 +25,7 @@ export class SurfaceTileInstance extends Instance {
 
   constructor(options: ISurfaceTileInstance) {
     super(options);
+    makeObservable(this, SurfaceTileInstance);
     this.c1 = options.corners[0];
     this.c2 = options.corners[1];
     this.c3 = options.corners[2];

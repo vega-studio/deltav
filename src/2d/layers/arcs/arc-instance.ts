@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance
@@ -47,6 +47,7 @@ export class ArcInstance extends Instance {
 
   constructor(options: IArcInstanceOptions) {
     super(options);
+    makeObservable(this, ArcInstance);
 
     this.angle = options.angle || this.angle;
     this.colorEnd = options.colorEnd || this.colorEnd;

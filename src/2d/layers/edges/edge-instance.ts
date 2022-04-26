@@ -2,7 +2,7 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
-import { observable } from "../../../instance-provider/observable";
+import { makeObservable, observable } from "../../../instance-provider/observable";
 import { copy4, Vec2, Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
@@ -79,6 +79,7 @@ export class EdgeInstance extends Instance {
 
   constructor(options: IEdgeInstanceOptions) {
     super(options);
+    makeObservable(this, EdgeInstance);
     this.startColor = options.startColor || this.startColor;
     this.endColor = options.endColor || this.endColor;
     this.control = options.control || this.control;

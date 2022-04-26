@@ -18,3 +18,4 @@ export * from "./create-attribute";
 export * from "./create-layer";
 export * from "./create-uniform";
 export * from "./create-vertex";
+export * from "./resource-pool";

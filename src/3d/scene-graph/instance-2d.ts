@@ -1,6 +1,7 @@
 import {
   IInstanceOptions,
   Instance,
+  makeObservable,
   observable
 } from "../../instance-provider";
 import { Quaternion, Vec2Compat, Vec3 } from "../../math";
@@ -107,6 +108,7 @@ export class Instance2D extends Instance {
 
   constructor(options: IInstance3DOptions) {
     super(options);
+    makeObservable(this, Instance2D);
     const transform = options.transform || new Transform2D();
     this.transform = transform;
 

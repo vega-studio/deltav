@@ -26,8 +26,7 @@ export class CubeLayer<
 > extends Layer<TInstance, TProps> {
   static defaultProps: ICubeLayerProps<CubeInstance> = {
     data: new InstanceProvider<CubeInstance>(),
-    key: "",
-    materialOptions: CommonMaterialOptions.transparentShapeBlending
+    key: ""
   };
 
   initShader(): IShaderInitialization<TInstance> | null {
@@ -291,8 +290,8 @@ export class CubeLayer<
   }
 
   getMaterialOptions() {
-    return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CW
+    return CommonMaterialOptions.transparentShapeBlending.modify({
+      culling: GLSettings.Material.CullSide.CW
     });
   }
 }

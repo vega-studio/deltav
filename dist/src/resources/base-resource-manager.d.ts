@@ -30,7 +30,9 @@ export declare abstract class BaseResourceManager<T extends IResourceType, S ext
      * Every resource manager will receive the utilized renderer so the manager
      * can perform basic GL tasks if needed
      */
-    webGLRenderer?: WebGLRenderer;
+    get webGLRenderer(): WebGLRenderer | undefined;
+    set webGLRenderer(val: WebGLRenderer | undefined);
+    _webGLRenderer?: WebGLRenderer;
     /**
      * This is called by the system for the manager to dequeue it's requests in an
      * asynchronous manner, thus allowing the system to have it's resources

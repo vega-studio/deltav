@@ -32,4 +32,9 @@ export declare class ObservableMonitoring {
  * InstanceProvider to properly update the Instances values in the appropriate
  * and corresponding buffers that will get committed to the GPU.
  */
-export declare function observable<T extends Instance>(target: T, key: string): void;
+export declare function observable<T extends Instance>(target: T, key: string, descriptor?: PropertyDescriptor): void;
+/**
+ * Place this within the constructor of a class that inherits from an Instance
+ * to transform flagged observable properties into actual observables.
+ */
+export declare function makeObservable(target: Instance, ctor: Function): void;

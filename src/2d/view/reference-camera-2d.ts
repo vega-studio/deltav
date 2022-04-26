@@ -70,11 +70,11 @@ export interface IReferenceCamera2DOptions {
  */
 export class ReferenceCamera2D extends Camera2D {
   private base: Camera2D;
-  private _control2D: ReferenceControl2D;
 
   set control2D(_val: Control2D) {
     /** Noop */
   }
+
   get control2D() {
     return this._control2D;
   }

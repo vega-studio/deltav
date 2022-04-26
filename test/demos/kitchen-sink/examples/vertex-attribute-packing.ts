@@ -5,13 +5,15 @@ import {
   EdgeInstance,
   EdgeLayer,
   EdgeType,
+  IAutoEasingMethod,
   InstanceProvider,
   nextFrame,
   RectangleInstance,
   RectangleLayer,
   scale4,
   ScaleMode,
-  uid
+  uid,
+  Vec
 } from "../../../../src";
 import { BaseExample, TestResourceKeys } from "./base-example";
 
@@ -29,7 +31,11 @@ export class VertexAttributePacking extends BaseExample {
     _resource: TestResourceKeys,
     provider: InstanceProvider<EdgeInstance>
   ) {
-    const animate = {
+    const animate: {
+      start: IAutoEasingMethod<Vec>;
+      end: IAutoEasingMethod<Vec>;
+      control?: IAutoEasingMethod<Vec>;
+    } = {
       start: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
       end: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT),
       control: AutoEasingMethod.linear(100, 0, AutoEasingLoopStyle.REPEAT)

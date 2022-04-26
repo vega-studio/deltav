@@ -134,7 +134,7 @@ export interface ISurfaceOptions {
  */
 export declare class Surface {
     /** This is the gl context this surface is rendering to */
-    private context;
+    private context?;
     /**
      * Available commands from the surface that triggers events or triggers
      * direct GPU operations.
@@ -196,7 +196,7 @@ export declare class Surface {
     sceneDiffs: ReactiveDiff<LayerScene, ISceneOptions>;
     constructor(options?: ISurfaceOptions);
     /** Read only getter for the gl context */
-    get gl(): WebGLRenderingContext;
+    get gl(): WebGLRenderingContext | undefined;
     /** Get all of the scenes for this surface */
     get scenes(): LayerScene[];
     /**

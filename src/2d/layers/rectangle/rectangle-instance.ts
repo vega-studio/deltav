@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance
@@ -117,6 +117,7 @@ export class RectangleInstance extends Instance {
 
   constructor(options: IRectangleInstanceOptions) {
     super(options);
+    makeObservable(this, RectangleInstance);
 
     this.depth = options.depth || this.depth;
     this.color = options.color || this.color;

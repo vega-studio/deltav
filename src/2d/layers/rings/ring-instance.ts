@@ -2,7 +2,10 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
-import { observable } from "../../../instance-provider/observable";
+import {
+  makeObservable,
+  observable
+} from "../../../instance-provider/observable";
 import { Vec2 } from "../../../math";
 
 export interface IRingInstanceOptions extends IInstanceOptions {
@@ -27,6 +30,7 @@ export class RingInstance extends Instance {
 
   constructor(options: IRingInstanceOptions) {
     super(options);
+    makeObservable(this, RingInstance);
 
     this.color = options.color || this.color;
     this.depth = options.depth || this.depth;

@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import { Vec2 } from "../../../math";
 import {
   IRectangleInstanceOptions,
@@ -24,6 +24,7 @@ export class BorderInstance extends RectangleInstance {
 
   constructor(options: IBorderInstanceOptions) {
     super(options);
+    makeObservable(this, BorderInstance);
     this.fontScale = options.fontScale || this.fontScale;
     this.textAreaOrigin = options.textAreaOrigin || this.textAreaOrigin;
     this.textAreaAnchor = options.textAreaAnchor || this.textAreaAnchor;

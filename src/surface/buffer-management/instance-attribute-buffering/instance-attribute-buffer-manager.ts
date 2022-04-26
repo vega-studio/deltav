@@ -534,7 +534,7 @@ export class InstanceAttributeBufferManager<
         }
       }
 
-      if (this.scene.container && this.model) {
+      if (this.scene?.container && this.model) {
         this.scene.container.remove(this.model);
       }
     }
@@ -547,6 +547,7 @@ export class InstanceAttributeBufferManager<
     this.material = this.material || this.makeLayerMaterial();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
+      this.layer.id,
       this.geometry,
       this.material,
       shaderIOInfo.drawMode

@@ -132,7 +132,7 @@ export declare class Texture {
      * These are the regions that have been requested to be applied to the Texture along
      * with the data that should be buffered into that region.
      */
-    get updateRegions(): [HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas | ImageData | {
+    get updateRegions(): [TexImageSource | {
         width: number;
         height: number;
         buffer: ArrayBufferView | null;

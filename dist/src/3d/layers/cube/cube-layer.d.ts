@@ -10,7 +10,9 @@ export interface ICubeLayerProps<TInstance extends CubeInstance> extends ILayerP
 export declare class CubeLayer<TInstance extends CubeInstance, TProps extends ICubeLayerProps<TInstance>> extends Layer<TInstance, TProps> {
     static defaultProps: ICubeLayerProps<CubeInstance>;
     initShader(): IShaderInitialization<TInstance> | null;
-    getMaterialOptions(): Partial<Pick<Pick<Partial<import("../../../gl").Material>, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "name" | "polygonOffset" | "uniforms" | "vertexShader">, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "name" | "polygonOffset">> & {
+    getMaterialOptions(): Partial<import("../../../types").Omit<import("../../../gl").MaterialOptions, "fragmentShader" | "uniforms" | "vertexShader">> & {
+        modify(options: Partial<import("../../../types").Omit<import("../../../gl").MaterialOptions, "fragmentShader" | "uniforms" | "vertexShader">>): Omit<import("../../../util").CommonMaterial, "modify>">;
+    } & {
         cullSide: GLSettings.Material.CullSide;
     };
 }

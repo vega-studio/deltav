@@ -85,5 +85,7 @@ export function generateLayerMaterial<
     };
   }
 
-  return new Material(materialParams);
+  const material = new Material(materialParams);
+
+  return material;
 }

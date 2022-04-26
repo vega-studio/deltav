@@ -2,6 +2,7 @@ import {
   Color,
   IInstance3DOptions,
   Instance3D,
+  makeObservable,
   observable,
   Size
 } from "../../../../src";
@@ -29,6 +30,7 @@ export class CubeInstance extends Instance3D {
 
   constructor(options: ICubeOptions) {
     super(options);
+    makeObservable(this, CubeInstance);
     this.size = options.size || this.size;
     this.color = options.color || this.color;
     this.frontColor = options.frontColor || this.frontColor;

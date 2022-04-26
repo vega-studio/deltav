@@ -56,7 +56,7 @@ export class UserInputEventManager {
    */
   eventManagers: EventManager[];
   /** This is the quad tree for finding intersections with the mouse */
-  quadTree: QuadTree<Bounds<View<IViewProps>>>;
+  quadTree?: QuadTree<Bounds<View<IViewProps>>>;
   /** The parent layer surface this event manager is beneath */
   surface: Surface;
   /** The events created that need to be removed */
@@ -142,7 +142,7 @@ export class UserInputEventManager {
     let elementMovedBeforeDocMoved = false;
 
     if (handlesWheelEvents) {
-      const wheelHandler = (event: MouseWheelEvent) => {
+      const wheelHandler = (event: WheelEvent) => {
         const mouse = eventElementPosition(event, element);
         const viewsUnderMouse = this.getViewsUnderPosition(mouse);
         if (viewsUnderMouse.length <= 0) return;
@@ -171,16 +171,16 @@ export class UserInputEventManager {
       };
 
       if ("onwheel" in element) {
-        element.onwheel = wheelHandler;
+        (element as any).onwheel = wheelHandler;
       }
 
       if ("addEventListener" in element) {
-        element.addEventListener("DOMMouseScroll", wheelHandler);
+        (element as any).addEventListener("DOMMouseScroll", wheelHandler);
         this.eventCleanup.push(["DOMMouseScroll", wheelHandler]);
       }
     }
 
-    element.onmouseleave = (event: any) => {
+    (element as any).onmouseleave = (event: any) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender || !mouseMetrics) return;
 
@@ -198,7 +198,7 @@ export class UserInputEventManager {
       });
     };
 
-    element.onmousemove = (event: any) => {
+    (element as any).onmousemove = (event: any) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
       const mouse = eventElementPosition(event, element);
@@ -236,7 +236,7 @@ export class UserInputEventManager {
       elementMovedBeforeDocMoved = true;
     };
 
-    element.onmousedown = (event: any) => {
+    (element as any).onmousedown = (event: any) => {
       // No interactions while waiting for the render to update
       if (this.waitingForRender) return;
 
@@ -322,7 +322,7 @@ export class UserInputEventManager {
         event.stopPropagation();
       };
 
-      element.onmouseup = event => {
+      (element as any).onmouseup = (event: MouseEvent) => {
         if (!mouseMetrics) return;
         const mouse = eventElementPosition(event, element);
         mouseMetrics.deltaPosition = subtract2(
@@ -358,7 +358,7 @@ export class UserInputEventManager {
           return false;
         };
       } else {
-        element.addEventListener("selectstart", function() {
+        (element as any).addEventListener("selectstart", function() {
           event.preventDefault();
         });
       }
@@ -553,7 +553,7 @@ export class UserInputEventManager {
       }
     };
 
-    element.ontouchstart = event => {
+    (element as any).ontouchstart = (event: TouchEvent) => {
       event.preventDefault();
       event.stopPropagation();
       const touches = this.getTouches(event);
@@ -647,7 +647,9 @@ export class UserInputEventManager {
       document.ontouchmove = documenttouchmove;
     };
 
-    const documenttouchend = (element.ontouchend = event => {
+    const documenttouchend = ((element as any).ontouchend = (
+      event: TouchEvent
+    ) => {
       // Prevent document events from handling twice
       event.stopPropagation();
       event.preventDefault();
@@ -705,7 +707,9 @@ export class UserInputEventManager {
       }
     });
 
-    const documenttouchmove = (element.ontouchmove = event => {
+    const documenttouchmove = ((element as any).ontouchmove = (
+      event: TouchEvent
+    ) => {
       // We do not want the move events bubbling to the document to have repeat events broadcasted
       event.stopPropagation();
       event.preventDefault();
@@ -769,7 +773,9 @@ export class UserInputEventManager {
       }
     });
 
-    const documenttouchcancel = (element.ontouchcancel = event => {
+    const documenttouchcancel = ((element as any).ontouchcancel = (
+      event: TouchEvent
+    ) => {
       // Prevent the document events from firing twice
       event.stopPropagation();
       event.preventDefault();
@@ -937,6 +943,7 @@ export class UserInputEventManager {
    * the first view in the list.
    */
   getViewsUnderPosition = (mouse: Vec2) => {
+    if (!this.quadTree) return [];
     // Find the views the mouse has interacted with
     const hitViews = this.quadTree.query(mouse);
     // Sort them by depth
@@ -1133,7 +1140,7 @@ export class UserInputEventManager {
     return allCombinations;
   }
 
-  makeWheel(event?: MouseWheelEvent): IWheelMetrics {
+  makeWheel(event?: WheelEvent): IWheelMetrics {
     if (!event) {
       return {
         delta: [0, 0]
@@ -1169,9 +1176,9 @@ export class UserInputEventManager {
     delete this.quadTree;
 
     if (!isOffscreenCanvas(this.context)) {
-      this.context.onmousedown = null;
-      this.context.onmousemove = null;
-      this.context.onmouseleave = null;
+      (this.context as any).onmousedown = null;
+      (this.context as any).onmousemove = null;
+      (this.context as any).onmouseleave = null;
     }
 
     const experimental = this.context as any;

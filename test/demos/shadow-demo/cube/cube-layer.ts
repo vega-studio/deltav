@@ -41,7 +41,6 @@ export class CubeLayer<
   static defaultProps: ICubeLayerProps<CubeInstance> = {
     data: new InstanceProvider<CubeInstance>(),
     key: "",
-    materialOptions: CommonMaterialOptions.transparentShapeBlending,
     shadowBias: () => 0.005
   };
 
@@ -297,8 +296,8 @@ export class CubeLayer<
   }
 
   getMaterialOptions() {
-    return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CCW
+    return CommonMaterialOptions.transparentShapeBlending.modify({
+      culling: GLSettings.Material.CullSide.CCW
     });
   }
 }

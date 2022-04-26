@@ -20,7 +20,7 @@ export declare class UserInputEventManager {
      */
     eventManagers: EventManager[];
     /** This is the quad tree for finding intersections with the mouse */
-    quadTree: QuadTree<Bounds<View<IViewProps>>>;
+    quadTree?: QuadTree<Bounds<View<IViewProps>>>;
     /** The parent layer surface this event manager is beneath */
     surface: Surface;
     /** The events created that need to be removed */
@@ -98,7 +98,7 @@ export declare class UserInputEventManager {
      * This makes all of the possible combinations of touches.
      */
     allTouchCombinations(list: ITouchMetrics[]): ITouchMetrics[][];
-    makeWheel(event?: MouseWheelEvent): IWheelMetrics;
+    makeWheel(event?: WheelEvent): IWheelMetrics;
     /**
      * When the renderer is resized, we must reform our quad tree
      */

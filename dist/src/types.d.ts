@@ -698,7 +698,7 @@ export declare type ILayerMaterialOptions = Partial<Omit<MaterialOptions, "unifo
 /**
  * A wrapper to make declaring layer material options easier and clearer
  */
-export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Pick<Pick<Partial<import("./gl").Material>, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "name" | "polygonOffset" | "uniforms" | "vertexShader">, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "name" | "polygonOffset">>;
+export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Omit<MaterialOptions, "fragmentShader" | "uniforms" | "vertexShader">>;
 /**
  * This is the type of picking assigned to a layer. Each mode has performance
  * and functionality tradeoffs.
@@ -1020,9 +1020,13 @@ export declare enum LayerBufferType {
  * type of change and stores the property id's of the properties on the instance
  * that have changed.
  */
-export declare type InstanceDiff<T extends Instance> = [T, InstanceDiffType, {
-    [key: number]: number;
-}];
+export declare type InstanceDiff<T extends Instance> = [
+    T,
+    InstanceDiffType,
+    {
+        [key: number]: number;
+    }
+];
 /**
  * Bare minimum required features a provider must provide to be the data for the
  * layer.

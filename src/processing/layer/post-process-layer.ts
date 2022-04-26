@@ -3,6 +3,7 @@ import { Texture } from "../../gl/texture";
 import {
   Instance,
   InstanceProvider,
+  makeObservable,
   observable
 } from "../../instance-provider";
 import { Vec2 } from "../../math/vector";
@@ -27,6 +28,11 @@ import { flatten2D } from "../../util/array";
 class PostProcessInstance extends Instance {
   @observable tint: Color = [1, 1, 1, 1];
   request: IRenderTextureResourceRequest;
+
+  constructor() {
+    super();
+    makeObservable(this, PostProcessInstance);
+  }
 }
 
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
@@ -65,7 +71,7 @@ export class PostProcessLayer extends Layer<
   static defaultProps: IPostProcessLayer = {
     key: "",
     data: new InstanceProvider<PostProcessInstance>([
-      new PostProcessInstance({})
+      new PostProcessInstance()
     ]),
     buffers: {},
     fs: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
@@ -73,7 +79,7 @@ export class PostProcessLayer extends Layer<
 
   initShader(): IShaderInitialization<PostProcessInstance> {
     const { buffers, fs } = this.props;
-    const dummyInstance = new PostProcessInstance({});
+    const dummyInstance = new PostProcessInstance();
 
     const vertexToNormal: Vec2[] = [
       [-1, -1],

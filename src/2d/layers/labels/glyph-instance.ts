@@ -1,6 +1,7 @@
 import {
   IInstanceOptions,
   Instance,
+  makeObservable,
   observable
 } from "../../../instance-provider";
 import { Vec2, Vec4 } from "../../../math/vector";
@@ -49,6 +50,7 @@ export class GlyphInstance extends Instance {
 
   constructor(options: GlyphInstanceOptions) {
     super(options);
+    makeObservable(this, GlyphInstance);
 
     this.origin = options.origin || this.origin;
     this.offset = options.offset || this.offset;

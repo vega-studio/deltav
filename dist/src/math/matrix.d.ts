@@ -1,7 +1,39 @@
 import { Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4 } from "./vector";
-export declare type Mat2x2 = [number, number, number, number];
-export declare type Mat3x3 = [number, number, number, number, number, number, number, number, number];
-export declare type Mat4x4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+export declare type Mat2x2 = [
+    number,
+    number,
+    number,
+    number
+];
+export declare type Mat3x3 = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+];
+export declare type Mat4x4 = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+];
 /** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export declare const M200 = 0;
 /** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */

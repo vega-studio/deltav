@@ -769,76 +769,20 @@ export class GLState {
    * material
    */
   syncMaterial(material: Material) {
-    const gl = this.gl;
-    const depthWrite = Boolean(material.depthWrite);
-
     // Depth mode changes
-    if (this._depthMask !== depthWrite) {
-      this._depthMask = depthWrite;
-      gl.depthMask(this._depthMask);
-    }
-
-    if (this._depthTestEnabled !== material.depthTest) {
-      this._depthTestEnabled = material.depthTest;
-      this._depthTestEnabled
-        ? gl.enable(gl.DEPTH_TEST)
-        : gl.disable(gl.DEPTH_TEST);
-    }
-
-    if (this._depthFunc !== material.depthFunc) {
-      this._depthFunc = material.depthFunc;
-      this.applyDepthFunc();
-    }
-
+    this.setDepthMask(material.depthWrite);
+    // Depth test enabled or no
+    this.setDepthTest(material.depthTest);
+    // Depth Func
+    this.setDepthFunc(material.depthFunc);
     // Blending changes
-    if (material.blending) {
-      if (!this._blendingEnabled) {
-        gl.enable(gl.BLEND);
-        this._blendingEnabled = true;
-      }
-
-      if (
-        this._blendDstFactor !== material.blending.blendDst ||
-        this._blendSrcFactor !== material.blending.blendSrc ||
-        this._blendEquation !== material.blending.blendEquation
-      ) {
-        this._blendDstFactor =
-          material.blending.blendDst || this._blendDstFactor;
-        this._blendSrcFactor =
-          material.blending.blendSrc || this._blendSrcFactor;
-        this._blendEquation =
-          material.blending.blendEquation || this._blendEquation;
-        this.applyBlendFactors();
-      }
-    } else {
-      if (this._blendingEnabled) {
-        gl.disable(gl.BLEND);
-        this._blendingEnabled = false;
-      }
-    }
-
+    this.setBlending(material.blending);
     // Cull mode
-    if (this._cullFace !== material.culling) {
-      this._cullFace = material.culling;
-      this.applyCullFace();
-    }
-
+    this.setCullFace(material.culling);
     // Color mode
-    if (
-      this._colorMask[0] !== material.colorWrite[0] ||
-      this._colorMask[1] !== material.colorWrite[1] ||
-      this._colorMask[2] !== material.colorWrite[2] ||
-      this._colorMask[3] !== material.colorWrite[3]
-    ) {
-      this._colorMask = material.colorWrite;
-      this.applyColorMask();
-    }
-
+    this.setColorMask(material.colorWrite);
     // Dithering
-    if (this._ditheringEnabled !== material.dithering) {
-      this._ditheringEnabled = material.dithering;
-      this._ditheringEnabled ? gl.enable(gl.DITHER) : gl.disable(gl.DITHER);
-    }
+    this.setDithering(material.dithering);
 
     // Uniforms
     this._currentUniforms = material.uniforms;
@@ -892,6 +836,103 @@ export class GLState {
     }
 
     return true;
+  }
+
+  /**
+   * Set masking for the depth
+   */
+  setDepthMask(depthWrite: boolean) {
+    if (this._depthMask !== depthWrite) {
+      this._depthMask = depthWrite;
+      this.gl.depthMask(this._depthMask);
+    }
+  }
+
+  /**
+   * Set the depth test enablement
+   */
+  setDepthTest(depthTest: boolean) {
+    if (this._depthTestEnabled !== depthTest) {
+      this._depthTestEnabled = depthTest;
+      this._depthTestEnabled
+        ? this.gl.enable(this.gl.DEPTH_TEST)
+        : this.gl.disable(this.gl.DEPTH_TEST);
+    }
+  }
+
+  /**
+   * Set the depth function
+   */
+  setDepthFunc(depthFunc: Material["depthFunc"]) {
+    if (this._depthFunc !== depthFunc) {
+      this._depthFunc = depthFunc;
+      this.applyDepthFunc();
+    }
+  }
+
+  /**
+   * Set the blend mode and settings.
+   */
+  setBlending(blending: Material["blending"]) {
+    if (blending) {
+      if (!this._blendingEnabled) {
+        this.gl.enable(this.gl.BLEND);
+        this._blendingEnabled = true;
+      }
+
+      if (
+        this._blendDstFactor !== blending.blendDst ||
+        this._blendSrcFactor !== blending.blendSrc ||
+        this._blendEquation !== blending.blendEquation
+      ) {
+        this._blendDstFactor = blending.blendDst || this._blendDstFactor;
+        this._blendSrcFactor = blending.blendSrc || this._blendSrcFactor;
+        this._blendEquation = blending.blendEquation || this._blendEquation;
+        this.applyBlendFactors();
+      }
+    } else {
+      if (this._blendingEnabled) {
+        this.gl.disable(this.gl.BLEND);
+        this._blendingEnabled = false;
+      }
+    }
+  }
+
+  /**
+   * Set whether or not dithering is enabled.
+   */
+  setDithering(dithering: boolean) {
+    if (this._ditheringEnabled !== dithering) {
+      this._ditheringEnabled = dithering;
+      this._ditheringEnabled
+        ? this.gl.enable(this.gl.DITHER)
+        : this.gl.disable(this.gl.DITHER);
+    }
+  }
+
+  /**
+   * Change the bit mask for color channels allowed to be written into.
+   */
+  setColorMask(colorMask: TypeVec<boolean>) {
+    if (
+      this._colorMask[0] !== colorMask[0] ||
+      this._colorMask[1] !== colorMask[1] ||
+      this._colorMask[2] !== colorMask[2] ||
+      this._colorMask[3] !== colorMask[3]
+    ) {
+      this._colorMask = colorMask;
+      this.applyColorMask();
+    }
+  }
+
+  /**
+   * Change the cull face state
+   */
+  setCullFace(cullFace: GLState["_cullFace"]) {
+    if (this._cullFace !== cullFace) {
+      this._cullFace = cullFace;
+      this.applyCullFace();
+    }
   }
 
   /**

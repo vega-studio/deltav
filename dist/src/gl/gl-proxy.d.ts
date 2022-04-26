@@ -113,7 +113,7 @@ export declare class GLProxy {
      * Retrieves the gl context from the canvas
      */
     static getContext(canvas: HTMLCanvasElement, options: {}): {
-        context: WebGLRenderingContext | WebGL2RenderingContext | null;
+        context: GLContext | null;
         extensions: IExtensions;
     };
     /**

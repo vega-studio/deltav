@@ -264,7 +264,7 @@ function initStats() {
         gl.RGBA,
         gl instanceof WebGL2RenderingContext
           ? gl.HALF_FLOAT
-          : halfExtension.HALF_FLOAT_OES,
+          : (halfExtension as any).HALF_FLOAT_OES,
         null
       );
 

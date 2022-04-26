@@ -1,5 +1,6 @@
 import {
   GLSettings,
+  GLState,
   RenderBufferOutputTarget,
   RenderTarget,
   Texture,
@@ -176,6 +177,13 @@ export interface IViewProps extends IdentifyByKeyOptions {
    * render to the screen but rather in scaled modes.
    */
   pixelRatio?: number;
+
+  /**
+   * This is a hook to allow gl state changes JUST BEFORE drawing a layer. This
+   * allows for view specific tweaks to how a lyer gets drawn which is a common
+   * occurrence in many rendering pipelines.
+   */
+  glState?(glState: GLState, layerId: string): void;
 }
 
 /**

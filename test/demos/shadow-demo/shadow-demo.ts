@@ -195,6 +195,10 @@ export class ShadowDemo extends BaseDemo {
                   [FragmentOutputType.BLANK]: resources.color
                 },
                 depth: resources.shadowMap
+              },
+
+              glState: state => {
+                state.setCullFace(GLSettings.Material.CullSide.CW);
               }
             }),
 

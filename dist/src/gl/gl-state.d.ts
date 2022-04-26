@@ -238,6 +238,34 @@ export declare class GLState {
      */
     syncMaterial(material: Material): boolean;
     /**
+     * Set masking for the depth
+     */
+    setDepthMask(depthWrite: boolean): void;
+    /**
+     * Set the depth test enablement
+     */
+    setDepthTest(depthTest: boolean): void;
+    /**
+     * Set the depth function
+     */
+    setDepthFunc(depthFunc: Material["depthFunc"]): void;
+    /**
+     * Set the blend mode and settings.
+     */
+    setBlending(blending: Material["blending"]): void;
+    /**
+     * Set whether or not dithering is enabled.
+     */
+    setDithering(dithering: boolean): void;
+    /**
+     * Change the bit mask for color channels allowed to be written into.
+     */
+    setColorMask(colorMask: TypeVec<boolean>): void;
+    /**
+     * Change the cull face state
+     */
+    setCullFace(cullFace: GLState["_cullFace"]): void;
+    /**
      * Performs the upload operation of a uniform to the GL context
      */
     private uploadUniform;

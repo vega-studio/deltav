@@ -130,9 +130,9 @@ export declare class WebGLRenderer {
      */
     prepareAttribute(geometry: Geometry, attribute: Attribute, name: string): boolean;
     /**
-     * Renders the Scene specified
+     * Renders the Scene specified.
      */
-    render(scene: Scene, target?: RenderTarget | RenderTarget[] | null): void;
+    render(scene: Scene, target?: RenderTarget | RenderTarget[] | null, stateChange?: (glState: GLState, modelId: string) => void): void;
     /**
      * Renders the specified model
      */

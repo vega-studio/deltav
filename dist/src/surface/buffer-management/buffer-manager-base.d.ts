@@ -60,11 +60,11 @@ export interface IBufferLocationGroup<T extends IBufferLocation> {
  */
 export declare abstract class BufferManagerBase<T extends Instance, U extends IBufferLocation> {
     /** This is the list of changes in effect while this manager is processing requests */
-    changeListContext: InstanceDiff<T>[];
+    changeListContext?: InstanceDiff<T>[];
     /** The layer this manager glues Instances to Buffers */
     layer: Layer<T, any>;
     /** The scene the layer is injecting elements into */
-    scene: LayerScene;
+    scene?: LayerScene;
     /**
      * Base constructor. A manager always needs to be associated with it's layer and it's scene.
      */

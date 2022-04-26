@@ -1,3 +1,19 @@
+## 3.0.0
+
+## Breaking
+
+- [`BREAKING`]: Upgraded Typescript version to latest
+- [`BREAKING`]: Fixed observable to be compatible with new TS decorator expectations. makeObservable(this, Class) must be added to ctors from now on.
+
+## Added
+
+- [`ADDED`]: GLState hook added to views to allow last minute state changes needed for the view to handle specialized scenarios.
+
+## Fixed
+
+- [`FIXED`]: Removed specific types for WebGL2 in favor of default provided types from TS
+- [`FIXED`]: Removed unused dependency causing node-gyp requirement
+
 ## 2.1.0
 
 ## Added

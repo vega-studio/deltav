@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance
@@ -28,6 +28,7 @@ export class CircleInstance extends Instance {
 
   constructor(options: ICircleInstanceOptions) {
     super(options);
+    makeObservable(this, CircleInstance);
 
     this.color = options.color || this.color;
     this.radius = options.radius || this.radius;

@@ -6,6 +6,7 @@ import { Color, IShaderInitialization, IUniform } from "../../types";
 declare class PostProcessInstance extends Instance {
     tint: Color;
     request: IRenderTextureResourceRequest;
+    constructor();
 }
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
     /** List of resource names and their respective keys to apply  */
@@ -27,6 +28,6 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
 export declare class PostProcessLayer extends Layer<PostProcessInstance, IPostProcessLayer> {
     static defaultProps: IPostProcessLayer;
     initShader(): IShaderInitialization<PostProcessInstance>;
-    getMaterialOptions(): Partial<Pick<Pick<Partial<import("../../gl").Material>, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "fragmentShader" | "name" | "polygonOffset" | "uniforms" | "vertexShader">, "blending" | "colorWrite" | "culling" | "depthFunc" | "depthTest" | "depthWrite" | "dithering" | "name" | "polygonOffset">>;
+    getMaterialOptions(): import("../../util").CommonMaterial;
 }
 export {};

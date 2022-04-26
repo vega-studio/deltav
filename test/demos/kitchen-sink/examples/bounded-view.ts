@@ -16,7 +16,7 @@ import {
 import { BaseExample, TestResourceKeys } from "./base-example";
 
 export class BoundedView extends BaseExample {
-  view: string;
+  view: string = "";
   manager: BasicCamera2DController;
   originalRange: Bounds<never>;
 

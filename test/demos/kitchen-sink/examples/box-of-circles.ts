@@ -91,9 +91,9 @@ export class BoxOfCircles extends BaseExample {
   };
   camera: Camera2D;
   manager: BasicCamera2DController;
-  originalRange: Bounds<never>;
+  originalRange?: Bounds<never>;
   scene: string;
-  textPositions: Vec2[];
+  textPositions?: Vec2[];
   textCache: {
     buckets: CircleInstance[][];
     xy: Vec2[];

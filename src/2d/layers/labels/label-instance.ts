@@ -1,4 +1,4 @@
-import { observable } from "../../../instance-provider";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance
@@ -117,6 +117,7 @@ export class LabelInstance extends Instance {
 
   constructor(options: ILabelInstanceOptions) {
     super(options);
+    makeObservable(this, LabelInstance);
 
     this.anchor = options.anchor || this.anchor;
     this.color = options.color || this.color;

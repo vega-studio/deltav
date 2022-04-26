@@ -8,6 +8,8 @@ import { Material } from "./material";
  * within a scene.
  */
 export class Model {
+  /** Unique identifier of this Model. */
+  id: string;
   /** Specifies how the system will utilize the geometry applied */
   drawMode: GLSettings.Model.DrawMode = GLSettings.Model.DrawMode.TRIANGLES;
   /** Specifies the vertices to render within the Model */
@@ -21,7 +23,8 @@ export class Model {
   /** Specifies the number of vertices available to the underlying geometry */
   vertexCount: number = 0;
 
-  constructor(geometry: Geometry, material: Material) {
+  constructor(id: string, geometry: Geometry, material: Material) {
+    this.id = id;
     this.geometry = geometry;
     this.material = material;
   }

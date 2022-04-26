@@ -135,5 +135,5 @@ export declare function normalizeWheel(/*object*/ event: any): {
     pixelY: number;
 };
 export declare namespace normalizeWheel {
-    var getEventType: () => "wheel" | "mousewheel" | "DOMMouseScroll";
+    var getEventType: () => "wheel" | "DOMMouseScroll" | "mousewheel";
 }

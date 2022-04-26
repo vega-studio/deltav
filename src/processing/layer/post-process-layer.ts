@@ -71,7 +71,7 @@ export class PostProcessLayer extends Layer<
   static defaultProps: IPostProcessLayer = {
     key: "",
     data: new InstanceProvider<PostProcessInstance>([
-      new PostProcessInstance({})
+      new PostProcessInstance()
     ]),
     buffers: {},
     fs: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
@@ -79,7 +79,7 @@ export class PostProcessLayer extends Layer<
 
   initShader(): IShaderInitialization<PostProcessInstance> {
     const { buffers, fs } = this.props;
-    const dummyInstance = new PostProcessInstance({});
+    const dummyInstance = new PostProcessInstance();
 
     const vertexToNormal: Vec2[] = [
       [-1, -1],

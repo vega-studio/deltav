@@ -65,11 +65,16 @@ function observeProperty<T extends Instance>(instance: T, key: string) {
   // faster lookups than the name itself. Matching against the name allows us to
   // have instances with their own property sets but have matching name mappings
   // to improve compatibility of Instances with varying Layers.
-  const propertyUID: number =
-    ObservableMonitoring.observableNamesToUID.get(key) || 0;
+  const propertyUID: number = m.observableNamesToUID.get(key) || 0;
 
   if (propertyUID === 0) {
-    console.warn("A property with name", key, "for", instance, "has not been assigned a UID which is an error in this step of the process.");
+    console.warn(
+      "A property with name",
+      key,
+      "for",
+      instance,
+      "has not been assigned a UID which is an error in this step of the process."
+    );
     return;
   }
 
@@ -108,7 +113,7 @@ function observeProperty<T extends Instance>(instance: T, key: string) {
     configurable: true,
     enumerable: true,
     get: getter,
-    set: setter,
+    set: setter
   });
 
   (instance as any)[key] = value;
@@ -127,12 +132,12 @@ export function observable<T extends Instance>(
 ): void {
   if (!descriptor) return;
   let willObserve = isObservable.get(target.constructor);
-  let propertyUID: number =
-    ObservableMonitoring.observableNamesToUID.get(key) || 0;
+  let propertyUID: number = m.observableNamesToUID.get(key) || 0;
+  console.log("OBSERVABLE", target, key);
 
   if (propertyUID === 0) {
     propertyUID = ++propUID;
-    ObservableMonitoring.observableNamesToUID.set(key, propertyUID);
+    m.observableNamesToUID.set(key, propertyUID);
   }
 
   if (!willObserve) {
@@ -152,7 +157,8 @@ export function observable<T extends Instance>(
     const baseProperties = isObservable.get(proto.constructor);
 
     if (baseProperties) {
-      baseProperties.forEach((prop) => willObserve?.add(prop));
+      baseProperties.forEach(prop => willObserve?.add(prop));
+      console.log("GATHERING", proto.constructor.name, willObserve);
     }
 
     proto = Object.getPrototypeOf(proto);
@@ -183,5 +189,5 @@ export function makeObservable(target: Instance, ctor: Function) {
   if (target.constructor !== ctor) return;
   const props = isObservable.get(ctor);
   if (!props) return;
-  props.forEach((prop) => observeProperty(target, prop));
+  props.forEach(prop => observeProperty(target, prop));
 }

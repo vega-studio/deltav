@@ -153,28 +153,27 @@ export class GLProxy {
 
     return {
       instancing:
-        (gl instanceof WebGL2RenderingContext ? gl : instancing) || undefined,
-      drawBuffers:
-        (gl instanceof WebGL2RenderingContext ? gl : mrt) || undefined,
+        (gl instanceof WebGL2RenderingContext ? gl : instancing) || void 0,
+      drawBuffers: (gl instanceof WebGL2RenderingContext ? gl : mrt) || void 0,
       anisotropicFiltering: anisotropicFiltering
         ? {
             ext: anisotropicFiltering,
             stat: anisotropicStats
           }
-        : undefined,
-      renderFloatTexture: renderFloatTexture,
+        : void 0,
+      renderFloatTexture: renderFloatTexture || void 0,
       floatTex:
-        (gl instanceof WebGL2RenderingContext ? gl : floatTex) || undefined,
+        (gl instanceof WebGL2RenderingContext ? gl : floatTex) || void 0,
       floatTexFilterLinear:
         (gl instanceof WebGL2RenderingContext ? gl : floatTexFilterLinear) ||
-        undefined,
+        void 0,
       halfFloatTex:
-        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) || undefined,
+        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) || void 0,
       halfFloatTexFilterLinear:
         (gl instanceof WebGL2RenderingContext
           ? gl
-          : halfFloatTexFilterLinear) || undefined,
-      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || undefined
+          : halfFloatTexFilterLinear) || void 0,
+      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || void 0
     };
   }
 

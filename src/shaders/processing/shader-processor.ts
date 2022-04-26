@@ -702,6 +702,11 @@ export class ShaderProcessor {
     sortIO: BaseIOSorting
   ): IShaderProcessingResults<T> | null {
     try {
+      if (!layer.surface.gl) {
+        console.warn("No WebGL context available for layer!");
+        return null;
+      }
+
       // Process imports to retrieve the requested IO the shader modules would
       // be requiring
       const shadersWithImports = this.processImports(

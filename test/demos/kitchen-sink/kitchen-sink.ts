@@ -97,7 +97,7 @@ function isLayerInitializerList(val: any): val is LayerInitializer[] {
  */
 export class KitchenSink extends BaseDemo {
   /** This is all of the scenes that were initialized */
-  allScenes: SceneInitializer[];
+  allScenes?: SceneInitializer[];
 
   testControls = new Map<
     BaseExample,
@@ -177,10 +177,10 @@ export class KitchenSink extends BaseDemo {
       if (!this.surface) return;
       layers = [];
       const controls = this.testControls.get(test);
-      const scene = this.allScenes[i];
-      const sceneName = this.allScenes[i].name;
+      const scene = this.allScenes?.[i];
+      const sceneName = this.allScenes?.[i].name;
       // test.surface = this.surface.surface;
-      test.view = sceneName;
+      test.view = sceneName || "";
 
       const layer = test.makeLayer(
         {
@@ -196,7 +196,7 @@ export class KitchenSink extends BaseDemo {
         layers.push(layer);
       }
 
-      scene.scene.layers = layers;
+      if (scene) scene.scene.layers = layers;
     });
   }
 

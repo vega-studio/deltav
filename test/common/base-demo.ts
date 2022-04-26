@@ -73,7 +73,7 @@ export abstract class BaseDemo {
   /**
    * This is called when everything for the demo should be ready.
    */
-  abstract async init(): Promise<void>;
+  abstract init(): Promise<void>;
 
   /**
    * Generates a message that overlays the rendering using HTML

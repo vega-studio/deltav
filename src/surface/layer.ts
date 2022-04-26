@@ -828,6 +828,11 @@ export class Layer<
    * to make instancing work for the shader.
    */
   init(views: View<IViewProps>[]) {
+    if (!this.surface.gl) {
+      console.warn("The layer's surface does not have a valid WebGL context.");
+      return false;
+    }
+
     // Set up the pick type for the layer
     const { picking = PickType.NONE } = this.props;
 

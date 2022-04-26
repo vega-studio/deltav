@@ -2,7 +2,10 @@ import {
   IInstanceOptions,
   Instance
 } from "../../../instance-provider/instance";
-import { makeObservable, observable } from "../../../instance-provider/observable";
+import {
+  makeObservable,
+  observable
+} from "../../../instance-provider/observable";
 import { copy4, Vec2, Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {

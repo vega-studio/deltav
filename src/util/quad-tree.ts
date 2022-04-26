@@ -69,9 +69,13 @@ export class QuadTreeQuadrants<T extends IQuadTreeItem> {
     this.TR.destroy();
     this.BL.destroy();
     this.BR.destroy();
+    // @ts-ignore
     delete this.TL;
+    // @ts-ignore
     delete this.TR;
+    // @ts-ignore
     delete this.BL;
+    // @ts-ignore
     delete this.BR;
   }
 
@@ -130,11 +134,15 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
    * @memberOf Node
    */
   destroy() {
+    // @ts-ignore Allow deletion, but once destroyed it is invalid to use this
+    // class anymore.
     delete this.children;
+    // @ts-ignore
     delete this.bounds;
 
     if (this.nodes) {
       this.nodes.destroy();
+      // @ts-ignore
       delete this.nodes;
     }
   }
@@ -255,6 +263,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
     if (this.nodes) {
       // completely...destroy...
       this.nodes.destroy();
+      // @ts-ignore
       delete this.nodes;
     }
 

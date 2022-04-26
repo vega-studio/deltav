@@ -37,8 +37,15 @@ export abstract class BaseResourceManager<
    * Every resource manager will receive the utilized renderer so the manager
    * can perform basic GL tasks if needed
    */
-  webGLRenderer?: WebGLRenderer;
+  get webGLRenderer(): WebGLRenderer | undefined {
+    return this._webGLRenderer;
+  }
 
+  set webGLRenderer(val: WebGLRenderer | undefined) {
+    this._webGLRenderer = val;
+  }
+
+  _webGLRenderer?: WebGLRenderer;
   /**
    * This is called by the system for the manager to dequeue it's requests in an
    * asynchronous manner, thus allowing the system to have it's resources
@@ -50,7 +57,7 @@ export abstract class BaseResourceManager<
    * If true was returned, this will trigger an additional draw operation to
    * immediately have the dequeue triggers take place and render to the screen.
    */
-  abstract async dequeueRequests(): Promise<boolean>;
+  abstract dequeueRequests(): Promise<boolean>;
 
   /**
    * This expects a resource manager to free all of it's resources it is hanging
@@ -80,7 +87,7 @@ export abstract class BaseResourceManager<
    * This is called to initialize a resource that the system has determined
    * needs to be constructed.
    */
-  abstract async initResource(resource: BaseResourceOptions): Promise<void>;
+  abstract initResource(resource: BaseResourceOptions): Promise<void>;
 
   /**
    * This will trigger a request of a resource to be generated. It will

@@ -230,7 +230,7 @@ function sortByOrder<T extends { order?: number }>(a: T, b: T) {
  */
 export class Surface {
   /** This is the gl context this surface is rendering to */
-  private context: WebGLRenderingContext;
+  private context?: WebGLRenderingContext;
   /**
    * Available commands from the surface that triggers events or triggers
    * direct GPU operations.
@@ -792,6 +792,7 @@ export class Surface {
    * rendered elements.
    */
   fitContainer(_pixelRatio?: number) {
+    if (!this.context) return;
     if (isOffscreenCanvas(this.context.canvas)) return;
     const container = this.context.canvas.parentElement;
 
@@ -1182,6 +1183,7 @@ export class Surface {
    * Initializes elements for handling mouse interactions with the canvas.
    */
   private initUserInputManager(options: ISurfaceOptions) {
+    if (!this.context) return;
     // We must inject an event manager to broadcast events through the layers
     // themselves
     const eventManagers: EventManager[] = ([
@@ -1273,7 +1275,7 @@ export class Surface {
             message.indexOf("Source is too large") > -1
           ) {
             const layer = err[0];
-            const changes = layer.bufferManager.changeListContext;
+            const changes = layer.bufferManager.changeListContext || [];
             let singleMessage:
               | [string, Instance, IInstanceAttribute<Instance>]
               | undefined;

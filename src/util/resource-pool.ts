@@ -30,8 +30,11 @@ export class ResourcePool<T> {
       this.options.destroy(this.pool[i]);
     }
 
+    // @ts-ignore
     delete this.pool;
+    // @ts-ignore
     delete this.marker;
+    // @ts-ignore
     delete this.options;
   }
 

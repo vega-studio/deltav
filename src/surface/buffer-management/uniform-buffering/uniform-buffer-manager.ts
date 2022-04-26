@@ -205,7 +205,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   removeFromScene() {
     const scene = this.scene;
 
-    if (scene.container) {
+    if (scene?.container) {
       for (let i = 0, end = this.buffers.length; i < end; ++i) {
         const buffer = this.buffers[i];
         scene.container.remove(buffer.model);

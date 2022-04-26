@@ -10,7 +10,15 @@ import { Control2D, IControl2DOptions } from "./control-2d";
  */
 export class Camera2D extends Camera {
   /** These are the 2d controls to make manipulating a 2D world easier */
-  control2D: Control2D;
+  _control2D: Control2D;
+
+  get control2D(): Control2D {
+    return this._control2D;
+  }
+
+  set control2D(val: Control2D) {
+    this._control2D = val;
+  }
 
   get scale2D() {
     return this.control2D.scale;

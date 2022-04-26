@@ -52,7 +52,6 @@ export class AtlasResourceManager extends BaseResourceManager<
     this._webGLRenderer = val;
     this.atlasManager.renderer = val;
   }
-  private _webGLRenderer?: WebGLRenderer;
 
   constructor(options?: IAtlasResourceManagerOptions) {
     super();

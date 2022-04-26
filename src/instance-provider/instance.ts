@@ -59,7 +59,7 @@ export class Instance {
    * Retrieves a method for disposing the link between observables and observer.
    */
   get observableDisposer(): () => void {
-    return () => delete this._observer;
+    return () => (this._observer = null);
   }
 
   /**

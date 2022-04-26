@@ -534,7 +534,7 @@ export class InstanceAttributeBufferManager<
         }
       }
 
-      if (this.scene.container && this.model) {
+      if (this.scene?.container && this.model) {
         this.scene.container.remove(this.model);
       }
     }

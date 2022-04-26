@@ -130,10 +130,15 @@ export function observable<T extends Instance>(
   key: string,
   descriptor?: PropertyDescriptor
 ): void {
-  if (!descriptor) return;
+  if (!descriptor) {
+    descriptor = {
+      configurable: true,
+      enumerable: true
+    };
+  }
+
   let willObserve = isObservable.get(target.constructor);
   let propertyUID: number = m.observableNamesToUID.get(key) || 0;
-  console.log("OBSERVABLE", target, key);
 
   if (propertyUID === 0) {
     propertyUID = ++propUID;
@@ -158,7 +163,6 @@ export function observable<T extends Instance>(
 
     if (baseProperties) {
       baseProperties.forEach(prop => willObserve?.add(prop));
-      console.log("GATHERING", proto.constructor.name, willObserve);
     }
 
     proto = Object.getPrototypeOf(proto);

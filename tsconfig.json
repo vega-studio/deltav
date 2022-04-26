@@ -4,6 +4,7 @@
     "allowUnreachableCode": false,
     "baseUrl": ".",
     "declaration": true,
+    "useDefineForClassFields": true,
     "experimentalDecorators": true,
     "jsx": "react",
     "jsxFactory": "h",

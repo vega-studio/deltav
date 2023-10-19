@@ -5,7 +5,7 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
-  InstanceDiffType
+  InstanceDiffType,
 } from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
@@ -15,7 +15,7 @@ import { LayerScene } from "../../layer-scene";
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup
+  IBufferLocationGroup,
 } from "../buffer-manager-base";
 
 const debug = require("debug")("performance");
@@ -125,7 +125,7 @@ export class InstanceAttributeBufferManager<
 
     // We need to find out how an instance interacts with the attributes, so we will
     // loop through the instances, call their updates and get feedback
-    this.layer.shaderIOInfo.instanceAttributes.forEach(attribute => {
+    this.layer.shaderIOInfo.instanceAttributes.forEach((attribute) => {
       // We don't need to register child attributes as they get updated as a consequence to parent attributes
       if (attribute.parentAttribute) return;
       // Access the update which accesses an instances properties (usually)
@@ -137,7 +137,7 @@ export class InstanceAttributeBufferManager<
       // Store the mapping of the property ids
       // TODO: We currently only support ONE property id per change
       this.attributeToPropertyIds.set(attribute, [
-        propertyIdsForAttribute[propertyIdsForAttribute.length - 1]
+        propertyIdsForAttribute[propertyIdsForAttribute.length - 1],
       ]);
 
       if (propertyIdsForAttribute.length > 1) {
@@ -211,7 +211,7 @@ export class InstanceAttributeBufferManager<
       if (this.model) {
         this.model.vertexDrawRange = [
           0,
-          this.layer.shaderIOInfo.instanceVertexCount
+          this.layer.shaderIOInfo.instanceVertexCount,
         ];
         this.model.drawInstances = this.currentInstancedCount;
 
@@ -280,7 +280,7 @@ export class InstanceAttributeBufferManager<
     const updateAllPropertyIdList: { [key: number]: number } = {};
 
     // Get unique ids that will target all attributes
-    this.attributeToPropertyIds.forEach(ids => {
+    this.attributeToPropertyIds.forEach((ids) => {
       updateAllPropertyIdList[ids[0]] = ids[0];
     });
 
@@ -408,10 +408,10 @@ export class InstanceAttributeBufferManager<
           const newLocation: IInstanceAttributeBufferLocation = {
             attribute: internalAttribute,
             buffer: {
-              value: buffer
+              value: buffer,
             },
             instanceIndex: i,
-            range: [i * size, i * size + size]
+            range: [i * size, i * size + size],
           };
 
           newBufferLocations.push(newLocation);
@@ -522,10 +522,10 @@ export class InstanceAttributeBufferManager<
             newLocation = {
               attribute,
               buffer: {
-                value: buffer
+                value: buffer,
               },
               instanceIndex: i,
-              range: [i * size, i * size + size]
+              range: [i * size, i * size + size],
             };
 
             newBufferLocations[index] = newLocation;
@@ -563,7 +563,7 @@ export class InstanceAttributeBufferManager<
 
     return {
       growth,
-      newLocations: attributeToNewBufferLocations
+      newLocations: attributeToNewBufferLocations,
     };
   }
 
@@ -604,12 +604,12 @@ export class InstanceAttributeBufferManager<
         attribute,
         bufferLocationsForAttribute:
           attributeToNewBufferLocations.get(attribute.name) || [],
-        childBufferLocations: (attribute.childAttributes || []).map(attr => ({
+        childBufferLocations: (attribute.childAttributes || []).map((attr) => ({
           location: attributeToNewBufferLocations.get(attr.name) || [],
-          bufferIndex: -1
+          bufferIndex: -1,
         })),
         ids,
-        bufferIndex: -1
+        bufferIndex: -1,
       });
     });
 
@@ -624,7 +624,7 @@ export class InstanceAttributeBufferManager<
     for (let i = 0; i < totalNewInstances; ++i) {
       const group: IInstanceAttributeBufferLocationGroup = {
         instanceIndex: -1,
-        propertyToBufferLocation: {}
+        propertyToBufferLocation: {},
       };
 
       // Loop through all of the property ids that affect specific attributes. Each of these ids

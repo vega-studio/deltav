@@ -183,6 +183,17 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
      */
     strategy?: StreamChangeStrategy;
   };
+  /**
+   * Layers as a default renders all content as hardware instanced entities.
+   * This means we use instancing strategies down to the hardware. This can
+   * cause performance issues for simpler meshes. Often, things like shape
+   * primitives can be rendered quicker if they use simple buffers. This may
+   * cause some slightly longer update times, but the frame by frame performance
+   * can be improved dramatically.
+   *
+   * This strategy can also be good for a layer rendering a single complex mesh.
+   */
+  noInstancing?: boolean;
 
   // ---- EVENTS ----
   /**
@@ -320,8 +331,8 @@ interface ILayerEasingManagerInternal extends ILayerEasingManager {
  * A base class for generating drawable content
  */
 export class Layer<
-  T extends Instance,
-  U extends ILayerProps<T>
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>
 > extends IdentifyByKey {
   /**
    * This MUST be implemented by sublayers in order for proper code hinting to
@@ -341,7 +352,7 @@ export class Layer<
    */
   isAnimationContinuous: boolean = false;
   /** Buffer manager is read only. Must use setBufferManager */
-  private _bufferManager: BufferManagerBase<T, IBufferLocation>;
+  private _bufferManager: BufferManagerBase<TInstance, IBufferLocation>;
   /**
    * This matches an instance to the data buffers and positions to stream to the
    * GPU for direct updates. Use setBufferManager to change this element.
@@ -360,7 +371,7 @@ export class Layer<
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This contains the methods and controls for handling diffs for the layer */
-  diffManager: InstanceDiffManager<T>;
+  diffManager: InstanceDiffManager<TInstance>;
   /**
    * This gets populated when there are attributes that have easing applied to
    * them. This subsequently gets applied to instances when they get added to
@@ -383,7 +394,7 @@ export class Layer<
   /** This is the initializer used when making this layer. */
   initializer: LayerInitializer;
   /** This is the handler that manages interactions for the layer */
-  interactions: LayerInteractionHandler<T, U>;
+  interactions: LayerInteractionHandler<TInstance, TProps>;
   /** The last time stamp this layer had its contents rendered */
   lastFrameTime: number = 0;
   /** This indicates whether this layer needs to draw */
@@ -396,9 +407,9 @@ export class Layer<
    */
   parent?: Layer<Instance, ILayerProps<Instance>>;
   /** This is all of the picking metrics kept for handling picking scenarios */
-  picking: ISinglePickingMetrics<T> | INonePickingMetrics;
+  picking: ISinglePickingMetrics<TInstance> | INonePickingMetrics;
   /** Properties handed to the Layer during a Surface render */
-  props: U;
+  props: TProps;
   /**
    * This is the system provided resource manager that lets a layer request
    * resources
@@ -410,7 +421,9 @@ export class Layer<
    * This contains the shader IO information generated when the layer was
    * created
    */
-  shaderIOInfo: ILayerShaderIOInfo<T> = {} as ILayerShaderIOInfo<T>;
+  shaderIOInfo: ILayerShaderIOInfo<TInstance> = {} as ILayerShaderIOInfo<
+    TInstance
+  >;
   /**
    * This is populated with the current streaming state for committing changes
    * to the GPU. See ILayerProps for how the configuration happens for this
@@ -426,7 +439,7 @@ export class Layer<
      * When defined, this is the list of items currently being streamed to the
      * GPU.
      */
-    stream?: U["data"]["changeList"];
+    stream?: TProps["data"]["changeList"];
     /** The index our stream has iterated through for the current stream */
     streamIndex: number;
   } = {
@@ -445,7 +458,7 @@ export class Layer<
    * This maps a uid to the instance. This is only populated if it's needed for
    * the processes the layer uses (such as color picking).
    */
-  uidToInstance = new Map<number, T>();
+  uidToInstance = new Map<number, TInstance>();
   /**
    * This is the view the layer is applied to. This changes as the rendering
    * progresses. A configuration of the surface can specify several views for a
@@ -477,7 +490,7 @@ export class Layer<
    * framework. This should involve VERY simple assignments at best. Do NOT
    * perform any logic in this callback or your application WILL suffer.
    */
-  onDiffAdd?(instance: T): void;
+  onDiffAdd?(instance: TInstance): void;
 
   /**
    * This is an opportunity to clean up any instance's association with the
@@ -491,7 +504,7 @@ export class Layer<
    * instantiated onDiffManagerAdd so you can clean out any bad memory
    * allocation choices you made.
    */
-  onDiffRemove?(instance: T): void;
+  onDiffRemove?(instance: TInstance): void;
 
   /**
    * Generates a reference object that can be used to retrieve layer specific
@@ -503,7 +516,11 @@ export class Layer<
     } as T;
   }
 
-  constructor(surface: Surface, scene: LayerScene, props: ILayerProps<T>) {
+  constructor(
+    surface: Surface,
+    scene: LayerScene,
+    props: ILayerProps<TInstance>
+  ) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
     // After associating the layer with the view it is a part of.
     super(props);
@@ -512,13 +529,13 @@ export class Layer<
     // Track the parent Layer Scene this layer is under
     this.scene = scene;
     // Keep our props within the layer
-    this.props = Object.assign({}, Layer.defaultProps || {}, props as U);
+    this.props = Object.assign({}, Layer.defaultProps || {}, props as TProps);
   }
 
   /**
    * Validates the shader initialization object from the layer.
    */
-  private validateShaderIO(shaderIO: IShaderInitialization<T> | null) {
+  private validateShaderIO(shaderIO: IShaderInitialization<TInstance> | null) {
     // If no metrics are provided, this layer is merely a shell layer and will
     // not receive any GPU handling objects.
     if (!shaderIO) {
@@ -546,7 +563,7 @@ export class Layer<
    * Initialization to make it easier and more reliable to work with when
    * processing.
    */
-  private cleanShaderIOElements(shaderIO: IShaderInitialization<T>) {
+  private cleanShaderIOElements(shaderIO: IShaderInitialization<TInstance>) {
     // Clean out nulls provided as a convenience to the layer
     shaderIO.instanceAttributes = (shaderIO.instanceAttributes || []).filter(
       isDefined
@@ -563,7 +580,9 @@ export class Layer<
    * allow two fragments to point to the same type. This performs a thorough
    * check to ensure that does not happen.
    */
-  private checkForDuplicateOutputTypes(shaderIO: IShaderInitialization<T>) {
+  private checkForDuplicateOutputTypes(
+    shaderIO: IShaderInitialization<TInstance>
+  ) {
     let { mapOutput } = this.props;
 
     // If the fragment is just a string, then it's output source is the default
@@ -629,7 +648,7 @@ export class Layer<
    * view.
    */
   private processFragmentShadersForEachView(
-    shaderIO: IShaderInitialization<T>,
+    shaderIO: IShaderInitialization<TInstance>,
     views: View<IViewProps>[]
   ) {
     // If the fragment is just a string, then it's output source is the default
@@ -752,12 +771,14 @@ export class Layer<
    * view and will be generated accordingly.
    */
   private processLayerShaders(
-    shaderIO: IShaderInitialization<T>,
+    shaderIO: IShaderInitialization<TInstance>,
     outputFragmentShaders: OutputFragmentShader,
     declarations: ShaderDeclarationStatementLookup
   ) {
     let shaderMetrics:
-      | (Omit<IShaderProcessingResults<T>, "fs"> & { fs: OutputFragmentShader })
+      | (Omit<IShaderProcessingResults<TInstance>, "fs"> & {
+          fs: OutputFragmentShader;
+        })
       | null = null;
 
     // Generate the actual shaders to be used by injecting all of the
@@ -783,8 +804,8 @@ export class Layer<
 
     // Now that all of the elements of the layer are complete, let us apply them to the layer
     this.shaderIOInfo = Object.assign<
-      ILayerShaderIOInfo<T>,
-      ILayerShaderIOInfo<T>
+      ILayerShaderIOInfo<TInstance>,
+      ILayerShaderIOInfo<TInstance>
     >(
       {
         // This is a filler active attribute. It gets replaced.
@@ -813,7 +834,7 @@ export class Layer<
    * Processes the static vertex information and applies GL Attributes for each
    * item.
    */
-  private processVertexAttributes(shaderIO: IShaderInitialization<T>) {
+  private processVertexAttributes(shaderIO: IShaderInitialization<TInstance>) {
     generateLayerGeometry(
       this,
       this.shaderIOInfo.maxInstancesPerBuffer,
@@ -840,7 +861,7 @@ export class Layer<
       this.picking = {
         currentPickMode: PickType.NONE,
         type: PickType.SINGLE,
-        uidToInstance: new Map<number, T>()
+        uidToInstance: new Map<number, TInstance>()
       };
     } else {
       this.picking = {
@@ -938,7 +959,7 @@ export class Layer<
    * to provide, such as Picking modes
    */
   baseShaderModules(
-    shaderIO: IShaderInitialization<T>
+    shaderIO: IShaderInitialization<TInstance>
   ): { fs: string[]; vs: string[] } {
     const additionalImportsVS: string[] = [];
     const additionalImportsFS: string[] = [];
@@ -1103,7 +1124,7 @@ export class Layer<
    * changes in a single update.
    */
   private getNextStreamChanges() {
-    let out: U["data"]["changeList"];
+    let out: TProps["data"]["changeList"];
 
     // Get the stream changes settings from our props
     const {
@@ -1163,7 +1184,7 @@ export class Layer<
    * This gets the next instance changes to push to the GPU.
    */
   private getChangeList() {
-    let changeList: U["data"]["changeList"];
+    let changeList: TProps["data"]["changeList"];
 
     // If we are streaming changes we do not accept new changes coming down but
     // instead work on resolving the current stream
@@ -1211,8 +1232,8 @@ export class Layer<
    * Do NOT use this in intensive loops, try to cache these results where
    * possible.
    */
-  getInstanceObservableIds<K extends keyof T>(
-    instance: T,
+  getInstanceObservableIds<K extends keyof TInstance>(
+    instance: TInstance,
     properties: Extract<K, string>[]
   ): { [key: string]: number } {
     const out: { [key: string]: number } = {};
@@ -1264,7 +1285,7 @@ export class Layer<
    * This is typical for parent layers that manage child layers who themselves
    * do not cause rendering of any sort.
    */
-  initShader(): IShaderInitialization<T> | null {
+  initShader(): IShaderInitialization<TInstance> | null {
     return {
       fs: "${import: no-op}",
       instanceAttributes: [],
@@ -1281,7 +1302,7 @@ export class Layer<
    * space to the instance. In special layer cases this may be overridden here
    * to make the assertion in some other way.
    */
-  managesInstance(instance: T): boolean {
+  managesInstance(instance: TInstance): boolean {
     return this.bufferManager && this.bufferManager.managesInstance(instance);
   }
 
@@ -1452,14 +1473,14 @@ export class Layer<
    * This is the default implementation for onDiffManagerAdd that gets applied
    * if easing is present in the layer's IO.
    */
-  private handleDiffAddWithEasing(instance: T) {
+  private handleDiffAddWithEasing(instance: TInstance) {
     instance.easingId = this.easingId;
   }
 
   /**
    * Handles diff manager add operations when the layer has picking enabled
    */
-  private handleDiffAddWithPicking(instance: T) {
+  private handleDiffAddWithPicking(instance: TInstance) {
     // Make sure the instance is mapped to it's UID
     this.uidToInstance.set(instance.uid, instance);
   }
@@ -1468,7 +1489,7 @@ export class Layer<
    * Handles diff manager add operations when the layer has picking AND easing
    * enabled
    */
-  private handleDiffAddWithPickingAndEasing(instance: T) {
+  private handleDiffAddWithPickingAndEasing(instance: TInstance) {
     // Make sure the instance is mapped to it's UID
     this.uidToInstance.set(instance.uid, instance);
     // Make sure the instance has it's easing identifiers available for it's use within this layer
@@ -1479,7 +1500,7 @@ export class Layer<
    * This is the default implementation for onDiffManagerRemove that gets
    * applied if easing is present in the layer's IO
    */
-  private handleDiffRemoveWithEasing(instance: T) {
+  private handleDiffRemoveWithEasing(instance: TInstance) {
     if (instance.easing) delete instance.easing;
     delete instance.easingId;
   }
@@ -1487,7 +1508,7 @@ export class Layer<
   /**
    * Handles diff manager remove operations when the layer has picking enabled
    */
-  private handleDiffRemoveWithPicking(instance: T) {
+  private handleDiffRemoveWithPicking(instance: TInstance) {
     // Remove the instance from our identifier list to prevent memory zombies
     this.uidToInstance.delete(instance.uid);
   }
@@ -1496,7 +1517,7 @@ export class Layer<
    * Handles diff manager remove operations when the layer has picking AND
    * easing enabled
    */
-  private handleDiffRemoveWithPickingAndEasing(instance: T) {
+  private handleDiffRemoveWithPickingAndEasing(instance: TInstance) {
     // Remove the instance from our identifier list to prevent memory zombies
     this.uidToInstance.delete(instance.uid);
     // Remove the reference to the easing identifiers to prevent memory zombies
@@ -1554,10 +1575,12 @@ export class Layer<
    * Applies a buffer manager to the layer which handles instance changes and
    * applies those changes to an appropriate buffer at the appropriate location.
    */
-  setBufferManager(bufferManager: BufferManagerBase<T, IBufferLocation>) {
+  setBufferManager(
+    bufferManager: BufferManagerBase<TInstance, IBufferLocation>
+  ) {
     if (!this._bufferManager) {
       this._bufferManager = bufferManager;
-      this.diffManager = new InstanceDiffManager<T>();
+      this.diffManager = new InstanceDiffManager<TInstance>();
       this.diffManager.makeProcessor(this, bufferManager);
     } else {
       console.warn(
@@ -1591,7 +1614,7 @@ export class Layer<
    * redraws. This method just aids in ensuring necessary redraws take place for
    * layer level logic and props.
    */
-  shouldDrawView(oldProps: U, newProps: U) {
+  shouldDrawView(oldProps: TProps, newProps: TProps) {
     for (const key in newProps) {
       if (newProps[key] !== oldProps[key]) return true;
     }
@@ -1621,7 +1644,7 @@ export class Layer<
    * Lifecycle: Fires before the props object is updated with the newProps.
    * Allows layer to respond to diff changes.
    */
-  willUpdateProps(newProps: ILayerProps<T>) {
+  willUpdateProps(newProps: ILayerProps<TInstance>) {
     // Pick type changes needs to trigger layer rebuild.
     if (newProps.picking !== this.props.picking) {
       this.rebuildLayer();

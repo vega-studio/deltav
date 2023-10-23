@@ -8,12 +8,12 @@ import { IEasingProps } from "../types";
  */
 export class EasingProps implements IEasingProps {
   delay: number = 0;
-  duration: number;
-  end: Vec;
+  duration!: number;
+  end!: Vec;
   isManualStart = false;
   isTimeSet = false;
-  start: Vec;
-  startTime: number;
+  start!: Vec;
+  startTime: number = -1;
 
   constructor(options: IEasingProps) {
     Object.assign(this, options);

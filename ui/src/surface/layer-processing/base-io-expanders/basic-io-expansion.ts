@@ -1,11 +1,8 @@
-import { uniformBufferInstanceBufferName } from "../../../constants";
 import { WebGLStat } from "../../../gl";
-import { MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider/instance";
-import { Vec4 } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult
+  ShaderIOHeaderInjectionResult,
 } from "../../../shaders/processing/base-shader-io-injection";
 import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../../surface/layer";
@@ -18,7 +15,7 @@ import {
   LayerBufferType,
   PickType,
   ShaderInjectionTarget,
-  UniformSize
+  UniformSize,
 } from "../../../types";
 
 /** Provides a label for performance debugging */
@@ -37,7 +34,7 @@ const sizeToType: Record<UniformSize, string> = {
   [UniformSize.FLOAT_ARRAY]: "float",
   [UniformSize.VEC4_ARRAY]: "vec4",
   /** This is the special case for instance attributes that want an atlas resource */
-  [UniformSize.TEXTURE]: "vec4"
+  [UniformSize.TEXTURE]: "vec4",
 };
 
 /**
@@ -106,58 +103,62 @@ export class BasicIOExpansion extends BaseIOExpansion {
    * attributes. This is to maximize compatibility with hardware and maximize flexibility in creative approaches
    * to utilizing shaders that need a lot of input.
    */
-  private generateUniformAttributePacking(
-    declarations: ShaderDeclarationStatements,
-    metrics: MetricsProcessing
-  ): ShaderIOHeaderInjectionResult {
-    // Add the uniform buffer to the shader
-    this.setDeclaration(
-      declarations,
-      uniformBufferInstanceBufferName,
-      `\n// Instance Attributes as a packed Uniform Buffer\nuniform vec4 ${uniformBufferInstanceBufferName}[${metrics.totalInstanceUniformBlocks}];\n`,
-      debugCtx
-    );
-    // Add the number of blocks an instance utilizes
-    this.setDeclaration(
-      declarations,
-      "instanceSize",
-      `int instanceSize = ${metrics.totalInstanceUniformBlocks};`,
-      debugCtx
-    );
-    // Add the block retrieval method to aid in the Destructuring process
-    this.setDeclaration(
-      declarations,
-      "getBlock",
-      `vec4 getBlock(int index, int instanceIndex) { return ${uniformBufferInstanceBufferName}[(instanceSize * instanceIndex) + index]; }`,
-      debugCtx
-    );
+  // TODO: Uniform buffer strategy out of service for now
+  // private generateUniformAttributePacking(
+  //   declarations: ShaderDeclarationStatements,
+  //   metrics: MetricsProcessing
+  // ): ShaderIOHeaderInjectionResult {
+  //   // Add the uniform buffer to the shader
+  //   this.setDeclaration(
+  //     declarations,
+  //     uniformBufferInstanceBufferName,
+  //     `\n// Instance Attributes as a packed Uniform Buffer\nuniform vec4 ${uniformBufferInstanceBufferName}[${metrics.totalInstanceUniformBlocks}];\n`,
+  //     debugCtx
+  //   );
+  //   // Add the number of blocks an instance utilizes
+  //   this.setDeclaration(
+  //     declarations,
+  //     "instanceSize",
+  //     `int instanceSize = ${metrics.totalInstanceUniformBlocks};`,
+  //     debugCtx
+  //   );
+  //   // Add the block retrieval method to aid in the Destructuring process
+  //   this.setDeclaration(
+  //     declarations,
+  //     "getBlock",
+  //     `vec4 getBlock(int index, int instanceIndex) { return ${uniformBufferInstanceBufferName}[(instanceSize * instanceIndex) + index]; }`,
+  //     debugCtx
+  //   );
 
-    return {
-      injection: "",
-      material: {
-        uniforms: [
-          {
-            name: uniformBufferInstanceBufferName,
-            type: MaterialUniformType.VEC4_ARRAY,
-            value: new Array(metrics.totalInstanceUniformBlocks)
-              .fill(0)
-              .map<Vec4>(() => [0, 0, 0, 0])
-          }
-        ]
-      }
-    };
-  }
+  //   return {
+  //     injection: "",
+  //     material: {
+  //       uniforms: [
+  //         {
+  //           name: uniformBufferInstanceBufferName,
+  //           type: MaterialUniformType.VEC4_ARRAY,
+  //           value: new Array(metrics.totalInstanceUniformBlocks)
+  //             .fill(0)
+  //             .map<Vec4>(() => [0, 0, 0, 0]),
+  //         },
+  //       ],
+  //     },
+  //   };
+  // }
 
   /**
    * This properly handles any special case destructuring for making the decalred attribute names available
    * after the ${attribute} declaration.
    */
-  processAttributeDestructuring(
-    layer: Layer<Instance, ILayerProps<Instance>>,
+  processAttributeDestructuring<
+    TInstance extends Instance,
+    TLayerProps extends ILayerProps<TInstance>,
+  >(
+    layer: Layer<TInstance, TLayerProps>,
     declarations: ShaderDeclarationStatements,
-    metrics: MetricsProcessing,
+    _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<Instance>[],
+    instanceAttributes: IInstanceAttribute<TInstance>[],
     _uniforms: IUniform[]
   ): string {
     let out = "";
@@ -181,13 +182,14 @@ export class BasicIOExpansion extends BaseIOExpansion {
         );
         break;
 
-      case LayerBufferType.UNIFORM:
-        out = this.processDestructuringUniformBuffer(
-          declarations,
-          orderedAttributes,
-          metrics.blocksPerInstance
-        );
-        break;
+      // Uniform buffer not supported for now
+      // case LayerBufferType.UNIFORM:
+      //   out = this.processDestructuringUniformBuffer(
+      //     declarations,
+      //     orderedAttributes,
+      //     metrics.blocksPerInstance
+      //   );
+      //   break;
     }
 
     // For now we add in our picking varying assignment should it be needed
@@ -238,31 +240,32 @@ export class BasicIOExpansion extends BaseIOExpansion {
    *
    * This will, as well, destructure the auto easing methods.
    */
-  private processDestructuringUniformBuffer<T extends Instance>(
-    declarations: ShaderDeclarationStatements,
-    orderedAttributes: IInstanceAttribute<T>[],
-    blocksPerInstance: number
-  ) {
-    this.setDeclaration(
-      declarations,
-      "instanceIndex",
-      "int instanceIndex = int(instance);",
-      debugCtx
-    );
+  // TODO: Uniform Buffering is not supported for now
+  // private processDestructuringUniformBuffer<T extends Instance>(
+  //   declarations: ShaderDeclarationStatements,
+  //   orderedAttributes: IInstanceAttribute<T>[],
+  //   blocksPerInstance: number
+  // ) {
+  //   this.setDeclaration(
+  //     declarations,
+  //     "instanceIndex",
+  //     "int instanceIndex = int(instance);",
+  //     debugCtx
+  //   );
 
-    // Generate the blocks
-    for (let i = 0; i < blocksPerInstance; ++i) {
-      this.setDeclaration(
-        declarations,
-        `block${i}`,
-        `  vec4 block${i} = getBlock(${i}, instanceIndex);\n`,
-        debugCtx
-      );
-    }
+  //   // Generate the blocks
+  //   for (let i = 0; i < blocksPerInstance; ++i) {
+  //     this.setDeclaration(
+  //       declarations,
+  //       `block${i}`,
+  //       `  vec4 block${i} = getBlock(${i}, instanceIndex);\n`,
+  //       debugCtx
+  //     );
+  //   }
 
-    // Destructure the blocks
-    return this.processDestructureBlocks(declarations, orderedAttributes);
-  }
+  //   // Destructure the blocks
+  //   return this.processDestructureBlocks(declarations, orderedAttributes);
+  // }
 
   /**
    * This produces the destructuring elements needed to utilize the attribute data stored in blocks with names
@@ -279,7 +282,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
   ) {
     const out = "";
 
-    orderedAttributes.forEach(attribute => {
+    orderedAttributes.forEach((attribute) => {
       const block = attribute.block || 0;
 
       // An attribute that is utilizing a matrix will span itself across 4 blocks
@@ -290,8 +293,9 @@ export class BasicIOExpansion extends BaseIOExpansion {
           attribute.name,
           `  ${sizeToType[attribute.size]} ${
             attribute.name
-          } = mat4(block${block}, block${block + 1}, block${block +
-            2}, block${block + 3});\n`,
+          } = mat4(block${block}, block${block + 1}, block${block + 2}, block${
+            block + 3
+          });\n`,
           debugCtx
         );
       } else if (attribute.size === InstanceAttributeSize.FOUR) {
@@ -333,17 +337,20 @@ export class BasicIOExpansion extends BaseIOExpansion {
    * Vertex Attribute Packing,
    * Uniform Packing
    */
-  processHeaderInjection(
+  processHeaderInjection<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+  >(
     target: ShaderInjectionTarget,
     declarations: ShaderDeclarationStatements,
-    layer: Layer<Instance, ILayerProps<Instance>>,
+    layer: Layer<TInstance, TProps>,
     metrics: MetricsProcessing,
     vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<Instance>[],
+    instanceAttributes: IInstanceAttribute<TInstance>[],
     uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     let attributeDeclarations = {
-      injection: ""
+      injection: "",
     };
 
     // Attributes are only injected into the vertex shader
@@ -365,36 +372,41 @@ export class BasicIOExpansion extends BaseIOExpansion {
 
     return {
       ...attributeDeclarations,
-      injection: attributeDeclarations.injection + uniformDeclaration
+      injection: attributeDeclarations.injection + uniformDeclaration,
     };
   }
 
   /**
    * Processes all IO for attribute declarations needed in the header of the shader.
    */
-  private processAttributeHeader(
+  private processAttributeHeader<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+  >(
     declarations: ShaderDeclarationStatements,
-    layer: Layer<Instance, ILayerProps<Instance>>,
+    layer: Layer<TInstance, TProps>,
     metrics: MetricsProcessing,
     vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<Instance>[]
+    instanceAttributes: IInstanceAttribute<TInstance>[]
   ): ShaderIOHeaderInjectionResult {
     let materialChanges = undefined;
     let out = "// Shader input\n";
 
-    // If we are in a uniform buffer type strategy. Then we generate a uniform buffer that will contain
-    // our instance attribute information along with some extras to help dereference from the buffer.
-    if (
-      layer.bufferType === LayerBufferType.UNIFORM &&
-      instanceAttributes.length > 0
-    ) {
-      const packing = this.generateUniformAttributePacking(
-        declarations,
-        metrics
-      );
-      materialChanges = packing.material;
-      out += packing.injection;
-    }
+    // If we are in a uniform buffer type strategy. Then we generate a uniform
+    // buffer that will contain our instance attribute information along with
+    // some extras to help dereference from the buffer.
+    // TODO: Uniform buffering currently out of service right now
+    // if (
+    //   layer.bufferType === LayerBufferType.UNIFORM &&
+    //   instanceAttributes.length > 0
+    // ) {
+    //   const packing = this.generateUniformAttributePacking(
+    //     declarations,
+    //     metrics
+    //   );
+    //   materialChanges = packing.material;
+    //   out += packing.injection;
+    // }
 
     // Add in the vertex attributes input
     out += this.processVertexAttributes(declarations, vertexAttributes);
@@ -426,7 +438,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
 
     return {
       injection: out,
-      material: materialChanges
+      material: materialChanges,
     };
   }
 
@@ -441,7 +453,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     const out = "";
     const injection = injectionType || ShaderInjectionTarget.VERTEX;
 
-    uniforms.forEach(uniform => {
+    uniforms.forEach((uniform) => {
       uniform.shaderInjection =
         uniform.shaderInjection || ShaderInjectionTarget.VERTEX;
 
@@ -480,15 +492,13 @@ export class BasicIOExpansion extends BaseIOExpansion {
       attrDeclaration = "in";
     }
 
-    instanceAttributes.forEach(attribute => {
+    instanceAttributes.forEach((attribute) => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `${attrDeclaration} ${
-          sizeToType[attribute.size || 1]
-        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""} ${
-          attribute.name
-        };\n`,
+        `${attrDeclaration} ${sizeToType[attribute.size || 1]} ${
+          attribute.qualifier || ""
+        }${(attribute.qualifier && " ") || ""} ${attribute.name};\n`,
         debugCtx
       );
     });
@@ -543,15 +553,13 @@ export class BasicIOExpansion extends BaseIOExpansion {
     }
 
     // No matter what, vertex attributes listed are strictly vertex attributes
-    vertexAttributes.forEach(attribute => {
+    vertexAttributes.forEach((attribute) => {
       this.setDeclaration(
         declarations,
         attribute.name,
-        `${attrDeclaration} ${
-          sizeToType[attribute.size]
-        } ${attribute.qualifier || ""}${(attribute.qualifier && " ") || ""}${
-          attribute.name
-        };\n`,
+        `${attrDeclaration} ${sizeToType[attribute.size]} ${
+          attribute.qualifier || ""
+        }${(attribute.qualifier && " ") || ""}${attribute.name};\n`,
         debugCtx
       );
     });

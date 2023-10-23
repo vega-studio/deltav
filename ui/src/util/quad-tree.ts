@@ -22,7 +22,7 @@ export function filterQuery<T extends IQuadTreeItem>(
   const filtered: T[] = [];
 
   queryValues.forEach((obj: IQuadTreeItem) => {
-    if (type.find(t => obj instanceof t)) {
+    if (type.find((t) => obj instanceof t)) {
       filtered.push(obj as T);
     }
   });
@@ -126,7 +126,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
   bounds: Bounds<never>;
   children: T[] = [];
   depth: number = 0;
-  nodes: QuadTreeQuadrants<T>;
+  nodes?: QuadTreeQuadrants<T>;
 
   /**
    * Destroys this node and ensures all child nodes are destroyed as well.
@@ -235,7 +235,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
       new Bounds({ left: minX, right: maxX, top: minY, bottom: maxY })
     );
     // Add all of the children into the tree
-    children.forEach(child => this.doAdd(child));
+    children.forEach((child) => this.doAdd(child));
   }
 
   /**
@@ -268,7 +268,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
     }
 
     // Reinsert all children with the new dimensions in place
-    allChildren.forEach(child => this.doAdd(child));
+    allChildren.forEach((child) => this.doAdd(child));
   }
 
   /**
@@ -410,7 +410,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
     }
 
     // Gather the children as hit at this point
-    this.children.forEach(c => {
+    this.children.forEach((c) => {
       if (c.hitBounds(b)) {
         list.push(c);
       }
@@ -452,7 +452,7 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
    * @return      Returns the exact same list that was input as the list param
    */
   queryPoint(p: any, list: T[], visit?: IQuadTreeVisitFunction<T>): T[] {
-    this.children.forEach(c => {
+    this.children.forEach((c) => {
       if (c.containsPoint(p)) {
         list.push(c);
       }

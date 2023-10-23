@@ -191,22 +191,6 @@ function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
   }
 }
 
-function fuzzyAssert1(
-  actual: Vec1,
-  expected: Vec1,
-  shouldEqual: boolean = true
-) {
-  if (shouldEqual) {
-    assert.equal(fuzzCompare1(actual, expected), true, fail1(actual, expected));
-  } else {
-    assert.equal(
-      !fuzzCompare1(actual, expected),
-      true,
-      fail1(actual, expected)
-    );
-  }
-}
-
 function fuzzyAssert2(
   actual: Vec2,
   expected: Vec2,

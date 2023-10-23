@@ -63,12 +63,15 @@ const debug = Debug("performance");
 /**
  * A type to describe the constructor of a Layer class.
  */
-export interface ILayerConstructable<T extends Instance> {
+export interface ILayerConstructable<
+  TInstance extends Instance,
+  TLayerProps extends ILayerProps<TInstance>,
+> {
   new (
     surface: Surface,
     scene: LayerScene,
-    props: ILayerProps<T>
-  ): Layer<any, any>;
+    props: TLayerProps
+  ): Layer<TInstance, TLayerProps>;
 }
 
 /**
@@ -76,18 +79,21 @@ export interface ILayerConstructable<T extends Instance> {
  * createLayer
  */
 export type ILayerConstructionClass<
-  T extends Instance,
-  U extends ILayerProps<T>,
-> = ILayerConstructable<T> & { defaultProps: U };
+  TInstance extends Instance,
+  TLayerProps extends ILayerProps<TInstance>,
+> = ILayerConstructable<TInstance, TLayerProps> & { defaultProps: TLayerProps };
 
 /**
  * This is a pair of a Class Type and the props to be applied to that class
  * type.
  */
-export type LayerInitializer = {
+export type LayerInitializer<
+  TInstance extends Instance,
+  TLayerProps extends ILayerProps<TInstance>,
+> = {
   key: string;
   init: [
-    ILayerConstructionClass<Instance, ILayerProps<Instance>>,
+    ILayerConstructionClass<TInstance, TLayerProps>,
     ILayerProps<Instance>,
   ];
 };
@@ -395,7 +401,7 @@ export class Layer<
   }
 
   /** This is the initializer used when making this layer. */
-  initializer!: LayerInitializer;
+  initializer!: LayerInitializer<TInstance, TProps>;
   /** This is the handler that manages interactions for the layer */
   interactions?: LayerInteractionHandler<TInstance, TProps>;
   /** The last time stamp this layer had its contents rendered */
@@ -1004,7 +1010,7 @@ export class Layer<
    * provider but split it's processing across it's own internal data providers
    * which is thus picked up by it's child layers and output by the layers.
    */
-  childLayers(): LayerInitializer[] {
+  childLayers(): LayerInitializer<Instance, ILayerProps<Instance>>[] {
     return [];
   }
 

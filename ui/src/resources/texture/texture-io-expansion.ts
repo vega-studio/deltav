@@ -2,13 +2,13 @@ import { Texture } from "../../gl/texture";
 import { Instance } from "../../instance-provider/instance";
 import {
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult
+  ShaderIOHeaderInjectionResult,
 } from "../../shaders/processing/base-shader-io-injection";
 import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../surface/layer";
 import {
   BaseIOExpansion,
-  ShaderIOExpansion
+  ShaderIOExpansion,
 } from "../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
@@ -16,10 +16,9 @@ import {
   IResourceInstanceAttribute,
   IResourceType,
   IUniform,
-  IValueInstanceAttribute,
   IVertexAttribute,
   ShaderInjectionTarget,
-  UniformSize
+  UniformSize,
 } from "../../types";
 import { ResourceRouter } from "../resource-router";
 
@@ -77,69 +76,68 @@ export class TextureIOExpansion extends BaseIOExpansion {
   /**
    * Provides expanded IO for attributes with resource properties.
    */
-  expand<T extends Instance, U extends ILayerProps<T>>(
-    _layer: Layer<T, U>,
-    instanceAttributes: IInstanceAttribute<T>[],
+  expand<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+    TInstAttr extends IInstanceAttribute<TInstance>,
+  >(
+    _layer: Layer<TInstance, TProps>,
+    instanceAttributes: TInstAttr[],
     _vertexAttributes: IVertexAttribute[],
     _uniforms: IUniform[]
-  ): ShaderIOExpansion<T> {
+  ): ShaderIOExpansion<TInstance> {
     // Pull down the manager to this method's context
     const manager = this.manager;
     // Retrieve all of the instance attributes that are atlas references
-    const atlasInstanceAttributes: IResourceInstanceAttribute<T>[] = [];
+    const atlasInstanceAttributes: IResourceInstanceAttribute<TInstance>[] = [];
     // Key: The atlas uniform name requested
     const requestedTextureInjections = new Map<string, [boolean, boolean]>();
 
     // Get the atlas requests that have unique names. We only need one uniform
     // For a single unique provided name. We also must merge the requests for
     // Vertex and fragment injections
-    instanceAttributes.forEach(
-      (
-        attribute: IValueInstanceAttribute<T> | IResourceInstanceAttribute<T>
-      ) => {
-        if (
-          isTextureAttribute(attribute, this.manager.router, this.resourceType)
-        ) {
-          // Auto set the size of the attribute. Attribute's that are a resource
-          // automatically Consume a size of four unless otherwise stated by the
-          // attribute
-          if (attribute.size === undefined) {
-            attribute.size = InstanceAttributeSize.FOUR;
-          }
+    instanceAttributes.forEach((attribute: TInstAttr) => {
+      if (
+        isTextureAttribute(attribute, this.manager.router, this.resourceType)
+      ) {
+        // Auto set the size of the attribute. Attribute's that are a resource
+        // automatically Consume a size of four unless otherwise stated by the
+        // attribute
+        if (attribute.size === undefined) {
+          attribute.size = InstanceAttributeSize.FOUR;
+        }
 
-          // Get the atlas resource uniform (sampler2D) injection targets. We
-          // default to only the Fragment shader as it's the most commonly used
-          // location for sampler2Ds
-          const injection: number =
-            attribute.resource.shaderInjection ||
-            ShaderInjectionTarget.FRAGMENT;
-          // See if we already have an injection for the given injected uniform
-          // name for an atlas resource.
-          const injections = requestedTextureInjections.get(
-            attribute.resource.name
-          );
+        // Get the atlas resource uniform (sampler2D) injection targets. We
+        // default to only the Fragment shader as it's the most commonly used
+        // location for sampler2Ds
+        const injection: number =
+          attribute.resource.shaderInjection || ShaderInjectionTarget.FRAGMENT;
+        // See if we already have an injection for the given injected uniform
+        // name for an atlas resource.
+        const injections = requestedTextureInjections.get(
+          attribute.resource.name
+        );
 
-          if (injections) {
-            requestedTextureInjections.set(attribute.resource.name, [
-              injections[0] ||
-                injection === ShaderInjectionTarget.VERTEX ||
-                injection === ShaderInjectionTarget.ALL,
-              injections[1] ||
-                injection === ShaderInjectionTarget.FRAGMENT ||
-                injection === ShaderInjectionTarget.ALL
-            ]);
-          } else {
-            atlasInstanceAttributes.push(attribute);
-            requestedTextureInjections.set(attribute.resource.name, [
+        if (injections) {
+          requestedTextureInjections.set(attribute.resource.name, [
+            injections[0] ||
               injection === ShaderInjectionTarget.VERTEX ||
-                injection === ShaderInjectionTarget.ALL,
+              injection === ShaderInjectionTarget.ALL,
+            injections[1] ||
               injection === ShaderInjectionTarget.FRAGMENT ||
-                injection === ShaderInjectionTarget.ALL
-            ]);
-          }
+              injection === ShaderInjectionTarget.ALL,
+          ]);
+        } else {
+          atlasInstanceAttributes.push(attribute);
+          requestedTextureInjections.set(attribute.resource.name, [
+            injection === ShaderInjectionTarget.VERTEX ||
+              injection === ShaderInjectionTarget.ALL,
+            injection === ShaderInjectionTarget.FRAGMENT ||
+              injection === ShaderInjectionTarget.ALL,
+          ]);
         }
       }
-    );
+    });
 
     // Make uniforms for all of the unique atlas requests.
     const uniforms = atlasInstanceAttributes.map(
@@ -181,7 +179,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
               }
 
               return Texture.emptyTexture;
-            }
+            },
           },
           // This provides the size of the texture that is applied to the
           // sampler.
@@ -204,19 +202,21 @@ export class TextureIOExpansion extends BaseIOExpansion {
               }
 
               return [1, 1];
-            }
-          }
+            },
+          },
         ];
       }
     );
 
     const flatten: IUniform[] = [];
-    uniforms.forEach(list => list.forEach(uniform => flatten.push(uniform)));
+    uniforms.forEach((list) =>
+      list.forEach((uniform) => flatten.push(uniform))
+    );
 
     return {
       instanceAttributes: [],
       vertexAttributes: [],
-      uniforms: flatten
+      uniforms: flatten,
     };
   }
 
@@ -231,7 +231,7 @@ export class TextureIOExpansion extends BaseIOExpansion {
   ): boolean {
     let foundError = false;
 
-    instanceAttributes.forEach(attribute => {
+    instanceAttributes.forEach((attribute) => {
       if (attribute.easing && attribute.resource) {
         console.warn(
           "An instance attribute can not have both easing and resource properties. Undefined behavior will occur."
@@ -250,17 +250,20 @@ export class TextureIOExpansion extends BaseIOExpansion {
    * injected as a sampler2D instead of a vector sizing which the basic io
    * expansion can only provide.
    */
-  processHeaderInjection(
+  processHeaderInjection<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+  >(
     target: ShaderInjectionTarget,
     declarations: ShaderDeclarationStatements,
-    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _layer: Layer<TInstance, TProps>,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
-    _instanceAttributes: IInstanceAttribute<Instance>[],
+    _instanceAttributes: IInstanceAttribute<TInstance>[],
     uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     const out = {
-      injection: ""
+      injection: "",
     };
 
     for (let i = 0, iMax = uniforms.length; i < iMax; ++i) {

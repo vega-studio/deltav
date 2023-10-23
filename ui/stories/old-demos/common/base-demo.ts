@@ -9,7 +9,7 @@ import {
   Instance,
   InstanceProvider,
   Lookup,
-  Omit
+  Omit,
 } from "../../../src";
 
 export type DemoPipeline<
@@ -17,7 +17,7 @@ export type DemoPipeline<
   U extends Lookup<Camera2D>,
   V extends Lookup<EventManager>,
   W extends Lookup<BaseResourceOptions>,
-  TScenes extends Lookup<BasicSurfaceSceneOptions> | BasicSurfaceSceneOptions[]
+  TScenes extends Lookup<BasicSurfaceSceneOptions>,
 > = Omit<
   IBasicSurfaceOptions<T, U, V, W, TScenes>,
   "container" | "onNoWebGL" | "handlesWheelEvents" | "rendererOptions"
@@ -88,8 +88,9 @@ export abstract class BaseDemo {
     div.setAttribute("class", "__message__");
     div.setAttribute(
       "style",
-      `background: rgba(0, 0, 0, 0.8); position: absolute; left: 10px; right: 10px; bottom: 10px; color: ${color ||
-        "white"}`
+      `background: rgba(0, 0, 0, 0.8); position: absolute; left: 10px; right: 10px; bottom: 10px; color: ${
+        color || "white"
+      }`
     );
     div.innerHTML = val;
   }

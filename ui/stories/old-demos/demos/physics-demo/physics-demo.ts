@@ -12,7 +12,7 @@ import {
   createView,
   InstanceProvider,
   LabelInstance,
-  View2D
+  View2D,
 } from "../../../../src";
 import { BaseDemo } from "../../common/base-demo";
 
@@ -30,7 +30,7 @@ export class PhysicsDemo extends BaseDemo {
   /** Surface providers */
   providers = {
     circles: new InstanceProvider<CircleInstance>(),
-    labels: new InstanceProvider<LabelInstance>()
+    labels: new InstanceProvider<LabelInstance>(),
   };
 
   /** GUI properties */
@@ -39,8 +39,8 @@ export class PhysicsDemo extends BaseDemo {
     radius: 30,
 
     previous: {
-      count: 250
-    }
+      count: 250,
+    },
   };
 
   // Physics engine
@@ -96,33 +96,33 @@ export class PhysicsDemo extends BaseDemo {
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {},
-      eventManagers: cameras => ({
+      eventManagers: (cameras) => ({
         main: new BasicCamera2DController({
-          camera: cameras.main
-        })
+          camera: cameras.main,
+        }),
       }),
       scenes: (_resources, providers, cameras) => ({
         main: {
           views: {
             view: createView(View2D, {
               camera: cameras.main,
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-            }) as any
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            }) as any,
           },
-          layers: [
-            createLayer(CircleLayer, {
+          layers: {
+            circles: createLayer(CircleLayer, {
               animate: {
-                center: AutoEasingMethod.linear(PHYSICS_FRAME)
+                center: AutoEasingMethod.linear(PHYSICS_FRAME),
               },
               data: providers.circles,
-              key: `circles`
-            })
-          ]
-        }
-      })
+              key: `circles`,
+            }),
+          },
+        },
+      }),
     });
   }
 
@@ -149,13 +149,13 @@ export class PhysicsDemo extends BaseDemo {
         bounds.width,
         60,
         {
-          isStatic: true
+          isStatic: true,
         }
       )
     );
     allObjects.push(
       Matter.Bodies.rectangle(-15, bounds.height / 2, 30, bounds.height, {
-        isStatic: true
+        isStatic: true,
       })
     );
     allObjects.push(
@@ -165,7 +165,7 @@ export class PhysicsDemo extends BaseDemo {
         30,
         bounds.height,
         {
-          isStatic: true
+          isStatic: true,
         }
       )
     );
@@ -189,7 +189,7 @@ export class PhysicsDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * bounds.width, random() * bounds.height],
         radius: random() * this.parameters.radius + 1,
-        color: [0, random(), random(), 1.0]
+        color: [0, random(), random(), 1.0],
       })
     );
 

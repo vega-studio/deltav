@@ -4,7 +4,7 @@ import {
   RenderBufferOutputTarget,
   RenderTarget,
   Texture,
-  WebGLStat
+  WebGLStat,
 } from "../gl";
 import { ColorBuffer } from "../gl/color-buffer";
 import { Instance, InstanceProvider } from "../instance-provider";
@@ -16,12 +16,12 @@ import { BaseResourceOptions } from "../resources/base-resource-manager";
 import {
   colorBufferRequest,
   IColorBufferResource,
-  isColorBufferResource
+  isColorBufferResource,
 } from "../resources/color-buffer";
 import { ResourceRouter } from "../resources/resource-router";
 import {
   IRenderTextureResource,
-  isRenderTextureResource
+  isRenderTextureResource,
 } from "../resources/texture/render-texture";
 import { textureRequest } from "../resources/texture/render-texture-resource-request";
 import { Color, FragmentOutputType, Omit } from "../types";
@@ -33,7 +33,7 @@ import { LayerScene } from "./layer-scene";
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
-  STENCIL = 0b0100
+  STENCIL = 0b0100,
 }
 
 /**
@@ -47,9 +47,8 @@ export interface IViewConstructable<TViewProps extends IViewProps> {
  * This specifies a class type that can be used in creating a view with
  * createView
  */
-export type IViewConstructionClass<
-  TViewProps extends IViewProps
-> = IViewConstructable<TViewProps> & { defaultProps: TViewProps };
+export type IViewConstructionClass<TViewProps extends IViewProps> =
+  IViewConstructable<TViewProps> & { defaultProps: TViewProps };
 
 /**
  * This is a pair of a Class Type and the props to be applied to that class
@@ -88,15 +87,15 @@ export function createView<TViewProps extends IViewProps>(
       left: 0,
       right: 0,
       top: 0,
-      bottom: 0
-    }
+      bottom: 0,
+    },
   });
 
   return {
     get key() {
       return props.key || "";
     },
-    init: [viewClass, keyedProps]
+    init: [viewClass, keyedProps],
   };
 }
 
@@ -190,12 +189,12 @@ export interface IViewProps extends IdentifyByKeyOptions {
  * A View renders a perspective of a scene to a given surface or surfaces.
  */
 export abstract class View<
-  TViewProps extends IViewProps
+  TViewProps extends IViewProps,
 > extends IdentifyByKey {
   static defaultProps: IViewProps = {
     key: "",
     camera: Camera.makeOrthographic(),
-    viewport: { left: 0, right: 0, top: 0, bottom: 0 }
+    viewport: { left: 0, right: 0, top: 0, bottom: 0 },
   };
 
   /** End time of animation */
@@ -233,7 +232,7 @@ export abstract class View<
    * This establishes the projection methods that can be used to project
    * geometry between the screen and the world
    */
-  projection: BaseProjection<View<TViewProps>>;
+  projection!: BaseProjection<View<TViewProps>>;
   /** The props applied to this view */
   props: TViewProps;
   /**
@@ -241,7 +240,7 @@ export abstract class View<
    * needs this to be available to aid in creating render targets to output
    * into.
    */
-  resource: ResourceRouter;
+  resource!: ResourceRouter;
   /**
    * If this is set, then this view is outputting its rendering somewhere that
    * is not the direct screen buffer.
@@ -300,22 +299,22 @@ export abstract class View<
       bufferTargets = [
         {
           outputType: FragmentOutputType.COLOR,
-          resource: output.buffers
-        }
+          resource: output.buffers,
+        },
       ];
     }
 
     // A Record causes us to pull out the necessary pieces of the outputs and
     // resource keys or strings as the keys.
     else {
-      Object.keys(output.buffers).forEach(outputTypeKey => {
+      Object.keys(output.buffers).forEach((outputTypeKey) => {
         const outputType = Number.parseFloat(outputTypeKey);
         const resource = output.buffers[outputType];
         if (!resource) return;
 
         bufferTargets.push({
           outputType,
-          resource
+          resource,
         });
       });
     }
@@ -347,7 +346,7 @@ export abstract class View<
     // Clear out the previous target
     if (this.renderTarget) {
       if (Array.isArray(this.renderTarget)) {
-        this.renderTarget.forEach(t => t.dispose());
+        this.renderTarget.forEach((t) => t.dispose());
       } else {
         this.renderTarget.dispose();
       }
@@ -375,7 +374,7 @@ export abstract class View<
         continue;
       }
 
-      fragmentOutputs.outputTypes.forEach(type =>
+      fragmentOutputs.outputTypes.forEach((type) =>
         supportedOutputTypes.add(type)
       );
     }
@@ -384,7 +383,7 @@ export abstract class View<
     const renderBuffers = new Map<number, Texture | ColorBuffer>();
     const dummyLayer = new Layer(surface, this.scene, {
       key: "",
-      data: new InstanceProvider()
+      data: new InstanceProvider(),
     });
     const dummyInstance = new Instance({});
     const bufferTargets = this.getOutputTargets() || [];
@@ -397,7 +396,7 @@ export abstract class View<
         if (isRenderTextureResource(resource)) {
           // Submit our request for the specified resource
           const request = textureRequest({
-            key: bufferTarget.resource.key
+            key: bufferTarget.resource.key,
           });
 
           this.resource.request(dummyLayer, dummyInstance, request);
@@ -418,7 +417,7 @@ export abstract class View<
           renderBuffers.set(bufferTarget.outputType, request.texture);
         } else {
           const request = colorBufferRequest({
-            key: bufferTarget.resource.key
+            key: bufferTarget.resource.key,
           });
 
           this.resource.request(dummyLayer, dummyInstance, request);
@@ -442,7 +441,7 @@ export abstract class View<
     }
 
     let checkW: number, checkH: number;
-    renderBuffers.forEach(resource => {
+    renderBuffers.forEach((resource) => {
       if (resource instanceof Texture) {
         if (checkW === void 0 || checkH === void 0) {
           checkW = resource.data?.width || 0;
@@ -492,7 +491,7 @@ export abstract class View<
         // Generate our request to retrieve the depth buffer from the manager
         // handling the indicated texture.
         const request = textureRequest({
-          key: output.depth.key
+          key: output.depth.key,
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
@@ -515,7 +514,7 @@ export abstract class View<
         // Generate our request to retrieve the depth buffer from the manager
         // handling the indicated texture.
         const request = colorBufferRequest({
-          key: output.depth.key
+          key: output.depth.key,
         });
 
         this.resource.request(dummyLayer, dummyInstance, request);
@@ -552,18 +551,18 @@ export abstract class View<
       renderBuffers.forEach((tex, type) =>
         colorBuffers.push({
           buffer: tex,
-          outputType: type
+          outputType: type,
         })
       );
 
       this.renderTarget = new RenderTarget({
         buffers: {
           color: colorBuffers,
-          depth: depthBuffer
+          depth: depthBuffer,
         },
         // Render target texture retention is governed by the resource set up
         // on the surface
-        retainTextureTargets: true
+        retainTextureTargets: true,
       });
     }
 
@@ -585,8 +584,8 @@ export abstract class View<
       this.projection.screenScale = this.props.screenScale;
     }
 
-    const invalid = targets.some(target =>
-      target.getBuffers().some(buffer => {
+    const invalid = targets.some((target) =>
+      target.getBuffers().some((buffer) => {
         if (buffer.buffer.destroyed) return true;
         return false;
       })
@@ -679,14 +678,14 @@ export class NoView extends View<IViewProps> {
     super(new LayerScene(undefined, { key: "error", layers: [], views: [] }), {
       key: "error",
       viewport: {},
-      camera: Camera.makeOrthographic()
+      camera: Camera.makeOrthographic(),
     });
 
     this.screenBounds = new Bounds<never>({
       x: 0,
       y: 0,
       width: 100,
-      height: 100
+      height: 100,
     });
   }
 }

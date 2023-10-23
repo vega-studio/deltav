@@ -10,7 +10,7 @@ import {
   createLayer,
   createView,
   InstanceProvider,
-  View2D
+  View2D,
 } from "../../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -27,7 +27,7 @@ export class WordSandDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    circles: new InstanceProvider<CircleInstance>()
+    circles: new InstanceProvider<CircleInstance>(),
   };
 
   /** GUI properties */
@@ -38,8 +38,8 @@ export class WordSandDemo extends BaseDemo {
     fontSize: 60,
 
     previous: {
-      count: 10000
-    }
+      count: 10000,
+    },
   };
 
   /**
@@ -94,35 +94,35 @@ export class WordSandDemo extends BaseDemo {
     return new BasicSurface({
       container,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       providers: this.providers,
       resources: {},
-      eventManagers: cameras => ({
+      eventManagers: (cameras) => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
-          startView: ["default.default-view"]
-        })
+          startView: ["default.default-view"],
+        }),
       }),
       scenes: (_resources, providers, cameras) => ({
         main: {
           views: {
             view: createView(View2D, {
               camera: cameras.main,
-              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR]
-            }) as any
+              clearFlags: [ClearFlags.DEPTH, ClearFlags.COLOR],
+            }) as any,
           },
-          layers: [
-            createLayer(CircleLayer, {
+          layers: {
+            circles: createLayer(CircleLayer, {
               animate: {
-                center: AutoEasingMethod.easeInOutQuad(250)
+                center: AutoEasingMethod.easeInOutQuad(250),
               },
               data: providers.circles,
-              key: "circles"
-            })
-          ]
-        }
-      })
+              key: "circles",
+            }),
+          },
+        },
+      }),
     });
   }
 
@@ -148,7 +148,7 @@ export class WordSandDemo extends BaseDemo {
       new CircleInstance({
         center: [random() * 2000, random() * 2000],
         radius: random() * 10 + 2,
-        color: [0, random(), random(), 1.0]
+        color: [0, random(), random(), 1.0],
       })
     );
 

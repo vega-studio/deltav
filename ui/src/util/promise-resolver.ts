@@ -3,8 +3,8 @@
  * later use in resolving a situation. Very handy for making a method asynchronous.
  */
 export class PromiseResolver<T> {
-  resolver: (val: T | PromiseLike<T>) => void;
-  rejector: Function;
+  resolver!: (val: T | PromiseLike<T>) => void;
+  rejector!: Function;
   promise: Promise<T>;
 
   constructor() {

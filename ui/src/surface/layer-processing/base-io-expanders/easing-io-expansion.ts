@@ -1,12 +1,12 @@
 import { Instance } from "../../../instance-provider";
 import {
   AutoEasingLoopStyle,
-  AutoEasingMethod
+  AutoEasingMethod,
 } from "../../../math/auto-easing-method";
 import { Vec, VecMath, VecMethods } from "../../../math/vector";
 import {
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult
+  ShaderIOHeaderInjectionResult,
 } from "../../../shaders/processing/base-shader-io-injection";
 import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
 import { ILayerProps, Layer } from "../../../surface/layer";
@@ -19,12 +19,12 @@ import {
   InstanceIOValue,
   IUniform,
   IVertexAttribute,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
 } from "../../../types";
 import { EasingProps } from "../../../util/easing-props";
 import {
   IShaderTemplateRequirements,
-  shaderTemplate
+  shaderTemplate,
 } from "../../../util/shader-templating";
 import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
 
@@ -36,7 +36,7 @@ const BLANK_EASING_PROPS: IEasingProps = {
   duration: 0,
   start: [0],
   end: [0],
-  startTime: 0
+  startTime: 0,
 };
 
 /** Converts a size to a shader type */
@@ -48,7 +48,7 @@ const sizeToType: { [key: number]: string } = {
   9: "mat3",
   16: "mat4",
   /** This is the special case for instance attributes that want an atlas resource */
-  99: "vec4"
+  99: "vec4",
 };
 
 /**
@@ -56,7 +56,7 @@ const sizeToType: { [key: number]: string } = {
  */
 const templateVars = {
   easingMethod: "easingMethod",
-  T: "T"
+  T: "T",
 };
 
 /**
@@ -152,7 +152,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
       // We keep this in a scope above the update as we utilize the fact that the attributes will update
       // In the order they are declared for a single instance. The attributes will all share this information.
       const attributeDataShare: { values: IEasingProps } = {
-        values: BLANK_EASING_PROPS
+        values: BLANK_EASING_PROPS,
       };
 
       // Remove declaring any variables within the scope of the update method for speed
@@ -172,7 +172,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
       // Hijack the update from the attribute to a new update method which will
       // Be able to interact with the values for the easing methodology
-      attribute.update = instance => {
+      attribute.update = (instance) => {
         frameMetrics = layer.surface.frameMetrics;
         // We retrieve properties that we want to be dynamic from the easing equation
         attributeDelay = attribute.easing.delay;
@@ -193,7 +193,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
             duration: attributeDuration,
             end: vecMethods.copy(end),
             start: vecMethods.copy(end),
-            startTime: currentTime
+            startTime: currentTime,
           });
 
           // Make sure the instance contains the current easing values
@@ -294,7 +294,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
         name: `_${name}_start`,
         parentAttribute: attribute,
         size,
-        update: _o => attributeDataShare.values.start
+        update: (_o) => attributeDataShare.values.start,
       };
 
       attribute.childAttributes.push(startAttr);
@@ -305,7 +305,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
         name: `_${name}_start_time`,
         parentAttribute: attribute,
         size: InstanceAttributeSize.ONE,
-        update: _o => [attributeDataShare.values.startTime]
+        update: (_o) => [attributeDataShare.values.startTime],
       };
 
       attribute.childAttributes.push(startTimeAttr);
@@ -316,7 +316,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
         name: `_${name}_duration`,
         parentAttribute: attribute,
         size: InstanceAttributeSize.ONE,
-        update: _o => [attributeDataShare.values.duration]
+        update: (_o) => [attributeDataShare.values.duration],
       };
 
       attribute.childAttributes.push(durationAttr);
@@ -327,7 +327,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
     return {
       instanceAttributes: newAttributes,
       vertexAttributes: [],
-      uniforms: []
+      uniforms: [],
     };
   }
 
@@ -342,7 +342,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
   ): boolean {
     let foundError = false;
 
-    instanceAttributes.forEach(attribute => {
+    instanceAttributes.forEach((attribute) => {
       if (attribute.easing && attribute.resource) {
         console.warn(
           "An instance attribute can not have both easing and resource properties. Undefined behavior will occur."
@@ -368,12 +368,15 @@ export class EasingIOExpansion extends BaseIOExpansion {
    * Easing provides some unique destructuring for the packed in vertex
    * information.
    */
-  processAttributeDestructuring(
-    _layer: Layer<Instance, ILayerProps<Instance>>,
+  processAttributeDestructuring<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+  >(
+    _layer: Layer<TInstance, TProps>,
     declarations: ShaderDeclarationStatements,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<Instance>[],
+    instanceAttributes: IInstanceAttribute<TInstance>[],
     _uniforms: IUniform[]
   ): string {
     // We analyze our instance attributes for easing attributes. When we find an
@@ -493,13 +496,16 @@ export class EasingIOExpansion extends BaseIOExpansion {
   /**
    * For easing, the header must be populated with the easing method
    */
-  processHeaderInjection(
+  processHeaderInjection<
+    TInstance extends Instance,
+    TProps extends ILayerProps<TInstance>,
+  >(
     target: ShaderInjectionTarget,
     declarations: ShaderDeclarationStatements,
-    _layer: Layer<Instance, ILayerProps<Instance>>,
+    _layer: Layer<TInstance, TProps>,
     _metrics: MetricsProcessing,
     _vertexAttributes: IVertexAttribute[],
-    instanceAttributes: IInstanceAttribute<Instance>[],
+    instanceAttributes: IInstanceAttribute<TInstance>[],
     _uniforms: IUniform[]
   ): ShaderIOHeaderInjectionResult {
     const out = { injection: "" };
@@ -511,7 +517,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
     out.injection = "// Auto Easing Methods specified by the layer\n";
 
     // First dedupe the methods needed by their method name
-    instanceAttributes.forEach(attribute => {
+    instanceAttributes.forEach((attribute) => {
       if (attribute.easing && attribute.size) {
         let methodSizes = methods.get(attribute.easing.methodName);
 
@@ -531,7 +537,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
     const required: IShaderTemplateRequirements = {
       name: "Easing Method Generation",
-      values: [templateVars.easingMethod]
+      values: [templateVars.easingMethod],
     };
 
     // Now generate the full blown method for each element. We create overloaded methods for
@@ -543,13 +549,13 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
           const templateOptions: { [key: string]: string } = {
             [templateVars.easingMethod]: `${sizeType} ${methodName}(${sizeType} start, ${sizeType} end, float t)`,
-            [templateVars.T]: `${sizeType}`
+            [templateVars.T]: `${sizeType}`,
           };
 
           const results = shaderTemplate({
             options: templateOptions,
             required,
-            shader: method
+            shader: method,
           });
 
           this.setDeclaration(

@@ -6,7 +6,7 @@ import {
   InstanceIOValue,
   IResourceContext,
   IResourceInstanceAttribute,
-  IResourceType
+  IResourceType,
 } from "../types";
 import { ResourceRouter } from "./resource-router";
 
@@ -26,13 +26,13 @@ export type BaseResourceRequest = IResourceType & { key: string };
  */
 export abstract class BaseResourceManager<
   T extends IResourceType,
-  S extends BaseResourceRequest
+  S extends BaseResourceRequest,
 > {
   /**
    * Every resource manager will have access to the parent ResourceManager
    * system that pipes resources and requests to the proper location.
    */
-  router: ResourceRouter;
+  router!: ResourceRouter;
   /**
    * Every resource manager will receive the utilized renderer so the manager
    * can perform basic GL tasks if needed

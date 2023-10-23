@@ -9,7 +9,7 @@ import {
   ISceneOptions,
   LayerInitializer,
   Vec4,
-  View2D
+  View2D,
 } from "../../../../src";
 
 import * as datGUI from "dat.gui";
@@ -79,7 +79,7 @@ function makeDemos() {
     new Arcs(),
     new VertexAttributePacking(),
     new VertexAttributePacking(true),
-    new Blending()
+    new Blending(),
   ];
 }
 
@@ -112,7 +112,7 @@ export class KitchenSink extends BaseDemo {
 
   destroy() {
     super.destroy();
-    tests.forEach(test => test.destroy());
+    tests.forEach((test) => test.destroy());
     tests = makeDemos();
     layers = [];
     this.testControls.clear();
@@ -131,8 +131,8 @@ export class KitchenSink extends BaseDemo {
     return this.allScenes;
   }
 
-  private getEventManagers() {
-    return this.makeSceneControls().map(init => init.control);
+  private getEventManagers(): any {
+    return this.makeSceneControls().map((init) => init.control);
   }
 
   /**
@@ -144,18 +144,19 @@ export class KitchenSink extends BaseDemo {
     return new BasicSurface({
       container,
       rendererOptions: {
-        antialias: true
+        antialias: true,
       },
       providers: {},
       resources: {
         atlas: DEFAULT_RESOURCES.atlas,
-        font: DEFAULT_RESOURCES.font
+        font: DEFAULT_RESOURCES.font,
       },
       cameras: {},
       eventManagers: () => this.getEventManagers(),
-      scenes: () => ({
-        ...scenes
-      })
+      scenes: () =>
+        ({
+          ...scenes,
+        }) as any,
     });
   }
 
@@ -163,7 +164,7 @@ export class KitchenSink extends BaseDemo {
    * Generate the scenes to be used by the kitchen sink
    */
   private getScenes() {
-    return this.makeSceneControls().map(init => init.scene);
+    return this.makeSceneControls().map((init) => init.scene);
   }
 
   /**
@@ -185,13 +186,13 @@ export class KitchenSink extends BaseDemo {
       const layer = test.makeLayer(
         {
           atlas: this.surface.resources.atlas.key,
-          font: this.surface.resources.font.key
+          font: this.surface.resources.font.key,
         },
         fakeProvider || !controls ? new InstanceProvider() : controls.provider
       );
 
       if (isLayerInitializerList(layer)) {
-        layer.forEach(l => layers.push(l));
+        layer.forEach((l) => layers.push(l));
       } else {
         layers.push(layer);
       }
@@ -201,11 +202,11 @@ export class KitchenSink extends BaseDemo {
   }
 
   handleKeyDown = (e: KeyboardEvent) => {
-    tests.forEach(test => test.keyEvent(e, true));
+    tests.forEach((test) => test.keyEvent(e, true));
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
-    tests.forEach(test => test.keyEvent(e, false));
+    tests.forEach((test) => test.keyEvent(e, false));
   };
 
   makeSceneBlock(sceneBlockSize: number) {
@@ -219,7 +220,7 @@ export class KitchenSink extends BaseDemo {
       [0.1, 0.1, 0.0, 1.0],
       [0.1, 0.0, 0.1, 1.0],
       [0.1, 0.1, 0.1, 1.0],
-      [0.0, 0.1, 0.1, 1.0]
+      [0.0, 0.1, 0.1, 1.0],
     ];
 
     let testIndex = -1;
@@ -253,12 +254,12 @@ export class KitchenSink extends BaseDemo {
                     height: `${viewSize}%`,
                     left: `${viewSize * k}%`,
                     top: `${viewSize * i}%`,
-                    width: `${viewSize}%`
-                  }
-                }) as any
+                    width: `${viewSize}%`,
+                  },
+                }) as any,
               ],
-              layers: []
-            }
+              layers: [],
+            },
           };
 
           scenes.push(init);
@@ -273,11 +274,11 @@ export class KitchenSink extends BaseDemo {
     if (!this.surface) return;
     const surface = await this.surface.ready;
 
-    tests.forEach(test => {
+    tests.forEach((test) => {
       if (!surface.base) return;
       test.surface = surface.base;
       this.testControls.set(test, {
-        provider: test.makeProvider()
+        provider: test.makeProvider(),
       });
     });
 

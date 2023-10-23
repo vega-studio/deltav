@@ -6,18 +6,36 @@ import {
   Vec2Compat,
   Vec3,
   Vec3Compat,
-  Vec4
+  Vec4,
 } from "./vector";
 
 const { cos, sin, tan } = Math;
 const PI_2 = Math.PI / 2;
 
+/**
+ * This represents a matrix with enough elements to define a 2x2 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M2<row><column> or M2<Y><X> to access the elements
+ * based on column and row. For example, M211 would be the value at row 1
+ * (second row) and column 2 (third column).
+ */
 // prettier-ignore
 export type Mat2x2 = [
   number, number,
   number, number
 ];
 
+/**
+ * This represents a matrix with enough elements to define a 3x3 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M3<row><column> or M3<Y><X> to access the elements
+ * based on column and row. For example, M321 would be the value at row 1
+ * (second row) and column 2 (third column).
+ */
 // prettier-ignore
 export type Mat3x3 = [
   number, number, number,
@@ -25,6 +43,15 @@ export type Mat3x3 = [
   number, number, number
 ];
 
+/**
+ * This represents a matrix with enough elements to define a 4x4 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M4<row><column> or M4<Y><X> to access the elements
+ * based on column and row. For example, M421 would be the value at row 2
+ * (third row) and column 1 (second column).
+ */
 // prettier-ignore
 export type Mat4x4 = [
   number, number, number, number,
@@ -32,6 +59,70 @@ export type Mat4x4 = [
   number, number, number, number,
   number, number, number, number
 ];
+
+/**
+ * This allows a number buffer with elements greater than 4 to be used as the
+ * buffer for a Mat2x2.
+ *
+ * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
+ * based on meaningful mathematical properties. For instance using a 4x4 matrix
+ * will NOT cause this type to be understood as the top left elements of that
+ * array.
+ *
+ * Your expectation will be:
+ *
+ * 4x4 =
+ * [a, b, c, d,]
+ * [e, f, g, h,]
+ * [i, j, k, l,]
+ * [m, n, o, p,]
+ *
+ * 2x2 =
+ * [a, b]
+ * [e, f]
+ *
+ * That assumption is WRONG. You will instead see your mat2x2 play out this way:
+ *
+ * 2x2=
+ * [a, b]
+ * [c, d]
+ *
+ * Which is the linear buffer interpretation of a Mat4x4 type.
+ */
+export type Mat2x2Compat = Mat2x2 | Mat3x3 | Mat4x4;
+
+/**
+ * This allows a number buffer with elements greater than 9 to be used as the
+ * buffer for a Mat3x3.
+ *
+ * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
+ * based on meaningful mathematical properties. For instance using a 4x4 matrix
+ * will NOT cause this type to be understood as the top left elements of that
+ * array.
+ *
+ * Your expectation will be:
+ *
+ * 4x4 =
+ * [a, b, c, d,]
+ * [e, f, g, h,]
+ * [i, j, k, l,]
+ * [m, n, o, p,]
+ *
+ * 3x3 =
+ * [a, b, c]
+ * [e, f, g]
+ * [i, j, k]
+ *
+ * That assumption is WRONG. You will instead see your mat3x3 play out this way:
+ *
+ * 3x3=
+ * [a, b, c]
+ * [d, e, f]
+ * [g, h, i]
+ *
+ * Which is the linear buffer interpretation of a Mat4x4 type.
+ */
+export type Mat3x3Compat = Mat3x3 | Mat4x4;
 
 /** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M200 = 0;
@@ -109,7 +200,7 @@ export const M433 = 15;
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const M3R: Mat3x3[] = new Array(20).fill(0).map(_ => identity3());
+export const M3R: Mat3x3[] = new Array(20).fill(0).map((_) => identity3());
 
 /**
  * Temp Matrix 4x4 registers. Can be used for intermediate operations. These
@@ -126,7 +217,7 @@ export const M3R: Mat3x3[] = new Array(20).fill(0).map(_ => identity3());
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const M4R: Mat4x4[] = new Array(20).fill(0).map(_ => identity4());
+export const M4R: Mat4x4[] = new Array(20).fill(0).map((_) => identity4());
 
 /**
  * It's often much faster to apply values to an existing matrix than to declare
@@ -141,7 +232,7 @@ export function apply2x2(
   m10: number,
   m11: number
 ) {
-  m = m || ((new Array(4) as any) as Mat2x2);
+  m = m || (new Array(4) as any as Mat2x2);
   m[0] = m00;
   m[1] = m01;
   m[2] = m10;
@@ -168,7 +259,7 @@ export function apply3x3(
   m21: number,
   m22: number
 ) {
-  m = m || ((new Array(9) as any) as Mat3x3);
+  m = m || (new Array(9) as any as Mat3x3);
   m[0] = m00;
   m[1] = m01;
   m[2] = m02;
@@ -207,7 +298,7 @@ export function apply4x4(
   m32: number,
   m33: number
 ) {
-  m = m || ((new Array(16) as any) as Mat4x4);
+  m = m || (new Array(16) as any as Mat4x4);
 
   m[0] = m00;
   m[1] = m01;
@@ -1474,7 +1565,7 @@ export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
     m[12],
     m[13],
     m[14],
-    m[15]
+    m[15],
   ];
 }
 
@@ -1497,7 +1588,7 @@ export function TRS4x4(
   translation: Vec3,
   out?: Mat4x4
 ) {
-  out = out || (([] as any) as Mat4x4);
+  out = out || ([] as any as Mat4x4);
   const [t, u, v] = scale;
   const [x, y, z] = translation;
   const [a, b, c, d, e, f, g, h, i] = rotation;
@@ -1541,7 +1632,7 @@ export function SRT4x4(
   translation: Vec3,
   out?: Mat4x4
 ) {
-  out = out || (([] as any) as Mat4x4);
+  out = out || ([] as any as Mat4x4);
   const [t, u, v] = scale;
   const [x, y, z] = translation;
   const [a, b, c, d, e, f, g, h, i] = rotation;
@@ -1587,7 +1678,7 @@ export function TRS4x4_2D(
   translation: Vec2,
   out?: Mat4x4
 ) {
-  out = out || (([] as any) as Mat4x4);
+  out = out || ([] as any as Mat4x4);
   const [t, u] = scale;
   const [x, y] = translation;
   const [a, b, c, d] = rotation;
@@ -1637,7 +1728,7 @@ export function SRT4x4_2D(
   translation: Vec2Compat,
   out?: Mat4x4
 ) {
-  out = out || (([] as any) as Mat4x4);
+  out = out || ([] as any as Mat4x4);
   const [t, u] = scale;
   const [x, y] = translation;
   const [a, b, c, d] = rotation;

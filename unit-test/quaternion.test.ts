@@ -1,81 +1,68 @@
-import assert from 'assert';
-import {
-    describe,
-    it
-} from 'mocha';
+import assert from "assert";
+import { describe, it } from "@jest/globals";
 
 import {
-    compare4x4,
-    Mat4x4,
-    rotation4x4,
-    toString4x4,
-    transform4
-} from '../src/math/matrix';
+  compare4x4,
+  Mat4x4,
+  rotation4x4,
+  toString4x4,
+  transform4,
+} from "../ui/src/math/matrix";
 import {
-    addQuat,
-    angleQuat,
-    axisQuat,
-    conjugateQuat,
-    divideQuat,
-    dotQuat,
-    eulerToQuat,
-    exponentQuat,
-    fromEulerAxisAngleToQuat,
-    imaginaryQuat,
-    inverseQuat,
-    iQuat,
-    jQuat,
-    kQuat,
-    lengthQuat,
-    lookAtMatrix,
-    lookAtQuat,
-    matrix4x4FromUnitQuatView,
-    matrix4x4ToQuaternion,
-    multiplyQuat,
-    normalizeQuat,
-    oneQuat,
-    Quaternion,
-    realQuat,
-    rotateVectorByUnitQuat,
-    scaleQuat,
-    slerpUnitQuat,
-    toEulerFromQuat,
-    toEulerXYZfromOrderedEuler,
-    toOrderedEulerFromQuat,
-    zeroQuat
-} from '../src/math/quaternion';
+  addQuat,
+  angleQuat,
+  axisQuat,
+  conjugateQuat,
+  divideQuat,
+  dotQuat,
+  eulerToQuat,
+  exponentQuat,
+  fromEulerAxisAngleToQuat,
+  imaginaryQuat,
+  inverseQuat,
+  iQuat,
+  jQuat,
+  kQuat,
+  lengthQuat,
+  lookAtMatrix,
+  lookAtQuat,
+  matrix4x4FromUnitQuatView,
+  matrix4x4ToQuaternion,
+  multiplyQuat,
+  normalizeQuat,
+  oneQuat,
+  Quaternion,
+  realQuat,
+  rotateVectorByUnitQuat,
+  scaleQuat,
+  slerpUnitQuat,
+  toEulerFromQuat,
+  toEulerXYZfromOrderedEuler,
+  zeroQuat,
+} from "../ui/src/math/quaternion";
 import {
-    compare1,
-    compare3,
-    compare4,
-    forward3,
-    fuzzyCompare4,
-    Vec1,
-    Vec3,
-    Vec4
-} from '../src/math/vector';
-import {
-    EulerOrder
-} from '../src/types';
-import {
-    fail1,
-    fail3,
-    fail4,
-    fuzzCompare3,
-    fuzzCompare4
-} from './vector.test';
+  compare1,
+  compare3,
+  compare4,
+  forward3,
+  Vec1,
+  Vec3,
+  Vec4,
+} from "../ui/src/math/vector";
+import { EulerOrder } from "../ui/src/types";
+import { fail1, fail3, fail4, fuzzCompare4 } from "./vector.test";
 
 const { exp, cos, sin, sqrt } = Math;
 
 const TO_RADIANS = Math.PI / 180;
 
-function fail4x4 (actual: any, expected: any) {
+function fail4x4(actual: any, expected: any) {
   return `\n\nACTUAL: ${toString4x4(actual)},\nEXPECTED: ${toString4x4(
     expected
   )}`;
 }
 
-function fuzzyCompare3 (v1: Vec3, v2: Vec3): boolean {
+function fuzzyCompare3(v1: Vec3, v2: Vec3): boolean {
   return (
     Math.abs(v1[0] - v2[0]) <= 1e-4 &&
     Math.abs(v1[1] - v2[1]) <= 1e-4 &&
@@ -83,7 +70,7 @@ function fuzzyCompare3 (v1: Vec3, v2: Vec3): boolean {
   );
 }
 
-function assert1 (actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
+function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare1(actual, expected), true, fail1(actual, expected));
   } else {
@@ -91,7 +78,7 @@ function assert1 (actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
   }
 }
 
-function assert3 (actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare3(actual, expected), true, fail3(actual, expected));
   } else {
@@ -99,7 +86,7 @@ function assert3 (actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   }
 }
 
-function assert4 (
+function assert4(
   actual: Quaternion,
   expected: Quaternion,
   shouldEqual: boolean = true
@@ -111,7 +98,7 @@ function assert4 (
   }
 }
 
-function fuzzyAssertNumber (
+function fuzzyAssertNumber(
   actual: number,
   expected: number,
   shouldEqual: boolean = true
@@ -123,7 +110,7 @@ function fuzzyAssertNumber (
   }
 }
 
-function fuzzyAssert3 (
+function fuzzyAssert3(
   actual: Vec3,
   expected: Vec3,
   shouldEqual: boolean = true
@@ -143,7 +130,7 @@ function fuzzyAssert3 (
   }
 }
 
-function fuzzyAssert4 (
+function fuzzyAssert4(
   actual: Quaternion,
   expected: Quaternion,
   shouldEqual: boolean = true
@@ -159,7 +146,7 @@ function fuzzyAssert4 (
   }
 }
 
-function assert4x4 (
+function assert4x4(
   actual: Mat4x4,
   expected: Mat4x4,
   shouldEqual: boolean = true
@@ -260,7 +247,7 @@ describe("Quaternion", () => {
         43 / 79,
         -18 / 79,
         -1 / 79,
-        14 / 79
+        14 / 79,
       ]);
     });
 
@@ -277,7 +264,7 @@ describe("Quaternion", () => {
         1,
         7 / 3,
         -1 / 3,
-        -2 / 3
+        -2 / 3,
       ]);
     });
 
@@ -286,7 +273,7 @@ describe("Quaternion", () => {
         7 / 5,
         -1,
         1 / 5,
-        -3 / 5
+        -3 / 5,
       ]);
     });
   });
@@ -366,7 +353,7 @@ describe("Quaternion", () => {
         0,
         0,
         -sqrt(3),
-        1
+        1,
       ]);
     });
 
@@ -377,7 +364,7 @@ describe("Quaternion", () => {
         0,
         0,
         sqrt(29),
-        1
+        1,
       ]);
     });
   });
@@ -390,9 +377,9 @@ describe("Quaternion", () => {
     it("exponentiation of a quaternion should be corrent", () => {
       fuzzyAssert4(exponentQuat([5, 4, 4, 2]), [
         exp(5) * cos(6),
-        4 * exp(5) * sin(6) / 6,
-        4 * exp(5) * sin(6) / 6,
-        2 * exp(5) * sin(6) / 6
+        (4 * exp(5) * sin(6)) / 6,
+        (4 * exp(5) * sin(6)) / 6,
+        (2 * exp(5) * sin(6)) / 6,
       ]);
     });
 
@@ -400,9 +387,9 @@ describe("Quaternion", () => {
       const coff = sqrt(109);
       fuzzyAssert4(exponentQuat([7, 3, 6, 8]), [
         exp(7) * cos(coff),
-        3 * exp(7) * sin(coff) / coff,
-        6 * exp(7) * sin(coff) / coff,
-        8 * exp(7) * sin(coff) / coff
+        (3 * exp(7) * sin(coff)) / coff,
+        (6 * exp(7) * sin(coff)) / coff,
+        (8 * exp(7) * sin(coff)) / coff,
       ]);
     });
   });
@@ -453,7 +440,7 @@ describe("Quaternion", () => {
         1 / 30,
         2 / 30,
         -3 / 30,
-        4 / 30
+        4 / 30,
       ]);
     });
   });
@@ -482,7 +469,7 @@ describe("Quaternion", () => {
         1 / sqrt(30),
         2 / sqrt(30),
         3 / sqrt(30),
-        4 / sqrt(30)
+        4 / sqrt(30),
       ]);
     });
 
@@ -495,7 +482,7 @@ describe("Quaternion", () => {
         0,
         6 / sqrt(65),
         5 / sqrt(65),
-        2 / sqrt(65)
+        2 / sqrt(65),
       ]);
     });
 
@@ -789,7 +776,7 @@ describe("Quaternion", () => {
       fuzzyAssert3(axisQuat([1, 2, 3, 4]), [
         2 / sqrt(29),
         3 / sqrt(29),
-        4 / sqrt(29)
+        4 / sqrt(29),
       ]);
     });
 
@@ -842,57 +829,45 @@ describe("Quaternion", () => {
 
   describe("fromEulerAxisAngleToQuat", () => {
     it("axis(2, 3, 4) with degree 120 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([2, 3, 4], 120 * TO_RADIANS), [
-        0.5,
-        0.3216338,
-        0.4824506,
-        0.6432675
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([2, 3, 4], 120 * TO_RADIANS),
+        [0.5, 0.3216338, 0.4824506, 0.6432675]
+      );
     });
 
     it("axis(1, 0, 0) with degree 0 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 0, 0], 0 * TO_RADIANS), [
-        1,
-        0,
-        0,
-        0
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([1, 0, 0], 0 * TO_RADIANS),
+        [1, 0, 0, 0]
+      );
     });
 
     it("axis(1, 0, 0) with degree 50 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 0, 0], 50 * TO_RADIANS), [
-        0.9063078,
-        0.4226183,
-        0,
-        0
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([1, 0, 0], 50 * TO_RADIANS),
+        [0.9063078, 0.4226183, 0, 0]
+      );
     });
 
     it("axis(1, 1, 1) with degree 200 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([1, 1, 1], 200 * TO_RADIANS), [
-        -0.1736482,
-        0.568579,
-        0.568579,
-        0.568579
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([1, 1, 1], 200 * TO_RADIANS),
+        [-0.1736482, 0.568579, 0.568579, 0.568579]
+      );
     });
 
     it("axis(0, 1, 0) with degree 90 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([0, 1, 0], 90 * TO_RADIANS), [
-        0.7071068,
-        0,
-        0.7071068,
-        0
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([0, 1, 0], 90 * TO_RADIANS),
+        [0.7071068, 0, 0.7071068, 0]
+      );
     });
 
     it("axis(0, 0, 1) with degree 180 should be correct", () => {
-      fuzzyAssert4(fromEulerAxisAngleToQuat([0, 0, 1], 180 * TO_RADIANS), [
-        0,
-        0,
-        0,
-        1
-      ]);
+      fuzzyAssert4(
+        fromEulerAxisAngleToQuat([0, 0, 1], 180 * TO_RADIANS),
+        [0, 0, 0, 1]
+      );
     });
   });
 
@@ -922,7 +897,7 @@ describe("Quaternion", () => {
       fuzzyAssert3(toEulerFromQuat([0.9659258, 0.258819, 0, 0]), [
         30 * TO_RADIANS,
         0,
-        0
+        0,
       ]);
     });
 
@@ -937,7 +912,7 @@ describe("Quaternion", () => {
       fuzzyAssert3(toEulerFromQuat([0.9396926, 0, 0.3420201, 0]), [
         0,
         40 * TO_RADIANS,
-        0
+        0,
       ]);
     });
 
@@ -952,7 +927,7 @@ describe("Quaternion", () => {
       fuzzyAssert3(toEulerFromQuat([0.9063078, 0, 0, 0.4226183]), [
         0,
         0,
-        50 * TO_RADIANS
+        50 * TO_RADIANS,
       ]);
     });
 
@@ -1001,7 +976,7 @@ describe("Quaternion", () => {
         [
           37.00045022 * TO_RADIANS,
           33.8258469 * TO_RADIANS,
-          -2.7604772 * TO_RADIANS
+          -2.7604772 * TO_RADIANS,
         ]
       );
     });
@@ -1012,11 +987,7 @@ describe("Quaternion", () => {
           [30 * TO_RADIANS, 0 * TO_RADIANS, 20 * TO_RADIANS],
           EulerOrder.yxz
         ),
-        [
-          30 * TO_RADIANS,
-          0 * TO_RADIANS,
-          20 * TO_RADIANS
-        ]
+        [30 * TO_RADIANS, 0 * TO_RADIANS, 20 * TO_RADIANS]
       );
     });
 
@@ -1026,11 +997,7 @@ describe("Quaternion", () => {
           [0 * TO_RADIANS, 60 * TO_RADIANS, 20 * TO_RADIANS],
           EulerOrder.yxz
         ),
-        [
-          0 * TO_RADIANS,
-          60 * TO_RADIANS,
-          20 * TO_RADIANS
-        ]
+        [0 * TO_RADIANS, 60 * TO_RADIANS, 20 * TO_RADIANS]
       );
     });
 
@@ -1043,7 +1010,7 @@ describe("Quaternion", () => {
         [
           97.0959699 * TO_RADIANS,
           18.747238 * TO_RADIANS,
-          -111.1728322 * TO_RADIANS
+          -111.1728322 * TO_RADIANS,
         ]
       );
     });
@@ -1054,11 +1021,7 @@ describe("Quaternion", () => {
           [70 * TO_RADIANS, 0 * TO_RADIANS, 0 * TO_RADIANS],
           EulerOrder.yxz
         ),
-        [
-          70 * TO_RADIANS,
-          0 * TO_RADIANS,
-          0 * TO_RADIANS
-        ]
+        [70 * TO_RADIANS, 0 * TO_RADIANS, 0 * TO_RADIANS]
       );
     });
 
@@ -1071,7 +1034,7 @@ describe("Quaternion", () => {
         [
           11.9226229 * TO_RADIANS,
           47.3092521 * TO_RADIANS,
-          25.9026867 * TO_RADIANS
+          25.9026867 * TO_RADIANS,
         ]
       );
     });
@@ -1082,11 +1045,7 @@ describe("Quaternion", () => {
           [33 * TO_RADIANS, 78 * TO_RADIANS, 0 * TO_RADIANS],
           EulerOrder.zxy
         ),
-        [
-          33 * TO_RADIANS,
-          78 * TO_RADIANS,
-          0 * TO_RADIANS
-        ]
+        [33 * TO_RADIANS, 78 * TO_RADIANS, 0 * TO_RADIANS]
       );
     });
 
@@ -1099,7 +1058,7 @@ describe("Quaternion", () => {
         [
           79.3724159 * TO_RADIANS,
           19.6834981 * TO_RADIANS,
-          3.6164416 * TO_RADIANS
+          3.6164416 * TO_RADIANS,
         ]
       );
     });
@@ -1110,11 +1069,7 @@ describe("Quaternion", () => {
           [0 * TO_RADIANS, 0 * TO_RADIANS, 20 * TO_RADIANS],
           EulerOrder.zxy
         ),
-        [
-          0 * TO_RADIANS,
-          0 * TO_RADIANS,
-          20 * TO_RADIANS
-        ]
+        [0 * TO_RADIANS, 0 * TO_RADIANS, 20 * TO_RADIANS]
       );
     });
 
@@ -1127,7 +1082,7 @@ describe("Quaternion", () => {
         [
           22.8425762 * TO_RADIANS,
           43.9562698 * TO_RADIANS,
-          -0.4626928 * TO_RADIANS
+          -0.4626928 * TO_RADIANS,
         ]
       );
     });
@@ -1141,7 +1096,7 @@ describe("Quaternion", () => {
         [
           37.0045022 * TO_RADIANS,
           33.8258469 * TO_RADIANS,
-          -22.7604772 * TO_RADIANS
+          -22.7604772 * TO_RADIANS,
         ]
       );
     });
@@ -1152,11 +1107,7 @@ describe("Quaternion", () => {
           [0 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS],
           EulerOrder.zyx
         ),
-        [
-          0 * TO_RADIANS,
-          40 * TO_RADIANS,
-          0 * TO_RADIANS
-        ]
+        [0 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS]
       );
     });
 
@@ -1169,7 +1120,7 @@ describe("Quaternion", () => {
         [
           40.3272025 * TO_RADIANS,
           43.4460868 * TO_RADIANS,
-          -7.4783506 * TO_RADIANS
+          -7.4783506 * TO_RADIANS,
         ]
       );
     });
@@ -1180,11 +1131,7 @@ describe("Quaternion", () => {
           [0 * TO_RADIANS, 134 * TO_RADIANS, 119 * TO_RADIANS],
           EulerOrder.yzx
         ),
-        [
-          -180 * TO_RADIANS,
-          46 * TO_RADIANS,
-          -61 * TO_RADIANS
-        ]
+        [-180 * TO_RADIANS, 46 * TO_RADIANS, -61 * TO_RADIANS]
       );
     });
 
@@ -1194,11 +1141,7 @@ describe("Quaternion", () => {
           [0 * TO_RADIANS, 34 * TO_RADIANS, 19 * TO_RADIANS],
           EulerOrder.yzx
         ),
-        [
-          0 * TO_RADIANS,
-          34 * TO_RADIANS,
-          19 * TO_RADIANS
-        ]
+        [0 * TO_RADIANS, 34 * TO_RADIANS, 19 * TO_RADIANS]
       );
     });
 
@@ -1211,7 +1154,7 @@ describe("Quaternion", () => {
         [
           13.9871036 * TO_RADIANS,
           37.1585561 * TO_RADIANS,
-          25.4137676 * TO_RADIANS
+          25.4137676 * TO_RADIANS,
         ]
       );
     });
@@ -1222,11 +1165,7 @@ describe("Quaternion", () => {
           [230 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS],
           EulerOrder.xzy
         ),
-        [
-          -130 * TO_RADIANS,
-          40 * TO_RADIANS,
-          0 * TO_RADIANS
-        ]
+        [-130 * TO_RADIANS, 40 * TO_RADIANS, 0 * TO_RADIANS]
       );
     });
 
@@ -1236,11 +1175,7 @@ describe("Quaternion", () => {
           [30 * TO_RADIANS, 0 * TO_RADIANS, 50 * TO_RADIANS],
           EulerOrder.xzy
         ),
-        [
-          30 * TO_RADIANS,
-          0 * TO_RADIANS,
-          50 * TO_RADIANS
-        ]
+        [30 * TO_RADIANS, 0 * TO_RADIANS, 50 * TO_RADIANS]
       );
     });
 
@@ -1250,68 +1185,46 @@ describe("Quaternion", () => {
           [230 * TO_RADIANS, 220 * TO_RADIANS, 0 * TO_RADIANS],
           EulerOrder.xzy
         ),
-        [
-          50 * TO_RADIANS,
-          -40 * TO_RADIANS,
-          -180 * TO_RADIANS
-        ]
+        [50 * TO_RADIANS, -40 * TO_RADIANS, -180 * TO_RADIANS]
       );
     });
   });
 
   describe("Transform Vector", () => {
-    it ('Should rotate on y-axis 90 degress', () => {
+    it("Should rotate on y-axis 90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([0, 1, 0], 90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [-1, 0, 0]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [-1, 0, 0]);
     });
 
-    it ('Should rotate on y-axis -90 degress', () => {
+    it("Should rotate on y-axis -90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([0, 1, 0], -90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [1, 0, 0]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [1, 0, 0]);
     });
 
-    it ('Should rotate on x-axis 90 degress', () => {
+    it("Should rotate on x-axis 90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([1, 0, 0], 90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [0, 1, 0]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [0, 1, 0]);
     });
 
-    it ('Should rotate on x-axis -90 degress', () => {
+    it("Should rotate on x-axis -90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([1, 0, 0], -90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [0, -1, 0]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [0, -1, 0]);
     });
 
-    it ('Should rotate on z-axis 90 degress', () => {
+    it("Should rotate on z-axis 90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([0, 0, 1], 90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [0, 0, -1]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [0, 0, -1]);
     });
 
-    it ('Should rotate on z-axis -90 degress', () => {
+    it("Should rotate on z-axis -90 degress", () => {
       const v = forward3();
       const q = fromEulerAxisAngleToQuat([0, 0, 1], -90 * TO_RADIANS);
-      fuzzyAssert3(
-        rotateVectorByUnitQuat(v, q),
-        [0, 0, -1]
-      );
+      fuzzyAssert3(rotateVectorByUnitQuat(v, q), [0, 0, -1]);
     });
   });
 });

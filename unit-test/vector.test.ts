@@ -1,8 +1,89 @@
-import assert from 'assert';
-import { describe, it } from 'mocha';
-import { add1, add2, add3, add4, ceil1, ceil2, ceil3, ceil4, compare1, compare2, compare3, compare4, copy1, copy2, copy3, copy4, cross1, cross2, cross3, cross4, divide1, divide2, divide3, divide4, dot1, dot2, dot3, dot4, down3, flatten1, flatten2, flatten3, flatten4, floor1, floor2, floor3, floor4, inverse1, inverse2, inverse3, inverse4, left3, linear1, linear2, linear3, linear4, max1, max2, max3, max4, min1, min2, min3, min4, multiply1, multiply2, multiply3, multiply4, normalize1, normalize2, normalize3, normalize4, right3, scale1, scale2, scale3, scale4, toString1, toString2, toString3, toString4, up3, Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from '../src/math/vector';
+import assert from "assert";
+import { describe, it } from "@jest/globals";
+import {
+  add1,
+  add2,
+  add3,
+  add4,
+  ceil1,
+  ceil2,
+  ceil3,
+  ceil4,
+  compare1,
+  compare2,
+  compare3,
+  compare4,
+  copy1,
+  copy2,
+  copy3,
+  copy4,
+  cross1,
+  cross2,
+  cross3,
+  cross4,
+  divide1,
+  divide2,
+  divide3,
+  divide4,
+  dot1,
+  dot2,
+  dot3,
+  dot4,
+  down3,
+  flatten1,
+  flatten2,
+  flatten3,
+  flatten4,
+  floor1,
+  floor2,
+  floor3,
+  floor4,
+  inverse1,
+  inverse2,
+  inverse3,
+  inverse4,
+  left3,
+  linear1,
+  linear2,
+  linear3,
+  linear4,
+  max1,
+  max2,
+  max3,
+  max4,
+  min1,
+  min2,
+  min3,
+  min4,
+  multiply1,
+  multiply2,
+  multiply3,
+  multiply4,
+  normalize1,
+  normalize2,
+  normalize3,
+  normalize4,
+  right3,
+  scale1,
+  scale2,
+  scale3,
+  scale4,
+  toString1,
+  toString2,
+  toString3,
+  toString4,
+  up3,
+  Vec1,
+  Vec1Compat,
+  Vec2,
+  Vec2Compat,
+  Vec3,
+  Vec3Compat,
+  Vec4,
+  Vec4Compat,
+} from "../ui/src/math/vector";
 
-export function fail1(actual: Vec1, expected: Vec1): string {
+export function fail1(actual: Vec1Compat, expected: Vec1Compat): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;
 }
 
@@ -46,10 +127,7 @@ export function fuzzCompare1(v1: Vec1, v2: Vec1): boolean {
 }
 
 export function fuzzCompare2(v1: Vec2, v2: Vec2): boolean {
-  return (
-    Math.abs(v1[0] - v2[0]) <= 1e-7 &&
-    Math.abs(v1[1] - v2[1]) <= 1e-7
-  );
+  return Math.abs(v1[0] - v2[0]) <= 1e-7 && Math.abs(v1[1] - v2[1]) <= 1e-7;
 }
 
 export function fuzzCompare3(v1: Vec3, v2: Vec3): boolean {
@@ -69,32 +147,38 @@ export function fuzzCompare4(v1: Vec4, v2: Vec4): boolean {
   );
 }
 
-function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
+function assert1(
+  actual: Vec1Compat,
+  expected: Vec1Compat,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(compare1(actual, expected), true, fail1(actual, expected));
-  }
-
-  else {
+  } else {
     assert.equal(!compare1(actual, expected), true, fail1(actual, expected));
   }
 }
 
-function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
+function assert2(
+  actual: Vec2Compat,
+  expected: Vec2Compat,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(compare2(actual, expected), true, fail2(actual, expected));
-  }
-
-  else {
+  } else {
     assert.equal(!compare2(actual, expected), true, fail2(actual, expected));
   }
 }
 
-function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+function assert3(
+  actual: Vec3Compat,
+  expected: Vec3Compat,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(compare3(actual, expected), true, fail3(actual, expected));
-  }
-
-  else {
+  } else {
     assert.equal(!compare3(actual, expected), true, fail3(actual, expected));
   }
 }
@@ -102,50 +186,72 @@ function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
 function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
   if (shouldEqual) {
     assert.equal(compare4(actual, expected), true, fail4(actual, expected));
-  }
-
-  else {
+  } else {
     assert.equal(!compare4(actual, expected), true, fail4(actual, expected));
   }
 }
 
-function fuzzyAssert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
+function fuzzyAssert1(
+  actual: Vec1,
+  expected: Vec1,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(fuzzCompare1(actual, expected), true, fail1(actual, expected));
-  }
-
-  else {
-    assert.equal(!fuzzCompare1(actual, expected), true, fail1(actual, expected));
+  } else {
+    assert.equal(
+      !fuzzCompare1(actual, expected),
+      true,
+      fail1(actual, expected)
+    );
   }
 }
 
-function fuzzyAssert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
+function fuzzyAssert2(
+  actual: Vec2,
+  expected: Vec2,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(fuzzCompare2(actual, expected), true, fail2(actual, expected));
-  }
-
-  else {
-    assert.equal(!fuzzCompare2(actual, expected), true, fail2(actual, expected));
+  } else {
+    assert.equal(
+      !fuzzCompare2(actual, expected),
+      true,
+      fail2(actual, expected)
+    );
   }
 }
 
-function fuzzyAssert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+function fuzzyAssert3(
+  actual: Vec3,
+  expected: Vec3,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(fuzzCompare3(actual, expected), true, fail3(actual, expected));
-  }
-
-  else {
-    assert.equal(!fuzzCompare3(actual, expected), true, fail3(actual, expected));
+  } else {
+    assert.equal(
+      !fuzzCompare3(actual, expected),
+      true,
+      fail3(actual, expected)
+    );
   }
 }
 
-function fuzzyAssert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
+function fuzzyAssert4(
+  actual: Vec4,
+  expected: Vec4,
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
     assert.equal(fuzzCompare4(actual, expected), true, fail4(actual, expected));
-  }
-
-  else {
-    assert.equal(!fuzzCompare4(actual, expected), true, fail4(actual, expected));
+  } else {
+    assert.equal(
+      !fuzzCompare4(actual, expected),
+      true,
+      fail4(actual, expected)
+    );
   }
 }
 
@@ -159,420 +265,432 @@ function compareArray(actual: number[], expected: number[]) {
   return true;
 }
 
-function assertArray(actual: number[], expected: number[], shouldEqual: boolean = true) {
+function assertArray(
+  actual: number[],
+  expected: number[],
+  shouldEqual: boolean = true
+) {
   if (shouldEqual) {
-    assert.equal(compareArray(actual, expected), true, failArray(actual, expected));
-  }
-
-  else {
-    assert.equal(compareArray(actual, expected), false, failArray(actual, expected));
+    assert.equal(
+      compareArray(actual, expected),
+      true,
+      failArray(actual, expected)
+    );
+  } else {
+    assert.equal(
+      compareArray(actual, expected),
+      false,
+      failArray(actual, expected)
+    );
   }
 }
 
-describe('Vector Library', () => {
-  describe('Compare', () => {
-    [
+describe("Vector Library", () => {
+  describe("Compare", () => {
+    (
       [
-        [1],
-        [1],
-      ],
-      [
-        [1],
-        [1, 2]
-      ],
-      [
-        [1],
-        [1, 2, 3]
-      ],
-      [
-        [1],
-        [1, 2, 3, 4]
-      ],
-      [
-        [1, 2],
-        [1, 3]
-      ],
-      [
-        [1, 2],
-        [1, 3, 4]
-      ],
-      [
-        [1, 2],
-        [1, 4, 6]
-      ],
-      [
-        [1, 2],
-        [1, 3, 4, 5]
-      ],
-      [
-        [1, 2, 3],
-        [1, 5, 6]
-      ],
-      [
-        [1, 2, 3],
-        [1, 3, 4, 7]
-      ],
-      [
-        [1, 2, 3, 8],
-        [1, 3, 4, 7]
-      ]
-    ].forEach((t: Vec1[]) => {
-      it ("Compare vector1 should be true", () => {
+        [[1], [1]],
+        [[1], [1, 2]],
+        [[1], [1, 2, 3]],
+        [[1], [1, 2, 3, 4]],
+        [
+          [1, 2],
+          [1, 3],
+        ],
+        [
+          [1, 2],
+          [1, 3, 4],
+        ],
+        [
+          [1, 2],
+          [1, 4, 6],
+        ],
+        [
+          [1, 2],
+          [1, 3, 4, 5],
+        ],
+        [
+          [1, 2, 3],
+          [1, 5, 6],
+        ],
+        [
+          [1, 2, 3],
+          [1, 3, 4, 7],
+        ],
+        [
+          [1, 2, 3, 8],
+          [1, 3, 4, 7],
+        ],
+      ] as Vec2Compat[][]
+    ).forEach((t: Vec1Compat[]) => {
+      it("Compare vector1 should be true", () => {
         assert1(t[0], t[1]);
       });
     });
 
-    [
+    (
       [
-        [1],
-        [2],
-      ],
-      [
-        [1],
-        [3, 2]
-      ],
-      [
-        [1],
-        [4, 2, 3]
-      ],
-      [
-        [1],
-        [6, 2, 3, 4]
-      ],
-      [
-        [1, 2],
-        [7, 3]
-      ],
-      [
-        [1, 2],
-        [3, 3, 4]
-      ],
-      [
-        [1, 2],
-        [2, 4, 6]
-      ],
-      [
-        [1, 2],
-        [4, 3, 4, 5]
-      ],
-      [
-        [1, 2, 3],
-        [2, 5, 6]
-      ],
-      [
-        [1, 2, 3],
-        [6, 3, 4, 7]
-      ],
-      [
-        [1, 2, 3, 9],
-        [6, 3, 4, 7]
-      ],
-    ].forEach((t: Vec1[]) => {
-      it ("Compare vector1 should be false", () => {
+        [[1], [2]],
+        [[1], [3, 2]],
+        [[1], [4, 2, 3]],
+        [[1], [6, 2, 3, 4]],
+        [
+          [1, 2],
+          [7, 3],
+        ],
+        [
+          [1, 2],
+          [3, 3, 4],
+        ],
+        [
+          [1, 2],
+          [2, 4, 6],
+        ],
+        [
+          [1, 2],
+          [4, 3, 4, 5],
+        ],
+        [
+          [1, 2, 3],
+          [2, 5, 6],
+        ],
+        [
+          [1, 2, 3],
+          [6, 3, 4, 7],
+        ],
+        [
+          [1, 2, 3, 9],
+          [6, 3, 4, 7],
+        ],
+      ] as Vec2Compat[][]
+    ).forEach((t: Vec1Compat[]) => {
+      it("Compare vector1 should be false", () => {
         assert1(t[0], t[1], false);
       });
     });
 
-    [
+    (
       [
-        [1, 2],
-        [1, 2]
-      ],
-      [
-        [1, 2],
-        [1, 2, 3]
-      ],
-      [
-        [1, 2],
-        [1, 2, 3, 4]
-      ],
-      [
-        [1, 2, 3],
-        [1, 2, 4]
-      ],
-      ,
-      [
-        [1, 2, 3],
-        [1, 2, 4, 5]
-      ],
-      [
-        [1, 2, 3, 9],
-        [1, 2, 4, 7]
-      ],
-    ].forEach((t: Vec2[]) => {
-      it ("Compare vector2 should be true", () => {
+        [
+          [1, 2],
+          [1, 2],
+        ],
+        [
+          [1, 2],
+          [1, 2, 3],
+        ],
+        [
+          [1, 2],
+          [1, 2, 3, 4],
+        ],
+        [
+          [1, 2, 3],
+          [1, 2, 4],
+        ],
+        ,
+        [
+          [1, 2, 3],
+          [1, 2, 4, 5],
+        ],
+        [
+          [1, 2, 3, 9],
+          [1, 2, 4, 7],
+        ],
+      ] as Vec2Compat[][]
+    ).forEach((t: Vec2Compat[]) => {
+      it("Compare vector2 should be true", () => {
         assert2(t[0], t[1]);
       });
     });
 
-    [
+    (
       [
-        [1, 2],
-        [2, 2]
-      ],
-      [
-        [1, 2],
-        [2, 3]
-      ],
-      [
-        [1, 3],
-        [1, 2]
-      ],
-      [
-        [1, 2],
-        [4, 3, 3]
-      ],
-      [
-        [1, 3],
-        [1, 2, 3, 4]
-      ],
-      [
-        [1, 2, 3],
-        [9, 2, 4]
-      ],
-      ,
-      [
-        [5, 2, 3],
-        [1, 6, 4, 5]
-      ],
-      [
-        [4, 2, 3, 9],
-        [1, 3, 4, 7]
-      ],
-    ].forEach((t: Vec2[]) => {
-      it ("Compare vector2 should be false", () => {
+        [
+          [1, 2],
+          [2, 2],
+        ],
+        [
+          [1, 2],
+          [2, 3],
+        ],
+        [
+          [1, 3],
+          [1, 2],
+        ],
+        [
+          [1, 2],
+          [4, 3, 3],
+        ],
+        [
+          [1, 3],
+          [1, 2, 3, 4],
+        ],
+        [
+          [1, 2, 3],
+          [9, 2, 4],
+        ],
+        ,
+        [
+          [5, 2, 3],
+          [1, 6, 4, 5],
+        ],
+        [
+          [4, 2, 3, 9],
+          [1, 3, 4, 7],
+        ],
+      ] as Vec2Compat[][]
+    ).forEach((t: Vec2Compat[]) => {
+      it("Compare vector2 should be false", () => {
         assert2(t[0], t[1], false);
       });
     });
 
-    [
+    (
       [
-        [1, 2, 3],
-        [1, 2, 3]
-      ],
-      [
-        [1, 2, 3],
-        [1, 2, 3, 5]
-      ],
-      [
-        [1, 2, 3, 9],
-        [1, 2, 3, 7]
-      ],
-    ].forEach((t: Vec3[]) => {
-      it ("Compare vector2 should be true", () => {
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+        [
+          [1, 2, 3],
+          [1, 2, 3, 5],
+        ],
+        [
+          [1, 2, 3, 9],
+          [1, 2, 3, 7],
+        ],
+      ] as Vec3Compat[][]
+    ).forEach((t: Vec3Compat[]) => {
+      it("Compare vector2 should be true", () => {
         assert3(t[0], t[1]);
       });
     });
 
-    [
+    (
       [
-        [1, 2, 3],
-        [9, 2, 4]
-      ],
-      [
-        [5, 2, 3],
-        [1, 6, 4, 5]
-      ],
-      [
-        [4, 2, 3, 9],
-        [1, 3, 4, 7]
-      ],
-    ].forEach((t: Vec3[]) => {
-      it ("Compare vector2 should be false", () => {
+        [
+          [1, 2, 3],
+          [9, 2, 4],
+        ],
+        [
+          [5, 2, 3],
+          [1, 6, 4, 5],
+        ],
+        [
+          [4, 2, 3, 9],
+          [1, 3, 4, 7],
+        ],
+      ] as Vec3Compat[][]
+    ).forEach((t: Vec3Compat[]) => {
+      it("Compare vector2 should be false", () => {
         assert3(t[0], t[1], false);
       });
     });
 
-    [
+    (
       [
-        [1, 2, 3, 5],
-        [1, 2, 3, 5]
-      ],
-      [
-        [1, 2, 3, 7],
-        [1, 2, 3, 7, 9]
-      ],
-    ].forEach((t: Vec4[]) => {
-      it ("Compare vector2 should be true", () => {
+        [
+          [1, 2, 3, 5],
+          [1, 2, 3, 5],
+        ],
+        [
+          [1, 2, 3, 7],
+          [1, 2, 3, 7, 9],
+        ],
+      ] as Vec4Compat[][]
+    ).forEach((t: Vec4Compat[]) => {
+      it("Compare vector2 should be true", () => {
         assert4(t[0], t[1]);
       });
     });
 
-    [
+    (
       [
-        [5, 2, 3, 6],
-        [1, 6, 4, 5]
-      ],
-      [
-        [4, 2, 3, 9],
-        [1, 3, 4, 7, 9]
-      ],
-    ].forEach((t: Vec4[]) => {
-      it ("Compare vector2 should be false", () => {
+        [
+          [5, 2, 3, 6],
+          [1, 6, 4, 5],
+        ],
+        [
+          [4, 2, 3, 9],
+          [1, 3, 4, 7, 9],
+        ],
+      ] as Vec4Compat[][]
+    ).forEach((t: Vec4Compat[]) => {
+      it("Compare vector2 should be false", () => {
         assert4(t[0], t[1], false);
       });
     });
   });
 
-  describe('Add', () => {
-    [
+  describe("Add", () => {
+    (
       [
-        [1],
-        [2],
-      ],
-      [
-        [1],
-        [2, 3],
-      ],
-      [
-        [1, 3],
-        [2, 4, 6],
-      ],
-      [
-        [1, 2, 5],
-        [2, 3, 6, 7]
-      ]
-    ].forEach((t: Vec1Compat[]) => {
+        [[1], [2]],
+        [[1], [2, 3]],
+        [
+          [1, 3],
+          [2, 4, 6],
+        ],
+        [
+          [1, 2, 5],
+          [2, 3, 6, 7],
+        ],
+      ] as Vec1Compat[][]
+    ).forEach((t: Vec1Compat[]) => {
       it("Add vector1 should be true", () => {
         assert1(add1(t[0], t[1]), [3]);
       });
     });
 
-    [
+    (
       [
-        [1, 4],
-        [2, 3],
-      ],
-      [
-        [1, 4],
-        [2, 3, 6],
-      ],
-      [
-        [1, 4, 5],
-        [2, 3, 6, 7]
-      ]
-    ].forEach((t: Vec2Compat[]) => {
+        [
+          [1, 4],
+          [2, 3],
+        ],
+        [
+          [1, 4],
+          [2, 3, 6],
+        ],
+        [
+          [1, 4, 5],
+          [2, 3, 6, 7],
+        ],
+      ] as Vec2Compat[][]
+    ).forEach((t: Vec2Compat[]) => {
       it("Add vector2 should be true", () => {
         assert2(add2(t[0], t[1]), [3, 7]);
       });
     });
 
-    [
+    (
       [
-        [1, 4, 7],
-        [2, 3, 6],
-      ],
-      [
-        [1, 4, 7],
-        [2, 3, 6, 7]
-      ],
-      [
-        [1, 4, 7, 9],
-        [2, 3, 6, 7]
-      ]
-    ].forEach((t: Vec3Compat[]) => {
+        [
+          [1, 4, 7],
+          [2, 3, 6],
+        ],
+        [
+          [1, 4, 7],
+          [2, 3, 6, 7],
+        ],
+        [
+          [1, 4, 7, 9],
+          [2, 3, 6, 7],
+        ],
+      ] as Vec3Compat[][]
+    ).forEach((t: Vec3Compat[]) => {
       it("Add vector3 should be true", () => {
         assert3(add3(t[0], t[1]), [3, 7, 13]);
       });
     });
 
-    [
+    (
       [
-        [1, 4, 7, 9],
-        [2, 3, 6, 7]
-      ],
-      [
-        [1, 4, 7, 9],
-        [2, 3, 6, 7, 8]
-      ]
-    ].forEach((t: Vec4Compat[]) => {
+        [
+          [1, 4, 7, 9],
+          [2, 3, 6, 7],
+        ],
+        [
+          [1, 4, 7, 9],
+          [2, 3, 6, 7, 8],
+        ],
+      ] as Vec4Compat[][]
+    ).forEach((t: Vec4Compat[]) => {
       it("Add vector4 should be true", () => {
         assert4(add4(t[0], t[1]), [3, 7, 13, 16]);
-     });
-   });
+      });
+    });
   });
 
   describe("Ceil", () => {
-    [
-      [1],
-      [0.6],
-      [0.7, 1.2],
-      [0.01],
-      [1e-11]
-    ].forEach((t: Vec1Compat) => {
-      it("Ceil Vector1 should be true", () => {
-        assert1(ceil1(t), [1]);
-      });
-    });
+    ([[1], [0.6], [0.7, 1.2], [0.01], [1e-11]] as Vec1Compat[]).forEach(
+      (t: Vec1Compat) => {
+        it("Ceil Vector1 should be true", () => {
+          assert1(ceil1(t), [1]);
+        });
+      }
+    );
 
     it("Ceil Vector1 should be false", () => {
       assert1(ceil1([1]), [2], false);
     });
 
-    [
-      [1, 2],
-      [0.6, 1.7],
-      [0.7, 1.2, 3],
-      [0.01, 1.0001],
-      [1e-11, 1 + 1e-13]
-    ].forEach((t: Vec2Compat) => {
+    (
+      [
+        [1, 2],
+        [0.6, 1.7],
+        [0.7, 1.2, 3],
+        [0.01, 1.0001],
+        [1e-11, 1 + 1e-13],
+      ] as Vec2Compat[]
+    ).forEach((t: Vec2Compat) => {
       it("Ceil Vector2 should be true", () => {
         assert2(ceil2(t), [1, 2]);
       });
     });
 
-    [
-      [0, 1],
-      [1, 1],
-      [0, 2]
-    ].forEach((t: Vec2Compat) => {
+    (
+      [
+        [0, 1],
+        [1, 1],
+        [0, 2],
+      ] as Vec2Compat[]
+    ).forEach((t: Vec2Compat) => {
       it("Ceil Vector2 should be false", () => {
         assert2(ceil2(t), [1, 2], false);
       });
     });
 
-    [
-      [1, 2, 3],
-      [0.6, 1.7, 2.3],
-      [0.7, 1.2, 3],
-      [0.01, 2, 2.0001],
-      [0.009, 1 + 1e-11, 2 + 1e-13]
-    ].forEach((t: Vec3Compat) => {
+    (
+      [
+        [1, 2, 3],
+        [0.6, 1.7, 2.3],
+        [0.7, 1.2, 3],
+        [0.01, 2, 2.0001],
+        [0.009, 1 + 1e-11, 2 + 1e-13],
+      ] as Vec3Compat[]
+    ).forEach((t: Vec3Compat) => {
       it("Ceil Vector3 should be true", () => {
         assert3(ceil3(t), [1, 2, 3]);
       });
     });
 
-    [
-      [1, 2, 3],
-      [1.1, 2, 3],
-      [1, 2.2, 3],
-      [1, 2, 3.3]
-    ].forEach((t: Vec3Compat) => {
+    (
+      [
+        [1, 2, 3],
+        [1.1, 2, 3],
+        [1, 2.2, 3],
+        [1, 2, 3.3],
+      ] as Vec3Compat[]
+    ).forEach((t: Vec3Compat) => {
       it("Ceil Vector3 should be false", () => {
         assert3(ceil3(t), [2, 3, 4], false);
       });
     });
 
-    [
-      [1, 2, 3, 4],
-      [0.6, 1.7, 2.3, 3.5],
-      [0.7, 1.2, 3, 4],
-      [1, 2, 2.0001, 3.1],
-      [0.009, 1 + 1e-11, 2 + 1e-13, 3 + 1e-14]
-    ].forEach((t: Vec4Compat) => {
+    (
+      [
+        [1, 2, 3, 4],
+        [0.6, 1.7, 2.3, 3.5],
+        [0.7, 1.2, 3, 4],
+        [1, 2, 2.0001, 3.1],
+        [0.009, 1 + 1e-11, 2 + 1e-13, 3 + 1e-14],
+      ] as Vec4Compat[]
+    ).forEach((t: Vec4Compat) => {
       it("Ceil Vector4 should be true", () => {
         assert4(ceil4(t), [1, 2, 3, 4]);
       });
     });
 
-    [
-      [1, 2, 3, 4],
-      [1.1, 2, 3, 4],
-      [1, 2.2, 3, 4],
-      [1, 2, 3.3, 4],
-      [1, 2, 3, 4.5]
-    ].forEach((t: Vec4Compat) => {
+    (
+      [
+        [1, 2, 3, 4],
+        [1.1, 2, 3, 4],
+        [1, 2.2, 3, 4],
+        [1, 2, 3.3, 4],
+        [1, 2, 3, 4.5],
+      ] as Vec4Compat[]
+    ).forEach((t: Vec4Compat) => {
       it("Ceil Vector4 should be false", () => {
         assert4(ceil4(t), [2, 3, 4, 5], false);
       });
@@ -580,39 +698,38 @@ describe('Vector Library', () => {
   });
 
   describe("Copy", () => {
-    [
-      [1],
-      [1, 2],
-      [1, 2, 3],
-      [1, 2, 3, 4]
-    ].forEach((t: Vec1Compat) => {
-      it("Copy Vector1 should be true", () => {
-        assert1(copy1(t), [1]);
-      });
-    });
+    ([[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]] as Vec1Compat[]).forEach(
+      (t: Vec1Compat) => {
+        it("Copy Vector1 should be true", () => {
+          assert1(copy1(t), [1]);
+        });
+      }
+    );
 
-    [
-      [1, 2],
-      [1, 2, 3],
-      [1, 2, 3, 4]
-    ].forEach((t: Vec2Compat) => {
+    (
+      [
+        [1, 2],
+        [1, 2, 3],
+        [1, 2, 3, 4],
+      ] as Vec2Compat[]
+    ).forEach((t: Vec2Compat) => {
       it("Copy Vector2 should be true", () => {
         assert2(copy2(t), [1, 2]);
       });
     });
 
-    [
-      [1, 2, 3],
-      [1, 2, 3, 4]
-    ].forEach((t: Vec3Compat) => {
+    (
+      [
+        [1, 2, 3],
+        [1, 2, 3, 4],
+      ] as Vec3Compat[]
+    ).forEach((t: Vec3Compat) => {
       it("Copy Vector3 should be true", () => {
         assert3(copy3(t), [1, 2, 3]);
       });
     });
 
-    [
-      [1, 2, 3, 4]
-    ].forEach((t: Vec4Compat) => {
+    ([[1, 2, 3, 4]] as Vec4Compat[]).forEach((t: Vec4Compat) => {
       it("Copy Vector4 should be true", () => {
         assert4(copy4(t), [1, 2, 3, 4]);
       });
@@ -715,7 +832,12 @@ describe('Vector Library', () => {
     });
 
     it("Divide vector4 should be correct", () => {
-      assert4(divide4([5, 6, 3, 1], [-2, -0, 7, 3]), [-2.5, -Infinity, 3 / 7, 1 / 3]);
+      assert4(divide4([5, 6, 3, 1], [-2, -0, 7, 3]), [
+        -2.5,
+        -Infinity,
+        3 / 7,
+        1 / 3,
+      ]);
     });
   });
 
@@ -766,19 +888,19 @@ describe('Vector Library', () => {
   });
 
   describe("Direction Vectors", () => {
-    it ('Should be +x', () => {
+    it("Should be +x", () => {
       assert3(right3([0, 0, -1], [0, 1, 0]), [1, 0, 0]);
     });
 
-    it ('Should be -x', () => {
+    it("Should be -x", () => {
       assert3(left3([0, 0, -1], [0, 1, 0]), [-1, 0, 0]);
     });
 
-    it ('Should be +y', () => {
+    it("Should be +y", () => {
       assert3(up3([0, 0, -1], [0, 1, -1]), [0, 1, 0]);
     });
 
-    it ('Should be -y', () => {
+    it("Should be -y", () => {
       assert3(down3([0, 0, -1], [0, 1, -1]), [0, -1, 0]);
     });
   });
@@ -810,7 +932,10 @@ describe('Vector Library', () => {
       const v4: Vec3Compat = [7, 8, 1];
       const v5: Vec3Compat = [9, 10, 14];
       const list = [v1, v2, v3, v4, v5];
-      assertArray(flatten3(list), [1, 2, 6, 3, 4, 2, 5, 6, 9, 7, 8, 1, 9, 10, 14]);
+      assertArray(
+        flatten3(list),
+        [1, 2, 6, 3, 4, 2, 5, 6, 9, 7, 8, 1, 9, 10, 14]
+      );
     });
 
     it("Flattern vector4 should be correct", () => {
@@ -820,91 +945,102 @@ describe('Vector Library', () => {
       const v4: Vec4Compat = [7, 8, 1, 15];
       const v5: Vec4Compat = [9, 10, 14, 17];
       const list = [v1, v2, v3, v4, v5];
-      assertArray(flatten4(list), [1, 2, 6, 7, 3, 4, 2, 12, 5, 6, 9, 11, 7, 8, 1, 15, 9, 10, 14, 17]);
+      assertArray(
+        flatten4(list),
+        [1, 2, 6, 7, 3, 4, 2, 12, 5, 6, 9, 11, 7, 8, 1, 15, 9, 10, 14, 17]
+      );
     });
   });
 
   describe("Floor", () => {
-    [
-      [0],
-      [0.6],
-      [0.7, 1.2],
-      [0.01],
-      [1e-11]
-    ].forEach((t: Vec1Compat) => {
-      it("Floor Vector1 should be true", () => {
-        assert1(floor1(t), [0]);
-      });
-    });
+    ([[0], [0.6], [0.7, 1.2], [0.01], [1e-11]] as Vec1Compat[]).forEach(
+      (t: Vec1Compat) => {
+        it("Floor Vector1 should be true", () => {
+          assert1(floor1(t), [0]);
+        });
+      }
+    );
 
     it("Floor Vector1 should be false", () => {
       assert1(floor1([1]), [0], false);
     });
 
-    [
-      [1, 2],
-      [1.6, 2.7],
-      [1.7, 2.2, 3],
-      [1.01, 2.0001],
-      [1 + 1e-11, 2 + 1e-13]
-    ].forEach((t: Vec2Compat) => {
+    (
+      [
+        [1, 2],
+        [1.6, 2.7],
+        [1.7, 2.2, 3],
+        [1.01, 2.0001],
+        [1 + 1e-11, 2 + 1e-13],
+      ] as Vec2Compat[]
+    ).forEach((t: Vec2Compat) => {
       it("Floor Vector2 should be true", () => {
         assert2(floor2(t), [1, 2]);
       });
     });
 
-    [
-      [2, 2],
-      [2, 3],
-      [1, 3]
-    ].forEach((t: Vec2Compat) => {
+    (
+      [
+        [2, 2],
+        [2, 3],
+        [1, 3],
+      ] as Vec2Compat[]
+    ).forEach((t: Vec2Compat) => {
       it("Floor Vector2 should be false", () => {
         assert2(floor2(t), [1, 2], false);
       });
     });
 
-    [
-      [1, 2, 3],
-      [1.6, 2.7, 3.3],
-      [1.7, 2.2, 3],
-      [1.01, 2, 3.0001],
-      [1.009, 2 + 1e-11, 3 + 1e-13]
-    ].forEach((t: Vec3Compat) => {
+    (
+      [
+        [1, 2, 3],
+        [1.6, 2.7, 3.3],
+        [1.7, 2.2, 3],
+        [1.01, 2, 3.0001],
+        [1.009, 2 + 1e-11, 3 + 1e-13],
+      ] as Vec3Compat[]
+    ).forEach((t: Vec3Compat) => {
       it("Floor Vector3 should be true", () => {
         assert3(floor3(t), [1, 2, 3]);
       });
     });
 
-    [
-      [3, 4, 5],
-      [3, 2, 3],
-      [2, 2.2, 4],
-      [2, 3, 3.3]
-    ].forEach((t: Vec3Compat) => {
+    (
+      [
+        [3, 4, 5],
+        [3, 2, 3],
+        [2, 2.2, 4],
+        [2, 3, 3.3],
+      ] as Vec3Compat[]
+    ).forEach((t: Vec3Compat) => {
       it("Floor Vector3 should be false", () => {
         assert3(floor3(t), [2, 3, 4], false);
       });
     });
 
-    [
-      [1, 2, 3, 4],
-      [1.6, 2.7, 3.3, 4.5],
-      [1.7, 2.2, 3, 4],
-      [1, 2, 3.0001, 4.1],
-      [1.009, 2 + 1e-11, 3 + 1e-13, 5 - 1e-14]
-    ].forEach((t: Vec4Compat) => {
+    (
+      [
+        [1, 2, 3, 4],
+        [1.6, 2.7, 3.3, 4.5],
+        [1.7, 2.2, 3, 4],
+        [1, 2, 3.0001, 4.1],
+        [1.009, 2 + 1e-11, 3 + 1e-13, 5 - 1e-14],
+      ] as Vec4Compat[]
+    ).forEach((t: Vec4Compat) => {
       it("Floor Vector4 should be true", () => {
         assert4(floor4(t), [1, 2, 3, 4]);
       });
     });
 
-    [
-      [3, 4, 5, 6],
-      [1.1, 2, 5, 6],
-      [1, 2.2, 3, 4],
-      [3, 4, 3.3, 4],
-      [2, 3, 5, 4.5]
-    ].forEach((t: Vec4Compat) => {
+    (
+      [
+        [3, 4, 5, 6],
+        [1.1, 2, 5, 6],
+        [1, 2.2, 3, 4],
+        [3, 4, 3.3, 4],
+        [2, 3, 5, 4.5],
+      ] as Vec4Compat[]
+    ).forEach((t: Vec4Compat) => {
       it("Floor Vector4 should be false", () => {
         assert4(floor4(t), [2, 3, 4, 5], false);
       });
@@ -965,7 +1101,11 @@ describe('Vector Library', () => {
     });
 
     it("Inverse Vector4 should be true", () => {
-      assert4(inverse4([0, 0, -0, -0]), [Infinity, Infinity, -Infinity, -Infinity], true);
+      assert4(
+        inverse4([0, 0, -0, -0]),
+        [Infinity, Infinity, -Infinity, -Infinity],
+        true
+      );
     });
   });
 
@@ -1045,7 +1185,11 @@ describe('Vector Library', () => {
     });
 
     it("Max Vector1 should be true", () => {
-      assert1(max1([Number.MIN_VALUE], [Number.MAX_VALUE]), [Number.MAX_VALUE], true);
+      assert1(
+        max1([Number.MIN_VALUE], [Number.MAX_VALUE]),
+        [Number.MAX_VALUE],
+        true
+      );
     });
 
     it("Max Vector2 should be true", () => {
@@ -1072,16 +1216,28 @@ describe('Vector Library', () => {
     });
 
     it("Max Vector3 should be true", () => {
-      assert3(max3([-Infinity, Infinity, -2], [2, 2, 0]), [2, Infinity, 0], true);
+      assert3(
+        max3([-Infinity, Infinity, -2], [2, 2, 0]),
+        [2, Infinity, 0],
+        true
+      );
     });
 
     it("Max Vector3 should be true", () => {
       assert3(
         max3(
           [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER],
-          [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]
+          [
+            Number.MAX_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+          ]
         ),
-        [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER],
+        [
+          Number.MAX_SAFE_INTEGER,
+          Number.MAX_SAFE_INTEGER,
+          Number.MIN_SAFE_INTEGER,
+        ],
         true
       );
     });
@@ -1091,16 +1247,35 @@ describe('Vector Library', () => {
     });
 
     it("Max Vector4 should be true", () => {
-      assert4(max4([-Infinity, Infinity, -2, 1200], [2, 2, 0, Infinity]), [2, Infinity, 0, Infinity], true);
+      assert4(
+        max4([-Infinity, Infinity, -2, 1200], [2, 2, 0, Infinity]),
+        [2, Infinity, 0, Infinity],
+        true
+      );
     });
 
     it("Max Vector4 should be true", () => {
       assert4(
         max4(
-          [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
-          [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
+          [
+            Number.MIN_VALUE,
+            Number.MIN_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+          ],
+          [
+            Number.MAX_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+          ]
         ),
-        [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+        [
+          Number.MAX_SAFE_INTEGER,
+          Number.MAX_SAFE_INTEGER,
+          Number.MIN_SAFE_INTEGER,
+          Number.MAX_SAFE_INTEGER,
+        ],
         true
       );
     });
@@ -1132,7 +1307,11 @@ describe('Vector Library', () => {
     });
 
     it("Min Vector1 should be true", () => {
-      assert1(min1([Number.MIN_VALUE], [Number.MAX_VALUE]), [Number.MIN_VALUE], true);
+      assert1(
+        min1([Number.MIN_VALUE], [Number.MAX_VALUE]),
+        [Number.MIN_VALUE],
+        true
+      );
     });
 
     it("Min Vector2 should be true", () => {
@@ -1159,14 +1338,22 @@ describe('Vector Library', () => {
     });
 
     it("Min Vector3 should be true", () => {
-      assert3(min3([-Infinity, Infinity, -2], [2, 2, 0]), [-Infinity, 2, -2], true);
+      assert3(
+        min3([-Infinity, Infinity, -2], [2, 2, 0]),
+        [-Infinity, 2, -2],
+        true
+      );
     });
 
     it("Min Vector3 should be true", () => {
       assert3(
         min3(
           [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER],
-          [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]
+          [
+            Number.MAX_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+          ]
         ),
         [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER],
         true
@@ -1178,16 +1365,35 @@ describe('Vector Library', () => {
     });
 
     it("Min Vector4 should be true", () => {
-      assert4(min4([-Infinity, Infinity, -2, 1200], [2, 2, 0, Infinity]), [-Infinity, 2, -2, 1200], true);
+      assert4(
+        min4([-Infinity, Infinity, -2, 1200], [2, 2, 0, Infinity]),
+        [-Infinity, 2, -2, 1200],
+        true
+      );
     });
 
     it("Min Vector4 should be true", () => {
       assert4(
         min4(
-          [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
-          [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
+          [
+            Number.MIN_VALUE,
+            Number.MIN_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+          ],
+          [
+            Number.MAX_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_SAFE_INTEGER,
+            Number.MAX_SAFE_INTEGER,
+          ]
         ),
-        [Number.MIN_VALUE, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+        [
+          Number.MIN_VALUE,
+          Number.MIN_SAFE_INTEGER,
+          Number.MIN_SAFE_INTEGER,
+          Number.MAX_SAFE_INTEGER,
+        ],
         true
       );
     });
@@ -1219,7 +1425,11 @@ describe('Vector Library', () => {
     });
 
     it("Multiply vector2 should be true", () => {
-      assert2(multiply2([Infinity, 2], [2, -Infinity]), [Infinity, -Infinity], true);
+      assert2(
+        multiply2([Infinity, 2], [2, -Infinity]),
+        [Infinity, -Infinity],
+        true
+      );
     });
 
     it("Multiply vector3 should be true", () => {
@@ -1231,7 +1441,11 @@ describe('Vector Library', () => {
     });
 
     it("Multiply vector3 should be true", () => {
-      assert3(multiply3([Infinity, 2, -4], [-1, Infinity, -Infinity]), [-Infinity, Infinity, Infinity], true);
+      assert3(
+        multiply3([Infinity, 2, -4], [-1, Infinity, -Infinity]),
+        [-Infinity, Infinity, Infinity],
+        true
+      );
     });
 
     it("Multiply vector4 should be true", () => {
@@ -1239,11 +1453,19 @@ describe('Vector Library', () => {
     });
 
     it("Multiply vector4 should be true", () => {
-      assert4(multiply4([1, 3.3, 0, 4], [2, 4, 7, -2.1]), [2, 13.2, 0, -8.4], true);
+      assert4(
+        multiply4([1, 3.3, 0, 4], [2, 4, 7, -2.1]),
+        [2, 13.2, 0, -8.4],
+        true
+      );
     });
 
     it("Multiply vector4 should be true", () => {
-      assert4(multiply4([Infinity, 2, -4, 0], [-1, Infinity, -Infinity, 0]), [-Infinity, Infinity, Infinity, 0], true);
+      assert4(
+        multiply4([Infinity, 2, -4, 0], [-1, Infinity, -Infinity, 0]),
+        [-Infinity, Infinity, Infinity, 0],
+        true
+      );
     });
   });
 
@@ -1269,11 +1491,19 @@ describe('Vector Library', () => {
     });
 
     it("Normalize vector3 should be true", () => {
-      fuzzyAssert3(normalize3([5, 5, 5]), [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]);
+      fuzzyAssert3(normalize3([5, 5, 5]), [
+        1 / Math.sqrt(3),
+        1 / Math.sqrt(3),
+        1 / Math.sqrt(3),
+      ]);
     });
 
     it("Normalize vector3 should be true", () => {
-      fuzzyAssert3(normalize3([3, 4, 5]), [3 / Math.sqrt(50), 4 / Math.sqrt(50), 5 / Math.sqrt(50)]);
+      fuzzyAssert3(normalize3([3, 4, 5]), [
+        3 / Math.sqrt(50),
+        4 / Math.sqrt(50),
+        5 / Math.sqrt(50),
+      ]);
     });
 
     it("Normalize vector3 should be true", () => {
@@ -1285,7 +1515,12 @@ describe('Vector Library', () => {
     });
 
     it("Normalize vector4 should be true", () => {
-      fuzzyAssert4(normalize4([1, -2, 3, -4]), [1 / Math.sqrt(30), -2 / Math.sqrt(30), 3 / Math.sqrt(30), -4 / Math.sqrt(30)]);
+      fuzzyAssert4(normalize4([1, -2, 3, -4]), [
+        1 / Math.sqrt(30),
+        -2 / Math.sqrt(30),
+        3 / Math.sqrt(30),
+        -4 / Math.sqrt(30),
+      ]);
     });
   });
 
@@ -1335,7 +1570,12 @@ describe('Vector Library', () => {
     });
 
     it("Scale vector4 should be true", () => {
-      fuzzCompare4(scale4([Infinity, -Infinity, 0, 5], -0.27), [-Infinity, Infinity, 0, -1.35]);
+      fuzzCompare4(scale4([Infinity, -Infinity, 0, 5], -0.27), [
+        -Infinity,
+        Infinity,
+        0,
+        -1.35,
+      ]);
     });
   });
 });

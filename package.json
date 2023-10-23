@@ -10,88 +10,45 @@
     "url": "https://github.com/vega-studio/deltav"
   },
   "version": "3.0.0",
-  "main": "dist/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "./dist/ui/index.js",
+  "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "dev": "node scripts/dev",
+    "dev": "devops dev",
     "shader": "ts-node scripts/shader-module-snippets",
     "eslint": "eslint",
-    "release": "node scripts/release",
+    "release": "devops release",
     "start": "node scripts/heroku",
     "auto": "auto",
     "runner": "runner",
-    "unit-test": "mocha --file 'unit-test/test-bootstrap.js' 'unit-test/**/*.ts'",
-    "unit-test-dev": "nodemon -e ts -x \"mocha --file unit-test/test-bootstrap.js unit-test/**/*.ts\"",
     "parcel": "runner run client server --no-docker",
-    "clean": "runner clean",
-    "build": "runner run lib"
+    "clean": "devops clean",
+    "build": "runner run lib",
+    "component": "devops component",
+    "init": "devops init",
+    "pr": "devops pr --repoUrl \"https://github.com/vega-studio/deltav\" --repoType git --masterBranch master",
+    "storybook": "devops storybook",
+    "test": "devops test",
+    "ts": "devops ts",
+    "url": "devops url"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@diniden/signal-processing": "github:diniden/signal-processing",
-    "@tarwich/runner": "github:tarwich/runner",
+    "@diniden/signal-processing": "github:diniden/signal-processing#semver:1.1.0",
     "@types/animejs": "2.0.0",
     "@types/assert": "1.4.2",
     "@types/d3-color": "1.2.2",
     "@types/dat.gui": "0.7.5",
     "@types/debug": "4.1.4",
-    "@types/fs-extra": "9.0.6",
     "@types/matter-js": "0.10.2",
-    "@types/mocha": "5.2.7",
-    "@types/node": "13.7.7",
     "@types/offscreencanvas": "2019.6.4",
     "animejs": "2.2.0",
     "assert": "2.0.0",
-    "auto": "github:tarwich/auto",
-    "babel-core": "6.26.0",
-    "babel-loader": "7.1.4",
-    "babel-polyfill": "6.26.0",
-    "babel-preset-env": "1.6.1",
-    "base64-image-loader": "1.2.1",
-    "circular-dependency-plugin": "5.0.2",
-    "commander": "2.19.0",
-    "compress-shader-loader": "1.0.0",
-    "compression": "1.7.4",
-    "copy-webpack-plugin": "4.5.2",
-    "css-loader": "0.28.11",
     "d3-color": "1.2.3",
     "dat.gui": "0.7.7",
     "debug": "3.1.0",
-    "dotenv": "8.0.0",
-    "dts-bundle": "0.7.3",
-    "eslint": "4.19.1",
-    "eslint-config-voidray": "github:voidrayco/eslint-config-voidray",
-    "express": "4.17.1",
-    "file-loader": "1.1.11",
-    "fs-extra": "4.0.3",
-    "glob": "7.1.4",
-    "less": "3.8.1",
-    "less-loader": "4.1.0",
+    "devops": "github:vega-studio/node-devops#semver:2.17.1",
     "matter-js": "0.14.2",
-    "mkdirp": "0.5.1",
-    "mocha": "6.1.4",
-    "nodemon": "1.19.1",
-    "parcel-bundler": "1.12.4",
-    "parcel-plugin-prettier": "github:tarwich/parcel-plugin-prettier",
-    "parcel-plugin-shader-compression": "github:diniden/parcel-plugin-shader-compression",
-    "preact": "8.2.7",
-    "prettier": "1.19.1",
-    "random": "github:tarwich/node-random#1.0.0",
-    "raw-loader": "0.5.1",
-    "rimraf": "2.6.2",
-    "shelljs": "0.8.3",
-    "spectorjs": "0.9.7",
-    "style-loader": "0.20.3",
-    "tiny-sdf": "github:diniden/tiny-sdf",
-    "ts-loader": "6.0.4",
-    "ts-node": "8.3.0",
-    "tslint": "5.9.1",
-    "tslint-loader": "3.6.0",
-    "typescript": "4.6.3",
-    "webpack": "4.33.0",
-    "webpack-bundle-analyzer": "3.3.2",
-    "webpack-dev-server": "3.7.2"
+    "preact": "10.18.1"
   },
   "greenkeeper": {
     "ignore": []
@@ -99,46 +56,38 @@
   "eslintIgnore": [
     "**/*.min.js"
   ],
-  "runner": {
-    "sources": [
-      {
-        "name": "client",
-        "entry": "test/index.html",
-        "parcel": {
-          "outDir": "./build/client",
-          "hmr": false
-        }
-      },
-      {
-        "name": "server",
-        "entry": "test/server.js",
-        "run": true,
-        "parcel": {
-          "cacheDir": "./.cache/server",
-          "outDir": "./build/server",
-          "outFile": "index.js",
-          "target": "node",
-          "minify": false,
-          "hmr": false
-        }
-      },
-      {
-        "name": "lib",
-        "entry": "src/index.ts",
-        "run": false,
-        "parcel": {
-          "build": true,
-          "outDir": "./dist",
-          "outFile": "index.js",
-          "sourceMaps": true
-        }
-      }
-    ]
-  },
   "shader": {
     "ext": [
       "fs",
       "vs"
     ]
+  },
+  "type": "module",
+  "native": {
+    "xcode": {
+      "tools": {
+        "path": "/Applications/Xcode.app/Contents/Developer",
+        "version": {
+          "min": "2397",
+          "max": "2397"
+        }
+      }
+    }
+  },
+  "hosts": {
+    "127.0.0.1": "local.deltav.com"
+  },
+  "url": {
+    "dev": "https://local.deltav.com",
+    "figma": "NA",
+    "repo": "https://github.com/vega-studio/deltav"
+  },
+  "skeleton": {
+    "answers": {
+      "repoUrl": "https://github.com/vega-studio/deltav",
+      "repoType": "git",
+      "masterBranch": "master",
+      "figmaUrl": "NA"
+    }
   }
 }

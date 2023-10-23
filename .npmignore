@@ -15,20 +15,36 @@ npm*log-*
 *.log
 
 # -----[ Distribution ] -------------------------------------------
+# Build scripts and processes
 # scripts
-scripts
 # Remove any development Code
-src
-docs
+README.md
+tsconfig.json
+ui
+ui/**/*
+ui/assets
+ui/stories
+ui/shims-tsx.d.ts
+ui/shims-vue.d.ts
+.babelrc
+.tokens
+scripts
+dts
+bin
+public
+.browserslistrc
+tests
+.storybook
+storybook-static
+ui
+app
 loaders
-# Ensure distribution sources are included
-!dist/src
-!dist/docs
+babel.config.js
 # Remove any tests
 test
 unit-test
 # Clear out any uneeded config files of any sort
-tsconfig.json
+# tsconfig.json
 tslint.json
 webpack.config.js
 wercker.yml
@@ -44,3 +60,19 @@ app.json
 .prettierignore
 .eslintignore
 .aws-local.js
+bitbucket-pipelines.yml
+
+# -----[ Force Keep ] -------------------------------------------
+# Ensure distribution sources are included
+!dist/ui
+!dist/app
+!dist/app/client
+!dist/app/server
+!dist/types
+!dist/types/ui
+!dist/types/util
+!dist/types/**/*
+# ui is excluded, but we want all components transferred over when installed
+!ui/components
+!ui/test
+tools

@@ -1,22 +1,48 @@
-# -----[ Application ]---------------------------------------------
-node_modules
-# The actual build files
-build
-# No lock files. They cause confusion. We just don't allow carats in our package
-package-lock.json
-# Remove cache
-.cache
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# -----[ Metadata ]---------------------------------------------
-# macOS
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+.env
+
+# production
+/build
+
+# misc
 .DS_Store
-# JetBrains (IDE)
-.idea
-# VS Code (IDE)
-.vscode
-npm*log-*
-*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# -----[ Local Administrative Items ] --------------------------
-.aws-local.js
-dist.tar
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+storybook-static
+
+.tokens
+br-ui-*.tgz
+
+.VSCodeCounter
+compress-project
+project.tgz
+tsconfig.temp.json
+tsconfig.unit.json
+ReactDev.code-profile
+tools
+
+.vscode
+
+# Ignore local app/config files
+*.local.ts
+*.local.js
+*.local.tsx
+*.local.jsx
+
+# Ignore capacitor files that are outside of the devops system structure
+capacitor.config.json

@@ -8,22 +8,19 @@ import {
   Surface,
 } from "../surface";
 import { Omit } from "../types";
-import { createLayer } from "../util/create-layer";
+import { createChildLayer, createLayer } from "../util/create-layer";
 
 /**
  * Options for generating a Logging layer
  */
-interface ILogChangesLayerProps<
-  TInstance extends Instance,
-  TWrapInstance extends Instance,
-  TWrapProps extends ILayerProps<TWrapInstance>,
-> extends Omit<ILayerProps<TInstance>, "key"> {
+interface ILogChangesLayerProps<TInstance extends Instance>
+  extends Omit<ILayerProps<TInstance>, "key"> {
   /** Gets the key for the layer. */
   key: string;
   /** Provides a header to the log output to make the logs easier to understand */
   messageHeader?(): string;
   /** This is the wrapped layer initializer */
-  wrap?: LayerInitializer<TWrapInstance, TWrapProps>;
+  wrap?: LayerInitializer<Instance, ILayerProps<Instance>>;
 }
 
 /**
@@ -33,12 +30,10 @@ interface ILogChangesLayerProps<
  */
 class LogChangesLayer<
   TInstance extends Instance,
-  TWrapInstance extends Instance,
-  TWrapProps extends ILayerProps<TWrapInstance>,
-  TProps extends ILogChangesLayerProps<TInstance, TWrapInstance, TWrapProps>,
+  TProps extends ILogChangesLayerProps<TInstance>,
 > extends Layer<TInstance, TProps> {
   /** Default props for the Layer */
-  static defaultProps: ILogChangesLayerProps<any, any, any> = {
+  static defaultProps: ILogChangesLayerProps<any> = {
     data: new InstanceProvider(),
     key: "default",
     messageHeader: () => "",
@@ -129,10 +124,10 @@ export function debugLayer<
 >(
   layerClass: ILayerConstructable<TInstance, TProps> & { defaultProps: TProps },
   props: Omit<TProps, "key" | "data"> & Partial<Pick<TProps, "key" | "data">>
-): LayerInitializer<TInstance, TProps> {
-  const initializer = createLayer(LogChangesLayer, {
+) {
+  const initializer = createChildLayer(LogChangesLayer, {
     messageHeader: (): string => `CHANGES FOR: ${initializer.init[1].key}`,
-    wrap: createLayer(layerClass, props),
+    wrap: createChildLayer(layerClass, props),
     data: props.data,
   });
 

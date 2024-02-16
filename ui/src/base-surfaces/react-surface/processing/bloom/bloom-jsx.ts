@@ -4,6 +4,7 @@ import {
   FragmentOutputType,
   type ILayerMaterialOptions,
   UniformSize,
+  ShaderInjectionTarget,
 } from "../../../../types";
 import { createUniform } from "../../../../util";
 import { IPartialViewJSX } from "../../scene/view-jsx";
@@ -141,6 +142,7 @@ export function BloomJSX(props: IBloomJSX) {
           createUniform({
             name: "gamma",
             size: UniformSize.ONE,
+            shaderInjection: ShaderInjectionTarget.ALL,
             update: () => [props.gammaCorrection || 1],
           }),
         ],
@@ -158,7 +160,7 @@ export function BloomJSX(props: IBloomJSX) {
               vec3 result = mix(
                 base,
                 glow + base,
-                ((glow.r + glow.g + glow.b) / gamma)
+                ((glow.r + glow.g + glow.b) * gamma)
               );
             `
                 : `

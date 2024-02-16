@@ -1,6 +1,6 @@
 import React from "react";
 import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../../src/base-surfaces/react-surface/surface-jsx";
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle";
 import {
   AutoEasingMethod,
   Camera2D,
@@ -8,14 +8,14 @@ import {
   CircleLayer,
   ClearFlags,
   InstanceProvider,
+  LayerJSX,
   PromiseResolver,
   Surface,
+  SurfaceJSX,
   View2D,
+  ViewJSX,
   onAnimationLoop,
-} from "../../../src";
-import { LayerJSX } from "../../../src/base-surfaces/react-surface/scene/layer-jsx";
-import { ViewJSX } from "../../../src/base-surfaces/react-surface/scene/view-jsx";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
+} from "../../../../src";
 
 export default {
   title: "Deltav/2D/Circle",
@@ -44,12 +44,7 @@ export const Basic: StoryFn = (() => {
         new CircleInstance({
           center: [size.mid[0], size.mid[1]],
           radius: 40,
-          color: [
-            0,
-            Math.random() * 0.8 + 0.2,
-            Math.random() * 0.8 + 0.2,
-            1,
-          ],
+          color: [0, Math.random() * 0.8 + 0.2, Math.random() * 0.8 + 0.2, 1],
         })
       );
 
@@ -123,12 +118,7 @@ export const Advanced: StoryFn = (() => {
               size.mid[1] + radius * Math.sin(angle),
             ],
             radius: 8,
-            color: [
-              Math.random(),
-              Math.random(),
-              Math.random(),
-              1,
-            ],
+            color: [Math.random(), Math.random(), Math.random(), 1],
           })
         );
 
@@ -176,9 +166,11 @@ export const Advanced: StoryFn = (() => {
       <LayerJSX
         type={CircleLayer}
         providerRef={circleProvider}
-        config={{
-          // No additional configuration for this layer
-        }}
+        config={
+          {
+            // No additional configuration for this layer
+          }
+        }
       />
     </SurfaceJSX>
   );

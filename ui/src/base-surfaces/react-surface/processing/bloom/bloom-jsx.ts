@@ -168,7 +168,6 @@ export function BloomJSX(props: IBloomJSX) {
             `
             }
 
-
             gl_FragColor = vec4(result, 1.0);
           }
         `,

@@ -90,7 +90,7 @@ export function TrailJSX(props: ITrailJSX) {
             gl_FragColor = vec4(color, alpha);
           }
         `,
-    }) as any
+    })
   );
 
   process.push(
@@ -125,7 +125,7 @@ export function TrailJSX(props: ITrailJSX) {
           $\{out: color} = fade;
         }
       `,
-    }) as any
+    })
   );
 
   return process;

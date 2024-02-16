@@ -271,7 +271,7 @@ export const Complex_Scene: StoryFn = (() => {
       if (!noColorProvider.current) return;
       if (!noGlowProvider.current) return;
 
-      camera.current.position = [0, 0, 25];
+      camera.current.position = [0, 0, 25 * 2];
       camera.current.lookAt([0, 0, -20], [0, 1, 0]);
       const factor =
         camera.current.projectionType === CameraProjectionType.PERSPECTIVE
@@ -430,6 +430,26 @@ export const Complex_Scene: StoryFn = (() => {
           internalFormat: GLSettings.Texture.TexelDataType.RGBA,
         }}
       />
+      <TextureJSX
+        name="glowTrail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
+      <TextureJSX
+        name="glowingTrail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
       {[
         TextureSize.SCREEN_HALF,
         TextureSize.SCREEN_QUARTER,
@@ -487,6 +507,14 @@ export const Complex_Scene: StoryFn = (() => {
           }}
         />
       </SceneJSX>
+      {TrailJSX({
+        intensity: 0.9,
+        input: {
+          trail: "glowTrail",
+          add: "glow",
+        },
+        output: "glowingTrail",
+      })}
       {BloomJSX({
         name: "bloom",
         view: {
@@ -496,8 +524,9 @@ export const Complex_Scene: StoryFn = (() => {
           },
         },
         samples: 6,
+        gammaCorrection: 0.5,
         resources: [
-          "glow",
+          "glowingTrail",
           "blur1",
           "blur2",
           "blur3",

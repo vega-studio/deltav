@@ -18,7 +18,7 @@ import { ViewJSX } from "../../../src/base-surfaces/react-surface/scene/view-jsx
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 
 export default {
-  title: "Deltav/Circle",
+  title: "Deltav/2D/Circle",
   args: {},
   argTypes: {},
 };

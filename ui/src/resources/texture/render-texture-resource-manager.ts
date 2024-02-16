@@ -38,7 +38,6 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    * longer needed.
    */
   destroy() {
-    console.log("DESTROYING TEXTURE RESOURCE MANAGER");
     this.resources.forEach((r) => r.destroy());
     this.resources.clear();
   }

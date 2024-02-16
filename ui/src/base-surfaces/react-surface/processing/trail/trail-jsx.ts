@@ -1,7 +1,7 @@
 import { IView2DProps } from "../../../../2d";
-import { IRenderTextureResource } from "../../../../resources/texture/render-texture";
 import { ClearFlags } from "../../../../surface";
 import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
+import { IPartialViewJSX } from "../../scene/view-jsx";
 import { PostProcessJSX } from "../post-process-jsx";
 
 export interface ITrailJSX {
@@ -10,18 +10,18 @@ export interface ITrailJSX {
    * the trail.
    */
   input: {
-    trail: IRenderTextureResource;
-    add: IRenderTextureResource;
+    trail: string;
+    add: string;
   };
   /**
    * This specifies the texture to render the new trail to. If not provided,
    * this will render to the screen.
    */
-  output: IRenderTextureResource;
+  output: string;
   /** For debugging only. Prints generated shader to the console. */
   printShader?: boolean;
   /** Options to send to the view */
-  view?: Partial<IView2DProps>;
+  view?: IPartialViewJSX<IView2DProps>;
   /**
    * Allows you to control material options such as blend modes of the post
    * process effect.
@@ -31,19 +31,22 @@ export interface ITrailJSX {
    * The trailing effect's intensity. 1 means infinite trail. 0 means no trail
    */
   intensity?: number;
+  /** The name to apply to the scenes this effect produces */
+  name?: string;
 }
 
 /**
  * Applies a trailing effect by doing a non-clearing additive effect of another
  * texture. Then applies the result to the trail texture slightly faded.
  */
-export function TrailJSX(options: ITrailJSX) {
-  const { output, input, view } = options;
+export function TrailJSX(props: ITrailJSX) {
+  const { output, input, view } = props;
   const process: React.JSX.Element[] = [];
 
   process.push(
     PostProcessJSX({
-      printShader: options.printShader,
+      name: props.name || "trail-effect",
+      printShader: props.printShader,
       // Set the buffers we want to composite
       buffers: {
         trailTex: input.trail,
@@ -56,7 +59,9 @@ export function TrailJSX(options: ITrailJSX) {
       // Render to the screen, or to a potentially specified target
       view: {
         ...{
-          clearFlags: [ClearFlags.COLOR],
+          config: {
+            clearFlags: [ClearFlags.COLOR],
+          },
           output: {
             buffers: { [FragmentOutputType.COLOR]: output },
             depth: false,
@@ -72,9 +77,17 @@ export function TrailJSX(options: ITrailJSX) {
             // Add the trailTex and addTex but fade out the trailTex slightly
             vec4 addT = texture2D(addTex, texCoord);
             vec4 trailT = texture2D(trailTex, texCoord);
-            vec4 result = addT.rgba * addT.a + trailT.rgba * trailT.a;
 
-            gl_FragColor = result;
+            // Blend the textures
+            float alpha = addT.a + trailT.a * (1.0 - addT.a); // Compute final alpha
+            vec3 color;
+            if (alpha > 0.0) { // Avoid division by zero
+              color = (addT.rgb * addT.a + trailT.rgb * trailT.a * (1.0 - addT.a)) / alpha;
+            } else {
+              color = vec3(0.0); // Fallback to black (or any other fallback color)
+            }
+
+            gl_FragColor = vec4(color, alpha);
           }
         `,
     }) as any
@@ -82,7 +95,7 @@ export function TrailJSX(options: ITrailJSX) {
 
   process.push(
     PostProcessJSX({
-      printShader: options.printShader,
+      printShader: props.printShader,
       // Set the buffers we want to composite
       buffers: {
         tex: output,
@@ -108,7 +121,7 @@ export function TrailJSX(options: ITrailJSX) {
 
         void main() {
           vec4 fade = texture2D(tex, texCoord);
-          fade.a *= ${options.intensity || 0.7};
+          fade.rgba *= ${props.intensity || 0.7};
           $\{out: color} = fade;
         }
       `,

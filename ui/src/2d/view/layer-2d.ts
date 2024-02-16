@@ -1,5 +1,5 @@
 import { Instance } from "../../instance-provider";
-import { ILayerProps, Layer } from "../../surface";
+import { ILayerProps, Layer, LayerScene, Surface } from "../../surface";
 import { IShaderInitialization } from "../../types";
 
 export interface ILayer2DProps<TInstance extends Instance>
@@ -11,8 +11,14 @@ export interface ILayer2DProps<TInstance extends Instance>
  */
 export class Layer2D<
   TInstance extends Instance,
-  TLayerProps extends ILayer2DProps<TInstance>
+  TLayerProps extends ILayer2DProps<TInstance>,
 > extends Layer<TInstance, TLayerProps> {
+  constructor(surface: Surface, scene: LayerScene, props: TLayerProps) {
+    // We do not establish bounds in the layer. The surface manager will take care of that for us
+    // After associating the layer with the view it is a part of.
+    super(surface, scene, props);
+  }
+
   /**
    * Force the world2D methods as the base methods
    */

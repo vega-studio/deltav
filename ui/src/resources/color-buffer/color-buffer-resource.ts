@@ -40,7 +40,7 @@ export function createColorBuffer(
   return {
     key: "",
     type: ResourceType.COLOR_BUFFER,
-    ...options
+    ...options,
   };
 }
 
@@ -58,8 +58,10 @@ export function isColorBufferResource(val: any): val is IColorBufferResource {
 /**
  * This defines a general purpose color buffer resource that can be rendered into.
  */
-export class ColorBufferResource extends IdentifyByKey
-  implements IColorBufferResource {
+export class ColorBufferResource
+  extends IdentifyByKey
+  implements IColorBufferResource
+{
   /** Set the type of the resource to explicitally be an atlas resource */
   type: ResourceType.COLOR_BUFFER = ResourceType.COLOR_BUFFER;
   /** This is the height of the texture */
@@ -74,7 +76,7 @@ export class ColorBufferResource extends IdentifyByKey
    */
   colorBufferSettings?: ColorBufferOptions;
   /** The actual texture resource generated */
-  colorBuffer: ColorBuffer;
+  colorBuffer!: ColorBuffer;
 
   constructor(options: IColorBufferResource, renderer?: WebGLRenderer) {
     super(options);
@@ -102,7 +104,7 @@ export class ColorBufferResource extends IdentifyByKey
     // Establish the settings to be applied to the Color Buffer. Provide some default
     // configuration.
     this.colorBufferSettings = {
-      ...this.colorBufferSettings
+      ...this.colorBufferSettings,
     };
 
     let width, height;
@@ -132,7 +134,7 @@ export class ColorBufferResource extends IdentifyByKey
     this.colorBuffer = new ColorBuffer({
       internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA4,
       size: [width, height],
-      ...this.colorBufferSettings
+      ...this.colorBufferSettings,
     });
   }
 }

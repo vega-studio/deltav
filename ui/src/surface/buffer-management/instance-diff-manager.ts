@@ -3,9 +3,9 @@ import { ResourceRouter } from "../../resources";
 import {
   INonePickingMetrics,
   ISinglePickingMetrics,
-  LayerBufferType
+  LayerBufferType,
 } from "../../types";
-import { ILayerShaderIOInfo } from "../layer";
+import { ILayerProps, ILayerShaderIOInfo } from "../layer";
 import { BaseDiffProcessor } from "./base-diff-processor";
 import { IBufferLocationGroup } from "./buffer-manager-base";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
@@ -13,28 +13,37 @@ import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/i
 import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
 
 /** Signature of a method that handles a diff */
-export type DiffHandler<T extends Instance> = (
-  manager: BaseDiffProcessor<T>,
-  instance: T,
+export type DiffHandler<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> = (
+  manager: BaseDiffProcessor<TInstance, TProps>,
+  instance: TInstance,
   propIds: number[],
   bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
 ) => void;
 /** A set of diff handling methods in this order [change, add, remove] */
-export type DiffLookup<T extends Instance> = DiffHandler<T>[];
+export type DiffLookup<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> = DiffHandler<TInstance, TProps>[];
 
 /**
  * This interface is the bare minimum properties needed for this diff manager to map instance updates to
  * uniform changes. We don't use a Layer as a target explicitly to avoid circular/hard dependencies
  */
-export interface IInstanceDiffManagerTarget<T extends Instance> {
+export interface IInstanceDiffManagerTarget<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> {
   /** Contains the shader IO information available in the target */
-  shaderIOInfo: ILayerShaderIOInfo<T>;
+  shaderIOInfo: ILayerShaderIOInfo<TInstance>;
   /** This is the picking metrics for how Instances are picked with the mouse */
-  picking: ISinglePickingMetrics<T> | INonePickingMetrics;
+  picking: ISinglePickingMetrics<TInstance> | INonePickingMetrics;
   /** This is the resource manager for the target which let's us fetch information from an atlas for an instance */
   resource: ResourceRouter;
   /** This is the manager that links an instance to it's uniform cluster for populating the uniform buffer */
-  bufferManager: BufferManagerBase<T, IBufferLocation>;
+  bufferManager: BufferManagerBase<TInstance, TProps, IBufferLocation>;
   /** This is the buffering strategy being used */
   bufferType: LayerBufferType;
 
@@ -48,7 +57,7 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
    * WARNING: This is tied into a MAJOR performance sensitive portion of the framework. This should involve VERY simple
    * assignments at best. Do NOT perform any logic in this callback or your application WILL suffer.
    */
-  onDiffAdd?(instance: T): void;
+  onDiffAdd?(instance: TInstance): void;
 
   /**
    * This is an opportunity to clean up any instance's association with the layer it was originally a part of.
@@ -59,24 +68,27 @@ export interface IInstanceDiffManagerTarget<T extends Instance> {
    * EXTRA WARNING: You better make sure you instantiate this if you instantiated onDiffManagerAdd so you can clean out
    * any bad memory allocation choices you made.
    */
-  onDiffRemove?(instance: T): void;
+  onDiffRemove?(instance: TInstance): void;
 }
 
 /**
  * This is a simple organizational class that generates a diff processor and provides a processing tuple that is used
  * in processing the diffs.
  */
-export class InstanceDiffManager<T extends Instance> {
-  processor: BaseDiffProcessor<T>;
-  processing: DiffLookup<T>;
+export class InstanceDiffManager<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> {
+  processor?: BaseDiffProcessor<TInstance, TProps>;
+  processing?: DiffLookup<TInstance, TProps>;
 
   /**
    * This returns the proper diff processor for handling diffs
    */
   makeProcessor(
-    layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>
-  ): DiffLookup<T> {
+    layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    bufferManager: BufferManagerBase<TInstance, TProps, IBufferLocation>
+  ): DiffLookup<TInstance, TProps> {
     // If this manager has already figured out which processor to use. Just return that processor.
     if (this.processing) return this.processing;
 
@@ -89,10 +101,14 @@ export class InstanceDiffManager<T extends Instance> {
       this.processor = new UniformDiffProcessor(layer, bufferManager);
     }
 
+    if (!this.processor) {
+      throw new Error("Failed to create a diff processor");
+    }
+
     this.processing = [
       this.processor.changeInstance,
       this.processor.addInstance,
-      this.processor.removeInstance
+      this.processor.removeInstance,
     ];
 
     return this.processing;

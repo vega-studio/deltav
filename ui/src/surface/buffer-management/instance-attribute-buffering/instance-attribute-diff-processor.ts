@@ -1,17 +1,14 @@
-import { Instance } from "../../../instance-provider/instance";
-import { Mat4x4, Vec } from "../../../math";
-import { IInstanceAttributeInternal, InstanceDiff } from "../../../types";
-import { BaseDiffProcessor } from "../base-diff-processor";
-import {
-  IBufferLocation,
-  IBufferLocationGroup,
-  isBufferLocationGroup
-} from "../buffer-manager-base";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { ILayerProps } from "../../layer.js";
+import { Instance } from "../../../instance-provider/instance.js";
+import { Mat4x4, Vec } from "../../../math/index.js";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import {
   IInstanceAttributeBufferLocation,
-  IInstanceAttributeBufferLocationGroup
-} from "./instance-attribute-buffer-manager";
+  IInstanceAttributeBufferLocationGroup,
+  isInstanceAttributeBufferLocationGroup,
+} from "./instance-attribute-buffer-manager.js";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
@@ -20,26 +17,27 @@ enum DiffMode {
   /** This mode will analyze incoming buffer location changes and only update the range of changed buffer */
   PARTIAL,
   /** This mode will not spend time figuring out what has changed for a buffer, rather the whole buffer will get an update */
-  FULL
+  FULL,
 }
 
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
  */
 export class InstanceAttributeDiffProcessor<
-  T extends Instance
-> extends BaseDiffProcessor<T> {
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> extends BaseDiffProcessor<TInstance, TProps> {
   /** This is the processor's current diff mode for consuming instance updates. */
   private diffMode: DiffMode = DiffMode.PARTIAL;
 
   /** This tracks a buffer attribute's uid to the range of data that it should update */
   bufferAttributeUpdateRange: {
-    [key: number]: [IInstanceAttributeInternal<T>, number, number];
+    [key: number]: [IInstanceAttributeInternal<TInstance>, number, number];
   } = {};
 
   /** This tracks a buffer attribute's uid that will perform a complete update */
   bufferAttributeWillUpdate: {
-    [key: number]: IInstanceAttributeInternal<T>;
+    [key: number]: IInstanceAttributeInternal<TInstance>;
   } = {};
 
   /**
@@ -47,10 +45,10 @@ export class InstanceAttributeDiffProcessor<
    * of adjustments.
    */
   updateInstance: (
-    layer: IInstanceDiffManagerTarget<T>,
-    instance: T,
+    layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    instance: TInstance,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IBufferLocation>
+    bufferLocations: IInstanceAttributeBufferLocationGroup
   ) => void = this.updateInstancePartial;
 
   /**
@@ -58,7 +56,7 @@ export class InstanceAttributeDiffProcessor<
    */
   addInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     _propIds: number[],
     bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
@@ -69,7 +67,7 @@ export class InstanceAttributeDiffProcessor<
       // Otherwise, we DO need to perform an add and we link a Uniform cluster to our instance
       const newBufferLocations = manager.layer.bufferManager.add(instance);
 
-      if (isBufferLocationGroup(newBufferLocations)) {
+      if (isInstanceAttributeBufferLocationGroup(newBufferLocations)) {
         instance.active = true;
 
         if (manager.layer.onDiffAdd) {
@@ -91,7 +89,7 @@ export class InstanceAttributeDiffProcessor<
    */
   changeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     propIds: number[],
     bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
@@ -109,7 +107,7 @@ export class InstanceAttributeDiffProcessor<
    */
   removeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     _propIds: number[],
     bufferLocations?: IInstanceAttributeBufferLocationGroup
   ) {
@@ -133,10 +131,10 @@ export class InstanceAttributeDiffProcessor<
    * This performs the actual updating of buffers the instance needs to update
    */
   updateInstancePartial(
-    _layer: IInstanceDiffManagerTarget<T>,
-    instance: T,
+    _layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    instance: TInstance,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
+    bufferLocations: IInstanceAttributeBufferLocationGroup
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
@@ -145,7 +143,7 @@ export class InstanceAttributeDiffProcessor<
     let updateValue: Vec | Mat4x4;
     let updateRange;
     let childLocations: IInstanceAttributeBufferLocation[];
-    let attribute: IInstanceAttributeInternal<T>;
+    let attribute: IInstanceAttributeInternal<TInstance>;
     let attributeChangeUID;
 
     if (instance.active) {
@@ -167,7 +165,7 @@ export class InstanceAttributeDiffProcessor<
         updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
           null,
           Number.MAX_SAFE_INTEGER,
-          Number.MIN_SAFE_INTEGER
+          Number.MIN_SAFE_INTEGER,
         ];
         updateRange[0] = attribute;
         updateRange[1] = min(location.range[0], updateRange[1]);
@@ -190,7 +188,7 @@ export class InstanceAttributeDiffProcessor<
             updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
               null,
               Number.MAX_SAFE_INTEGER,
-              Number.MIN_SAFE_INTEGER
+              Number.MIN_SAFE_INTEGER,
             ];
             updateRange[0] = location.attribute;
             updateRange[1] = min(location.range[0], updateRange[1]);
@@ -210,7 +208,7 @@ export class InstanceAttributeDiffProcessor<
       updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
         null,
         Number.MAX_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER,
       ];
       updateRange[0] = attribute;
       updateRange[1] = min(location.range[0], updateRange[1]);
@@ -227,10 +225,10 @@ export class InstanceAttributeDiffProcessor<
    * rather than a chunk of it.
    */
   updateInstanceFull(
-    _layer: IInstanceDiffManagerTarget<T>,
-    instance: T,
+    _layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    instance: TInstance,
     propIds: number[],
-    bufferLocations: IBufferLocationGroup<IInstanceAttributeBufferLocation>
+    bufferLocations: IInstanceAttributeBufferLocationGroup
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
@@ -238,7 +236,7 @@ export class InstanceAttributeDiffProcessor<
     let location: IInstanceAttributeBufferLocation;
     let updateValue: Vec | Mat4x4;
     let childLocations: IInstanceAttributeBufferLocation[];
-    let attribute: IInstanceAttributeInternal<T>;
+    let attribute: IInstanceAttributeInternal<TInstance>;
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property update
@@ -255,9 +253,8 @@ export class InstanceAttributeDiffProcessor<
         attribute = location.attribute;
         updateValue = attribute.update(instance);
         location.buffer.value.set(updateValue, location.range[0]);
-        bufferAttributeWillUpdate[
-          attribute.packUID || attribute.uid
-        ] = attribute;
+        bufferAttributeWillUpdate[attribute.packUID || attribute.uid] =
+          attribute;
 
         // Now update any child attributes that would need updating based on the parent attribute changing
         if (location.childLocations) {
@@ -271,9 +268,8 @@ export class InstanceAttributeDiffProcessor<
             attribute = location.attribute;
             updateValue = attribute.update(instance);
             location.buffer.value.set(updateValue, location.range[0]);
-            bufferAttributeWillUpdate[
-              attribute.packUID || attribute.uid
-            ] = attribute;
+            bufferAttributeWillUpdate[attribute.packUID || attribute.uid] =
+              attribute;
           }
         }
       }
@@ -305,7 +301,7 @@ export class InstanceAttributeDiffProcessor<
         const attribute = update[0].bufferAttribute;
         attribute.updateRange = {
           count: update[2] - update[1],
-          offset: update[1]
+          offset: update[1],
         };
       }
     } else {
@@ -317,7 +313,7 @@ export class InstanceAttributeDiffProcessor<
         const attribute = updates[i].bufferAttribute;
         attribute.updateRange = {
           count: -1,
-          offset: 0
+          offset: 0,
         };
       }
     }
@@ -331,7 +327,7 @@ export class InstanceAttributeDiffProcessor<
    * cause the entire attribute buffer to update. If there are not enough, then we will update with
    * additional steps to only update the chunks of the buffer that are affected by the changelist.
    */
-  incomingChangeList(changes: InstanceDiff<T>[]) {
+  incomingChangeList(changes: InstanceDiff<TInstance>[]) {
     if (changes.length === 0) {
       this.diffMode = DiffMode.PARTIAL;
     } else if (changes.length > this.bufferManager.getInstanceCount() * 0.7) {

@@ -146,9 +146,9 @@ export class ResourceRouter {
    */
   request<
     TInstance extends Instance,
-    TLayerProps extends ILayerProps<TInstance>,
     TLayer extends Layer<TInstance, TLayerProps>,
-    TResourceType extends IResourceType,
+    TLayerProps extends ILayerProps<TInstance> = TLayer["props"],
+    TResourceType extends IResourceType = IResourceType,
   >(
     layer: TLayer,
     instance: TInstance,

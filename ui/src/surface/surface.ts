@@ -48,7 +48,7 @@ import { ClearFlags, IViewProps, View } from "./view";
  * Default IO expansion controllers applied to the system when explicit settings
  * are not provided.
  */
-export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
+export const DEFAULT_IO_EXPANSION = (): BaseIOExpansion[] => [
   // Basic expansion to handle writing attributes and uniforms to the shader
   new BasicIOExpansion(),
   // Expansion to write in the active attribute handler. Any expansion injected AFTER
@@ -65,8 +65,8 @@ export const DEFAULT_IO_EXPANSION: BaseIOExpansion[] = [
 /**
  * Default resource managers the system will utilize to handle default / basic resources.
  */
-export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] =
-  [
+export const DEFAULT_RESOURCE_MANAGEMENT =
+  (): ISurfaceOptions["resourceManagers"] => [
     {
       type: ResourceType.COLOR_BUFFER,
       manager: new ColorBufferResourceManager(),
@@ -85,7 +85,7 @@ export const DEFAULT_RESOURCE_MANAGEMENT: ISurfaceOptions["resourceManagers"] =
     },
   ];
 
-export const DEFAULT_SHADER_TRANSFORM: BaseShaderTransform[] = [
+export const DEFAULT_SHADER_TRANSFORM = (): BaseShaderTransform[] => [
   // Transform that handles odds and ends of 3.0 and 2.0 inconsistencies and
   // attempts tp unify them as best as possible depending on the current
   // system's operating mode.
@@ -1123,6 +1123,8 @@ export class Surface {
    * processing.
    */
   private initIOExpanders(options: ISurfaceOptions) {
+    const defaultIOExpansion = DEFAULT_IO_EXPANSION();
+
     // Handle expanders passed in as an array or blank
     if (
       Array.isArray(options.ioExpansion) ||
@@ -1131,13 +1133,13 @@ export class Surface {
       // Initialize the Shader IO expansion objects
       this.ioExpanders =
         (options.ioExpansion && options.ioExpansion.slice(0)) ||
-        (DEFAULT_IO_EXPANSION && DEFAULT_IO_EXPANSION.slice(0)) ||
+        defaultIOExpansion.slice(0) ||
         [];
     }
 
     // Handle expanders passed in as a method
     else if (options.ioExpansion instanceof Function) {
-      this.ioExpanders = options.ioExpansion(DEFAULT_IO_EXPANSION);
+      this.ioExpanders = options.ioExpansion(defaultIOExpansion);
     }
 
     // Retrieve any expansion objects the resource managers may provide
@@ -1151,6 +1153,8 @@ export class Surface {
    * rendered with this surface.
    */
   private initShaderTransforms(options: ISurfaceOptions) {
+    const defaultShaderTransforms = DEFAULT_SHADER_TRANSFORM();
+
     // Handle transforms passed in as an array or blank
     if (
       Array.isArray(options.shaderTransforms) ||
@@ -1159,15 +1163,13 @@ export class Surface {
       // Initialize the Shader IO expansion objects
       this.shaderTransforms =
         (options.shaderTransforms && options.shaderTransforms.slice(0)) ||
-        (DEFAULT_SHADER_TRANSFORM && DEFAULT_SHADER_TRANSFORM.slice(0)) ||
+        defaultShaderTransforms.slice(0) ||
         [];
     }
 
     // Handle expanders passed in as a method
     else if (options.shaderTransforms instanceof Function) {
-      this.shaderTransforms = options.shaderTransforms(
-        DEFAULT_SHADER_TRANSFORM
-      );
+      this.shaderTransforms = options.shaderTransforms(defaultShaderTransforms);
     }
   }
 
@@ -1196,6 +1198,7 @@ export class Surface {
    * surfaces.
    */
   private async initResources(options: ISurfaceOptions) {
+    const defaultResourceManagers = DEFAULT_RESOURCE_MANAGEMENT();
     // Create the controller for handling all resource managers
     this.resourceManager = new ResourceRouter();
     // Set the GL renderer to the
@@ -1204,7 +1207,7 @@ export class Surface {
     // Get the managers requested by the configuration
     const managers =
       (options.resourceManagers && options.resourceManagers.slice(0)) ||
-      (DEFAULT_RESOURCE_MANAGEMENT && DEFAULT_RESOURCE_MANAGEMENT.slice(0)) ||
+      defaultResourceManagers!.slice(0) ||
       [];
 
     // Register all of the managers for use by their type.

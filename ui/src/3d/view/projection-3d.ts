@@ -5,7 +5,7 @@ import {
   ray,
   Ray,
   rayFromPoints,
-  transform4
+  transform4,
 } from "../../math";
 import { BaseProjection } from "../../math/base-projection";
 import {
@@ -16,13 +16,13 @@ import {
   Vec2,
   Vec3,
   vec3,
-  vec4
+  vec4,
 } from "../../math/vector";
 import { Camera, CameraProjectionType } from "../../util/camera";
 
 export class Projection3D extends BaseProjection<any> {
   /** Camera used for the 3d view. */
-  camera: Camera;
+  camera!: Camera;
 
   /**
    * Maps a coordinate relative to the screen to the pixel's location within the 3D world. Remember that a camera with

@@ -2,14 +2,14 @@ import { QueuedEventHandler } from "../../event-management/queued-event-handler"
 import {
   IEventInteraction,
   IMouseInteraction,
-  ITouchInteraction
+  ITouchInteraction,
 } from "../../event-management/types";
 import { FragmentOutputType, PickType } from "../../types";
 import {
   isDefined,
   mapGetWithDefault,
   mapInjectDefault,
-  PromiseResolver
+  PromiseResolver,
 } from "../../util";
 import { Layer } from "../layer";
 import { LayerScene } from "../layer-scene";
@@ -51,93 +51,101 @@ export class LayerMouseEvents extends QueuedEventHandler {
    * for rendering to complete so commands can run, then we continue with the
    * broadcast post render.
    */
-  private willRenderResolver: PromiseResolver<void>;
-  private didRenderResolver: PromiseResolver<void>;
+  private willRenderResolver?: PromiseResolver<void>;
+  private didRenderResolver?: PromiseResolver<void>;
 
   constructor() {
     super({
       handleClick: async (e: IMouseInteraction) => {
         // Enable picking, then wait for next render
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
         // Enable picking again, then wait for end of this frame
         this.enablePicking();
-        await this.didRenderResolver.promise;
+        await this.didRenderResolver?.promise;
 
         // Broadcast interactions
         this.handleInteraction(e, (layer, view) => {
-          layer.interactions.handleMouseClick(view, e);
+          layer.interactions?.handleMouseClick(view, e);
         });
       },
 
       handleTap: async (e: ITouchInteraction) => {
         // Enable picking, then wait for next render
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
         // Enable picking again, then wait for end of this frame
         this.enablePicking();
-        await this.didRenderResolver.promise;
+        await this.didRenderResolver?.promise;
 
-        e.touches.forEach(interaction => {
+        e.touches.forEach((interaction) => {
           this.handleInteraction(interaction, (layer, view) => {
-            layer.interactions.handleTap(view, e, interaction);
+            layer.interactions?.handleTap(view, e, interaction);
           });
         });
       },
 
       handleDrag: async (e: IMouseInteraction) => {
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
         this.handleInteraction(e, (layer, view) => {
-          layer.interactions.handleMouseDrag(view, e);
+          layer.interactions?.handleMouseDrag(view, e);
         });
       },
 
       handleMouseDown: async (e: IMouseInteraction) => {
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        this.handleInteraction(e, (layer, view) =>
-          layer.interactions.handleMouseDown(view, e)
+        this.handleInteraction(
+          e,
+          (layer, view) => layer.interactions?.handleMouseDown(view, e)
         );
       },
 
       handleTouchDown: async (e: ITouchInteraction) => {
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        e.touches.forEach(interaction => {
-          this.handleInteraction(interaction, (layer, view) =>
-            layer.interactions.handleTouchDown(view, e, interaction)
+        e.touches.forEach((interaction) => {
+          this.handleInteraction(
+            interaction,
+            (layer, view) =>
+              layer.interactions?.handleTouchDown(view, e, interaction)
           );
         });
       },
 
       handleMouseUp: async (e: IMouseInteraction) => {
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        this.handleInteraction(e, (layer, view) =>
-          layer.interactions.handleMouseUp(view, e)
+        this.handleInteraction(
+          e,
+          (layer, view) => layer.interactions?.handleMouseUp(view, e)
         );
       },
 
       handleTouchUp: async (e: ITouchInteraction) => {
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        e.touches.forEach(interaction => {
-          this.handleInteraction(interaction, (layer, projection) =>
-            layer.interactions.handleTouchUp(projection, e, interaction)
+        e.touches.forEach((interaction) => {
+          this.handleInteraction(
+            interaction,
+            (layer, projection) =>
+              layer.interactions?.handleTouchUp(projection, e, interaction)
           );
         });
       },
 
       handleMouseOut: async (e: IMouseInteraction) => {
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
         // All views that are moused over should no longer be considered over and broadcast a mouse out
-        this.isOver.forEach(view => {
-          this.handleView(view, (layer, projection) =>
-            layer.interactions.handleMouseOut(projection, e)
+        this.isOver.forEach((view) => {
+          this.handleView(
+            view,
+            (layer, projection) =>
+              layer.interactions?.handleMouseOut(projection, e)
           );
         });
 
@@ -146,9 +154,9 @@ export class LayerMouseEvents extends QueuedEventHandler {
       },
 
       handleTouchOut: async (e: ITouchInteraction) => {
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        e.touches.forEach(interaction => {
+        e.touches.forEach((interaction) => {
           const isTouchOver = mapGetWithDefault(
             this.isTouchOver,
             interaction.touch.touch.identifier,
@@ -156,9 +164,11 @@ export class LayerMouseEvents extends QueuedEventHandler {
           );
 
           // All views that are moused over should no longer be considered over and broadcast a mouse out
-          isTouchOver.forEach(view => {
-            this.handleView(view, (layer, projection) =>
-              layer.interactions.handleTouchOut(projection, e, interaction)
+          isTouchOver.forEach((view) => {
+            this.handleView(
+              view,
+              (layer, projection) =>
+                layer.interactions?.handleTouchOut(projection, e, interaction)
             );
           });
 
@@ -169,31 +179,36 @@ export class LayerMouseEvents extends QueuedEventHandler {
 
       handleMouseMove: async (e: IMouseInteraction) => {
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
         // Get all of the scenes we have interacted with, and broadcast a move event for each
-        const allSceneViews = this.handleInteraction(e, (layer, view) =>
-          layer.interactions.handleMouseMove(view, e)
+        const allSceneViews = this.handleInteraction(
+          e,
+          (layer, view) => layer.interactions?.handleMouseMove(view, e)
         );
 
         // For quick lookups map all of the current SceneViews that are over
         const currentSceneViews = new Set<View<IViewProps>>();
-        allSceneViews.forEach(v => currentSceneViews.add(v));
+        allSceneViews.forEach((v) => currentSceneViews.add(v));
 
         // Detect which of the views are no longer over
-        this.isOver.forEach(view => {
+        this.isOver.forEach((view) => {
           if (!currentSceneViews.has(view)) {
-            this.handleView(view, (layer, projection) =>
-              layer.interactions.handleMouseOut(projection, e)
+            this.handleView(
+              view,
+              (layer, projection) =>
+                layer.interactions?.handleMouseOut(projection, e)
             );
           }
         });
 
         // Detect which of the views are newly over
-        currentSceneViews.forEach(sceneView => {
+        currentSceneViews.forEach((sceneView) => {
           if (!this.isOver.has(sceneView)) {
-            this.handleView(sceneView, (layer, projection) =>
-              layer.interactions.handleMouseOver(projection, e)
+            this.handleView(
+              sceneView,
+              (layer, projection) =>
+                layer.interactions?.handleMouseOver(projection, e)
             );
           }
         });
@@ -207,19 +222,19 @@ export class LayerMouseEvents extends QueuedEventHandler {
        */
       handleTouchDrag: async (e: ITouchInteraction) => {
         this.enablePicking();
-        await this.willRenderResolver.promise;
+        await this.willRenderResolver?.promise;
 
-        e.touches.forEach(interaction => {
+        e.touches.forEach((interaction) => {
           // Get all of the scenes we have interacted with, and broadcast a move event for each
           const allSceneViews = this.handleInteraction(
             interaction,
             (layer, view) =>
-              layer.interactions.handleTouchMove(view, e, interaction)
+              layer.interactions?.handleTouchMove(view, e, interaction)
           );
 
           // For quick lookups map all of the current SceneViews that are over
           const currentSceneViews = new Set<View<IViewProps>>();
-          allSceneViews.forEach(v => currentSceneViews.add(v));
+          allSceneViews.forEach((v) => currentSceneViews.add(v));
           const isTouchOver = mapInjectDefault(
             this.isTouchOver,
             interaction.touch.touch.identifier,
@@ -227,19 +242,27 @@ export class LayerMouseEvents extends QueuedEventHandler {
           );
 
           // Detect which of the views are no longer over
-          isTouchOver.forEach(view => {
+          isTouchOver.forEach((view) => {
             if (!currentSceneViews.has(view)) {
-              this.handleView(view, (layer, projection) =>
-                layer.interactions.handleTouchOut(projection, e, interaction)
+              this.handleView(
+                view,
+                (layer, projection) =>
+                  layer.interactions?.handleTouchOut(projection, e, interaction)
               );
             }
           });
 
           // Detect which of the views are newly over
-          currentSceneViews.forEach(sceneView => {
+          currentSceneViews.forEach((sceneView) => {
             if (!isTouchOver.has(sceneView)) {
-              this.handleView(sceneView, (layer, projection) =>
-                layer.interactions.handleTouchOver(projection, e, interaction)
+              this.handleView(
+                sceneView,
+                (layer, projection) =>
+                  layer.interactions?.handleTouchOver(
+                    projection,
+                    e,
+                    interaction
+                  )
               );
             }
           });
@@ -250,7 +273,7 @@ export class LayerMouseEvents extends QueuedEventHandler {
             currentSceneViews
           );
         });
-      }
+      },
     });
   }
 
@@ -270,7 +293,7 @@ export class LayerMouseEvents extends QueuedEventHandler {
 
       for (let k = 0, kMax = scene.layers.length; k < kMax; ++k) {
         const layer = scene.layers[k];
-        delete layer.interactions.colorPicking;
+        delete layer.interactions?.colorPicking;
       }
     }
 
@@ -307,7 +330,7 @@ export class LayerMouseEvents extends QueuedEventHandler {
 
     // Now retrieve and convert each view under the mouse to the scene view it coincides with
     return e.target.views
-      .map(viewItem => viewByViewId.get(viewItem.view.id))
+      .map((viewItem) => viewByViewId.get(viewItem.view.id))
       .filter(isDefined);
   }
 

@@ -3,13 +3,13 @@ import { Attribute, Geometry, Material, Model } from "../../../gl";
 import {
   IMaterialUniform,
   isUniformVec4Array,
-  MaterialUniformType
+  MaterialUniformType,
 } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
 import { Vec2, Vec4 } from "../../../math";
 import { IInstanceAttribute } from "../../../types";
 import { uid } from "../../../util/uid";
-import { Layer } from "../../layer";
+import { ILayerProps, Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
 import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
@@ -79,10 +79,10 @@ export interface InstanceUniformBuffer {
  * If we remove instances, we must free up the uniform set so that others can use the uniforms. While the uniforms
  * are not in use, the instance should not be rendering.
  */
-export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
-  T,
-  IUniformBufferLocation
-> {
+export class UniformBufferManager<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> extends BufferManagerBase<TInstance, TProps, IUniformBufferLocation> {
   /** The number of uniform blocks an instance requires */
   private uniformBlocksPerInstance: number;
   /** The generated buffers by this manager */
@@ -97,12 +97,12 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     InstanceUniformBuffer
   >();
 
-  constructor(layer: Layer<T, any>, scene: LayerScene) {
+  constructor(layer: Layer<TInstance, any>, scene: LayerScene) {
     super(layer, scene);
 
     let maxUniformBlock: number = 0;
     layer.shaderIOInfo.instanceAttributes.forEach(
-      (attributes: IInstanceAttribute<T>) => {
+      (attributes: IInstanceAttribute<TInstance>) => {
         maxUniformBlock = Math.max(attributes.block || 0, maxUniformBlock);
       }
     );
@@ -114,7 +114,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * This adds an instance to the manager and gives the instance an associative
    * block of uniforms to work with.
    */
-  add = (instance: T) => {
+  add = (instance: TInstance) => {
     // If there are no available buffers, we must add a buffer
     if (this.availableClusters.length <= 0) {
       this.makeNewBuffer();
@@ -137,7 +137,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * Free all resources this manager may be holding onto
    */
   destroy() {
-    this.buffers.forEach(buffer => {
+    this.buffers.forEach((buffer) => {
       buffer.geometry.destroy();
       buffer.material.dispose();
     });
@@ -147,7 +147,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * This retireves the uniforms associated with an instance, or returns nothing
    * if the instance has not been associated yet.
    */
-  getBufferLocations(instance: T) {
+  getBufferLocations(instance: TInstance) {
     return this.instanceToCluster[instance.uid];
   }
 
@@ -178,7 +178,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
   /**
    * Checks to see if the instance is managed by this manager.
    */
-  managesInstance(instance: T) {
+  managesInstance(instance: TInstance) {
     return this.instanceToCluster[instance.uid] === undefined;
   }
 
@@ -186,7 +186,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
    * Disassociates an instance with it's group of uniforms and makes the instance
    * in the buffer no longer drawable.
    */
-  remove = function(instance: T) {
+  remove = (instance: TInstance) => {
     const cluster = this.instanceToCluster[instance.uid];
 
     // If the instance is associated with a cluster, we can add the cluster back to being available
@@ -240,7 +240,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Needs to have it's own unique draw range per buffer for optimal
     // Performance
     const newGeometry = new Geometry();
-    shaderIOInfo.vertexAttributes.forEach(attribute => {
+    shaderIOInfo.vertexAttributes.forEach((attribute) => {
       if (attribute.materialAttribute) {
         newGeometry.addAttribute(attribute.name, attribute.materialAttribute);
       }
@@ -259,7 +259,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     // Ensure the draw range covers every instance in the geometry.
     newModel.vertexDrawRange = [
       0,
-      shaderIOInfo.maxInstancesPerBuffer * shaderIOInfo.instanceVertexCount
+      shaderIOInfo.maxInstancesPerBuffer * shaderIOInfo.instanceVertexCount,
     ];
 
     // Make our new buffer which will manage the geometry and everything necessary
@@ -270,7 +270,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       geometry: newGeometry,
       lastInstance: 0,
       material: newMaterial,
-      model: newModel
+      model: newModel,
     };
 
     this.buffers.push(buffer);
@@ -286,10 +286,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
     if (isUniformVec4Array(instanceData)) {
       // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
       instanceData.value = instanceData.value.map<Vec4>(() => [
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        0.0, 0.0, 0.0, 0.0,
       ]);
     } else {
       console.warn(
@@ -304,7 +301,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
       shaderIOInfo.instanceAttributes[0],
       {
         bufferAttribute: new Attribute(new Float32Array(1), 1),
-        uid: uid()
+        uid: uid(),
       }
     );
 
@@ -314,7 +311,7 @@ export class UniformBufferManager<T extends Instance> extends BufferManagerBase<
         // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
-        range: [uniformIndex, 0]
+        range: [uniformIndex, 0],
       };
 
       uniformIndex += this.uniformBlocksPerInstance;

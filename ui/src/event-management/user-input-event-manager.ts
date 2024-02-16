@@ -17,7 +17,7 @@ import {
   ISingleTouchInteraction,
   ITouchInteraction,
   ITouchMetrics,
-  IWheelMetrics
+  IWheelMetrics,
 } from "./types";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a
@@ -54,7 +54,7 @@ export class UserInputEventManager {
    * This is list of Event Managers that receive the events and gestures which
    * respond to the events and perform actions.
    */
-  eventManagers: EventManager[];
+  eventManagers: EventManager[] = [];
   /** This is the quad tree for finding intersections with the mouse */
   quadTree?: QuadTree<Bounds<View<IViewProps>>>;
   /** The parent layer surface this event manager is beneath */
@@ -157,12 +157,12 @@ export class UserInputEventManager {
           startView: viewsUnderMouse[0].d,
           event,
           wheel: this.makeWheel(event),
-          button: -1
+          button: -1,
         };
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleWheel(interaction);
         });
 
@@ -176,7 +176,7 @@ export class UserInputEventManager {
 
       if ("addEventListener" in element) {
         (element as any).addEventListener("DOMMouseScroll", wheelHandler);
-        this.eventCleanup.push(["DOMMouseScroll", wheelHandler]);
+        this.eventCleanup.push(["DOMMouseScroll", wheelHandler as any]);
       }
     }
 
@@ -193,7 +193,7 @@ export class UserInputEventManager {
       mouseMetrics.currentPosition = mouse;
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.eventManagers.forEach(controller => {
+      this.eventManagers.forEach((controller) => {
         controller.handleMouseOut(interaction);
       });
     };
@@ -216,7 +216,7 @@ export class UserInputEventManager {
           startView: viewsUnderMouse[0].d,
           event,
           wheel: this.makeWheel(),
-          button: -1
+          button: -1,
         };
       }
 
@@ -229,7 +229,7 @@ export class UserInputEventManager {
       mouseMetrics.canClick = false;
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.eventManagers.forEach(controller => {
+      this.eventManagers.forEach((controller) => {
         controller.handleMouseMove(interaction);
       });
 
@@ -258,12 +258,12 @@ export class UserInputEventManager {
         startView: downViews[0].d,
         event,
         wheel: this.makeWheel(),
-        button: event.button
+        button: event.button,
       };
 
       const interaction = this.makeMouseInteraction(mouseMetrics);
 
-      this.eventManagers.forEach(controller => {
+      this.eventManagers.forEach((controller) => {
         controller.handleMouseDown(interaction);
       });
 
@@ -285,7 +285,7 @@ export class UserInputEventManager {
 
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleDrag(interaction);
         });
 
@@ -296,14 +296,14 @@ export class UserInputEventManager {
         elementMovedBeforeDocMoved = false;
       };
 
-      document.onmouseup = _event => {
+      document.onmouseup = (_event) => {
         document.onmousemove = null;
         document.onmouseup = null;
         document.onmouseover = null;
         mouseMetrics = undefined;
       };
 
-      document.onmouseover = event => {
+      document.onmouseover = (event) => {
         if (!mouseMetrics) return;
 
         const mouse = eventElementPosition(event, element);
@@ -315,7 +315,7 @@ export class UserInputEventManager {
         mouseMetrics.currentPosition = mouse;
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleMouseOver(interaction);
         });
 
@@ -334,7 +334,7 @@ export class UserInputEventManager {
         mouseMetrics.button = event.button;
         const interaction = this.makeMouseInteraction(mouseMetrics);
 
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleMouseUp(interaction);
         });
 
@@ -343,7 +343,7 @@ export class UserInputEventManager {
           mouseMetrics.canClick &&
           Date.now() - mouseMetrics.startTime < VALID_CLICK_DELAY
         ) {
-          this.eventManagers.forEach(controller => {
+          this.eventManagers.forEach((controller) => {
             controller.handleClick(interaction);
           });
         }
@@ -354,11 +354,11 @@ export class UserInputEventManager {
       // Text will not be selected when it is being dragged
       const experimental = element as any;
       if (experimental.onselectstart !== undefined) {
-        experimental.onselectstart = function() {
+        experimental.onselectstart = function () {
           return false;
         };
       } else {
-        (element as any).addEventListener("selectstart", function() {
+        (element as any).addEventListener("selectstart", function () {
           event.preventDefault();
         });
       }
@@ -382,7 +382,7 @@ export class UserInputEventManager {
      * Converts Touch interaction list to touch metrics
      */
     function getTouchMetrics(touches: ISingleTouchInteraction[]) {
-      return touches.map(t => t.touch);
+      return touches.map((t) => t.touch);
     }
 
     /**
@@ -438,7 +438,7 @@ export class UserInputEventManager {
 
         return metrics
           .sort(sortByIdentifier)
-          .map(m => m.touch.identifier)
+          .map((m) => m.touch.identifier)
           .join("_");
       },
 
@@ -550,7 +550,7 @@ export class UserInputEventManager {
             return touch.startRelative.get(primary) || [0, 0];
           }
         );
-      }
+      },
     };
 
     (element as any).ontouchstart = (event: TouchEvent) => {
@@ -579,7 +579,7 @@ export class UserInputEventManager {
             startView,
             previousPosition: position,
             startRelative: new Map(),
-            touch
+            touch,
           };
 
           // Track the information with the touch
@@ -618,26 +618,26 @@ export class UserInputEventManager {
         const downEvent: ITouchInteraction = {
           touches: singleInteractions,
           allTouches: allTouches
-            .map(t => currentTouchInteractions.get(t.touch.identifier))
+            .map((t) => currentTouchInteractions.get(t.touch.identifier))
             .filter(isDefined),
-          multitouch: multiTouchInteraction
+          multitouch: multiTouchInteraction,
         };
 
         // Broadcast to the controllers
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleTouchDown(downEvent);
         });
       }
 
       // Add all of the document events
-      document.ontouchend = event => {
+      document.ontouchend = (event) => {
         documenttouchend.call(document, event);
         document.ontouchend = null;
         document.ontouchcancel = null;
         document.ontouchmove = null;
       };
 
-      document.ontouchcancel = event => {
+      document.ontouchcancel = (event) => {
         documenttouchcancel.call(document, event);
         document.ontouchend = null;
         document.ontouchcancel = null;
@@ -674,11 +674,11 @@ export class UserInputEventManager {
           const tapEvent: ITouchInteraction = {
             touches: interactions,
             allTouches,
-            multitouch: multiTouchInteraction
+            multitouch: multiTouchInteraction,
           };
 
           // Broadcast to the controllers
-          this.eventManagers.forEach(controller => {
+          this.eventManagers.forEach((controller) => {
             controller.handleTap(tapEvent);
           });
         }
@@ -690,18 +690,18 @@ export class UserInputEventManager {
       }
 
       if (upTouches.length > 0) {
-        const interactions = upTouches.map(metrics =>
+        const interactions = upTouches.map((metrics) =>
           this.makeSingleTouchInteraction(metrics)
         );
 
         const moveEvent: ITouchInteraction = {
           touches: interactions,
           allTouches,
-          multitouch: multiTouchInteraction
+          multitouch: multiTouchInteraction,
         };
 
         // Broadcast to the controllers
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleTouchUp(moveEvent);
         });
       }
@@ -735,7 +735,7 @@ export class UserInputEventManager {
               currentPosition: position,
               deltaPosition,
               previousPosition: trackedTouch.currentPosition,
-              touch
+              touch,
             });
             continue;
           }
@@ -747,27 +747,27 @@ export class UserInputEventManager {
             currentPosition: position,
             deltaPosition,
             previousPosition: trackedTouch.currentPosition,
-            touch
+            touch,
           });
         }
       }
 
       if (moved.length > 0) {
         const all = moved.concat(unmoved);
-        const interactions = moved.map(metrics =>
+        const interactions = moved.map((metrics) =>
           this.makeSingleTouchInteraction(metrics)
         );
 
         const moveEvent: ITouchInteraction = {
           touches: interactions,
           allTouches: all
-            .map(m => currentTouchInteractions.get(m.touch.identifier))
+            .map((m) => currentTouchInteractions.get(m.touch.identifier))
             .filter(isDefined),
-          multitouch: multiTouchInteraction
+          multitouch: multiTouchInteraction,
         };
 
         // Broadcast to the controllers
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleTouchDrag(moveEvent);
         });
       }
@@ -796,18 +796,18 @@ export class UserInputEventManager {
       }
 
       if (upTouches.length > 0) {
-        const interactions = upTouches.map(metrics =>
+        const interactions = upTouches.map((metrics) =>
           this.makeSingleTouchInteraction(metrics)
         );
 
         const moveEvent: ITouchInteraction = {
           touches: interactions,
           allTouches,
-          multitouch: multiTouchInteraction
+          multitouch: multiTouchInteraction,
         };
 
         // Broadcast to the controllers
-        this.eventManagers.forEach(controller => {
+        this.eventManagers.forEach((controller) => {
           controller.handleTouchCancelled(moveEvent);
         });
       }
@@ -968,34 +968,34 @@ export class UserInputEventManager {
       canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       mouse,
       screen: {
-        position: mouse.currentPosition
+        position: mouse.currentPosition,
       },
       start: {
         position: startView.projection.screenToView(mouse.start),
         view: startView,
-        views: startViews.map(v => {
+        views: startViews.map((v) => {
           if (!v.d) v.d = emptyView;
 
           return {
             position: v.d.projection.screenToView(mouse.start),
-            view: v.d
+            view: v.d,
           };
-        })
+        }),
       },
       target: {
         position: targetSceneView.projection.screenToView(
           mouse.currentPosition
         ),
         view: targetSceneView,
-        views: hitViews.map(v => {
+        views: hitViews.map((v) => {
           if (!v.d) v.d = emptyView;
 
           return {
             position: v.d.projection.screenToView(mouse.currentPosition),
-            view: v.d
+            view: v.d,
           };
-        })
-      }
+        }),
+      },
     };
 
     this.currentInteraction = interaction;
@@ -1018,32 +1018,32 @@ export class UserInputEventManager {
       canvas: isOffscreenCanvas(this.context) ? undefined : this.context,
       touch,
       screen: {
-        position
+        position,
       },
       start: {
         position: startView.projection.screenToView(touch.start),
         view: startView,
-        views: this.getViewsUnderPosition(touch.start).map(v => {
+        views: this.getViewsUnderPosition(touch.start).map((v) => {
           if (!v.d) v.d = emptyView;
 
           return {
             position: v.d.projection.screenToView(touch.start),
-            view: v.d
+            view: v.d,
           };
-        })
+        }),
       },
       target: {
         position: targetSceneView.projection.screenToView(position),
         view: targetSceneView,
-        views: hitViews.map(v => {
+        views: hitViews.map((v) => {
           if (!v.d) v.d = emptyView;
 
           return {
             position: v.d.projection.screenToView(position),
-            view: v.d
+            view: v.d,
           };
-        })
-      }
+        }),
+      },
     };
 
     this.currentInteraction = interaction;
@@ -1068,7 +1068,7 @@ export class UserInputEventManager {
     // With all combinations in place, we can now find any combination that newly exists as a result of the new touches.
     for (let i = 0, iMax = allCombinations.length; i < iMax; ++i) {
       const combo = allCombinations[i];
-      const id = combo.map(metrics => metrics.touch.identifier).join("_");
+      const id = combo.map((metrics) => metrics.touch.identifier).join("_");
       let multitouch = multiTouchLookup.get(id);
 
       if (!multitouch) {
@@ -1080,7 +1080,7 @@ export class UserInputEventManager {
           currentCenter: center,
           currentRotation: this.getAverageAngle(combo, center),
           centerDelta: [0, 0],
-          rotationDelta: 0
+          rotationDelta: 0,
         };
 
         multiTouchLookup.set(id, multitouch);
@@ -1103,7 +1103,7 @@ export class UserInputEventManager {
 
     for (let i = 0, iMax = allCombinations.length; i < iMax; ++i) {
       const combo = allCombinations[i];
-      const id = combo.map(metrics => metrics.touch.identifier).join("_");
+      const id = combo.map((metrics) => metrics.touch.identifier).join("_");
       const multitouch = multiTouchLookup.get(id);
 
       if (multitouch) {
@@ -1143,14 +1143,14 @@ export class UserInputEventManager {
   makeWheel(event?: WheelEvent): IWheelMetrics {
     if (!event) {
       return {
-        delta: [0, 0]
+        delta: [0, 0],
       };
     }
 
     const wheel = normalizeWheel(event);
 
     return {
-      delta: [wheel.pixelX, wheel.pixelY]
+      delta: [wheel.pixelX, wheel.pixelY],
     };
   }
 
@@ -1187,7 +1187,7 @@ export class UserInputEventManager {
       experimental.onmousewheel = null;
     }
 
-    this.eventCleanup.forEach(event => {
+    this.eventCleanup.forEach((event) => {
       this.context.removeEventListener(event[0], event[1]);
     });
   }

@@ -2,7 +2,7 @@ import { Material } from "../../gl";
 import { Instance } from "../../instance-provider/instance";
 import { Vec2, Vec4 } from "../../math";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
-import { Layer } from "../layer";
+import { ILayerProps, Layer } from "../layer";
 import { generateLayerMaterial } from "../layer-processing";
 import { LayerScene } from "../layer-scene";
 
@@ -53,11 +53,13 @@ export interface IBufferLocation {
  * instance attribute used in updates. So a grouping is several buffer locations that are keyed by
  * the instance's property's UIDs.
  */
-export interface IBufferLocationGroup<T extends IBufferLocation> {
+export interface IBufferLocationGroup<
+  TBufferLocation extends IBufferLocation = IBufferLocation,
+> {
   /** This is the instance index WITHIN THE BUFFERS. This does NOT have relevance to Instance type objects */
   instanceIndex: number;
   /** This is a map of property UIDs to an associated buffer location */
-  propertyToBufferLocation: { [key: number]: T };
+  propertyToBufferLocation: { [key: number]: TBufferLocation };
 }
 
 /**
@@ -70,12 +72,13 @@ export interface IBufferLocationGroup<T extends IBufferLocation> {
  */
 export abstract class BufferManagerBase<
   TInstance extends Instance,
-  TBufferLocation extends IBufferLocation
+  TProps extends ILayerProps<TInstance>,
+  TBufferLocation extends IBufferLocation,
 > {
   /** This is the list of changes in effect while this manager is processing requests */
   changeListContext?: InstanceDiff<TInstance>[];
   /** The layer this manager glues Instances to Buffers */
-  layer: Layer<TInstance, any>;
+  layer: Layer<TInstance, TProps>;
   /** The scene the layer is injecting elements into */
   scene?: LayerScene;
 
@@ -90,7 +93,10 @@ export abstract class BufferManagerBase<
   /**
    * This adds an instance to the manager and thus ties the instance to an IBuffer location
    */
-  add: (instance: TInstance) => TBufferLocation | IBufferLocationGroup<TBufferLocation> | undefined = () => void 0;
+  add: (
+    instance: TInstance
+  ) => TBufferLocation | IBufferLocationGroup<TBufferLocation> | undefined =
+    () => void 0;
 
   /**
    * This allows a manager to clean up any contextual information it may have stored while processing changes.
@@ -169,7 +175,7 @@ export abstract class BufferManagerBase<
    * Disassociates an instance with it's buffer location and makes the instance
    * in the buffer no longer drawable.
    */
-  remove: (instance: TInstance) => TInstance = i => i;
+  remove: (instance: TInstance) => TInstance = (i) => i;
 
   /**
    * Removes the manager from the scene it applied itself to.

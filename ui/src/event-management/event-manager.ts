@@ -8,7 +8,7 @@ import { UserInputEventManager } from "./user-input-event-manager";
  * Classes can extend this and override the methods to respond to events.
  */
 export abstract class EventManager {
-  private userInputManager: UserInputEventManager;
+  private userInputManager!: UserInputEventManager;
 
   /** Allows an event manager to access it's governing surface */
   get surface() {

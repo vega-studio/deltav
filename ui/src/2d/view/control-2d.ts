@@ -1,6 +1,6 @@
 import {
   AutoEasingMethod,
-  IAutoEasingMethod
+  IAutoEasingMethod,
 } from "../../math/auto-easing-method";
 import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector";
 import { Surface } from "../../surface";
@@ -46,7 +46,7 @@ export class Control2D {
   private startScaleTime: number = 0;
   private scaleEndTime: number = 0;
   /** This is the surface the camera is controlled by */
-  surface: Surface;
+  surface?: Surface;
   /** When set, this will broadcast any change in the camera that will affect the view range */
   private onViewChange?: (camera: Camera2D, view: string) => void;
   /** Flag indicating the camera needs to broadcast it's changes */
@@ -81,7 +81,7 @@ export class Control2D {
    * Adjusts offset to set the middle at the provided location relative to a provided view.
    */
   centerOn(viewId: string, position: Vec3) {
-    const viewBounds = this.surface.getViewSize(viewId);
+    const viewBounds = this.surface?.getViewSize(viewId);
     if (!viewBounds) return;
     const midScreen: Vec3 = [viewBounds.width / 2, viewBounds.height / 2, 0];
     const fromScreenCenter: Vec3 = subtract3(

@@ -10,7 +10,7 @@ import { Control2D, IControl2DOptions } from "./control-2d";
  */
 export class Camera2D extends Camera {
   /** These are the 2d controls to make manipulating a 2D world easier */
-  _control2D: Control2D;
+  _control2D!: Control2D;
 
   get control2D(): Control2D {
     return this._control2D;
@@ -37,7 +37,7 @@ export class Camera2D extends Camera {
       bottom: 100,
       near: -100,
       far: 100000,
-      type: CameraProjectionType.ORTHOGRAPHIC
+      type: CameraProjectionType.ORTHOGRAPHIC,
     });
 
     // Generate the controller that manipulates our 2D world

@@ -7,7 +7,7 @@ import {
   ILayerPropsInternal,
   Layer,
   LayerInitializer,
-  LayerInitializerInternal
+  LayerInitializerInternal,
 } from "./layer";
 import { generateDefaultScene } from "./layer-processing/generate-default-scene";
 import { Surface } from "./surface";
@@ -24,7 +24,7 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
   /**
    * This decalres all of the layers that should be applied to this scene.
    */
-  layers: LayerInitializer[];
+  layers: LayerInitializer<Instance, ILayerProps<Instance>>[];
   /** Helps assert a guaranteed rendering order for scenes. Lower numbers reender first. */
   order?: number;
   /**
@@ -50,7 +50,7 @@ export class LayerScene extends IdentifyByKey {
   /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
   layerDiffs!: ReactiveDiff<
     Layer<Instance, ILayerProps<Instance>>,
-    LayerInitializer
+    LayerInitializer<Instance, ILayerProps<Instance>>
   >;
   /** Helps assert a guaranteed render order for scenes. Lower numbers render first. */
   order?: number;
@@ -133,7 +133,7 @@ export class LayerScene extends IdentifyByKey {
       },
 
       destroyItem: async (
-        initializer: LayerInitializer,
+        initializer: LayerInitializer<Instance, ILayerProps<Instance>>,
         layer: Layer<Instance, ILayerProps<Instance>>
       ) => {
         debug("Destroying layer", initializer.key);
@@ -142,7 +142,7 @@ export class LayerScene extends IdentifyByKey {
       },
 
       updateItem: async (
-        initializer: LayerInitializer,
+        initializer: LayerInitializer<Instance, ILayerProps<Instance>>,
         layer: Layer<Instance, ILayerProps<Instance>>
       ) => {
         const props: ILayerPropsInternal<Instance> = initializer.init[1];
@@ -197,7 +197,7 @@ export class LayerScene extends IdentifyByKey {
         else {
           this.layerDiffs.inline(layer.childLayers());
         }
-      }
+      },
     });
 
     // Create the diff manager to handle the views coming in.
@@ -237,7 +237,7 @@ export class LayerScene extends IdentifyByKey {
         if (this.surface) {
           this.surface.userInputManager.waitingForRender = true;
         }
-      }
+      },
     });
 
     // Now add in the initial data into our diff objects
@@ -277,6 +277,6 @@ export class LayerScene extends IdentifyByKey {
     // After the views and layers have been updated and created, we can now tell
     // the views to establish their render targets as creating the render
     // targets is dependent on how the layer's analyzed the output of the views
-    this.views.forEach(view => view.createRenderTarget());
+    this.views.forEach((view) => view.createRenderTarget());
   }
 }

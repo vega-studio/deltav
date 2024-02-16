@@ -7,17 +7,17 @@ import { IInstanceAttribute, IUniform } from "../../types";
  */
 export class MetricsProcessing {
   /** This is an instance's max listed block */
-  instanceMaxBlock: number;
+  instanceMaxBlock!: number;
   /** This is the number of blocks each instance will use */
-  blocksPerInstance: number;
+  blocksPerInstance!: number;
   /** This is how many uniform blocks the current device can utilize in a shader */
-  maxUniforms: number;
+  maxUniforms!: number;
   /** This reflects how many uniform blocks are available for instancing */
-  maxUniformsForInstancing: number;
+  maxUniformsForInstancing!: number;
   /** Get the number of instances the client's system supports specifically for uniform instancing */
-  maxInstancesPerUniformBuffer: number;
+  maxInstancesPerUniformBuffer!: number;
   /** This is the total blocks to be used in our uniform buffer for handling instances */
-  totalInstanceUniformBlocks: number;
+  totalInstanceUniformBlocks!: number;
 
   /**
    * This calculates how many uniform blocks are utilized based on the input uniforms
@@ -42,7 +42,7 @@ export class MetricsProcessing {
     this.instanceMaxBlock = 0;
 
     // First find the max block to be utilized
-    instanceAttributes.forEach(attribute => {
+    instanceAttributes.forEach((attribute) => {
       this.instanceMaxBlock = Math.max(
         this.instanceMaxBlock,
         attribute.block || 0

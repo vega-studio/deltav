@@ -99,6 +99,16 @@ export function createView<TViewProps extends IViewProps>(
   };
 }
 
+export type ViewOutputBuffers = Record<
+  number,
+  IRenderTextureResource | IColorBufferResource | undefined
+>;
+
+export type ViewDepthBuffer =
+  | IRenderTextureResource
+  | IColorBufferResource
+  | boolean;
+
 /**
  * Defines the input metrics of a view for a scene.
  */
@@ -145,16 +155,13 @@ export interface IViewProps extends IdentifyByKeyOptions {
      * These should be targets specifying resource keys and provide outputTypes
      * to match information potentially provided by the layers.
      */
-    buffers: Record<
-      number,
-      IRenderTextureResource | IColorBufferResource | undefined
-    >;
+    buffers: ViewOutputBuffers;
     /**
      * Set to true to include a depth buffer the system will generate for you.
      * Set to a resource id to target an output texture to store the depth
      * buffer. Set to false to not have the depth buffer used or calculated.
      */
-    depth: IRenderTextureResource | IColorBufferResource | boolean;
+    depth: ViewDepthBuffer;
   };
   /**
    * This specifies the bounds on the canvas this camera will render to. This

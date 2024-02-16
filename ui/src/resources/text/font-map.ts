@@ -4,11 +4,7 @@ import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { PackNode } from "../texture/pack-node";
 import { SubTexture } from "../texture/sub-texture";
-import {
-  FontManager,
-  FontMapSource,
-  IFontResourceOptions
-} from "./font-manager";
+import { FontMapSource, IFontResourceOptions } from "./font-manager";
 import { FontRenderer, KerningPairs } from "./font-renderer";
 
 import Debug from "debug";
@@ -21,7 +17,7 @@ export enum FontMapGlyphType {
   /** Signed distance field glyphs */
   SDF,
   /** Multichannel signed distance fields */
-  MSDF
+  MSDF,
 }
 
 export interface IFontMapOptions extends IFontResourceOptions {
@@ -74,7 +70,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * The number of glyphs successfully registered with this font map. This is used to determine the
    * position of the next glyph for the font map.
    */
-  glyphCount: number;
+  glyphCount: number = 0;
   /**
    * This maps all of the glyphs this resource provides for to the SubTexture where the glyph is rendered
    * on the resource.
@@ -86,18 +82,16 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * for the font map yet.
    */
   kerning: KerningPairs = {};
-  /** This is the manager storing the Font Map */
-  manager: FontManager;
   /** Tracks how the glyphs are packed into the map */
   packing: PackNode<SubTexture>;
   /** This is the calculated width of a space for the font map */
   spaceWidth: number = 0;
   /** The base texture where the font map is stored */
-  texture: Texture;
+  texture?: Texture;
   /**
    * The settings applied to the texture object itself. This is managed by the type of glyph in use.
    */
-  private textureSettings: TextureOptions;
+  private textureSettings?: TextureOptions;
   /**
    * This finishes establishing this font map as a resource that is a IFontMapResourceOptions
    */
@@ -110,7 +104,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     this.fontSource = options.fontSource;
 
     if (options.characters) {
-      options.characters.forEach(pair => {
+      options.characters.forEach((pair) => {
         this.doRegisterGlyph(pair[0], pair[1]);
       });
     }
@@ -220,12 +214,12 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       textureSettings = {
         generateMipMaps: true,
         premultiplyAlpha: true,
-        ...this.textureSettings
+        ...this.textureSettings,
       };
     } else {
       textureSettings = {
         generateMipMaps: true,
-        premultiplyAlpha: true
+        premultiplyAlpha: true,
       };
     }
 
@@ -234,9 +228,9 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       data: {
         width: size[0],
         height: size[1],
-        buffer: null
+        buffer: null,
       },
-      ...textureSettings
+      ...textureSettings,
     });
   }
 
@@ -244,7 +238,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    * Free resources for this manager
    */
   destroy() {
-    this.texture.destroy();
+    this.texture?.destroy();
   }
 
   /**
@@ -351,7 +345,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           glyphs: "",
           positions: [],
           size: [0, 0],
-          text: ""
+          text: "",
         } as KernedLayout;
       }
 
@@ -588,7 +582,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       offset = add2(add2(offset, scale2(kern, fontScale)), [
         whiteSpaceCount * whiteSpacing * fontScale +
           (i === 0 ? 0 : letterSpacing),
-        0
+        0,
       ]);
 
       // Copy the offset to our output positions for the character
@@ -627,7 +621,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
       glyphs,
       positions,
       size,
-      text
+      text,
     };
   }
 
@@ -642,7 +636,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.LinearMipMapLinear,
           internalFormat: GLSettings.Texture.TexelDataType.LuminanceAlpha,
-          format: GLSettings.Texture.TexelDataType.LuminanceAlpha
+          format: GLSettings.Texture.TexelDataType.LuminanceAlpha,
         };
         break;
 
@@ -652,7 +646,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
           internalFormat: GLSettings.Texture.TexelDataType.Luminance,
-          format: GLSettings.Texture.TexelDataType.Luminance
+          format: GLSettings.Texture.TexelDataType.Luminance,
         };
         break;
 
@@ -663,7 +657,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
           minFilter: GLSettings.Texture.TextureMinFilter.Linear,
           internalFormat: GLSettings.Texture.TexelDataType.RGB,
-          format: GLSettings.Texture.TexelDataType.RGB
+          format: GLSettings.Texture.TexelDataType.RGB,
         };
         break;
     }

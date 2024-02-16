@@ -7,7 +7,7 @@ import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
 import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
-  BaseResourceOptions
+  BaseResourceOptions,
 } from "../base-resource-manager";
 import { Atlas, IAtlasResource, isAtlasResource } from "./atlas";
 import { AtlasManager } from "./atlas-manager";
@@ -21,10 +21,10 @@ export interface IAtlasResourceManagerOptions {
 }
 
 /**
- * This class is responsible for tracking resources requested to be placed on an Atlas.
- * This makes sure the resource is uploaded and then properly cached so similar requests
- * return already existing resources. This also manages instances waiting for the resource
- * to be made available.
+ * This class is responsible for tracking resources requested to be placed on an
+ * Atlas. This makes sure the resource is uploaded and then properly cached so
+ * similar requests return already existing resources. This also manages
+ * instances waiting for the resource to be made available.
  */
 export class AtlasResourceManager extends BaseResourceManager<
   IAtlasResource,
@@ -37,14 +37,18 @@ export class AtlasResourceManager extends BaseResourceManager<
   /** This stores all of the requests awaiting dequeueing */
   private requestQueue = new Map<string, IAtlasResourceRequest[]>();
   /**
-   * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
+   * This tracks if a resource is already in the request queue. This also stores
+   * ALL instances awaiting the resource.
    */
   private requestLookup = new Map<
     string,
     Map<IAtlasResourceRequest, [Layer<any, any>, Instance][]>
   >();
 
-  /** Override the get and set of the webgl renderer so we can also apply it to the atlas manager object */
+  /**
+   * Override the get and set of the webgl renderer so we can also apply it to
+   * the atlas manager object
+   */
   get webGLRenderer() {
     return this._webGLRenderer;
   }
@@ -59,8 +63,8 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * This dequeues all instance requests for a resource and processes the request which will
-   * inevitably make the instance active
+   * This dequeues all instance requests for a resource and processes the
+   * request which will inevitably make the instance active
    */
   async dequeueRequests() {
     // This flag will be modified to reflect if a dequeue operation has occurred
@@ -77,8 +81,9 @@ export class AtlasResourceManager extends BaseResourceManager<
       if (requests.length > 0) {
         // We did dequeue
         didDequeue = true;
-        // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
-        // New requests while this dequeue is being processed
+        // Pull out all of the requests into a new array and empty the existing
+        // queue to allow the queue to register New requests while this dequeue
+        // is being processed
         const allRequests = requests.slice(0);
         // Empty the queue to begin taking in new requests as needed
         requests.length = 0;
@@ -91,17 +96,19 @@ export class AtlasResourceManager extends BaseResourceManager<
           // We will gather all unique instances for triggering next frame
           const toTrigger = new Set<Instance>();
 
-          // Once the manager has been updated, we can now flag all of the instances waiting for the resources
-          // As active, which should thus trigger an update to the layers to perform a diff for each instance
-          allRequests.forEach(request => {
+          // Once the manager has been updated, we can now flag all of the
+          // instances waiting for the resources As active, which should thus
+          // trigger an update to the layers to perform a diff for each instance
+          allRequests.forEach((request) => {
             const requesters = atlasRequests.get(request);
             atlasRequests.delete(request);
 
             if (requesters && !request.disposeResource) {
               for (let i = 0, iMax = requesters.length; i < iMax; ++i) {
                 const [layer, instance] = requesters[i];
-                // If the instance is still associated with buffer locations, then the instance can be activated. Having
-                // A buffer location is indicative the instance has not been deleted.
+                // If the instance is still associated with buffer locations,
+                // then the instance can be activated. Having A buffer location
+                // is indicative the instance has not been deleted.
                 if (layer.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
@@ -112,10 +119,11 @@ export class AtlasResourceManager extends BaseResourceManager<
             }
           });
 
-          // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
-          // applied to the instance's rendering
+          // Do a delay to next frame before we do our resource trigger so we
+          // can see any lingering updates get applied to the instance's
+          // rendering
           nextFrame(() => {
-            toTrigger.forEach(instance => {
+            toTrigger.forEach((instance) => {
               instance.active = true;
               instance.resourceTrigger();
             });
@@ -152,7 +160,7 @@ export class AtlasResourceManager extends BaseResourceManager<
     const atlas = this.atlasManager.getAtlasTexture(key);
 
     if (atlas) {
-      return atlas.texture;
+      return atlas.texture || null;
     }
 
     return null;
@@ -166,7 +174,8 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * Return the IO Expander necessary to handle the resurce type this manager is attempting to provide for layers.
+   * Return the IO Expander necessary to handle the resurce type this manager is
+   * attempting to provide for layers.
    */
   getIOExpansion(): BaseIOExpansion[] {
     return [new TextureIOExpansion(ResourceType.ATLAS, this)];
@@ -183,9 +192,10 @@ export class AtlasResourceManager extends BaseResourceManager<
   }
 
   /**
-   * This is a request for atlas texture resources. It will produce either the coordinates needed to
-   * make valid texture lookups, or it will trigger a loading of resources to an atlas and cause an
-   * automated deactivation and reactivation of the instance.
+   * This is a request for atlas texture resources. It will produce either the
+   * coordinates needed to make valid texture lookups, or it will trigger a
+   * loading of resources to an atlas and cause an automated deactivation and
+   * reactivation of the instance.
    */
   request<T extends Instance, U extends ILayerProps<T>>(
     layer: Layer<T, U>,
@@ -196,13 +206,15 @@ export class AtlasResourceManager extends BaseResourceManager<
     const resourceContext = request.key || "";
     const texture = request.texture;
 
-    // If the texture is ready and available, then we simply return the IO values
+    // If the texture is ready and available, then we simply return the IO
+    // values
     if (texture) {
       return subTextureIOValue(texture);
     }
 
-    // If a request is already made, then we must save the instance making the request for deactivation and
-    // Reactivation but without any additional atlas loading
+    // If a request is already made, then we must save the instance making the
+    // request for deactivation and Reactivation but without any additional
+    // atlas loading
     let atlasRequests = this.requestLookup.get(resourceContext);
 
     if (atlasRequests) {
@@ -220,9 +232,10 @@ export class AtlasResourceManager extends BaseResourceManager<
       this.requestLookup.set(resourceContext, atlasRequests);
     }
 
-    // If the texture is not available, then we must load the resource, deactivate the instance
-    // And wait for the resource to become available. Once the resource is available, the system
-    // Must activate the instance to render the resource.
+    // If the texture is not available, then we must load the resource,
+    // deactivate the instance And wait for the resource to become available.
+    // Once the resource is available, the system Must activate the instance to
+    // render the resource.
     if (!request.disposeResource) {
       instance.active = false;
     }

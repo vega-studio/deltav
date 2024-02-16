@@ -1,22 +1,26 @@
-import { Instance } from "../../instance-provider";
-import { InstanceDiff } from "../../types";
+import { ILayerProps } from "../layer.js";
+import { Instance } from "../../instance-provider/index.js";
+import { InstanceDiff } from "../../types.js";
 import {
   BufferManagerBase,
   IBufferLocation,
-  IBufferLocationGroup
-} from "./buffer-manager-base";
-import { IInstanceDiffManagerTarget } from "./instance-diff-manager";
+  IBufferLocationGroup,
+} from "./buffer-manager-base.js";
+import { IInstanceDiffManagerTarget } from "./instance-diff-manager.js";
 
 /**
  * Base requirements for handling diffs from a layer.
  */
-export abstract class BaseDiffProcessor<T extends Instance> {
-  layer: IInstanceDiffManagerTarget<T>;
-  bufferManager: BufferManagerBase<T, IBufferLocation>;
+export abstract class BaseDiffProcessor<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> {
+  layer: IInstanceDiffManagerTarget<TInstance, TProps>;
+  bufferManager: BufferManagerBase<TInstance, TProps, IBufferLocation>;
 
   constructor(
-    layer: IInstanceDiffManagerTarget<T>,
-    bufferManager: BufferManagerBase<T, IBufferLocation>
+    layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    bufferManager: BufferManagerBase<TInstance, TProps, IBufferLocation>
   ) {
     this.layer = layer;
     this.bufferManager = bufferManager;
@@ -25,21 +29,21 @@ export abstract class BaseDiffProcessor<T extends Instance> {
   /** Perform an 'add' operation for the instance's buffer */
   abstract addInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     propIds: number[],
     bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
   /** Perform a 'change' operation for the instance's buffer */
   abstract changeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     propIds: number[],
     bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
   /** Perform a 'remove' operation for the instance's buffer */
   abstract removeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     propIds: number[],
     bufferLocation?: IBufferLocation | IBufferLocationGroup<IBufferLocation>
   ): void;
@@ -57,5 +61,5 @@ export abstract class BaseDiffProcessor<T extends Instance> {
    * changes approaches some large percentage of the instances supported by the buffer), then it would be more efficient just to
    * update the entire buffer rather than discover the portion needing updating.
    */
-  abstract incomingChangeList(changes: InstanceDiff<T>[]): void;
+  abstract incomingChangeList(changes: InstanceDiff<TInstance>[]): void;
 }

@@ -1,10 +1,11 @@
 import { Camera2D, IView2DProps, View2D } from "../2d";
 import { IRenderTextureResource } from "../resources";
+import { ISceneOptions } from "../surface";
 import { createView } from "../surface/view";
 import {
   ILayerMaterialOptions,
   IUniform,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
 } from "../types";
 import { createLayer } from "../util/create-layer";
 import { PostProcessLayer } from "./layer/post-process-layer";
@@ -53,9 +54,9 @@ export interface IPostProcess {
  * several textures into a single output. This output can either be rendered to
  * the screen directly or target another texture to render to.
  */
-export function postProcess(options: IPostProcess) {
+export function postProcess(options: IPostProcess): ISceneOptions {
   if (options.uniforms) {
-    options.uniforms.forEach(uniform => {
+    options.uniforms.forEach((uniform) => {
       uniform.shaderInjection = ShaderInjectionTarget.FRAGMENT;
     });
   }
@@ -65,8 +66,8 @@ export function postProcess(options: IPostProcess) {
       screen: createView(View2D, {
         camera: new Camera2D(),
         viewport: { left: 0, top: 0, width: "100%", height: "100%" },
-        ...options.view
-      })
+        ...options.view,
+      }),
     },
     layers: {
       screen: createLayer(PostProcessLayer, {
@@ -75,8 +76,8 @@ export function postProcess(options: IPostProcess) {
         buffers: options.buffers,
         fs: options.shader,
         uniforms: options.uniforms,
-        materialOptions: options.material
-      })
-    }
-  };
+        materialOptions: options.material,
+      }),
+    },
+  } as any;
 }

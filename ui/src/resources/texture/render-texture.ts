@@ -34,7 +34,7 @@ export function createTexture(
   return {
     key: "",
     type: ResourceType.TEXTURE,
-    ...options
+    ...options,
   };
 }
 
@@ -51,8 +51,10 @@ export function isRenderTextureResource(
  * This defines a general purpose texture that can be rendered into and be
  * rendered.
  */
-export class RenderTexture extends IdentifyByKey
-  implements IRenderTextureResource {
+export class RenderTexture
+  extends IdentifyByKey
+  implements IRenderTextureResource
+{
   /** Set the type of the resource to explicitally be an atlas resource */
   type: ResourceType.TEXTURE = ResourceType.TEXTURE;
   /** This is the height of the texture */
@@ -67,7 +69,7 @@ export class RenderTexture extends IdentifyByKey
    */
   textureSettings?: TextureOptions;
   /** The actual texture resource generated */
-  texture: Texture;
+  texture!: Texture;
 
   constructor(options: IRenderTextureResource, renderer?: WebGLRenderer) {
     super(options);
@@ -97,7 +99,7 @@ export class RenderTexture extends IdentifyByKey
     this.textureSettings = {
       generateMipMaps: true,
       premultiplyAlpha: false,
-      ...this.textureSettings
+      ...this.textureSettings,
     };
 
     let width, height;
@@ -128,9 +130,9 @@ export class RenderTexture extends IdentifyByKey
       data: this.textureSettings?.data || {
         width,
         height,
-        buffer: null
+        buffer: null,
       },
-      ...this.textureSettings
+      ...this.textureSettings,
     });
   }
 }

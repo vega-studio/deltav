@@ -24,7 +24,7 @@ export function subTextureIOValue(
     texture.atlasTL[0],
     texture.atlasTL[1],
     texture.atlasBR[0],
-    texture.atlasBR[1]
+    texture.atlasBR[1],
   ];
 }
 
@@ -58,7 +58,18 @@ export class SubTexture {
   /** The region information of the subtexture on the atlas' texture. */
   atlasRegion?: { x: number; y: number; width: number; height: number };
   /** This is the source image/data that this sub texture applied to the atlas */
-  source?: TexImageSource;
+  source?:
+    | ImageBitmap
+    | ImageData
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | HTMLVideoElement
+    | OffscreenCanvas
+    | {
+        width: number;
+        height: number;
+        buffer: ArrayBufferView | null;
+      };
   /** This is the actual texture this resource is located within */
   texture: Texture | null = null;
   /**
@@ -90,7 +101,7 @@ export class SubTexture {
       bottom: uy + uh,
       left: ux,
       right: ux + uw,
-      top: uy
+      top: uy,
     });
 
     const bottom = atlasDimensions.bottom;
@@ -125,10 +136,10 @@ export class SubTexture {
           TL: this.atlasTL,
           TR: this.atlasTR,
           BL: this.atlasBL,
-          BR: this.atlasBR
+          BR: this.atlasBR,
         },
         width: this.pixelWidth,
-        height: this.pixelHeight
+        height: this.pixelHeight,
       },
       null,
       2

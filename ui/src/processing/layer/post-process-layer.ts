@@ -23,7 +23,7 @@ import { CommonMaterialOptions, isDefined } from "../../util";
 import { flatten2D } from "../../util/array";
 import PostProcessLayerVS from "./post-process-layer.vs";
 
-class PostProcessInstance extends Instance {
+export class PostProcessInstance extends Instance {
   @observable tint: Color = [1, 1, 1, 1];
 
   constructor() {
@@ -120,6 +120,7 @@ export class PostProcessLayer extends Layer<
               shaderInjection: ShaderInjectionTarget.FRAGMENT,
               size: UniformSize.TWO,
               update: () => {
+                this.props;
                 this.resource.request(this, dummyInstance, request);
                 const data = (request.texture || emptyTexture).data;
                 return [data?.width || 1, data?.height || 1];

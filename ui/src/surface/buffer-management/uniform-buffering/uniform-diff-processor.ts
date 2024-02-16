@@ -1,12 +1,13 @@
-import { Instance } from "../../../instance-provider";
-import { Vec4 } from "../../../math/vector";
-import { InstanceDiff } from "../../../types";
-import { BaseDiffProcessor } from "../base-diff-processor";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager";
+import { Instance } from "../../../instance-provider/index.js";
+import { Vec4 } from "../../../math/vector.js";
+import { InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import {
   isUniformBufferLocation,
-  IUniformBufferLocation
-} from "./uniform-buffer-manager";
+  IUniformBufferLocation,
+} from "./uniform-buffer-manager.js";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];
@@ -14,15 +15,16 @@ const EMPTY: number[] = [];
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
  */
-export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
-  T
-> {
+export class UniformDiffProcessor<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> extends BaseDiffProcessor<TInstance, TProps> {
   /**
    * This processes add operations from changes in the instancing data
    */
   addInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     _propIds: number[],
     uniformCluster?: IUniformBufferLocation
   ) {
@@ -50,7 +52,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
    */
   changeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     _propIds: number[],
     uniformCluster?: IUniformBufferLocation
   ) {
@@ -68,7 +70,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
    */
   removeInstance(
     manager: this,
-    instance: T,
+    instance: TInstance,
     _propIds: number[],
     uniformCluster?: IUniformBufferLocation
   ) {
@@ -94,8 +96,8 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
    * This performs the actual updating of buffers the instance needs to update
    */
   updateInstance(
-    layer: IInstanceDiffManagerTarget<T>,
-    instance: T,
+    layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    instance: TInstance,
     uniformCluster: IUniformBufferLocation
   ) {
     if (instance.active) {
@@ -167,7 +169,7 @@ export class UniformDiffProcessor<T extends Instance> extends BaseDiffProcessor<
   /**
    * There are no optimizations available for this processor yet.
    */
-  incomingChangeList(_changes: InstanceDiff<T>[]) {
+  incomingChangeList(_changes: InstanceDiff<TInstance>[]) {
     /** no-op */
   }
 }

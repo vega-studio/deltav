@@ -51,7 +51,7 @@ export class Attribute {
   get needsUpdate() {
     return this._needsUpdate;
   }
-  private _needsUpdate: boolean;
+  private _needsUpdate: boolean = false;
   /**
    * The packing size of the vertex attribute (how many floats per attribute). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
@@ -75,7 +75,7 @@ export class Attribute {
     /** Number of vertices to update */
     count: -1,
     /** Offset to the first vertex to begin updating */
-    offset: -1
+    offset: -1,
   };
 
   /**

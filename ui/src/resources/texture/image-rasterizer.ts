@@ -14,7 +14,7 @@ export class ImageRasterizer {
     // Iterate till the browser provides a valid canvas to render elements into
     while (!canvas) {
       this.getContext();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     }
   }
 
@@ -63,7 +63,16 @@ export class ImageRasterizer {
   /**
    * This resizes the input image by the provided scale.
    */
-  static async resizeImage(image: TexImageSource, scale: number) {
+  static async resizeImage(
+    image:
+      | ImageBitmap
+      | ImageData
+      | HTMLImageElement
+      | HTMLCanvasElement
+      | HTMLVideoElement
+      | OffscreenCanvas,
+    scale: number
+  ) {
     await this.awaitContext();
 
     if (!canvas) {

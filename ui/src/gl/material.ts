@@ -32,7 +32,7 @@ export class Material {
   } | null = {
     blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
     blendEquation: GLSettings.Material.BlendingEquations.Add,
-    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
+    blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
   };
   /**
    * The write mask to the color buffer. Each channel can be toggled on or off
@@ -81,7 +81,7 @@ export class Material {
    * outputs and determine which shader is most efficient and appropriate for
    * rendering to the current RenderTarget.
    */
-  fragmentShader: MaterialFragmentShader;
+  fragmentShader?: MaterialFragmentShader;
   /**
    * Stores any gl state associated with this object. Modifying this outside the
    * framework is almost guaranteed to break something.

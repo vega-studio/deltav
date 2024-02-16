@@ -1,4 +1,5 @@
 import React from "react";
+import { isString } from "./types";
 
 type GroupFilterType =
   | string
@@ -6,6 +7,29 @@ type GroupFilterType =
   | React.JSXElementConstructor<any>;
 
 type GroupMap = Map<GroupFilterType, React.ReactNode[]>;
+
+/**
+ * Retrieves all of the base types of a class
+ */
+function getAllBaseTypes(classType: GroupFilterType): GroupFilterType[] {
+  if (isString(classType)) {
+    return [classType];
+  }
+
+  // Initialize an array to hold the class types, starting with the provided classType
+  const types: GroupFilterType[] = [classType];
+
+  // Get the prototype of the classType
+  let currentPrototype = Object.getPrototypeOf(classType.prototype);
+
+  // Loop through the prototype chain until reaching the end (Object.prototype)
+  while (currentPrototype && currentPrototype !== Object.prototype) {
+    types.push(currentPrototype.constructor);
+    currentPrototype = Object.getPrototypeOf(currentPrototype);
+  }
+
+  return types;
+}
 
 /**
  * This is a helper method to sort a list of react children into groups, based
@@ -56,23 +80,37 @@ export function groupReactChildren(
       }
     } else if (child !== void 0) {
       if (pickTypes) {
-        const group = groups.get(child.type);
+        // Get all of the base types of the child so the grouping list can be
+        // exhaustive enough to handle inherted types
+        const baseTypes = getAllBaseTypes(child.type);
 
-        if (!group) {
-          if (outExcluded) outExcluded.push(child);
-          continue;
+        for (let i = 0, iMax = baseTypes.length; i < iMax; ++i) {
+          const childType = baseTypes[i];
+          const group = groups.get(childType);
+
+          if (!group) {
+            if (outExcluded) outExcluded.push(child);
+            continue;
+          }
+
+          group.push(child);
         }
-
-        group.push(child);
       } else {
-        let group = groups.get(child.type);
+        // Get all of the base types of the child so the grouping list can be
+        // exhaustive enough to handle inherted types
+        const baseTypes = getAllBaseTypes(child.type);
 
-        if (!group) {
-          group = [];
-          groups.set(child.type, group);
+        for (let i = 0, iMax = baseTypes.length; i < iMax; ++i) {
+          const childType = baseTypes[i];
+          let group = groups.get(childType);
+
+          if (!group) {
+            group = [];
+            groups.set(childType, group);
+          }
+
+          group.push(child);
         }
-
-        group.push(child);
       }
     }
   }

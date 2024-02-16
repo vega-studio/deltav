@@ -6,7 +6,14 @@ export type AtlasVideoResource = {
   videoSrc: string;
 };
 
-export type AtlasResource = string | TexImageSource;
+export type AtlasResource =
+  | string
+  | ImageBitmap
+  | ImageData
+  | HTMLImageElement
+  | HTMLCanvasElement
+  | HTMLVideoElement
+  | OffscreenCanvas;
 
 const EMPTY_IMAGE = new Image();
 
@@ -51,6 +58,6 @@ export function atlasRequest(
   return {
     type: ResourceType.ATLAS,
     source: EMPTY_IMAGE,
-    ...options
+    ...options,
   };
 }

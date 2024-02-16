@@ -8,17 +8,18 @@ type InstanceDisposer<T extends Instance> = [T, Function];
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.
  */
-export class InstanceProvider<T extends Instance>
-  implements IInstanceProvider<T> {
+export class InstanceProvider<TInstance extends Instance>
+  implements IInstanceProvider<TInstance>
+{
   /** A uid provided to this object to give it some easy to identify uniqueness */
   get uid() {
     return this._uid;
   }
   private _uid: number = uid();
   /** Stores the disposers that are called when the instance is no longer listened to */
-  private cleanObservation = new Map<number, InstanceDisposer<T>>();
+  private cleanObservation = new Map<number, InstanceDisposer<TInstance>>();
   /** This stores the changes to the instances themselves */
-  private instanceChanges = new Map<number, InstanceDiff<T>>();
+  private instanceChanges = new Map<number, InstanceDiff<TInstance>>();
   /** This flag is true when resolving changes when the change list is retrieved. it blocks changes until the current list is resolved */
   private allowChanges = true;
   /**
@@ -27,7 +28,7 @@ export class InstanceProvider<T extends Instance>
    */
   resolveContext: string = "";
 
-  constructor(instances?: T[]) {
+  constructor(instances?: TInstance[]) {
     if (instances) {
       for (let i = 0, iMax = instances.length; i < iMax; ++i) {
         const instance = instances[i];
@@ -39,10 +40,10 @@ export class InstanceProvider<T extends Instance>
   /**
    * Retrieve all of the changes applied to instances
    */
-  get changeList(): InstanceDiff<T>[] {
+  get changeList(): InstanceDiff<TInstance>[] {
     this.allowChanges = false;
-    const changes: InstanceDiff<T>[] = [];
-    this.instanceChanges.forEach(val => changes.push(val));
+    const changes: InstanceDiff<TInstance>[] = [];
+    this.instanceChanges.forEach((val) => changes.push(val));
 
     return changes;
   }
@@ -51,7 +52,7 @@ export class InstanceProvider<T extends Instance>
    * Adds an instance to the provider which will stream observable changes of the instance to
    * the framework.
    */
-  add(instance: T) {
+  add(instance: TInstance) {
     // No need to duplicate the addition
     if (this.cleanObservation.get(instance.uid)) {
       return instance;
@@ -66,7 +67,7 @@ export class InstanceProvider<T extends Instance>
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.INSERT,
-        instance.changes
+        instance.changes,
       ]);
     }
 
@@ -77,7 +78,7 @@ export class InstanceProvider<T extends Instance>
    * Removes all instances from this provider
    */
   clear() {
-    this.cleanObservation.forEach(values => {
+    this.cleanObservation.forEach((values) => {
       this.remove(values[0]);
     });
   }
@@ -88,7 +89,7 @@ export class InstanceProvider<T extends Instance>
    * desire to hang onto the instance objects, then this should be called.
    */
   destroy() {
-    this.cleanObservation.forEach(values => {
+    this.cleanObservation.forEach((values) => {
       values[1]();
     });
 
@@ -100,13 +101,13 @@ export class InstanceProvider<T extends Instance>
    * This is called from observables to indicate it's parent has been updated.
    * This is what an instance calls when it's observable property is modified.
    */
-  instanceUpdated(instance: T) {
+  instanceUpdated(instance: TInstance) {
     if (this.allowChanges) {
       // Flag the instance as having a property changed
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.CHANGE,
-        instance.changes
+        instance.changes,
       ]);
     }
   }
@@ -115,7 +116,7 @@ export class InstanceProvider<T extends Instance>
    * Stops the instance's ability to register changes with this provider and flags
    * a final removal diff change.
    */
-  remove(instance: T) {
+  remove(instance: { uid: number }) {
     if (this.allowChanges) {
       const disposer = this.cleanObservation.get(instance.uid);
 
@@ -123,9 +124,9 @@ export class InstanceProvider<T extends Instance>
         disposer[1]();
         this.cleanObservation.delete(instance.uid);
         this.instanceChanges.set(instance.uid, [
-          instance,
+          disposer[0],
           InstanceDiffType.REMOVE,
-          {}
+          {},
         ]);
       }
     }
@@ -161,13 +162,13 @@ export class InstanceProvider<T extends Instance>
     const emptyPropertyChanges: number[] = [];
 
     // Loop through all registered instances (which is only stored in the disposer list kept by this provider)
-    this.cleanObservation.forEach(disposer => {
+    this.cleanObservation.forEach((disposer) => {
       const [instance] = disposer;
       // Flag the instance as having a property changed
       this.instanceChanges.set(instance.uid, [
         instance,
         InstanceDiffType.INSERT,
-        emptyPropertyChanges
+        emptyPropertyChanges,
       ]);
     });
   }

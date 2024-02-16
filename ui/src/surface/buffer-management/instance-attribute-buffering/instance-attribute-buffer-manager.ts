@@ -9,7 +9,7 @@ import {
 } from "../../../types";
 import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
 import { uid } from "../../../util/uid";
-import { Layer } from "../../layer";
+import { ILayerProps, Layer } from "../../layer";
 import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
 import {
@@ -38,9 +38,8 @@ export interface IInstanceAttributeBufferLocation extends IBufferLocation {
 }
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
-export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<
-  IInstanceAttributeBufferLocation
->;
+export type IInstanceAttributeBufferLocationGroup =
+  IBufferLocationGroup<IInstanceAttributeBufferLocation>;
 
 /**
  * Typeguard for the instance attribute buffer location.
@@ -52,11 +51,29 @@ export function isInstanceAttributeBufferLocation(
 }
 
 /**
+ * Typeguard for the instance attribute buffer location group.
+ */
+export function isInstanceAttributeBufferLocationGroup(
+  val: any
+): val is IInstanceAttributeBufferLocationGroup {
+  return Boolean(
+    val &&
+      (val.buffer.value instanceof Float32Array ||
+        val.buffer.value instanceof Uint8Array)
+  );
+}
+
+/**
  * This manages instances in how they associate with buffer data for an instanced attribute strategy.
  */
 export class InstanceAttributeBufferManager<
-  T extends Instance
-> extends BufferManagerBase<T, IInstanceAttributeBufferLocation> {
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+> extends BufferManagerBase<
+  TInstance,
+  TProps,
+  IInstanceAttributeBufferLocation
+> {
   /** This stores an attribute's name to the buffer locations generated for it */
   private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
   /** This contains the buffer locations the system will have available */
@@ -74,10 +91,13 @@ export class InstanceAttributeBufferManager<
   private geometry?: Geometry;
   private material?: Material;
   private model?: Model;
-  private attributes?: IInstanceAttributeInternal<T>[];
+  private attributes?: IInstanceAttributeInternal<TInstance>[];
 
   /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
-  private attributeToPropertyIds = new Map<IInstanceAttribute<T>, number[]>();
+  private attributeToPropertyIds = new Map<
+    IInstanceAttribute<TInstance>,
+    number[]
+  >();
   /**
    * This is a trimmed listing of minimum property ids needed to trigger an update on all properties.
    * This is used by the diffing process mostly to handle adding a new instance.
@@ -99,7 +119,7 @@ export class InstanceAttributeBufferManager<
    */
   private currentAvailableLocation: number = -1;
 
-  constructor(layer: Layer<T, any>, scene: LayerScene) {
+  constructor(layer: Layer<TInstance, any>, scene: LayerScene) {
     super(layer, scene);
     // Start our add method as a registration step.
     this.add = this.doAddWithRegistration;
@@ -121,7 +141,7 @@ export class InstanceAttributeBufferManager<
   /**
    * First instance to be added to this manager will be heavily analyzed for used observables per attribute.
    */
-  private doAddWithRegistration(instance: T) {
+  private doAddWithRegistration(instance: TInstance) {
     // Activate monitoring of ids, this also resets the monitor's list
     ObservableMonitoring.setObservableMonitor(true);
 
@@ -133,9 +153,8 @@ export class InstanceAttributeBufferManager<
       // Access the update which accesses an instances properties (usually)
       attribute.update(instance);
       // We now have all of the ids of the properties that were used in updating the attributes
-      const propertyIdsForAttribute = ObservableMonitoring.getObservableMonitorIds(
-        true
-      );
+      const propertyIdsForAttribute =
+        ObservableMonitoring.getObservableMonitorIds(true);
       // Store the mapping of the property ids
       // TODO: We currently only support ONE property id per change
       this.attributeToPropertyIds.set(attribute, [
@@ -181,7 +200,7 @@ export class InstanceAttributeBufferManager<
    * After the registration add happens, we gear shift over to this add method which will only pair instances
    * with their appropriate buffer location.
    */
-  private doAdd(instance: T) {
+  private doAdd(instance: TInstance) {
     // Ensure we have buffer locations available
     if (
       this.availableLocations.length <= 0 ||
@@ -197,9 +216,8 @@ export class InstanceAttributeBufferManager<
     }
 
     // Get the next available location
-    const bufferLocations = this.availableLocations[
-      ++this.currentAvailableLocation
-    ];
+    const bufferLocations =
+      this.availableLocations[++this.currentAvailableLocation];
 
     // Pair up the instance with it's buffer location
     if (bufferLocations && this.geometry) {
@@ -246,7 +264,7 @@ export class InstanceAttributeBufferManager<
    * This retireves the buffer locations associated with an instance, or returns nothing
    * if the instance has not been associated yet.
    */
-  getBufferLocations(instance: T) {
+  getBufferLocations(instance: TInstance) {
     return this.instanceToBufferLocation[instance.uid];
   }
 
@@ -268,7 +286,7 @@ export class InstanceAttributeBufferManager<
   /**
    * Checks to see if an instance is managed by this manager.
    */
-  managesInstance(instance: T) {
+  managesInstance(instance: TInstance) {
     // We know this instance is managed if the instance has buffer location real estate assigned to it
     return this.instanceToBufferLocation[instance.uid] !== void 0;
   }
@@ -295,7 +313,7 @@ export class InstanceAttributeBufferManager<
   /**
    * Disassociates an instance with a buffer
    */
-  remove = (instance: T) => {
+  remove = (instance: TInstance) => {
     const location = this.instanceToBufferLocation[instance.uid];
 
     if (location) {
@@ -400,11 +418,11 @@ export class InstanceAttributeBufferManager<
         const allLocations = this.allBufferLocations[attribute.name] || [];
         this.allBufferLocations[attribute.name] = allLocations;
 
-        const internalAttribute: IInstanceAttributeInternal<T> = Object.assign(
-          {},
-          attribute,
-          { uid: uid(), bufferAttribute: bufferAttribute }
-        );
+        const internalAttribute: IInstanceAttributeInternal<TInstance> =
+          Object.assign({}, attribute, {
+            uid: uid(),
+            bufferAttribute: bufferAttribute,
+          });
 
         for (let i = 0; i < this.maxInstancedCount; ++i) {
           const newLocation: IInstanceAttributeBufferLocation = {
@@ -586,7 +604,7 @@ export class InstanceAttributeBufferManager<
 
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
-      attribute: IInstanceAttribute<T>;
+      attribute: IInstanceAttribute<TInstance>;
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
       childBufferLocations: {
         location: IInstanceAttributeBufferLocation[];
@@ -616,11 +634,11 @@ export class InstanceAttributeBufferManager<
     });
 
     let allLocations,
-      attribute: IInstanceAttribute<T>,
+      attribute: IInstanceAttribute<TInstance>,
       ids: number[],
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
       bufferLocation: IInstanceAttributeBufferLocation | undefined,
-      childAttribute: IInstanceAttribute<T>;
+      childAttribute: IInstanceAttribute<TInstance>;
 
     // Loop through all of the new instances available and gather all of the buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {

@@ -1,10 +1,8 @@
-import { Instance } from "../../instance-provider/instance";
 import { identity4 } from "../../math";
 import { ShaderModule } from "../../shaders";
-import { ILayerProps, Layer } from "../../surface";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { createUniform } from "../../util";
-import { ISceneGraphLayerProps, SceneGraphLayer } from "./scene-graph-layer";
+import { SceneGraphLayer } from "./scene-graph-layer";
 
 const doc = `
 When working with SceneGraphLayers, the
@@ -21,10 +19,8 @@ ShaderModule.register({
   description: doc,
   compatibility: ShaderInjectionTarget.VERTEX,
   content: "",
-  uniforms: layer => {
-    const moduleLayer:
-      | SceneGraphLayer<Instance, ISceneGraphLayerProps<Instance>>
-      | Layer<Instance, ILayerProps<Instance>> = layer;
+  uniforms: (layer) => {
+    const moduleLayer = layer;
 
     if (!(moduleLayer instanceof SceneGraphLayer)) {
       console.warn(
@@ -41,8 +37,8 @@ ShaderModule.register({
       createUniform({
         name: "parentTransform",
         size: UniformSize.MATRIX4,
-        update: () => moduleLayer.props.parent?.matrix || identity
-      })
+        update: () => moduleLayer.props.parent?.matrix || identity,
+      }),
     ];
-  }
+  },
 });

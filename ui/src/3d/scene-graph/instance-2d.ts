@@ -2,7 +2,7 @@ import {
   IInstanceOptions,
   Instance,
   makeObservable,
-  observable
+  observable,
 } from "../../instance-provider";
 import { Quaternion, Vec2Compat, Vec3 } from "../../math";
 import { Transform2D } from "./transform-2d";
@@ -26,7 +26,7 @@ export class Instance2D extends Instance {
   /**
    * This is the 3D transform that will place this object within the 3D world.
    */
-  @observable private _transform: Transform2D;
+  @observable private _transform!: Transform2D;
   get transform() {
     return this._transform;
   }
@@ -52,7 +52,7 @@ export class Instance2D extends Instance {
   set localPosition(val: Vec2Compat) {
     this.transform.localPosition = val;
   }
-  @observable private _localPosition: Vec2Compat;
+  @observable private _localPosition!: Vec2Compat;
 
   /** Local space rotation of the Instance */
   get localRotation() {
@@ -62,7 +62,7 @@ export class Instance2D extends Instance {
   set localRotation(val: number) {
     this.transform.localRotation = val;
   }
-  @observable private _localRotation: number;
+  @observable private _localRotation!: number;
 
   /** Local axis scale of the instance */
   get localScale() {
@@ -72,7 +72,7 @@ export class Instance2D extends Instance {
   set localScale(val: Vec2Compat) {
     this.transform.localScale = val;
   }
-  @observable private _localScale: Vec2Compat;
+  @observable private _localScale!: Vec2Compat;
 
   /** World position of the Instance */
   get position() {
@@ -80,7 +80,7 @@ export class Instance2D extends Instance {
     this.transform.update();
     return this._position;
   }
-  @observable private _position: Vec3;
+  @observable private _position!: Vec3;
 
   /** World space rotation of the Instance */
   get rotation() {
@@ -88,7 +88,7 @@ export class Instance2D extends Instance {
     this.transform.update();
     return this._rotation;
   }
-  @observable private _rotation: Quaternion;
+  @observable private _rotation!: Quaternion;
 
   /** Axis scale of the instance */
   get scale() {
@@ -96,7 +96,7 @@ export class Instance2D extends Instance {
     this.transform.update();
     return this._scale;
   }
-  @observable private _scale: Vec3;
+  @observable private _scale!: Vec3;
 
   /**
    * Quick way to work with parent transforms. This is just syntactic sugar so

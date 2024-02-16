@@ -21,7 +21,7 @@ import {
   preloadNumber,
   ScaleMode,
   View2D,
-  wait
+  wait,
 } from "../../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { debounce } from "../../common/debounce";
@@ -64,7 +64,7 @@ export class TextDemo extends BaseDemo {
 
   /** Surface providers */
   providers = {
-    labels: new InstanceProvider<LabelInstance>()
+    labels: new InstanceProvider<LabelInstance>(),
   };
 
   /** GUI properties */
@@ -77,13 +77,13 @@ export class TextDemo extends BaseDemo {
     scaleMode: ScaleMode.BOUND_MAX,
 
     previous: {
-      count: 100
+      count: 100,
     },
 
     copy: () => {
-      const texts = this.labels.map(lbl => lbl.text).join("\n");
+      const texts = this.labels.map((lbl) => lbl.text).join("\n");
       copyToClipboard(texts);
-    }
+    },
   };
 
   /**
@@ -125,7 +125,7 @@ export class TextDemo extends BaseDemo {
 
     parameters.add(this.parameters, "fontSize", 4, 80, 1).onChange(
       debounce(async (value: number) => {
-        this.labels.forEach(lbl => (lbl.fontSize = value));
+        this.labels.forEach((lbl) => (lbl.fontSize = value));
         if (this.numberLabel) this.numberLabel.fontSize = value;
         this.layoutLabels();
       }, 250)
@@ -133,7 +133,7 @@ export class TextDemo extends BaseDemo {
 
     parameters.add(this.parameters, "maxWidth", 0, 1200, 1).onChange(
       debounce(async (value: number) => {
-        this.labels.forEach(lbl => (lbl.maxWidth = value));
+        this.labels.forEach((lbl) => (lbl.maxWidth = value));
         if (this.numberLabel) this.numberLabel.maxWidth = value;
       }, 250)
     );
@@ -141,14 +141,14 @@ export class TextDemo extends BaseDemo {
     parameters.add(this.parameters, "scaleMode", {
       Always: ScaleMode.ALWAYS,
       BoundMax: ScaleMode.BOUND_MAX,
-      Never: ScaleMode.NEVER
+      Never: ScaleMode.NEVER,
     });
 
     parameters.add(this.parameters, "copy");
 
     parameters.add(this.parameters, "letterSpacing", -5, 20, 1).onChange(
       debounce(async (value: number) => {
-        this.labels.forEach(lbl => (lbl.letterSpacing = value));
+        this.labels.forEach((lbl) => (lbl.letterSpacing = value));
         if (this.numberLabel) this.numberLabel.letterSpacing = value;
       }, 250)
     );
@@ -162,25 +162,25 @@ export class TextDemo extends BaseDemo {
       ...DEFAULT_RESOURCES.font,
       fontSource: {
         ...DEFAULT_RESOURCES.font.fontSource,
-        preload: preloadNumber()
-      }
+        preload: preloadNumber(),
+      },
     };
 
     return new BasicSurface({
       container,
       providers: this.providers,
       cameras: {
-        main: new Camera2D()
+        main: new Camera2D(),
       },
       resources: {
-        font: font
+        font: font,
       },
-      eventManagers: cameras => ({
+      eventManagers: (cameras) => ({
         main: new BasicCamera2DController({
           camera: cameras.main,
           startView: ["default.default-view"],
-          wheelShouldScroll: true
-        })
+          wheelShouldScroll: true,
+        }),
       }),
       scenes: (resources, providers, cameras) => ({
         default: {
@@ -188,21 +188,21 @@ export class TextDemo extends BaseDemo {
             "default-view": createView(View2D, {
               background: [0, 0, 0, 1],
               camera: cameras.main,
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-            }) as any
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            }) as any,
           },
           layers: {
             labels: createLayer(LabelLayer, {
               animate: {
-                color: AutoEasingMethod.easeInOutCubic(500)
+                color: AutoEasingMethod.easeInOutCubic(500),
               },
               data: providers.labels,
               resourceKey: resources.font.key,
               scaleMode: this.parameters.scaleMode,
               picking: PickType.SINGLE,
 
-              onMouseClick: info => {
-                info.instances.forEach(label => {
+              onMouseClick: (info) => {
+                info.instances.forEach((label) => {
                   label.color = [1, 1, 1, 1];
 
                   EasingUtil.all(
@@ -219,11 +219,11 @@ export class TextDemo extends BaseDemo {
                     }
                   );
                 });
-              }
-            })
-          }
-        }
-      })
+              },
+            }) as any,
+          },
+        },
+      }),
     });
   }
 
@@ -232,18 +232,18 @@ export class TextDemo extends BaseDemo {
    */
   async init() {
     let resolver: Function;
-    const promise = new Promise(resolve => (resolver = resolve));
+    const promise = new Promise((resolve) => (resolver = resolve));
 
     for (let i = 0, iMax = this.parameters.count; i < iMax; ++i) {
       this.makeLabel(true);
     }
 
-    const labels = this.labels.map(lbl => lbl.text);
+    const labels = this.labels.map((lbl) => lbl.text);
     this.labels = [];
 
     nextFrame(async () => {
       await wait(100);
-      labels.forEach(lbl => this.makeLabel(false, lbl));
+      labels.forEach((lbl) => this.makeLabel(false, lbl));
       resolver();
     });
 
@@ -251,7 +251,7 @@ export class TextDemo extends BaseDemo {
       color: [1, 1, 1, 1],
       text: "0",
       origin: [5, 5],
-      fontSize: this.parameters.fontSize
+      fontSize: this.parameters.fontSize,
     });
 
     onAnimationLoop(() => {
@@ -299,14 +299,14 @@ export class TextDemo extends BaseDemo {
         5,
         this.parameters.fontSize * this.labels.length +
           this.parameters.fontSize +
-          5
+          5,
       ],
       color: [0, random(), random(), 0.0],
       text: txt !== undefined ? txt : words.join(" "),
       fontSize: this.parameters.fontSize,
       letterSpacing: this.parameters.letterSpacing,
       onReady: this.labelReady,
-      preload
+      preload,
     });
 
     this.providers.labels.add(label);
@@ -320,7 +320,7 @@ export class TextDemo extends BaseDemo {
     this.labels.forEach((lbl, i) => {
       lbl.origin = [
         5,
-        i * this.parameters.fontSize + this.parameters.fontSize + 5
+        i * this.parameters.fontSize + this.parameters.fontSize + 5,
       ];
     });
   }

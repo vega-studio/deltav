@@ -12,7 +12,7 @@ import {
   minFilter,
   stencilBufferFormat,
   texelFormat,
-  wrapMode
+  wrapMode,
 } from "./gl-decode";
 import { GLSettings } from "./gl-settings";
 import { GLState } from "./gl-state";
@@ -52,9 +52,7 @@ function isPowerOf2(val: number) {
  * This determines if a texture object is ready for use meaning
  * it's compiled and has a current active texture unit.
  */
-function isTextureReady(
-  texture: Texture
-): texture is Texture & {
+function isTextureReady(texture: Texture): texture is Texture & {
   gl: { textureId: WebGLTexture; textureUnit: number };
 } {
   return Boolean(
@@ -118,7 +116,7 @@ export class GLProxy {
     const vao = gl.getExtension("OES_vertex_array_object");
 
     const anisotropicStats = {
-      maxAnistropicFilter: 0
+      maxAnistropicFilter: 0,
     };
 
     // This exists as an extension or as a webgl2 context
@@ -159,7 +157,7 @@ export class GLProxy {
       anisotropicFiltering: anisotropicFiltering
         ? {
             ext: anisotropicFiltering,
-            stat: anisotropicStats
+            stat: anisotropicStats,
           }
         : void 0,
       renderFloatTexture: renderFloatTexture || void 0,
@@ -174,7 +172,7 @@ export class GLProxy {
         (gl instanceof WebGL2RenderingContext
           ? gl
           : halfFloatTexFilterLinear) || void 0,
-      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || void 0
+      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || void 0,
     };
   }
 
@@ -223,7 +221,7 @@ export class GLProxy {
     attribute.gl = {
       bufferId: buffer,
       type: gl.ARRAY_BUFFER,
-      proxy: this
+      proxy: this,
     };
 
     // Indicate the attribute is updated to it's latest needs and concerns
@@ -242,7 +240,7 @@ export class GLProxy {
 
     // Make our geometry gl context
     geometry.gl = {
-      proxy: this
+      proxy: this,
     };
 
     // If we have the ability to have a vao, let's use this moment to fully
@@ -278,7 +276,7 @@ export class GLProxy {
     }
 
     // Loop through each attribute of the geometry
-    geometry.attributes.forEach(attribute => {
+    geometry.attributes.forEach((attribute) => {
       success = Boolean(this.compileAttribute(attribute) && success);
     });
 
@@ -349,17 +347,24 @@ export class GLProxy {
       programId: [],
       proxy: this,
       programByTarget: new WeakMap(),
-      outputsByProgram: new WeakMap()
+      outputsByProgram: new WeakMap(),
     };
 
     // We use this to aggregate all uniforms across all programs generated to
     // analyze if we are missing uniforms or need to strip out uniforms
     const usedUniforms = new Set<string>();
 
+    if (!material.fragmentShader) {
+      console.warn(
+        "A material appears to not have it's fragment shader configuration set."
+      );
+      return false;
+    }
+
     // We must loop through all of the fragment shaders the material can
     // provide. Each fragment shader is designed for specific outputs to match a
     // render target's configuration.
-    material.fragmentShader.forEach(fragmentShader => {
+    material.fragmentShader.forEach((fragmentShader) => {
       if (!vertexPrograms || !vs) return;
 
       // Check for existing shader programs for the fragment shader
@@ -423,7 +428,7 @@ export class GLProxy {
 
         useMetrics = {
           useCount: 1,
-          program
+          program,
         };
 
         this.gl.attachShader(program, vs);
@@ -461,11 +466,11 @@ export class GLProxy {
       // Establish the gl context info that makes this material tick.
       materialGL.fsId?.push({
         id: fs,
-        outputTypes: fragmentShader.outputTypes
+        outputTypes: fragmentShader.outputTypes,
       });
       materialGL.programId?.push({
         id: useMetrics.program,
-        outputTypes: fragmentShader.outputTypes
+        outputTypes: fragmentShader.outputTypes,
       });
       materialGL.outputsByProgram.set(
         useMetrics.program,
@@ -510,13 +515,13 @@ export class GLProxy {
     // program as they are not needed and will just be lingering unused clutter.
     const uniformToRemove = new Set<string>();
 
-    Object.keys(material.uniforms).forEach(name => {
+    Object.keys(material.uniforms).forEach((name) => {
       if (!usedUniforms.has(name)) {
         uniformToRemove.add(name);
       }
     });
 
-    uniformToRemove.forEach(name => {
+    uniformToRemove.forEach((name) => {
       delete material.uniforms[name];
     });
 
@@ -568,7 +573,7 @@ export class GLProxy {
     const glContext: RenderTarget["gl"] = {
       fboId: fbo,
       proxy: this,
-      fboByMaterial: new WeakMap()
+      fboByMaterial: new WeakMap(),
     };
 
     // Color buffer
@@ -604,7 +609,7 @@ export class GLProxy {
           buffers.push({
             data: buffer.buffer,
             outputType: buffer.outputType,
-            attachment: bufferAttachment
+            attachment: bufferAttachment,
           });
 
           if (isTextureReady(buffer.buffer)) {
@@ -640,7 +645,7 @@ export class GLProxy {
             buffers.push({
               data: rboId,
               outputType: buffer.outputType,
-              attachment: bufferAttachment
+              attachment: bufferAttachment,
             });
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
@@ -669,7 +674,7 @@ export class GLProxy {
         glContext.colorBufferId = {
           data: buffer.buffer,
           outputType: buffer.outputType,
-          attachment: bufferAttachment
+          attachment: bufferAttachment,
         };
 
         if (isTextureReady(buffer.buffer)) {
@@ -705,7 +710,7 @@ export class GLProxy {
           glContext.colorBufferId = {
             data: rboId,
             outputType: buffer.outputType,
-            attachment: bufferAttachment
+            attachment: bufferAttachment,
           };
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
@@ -735,7 +740,7 @@ export class GLProxy {
         }
       } else if (buffer instanceof ColorBuffer) {
         const rboId = this.compileDepthBuffer(
-          depthBufferFormat(gl, buffer.internalFormat),
+          buffer.internalFormat as GLSettings.RenderTarget.DepthBufferFormat,
           target.width,
           target.height
         );
@@ -980,7 +985,7 @@ export class GLProxy {
 
     buffer.gl = {
       bufferId: rbo,
-      proxy: this
+      proxy: this,
     };
 
     return rbo;
@@ -1052,7 +1057,7 @@ export class GLProxy {
     ) {
       drawRange = [
         model.vertexDrawRange[0],
-        model.vertexDrawRange[1] - model.vertexDrawRange[0]
+        model.vertexDrawRange[1] - model.vertexDrawRange[0],
       ];
     } else {
       drawRange = [0, model.vertexCount];
@@ -1068,7 +1073,7 @@ export class GLProxy {
     // established and MRT is enabled: then don't don't
     if (WebGLStat.MRT || WebGLStat.MRT_EXTENSION) {
       if (this.state.renderTarget) {
-        if (!this.state.drawBuffers.find(target => target !== this.gl.NONE)) {
+        if (!this.state.drawBuffers.find((target) => target !== this.gl.NONE)) {
           return;
         }
       }
@@ -1161,7 +1166,7 @@ export class GLProxy {
         if (!useMetrics) {
           useMetrics = {
             useCount: 0,
-            program: programId
+            program: programId,
           };
         }
 
@@ -1184,7 +1189,7 @@ export class GLProxy {
         // The fragment shader is a bit trickier, we must go through all vertex shader lookups and see
         // if the fragment shader exists in any of them. If not: the fragment shader is ready for removal
         let found = false;
-        this.programs.forEach(fsLookup => {
+        this.programs.forEach((fsLookup) => {
           if (fsLookup.has(fsId)) found = true;
         });
 
@@ -1212,7 +1217,7 @@ export class GLProxy {
     if (target.gl) {
       // List of color buffers for MRT
       if (Array.isArray(target.gl.colorBufferId)) {
-        target.gl.colorBufferId.forEach(buffer => {
+        target.gl.colorBufferId.forEach((buffer) => {
           if (buffer.data instanceof Texture && !target.retainTextureTargets) {
             this.disposeTexture(buffer.data);
           } else if (buffer.data instanceof WebGLRenderbuffer) {
@@ -1279,7 +1284,7 @@ export class GLProxy {
       WebGLStat.WEBGL_VERSION,
       "webgl",
       "webgl2",
-      "experimental-webgl"
+      "experimental-webgl",
     ];
     let context: GLContext | null = null;
     let extensions: IExtensions = {};
@@ -1306,7 +1311,7 @@ export class GLProxy {
 
     return {
       context,
-      extensions
+      extensions,
     };
   }
 
@@ -1376,11 +1381,12 @@ export class GLProxy {
   lineFormatShader(
     shader: Material["fragmentShader"] | Material["vertexShader"]
   ) {
+    if (!shader) return "NO SHADER FOUND";
     if (isString(shader)) {
       return this.lineFormat(shader);
     } else {
       return shader.forEach(
-        s =>
+        (s) =>
           `\nSHADER FOR OUTPUT TYPES: ${s.outputTypes} ${this.lineFormat(
             s.source
           )}`
@@ -1514,7 +1520,7 @@ export class GLProxy {
       texture.data = {
         width: texture.data.width,
         height: texture.data.height,
-        buffer: null
+        buffer: null,
       };
     }
 
@@ -1554,7 +1560,7 @@ export class GLProxy {
     );
 
     // Loop through all the necessary update regions and apply the changes
-    texture.updateRegions.forEach(region => {
+    texture.updateRegions.forEach((region) => {
       const buffer = region[0];
       const bounds = region[1];
 
@@ -1747,12 +1753,12 @@ export class GLProxy {
     if (!texture.isFloatTexture) {
       gl.pixelStorei(
         gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        (texture.premultiplyAlpha as unknown) as number
+        texture.premultiplyAlpha as unknown as number
       );
 
       gl.pixelStorei(
         gl.UNPACK_FLIP_Y_WEBGL,
-        (texture.flipY as unknown) as number
+        texture.flipY as unknown as number
       );
     }
 
@@ -1761,7 +1767,7 @@ export class GLProxy {
       const { ext, stat } = this.extensions.anisotropicFiltering;
       const anisotropy = Math.min(
         stat.maxAnistropicFilter,
-        Math.floor(texture.anisotropy)
+        Math.floor(texture.anisotropy || 0)
       );
 
       if (!isNaN(anisotropy) && !texture.isFloatTexture) {

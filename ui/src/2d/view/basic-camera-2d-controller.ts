@@ -2,7 +2,7 @@ import { SimpleEventHandler } from "../../event-management/simple-event-handler"
 import {
   IMouseInteraction,
   ISingleTouchInteraction,
-  ITouchInteraction
+  ITouchInteraction,
 } from "../../event-management/types";
 import {
   add3,
@@ -19,7 +19,7 @@ import {
   subtract3,
   Vec2,
   Vec3,
-  vec3
+  vec3,
 } from "../../math";
 import { Bounds } from "../../math/primitives/bounds";
 import { IViewProps, View } from "../../surface/view";
@@ -38,7 +38,7 @@ export enum CameraBoundsAnchor {
   MIDDLE_RIGHT,
   BOTTOM_LEFT,
   BOTTOM_MIDDLE,
-  BOTTOM_RIGHT
+  BOTTOM_RIGHT,
 }
 
 /**
@@ -153,7 +153,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
   /** Whether a view can be scrolled by wheel */
-  wheelShouldScroll: boolean;
+  wheelShouldScroll?: boolean;
   /** Indicates if panning will happen with two or more fingers down instead of one */
   twoFingerPan: boolean;
   /** Stores the views this controller has flagged for optimizing */
@@ -166,7 +166,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /**
    * If an unconvered start view is not available, this is the next available covered view, if present
    */
-  private coveredStartView: View<IViewProps>;
+  private coveredStartView?: View<IViewProps>;
   /**
    * Callback for when the range has changed for the camera in a view
    */
@@ -346,11 +346,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
   ) {
     const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
-      bounds.worldBounds.top
+      bounds.worldBounds.top,
     ]);
     const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
-      bounds.worldBounds.bottom
+      bounds.worldBounds.bottom,
     ]);
 
     const widthDifference =
@@ -399,11 +399,11 @@ export class BasicCamera2DController extends SimpleEventHandler {
   ) {
     const worldTLinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.left,
-      bounds.worldBounds.top
+      bounds.worldBounds.top,
     ]);
     const worldBRinScreenSpace = targetView.projection.worldToScreen([
       bounds.worldBounds.right,
-      bounds.worldBounds.bottom
+      bounds.worldBounds.bottom,
     ]);
 
     const heightDifference =
@@ -569,7 +569,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
    */
   private findCoveredStartView(e: IMouseInteraction) {
     const found = e.target.views.find(
-      under => this.startViews.indexOf(under.view.id) > -1
+      (under) => this.startViews.indexOf(under.view.id) > -1
     );
     this.startViewDidStart = Boolean(found);
 
@@ -594,18 +594,18 @@ export class BasicCamera2DController extends SimpleEventHandler {
       /** Get the current viewed world bounds of the view */
       const topLeft = projection.screenToWorld([
         screenBounds.x,
-        screenBounds.y
+        screenBounds.y,
       ]);
       const bottomRight = projection.screenToWorld([
         screenBounds.right,
-        screenBounds.bottom
+        screenBounds.bottom,
       ]);
 
       return new Bounds({
         height: bottomRight[1] - topLeft[1],
         width: bottomRight[0] - topLeft[0],
         x: topLeft[0],
-        y: topLeft[1]
+        y: topLeft[1],
       });
     }
 
@@ -673,7 +673,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
   handleMouseUp(_e: IMouseInteraction) {
     this.startViewDidStart = false;
     this.isPanning = false;
-    this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+    this.optimizedViews.forEach((view) => (view.optimizeRendering = false));
     this.optimizedViews.clear();
   }
 
@@ -681,13 +681,13 @@ export class BasicCamera2DController extends SimpleEventHandler {
    * Used to stop panning and scaling effects
    */
   handleTouchUp(e: ITouchInteraction) {
-    e.touches.forEach(touch => {
+    e.touches.forEach((touch) => {
       this.targetTouches.delete(touch.touch.touch.identifier);
 
       if (this.targetTouches.size <= 0) {
         this.startViewDidStart = false;
         this.isPanning = false;
-        this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+        this.optimizedViews.forEach((view) => (view.optimizeRendering = false));
         this.optimizedViews.clear();
       }
     });
@@ -708,13 +708,13 @@ export class BasicCamera2DController extends SimpleEventHandler {
    * Used to stop panning and scaling effects when touches are forcibly ejected from existence.
    */
   handleTouchCancelled(e: ITouchInteraction) {
-    e.touches.forEach(touch => {
+    e.touches.forEach((touch) => {
       this.targetTouches.delete(touch.touch.touch.identifier);
 
       if (this.targetTouches.size <= 0) {
         this.startViewDidStart = false;
         this.isPanning = false;
-        this.optimizedViews.forEach(view => (view.optimizeRendering = false));
+        this.optimizedViews.forEach((view) => (view.optimizeRendering = false));
         this.optimizedViews.clear();
       }
     });
@@ -737,14 +737,14 @@ export class BasicCamera2DController extends SimpleEventHandler {
   handleDrag(e: IMouseInteraction) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
-        e.target.views.forEach(view => {
+        e.target.views.forEach((view) => {
           view.view.optimizeRendering = true;
           this.optimizedViews.add(view.view);
         });
 
         // Panning the camera will always be immediate
         this.doPan(
-          e.target.views.map(v => v.view),
+          e.target.views.map((v) => v.view),
           e.start.view,
           e.mouse.deltaPosition
         );
@@ -765,7 +765,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
       for (let i = 0, iMax = validTouches.length; i < iMax; ++i) {
         const targetTouch = validTouches[i];
 
-        targetTouch.target.views.forEach(view => {
+        targetTouch.target.views.forEach((view) => {
           view.view.optimizeRendering = true;
           this.optimizedViews.add(view.view);
         });
@@ -830,7 +830,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const deltaScale: Vec3 = [
           scaleToCurrentTouch * this.camera.scale2D[0] - this.camera.scale2D[0],
           scaleToCurrentTouch * this.camera.scale2D[1] - this.camera.scale2D[1],
-          0
+          0,
         ];
 
         if (scaleToCurrentTouch !== 1) {
@@ -856,12 +856,12 @@ export class BasicCamera2DController extends SimpleEventHandler {
       if (this.wheelShouldScroll) {
         const deltaPosition: [number, number] = [
           -e.mouse.wheel.delta[0],
-          e.mouse.wheel.delta[1]
+          e.mouse.wheel.delta[1],
         ];
 
         if (e.start) {
           this.doPan(
-            e.target.views.map(v => v.view),
+            e.target.views.map((v) => v.view),
             e.start.view,
             deltaPosition
           );
@@ -874,13 +874,18 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const deltaScale: [number, number, number] = [
           (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomX,
           (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomY,
-          1
+          1,
         ];
+
+        if (!targetView) {
+          console.warn("Could not find target view for wheel event");
+          return;
+        }
 
         this.doScale(
           e.screen.position,
           targetView,
-          e.target.views.map(v => v.view),
+          e.target.views.map((v) => v.view),
           deltaScale
         );
       }
@@ -974,7 +979,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
         [
           screenBounds.width / newWorld.width,
           screenBounds.height / newWorld.height,
-          1
+          1,
         ],
         this.camera.control2D.getScale()
       );

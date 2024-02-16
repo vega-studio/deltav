@@ -1,7 +1,7 @@
 /**
  * This file is dedicted to the all important step of processing desired inputs
  * from the layer and coming up with automated generated uniforms and attributes
- * that the shader's will need in order to operate with the conveniences the
+ * that the shaders will need in order to operate with the conveniences the
  * library offers. This includes things such as injecting camera projection
  * uniforms, resource uniforms, animation adjustments etc etc.
  */
@@ -14,7 +14,7 @@ import {
   IUniform,
   IUniformInternal,
   IVertexAttribute,
-  IVertexAttributeInternal
+  IVertexAttributeInternal,
 } from "../../types";
 import { BaseIOSorting } from "./base-io-sorting";
 import { packAttributes } from "./pack-attributes";
@@ -65,13 +65,16 @@ function toUniformInternal(uniform: IUniform): IUniformInternal {
  * This processes instance attributes and performs some basic validation on them
  * to ensure their properties are sane and expected for rendering.
  */
-function validateInstanceAttributes<T extends Instance>(
-  layer: Layer<T, any>,
-  instanceAttributes: IInstanceAttribute<T>[],
+function validateInstanceAttributes<
+  TInstance extends Instance = Instance,
+  TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>,
+>(
+  layer: Layer<TInstance, TProps>,
+  instanceAttributes: IInstanceAttribute<TInstance>[],
   vertexAttributes: IVertexAttribute[],
   _uniforms: IUniform[]
 ) {
-  instanceAttributes.forEach(attribute => {
+  instanceAttributes.forEach((attribute) => {
     if (attribute.name === undefined) {
       console.warn(
         "All instance attributes MUST have a name on Layer:",
@@ -81,7 +84,7 @@ function validateInstanceAttributes<T extends Instance>(
 
     if (
       instanceAttributes.find(
-        attr => attr !== attribute && attr.name === attribute.name
+        (attr) => attr !== attribute && attr.name === attribute.name
       )
     ) {
       console.warn(
@@ -90,7 +93,7 @@ function validateInstanceAttributes<T extends Instance>(
       );
     }
 
-    if (vertexAttributes.find(attr => attr.name === attribute.name)) {
+    if (vertexAttributes.find((attr) => attr.name === attribute.name)) {
       console.warn(
         "An instance attribute and a vertex attribute in a layer can not share the same name:",
         attribute.name
@@ -112,7 +115,7 @@ function validateInstanceAttributes<T extends Instance>(
  */
 function gatherIOFromShaderModules<
   T extends Instance,
-  U extends ILayerProps<T>
+  U extends ILayerProps<T>,
 >(
   layer: Layer<T, U>,
   shaderIO: IShaderInitialization<T>,
@@ -126,7 +129,7 @@ function gatherIOFromShaderModules<
   let moduleVertexAttributes = shaderIO.vertexAttributes || [];
 
   // Add in the module requested items
-  importResults.shaderModuleUnits.forEach(unit => {
+  importResults.shaderModuleUnits.forEach((unit) => {
     if (unit.instanceAttributes) {
       moduleInstanceAttributes = moduleInstanceAttributes.concat(
         unit.instanceAttributes(layer)
@@ -149,7 +152,7 @@ function gatherIOFromShaderModules<
   const instanceAttributeNames = new Set<string>();
   const vertexAttributeNames = new Set<string>();
 
-  moduleUniforms.filter(uniform => {
+  moduleUniforms.filter((uniform) => {
     if (uniform) {
       if (uniformNames.has(uniform.name)) {
         console.warn(
@@ -168,7 +171,7 @@ function gatherIOFromShaderModules<
     return false;
   });
 
-  moduleInstanceAttributes.filter(attribute => {
+  moduleInstanceAttributes.filter((attribute) => {
     if (attribute) {
       if (instanceAttributeNames.has(attribute.name)) {
         console.warn(
@@ -187,7 +190,7 @@ function gatherIOFromShaderModules<
     return false;
   });
 
-  moduleVertexAttributes.filter(attribute => {
+  moduleVertexAttributes.filter((attribute) => {
     if (attribute) {
       if (vertexAttributeNames.has(attribute.name)) {
         console.warn(
@@ -225,7 +228,10 @@ function gatherIOFromShaderModules<
  * @param importResults The Shader IO object provided by the layer after it's
  *                      had it's imports analyzed from the provided shader.
  */
-export function injectShaderIO<TInstance extends Instance, TProps extends ILayerProps<TInstance>>(
+export function injectShaderIO<
+  TInstance extends Instance = Instance,
+  TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>,
+>(
   gl: WebGLRenderingContext,
   layer: Layer<TInstance, TProps>,
   shaderIO: IShaderInitialization<TInstance>,
@@ -263,10 +269,15 @@ export function injectShaderIO<TInstance extends Instance, TProps extends ILayer
     // validation method should provide all of the logged output necessary to
     // determine why the configuration was wrong.
     if (
-      expansion.validate(layer, instanceAttributes, vertexAttributes, uniforms)
+      expansion.validate<TInstance, TProps>(
+        layer,
+        instanceAttributes,
+        vertexAttributes,
+        uniforms
+      )
     ) {
       // Perform the expansion
-      const extraIO = expansion.expand(
+      const extraIO = expansion.expand<TInstance, TProps>(
         layer,
         instanceAttributes,
         vertexAttributes,
@@ -275,17 +286,17 @@ export function injectShaderIO<TInstance extends Instance, TProps extends ILayer
       // Now we add in the extra IO discovered
       extraIO.instanceAttributes
         .filter(isInstanceAttribute)
-        .forEach(attr => instanceAttributes.push(attr));
+        .forEach((attr) => instanceAttributes.push(attr));
       extraIO.vertexAttributes
         .filter(isVertexAttribute)
-        .forEach(attr => vertexAttributes.push(attr));
-      extraIO.uniforms.filter(isUniform).forEach(attr => uniforms.push(attr));
+        .forEach((attr) => vertexAttributes.push(attr));
+      extraIO.uniforms.filter(isUniform).forEach((attr) => uniforms.push(attr));
     }
   }
 
   // Do a final validation pass of the attributes injected so we can provide
   // feedback as to why things behave odd
-  validateInstanceAttributes(
+  validateInstanceAttributes<TInstance, TProps>(
     layer,
     instanceAttributes,
     vertexAttributes,
@@ -316,6 +327,6 @@ export function injectShaderIO<TInstance extends Instance, TProps extends ILayer
   return {
     instanceAttributes: allInstanceAttributes,
     uniforms: allUniforms,
-    vertexAttributes: allVertexAttributes
+    vertexAttributes: allVertexAttributes,
   };
 }

@@ -14,7 +14,7 @@ import {
   OutputFragmentShader,
   OutputFragmentShaderSource,
   OutputFragmentShaderTarget,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
 } from "../../types";
 import { removeComments } from "../../util/remove-comments";
 import { shaderTemplate } from "../../util/shader-templating";
@@ -23,7 +23,7 @@ import { BaseIOSorting } from "./base-io-sorting";
 import {
   ShaderDeclarationStatementLookup,
   ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult
+  ShaderIOHeaderInjectionResult,
 } from "./base-shader-io-injection";
 import { BaseShaderTransform } from "./base-shader-transform";
 import { injectShaderIO } from "./inject-shader-io";
@@ -311,14 +311,14 @@ export class ShaderProcessor {
           headers += `\n${(header || "").trim()}`;
           bodies += `\n  ${(body || "").trim()}`;
           return (body || "").trim();
-        }
+        },
       });
     });
 
     return {
       output: `${headers}\nvoid main() {\n${bodies}\n}`,
       outputNames: Array.from(outputNames.values()),
-      outputTypes: outputTypes
+      outputTypes: outputTypes,
     };
   }
 
@@ -347,8 +347,8 @@ export class ShaderProcessor {
       layerOutputs = [
         {
           outputType: FragmentOutputType.COLOR,
-          source: layerOutputs
-        }
+          source: layerOutputs,
+        },
       ];
     }
 
@@ -357,7 +357,7 @@ export class ShaderProcessor {
     const outputNames = new Set<string>();
     const outputTypes: number[] = [];
 
-    layerOutputs.some(layerOutput => {
+    layerOutputs.some((layerOutput) => {
       const isColor = layerOutput.outputType === FragmentOutputType.COLOR;
       let foundOutputToken = false;
 
@@ -451,7 +451,7 @@ export class ShaderProcessor {
           headers += `\n${(header || "").trim()}`;
           bodies += `\n  ${(body || "").trim()}`;
           return (body || "").trim();
-        }
+        },
       });
 
       // Stop when we find a COLOR output
@@ -462,7 +462,7 @@ export class ShaderProcessor {
     return {
       output: `${headers}\nvoid main() {\n${bodies}\n}`,
       outputNames: Array.from(outputNames.values()),
-      outputTypes: outputTypes
+      outputTypes: outputTypes,
     };
   }
 
@@ -499,8 +499,8 @@ export class ShaderProcessor {
           [
             {
               source: layerOutputs,
-              outputType: FragmentOutputType.COLOR
-            }
+              outputType: FragmentOutputType.COLOR,
+            },
           ],
           [FragmentOutputType.COLOR]
         );
@@ -508,7 +508,7 @@ export class ShaderProcessor {
         return {
           source: processed.output,
           outputTypes: [FragmentOutputType.COLOR],
-          outputNames: processed.outputNames
+          outputNames: processed.outputNames,
         };
       }
 
@@ -516,7 +516,7 @@ export class ShaderProcessor {
       // labeled as a color. We prioritize that.
       else if (Array.isArray(layerOutputs)) {
         const colorOutput = layerOutputs.find(
-          s => s.outputType === FragmentOutputType.COLOR
+          (s) => s.outputType === FragmentOutputType.COLOR
         );
 
         let outputIndex = -1;
@@ -544,7 +544,7 @@ export class ShaderProcessor {
         return {
           source: processed.output,
           outputNames: processed.outputNames,
-          outputTypes: [FragmentOutputType.COLOR]
+          outputTypes: [FragmentOutputType.COLOR],
         };
       }
 
@@ -572,7 +572,7 @@ export class ShaderProcessor {
 
       // Gather all of the actual output types in a list so we know the ordering
       // and the mapping of types to specific outputs.
-      const viewOutputTypes = viewOutputs.map(target => target.outputType);
+      const viewOutputTypes = viewOutputs.map((target) => target.outputType);
 
       // If we have multiple outputs, let's find indices of each output that
       // matches a target and create our shader(s) with that
@@ -620,7 +620,7 @@ export class ShaderProcessor {
           return {
             source: processed.output,
             outputNames: processed.outputNames,
-            outputTypes: processed.outputTypes
+            outputTypes: processed.outputTypes,
           };
         }
 
@@ -658,7 +658,7 @@ export class ShaderProcessor {
       // any shaders for this configuration.
       else {
         const targetColor = viewOutputs.find(
-          t => t.outputType === FragmentOutputType.COLOR
+          (t) => t.outputType === FragmentOutputType.COLOR
         );
 
         if (targetColor && layerOutputs) {
@@ -668,8 +668,8 @@ export class ShaderProcessor {
             [
               {
                 source: layerOutputs,
-                outputType: FragmentOutputType.COLOR
-              }
+                outputType: FragmentOutputType.COLOR,
+              },
             ],
             viewOutputTypes
           );
@@ -677,7 +677,7 @@ export class ShaderProcessor {
           return {
             source: processed.output,
             outputNames: processed.outputNames,
-            outputTypes: processed.outputTypes
+            outputTypes: processed.outputTypes,
           };
         }
       }
@@ -692,15 +692,15 @@ export class ShaderProcessor {
    * produce a fully functional shader that is compatible with the client's
    * system.
    */
-  process<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>,
-    shaderIO: IShaderInitialization<T>,
+  process<TInstance extends Instance, TProps extends ILayerProps<TInstance>>(
+    layer: Layer<TInstance, TProps>,
+    shaderIO: IShaderInitialization<TInstance>,
     fragmentShaders: OutputFragmentShader,
     shaderDeclarations: ShaderDeclarationStatementLookup,
     ioExpansion: BaseIOExpansion[],
     transforms: BaseShaderTransform[],
     sortIO: BaseIOSorting
-  ): IShaderProcessingResults<T> | null {
+  ): IShaderProcessingResults<TInstance> | null {
     try {
       if (!layer.surface.gl) {
         console.warn("No WebGL context available for layer!");
@@ -751,7 +751,7 @@ export class ShaderProcessor {
       // In processing, this may generate changes to the Material to accommodate
       // features required
       const materialChanges: ShaderIOHeaderInjectionResult["material"] = {
-        uniforms: []
+        uniforms: [],
       };
 
       const vsHeaderDeclarations: ShaderDeclarationStatements =
@@ -767,7 +767,10 @@ export class ShaderProcessor {
         const processor = ioExpansion[i];
 
         // Generate vertex header declarations
-        const vsHeaderInfo = processor.processHeaderInjection(
+        const vsHeaderInfo = processor.processHeaderInjection<
+          TInstance,
+          TProps
+        >(
           ShaderInjectionTarget.VERTEX,
           vsHeaderDeclarations,
           layer,
@@ -786,7 +789,10 @@ export class ShaderProcessor {
         }
 
         // Destructure the elements
-        destructuring += processor.processAttributeDestructuring(
+        destructuring += processor.processAttributeDestructuring<
+          TInstance,
+          TProps
+        >(
           layer,
           destructureDeclarations,
           this.metricsProcessing,
@@ -800,14 +806,14 @@ export class ShaderProcessor {
       // together
       let declarations = "";
 
-      vsHeaderDeclarations.forEach(declaration => {
+      vsHeaderDeclarations.forEach((declaration) => {
         declarations += declaration;
       });
 
       vsHeader = declarations + vsHeader;
       declarations = "";
 
-      destructureDeclarations.forEach(declaration => {
+      destructureDeclarations.forEach((declaration) => {
         declarations += declaration;
       });
 
@@ -826,7 +832,7 @@ export class ShaderProcessor {
 
       // Last we replace any templating variables with their relevant values
       let templateOptions: { [key: string]: string } = {
-        [templateVars.attributes]: destructuring
+        [templateVars.attributes]: destructuring,
       };
 
       // This flag will determine if the attributes are manually placed in the
@@ -856,7 +862,7 @@ export class ShaderProcessor {
           }
 
           return `${destructuring}\n${body}`;
-        }
+        },
       });
 
       // We process the Fragment shader as well, currently with nothing to
@@ -871,7 +877,10 @@ export class ShaderProcessor {
         for (let i = 0, iMax = ioExpansion.length; i < iMax; ++i) {
           const processor = ioExpansion[i];
           // Generate fragment header declarations
-          const fsHeaderInfo = processor.processHeaderInjection(
+          const fsHeaderInfo = processor.processHeaderInjection<
+            TInstance,
+            TProps
+          >(
             ShaderInjectionTarget.FRAGMENT,
             fsDeclarations,
             layer,
@@ -885,10 +894,10 @@ export class ShaderProcessor {
 
           if (fsHeaderInfo.material) {
             const currentUniformNames = new Set();
-            materialChanges.uniforms.forEach(uniform =>
+            materialChanges.uniforms.forEach((uniform) =>
               currentUniformNames.add(uniform.name)
             );
-            materialChanges.uniforms.forEach(uniform => {
+            materialChanges.uniforms.forEach((uniform) => {
               if (!currentUniformNames.has(uniform.name)) {
                 materialChanges.uniforms.push(uniform);
               }
@@ -896,7 +905,7 @@ export class ShaderProcessor {
           }
         }
 
-        fsDeclarations.forEach(declaration => {
+        fsDeclarations.forEach((declaration) => {
           declarations += declaration;
         });
 
@@ -910,7 +919,7 @@ export class ShaderProcessor {
         const processShaderFS = shaderTemplate({
           options: templateOptions,
           required: undefined,
-          shader: fullShaderFS
+          shader: fullShaderFS,
         });
 
         fsShader.source = processShaderFS.shader.trim();
@@ -927,13 +936,13 @@ export class ShaderProcessor {
       const results = {
         fs: shadersWithImports.fs,
         materialUniforms: materialChanges.uniforms,
-        maxInstancesPerBuffer: this.metricsProcessing
-          .maxInstancesPerUniformBuffer,
+        maxInstancesPerBuffer:
+          this.metricsProcessing.maxInstancesPerUniformBuffer,
         modules: Array.from(shadersWithImports.shaderModuleUnits),
         vs: processedShaderVS.shader.trim(),
         vertexAttributes,
         instanceAttributes,
-        uniforms
+        uniforms,
       };
 
       return results;
@@ -1036,28 +1045,28 @@ export class ShaderProcessor {
         return;
       }
 
-      fsResult.shaderModuleUnits.forEach(moduleUnit =>
+      fsResult.shaderModuleUnits.forEach((moduleUnit) =>
         shaderModuleUnits.add(moduleUnit)
       );
 
       const fs = {
         source: fsResult.shader || "",
         outputTypes: shader.outputTypes,
-        outputNames: shader.outputNames
+        outputNames: shader.outputNames,
       };
 
       processedFragmentShaders.set(view, fs);
     });
 
     // Gather all discovered Shader Module Units
-    vsResult.shaderModuleUnits.forEach(moduleUnit =>
+    vsResult.shaderModuleUnits.forEach((moduleUnit) =>
       shaderModuleUnits.add(moduleUnit)
     );
 
     return {
       fs: processedFragmentShaders,
       vs: vsResult.shader || "",
-      shaderModuleUnits
+      shaderModuleUnits,
     };
   }
 }

@@ -40,12 +40,15 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    *
    * NOTE: The inputs should NOT be modified in any way
    */
-  expand<T extends Instance, U extends ILayerProps<T>>(
-    _layer: Layer<T, U>,
-    _instanceAttributes: IInstanceAttribute<T>[],
+  expand<
+    TInstance extends Instance = Instance,
+    TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>,
+  >(
+    _layer: Layer<TInstance, TProps>,
+    _instanceAttributes: IInstanceAttribute<TInstance>[],
     _vertexAttributes: IVertexAttribute[],
     _uniforms: IUniform[]
-  ): ShaderIOExpansion<T> {
+  ): ShaderIOExpansion<TInstance> {
     return {
       instanceAttributes: [],
       uniforms: [],
@@ -69,7 +72,10 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
    *
    * NOTE: The inputs should NOT be modified in any way
    */
-  validate<TInstance extends Instance, TProps extends ILayerProps<TInstance>>(
+  validate<
+    TInstance extends Instance = Instance,
+    TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>,
+  >(
     _layer: Layer<TInstance, TProps>,
     _instanceAttributes: IInstanceAttribute<TInstance>[],
     _vertexAttributes: IVertexAttribute[],

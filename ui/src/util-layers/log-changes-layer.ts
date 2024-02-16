@@ -5,7 +5,7 @@ import {
   Layer,
   LayerInitializer,
   LayerScene,
-  Surface
+  Surface,
 } from "../surface";
 import { Omit } from "../types";
 import { createLayer } from "../util/create-layer";
@@ -13,14 +13,17 @@ import { createLayer } from "../util/create-layer";
 /**
  * Options for generating a Logging layer
  */
-interface ILogChangesLayerProps<T extends Instance>
-  extends Omit<ILayerProps<T>, "key"> {
+interface ILogChangesLayerProps<
+  TInstance extends Instance,
+  TWrapInstance extends Instance,
+  TWrapProps extends ILayerProps<TWrapInstance>,
+> extends Omit<ILayerProps<TInstance>, "key"> {
   /** Gets the key for the layer. */
   key: string;
   /** Provides a header to the log output to make the logs easier to understand */
   messageHeader?(): string;
   /** This is the wrapped layer initializer */
-  wrap?: LayerInitializer;
+  wrap?: LayerInitializer<TWrapInstance, TWrapProps>;
 }
 
 /**
@@ -29,21 +32,22 @@ interface ILogChangesLayerProps<T extends Instance>
  * way.
  */
 class LogChangesLayer<
-  T extends Instance,
-  U extends ILogChangesLayerProps<T>
-> extends Layer<T, U> {
+  TInstance extends Instance,
+  TWrapInstance extends Instance,
+  TWrapProps extends ILayerProps<TWrapInstance>,
+  TProps extends ILogChangesLayerProps<TInstance, TWrapInstance, TWrapProps>,
+> extends Layer<TInstance, TProps> {
   /** Default props for the Layer */
-  static defaultProps: ILogChangesLayerProps<any> = {
+  static defaultProps: ILogChangesLayerProps<any, any, any> = {
     data: new InstanceProvider(),
     key: "default",
     messageHeader: () => "",
     wrap: createLayer(Layer, {
       data: new InstanceProvider(),
-      scene: "default"
-    })
+    }),
   };
 
-  constructor(surface: Surface, scene: LayerScene, props: U) {
+  constructor(surface: Surface, scene: LayerScene, props: TProps) {
     super(surface, scene, props);
 
     console.warn(
@@ -55,15 +59,15 @@ class LogChangesLayer<
   /**
    * Hand the wrapped layer as a child layer to this layer
    */
-  childLayers(): LayerInitializer[] {
+  childLayers() {
     if (!this.props.wrap) return [];
     this.props.wrap.init[1].key = `debug-wrapper.${this.props.key}`;
     return [this.props.wrap];
   }
 
   /**
-   * Our draw loop. We use this to hijack the changes flowing to our wrapped layer so we can output
-   * significant information about the changes.
+   * Our draw loop. We use this to hijack the changes flowing to our wrapped
+   * layer so we can output significant information about the changes.
    */
   draw() {
     if (!this.props.wrap) return;
@@ -73,7 +77,7 @@ class LogChangesLayer<
 
     console.warn(`${messageHeader()}\n`, {
       totalChanges: changes.length,
-      changes
+      changes,
     });
   }
 
@@ -101,15 +105,15 @@ class LogChangesLayer<
       );
 
       childLayers[childLayer.id] = {
-        shaderIO: childLayer.initShader()
+        shaderIO: childLayer.initShader(),
       };
 
-      childLayer.childLayers().forEach(l => toProcess.push(l));
+      childLayer.childLayers().forEach((l) => toProcess.push(l));
     }
 
     console.warn(`Shader IO: ${this.id}\n`, {
       shaderIO: layer.initShader(),
-      childLayers
+      childLayers,
     });
 
     return null;
@@ -119,14 +123,17 @@ class LogChangesLayer<
 /**
  * Can use this instead of createLayer to view changes streaming through a layer.
  */
-export function debugLayer<T extends Instance, U extends ILayerProps<T>>(
-  layerClass: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key" | "data"> & Partial<Pick<U, "key" | "data">>
-): LayerInitializer {
-  const initializer: LayerInitializer = createLayer(LogChangesLayer, {
-    messageHeader: () => `CHANGES FOR: ${initializer.init[1].key}`,
+export function debugLayer<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+>(
+  layerClass: ILayerConstructable<TInstance, TProps> & { defaultProps: TProps },
+  props: Omit<TProps, "key" | "data"> & Partial<Pick<TProps, "key" | "data">>
+): LayerInitializer<TInstance, TProps> {
+  const initializer = createLayer(LogChangesLayer, {
+    messageHeader: (): string => `CHANGES FOR: ${initializer.init[1].key}`,
     wrap: createLayer(layerClass, props),
-    data: props.data
+    data: props.data,
   });
 
   return initializer;

@@ -20,7 +20,7 @@ import {
   TextureSize,
   Transform,
   vec3,
-  View3D
+  View3D,
 } from "../../../../src";
 import { BaseDemo } from "../../common/base-demo";
 import { CubeInstance } from "./cube/cube-instance";
@@ -34,7 +34,7 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
     screenPass: new InstanceProvider<CubeInstance>(),
     cubes: new InstanceProvider<CubeInstance>(),
     noGlow: new InstanceProvider<CubeInstance>(),
-    noColor: new InstanceProvider<CubeInstance>()
+    noColor: new InstanceProvider<CubeInstance>(),
   };
 
   /** GUI properties */
@@ -49,7 +49,7 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
     Bloom: () => {
       this.parameters.glow = true;
       this.reset();
-    }
+    },
   };
 
   loopId?: Promise<number>;
@@ -68,7 +68,7 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
   reset() {
     if (this.surface) {
       this.destroy();
-      Object.keys(this.providers).forEach(key =>
+      Object.keys(this.providers).forEach((key) =>
         (this.providers as any)[key].clear()
       );
       this.surface.rebuild();
@@ -80,14 +80,14 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
     return new BasicSurface({
       container,
       rendererOptions: {
-        antialias: true
+        antialias: true,
       },
       providers: this.providers,
       cameras: {
         main: Camera.makePerspective({
           fov: (60 * Math.PI) / 180,
-          far: 100000
-        })
+          far: 100000,
+        }),
       },
       resources: {
         color: createTexture({
@@ -96,8 +96,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         buffer: createTexture({
           width: TextureSize.SCREEN,
@@ -105,17 +105,35 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         glow: createTexture({
           width: TextureSize.SCREEN,
           height: TextureSize.SCREEN,
           textureSettings: {
             generateMipMaps: false,
-            format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            format: GLSettings.Texture.TexelDataType.RGBA,
+            internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+          },
+        }),
+        glowTrail: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            format: GLSettings.Texture.TexelDataType.RGBA,
+            internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+          },
+        }),
+        glowingTrail: createTexture({
+          width: TextureSize.SCREEN,
+          height: TextureSize.SCREEN,
+          textureSettings: {
+            generateMipMaps: false,
+            format: GLSettings.Texture.TexelDataType.RGBA,
+            internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+          },
         }),
         blur1: createTexture({
           width: TextureSize.SCREEN_HALF,
@@ -123,8 +141,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur2: createTexture({
           width: TextureSize.SCREEN_QUARTER,
@@ -132,8 +150,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur3: createTexture({
           width: TextureSize.SCREEN_8TH,
@@ -141,8 +159,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur4: createTexture({
           width: TextureSize.SCREEN_16TH,
@@ -150,8 +168,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur5: createTexture({
           width: TextureSize.SCREEN_32ND,
@@ -159,8 +177,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur6: createTexture({
           width: TextureSize.SCREEN_64TH,
@@ -168,8 +186,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur7: createTexture({
           width: TextureSize.SCREEN_128TH,
@@ -177,8 +195,8 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
         }),
         blur8: createTexture({
           width: TextureSize.SCREEN_256TH,
@@ -186,11 +204,11 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
           textureSettings: {
             generateMipMaps: false,
             format: GLSettings.Texture.TexelDataType.RGB,
-            internalFormat: GLSettings.Texture.TexelDataType.RGB
-          }
-        })
+            internalFormat: GLSettings.Texture.TexelDataType.RGB,
+          },
+        }),
       },
-      eventManagers: _cameras => ({}),
+      eventManagers: (_cameras) => ({}),
       scenes: (resources, providers, cameras) => ({
         // Render our world scene to textures
         world: {
@@ -203,37 +221,50 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
                     buffers: {
                       [FragmentOutputType.COLOR]: resources.color,
                       [FragmentOutputType.ACCUMULATION1]: resources.buffer,
-                      [FragmentOutputType.GLOW]: resources.glow
+                      [FragmentOutputType.GLOW]: resources.glow,
                     },
-                    depth: true
+                    depth: true,
                   }
-                : void 0
-            })
+                : void 0,
+            }),
           },
           layers: {
             cubes: createLayer(CubeLayer, {
-              data: providers.cubes
+              data: providers.cubes,
             }),
             noColorCubes: createLayer(CubeLayer, {
               data: providers.noColor,
               mapOutput: this.parameters.glow
                 ? {
-                    [FragmentOutputType.COLOR]: FragmentOutputType.ACCUMULATION1
+                    [FragmentOutputType.COLOR]:
+                      FragmentOutputType.ACCUMULATION1,
                   }
-                : void 0
+                : void 0,
             }),
             noGlowCubes: createLayer(CubeLayer, {
               data: providers.noGlow,
               mapOutput: {
-                [FragmentOutputType.GLOW]: FragmentOutputType.NONE
-              }
-            })
-          }
+                [FragmentOutputType.GLOW]: FragmentOutputType.NONE,
+              },
+            }),
+          },
         },
 
         // Perform post processing with the resulting textures
-        postEffects: {
-          bloom: PostEffect.bloom({
+        postEffects: [
+          // ...PostEffect.trail({
+          //   intensity: 0.5,
+          //   input: {
+          //     trail: resources.glowTrail,
+          //     add: resources.glow,
+          //   },
+          //   output: resources.glowingTrail,
+          // }),
+          ...PostEffect.bloom({
+            view: {
+              background: [0, 0, 0, 0],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            },
             samples: 6,
             resources: [
               resources.glow,
@@ -244,12 +275,12 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
               resources.blur5,
               resources.blur6,
               resources.blur7,
-              resources.blur8
+              resources.blur8,
             ],
-            compose: resources.color
-          })
-        }
-      })
+            compose: resources.color,
+          }),
+        ],
+      }),
     });
   }
 
@@ -267,7 +298,7 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
     const core1 = this.providers.cubes.add(
       new CubeInstance({
         color: [0, 0, 0, 1],
-        size: scale3([1, 1, 1], factor)
+        size: scale3([1, 1, 1], factor),
       })
     );
 
@@ -287,9 +318,9 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
-              1
+              1,
             ],
-            size: scale3([1, 1, 1], factor)
+            size: scale3([1, 1, 1], factor),
           });
 
           c.localPosition = scale3(normalize3(vec3(i, k, z)), 10);
@@ -311,9 +342,9 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
-              1
+              1,
             ],
-            size: scale3([1, 1, 1], factor)
+            size: scale3([1, 1, 1], factor),
           });
 
           c.localPosition = scale3(normalize3(vec3(i, k, z)), 5);
@@ -335,9 +366,9 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
               Math.random() * 0.8 + 0.2,
-              1
+              1,
             ],
-            size: scale3([1, 1, 1], factor)
+            size: scale3([1, 1, 1], factor),
           });
 
           c.localPosition = scale3(normalize3(vec3(i, k, z)), 15);
@@ -369,7 +400,7 @@ export class MultiRenderTargetDemo3D extends BaseDemo {
         Math.random() * 0.8 + 0.2,
         Math.random() * 0.8 + 0.2,
         Math.random() * 0.8 + 0.2,
-        1
+        1,
       ];
     });
   }

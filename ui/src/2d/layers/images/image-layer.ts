@@ -2,11 +2,10 @@ import { InstanceProvider } from "../../../instance-provider";
 import {
   atlasRequest,
   AtlasResource,
-  IAtlasResourceRequest
+  IAtlasResourceRequest,
 } from "../../../resources";
-import { LayerInitializer } from "../../../surface/layer";
 import { InstanceDiffType } from "../../../types";
-import { createLayer, mapInjectDefault } from "../../../util";
+import { createChildLayer, mapInjectDefault } from "../../../util";
 import { PromiseResolver } from "../../../util/promise-resolver";
 import { Layer2D } from "../../view/layer-2d";
 import { debugVideoEvents } from "./debug-video";
@@ -54,13 +53,13 @@ WHITE_PIXEL.src =
  * them in interesting ways. This is the primary handler for image instances.
  */
 export class ImageLayer<
-  T extends ImageInstance,
-  U extends IImageLayerProps<T>
-> extends Layer2D<T, U> {
+  TInstance extends ImageInstance,
+  TProps extends IImageLayerProps<TInstance>,
+> extends Layer2D<TInstance, TProps> {
   static defaultProps: IImageLayerProps<any> = {
     atlas: "default",
     key: "",
-    data: new InstanceProvider<ImageInstance>()
+    data: new InstanceProvider<ImageInstance>(),
   };
 
   /** Internal provider for child layers for this layer to hand off to */
@@ -102,18 +101,18 @@ export class ImageLayer<
    * The image layer will manage the resources for the images, and the child layer will concern itself
    * with rendering.
    */
-  childLayers(): LayerInitializer[] {
-    return [
-      createLayer(ImageRenderLayer, {
-        ...this.props,
-        key: `${this.props.key}.image-render-layer`
-      })
-    ];
+  childLayers() {
+    const child = createChildLayer(ImageRenderLayer, {
+      ...this.props,
+      key: `${this.props.key}.image-render-layer`,
+    });
+
+    return [child];
   }
 
   destroy() {
     super.destroy();
-    this.sourceToVideo.forEach(video => {
+    this.sourceToVideo.forEach((video) => {
       video.pause();
       this.sourceToVideo.clear();
       this.waitingForVideo.clear();
@@ -136,7 +135,7 @@ export class ImageLayer<
 
     if (!this.propertyIds) {
       this.propertyIds = this.getInstanceObservableIds(changes[0][0], [
-        "source"
+        "source",
       ]);
     }
 
@@ -164,9 +163,8 @@ export class ImageLayer<
 
               if (waitingOnSource) {
                 this.waitForVideoSource.delete(instance);
-                const instancesWaiting = this.waitingForVideo.get(
-                  waitingOnSource
-                );
+                const instancesWaiting =
+                  this.waitingForVideo.get(waitingOnSource);
 
                 if (instancesWaiting) {
                   instancesWaiting.delete(instance);
@@ -217,7 +215,7 @@ export class ImageLayer<
               atlasRequest({
                 key: this.props.atlas || "",
                 disposeResource: true,
-                source: previous
+                source: previous,
               })
             );
 
@@ -229,7 +227,7 @@ export class ImageLayer<
                 request = atlasRequest({
                   key: this.props.atlas || "",
                   source: resource,
-                  rasterizationScale: this.props.rasterizationScale
+                  rasterizationScale: this.props.rasterizationScale,
                 });
 
                 this.sourceToRequest.set(resource, request);
@@ -267,7 +265,7 @@ export class ImageLayer<
               request = atlasRequest({
                 key: this.props.atlas || "",
                 source: resource,
-                rasterizationScale: this.props.rasterizationScale
+                rasterizationScale: this.props.rasterizationScale,
               });
 
               this.sourceToRequest.set(resource, request);
@@ -290,9 +288,8 @@ export class ImageLayer<
 
             if (waitingOnSource) {
               this.waitForVideoSource.delete(instance);
-              const instancesWaiting = this.waitingForVideo.get(
-                waitingOnSource
-              );
+              const instancesWaiting =
+                this.waitingForVideo.get(waitingOnSource);
 
               if (instancesWaiting) {
                 instancesWaiting.delete(instance);
@@ -321,7 +318,7 @@ export class ImageLayer<
             atlasRequest({
               key: this.props.atlas || "",
               disposeResource: true,
-              source: resource
+              source: resource,
             })
           );
           break;
@@ -511,7 +508,7 @@ export class ImageLayer<
         const waitingInstances = this.waitingForVideo.get(source.videoSrc);
 
         if (waitingInstances) {
-          waitingInstances.forEach(instance => {
+          waitingInstances.forEach((instance) => {
             // Set the instance's source back to the video. Since this is asynchronous, it should trigger the change and
             // flow through the provider
             instance.source = source;
@@ -533,7 +530,7 @@ export class ImageLayer<
     // We should check to see if any of the video sources are playing or not
     let isVideoPlaying = false;
 
-    this.sourceToVideo.forEach(video => {
+    this.sourceToVideo.forEach((video) => {
       if (!video.paused) {
         isVideoPlaying = true;
       }

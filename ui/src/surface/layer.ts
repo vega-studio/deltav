@@ -92,10 +92,7 @@ export type LayerInitializer<
   TLayerProps extends ILayerProps<TInstance>,
 > = {
   key: string;
-  init: [
-    ILayerConstructionClass<TInstance, TLayerProps>,
-    ILayerProps<Instance>,
-  ];
+  init: [ILayerConstructionClass<TInstance, TLayerProps>, TLayerProps];
 };
 
 /**
@@ -113,21 +110,22 @@ export type LayerInitializerInternal = {
 /**
  * Constructor options when generating a layer.
  */
-export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
+export interface ILayerProps<TInstance extends Instance>
+  extends IdentifyByKeyOptions {
   /**
    * This allows for external overriding of the base shader modules for a layer.
    * This can cause a layer to break if the overrides do not provide what the
    * layer is expecting at the least.
    */
   baseShaderModules?(
-    shaderIO: IShaderInitialization<T>,
+    shaderIO: IShaderInitialization<TInstance>,
     layerModules: { fs: string[]; vs: string[] }
   ): { fs: string[]; vs: string[] };
   /**
    * This is the data provider where the instancing data is injected and
    * modified.
    */
-  data: IInstanceProvider<T>;
+  data: IInstanceProvider<TInstance>;
   /**
    * This allows you to remap a layer's fragment output to an output your system
    * needs. For example: a layer may output a color to the glow buffer, but we
@@ -208,32 +206,32 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
   /**
    * Executes when the mouse is down on instances (Picking type must be set)
    */
-  onMouseDown?(info: IPickInfo<T>): void;
+  onMouseDown?(info: IPickInfo<TInstance>): void;
   /** Executes when the mouse moves on instances (Picking type must be set) */
-  onMouseMove?(info: IPickInfo<T>): void;
+  onMouseMove?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when the mouse no longer over instances (Picking type must be set)
    */
-  onMouseOut?(info: IPickInfo<T>): void;
+  onMouseOut?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when the mouse is newly over instances (Picking type must be set)
    */
-  onMouseOver?(info: IPickInfo<T>): void;
+  onMouseOver?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when the mouse button is released when over instances (Picking
    * type must be set)
    */
-  onMouseUp?(info: IPickInfo<T>): void;
+  onMouseUp?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when the mouse was down on an instance but is released up outside
    * of that instance (Picking type must be set)
    */
-  onMouseUpOutside?(info: IPickInfo<T>): void;
+  onMouseUpOutside?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when the mouse click gesture is executed over instances (Picking
    * type must be set)
    */
-  onMouseClick?(info: IPickInfo<T>): void;
+  onMouseClick?(info: IPickInfo<TInstance>): void;
 
   /**
    * Executes when there are no longer any touches that are down for the layer
@@ -242,44 +240,44 @@ export interface ILayerProps<T extends Instance> extends IdentifyByKeyOptions {
    * NOTE: This executes for touches being released inside and outside their
    * respective instance.
    */
-  onTouchAllEnd?(info: IPickInfo<T>): void;
+  onTouchAllEnd?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch is down on instances. Each touch will produce it's
    * own event (Picking type must be set)
    */
-  onTouchDown?(info: IPickInfo<T>): void;
+  onTouchDown?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch is up when over on instances. Each touch will produce
    * it's own event (Picking type must be set)
    */
-  onTouchUp?(info: IPickInfo<T>): void;
+  onTouchUp?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch was down on an instance but is released up outside of
    * that instance (Picking type must be set)
    */
-  onTouchUpOutside?(info: IPickInfo<T>): void;
+  onTouchUpOutside?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch is moving atop of instances. Each touch will produce
    * it's own event (Picking type must be set)
    */
-  onTouchMove?(info: IPickInfo<T>): void;
+  onTouchMove?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch is moves off of an instance. Each touch will produce
    * it's own event (Picking type must be set)
    */
-  onTouchOut?(info: IPickInfo<T>): void;
+  onTouchOut?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch moves over instances while the touch is dragged
    * around the screen. (Picking type must be set)
    */
-  onTouchOver?(info: IPickInfo<T>): void;
+  onTouchOver?(info: IPickInfo<TInstance>): void;
   /**
    * Executes when a touch moves off of an instance and there is no longer ANY
    * touches over the instance (Picking type must be set)
    */
-  onTouchAllOut?(info: IPickInfo<T>): void;
+  onTouchAllOut?(info: IPickInfo<TInstance>): void;
   /** Executes when a touch taps on instances. (Picking type must be set) */
-  onTap?(info: IPickInfo<T>): void;
+  onTap?(info: IPickInfo<TInstance>): void;
 }
 
 /**
@@ -361,7 +359,11 @@ export class Layer<
    */
   isAnimationContinuous: boolean = false;
   /** Buffer manager is read only. Must use setBufferManager */
-  private _bufferManager!: BufferManagerBase<TInstance, IBufferLocation>;
+  private _bufferManager!: BufferManagerBase<
+    TInstance,
+    TProps,
+    IBufferLocation
+  >;
   /**
    * This matches an instance to the data buffers and positions to stream to the
    * GPU for direct updates. Use setBufferManager to change this element.
@@ -380,7 +382,7 @@ export class Layer<
   /** This determines the drawing order of the layer within it's scene */
   depth: number = 0;
   /** This contains the methods and controls for handling diffs for the layer */
-  diffManager?: InstanceDiffManager<TInstance>;
+  diffManager?: InstanceDiffManager<TInstance, TProps>;
   /**
    * This gets populated when there are attributes that have easing applied to
    * them. This subsequently gets applied to instances when they get added to
@@ -528,11 +530,7 @@ export class Layer<
     } as T;
   }
 
-  constructor(
-    surface: Surface,
-    scene: LayerScene,
-    props: ILayerProps<TInstance>
-  ) {
+  constructor(surface: Surface, scene: LayerScene, props: TProps) {
     // We do not establish bounds in the layer. The surface manager will take care of that for us
     // After associating the layer with the view it is a part of.
     super(props);
@@ -1055,6 +1053,13 @@ export class Layer<
     const processor = diffManager.processor;
 
     // Forewarn the processor how many instances are flagged for a change.
+    if (!processor) {
+      console.warn(
+        "A layer is atttempting to draw without a diff processor for analyzing changes."
+      );
+      return;
+    }
+
     processor.incomingChangeList(changeList);
     // Forewarn the buffer manager of changes so it can optimize it's handling
     // of changes as well
@@ -1066,7 +1071,7 @@ export class Layer<
       bufferLocations = this.bufferManager.getBufferLocations(instance);
       // The diff type is change[1] which we use to find the diff processing
       // method to use
-      processing[change[1]](
+      processing?.[change[1]](
         processor,
         instance,
         Object.values(change[2]),
@@ -1587,11 +1592,11 @@ export class Layer<
    * applies those changes to an appropriate buffer at the appropriate location.
    */
   setBufferManager(
-    bufferManager: BufferManagerBase<TInstance, IBufferLocation>
+    bufferManager: BufferManagerBase<TInstance, TProps, IBufferLocation>
   ) {
     if (!this._bufferManager) {
       this._bufferManager = bufferManager;
-      this.diffManager = new InstanceDiffManager<TInstance>();
+      this.diffManager = new InstanceDiffManager<TInstance, TProps>();
       this.diffManager.makeProcessor(this, bufferManager);
     } else {
       console.warn(

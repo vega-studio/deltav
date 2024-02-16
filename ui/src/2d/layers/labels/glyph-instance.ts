@@ -2,7 +2,7 @@ import {
   IInstanceOptions,
   Instance,
   makeObservable,
-  observable
+  observable,
 } from "../../../instance-provider";
 import { Vec2, Vec4 } from "../../../math/vector";
 import { IFontResourceRequest } from "../../../resources";
@@ -46,7 +46,7 @@ export class GlyphInstance extends Instance {
   /** Fires when this instance is ready for rendering */
   onReady?: (glyph: GlyphInstance) => void;
   /** This is populated as a result of character updates */
-  request: IFontResourceRequest;
+  request?: IFontResourceRequest;
 
   constructor(options: GlyphInstanceOptions) {
     super(options);

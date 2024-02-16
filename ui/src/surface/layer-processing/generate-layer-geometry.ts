@@ -4,7 +4,7 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal,
   LayerBufferType,
-  ShaderIOValue
+  ShaderIOValue,
 } from "../../types";
 import { Layer } from "../layer";
 
@@ -76,9 +76,9 @@ export function generateLayerGeometry<T extends Instance>(
     );
   }
 
-  // After getting the geometry for a single instance, we can now copy paste
-  // For subsequent instances using very fast FLoat32 methods
-  // NOTE: This is ONLY for certain buffering strategies. This is essentially a noop when the
+  // After getting the geometry for a single instance, we can now copy paste For
+  // subsequent instances using very fast FLoat32 methods NOTE: This is ONLY for
+  // certain buffering strategies. This is essentially a noop when the
   // maxInstances is set to one.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
@@ -91,7 +91,8 @@ export function generateLayerGeometry<T extends Instance>(
   }
 
   // Lastly, we make the instance attribute reflect correctly so each instance
-  // Can have varied information. This is only appropriate for the uniform buffer strategy
+  // Can have varied information. This is only appropriate for the uniform
+  // buffer strategy
   if (layer.bufferType === LayerBufferType.UNIFORM) {
     const instancingBuffer = vertexBuffers[0];
 
@@ -107,7 +108,8 @@ export function generateLayerGeometry<T extends Instance>(
   // Now we can generate the attributes and apply them to a geometry object
   const geometry = new Geometry();
 
-  // Generate the attributes, they are all Vertex attributes, thus instancing does not get flagged on them.
+  // Generate the attributes, they are all Vertex attributes, thus instancing
+  // does not get flagged on them.
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
     const materialAttribute = new Attribute(vertexBuffers[i], attribute.size);

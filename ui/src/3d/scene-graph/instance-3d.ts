@@ -2,7 +2,7 @@ import {
   IInstanceOptions,
   Instance,
   makeObservable,
-  observable
+  observable,
 } from "../../instance-provider";
 import { Mat4x4, Quaternion, Vec3 } from "../../math";
 import { Transform } from "./transform";
@@ -44,7 +44,7 @@ export class Instance3D extends Instance {
     val.instance = this;
     this._transform = val;
   }
-  private _transform: Transform;
+  private _transform!: Transform;
 
   /**
    * Matrix representing the transform needed to put this instance into world
@@ -55,7 +55,7 @@ export class Instance3D extends Instance {
     this._transform.update();
     return this._matrix;
   }
-  @observable private _matrix: Mat4x4;
+  @observable private _matrix!: Mat4x4;
 
   /**
    * Matrix used to represent the transform this object places on itself.
@@ -65,7 +65,7 @@ export class Instance3D extends Instance {
     this._transform.update();
     return this._localMatrix;
   }
-  @observable private _localMatrix: Mat4x4;
+  @observable private _localMatrix!: Mat4x4;
 
   /** Local position of the Instance */
   get localPosition() {
@@ -75,7 +75,7 @@ export class Instance3D extends Instance {
   set localPosition(val: Vec3) {
     this.transform.localPosition = val;
   }
-  @observable private _localPosition: Vec3;
+  @observable private _localPosition!: Vec3;
 
   /** Local space rotation of the Instance */
   get localRotation() {
@@ -85,7 +85,7 @@ export class Instance3D extends Instance {
   set localRotation(val: Quaternion) {
     this.transform.localRotation = val;
   }
-  @observable private _localRotation: Quaternion;
+  @observable private _localRotation!: Quaternion;
 
   /** Local axis scale of the instance */
   get localScale() {
@@ -95,7 +95,7 @@ export class Instance3D extends Instance {
   set localScale(val: Vec3) {
     this.transform.localScale = val;
   }
-  @observable private _localScale: Vec3;
+  @observable private _localScale!: Vec3;
 
   /** World position of the Instance */
   get position() {
@@ -106,7 +106,7 @@ export class Instance3D extends Instance {
   set position(val: Vec3) {
     this.transform.position = val;
   }
-  @observable private _position: Vec3;
+  @observable private _position!: Vec3;
 
   /** World space rotation of the Instance */
   get rotation() {
@@ -117,7 +117,7 @@ export class Instance3D extends Instance {
   set rotation(val: Quaternion) {
     this.transform.rotation = val;
   }
-  @observable private _rotation: Quaternion;
+  @observable private _rotation!: Quaternion;
 
   /** Axis scale of the instance */
   get scale() {
@@ -128,7 +128,7 @@ export class Instance3D extends Instance {
   set scale(val: Vec3) {
     this.transform.scale = val;
   }
-  @observable private _scale: Vec3;
+  @observable private _scale!: Vec3;
 
   /**
    * Quick way to work with parent transforms. This is just syntactic sugar so

@@ -1,3 +1,5 @@
+import { isDefined } from "../types";
+import { PromiseResolver } from "../promise-resolver";
 import { useEffect, useState } from "react";
 
 type WillUnmount = () => void;
@@ -14,7 +16,22 @@ export interface ILifecycle {
    */
   willMount?(): boolean;
   /** Component finished it's first render */
-  didMount?(): WillUnmount | undefined | void;
+  didMount?():
+    | WillUnmount
+    | undefined
+    | void
+    | Promise<WillUnmount | undefined | void>;
+
+  /**
+   * Only executes on renders AFTER the component has mounted. Thus, will not
+   * run first render. This DOES run before the current render pass has
+   * completed.
+   *
+   * The returned async function will execute AFTER the current render pass has
+   * executed, thus getting close to being a didUpdate (not 'exactly' the same
+   * as a class component lifecycle, but very close. Expect nuances)
+   */
+  willUpdate?(): (() => Promise<void>) | undefined | void;
 }
 
 /**
@@ -39,18 +56,42 @@ export function useLifecycle<TStore extends ILifecycle>(
     shouldMount,
   };
 
-  if (!didMount) {
+  // Only run on first render prior to anything else
+  if (!didMount && isDefined(target.willMount)) {
     out.shouldMount = target.willMount?.() ? true : false;
+  }
+
+  // Only run if NOT first render.
+  if (didMount) {
+    const didUpdate = target.willUpdate?.();
+
+    if (didUpdate) {
+      (async () => {
+        await didUpdate();
+      })();
+    }
   }
 
   // Normal mounting strategy
   useEffect(() => {
+    const resolver = new PromiseResolver<boolean>();
     setDidMount(true);
     setShouldMount(out.shouldMount);
-    const willUnmount = target.didMount?.();
+    let willUnmount: WillUnmount | undefined | void;
+
+    // Allow the mounting process to have async/await processes
+    (async () => {
+      willUnmount = await target.didMount?.();
+      resolver.resolve(true);
+    })();
 
     return () => {
-      willUnmount?.();
+      // We must ensure the didMount ran to completion before we can verify we
+      // have the unmount provided to us to perform.
+      (async () => {
+        await resolver.promise;
+        willUnmount?.();
+      })();
     };
   }, []);
 

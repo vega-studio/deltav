@@ -4,7 +4,7 @@ import {
   InstanceIOValue,
   IResourceContext,
   ResourceType,
-  TextureSize
+  TextureSize,
 } from "../../types";
 import { BaseResourceManager } from "../base-resource-manager";
 import { IRenderTextureResource, RenderTexture } from "./render-texture";
@@ -38,7 +38,8 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    * longer needed.
    */
   destroy() {
-    this.resources.forEach(r => r.destroy());
+    console.log("DESTROYING TEXTURE RESOURCE MANAGER");
+    this.resources.forEach((r) => r.destroy());
     this.resources.clear();
   }
 

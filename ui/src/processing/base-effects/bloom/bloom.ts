@@ -1,10 +1,15 @@
 import { IView2DProps } from "../../../2d";
 import { GLSettings } from "../../../gl/gl-settings";
 import { IRenderTextureResource } from "../../../resources/texture/render-texture";
-import { FragmentOutputType, ILayerMaterialOptions } from "../../../types";
+import { ISceneOptions } from "../../../surface";
+import {
+  FragmentOutputType,
+  ILayerMaterialOptions,
+  UniformSize,
+} from "../../../types";
+import { createUniform } from "../../../util";
 import { postProcess } from "../../post-process";
 import { boxSample, BoxSampleDirection } from "../box-sample/box-sample";
-import BloomFS from "./bloom.fs";
 
 export interface IBloom {
   /**
@@ -47,14 +52,28 @@ export interface IBloom {
    * process effect.
    */
   material?: ILayerMaterialOptions;
+  /**
+   * Sometimes bloom can pick up very microscopic artifacts that creates a
+   * "light bleed" effect (looks like a ghostly halo). Set this value to a
+   * number usually between 2 to 5 to decrease the glow slightly and filter out
+   * faint effects.
+   */
+  gammaCorrection?: number;
+}
+
+/**
+ * Ensures a decimal is present even if the decimal would be 0
+ */
+function ensureDecimal(v: number): string {
+  return v % 1 === 0 ? `${v}.0` : `${v}`;
 }
 
 /**
  * Performs a gaussian horizontal blur on a resource and outputs to a specified
  * resource.
  */
-export function bloom(options: IBloom) {
-  const { compose, output, resources } = options;
+export function bloom(options: IBloom): ISceneOptions[] {
+  const { compose, output, resources, view } = options;
 
   const addBlend = {
     blending: {
@@ -64,11 +83,11 @@ export function bloom(options: IBloom) {
     },
   };
 
-  const process: Record<string, any> = {};
+  const process: ISceneOptions[] = [];
 
   // Generate down samples
   for (let i = 0, iMax = options.samples; i < iMax; ++i) {
-    const sample = boxSample({
+    const sample: any = boxSample({
       printShader: options.printShader,
       input: resources[i],
       output: resources[i + 1],
@@ -78,12 +97,12 @@ export function bloom(options: IBloom) {
       },
     });
 
-    process[`downSample${i}`] = sample;
+    process.push(sample);
   }
 
   // Generate up samples
   for (let i = options.samples - 1; i > 0; --i) {
-    const sample = boxSample({
+    const sample: any = boxSample({
       printShader: options.printShader,
       input: resources[i + 1],
       output: resources[i],
@@ -91,34 +110,68 @@ export function bloom(options: IBloom) {
       material: addBlend,
     });
 
-    process[`upSample${i}`] = sample;
+    process.push(sample);
   }
 
   // Generate the composition process
   if (compose) {
-    process.compose = postProcess({
-      printShader: options.printShader,
-      // Set the buffers we want to composite
-      buffers: {
-        color: compose,
-        glow: resources[1],
-      },
-      // Turn off blending
-      material: {
-        blending: null,
-      },
-      // Render to the screen, or to a potentially specified target
-      view: output
-        ? {
-            output: {
-              buffers: { [FragmentOutputType.COLOR]: output },
-              depth: false,
-            },
+    process.push(
+      postProcess({
+        printShader: options.printShader,
+        // Set the buffers we want to composite
+        buffers: {
+          color: compose,
+          glow: resources[1],
+        },
+        // Turn off blending
+        material: addBlend,
+        // Render to the screen, or to a potentially specified target
+        view: {
+          ...(output
+            ? {
+                output: {
+                  buffers: { [FragmentOutputType.COLOR]: output },
+                  depth: false,
+                },
+              }
+            : void 0),
+          ...view,
+        },
+        uniforms: [
+          createUniform({
+            name: "gamma",
+            size: UniformSize.ONE,
+            update: () => [options.gammaCorrection || 1],
+          }),
+        ],
+        // Utilize our composition shader
+        shader: `
+          varying vec2 texCoord;
+
+          void main() {
+            vec3 base = texture2D(color, texCoord).rgb;
+            vec3 glow = texture2D(glow, texCoord).rgb;
+
+            ${
+              options.gammaCorrection !== void 0
+                ? `
+              vec3 result = mix(
+                base,
+                glow + base,
+                ((glow.r + glow.g + glow.b) / gamma)
+              );
+            `
+                : `
+              vec3 result = base + glow;
+            `
+            }
+
+
+            gl_FragColor = vec4(result, 1.0);
           }
-        : void 0,
-      // Utilize our composition shader
-      shader: BloomFS,
-    });
+        `,
+      })
+    );
   }
 
   return process;

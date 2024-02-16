@@ -41,7 +41,7 @@ export function createAtlas(
   return {
     key: "",
     type: ResourceType.ATLAS,
-    ...options
+    ...options,
   };
 }
 
@@ -77,7 +77,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     ResourceReference
   >();
   /** This is the actual texture object that represents the atlas on the GPU */
-  texture: Texture;
+  texture?: Texture;
   /** These are the applied settings to our texture */
   textureSettings?: TextureOptions;
   /** The resource type for resource management */
@@ -117,19 +117,19 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       textureSettings = {
         generateMipMaps: true,
         premultiplyAlpha: true,
-        ...this.textureSettings
+        ...this.textureSettings,
       };
     } else {
       textureSettings = {
         generateMipMaps: true,
-        premultiplyAlpha: true
+        premultiplyAlpha: true,
       };
     }
 
     // Generate the texture
     this.texture = new Texture({
       data: canvas,
-      ...textureSettings
+      ...textureSettings,
     });
   }
 
@@ -141,11 +141,11 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
    */
   destroy() {
     // Delete the GPU's texture object
-    this.texture.destroy();
+    this.texture?.destroy();
 
     // Invalidate the Sub textures so they don't start rendering wild colors. Instead
     // should render a single color at the 0, 0 mark of the texture.
-    this.resourceReferences.forEach(resource => {
+    this.resourceReferences.forEach((resource) => {
       this.invalidateTexture(resource.subtexture);
     });
   }
@@ -208,7 +208,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
       request.source
     ) || {
       subtexture: request.texture || new SubTexture(),
-      count: 0
+      count: 0,
     };
 
     reference.count--;
@@ -220,7 +220,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   useResource(request: IAtlasResourceRequest) {
     const reference = this.resourceReferences.get(request.source) || {
       subtexture: request.texture,
-      count: 0
+      count: 0,
     };
 
     reference.count++;

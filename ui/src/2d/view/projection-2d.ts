@@ -1,8 +1,15 @@
 import { BaseProjection, Ray, Vec2 } from "../../math";
 import { Camera2D } from "./camera-2d";
 
+/** Provides a guaranteed camera object if none is provided */
+const NO_CAMERA = new Camera2D();
+
+/**
+ * Provides the projection methods for shifting coordinates between vector
+ * spaces.
+ */
 export class Projection2D extends BaseProjection<any> {
-  camera: Camera2D;
+  camera: Camera2D = NO_CAMERA;
 
   /**
    * Maps a coordinate relative to the screen to a coordinate found within the world space.
@@ -32,7 +39,7 @@ export class Projection2D extends BaseProjection<any> {
 
     return [
       [world[0], world[1], 0],
-      [world[0], world[1], -1]
+      [world[0], world[1], -1],
     ];
   }
 

@@ -13,7 +13,7 @@ export enum Axis2D {
   /** X-axis remains x-axis and y-axis is now mapped to the z axis */
   XZ,
   /** X-axis is mapped to the z-axis and the y-axis remains y-axis */
-  YZ
+  YZ,
 }
 
 /**
@@ -29,11 +29,14 @@ export enum Axis2D {
  * To render elements truly flat within the 3D world, use a render target first, then render the target within the 3D
  * world.
  */
-export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
+export function createLayer2Din3D<
+  TInstance extends Instance,
+  TProps extends ILayerProps<TInstance>,
+>(
   axis2D: Axis2D,
-  classType: ILayerConstructable<T> & { defaultProps: U },
-  props: Omit<U, "key" | "data"> &
-    Partial<Pick<U, "key" | "data">> & { control2D: Control2D }
+  classType: ILayerConstructable<TInstance, TProps> & { defaultProps: TProps },
+  props: Omit<TProps, "key" | "data"> &
+    Partial<Pick<TProps, "key" | "data">> & { control2D: Control2D }
 ) {
   const doesInheritLayer2D =
     classType === Layer2D || classType.prototype instanceof Layer2D;
@@ -82,7 +85,7 @@ export function createLayer2Din3D<T extends Instance, U extends ILayerProps<T>>(
       }
 
       return layerModules;
-    }
+    },
   });
 
   return createLayer(classType, modifiedProps);

@@ -44,7 +44,7 @@ function isTextureAttribute<T extends Instance>(
  * expander.
  */
 interface ITextureIOExpansionResource extends IResourceType {
-  texture: Texture;
+  texture?: Texture;
 }
 
 /**

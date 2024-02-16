@@ -45,6 +45,7 @@ export type UniformIOValue =
   | number[];
 
 export enum InstanceBlockIndex {
+  INVALID = 0,
   ONE = 1,
   TWO = 2,
   THREE = 3,
@@ -1125,12 +1126,12 @@ export enum LayerBufferType {
    *    Attributes for the hardware and Attribute packing still can not fit all
    *    of the attributes for the item.
    */
-  UNIFORM = 0,
+  UNIFORM = 1,
   /**
    * This is a fast and zippy buffering strategy used when the hardware supports
    * it for a provided layer!
    */
-  INSTANCE_ATTRIBUTE = 1,
+  INSTANCE_ATTRIBUTE = 2,
   /**
    * This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering
    * strategy. If provided attributes do not fit the limited amount of vertex
@@ -1140,7 +1141,7 @@ export enum LayerBufferType {
    * to be 4 32 bit floats. These packed attributes will then get dereferenced
    * in the shader.
    */
-  INSTANCE_ATTRIBUTE_PACKING = 2,
+  INSTANCE_ATTRIBUTE_PACKING = 3,
 }
 
 /**
@@ -1158,7 +1159,7 @@ export type InstanceDiff<T extends Instance> = [
  * Bare minimum required features a provider must provide to be the data for the
  * layer.
  */
-export interface IInstanceProvider<T extends Instance> {
+export interface IInstanceProvider<TInstance extends Instance> {
   /**
    * This indicates the context this provider was handled within. Currently,
    * only one context is allowed per provider, so we use this to detect when
@@ -1168,9 +1169,9 @@ export interface IInstanceProvider<T extends Instance> {
   /** A unique number making it easier to identify this object */
   uid: number;
   /** A list of changes to instances */
-  changeList: InstanceDiff<T>[];
-  /** Removes an instance from the list */
-  remove(instance: T): void;
+  changeList: InstanceDiff<TInstance>[];
+  /** Removes an instance from the list. Matches based on the object's uid */
+  remove(instance: { uid: number }): void;
   /** Resolves the changes as consumed */
   resolve(context: string): void;
   /**
@@ -1431,3 +1432,10 @@ export enum FragmentOutputType {
    */
   BLUR,
 }
+
+/**
+ * Defines a type that can be partially filled
+ */
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};

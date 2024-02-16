@@ -3,7 +3,7 @@ import { SimpleEventHandler } from "./simple-event-handler";
 import {
   IEventInteraction,
   IMouseInteraction,
-  ITouchInteraction
+  ITouchInteraction,
 } from "./types";
 
 /**
@@ -44,11 +44,11 @@ export class QueuedEventHandler extends EventManager {
   dequeue() {
     try {
       if (this.preserveEvents) {
-        this.preserveQueueMouse.forEach(queue => {
+        this.preserveQueueMouse.forEach((queue) => {
           queue[0](queue[1]);
         });
 
-        this.preserveQueueTouch.forEach(queue => {
+        this.preserveQueueTouch.forEach((queue) => {
           queue[0](queue[1]);
         });
       } else {
@@ -62,7 +62,7 @@ export class QueuedEventHandler extends EventManager {
       }
     } catch (err) {
       console.error("Queued events had errors. Further events aborted");
-      console.error(err.stack || err.message);
+      if (err instanceof Error) console.error(err.stack || err.message);
     }
 
     this.preserveQueueMouse = [];

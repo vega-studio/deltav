@@ -1,5 +1,6 @@
 import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { LayerScene, Surface } from "../../../surface";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -53,6 +54,12 @@ export class ImageRenderLayer<
     texture: "texture",
     tint: "tint",
   };
+
+  constructor(surface: Surface, scene: LayerScene, props: TLayerProps) {
+    // We do not establish bounds in the layer. The surface manager will take care of that for us
+    // After associating the layer with the view it is a part of.
+    super(surface, scene, props);
+  }
 
   /**
    * Define our shader and it's inputs

@@ -9,7 +9,11 @@
  */
 
 import { Instance } from "../../instance-provider/instance";
-import { IInstanceAttribute, InstanceAttributeSize } from "../../types";
+import {
+  IInstanceAttribute,
+  InstanceAttributeSize,
+  InstanceBlockIndex,
+} from "../../types";
 
 /**
  * A quick representation of an available block with a convenience method to
@@ -40,7 +44,7 @@ class Block<T extends Instance> {
  * This loops through all attributes and ensures each attribute is applied
  */
 function ensureSizes<T extends Instance>(attributes: IInstanceAttribute<T>[]) {
-  attributes.forEach(attr => {
+  attributes.forEach((attr) => {
     if (attr.resource && attr.size === undefined) {
       attr.size = InstanceAttributeSize.FOUR;
     }
@@ -81,12 +85,12 @@ export function packAttributes<T extends Instance>(
   const blocks: Block<T>[] = [];
 
   // Loop through all attributes and pack em' in
-  attributes.forEach(attr => {
+  attributes.forEach((attr) => {
     // A matrix 4x4 is a special case where it requires 4 consecutive blocks to
     // work correctly
     if (attr.size && attr.size === InstanceAttributeSize.MAT4X4) {
       attr.block = blocks.length;
-      attr.blockIndex = 0;
+      attr.blockIndex = InstanceBlockIndex.INVALID;
 
       // We know any block that gets created instantly receives some content.
       // Thus we know to fit the matrix we need to simply immediately create 4
@@ -102,7 +106,7 @@ export function packAttributes<T extends Instance>(
     }
 
     // Look for a block that can fit our attribute
-    const block = blocks.find(block => {
+    const block = blocks.find((block) => {
       if (block.setAttribute(attr)) {
         return Boolean(block);
       }

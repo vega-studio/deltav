@@ -1,31 +1,26 @@
 import { Instance } from "../../instance-provider/instance";
 import {
   SubTexture,
-  subTextureIOValue
+  subTextureIOValue,
 } from "../../resources/texture/sub-texture";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import {
-  InstanceIOValue,
-  IResourceContext,
-  IResourceInstanceAttribute,
-  ResourceType
-} from "../../types";
+import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
 import { nextFrame, shallowCompare } from "../../util";
 import {
   BaseResourceManager,
-  BaseResourceOptions
+  BaseResourceOptions,
 } from "../base-resource-manager";
 import { TextureIOExpansion } from "../texture/texture-io-expansion";
 import {
   FontManager,
   IFontResourceOptions,
-  isFontResource
+  isFontResource,
 } from "./font-manager";
 import { FontMap } from "./font-map";
 import {
   FontResourceRequestFetch,
-  IFontResourceRequest
+  IFontResourceRequest,
 } from "./font-resource-request";
 
 import Debug from "debug";
@@ -34,16 +29,18 @@ const debug = Debug("performance");
 
 export interface IFontResourceRequestInternal extends IFontResourceRequest {
   /**
-   * This is used to flag a request object as requested so that the same request object can be used for
-   * similar resources without generating two request lifecycles.
+   * This is used to flag a request object as requested so that the same request
+   * object can be used for similar resources without generating two request
+   * lifecycles.
    */
   isRequested?: boolean;
 }
 
 /**
- * This manager controls and manages Font type resources that are requested for generation. This manager
- * will utilize the request given to it to provide the best possible solution in both load times and
- * run time performance available to the manager.
+ * This manager controls and manages Font type resources that are requested for
+ * generation. This manager will utilize the request given to it to provide the
+ * best possible solution in both load times and run time performance available
+ * to the manager.
  *
  * This manager will have the ability to handle resources
  */
@@ -51,10 +48,9 @@ export class FontResourceManager extends BaseResourceManager<
   IFontResourceOptions,
   IFontResourceRequest
 > {
-  /** The current attribute that is making request calls */
-  currentAttribute: IResourceInstanceAttribute<Instance>;
   /**
-   * This tracks if a resource is already in the request queue. This also stores ALL instances awaiting the resource.
+   * This tracks if a resource is already in the request queue. This also stores
+   * ALL instances awaiting the resource.
    */
   private requestLookup = new Map<
     string,
@@ -69,8 +65,9 @@ export class FontResourceManager extends BaseResourceManager<
   private fontManager = new FontManager();
 
   /**
-   * This is so the system can control when requests are made so this manager has the opportunity
-   * to verify and generate the resources the request requires.
+   * This is so the system can control when requests are made so this manager
+   * has the opportunity to verify and generate the resources the request
+   * requires.
    */
   async dequeueRequests(): Promise<boolean> {
     // This flag will be modified to reflect if a dequeue operation has occurred
@@ -90,8 +87,9 @@ export class FontResourceManager extends BaseResourceManager<
       if (allRequests.length > 0) {
         // We did dequeue
         didDequeue = true;
-        // Pull out all of the requests into a new array and empty the existing queue to allow the queue to register
-        // New requests while this dequeue is being processed
+        // Pull out all of the requests into a new array and empty the existing
+        // queue to allow the queue to register New requests while this dequeue
+        // is being processed
         const requests = allRequests.slice(0);
         // Empty the queue to begin taking in new requests as needed
         allRequests.length = 0;
@@ -106,25 +104,28 @@ export class FontResourceManager extends BaseResourceManager<
         const glyphRequests = this.requestLookup.get(fontResource);
 
         if (glyphRequests) {
-          // Once the manager has been updated, we can now flag all of the instances waiting for the resources
-          // As active, which should thus trigger an update to the layers to perform a diff for each instance
-          requests.forEach(resource => {
+          // Once the manager has been updated, we can now flag all of the
+          // instances waiting for the resources As active, which should thus
+          // trigger an update to the layers to perform a diff for each instance
+          requests.forEach((resource) => {
             const request = glyphRequests.get(resource);
             glyphRequests.delete(resource);
 
             if (request) {
               for (let i = 0, iMax = request.length; i < iMax; ++i) {
                 const [layer, instance] = request[i];
-                // If the instance is still associated with buffer locations, then the instance can be activated. Having
-                // A buffer location is indicative the instance has not been deleted.
+                // If the instance is still associated with buffer locations,
+                // then the instance can be activated. Having A buffer location
+                // is indicative the instance has not been deleted.
                 if (layer.managesInstance(instance)) {
                   // Make sure the instance is active
                   instance.active = true;
                 }
               }
 
-              // Do a delay to next frame before we do our resource trigger so we can see any lingering updates get
-              // applied to the instance's rendering
+              // Do a delay to next frame before we do our resource trigger so
+              // we can see any lingering updates get applied to the instance's
+              // rendering
               nextFrame(() => {
                 const triggered = new Set();
 
@@ -154,8 +155,9 @@ export class FontResourceManager extends BaseResourceManager<
   }
 
   /**
-   * This will force this manager to free all of it's beloved resources that it manages should
-   * it be holding onto resources that can not be freed by lack of references.
+   * This will force this manager to free all of it's beloved resources that it
+   * manages should it be holding onto resources that can not be freed by lack
+   * of references.
    */
   destroy(): void {
     this.fontManager.destroy();
@@ -179,8 +181,9 @@ export class FontResourceManager extends BaseResourceManager<
   }
 
   /**
-   * Make the expander to handle making the attribute changes necessary to have the texture applied
-   * to a uniform when the attribute places a resource request with a key.
+   * Make the expander to handle making the attribute changes necessary to have
+   * the texture applied to a uniform when the attribute places a resource
+   * request with a key.
    */
   getIOExpansion(): BaseIOExpansion[] {
     return [new TextureIOExpansion(ResourceType.FONT, this)];
@@ -202,8 +205,8 @@ export class FontResourceManager extends BaseResourceManager<
   }
 
   /**
-   * This is for attributes making a request for a resource of this type to create shader compatible info
-   * regarding the requests properties.
+   * This is for attributes making a request for a resource of this type to
+   * create shader compatible info regarding the requests properties.
    */
   request<U extends Instance, V extends ILayerProps<U>>(
     layer: Layer<U, V>,
@@ -215,10 +218,11 @@ export class FontResourceManager extends BaseResourceManager<
     const fontMap = request.fontMap;
     let texture: SubTexture | null = null;
 
-    // If the texture is ready and available, then we simply return the IO values
+    // If the texture is ready and available, then we simply return the IO
+    // values
     if (fontMap) {
-      // If this is a character request, then we output the texture desired. Kerning requests only needs
-      // the font map populated in the request.
+      // If this is a character request, then we output the texture desired.
+      // Kerning requests only needs the font map populated in the request.
       if (request.character) {
         texture = fontMap.getGlyphTexture(request.character);
       }
@@ -240,8 +244,9 @@ export class FontResourceManager extends BaseResourceManager<
 
     // This is the attributes resource key being requested
     const resourceKey = req.key;
-    // If a request is already made, then we must save the instance making the request for deactivation and
-    // Reactivation but without any additional atlas loading
+    // If a request is already made, then we must save the instance making the
+    // request for deactivation and Reactivation but without any additional
+    // atlas loading
     let fontRequests = this.requestLookup.get(resourceKey);
 
     if (fontRequests) {
@@ -262,9 +267,10 @@ export class FontResourceManager extends BaseResourceManager<
       this.requestLookup.set(resourceKey, fontRequests);
     }
 
-    // If the texture is not available, then we must load the resource, deactivate the instance
-    // And wait for the resource to become available. Once the resource is available, the system
-    // Must activate the instance to render the resource.
+    // If the texture is not available, then we must load the resource,
+    // deactivate the instance And wait for the resource to become available.
+    // Once the resource is available, the system Must activate the instance to
+    // render the resource.
     instance.active = false;
     let requests = this.requestQueue.get(resourceKey);
 

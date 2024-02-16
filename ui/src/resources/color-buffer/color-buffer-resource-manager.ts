@@ -4,14 +4,14 @@ import { InstanceIOValue, IResourceContext, TextureSize } from "../../types";
 import { BaseResourceManager } from "../base-resource-manager";
 import {
   ColorBufferResource,
-  IColorBufferResource
+  IColorBufferResource,
 } from "./color-buffer-resource";
 import { IColorBufferResourceRequest } from "./color-buffer-resource-request";
 
 /**
  * This manager handles creation and destruction of simple Texture Resources.
  * Render Textures are more used on a higher level with the Surface
- * configuration, so we don't need robust memeory handling for it.
+ * configuration, so we don't need robust memory handling for it.
  */
 export class ColorBufferResourceManager extends BaseResourceManager<
   IColorBufferResource,
@@ -35,7 +35,7 @@ export class ColorBufferResourceManager extends BaseResourceManager<
    * longer needed.
    */
   destroy() {
-    this.resources.forEach(r => r.destroy());
+    this.resources.forEach((r) => r.destroy());
     this.resources.clear();
   }
 

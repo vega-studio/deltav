@@ -2,7 +2,9 @@ import { EventManager } from "./event-manager";
 import { IMouseInteraction, ITouchInteraction } from "./types";
 
 /**
- * This is a simple way to access the events executing on the chart.
+ * This is a simple way to access the events executing on the chart. This
+ * implements most of the abstract methods to make the class viable. But this
+ * allows overriding of individual events to allow for targetted events needed.
  */
 export class SimpleEventHandler extends EventManager {
   constructor(handlers: Partial<EventManager>) {

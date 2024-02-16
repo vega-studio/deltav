@@ -11,7 +11,7 @@ import {
   IMaterialUniform,
   MaterialUniformType,
   MaterialUniformValue,
-  UseMaterialStatus
+  UseMaterialStatus,
 } from "./types";
 
 import Debug from "debug";
@@ -29,11 +29,11 @@ export class GLState {
   /** Message to include with debug, warns, and errors */
   debugContext: string = "";
   /** The extensions enabled for the context */
-  private extensions: IExtensions;
+  private extensions!: IExtensions;
   /** Stores the gl context this is watching the state over */
-  private gl: WebGLRenderingContext;
+  private gl!: WebGLRenderingContext;
   /** This is a proxy to execute commands that do not change global gl state */
-  private glProxy: GLProxy;
+  private glProxy!: GLProxy;
   /** Lookup a texture unit to it's current assigned texture. */
   private _textureUnitToTexture = new Map<number, Texture | null>();
   /** This holds which texture units are free for use and have no Texture assigned to them */
@@ -122,7 +122,7 @@ export class GLState {
   get renderTarget() {
     return this._renderTarget;
   }
-  private _renderTarget: RenderTarget | null;
+  private _renderTarget: RenderTarget | null = null;
 
   /** The currently bound render buffer object. null if nothing bound. */
   get boundRBO() {
@@ -152,7 +152,7 @@ export class GLState {
   }
   private _boundTexture: { id: WebGLTexture | null; unit: number } = {
     id: null,
-    unit: -1
+    unit: -1,
   };
 
   /** The current program in use */
@@ -179,7 +179,7 @@ export class GLState {
   }
   private _currentUniforms: {
     [name: string]: IMaterialUniform<MaterialUniformType>;
-  };
+  } = {};
 
   /** This is the texture unit currently active */
   get activeTextureUnit() {
@@ -217,7 +217,7 @@ export class GLState {
   get enabledVertexAttributeArray() {
     return this._enabledVertexAttributeArray
       .slice(0)
-      .filter(n => n !== undefined);
+      .filter((n) => n !== undefined);
   }
   private _enabledVertexAttributeArray: number[] = [];
   private _willUseVertexAttributeArray: number[] = [];
@@ -308,7 +308,7 @@ export class GLState {
     ) {
       this._boundTexture = {
         id: texture.gl.textureId,
-        unit: this._activeTextureUnit
+        unit: this._activeTextureUnit,
       };
 
       switch (target) {
@@ -606,7 +606,7 @@ export class GLState {
         for (let i = 0, iMax = renderOutputs.length; i < iMax; ++i) {
           const renderOutput = renderOutputs[i];
           const target = fragOutputs.find(
-            output => renderOutput?.outputType === output
+            (output) => renderOutput?.outputType === output
           );
 
           // The output type does not exist in the target outputs, thus we bind
@@ -659,7 +659,7 @@ export class GLState {
     // COLOR output to the screen. We find the program that has the LEAST number
     // of targets AND outputs a COLOR target.
     if (!this._renderTarget || this._renderTarget.isColorTarget()) {
-      let programId: WebGLProgram | void;
+      let programId: WebGLProgram | undefined;
 
       // If the program is defined already, then we simply return that program as
       // the program to use
@@ -806,7 +806,7 @@ export class GLState {
 
         if (!location) {
           glSettings = {
-            location: void 0
+            location: void 0,
           };
 
           debug(
@@ -818,7 +818,7 @@ export class GLState {
         }
 
         glSettings = {
-          location
+          location,
         };
 
         // Store the found location for the uniform
@@ -968,30 +968,26 @@ export class GLState {
         break;
 
       case MaterialUniformType.VEC4_ARRAY:
-        v = uniform.value as MaterialUniformValue<
-          MaterialUniformType.VEC4_ARRAY
-        >;
+        v =
+          uniform.value as MaterialUniformValue<MaterialUniformType.VEC4_ARRAY>;
         this.gl.uniform4fv(location, flatten4(v));
         break;
 
       case MaterialUniformType.MATRIX3x3:
-        v = uniform.value as MaterialUniformValue<
-          MaterialUniformType.MATRIX3x3
-        >;
+        v =
+          uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX3x3>;
         this.gl.uniformMatrix3fv(location, false, v);
         break;
 
       case MaterialUniformType.MATRIX4x4:
-        v = uniform.value as MaterialUniformValue<
-          MaterialUniformType.MATRIX4x4
-        >;
+        v =
+          uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX4x4>;
         this.gl.uniformMatrix4fv(location, false, v);
         break;
 
       case MaterialUniformType.FLOAT_ARRAY:
-        v = uniform.value as MaterialUniformValue<
-          MaterialUniformType.FLOAT_ARRAY
-        >;
+        v =
+          uniform.value as MaterialUniformValue<MaterialUniformType.FLOAT_ARRAY>;
         this.gl.uniform1fv(location, v);
         break;
 
@@ -1024,14 +1020,14 @@ export class GLState {
     // We apply the default unit to each texture that failed. Output will be made from the
     // previous method, so at this point, let's just try to make lemonade out of lemons (set
     // sane defaults)
-    failedTextures.forEach(texture => {
+    failedTextures.forEach((texture) => {
       if (texture.gl) {
         texture.gl.textureUnit = this.gl.TEXTURE0;
       } else {
         texture.gl = {
           textureId: null,
           textureUnit: this.gl.TEXTURE0,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       }
     });
@@ -1050,9 +1046,9 @@ export class GLState {
 
     // Now our list of render targets is guaranteed to have their textures set with an active texture unit,
     // so we can now officially ensure the render target is compiled.
-    renderTargets.forEach(target => {
+    renderTargets.forEach((target) => {
       const textures = target.getTextures();
-      const failed = textures.some(texture => {
+      const failed = textures.some((texture) => {
         // Only compile and process successful texture units
         if (failedTextures.indexOf(texture) < 0) {
           this.glProxy.updateTexture(texture);
@@ -1078,14 +1074,14 @@ export class GLState {
       if (failedTextures.indexOf(texture) < 0) {
         this.glProxy.updateTexture(texture);
 
-        uniforms.forEach(uniform => {
+        uniforms.forEach((uniform) => {
           this.uploadTextureToUniform(uniform, texture);
         });
       }
 
       // Failed textures get their uniforms filled with the default 0 texture unit
       else {
-        uniforms.forEach(uniform => {
+        uniforms.forEach((uniform) => {
           this.gl.uniform1i(uniform, textureUnitToIndex(this.gl, 0));
         });
       }
@@ -1106,7 +1102,7 @@ export class GLState {
     const hasUnit: Texture[] = [];
 
     // First establish all textures that need a unit
-    textures.forEach(texture => {
+    textures.forEach((texture) => {
       if (!texture.gl || texture.gl.textureUnit < 0) {
         needsUnit.push(texture);
       } else {
@@ -1130,7 +1126,7 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       } else {
         texture.gl.textureUnit = freeUnit;
@@ -1155,13 +1151,13 @@ export class GLState {
     // Get a list of texture units in use but are not required for next draw call
     const inUse = new Map<Texture, boolean>();
 
-    this._textureUnitToTexture.forEach(texture => {
+    this._textureUnitToTexture.forEach((texture) => {
       if (texture) {
         inUse.set(texture, false);
       }
     });
 
-    hasUnit.forEach(texture => {
+    hasUnit.forEach((texture) => {
       inUse.set(texture, true);
     });
 
@@ -1201,7 +1197,7 @@ export class GLState {
         texture.gl = {
           textureId: null,
           textureUnit: freeUnit.gl.textureUnit,
-          proxy: this.glProxy
+          proxy: this.glProxy,
         };
       } else {
         texture.gl.textureUnit = freeUnit.gl.textureUnit;

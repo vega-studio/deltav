@@ -8,7 +8,7 @@ import {
   RenderTarget,
   Scene,
   Texture,
-  WebGLRenderer
+  WebGLRenderer,
 } from "../../gl";
 import { Bounds } from "../../math/primitives/bounds";
 import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
@@ -34,7 +34,7 @@ const ZERO_IMAGE: SubTexture = new SubTexture({
   isValid: false,
   pixelHeight: 0,
   pixelWidth: 0,
-  widthOnAtlas: 0
+  widthOnAtlas: 0,
 });
 
 /**
@@ -90,7 +90,7 @@ export class AtlasManager {
    * Free ALL resources under this manager
    */
   destroy() {
-    this.allAtlas.forEach(value => value.destroy());
+    this.allAtlas.forEach((value) => value.destroy());
   }
 
   /**
@@ -153,13 +153,20 @@ export class AtlasManager {
     request.texture.isValid = true;
     atlas.resourceReferences.set(request.source, {
       subtexture: request.texture,
-      count: 0
+      count: 0,
     });
 
     // First we must load the image
     // Make a buffer to hold our new image
     // Load the image into memory, default to keeping the alpha channel
-    const loadedImage: TexImageSource | null = await this.loadImage(request);
+    const loadedImage:
+      | ImageBitmap
+      | ImageData
+      | HTMLImageElement
+      | HTMLCanvasElement
+      | HTMLVideoElement
+      | OffscreenCanvas
+      | null = await this.loadImage(request);
     // Get the sub texture that is going to be applied to the atlas
     const texture = request.texture;
 
@@ -170,13 +177,13 @@ export class AtlasManager {
         bottom: texture.pixelHeight,
         left: 0,
         right: texture.pixelWidth,
-        top: 0
+        top: 0,
       });
 
       // Create ImageDimension to insert into our atlas mapper
       const dimensions: IPackNodeDimensions<SubTexture> = {
         data: texture,
-        bounds: rect
+        bounds: rect,
       };
 
       // Auto add a buffer in
@@ -185,9 +192,8 @@ export class AtlasManager {
       // Get the atlas map node
       let packing: PackNode<SubTexture> = atlas.packing;
       // Store the node resulting from the insert operation
-      let insertedNode: PackNode<SubTexture> | null = packing.insert(
-        dimensions
-      );
+      let insertedNode: PackNode<SubTexture> | null =
+        packing.insert(dimensions);
 
       // If we failed to insert the image, let's repack the atlas and attempt a
       // second round of packing. We can only repack if the system has provided
@@ -219,25 +225,25 @@ export class AtlasManager {
           top: 0.5,
           left: 0.5,
           right: 0.5,
-          bottom: 0.5
+          bottom: 0.5,
         });
 
         // Track the subtexture with the source that created it.
-        texture.texture = atlas.texture;
+        texture.texture = atlas.texture || null;
         texture.source = loadedImage;
         texture.atlasRegion = {
           ...insertedNode.bounds,
-          y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height
+          y: atlas.height - insertedNode.bounds.y - insertedNode.bounds.height,
         };
 
         // Now specify the update region to be applied to the texture
-        atlas.texture.update(loadedImage, texture.atlasRegion);
+        atlas.texture?.update(loadedImage, texture.atlasRegion);
 
         // If this is a video element, we must make a monitor for it to keep the
         // texture in sync with the videos time location
         if (loadedImage instanceof HTMLVideoElement) {
           texture.video = {
-            monitor: new VideoTextureMonitor(loadedImage, texture)
+            monitor: new VideoTextureMonitor(loadedImage, texture),
           };
         }
 
@@ -283,14 +289,30 @@ export class AtlasManager {
    */
   private async loadImage(
     resource: IAtlasResourceRequest
-  ): Promise<TexImageSource | null> {
+  ): Promise<
+    | ImageBitmap
+    | ImageData
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | HTMLVideoElement
+    | OffscreenCanvas
+    | null
+  > {
     const subTexture = resource.texture || new SubTexture();
     const source = resource.source;
     resource.texture = subTexture;
     if (resource.texture.isValid === false) return null;
 
     if (source instanceof HTMLImageElement) {
-      let image = await new Promise<TexImageSource | null>(resolve => {
+      let image = await new Promise<
+        | ImageBitmap
+        | ImageData
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | HTMLVideoElement
+        | OffscreenCanvas
+        | null
+      >((resolve) => {
         if (!(source instanceof HTMLImageElement)) return;
         const image: HTMLImageElement | undefined = source;
 
@@ -304,7 +326,7 @@ export class AtlasManager {
         }
 
         if (image) {
-          image.onload = function() {
+          image.onload = function () {
             subTexture.pixelWidth = image.width;
             subTexture.pixelHeight = image.height;
             subTexture.aspectRatio = image.width / image.height;
@@ -312,7 +334,7 @@ export class AtlasManager {
             resolve(image);
           };
 
-          image.onerror = function() {
+          image.onerror = function () {
             console.error("Error generating Image element for source:", source);
             image.onload = null;
             resolve(null);
@@ -345,7 +367,8 @@ export class AtlasManager {
         return null;
       }
 
-      // At this point, the video width and height should definitely be established and can be applied to the texture
+      // At this point, the video width and height should definitely be
+      // established and can be applied to the texture
       subTexture.pixelWidth = source.videoWidth;
       subTexture.pixelHeight = source.videoHeight;
       subTexture.aspectRatio = source.videoWidth / source.videoHeight;
@@ -355,10 +378,18 @@ export class AtlasManager {
     } else if (isString(source)) {
       const dataURL = source;
 
-      let image = await new Promise<TexImageSource | null>(resolve => {
+      let image = await new Promise<
+        | ImageBitmap
+        | ImageData
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | HTMLVideoElement
+        | OffscreenCanvas
+        | null
+      >((resolve) => {
         const generatingImage = new Image();
 
-        generatingImage.onload = function() {
+        generatingImage.onload = function () {
           subTexture.pixelWidth = generatingImage.width;
           subTexture.pixelHeight = generatingImage.height;
           subTexture.aspectRatio =
@@ -367,7 +398,7 @@ export class AtlasManager {
           resolve(generatingImage);
         };
 
-        generatingImage.onerror = function() {
+        generatingImage.onerror = function () {
           console.error("Error generating Image element for source:", source);
           resolve(null);
         };
@@ -388,7 +419,13 @@ export class AtlasManager {
 
       return image;
     } else {
-      let image: TexImageSource = source;
+      let image:
+        | ImageBitmap
+        | ImageData
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | HTMLVideoElement
+        | OffscreenCanvas = source;
 
       if (
         image &&
@@ -427,11 +464,12 @@ export class AtlasManager {
     const toProcess = [atlas.packing];
     const allNodes = [];
     let index = 0;
-    // Track the old bounds position information. Will be able to look up via the node's bounds object as it will get
-    // reused for the remapping.
+    // Track the old bounds position information. Will be able to look up via
+    // the node's bounds object as it will get reused for the remapping.
     const oldBounds = new Map<Bounds<any>, Bounds<any>>();
 
-    // We process all of the nodes in the current atlas and flatten out the tree to merely the bounds of each node
+    // We process all of the nodes in the current atlas and flatten out the tree
+    // to merely the bounds of each node
     while (index < toProcess.length) {
       const next = toProcess[index];
       index++;
@@ -453,24 +491,33 @@ export class AtlasManager {
         Math.max(a.bounds.width, a.bounds.height)
     );
 
-    // If there are no valid nodes left, then we simply clear out the root pack node and let the texture repack anew.
+    // If there are no valid nodes left, then we simply clear out the root pack
+    // node and let the texture repack anew.
     if (allNodes.length <= 0) {
       atlas.packing = new PackNode<SubTexture>(0, 0, atlas.width, atlas.height);
       return true;
     }
 
-    // We now know at this point a new texture will be needed to render the newly packed layout
-    // Simply copy all of the settings of the existing texture
+    if (!atlas.texture) {
+      console.warn(
+        "Attempted to repack resources for an atlas with no texture."
+      );
+      return false;
+    }
+
+    // We now know at this point a new texture will be needed to render the
+    // newly packed layout Simply copy all of the settings of the existing
+    // texture
     const newAtlasTexture = new Texture(atlas.texture);
     // Initialize the texture with blank information
     newAtlasTexture.data = {
       buffer: new Uint8Array(atlas.width * atlas.height * 4),
       width: atlas.width,
-      height: atlas.height
+      height: atlas.height,
     };
 
-    // We now have all of the valid nodes and their respective original bounds. We will now repack these nodes to
-    // get the new locations of them all.
+    // We now have all of the valid nodes and their respective original bounds.
+    // We will now repack these nodes to get the new locations of them all.
     const rootNode = new PackNode<SubTexture>(0, 0, atlas.width, atlas.height);
     let failedRepack = false;
 
@@ -487,7 +534,7 @@ export class AtlasManager {
 
       const newNode = rootNode.insert({
         bounds: node.bounds,
-        data: node.data
+        data: node.data,
       });
 
       if (!newNode) {
@@ -499,9 +546,11 @@ export class AtlasManager {
         continue;
       }
 
-      // Apply the node to the subtexture to let the subtexture know it's new coordinates in the render space. This
-      // sub texture should be the same subtexture object the node originally was associated with. This way all
-      // references using this subtexture object will immediately have the new subtexture information.
+      // Apply the node to the subtexture to let the subtexture know it's new
+      // coordinates in the render space. This sub texture should be the same
+      // subtexture object the node originally was associated with. This way all
+      // references using this subtexture object will immediately have the new
+      // subtexture information.
       PackNode.applyToSubTexture(rootNode, newNode, node.data);
     }
 
@@ -512,11 +561,13 @@ export class AtlasManager {
     // Now we can map all of the nodes to quads
     // Positions = Total nodes * Vec2 for xy coords * 6 vertices per quad
     const positions = new Float32Array(allNodes.length * 2 * 6);
-    // Texture coordinates = Total nodes * Vec2 for xy coord positions * 6 vertices per quad
+    // Texture coordinates = Total nodes * Vec2 for xy coord positions * 6
+    // vertices per quad
     const texCoords = new Float32Array(allNodes.length * 2 * 6);
-    // We now produce the geometry that will render the old texture atlas elements to the new texture atlas. The texture
-    // coordinates will be the coordinates located on the old texture. The position of the vertices will be the new pack
-    // location to be rendered on the new texture.
+    // We now produce the geometry that will render the old texture atlas
+    // elements to the new texture atlas. The texture coordinates will be the
+    // coordinates located on the old texture. The position of the vertices will
+    // be the new pack location to be rendered on the new texture.
     const tempTexture = new SubTexture();
 
     for (let i = 0, iMax = allNodes.length; i < iMax; ++i) {
@@ -533,15 +584,17 @@ export class AtlasManager {
         continue;
       }
 
-      // We need the atlas coordinates of the previous bounds so we can make sure we keep the coordinate system
-      // consistent with the new packing
+      // We need the atlas coordinates of the previous bounds so we can make
+      // sure we keep the coordinate system consistent with the new packing
       PackNode.applyToSubTexture(rootNode, previousBounds, tempTexture);
-      // Get the index of data for the first vertex for the quad for the node we want to render
+      // Get the index of data for the first vertex for the quad for the node we
+      // want to render
       const startIndex = i * 2 * 6;
 
-      // The position is the location within clip space the new packing will occur. We must convert the coords to clip
-      // space simply by x * 2 - 1 as clip space is [-1, 1] so it's '2' wide while tex coords are 0 - 1.
-      // Set the xy coordinate within the new texture
+      // The position is the location within clip space the new packing will
+      // occur. We must convert the coords to clip space simply by x * 2 - 1 as
+      // clip space is [-1, 1] so it's '2' wide while tex coords are 0 - 1. Set
+      // the xy coordinate within the new texture
       positions[startIndex] = nextTexture.atlasTL[0] * 2 - 1;
       positions[startIndex + 1] = nextTexture.atlasTL[1] * 2 - 1;
       positions[startIndex + 2] = nextTexture.atlasTR[0] * 2 - 1;
@@ -578,8 +631,8 @@ export class AtlasManager {
       nextTexture.texture = newAtlasTexture;
     }
 
-    // Create a model to render our newly specified geometry. Our vertices will already be in clip
-    // space so no camera transforms will be needed.
+    // Create a model to render our newly specified geometry. Our vertices will
+    // already be in clip space so no camera transforms will be needed.
     const geometry = new Geometry();
     const positionAttr = new Attribute(positions, 2);
     const texAttr = new Attribute(texCoords, 2);
@@ -589,16 +642,16 @@ export class AtlasManager {
     // Now we create a render target that will render to our new texture
     const renderTarget = new RenderTarget({
       buffers: {
-        color: { buffer: newAtlasTexture, outputType: 0 }
+        color: { buffer: newAtlasTexture, outputType: 0 },
       },
-      retainTextureTargets: true
+      retainTextureTargets: true,
     });
 
     // Make a simple material that will handle the
     const material = new Material({
       culling: GLSettings.Material.CullSide.NONE,
       uniforms: {
-        texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture }
+        texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture },
       },
       fragmentShader: new Map([
         [
@@ -615,9 +668,9 @@ export class AtlasManager {
           void main() {
             gl_FragColor = texture2D(texture, _texCoord);
           }
-        `
-          }
-        ]
+        `,
+          },
+        ],
       ]),
       vertexShader: `
         precision highp float;
@@ -630,7 +683,7 @@ export class AtlasManager {
           _texCoord = texCoord;
           gl_Position = vec4(position, 0.0, 1.0);
         }
-      `
+      `,
     });
 
     const model = new Model("__atlas_manager__", geometry, material);
@@ -640,8 +693,9 @@ export class AtlasManager {
     // Make a dummy scene to cram our model into
     const scene = new Scene();
     scene.add(model);
-    // Now perform the rendering to our new texture. This should effectively make our new texture the newly packed
-    // version of the previous atlas texture.
+    // Now perform the rendering to our new texture. This should effectively
+    // make our new texture the newly packed version of the previous atlas
+    // texture.
     this.renderer.setRenderTarget(renderTarget);
     this.renderer.setViewport(this.renderer.getFullViewport());
     this.renderer.setScissor(this.renderer.getFullViewport());
@@ -652,11 +706,11 @@ export class AtlasManager {
     renderTarget.dispose();
     // The old texture is no longer needed now!
     atlas.texture.destroy();
-    // Apply the new texture to our atlas. The texture should already be applied to all of the valid
-    // subtextures already.
+    // Apply the new texture to our atlas. The texture should already be applied
+    // to all of the valid subtextures already.
     atlas.texture = newAtlasTexture;
-    // Set the new packing node as the packing scheme for the texture since it was recalculated. This will allow
-    // new nodes to use the new pack layout.
+    // Set the new packing node as the packing scheme for the texture since it
+    // was recalculated. This will allow new nodes to use the new pack layout.
     atlas.packing = rootNode;
 
     return true;

@@ -102,8 +102,9 @@ export abstract class BaseResourceManager<
     context?: IResourceContext
   ): InstanceIOValue;
 
-  /** This will be called when the system detects the renderer has been resized
-   * */
+  /**
+   * This will be called when the system detects the renderer has been resized
+   */
   resize() {
     // Implemented by subclasses
   }

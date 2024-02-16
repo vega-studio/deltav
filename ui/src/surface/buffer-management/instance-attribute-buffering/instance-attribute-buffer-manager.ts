@@ -16,6 +16,7 @@ import {
   BufferManagerBase,
   IBufferLocation,
   IBufferLocationGroup,
+  isBufferLocationGroup,
 } from "../buffer-manager-base";
 
 import Debug from "debug";
@@ -56,11 +57,7 @@ export function isInstanceAttributeBufferLocation(
 export function isInstanceAttributeBufferLocationGroup(
   val: any
 ): val is IInstanceAttributeBufferLocationGroup {
-  return Boolean(
-    val &&
-      (val.buffer.value instanceof Float32Array ||
-        val.buffer.value instanceof Uint8Array)
-  );
+  return isBufferLocationGroup(val);
 }
 
 /**

@@ -1,3 +1,13 @@
+## 4.0.0
+
+## Breaking
+
+- [`BREAKING`]: Updated to the latest devops system which includes typescript updates and many other odds and ends to get it working. This includes a storybook integration so future features can be deved quickly.
+
+## Added
+
+- [`ADDED`]: New React Surface for JSX composition of rendering pipelines
+
 ## 3.0.0
 
 ## Breaking

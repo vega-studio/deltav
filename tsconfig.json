@@ -1,36 +1,68 @@
 {
   "compilerOptions": {
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "allowUnreachableCode": false,
-    "baseUrl": ".",
     "declaration": true,
-    "useDefineForClassFields": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "jsxFactory": "h",
-    "lib": ["es2015", "es2017", "dom"],
-    "module": "commonjs",
+    "lib": [
+      "es2017",
+      "esnext",
+      "dom"
+    ],
+    "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noUnusedLocals": true,
     "paths": {
-      "src": ["./src"],
-      "test": ["./test"]
+      "ui/*": [
+        "./ui/*"
+      ],
+      "app": [
+        "./app"
+      ],
+      "util": [
+        "./util"
+      ],
+      "utils": [
+        "./utils"
+      ],
+      "test": [
+        "./test"
+      ],
+      "config/*": [
+        "./app/config/*"
+      ]
     },
     "sourceMap": true,
     "noUnusedParameters": true,
     "removeComments": false,
+    "strict": true,
     "strictNullChecks": true,
-    "target": "es5",
-    "typeRoots": ["./node_modules/@types"]
+    "target": "ES2017",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./dts"
+    ],
+    "skipLibCheck": true
   },
   "include": [
-    "src",
-    "test"
+    "./app",
+    "./ui",
+    "./test",
+    "./unit-test",
+    "./dts",
+    "./bin",
+    "./util",
+    "./utils",
+    "./shim",
+    "./node_modules/@types",
+    "./node_modules/@storybook"
   ],
   "exclude": [
-    "node_modules",
-    "!node_modules/@types"
+    "./node_modules",
+    "./bin/lib/template/*"
   ]
 }

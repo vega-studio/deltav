@@ -965,7 +965,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  setRange(newWorld: Bounds<{}>, viewId: string) {
+  setRange(newWorld: Bounds<object>, viewId: string) {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */

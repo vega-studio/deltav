@@ -1,7 +1,6 @@
 import React from "react";
-import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
 import {
+  add2,
   AutoEasingMethod,
   Camera,
   Camera2D,
@@ -10,37 +9,38 @@ import {
   CircleLayer,
   ClearFlags,
   FragmentOutputType,
+  fromEulerAxisAngleToQuat,
   GLSettings,
   InstanceProvider,
-  PromiseResolver,
-  SceneJSX,
-  Surface,
-  TextureJSX,
-  TextureSize,
-  Transform,
-  Vec4,
-  View2D,
-  View3D,
-  add2,
-  fromEulerAxisAngleToQuat,
   multiply4,
   normalize2,
   normalize3,
   onAnimationLoop,
   onFrame,
+  PromiseResolver,
   scale2,
   scale3,
+  SceneJSX,
   stopAnimationLoop,
+  Surface,
+  TextureJSX,
+  TextureSize,
+  Transform,
   vec3,
+  Vec4,
+  View2D,
+  View3D,
 } from "../../src";
-import { LayerJSX } from "../../src/base-surfaces/react-surface/scene/layer-jsx";
-import { ViewJSX } from "../../src/base-surfaces/react-surface/scene/view-jsx";
-import { useLifecycle } from "../../../util/hooks/use-life-cycle";
 import { BloomJSX } from "../../src/base-surfaces/react-surface/processing/bloom/bloom-jsx";
-import { CubeLayer } from "./layers/cube/cube-layer";
 import { CubeInstance } from "./layers/cube/cube-instance";
+import { CubeLayer } from "./layers/cube/cube-layer";
+import { LayerJSX } from "../../src/base-surfaces/react-surface/scene/layer-jsx";
+import { StoryFn } from "@storybook/react";
+import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
 import { TrailJSX } from "../../src/base-surfaces/react-surface/processing/trail/trail-jsx";
+import { useLifecycle } from "../../../util/hooks/use-life-cycle";
 import { Vec2 } from "@diniden/signal-processing";
+import { ViewJSX } from "../../src/base-surfaces/react-surface/scene/view-jsx";
 
 export default {
   title: "Deltav/MultiRenderTarget",
@@ -104,7 +104,6 @@ export const Fireworks: StoryFn = (() => {
 
         // Remove all faded out particles
         onFrame(() => {
-          console.log("REMOVE");
           instances.forEach((c) => provider.remove(c));
         }, animationDuration);
       }, 100);

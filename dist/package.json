@@ -1,13 +1,1 @@
-{
-  "author": {
-    "name": "Vega Studio",
-    "email": "chris@vega.com",
-    "url": "http://vega.studio"
-  },
-  "name": "deltav",
-  "version": "1.32.0",
-  "main": "index.js",
-  "types": "src/index.d.ts",
-  "license": "MIT",
-  "dependencies": {}
-}
+{"name":"deltav","private":true,"main":"./ui/index.js","types":"./types/ui/index.d.ts","dependencies":{},"repository":{},"scripts":{},"devDependencies":{}}

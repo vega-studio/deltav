@@ -1,9 +1,7 @@
-import { Instance } from "../../instance-provider/instance";
 import {
   BaseShaderIOInjection,
   ShaderIOHeaderInjectionResult,
 } from "../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import {
   IInstanceAttribute,
   IUniform,
@@ -11,6 +9,8 @@ import {
   ShaderInjectionTarget,
 } from "../../types";
 import { ILayerProps, Layer } from "../layer";
+import { Instance } from "../../instance-provider/instance";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 
 export type ShaderIOExpansion<T extends Instance> = {
   /** The additional instance attributes to add to the layer's Shader IO */

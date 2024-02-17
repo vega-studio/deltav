@@ -1,5 +1,9 @@
-import { InstanceProvider } from "../../../instance-provider";
+import BorderLayerFS from "./border-layer.fs";
+import BorderLayerVS from "./border-layer.vs";
+import { BorderInstance } from "./border-instance";
+import { CommonMaterialOptions } from "../../../util/common-options";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { ILayer2DProps, Layer2D } from "../../view";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -7,11 +11,7 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util/common-options";
-import { ILayer2DProps, Layer2D } from "../../view";
-import { BorderInstance } from "./border-instance";
-import BorderLayerFS from "./border-layer.fs";
-import BorderLayerVS from "./border-layer.vs";
+import { InstanceProvider } from "../../../instance-provider";
 
 export interface IBorderLayerProps<T extends BorderInstance>
   extends ILayer2DProps<T> {

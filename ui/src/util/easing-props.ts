@@ -1,5 +1,5 @@
-import { Vec } from "../math/vector";
 import { IEasingProps } from "../types";
+import { Vec } from "../math/vector";
 
 /**
  * This object represents the data associated with easing. It provides the
@@ -7,13 +7,13 @@ import { IEasingProps } from "../types";
  * contains a few methods to aid in properly adjusting the easing values.
  */
 export class EasingProps implements IEasingProps {
-  delay: number = 0;
+  delay = 0;
   duration!: number;
   end!: Vec;
   isManualStart = false;
   isTimeSet = false;
   start!: Vec;
-  startTime: number = -1;
+  startTime = -1;
 
   constructor(options: IEasingProps) {
     Object.assign(this, options);

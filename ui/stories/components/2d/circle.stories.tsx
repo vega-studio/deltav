@@ -1,6 +1,4 @@
 import React from "react";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 import {
   AutoEasingMethod,
   Camera2D,
@@ -9,13 +7,15 @@ import {
   ClearFlags,
   InstanceProvider,
   LayerJSX,
+  onAnimationLoop,
   PromiseResolver,
   Surface,
   SurfaceJSX,
   View2D,
   ViewJSX,
-  onAnimationLoop,
 } from "../../../src";
+import { StoryFn } from "@storybook/react";
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 
 export default {
   title: "Deltav/2D/Circle",

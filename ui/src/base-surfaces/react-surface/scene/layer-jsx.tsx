@@ -1,20 +1,20 @@
 import React from "react";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
-import { ILayerBaseJSX } from "./as-layer.js";
+import { createLayer } from "../../../util/create-layer.js";
 import { CustomTag } from "../custom-tag.js";
+import { ILayerBaseJSX } from "./as-layer.js";
+import { ILayerConstructable, ILayerProps } from "../../../surface/index.js";
 import {
   Instance,
   InstanceProvider,
 } from "../../../instance-provider/index.js";
-import { ILayerConstructable, ILayerProps } from "../../../surface/index.js";
-import { createLayer } from "../../../util/create-layer.js";
-import { SurfaceJSXType } from "../group-surface-children.js";
 import {
   IRenderTextureResource,
   isRenderTextureResource,
 } from "../../../resources/index.js";
-import { SurfaceContext } from "../surface-jsx.js";
 import { isDefined } from "../../../util/common-filters.js";
+import { SurfaceContext } from "../surface-jsx.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export type LayerConfig<
   TInstance extends Instance,

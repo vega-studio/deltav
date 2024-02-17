@@ -2,13 +2,6 @@ import assert from "assert";
 import { describe, it } from "@jest/globals";
 
 import {
-  compare4x4,
-  Mat4x4,
-  rotation4x4,
-  toString4x4,
-  transform4,
-} from "../ui/src/math/matrix";
-import {
   addQuat,
   angleQuat,
   axisQuat,
@@ -49,6 +42,13 @@ import {
   Vec3,
   Vec4,
 } from "../ui/src/math/vector";
+import {
+  compare4x4,
+  Mat4x4,
+  rotation4x4,
+  toString4x4,
+  transform4,
+} from "../ui/src/math/matrix";
 import { EulerOrder } from "../ui/src/types";
 import { fail1, fail3, fail4, fuzzCompare4 } from "./vector.test";
 
@@ -70,7 +70,7 @@ function fuzzyCompare3(v1: Vec3, v2: Vec3): boolean {
   );
 }
 
-function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
+function assert1(actual: Vec1, expected: Vec1, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare1(actual, expected), true, fail1(actual, expected));
   } else {
@@ -78,7 +78,7 @@ function assert1(actual: Vec1, expected: Vec1, shouldEqual: boolean = true) {
   }
 }
 
-function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+function assert3(actual: Vec3, expected: Vec3, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare3(actual, expected), true, fail3(actual, expected));
   } else {
@@ -86,11 +86,7 @@ function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   }
 }
 
-function assert4(
-  actual: Quaternion,
-  expected: Quaternion,
-  shouldEqual: boolean = true
-) {
+function assert4(actual: Quaternion, expected: Quaternion, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare4(actual, expected), true, fail4(actual, expected));
   } else {
@@ -101,7 +97,7 @@ function assert4(
 function fuzzyAssertNumber(
   actual: number,
   expected: number,
-  shouldEqual: boolean = true
+  shouldEqual = true
 ) {
   if (shouldEqual) {
     assert.equal(actual - expected <= 1e7, true, fail1([actual], [expected]));
@@ -110,11 +106,7 @@ function fuzzyAssertNumber(
   }
 }
 
-function fuzzyAssert3(
-  actual: Vec3,
-  expected: Vec3,
-  shouldEqual: boolean = true
-) {
+function fuzzyAssert3(actual: Vec3, expected: Vec3, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(
       fuzzyCompare3(actual, expected),
@@ -133,7 +125,7 @@ function fuzzyAssert3(
 function fuzzyAssert4(
   actual: Quaternion,
   expected: Quaternion,
-  shouldEqual: boolean = true
+  shouldEqual = true
 ) {
   if (shouldEqual) {
     assert.equal(fuzzCompare4(actual, expected), true, fail4(actual, expected));
@@ -146,11 +138,7 @@ function fuzzyAssert4(
   }
 }
 
-function assert4x4(
-  actual: Mat4x4,
-  expected: Mat4x4,
-  shouldEqual: boolean = true
-) {
+function assert4x4(actual: Mat4x4, expected: Mat4x4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare4x4(actual, expected), true, fail4x4(actual, expected));
   } else {

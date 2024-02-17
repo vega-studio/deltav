@@ -1,10 +1,10 @@
-import { FragmentOutputType } from "../types";
-import { uid } from "../util/uid";
 import { ColorBuffer } from "./color-buffer";
+import { FragmentOutputType } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
 import { Material } from "./material";
 import { Texture } from "./texture";
+import { uid } from "../util/uid";
 
 /**
  * This specifies a buffer and matches it to a hinting output type. The buffer
@@ -73,7 +73,7 @@ export class RenderTarget {
    * This gets flagged as invalid and will not re-attempt compilation until
    * something changes.
    */
-  isInvalid: boolean = false;
+  isInvalid = false;
 
   /** UID for the object */
   get uid() {
@@ -88,7 +88,7 @@ export class RenderTarget {
         ? this._buffers.color.slice(0)
         : this._buffers.color,
       depth: this._buffers.depth,
-      stencil: this._buffers.stencil
+      stencil: this._buffers.stencil,
     };
   }
   private _buffers: IRenderTargetOptions["buffers"];
@@ -117,7 +117,7 @@ export class RenderTarget {
   get validFramebuffer() {
     return this._validFramebuffer;
   }
-  private _validFramebuffer: boolean = false;
+  private _validFramebuffer = false;
 
   /**
    * This allows outputTargets to be specified as disabled so they will not
@@ -137,7 +137,7 @@ export class RenderTarget {
    * cleaning out the FBO and it's attachments, but we need the Texture to live
    * on for additional purposes.
    */
-  retainTextureTargets: boolean = false;
+  retainTextureTargets = false;
 
   /**
    * This contains gl state that is processed and identified for the render
@@ -175,7 +175,7 @@ export class RenderTarget {
         ? options.buffers.color.slice(0)
         : options.buffers.color,
       depth: options.buffers.depth,
-      stencil: options.buffers.stencil
+      stencil: options.buffers.stencil,
     };
     this._width = options.width || 0;
     this._height = options.height || 0;
@@ -315,7 +315,7 @@ export class RenderTarget {
    * Gets an ordered list of all output types this render target handles.
    */
   getOutputTypes() {
-    return this.getBuffers().map(buffer => buffer.outputType);
+    return this.getBuffers().map((buffer) => buffer.outputType);
   }
 
   /**
@@ -333,7 +333,7 @@ export class RenderTarget {
     const textures: Texture[] = [];
 
     if (Array.isArray(this.buffers.color)) {
-      this.buffers.color.forEach(buffer => {
+      this.buffers.color.forEach((buffer) => {
         if (buffer.buffer instanceof Texture) {
           textures.push(buffer.buffer);
         }
@@ -378,7 +378,7 @@ export class RenderTarget {
    */
   private removeTextureFromBuffer(texture: Texture) {
     if (Array.isArray(this._buffers.color)) {
-      const found = this._buffers.color.find(b => b.buffer === texture);
+      const found = this._buffers.color.find((b) => b.buffer === texture);
       if (!found) return;
       const index = this._buffers.color.indexOf(found);
       if (index > -1) this._buffers.color.splice(index, 1);
@@ -412,11 +412,11 @@ export class RenderTarget {
     // Adjust all of the texture objects data to size properly
     const textures = this.getTextures();
 
-    textures.forEach(texture => {
+    textures.forEach((texture) => {
       texture.data = {
         buffer: null,
         height,
-        width
+        width,
       };
     });
   }

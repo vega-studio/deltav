@@ -1,6 +1,6 @@
 import { InstanceIOValue } from "../types";
-import { uid } from "../util/uid";
 import { isVec4, Vec, VecMath } from "./vector";
+import { uid } from "../util/uid";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -17,7 +17,7 @@ export enum AutoEasingLoopStyle {
   /** Time will continuously go 0 -> 1 then 0 -> 1 then 0 -> 1 etc etc */
   REPEAT = 2,
   /** Time will continously go 0 -> 1 then 1 -> 0 then 0 -> 1 then 1 -> 0 etc etc */
-  REFLECT = 3
+  REFLECT = 3,
 }
 
 /**
@@ -569,13 +569,14 @@ $\{easingMethod} {
  * Class of base AutoEasingMethods as well as helper constructs for making the methods.
  */
 export class AutoEasingMethod<T extends InstanceIOValue>
-  implements IAutoEasingMethod<T> {
+  implements IAutoEasingMethod<T>
+{
   /**
    * Autoeasing methods for linear easing
    */
   static immediate<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -588,7 +589,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: immediateGPU,
       loop,
-      methodName: "immediate"
+      methodName: "immediate",
     };
   }
 
@@ -597,7 +598,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static linear<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -611,7 +612,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: linearGPU,
       loop,
-      methodName: "linear"
+      methodName: "linear",
     };
   }
 
@@ -620,7 +621,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -635,7 +636,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuadGPU,
       loop,
-      methodName: "easeInQuad"
+      methodName: "easeInQuad",
     };
   }
 
@@ -644,7 +645,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeOutQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -659,7 +660,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuadGPU,
       loop,
-      methodName: "easeOutQuad"
+      methodName: "easeOutQuad",
     };
   }
 
@@ -668,7 +669,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInOutQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -683,7 +684,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuadGPU,
       loop,
-      methodName: "easeInOutQuad"
+      methodName: "easeInOutQuad",
     };
   }
 
@@ -692,7 +693,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -707,7 +708,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInCubicGPU,
       loop,
-      methodName: "easeInCubic"
+      methodName: "easeInCubic",
     };
   }
 
@@ -716,7 +717,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeOutCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -731,7 +732,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutCubicGPU,
       loop,
-      methodName: "easeOutCubic"
+      methodName: "easeOutCubic",
     };
   }
 
@@ -740,7 +741,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInOutCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -756,7 +757,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutCubicGPU,
       loop,
-      methodName: "easeInOutCubic"
+      methodName: "easeInOutCubic",
     };
   }
 
@@ -765,7 +766,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -780,7 +781,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuartGPU,
       loop,
-      methodName: "easeInQuart"
+      methodName: "easeInQuart",
     };
   }
 
@@ -789,7 +790,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeOutQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -804,7 +805,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuartGPU,
       loop,
-      methodName: "easeOutQuart"
+      methodName: "easeOutQuart",
     };
   }
 
@@ -813,7 +814,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInOutQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -828,7 +829,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuartGPU,
       loop,
-      methodName: "easeInOutQuart"
+      methodName: "easeInOutQuart",
     };
   }
 
@@ -837,7 +838,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -852,7 +853,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInQuintGPU,
       loop,
-      methodName: "easeInQuint"
+      methodName: "easeInQuint",
     };
   }
 
@@ -861,7 +862,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeOutQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -876,7 +877,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutQuintGPU,
       loop,
-      methodName: "easeOutQuint"
+      methodName: "easeOutQuint",
     };
   }
 
@@ -885,7 +886,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeInOutQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -901,7 +902,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeInOutQuintGPU,
       loop,
-      methodName: "easeInOutQuint"
+      methodName: "easeInOutQuint",
     };
   }
 
@@ -910,7 +911,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeOutElastic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -926,7 +927,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeOutElasticGPU,
       loop,
-      methodName: "easeOutElastic"
+      methodName: "easeOutElastic",
     };
   }
 
@@ -935,7 +936,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeBackIn<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -951,7 +952,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInGPU,
       loop,
-      methodName: "easeBackIn"
+      methodName: "easeBackIn",
     };
   }
 
@@ -960,7 +961,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeBackOut<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -977,7 +978,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackOutGPU,
       loop,
-      methodName: "easeBackOut"
+      methodName: "easeBackOut",
     };
   }
 
@@ -986,7 +987,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static easeBackInOut<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1008,7 +1009,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: easeBackInOutGPU,
       loop,
-      methodName: "easeBackInOut"
+      methodName: "easeBackInOut",
     };
   }
 
@@ -1020,7 +1021,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
    */
   static continuousSinusoidal<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.CONTINUOUS
   ): IAutoEasingMethod<T> {
     return {
@@ -1048,14 +1049,14 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         // When time = 1 our value will = start and NOT end
         ignoreEndValueCheck: true,
         // When the time is > 1 our value will not clamp to the value at 1.
-        ignoreOverTimeCheck: true
-      }
+        ignoreOverTimeCheck: true,
+      },
     };
   }
 
   static slerpQuatLinear<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1078,13 +1079,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatLinearGPU,
       loop,
-      methodName: "slerpQuatLinear"
+      methodName: "slerpQuatLinear",
     };
   }
 
   static slerpQuatInQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1107,13 +1108,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuadGPU,
       loop,
-      methodName: "slerpQuatInQuad"
+      methodName: "slerpQuatInQuad",
     };
   }
 
   static slerpQuatOutQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1136,13 +1137,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuadGPU,
       loop,
-      methodName: "slerpQuatOutQuad"
+      methodName: "slerpQuatOutQuad",
     };
   }
 
   static slerpQuatInOutQuad<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1165,13 +1166,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuadGPU,
       loop,
-      methodName: "slerpQuatInOutQuad"
+      methodName: "slerpQuatInOutQuad",
     };
   }
 
   static slerpQuatInCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1194,13 +1195,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInCubicGPU,
       loop,
-      methodName: "slerpQuatInCubic"
+      methodName: "slerpQuatInCubic",
     };
   }
 
   static slerpQuatOutCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1223,13 +1224,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutCubicGPU,
       loop,
-      methodName: "slerpQuatOutCubic"
+      methodName: "slerpQuatOutCubic",
     };
   }
 
   static slerpQuatInOutCubic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1253,13 +1254,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutCubicGPU,
       loop,
-      methodName: "slerpQuatInOutCubic"
+      methodName: "slerpQuatInOutCubic",
     };
   }
 
   static slerpQuatInQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1282,13 +1283,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuartGPU,
       loop,
-      methodName: "slerpQuatInQuart"
+      methodName: "slerpQuatInQuart",
     };
   }
 
   static slerpQuatOutQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1311,13 +1312,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuartGPU,
       loop,
-      methodName: "slerpQuatOutQuart"
+      methodName: "slerpQuatOutQuart",
     };
   }
 
   static slerpQuatInOutQuart<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1340,13 +1341,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuartGPU,
       loop,
-      methodName: "slerpQuatInOutQuart"
+      methodName: "slerpQuatInOutQuart",
     };
   }
 
   static slerpQuatInQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1369,13 +1370,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInQuintGPU,
       loop,
-      methodName: "slerpQuatInQuint"
+      methodName: "slerpQuatInQuint",
     };
   }
 
   static slerpQuatOutQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1398,13 +1399,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutQuintGPU,
       loop,
-      methodName: "slerpQuatOutQuint"
+      methodName: "slerpQuatOutQuint",
     };
   }
 
   static slerpQuatInOutQuint<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1428,13 +1429,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatInOutQuintGPU,
       loop,
-      methodName: "slerpQuatInOutQuint"
+      methodName: "slerpQuatInOutQuint",
     };
   }
 
   static slerpQuatOutElastic<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1458,13 +1459,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatOutElasticGPU,
       loop,
-      methodName: "slerpQuatOutElastic"
+      methodName: "slerpQuatOutElastic",
     };
   }
 
   static slerpQuatBackIn<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1488,13 +1489,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackInGPU,
       loop,
-      methodName: "slerpQuatBackIn"
+      methodName: "slerpQuatBackIn",
     };
   }
 
   static slerpQuatBackOut<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1519,13 +1520,13 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackOutGPU,
       loop,
-      methodName: "slerpQuatBackOut"
+      methodName: "slerpQuatBackOut",
     };
   }
 
   static slerpQuatBackInOut<T extends Vec>(
     duration: number,
-    delay: number = 0,
+    delay = 0,
     loop = AutoEasingLoopStyle.NONE
   ): IAutoEasingMethod<T> {
     return {
@@ -1555,7 +1556,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
       duration,
       gpu: slerpQuatBackInOutGPU,
       loop,
-      methodName: "slerpQuatBackInOut"
+      methodName: "slerpQuatBackInOut",
     };
   }
 
@@ -1564,9 +1565,9 @@ export class AutoEasingMethod<T extends InstanceIOValue>
   /** The easing method for the cpu */
   cpu: IAutoEasingMethod<T>["cpu"];
   /** Time before a delay  */
-  delay: number = 0;
+  delay = 0;
   /** The time in ms is takes to complete the animation */
-  duration: number = 500;
+  duration = 500;
   /** The easing method on the GPU */
   gpu: IAutoEasingMethod<T>["gpu"];
   /** The looping style of the animation */

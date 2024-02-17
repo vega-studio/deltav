@@ -1,7 +1,7 @@
-import { Layer } from "../../surface/layer";
-import { InstanceAttributeSize, ShaderInjectionTarget } from "../../types";
-import { ShaderModule } from "../processing";
 import picking from "./shader-fragments/picking.vs";
+import { InstanceAttributeSize, ShaderInjectionTarget } from "../../types";
+import { Layer } from "../../surface/layer";
+import { ShaderModule } from "../processing";
 
 ShaderModule.register([
   {

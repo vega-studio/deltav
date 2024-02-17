@@ -1,5 +1,3 @@
-import { Vec4 } from "../math";
-import { Size } from "../types";
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
@@ -7,7 +5,9 @@ import { GLState } from "./gl-state";
 import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
+import { Size } from "../types";
 import { UseMaterialStatus } from "./types";
+import { Vec4 } from "../math";
 import { WebGLStat } from "./webgl-stat";
 
 import Debug from "debug";
@@ -455,7 +455,7 @@ export class WebGLRenderer {
     width: number,
     height: number,
     out: ArrayBufferView,
-    bufferType: number = 0
+    bufferType = 0
   ) {
     if (!this.gl) return;
     const allTargets = this.state.currentRenderTarget;

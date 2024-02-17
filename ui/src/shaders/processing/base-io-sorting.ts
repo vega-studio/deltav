@@ -1,5 +1,5 @@
-import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../types";
+import { Instance } from "../../instance-provider/instance";
 
 /**
  * This provides the sorting methods to be applied to

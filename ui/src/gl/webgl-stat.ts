@@ -1,9 +1,14 @@
 export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
-  const result = {
+  const result: {
+      attributeCount: number;
+      attributes: (WebGLActiveInfo | null)[];
+      uniformCount: number;
+      uniforms: (WebGLActiveInfo | null)[];
+    } = {
       attributeCount: 0,
-      attributes: new Array(),
+      attributes: [],
       uniformCount: 0,
-      uniforms: new Array()
+      uniforms: [],
     },
     activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS),
     activeAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
@@ -32,7 +37,7 @@ export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
     0x1403: "UNSIGNED_SHORT",
     0x1404: "INT",
     0x1405: "UNSIGNED_INT",
-    0x1406: "FLOAT"
+    0x1406: "FLOAT",
   };
 
   const blocks: { [key: number]: number } = {
@@ -57,7 +62,7 @@ export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
     0x1403: 1,
     0x1404: 1,
     0x1405: 1,
-    0x1406: 1
+    0x1406: 1,
   };
 
   // Loop through active uniforms
@@ -86,7 +91,7 @@ export class WebGLStat {
   static MAX_VERTEX_UNIFORMS = 0;
   static MAX_FRAGMENT_UNIFORMS = 0;
   static MAX_VERTEX_ATTRIBUTES = 0;
-  static WEBGL_SUPPORTED: boolean = false;
+  static WEBGL_SUPPORTED = false;
   static MAX_TEXTURE_SIZE = 0;
   static HARDWARE_INSTANCING = false;
   static MRT_EXTENSION = false;
@@ -98,11 +103,11 @@ export class WebGLStat {
     half: false,
     full: false,
     halfLinearFilter: false,
-    fullLinearFilter: false
+    fullLinearFilter: false,
   };
   static FLOAT_TEXTURE_WRITE = {
     half: false,
-    full: false
+    full: false,
   };
 
   static print() {

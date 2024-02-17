@@ -1,7 +1,4 @@
-import {
-  ShaderInjectionTarget,
-  UniformSize
-} from "../../types";
+import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { ShaderModule } from "../processing";
 
 const doc = `
@@ -17,15 +14,15 @@ ShaderModule.register([
   {
     moduleId: "random",
     description: doc,
-    content: '',
+    content: "",
     compatibility: ShaderInjectionTarget.ALL,
 
-    uniforms: _layer => [
+    uniforms: (_layer) => [
       {
-        name: 'random',
+        name: "random",
         size: UniformSize.ONE,
         update: () => Math.random(),
-      }
-    ]
-  }
+      },
+    ],
+  },
 ]);

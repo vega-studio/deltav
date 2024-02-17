@@ -1,10 +1,10 @@
-import { makeObservable, observable } from "../../../instance-provider";
+import { Anchor, AnchorType, ScaleMode } from "../../types";
 import {
   IInstanceOptions,
-  Instance
+  Instance,
 } from "../../../instance-provider/instance";
+import { makeObservable, observable } from "../../../instance-provider";
 import { Vec2 } from "../../../math/vector";
-import { Anchor, AnchorType, ScaleMode } from "../../types";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**
@@ -70,7 +70,7 @@ const anchorCalculator: {
   [AnchorType.Custom]: (anchor: Anchor, _rectangle: RectangleInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  }
+  },
 };
 
 /**
@@ -92,11 +92,11 @@ export class RectangleInstance extends Instance {
   /** This is the rendered color of the rectangle */
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the rectangle (or the z value of the rectangle) */
-  @observable depth: number = 0;
+  @observable depth = 0;
   /** When in BOUND_MAX mode, this allows the rectangle to scale up beyond it's max size */
-  @observable maxScale: number = 1;
+  @observable maxScale = 1;
   /** Scales the rectangle uniformly */
-  @observable scale: number = 1;
+  @observable scale = 1;
   /** Sets the way the rectangle scales with the world */
   @observable scaling: ScaleMode = ScaleMode.BOUND_MAX;
   /** The size of the rectangle as it is to be rendered in world space */
@@ -112,7 +112,7 @@ export class RectangleInstance extends Instance {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(options: IRectangleInstanceOptions) {
@@ -141,7 +141,7 @@ export class RectangleInstance extends Instance {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0
+      y: anchor.y || 0,
     };
 
     // Calculate the new anchors position values

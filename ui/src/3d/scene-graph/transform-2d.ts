@@ -12,12 +12,12 @@ import {
   rotation2x2,
   SRT4x4_2D,
   Vec2Compat,
-  Vec3
+  Vec3,
 } from "../../math";
-import { UpdateProp } from "../../types";
 import { Instance2D } from "./instance-2d";
 import { resolveUpdate, scheduleUpdate } from "./transform-base";
 import { TreeNode } from "./tree-node";
+import { UpdateProp } from "../../types";
 
 /**
  * This is a transform node that specifically only operates on x y positions and
@@ -36,7 +36,7 @@ export class Transform2D extends TreeNode<Transform2D> {
    * When this is set, this means the world matrix has updated and has not been
    * decomposed yet.
    */
-  private needsWorldDecomposition: boolean = false;
+  private needsWorldDecomposition = false;
 
   /** This is a special instance listener for the transform */
   private _instance: Instance2D | null = null;
@@ -105,7 +105,7 @@ export class Transform2D extends TreeNode<Transform2D> {
   }
   private _position: UpdateProp<Vec3> = { value: [0, 0, 0] };
   private _localPosition: UpdateProp<Vec2Compat> = {
-    value: this._position.value
+    value: this._position.value,
   };
 
   /**
@@ -136,7 +136,7 @@ export class Transform2D extends TreeNode<Transform2D> {
   }
   private _rotation: UpdateProp<Quaternion> = { value: oneQuat() };
   private _localRotation: UpdateProp<number> = {
-    value: 0
+    value: 0,
   };
   private localRotationMatrix = identity2();
 
@@ -287,7 +287,7 @@ export class Transform2D extends TreeNode<Transform2D> {
         // up the chain are out of date as well. So we shall update those nodes
         // starting at the top most out of date node, and work our way down
         if (!unsafe) {
-          this.processParentUpdates(transform => {
+          this.processParentUpdates((transform) => {
             transform.update(true);
           });
         }

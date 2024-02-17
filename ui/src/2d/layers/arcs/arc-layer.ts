@@ -1,19 +1,19 @@
+import ArcLayerFS from "./arc-layer.fs";
+import ArcLayerScreenSpaceVS from "./arc-layer-screen-space.vs";
+import ArcLayerVS from "./arc-layer.vs";
+import { ArcInstance } from "./arc-instance";
+import { CommonMaterialOptions } from "../../../util";
 import { GLSettings } from "../../../gl";
-import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
-  VertexAttributeSize
+  VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ArcInstance } from "./arc-instance";
-import ArcLayerVS from "./arc-layer.vs";
-import ArcLayerFS from "./arc-layer.fs";
-import ArcLayerScreenSpaceVS from "./arc-layer-screen-space.vs";
+import { InstanceProvider } from "../../../instance-provider";
 
 export enum ArcScaleType {
   /** All dimensions are within world space */
@@ -22,7 +22,7 @@ export enum ArcScaleType {
    * The thickness of the arc is in screen space. Thus, camera zoom changes will not affect it and
    * must be controlled by scaleFactor alone.
    */
-  SCREEN_CURVE
+  SCREEN_CURVE,
 }
 
 export interface IArcLayerProps<T extends ArcInstance>
@@ -45,12 +45,12 @@ export interface IArcLayerProps<T extends ArcInstance>
  */
 export class ArcLayer<
   T extends ArcInstance,
-  U extends IArcLayerProps<T>
+  U extends IArcLayerProps<T>,
 > extends Layer2D<T, U> {
   static defaultProps: IArcLayerProps<ArcInstance> = {
     data: new InstanceProvider<ArcInstance>(),
     key: "",
-    scaleType: ArcScaleType.NONE
+    scaleType: ArcScaleType.NONE,
   };
 
   /** Easy lookup of all attribute names for the layer */
@@ -62,7 +62,7 @@ export class ArcLayer<
     colorStart: "colorStart",
     depth: "depth",
     radius: "radius",
-    thickness: "thickness"
+    thickness: "thickness",
   };
 
   /**
@@ -78,7 +78,7 @@ export class ArcLayer<
       radius: animateRadius,
       thickness: animateThickness,
       colorStart: animateColorStart,
-      colorEnd: animateColorEnd
+      colorEnd: animateColorEnd,
     } = animations;
 
     const MAX_SEGMENTS = 150;
@@ -86,12 +86,12 @@ export class ArcLayer<
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
-      [MAX_SEGMENTS * 2 + 2]: -1
+      [MAX_SEGMENTS * 2 + 2]: -1,
     };
 
     const vertexInterpolation: { [key: number]: number } = {
       0: 0,
-      [MAX_SEGMENTS * 2 + 2]: 1
+      [MAX_SEGMENTS * 2 + 2]: 1,
     };
 
     let sign = 1;
@@ -102,9 +102,7 @@ export class ArcLayer<
     }
 
     const vs =
-      scaleType === ArcScaleType.NONE
-        ? ArcLayerVS
-        : ArcLayerScreenSpaceVS;
+      scaleType === ArcScaleType.NONE ? ArcLayerVS : ArcLayerScreenSpaceVS;
 
     return {
       fs: ArcLayerFS,
@@ -113,56 +111,56 @@ export class ArcLayer<
           easing: animateCenter,
           name: ArcLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: o => o.center
+          update: (o) => o.center,
         },
         {
           easing: animateRadius,
           name: ArcLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.radius]
+          update: (o) => [o.radius],
         },
         {
           name: ArcLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.depth]
+          update: (o) => [o.depth],
         },
         {
           easing: animateThickness,
           name: ArcLayer.attributeNames.thickness,
           size: InstanceAttributeSize.TWO,
-          update: o => o.thickness
+          update: (o) => o.thickness,
         },
         {
           easing: animateAngle,
           name: ArcLayer.attributeNames.angle,
           size: InstanceAttributeSize.TWO,
-          update: o => o.angle
+          update: (o) => o.angle,
         },
         {
           easing: animateAngleOffset,
           name: ArcLayer.attributeNames.angleOffset,
           size: InstanceAttributeSize.ONE,
-          update: o => [o.angleOffset]
+          update: (o) => [o.angleOffset],
         },
         {
           easing: animateColorStart,
           name: ArcLayer.attributeNames.colorStart,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorStart
+          update: (o) => o.colorStart,
         },
         {
           easing: animateColorEnd,
           name: ArcLayer.attributeNames.colorEnd,
           size: InstanceAttributeSize.FOUR,
-          update: o => o.colorEnd
-        }
+          update: (o) => o.colorEnd,
+        },
       ],
       uniforms: [
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: _u => [1]
-        }
+          update: (_u) => [1],
+        },
       ],
       vertexAttributes: [
         {
@@ -174,18 +172,18 @@ export class ArcLayer<
             // The side of the quad
             vertexInterpolation[vertex],
             // The number of vertices
-            MAX_SEGMENTS * 2
-          ]
-        }
+            MAX_SEGMENTS * 2,
+          ],
+        },
       ],
       vertexCount: MAX_SEGMENTS * 2 + 2,
-      vs
+      vs,
     };
   }
 
   getMaterialOptions(): ILayerMaterialOptions {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      culling: GLSettings.Material.CullSide.NONE
+      culling: GLSettings.Material.CullSide.NONE,
     } as ILayerMaterialOptions);
   }
 }

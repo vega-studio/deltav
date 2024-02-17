@@ -1,4 +1,4 @@
-import { Transform } from "../3d/scene-graph/transform";
+import { compare3, Vec3 } from "../math/vector";
 import {
   compare4x4,
   copy4x4,
@@ -6,15 +6,15 @@ import {
   Mat4x4,
   multiply4x4,
   orthographic4x4,
-  perspective4x4
+  perspective4x4,
 } from "../math/matrix";
-import { compare3, Vec3 } from "../math/vector";
 import { shallowCompare } from "./shallow-compare";
+import { Transform } from "../3d/scene-graph/transform";
 import { uid } from "./uid";
 
 export enum CameraProjectionType {
   PERSPECTIVE,
-  ORTHOGRAPHIC
+  ORTHOGRAPHIC,
 }
 
 /**
@@ -102,13 +102,13 @@ export class Camera {
   private _id: number = uid();
 
   /** This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates */
-  animationEndTime: number = 0;
+  animationEndTime = 0;
   /** Indicates the view's associated with this camera should be redrawn */
-  needsViewDrawn: boolean = true;
+  needsViewDrawn = true;
   /** Flag indicating the camera needs to broadcast changes applied to it */
-  needsBroadcast: boolean = false;
+  needsBroadcast = false;
   /** The id of the view to be broadcasted for the sake of a change */
-  viewChangeViewId: string = "";
+  viewChangeViewId = "";
   /** This is the transform that places the camera within world space */
   transform: Transform = new Transform();
 
@@ -137,7 +137,7 @@ export class Camera {
           bottom: 100,
           near: -100,
           far: 100000,
-          type: CameraProjectionType.ORTHOGRAPHIC
+          type: CameraProjectionType.ORTHOGRAPHIC,
         },
         options
       )
@@ -156,7 +156,7 @@ export class Camera {
           near: 1,
           fov: (90 * Math.PI) / 180,
           height: 1000,
-          width: 1000
+          width: 1000,
         },
         options
       )
@@ -266,7 +266,7 @@ export class Camera {
         bottom: 100,
         near: -100,
         far: 100000,
-        type: CameraProjectionType.ORTHOGRAPHIC
+        type: CameraProjectionType.ORTHOGRAPHIC,
       },
       options
     );
@@ -283,7 +283,7 @@ export class Camera {
         near: 1,
         fov: (90 * Math.PI) / 180,
         height: 1000,
-        width: 1000
+        width: 1000,
       },
       options
     );

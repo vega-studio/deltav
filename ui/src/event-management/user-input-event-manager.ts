@@ -1,12 +1,7 @@
-import { CanvasElement, isOffscreenCanvas } from "../gl";
-import { Bounds } from "../math/primitives";
 import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
-import { LayerScene } from "../surface/layer-scene";
-import { Surface } from "../surface/surface";
-import { IViewProps, NoView, View } from "../surface/view";
-import { isDefined } from "../util/common-filters";
+import { Bounds } from "../math/primitives";
+import { CanvasElement, isOffscreenCanvas } from "../gl";
 import { eventElementPosition, normalizeWheel } from "../util/mouse";
-import { QuadTree } from "../util/quad-tree";
 import { EventManager } from "./event-manager";
 import {
   IEventInteraction,
@@ -19,6 +14,11 @@ import {
   ITouchMetrics,
   IWheelMetrics,
 } from "./types";
+import { isDefined } from "../util/common-filters";
+import { IViewProps, NoView, View } from "../surface/view";
+import { LayerScene } from "../surface/layer-scene";
+import { QuadTree } from "../util/quad-tree";
+import { Surface } from "../surface/surface";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a
 // click gesture will happen
@@ -69,7 +69,7 @@ export class UserInputEventManager {
    * establish bounds. No Mouse interations will happen while this is set to
    * true.
    */
-  private _waitingForRender: boolean = true;
+  private _waitingForRender = true;
 
   get waitingForRender() {
     return this._waitingForRender;

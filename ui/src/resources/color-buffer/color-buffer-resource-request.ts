@@ -1,6 +1,6 @@
+import { BaseResourceRequest } from "../base-resource-manager";
 import { ColorBuffer } from "../../gl/color-buffer";
 import { Omit, ResourceType } from "../../types";
-import { BaseResourceRequest } from "../base-resource-manager";
 
 /**
  * Base information an RenderTexture resource can provide.
@@ -30,6 +30,6 @@ export function colorBufferRequest(
 ): IColorBufferResourceRequest {
   return {
     type: ResourceType.COLOR_BUFFER,
-    ...options
+    ...options,
   };
 }

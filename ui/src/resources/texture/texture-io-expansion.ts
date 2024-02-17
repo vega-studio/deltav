@@ -1,11 +1,3 @@
-import { Texture } from "../../gl/texture";
-import { Instance } from "../../instance-provider/instance";
-import {
-  ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from "../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../surface/layer";
 import {
   BaseIOExpansion,
   ShaderIOExpansion,
@@ -20,7 +12,15 @@ import {
   ShaderInjectionTarget,
   UniformSize,
 } from "../../types";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import { ResourceRouter } from "../resource-router";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult,
+} from "../../shaders/processing/base-shader-io-injection";
+import { Texture } from "../../gl/texture";
 
 const debugCtx = "TextureIOExpansion";
 

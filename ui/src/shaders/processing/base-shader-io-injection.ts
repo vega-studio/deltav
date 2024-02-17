@@ -1,15 +1,15 @@
 import { Attribute } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { IViewProps, View } from "../../surface/view";
 import {
   IInstanceAttribute,
   IInstancingUniform,
   IUniform,
   IVertexAttribute,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
 } from "../../types";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { IViewProps, View } from "../../surface/view";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 
 import Debug from "debug";
 

@@ -1,7 +1,6 @@
-import { WebGLStat } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
+import { BaseIOSorting } from "./base-io-sorting";
+import { BaseShaderTransform } from "./base-shader-transform";
 import {
   FragmentOutputType,
   IInstanceAttribute,
@@ -16,20 +15,21 @@ import {
   OutputFragmentShaderTarget,
   ShaderInjectionTarget,
 } from "../../types";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { injectShaderIO } from "./inject-shader-io";
+import { Instance } from "../../instance-provider/instance";
+import { MetricsProcessing } from "./metrics-processing";
 import { removeComments } from "../../util/remove-comments";
-import { shaderTemplate } from "../../util/shader-templating";
-import { templateVars } from "../template-vars";
-import { BaseIOSorting } from "./base-io-sorting";
 import {
   ShaderDeclarationStatementLookup,
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult,
 } from "./base-shader-io-injection";
-import { BaseShaderTransform } from "./base-shader-transform";
-import { injectShaderIO } from "./inject-shader-io";
-import { MetricsProcessing } from "./metrics-processing";
 import { ShaderModule } from "./shader-module";
 import { ShaderModuleUnit } from "./shader-module-unit";
+import { shaderTemplate } from "../../util/shader-templating";
+import { templateVars } from "../template-vars";
+import { WebGLStat } from "../../gl";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.
@@ -64,12 +64,12 @@ export type ProcessShaderImportResults = {
  * This is the expected token to be found within the shader content to indicate
  * a fragment output.
  */
-const OUT_TOKEN: string = "out";
+const OUT_TOKEN = "out";
 /**
  * Seperator token between an out token and the variable name it's supposed to
  * become.
  */
-const OUT_DELIMITER: string = ":";
+const OUT_DELIMITER = ":";
 
 /**
  * The intent of this processor is to analyze a layer's Shader IO elements and produce a functional

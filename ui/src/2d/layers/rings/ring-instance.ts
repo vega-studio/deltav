@@ -1,10 +1,10 @@
 import {
   IInstanceOptions,
-  Instance
+  Instance,
 } from "../../../instance-provider/instance";
 import {
   makeObservable,
-  observable
+  observable,
 } from "../../../instance-provider/observable";
 import { Vec2 } from "../../../math";
 
@@ -23,9 +23,9 @@ export interface IRingInstanceOptions extends IInstanceOptions {
 
 export class RingInstance extends Instance {
   @observable color: [number, number, number, number] = [1.0, 1.0, 1.0, 1.0];
-  @observable depth: number = 0;
-  @observable radius: number = 0;
-  @observable thickness: number = 1;
+  @observable depth = 0;
+  @observable radius = 0;
+  @observable thickness = 1;
   @observable center: Vec2 = [0, 0];
 
   constructor(options: IRingInstanceOptions) {

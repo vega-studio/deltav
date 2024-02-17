@@ -1,12 +1,12 @@
-import { WebGLRenderer } from "../gl";
-import { Instance } from "../instance-provider/instance";
-import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
 import {
   BaseResourceManager,
   INVALID_RESOURCE_MANAGER,
 } from "./base-resource-manager";
+import { ILayerProps, Layer } from "../surface/layer";
+import { Instance } from "../instance-provider/instance";
+import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
+import { WebGLRenderer } from "../gl";
 
 import Debug from "debug";
 

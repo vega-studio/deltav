@@ -1,12 +1,10 @@
-import { GLSettings } from "../gl";
-import { WebGLStat } from "../gl/webgl-stat";
-import { Instance, ObservableMonitoring } from "../instance-provider";
-import { DEFAULT_RESOURCE_ROUTER, ResourceRouter } from "../resources";
-import { ShaderDeclarationStatementLookup } from "../shaders";
+import PickingFS from "../shaders/base-modules/shader-fragments/picking.fs";
 import {
-  IShaderProcessingResults,
-  ShaderProcessor,
-} from "../shaders/processing/shader-processor";
+  BufferManagerBase,
+  IBufferLocation,
+} from "./buffer-management/buffer-manager-base";
+import { createAttribute } from "../util/create-attribute";
+import { DEFAULT_RESOURCE_ROUTER, ResourceRouter } from "../resources";
 import {
   FragmentOutputType,
   IInstanceAttribute,
@@ -31,30 +29,32 @@ import {
   StreamChangeStrategy,
   UniformIOValue,
 } from "../types";
-import { isBoolean } from "../types";
-import { isDefined } from "../util/common-filters";
-import { mapInjectDefault } from "../util/common-operations";
-import { createAttribute } from "../util/create-attribute";
-import { onFrame } from "../util/frame";
+import { generateLayerGeometry } from "./layer-processing";
+import { GLSettings } from "../gl";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { PromiseResolver } from "../util/promise-resolver";
-import { uid } from "../util/uid";
+import { Instance, ObservableMonitoring } from "../instance-provider";
 import {
   InstanceAttributeBufferManager,
   InstanceAttributePackingBufferManager,
   UniformBufferManager,
 } from "./buffer-management";
-import {
-  BufferManagerBase,
-  IBufferLocation,
-} from "./buffer-management/buffer-manager-base";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
-import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { generateLayerGeometry } from "./layer-processing";
-import { LayerScene } from "./layer-scene";
-import { Surface } from "./surface";
+import { isBoolean } from "../types";
+import { isDefined } from "../util/common-filters";
+import {
+  IShaderProcessingResults,
+  ShaderProcessor,
+} from "../shaders/processing/shader-processor";
 import { IViewProps, View } from "./view";
-import PickingFS from "../shaders/base-modules/shader-fragments/picking.fs";
+import { LayerInteractionHandler } from "./layer-interaction-handler";
+import { LayerScene } from "./layer-scene";
+import { mapInjectDefault } from "../util/common-operations";
+import { onFrame } from "../util/frame";
+import { PromiseResolver } from "../util/promise-resolver";
+import { ShaderDeclarationStatementLookup } from "../shaders";
+import { Surface } from "./surface";
+import { uid } from "../util/uid";
+import { WebGLStat } from "../gl/webgl-stat";
 
 import Debug from "debug";
 
@@ -352,12 +352,12 @@ export class Layer<
    * the system to keep rendering and not go into an idle state until the time
    * of the last rendered frame has exceeded the time flagged here.
    */
-  animationEndTime: number = 0;
+  animationEndTime = 0;
   /**
    * This is a flag that allows a system to indicate this layer should always
    * re-render
    */
-  isAnimationContinuous: boolean = false;
+  isAnimationContinuous = false;
   /** Buffer manager is read only. Must use setBufferManager */
   private _bufferManager!: BufferManagerBase<
     TInstance,
@@ -380,7 +380,7 @@ export class Layer<
   /** When a layer creates children, this is populated with those children */
   children?: Layer<Instance, ILayerProps<Instance>>[];
   /** This determines the drawing order of the layer within it's scene */
-  depth: number = 0;
+  depth = 0;
   /** This contains the methods and controls for handling diffs for the layer */
   diffManager?: InstanceDiffManager<TInstance, TProps>;
   /**
@@ -407,9 +407,9 @@ export class Layer<
   /** This is the handler that manages interactions for the layer */
   interactions?: LayerInteractionHandler<TInstance, TProps>;
   /** The last time stamp this layer had its contents rendered */
-  lastFrameTime: number = 0;
+  lastFrameTime = 0;
   /** This indicates whether this layer needs to draw */
-  needsViewDrawn: boolean = false;
+  needsViewDrawn = false;
   /** Helps assert rendering order. Lower numbers render first. */
   order?: number;
   /**
@@ -486,7 +486,7 @@ export class Layer<
    * This flag indicates if the layer will be reconstructed from scratch next
    * layer rendering cycle
    */
-  willRebuildLayer: boolean = false;
+  willRebuildLayer = false;
 
   /**
    * This is a hook for the layer to respond to an instance being added via the
@@ -679,10 +679,8 @@ export class Layer<
     // picking output type.
     const doAutomatedPicking =
       this.picking.type === PickType.SINGLE &&
-      !Boolean(
-        shaderIO.fs.find(
-          (output) => output.outputType === FragmentOutputType.PICKING
-        )
+      !shaderIO.fs.find(
+        (output) => output.outputType === FragmentOutputType.PICKING
       );
 
     if (this.picking.type === PickType.SINGLE && !doAutomatedPicking) {

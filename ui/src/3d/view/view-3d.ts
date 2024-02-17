@@ -1,7 +1,7 @@
 import { Bounds } from "../../math/primitives/bounds";
+import { Camera, CameraProjectionType, isPerspective } from "../../util/camera";
 import { IViewProps, View } from "../../surface";
 import { LayerScene } from "../../surface/layer-scene";
-import { Camera, CameraProjectionType, isPerspective } from "../../util/camera";
 import { Projection3D } from "./projection-3d";
 
 /**
@@ -32,14 +32,14 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
       height: 100,
       fov: Math.PI / 2,
       far: 100000,
-      near: 1
+      near: 1,
     }),
     viewport: {
       left: 0,
       right: 0,
       bottom: 0,
-      top: 0
-    }
+      top: 0,
+    },
   };
 
   projection: Projection3D;
@@ -68,7 +68,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         near: camera.projectionOptions.near,
         far: camera.projectionOptions.far,
         width,
-        height
+        height,
       };
 
       if (!this.props.preventCameraAdjustment) {
@@ -87,7 +87,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         height: this.projection.viewBounds.height / this.pixelRatio,
         width: this.projection.viewBounds.width / this.pixelRatio,
         x: this.projection.viewBounds.x / this.pixelRatio,
-        y: this.projection.viewBounds.y / this.pixelRatio
+        y: this.projection.viewBounds.y / this.pixelRatio,
       });
       this.projection.screenBounds.d = this;
     } else if (isOrthographic(this.props.camera)) {
@@ -101,7 +101,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         left: -width / 2,
         right: width / 2,
         top: height / 2,
-        bottom: -height / 2
+        bottom: -height / 2,
       };
 
       if (!this.props.preventCameraAdjustment) {
@@ -120,7 +120,7 @@ export class View3D<TViewProps extends IView3DProps> extends View<TViewProps> {
         height: this.projection.viewBounds.height / this.pixelRatio,
         width: this.projection.viewBounds.width / this.pixelRatio,
         x: this.projection.viewBounds.x / this.pixelRatio,
-        y: this.projection.viewBounds.y / this.pixelRatio
+        y: this.projection.viewBounds.y / this.pixelRatio,
       });
       this.projection.screenBounds.d = this;
     }

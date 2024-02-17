@@ -19,9 +19,9 @@ export interface IInstance3DOptions extends IInstanceOptions {
  */
 export class Instance2D extends Instance {
   /** Flag indicates local space properties are retrieved from this instance */
-  needsLocalUpdate: boolean = false;
+  needsLocalUpdate = false;
   /** Flag indicates world space properties are retrieved from this instance */
-  needsWorldUpdate: boolean = false;
+  needsWorldUpdate = false;
 
   /**
    * This is the 3D transform that will place this object within the 3D world.

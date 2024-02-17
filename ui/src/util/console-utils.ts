@@ -6,10 +6,11 @@ import { onAnimationLoop, stopAnimationLoop } from "./frame";
  * This is a helper method for logging on the frame loop. It will take in logs that are intended to be output but will
  * display them at a reduced frequency to eliminate flicker from the log console.
  */
-export function consoleRender(logMethod: Function, refresh: number = 1000) {
+export function consoleRender(logMethod: Function, refresh = 1000) {
   const logs: any[] = [];
 
   const loopId = onAnimationLoop(() => {
+    // eslint-disable-next-line no-console
     console.clear();
 
     for (let i = 0, iMax = logs.length; i < iMax; ++i) {
@@ -29,7 +30,7 @@ export function consoleRender(logMethod: Function, refresh: number = 1000) {
 
       stop: () => {
         stopAnimationLoop(loopId);
-      }
+      },
     }
   );
 }

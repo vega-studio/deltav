@@ -1,6 +1,6 @@
-import { Texture } from "../../gl/texture";
-import { Omit, ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
+import { Omit, ResourceType } from "../../types";
+import { Texture } from "../../gl/texture";
 
 /**
  * Base information an RenderTexture resource can provide.
@@ -30,6 +30,6 @@ export function textureRequest(
 ): IRenderTextureResourceRequest {
   return {
     type: ResourceType.TEXTURE,
-    ...options
+    ...options,
   };
 }

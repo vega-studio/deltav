@@ -17,7 +17,7 @@ export interface IPackNodeDimensions<T> {
  */
 export class PackNode<T> {
   child: [PackNode<T> | null, PackNode<T> | null] = [null, null];
-  isLeaf: boolean = true;
+  isLeaf = true;
   bounds: Bounds<any>;
   data: T | null = null;
 
@@ -26,7 +26,7 @@ export class PackNode<T> {
       height,
       width,
       x,
-      y
+      y,
     });
   }
 
@@ -182,7 +182,7 @@ export class PackNode<T> {
       top: 0,
       left: 0,
       bottom: 0,
-      right: 0
+      right: 0,
     };
 
     const bounds = node instanceof PackNode ? node.bounds : node;
@@ -202,14 +202,14 @@ export class PackNode<T> {
         bottom: 1.0 - uy,
         left: ux,
         right: ux + uw,
-        top: 1.0 - (uy + uh)
+        top: 1.0 - (uy + uh),
       });
     } else {
       atlasDimensions = new Bounds({
         top: 1.0 - uy,
         left: ux,
         right: ux + uw,
-        bottom: 1.0 - (uy + uh)
+        bottom: 1.0 - (uy + uh),
       });
     }
 

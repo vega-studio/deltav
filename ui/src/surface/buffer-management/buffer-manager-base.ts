@@ -1,10 +1,10 @@
-import { Material } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
-import { Vec2, Vec4 } from "../../math";
+import { generateLayerMaterial } from "../layer-processing";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
 import { ILayerProps, Layer } from "../layer";
-import { generateLayerMaterial } from "../layer-processing";
+import { Instance } from "../../instance-provider/instance";
 import { LayerScene } from "../layer-scene";
+import { Material } from "../../gl";
+import { Vec2, Vec4 } from "../../math";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;

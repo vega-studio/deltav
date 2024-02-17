@@ -1,10 +1,16 @@
-import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
-import {
-  fontRequest,
-  FontResourceRequestFetch,
-  IFontResourceRequest,
-} from "../../../resources";
+import GlyphLayerAlwaysFS from "./glyph-layer-always.fs";
+import GlyphLayerAlwaysVS from "./glyph-layer-always.vs";
+import GlyphLayerBoundMaxFS from "./glyph-layer-bound-max.fs";
+import GlyphLayerBoundMaxVS from "./glyph-layer-bound-max.vs";
+import GlyphLayerNeverFS from "./glyph-layer-never.fs";
+import GlyphLayerNeverVS from "./glyph-layer-never.vs";
+import TextAreaLayerAlwaysFS from "./text-area-layer-always.fs";
+import TextAreaLayerAlwaysVS from "./text-area-layer-always.vs";
+import TextAreaLayerBoundMaxFS from "./text-area-layer-bound-max.fs";
+import TextAreaLayerBoundMaxVS from "./text-area-layer-bound-max.vs";
+import TextAreaLayerNeverFS from "./text-area-layer-never.fs";
+import TextAreaLayerNeverVS from "./text-area-layer-never.vs";
+import { CommonMaterialOptions } from "../../../util";
 import {
   createMaterialOptions,
   IInstanceAttribute,
@@ -13,22 +19,16 @@ import {
   IShaderInitialization,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ScaleMode } from "../../types";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import {
+  fontRequest,
+  FontResourceRequestFetch,
+  IFontResourceRequest,
+} from "../../../resources";
 import { GlyphInstance } from "./glyph-instance";
-import TextAreaLayerBoundMaxFS from "./text-area-layer-bound-max.fs";
-import TextAreaLayerBoundMaxVS from "./text-area-layer-bound-max.vs";
-import TextAreaLayerNeverFS from "./text-area-layer-never.fs";
-import TextAreaLayerNeverVS from "./text-area-layer-never.vs";
-import TextAreaLayerAlwaysFS from "./text-area-layer-always.fs";
-import TextAreaLayerAlwaysVS from "./text-area-layer-always.vs";
-import GlyphLayerBoundMaxFS from "./glyph-layer-bound-max.fs";
-import GlyphLayerBoundMaxVS from "./glyph-layer-bound-max.vs";
-import GlyphLayerNeverFS from "./glyph-layer-never.fs";
-import GlyphLayerNeverVS from "./glyph-layer-never.vs";
-import GlyphLayerAlwaysFS from "./glyph-layer-always.fs";
-import GlyphLayerAlwaysVS from "./glyph-layer-always.vs";
+import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { InstanceProvider } from "../../../instance-provider";
+import { ScaleMode } from "../../types";
 
 /**
  * Options available to this layer as props.

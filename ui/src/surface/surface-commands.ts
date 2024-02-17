@@ -1,9 +1,9 @@
-import { RenderTarget } from "../gl/render-target";
-import { Texture } from "../gl/texture";
 import { divide2, scale2, Vec2, Vec4 } from "../math/vector";
 import { FragmentOutputType, IColorPickingData, PickType } from "../types";
-import { Surface } from "./surface";
 import { IViewProps, View } from "./view";
+import { RenderTarget } from "../gl/render-target";
+import { Surface } from "./surface";
+import { Texture } from "../gl/texture";
 
 export interface ISurfaceCommandsOptions {
   surface: Surface;
@@ -24,7 +24,7 @@ function analyzeColorPickingRendering(
     dataWidth: width,
     mouse,
     nearestColor: 0,
-    nearestColorBytes: [0, 0, 0, 0]
+    nearestColorBytes: [0, 0, 0, 0],
   };
 
   const uniqueColors = new Map<number, boolean>();
@@ -157,7 +157,7 @@ export class SurfaceCommands {
     if (!interaction) return;
 
     const position = interaction.screen.position;
-    const views = interaction.target.views.map(v => v.view);
+    const views = interaction.target.views.map((v) => v.view);
 
     // Clean out any render targets that have no valid texture to read from.
     const toRemove = new Set<View<any>>();
@@ -172,30 +172,30 @@ export class SurfaceCommands {
       }
     });
 
-    toRemove.forEach(view => this.pickingRenderTargets.delete(view));
+    toRemove.forEach((view) => this.pickingRenderTargets.delete(view));
 
     // Loop through each potential view and seek an output buffer with type
     // picking for it
-    views.forEach(view => {
+    views.forEach((view) => {
       let pickingTarget = this.pickingRenderTargets.get(view);
 
       // Ensure our view has a render target created for reading from the
       // picking output of the view.
       if (!pickingTarget) {
-        view.getRenderTargets().forEach(renderTarget => {
+        view.getRenderTargets().forEach((renderTarget) => {
           // We do not consider the render target for valid buffers unless it's
           // been compiled.
           if (!renderTarget.gl) return;
 
           // Find the target that outputs for picking
-          renderTarget.getBuffers().forEach(buffer => {
+          renderTarget.getBuffers().forEach((buffer) => {
             if (buffer.outputType === FragmentOutputType.PICKING) {
               // Generate our single render buffer target so our read pixels
               // will for sure target the right buffer
               pickingTarget = new RenderTarget({
                 buffers: {
-                  color: buffer
-                }
+                  color: buffer,
+                },
               });
 
               // If the target was not able to specify valid dimensions, then we

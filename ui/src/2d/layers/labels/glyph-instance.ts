@@ -1,13 +1,13 @@
+import { IFontResourceRequest } from "../../../resources";
 import {
   IInstanceOptions,
   Instance,
   makeObservable,
   observable,
 } from "../../../instance-provider";
-import { Vec2, Vec4 } from "../../../math/vector";
-import { IFontResourceRequest } from "../../../resources";
-import { Omit } from "../../../types";
 import { LabelInstance } from "./label-instance";
+import { Omit } from "../../../types";
+import { Vec2, Vec4 } from "../../../math/vector";
 
 export type GlyphInstanceOptions = Omit<
   Partial<GlyphInstance>,
@@ -22,18 +22,18 @@ export class GlyphInstance extends Instance {
   /** Adjustment to position the glyph relative to an anchor location on an overrarching label */
   @observable anchor: Vec2 = [0, 0];
   /** This is the character the glyph will render. */
-  @observable character: string = "a";
+  @observable character = "a";
   /** The color to tint the glyph */
   @observable color: Vec4 = [1, 1, 1, 1];
   /** Z distance of the glyph */
-  @observable depth: number = 0;
+  @observable depth = 0;
   /**
    * This is the scale of the glyph compared to the font resource's rendering. If the font resource
    * is rendered at 32px, then this needs to be 20 / 32 to render the glyph at a font size of 20.
    */
-  @observable fontScale: number = 1;
+  @observable fontScale = 1;
   /** When in BOUND_MAX mode, this controls how much scaling is allowed up to the base font size */
-  @observable maxScale: number = 1;
+  @observable maxScale = 1;
   /** The top left location of this glyph's offset from it's origin */
   @observable offset: Vec2 = [0, 0];
   /** This is the anchor point of the glyph to which the glyph scales and rotates about and is positioned */
@@ -75,9 +75,13 @@ export class GlyphInstance extends Instance {
    * This will trigger when the resource nmanager is ready to render this glyph.
    */
   resourceTrigger() {
+    // eslint-disable-next-line no-self-assign
     this.offset = this.offset;
+    // eslint-disable-next-line no-self-assign
     this.origin = this.origin;
+    // eslint-disable-next-line no-self-assign
     this.character = this.character;
+    // eslint-disable-next-line no-self-assign
     this.color = this.color;
 
     // Indicate this glyph is getting ready to render to the screen

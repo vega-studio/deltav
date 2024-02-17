@@ -8,20 +8,20 @@
  * Thus, we pack down the attributes into appropriate block indices and slots.
  */
 
-import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
 } from "../../types";
+import { Instance } from "../../instance-provider/instance";
 
 /**
  * A quick representation of an available block with a convenience method to
  * easily apply metrics to an attribute if it fits.
  */
 class Block<T extends Instance> {
-  index: number = 0;
-  available: number = 4;
+  index = 0;
+  available = 4;
 
   constructor(blockIndex: number) {
     this.index = blockIndex;

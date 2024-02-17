@@ -5,9 +5,8 @@
  * library offers. This includes things such as injecting camera projection
  * uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
+import { BaseIOSorting } from "./base-io-sorting";
 import {
   IInstanceAttribute,
   IShaderInitialization,
@@ -16,7 +15,8 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal,
 } from "../../types";
-import { BaseIOSorting } from "./base-io-sorting";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
 import { packAttributes } from "./pack-attributes";
 import { ProcessShaderImportResults } from "./shader-processor";
 

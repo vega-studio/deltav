@@ -1,7 +1,7 @@
-import { uid } from "../util/uid";
+import { apply2, compare2, Vec2, Vec2Compat } from "./vector";
 import { Bounds } from "./primitives/bounds";
 import { Ray } from "./ray";
-import { apply2, compare2, Vec2, Vec2Compat } from "./vector";
+import { uid } from "../util/uid";
 
 /**
  * This object expresses a suite of methods that aids in projecting values from
@@ -15,13 +15,13 @@ export abstract class BaseProjection<T> {
   }
   private _uid: number = uid();
   /** Allows for a sensical identifier to be applied to this projection. */
-  id: string = "";
+  id = "";
 
   /**
    * This is set to ensure the projections that happen properly translates the
    * pixel ratio to normal Web coordinates
    */
-  pixelRatio: number = 1;
+  pixelRatio = 1;
   /** This is the rendering bounds within screen space */
   get screenBounds(): Bounds<T> {
     if (!this._scaledScreenBounds) {

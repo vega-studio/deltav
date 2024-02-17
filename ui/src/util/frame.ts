@@ -47,13 +47,8 @@ const loop = (time: number) => {
   // Execute all of the animation loop commands
   animationLoopCommands.forEach((command, id) => {
     keepLooping = true;
-    let [
-      commandFn,
-      interval,
-      intervalStartTime,
-      duration,
-      durationStartTime
-    ] = command;
+    let [commandFn, interval, intervalStartTime, duration, durationStartTime] =
+      command;
 
     // Check to see if the command has a specified duration
     if (duration !== -1) {
@@ -243,7 +238,7 @@ export function onAnimationLoop(
     interval || -1,
     -1,
     duration || -1,
-    -1
+    -1,
   ]);
 
   if (animationFrameId === -1) {
@@ -270,7 +265,7 @@ export function stopAnimationLoop(id: Promise<number>) {
  * onFrame commands.
  */
 export function stopAllFrameCommands() {
-  animationLoopCommands.forEach(cmd => cmd[0](currentTime, currentTime));
+  animationLoopCommands.forEach((cmd) => cmd[0](currentTime, currentTime));
   animationLoopCommands.clear();
   immediateQueuedCommands = [];
   nextQueuedCommands = [];

@@ -68,7 +68,7 @@ export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const V3R: Vec3[] = new Array(20).fill(0).map(_ => [0, 0, 0]);
+export const V3R: Vec3[] = new Array(20).fill(0).map((_) => [0, 0, 0]);
 
 /**
  * Temp Vec4 registers. Can be used for intermediate operations. These
@@ -85,7 +85,7 @@ export const V3R: Vec3[] = new Array(20).fill(0).map(_ => [0, 0, 0]);
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const V4R: Vec4[] = new Array(20).fill(0).map(_ => [0, 0, 0, 0]);
+export const V4R: Vec4[] = new Array(20).fill(0).map((_) => [0, 0, 0, 0]);
 
 // Type guards for Vecs
 
@@ -108,7 +108,7 @@ export function isVec4(val: any): val is Vec4 {
 // Vec1 methods
 
 export function apply1(v: Vec1Compat | undefined, v0: number): Vec1 {
-  v = v || (([] as any) as Vec1);
+  v = v || ([] as any as Vec1);
   v[0] = v0;
 
   return v as Vec1;
@@ -287,7 +287,7 @@ export function apply2(
   v0: number,
   v1: number
 ): Vec2 {
-  v = v || ((new Array(2) as any) as Vec2);
+  v = v || (new Array(2) as any as Vec2);
   v[0] = v0;
   v[1] = v1;
 
@@ -477,7 +477,7 @@ export function apply3(
   v1: number,
   v2: number
 ): Vec3 {
-  v = v || ((new Array(3) as any) as Vec3);
+  v = v || (new Array(3) as any as Vec3);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -531,7 +531,7 @@ export function cross3(
   right: Vec3Compat,
   out?: Vec3Compat
 ): Vec3 {
-  out = out || ((new Array(3) as any) as Vec3);
+  out = out || (new Array(3) as any as Vec3);
   out[0] = left[1] * right[2] - left[2] * right[1];
   out[1] = left[2] * right[0] - left[0] * right[2];
   out[2] = left[0] * right[1] - left[1] * right[0];
@@ -655,7 +655,7 @@ export function min3(
 }
 
 export function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3 {
-  out = out || ((new Array(3) as any) as Vec3);
+  out = out || (new Array(3) as any as Vec3);
   const length = length3(left);
   out[0] = left[0] / length;
   out[1] = left[1] / length;
@@ -742,7 +742,7 @@ export function apply4(
   v2: number,
   v3: number
 ): Vec4 {
-  v = v || ((new Array(4) as any) as Vec4);
+  v = v || (new Array(4) as any as Vec4);
   v[0] = v0;
   v[1] = v1;
   v[2] = v2;
@@ -1101,7 +1101,7 @@ export const vec1Methods: VecMethods<Vec1> = {
   normalize: normalize1,
   scale: scale1,
   subtract: subtract1,
-  vec: vec1
+  vec: vec1,
 };
 
 export const vec2Methods: VecMethods<Vec2> = {
@@ -1125,7 +1125,7 @@ export const vec2Methods: VecMethods<Vec2> = {
   normalize: normalize2,
   scale: scale2,
   subtract: subtract2,
-  vec: vec2
+  vec: vec2,
 };
 
 export const vec3Methods: VecMethods<Vec3> = {
@@ -1149,7 +1149,7 @@ export const vec3Methods: VecMethods<Vec3> = {
   normalize: normalize3,
   scale: scale3,
   subtract: subtract3,
-  vec: vec3
+  vec: vec3,
 };
 
 export const vec4Methods: VecMethods<Vec4> = {
@@ -1174,7 +1174,7 @@ export const vec4Methods: VecMethods<Vec4> = {
   scale: scale4,
   subtract: subtract4,
   vec: vec4,
-  slerpQuat: slerpQuat
+  slerpQuat: slerpQuat,
 };
 
 export function VecMath<T extends IVec>(vec: T): VecMethods<T> {

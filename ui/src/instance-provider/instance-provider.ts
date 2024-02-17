@@ -1,6 +1,6 @@
 import { IInstanceProvider, InstanceDiff, InstanceDiffType } from "../types";
-import { uid } from "../util/uid";
 import { Instance } from "./instance";
+import { uid } from "../util/uid";
 
 type InstanceDisposer<T extends Instance> = [T, Function];
 
@@ -26,7 +26,7 @@ export class InstanceProvider<TInstance extends Instance>
    * This indicates the context this provider was handled within. Currently, only one context is allowed per provider,
    * so we use this to detect when multiple contexts have attempted use of this provider.
    */
-  resolveContext: string = "";
+  resolveContext = "";
 
   constructor(instances?: TInstance[]) {
     if (instances) {

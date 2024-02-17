@@ -1,14 +1,14 @@
-import { Vec2 } from "../math/vector";
 import { normalizeWheel } from "../../../util/normalize-wheel";
+import { Vec2 } from "../math/vector";
 
 /**
  * Analyzes a MouseEvent and calculates the mouse coordinates (relative to the element).
  */
 function eventElementPosition(e: any, relative?: HTMLElement): Vec2 {
-  let mouseX: number = 0,
-    mouseY: number = 0,
-    eventX: number = 0,
-    eventY: number = 0,
+  let mouseX = 0,
+    mouseY = 0,
+    eventX = 0,
+    eventY = 0,
     object: any =
       relative || (e.nativeEvent && e.nativeEvent.target) || e.target;
 

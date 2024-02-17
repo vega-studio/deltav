@@ -1,5 +1,5 @@
-import { IEasingControl, IEasingProps } from "../types";
 import { EasingProps } from "../util/easing-props";
+import { IEasingControl, IEasingProps } from "../types";
 import { InstanceProvider } from "./instance-provider";
 import { makeObservable, observable } from "./observable";
 
@@ -25,7 +25,7 @@ export class Instance {
     this._active = val;
     this.reactivate = true;
   }
-  @observable _active: boolean = false;
+  @observable _active = false;
   /** The property changes on the instance */
   changes: { [key: number]: number } = {};
   /**
@@ -53,7 +53,7 @@ export class Instance {
    * This is the flag indicating this instance was reactivated. When true, this
    * performs a full update of all properties on the instance
    */
-  reactivate: boolean = false;
+  reactivate = false;
 
   /**
    * Retrieves a method for disposing the link between observables and observer.

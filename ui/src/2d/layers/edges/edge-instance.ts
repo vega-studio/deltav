@@ -1,12 +1,12 @@
+import { copy4, Vec2, Vec4 } from "../../../math";
 import {
   IInstanceOptions,
-  Instance
+  Instance,
 } from "../../../instance-provider/instance";
 import {
   makeObservable,
-  observable
+  observable,
 } from "../../../instance-provider/observable";
-import { copy4, Vec2, Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** This is the list of control points  */
@@ -28,9 +28,9 @@ export interface IEdgeInstanceOptions extends IInstanceOptions {
 export class EdgeInstance extends Instance {
   @observable control: Vec2[] = [
     [0, 0],
-    [0, 0]
+    [0, 0],
   ];
-  @observable depth: number = 0;
+  @observable depth = 0;
   @observable end: Vec2 = [0, 0];
   @observable endColor: Vec4 = [1.0, 1.0, 1.0, 1.0];
   @observable start: Vec2 = [0, 0];
@@ -61,7 +61,7 @@ export class EdgeInstance extends Instance {
 
     return [
       (this.end[1] - this.start[1]) / length,
-      -(this.end[0] - this.start[0]) / length
+      -(this.end[0] - this.start[0]) / length,
     ];
   }
 

@@ -1,17 +1,17 @@
+import TriangleLayerFS from "./triangle-layer.fs";
+import TriangleLayerVS from "./triangle-layer.vs";
+import { CommonMaterialOptions, createAttribute } from "../../../util";
 import { GLSettings } from "../../../gl";
-import { InstanceProvider } from "../../../instance-provider";
-import { Vec3 } from "../../../math/vector";
+import { IdentityTransform } from "../../scene-graph";
 import { ILayerProps, Layer } from "../../../surface/layer";
 import {
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions, createAttribute } from "../../../util";
-import { IdentityTransform } from "../../scene-graph";
+import { InstanceProvider } from "../../../instance-provider";
 import { TriangleInstance } from "./triangle-instance";
-import TriangleLayerFS from "./triangle-layer.fs";
-import TriangleLayerVS from "./triangle-layer.vs";
+import { Vec3 } from "../../../math/vector";
 
 export interface ITriangleLayerProps<TInstance extends TriangleInstance>
   extends ILayerProps<TInstance> {}

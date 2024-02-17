@@ -20,7 +20,7 @@ export enum MaterialUniformType {
   /** A single 4x4 matrix of floats */
   MATRIX4x4,
   /** The uniform refers to a texture that should be bound to an active texture unit */
-  TEXTURE
+  TEXTURE,
 }
 
 // Uniform type guards
@@ -188,5 +188,5 @@ export enum UseMaterialStatus {
    * The current render target and the material specified have no matching
    * output types, thus drawing with the provided material will result in
    */
-  NO_RENDER_TARGET_MATCHES
+  NO_RENDER_TARGET_MATCHES,
 }

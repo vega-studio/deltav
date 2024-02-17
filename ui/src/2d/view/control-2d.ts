@@ -2,10 +2,10 @@ import {
   AutoEasingMethod,
   IAutoEasingMethod,
 } from "../../math/auto-easing-method";
+import { Camera2D } from "./camera-2d";
 import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector";
 import { Surface } from "../../surface";
 import { uid } from "../../util/uid";
-import { Camera2D } from "./camera-2d";
 
 export interface IControl2DOptions {
   /** The world space offset of elements in the chart */
@@ -28,23 +28,23 @@ export class Control2D {
   /** The animation set to this camera to animate it's scale and offset */
   animation: IAutoEasingMethod<Vec3> = AutoEasingMethod.immediate(0);
   /** This records when the end of the animation for the camera will be completed */
-  animationEndTime: number = 0;
+  animationEndTime = 0;
   /** The 2d camera to work with */
   camera: Camera2D;
   /** Indicates which time frame the offset was retrieved so it will only broadcast a change event once for that timeframe */
-  private offsetBroadcastTime: number = 0;
+  private offsetBroadcastTime = 0;
   /** Indicates which time frame the scale was retrieved so it will only broadcast a change event once for that timeframe */
-  private scaleBroadcastTime: number = 0;
+  private scaleBroadcastTime = 0;
   /** Represents how much an element should be offset in world space */
   private _offset: Vec3 = [0, 0, 0];
   private startOffset: Vec3 = [0, 0, 0];
-  private startOffsetTime: number = 0;
-  private offsetEndTime: number = 0;
+  private startOffsetTime = 0;
+  private offsetEndTime = 0;
   /** Represents how scaled each axis should be in world space */
   private _scale: Vec3 = [1, 1, 1];
   private startScale: Vec3 = [1, 1, 1];
-  private startScaleTime: number = 0;
-  private scaleEndTime: number = 0;
+  private startScaleTime = 0;
+  private scaleEndTime = 0;
   /** This is the surface the camera is controlled by */
   surface?: Surface;
   /** When set, this will broadcast any change in the camera that will affect the view range */

@@ -86,7 +86,7 @@ export class ReferenceCamera2D extends Camera2D {
     this._control2D = new ReferenceControl2D(this.base, {
       base: this.base.control2D,
       offsetFilter: options.offsetFilter,
-      scaleFilter: options.scaleFilter
+      scaleFilter: options.scaleFilter,
     });
   }
 }

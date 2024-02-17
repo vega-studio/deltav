@@ -1,8 +1,8 @@
-import { Texture } from "../../gl/texture";
 import { Bounds } from "../../math/primitives/bounds";
-import { Vec2 } from "../../math/vector";
 import { InstanceIOValue, Omit } from "../../types";
+import { Texture } from "../../gl/texture";
 import { uid } from "../../util";
+import { Vec2 } from "../../math/vector";
 import { VideoTextureMonitor } from "./video-texture-monitor";
 
 /**
@@ -38,7 +38,7 @@ export class SubTexture {
   }
   private _uid: number = uid();
   /** Stores the aspect ratio of the image for quick reference */
-  aspectRatio: number = 1.0;
+  aspectRatio = 1.0;
   /** This is the top left UV coordinate of the sub texture on the atlas */
   atlasTL: Vec2 = [0, 0];
   /** This is the top right UV coordinate of the sub texture on the atlas */
@@ -48,13 +48,13 @@ export class SubTexture {
   /** This is the bottom right UV coordinate of the sub texture on the atlas */
   atlasBR: Vec2 = [0, 0];
   /** This is the normalized height of the sub texture on the atlas */
-  heightOnAtlas: number = 0;
+  heightOnAtlas = 0;
   /** This flag is set to false when the underlying texture is no longer valid */
-  isValid: boolean = false;
+  isValid = false;
   /** Width in pixels of the image on the atlas */
-  pixelWidth: number = 0;
+  pixelWidth = 0;
   /** Height in pixels of the image on the atlas */
-  pixelHeight: number = 0;
+  pixelHeight = 0;
   /** The region information of the subtexture on the atlas' texture. */
   atlasRegion?: { x: number; y: number; width: number; height: number };
   /** This is the source image/data that this sub texture applied to the atlas */
@@ -80,7 +80,7 @@ export class SubTexture {
     monitor: VideoTextureMonitor;
   };
   /** This is the normalized width of the sub texture on the atlas */
-  widthOnAtlas: number = 0;
+  widthOnAtlas = 0;
 
   constructor(options?: Omit<Partial<SubTexture>, "update">) {
     Object.assign(this, options);

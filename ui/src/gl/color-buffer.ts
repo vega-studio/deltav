@@ -1,6 +1,6 @@
-import { Vec2 } from "../math";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
+import { Vec2 } from "../math";
 
 /**
  * This is the options to apply to a texture
@@ -20,7 +20,7 @@ export class ColorBuffer {
   public get destroyed(): boolean {
     return this._destroyed;
   }
-  private _destroyed: boolean = false;
+  private _destroyed = false;
 
   /**
    * This stores any gl state associated with this object. Modifying this object
@@ -57,7 +57,7 @@ export class ColorBuffer {
     GLSettings.RenderTarget.ColorBufferFormat.RGBA4;
 
   /** Flag indicates if the Render Buffer needs it's settings modified */
-  needsSettingsUpdate: boolean = false;
+  needsSettingsUpdate = false;
 
   /**
    * The dimensions of this color buffer object.

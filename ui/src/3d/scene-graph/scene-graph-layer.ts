@@ -1,7 +1,7 @@
-import { Instance } from "../../instance-provider";
-import { Mat4x4 } from "../../math/matrix";
 import { ILayerProps, Layer } from "../../surface";
+import { Instance } from "../../instance-provider";
 import { IShaderInitialization } from "../../types";
+import { Mat4x4 } from "../../math/matrix";
 
 export interface ISceneGraphLayerProps<TInstance extends Instance>
   extends ILayerProps<TInstance> {
@@ -26,7 +26,7 @@ export interface ISceneGraphLayerProps<TInstance extends Instance>
  */
 export class SceneGraphLayer<
   TInstance extends Instance,
-  TProps extends ISceneGraphLayerProps<TInstance>
+  TProps extends ISceneGraphLayerProps<TInstance>,
 > extends Layer<TInstance, TProps> {
   /**
    * Ensure the shaders utilizing this framework has easy access to the

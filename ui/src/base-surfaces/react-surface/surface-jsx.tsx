@@ -1,5 +1,12 @@
 import React from "react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
+import { BaseResourceOptions } from "../../resources/index.js";
+import { concatChildren, useChildResolvers } from "./use-child-resolver.js";
+import { CustomTag } from "./custom-tag.js";
+import { EventManager } from "../../event-management/index.js";
+import {
+  groupSurfaceChildren,
+  SurfaceJSXType,
+} from "./group-surface-children.js";
 import {
   ILayerProps,
   ISceneOptions,
@@ -9,23 +16,16 @@ import {
   Surface,
   ViewInitializer,
 } from "../../surface/index.js";
-import { CustomTag } from "./custom-tag.js";
-import {
-  SurfaceJSXType,
-  groupSurfaceChildren,
-} from "./group-surface-children.js";
-import { PromiseResolver } from "../../util/promise-resolver.js";
-import { EventManager } from "../../event-management/index.js";
-import { BaseResourceOptions } from "../../resources/index.js";
+import { Instance } from "../../instance-provider/instance.js";
 import { isDefined } from "../../util/common-filters.js";
 import {
   onAnimationLoop,
   onFrame,
   stopAnimationLoop,
 } from "../../util/index.js";
+import { PromiseResolver } from "../../util/promise-resolver.js";
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import "./surface-jsx.scss";
-import { concatChildren, useChildResolvers } from "./use-child-resolver.js";
-import { Instance } from "../../instance-provider/instance.js";
 
 export interface ISurfaceJSX {
   /** Accepts children */
@@ -127,7 +127,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
 
   // As we work through our lists of children and clone and aggregate them, we
   // will need to ensure our key uniqueness is retained amongst them.
-  let childKey = { current: 0 };
+  const childKey = { current: 0 };
 
   // On a new render cycle, we need to establish all of our child assets for
   // this surface. Most of the asset handling is through promise resolvers that
@@ -143,19 +143,19 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
 
   // Get all child groups and the resolvers we will use for them to retreve the
   // resources they will provide.
-  let [eventManagers, eventsPromise] = useChildResolvers<EventManager>(
+  const [eventManagers, eventsPromise] = useChildResolvers<EventManager>(
     eventResolvers.current,
     groups,
     SurfaceJSXType.EVENT_MANAGER,
     childKey
   );
-  let [resources, resourcesPromise] = useChildResolvers<BaseResourceOptions>(
+  const [resources, resourcesPromise] = useChildResolvers<BaseResourceOptions>(
     resourceResolvers.current,
     groups,
     SurfaceJSXType.RESOURCE,
     childKey
   );
-  let [scenes, scenesPromise, { nameConflict: sceneNameConflict }] =
+  const [scenes, scenesPromise, { nameConflict: sceneNameConflict }] =
     useChildResolvers<ISceneOptions>(
       sceneResolvers.current,
       groups,
@@ -232,7 +232,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       if (!canvasRef.current || !container.current) return;
 
       // Let everything resolve as parellel as possible.
-      let [
+      const [
         resolvedEventManagers,
         resolvedResources,
         resolvedScenes,

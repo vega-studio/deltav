@@ -1,6 +1,6 @@
-import { UniformSize } from "../../../../types";
-import { PostProcessJSX } from "../post-process-jsx";
 import GaussVerticalBlurFS from "./gauss-vertical-blur.fs";
+import { PostProcessJSX } from "../post-process-jsx";
+import { UniformSize } from "../../../../types";
 
 export interface IGaussVerticalBlurJSX {
   /** Specifies the resource taken in that will be blurred for the output */

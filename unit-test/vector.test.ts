@@ -1,5 +1,4 @@
 import assert from "assert";
-import { describe, it } from "@jest/globals";
 import {
   add1,
   add2,
@@ -82,6 +81,7 @@ import {
   Vec4,
   Vec4Compat,
 } from "../ui/src/math/vector";
+import { describe, it } from "@jest/globals";
 
 export function fail1(actual: Vec1Compat, expected: Vec1Compat): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;
@@ -147,11 +147,7 @@ export function fuzzCompare4(v1: Vec4, v2: Vec4): boolean {
   );
 }
 
-function assert1(
-  actual: Vec1Compat,
-  expected: Vec1Compat,
-  shouldEqual: boolean = true
-) {
+function assert1(actual: Vec1Compat, expected: Vec1Compat, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare1(actual, expected), true, fail1(actual, expected));
   } else {
@@ -159,11 +155,7 @@ function assert1(
   }
 }
 
-function assert2(
-  actual: Vec2Compat,
-  expected: Vec2Compat,
-  shouldEqual: boolean = true
-) {
+function assert2(actual: Vec2Compat, expected: Vec2Compat, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare2(actual, expected), true, fail2(actual, expected));
   } else {
@@ -171,11 +163,7 @@ function assert2(
   }
 }
 
-function assert3(
-  actual: Vec3Compat,
-  expected: Vec3Compat,
-  shouldEqual: boolean = true
-) {
+function assert3(actual: Vec3Compat, expected: Vec3Compat, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare3(actual, expected), true, fail3(actual, expected));
   } else {
@@ -183,7 +171,7 @@ function assert3(
   }
 }
 
-function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
+function assert4(actual: Vec4, expected: Vec4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare4(actual, expected), true, fail4(actual, expected));
   } else {
@@ -191,11 +179,7 @@ function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
   }
 }
 
-function fuzzyAssert2(
-  actual: Vec2,
-  expected: Vec2,
-  shouldEqual: boolean = true
-) {
+function fuzzyAssert2(actual: Vec2, expected: Vec2, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(fuzzCompare2(actual, expected), true, fail2(actual, expected));
   } else {
@@ -207,11 +191,7 @@ function fuzzyAssert2(
   }
 }
 
-function fuzzyAssert3(
-  actual: Vec3,
-  expected: Vec3,
-  shouldEqual: boolean = true
-) {
+function fuzzyAssert3(actual: Vec3, expected: Vec3, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(fuzzCompare3(actual, expected), true, fail3(actual, expected));
   } else {
@@ -223,11 +203,7 @@ function fuzzyAssert3(
   }
 }
 
-function fuzzyAssert4(
-  actual: Vec4,
-  expected: Vec4,
-  shouldEqual: boolean = true
-) {
+function fuzzyAssert4(actual: Vec4, expected: Vec4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(fuzzCompare4(actual, expected), true, fail4(actual, expected));
   } else {
@@ -249,11 +225,7 @@ function compareArray(actual: number[], expected: number[]) {
   return true;
 }
 
-function assertArray(
-  actual: number[],
-  expected: number[],
-  shouldEqual: boolean = true
-) {
+function assertArray(actual: number[], expected: number[], shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(
       compareArray(actual, expected),
@@ -371,7 +343,6 @@ describe("Vector Library", () => {
           [1, 2, 3],
           [1, 2, 4],
         ],
-        ,
         [
           [1, 2, 3],
           [1, 2, 4, 5],
@@ -413,7 +384,6 @@ describe("Vector Library", () => {
           [1, 2, 3],
           [9, 2, 4],
         ],
-        ,
         [
           [5, 2, 3],
           [1, 6, 4, 5],

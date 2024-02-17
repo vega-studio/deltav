@@ -4,9 +4,9 @@ export class ObservableMonitoring {
   /**
    * Flag to help gathering Ids not gather Ids that arise from setting values
    */
-  static setCycle: boolean = false;
+  static setCycle = false;
   /** When true, observables will gather their used IDs into a list */
-  static gatherIds: boolean = false;
+  static gatherIds = false;
   /** The IDs gathered while gatherIds flag is true */
   static observableIds: number[] = [];
   /**
@@ -113,7 +113,7 @@ function observeProperty<T extends Instance>(instance: T, key: string) {
     configurable: true,
     enumerable: true,
     get: getter,
-    set: setter
+    set: setter,
   });
 
   (instance as any)[key] = value;
@@ -133,7 +133,7 @@ export function observable<T extends Instance>(
   if (!descriptor) {
     descriptor = {
       configurable: true,
-      enumerable: true
+      enumerable: true,
     };
   }
 
@@ -162,7 +162,7 @@ export function observable<T extends Instance>(
     const baseProperties = isObservable.get(proto.constructor);
 
     if (baseProperties) {
-      baseProperties.forEach(prop => willObserve?.add(prop));
+      baseProperties.forEach((prop) => willObserve?.add(prop));
     }
 
     proto = Object.getPrototypeOf(proto);
@@ -194,5 +194,5 @@ export function makeObservable(target: Instance, ctor: Function) {
   if (target.constructor !== ctor) return;
   const props = isObservable.get(ctor);
   if (!props) return;
-  props.forEach(prop => observeProperty(target, prop));
+  props.forEach((prop) => observeProperty(target, prop));
 }

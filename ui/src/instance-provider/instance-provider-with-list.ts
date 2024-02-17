@@ -14,7 +14,7 @@ export class InstanceProviderWithList<
    * List that tracks all instances. This list should not be manipulated
    * directly. But the instances within can be edited.
    */
-  get instances(): ReadonlyArray<TInstance> {
+  get instances(): readonly TInstance[] {
     return this._instances;
   }
   private _instances: TInstance[] = [];

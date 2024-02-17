@@ -1,9 +1,9 @@
 import { ShaderInjectionTarget } from "../../types";
-import { shaderTemplate } from "../../util/shader-templating";
 import {
   ShaderModuleUnit,
-  ShaderModuleUnitOptions
+  ShaderModuleUnitOptions,
 } from "./shader-module-unit";
+import { shaderTemplate } from "../../util/shader-templating";
 
 import Debug from "debug";
 
@@ -91,7 +91,7 @@ export class ShaderModule {
       if (Array.isArray(unit)) {
         let out = "";
 
-        unit.forEach(options => {
+        unit.forEach((options) => {
           const output = ShaderModule.register(options);
           if (output) out += `${output}\n`;
         });
@@ -195,7 +195,7 @@ export class ShaderModule {
 
       // We do not want to remove any template macros that do not deal with
       // extension
-      onToken: token => {
+      onToken: (token) => {
         const trimmedToken = token.trim();
 
         // See if the token is the first thing to appear
@@ -222,7 +222,7 @@ export class ShaderModule {
             }
 
             // Loop through all discovered module ids after the import statement
-            moduleIds.forEach(moduleId => {
+            moduleIds.forEach((moduleId) => {
               // Make sure whitespace is cleared
               moduleId = moduleId.trim();
               // Get the requested module
@@ -291,7 +291,7 @@ export class ShaderModule {
 
         // Leave any token not processed alone
         return `$\{${token}}`;
-      }
+      },
     });
 
     // Update the content to be stripped of it's import statements
@@ -339,14 +339,7 @@ export class ShaderModule {
       // Get the id of the module being processed for quick reference
       const id = unit.moduleId;
       // Debugging for the import id's found along with the current stack
-      debugTarget(
-        "%o: %o",
-        id,
-        processing
-          .slice(0)
-          .reverse()
-          .join(" -> ")
-      );
+      debugTarget("%o: %o", id, processing.slice(0).reverse().join(" -> "));
 
       // First look to see if the identifier is already in the processing queue.
       // If it is, we have a heinous circular dependency.
@@ -409,7 +402,7 @@ export class ShaderModule {
       // Make sure the dependents for the module are properly analyzed
       const dependentsErrors = ShaderModule.analyzeDependents(unit);
       // Add in any errors discovered during module analysis
-      dependentsErrors.forEach(error => errors.push(error));
+      dependentsErrors.forEach((error) => errors.push(error));
       // Get the dependents for the module for processing
       const dependents = unit.dependents;
       debugTarget("Module dependencies detected %o", dependents);
@@ -493,7 +486,7 @@ export class ShaderModule {
     if (additionalModules) {
       let imports = "";
 
-      additionalModules.forEach(moduleId => {
+      additionalModules.forEach((moduleId) => {
         imports += `$\{import: ${moduleId}}\n`;
       });
 
@@ -511,14 +504,14 @@ export class ShaderModule {
           : target === ShaderInjectionTarget.VERTEX
           ? "vs"
           : "fs"
-      }`
+      }`,
     });
 
     // Generate the results needed
     const results = {
       errors,
       shader: process(tempShaderModuleUnit),
-      shaderModuleUnits
+      shaderModuleUnits,
     };
 
     return results;

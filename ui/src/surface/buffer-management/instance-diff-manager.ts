@@ -1,15 +1,15 @@
-import { Instance } from "../../instance-provider/instance";
-import { ResourceRouter } from "../../resources";
+import { BaseDiffProcessor } from "./base-diff-processor";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { IBufferLocationGroup } from "./buffer-manager-base";
+import { ILayerProps, ILayerShaderIOInfo } from "../layer";
 import {
   INonePickingMetrics,
   ISinglePickingMetrics,
   LayerBufferType,
 } from "../../types";
-import { ILayerProps, ILayerShaderIOInfo } from "../layer";
-import { BaseDiffProcessor } from "./base-diff-processor";
-import { IBufferLocationGroup } from "./buffer-manager-base";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base";
+import { Instance } from "../../instance-provider/instance";
 import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor";
+import { ResourceRouter } from "../../resources";
 import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor";
 
 /** Signature of a method that handles a diff */

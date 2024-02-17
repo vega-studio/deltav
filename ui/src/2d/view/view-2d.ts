@@ -1,9 +1,9 @@
-import { Bounds } from "../../math/primitives/bounds";
 import { add3 } from "../../math/vector";
-import { IViewProps, View } from "../../surface";
-import { LayerScene } from "../../surface/layer-scene";
+import { Bounds } from "../../math/primitives/bounds";
 import { Camera, CameraProjectionType } from "../../util/camera";
 import { Camera2D } from "./camera-2d";
+import { IViewProps, View } from "../../surface";
+import { LayerScene } from "../../surface/layer-scene";
 import { Projection2D } from "./projection-2d";
 
 /**
@@ -32,8 +32,8 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
       left: 0,
       right: 0,
       bottom: 0,
-      top: 0
-    }
+      top: 0,
+    },
   };
 
   /** These are the projection methods specific to rendering with this 2D system. */
@@ -63,7 +63,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         left: -width / 2,
         near: -100,
         right: width / 2,
-        top: height / 2
+        top: height / 2,
       };
 
       const scaleX = 1 / this.pixelRatio;
@@ -77,7 +77,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
       camera.position = [
         viewBounds.width / (2.0 * this.pixelRatio),
         viewBounds.height / (2.0 * this.pixelRatio),
-        camera.position[2]
+        camera.position[2],
       ];
       camera.scale = [scaleX, -scaleY, 1.0];
       // Always face the -z direction
@@ -90,7 +90,7 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
         height: this.viewBounds.height / this.pixelRatio,
         width: this.viewBounds.width / this.pixelRatio,
         x: this.viewBounds.x / this.pixelRatio,
-        y: this.viewBounds.y / this.pixelRatio
+        y: this.viewBounds.y / this.pixelRatio,
       });
       this.screenBounds.d = this;
     } else if (!isOrthographic(this.props.camera)) {

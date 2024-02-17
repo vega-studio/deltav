@@ -1,8 +1,8 @@
-import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
-  Instance
+  Instance,
 } from "../../../instance-provider/instance";
+import { makeObservable, observable } from "../../../instance-provider";
 import { Vec2, Vec4 } from "../../../math";
 
 export interface IArcInstanceOptions extends IInstanceOptions {
@@ -37,11 +37,11 @@ export class ArcInstance extends Instance {
   /** The center point where the arc wraps around */
   @observable center: Vec2 = [0, 0];
   /** Depth sorting of the arc (or the z value of the arc) */
-  @observable depth: number = 0;
+  @observable depth = 0;
   /** An offset to apply to the angle. This makes it easy to animate the arc or set a point of reference for angle 0 */
-  @observable angleOffset: number = 0;
+  @observable angleOffset = 0;
   /** The radius of how far the middle of the arc is from the center point */
-  @observable radius: number = 1;
+  @observable radius = 1;
   /** The start to end thickness of the arc */
   @observable thickness: Vec2 = [5, 5];
 

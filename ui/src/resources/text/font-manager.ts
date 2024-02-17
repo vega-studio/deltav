@@ -1,11 +1,11 @@
-import { Bounds } from "../../math/primitives";
-import { PackNode } from "../../resources/texture/pack-node";
-import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { SubTexture } from "../texture/sub-texture";
+import { Bounds } from "../../math/primitives";
 import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
 import { fontRequest, IFontResourceRequest } from "./font-resource-request";
+import { Omit, ResourceType, Size } from "../../types";
+import { PackNode } from "../../resources/texture/pack-node";
+import { SubTexture } from "../texture/sub-texture";
 
 import Debug from "debug";
 
@@ -248,8 +248,6 @@ export class FontManager {
     const characters: string = this.characterFilterToCharacters(
       resourceOptions.characterFilter || ""
     );
-    // This is the generated font map specified by the resource options
-    let fontMap: FontMap | undefined;
     // This is the source information of the font which the system will utilize to produce the map
     const fontSource = resourceOptions.fontSource;
     // This is the determined glyph type of the resource
@@ -265,8 +263,9 @@ export class FontManager {
       }
     }
 
+    // This is the generated font map specified by the resource options
     // Create our new font map resource
-    fontMap = new FontMap({
+    const fontMap = new FontMap({
       ...resourceOptions,
       glyphType,
     });
@@ -349,7 +348,7 @@ export class FontManager {
     }
 
     // Convert the characters to be rendered to a sinple string
-    let uniqueCharacters: string = "";
+    let uniqueCharacters = "";
     allCharacters.forEach((char) => (uniqueCharacters += char));
 
     // Perform the updates to the font map

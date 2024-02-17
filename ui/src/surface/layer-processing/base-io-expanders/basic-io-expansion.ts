@@ -1,11 +1,3 @@
-import { WebGLStat } from "../../../gl";
-import { Instance } from "../../../instance-provider/instance";
-import {
-  ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from "../../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../../surface/layer";
 import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
@@ -17,6 +9,14 @@ import {
   ShaderInjectionTarget,
   UniformSize,
 } from "../../../types";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { Instance } from "../../../instance-provider/instance";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult,
+} from "../../../shaders/processing/base-shader-io-injection";
+import { WebGLStat } from "../../../gl";
 
 /** Provides a label for performance debugging */
 const debugCtx = "BasicIOExpansion";
@@ -389,7 +389,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     vertexAttributes: IVertexAttribute[],
     instanceAttributes: IInstanceAttribute<TInstance>[]
   ): ShaderIOHeaderInjectionResult {
-    let materialChanges = undefined;
+    const materialChanges = undefined;
     let out = "// Shader input\n";
 
     // If we are in a uniform buffer type strategy. Then we generate a uniform

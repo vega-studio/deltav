@@ -83,7 +83,7 @@ export function removeComments(str: string): string {
   // descending
   comments.reverse();
 
-  comments.forEach(comment => {
+  comments.forEach((comment) => {
     str = spliceStr(str, comment.start, comment.stop - comment.start);
   });
 

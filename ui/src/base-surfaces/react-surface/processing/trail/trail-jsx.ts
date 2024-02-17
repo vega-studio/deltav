@@ -1,7 +1,7 @@
-import { IView2DProps } from "../../../../2d";
 import { ClearFlags } from "../../../../surface";
 import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
 import { IPartialViewJSX } from "../../scene/view-jsx";
+import { IView2DProps } from "../../../../2d";
 import { PostProcessJSX } from "../post-process-jsx";
 
 export interface ITrailJSX {

@@ -1,4 +1,4 @@
-import { IView2DProps } from "../../../../2d";
+import BoxSampleFS from "./box-sample-jsx.fs";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
@@ -6,8 +6,8 @@ import {
   UniformSize,
 } from "../../../../types";
 import { IPartialViewJSX } from "../../scene/view-jsx";
+import { IView2DProps } from "../../../../2d";
 import { PostProcessJSX } from "../post-process-jsx";
-import BoxSampleFS from "./box-sample-jsx.fs";
 
 export enum BoxSampleJSXDirection {
   DOWN,

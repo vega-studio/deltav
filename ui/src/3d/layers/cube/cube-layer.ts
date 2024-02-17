@@ -1,18 +1,18 @@
-import { GLSettings } from "../../../gl";
-import { InstanceProvider } from "../../../instance-provider";
-import { Vec2, Vec3 } from "../../../math/vector";
-import { ILayerProps, Layer } from "../../../surface/layer";
+import CubeLayerFS from "./cube-layer.fs";
+import CubeLayerVS from "./cube-layer.vs";
+import { CommonMaterialOptions, createAttribute } from "../../../util";
+import { CubeInstance } from "./cube-instance";
 import {
   FragmentOutputType,
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions, createAttribute } from "../../../util";
+import { GLSettings } from "../../../gl";
 import { IdentityTransform } from "../../scene-graph";
-import { CubeInstance } from "./cube-instance";
-import CubeLayerFS from "./cube-layer.fs";
-import CubeLayerVS from "./cube-layer.vs";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec2, Vec3 } from "../../../math/vector";
 
 export interface ICubeLayerProps<TInstance extends CubeInstance>
   extends ILayerProps<TInstance> {}

@@ -1,10 +1,10 @@
 import React from "react";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
-import { EventManager } from "../../../event-management/event-manager.js";
-import { QueuedEventHandler } from "../../../event-management/queued-event-handler.js";
 import { CustomTag } from "../custom-tag.js";
+import { EventManager } from "../../../event-management/event-manager.js";
 import { IEventManagerJSX } from "./as-event-manager.js";
+import { QueuedEventHandler } from "../../../event-management/queued-event-handler.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export interface IQueuedEventHandlerJSX extends Partial<IEventManagerJSX> {
   /** Specified handlers you wish to implement */

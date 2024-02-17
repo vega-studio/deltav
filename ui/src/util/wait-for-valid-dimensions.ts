@@ -58,7 +58,7 @@ export function waitForValidDimensions(container?: HTMLElement) {
       // Check the input container, if we're suddenly waiting for a new container, the previous contexts should be
       // invalid
       if (otherContainer !== void 0 && otherContainer !== container) {
-        resolvers.forEach(r => r.resolve(false));
+        resolvers.forEach((r) => r.resolve(false));
         container = otherContainer;
       }
 
@@ -76,11 +76,11 @@ export function waitForValidDimensions(container?: HTMLElement) {
       if (box.width === 0 || box.height === 0) {
         let observing = true;
         const toWatch = {
-          attributes: true
+          attributes: true,
         };
 
         // Try to use a DOM concept for waiting for changes to the container
-        observer = new MutationObserver(mutationsList => {
+        observer = new MutationObserver((mutationsList) => {
           if (!observing) return;
 
           for (const mutation of mutationsList) {
@@ -129,7 +129,7 @@ export function waitForValidDimensions(container?: HTMLElement) {
       }
 
       if (result) {
-        resolvers.forEach(r => r.resolve(false));
+        resolvers.forEach((r) => r.resolve(false));
         resolvers = [];
       }
 
@@ -140,9 +140,9 @@ export function waitForValidDimensions(container?: HTMLElement) {
     // dimensions to occur. This allows for proper memory cleansing
     {
       cancel: () => {
-        resolvers.forEach(r => r.resolve(false));
+        resolvers.forEach((r) => r.resolve(false));
         resolvers = [];
-      }
+      },
     }
   );
 

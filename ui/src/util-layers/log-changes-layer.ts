@@ -1,4 +1,4 @@
-import { Instance, InstanceProvider } from "../instance-provider";
+import { createChildLayer, createLayer } from "../util/create-layer";
 import {
   ILayerConstructable,
   ILayerProps,
@@ -7,8 +7,8 @@ import {
   LayerScene,
   Surface,
 } from "../surface";
+import { Instance, InstanceProvider } from "../instance-provider";
 import { Omit } from "../types";
-import { createChildLayer, createLayer } from "../util/create-layer";
 
 /**
  * Options for generating a Logging layer
@@ -88,7 +88,7 @@ class LogChangesLayer<
       this.props.wrap.init[1]
     );
     const toProcess = layer.childLayers();
-    const childLayers: { [key: string]: {} } = {};
+    const childLayers: { [key: string]: object } = {};
 
     while (toProcess.length > 0) {
       const child = toProcess.pop();

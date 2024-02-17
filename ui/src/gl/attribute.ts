@@ -39,19 +39,19 @@ export class Attribute {
   get isInstanced() {
     return this._isInstanced;
   }
-  private _isInstanced: boolean = false;
+  private _isInstanced = false;
   /** Indicates a full update of the buffer will happen. This is managed internally to determine when needed */
   get fullUpdate() {
     return this._fullUpdate;
   }
-  private _fullUpdate: boolean = false;
+  private _fullUpdate = false;
   /** Indicates if the data should be normalized when provided to the shader. */
-  normalize: boolean = false;
+  normalize = false;
   /** This flags the attribute as needing to commit updates to it's buffer */
   get needsUpdate() {
     return this._needsUpdate;
   }
-  private _needsUpdate: boolean = false;
+  private _needsUpdate = false;
   /**
    * The packing size of the vertex attribute (how many floats per attribute). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
@@ -85,8 +85,8 @@ export class Attribute {
   constructor(
     data: Float32Array,
     size: number,
-    isDynamic: boolean = false,
-    isInstanced: boolean = false
+    isDynamic = false,
+    isInstanced = false
   ) {
     this.data = data;
     this.size = size;

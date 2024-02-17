@@ -1,5 +1,5 @@
-import { GLSettings } from "./gl-settings";
 import { GLContext, IExtensions } from "./types";
+import { GLSettings } from "./gl-settings";
 import { WebGLStat } from "./webgl-stat";
 
 /**

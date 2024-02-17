@@ -1,11 +1,11 @@
-import { colorBufferRequest, createColorBuffer } from "./color-buffer";
-import { createFont, fontRequest } from "./text";
 import {
   atlasRequest,
   createAtlas,
   createTexture,
-  textureRequest
+  textureRequest,
 } from "./texture";
+import { colorBufferRequest, createColorBuffer } from "./color-buffer";
+import { createFont, fontRequest } from "./text";
 
 export * from "./base-resource-manager";
 export * from "./resource-router";
@@ -16,12 +16,12 @@ export const RESOURCE = {
   createFont,
   createAtlas,
   createTexture,
-  createColorBuffer
+  createColorBuffer,
 };
 
 export const REQUEST = {
   textureRequest,
   atlasRequest,
   fontRequest,
-  colorBufferRequest
+  colorBufferRequest,
 };

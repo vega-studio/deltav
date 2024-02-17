@@ -1,6 +1,6 @@
-import { makeObservable, observable } from "../../../instance-provider";
 import { Color, Size } from "../../../types";
 import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d";
+import { makeObservable, observable } from "../../../instance-provider";
 
 /** Customizes a new Cube instance */
 export interface ICubeOptions extends IInstance3DOptions {

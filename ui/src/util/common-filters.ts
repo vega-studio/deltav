@@ -43,9 +43,9 @@ export function touchesHasStartView(view: string | string[]) {
 export function touchesContainsStartView(view: string | string[]) {
   if (Array.isArray(view)) {
     return (touch: ISingleTouchInteraction) =>
-      touch.start.views.find(v => view.indexOf(v.view.id) >= 0);
+      touch.start.views.find((v) => view.indexOf(v.view.id) >= 0);
   }
 
   return (touch: ISingleTouchInteraction) =>
-    touch.start.views.find(v => v.view.id === view);
+    touch.start.views.find((v) => v.view.id === view);
 }

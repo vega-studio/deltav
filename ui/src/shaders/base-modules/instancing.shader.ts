@@ -1,11 +1,11 @@
-import { Instance } from "../../instance-provider/instance";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
   LayerBufferType,
   ShaderInjectionTarget,
-  VertexAttributeSize
+  VertexAttributeSize,
 } from "../../types";
+import { Instance } from "../../instance-provider/instance";
 import { ShaderModule } from "../processing";
 
 const doc = `
@@ -28,13 +28,13 @@ ShaderModule.register({
   content: "",
   compatibility: ShaderInjectionTarget.ALL,
 
-  instanceAttributes: layer => {
+  instanceAttributes: (layer) => {
     // This is injected so the system can control when an instance should not be rendered.
     // This allows for holes to be in the buffer without having to correct them immediately
     const activeAttribute: IInstanceAttribute<Instance> = {
       name: "_active",
       size: InstanceAttributeSize.ONE,
-      update: o => [o.active ? 1 : 0]
+      update: (o) => [o.active ? 1 : 0],
     };
 
     // Set the active attribute to the layer for quick reference
@@ -43,7 +43,7 @@ ShaderModule.register({
     return [activeAttribute];
   },
 
-  vertexAttributes: layer => {
+  vertexAttributes: (layer) => {
     // Only the uniform buffering strategy requires instance information in it's vertex attributes
     if (layer.bufferType === LayerBufferType.UNIFORM) {
       return [
@@ -53,11 +53,11 @@ ShaderModule.register({
           name: "instance",
           size: VertexAttributeSize.ONE,
           // We no op this as our geometry generating routine will establish the values needed here
-          update: () => [0]
-        }
+          update: () => [0],
+        },
       ];
     }
 
     return [];
-  }
+  },
 });

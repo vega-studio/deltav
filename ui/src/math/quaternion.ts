@@ -1,3 +1,16 @@
+import {
+  add3,
+  cross3,
+  dot3,
+  dot4,
+  normalize3,
+  scale3,
+  V3R,
+  Vec3,
+  vec3,
+  Vec3Compat,
+  Vec4,
+} from "./vector";
 import { EulerOrder, EulerRotation } from "../types";
 import {
   identity3,
@@ -28,21 +41,8 @@ import {
   M432,
   M433,
   Mat3x3,
-  Mat4x4
+  Mat4x4,
 } from "./matrix";
-import {
-  add3,
-  cross3,
-  dot3,
-  dot4,
-  normalize3,
-  scale3,
-  V3R,
-  Vec3,
-  vec3,
-  Vec3Compat,
-  Vec4
-} from "./vector";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 
@@ -1002,22 +1002,21 @@ export function axisQuat(quat: Quaternion): Vec3 {
  * the orientation.
  */
 export function matrix3x3FromUnitQuatModel(q: Quaternion, m?: Mat3x3): Mat3x3 {
-  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
   m = m || identity3();
 
   // Calculate coefficients
-  x2 = q[1] + q[1];
-  y2 = q[2] + q[2];
-  z2 = q[3] + q[3];
-  xx = q[1] * x2;
-  xy = q[1] * y2;
-  xz = q[1] * z2;
-  yy = q[2] * y2;
-  yz = q[2] * z2;
-  zz = q[3] * z2;
-  wx = q[0] * x2;
-  wy = q[0] * y2;
-  wz = q[0] * z2;
+  const x2 = q[1] + q[1];
+  const y2 = q[2] + q[2];
+  const z2 = q[3] + q[3];
+  const xx = q[1] * x2;
+  const xy = q[1] * y2;
+  const xz = q[1] * z2;
+  const yy = q[2] * y2;
+  const yz = q[2] * z2;
+  const zz = q[3] * z2;
+  const wx = q[0] * x2;
+  const wy = q[0] * y2;
+  const wz = q[0] * z2;
 
   m[M300] = 1.0 - (yy + zz);
   m[M301] = xy - wz;
@@ -1040,22 +1039,21 @@ export function matrix3x3FromUnitQuatModel(q: Quaternion, m?: Mat3x3): Mat3x3 {
  * the orientation.
  */
 export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
-  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
   m = m || identity4();
 
   // calculate coefficients
-  x2 = q[1] + q[1];
-  y2 = q[2] + q[2];
-  z2 = q[3] + q[3];
-  xx = q[1] * x2;
-  xy = q[1] * y2;
-  xz = q[1] * z2;
-  yy = q[2] * y2;
-  yz = q[2] * z2;
-  zz = q[3] * z2;
-  wx = q[0] * x2;
-  wy = q[0] * y2;
-  wz = q[0] * z2;
+  const x2 = q[1] + q[1];
+  const y2 = q[2] + q[2];
+  const z2 = q[3] + q[3];
+  const xx = q[1] * x2;
+  const xy = q[1] * y2;
+  const xz = q[1] * z2;
+  const yy = q[2] * y2;
+  const yz = q[2] * z2;
+  const zz = q[3] * z2;
+  const wx = q[0] * x2;
+  const wy = q[0] * y2;
+  const wz = q[0] * z2;
 
   m[M400] = 1.0 - (yy + zz);
   m[M401] = xy - wz;
@@ -1085,22 +1083,21 @@ export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
  * that is from a 'views' perspective where the world orients to match the view.
  */
 export function matrix3x3FromUnitQuatView(q: Quaternion, m?: Mat3x3): Mat3x3 {
-  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
   m = m || identity3();
 
   // calculate coefficients
-  x2 = q[1] + q[1];
-  y2 = q[2] + q[2];
-  z2 = q[3] + q[3];
-  xx = q[1] * x2;
-  xy = q[1] * y2;
-  xz = q[1] * z2;
-  yy = q[2] * y2;
-  yz = q[2] * z2;
-  zz = q[3] * z2;
-  wx = q[0] * x2;
-  wy = q[0] * y2;
-  wz = q[0] * z2;
+  const x2 = q[1] + q[1];
+  const y2 = q[2] + q[2];
+  const z2 = q[3] + q[3];
+  const xx = q[1] * x2;
+  const xy = q[1] * y2;
+  const xz = q[1] * z2;
+  const yy = q[2] * y2;
+  const yz = q[2] * z2;
+  const zz = q[3] * z2;
+  const wx = q[0] * x2;
+  const wy = q[0] * y2;
+  const wz = q[0] * z2;
 
   m[M300] = 1.0 - (yy + zz);
   m[M310] = xy - wz;
@@ -1122,22 +1119,21 @@ export function matrix3x3FromUnitQuatView(q: Quaternion, m?: Mat3x3): Mat3x3 {
  * that is from a 'views' perspective where the world orients to match the view.
  */
 export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
-  let wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
   m = m || identity4();
 
   // calculate coefficients
-  x2 = q[1] + q[1];
-  y2 = q[2] + q[2];
-  z2 = q[3] + q[3];
-  xx = q[1] * x2;
-  xy = q[1] * y2;
-  xz = q[1] * z2;
-  yy = q[2] * y2;
-  yz = q[2] * z2;
-  zz = q[3] * z2;
-  wx = q[0] * x2;
-  wy = q[0] * y2;
-  wz = q[0] * z2;
+  const x2 = q[1] + q[1];
+  const y2 = q[2] + q[2];
+  const z2 = q[3] + q[3];
+  const xx = q[1] * x2;
+  const xy = q[1] * y2;
+  const xz = q[1] * z2;
+  const yy = q[2] * y2;
+  const yz = q[2] * z2;
+  const zz = q[3] * z2;
+  const wx = q[0] * x2;
+  const wy = q[0] * y2;
+  const wz = q[0] * z2;
 
   m[M400] = 1.0 - (yy + zz);
   m[M410] = xy - wz;
@@ -1170,20 +1166,19 @@ export function eulerToQuat(
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
-  let cr, cp, cy, sr, sp, sy, cpcy, spsy, cpsy, spcy;
   const [roll, pitch, yaw] = angles;
 
   // calculate trig identities
-  cr = cos(roll / 2);
-  cp = cos(pitch / 2);
-  cy = cos(yaw / 2);
-  sr = sin(roll / 2);
-  sp = sin(pitch / 2);
-  sy = sin(yaw / 2);
-  cpcy = cp * cy;
-  spsy = sp * sy;
-  cpsy = cp * sy;
-  spcy = sp * cy;
+  const cr = cos(roll / 2);
+  const cp = cos(pitch / 2);
+  const cy = cos(yaw / 2);
+  const sr = sin(roll / 2);
+  const sp = sin(pitch / 2);
+  const sy = sin(yaw / 2);
+  const cpcy = cp * cy;
+  const spsy = sp * sy;
+  const cpsy = cp * sy;
+  const spcy = sp * cy;
   out[0] = cr * cpcy + sr * spsy;
   out[1] = sr * cpcy - cr * spsy;
   out[2] = cr * spcy + sr * cpsy;

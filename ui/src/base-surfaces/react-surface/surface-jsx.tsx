@@ -54,6 +54,11 @@ export interface ISurfaceJSX {
    * turned on.
    */
   writeToDom?: boolean;
+  /**
+   * The pixel ratio to use when rendering. When not provided, this will match
+   * the pixel density of the user's monitor.
+   */
+  pixelRatio?: number;
 }
 
 export interface ISurfaceContext {
@@ -281,7 +286,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
           props.handlesWheelEvents !== undefined
             ? props.handlesWheelEvents
             : true,
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: props.pixelRatio || window.devicePixelRatio,
         eventManagers: validEventManagers,
         rendererOptions: Object.assign(
           // Default render options

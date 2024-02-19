@@ -24,11 +24,13 @@ ShaderModule.register({
     {
       name: "currentTime",
       size: UniformSize.ONE,
+      shaderInjection: ShaderInjectionTarget.ALL,
       update: () => [layer.surface.frameMetrics.currentTime],
     },
     {
       name: "currentFrame",
       size: UniformSize.ONE,
+      shaderInjection: ShaderInjectionTarget.ALL,
       update: () => [layer.surface.frameMetrics.currentFrame],
     },
   ],

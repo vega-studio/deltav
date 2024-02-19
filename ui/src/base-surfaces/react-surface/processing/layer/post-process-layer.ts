@@ -74,6 +74,7 @@ export class PostProcessLayer extends Layer<
     const { buffers, fs, data } = this.props;
     const dummyInstance = new PostProcessInstance();
     if (data instanceof InstanceProvider) data.add(dummyInstance);
+    this.alwaysDraw = true;
 
     const vertexToNormal: Vec2[] = [
       [-1, -1],
@@ -161,6 +162,10 @@ export class PostProcessLayer extends Layer<
       ],
       vertexCount: 4,
     };
+  }
+
+  shouldDrawView(): boolean {
+    return true;
   }
 
   getMaterialOptions() {

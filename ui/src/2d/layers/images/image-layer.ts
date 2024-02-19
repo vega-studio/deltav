@@ -538,7 +538,7 @@ export class ImageLayer<
     });
 
     // When videos are in use AND playing, this layer should be on continuous redraws to ensure the video renders continuously.
-    this.isAnimationContinuous = this.usingVideo.size > 0 && isVideoPlaying;
+    this.alwaysDraw = this.usingVideo.size > 0 && isVideoPlaying;
   }
 
   /**

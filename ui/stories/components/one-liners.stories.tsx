@@ -8,15 +8,22 @@
  */
 
 import React from "react";
+import { BaseShaderTransform } from "../../src/shaders/processing/base-shader-transform";
 import {
   ClearFlags,
+  createUniform,
   GLSettings,
+  isString,
+  type OutputFragmentShaderSource,
   ShaderInjectionTarget,
   ShaderModule,
+  shaderTemplate,
   TextureJSX,
   TextureSize,
+  UniformSize,
 } from "../../src";
 import { PostProcessJSX } from "../../src/base-surfaces/react-surface/processing/post-process-jsx";
+import { removeComments } from "../../src/util/remove-comments";
 import { StoryFn } from "@storybook/react";
 import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
 
@@ -30,22 +37,31 @@ ShaderModule.register({
   moduleId: "twigl",
   description: "Twigl compatibility module",
   compatibility: ShaderInjectionTarget.FRAGMENT,
+  uniforms: (layer) => [
+    createUniform({
+      name: "time",
+      size: UniformSize.ONE,
+      shaderInjection: ShaderInjectionTarget.FRAGMENT,
+      update: () => [layer.surface.frameMetrics.currentTime / 1000],
+    }),
+  ],
   content: `
-    vec3 hsv(float h, float s, float v){
+    vec3 hsv(float h, float s, float v) {
       vec4 t = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
       vec3 p = abs(fract(vec3(h) + t.xyz) * 6.0 - vec3(t.w));
       return v * mix(vec3(t.x), clamp(p - vec3(t.x), 0.0, 1.0), s);
     }
 
-    mat2 rotate2D(float r){
+    mat2 rotate2D(float r) {
       return mat2(cos(r), sin(r), -sin(r), cos(r));
     }
 
-    mat3 rotate3D(float angle, vec3 axis){
+    mat3 rotate3D(float angle, vec3 axis) {
       vec3 a = normalize(axis);
       float s = sin(angle);
       float c = cos(angle);
       float r = 1.0 - c;
+
       return mat3(
         a.x * a.x * r + c,
         a.y * a.x * r + a.z * s,
@@ -64,12 +80,70 @@ ShaderModule.register({
   `,
 });
 
+class TwiGLShaderTransform extends BaseShaderTransform {
+  vertex(shader: string) {
+    return shader;
+  }
+
+  rawFragment(shader: OutputFragmentShaderSource): OutputFragmentShaderSource {
+    const doTransform = (fs: string) => {
+      const result = shaderTemplate({
+        shader: removeComments(fs),
+
+        onToken: (token) => {
+          return `$\{${token}}`;
+        },
+
+        onMain: (body) => {
+          return `
+            $\{out: o};
+            ${body}
+          `;
+        },
+      });
+
+      return result.shader;
+    };
+
+    if (isString(shader)) {
+      return doTransform(shader);
+    } else {
+      // Modify the first shader leave the rest alone
+      shader[0].source = doTransform(shader[0].source);
+      return shader;
+    }
+  }
+
+  fragment(shader: string): string {
+    const result = shaderTemplate({
+      options: {},
+      shader: removeComments(shader),
+
+      onMain: (body) => {
+        return `
+          vec2 r = buffer_size;
+          vec2 FC = gl_FragCoord.xy;
+          float t = time;
+          ${body}
+          _FragColor = o;
+        `;
+      },
+    });
+
+    return result.shader;
+  }
+}
+
 export const Kaleidoscope: StoryFn = (() => {
   return (
     <SurfaceJSX
       options={{
         alpha: true,
         antialias: true,
+      }}
+      ioExpansion={(base) => {
+        base.push();
+        return base;
       }}
     >
       <TextureJSX
@@ -139,10 +213,9 @@ export const Glow: StoryFn = (() => {
           buffer: "buffer",
         },
         shader: `
-          $\{import: frame, camera}
+          $\{import: twigl}
 
           void main() {
-            float time = currentTime / 1000.;
             vec4 p=vec4((gl_FragCoord.xy/4e2),0,-4);for(int i=0;i<9;++i)p+=vec4(sin(-(p.x+time*.2))+atan(p.y*p.w),cos(-p.x)+atan(p.z*p.w),cos(-(p.x+sin(time*.8)))+atan(p.z*p.w),0);gl_FragColor=p;
           }
         `,
@@ -160,6 +233,10 @@ export const Mountains: StoryFn = (() => {
         premultipliedAlpha: false,
       }}
       pixelRatio={0.5}
+      shaderTransforms={(base) => {
+        base.push(new TwiGLShaderTransform());
+        return base;
+      }}
     >
       <TextureJSX
         name="buffer"
@@ -181,17 +258,10 @@ export const Mountains: StoryFn = (() => {
           buffer: "buffer",
         },
         shader: `
-          $\{import: twigl, frame, camera}
+          $\{import: twigl}
 
           void main() {
-            vec2 r = buffer_size;
-            vec2 FC = gl_FragCoord.xy;
-            float t = currentTime / 1000.;
-            $\{out: o};
-
             o++;vec3 p,c=vec3(8,6,7)/6e2;for(float q=2.,e,i,a,g,h,k;i++<2e2;g+=a=min(e,h-q)/3.,o-=mix(c.ggbr,c.rgrr+h/7e2,h-q)/exp(a*a*1e7)/h)for(p=vec3((FC.xy-r/q)/r.y*g,g),e=p.y-g*.7+q,p.z+=t,h=e+p.x*.4,a=q;a<5e2;a/=.8)p.xz*=rotate2D(q),h-=exp(sin(k=p.z*a)/a-1.)-.44,e-=exp(sin(k+t+t)-q)/a;
-
-            _FragColor = o;
           }
         `,
       })}

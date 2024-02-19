@@ -59,7 +59,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   /**
    * Every expansion object will be given the opportunity to validate the IO
    * presented to it here, thus allowing unique IO configuration types to be
-   * confirmed before getting  completely processed.
+   * confirmed before getting completely processed.
    *
    * It will be expected that a unique Expansion object will have special
    * requirements centered around the configuration object, thus it is expected

@@ -172,7 +172,6 @@ export const Mountains: StoryFn = (() => {
         }}
       />
       {PostProcessJSX({
-        printShader: true,
         view: {
           config: {
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],

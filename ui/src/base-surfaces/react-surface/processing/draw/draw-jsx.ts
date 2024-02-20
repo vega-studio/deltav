@@ -1,7 +1,7 @@
 import Debug from "debug";
-import { PostProcessJSX } from "../post-process-jsx";
-import { IView2DProps } from "../../../../2d";
 import { ILayerMaterialOptions } from "../../../../types";
+import { IView2DProps } from "../../../../2d";
+import { PostProcessJSX } from "../post-process-jsx";
 
 const debug = Debug("performance");
 

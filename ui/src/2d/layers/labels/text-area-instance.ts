@@ -1,10 +1,10 @@
-import {
-  makeObservable,
-  observable
-} from "../../../instance-provider/observable";
-import { Vec1Compat } from "../../../math";
 import { BorderInstance } from "./border-instance";
 import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
+import {
+  makeObservable,
+  observable,
+} from "../../../instance-provider/observable";
+import { Vec1Compat } from "../../../math";
 
 /**
  * Alignment mode for text within a region.
@@ -12,7 +12,7 @@ import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 export enum TextAlignment {
   LEFT,
   RIGHT,
-  CENTERED
+  CENTERED,
 }
 
 /**
@@ -33,13 +33,13 @@ export enum WordWrap {
    * WORD: Newlines happen on newline characters OR they happen when the row exceeds maxWidth
    * and the whole word continues on the next line.
    */
-  WORD
+  WORD,
 }
 
 /** This is used to mark the specialLetter when divide the textArea into several labels */
 export enum NewLineCharacterMode {
   /** When the scanner meets a new line sign ("/n", "/r", "/n/r") */
-  NEWLINE
+  NEWLINE,
 }
 
 export type TextAreaLabel = LabelInstance | NewLineCharacterMode;
@@ -78,12 +78,12 @@ export class TextAreaInstance extends LabelInstance {
    * Specifies how tall the text area can become. If this is exceeded, the final line
    * in the text area will end with ellipses.
    */
-  @observable maxHeight: number = 0;
+  @observable maxHeight = 0;
 
   /**
    * This specifies how tall a line should be for each line.
    */
-  @observable lineHeight: number = 0;
+  @observable lineHeight = 0;
   /**
    * This indicates if a single line of text should wrap or not. If not, the first word that goes
    * out of bounds will be removed and replaced with ellipses. If true, excess words in a single line
@@ -108,11 +108,11 @@ export class TextAreaInstance extends LabelInstance {
   /** Stores paddings for the text area, [top, right, bottom, left] */
   @observable padding: Vec1Compat = [0, 0, 0, 0];
   /** Border width */
-  @observable borderWidth: number = 6;
+  @observable borderWidth = 6;
   /** Whether the textArea has border */
-  @observable hasBorder: boolean = true;
+  @observable hasBorder = true;
   /** Width of space in a textArea */
-  spaceWidth: number = 0;
+  spaceWidth = 0;
 
   constructor(options: ITextAreaInstanceOptions) {
     super(options);

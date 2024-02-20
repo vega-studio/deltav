@@ -1,6 +1,6 @@
+import { Camera } from "../../util";
 import { IMouseInteraction } from "../../event-management";
 import { SimpleEventHandler } from "../../event-management/simple-event-handler";
-import { Camera } from "../../util";
 
 export interface IMouseSwivelCameraController {
   /**
@@ -31,7 +31,7 @@ export interface IMouseSwivelCameraController {
  */
 export class MouseSwivelCameraController extends SimpleEventHandler {
   private options: IMouseSwivelCameraController;
-  private didCapture: boolean = false;
+  private didCapture = false;
   private targetCanvas?: HTMLCanvasElement;
 
   constructor(options: IMouseSwivelCameraController) {
@@ -50,7 +50,7 @@ export class MouseSwivelCameraController extends SimpleEventHandler {
   private viewIsValid(e: IMouseInteraction) {
     if (this.options.ignoreCoveringViews) {
       return Boolean(
-        e.target.views.find(v => v.view.key === this.options.view)
+        e.target.views.find((v) => v.view.key === this.options.view)
       );
     } else {
       return e.target.view.key === this.options.view;

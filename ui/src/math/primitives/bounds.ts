@@ -29,10 +29,10 @@ export interface IBoundsOptions {
  *             via the property 'd'
  */
 export class Bounds<T> {
-  x: number = 0;
-  y: number = 0;
-  width: number = 0;
-  height: number = 0;
+  x = 0;
+  y = 0;
+  width = 0;
+  height = 0;
   d?: T;
 
   get area() {
@@ -64,7 +64,7 @@ export class Bounds<T> {
       height: 0,
       width: 0,
       x: 0,
-      y: 0
+      y: 0,
     });
   }
 

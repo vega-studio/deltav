@@ -1,16 +1,16 @@
-import { InstanceProvider } from "../../../instance-provider";
 import {
   atlasRequest,
   AtlasResource,
   IAtlasResourceRequest,
 } from "../../../resources";
-import { InstanceDiffType } from "../../../types";
 import { createChildLayer, mapInjectDefault } from "../../../util";
-import { PromiseResolver } from "../../../util/promise-resolver";
-import { Layer2D } from "../../view/layer-2d";
 import { debugVideoEvents } from "./debug-video";
-import { ImageInstance } from "./image-instance";
 import { IImageRenderLayerProps, ImageRenderLayer } from "./image-render-layer";
+import { ImageInstance } from "./image-instance";
+import { InstanceDiffType } from "../../../types";
+import { InstanceProvider } from "../../../instance-provider";
+import { Layer2D } from "../../view/layer-2d";
+import { PromiseResolver } from "../../../util/promise-resolver";
 
 export interface IImageLayerProps<T extends ImageInstance>
   extends IImageRenderLayerProps<T> {}
@@ -276,7 +276,7 @@ export class ImageLayer<
 
           break;
 
-        case InstanceDiffType.REMOVE:
+        case InstanceDiffType.REMOVE: {
           // Make sure we get the atlas appropriate resource for the instance
           const resource = this.getAtlasSource(instance);
           // Clear out any state the instance may have retained in this layer
@@ -322,6 +322,7 @@ export class ImageLayer<
             })
           );
           break;
+        }
       }
     }
 
@@ -537,7 +538,7 @@ export class ImageLayer<
     });
 
     // When videos are in use AND playing, this layer should be on continuous redraws to ensure the video renders continuously.
-    this.isAnimationContinuous = this.usingVideo.size > 0 && isVideoPlaying;
+    this.alwaysDraw = this.usingVideo.size > 0 && isVideoPlaying;
   }
 
   /**

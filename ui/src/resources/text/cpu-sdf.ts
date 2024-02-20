@@ -35,7 +35,7 @@ function getSeed(canvas: HTMLCanvasElement, imageData: Uint8ClampedArray) {
 
   return {
     seed: buffer,
-    inverse
+    inverse,
   };
 }
 
@@ -59,13 +59,13 @@ function makeEmptyBuffer(buffer: Vec2[][]) {
 function normalizedDistanceField(
   buffer: Vec2[][],
   noData: Vec2,
-  negate: boolean = false
+  negate = false
 ) {
   const sign = negate ? -1 : 1;
   let position: Vec2, current: Vec2, direction: Vec2;
   let distance;
   const distanceBuffer: number[][] = [];
-  let maxDistance: number = -1;
+  let maxDistance = -1;
 
   // Calculate the distances and get the max distance so we can normalize the output
   for (let x = 0, xMax = buffer.length; x < xMax; ++x) {
@@ -144,7 +144,7 @@ function mapToDistanceField(
     for (let y = 0, yMax = toSeedCol.length; y < yMax; ++y) {
       outColor = toSeedCol[y];
       // We use the 1 - signed distance (images are more human happy and algo happy)
-      outColor = outColor;
+      // outColor = outColor;
 
       const redIndex = y * (width * 4) + x * 4;
       outBuffer[redIndex] = outColor;
@@ -198,7 +198,7 @@ function jfaPasses(seedBuffer: Vec2[][], passes: number) {
           (readBuffer[x + offset] || [])[y] || NO_DATA,
           (readBuffer[x - offset] || [])[y + offset] || NO_DATA,
           (readBuffer[x] || [])[y + offset] || NO_DATA,
-          (readBuffer[x + offset] || [])[y + offset] || NO_DATA
+          (readBuffer[x + offset] || [])[y + offset] || NO_DATA,
         ];
 
         nearestIndex = 0;

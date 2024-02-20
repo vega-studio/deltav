@@ -1,3 +1,15 @@
+import { AbsolutePosition } from "../math/primitives/absolute-position";
+import { BaseProjection, SimpleProjection } from "../math/base-projection";
+import { BaseResourceOptions } from "../resources/base-resource-manager";
+import { Bounds } from "../math/primitives/bounds";
+import { Camera } from "../util/camera";
+import { Color, FragmentOutputType, Omit } from "../types";
+import { ColorBuffer } from "../gl/color-buffer";
+import {
+  colorBufferRequest,
+  IColorBufferResource,
+  isColorBufferResource,
+} from "../resources/color-buffer";
 import {
   GLSettings,
   GLState,
@@ -6,29 +18,17 @@ import {
   Texture,
   WebGLStat,
 } from "../gl";
-import { ColorBuffer } from "../gl/color-buffer";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { Instance, InstanceProvider } from "../instance-provider";
-import { Vec2 } from "../math";
-import { BaseProjection, SimpleProjection } from "../math/base-projection";
-import { AbsolutePosition } from "../math/primitives/absolute-position";
-import { Bounds } from "../math/primitives/bounds";
-import { BaseResourceOptions } from "../resources/base-resource-manager";
-import {
-  colorBufferRequest,
-  IColorBufferResource,
-  isColorBufferResource,
-} from "../resources/color-buffer";
-import { ResourceRouter } from "../resources/resource-router";
 import {
   IRenderTextureResource,
   isRenderTextureResource,
 } from "../resources/texture/render-texture";
-import { textureRequest } from "../resources/texture/render-texture-resource-request";
-import { Color, FragmentOutputType, Omit } from "../types";
-import { Camera } from "../util/camera";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { Layer } from "./layer";
 import { LayerScene } from "./layer-scene";
+import { ResourceRouter } from "../resources/resource-router";
+import { textureRequest } from "../resources/texture/render-texture-resource-request";
+import { Vec2 } from "../math";
 
 export enum ClearFlags {
   COLOR = 0b0001,
@@ -205,23 +205,23 @@ export abstract class View<
   };
 
   /** End time of animation */
-  animationEndTime: number = 0;
+  animationEndTime = 0;
   /**
    * This is the depth of the view. The higher the depth represents which layer
    * is on top. Zero always represents the default view.
    */
-  depth: number = 0;
+  depth = 0;
   /** Last frame time this view was rendered under */
-  lastFrameTime: number = 0;
+  lastFrameTime = 0;
   /** This is the flag to see if a view needs draw */
-  needsDraw: boolean = false;
+  needsDraw = false;
   /**
    * This is a flag for various processes to indicate the view is demanding
    * optimal rendering performance over other processes. This is merely a
    * hinting device and does not guarantee better performance at any given
    * moment.
    */
-  optimizeRendering: boolean = false;
+  optimizeRendering = false;
   /**
    * This is set to ensure the projections that happen properly translates the
    * pixel ratio to normal Web coordinates
@@ -234,7 +234,7 @@ export abstract class View<
     this._pixelRatio = val;
   }
 
-  private _pixelRatio: number = 1;
+  private _pixelRatio = 1;
   /**
    * This establishes the projection methods that can be used to project
    * geometry between the screen and the world

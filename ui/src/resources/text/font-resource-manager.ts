@@ -1,17 +1,8 @@
-import { Instance } from "../../instance-provider/instance";
-import {
-  SubTexture,
-  subTextureIOValue,
-} from "../../resources/texture/sub-texture";
-import { ILayerProps, Layer } from "../../surface/layer";
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
-import { nextFrame, shallowCompare } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions,
 } from "../base-resource-manager";
-import { TextureIOExpansion } from "../texture/texture-io-expansion";
 import {
   FontManager,
   IFontResourceOptions,
@@ -22,6 +13,15 @@ import {
   FontResourceRequestFetch,
   IFontResourceRequest,
 } from "./font-resource-request";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
+import { nextFrame, shallowCompare } from "../../util";
+import {
+  SubTexture,
+  subTextureIOValue,
+} from "../../resources/texture/sub-texture";
+import { TextureIOExpansion } from "../texture/texture-io-expansion";
 
 import Debug from "debug";
 

@@ -1,7 +1,6 @@
-import { WebGLRenderer } from "../gl";
-import { Instance } from "../instance-provider/instance";
-import { ILayerProps, Layer } from "../surface/layer";
 import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
+import { ILayerProps, Layer } from "../surface/layer";
+import { Instance } from "../instance-provider/instance";
 import {
   InstanceIOValue,
   IResourceContext,
@@ -9,6 +8,7 @@ import {
   IResourceType,
 } from "../types";
 import { ResourceRouter } from "./resource-router";
+import { WebGLRenderer } from "../gl";
 
 /**
  * The Base Options for initializing a resource.

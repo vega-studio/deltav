@@ -1,5 +1,5 @@
-import { Instance } from "../../instance-provider";
 import { ILayerProps, Layer, LayerScene, Surface } from "../../surface";
+import { Instance } from "../../instance-provider";
 import { IShaderInitialization } from "../../types";
 
 export interface ILayer2DProps<TInstance extends Instance>

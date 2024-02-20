@@ -1,6 +1,6 @@
-import { makeObservable, observable } from "../../../instance-provider";
 import { Color } from "../../../types";
 import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d";
+import { makeObservable, observable } from "../../../instance-provider";
 
 /** Customizes a new Triangle instance */
 export interface ITriangleOptions extends IInstance3DOptions {
@@ -17,7 +17,7 @@ export class TriangleInstance extends Instance3D {
   /** Sets the color of the Triangle */
   @observable color: Color = [1, 1, 1, 1];
   /** Sizes the triangle */
-  @observable size: number = 1;
+  @observable size = 1;
 
   constructor(options: ITriangleOptions) {
     super(options);

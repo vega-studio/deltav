@@ -1,7 +1,7 @@
-import { Omit } from "../types";
-import { uid } from "../util/uid";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
+import { Omit } from "../types";
+import { uid } from "../util/uid";
 
 /**
  * This is the options to apply to a texture
@@ -35,7 +35,7 @@ export class Texture {
   public get destroyed(): boolean {
     return this._destroyed;
   }
-  private _destroyed: boolean = false;
+  private _destroyed = false;
 
   /**
    * Anisotropic filtering level. See:
@@ -88,7 +88,7 @@ export class Texture {
     this.needsDataUpload = true;
     this._flipY = val;
   }
-  private _flipY: boolean = false;
+  private _flipY = false;
 
   /**
    * Source format of the input data. See:
@@ -115,7 +115,7 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._generateMipmaps = val;
   }
-  private _generateMipmaps: boolean = false;
+  private _generateMipmaps = false;
 
   /**
    * This stores any gl state associated with this object. Modifying this object will cause the system to get out
@@ -173,11 +173,11 @@ export class Texture {
     GLSettings.Texture.TextureMinFilter.LinearMipMapLinear;
 
   /** Flag indicates if the texture object needs to have it's data modified */
-  needsDataUpload: boolean = false;
+  needsDataUpload = false;
   /** Flag indicates if the texture object has sub texture updates needed to be applied to it */
-  needsPartialDataUpload: boolean = false;
+  needsPartialDataUpload = false;
   /** Flag indicates if the texture object needs it's settings modified */
-  needsSettingsUpdate: boolean = false;
+  needsSettingsUpdate = false;
 
   /**
    * Sets the readPixels data alignment. See:
@@ -205,7 +205,7 @@ export class Texture {
     this.needsSettingsUpdate = true;
     this._premultiplyAlpha = val;
   }
-  private _premultiplyAlpha: boolean = false;
+  private _premultiplyAlpha = false;
 
   /**
    * The source pixel data type.

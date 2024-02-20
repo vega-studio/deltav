@@ -4,8 +4,8 @@ import { isVec2, Vec2 } from "../math/vector";
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
 // Must be tested for specific use cases
-const maxPopulation: number = 5;
-const maxDepth: number = 10;
+const maxPopulation = 5;
+const maxDepth = 10;
 
 export type IQuadTreeItem = Bounds<any>;
 
@@ -69,14 +69,6 @@ export class QuadTreeQuadrants<T extends IQuadTreeItem> {
     this.TR.destroy();
     this.BL.destroy();
     this.BR.destroy();
-    // @ts-ignore
-    delete this.TL;
-    // @ts-ignore
-    delete this.TR;
-    // @ts-ignore
-    delete this.BL;
-    // @ts-ignore
-    delete this.BR;
   }
 
   /**
@@ -125,7 +117,7 @@ export class QuadTreeQuadrants<T extends IQuadTreeItem> {
 export class QuadTreeNode<T extends IQuadTreeItem> {
   bounds: Bounds<never>;
   children: T[] = [];
-  depth: number = 0;
+  depth = 0;
   nodes?: QuadTreeQuadrants<T>;
 
   /**
@@ -134,15 +126,10 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
    * @memberOf Node
    */
   destroy() {
-    // @ts-ignore Allow deletion, but once destroyed it is invalid to use this
-    // class anymore.
-    delete this.children;
-    // @ts-ignore
-    delete this.bounds;
+    this.children = [];
 
     if (this.nodes) {
       this.nodes.destroy();
-      // @ts-ignore
       delete this.nodes;
     }
   }
@@ -263,7 +250,6 @@ export class QuadTreeNode<T extends IQuadTreeItem> {
     if (this.nodes) {
       // completely...destroy...
       this.nodes.destroy();
-      // @ts-ignore
       delete this.nodes;
     }
 

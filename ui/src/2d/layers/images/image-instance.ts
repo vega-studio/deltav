@@ -1,13 +1,10 @@
-import { makeObservable, observable } from "../../../instance-provider";
-import {
-  IInstanceOptions,
-  Instance
-} from "../../../instance-provider";
-import { Vec2 } from "../../../math/vector";
-import { IAtlasResourceRequest } from "../../../resources";
-import { NOOP } from "../../../types";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
+import { IAtlasResourceRequest } from "../../../resources";
+import { IInstanceOptions, Instance } from "../../../instance-provider";
 import { ImageInstanceResource } from "./image-layer";
+import { makeObservable, observable } from "../../../instance-provider";
+import { NOOP } from "../../../types";
+import { Vec2 } from "../../../math/vector";
 
 const { max } = Math;
 
@@ -84,7 +81,7 @@ const anchorCalculator: {
   [AnchorType.Custom]: (anchor: Anchor, _image: ImageInstance) => {
     anchor.x = anchor.x || 0;
     anchor.y = anchor.y || 0;
-  }
+  },
 };
 
 /**
@@ -105,13 +102,13 @@ export class ImageInstance extends Instance {
   /** This is the rendered color of the image */
   @observable tint: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the image (or the z value of the image) */
-  @observable depth: number = 0;
+  @observable depth = 0;
   /**
    * The height of the image as it is to be rendered in world space.
    * After onReady: this is immediately populated with the width and height of the image as it
    * appears in the atlas.
    */
-  @observable height: number = 1;
+  @observable height = 1;
   /** The coordinate where the image will be located in world space */
   @observable origin: Vec2 = [0, 0];
   /** Sets the way the image scales with the world */
@@ -123,7 +120,7 @@ export class ImageInstance extends Instance {
    * After onReady: this is immediately populated with the width and height of the image as it
    * appears in the atlas.
    */
-  @observable width: number = 1;
+  @observable width = 1;
 
   /**
    * This property reflects the maximum size a single dimension of the image will take up.
@@ -146,9 +143,9 @@ export class ImageInstance extends Instance {
   /** This is the request generated for the instance to retrieve the correct resource */
   request?: IAtlasResourceRequest;
   /** After onReady: This is populated with the width of the source image loaded into the Atlas */
-  sourceWidth: number = 0;
+  sourceWidth = 0;
   /** After onReady: This is populated with the height of the source image loaded into the Atlas */
-  sourceHeight: number = 0;
+  sourceHeight = 0;
 
   /**
    * This is a position relative to the image. This will align the image such that the anchor point on
@@ -159,7 +156,7 @@ export class ImageInstance extends Instance {
     padding: 0,
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(options: IImageInstanceOptions) {
@@ -195,6 +192,7 @@ export class ImageInstance extends Instance {
   /** This is triggered after the request has been completed */
   resourceTrigger() {
     // Only the source needs to be triggered to get the texture info to update from the request
+    // eslint-disable-next-line no-self-assign
     this.source = this.source;
 
     if (this.request && this.request.texture) {
@@ -213,7 +211,7 @@ export class ImageInstance extends Instance {
       padding: anchor.padding || 0,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0
+      y: anchor.y || 0,
     };
 
     // Calculate the new anchors position values

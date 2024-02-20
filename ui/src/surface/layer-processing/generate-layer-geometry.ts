@@ -48,7 +48,7 @@ export function generateLayerGeometry<T extends Instance>(
   let buffer: Float32Array;
   let attribute: IVertexAttribute;
   let value: ShaderIOValue;
-  let formatError: boolean = false;
+  let formatError = false;
 
   for (let i = 0, end = vertexCount; i < end; ++i) {
     for (let k = 0; k < endk; ++k) {

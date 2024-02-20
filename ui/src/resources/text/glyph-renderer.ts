@@ -93,7 +93,7 @@ export function renderGlyph(
 
     return {
       data,
-      size: [0, 0]
+      size: [0, 0],
     };
   }
 
@@ -110,6 +110,6 @@ export function renderGlyph(
 
   return {
     data,
-    size: [glyphWidth, glyphHeight]
+    size: [glyphWidth, glyphHeight],
   };
 }

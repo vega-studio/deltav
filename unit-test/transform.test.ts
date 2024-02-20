@@ -1,6 +1,4 @@
 import assert from "assert";
-import { describe, it } from "@jest/globals";
-import { Transform } from "../ui/src/3d/scene-graph/transform";
 import {
   compare4x4,
   identity4,
@@ -8,9 +6,11 @@ import {
   toString4x4,
   transform4,
 } from "../ui/src/math/matrix";
-import { Quaternion } from "../ui/src/math/quaternion";
-import { Vec4 } from "../ui/src/math/vector";
+import { describe, it } from "@jest/globals";
 import { fail4, fuzzCompare4 } from "./vector.test";
+import { Quaternion } from "../ui/src/math/quaternion";
+import { Transform } from "../ui/src/3d/scene-graph/transform";
+import { Vec4 } from "../ui/src/math/vector";
 
 const { sqrt } = Math;
 
@@ -23,7 +23,7 @@ function fail4x4(actual: any, expected: any) {
 function fuzzyAssert4(
   actual: Quaternion,
   expected: Quaternion,
-  shouldEqual: boolean = true
+  shouldEqual = true
 ) {
   if (shouldEqual) {
     assert.equal(fuzzCompare4(actual, expected), true, fail4(actual, expected));
@@ -36,11 +36,7 @@ function fuzzyAssert4(
   }
 }
 
-function assert4x4(
-  actual: Mat4x4,
-  expected: Mat4x4,
-  shouldEqual: boolean = true
-) {
+function assert4x4(actual: Mat4x4, expected: Mat4x4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare4x4(actual, expected), true, fail4x4(actual, expected));
   } else {

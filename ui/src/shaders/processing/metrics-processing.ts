@@ -1,6 +1,6 @@
-import { WebGLStat } from "../../gl/webgl-stat";
-import { Instance } from "../../instance-provider/instance";
 import { IInstanceAttribute, IUniform } from "../../types";
+import { Instance } from "../../instance-provider/instance";
+import { WebGLStat } from "../../gl/webgl-stat";
 
 /**
  * This handles processing some metrics that are commonly needed by other processors.

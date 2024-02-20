@@ -1,5 +1,8 @@
-import { InstanceProvider } from "../../../instance-provider";
+import RectangleLayerFS from "./rectangle-layer.fs";
+import RectangleLayerVS from "./rectangle-layer.vs";
+import { CommonMaterialOptions } from "../../../util";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -7,11 +10,8 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { InstanceProvider } from "../../../instance-provider";
 import { RectangleInstance } from "./rectangle-instance";
-import RectangleLayerFS from "./rectangle-layer.fs";
-import RectangleLayerVS from "./rectangle-layer.vs";
 
 export interface IRectangleLayerProps<T extends RectangleInstance>
   extends ILayer2DProps<T> {

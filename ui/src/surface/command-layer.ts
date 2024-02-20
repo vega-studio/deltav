@@ -1,6 +1,6 @@
+import { ILayerProps, Layer } from "./layer";
 import { Instance } from "../instance-provider/instance";
 import { InstanceProvider } from "../instance-provider/instance-provider";
-import { ILayerProps, Layer } from "./layer";
 import { Surface } from "./surface";
 
 export type CommandCallback = (surface: Surface) => void;
@@ -19,14 +19,14 @@ export interface ICommandLayerProps<T extends Instance> extends ILayerProps<T> {
  */
 export class CommandLayer<
   T extends Instance,
-  U extends ICommandLayerProps<T>
+  U extends ICommandLayerProps<T>,
 > extends Layer<T, U> {
   static defaultProps: ICommandLayerProps<Instance> = {
     data: new InstanceProvider<Instance>(),
     key: "",
     commands: () => {
       /** NOOP */
-    }
+    },
   };
 
   draw() {

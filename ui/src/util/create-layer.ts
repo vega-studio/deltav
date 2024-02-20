@@ -1,10 +1,10 @@
-import { Instance } from "../instance-provider/instance";
 import {
   ILayerConstructable,
   ILayerConstructionClass,
   ILayerProps,
   LayerInitializer,
 } from "../surface/layer";
+import { Instance } from "../instance-provider/instance";
 
 /**
  * Used for reactive layer generation and updates.

@@ -1,7 +1,7 @@
 import React from "react";
-import { PromiseResolver } from "../../util/promise-resolver";
-import { SurfaceJSXType, groupSurfaceChildren } from "./group-surface-children";
+import { groupSurfaceChildren, SurfaceJSXType } from "./group-surface-children";
 import { isDefined } from "../../util";
+import { PromiseResolver } from "../../util/promise-resolver";
 
 /**
  * Base class for any type of JSX resource that provides a result through a
@@ -72,7 +72,7 @@ export function useChildResolvers<
   const group = children.get(type);
   const names = new Set<string | number | null | undefined>();
   const resolvers = React.useRef<PromiseResolver<TResolve | null>[]>([]);
-  let nameConflict = new Set<string | number | null | undefined>();
+  const nameConflict = new Set<string | number | null | undefined>();
   resolvers.current = [];
   baseName = baseName ? `${baseName}.` : "";
   let childClones: React.ReactNode[] | undefined | null = [];

@@ -1,9 +1,4 @@
 import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction,
-} from "./event-management";
-import {
   Attribute,
   GLSettings,
   IMaterialUniform,
@@ -11,8 +6,17 @@ import {
   MaterialUniformType,
   Texture,
 } from "./gl";
-import { Instance } from "./instance-provider/instance";
 import { BaseProjection } from "./math";
+import { BaseResourceOptions } from "./resources/base-resource-manager";
+import { IAutoEasingMethod } from "./math/auto-easing-method";
+import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+} from "./event-management";
+import { Instance } from "./instance-provider/instance";
+import { ISceneOptions } from "./surface/layer-scene";
+import { IViewProps, View } from "./surface/view";
 import {
   Mat3x3,
   Mat4x4,
@@ -23,10 +27,6 @@ import {
   Vec3,
   Vec4,
 } from "./math";
-import { IAutoEasingMethod } from "./math/auto-easing-method";
-import { BaseResourceOptions } from "./resources/base-resource-manager";
-import { ISceneOptions } from "./surface/layer-scene";
-import { IViewProps, View } from "./surface/view";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & {
   [P in U]: never;
@@ -1256,7 +1256,7 @@ export function isFunction<T extends Function>(val?: any): val is T {
  * Checks if a value is strictly a boolean type. This avoids typeof and string
  * comparison.
  */
-export function isBoolean(val?: any): val is Boolean {
+export function isBoolean(val?: any): val is boolean {
   return val === true || val === false;
 }
 

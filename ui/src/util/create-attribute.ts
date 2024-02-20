@@ -1,5 +1,5 @@
-import { Instance } from "../instance-provider/instance";
 import { IInstanceAttribute } from "../types";
+import { Instance } from "../instance-provider/instance";
 
 /**
  * Makes it easier to type out and get better editor help in establishing initShader

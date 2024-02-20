@@ -1,11 +1,11 @@
-import { Bounds } from "../../math/primitives";
-import { PackNode } from "../../resources/texture/pack-node";
-import { Omit, ResourceType, Size } from "../../types";
 import { BaseResourceOptions } from "../base-resource-manager";
-import { SubTexture } from "../texture/sub-texture";
+import { Bounds } from "../../math/primitives";
 import { FontMap, FontMapGlyphType } from "./font-map";
 import { FontRenderer } from "./font-renderer";
 import { fontRequest, IFontResourceRequest } from "./font-resource-request";
+import { Omit, ResourceType, Size } from "../../types";
+import { PackNode } from "../../resources/texture/pack-node";
+import { SubTexture } from "../texture/sub-texture";
 
 import Debug from "debug";
 
@@ -22,7 +22,7 @@ export enum FontGlyphRenderSize {
   /** Better quality glyphs for rendering, but suffers from resource useasge */
   _64 = 64,
   /** NOT RECOMMENDED: This is very large and will not allow for many glyphs on a single texture */
-  _128 = 128
+  _128 = 128,
 }
 
 /**
@@ -156,7 +156,7 @@ export function createFont(
   return {
     key: "",
     type: ResourceType.FONT,
-    ...options
+    ...options,
   };
 }
 
@@ -248,8 +248,6 @@ export class FontManager {
     const characters: string = this.characterFilterToCharacters(
       resourceOptions.characterFilter || ""
     );
-    // This is the generated font map specified by the resource options
-    let fontMap: FontMap | undefined;
     // This is the source information of the font which the system will utilize to produce the map
     const fontSource = resourceOptions.fontSource;
     // This is the determined glyph type of the resource
@@ -265,10 +263,11 @@ export class FontManager {
       }
     }
 
+    // This is the generated font map specified by the resource options
     // Create our new font map resource
-    fontMap = new FontMap({
+    const fontMap = new FontMap({
       ...resourceOptions,
-      glyphType
+      glyphType,
     });
 
     // Apply initial characters to the fontMap
@@ -287,9 +286,9 @@ export class FontManager {
           metrics: {
             fontSize: 12,
             text: resourceOptions.fontSource.preload,
-            letterSpacing: 0
-          }
-        })
+            letterSpacing: 0,
+          },
+        }),
       ]);
     }
 
@@ -301,7 +300,7 @@ export class FontManager {
    */
   destroy() {
     // Clears up resources
-    this.fontMaps.forEach(font => font.destroy());
+    this.fontMaps.forEach((font) => font.destroy());
   }
 
   /**
@@ -349,8 +348,8 @@ export class FontManager {
     }
 
     // Convert the characters to be rendered to a sinple string
-    let uniqueCharacters: string = "";
-    allCharacters.forEach(char => (uniqueCharacters += char));
+    let uniqueCharacters = "";
+    allCharacters.forEach((char) => (uniqueCharacters += char));
 
     // Perform the updates to the font map
     await this.updateFontMapCharacters(uniqueCharacters, fontMap);
@@ -408,12 +407,12 @@ export class FontManager {
     for (const char in glyphs) {
       const metrics = glyphs[char];
 
-      if (texture.data) {
+      if (texture?.data) {
         const packBounds = new Bounds({
           x: 0,
           y: 0,
           width: metrics.glyph.width,
-          height: metrics.glyph.height
+          height: metrics.glyph.height,
         });
 
         // Make the sub texture object our packing is going to associate with
@@ -422,7 +421,7 @@ export class FontManager {
         // Pack the glyph information into the font map texture
         const packing = fontMap.packing.insert({
           data: subTexture,
-          bounds: packBounds
+          bounds: packBounds,
         });
 
         if (!packing) {
@@ -447,7 +446,7 @@ export class FontManager {
           y:
             fontMap.packing.bounds.height -
             packing.bounds.y -
-            packing.bounds.height
+            packing.bounds.height,
         });
 
         // Register the glyph with the font map
@@ -481,7 +480,7 @@ export class FontManager {
     const promises: Promise<void>[] = [];
 
     // Loop through all of the characters to be loaded from the source
-    characters.forEach(char => {
+    characters.forEach((char) => {
       let glyphData = source.glyphs[char];
 
       // Make sure the character exists, if not, use the error glyph provided by the source
@@ -500,10 +499,10 @@ export class FontManager {
       // Set up the waiting mechanisms and the resources to render our glyphs from Base64
       const image = new Image();
       let resolve: Function;
-      const promise = new Promise<void>(resolver => (resolve = resolver));
+      const promise = new Promise<void>((resolver) => (resolve = resolver));
 
       // Wait for the image to finish loading
-      image.onload = function() {
+      image.onload = function () {
         // Make our canvas context to render the glyph data to.
         const canvas: HTMLCanvasElement = document.createElement("canvas");
         const context = canvas.getContext("2d");
@@ -520,7 +519,7 @@ export class FontManager {
       };
 
       // If an error occurrs
-      image.onerror = function() {
+      image.onerror = function () {
         console.warn(
           "There was an issue with loading the glyph data for character:",
           char

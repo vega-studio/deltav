@@ -1,9 +1,9 @@
-import { Control2D } from "../../2d";
-import { Layer2D } from "../../2d/view/layer-2d";
-import { ShaderModule } from "../../shaders";
-import { Layer } from "../../surface/layer";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
 import world2DXZ from "./shader-fragments/world-2d-xz-projection.vs";
+import { Control2D } from "../../2d";
+import { Layer } from "../../surface/layer";
+import { Layer2D } from "../../2d/view/layer-2d";
+import { ShaderInjectionTarget, UniformSize } from "../../types";
+import { ShaderModule } from "../../shaders";
 
 const doc = `
 This is a special helper module used by
@@ -43,13 +43,13 @@ ShaderModule.register([
         {
           name: "projection",
           size: UniformSize.MATRIX4,
-          update: () => layer.view.props.camera.projection
+          update: () => layer.view.props.camera.projection,
         },
         // This injects the model view matrix from the view camera
         {
           name: "view",
           size: UniformSize.MATRIX4,
-          update: () => layer.view.props.camera.view
+          update: () => layer.view.props.camera.view,
         },
         // This injects a 2D camera's offset
         {
@@ -58,19 +58,19 @@ ShaderModule.register([
           update: () =>
             layer.props.control2D instanceof Control2D
               ? layer.props.control2D.offset
-              : [0, 0, 0]
+              : [0, 0, 0],
         },
         // This injects the camera's current position
         {
           name: "cameraPosition",
           size: UniformSize.THREE,
-          update: () => layer.view.props.camera.position
+          update: () => layer.view.props.camera.position,
         },
         // This injects the camera's current scale
         {
           name: "cameraScale",
           size: UniformSize.THREE,
-          update: () => layer.view.props.camera.scale
+          update: () => layer.view.props.camera.scale,
         },
         // This injects the camera's 2D current scale
         {
@@ -79,13 +79,13 @@ ShaderModule.register([
           update: () =>
             layer.props.control2D instanceof Control2D
               ? layer.props.control2D.scale
-              : [1, 1, 1]
+              : [1, 1, 1],
         },
         // This injects the camera's Euler rotation
         {
           name: "cameraRotation",
           size: UniformSize.THREE,
-          update: () => layer.view.props.camera.scale
+          update: () => layer.view.props.camera.scale,
         },
         // This injects the pixel width and height of the view
         {
@@ -93,17 +93,17 @@ ShaderModule.register([
           size: UniformSize.TWO,
           update: () => [
             layer.view.viewBounds.width,
-            layer.view.viewBounds.height
-          ]
+            layer.view.viewBounds.height,
+          ],
         },
         // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
         // Things like gl_PointSize will need this metric if not working in clip space
         {
           name: "pixelRatio",
           size: UniformSize.ONE,
-          update: () => [layer.view.pixelRatio]
-        }
+          update: () => [layer.view.pixelRatio],
+        },
       ];
-    }
-  }
+    },
+  },
 ]);

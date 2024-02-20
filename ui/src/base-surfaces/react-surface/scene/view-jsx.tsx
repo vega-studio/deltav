@@ -1,24 +1,24 @@
 import React from "react";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
-import { IViewBaseJSX } from "./as-view.js";
-import { CustomTag } from "../custom-tag.js";
-import {
-  IViewConstructable,
-  IViewProps,
-  ViewDepthBuffer,
-  ViewOutputBuffers,
-  createView,
-} from "../../../surface/index.js";
-import { SurfaceJSXType } from "../group-surface-children.js";
 import {
   BaseResourceOptions,
   isRenderTextureResource,
 } from "../../../resources/index.js";
-import { PromiseResolver } from "../../../util/promise-resolver.js";
-import { isDefined } from "../../../util/index.js";
-import { ISurfaceContext, SurfaceContext } from "../surface-jsx.js";
-import { isString } from "../../../../../util/types.js";
+import {
+  createView,
+  IViewConstructable,
+  IViewProps,
+  ViewDepthBuffer,
+  ViewOutputBuffers,
+} from "../../../surface/index.js";
+import { CustomTag } from "../custom-tag.js";
 import { isColorBufferResource } from "../../../resources/color-buffer/color-buffer-resource.js";
+import { isDefined } from "../../../util/index.js";
+import { isString } from "../../../../../util/types.js";
+import { ISurfaceContext, SurfaceContext } from "../surface-jsx.js";
+import { IViewBaseJSX } from "./as-view.js";
+import { PromiseResolver } from "../../../util/promise-resolver.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export interface IViewJSX<TProps extends IViewProps>
   extends Partial<IViewBaseJSX<TProps>> {
@@ -131,9 +131,9 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
         resourceResolvers.map(async (r) => {
           const resource = await r[1].promise;
           if (isRenderTextureResource(resource)) outputBuffers[r[0]] = resource;
-          else if (isColorBufferResource(resource))
+          else if (isColorBufferResource(resource)) {
             outputBuffers[r[0]] = resource;
-          else {
+          } else {
             console.error(
               `A View "${props.name}" requested an output buffer for the resource with name: ${r[2]} but the resource indicated is not a valid output target type.`,
               "Ensure the resource is a RenderTextureResource or ColorBufferResource"

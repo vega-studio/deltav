@@ -1,11 +1,3 @@
-import { WebGLStat } from "../../../gl";
-import { Instance } from "../../../instance-provider/instance";
-import {
-  ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from "../../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../../surface/layer";
 import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
 import {
   IInstanceAttribute,
@@ -17,6 +9,14 @@ import {
   ShaderInjectionTarget,
   UniformSize,
 } from "../../../types";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { Instance } from "../../../instance-provider/instance";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult,
+} from "../../../shaders/processing/base-shader-io-injection";
+import { WebGLStat } from "../../../gl";
 
 /** Provides a label for performance debugging */
 const debugCtx = "BasicIOExpansion";
@@ -81,27 +81,30 @@ function makeArrayDeclaration(uniform: IUniform) {
 }
 
 /**
- * This method properly provides a vector's chunk of data based on a swizzle. So a size of 2
- * provides vector.xy and a size of 4 provides vector.xyzw.
+ * This method properly provides a vector's chunk of data based on a swizzle. So
+ * a size of 2 provides vector.xy and a size of 4 provides vector.xyzw.
  */
 function makeVectorSwizzle(start: number, size: number) {
   return VECTOR_COMPONENTS.slice(start, start + size).join("");
 }
 
 /**
- * This is the basic needs of processing attributes and uniforms and injecting their declarations into the shader.
- * This will handle buffer management associated with normal hardware instancing, vertex packing, and
- * uniform packing.
+ * This is the basic needs of processing attributes and uniforms and injecting
+ * their declarations into the shader. This will handle buffer management
+ * associated with normal hardware instancing, vertex packing, and uniform
+ * packing.
  *
- * This will not expand the IO in any way, rather this forms the basis for the IO input declarations in the shader
- * and arranges these declarations to handle all of the base Buffer management systems provided in the
- * default DeltaV library.
+ * This will not expand the IO in any way, rather this forms the basis for the
+ * IO input declarations in the shader and arranges these declarations to handle
+ * all of the base Buffer management systems provided in the default DeltaV
+ * library.
  */
 export class BasicIOExpansion extends BaseIOExpansion {
   /**
-   * This is the special case where attributes are packed into a uniform buffer instead of into
-   * attributes. This is to maximize compatibility with hardware and maximize flexibility in creative approaches
-   * to utilizing shaders that need a lot of input.
+   * This is the special case where attributes are packed into a uniform buffer
+   * instead of into attributes. This is to maximize compatibility with hardware
+   * and maximize flexibility in creative approaches to utilizing shaders that
+   * need a lot of input.
    */
   // TODO: Uniform buffer strategy out of service for now
   // private generateUniformAttributePacking(
@@ -147,8 +150,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   // }
 
   /**
-   * This properly handles any special case destructuring for making the decalred attribute names available
-   * after the ${attribute} declaration.
+   * This properly handles any special case destructuring for making the
+   * decalred attribute names available after the ${attribute} declaration.
    */
   processAttributeDestructuring<
     TInstance extends Instance,
@@ -166,7 +169,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // Prevent mutating
     const orderedAttributes = instanceAttributes.slice(0);
 
-    // See which buffer strategy our layer is using and produce a destructuring strategy that suits it
+    // See which buffer strategy our layer is using and produce a destructuring
+    // strategy that suits it
     switch (layer.bufferType) {
       case LayerBufferType.INSTANCE_ATTRIBUTE:
         out = this.processDestructuringInstanceAttribute(
@@ -208,15 +212,16 @@ export class BasicIOExpansion extends BaseIOExpansion {
     _declarations: ShaderDeclarationStatements,
     _orderedAttributes: IInstanceAttribute<Instance>[]
   ) {
-    // No-op, the attributes for normal instance attribute destructuring will simply be used directly
-    // as they will not be packed in and will simply out
+    // No-op, the attributes for normal instance attribute destructuring will
+    // simply be used directly as they will not be packed in and will simply out
     return "";
   }
 
   /**
-   * This generates all Destructuring needs for the Instance Attribute Packing strategy. For this scenario
-   * attributes are tighly packed into attribute blocks rather than explicitly named attributes, thus the blocks
-   * must be destructured into the proper names of the attributes.
+   * This generates all Destructuring needs for the Instance Attribute Packing
+   * strategy. For this scenario attributes are tighly packed into attribute
+   * blocks rather than explicitly named attributes, thus the blocks must be
+   * destructured into the proper names of the attributes.
    *
    * This will, as well, destructure the auto easing methods.
    */
@@ -226,17 +231,18 @@ export class BasicIOExpansion extends BaseIOExpansion {
   ) {
     let out = "";
 
-    // The attributes are generated in blocks already. Thus all that need be done for this scenario
-    // is merely perform block destructuring
+    // The attributes are generated in blocks already. Thus all that need be
+    // done for this scenario is merely perform block destructuring
     out += this.processDestructureBlocks(declarations, orderedAttributes);
 
     return out;
   }
 
   /**
-   * This generates all Destructuring needs for the Uniform Packing strategy. For this scenario,
-   * attributes are tighly packed into uniform blocks rather than attributes, thus the blocks
-   * must be destructured into the proper names of the attributes.
+   * This generates all Destructuring needs for the Uniform Packing strategy.
+   * For this scenario, attributes are tighly packed into uniform blocks rather
+   * than attributes, thus the blocks must be destructured into the proper names
+   * of the attributes.
    *
    * This will, as well, destructure the auto easing methods.
    */
@@ -268,11 +274,10 @@ export class BasicIOExpansion extends BaseIOExpansion {
   // }
 
   /**
-   * This produces the destructuring elements needed to utilize the attribute data stored in blocks with names
-   * like:
+   * This produces the destructuring elements needed to utilize the attribute
+   * data stored in blocks with names like:
    *
-   * vec4 block0;
-   * vec4 block1;
+   * vec4 block0; vec4 block1;
    *
    * etc
    */
@@ -377,7 +382,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * Processes all IO for attribute declarations needed in the header of the shader.
+   * Processes all IO for attribute declarations needed in the header of the
+   * shader.
    */
   private processAttributeHeader<
     TInstance extends Instance,
@@ -389,13 +395,14 @@ export class BasicIOExpansion extends BaseIOExpansion {
     vertexAttributes: IVertexAttribute[],
     instanceAttributes: IInstanceAttribute<TInstance>[]
   ): ShaderIOHeaderInjectionResult {
-    let materialChanges = undefined;
+    const materialChanges = undefined;
     let out = "// Shader input\n";
 
     // If we are in a uniform buffer type strategy. Then we generate a uniform
     // buffer that will contain our instance attribute information along with
     // some extras to help dereference from the buffer.
     // TODO: Uniform buffering currently out of service right now
+
     // if (
     //   layer.bufferType === LayerBufferType.UNIFORM &&
     //   instanceAttributes.length > 0
@@ -423,9 +430,10 @@ export class BasicIOExpansion extends BaseIOExpansion {
       );
     }
 
-    // If we are in an instance attribute "packing" buffer type strategy, then the layer
-    // is expecting to have attributes that are "blocks" instead of explicitally named
-    // attributes. The layer will be utilizing the blocks to efficiently pack in our instance information
+    // If we are in an instance attribute "packing" buffer type strategy, then
+    // the layer is expecting to have attributes that are "blocks" instead of
+    // explicitally named attributes. The layer will be utilizing the blocks to
+    // efficiently pack in our instance information
     if (
       layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING &&
       instanceAttributes.length > 0
@@ -443,7 +451,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * Processes all IO for uniform declarations needed in the header of the shader.
+   * Processes all IO for uniform declarations needed in the header of the
+   * shader.
    */
   private processUniformHeader(
     declarations: ShaderDeclarationStatements,
@@ -478,7 +487,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * Produces attributes that are explicitally named and set by the attribute itself.
+   * Produces attributes that are explicitally named and set by the attribute
+   * itself.
    */
   private processInstanceAttributeBufferStrategy<T extends Instance>(
     declarations: ShaderDeclarationStatements,
@@ -507,8 +517,9 @@ export class BasicIOExpansion extends BaseIOExpansion {
   }
 
   /**
-   * Produces attributes that are blocks instead of individual attributes. The system uses these
-   * blocks to pack attributes tightly together to maximize capabilities.
+   * Produces attributes that are blocks instead of individual attributes. The
+   * system uses these blocks to pack attributes tightly together to maximize
+   * capabilities.
    */
   private processInstanceAttributePackingBufferStrategy(
     declarations: ShaderDeclarationStatements,

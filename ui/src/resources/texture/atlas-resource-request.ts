@@ -1,5 +1,5 @@
-import { Omit, ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
+import { Omit, ResourceType } from "../../types";
 import { SubTexture } from "./sub-texture";
 
 export type AtlasVideoResource = {

@@ -1,17 +1,17 @@
 import {
-  Material,
-  MaterialFragmentShader,
-  MaterialOptions,
-  MaterialUniformType
-} from "../../gl";
-import { Instance } from "../../instance-provider/instance";
-import {
   IInstancingUniform,
   IUniform,
   OutputFragmentShader,
-  UniformSize
+  UniformSize,
 } from "../../types";
 import { ILayerProps, Layer } from "../layer";
+import { Instance } from "../../instance-provider/instance";
+import {
+  Material,
+  MaterialFragmentShader,
+  MaterialOptions,
+  MaterialUniformType,
+} from "../../gl";
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.ONE]: MaterialUniformType.FLOAT,
@@ -21,7 +21,7 @@ const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.MATRIX3]: MaterialUniformType.MATRIX3x3,
   [UniformSize.MATRIX4]: MaterialUniformType.MATRIX4x4,
   [UniformSize.FLOAT_ARRAY]: MaterialUniformType.FLOAT_ARRAY,
-  [UniformSize.TEXTURE]: MaterialUniformType.TEXTURE
+  [UniformSize.TEXTURE]: MaterialUniformType.TEXTURE,
 };
 
 const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
@@ -30,19 +30,19 @@ const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
   [UniformSize.THREE]: [0, 0, 0],
   [UniformSize.FOUR]: [0, 0, 0, 0],
   [UniformSize.MATRIX3]: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [UniformSize.MATRIX4]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  [UniformSize.MATRIX4]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
 function toMaterialUniform(uniform: IUniform) {
   return {
     type: UNIFORM_SIZE_TO_MATERIAL_TYPE[uniform.size],
-    value: DEFAULT_UNIFORM_VALUE[uniform.size]
+    value: DEFAULT_UNIFORM_VALUE[uniform.size],
   };
 }
 
 export function generateLayerMaterial<
   T extends Instance,
-  U extends ILayerProps<T>
+  U extends ILayerProps<T>,
 >(
   layer: Layer<T, U>,
   vs: string,
@@ -81,7 +81,7 @@ export function generateLayerMaterial<
     const generatedUniform = instancingUniforms[i];
     materialParams.uniforms[generatedUniform.name] = {
       type: generatedUniform.type,
-      value: generatedUniform.value
+      value: generatedUniform.value,
     };
   }
 

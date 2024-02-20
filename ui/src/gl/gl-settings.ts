@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * These are all of the settings that can be used to configure the GL state of the system
  */
@@ -65,7 +66,7 @@ export namespace GLSettings {
       /** WebGL 2 Format */
       RGBA32I,
       /** WebGL 2 Format */
-      RGBA32UI
+      RGBA32UI,
     }
 
     /**
@@ -84,7 +85,7 @@ export namespace GLSettings {
       /** WebGL 2 Format */
       DEPTH24_STENCIL8,
       /** WebGL 2 Format */
-      DEPTH32F_STENCIL8
+      DEPTH32F_STENCIL8,
     }
 
     /**
@@ -93,7 +94,7 @@ export namespace GLSettings {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
      */
     export enum StencilBufferFormat {
-      STENCIL_INDEX8
+      STENCIL_INDEX8,
     }
   }
 
@@ -108,7 +109,7 @@ export namespace GLSettings {
       NormalBlending = 1,
       AdditiveBlending = 2,
       SubtractiveBlending = 3,
-      MultiplyBlending = 4
+      MultiplyBlending = 4,
     }
 
     /**
@@ -125,7 +126,7 @@ export namespace GLSettings {
       DstAlpha = 6,
       OneMinusDstAlpha = 7,
       DstColor = 8,
-      OneMinusDstColor = 9
+      OneMinusDstColor = 9,
     }
 
     /**
@@ -143,7 +144,7 @@ export namespace GLSettings {
       OneMinusDstAlpha = 7,
       DstColor = 8,
       OneMinusDstColor = 9,
-      SrcAlphaSaturate = 10
+      SrcAlphaSaturate = 10,
     }
 
     /**
@@ -153,7 +154,7 @@ export namespace GLSettings {
     export enum BlendingEquations {
       Add = -1,
       Subtract = 1,
-      ReverseSubtract = 2
+      ReverseSubtract = 2,
       /** Requires extension for Webgl 1.0 */
       // Min = 3,
       // Max = 4
@@ -172,7 +173,7 @@ export namespace GLSettings {
       GREATER = 4,
       NOTEQUAL = 5,
       GREATER_OR_EQUAL = 6,
-      ALWAYS = 7
+      ALWAYS = 7,
     }
 
     /**
@@ -184,7 +185,7 @@ export namespace GLSettings {
       NONE = -1,
       CW = 1,
       CCW = 2,
-      BOTH = 3
+      BOTH = 3,
     }
   }
 
@@ -199,7 +200,7 @@ export namespace GLSettings {
       POINTS,
       TRIANGLE_FAN,
       TRIANGLE_STRIP,
-      TRIANGLES
+      TRIANGLES,
     }
   }
 
@@ -212,7 +213,7 @@ export namespace GLSettings {
      */
     export enum TextureBindingTarget {
       TEXTURE_2D,
-      CUBE_MAP
+      CUBE_MAP,
     }
 
     /**
@@ -222,7 +223,7 @@ export namespace GLSettings {
     export enum Wrapping {
       REPEAT = -1,
       CLAMP_TO_EDGE = 1,
-      MIRRORED_REPEAT = 2
+      MIRRORED_REPEAT = 2,
     }
 
     /**
@@ -235,7 +236,7 @@ export namespace GLSettings {
       NearestMipMapLinear = 2,
       Linear = 3,
       LinearMipMapNearest = 4,
-      LinearMipMapLinear = 5
+      LinearMipMapLinear = 5,
     }
 
     /**
@@ -244,7 +245,7 @@ export namespace GLSettings {
      */
     export enum TextureMagFilter {
       Nearest = -1,
-      Linear = 1
+      Linear = 1,
     }
 
     /**
@@ -295,7 +296,7 @@ export namespace GLSettings {
       /** Webgl 2 */
       UnsignedInt_5_9_9_9_REV = 14,
       /** Webgl 2 */
-      Float32UnsignedInt_24_8_REV = 15
+      Float32UnsignedInt_24_8_REV = 15,
     }
 
     /**
@@ -428,7 +429,7 @@ export namespace GLSettings {
       /** WebGL 2 texel format */
       RGB_INTEGER = 49,
       /** WebGL 2 texel format */
-      RGBA_INTEGER = 50
+      RGBA_INTEGER = 50,
     }
 
     /**
@@ -444,7 +445,7 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8
+      EIGHT = 8,
     }
 
     /**
@@ -460,7 +461,7 @@ export namespace GLSettings {
       /** Word-alignment */
       FOUR = 4,
       /** Rows start on double-word boundaries */
-      EIGHT = 8
+      EIGHT = 8,
     }
   }
 
@@ -474,7 +475,7 @@ export namespace GLSettings {
     export enum ReadFilter {
       ALPHA,
       RGB,
-      RGBA
+      RGBA,
     }
 
     /**
@@ -485,7 +486,7 @@ export namespace GLSettings {
       UNSIGNED_SHORT_5_6_5,
       UNSIGNED_SHORT_4_4_4_4,
       UNSIGNED_SHORT_5_5_5_1,
-      FLOAT
+      FLOAT,
     }
   }
 }

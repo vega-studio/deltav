@@ -1,11 +1,7 @@
 import { compare4, copy4, flatten4, Vec4 } from "../math/vector";
 import { FragmentOutputType, TypeVec } from "../types";
-import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
-import { Material } from "./material";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
 import {
   IExtensions,
   IMaterialUniform,
@@ -13,6 +9,10 @@ import {
   MaterialUniformValue,
   UseMaterialStatus,
 } from "./types";
+import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
+import { Material } from "./material";
+import { RenderTarget } from "./render-target";
+import { Texture } from "./texture";
 
 import Debug from "debug";
 
@@ -27,7 +27,7 @@ const debug = Debug("performance");
  */
 export class GLState {
   /** Message to include with debug, warns, and errors */
-  debugContext: string = "";
+  debugContext = "";
   /** The extensions enabled for the context */
   private extensions!: IExtensions;
   /** Stores the gl context this is watching the state over */
@@ -165,7 +165,7 @@ export class GLState {
   get scissorTestEnabled() {
     return this._scissorTestEnabled;
   }
-  private _scissorTestEnabled: boolean = false;
+  private _scissorTestEnabled = false;
 
   /** The current bounds of the scissor test */
   get scissorBounds() {
@@ -185,7 +185,7 @@ export class GLState {
   get activeTextureUnit() {
     return this._activeTextureUnit;
   }
-  private _activeTextureUnit: number = -1;
+  private _activeTextureUnit = -1;
 
   /** This is the buffer state set and activated for the drawBuffers call */
   get drawBuffers() {
@@ -316,7 +316,7 @@ export class GLState {
           this.gl.bindTexture(this.gl.TEXTURE_2D, texture.gl.textureId);
           break;
 
-        case GLSettings.Texture.TextureBindingTarget.TEXTURE_2D:
+        case GLSettings.Texture.TextureBindingTarget.CUBE_MAP:
           this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture.gl.textureId);
           break;
       }

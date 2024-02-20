@@ -1,8 +1,8 @@
-import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types";
 import { GLProxy } from "./gl-proxy";
 import { GLSettings } from "./gl-settings";
-import { RenderTarget } from "./render-target";
 import { IMaterialUniform, MaterialUniformType } from "./types";
+import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types";
+import { RenderTarget } from "./render-target";
 
 export type MaterialOptions = Omit<
   Partial<Material>,
@@ -51,18 +51,18 @@ export class Material {
    * to the depth buffer before writing). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    */
-  depthTest: boolean = true;
+  depthTest = true;
   /**
    * Enable / disable depth mask (determines if fragments write to the depth
    * buffer). See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
    */
-  depthWrite: boolean = true;
+  depthWrite = true;
   /**
    * Sets whether or not GL should use it's dithering routine. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
    */
-  dithering: boolean = true;
+  dithering = true;
   /**
    * The fragment shader in raw text format that will be compiled to run as the
    * program to use when this material is used.
@@ -115,7 +115,7 @@ export class Material {
    * A name for the material. Helps with identifying the material and aids in
    * debugging
    */
-  name: string = "";
+  name = "";
   /**
    * TODO: This is NOT IN USE YET
    *
@@ -135,7 +135,7 @@ export class Material {
    * The vertex shader that will be compiled to run as the program to use when
    * this material is used.
    */
-  vertexShader: string = "";
+  vertexShader = "";
 
   constructor(options: MaterialOptions) {
     // Take in the properties

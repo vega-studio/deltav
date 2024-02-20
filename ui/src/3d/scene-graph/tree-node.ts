@@ -32,7 +32,7 @@ export abstract class TreeNode<T extends TreeNode<any>> {
    * property of all the nodes in this list.
    */
   private _children: T[] = [];
-  public get children(): ReadonlyArray<T> {
+  public get children(): readonly T[] {
     return this._children;
   }
 
@@ -40,7 +40,7 @@ export abstract class TreeNode<T extends TreeNode<any>> {
   public get needsUpdate(): boolean {
     return this._needsUpdate;
   }
-  private _needsUpdate: boolean = false;
+  private _needsUpdate = false;
 
   /** This stores which children require updating still */
   private _childUpdate: Set<T> = new Set();

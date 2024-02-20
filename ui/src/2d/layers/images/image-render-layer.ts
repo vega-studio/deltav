@@ -1,6 +1,8 @@
-import { InstanceProvider } from "../../../instance-provider";
+import ImageLayerFS from "./image-layer.fs";
+import ImageLayerVS from "./image-layer.vs";
+import { CommonMaterialOptions } from "../../../util/common-options";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { LayerScene, Surface } from "../../../surface";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -8,11 +10,9 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util/common-options";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { ImageInstance } from "./image-instance";
-import ImageLayerFS from "./image-layer.fs";
-import ImageLayerVS from "./image-layer.vs";
+import { InstanceProvider } from "../../../instance-provider";
+import { LayerScene, Surface } from "../../../surface";
 
 export interface IImageRenderLayerProps<TInstance extends ImageInstance>
   extends ILayer2DProps<TInstance> {

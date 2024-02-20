@@ -1,7 +1,7 @@
+import VS from "./shader-fragments/projection.vs";
 import { Layer } from "../../surface/layer";
 import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { ShaderModule } from "../processing";
-import VS from "./shader-fragments/projection.vs";
 
 const doc = `
 These are properties injected from the
@@ -35,36 +35,36 @@ ShaderModule.register([
       {
         name: "projection",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.props.camera.projection
+        update: () => layer.view.props.camera.projection,
       },
       {
         name: "viewProjection",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.props.camera.viewProjection
+        update: () => layer.view.props.camera.viewProjection,
       },
       // This injects the model view matrix from the view camera
       {
         name: "view",
         size: UniformSize.MATRIX4,
-        update: () => layer.view.props.camera.view
+        update: () => layer.view.props.camera.view,
       },
       // This injects the camera's current position
       {
         name: "cameraPosition",
         size: UniformSize.THREE,
-        update: () => layer.view.props.camera.position
+        update: () => layer.view.props.camera.position,
       },
       // This injects the camera's current scale
       {
         name: "cameraScale",
         size: UniformSize.THREE,
-        update: () => layer.view.props.camera.scale
+        update: () => layer.view.props.camera.scale,
       },
       // This injects the camera's Euler rotation
       {
         name: "cameraRotation",
         size: UniformSize.THREE,
-        update: () => layer.view.props.camera.scale
+        update: () => layer.view.props.camera.scale,
       },
       // This injects the pixel width and height of the view
       {
@@ -73,8 +73,8 @@ ShaderModule.register([
         size: UniformSize.TWO,
         update: () => [
           layer.view.viewBounds.width,
-          layer.view.viewBounds.height
-        ]
+          layer.view.viewBounds.height,
+        ],
       },
       // This injects the current layer's pixel ratio so pixel ratio dependent items can react to it
       // Things like gl_PointSize will need this metric if not working in clip space
@@ -82,13 +82,13 @@ ShaderModule.register([
         shaderInjection: ShaderInjectionTarget.ALL,
         name: "pixelRatio",
         size: UniformSize.ONE,
-        update: () => [layer.view.pixelRatio]
-      }
-    ]
+        update: () => [layer.view.pixelRatio],
+      },
+    ],
   },
   {
     moduleId: "projection",
     content: VS,
-    compatibility: ShaderInjectionTarget.ALL
-  }
+    compatibility: ShaderInjectionTarget.ALL,
+  },
 ]);

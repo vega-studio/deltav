@@ -1,7 +1,7 @@
-import { uid } from "../util/uid";
+import { apply2, compare2, Vec2, Vec2Compat } from "./vector";
 import { Bounds } from "./primitives/bounds";
 import { Ray } from "./ray";
-import { apply2, compare2, Vec2, Vec2Compat } from "./vector";
+import { uid } from "../util/uid";
 
 /**
  * This object expresses a suite of methods that aids in projecting values from
@@ -15,13 +15,13 @@ export abstract class BaseProjection<T> {
   }
   private _uid: number = uid();
   /** Allows for a sensical identifier to be applied to this projection. */
-  id: string = "";
+  id = "";
 
   /**
    * This is set to ensure the projections that happen properly translates the
    * pixel ratio to normal Web coordinates
    */
-  pixelRatio: number = 1;
+  pixelRatio = 1;
   /** This is the rendering bounds within screen space */
   get screenBounds(): Bounds<T> {
     if (!this._scaledScreenBounds) {
@@ -29,7 +29,7 @@ export abstract class BaseProjection<T> {
         x: this._screenBounds.x * this._screenScale[0],
         y: this._screenBounds.y * this._screenScale[1],
         width: this._screenBounds.width * this._screenScale[0],
-        height: this._screenBounds.height * this._screenScale[1]
+        height: this._screenBounds.height * this._screenScale[1],
       });
     }
 
@@ -40,6 +40,7 @@ export abstract class BaseProjection<T> {
     delete this._scaledScreenBounds;
     this._screenBounds = val;
   }
+
   /**
    * This helps resolve view's that don't correlate to the screen perfectly.
    * This would include times a view renders to a resource at a scaled valued
@@ -60,10 +61,10 @@ export abstract class BaseProjection<T> {
    * is the size of the render space within the context so this will include the
    * pixelRatio as needed.
    */
-  viewBounds: Bounds<T>;
+  viewBounds!: Bounds<T>;
 
   private _screenScale: Vec2 = [1, 1];
-  private _screenBounds: Bounds<T>;
+  private _screenBounds!: Bounds<T>;
   private _scaledScreenBounds?: Bounds<T>;
 
   /**
@@ -162,7 +163,7 @@ export class SimpleProjection extends BaseProjection<any> {
   screenRay(_point: Vec2Compat): Ray {
     return [
       [0, 0, -1],
-      [0, 0, -2]
+      [0, 0, -2],
     ];
   }
 

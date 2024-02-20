@@ -1,8 +1,8 @@
 import { Control2D, Layer2D } from "../../2d";
-import { Instance } from "../../instance-provider/instance";
-import { ILayerConstructable, ILayerProps } from "../../surface/layer";
-import { IShaderInitialization, Omit } from "../../types";
 import { createLayer } from "../../util/create-layer";
+import { ILayerConstructable, ILayerProps } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { IShaderInitialization, Omit } from "../../types";
 
 /**
  * Specifies a 2D axis system within a 3D world.

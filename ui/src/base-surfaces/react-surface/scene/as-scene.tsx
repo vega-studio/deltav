@@ -1,6 +1,6 @@
-import { SurfaceJSXType } from "../group-surface-children.js";
-import { ISceneOptions } from "../../../surface/index.js";
 import { IResolverProvider } from "../use-child-resolver.js";
+import { ISceneOptions } from "../../../surface/index.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 
 /**
  * Base props required for the component to implement to be a LayerJSX

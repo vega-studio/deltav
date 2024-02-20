@@ -1,5 +1,5 @@
-import { Instance } from "../instance-provider";
 import { IEasingControl, NOOP } from "../types";
+import { Instance } from "../instance-provider";
 import { onFrame } from "./frame";
 
 /** Handler type for discovered easing controls using the all() method */
@@ -49,7 +49,7 @@ export class EasingUtil {
     adjust?: EasingUtilAllHandler<T>
   ) {
     let resolver: Function = NOOP;
-    const promise = new Promise(resolve => (resolver = resolve));
+    const promise = new Promise((resolve) => (resolver = resolve));
     let finishedTime = 0;
 
     for (let i = 0, iMax = layerAttributes.length; i < iMax; ++i) {
@@ -77,7 +77,7 @@ export class EasingUtil {
     };
 
     if (wait) {
-      onFrame(t => {
+      onFrame((t) => {
         finishedTime += t;
         checkNextFrame(t);
       });

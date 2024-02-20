@@ -1,13 +1,13 @@
-import { Instance } from "../../../instance-provider/index.js";
-import { Vec4 } from "../../../math/vector.js";
-import { InstanceDiff } from "../../../types.js";
-import { ILayerProps } from "../../layer.js";
 import { BaseDiffProcessor } from "../base-diff-processor.js";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
+import { ILayerProps } from "../../layer.js";
+import { Instance } from "../../../instance-provider/index.js";
+import { InstanceDiff } from "../../../types.js";
 import {
   isUniformBufferLocation,
   IUniformBufferLocation,
 } from "./uniform-buffer-manager.js";
+import { Vec4 } from "../../../math/vector.js";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];
@@ -134,14 +134,14 @@ export class UniformDiffProcessor<
       const uniforms = uniformCluster.buffer;
       const uniformRangeStart = uniformCluster.range[0];
       const instanceData: Vec4[] = uniforms.value;
-      let instanceUniform, value, block, start;
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
       // Point to updating any other uniform
-      instanceUniform = layer.shaderIOInfo.activeAttribute;
-      value = instanceUniform.update(instance);
-      block = instanceData[uniformRangeStart + (instanceUniform.block || 0)];
-      start = instanceUniform.blockIndex;
+      const instanceUniform = layer.shaderIOInfo.activeAttribute;
+      const value = instanceUniform.update(instance);
+      const block =
+        instanceData[uniformRangeStart + (instanceUniform.block || 0)];
+      const start = instanceUniform.blockIndex;
 
       if (start !== undefined) {
         // Hyper optimized vector filling routine. It uses properties that are globally scoped

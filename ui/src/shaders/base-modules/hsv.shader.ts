@@ -1,6 +1,6 @@
+import VS from "./shader-fragments/hsv.vs";
 import { ShaderInjectionTarget } from "../../types";
 import { ShaderModule } from "../processing";
-import VS from "./shader-fragments/hsv.vs";
 
 const doc = `
 Provides methods that converts colors to
@@ -20,5 +20,5 @@ ShaderModule.register({
   moduleId: "hsv",
   description: doc,
   content: VS,
-  compatibility: ShaderInjectionTarget.ALL
+  compatibility: ShaderInjectionTarget.ALL,
 });

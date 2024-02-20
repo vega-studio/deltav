@@ -1,11 +1,11 @@
-import { GLSettings, Texture, TextureOptions } from "../../gl";
 import { add2, scale2, Vec2 } from "../../math/vector";
-import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { PackNode } from "../texture/pack-node";
-import { SubTexture } from "../texture/sub-texture";
 import { FontMapSource, IFontResourceOptions } from "./font-manager";
 import { FontRenderer, KerningPairs } from "./font-renderer";
+import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { IdentifyByKey } from "../../util/identify-by-key";
+import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
+import { PackNode } from "../texture/pack-node";
+import { SubTexture } from "../texture/sub-texture";
 
 import Debug from "debug";
 
@@ -63,14 +63,14 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   /**
    * A dynamic font map renders single glyphs at a time into the resource rather than preloads.
    */
-  dynamic: boolean = false;
+  dynamic = false;
   /** The metrics of the font rendered to this font map */
   fontSource: FontMapSource;
   /**
    * The number of glyphs successfully registered with this font map. This is used to determine the
    * position of the next glyph for the font map.
    */
-  glyphCount: number = 0;
+  glyphCount = 0;
   /**
    * This maps all of the glyphs this resource provides for to the SubTexture where the glyph is rendered
    * on the resource.
@@ -85,7 +85,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
   /** Tracks how the glyphs are packed into the map */
   packing: PackNode<SubTexture>;
   /** This is the calculated width of a space for the font map */
-  spaceWidth: number = 0;
+  spaceWidth = 0;
   /** The base texture where the font map is stored */
   texture?: Texture;
   /**
@@ -259,7 +259,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
    */
   findMissingCharacters(newCharacters: string) {
     const missing = new Set<string>();
-    let allMissing: string = "";
+    let allMissing = "";
 
     for (let i = 0, iMax = newCharacters.length; i < iMax; ++i) {
       const char = newCharacters[i];
@@ -541,7 +541,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
     // The output positions for each letter in the text
     const positions: Vec2[] = [];
     // The output of each character found that is provided a position (the string without the whitespace)
-    let glyphs: string = "";
+    let glyphs = "";
     // Calculate the scaling of the font which would be the font map's rendered glyph size
     // as a ratio to the label's desired font size.
     const fontScale = fontSize / this.fontSource.size;

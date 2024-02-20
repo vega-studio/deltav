@@ -41,7 +41,7 @@ const updateLoop = async () => {
   await onAnimationLoop(
     () => {
       if (updateSet.size === 0) return;
-      updateSet.forEach(t => t.update());
+      updateSet.forEach((t) => t.update());
       updateSet.clear();
     },
     undefined,

@@ -27,7 +27,7 @@ export interface IReactiveDiffOptions<U, T extends ReactiveDiffObject<U>> {
  */
 export class ReactiveDiff<
   U extends IdentifiableById | null,
-  T extends ReactiveDiffObject<U>
+  T extends ReactiveDiffObject<U>,
 > {
   /** The options used to construct this controller */
   private options: IReactiveDiffOptions<U, T>;
@@ -165,7 +165,7 @@ export class ReactiveDiff<
     this.willDispose.clear();
 
     // Now we take all existing items and flag them anew for disposal
-    this.keyToInitializer.forEach(item => {
+    this.keyToInitializer.forEach((item) => {
       this.willDispose.add(item.key);
     });
 

@@ -1,15 +1,9 @@
-import { Instance } from "../../../instance-provider";
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
 } from "../../../math/auto-easing-method";
-import { Vec, VecMath, VecMethods } from "../../../math/vector";
-import {
-  ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from "../../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../../surface/layer";
+import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
+import { EasingProps } from "../../../util/easing-props";
 import {
   FrameMetrics,
   IEasingInstanceAttribute,
@@ -21,12 +15,18 @@ import {
   IVertexAttribute,
   ShaderInjectionTarget,
 } from "../../../types";
-import { EasingProps } from "../../../util/easing-props";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { Instance } from "../../../instance-provider";
 import {
   IShaderTemplateRequirements,
   shaderTemplate,
 } from "../../../util/shader-templating";
-import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult,
+} from "../../../shaders/processing/base-shader-io-injection";
+import { Vec, VecMath, VecMethods } from "../../../math/vector";
 
 const debugCtx = "EasingIOExpansion";
 
@@ -237,13 +237,14 @@ export class EasingIOExpansion extends BaseIOExpansion {
               break;
 
             // Reflect means going from 0 to 1 then 1 to 0 then 0 to 1 etc etc
-            case AutoEasingLoopStyle.REFLECT:
+            case AutoEasingLoopStyle.REFLECT: {
               const timePassed =
                 (currentTime - easingValues.startTime) / duration;
               // This is a triangle wave for an input
               timeValue = abs(((timePassed / 2.0) % 1) - 0.5) * 2.0;
               isContinuous = true;
               break;
+            }
 
             // No loop means just linear time
             case AutoEasingLoopStyle.NONE:
@@ -279,7 +280,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // Flag the layer's continuous animation so continuous easing loop
         // styles will keep rendering indefinitely
-        layer.isAnimationContinuous = isContinuous;
+        layer.alwaysDraw = isContinuous;
 
         return end;
       };

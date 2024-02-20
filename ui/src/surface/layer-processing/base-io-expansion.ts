@@ -1,9 +1,7 @@
-import { Instance } from "../../instance-provider/instance";
 import {
   BaseShaderIOInjection,
   ShaderIOHeaderInjectionResult,
 } from "../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 import {
   IInstanceAttribute,
   IUniform,
@@ -11,6 +9,8 @@ import {
   ShaderInjectionTarget,
 } from "../../types";
 import { ILayerProps, Layer } from "../layer";
+import { Instance } from "../../instance-provider/instance";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 
 export type ShaderIOExpansion<T extends Instance> = {
   /** The additional instance attributes to add to the layer's Shader IO */
@@ -59,7 +59,7 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
   /**
    * Every expansion object will be given the opportunity to validate the IO
    * presented to it here, thus allowing unique IO configuration types to be
-   * confirmed before getting  completely processed.
+   * confirmed before getting completely processed.
    *
    * It will be expected that a unique Expansion object will have special
    * requirements centered around the configuration object, thus it is expected

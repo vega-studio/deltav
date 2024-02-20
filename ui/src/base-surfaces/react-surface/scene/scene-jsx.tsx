@@ -1,10 +1,9 @@
 import React from "react";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
+import { concatChildren, useChildResolvers } from "../use-child-resolver.js";
 import { CustomTag } from "../custom-tag.js";
-import { ISceneBaseJSX } from "./as-scene.js";
 import {
-  SurfaceJSXType,
   groupSurfaceChildren,
+  SurfaceJSXType,
 } from "../group-surface-children.js";
 import {
   ILayerProps,
@@ -13,9 +12,10 @@ import {
   ViewInitializer,
 } from "../../../surface/index.js";
 import { Instance } from "../../../instance-provider/instance.js";
+import { ISceneBaseJSX } from "./as-scene.js";
 import { isDefined } from "../../../util/common-filters.js";
-import { concatChildren, useChildResolvers } from "../use-child-resolver.js";
 import { SurfaceContext } from "../surface-jsx.js";
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export interface ISceneJSX extends Partial<ISceneBaseJSX> {
   /** Supports children. View and Layer. */

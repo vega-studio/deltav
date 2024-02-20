@@ -10,7 +10,6 @@
  */
 
 import assert from "assert";
-import { describe, it } from "@jest/globals";
 import {
   apply2x2,
   apply3x3,
@@ -55,6 +54,8 @@ import {
   transpose3x3,
   transpose4x4,
 } from "../ui/src/math/matrix";
+import { describe, it } from "@jest/globals";
+import { fail2, fail3, fail4 } from "./vector.test";
 import {
   fuzzyCompare2,
   fuzzyCompare3,
@@ -63,7 +64,6 @@ import {
   Vec3,
   Vec4,
 } from "../ui/src/math/vector";
-import { fail2, fail3, fail4 } from "./vector.test";
 
 function fail2x2(actual: any, expected: any) {
   return `\n\nACTUAL: ${toString2x2(actual)},\nEXPECTED: ${toString2x2(
@@ -83,11 +83,7 @@ function fail4x4(actual: any, expected: any) {
   )}`;
 }
 
-function assert2x2(
-  actual: Mat2x2,
-  expected: Mat2x2,
-  shouldEqual: boolean = true
-) {
+function assert2x2(actual: Mat2x2, expected: Mat2x2, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare2x2(actual, expected), true, fail2x2(actual, expected));
   } else {
@@ -99,11 +95,7 @@ function assert2x2(
   }
 }
 
-function assert3x3(
-  actual: Mat3x3,
-  expected: Mat3x3,
-  shouldEqual: boolean = true
-) {
+function assert3x3(actual: Mat3x3, expected: Mat3x3, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare3x3(actual, expected), true, fail3x3(actual, expected));
   } else {
@@ -115,11 +107,7 @@ function assert3x3(
   }
 }
 
-function assert4x4(
-  actual: Mat4x4,
-  expected: Mat4x4,
-  shouldEqual: boolean = true
-) {
+function assert4x4(actual: Mat4x4, expected: Mat4x4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(compare4x4(actual, expected), true, fail4x4(actual, expected));
   } else {
@@ -131,7 +119,7 @@ function assert4x4(
   }
 }
 
-function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
+function assert2(actual: Vec2, expected: Vec2, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(
       fuzzyCompare2(actual, expected, 1e-7),
@@ -147,7 +135,7 @@ function assert2(actual: Vec2, expected: Vec2, shouldEqual: boolean = true) {
   }
 }
 
-function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
+function assert3(actual: Vec3, expected: Vec3, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(
       fuzzyCompare3(actual, expected, 1e-7),
@@ -163,7 +151,7 @@ function assert3(actual: Vec3, expected: Vec3, shouldEqual: boolean = true) {
   }
 }
 
-function assert4(actual: Vec4, expected: Vec4, shouldEqual: boolean = true) {
+function assert4(actual: Vec4, expected: Vec4, shouldEqual = true) {
   if (shouldEqual) {
     assert.equal(
       fuzzyCompare4(actual, expected, 1e-7),
@@ -325,7 +313,6 @@ describe("Matrix Library", () => {
             20,
           ],
         ],
-        ,
         [
           [
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,

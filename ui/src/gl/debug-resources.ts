@@ -6,20 +6,10 @@ import { WebGLRenderer } from "./webgl-renderer";
 
 const positionData = new Float32Array([
   // Top tri
-  -1,
-  -1,
-  1,
-  -1,
-  -1,
-  1,
+  -1, -1, 1, -1, -1, 1,
 
   // Bottom tri
-  1,
-  -1,
-  1,
-  1,
-  -1,
-  1
+  1, -1, 1, 1, -1, 1,
 ]);
 
 const texCoordData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]);
@@ -36,7 +26,12 @@ quadGeometry.addAttribute("texCoord", texCoord);
 /** Height of each view that is rendered */
 const debugViewHeight = 200;
 /** This stores deferred debug statements which will be emptied when flushDebug is called */
-const debugQueue: [WebGLRenderer, RenderTarget | RenderTarget[] | null, Function, any[]][] = [];
+const debugQueue: [
+  WebGLRenderer,
+  RenderTarget | RenderTarget[] | null,
+  Function,
+  any[],
+][] = [];
 
 function getContainer(context: HTMLCanvasElement) {
   let container = document.getElementById(`__debug_read_pixels__`);
@@ -74,14 +69,15 @@ function getContainer(context: HTMLCanvasElement) {
 export function debugRenderTarget(
   renderer: WebGLRenderer,
   target: RenderTarget,
-  defer?: boolean
+  defer?: boolean,
+  ...rest: any[]
 ) {
   if (defer) {
     debugQueue.push([
       renderer,
       renderer.state.currentRenderTarget,
       debugRenderTarget,
-      Array.from(arguments).slice(0, -1)
+      Array.from([renderer, target, defer, ...rest]).slice(0, -1),
     ]);
 
     return;
@@ -95,7 +91,7 @@ export function debugRenderTarget(
   if (Array.isArray(target.buffers.color)) {
     let foundTexture = false;
 
-    target.buffers.color.forEach(colorBuffer => {
+    target.buffers.color.forEach((colorBuffer) => {
       if (colorBuffer instanceof Texture) {
         debugTexture(renderer, colorBuffer, 400);
         foundTexture = true;
@@ -134,8 +130,8 @@ export function debugTexture(
 
   const debugFBO = new RenderTarget({
     buffers: {
-      color: { buffer: texture, outputType: 0 }
-    }
+      color: { buffer: texture, outputType: 0 },
+    },
   });
 
   const scale = Math.min(
@@ -181,14 +177,23 @@ export function debugReadPixels(
   width: number,
   height: number,
   debugId: string,
-  defer?: boolean
+  defer?: boolean,
+  ...rest: any[]
 ) {
   if (defer) {
     debugQueue.push([
       renderer,
       renderer.state.currentRenderTarget,
       debugReadPixels,
-      Array.from(arguments).slice(0, -1)
+      Array.from([
+        renderer,
+        data,
+        width,
+        height,
+        debugId,
+        defer,
+        ...rest,
+      ]).slice(0, -1),
     ]);
 
     return;
@@ -229,7 +234,7 @@ export function debugReadPixels(
  * This dequeues all debug operations
  */
 export function flushDebug() {
-  debugQueue.forEach(debug => {
+  debugQueue.forEach((debug) => {
     debug[0].setRenderTarget(debug[1]);
     debug[2].apply(null, debug[3]);
   });

@@ -62,7 +62,7 @@ export function shaderTemplate(
     required,
     onError,
     onToken,
-    onMain
+    onMain,
   } = templateOptions;
   const matched = new Map<string, number>();
   const noValueProvided = new Map<string, number>();
@@ -90,7 +90,7 @@ export function shaderTemplate(
     }
   );
 
-  Object.keys(options).forEach(option => {
+  Object.keys(options).forEach((option) => {
     if (!matched.get(option)) {
       notFound.set(option, (notFound.get(option) || 0) + 1);
     }
@@ -102,12 +102,12 @@ export function shaderTemplate(
     shader: shaderResults,
     shaderProvidedOptions: shaderOptions,
     unresolvedProvidedOptions: notFound,
-    unresolvedShaderOptions: noValueProvided
+    unresolvedShaderOptions: noValueProvided,
   };
 
   if (required) {
     // This will ensure that BOTH the parameter input AND the shader provided the required options.
-    required.values.forEach(require => {
+    required.values.forEach((require) => {
       if (results.unresolvedProvidedOptions.get(require)) {
         const msg = `${required.name}: Could not resolve all the required inputs. Input: ${require}`;
         if (onError) onError(msg);

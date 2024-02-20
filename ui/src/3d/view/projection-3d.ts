@@ -1,14 +1,4 @@
 import {
-  Mat4x4,
-  multiply4x4,
-  project3As4ToScreen,
-  ray,
-  Ray,
-  rayFromPoints,
-  transform4,
-} from "../../math";
-import { BaseProjection } from "../../math/base-projection";
-import {
   apply2,
   apply3,
   scale2,
@@ -18,7 +8,17 @@ import {
   vec3,
   vec4,
 } from "../../math/vector";
+import { BaseProjection } from "../../math/base-projection";
 import { Camera, CameraProjectionType } from "../../util/camera";
+import {
+  Mat4x4,
+  multiply4x4,
+  project3As4ToScreen,
+  ray,
+  Ray,
+  rayFromPoints,
+  transform4,
+} from "../../math";
 
 export class Projection3D extends BaseProjection<any> {
   /** Camera used for the 3d view. */
@@ -126,15 +126,14 @@ export class Projection3D extends BaseProjection<any> {
     // appear as a dot flying away from the screen.
     if (projectionOptions.type === CameraProjectionType.PERSPECTIVE) {
       const { fov, near } = projectionOptions;
-      let Px, Py;
 
       const aspect = height / width;
       const r = tan(fov / 2) * near;
 
       // We assume z = 1 and algebraically reverse the projection operation to
       // solve for the vector input instead of the screen.
-      Px = (2 * ((renderSpace[0] + 0.5) / width) - 1) * r;
-      Py = (1 - 2 * ((renderSpace[1] + 0.5) / height)) * r * aspect;
+      const Px = (2 * ((renderSpace[0] + 0.5) / width) - 1) * r;
+      const Py = (1 - 2 * ((renderSpace[1] + 0.5) / height)) * r * aspect;
 
       const rayReference: Vec3 = [Px, Py, -1];
       const world = transform4(

@@ -1,7 +1,7 @@
 import { BaseProjection } from "../math";
 import { Bounds } from "../math/primitives";
-import { IViewProps, View } from "../surface/view";
 import { IMouseInteraction, ITouchInteraction } from "./types";
+import { IViewProps, View } from "../surface/view";
 import { UserInputEventManager } from "./user-input-event-manager";
 
 /**

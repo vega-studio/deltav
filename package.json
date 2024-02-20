@@ -7,23 +7,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vega-studio/deltav"
+    "url": "git@github.com:vega-studio/deltav.git"
   },
-  "version": "3.0.0",
+  "version": "4.0.0",
   "main": "./dist/ui/index.js",
   "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",
   "scripts": {
     "dev": "devops dev",
-    "shader": "ts-node scripts/shader-module-snippets",
-    "eslint": "eslint",
     "release": "devops release",
-    "start": "node scripts/heroku",
-    "auto": "auto",
-    "runner": "runner",
-    "parcel": "runner run client server --no-docker",
     "clean": "devops clean",
-    "build": "runner run lib",
     "component": "devops component",
     "init": "devops init",
     "pr": "devops pr --repoUrl \"https://github.com/vega-studio/deltav\" --repoType git --masterBranch master",
@@ -34,20 +27,12 @@
   },
   "devDependencies": {
     "@diniden/signal-processing": "github:diniden/signal-processing#semver:1.1.0",
-    "@types/animejs": "2.0.0",
     "@types/assert": "1.4.2",
-    "@types/d3-color": "1.2.2",
-    "@types/dat.gui": "0.7.5",
     "@types/debug": "4.1.4",
-    "@types/matter-js": "0.10.2",
     "@types/offscreencanvas": "2019.6.4",
-    "animejs": "2.2.0",
     "assert": "2.0.0",
-    "d3-color": "1.2.3",
-    "dat.gui": "0.7.7",
     "debug": "3.1.0",
     "devops": "github:vega-studio/node-devops#semver:2.17.1",
-    "matter-js": "0.14.2",
     "preact": "10.18.1"
   },
   "greenkeeper": {

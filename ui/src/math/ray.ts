@@ -4,7 +4,7 @@ import {
   normalize3,
   scale3,
   subtract3,
-  Vec3
+  Vec3,
 } from "../math/vector";
 
 /**
@@ -39,7 +39,7 @@ export function rayToLocation(ray: Ray, distance: number, out?: Vec3): Vec3 {
 export function rayFromPoints(origin: Vec3, destination: Vec3, out?: Ray): Ray {
   out = out || [
     [0, 0, 0],
-    [0, 0, 0]
+    [0, 0, 0],
   ];
   copy3(origin, out[0]);
   normalize3(subtract3(destination, origin), out[1]);

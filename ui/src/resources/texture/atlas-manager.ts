@@ -1,3 +1,4 @@
+import { Atlas, IAtlasResource } from "./atlas";
 import {
   Attribute,
   Geometry,
@@ -11,13 +12,12 @@ import {
   WebGLRenderer,
 } from "../../gl";
 import { Bounds } from "../../math/primitives/bounds";
-import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
-import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
-import { isString } from "../../types";
-import { Atlas, IAtlasResource } from "./atlas";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
+import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
 import { IPackNodeDimensions, PackNode } from "./pack-node";
+import { isString } from "../../types";
 import { SubTexture } from "./sub-texture";
+import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
 
 import Debug from "debug";
 

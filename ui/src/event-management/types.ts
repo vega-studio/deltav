@@ -1,5 +1,5 @@
-import { Vec2 } from "../math/vector";
 import { IViewProps, View } from "../surface/view";
+import { Vec2 } from "../math/vector";
 
 export enum MouseButton {
   /** No button detected */
@@ -13,7 +13,7 @@ export enum MouseButton {
   /** Usually side left mouse button (will cause 'browser back' in some cases) */
   FOURTH = 3,
   /** Usually side right mouse button (will cause 'browser forward' in some cases) */
-  FIFTH = 4
+  FIFTH = 4,
 }
 
 export interface IEventInteraction {

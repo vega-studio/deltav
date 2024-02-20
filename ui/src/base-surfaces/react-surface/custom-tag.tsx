@@ -1,6 +1,6 @@
 import React from "react";
-import { SurfaceContext } from "./surface-jsx";
 import { isString } from "../../types";
+import { SurfaceContext } from "./surface-jsx";
 
 interface IProps extends Record<string, any> {
   /** Supports children */

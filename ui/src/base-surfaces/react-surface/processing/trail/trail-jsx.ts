@@ -1,8 +1,15 @@
-import { IView2DProps } from "../../../../2d";
 import { ClearFlags } from "../../../../surface";
-import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
+import { createUniform } from "../../../../util";
+import {
+  FragmentOutputType,
+  ILayerMaterialOptions,
+  ShaderInjectionTarget,
+  UniformSize,
+} from "../../../../types";
 import { IPartialViewJSX } from "../../scene/view-jsx";
+import { IView2DProps } from "../../../../2d";
 import { PostProcessJSX } from "../post-process-jsx";
+import type { Vec2 } from "../../../../math";
 
 export interface ITrailJSX {
   /**
@@ -33,6 +40,18 @@ export interface ITrailJSX {
   intensity?: number;
   /** The name to apply to the scenes this effect produces */
   name?: string;
+  /**
+   * When provided the trails will drift in a direction over time. Like a wind
+   * blowing effect
+   */
+  drift?: {
+    /** Direction + magnitude the trail will drift */
+    direction: Vec2;
+    /**
+     * Resource texture containing the vector field that will distort the trail
+     */
+    vectorField?: string;
+  };
 }
 
 /**
@@ -93,40 +112,89 @@ export function TrailJSX(props: ITrailJSX) {
     })
   );
 
-  process.push(
-    PostProcessJSX({
-      printShader: props.printShader,
-      // Set the buffers we want to composite
-      buffers: {
-        tex: output,
-      },
-      // Turn off blending
-      material: {
-        blending: null,
-      },
-      // Render the composited textures back to the trail input but faded back a
-      // little.
-      view: {
-        ...{
-          output: {
-            buffers: { [FragmentOutputType.COLOR]: input.trail },
-            depth: false,
-          },
+  // Simple trail effect that requires moving objects to see the trail
+  if (!props.drift) {
+    process.push(
+      PostProcessJSX({
+        printShader: props.printShader,
+        // Set the buffers we want to composite
+        buffers: {
+          tex: output,
         },
-        ...view,
-      },
-      // Utilize our composition shader
-      shader: `
-        varying vec2 texCoord;
+        // Turn off blending
+        material: {
+          blending: null,
+        },
+        // Render the composited textures back to the trail input but faded back a
+        // little.
+        view: {
+          ...{
+            output: {
+              buffers: { [FragmentOutputType.COLOR]: input.trail },
+              depth: false,
+            },
+          },
+          ...view,
+        },
+        // Utilize our composition shader
+        shader: `
+          varying vec2 texCoord;
 
-        void main() {
-          vec4 fade = texture2D(tex, texCoord);
-          fade.rgba *= ${props.intensity || 0.7};
-          $\{out: color} = fade;
-        }
-      `,
-    })
-  );
+          void main() {
+            vec4 fade = texture2D(tex, texCoord);
+            fade.rgba *= ${props.intensity || 0.7};
+            $\{out: color} = fade;
+          }
+        `,
+      })
+    );
+  }
+
+  // More complex trail effect that "blows in the wind"
+  else if (props.drift) {
+    process.push(
+      PostProcessJSX({
+        printShader: props.printShader,
+        // Set the buffers we want to composite
+        buffers: {
+          tex: output,
+        },
+        // Turn off blending
+        material: {
+          blending: null,
+        },
+        // Render the composited textures back to the trail input but faded back a
+        // little.
+        view: {
+          ...{
+            output: {
+              buffers: { [FragmentOutputType.COLOR]: input.trail },
+              depth: false,
+            },
+          },
+          ...view,
+        },
+        uniforms: [
+          createUniform({
+            name: "drift",
+            size: UniformSize.TWO,
+            shaderInjection: ShaderInjectionTarget.FRAGMENT,
+            update: () => props.drift?.direction || [0, 0],
+          }),
+        ],
+        // Utilize our composition shader
+        shader: `
+          varying vec2 texCoord;
+
+          void main() {
+            vec4 fade = texture2D(tex, texCoord + (drift / tex_size));
+            fade.rgba *= ${props.intensity || 0.7};
+            $\{out: color} = fade;
+          }
+        `,
+      })
+    );
+  }
 
   return process;
 }

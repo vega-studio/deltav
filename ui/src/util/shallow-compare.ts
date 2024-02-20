@@ -6,9 +6,7 @@ export function shallowCompare(objA: any, objB: any) {
     return objA === objB;
   }
 
-  return !Boolean(
-    Object.keys(Object.assign({}, objA, objB)).find(
-      key => objA[key] !== objB[key]
-    )
+  return !Object.keys(Object.assign({}, objA, objB)).find(
+    (key) => objA[key] !== objB[key]
   );
 }

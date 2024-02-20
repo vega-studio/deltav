@@ -1,12 +1,12 @@
-import { Instance } from "../../instance-provider/instance";
+import { BaseResourceManager } from "../base-resource-manager";
 import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
 import {
   InstanceIOValue,
   IResourceContext,
   ResourceType,
   TextureSize,
 } from "../../types";
-import { BaseResourceManager } from "../base-resource-manager";
 import { IRenderTextureResource, RenderTexture } from "./render-texture";
 import { IRenderTextureResourceRequest } from "./render-texture-resource-request";
 import { TextureIOExpansion } from "./texture-io-expansion";

@@ -1,11 +1,11 @@
-import { Texture, TextureOptions } from "../../gl/texture";
-import { Vec2 } from "../../math/vector";
-import { Omit, ResourceType, TextureSize } from "../../types";
-import { IdentifyByKey } from "../../util/identify-by-key";
 import { BaseResourceOptions } from "../base-resource-manager";
 import { IAtlasResourceRequest } from "./atlas-resource-request";
+import { IdentifyByKey } from "../../util/identify-by-key";
+import { Omit, ResourceType, TextureSize } from "../../types";
 import { PackNode } from "./pack-node";
 import { SubTexture } from "./sub-texture";
+import { Texture, TextureOptions } from "../../gl/texture";
+import { Vec2 } from "../../math/vector";
 import { VideoTextureMonitor } from "./video-texture-monitor";
 
 import Debug from "debug";

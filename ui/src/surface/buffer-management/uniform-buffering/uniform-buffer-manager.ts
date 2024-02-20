@@ -1,18 +1,18 @@
-import { uniformBufferInstanceBufferName } from "../../../constants";
 import { Attribute, Geometry, Material, Model } from "../../../gl";
+import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model";
+import { IInstanceAttribute } from "../../../types";
+import { ILayerProps, Layer } from "../../layer";
 import {
   IMaterialUniform,
   isUniformVec4Array,
   MaterialUniformType,
 } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
-import { Vec2, Vec4 } from "../../../math";
-import { IInstanceAttribute } from "../../../types";
-import { uid } from "../../../util/uid";
-import { ILayerProps, Layer } from "../../layer";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
 import { LayerScene } from "../../layer-scene";
-import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
+import { uid } from "../../../util/uid";
+import { uniformBufferInstanceBufferName } from "../../../constants";
+import { Vec2, Vec4 } from "../../../math";
 
 export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */
@@ -100,7 +100,7 @@ export class UniformBufferManager<
   constructor(layer: Layer<TInstance, any>, scene: LayerScene) {
     super(layer, scene);
 
-    let maxUniformBlock: number = 0;
+    let maxUniformBlock = 0;
     layer.shaderIOInfo.instanceAttributes.forEach(
       (attributes: IInstanceAttribute<TInstance>) => {
         maxUniformBlock = Math.max(attributes.block || 0, maxUniformBlock);

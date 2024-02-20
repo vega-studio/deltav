@@ -1,5 +1,3 @@
-import { Vec4 } from "../math";
-import { Size } from "../types";
 import { Attribute } from "./attribute";
 import { Geometry } from "./geometry";
 import { GLProxy } from "./gl-proxy";
@@ -7,7 +5,9 @@ import { GLState } from "./gl-state";
 import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
+import { Size } from "../types";
 import { UseMaterialStatus } from "./types";
+import { Vec4 } from "../math";
 import { WebGLStat } from "./webgl-stat";
 
 import Debug from "debug";
@@ -88,9 +88,9 @@ export class WebGLRenderer {
    * This is the compiler that performs all actions related to creating and
    * updating buffers and objects on the GPU
    */
-  glProxy: GLProxy;
+  glProxy!: GLProxy;
   /** This handles anything related to state changes in the GL state */
-  glState: GLState;
+  glState!: GLState;
   /** The options that constructed or are currently applied to the renderer */
   options: IWebGLRendererOptions;
 
@@ -100,7 +100,7 @@ export class WebGLRenderer {
     currentRenderTarget: null,
     displaySize: [1, 1],
     pixelRatio: 1,
-    renderSize: [1, 1]
+    renderSize: [1, 1],
   };
 
   constructor(options: IWebGLRendererOptions) {
@@ -109,7 +109,7 @@ export class WebGLRenderer {
       {
         alpha: false,
         antialias: false,
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: false,
       },
       options
     );
@@ -132,7 +132,7 @@ export class WebGLRenderer {
     this.state.clearMask = [
       clear[0] || color || false,
       clear[1] || depth || false,
-      clear[2] || stencil || false
+      clear[2] || stencil || false,
     ];
   }
 
@@ -167,7 +167,7 @@ export class WebGLRenderer {
       alpha: this.options.alpha || false,
       antialias: this.options.antialias || false,
       premultipliedAlpha: this.options.premultipliedAlpha || false,
-      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false
+      preserveDrawingBuffer: this.options.preserveDrawingBuffer || false,
     });
 
     if (gl.context) {
@@ -227,14 +227,14 @@ export class WebGLRenderer {
         x: 0,
         y: 0,
         width: target[0].width,
-        height: target[0].height
+        height: target[0].height,
       };
     } else if (target) {
       return {
         x: 0,
         y: 0,
         width: target.width,
-        height: target.height
+        height: target.height,
       };
     } else {
       const size = this.getRenderSize();
@@ -243,7 +243,7 @@ export class WebGLRenderer {
         x: 0,
         y: 0,
         width: size[0],
-        height: size[1]
+        height: size[1],
       };
     }
   }
@@ -296,7 +296,7 @@ export class WebGLRenderer {
     ) {
       const buffers = target.getGLBuffers();
       this.glState.setDrawBuffers(
-        buffers.map(buffer => buffer?.attachment || 0)
+        buffers.map((buffer) => buffer?.attachment || 0)
       );
     }
 
@@ -344,7 +344,7 @@ export class WebGLRenderer {
     }
 
     // Clear out any failed models from the scene
-    toRemove.forEach(model => {
+    toRemove.forEach((model) => {
       scene.remove(model);
     });
   }
@@ -455,7 +455,7 @@ export class WebGLRenderer {
     width: number,
     height: number,
     out: ArrayBufferView,
-    bufferType: number = 0
+    bufferType = 0
   ) {
     if (!this.gl) return;
     const allTargets = this.state.currentRenderTarget;
@@ -465,9 +465,9 @@ export class WebGLRenderer {
     // When our render target is multiple render targets, let's find one that
     // has a colorBuffer with an outputType that matches our parameter
     if (Array.isArray(allTargets)) {
-      target = allTargets.find(t => {
+      target = allTargets.find((t) => {
         if (Array.isArray(t.buffers.color)) {
-          return t.buffers.color.find(b => b.outputType === bufferType);
+          return t.buffers.color.find((b) => b.outputType === bufferType);
         } else {
           return t.buffers.color?.outputType === bufferType;
         }
@@ -612,7 +612,7 @@ export class WebGLRenderer {
           x: x,
           y: _height - y - height,
           width: width,
-          height: height
+          height: height,
         });
       } else {
         this.glState.setScissor(null);
@@ -651,7 +651,7 @@ export class WebGLRenderer {
     if (Array.isArray(target)) {
       // If our render target approach is multiple render targets, then we only
       // need to ensure the targets have their FBO generated appropriately
-      target.forEach(renderTarget => {
+      target.forEach((renderTarget) => {
         if (!renderTarget.gl) {
           this.glProxy.compileRenderTarget(renderTarget);
         }
@@ -660,7 +660,7 @@ export class WebGLRenderer {
       // If unable to use yet, this indicates the FBO needs to be compiled
       // Probably due to uncompiled texture objects that the FBO needs.
       // First flag all textures as needing a texture unit
-      target.getTextures().forEach(texture => {
+      target.getTextures().forEach((texture) => {
         this.glState.willUseTextureUnit(texture, target);
       });
 

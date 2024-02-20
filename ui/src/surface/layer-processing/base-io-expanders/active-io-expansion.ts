@@ -1,11 +1,11 @@
+import ActiveAttributeHandlerVS from "./fragments/active-attribute-handler.vs";
 import { activeAttributeName } from "../../../constants";
-import { Instance } from "../../../instance-provider/instance";
-import { ShaderDeclarationStatements } from "../../../shaders/processing/base-shader-io-injection";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ILayerProps, Layer } from "../../../surface/layer";
 import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
 import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../../types";
-import ActiveAttributeHandlerVS from "./fragments/active-attribute-handler.vs";
+import { ILayerProps, Layer } from "../../../surface/layer";
+import { Instance } from "../../../instance-provider/instance";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
+import { ShaderDeclarationStatements } from "../../../shaders/processing/base-shader-io-injection";
 
 const debugCtx = "ActiveIOExpansion";
 

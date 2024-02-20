@@ -1,16 +1,16 @@
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector";
-import { fontRequest, IFontResourceRequest } from "../../../resources";
-import { ILayerConstructionClass } from "../../../surface/layer";
-import { InstanceDiffType, newLineRegEx } from "../../../types";
-import { createChildLayer } from "../../../util/create-layer";
 import { AnchorType, ScaleMode } from "../../types";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { BorderInstance } from "./border-instance";
 import { BorderLayer } from "./border-layer";
+import { createChildLayer } from "../../../util/create-layer";
+import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { GlyphInstance } from "./glyph-instance";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import { IGlyphLayerOptions } from "./glyph-layer";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { ILayerConstructionClass } from "../../../surface/layer";
+import { InstanceDiffType, newLineRegEx } from "../../../types";
+import { InstanceProvider } from "../../../instance-provider/instance-provider";
 import { LabelInstance } from "./label-instance";
 import { LabelLayer } from "./label-layer";
 import {
@@ -265,7 +265,7 @@ export class TextAreaLayer<
    * When this is flagged, we must do a complete recomputation of all our label's glyphs positions and kernings.
    * This event really only takes place when the font resource changes.
    */
-  fullUpdate: boolean = false;
+  fullUpdate = false;
   /** Tracks all assigned labels to the text area */
   areaToLabels = new Map<TextAreaInstance, TextAreaLabel[]>();
   /** Tracks the labels assigned to an area and are grouped by the line they appear within */
@@ -442,7 +442,7 @@ export class TextAreaLayer<
           this.insert(instance);
           break;
 
-        case InstanceDiffType.REMOVE:
+        case InstanceDiffType.REMOVE: {
           const labels = this.areaToLabels.get(instance);
 
           if (labels) {
@@ -457,6 +457,7 @@ export class TextAreaLayer<
             this.areaWaitingOnLabel.delete(instance);
           }
           break;
+        }
       }
     }
   }

@@ -10,7 +10,7 @@ export interface IResourcePool<T> {
  * like Matrices and Vectors.
  */
 export class ResourcePool<T> {
-  private index: number = -1;
+  private index = -1;
   private pool: T[];
   private marker = new Map<T, number>();
   private options: IResourcePool<T>;
@@ -30,12 +30,8 @@ export class ResourcePool<T> {
       this.options.destroy(this.pool[i]);
     }
 
-    // @ts-ignore
-    delete this.pool;
-    // @ts-ignore
-    delete this.marker;
-    // @ts-ignore
-    delete this.options;
+    this.pool = [];
+    this.marker.clear();
   }
 
   retrieve(): T {

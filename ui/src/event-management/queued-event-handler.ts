@@ -1,10 +1,10 @@
 import { EventManager } from "./event-manager";
-import { SimpleEventHandler } from "./simple-event-handler";
 import {
   IEventInteraction,
   IMouseInteraction,
   ITouchInteraction,
 } from "./types";
+import { SimpleEventHandler } from "./simple-event-handler";
 
 /**
  * This takes in events and stores them for a later moment to be dequeued in a
@@ -17,7 +17,7 @@ export class QueuedEventHandler extends EventManager {
   private singleQueueMouse = new Map<Function, IEventInteraction>();
   private preserveQueueTouch: [Function, ITouchInteraction][] = [];
   private singleQueueTouch = new Map<Function, ITouchInteraction>();
-  private preserveEvents: boolean = false;
+  private preserveEvents = false;
 
   /**
    * Default ctor for Queued event handling.
@@ -28,10 +28,7 @@ export class QueuedEventHandler extends EventManager {
    *                       when false, only the last event of a given event type
    *                       will be preserved for broadcast.
    */
-  constructor(
-    handlers: Partial<EventManager>,
-    preserveEvents: boolean = false
-  ) {
+  constructor(handlers: Partial<EventManager>, preserveEvents = false) {
     super();
     this.handlers = new SimpleEventHandler(handlers);
     this.preserveEvents = preserveEvents;

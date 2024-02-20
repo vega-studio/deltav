@@ -1,18 +1,18 @@
 import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction
-} from "../event-management/types";
-import { Instance } from "../instance-provider/instance";
-import {
   IColorPickingData,
   IMousePickInfo,
   ITouchPickInfo,
-  PickType
+  PickType,
 } from "../types";
-import { mapGetWithDefault, mapInjectDefault } from "../util/common-operations";
 import { ILayerProps, Layer } from "./layer";
+import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+} from "../event-management/types";
+import { Instance } from "../instance-provider/instance";
 import { IViewProps, View } from "./view";
+import { mapGetWithDefault, mapInjectDefault } from "../util/common-operations";
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
@@ -23,7 +23,7 @@ import { IViewProps, View } from "./view";
  */
 export class LayerInteractionHandler<
   T extends Instance,
-  U extends ILayerProps<T>
+  U extends ILayerProps<T>,
 > {
   /** This is the color picking information most recently rendered */
   colorPicking?: IColorPickingData;
@@ -110,14 +110,14 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view.projection,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseDown(info);
 
         // We track all the elements the mouse is currently down on
         this.isMouseDown.clear();
-        instances.forEach(o => this.isMouseDown.add(o));
+        instances.forEach((o) => this.isMouseDown.add(o));
       }
     }
   }
@@ -161,7 +161,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view.projection,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     // Add the instances involved in the touch down to our down state items.
@@ -180,7 +180,7 @@ export class LayerInteractionHandler<
       () => new Set()
     );
 
-    instances.forEach(instance => {
+    instances.forEach((instance) => {
       isTouchDown.add(instance);
       isTouchOver.add(instance);
     });
@@ -210,7 +210,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view.projection,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseOut(info);
@@ -248,7 +248,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view.projection,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     onTouchOut(info);
@@ -291,14 +291,14 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view.projection,
       screen: interaction.screen.position,
-      world
+      world,
     };
 
     // Broadcast the mouse up event to the layers
     onMouseUp(info);
     // Now we look to see which of the mouse down instances were NOT in the
     // mouse up instances to detect mouse up outside events
-    instances.forEach(instance => this.isMouseDown.delete(instance));
+    instances.forEach((instance) => this.isMouseDown.delete(instance));
     // If no mouse downs remain, then we simply stop here
     if (this.isMouseDown.size <= 0 || !onMouseUpOutside) return;
 
@@ -309,7 +309,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view.projection,
       screen: interaction.screen.position,
-      world
+      world,
     };
 
     // Broadcast the mouse up outside event to the layers
@@ -324,12 +324,8 @@ export class LayerInteractionHandler<
     interaction: ITouchInteraction,
     touch: ISingleTouchInteraction
   ) {
-    const {
-      onTouchUp,
-      onTouchUpOutside,
-      onTouchOut,
-      onTouchAllEnd
-    } = this.layer.props;
+    const { onTouchUp, onTouchUpOutside, onTouchOut, onTouchAllEnd } =
+      this.layer.props;
 
     // Check to ensure the layer is configured to accept the events
     if (
@@ -359,7 +355,7 @@ export class LayerInteractionHandler<
       layer: this.layer.id,
       projection: view.projection,
       screen: touch.screen.position,
-      world
+      world,
     };
 
     // Broadcast the touch up event to the layers
@@ -374,7 +370,7 @@ export class LayerInteractionHandler<
     );
     // Now we look to see which of the touch down instances were NOT in the
     // touch up instances to detect touch up outside events
-    instances.forEach(instance => isTouchDown.delete(instance));
+    instances.forEach((instance) => isTouchDown.delete(instance));
 
     // If no touch downs remain, then we simply stop here
     if (isTouchDown.size > 0 && onTouchUpOutside) {
@@ -386,7 +382,7 @@ export class LayerInteractionHandler<
         layer: this.layer.id,
         projection: view.projection,
         screen: touch.screen.position,
-        world
+        world,
       };
 
       // Broadcast the mouse up outside event to the layers
@@ -406,7 +402,7 @@ export class LayerInteractionHandler<
         layer: this.layer.id,
         projection: view.projection,
         screen: touch.screen.position,
-        world
+        world,
       };
 
       onTouchAllEnd(info);
@@ -443,14 +439,14 @@ export class LayerInteractionHandler<
         // MOUSE OUT
         // First broadcast Mouse out events
         const isCurrentlyOver = new Set<T>();
-        instances.forEach(o => isCurrentlyOver.add(o));
+        instances.forEach((o) => isCurrentlyOver.add(o));
 
         // Broadcast the the picking info for all instances that the mouse moved
         // off of
         if (onMouseOut) {
           const noLongerOver: T[] = [];
 
-          this.isMouseOver.forEach(o => {
+          this.isMouseOver.forEach((o) => {
             if (!isCurrentlyOver.has(o)) {
               noLongerOver.push(o);
             }
@@ -463,7 +459,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           if (noLongerOver.length > 0) onMouseOut(info);
@@ -473,7 +469,7 @@ export class LayerInteractionHandler<
         // of the layers listeners if needed
         if (onMouseOver) {
           const notOverInstances = instances.filter(
-            o => !this.isMouseOver.has(o)
+            (o) => !this.isMouseOver.has(o)
           );
           info = {
             interaction,
@@ -481,7 +477,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           if (notOverInstances.length > 0) onMouseOver(info);
@@ -497,7 +493,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: interaction.screen.position,
-            world
+            world,
           };
 
           onMouseMove(info);
@@ -548,14 +544,14 @@ export class LayerInteractionHandler<
         // TOUCH OUT
         // First broadcast touch out events
         const isCurrentlyOver = new Set<T>();
-        instances.forEach(o => isCurrentlyOver.add(o));
+        instances.forEach((o) => isCurrentlyOver.add(o));
 
         // Broadcast the the picking info for all instances that the touch moved
         // off of
         if (onTouchOut) {
           const noLongerOver: T[] = [];
 
-          isTouchOver.forEach(o => {
+          isTouchOver.forEach((o) => {
             if (!isCurrentlyOver.has(o)) {
               noLongerOver.push(o);
             }
@@ -569,7 +565,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           if (noLongerOver.length > 0) onTouchOut(info);
@@ -578,7 +574,7 @@ export class LayerInteractionHandler<
         // TOUCH OVER Broadcast the picking info for newly over instances to any
         // of the layers listeners if needed
         if (onTouchOver) {
-          const notOverInstances = instances.filter(o => !isTouchOver.has(o));
+          const notOverInstances = instances.filter((o) => !isTouchOver.has(o));
           info = {
             interaction,
             touch,
@@ -586,7 +582,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           if (notOverInstances.length > 0) onTouchOver(info);
@@ -603,7 +599,7 @@ export class LayerInteractionHandler<
             layer: this.layer.id,
             projection: view.projection,
             screen: touch.screen.position,
-            world
+            world,
           };
 
           onTouchMove(info);
@@ -646,7 +642,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view.projection,
           screen: interaction.screen.position,
-          world
+          world,
         };
 
         onMouseClick(info);
@@ -687,7 +683,7 @@ export class LayerInteractionHandler<
           layer: this.layer.id,
           projection: view.projection,
           screen: touch.screen.position,
-          world
+          world,
         };
 
         onTap(info);

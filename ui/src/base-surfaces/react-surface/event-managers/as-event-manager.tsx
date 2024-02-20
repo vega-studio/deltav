@@ -1,6 +1,6 @@
 import { EventManager } from "../../../event-management/index.js";
-import { SurfaceJSXType } from "../group-surface-children.js";
 import { IResolverProvider } from "../use-child-resolver.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 /**
  * Base props required for the component to implement to be a EventManagerJSX
  */

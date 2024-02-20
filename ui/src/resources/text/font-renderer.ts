@@ -3,12 +3,12 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-import { WebGLStat } from "../../gl/webgl-stat";
-import { scale2, Vec2 } from "../../math";
-import { IResourceType, ResourceType } from "../../types";
 import { IdentifyByKey } from "../../util/identify-by-key";
+import { IResourceType, ResourceType } from "../../types";
 import { renderGlyph } from "./glyph-renderer";
+import { scale2, Vec2 } from "../../math";
 import { svgToData } from "./svg-to-data";
+import { WebGLStat } from "../../gl/webgl-stat";
 
 import Debug from "debug";
 
@@ -72,8 +72,9 @@ async function renderEachPair(
     currentBatch = Math.floor(rows.length / rowsPerBatch);
     tr.setAttribute(
       "transform",
-      `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
-        cellHeight})`
+      `translate(0, ${
+        (rows.length - currentBatch * rowsPerBatch) * cellHeight
+      })`
     );
     rows.push(tr);
 
@@ -132,7 +133,7 @@ async function renderEachPair(
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
-      Number.MAX_SAFE_INTEGER
+      Number.MAX_SAFE_INTEGER,
     ]);
   }
 
@@ -197,8 +198,9 @@ async function renderEachPair(
         currentBatch = Math.floor(rows.length / rowsPerBatch);
         tr.setAttribute(
           "transform",
-          `translate(0, ${(rows.length - currentBatch * rowsPerBatch) *
-            cellHeight})`
+          `translate(0, ${
+            (rows.length - currentBatch * rowsPerBatch) * cellHeight
+          })`
         );
         currentRow = tr;
         currentRow.appendChild(td);
@@ -214,7 +216,7 @@ async function renderEachPair(
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
-        Number.MAX_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER,
       ]);
 
       // Indicate the space check is indeed happening
@@ -387,7 +389,7 @@ function stringToPairs(
   return {
     all,
     pairs,
-    spaceWidth: 0
+    spaceWidth: 0,
   };
 }
 
@@ -425,7 +427,7 @@ export class FontRenderer {
       if (glyph) {
         map[char] = {
           glyph: glyph.data,
-          glyphIndex: i
+          glyphIndex: i,
         };
       } else {
         console.warn(
@@ -455,7 +457,7 @@ export class FontRenderer {
     const pairInfo: KerningInfo = {
       all: [],
       pairs: {},
-      spaceWidth: 0
+      spaceWidth: 0,
     };
 
     debug("Estimating Kerning for", str);

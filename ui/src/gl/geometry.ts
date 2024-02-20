@@ -24,12 +24,12 @@ export class Geometry {
     proxy: GLProxy;
   };
   /** Number of instances this geometry covers */
-  maxInstancedCount: number = 0;
+  maxInstancedCount = 0;
   /**
    * If all attributes added are instanced or not instanced, then this geometry
    * is not instanced
    */
-  isInstanced: boolean = false;
+  isInstanced = false;
 
   /**
    * Adds an attribute to this geometry. This will associate the attribute's
@@ -41,7 +41,7 @@ export class Geometry {
     let didChange: number | undefined;
 
     // Check to see if the attributes are uniform or not in instancing
-    Object.values(this._attributes).forEach(attr => {
+    Object.values(this._attributes).forEach((attr) => {
       const check = attr.isInstanced ? 1 : 0;
       // Initialize the check value if it has not been yet
       if (didChange === undefined) didChange = check;
@@ -62,7 +62,7 @@ export class Geometry {
    * Destroys this resource and frees resources it consumes on the GPU.
    */
   destroy() {
-    this.attributes.forEach(attribute => attribute.destroy());
+    this.attributes.forEach((attribute) => attribute.destroy());
 
     if (this.gl) {
       this.gl.proxy.disposeGeometry(this);

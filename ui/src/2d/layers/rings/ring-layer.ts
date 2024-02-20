@@ -1,5 +1,8 @@
-import { InstanceProvider } from "../../../instance-provider";
+import RingLayerFS from "./ring-layer.fs";
+import RingLayerVS from "./ring-layer.vs";
+import { CommonMaterialOptions } from "../../../util";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -8,11 +11,8 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { InstanceProvider } from "../../../instance-provider";
 import { RingInstance } from "./ring-instance";
-import RingLayerFS from "./ring-layer.fs";
-import RingLayerVS from "./ring-layer.vs";
 
 export interface IRingLayerProps<T extends RingInstance>
   extends ILayer2DProps<T> {

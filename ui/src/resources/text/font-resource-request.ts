@@ -1,13 +1,13 @@
-import { Texture } from "../../gl/texture";
-import { ResourceType } from "../../types";
 import { BaseResourceRequest } from "../base-resource-manager";
 import { FontMap, KernedLayout } from "./font-map";
+import { ResourceType } from "../../types";
+import { Texture } from "../../gl/texture";
 
 export enum FontResourceRequestFetch {
   /** Retrieves the tex coordinates on the font map of the specified character glyph. Defaults to [0, 0, 0, 0] */
   TEXCOORDS = 0,
   /** Retrieves the pixel size of the character glyph on the font map */
-  IMAGE_SIZE = 1
+  IMAGE_SIZE = 1,
 }
 
 /**
@@ -66,7 +66,7 @@ export function fontRequest(
 ): IFontResourceRequest {
   return {
     type: ResourceType.FONT,
-    ...options
+    ...options,
   };
 }
 

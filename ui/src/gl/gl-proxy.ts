@@ -1,7 +1,6 @@
-import { isString } from "../types";
+import Debug from "debug";
 import { Attribute } from "./attribute";
 import { ColorBuffer } from "./color-buffer";
-import { Geometry } from "./geometry";
 import {
   colorBufferFormat,
   depthBufferFormat,
@@ -14,15 +13,16 @@ import {
   texelFormat,
   wrapMode,
 } from "./gl-decode";
+import { Geometry } from "./geometry";
+import { GLContext, IExtensions } from "./types";
 import { GLSettings } from "./gl-settings";
 import { GLState } from "./gl-state";
+import { isString } from "../types";
 import { Material } from "./material";
 import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
-import { GLContext, IExtensions } from "./types";
 import { WebGLStat } from "./webgl-stat";
-import Debug from "debug";
 
 const debug = Debug("performance");
 
@@ -65,7 +65,7 @@ function isTextureReady(texture: Texture): texture is Texture & {
  */
 export class GLProxy {
   /** Message to include with debugging statements, warnings and errors */
-  debugContext: string = "";
+  debugContext = "";
   /** This is the gl context we're manipulating. */
   gl: GLContext;
   /** This is the state tracker of the GL context */
@@ -1277,7 +1277,7 @@ export class GLProxy {
   /**
    * Retrieves the gl context from the canvas
    */
-  static getContext(canvas: HTMLCanvasElement, options: {}) {
+  static getContext(canvas: HTMLCanvasElement, options: object) {
     // Attempt to fetch the same webgl as webgl stat reports, if it fails,
     // attempt to fetch in descending order a known version of webgl.
     const names = [
@@ -1504,7 +1504,6 @@ export class GLProxy {
           texelFormat(gl, texture.internalFormat),
           texelFormat(gl, texture.format),
           inputImageFormat(gl, texture.type),
-          // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason
           texture.data
         );
       }
@@ -1589,7 +1588,6 @@ export class GLProxy {
             bounds.y,
             texelFormat(gl, texture.format),
             inputImageFormat(gl, texture.type),
-            // @ts-ignore Typescript is not able to pick the correct overload for the type check for this for some reason
             buffer
           );
         }
@@ -1899,7 +1897,7 @@ export class GLProxy {
 
       // For sizes that exceed a single 'block' for a vertex attribute, one must break up the attribute pointers as the
       // max allowed size is 4 at a time.
-      default:
+      default: {
         const totalBlocks = Math.ceil(attribute.size / 4);
 
         for (let i = 0; i < totalBlocks; ++i) {
@@ -1927,6 +1925,7 @@ export class GLProxy {
         }
 
         break;
+      }
     }
 
     return true;

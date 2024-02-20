@@ -1,12 +1,12 @@
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface/layer";
 import {
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
   Omit,
-  ShaderInjectionTarget
+  ShaderInjectionTarget,
 } from "../../types";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
 
 /**
  * This is the message used when a module unit is attempted to be modified after

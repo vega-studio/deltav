@@ -1,7 +1,7 @@
+import noopFS from "./shader-fragments/no-op.fs";
+import noopVS from "./shader-fragments/no-op.vs";
 import { ShaderInjectionTarget } from "../../types";
 import { ShaderModule } from "../processing";
-import noopVS from "./shader-fragments/no-op.vs";
-import noopFS from "./shader-fragments/no-op.fs";
 
 const doc = `
 Makes a no-op shader where gl_Position
@@ -17,12 +17,12 @@ ShaderModule.register([
     moduleId: "no-op",
     description: doc,
     content: noopVS,
-    compatibility: ShaderInjectionTarget.VERTEX
+    compatibility: ShaderInjectionTarget.VERTEX,
   },
   {
     moduleId: "no-op",
     description: doc,
     content: noopFS,
-    compatibility: ShaderInjectionTarget.FRAGMENT
-  }
+    compatibility: ShaderInjectionTarget.FRAGMENT,
+  },
 ]);

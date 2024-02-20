@@ -1,6 +1,6 @@
+import packFloat from "./shader-fragments/pack-float.vs";
 import { ShaderInjectionTarget } from "../../types";
 import { ShaderModule } from "../processing";
-import packFloat from "./shader-fragments/pack-float.vs";
 
 const doc = `
 This provides the ability to pack
@@ -20,5 +20,5 @@ ShaderModule.register({
   moduleId: "packFloat",
   description: doc,
   content: packFloat,
-  compatibility: ShaderInjectionTarget.ALL
+  compatibility: ShaderInjectionTarget.ALL,
 });

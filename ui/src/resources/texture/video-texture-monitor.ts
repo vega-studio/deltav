@@ -7,16 +7,19 @@ import { SubTexture } from "./sub-texture";
  */
 export class VideoTextureMonitor {
   /** Indictaes if this resource is valid or not */
-  private isDestroyed: boolean = false;
+  private isDestroyed = false;
   /** This is the current rendered time frame that is applied to the subtexture */
-  private renderedTime: number = -1;
+  private renderedTime = -1;
 
-  previousTime: number = -1;
-  playedFrames: number = 0;
-  caughtFrames: number = 0;
-  timeFrame: number = 0;
+  previousTime = -1;
+  playedFrames = 0;
+  caughtFrames = 0;
+  timeFrame = 0;
 
-  constructor(public video: HTMLVideoElement, public subTexture: SubTexture) {
+  constructor(
+    public video: HTMLVideoElement,
+    public subTexture: SubTexture
+  ) {
     this.addEventListeners();
   }
 

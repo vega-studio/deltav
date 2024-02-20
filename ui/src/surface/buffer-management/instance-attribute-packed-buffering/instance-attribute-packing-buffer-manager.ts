@@ -1,20 +1,20 @@
 import { Attribute, Geometry, Material, Model } from "../../../gl";
-import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import {
-  IInstanceAttribute,
-  IInstanceAttributeInternal,
-  InstanceDiffType,
-} from "../../../types";
-import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
-import { uid } from "../../../util/uid";
-import { ILayerProps, Layer } from "../../layer";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import { LayerScene } from "../../layer-scene";
 import {
   BufferManagerBase,
   IBufferLocation,
   IBufferLocationGroup,
 } from "../buffer-manager-base";
+import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model";
+import {
+  IInstanceAttribute,
+  IInstanceAttributeInternal,
+  InstanceDiffType,
+} from "../../../types";
+import { ILayerProps, Layer } from "../../layer";
+import { Instance, ObservableMonitoring } from "../../../instance-provider";
+import { LayerScene } from "../../layer-scene";
+import { uid } from "../../../util/uid";
 
 const { max } = Math;
 import Debug from "debug";
@@ -56,7 +56,7 @@ export class InstanceAttributePackingBufferManager<
     [key: number]: IInstanceAttributePackingBufferLocationGroup;
   } = {};
   /** This is the number of instances the buffer currently supports */
-  private maxInstancedCount: number = 1000;
+  private maxInstancedCount = 1000;
 
   // These are the only GL objects that must be monitored for disposal
   private geometry?: Geometry;
@@ -83,7 +83,7 @@ export class InstanceAttributePackingBufferManager<
    * This is the discovered property id of the active attribute for the instance type this manager manages.
    * This is used by the diffing process to target updates related to deactivating an instance.
    */
-  private activePropertyId: number = -1;
+  private activePropertyId = -1;
   /**
    * As changes are processed, instances will be added into the buffers. As they are added in, the instance
    * will take over available locations within the buffer. Normally we would have these available locations
@@ -93,7 +93,7 @@ export class InstanceAttributePackingBufferManager<
    * we perform a one time operation splice to delete any list of available locations that have been used. This
    * GREATLY improves performance for these types of operations.
    */
-  private currentAvailableLocation: number = -1;
+  private currentAvailableLocation = -1;
 
   constructor(layer: Layer<TInstance, any>, scene: LayerScene) {
     super(layer, scene);

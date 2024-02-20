@@ -3,5 +3,5 @@ export const templateVars = {
   easingMethod: "easingMethod",
   extend: "extend",
   extendHeader: "extendHeader",
-  T: "T"
+  T: "T",
 };

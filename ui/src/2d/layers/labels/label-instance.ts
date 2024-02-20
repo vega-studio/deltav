@@ -1,13 +1,13 @@
-import { makeObservable, observable } from "../../../instance-provider";
-import {
-  IInstanceOptions,
-  Instance
-} from "../../../instance-provider/instance";
-import { Vec2 } from "../../../math";
-import { isWhiteSpace, Size } from "../../../types";
 import { Anchor, AnchorType } from "../../types";
 import { GlyphInstance } from "./glyph-instance";
+import {
+  IInstanceOptions,
+  Instance,
+} from "../../../instance-provider/instance";
+import { isWhiteSpace, Size } from "../../../types";
+import { makeObservable, observable } from "../../../instance-provider";
 import { TextAreaInstance } from "./text-area-instance";
+import { Vec2 } from "../../../math";
 
 export interface ILabelInstanceOptions extends IInstanceOptions {
   /**
@@ -50,31 +50,31 @@ export class LabelInstance extends Instance {
   /** This is the rendered color of the label */
   @observable color: [number, number, number, number] = [0, 0, 0, 1];
   /** Depth sorting of the label (or the z value of the label) */
-  @observable depth: number = 0;
+  @observable depth = 0;
   /**
    * Font size in world coordinates. This causes scaling relative to the base font resource available.
    * IE- If the font resource is rendered at 32 and this is 16, then the output rendering will
    *     be glyphs that are 50% the size of the rendered glyph in the font map. This can cause
    *     artefacts based on the rendering strategy used.
    */
-  @observable fontSize: number = 12;
+  @observable fontSize = 12;
   /** When in BOUND_MAX mode, this controls how much scaling is allowed up to the base font size */
-  @observable maxScale: number = 1;
+  @observable maxScale = 1;
   /**
    * This is the maximum width the label can take up. If this is exceeded the label gets truncated.
    * A max width of 0 or less is unbounded and will not truncate the text. When a max width is specified,
    * there will always be a minimum requirement to show ellipses which inevitably causes a min width to
    * arise and is dependent on the font in use.
    */
-  @observable maxWidth: number = 0;
+  @observable maxWidth = 0;
   /** The x coordinate where the label will be anchored to in world space */
   @observable origin: Vec2 = [0, 0];
   /** Scales the label uniformly */
-  @observable scale: number = 1.0;
+  @observable scale = 1.0;
   /** The rendered text for the label. */
-  @observable text: string = "";
+  @observable text = "";
   /** Spacing between letters in a label */
-  @observable letterSpacing: number = 0;
+  @observable letterSpacing = 0;
 
   /** This executes when the label is finished waiting for it's glyphs to be ready to render */
   onReady?: (label: LabelInstance) => void;
@@ -84,7 +84,7 @@ export class LabelInstance extends Instance {
    * Special flag for the instance that will cause the instance to not render any glyphs but will ensure the label's
    * Kerning is calculated.
    */
-  preload: boolean = false;
+  preload = false;
   /**
    * After the label has been rendered, this will be populated with all of the glyphs that
    * have been created for the label. Using this you can manipulate each character very easily.
@@ -103,7 +103,7 @@ export class LabelInstance extends Instance {
    * This provides the calculated truncated text. If not populated, then no truncation
    * has happened.
    */
-  truncatedText: string = "";
+  truncatedText = "";
 
   /** This is the anchor location relative to the label's render space */
   @observable
@@ -112,7 +112,7 @@ export class LabelInstance extends Instance {
     paddingDirection: [0, 0],
     type: AnchorType.TopLeft,
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(options: ILabelInstanceOptions) {
@@ -149,7 +149,7 @@ export class LabelInstance extends Instance {
       paddingDirection: anchor.paddingDirection,
       type: anchor.type,
       x: anchor.x || 0,
-      y: anchor.y || 0
+      y: anchor.y || 0,
     };
 
     // Apply the anchor

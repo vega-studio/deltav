@@ -1,24 +1,24 @@
-import { GLSettings, Texture } from "../../../../gl";
-import {
-  Instance,
-  InstanceProvider,
-  makeObservable,
-  observable,
-} from "../../../../instance-provider";
-import { Vec2 } from "../../../../math";
-import { IRenderTextureResource, textureRequest } from "../../../../resources";
-import { ILayerProps, Layer } from "../../../../surface";
 import {
   Color,
+  InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
-  InstanceAttributeSize,
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
 } from "../../../../types";
 import { CommonMaterialOptions, isDefined } from "../../../../util";
 import { flatten2D } from "../../../../util/array";
+import { GLSettings, Texture } from "../../../../gl";
+import { ILayerProps, Layer } from "../../../../surface";
+import {
+  Instance,
+  InstanceProvider,
+  makeObservable,
+  observable,
+} from "../../../../instance-provider";
+import { IRenderTextureResource, textureRequest } from "../../../../resources";
+import { Vec2 } from "../../../../math";
 
 export class PostProcessInstance extends Instance {
   @observable tint: Color = [1, 1, 1, 1];
@@ -74,6 +74,7 @@ export class PostProcessLayer extends Layer<
     const { buffers, fs, data } = this.props;
     const dummyInstance = new PostProcessInstance();
     if (data instanceof InstanceProvider) data.add(dummyInstance);
+    this.alwaysDraw = true;
 
     const vertexToNormal: Vec2[] = [
       [-1, -1],
@@ -161,6 +162,10 @@ export class PostProcessLayer extends Layer<
       ],
       vertexCount: 4,
     };
+  }
+
+  shouldDrawView(): boolean {
+    return true;
   }
 
   getMaterialOptions() {

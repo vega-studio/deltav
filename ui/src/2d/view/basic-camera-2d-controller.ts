@@ -1,9 +1,3 @@
-import { SimpleEventHandler } from "../../event-management/simple-event-handler";
-import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction,
-} from "../../event-management/types";
 import {
   add3,
   AutoEasingMethod,
@@ -22,9 +16,15 @@ import {
   vec3,
 } from "../../math";
 import { Bounds } from "../../math/primitives/bounds";
-import { IViewProps, View } from "../../surface/view";
-import { touchesContainsStartView, touchesHasStartView, uid } from "../../util";
 import { Camera2D } from "./camera-2d";
+import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+} from "../../event-management/types";
+import { IViewProps, View } from "../../surface/view";
+import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { touchesContainsStartView, touchesHasStartView, uid } from "../../util";
 
 /**
  * Anchor options for the controller
@@ -133,9 +133,9 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /** When this is set to true, the start view can be targetted even when behind other views */
   ignoreCoverViews?: boolean;
   /** Informative property indicating the controller is panning the chart or not */
-  isPanning: boolean = false;
+  isPanning = false;
   /** Informative property indicationt he controller is scaling via touch gesture */
-  isScaling: boolean = false;
+  isScaling = false;
   /** This is the filter applied to panning operations */
   private panFilter = (
     offset: [number, number, number],
@@ -181,7 +181,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
    * This flag is set to true when a start view is targetted on mouse down even if it is not
    * the top most view.
    */
-  private startViewDidStart: boolean = false;
+  private startViewDidStart = false;
 
   constructor(options: IBasicCamera2DControllerOptions) {
     super({});
@@ -965,7 +965,7 @@ export class BasicCamera2DController extends SimpleEventHandler {
    *
    * @param viewId The id of the view when the view was generated when the surface was made
    */
-  setRange(newWorld: Bounds<{}>, viewId: string) {
+  setRange(newWorld: Bounds<object>, viewId: string) {
     /** Get the projections for the provided view */
     const projection = this.getProjection(viewId);
     /** Get the bounds on the screen for the indicated view */

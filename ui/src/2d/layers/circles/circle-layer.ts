@@ -1,7 +1,9 @@
-import { GLSettings } from "../../../gl";
-import { InstanceProvider } from "../../../instance-provider";
-import { Vec } from "../../../math";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
+import CircleLayerFS from "./circle-layer.fs";
+import CircleLayerPointsFS from "./circle-layer-points.fs";
+import CircleLayerPointsVS from "./circle-layer-points.vs";
+import CircleLayerVS from "./circle-layer.vs";
+import { CircleInstance } from "./circle-instance";
+import { CommonMaterialOptions } from "../../../util";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
@@ -10,15 +12,13 @@ import {
   IUniform,
   IVertexAttribute,
   UniformSize,
-  VertexAttributeSize
+  VertexAttributeSize,
 } from "../../../types";
-import { CommonMaterialOptions } from "../../../util";
+import { GLSettings } from "../../../gl";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { CircleInstance } from "./circle-instance";
-import CircleLayerFS from "./circle-layer.fs";
-import CircleLayerVS from "./circle-layer.vs";
-import CircleLayerPointsFS from "./circle-layer-points.fs";
-import CircleLayerPointsVS from "./circle-layer-points.vs";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec } from "../../../math";
 
 export interface ICircleLayerProps<T extends CircleInstance>
   extends ILayer2DProps<T> {
@@ -54,18 +54,18 @@ export interface ICircleLayerProps<T extends CircleInstance>
  */
 export class CircleLayer<
   T extends CircleInstance,
-  U extends ICircleLayerProps<T>
+  U extends ICircleLayerProps<T>,
 > extends Layer2D<T, U> {
   static defaultProps: ICircleLayerProps<CircleInstance> = {
     data: new InstanceProvider<CircleInstance>(),
-    key: ""
+    key: "",
   };
 
   static attributeNames = {
     center: "center",
     color: "color",
     depth: "depth",
-    radius: "radius"
+    radius: "radius",
   };
 
   /**
@@ -77,7 +77,7 @@ export class CircleLayer<
     const {
       center: animateCenter,
       radius: animateRadius,
-      color: animateColor
+      color: animateColor,
     } = animate;
 
     const vertexToNormal: { [key: number]: number } = {
@@ -86,7 +86,7 @@ export class CircleLayer<
       2: -1,
       3: 1,
       4: -1,
-      5: -1
+      5: -1,
     };
 
     const vertexToSide: { [key: number]: number } = {
@@ -95,7 +95,7 @@ export class CircleLayer<
       2: -1,
       3: 1,
       4: 1,
-      5: 1
+      5: 1,
     };
 
     const vertexAttributes: IVertexAttribute[] = [
@@ -106,9 +106,9 @@ export class CircleLayer<
           // Normal
           vertexToNormal[vertex],
           // The side of the quad
-          vertexToSide[vertex]
-        ]
-      }
+          vertexToSide[vertex],
+        ],
+      },
     ];
 
     const vertexCount = 6;
@@ -121,7 +121,7 @@ export class CircleLayer<
         ? [
             {
               outputType: FragmentOutputType.COLOR,
-              source: CircleLayerPointsFS
+              source: CircleLayerPointsFS,
             },
             {
               outputType: FragmentOutputType.GLOW,
@@ -129,13 +129,13 @@ export class CircleLayer<
               void main() {
                 $\{out: glow} = color;
               }
-              `
-            }
+              `,
+            },
           ]
         : [
             {
               outputType: FragmentOutputType.COLOR,
-              source: CircleLayerFS
+              source: CircleLayerFS,
             },
             {
               outputType: FragmentOutputType.GLOW,
@@ -143,46 +143,44 @@ export class CircleLayer<
               void main() {
                 $\{out: glow} = color;
               }
-              `
-            }
+              `,
+            },
           ],
       instanceAttributes: [
         {
           easing: animateCenter,
           name: CircleLayer.attributeNames.center,
           size: InstanceAttributeSize.TWO,
-          update: circle => circle.center
+          update: (circle) => circle.center,
         },
         {
           easing: animateRadius,
           name: CircleLayer.attributeNames.radius,
           size: InstanceAttributeSize.ONE,
-          update: circle => [circle.radius]
+          update: (circle) => [circle.radius],
         },
         {
           name: CircleLayer.attributeNames.depth,
           size: InstanceAttributeSize.ONE,
-          update: circle => [circle.depth]
+          update: (circle) => [circle.depth],
         },
         {
           easing: animateColor,
           name: CircleLayer.attributeNames.color,
           size: InstanceAttributeSize.FOUR,
-          update: circle => circle.color
-        }
+          update: (circle) => circle.color,
+        },
       ],
       uniforms: [
         {
           name: "layerOpacity",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [opacity()]
-        }
+          update: (_uniform: IUniform) => [opacity()],
+        },
       ],
       vertexAttributes: usePoints ? undefined : vertexAttributes,
       vertexCount: usePoints ? 0 : vertexCount,
-      vs: usePoints
-        ? CircleLayerPointsVS
-        : CircleLayerVS
+      vs: usePoints ? CircleLayerPointsVS : CircleLayerVS,
     };
   }
 

@@ -23,12 +23,12 @@ import {
   transpose3x3,
   TRS4x4,
   V3R,
-  Vec3
+  Vec3,
 } from "../../math";
-import { UpdateProp } from "../../types";
 import { Instance3D } from "./instance-3d";
 import { resolveUpdate, scheduleUpdate } from "./transform-base";
 import { TreeNode } from "./tree-node";
+import { UpdateProp } from "../../types";
 
 /**
  * The initial properties of the transform on creation
@@ -73,7 +73,7 @@ export class Transform extends TreeNode<Transform> {
    * Flag that indicates this transform has a matrix that performs the
    * operations in reverse (such as for a camera.)
    */
-  private hasViewMatrix: boolean = false;
+  private hasViewMatrix = false;
 
   /** This is a special instance listener for the transform */
   private _instance: Instance3D | null = null;
@@ -250,7 +250,7 @@ export class Transform extends TreeNode<Transform> {
   }
   private _rotation: UpdateProp<Quaternion> = { value: oneQuat() };
   private _localRotation: UpdateProp<Quaternion> = {
-    value: this._rotation.value
+    value: this._rotation.value,
   };
   private localRotationMatrix = identity3();
 
@@ -326,7 +326,7 @@ export class Transform extends TreeNode<Transform> {
   }
   private _position: UpdateProp<Vec3> = { value: [0, 0, 0] };
   private _localPosition: UpdateProp<Vec3> = {
-    value: this._position.value
+    value: this._position.value,
   };
 
   /**
@@ -363,7 +363,7 @@ export class Transform extends TreeNode<Transform> {
   }
   private _forward: UpdateProp<Vec3> = { value: forward3() };
   private _localForward: UpdateProp<Vec3> = { value: this._forward.value };
-  private needsForwardUpdate: boolean = false;
+  private needsForwardUpdate = false;
 
   constructor(options?: ITransform) {
     super();
@@ -680,7 +680,7 @@ export class Transform extends TreeNode<Transform> {
         // up the chain are out of date as well. So we shall update those nodes
         // starting at the top most out of date node, and work our way down
         if (!unsafe) {
-          this.processParentUpdates(transform => {
+          this.processParentUpdates((transform) => {
             transform.update(true);
           });
         }

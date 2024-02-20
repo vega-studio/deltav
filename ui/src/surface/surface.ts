@@ -1,12 +1,8 @@
-import { EventManager } from "../event-management/event-manager";
-import { UserInputEventManager } from "../event-management/user-input-event-manager";
-import { isOffscreenCanvas, RenderTarget, Scene } from "../gl";
-import { WebGLRenderer } from "../gl/webgl-renderer";
-import { Instance } from "../instance-provider/instance";
+import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
+import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
+import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
 import { BaseProjection } from "../math";
-import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
-import { Bounds } from "../math/primitives/bounds";
-import { Vec4 } from "../math/vector";
 import {
   BaseResourceManager,
   BaseResourceOptions,
@@ -14,35 +10,39 @@ import {
   FontResourceManager,
   ResourceRouter,
 } from "../resources";
-import { ColorBufferResourceManager } from "../resources/color-buffer";
-import { AtlasResourceManager } from "../resources/texture/atlas-resource-manager";
-import { RenderTextureResourceManager } from "../resources/texture/render-texture-resource-manager";
-import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
 import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
-import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion";
+import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
+import { Bounds } from "../math/primitives/bounds";
+import { ClearFlags, IViewProps, View } from "./view";
+import { ColorBufferResourceManager } from "../resources/color-buffer";
+import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
+import { EventManager } from "../event-management/event-manager";
 import {
   FragmentOutputType,
   FrameMetrics,
   ResourceType,
   SurfaceErrorType,
 } from "../types";
+import { getAbsolutePositionBounds } from "../math/primitives/absolute-position";
 import {
   IdentifiableById,
   IInstanceAttribute,
   IPipeline,
   IResourceType,
 } from "../types";
+import { Instance } from "../instance-provider/instance";
+import { ISceneOptions, LayerScene } from "./layer-scene";
+import { isOffscreenCanvas, RenderTarget, Scene } from "../gl";
+import { Layer } from "./layer";
+import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
 import { onFrame, PromiseResolver } from "../util";
 import { ReactiveDiff } from "../util/reactive-diff";
-import { LayerMouseEvents } from "./event-managers/layer-mouse-events";
-import { Layer } from "./layer";
-import { BasicIOExpansion } from "./layer-processing/base-io-expanders/basic-io-expansion";
-import { EasingIOExpansion } from "./layer-processing/base-io-expanders/easing-io-expansion";
-import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
+import { RenderTextureResourceManager } from "../resources/texture/render-texture-resource-manager";
 import { Shaders30CompatibilityTransform } from "./layer-processing/base-shader-transforms/shaders-30-compatibility-transform";
-import { ISceneOptions, LayerScene } from "./layer-scene";
 import { SurfaceCommands } from "./surface-commands";
-import { ClearFlags, IViewProps, View } from "./view";
+import { UserInputEventManager } from "../event-management/user-input-event-manager";
+import { Vec4 } from "../math/vector";
+import { WebGLRenderer } from "../gl/webgl-renderer";
 
 /**
  * Default IO expansion controllers applied to the system when explicit settings
@@ -411,9 +411,10 @@ export class Surface {
   ) {
     if (!this.gl) return;
 
-    // For now, while certain mysteries remain, we will track only if any view needs to be redrawn.
-    // Any view that needs to be redrawn will trigger a redraw of the entire surface for now until
-    // we can optimize down to only drawing a single view without erasing views that were not redrawn.
+    // For now, while certain mysteries remain, we will track only if any view
+    // needs to be redrawn. Any view that needs to be redrawn will trigger a
+    // redraw of the entire surface for now until we can optimize down to only
+    // drawing a single view without erasing views that were not redrawn.
     let needsDraw = false;
 
     // We are rendering a new frame so increment our frame count
@@ -426,8 +427,8 @@ export class Surface {
     if (time === undefined) {
       this.frameMetrics.currentTime = Date.now() | 0;
     } else {
-      // If this is our first frame and we have a manual time entry, then we first need to sync up
-      // The manual time as our previous timing.
+      // If this is our first frame and we have a manual time entry, then we
+      // first need to sync up The manual time as our previous timing.
       if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
         this.frameMetrics.previousTime = time;
       }
@@ -520,7 +521,7 @@ export class Surface {
             layer.draw();
             // If any of the layers under the view need a redraw
             // Then the view needs a redraw
-            if (layer.needsViewDrawn || layer.isAnimationContinuous) {
+            if (layer.needsViewDrawn || layer.alwaysDraw) {
               view.needsDraw = true;
             }
             // Flag the layer as valid

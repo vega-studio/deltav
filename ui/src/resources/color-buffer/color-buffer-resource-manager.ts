@@ -1,12 +1,12 @@
-import { Instance } from "../../instance-provider/instance";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { InstanceIOValue, IResourceContext, TextureSize } from "../../types";
 import { BaseResourceManager } from "../base-resource-manager";
 import {
   ColorBufferResource,
   IColorBufferResource,
 } from "./color-buffer-resource";
 import { IColorBufferResourceRequest } from "./color-buffer-resource-request";
+import { ILayerProps, Layer } from "../../surface/layer";
+import { Instance } from "../../instance-provider/instance";
+import { InstanceIOValue, IResourceContext, TextureSize } from "../../types";
 
 /**
  * This manager handles creation and destruction of simple Texture Resources.

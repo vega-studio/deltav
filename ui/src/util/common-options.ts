@@ -17,13 +17,13 @@ export class CommonMaterialOptions {
     blending: {
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
       blendEquation: GLSettings.Material.BlendingEquations.Add,
-      blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha
+      blendSrc: GLSettings.Material.BlendingSrcFactor.SrcAlpha,
     },
     culling: GLSettings.Material.CullSide.NONE,
 
     modify(options: ILayerMaterialOptions) {
       return Object.assign({}, this, options);
-    }
+    },
   };
 
   /**
@@ -34,12 +34,12 @@ export class CommonMaterialOptions {
     blending: {
       blendSrc: GLSettings.Material.BlendingSrcFactor.One,
       blendDst: GLSettings.Material.BlendingDstFactor.OneMinusSrcAlpha,
-      blendEquation: GLSettings.Material.BlendingEquations.Add
+      blendEquation: GLSettings.Material.BlendingEquations.Add,
     },
     culling: GLSettings.Material.CullSide.NONE,
 
     modify(options: ILayerMaterialOptions) {
       return Object.assign({}, this, options);
-    }
+    },
   };
 }

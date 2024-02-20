@@ -1,15 +1,15 @@
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
-import { fontRequest, IFontResourceRequest } from "../../../resources";
-import { KernedLayout } from "../../../resources/text/font-map";
-import { ILayerConstructionClass } from "../../../surface/layer";
-import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types";
-import { createChildLayer, isDefined } from "../../../util";
 import { Anchor, AnchorType, ScaleMode } from "../../types";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
+import { createChildLayer, isDefined } from "../../../util";
+import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { GlyphInstance } from "./glyph-instance";
 import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { ILayerConstructionClass } from "../../../surface/layer";
+import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types";
+import { InstanceProvider } from "../../../instance-provider/instance-provider";
+import { KernedLayout } from "../../../resources/text/font-map";
 import { LabelInstance } from "./label-instance";
 
 /**
@@ -117,6 +117,7 @@ const paddingCalculator: {
     anchor.paddingDirection = scale2(directions[8], anchor.padding);
   },
   [AnchorType.Custom]: (anchor: Anchor) => {
+    // eslint-disable-next-line no-self-assign
     anchor.paddingDirection = anchor.paddingDirection;
   },
 };
@@ -187,7 +188,7 @@ export class LabelLayer<
    * When this is flagged, we must do a complete recomputation of all our label's glyphs positions and kernings.
    * This event really only takes place when the font resource changes.
    */
-  fullUpdate: boolean = false;
+  fullUpdate = false;
   /** Provider for the glyph layer this layer manages */
   glyphProvider = new InstanceProvider<GlyphInstance>();
   /**
@@ -214,7 +215,7 @@ export class LabelLayer<
   /**
    * This is the width of the truncation glyphs.
    */
-  truncationWidth: number = -1;
+  truncationWidth = -1;
 
   /**
    * This provides the child layers that will render on behalf of this layer.
@@ -354,7 +355,7 @@ export class LabelLayer<
           this.insert(instance);
           break;
 
-        case InstanceDiffType.REMOVE:
+        case InstanceDiffType.REMOVE: {
           const glyphs = this.labelToGlyphs.get(instance);
 
           if (glyphs) {
@@ -367,6 +368,7 @@ export class LabelLayer<
             this.labelWaitingOnGlyph.delete(instance);
           }
           break;
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 import assert from "assert";
-import { describe, it } from "@jest/globals";
 import { Bounds } from "../ui/src/math/primitives";
+import { describe, it } from "@jest/globals";
 import { getAbsolutePositionBounds } from "../ui/src/math/primitives/absolute-position";
 
 describe("Absolute Position", () => {

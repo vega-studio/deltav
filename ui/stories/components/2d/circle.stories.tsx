@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  add2,
   AutoEasingMethod,
   Camera2D,
   CircleInstance,
@@ -7,17 +8,16 @@ import {
   ClearFlags,
   InstanceProvider,
   LayerJSX,
+  normalize2,
+  onAnimationLoop,
+  onFrame,
   PromiseResolver,
+  scale2,
+  stopAnimationLoop,
   Surface,
   SurfaceJSX,
   View2D,
   ViewJSX,
-  add2,
-  normalize2,
-  onAnimationLoop,
-  onFrame,
-  scale2,
-  stopAnimationLoop,
 } from "../../../src";
 import { StoryFn } from "@storybook/react";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
@@ -91,7 +91,6 @@ export const Basic: StoryFn = (() => {
   );
 }).bind({});
 
-
 export const StarField: StoryFn = (() => {
   const circleProvider = React.useRef<InstanceProvider<CircleInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
@@ -105,7 +104,8 @@ export const StarField: StoryFn = (() => {
       if (!circleProvider.current || !surface) return;
 
       // Declare and assign size inside the didMount function
-      const size: { width: number; height: number } | null = surface.getViewSize("main");
+      const size: { width: number; height: number } | null =
+        surface.getViewSize("main");
       if (!size || !size.width || !size.height) {
         console.warn("Invalid View Size", surface);
         return;
@@ -135,16 +135,16 @@ export const StarField: StoryFn = (() => {
         // Move to destination and adjust size based on distance from the center
         onFrame(() => {
           theCircles.forEach((c) => {
-              // Move the circle to the destination
-              const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
-              c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
-              c.radius = maxRadius;
+            // Move the circle to the destination
+            const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
+            c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
+            c.radius = maxRadius;
           });
-      }, 1);
+        }, 1);
 
         // Clean up
         onFrame(() => {
-          theCircles.forEach(c => circleProvider.current?.remove(c));
+          theCircles.forEach((c) => circleProvider.current?.remove(c));
         }, animationDuration);
       }, 1);
 

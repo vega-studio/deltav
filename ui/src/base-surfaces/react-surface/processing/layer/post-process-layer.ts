@@ -40,7 +40,7 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
   /**
    * Additional uniforms to inject into the program.
    */
-  uniforms?: IUniform[];
+  uniforms?: IUniform[] | ((layer: PostProcessLayer) => IUniform[]);
 }
 
 /**
@@ -129,6 +129,12 @@ export class PostProcessLayer extends Layer<
         .filter(isDefined)
     );
 
+    let addUniforms = this.props.uniforms || [];
+
+    if (!Array.isArray(addUniforms)) {
+      addUniforms = addUniforms(this);
+    }
+
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
       vs: `
@@ -147,7 +153,7 @@ export class PostProcessLayer extends Layer<
           update: (_o) => [0],
         },
       ],
-      uniforms: resourceUniforms.concat(this.props.uniforms || []),
+      uniforms: resourceUniforms.concat(addUniforms),
       vertexAttributes: [
         {
           name: "vertex",

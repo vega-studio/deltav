@@ -32,7 +32,7 @@ export interface IPostProcessJSX {
    * NOTE: Remember to use ShaderInjectionTarget Fragment only! You are not
    * writing a vertex shader here!
    */
-  uniforms?: IUniform[];
+  uniforms?: IUniform[] | ((layer: PostProcessLayer) => IUniform[]);
   /**
    * Use this to modify the View2D being used to produce this quad. You can use
    * these options to redirect the output of this step to another resource if

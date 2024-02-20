@@ -2,18 +2,22 @@ import React from "react";
 import {
   add2,
   AutoEasingMethod,
+  BloomJSX,
   Camera,
   Camera2D,
   CameraProjectionType,
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  EasingUtil,
   FragmentOutputType,
   fromEulerAxisAngleToQuat,
   GLSettings,
   type IMouseInteraction,
   InstanceProvider,
+  LayerJSX,
   multiply4,
+  nextFrame,
   normalize2,
   normalize3,
   onAnimationLoop,
@@ -24,27 +28,26 @@ import {
   SceneJSX,
   SimpleEventHandlerJSX,
   stopAnimationLoop,
+  subtract2,
   Surface,
+  SurfaceJSX,
   TextureJSX,
   TextureSize,
+  TrailJSX,
   Transform,
   vec2,
+  Vec2,
   vec3,
   Vec4,
   View2D,
   View3D,
+  ViewJSX,
 } from "../../src";
-import { BloomJSX } from "../../src/base-surfaces/react-surface/processing/bloom/bloom-jsx";
 import { CubeInstance } from "./layers/cube/cube-instance";
 import { CubeLayer } from "./layers/cube/cube-layer";
 import { InstanceProviderWithList } from "../../src/instance-provider/instance-provider-with-list";
-import { LayerJSX } from "../../src/base-surfaces/react-surface/scene/layer-jsx";
 import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
-import { TrailJSX } from "../../src/base-surfaces/react-surface/processing/trail/trail-jsx";
 import { useLifecycle } from "../../../util/hooks/use-life-cycle";
-import { Vec2 } from "@diniden/signal-processing";
-import { ViewJSX } from "../../src/base-surfaces/react-surface/scene/view-jsx";
 
 export default {
   title: "Deltav/MultiRenderTarget",
@@ -58,7 +61,8 @@ export const Simple_Trail: StoryFn = (() => {
   );
   const camera = React.useRef(new Camera2D());
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 2000;
+  const mouse = React.useRef(vec2(0, 0));
+  const animationDuration = 1000;
 
   useLifecycle({
     async didMount() {
@@ -74,22 +78,53 @@ export const Simple_Trail: StoryFn = (() => {
         return;
       }
 
-      provider.add(
-        new CircleInstance({
-          radius: 100,
-          center: scale2(view.mid, 1 / window.devicePixelRatio),
-          color: [0.4, 0.7, 1.0, 1.0],
-        })
-      );
+      mouse.current = scale2(view.mid, 1 / window.devicePixelRatio);
+
+      onAnimationLoop(() => {
+        const circles: CircleInstance[] = [];
+
+        for (let i = 0, iMax = 10; i < iMax; ++i) {
+          circles.push(
+            provider.add(
+              new CircleInstance({
+                radius: 20,
+                center: add2(
+                  mouse.current,
+                  scale2(
+                    normalize2([Math.random() - 0.5, Math.random() - 0.5]),
+                    Math.random() * 30
+                  )
+                ),
+                color: [0.4, 0.7, 1.0, 1.0],
+              })
+            )
+          );
+        }
+
+        onFrame(() => {
+          circles.forEach((circle) => {
+            circle.radius = 0;
+            circle.color = multiply4(circle.color, [1, 1, 1, 0]);
+          });
+        }, 1);
+
+        onFrame(() => {
+          circles.forEach((circle) => {
+            provider.remove(circle);
+          });
+        }, animationDuration);
+      });
     },
   });
 
   const handleMouseMove = (e: IMouseInteraction) => {
     if (!circleProvider.current) return;
     const world = e.target.view.projection.screenToWorld(e.screen.position);
+    const delta = subtract2(world, mouse.current);
+    mouse.current = vec2(world);
 
     circleProvider.current.instances.forEach((circle) => {
-      circle.center = vec2(world);
+      circle.center = add2(circle.center, delta);
     });
   };
 
@@ -190,6 +225,7 @@ export const Simple_Trail: StoryFn = (() => {
           config={{
             data: circleProvider.current,
             animate: {
+              radius: AutoEasingMethod.linear(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
             },
           }}
@@ -203,7 +239,7 @@ export const Simple_Trail: StoryFn = (() => {
         },
         output: "glowingTrail",
         drift: {
-          direction: [0, -10],
+          direction: [-2, -10],
         },
       })}
       {BloomJSX({
@@ -227,7 +263,7 @@ export const Simple_Trail: StoryFn = (() => {
           "blur7",
           "blur8",
         ],
-        compose: "color",
+        compose: "glow",
       })}
     </SurfaceJSX>
   );
@@ -279,13 +315,18 @@ export const Fireworks: StoryFn = (() => {
         }
 
         // Move the particles to locations and fade them out
-        onFrame(() => {
+        nextFrame(() => {
           instances.forEach((c) => {
             const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
             c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
             c.color = multiply4(c.color, [1, 1, 1, 0]);
+            c.radius = 0;
           });
-        }, 1);
+          EasingUtil.modify(instances, ["center"], (easing) => {
+            const delay = (Math.random() * animationDuration) / 10;
+            easing.setTiming(delay, animationDuration - delay);
+          });
+        });
 
         // Remove all faded out particles
         onFrame(() => {
@@ -397,6 +438,7 @@ export const Fireworks: StoryFn = (() => {
             animate: {
               center: AutoEasingMethod.easeOutCubic(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
+              radius: AutoEasingMethod.linear(animationDuration),
             },
           }}
         />

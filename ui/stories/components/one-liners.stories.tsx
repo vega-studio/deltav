@@ -15,17 +15,17 @@ import {
   GLSettings,
   isString,
   type OutputFragmentShaderSource,
+  PostProcessJSX,
+  removeComments,
   ShaderInjectionTarget,
   ShaderModule,
   shaderTemplate,
+  SurfaceJSX,
   TextureJSX,
   TextureSize,
   UniformSize,
 } from "../../src";
-import { PostProcessJSX } from "../../src/base-surfaces/react-surface/processing/post-process-jsx";
-import { removeComments } from "../../src/util/remove-comments";
 import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
 
 export default {
   title: "Deltav/One Liners",

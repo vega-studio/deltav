@@ -9,6 +9,7 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  DrawJSX,
   EasingUtil,
   FragmentOutputType,
   fromEulerAxisAngleToQuat,
@@ -35,8 +36,8 @@ import {
   TextureSize,
   TrailJSX,
   Transform,
-  vec2,
   Vec2,
+  vec2,
   vec3,
   Vec4,
   View2D,
@@ -56,6 +57,130 @@ export default {
 };
 
 export const Simple_Trail: StoryFn = (() => {
+  const circleProvider = React.useRef(
+    new InstanceProviderWithList<CircleInstance>()
+  );
+  const camera = React.useRef(new Camera2D());
+  const ready = React.useRef(new PromiseResolver<Surface>());
+  const mouse = React.useRef(vec2(0, 0));
+  const animationDuration = 1000;
+
+  useLifecycle({
+    async didMount() {
+      // Wait for the surface to establish the full pipeline
+      if (!circleProvider.current) return;
+      const surface = await ready.current.promise;
+      const provider = circleProvider.current;
+      const view = surface.getViewSize("particles.main");
+      const project = surface.getProjections("particles.main");
+
+      if (!view || !project) {
+        console.warn("Invalid View Size", surface);
+        return;
+      }
+
+      mouse.current = scale2(view.mid, 1 / window.devicePixelRatio);
+
+      provider.add(
+        new CircleInstance({
+          radius: 20,
+          center: mouse.current,
+          color: [0.4, 0.7, 1.0, 1.0],
+        })
+      );
+    },
+  });
+
+  const handleMouseMove = (e: IMouseInteraction) => {
+    if (!circleProvider.current) return;
+    const world = e.target.view.projection.screenToWorld(e.screen.position);
+    mouse.current = vec2(world);
+
+    circleProvider.current.instances.forEach((circle) => {
+      circle.center = mouse.current;
+    });
+  };
+
+  const textureSettingsRGBA = {
+    generateMipMaps: false,
+    format: GLSettings.Texture.TexelDataType.RGBA,
+    internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+  };
+
+  return (
+    <SurfaceJSX
+      ready={ready.current}
+      options={{
+        alpha: true,
+        antialias: true,
+      }}
+    >
+      <SimpleEventHandlerJSX handlers={{ handleMouseMove }} />
+      <TextureJSX
+        name="color"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <TextureJSX
+        name="trail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <TextureJSX
+        name="trailing"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <SceneJSX name="particles">
+        <ViewJSX
+          name="main"
+          type={View2D}
+          config={{
+            background: [0, 0, 0, 0],
+            camera: camera.current,
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          }}
+          output={{
+            buffers: {
+              [FragmentOutputType.COLOR]: "color",
+            },
+            depth: true,
+          }}
+        />
+        <LayerJSX
+          name="circles"
+          type={CircleLayer}
+          config={{
+            data: circleProvider.current,
+            animate: {
+              radius: AutoEasingMethod.linear(animationDuration),
+              color: AutoEasingMethod.easeOutCubic(animationDuration),
+            },
+          }}
+        />
+      </SceneJSX>
+      {TrailJSX({
+        intensity: 0.93,
+        input: {
+          trail: "trail",
+          add: "color",
+        },
+        output: "trailing",
+        drift: {
+          direction: [0, 0],
+        },
+      })}
+      {DrawJSX({
+        input: "trailing",
+      })}
+    </SurfaceJSX>
+  );
+}).bind({});
+
+export const Glowing_Trail: StoryFn = (() => {
   const circleProvider = React.useRef(
     new InstanceProviderWithList<CircleInstance>()
   );
@@ -319,7 +444,7 @@ export const Fireworks: StoryFn = (() => {
           instances.forEach((c) => {
             const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
             c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
-            c.color = multiply4(c.color, [1, 1, 1, 0]);
+            // c.color = multiply4(c.color, [1, 1, 1, 0]);
             c.radius = 0;
           });
           EasingUtil.modify(instances, ["center"], (easing) => {
@@ -438,7 +563,7 @@ export const Fireworks: StoryFn = (() => {
             animate: {
               center: AutoEasingMethod.easeOutCubic(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
-              radius: AutoEasingMethod.linear(animationDuration),
+              radius: AutoEasingMethod.linear(animationDuration * 0.6),
             },
           }}
         />

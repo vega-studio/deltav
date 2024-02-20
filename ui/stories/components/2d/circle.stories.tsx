@@ -45,18 +45,13 @@ export const Basic: StoryFn = (() => {
       }
 
       // Add a single CircleInstance
-      const circleInstance = circleProvider.current.add(
+      circleProvider.current.add(
         new CircleInstance({
           center: [size.mid[0], size.mid[1]],
           radius: 40,
           color: [0, Math.random() * 0.8 + 0.2, Math.random() * 0.8 + 0.2, 1],
         })
       );
-
-      return () => {
-        // Remove the single CircleInstance when the component unmounts
-        circleProvider.current?.remove(circleInstance);
-      };
     },
   });
 
@@ -94,59 +89,60 @@ export const Basic: StoryFn = (() => {
 export const StarField: StoryFn = (() => {
   const circleProvider = React.useRef<InstanceProvider<CircleInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 4000;
-  const minRadius = 0;
+  const animationDuration = 5000;
+  const minRadius = 0.1;
   const maxRadius = 3;
 
   useLifecycle({
     async didMount() {
       const surface = await ready.current.promise;
-      if (!circleProvider.current || !surface) return;
+      const provider = circleProvider.current;
+      if (!circleProvider.current || !surface || !provider) return;
 
-      // Declare and assign size inside the didMount function
-      const size: { width: number; height: number } | null =
-        surface.getViewSize("main");
-      if (!size || !size.width || !size.height) {
-        console.warn("Invalid View Size", surface);
-        return;
-      }
+      const loopId = onAnimationLoop(async (_t: number) => {
+        // Declare and assign size inside the didMount function
+        const size: { width: number; height: number } | null =
+          surface.getViewSize("main");
 
-      const loopId = onAnimationLoop((_t: number) => {
+        if (!size) {
+          console.warn("Invalid View Size", surface);
+          return;
+        }
+
         const theCircles: CircleInstance[] = [];
 
         // Init
         for (let i = 0; i < 10; i++) {
-          if (circleProvider.current && size) {
-            const x = size.width / 2 + Math.random() * 1;
-            const y = size.height / 2 + Math.random() * 1;
+          const x = size.width / 2;
+          const y = size.height / 2;
 
-            const circle = circleProvider.current.add(
-              new CircleInstance({
-                center: [x, y],
-                radius: minRadius,
-                color: [1, 1, 1, 1],
-              })
-            );
+          const circle = provider.add(
+            new CircleInstance({
+              center: [x, y],
+              radius: minRadius,
+              color: [1, 1, 1, 1],
+            })
+          );
 
-            theCircles.push(circle);
-          }
+          theCircles.push(circle);
         }
 
         // Move to destination and adjust size based on distance from the center
         onFrame(() => {
+          const offscreen = Math.max(size.width, size.height);
           theCircles.forEach((c) => {
             // Move the circle to the destination
             const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
-            c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
+            c.center = add2(c.center, scale2(dir, offscreen));
             c.radius = maxRadius;
           });
         }, 1);
 
         // Clean up
         onFrame(() => {
-          theCircles.forEach((c) => circleProvider.current?.remove(c));
+          theCircles.forEach((c) => provider.remove(c));
         }, animationDuration);
-      }, 1);
+      });
 
       return () => {
         // Remove instances when the component unmounts
@@ -179,7 +175,7 @@ export const StarField: StoryFn = (() => {
           // Animation for center property using easing method over 2000 milliseconds
           animate: {
             center: AutoEasingMethod.easeInCubic(animationDuration),
-            radius: AutoEasingMethod.easeInCubic(animationDuration),
+            radius: AutoEasingMethod.easeInQuart(animationDuration),
           },
         }}
       />

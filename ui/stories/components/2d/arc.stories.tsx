@@ -213,10 +213,6 @@ export const AnotherComplex: StoryFn = (() => {
   let currentIteration = 0;
   const activeArcIndex = React.useRef(0);
 
-  function getRandomColor(): [number, number, number, number] {
-    return [Math.random(), Math.random(), Math.random(), 1];
-  }
-
   useLifecycle({
     async didMount() {
       const surface = await ready.current.promise;

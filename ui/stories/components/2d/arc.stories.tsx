@@ -5,7 +5,6 @@ import {
   AutoEasingMethod,
   Camera2D,
   ClearFlags,
-  EasingUtil,
   InstanceProvider,
   LayerJSX,
   onAnimationLoop,
@@ -94,7 +93,6 @@ export const Complex: StoryFn = (() => {
   const animationDuration = 4000;
   let arcCounter = 30;
   let currentIteration = 0;
-  const activeArcIndex = React.useRef(0);
   let loopColor: [number, number, number, number] = [
     Math.random(),
     Math.random(),
@@ -130,7 +128,9 @@ export const Complex: StoryFn = (() => {
             thickness: [5, -5],
           })
         );
-        // Move only the active arc to destination and adjust size based on distance from the center
+
+        // Move only the active arc to destination and adjust size based on
+        // distance from the center
         onFrame(() => {
           if (arcCounter > 0) {
             arcCounter--;
@@ -145,9 +145,6 @@ export const Complex: StoryFn = (() => {
             arc.radius = 30 + currentIteration * 20;
             arc.depth = 1;
           }
-
-          // Update active arc index for the next frame
-          activeArcIndex.current = (activeArcIndex.current + 1) % 15;
         }, 1);
 
         // Clean up
@@ -237,7 +234,9 @@ export const AnotherComplex: StoryFn = (() => {
             thickness: [5, -5],
           })
         );
-        // Move only the active arc to destination and adjust size based on distance from the center
+
+        // Move only the active arc to destination and adjust size based on
+        // distance from the center
         onFrame(() => {
           const loopColor: [number, number, number, number] = [
             Math.random(),
@@ -245,6 +244,7 @@ export const AnotherComplex: StoryFn = (() => {
             Math.random(),
             1,
           ];
+
           if (arcCounter > 0) {
             arcCounter--;
             currentIteration++;

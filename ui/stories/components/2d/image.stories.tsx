@@ -1,9 +1,9 @@
+import pic from "./demo-pic.png";
 import React from "react";
 import {
   AnchorType,
   Camera2D,
   ClearFlags,
-  GLSettings,
   ImageInstance,
   ImageLayer,
   InstanceProvider,
@@ -12,11 +12,10 @@ import {
   ScaleMode,
   Surface,
   SurfaceJSX,
-  TextureJSX,
-  TextureSize,
   View2D,
   ViewJSX,
 } from "../../../src";
+import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx";
 import { StoryFn } from "@storybook/react";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 
@@ -46,28 +45,17 @@ export const Basic: StoryFn = (() => {
       }
       provider.add(
         new ImageInstance({
-          anchor: {
-            x: size.width / 2,
-            y: size.height / 2,
-            padding: 10,
-            type: AnchorType.Custom,
-          },
           depth: 0,
+          // source: pic,
           source: "https://picsum.photos/200/300",
-          width: 200,
-          height: 300,
+          width: 463,
+          height: 491,
           tint: [1, 1, 1, 1],
           scaling: ScaleMode.ALWAYS,
         })
       );
     },
   });
-
-  const textureSettings = {
-    generateMipMaps: false,
-    format: GLSettings.Texture.TexelDataType.RGB,
-    internalFormat: GLSettings.Texture.TexelDataType.RGB,
-  };
 
   return (
     <SurfaceJSX
@@ -77,12 +65,7 @@ export const Basic: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <TextureJSX
-        name="atlas"
-        width={4096}
-        height={4096}
-        textureSettings={textureSettings}
-      />
+      <AtlasJSX name="atlas" width={4096} height={4096} />
       <ViewJSX
         name="main"
         type={View2D}

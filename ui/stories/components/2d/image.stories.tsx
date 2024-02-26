@@ -78,9 +78,9 @@ export const Basic: StoryFn = (() => {
       }}
     >
       <TextureJSX
-        name="color"
-        width={TextureSize.SCREEN}
-        height={TextureSize.SCREEN}
+        name="atlas"
+        width={4096}
+        height={4096}
         textureSettings={textureSettings}
       />
       <ViewJSX
@@ -92,7 +92,13 @@ export const Basic: StoryFn = (() => {
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
         }}
       />
-      <LayerJSX type={ImageLayer} providerRef={imageProvider} />
+      <LayerJSX
+        type={ImageLayer}
+        providerRef={imageProvider}
+        config={{
+          atlas: "atlas",
+        }}
+      />
     </SurfaceJSX>
   );
 }).bind({});

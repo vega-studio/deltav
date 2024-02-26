@@ -33,32 +33,88 @@ export const Basic: StoryFn = (() => {
     async didMount() {
       const surface = await ready.current.promise;
       const provider = imageProvider.current;
-      if (!imageProvider.current || !surface || !provider) return;
+      if (!provider || !surface) return;
 
-      // Declare and assign size inside the didMount function
-      const size: { width: number; height: number } | null =
-        surface.getViewSize("main");
-
+      const size = surface.getViewSize("main");
       if (!size) {
         console.warn("Invalid View Size", surface);
         return;
       }
 
-      const ids = new Array(20).fill(0).map((_, i) => i);
+      // Load the image to be used for the collage
+      const singleImage = new Image();
+      singleImage.crossOrigin = "Anonymous"; // Ensure CORS is enabled for the image
+      singleImage.src = `https://picsum.photos/id/${Math.floor(
+        Math.random() * 100
+      )}/200/300`;
 
+      // Wait for the single image to load
+      await new Promise((resolve) => {
+        singleImage.onload = resolve;
+      });
+
+      const singleImageCanvas = document.createElement("canvas");
+      singleImageCanvas.width = singleImage.width;
+      singleImageCanvas.height = singleImage.height;
+      const singleImageContext = singleImageCanvas.getContext("2d");
+      singleImageContext?.drawImage(singleImage, 0, 0);
+      const singleImageData = singleImageContext?.getImageData(
+        0,
+        0,
+        singleImage.width,
+        singleImage.height
+      ).data;
+
+      if (!singleImageData) {
+        console.warn("Invalid image data", singleImageData);
+        return;
+      }
+
+      const regionWidth = singleImage.width / 200; // Divide the image into 200 regions horizontally
+      const regionHeight = singleImage.height / 300; // Divide the image into 100 regions vertically
+      //Function to get random image src
+      const imgArray = [];
+      for (let i = 0; i < 25; i++) {
+        imgArray.push(`https://picsum.photos/id/${i}/200/300`);
+      }
+
+      // Iterate through each region and calculate its tint
       for (let i = 0; i < 200; i++) {
-        for (let k = 0; k < 100; k++) {
+        for (let k = 0; k < 300; k++) {
+          let totalRed = 0,
+            totalGreen = 0,
+            totalBlue = 0;
+
+          // Iterate over the pixels in the region
+          for (let x = i * regionWidth; x < (i + 1) * regionWidth; x++) {
+            for (let y = k * regionHeight; y < (k + 1) * regionHeight; y++) {
+              const index = (y * singleImage.width + x) * 4; // Calculate the pixel index
+              totalRed += singleImageData[index];
+              totalGreen += singleImageData[index + 1];
+              totalBlue += singleImageData[index + 2];
+            }
+          }
+
+          // Calculate the average tint for the region
+          const pixelCount = regionWidth * regionHeight;
+          const averageRed = totalRed / pixelCount;
+          const averageGreen = totalGreen / pixelCount;
+          const averageBlue = totalBlue / pixelCount;
+
+          // Add an image to the provider for the current region with the calculated tint
           provider.add(
             new ImageInstance({
               depth: 0,
-              // source: pic,
-              source: `https://picsum.photos/200/300?rand=${
-                ids[Math.floor(Math.random() * ids.length)]
-              }`,
+              source: imgArray[Math.floor(Math.random() * 100)],
               width: 50,
               height: 50,
               origin: [i * 50, k * 50],
-              tint: [1, 1, 1, 1],
+              tint: [
+                averageRed / 255,
+                averageGreen / 255,
+                averageBlue / 255,
+                1,
+              ],
               scaling: ScaleMode.ALWAYS,
             })
           );

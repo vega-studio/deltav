@@ -15,6 +15,27 @@ export class Joint {
   endEdges = new Set<EdgeInstance>();
 
   /**
+   * Get a list of all lines that connect to this joint with their start
+   */
+  start() {
+    return [...this.startEdges];
+  }
+
+  /**
+   * Get a list of all lines that connect to this joint with their end
+   */
+  end() {
+    return [...this.endEdges];
+  }
+
+  /**
+   * Get a complete list of all edges associated with this joint.
+   */
+  all() {
+    return [...this.startEdges, ...this.endEdges];
+  }
+
+  /**
    * Add an edge based on the connection made.
    */
   addEdge(edge: EdgeInstance, connection: JointConnection) {

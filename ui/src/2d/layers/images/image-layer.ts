@@ -17,8 +17,9 @@ export interface IImageLayerProps<T extends ImageInstance>
 
 export type ImageVideoResource = {
   /**
-   * IF AND ONLY IF the browser supports it. This will cause the video to begin playing immediately when ready and
-   * loaded. This merely prevents the need to add video.play() to something after onReady has been called. All other
+   * IF AND ONLY IF the browser supports it. This will cause the video to begin
+   * playing immediately when ready and loaded. This merely prevents the need to
+   * add video.play() to something after onReady has been called. All other
    * expected video patterns are expected to apply.
    */
   autoPlay?: boolean;
@@ -49,8 +50,9 @@ WHITE_PIXEL.src =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 /**
- * This layer displays Images and provides as many controls as possible for displaying
- * them in interesting ways. This is the primary handler for image instances.
+ * This layer displays Images and provides as many controls as possible for
+ * displaying them in interesting ways. This is the primary handler for image
+ * instances.
  */
 export class ImageLayer<
   TInstance extends ImageInstance,
@@ -65,24 +67,27 @@ export class ImageLayer<
   /** Internal provider for child layers for this layer to hand off to */
   childProvider = new InstanceProvider<ImageInstance>();
   /**
-   * This tracks which resource this image is associated with This allows us to know what resource an image
-   * moves on from, thus allowing us to dispatch a disposal request of the resource.
+   * This tracks which resource this image is associated with This allows us to
+   * know what resource an image moves on from, thus allowing us to dispatch a
+   * disposal request of the resource.
    */
   imageToResource = new Map<ImageInstance, IAtlasResourceRequest["source"]>();
-  /** The cached property ids of the instances so they are not processed every draw */
+  /** The cached property ids of the instances so they are not processed every
+   * draw */
   propertyIds?: { [key: string]: number };
-  /** We can consolidate requests at this layer level to reduce memory footprint of requests */
+  /** We can consolidate requests at this layer level to reduce memory footprint
+   * of requests */
   sourceToRequest = new Map<AtlasResource, IAtlasResourceRequest>();
   /** Map video resource requests to their corresponding video element */
   sourceToVideo = new Map<string, HTMLVideoElement>();
   /**
-   * Stores a lookup to see which instances are using a video source. This helps track when the video source is no
-   * longer in use and can be disposed.
+   * Stores a lookup to see which instances are using a video source. This helps
+   * track when the video source is no longer in use and can be disposed.
    */
   usingVideo = new Map<string, Set<ImageInstance>>();
   /**
-   * These are the instances waiting for a video source to finish loading and have valid dimensions to be used by the
-   * resource manager.
+   * These are the instances waiting for a video source to finish loading and
+   * have valid dimensions to be used by the resource manager.
    */
   waitingForVideo = new Map<string, Set<ImageInstance>>();
   /**
@@ -90,7 +95,8 @@ export class ImageLayer<
    */
   waitForVideoSource = new Map<ImageInstance, string>();
   /**
-   * In cases where the image has a special case loading procedure like videos, the image will have it's onReady
+   * In cases where the image has a special case loading procedure like videos,
+   * the image will have it's onReady
    */
   originalOnReadyCallbacks = new Map<
     ImageInstance,
@@ -98,8 +104,8 @@ export class ImageLayer<
   >();
 
   /**
-   * The image layer will manage the resources for the images, and the child layer will concern itself
-   * with rendering.
+   * The image layer will manage the resources for the images, and the child
+   * layer will concern itself with rendering.
    */
   childLayers() {
     const child = createChildLayer(ImageRenderLayer, {
@@ -121,12 +127,12 @@ export class ImageLayer<
   }
 
   /**
-   * Hijack the draw method to control changes to the source so we can send the manager dispose requests
-   * of a given image.
+   * Hijack the draw method to control changes to the source so we can send the
+   * manager dispose requests of a given image.
    */
   draw() {
-    // Get the changes we need to handle. We make sure the provider's changes remain in tact for
-    // the child layer to process them.
+    // Get the changes we need to handle. We make sure the provider's changes
+    // remain in tact for the child layer to process them.
     const changes = this.resolveChanges(true);
     // Make sure we are triggering redraws appropriately
     this.updateAnimationState();
@@ -156,9 +162,11 @@ export class ImageLayer<
             // Nothing needs to happen if the resource didn't change
             if (resource === previous) break;
 
-            // If the previous is a video source we need to clear the instance out from utilizing the video
+            // If the previous is a video source we need to clear the instance
+            // out from utilizing the video
             if (previous instanceof HTMLVideoElement) {
-              // Remove the potentially existing 'waiting on the video' references
+              // Remove the potentially existing 'waiting on the video'
+              // references
               const waitingOnSource = this.waitForVideoSource.get(instance);
 
               if (waitingOnSource) {
@@ -195,7 +203,8 @@ export class ImageLayer<
             // Video resources must be prepped to handle special circumstances
             if (isVideoResource(instance.source)) {
               this.prepareVideo(instance, instance.source);
-              // Prepping the video can potentially temp swap the source of the image
+              // Prepping the video can potentially temp swap the source of the
+              // image
               resource = this.getAtlasSource(instance);
               // Add the video to the video's use list
               const usingList = mapInjectDefault(
@@ -247,7 +256,8 @@ export class ImageLayer<
 
             if (isVideoResource(instance.source)) {
               this.prepareVideo(instance, instance.source);
-              // Prepping the video can potentially temp swap the source of the image
+              // Prepping the video can potentially temp swap the source of the
+              // image
               resource = this.getAtlasSource(instance);
               // Add the video to the video's use list
               const usingList = mapInjectDefault(
@@ -326,8 +336,9 @@ export class ImageLayer<
       }
     }
 
-    // After all changes are processed, we need to check to see if any video sources are no longer in use and clear out
-    // any remaining references to the video.
+    // After all changes are processed, we need to check to see if any video
+    // sources are no longer in use and clear out any remaining references to
+    // the video.
     const toRemoveVideoSources: string[] = [];
 
     this.usingVideo.forEach((usingVideoSet, videoSrc) => {
@@ -355,8 +366,9 @@ export class ImageLayer<
   }
 
   /**
-   * This handles creating the video object from the source. It then queues up the waiting needs and temporarily
-   * converts the video Image to a simple white image that will take on the tint of the ImageInstance.
+   * This handles creating the video object from the source. It then queues up
+   * the waiting needs and temporarily converts the video Image to a simple
+   * white image that will take on the tint of the ImageInstance.
    */
   private prepareVideo(image: ImageInstance, source: ImageVideoResource) {
     const check = this.sourceToVideo.get(source.videoSrc);
@@ -366,12 +378,13 @@ export class ImageLayer<
       this.originalOnReadyCallbacks.set(image, image.onReady);
     }
 
-    // Let's first see if the source provided already is being monitored by this layer.
+    // Let's first see if the source provided already is being monitored by this
+    // layer.
     if (check) {
       const waitingInstances = this.waitingForVideo.get(source.videoSrc);
 
-      // If waiting instances exists, then the video has not loaded yet and this becomes an additional instance waiting
-      // for the video to be ready.
+      // If waiting instances exists, then the video has not loaded yet and this
+      // becomes an additional instance waiting for the video to be ready.
       if (waitingInstances) {
         waitingInstances.add(image);
         this.waitForVideoSource.set(image, source.videoSrc);
@@ -387,14 +400,16 @@ export class ImageLayer<
         };
       }
 
-      // Otherwise, the video IS ready and the instance can carry on as a normal instance
+      // Otherwise, the video IS ready and the instance can carry on as a normal
+      // instance
       else {
         const onReady =
           this.originalOnReadyCallbacks.get(image) || image.onReady;
         if (!onReady) return;
 
-        // Replace the onReady that the resource manager will fire with an onReady that will execute with the video
-        // that is prepped and ready included.
+        // Replace the onReady that the resource manager will fire with an
+        // onReady that will execute with the video that is prepped and ready
+        // included.
         image.onReady = (image: ImageInstance) => {
           onReady(image, check);
         };
@@ -406,13 +421,15 @@ export class ImageLayer<
     // Create the physical video element to use.
     const video = document.createElement("video");
     this.sourceToVideo.set(source.videoSrc, video);
-    // Store the exact source path on the element (the src attribute gets resolved to relative http request)
+    // Store the exact source path on the element (the src attribute gets
+    // resolved to relative http request)
     video.setAttribute("data-source", source.videoSrc);
 
     debugVideoEvents(video);
 
-    // We must load the video properly to make it compatible with the texture and have all of it's properties
-    // set in an appropriate fashion to not violate current video playback standards.
+    // We must load the video properly to make it compatible with the texture
+    // and have all of it's properties set in an appropriate fashion to not
+    // violate current video playback standards.
     const metaResolver = new PromiseResolver<void>();
     const dataResolver = new PromiseResolver<void>();
 
@@ -457,17 +474,19 @@ export class ImageLayer<
       dataResolver.reject({});
     };
 
-    // We must ensure the source has it's meta data and first frame available. The meta data ensures a
-    // videoWidth and height are available and the first frame ensures WebGL does not throw an error in some
-    // browsers like chrome that will think the video is initially invalid.
+    // We must ensure the source has it's meta data and first frame available.
+    // The meta data ensures a videoWidth and height are available and the first
+    // frame ensures WebGL does not throw an error in some browsers like chrome
+    // that will think the video is initially invalid.
     video.addEventListener("loadedmetadata", waitForMetaData);
     video.addEventListener("loadeddata", waitForData);
     video.addEventListener("error", waitForError);
 
-    // We now initialize the image as waiting on the video
-    // The image may have a custom onReady set awaiting the video's completion. We must not allow it to happen for
-    // loading the placeholder white image. So we replace it with a NOOP until the video itself is actually ready to
-    // be loaded into the resource manager.
+    // We now initialize the image as waiting on the video The image may have a
+    // custom onReady set awaiting the video's completion. We must not allow it
+    // to happen for loading the placeholder white image. So we replace it with
+    // a NOOP until the video itself is actually ready to be loaded into the
+    // resource manager.
     image.onReady = undefined;
     // We must also register the video source as waiting
     const waitingInstances = mapInjectDefault(
@@ -479,7 +498,8 @@ export class ImageLayer<
     this.waitForVideoSource.set(image, source.videoSrc);
     // Make the video's source point to the empty white image
     image.source = WHITE_PIXEL;
-    // Lastly, make the image videoLoad method actually be a valid video operation.
+    // Lastly, make the image videoLoad method actually be a valid video
+    // operation.
     image.videoLoad = () => {
       video.load();
 
@@ -488,19 +508,22 @@ export class ImageLayer<
       }
     };
 
-    // Current standard declares unmuted videos CAN NOT be auto played via javascript and must play in the context of
-    // a user event
+    // Current standard declares unmuted videos CAN NOT be auto played via
+    // javascript and must play in the context of a user event
     video.muted = true;
-    // Set the video source after the events have been assigned so we can wait for the video to begin playback
+    // Set the video source after the events have been assigned so we can wait
+    // for the video to begin playback
     video.src = source.videoSrc;
 
     Promise.all([metaResolver.promise, dataResolver.promise])
-      // This executes when the video is officially ready and will be loaded into the resource manager for play back
+      // This executes when the video is officially ready and will be loaded
+      // into the resource manager for play back
       .then(() => {
         // Make sure the video start from the beginning
         video.currentTime = 0;
 
-        // Check the video source preferences to see if the video should play immediately upon loading.
+        // Check the video source preferences to see if the video should play
+        // immediately upon loading.
         if (source.autoPlay) {
           video.play();
         }
@@ -510,8 +533,9 @@ export class ImageLayer<
 
         if (waitingInstances) {
           waitingInstances.forEach((instance) => {
-            // Set the instance's source back to the video. Since this is asynchronous, it should trigger the change and
-            // flow through the provider
+            // Set the instance's source back to the video. Since this is
+            // asynchronous, it should trigger the change and flow through the
+            // provider
             instance.source = source;
             instance.onReady = this.originalOnReadyCallbacks.get(instance);
           });
@@ -537,7 +561,8 @@ export class ImageLayer<
       }
     });
 
-    // When videos are in use AND playing, this layer should be on continuous redraws to ensure the video renders continuously.
+    // When videos are in use AND playing, this layer should be on continuous
+    // redraws to ensure the video renders continuously.
     this.alwaysDraw = this.usingVideo.size > 0 && isVideoPlaying;
   }
 

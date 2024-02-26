@@ -28,6 +28,11 @@ export interface IImageInstanceOptions extends IInstanceOptions {
   tint: [number, number, number, number];
   /** The width of the image as it is to be rendered in world space */
   width?: number;
+  /**
+   * Applies a rotation to the image in radians around the anchor point. ONLY
+   * WORKS ON LAYERS THAT SUPPORT IT.
+   */
+  rotation?: number;
 
   /** Triggered when it's detected that the image will never render correctly */
   onError?(): void;
@@ -85,18 +90,20 @@ const anchorCalculator: {
 };
 
 /**
- * This generates a new image instance.
- * There are restrictions surrounding images due to texture sizes and rendering limitations.
+ * This generates a new image instance. There are restrictions surrounding
+ * images due to texture sizes and rendering limitations.
  *
- * Currently, we only support rendering a image via canvas, then rendering it to an Atlas texture
- * which is used to render to cards in the world for rendering. This is highly performant, but means:
+ * Currently, we only support rendering a image via canvas, then rendering it to
+ * an Atlas texture which is used to render to cards in the world for rendering.
+ * This is highly performant, but means:
  *
  * - Images should only be so large.
  * - Once a image is constructed, only SOME properties can be altered thereafter
  *
- * An image that is constructed can only have some properties set upon creating the image and are locked
- * thereafter. The only way to modify them would be to destroy the image, then construct a new image
- * with the modifications. This has to deal with performance regarding rasterizing the image.
+ * An image that is constructed can only have some properties set upon creating
+ * the image and are locked thereafter. The only way to modify them would be to
+ * destroy the image, then construct a new image with the modifications. This
+ * has to deal with performance regarding rasterizing the image.
  */
 export class ImageInstance extends Instance {
   /** This is the rendered color of the image */
@@ -104,9 +111,9 @@ export class ImageInstance extends Instance {
   /** Depth sorting of the image (or the z value of the image) */
   @observable depth = 0;
   /**
-   * The height of the image as it is to be rendered in world space.
-   * After onReady: this is immediately populated with the width and height of the image as it
-   * appears in the atlas.
+   * The height of the image as it is to be rendered in world space. After
+   * onReady: this is immediately populated with the width and height of the
+   * image as it appears in the atlas.
    */
   @observable height = 1;
   /** The coordinate where the image will be located in world space */
@@ -116,16 +123,22 @@ export class ImageInstance extends Instance {
   /** This is where the source of the image will come from */
   @observable source: ImageInstanceResource;
   /**
-   * The width of the image as it is to be rendered in world space.
-   * After onReady: this is immediately populated with the width and height of the image as it
-   * appears in the atlas.
+   * The width of the image as it is to be rendered in world space. After
+   * onReady: this is immediately populated with the width and height of the
+   * image as it appears in the atlas.
    */
   @observable width = 1;
+  /**
+   * The rotation of the image in radians. This will only be applied if the
+   * layer being used specifies support for it. Keep in mind, computing
+   * rotations is more costly than AABBs in general.
+   */
+  @observable rotation = 0;
 
   /**
-   * This property reflects the maximum size a single dimension of the image will take up.
-   * This means if you set this value to 100 at least the width or the height will be 100
-   * depending on the aspect ratio of the image.
+   * This property reflects the maximum size a single dimension of the image
+   * will take up. This means if you set this value to 100 at least the width or
+   * the height will be 100 depending on the aspect ratio of the image.
    */
   get maxSize() {
     return max(this.width, this.height);
@@ -136,20 +149,26 @@ export class ImageInstance extends Instance {
     this.height = value;
   }
 
-  /** Event called when there is an error attempting to load and render the image */
+  /** Event called when there is an error attempting to load and render the
+   * image */
   onError?: IImageInstanceOptions["onError"];
-  /** Event called when the instance has it's resource loaded and ready for use */
+  /** Event called when the instance has it's resource loaded and ready for use
+   * */
   onReady?: IImageInstanceOptions["onReady"];
-  /** This is the request generated for the instance to retrieve the correct resource */
+  /** This is the request generated for the instance to retrieve the correct
+   * resource */
   request?: IAtlasResourceRequest;
-  /** After onReady: This is populated with the width of the source image loaded into the Atlas */
+  /** After onReady: This is populated with the width of the source image loaded
+   * into the Atlas */
   sourceWidth = 0;
-  /** After onReady: This is populated with the height of the source image loaded into the Atlas */
+  /** After onReady: This is populated with the height of the source image
+   * loaded into the Atlas */
   sourceHeight = 0;
 
   /**
-   * This is a position relative to the image. This will align the image such that the anchor point on
-   * the image will be located at the origin in world space.
+   * This is a position relative to the image. This will align the image such
+   * that the anchor point on the image will be located at the origin in world
+   * space.
    */
   @observable
   private _anchor: Anchor = {
@@ -170,6 +189,7 @@ export class ImageInstance extends Instance {
     this.width = options.width || 1;
     this.height = options.height || 1;
     this.source = options.source;
+    this.rotation = options.rotation || 0;
     this.onReady = options.onReady;
 
     // Make sure the anchor is set to the appropriate location
@@ -181,18 +201,22 @@ export class ImageInstance extends Instance {
   }
 
   /**
-   * In the event that video auto play is not permitted, one may have to respond to a user input gesture to begin
-   * loading and playing the video. While your video is not ready to play, the ImageInstance will NOT fire the onReady
-   * callback. Instead it will wait idle as an image that is merely the 'tint color' provided. Once this is called
-   * (within a user gesture) the video will for sure start loading, the onReady will call back once the video has
+   * In the event that video auto play is not permitted, one may have to respond
+   * to a user input gesture to begin loading and playing the video. While your
+   * video is not ready to play, the ImageInstance will NOT fire the onReady
+   * callback. Instead it will wait idle as an image that is merely the 'tint
+   * color' provided. Once this is called (within a user gesture) the video will
+   * for sure start loading, the onReady will call back once the video has
    * properly prepped.
    */
   videoLoad: Function = NOOP;
 
   /** This is triggered after the request has been completed */
   resourceTrigger() {
-    // Only the source needs to be triggered to get the texture info to update from the request
-    // eslint-disable-next-line no-self-assign
+    // Only the source needs to be triggered to get the texture info to update
+    // from the request
+    //
+    //eslint-disable-next-line no-self-assign
     this.source = this.source;
 
     if (this.request && this.request.texture) {
@@ -204,7 +228,8 @@ export class ImageInstance extends Instance {
   }
 
   /**
-   * This applies a new anchor to this image and properly determines it's anchor position on the image
+   * This applies a new anchor to this image and properly determines it's anchor
+   * position on the image
    */
   setAnchor(anchor: Anchor) {
     const newAnchor = {

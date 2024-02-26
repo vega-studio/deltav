@@ -1,6 +1,6 @@
 import React from "react";
-import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx";
 import {
+  AnchorType,
   BasicCamera2DControllerJSX,
   Camera2D,
   ClearFlags,
@@ -9,12 +9,12 @@ import {
   InstanceProvider,
   LayerJSX,
   PromiseResolver,
-  ScaleMode,
   Surface,
   SurfaceJSX,
   View2D,
   ViewJSX,
 } from "../../../src";
+import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx";
 import { StoryFn } from "@storybook/react";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 
@@ -55,11 +55,15 @@ export const Basic: StoryFn = (() => {
               source: `https://picsum.photos/200/300?rand=${
                 ids[Math.floor(Math.random() * ids.length)]
               }`,
+              anchor: {
+                type: AnchorType.Middle,
+                padding: 0,
+              },
               width: 50,
               height: 50,
               origin: [i * 50, k * 50],
               tint: [1, 1, 1, 1],
-              scaling: ScaleMode.ALWAYS,
+              rotation: (Math.PI / 20000) * (i * 100 + k),
             })
           );
         }
@@ -91,6 +95,7 @@ export const Basic: StoryFn = (() => {
         providerRef={imageProvider}
         config={{
           atlas: "atlas",
+          enableRotation: true,
         }}
       />
     </SurfaceJSX>

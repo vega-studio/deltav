@@ -72,7 +72,6 @@ export const Basic: StoryFn = (() => {
 
       const regionWidth = singleImage.width / 200; // Divide the image into 200 regions horizontally
       const regionHeight = singleImage.height / 300; // Divide the image into 100 regions vertically
-      //Function to get random image src
       const imgArray = [];
       for (let i = 0; i < 25; i++) {
         imgArray.push(`https://picsum.photos/id/${i}/200/300`);
@@ -105,7 +104,7 @@ export const Basic: StoryFn = (() => {
           provider.add(
             new ImageInstance({
               depth: 0,
-              source: imgArray[Math.floor(Math.random() * 100)],
+              source: imgArray[Math.floor(Math.random() * imgArray.length)],
               width: 50,
               height: 50,
               origin: [i * 50, k * 50],

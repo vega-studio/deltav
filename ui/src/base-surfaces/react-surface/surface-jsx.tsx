@@ -59,6 +59,21 @@ export interface ISurfaceJSX {
    * the pixel density of the user's monitor.
    */
   pixelRatio?: number;
+  /**
+   * Add or modify the IO expanders that controls the capabilities of the IO
+   * configuration for shaders.
+   */
+  ioExpansion?: ISurfaceOptions["ioExpansion"];
+  /**
+   * Add or modify the shader transforms that should be applied to the surface
+   * which controls the final output of how the shader will be generated.
+   */
+  shaderTransforms?: ISurfaceOptions["shaderTransforms"];
+  /**
+   * Add or modify the resource managers that controls resource requests
+   * delivered from layers and the instance diff changes.
+   */
+  resourceManagers?: ISurfaceOptions["resourceManagers"];
 }
 
 export interface ISurfaceContext {
@@ -288,6 +303,9 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
             : true,
         pixelRatio: props.pixelRatio || window.devicePixelRatio,
         eventManagers: validEventManagers,
+        ioExpansion: props.ioExpansion,
+        shaderTransforms: props.shaderTransforms,
+        resourceManagers: props.resourceManagers,
         rendererOptions: Object.assign(
           // Default render options
           {

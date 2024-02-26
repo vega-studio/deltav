@@ -928,7 +928,6 @@ export class ShaderProcessor {
         for (let i = 0, iMax = transforms.length; i < iMax; ++i) {
           const transform = transforms[i];
           processedShaderVS.shader = transform.vertex(processedShaderVS.shader);
-
           fsShader.source = transform.fragment(fsShader.source);
         }
       });

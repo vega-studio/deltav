@@ -35,3 +35,19 @@ ShaderModule.register({
     },
   ],
 });
+
+ShaderModule.register({
+  moduleId: "time",
+  description: doc,
+  content: "",
+  compatibility: ShaderInjectionTarget.ALL,
+  uniforms: (layer: Layer<any, any>) => [
+    // This will be the current frame's current time which is updated in the layer's surface draw call
+    {
+      name: "time",
+      size: UniformSize.ONE,
+      shaderInjection: ShaderInjectionTarget.ALL,
+      update: () => [layer.surface.frameMetrics.currentTime],
+    },
+  ],
+});

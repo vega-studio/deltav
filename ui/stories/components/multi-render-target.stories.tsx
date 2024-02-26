@@ -2,18 +2,23 @@ import React from "react";
 import {
   add2,
   AutoEasingMethod,
+  BloomJSX,
   Camera,
   Camera2D,
   CameraProjectionType,
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  DrawJSX,
   EasingUtil,
   FragmentOutputType,
   fromEulerAxisAngleToQuat,
   GLSettings,
+  type IMouseInteraction,
   InstanceProvider,
+  LayerJSX,
   multiply4,
+  nextFrame,
   normalize2,
   normalize3,
   onAnimationLoop,
@@ -22,26 +27,28 @@ import {
   scale2,
   scale3,
   SceneJSX,
+  SimpleEventHandlerJSX,
   stopAnimationLoop,
+  subtract2,
   Surface,
+  SurfaceJSX,
   TextureJSX,
   TextureSize,
+  TrailJSX,
   Transform,
+  Vec2,
+  vec2,
   vec3,
   Vec4,
   View2D,
   View3D,
+  ViewJSX,
 } from "../../src";
-import { BloomJSX } from "../../src/base-surfaces/react-surface/processing/bloom/bloom-jsx";
 import { CubeInstance } from "./layers/cube/cube-instance";
 import { CubeLayer } from "./layers/cube/cube-layer";
-import { LayerJSX } from "../../src/base-surfaces/react-surface/scene/layer-jsx";
+import { InstanceProviderWithList } from "../../src/instance-provider/instance-provider-with-list";
 import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
-import { TrailJSX } from "../../src/base-surfaces/react-surface/processing/trail/trail-jsx";
 import { useLifecycle } from "../../../util/hooks/use-life-cycle";
-import { Vec2 } from "@diniden/signal-processing";
-import { ViewJSX } from "../../src/base-surfaces/react-surface/scene/view-jsx";
 
 export default {
   title: "Deltav/MultiRenderTarget",
@@ -49,13 +56,14 @@ export default {
   argTypes: {},
 };
 
-export const Fireworks: StoryFn = (() => {
-  const circleProvider = React.useRef(new InstanceProvider<CircleInstance>());
+export const Simple_Trail: StoryFn = (() => {
+  const circleProvider = React.useRef(
+    new InstanceProviderWithList<CircleInstance>()
+  );
   const camera = React.useRef(new Camera2D());
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 4000;
-  const minDuration = 2000;
-  const maxDuration = 6000;
+  const mouse = React.useRef(vec2(0, 0));
+  const animationDuration = 1000;
 
   useLifecycle({
     async didMount() {
@@ -63,8 +71,341 @@ export const Fireworks: StoryFn = (() => {
       if (!circleProvider.current) return;
       const surface = await ready.current.promise;
       const provider = circleProvider.current;
-      const fireworkDuration =
-        Math.random() * (maxDuration - minDuration) + minDuration;
+      const view = surface.getViewSize("particles.main");
+      const project = surface.getProjections("particles.main");
+
+      if (!view || !project) {
+        console.warn("Invalid View Size", surface);
+        return;
+      }
+
+      mouse.current = scale2(view.mid, 1 / window.devicePixelRatio);
+
+      provider.add(
+        new CircleInstance({
+          radius: 20,
+          center: mouse.current,
+          color: [0.4, 0.7, 1.0, 1.0],
+        })
+      );
+    },
+  });
+
+  const handleMouseMove = (e: IMouseInteraction) => {
+    if (!circleProvider.current) return;
+    const world = e.target.view.projection.screenToWorld(e.screen.position);
+    mouse.current = vec2(world);
+
+    circleProvider.current.instances.forEach((circle) => {
+      circle.center = mouse.current;
+    });
+  };
+
+  const textureSettingsRGBA = {
+    generateMipMaps: false,
+    format: GLSettings.Texture.TexelDataType.RGBA,
+    internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+  };
+
+  return (
+    <SurfaceJSX
+      ready={ready.current}
+      options={{
+        alpha: true,
+        antialias: true,
+      }}
+    >
+      <SimpleEventHandlerJSX handlers={{ handleMouseMove }} />
+      <TextureJSX
+        name="color"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <TextureJSX
+        name="trail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <TextureJSX
+        name="trailing"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettingsRGBA}
+      />
+      <SceneJSX name="particles">
+        <ViewJSX
+          name="main"
+          type={View2D}
+          config={{
+            background: [0, 0, 0, 0],
+            camera: camera.current,
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          }}
+          output={{
+            buffers: {
+              [FragmentOutputType.COLOR]: "color",
+            },
+            depth: true,
+          }}
+        />
+        <LayerJSX
+          name="circles"
+          type={CircleLayer}
+          config={{
+            data: circleProvider.current,
+            animate: {
+              radius: AutoEasingMethod.linear(animationDuration),
+              color: AutoEasingMethod.easeOutCubic(animationDuration),
+            },
+          }}
+        />
+      </SceneJSX>
+      {TrailJSX({
+        intensity: 0.93,
+        input: {
+          trail: "trail",
+          add: "color",
+        },
+        output: "trailing",
+        drift: {
+          direction: [0, 0],
+        },
+      })}
+      {DrawJSX({
+        input: "trailing",
+      })}
+    </SurfaceJSX>
+  );
+}).bind({});
+
+export const Glowing_Trail: StoryFn = (() => {
+  const circleProvider = React.useRef(
+    new InstanceProviderWithList<CircleInstance>()
+  );
+  const camera = React.useRef(new Camera2D());
+  const ready = React.useRef(new PromiseResolver<Surface>());
+  const mouse = React.useRef(vec2(0, 0));
+  const animationDuration = 1000;
+
+  useLifecycle({
+    async didMount() {
+      // Wait for the surface to establish the full pipeline
+      if (!circleProvider.current) return;
+      const surface = await ready.current.promise;
+      const provider = circleProvider.current;
+      const view = surface.getViewSize("particles.main");
+      const project = surface.getProjections("particles.main");
+
+      if (!view || !project) {
+        console.warn("Invalid View Size", surface);
+        return;
+      }
+
+      mouse.current = scale2(view.mid, 1 / window.devicePixelRatio);
+
+      onAnimationLoop(() => {
+        const circles: CircleInstance[] = [];
+
+        for (let i = 0, iMax = 10; i < iMax; ++i) {
+          circles.push(
+            provider.add(
+              new CircleInstance({
+                radius: 20,
+                center: add2(
+                  mouse.current,
+                  scale2(
+                    normalize2([Math.random() - 0.5, Math.random() - 0.5]),
+                    Math.random() * 30
+                  )
+                ),
+                color: [0.4, 0.7, 1.0, 1.0],
+              })
+            )
+          );
+        }
+
+        onFrame(() => {
+          circles.forEach((circle) => {
+            circle.radius = 0;
+            circle.color = multiply4(circle.color, [1, 1, 1, 0]);
+          });
+        }, 1);
+
+        onFrame(() => {
+          circles.forEach((circle) => {
+            provider.remove(circle);
+          });
+        }, animationDuration);
+      });
+    },
+  });
+
+  const handleMouseMove = (e: IMouseInteraction) => {
+    if (!circleProvider.current) return;
+    const world = e.target.view.projection.screenToWorld(e.screen.position);
+    const delta = subtract2(world, mouse.current);
+    mouse.current = vec2(world);
+
+    circleProvider.current.instances.forEach((circle) => {
+      circle.center = add2(circle.center, delta);
+    });
+  };
+
+  const textureSettings = {
+    generateMipMaps: false,
+    format: GLSettings.Texture.TexelDataType.RGB,
+    internalFormat: GLSettings.Texture.TexelDataType.RGB,
+  };
+
+  return (
+    <SurfaceJSX
+      ready={ready.current}
+      options={{
+        alpha: true,
+        antialias: true,
+      }}
+    >
+      <SimpleEventHandlerJSX handlers={{ handleMouseMove }} />
+      <TextureJSX
+        name="color"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettings}
+      />
+      <TextureJSX
+        name="buffer"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={textureSettings}
+      />
+      <TextureJSX
+        name="glow"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
+      <TextureJSX
+        name="glowTrail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
+      <TextureJSX
+        name="glowingTrail"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
+      {[
+        TextureSize.SCREEN_HALF,
+        TextureSize.SCREEN_QUARTER,
+        TextureSize.SCREEN_8TH,
+        TextureSize.SCREEN_16TH,
+        TextureSize.SCREEN_32ND,
+        TextureSize.SCREEN_64TH,
+        TextureSize.SCREEN_128TH,
+        TextureSize.SCREEN_256TH,
+      ].map((size, i) => (
+        <TextureJSX
+          key={i}
+          name={`blur${i + 1}`}
+          width={size}
+          height={size}
+          textureSettings={textureSettings}
+        />
+      ))}
+      <SceneJSX name="particles">
+        <ViewJSX
+          name="main"
+          type={View2D}
+          config={{
+            camera: camera.current,
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          }}
+          output={{
+            buffers: {
+              [FragmentOutputType.COLOR]: "color",
+              [FragmentOutputType.GLOW]: "glow",
+            },
+            depth: true,
+          }}
+        />
+        <LayerJSX
+          name="circles"
+          type={CircleLayer}
+          config={{
+            data: circleProvider.current,
+            animate: {
+              radius: AutoEasingMethod.linear(animationDuration),
+              color: AutoEasingMethod.easeOutCubic(animationDuration),
+            },
+          }}
+        />
+      </SceneJSX>
+      {TrailJSX({
+        intensity: 0.93,
+        input: {
+          trail: "glowTrail",
+          add: "glow",
+        },
+        output: "glowingTrail",
+        drift: {
+          direction: [-2, -10],
+        },
+      })}
+      {BloomJSX({
+        name: "bloom",
+        view: {
+          config: {
+            background: [0, 0, 0, 0],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          },
+        },
+        gammaCorrection: 0.4,
+        samples: 6,
+        resources: [
+          "glowingTrail",
+          "blur1",
+          "blur2",
+          "blur3",
+          "blur4",
+          "blur5",
+          "blur6",
+          "blur7",
+          "blur8",
+        ],
+        compose: "glow",
+      })}
+    </SurfaceJSX>
+  );
+}).bind({});
+
+export const Fireworks: StoryFn = (() => {
+  const circleProvider = React.useRef(new InstanceProvider<CircleInstance>());
+  const camera = React.useRef(new Camera2D());
+  const ready = React.useRef(new PromiseResolver<Surface>());
+  const animationDuration = 4000;
+
+  useLifecycle({
+    async didMount() {
+      // Wait for the surface to establish the full pipeline
+      if (!circleProvider.current) return;
+      const surface = await ready.current.promise;
+      const provider = circleProvider.current;
 
       // Move things around by making the core look around
       // Also change the cubes colors randomly for extra disco
@@ -100,17 +441,18 @@ export const Fireworks: StoryFn = (() => {
         }
 
         // Move the particles to locations and fade them out
-        onFrame(() => {
+        nextFrame(() => {
           instances.forEach((c) => {
             const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
-            c.center = add2(start, scale2(dir, Math.random() * 450 + 20));
-            c.color = multiply4(c.color, [1, 1, 1, 0]);
+            c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
+            // c.color = multiply4(c.color, [1, 1, 1, 0]);
             c.radius = 0;
           });
           EasingUtil.modify(instances, ["center"], (easing) => {
-            easing.setTiming(0, fireworkDuration);
+            const delay = (Math.random() * animationDuration) / 10;
+            easing.setTiming(delay, animationDuration - delay);
           });
-        }, 1);
+        });
 
         // Remove all faded out particles
         onFrame(() => {
@@ -223,7 +565,7 @@ export const Fireworks: StoryFn = (() => {
             animate: {
               center: AutoEasingMethod.easeOutCubic(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
-              radius: AutoEasingMethod.easeOutQuart(animationDuration),
+              radius: AutoEasingMethod.linear(animationDuration * 0.6),
             },
           }}
         />

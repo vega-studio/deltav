@@ -1560,6 +1560,50 @@ export class AutoEasingMethod<T extends InstanceIOValue>
     };
   }
 
+  /**
+   * Auto easing that oscillates and gradually settles at the end value
+   */
+  static flickerOut<T extends Vec>(
+    duration: number,
+    delay = 0,
+    loop = AutoEasingLoopStyle.NONE
+  ): IAutoEasingMethod<T> {
+    return {
+      uid: uid(),
+      cpu: (start: T, end: T, t: number, out?: T) => {
+        t = clamp(t, 0, 1);
+
+        // Squaring t to increase probability quadratically
+        const probability = t * t;
+
+        // Generate a random number between 0 and 1
+        const rand = Math.random();
+
+        // The actual easing calculation
+        const { add, scale, subtract } = VecMath(start);
+
+        // If the random number is less than the probability, snap to the end value
+        if (rand < probability) {
+          return add(scale(subtract(end, start), 1), start, out);
+        } else {
+          // Otherwise, perform normal linear interpolation
+          return add(scale(subtract(end, start), t), start, out);
+        }
+      },
+      delay,
+      duration,
+      gpu: `
+      $\{easingMethod} {
+        float probability = t * t;
+        float rand = fract(sin(dot(vec2(t, 5), vec2(12.9898, 7))) * 43758.5453);
+        return (rand < probability) ? end : (end - start) * t + start;
+      }
+    `,
+      loop,
+      methodName: "flickerOut",
+    };
+  }
+
   /** A uid for the easing method */
   uid = uid();
   /** The easing method for the cpu */

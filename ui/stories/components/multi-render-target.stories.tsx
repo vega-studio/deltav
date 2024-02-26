@@ -8,6 +8,7 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  EasingUtil,
   FragmentOutputType,
   fromEulerAxisAngleToQuat,
   GLSettings,
@@ -52,7 +53,9 @@ export const Fireworks: StoryFn = (() => {
   const circleProvider = React.useRef(new InstanceProvider<CircleInstance>());
   const camera = React.useRef(new Camera2D());
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 2000;
+  const animationDuration = 4000;
+  const minDuration = 2000;
+  const maxDuration = 6000;
 
   useLifecycle({
     async didMount() {
@@ -60,6 +63,8 @@ export const Fireworks: StoryFn = (() => {
       if (!circleProvider.current) return;
       const surface = await ready.current.promise;
       const provider = circleProvider.current;
+      const fireworkDuration =
+        Math.random() * (maxDuration - minDuration) + minDuration;
 
       // Move things around by making the core look around
       // Also change the cubes colors randomly for extra disco
@@ -80,12 +85,13 @@ export const Fireworks: StoryFn = (() => {
           Math.random() * 0.7 + 0.1,
           1,
         ];
+        const radius: number = Math.random() * 4 + 2;
         const instances: CircleInstance[] = [];
 
         for (let i = 0, iMax = 400; i < iMax; ++i) {
           const circle = provider.add(
             new CircleInstance({
-              radius: Math.random() * 4 + 2,
+              radius: radius,
               color,
               center: start,
             })
@@ -97,8 +103,12 @@ export const Fireworks: StoryFn = (() => {
         onFrame(() => {
           instances.forEach((c) => {
             const dir = normalize2([Math.random() - 0.5, Math.random() - 0.5]);
-            c.center = add2(c.center, scale2(dir, Math.random() * 350 + 100));
+            c.center = add2(start, scale2(dir, Math.random() * 450 + 20));
             c.color = multiply4(c.color, [1, 1, 1, 0]);
+            c.radius = 0;
+          });
+          EasingUtil.modify(instances, ["center"], (easing) => {
+            easing.setTiming(0, fireworkDuration);
           });
         }, 1);
 
@@ -209,9 +219,11 @@ export const Fireworks: StoryFn = (() => {
           type={CircleLayer}
           config={{
             data: circleProvider.current,
+            materialOptions: {},
             animate: {
               center: AutoEasingMethod.easeOutCubic(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
+              radius: AutoEasingMethod.easeOutQuart(animationDuration),
             },
           }}
         />

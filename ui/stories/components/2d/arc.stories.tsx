@@ -205,7 +205,7 @@ export const Complex: StoryFn = (() => {
 export const AnotherComplex: StoryFn = (() => {
   const arcProvider = React.useRef<InstanceProvider<ArcInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 4000;
+  const animationDuration = 5000;
   let arcCounter = 30;
   let currentIteration = 0;
   const activeArcIndex = React.useRef(0);
@@ -272,7 +272,7 @@ export const AnotherComplex: StoryFn = (() => {
             currentIteration = 0;
           }
         }, animationDuration);
-      }, 100);
+      }, 5000);
 
       return () => {
         // Remove instances when the component unmounts

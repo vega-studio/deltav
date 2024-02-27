@@ -3,13 +3,13 @@ import {
   AnchorType,
   Camera2D,
   ClearFlags,
+  FontJSX, // Import FontJSX
   GLSettings,
   InstanceProvider,
   LabelInstance,
   LabelLayer,
   LayerJSX,
   PromiseResolver,
-  ScaleMode,
   Surface,
   SurfaceJSX,
   TextureJSX,
@@ -50,13 +50,13 @@ export const Basic: StoryFn = (() => {
             x: size.width / 2,
             y: size.height / 2,
             padding: 0,
-            type: AnchorType.Custom,
+            type: AnchorType.Middle,
           },
           color: [1, 0, 0, 1],
           depth: 0,
-          text: "Hello World",
-          fontSize: 20,
-          origin: [0.5, 0.5],
+          text: "Basic Text",
+          fontSize: 60,
+          origin: [size.width / 2, size.height / 2],
         })
       );
     },
@@ -64,8 +64,8 @@ export const Basic: StoryFn = (() => {
 
   const textureSettings = {
     generateMipMaps: false,
-    format: GLSettings.Texture.TexelDataType.RGBA,
-    internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+    format: GLSettings.Texture.TexelDataType.RGB,
+    internalFormat: GLSettings.Texture.TexelDataType.RGB,
   };
 
   return (
@@ -91,6 +91,7 @@ export const Basic: StoryFn = (() => {
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
         }}
       />
+      <FontJSX name="font" />
       <LayerJSX type={LabelLayer} providerRef={labelProvider} />
     </SurfaceJSX>
   );

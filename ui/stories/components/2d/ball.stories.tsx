@@ -2,7 +2,6 @@ import planck from "planck-js";
 import React from "react";
 import {
   AnchorType,
-  BasicCamera2DControllerJSX,
   Camera2D,
   CircleInstance,
   CircleLayer,
@@ -148,8 +147,8 @@ class ShipObject {
   body: planck.Body;
 
   constructor() {
-    const position: Vec2 = [500, 500];
-    const size: Vec2 = [140, 140];
+    const position: Vec2 = [1400, 500];
+    const size: Vec2 = [100, 100];
     this.graphic = new ImageInstance({
       depth: 0,
       source: shipImage,

@@ -1,7 +1,6 @@
 import planck from "planck-js";
 import React from "react";
 import {
-  add2,
   AnchorType,
   Camera2D,
   CircleInstance,
@@ -13,13 +12,11 @@ import {
   ImageLayer,
   InstanceProvider,
   LayerJSX,
-  normalize2,
   onAnimationLoop,
   onFrame,
   PromiseResolver,
   RectangleInstance,
   RectangleLayer,
-  scale2,
   SceneJSX,
   stopAnimationLoop,
   Surface,
@@ -56,7 +53,7 @@ interface IArrows {
 class BallObject {
   graphic: CircleInstance;
   body: planck.Body;
-  speed = 10;
+  speed = 100;
 
   constructor(center: Vec2, radius: number, color: Vec4) {
     this.graphic = new CircleInstance({
@@ -164,7 +161,7 @@ class ShipObject {
     const position: Vec2 = [1400, 500];
     const size: Vec2 = [100, 100];
     this.decelerate = 0.98;
-    this.accelerate = 10;
+    this.accelerate = 100;
     this.maxSpeed = 5000;
     this.speed = 100;
     this.graphic = new ImageInstance({
@@ -185,7 +182,7 @@ class ShipObject {
     this.body = world.createBody({
       type: planck.Body.KINEMATIC,
       position: planck.Vec2(position[0], position[1]),
-      linearDamping: 2,
+      linearDamping: 10,
     });
     this.body.createFixture(planck.Box(size[0] / 2, size[1] / 2), 1);
     this.updatePosition();
@@ -403,8 +400,8 @@ export const Balls: StoryFn = (() => {
       createBoundaries(viewSize);
 
       // Ball properties
-      const radius = 50;
-      const maxBalls = 50;
+      const radius = 30;
+      const maxBalls = 100;
 
       // Get a random starting position in the view
       const getRandomCenter = (r: number): Vec2 => {

@@ -42,6 +42,13 @@ export default {
   argTypes: {},
 };
 
+interface IArrows {
+  up: boolean;
+  down: boolean;
+  left: boolean;
+  right: boolean;
+}
+
 // The ball object
 class BallObject {
   graphic: CircleInstance;
@@ -172,9 +179,30 @@ class ShipObject {
     this.updatePosition();
   }
 
-  updatePosition() {
+  updatePosition(arrow?: IArrows) {
     const position = this.body.getPosition();
     this.graphic.origin = [position.x, position.y];
+
+    // Rotate left
+    if (arrow?.left) {
+      this.body.setAngle(this.body.getAngle() - 0.1);
+      this.graphic.rotation = this.body.getAngle();
+    }
+
+    // Rotate right
+    if (arrow?.right) {
+      this.body.setAngle(this.body.getAngle() + 0.1);
+      this.graphic.rotation = this.body.getAngle();
+    }
+
+    // Move forward
+    if (arrow?.up) {
+      const force = planck.Vec2(0, 5);
+      const point = planck.Vec2(position.x, position.y);
+      this.body.applyForce(force, point, true);
+      // Move the graphic origin to the body position
+      this.graphic.origin = [position.x, position.y];
+    }
   }
 }
 
@@ -281,6 +309,44 @@ export const Balls: StoryFn = (() => {
   const ready = React.useRef(new PromiseResolver<Surface>());
   const interval = 100;
 
+  // Detect which arrow key is being pressed
+  const arrow: IArrows = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "ArrowUp") {
+      arrow.up = true;
+    }
+    if (event.key === "ArrowDown") {
+      arrow.down = true;
+    }
+    if (event.key === "ArrowLeft") {
+      arrow.left = true;
+    }
+    if (event.key === "ArrowRight") {
+      arrow.right = true;
+    }
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if (event.key === "ArrowUp") {
+      arrow.up = false;
+    }
+    if (event.key === "ArrowDown") {
+      arrow.down = false;
+    }
+    if (event.key === "ArrowLeft") {
+      arrow.left = false;
+    }
+    if (event.key === "ArrowRight") {
+      arrow.right = false;
+    }
+  };
+
   useLifecycle({
     async didMount() {
       // Wait for the surface to establish the full pipeline
@@ -366,6 +432,10 @@ export const Balls: StoryFn = (() => {
       // Create ship
       createShip();
 
+      // Bind arrow keys
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+
       const loopId = onAnimationLoop((_t: number) => {
         world.step(1 / 60);
         // const currentTime = _t % animationDuration;
@@ -376,6 +446,10 @@ export const Balls: StoryFn = (() => {
             const graphic = ball.graphic;
             ball.updatePosition();
             graphic.color = rainbowColor(graphic.center[0], 0, viewSize.width);
+          });
+          // Move ship
+          ships.forEach((ship) => {
+            ship.updatePosition(arrow);
           });
         }, interval);
       }, 10);

@@ -1,6 +1,7 @@
 import planck from "planck-js";
 import React from "react";
 import {
+  add2,
   AnchorType,
   Camera2D,
   CircleInstance,
@@ -12,11 +13,13 @@ import {
   ImageLayer,
   InstanceProvider,
   LayerJSX,
+  normalize2,
   onAnimationLoop,
   onFrame,
   PromiseResolver,
   RectangleInstance,
   RectangleLayer,
+  scale2,
   SceneJSX,
   stopAnimationLoop,
   Surface,
@@ -152,10 +155,18 @@ class EdgeObject {
 class ShipObject {
   graphic: ImageInstance;
   body: planck.Body;
+  decelerate: number;
+  accelerate: number;
+  maxSpeed: number;
+  speed: number;
 
   constructor() {
     const position: Vec2 = [1400, 500];
     const size: Vec2 = [100, 100];
+    this.decelerate = 0.98;
+    this.accelerate = 10;
+    this.maxSpeed = 5000;
+    this.speed = 100;
     this.graphic = new ImageInstance({
       depth: 0,
       source: shipImage,
@@ -172,8 +183,9 @@ class ShipObject {
 
     // Create a physical body in Planck.js world
     this.body = world.createBody({
-      type: planck.Body.STATIC,
+      type: planck.Body.KINEMATIC,
       position: planck.Vec2(position[0], position[1]),
+      linearDamping: 2,
     });
     this.body.createFixture(planck.Box(size[0] / 2, size[1] / 2), 1);
     this.updatePosition();
@@ -181,27 +193,49 @@ class ShipObject {
 
   updatePosition(arrow?: IArrows) {
     const position = this.body.getPosition();
+    const angle = this.body.getAngle();
+    this.graphic.rotation = angle;
     this.graphic.origin = [position.x, position.y];
 
     // Rotate left
     if (arrow?.left) {
       this.body.setAngle(this.body.getAngle() - 0.1);
-      this.graphic.rotation = this.body.getAngle();
     }
 
     // Rotate right
     if (arrow?.right) {
       this.body.setAngle(this.body.getAngle() + 0.1);
-      this.graphic.rotation = this.body.getAngle();
     }
 
     // Move forward
     if (arrow?.up) {
-      const force = planck.Vec2(0, 5);
-      const point = planck.Vec2(position.x, position.y);
-      this.body.applyForce(force, point, true);
-      // Move the graphic origin to the body position
-      this.graphic.origin = [position.x, position.y];
+      this.speed = Math.min(this.speed + this.accelerate, this.maxSpeed);
+      const velocityX = this.speed * Math.sin(angle);
+      const velocityY = -this.speed * Math.cos(angle); // Negative sign due to Y-axis direction in most 2D graphics systems
+
+      // Set the ship's linear velocity in the direction it's facing
+      this.body.setLinearVelocity(planck.Vec2(velocityX, velocityY));
+    }
+
+    // Move backward
+    if (arrow?.down) {
+      this.speed = Math.min(this.speed + this.accelerate, this.maxSpeed);
+      const velocityX = -this.speed * Math.sin(angle);
+      const velocityY = this.speed * Math.cos(angle); // Negative sign due to Y-axis direction in most 2D graphics systems
+
+      // Set the ship's linear velocity in the direction it's facing
+      this.body.setLinearVelocity(planck.Vec2(velocityX, velocityY));
+    }
+
+    // Slow down
+    if (!arrow?.up && !arrow?.down) {
+      const currentVelocity = this.body.getLinearVelocity();
+      const deceleratedVelocity = planck.Vec2(
+        currentVelocity.x * this.decelerate,
+        currentVelocity.y * this.decelerate
+      );
+      this.body.setLinearVelocity(deceleratedVelocity);
+      this.speed = 0;
     }
   }
 }
@@ -413,6 +447,7 @@ export const Balls: StoryFn = (() => {
         edges.push(edge1);
       };
 
+      // Create a ship
       const createShip = () => {
         if (!imageProvider.current) return;
         const ship = new ShipObject();
@@ -420,16 +455,10 @@ export const Balls: StoryFn = (() => {
         ships.push(ship);
       };
 
-      // Create balls
+      // Create the scene
       createBalls();
-
-      // Add the paddle
       createPaddle();
-
-      // Create edges
       createEdges();
-
-      // Create ship
       createShip();
 
       // Bind arrow keys

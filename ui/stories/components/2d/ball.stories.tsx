@@ -1,12 +1,16 @@
 import planck from "planck-js";
 import React from "react";
 import {
+  AnchorType,
+  BasicCamera2DControllerJSX,
   Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   EdgeInstance,
   EdgeLayer,
+  ImageInstance,
+  ImageLayer,
   InstanceProvider,
   LayerJSX,
   onAnimationLoop,
@@ -27,7 +31,10 @@ import { StoryFn } from "@storybook/react";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 
 // Establish the world
-const world = planck.World({ gravity: planck.Vec2(0, 0) });
+const world = planck.World();
+
+import shipImage from "../../../assets/ship.png";
+import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx";
 
 // Storybook export
 export default {
@@ -40,7 +47,7 @@ export default {
 class BallObject {
   graphic: CircleInstance;
   body: planck.Body;
-  speed = 1000;
+  speed = 10;
 
   constructor(center: Vec2, radius: number, color: Vec4) {
     this.graphic = new CircleInstance({
@@ -50,7 +57,10 @@ class BallObject {
     });
 
     // Create a physical body in Planck.js world
-    this.body = world.createBody().setDynamic();
+    this.body = world.createBody({
+      type: planck.Body.DYNAMIC,
+      bullet: true,
+    });
     this.body.createFixture(planck.Circle(radius), {
       density: 1,
       restitution: 0.9,
@@ -70,15 +80,14 @@ class BallObject {
     const velocity = this.body.getLinearVelocity();
     const normalizedVelocity = velocity.clone();
     const newVelocity = normalizedVelocity.mul(newSpeed);
-    this.body.applyForceToCenter(newVelocity, true);
+    // this.body.applyForceToCenter(newVelocity, true);
     this.body.setLinearVelocity(newVelocity);
   }
 
   updatePosition() {
     const position = this.body.getPosition();
     this.graphic.center = [position.x, position.y];
-
-    this.setSpeed(100);
+    this.setSpeed(this.speed);
   }
 }
 
@@ -131,6 +140,42 @@ class EdgeObject {
     // Create a physical body in Planck.js world
     this.body = world.createBody();
     this.body.createFixture(planck.Edge(planckStart, planckEnd), 0);
+  }
+}
+
+class ShipObject {
+  graphic: ImageInstance;
+  body: planck.Body;
+
+  constructor() {
+    const position: Vec2 = [500, 500];
+    const size: Vec2 = [140, 140];
+    this.graphic = new ImageInstance({
+      depth: 0,
+      source: shipImage,
+      width: size[0],
+      height: size[1],
+      anchor: {
+        type: AnchorType.Middle,
+        padding: 0,
+      },
+      origin: position,
+      tint: [1, 1, 1, 1],
+      rotation: 0,
+    });
+
+    // Create a physical body in Planck.js world
+    this.body = world.createBody({
+      type: planck.Body.STATIC,
+      position: planck.Vec2(position[0], position[1]),
+    });
+    this.body.createFixture(planck.Box(size[0] / 2, size[1] / 2), 1);
+    this.updatePosition();
+  }
+
+  updatePosition() {
+    const position = this.body.getPosition();
+    this.graphic.origin = [position.x, position.y];
   }
 }
 
@@ -229,10 +274,11 @@ function rainbowColor(value: number, min = 0, max = 100): Vec4 {
   return [r, g, b, 1];
 }
 
-export const Simple: StoryFn = (() => {
+export const Balls: StoryFn = (() => {
   const circleProvider = React.useRef<InstanceProvider<CircleInstance>>(null);
   const rectProvider = React.useRef<InstanceProvider<RectangleInstance>>(null);
   const edgeProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const imageProvider = React.useRef<InstanceProvider<ImageInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
   const interval = 100;
 
@@ -246,6 +292,7 @@ export const Simple: StoryFn = (() => {
       const balls: BallObject[] = [];
       const paddle: PaddleObject[] = [];
       const edges: EdgeObject[] = [];
+      const ships: ShipObject[] = [];
 
       // Make sure the view exists
       if (!viewSize) {
@@ -301,6 +348,13 @@ export const Simple: StoryFn = (() => {
         edges.push(edge1);
       };
 
+      const createShip = () => {
+        if (!imageProvider.current) return;
+        const ship = new ShipObject();
+        imageProvider.current.add(ship.graphic);
+        ships.push(ship);
+      };
+
       // Create balls
       createBalls();
 
@@ -309,6 +363,9 @@ export const Simple: StoryFn = (() => {
 
       // Create edges
       createEdges();
+
+      // Create ship
+      createShip();
 
       const loopId = onAnimationLoop((_t: number) => {
         world.step(1 / 60);
@@ -338,7 +395,16 @@ export const Simple: StoryFn = (() => {
         antialias: true,
       }}
     >
+      <AtlasJSX name="ship" width={4096} height={4096} />
       <SceneJSX name="balls">
+        <LayerJSX
+          type={ImageLayer}
+          providerRef={imageProvider}
+          config={{
+            atlas: "ship",
+            enableRotation: true,
+          }}
+        />
         <ViewJSX
           name="main"
           type={View2D}

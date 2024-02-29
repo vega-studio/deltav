@@ -30,10 +30,13 @@
     "@types/assert": "1.4.2",
     "@types/debug": "4.1.4",
     "@types/offscreencanvas": "2019.6.4",
+    "@types/random-seed": "0.3.5",
+    "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
     "devops": "github:vega-studio/node-devops#semver:2.17.1",
-    "preact": "10.18.1"
+    "preact": "10.18.1",
+    "rand-seed": "1.0.2"
   },
   "greenkeeper": {
     "ignore": []

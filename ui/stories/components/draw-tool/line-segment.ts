@@ -1,13 +1,17 @@
 import {
   add2,
   copy2,
+  dot2,
   EdgeInstance,
   EdgeType,
+  length2,
   scale2,
   subtract2,
+  tod_flip2,
   Vec2,
-  type Vec3,
+  type Vec4,
 } from "../../../src";
+import type { LineSweep } from "./line-sweep";
 
 // These are temp vector storage registers for storing results for multiple
 // vector steps. Using these as out values greatly reduces allocations.
@@ -19,44 +23,6 @@ const REGISTER5: Vec2 = [0, 0];
 const REGISTER6: Vec2 = [0, 0];
 
 /**
- * This takes our intersections a step further and computes the actual
- * intersection information relative to the LineSegments/Edge. The
- * intersection computation in the other method is merely for a single two
- * point line segment, this is for an edge decomposed into multiple segments.
- */
-function computeFinalIntersection(
-  seg1: [Vec2, Vec2, LineSegments],
-  seg2: [Vec2, Vec2, LineSegments]
-): [Vec2, LineSegments, number, LineSegments, number] | null {
-  const intersection = LineSegments.intersect(seg1, seg2);
-
-  // If we intersect, we need to add it to the intersection list AND
-  // calculate the true t value of the intersection relative to the
-  // edges that collided. The intersection t value is merely the
-  // intersection for the segment and NOT the edge as a whole.
-  if (intersection) {
-    const { 0: x, 1: y, 2: ut } = intersection;
-    const edge1 = seg1[2];
-    const edge2 = seg2[2];
-
-    // Find the segments index in each edge
-    const index1 = edge1.segments.findIndex((s) => s === seg1);
-    const index2 = edge2.segments.findIndex((s) => s === seg2);
-
-    // Use the segment dvision amounts to get the t value that should
-    // be associate
-    const tEdge1 = index1 * edge1.tDivision + ut;
-    const tEdge2 = index2 * edge2.tDivision + ut;
-
-    // Compute the t value along checkEject line
-    return [[x, y], edge1, tEdge1, edge2, tEdge2];
-  }
-
-  // No intersection
-  return null;
-}
-
-/**
  * As a utility class: Provides helper equations for line segments.
  *
  * As a class: Stores an edge and manages the breakup of the edge into easier to
@@ -65,7 +31,12 @@ function computeFinalIntersection(
  * curve based on CPU processes.
  */
 export class LineSegments {
+  /**
+   * Tracks the mode of the line. This should always match the Layer edge type
+   * the edge is added to.
+   */
   type: EdgeType;
+  /** The tracked edge graphic that this LineSegments represents */
   edge: EdgeInstance;
   /**
    * The t amount used to generate each line segment. Only is < 1 when there
@@ -78,17 +49,26 @@ export class LineSegments {
    * costs a little more memory, it prevents the need to generate lookup maps
    * during processing which ends up being more costly anywho.
    */
+  get segments(): readonly [Vec2, Vec2, LineSegments][] {
+    if (this.needsUpdate) this.updateSegments();
+    return this._segments;
+  }
   private _segments: [Vec2, Vec2, LineSegments][] = [];
+
+  /**
+   * This is the approximated length of the edge. It computes the length of each
+   * line segment to get the total length of the edge.
+   */
+  get length(): number {
+    if (this.needsUpdate) this.updateSegments();
+    return this._length;
+  }
+  private _length = 0;
   /**
    * Flag this as true when the segments should be updated to new values on next
    * segments retrieval.
    */
   needsUpdate = true;
-
-  get segments(): readonly [Vec2, Vec2, LineSegments][] {
-    if (this.needsUpdate) this.updateSegments();
-    return this._segments;
-  }
 
   constructor(edge: EdgeInstance, type: EdgeType) {
     this.edge = edge;
@@ -99,7 +79,7 @@ export class LineSegments {
    * This computes two new edges that represents the exact same edge split at
    * the specified t interval along this edge.
    */
-  splitEdge(t: number): [EdgeInstance, EdgeInstance] {
+  splitEdge(t: number): [LineSegments, LineSegments] {
     // From ChatGPT Splitting a Bézier curve at a parameter \(t\) along its
     // path results in two new Bézier curves that, when combined, match the
     // original curve exactly. The process of splitting a Bézier curve
@@ -143,6 +123,7 @@ export class LineSegments {
     // Thickness split is the same for all curves as it's linear
     const dT = this.edge.thickness[1] - this.edge.thickness[0];
     const tThickness = this.edge.thickness[0] + dT * t;
+    let edges: [EdgeInstance, EdgeInstance] | null = null;
 
     switch (this.type) {
       case EdgeType.LINE: {
@@ -151,7 +132,7 @@ export class LineSegments {
           scale2(subtract2(this.edge.end, this.edge.start, REGISTER1), t)
         );
 
-        return [
+        edges = [
           new EdgeInstance({
             startColor: this.edge.startColor,
             endColor: this.edge.endColor,
@@ -167,6 +148,7 @@ export class LineSegments {
             end: copy2(this.edge.end),
           }),
         ];
+        break;
       }
 
       case EdgeType.BEZIER: {
@@ -181,7 +163,7 @@ export class LineSegments {
           scale2(P12, t, REGISTER2)
         );
 
-        return [
+        edges = [
           new EdgeInstance({
             startColor: this.edge.startColor,
             endColor: this.edge.endColor,
@@ -199,6 +181,7 @@ export class LineSegments {
             control: [P12],
           }),
         ];
+        break;
       }
 
       case EdgeType.BEZIER2: {
@@ -223,7 +206,7 @@ export class LineSegments {
           scale2(P123, t, REGISTER2)
         );
 
-        return [
+        edges = [
           new EdgeInstance({
             startColor: this.edge.startColor,
             endColor: this.edge.endColor,
@@ -241,7 +224,53 @@ export class LineSegments {
             control: [P123, P23],
           }),
         ];
+        break;
       }
+    }
+
+    return [
+      new LineSegments(edges[0], this.type),
+      new LineSegments(edges[1], this.type),
+    ];
+  }
+
+  getRoughYBounds() {
+    switch (this.type) {
+      case EdgeType.LINE:
+        return [
+          Math.min(this.edge.start[1], this.edge.end[1]),
+          Math.max(this.edge.start[1], this.edge.end[1]),
+        ];
+
+      case EdgeType.BEZIER:
+        return [
+          Math.min(
+            this.edge.start[1],
+            this.edge.end[1],
+            this.edge.control[0][1]
+          ),
+          Math.max(
+            this.edge.start[1],
+            this.edge.end[1],
+            this.edge.control[0][1]
+          ),
+        ];
+
+      case EdgeType.BEZIER2:
+        return [
+          Math.min(
+            this.edge.start[1],
+            this.edge.end[1],
+            this.edge.control[0][1],
+            this.edge.control[1][1]
+          ),
+          Math.max(
+            this.edge.start[1],
+            this.edge.end[1],
+            this.edge.control[0][1],
+            this.edge.control[1][1]
+          ),
+        ];
     }
   }
 
@@ -267,7 +296,7 @@ export class LineSegments {
         const t_1 = 1 - t;
         return add2(
           add2(
-            scale2(this.edge.start, t_1, REGISTER1),
+            scale2(this.edge.start, t_1 * t_1, REGISTER1),
             scale2(this.edge.control[0], 2 * t * t_1, REGISTER2),
             REGISTER3
           ),
@@ -300,15 +329,34 @@ export class LineSegments {
   }
 
   /**
+   * This takes a segment and returns the start and end t value of the segment.
+   * This ONLY works if the segment used comes from the most recent update of
+   * this line segment's segments.
+   *
+   * Returns null if the segment is not part of this line segment.
+   */
+  getSegmentT(segment: LineSegments["segments"][number]): Vec2 | null {
+    const index = this.segments.findIndex((s) => s === segment);
+    if (index < 0) return null;
+
+    return [index * this.tDivision, (index + 1) * this.tDivision];
+  }
+
+  /**
    * Call this to update the line segment representation of the edge. Curves
    * require several line segments to represent them for mathematical collisions
    * and intersections.
    */
   updateSegments(customCount?: number) {
+    // Generate the new segments for the edge
     switch (this.type) {
       case EdgeType.LINE:
         this.tDivision = 1;
-        this._segments = [[this.edge.start, this.edge.end, this]];
+        if (this.edge.start[0] < this.edge.end[0]) {
+          this._segments = [[this.edge.start, this.edge.end, this]];
+        } else {
+          this._segments = [[this.edge.end, this.edge.start, this]];
+        }
         break;
 
       case EdgeType.BEZIER: {
@@ -331,7 +379,7 @@ export class LineSegments {
         let previous = this.getPoint(0);
         this._segments = [];
 
-        for (let i = 1; i < count; ++i) {
+        for (let i = 1; i <= count; ++i) {
           const t = i * this.tDivision;
           const p = this.getPoint(t);
           // Segments always travel from left to right to aid in sweep
@@ -363,7 +411,7 @@ export class LineSegments {
         let previous = this.getPoint(0);
         this._segments = [];
 
-        for (let i = 1; i < count; ++i) {
+        for (let i = 1; i <= count; ++i) {
           const t = i * this.tDivision;
           const p = this.getPoint(t);
           // Segments always travel from left to right to aid in sweep
@@ -375,6 +423,14 @@ export class LineSegments {
         break;
       }
     }
+
+    // Loop through the generated segments to add each segment's length
+    this._length = 0;
+    for (const segment of this._segments) {
+      this._length += length2(subtract2(segment[1], segment[0], REGISTER1));
+    }
+
+    this.needsUpdate = false;
   }
 
   /**
@@ -382,8 +438,10 @@ export class LineSegments {
    * you need the real distance take the square root of this value. This is done
    * for a performance reminder and consideration when writing applications with
    * this method.
+   *
+   * This also returns the t value calculated while determining the distance.
    */
-  static distanceToPointSq(segment: [Vec2, Vec2], p: Vec2) {
+  static distanceToPointSq(segment: [Vec2, Vec2, ...any], p: Vec2): Vec2 {
     const { 0: px, 1: py } = p;
     const { 0: x1, 1: y1 } = segment[0];
     const { 0: x2, 1: y2 } = segment[1];
@@ -398,7 +456,7 @@ export class LineSegments {
     let param = -1;
 
     // In case of 0 length line
-    if (len_sq != 0) {
+    if (len_sq !== 0) {
       param = dot / len_sq;
     }
 
@@ -407,9 +465,11 @@ export class LineSegments {
     if (param < 0) {
       xx = x1;
       yy = y1;
+      param = 0;
     } else if (param > 1) {
       xx = x2;
       yy = y2;
+      param = 1;
     } else {
       xx = x1 + param * C;
       yy = y1 + param * D;
@@ -418,7 +478,13 @@ export class LineSegments {
     const dx = px - xx;
     const dy = py - yy;
 
-    return dx * dx + dy * dy;
+    return [dx * dx + dy * dy, param];
+  }
+
+  static yCheck(y1: number, y2: number, y3: number, y4: number) {
+    if (y1 < y3 && y2 < y3 && y1 < y4 && y2 < y4) return true;
+    if (y1 > y3 && y2 > y3 && y1 > y4 && y2 > y4) return true;
+    return false;
   }
 
   /**
@@ -428,84 +494,135 @@ export class LineSegments {
   static intersect(
     s1: [Vec2, Vec2, ...any],
     s2: [Vec2, Vec2, ...any]
-  ): Vec3 | null {
-    const { 0: x1, 1: y1 } = s1[0];
-    const { 0: x2, 1: y2 } = s1[1];
-    const { 0: x3, 1: y3 } = s2[0];
-    const { 0: x4, 1: y4 } = s2[1];
-    const a = x2 - x1;
-    const b = y2 - y1;
-    const c = x4 - x3;
-    const d = y4 - y3;
-    const denom = d * a - c * b;
-    if (denom === 0) return null;
-    const ua = (c * (y1 - y3) - d * (x1 - x3)) / denom;
-    const ub = (a * (y1 - y3) - b * (x1 - x3)) / denom;
-    if (ua < 0 || ua > 1 || ub < 0 || ub > 1) return null;
-    const x = x1 + ua * a;
-    const y = y1 + ua * b;
+  ): Vec4 | null {
+    // const { 0: x1, 1: y1 } = s1[0];
+    // const { 0: x2, 1: y2 } = s1[1];
+    // const { 0: x3, 1: y3 } = s2[0];
+    // const { 0: x4, 1: y4 } = s2[1];
+    // if (y1 < y3 && y2 < y3 && y1 < y4 && y2 < y4) return null;
+    // if (y1 > y3 && y2 > y3 && y1 > y4 && y2 > y4) return null;
+    // const a = x2 - x1;
+    // const b = y2 - y1;
+    // const c = x4 - x3;
+    // const d = y4 - y3;
+    // let denom = d * a - c * b;
+    // if (denom === 0) return null;
+    // denom = 1 / denom;
+    // const ua = (c * (y1 - y3) - d * (x1 - x3)) * denom;
+    // const ub = (a * (y1 - y3) - b * (x1 - x3)) * denom;
+    // if (ua < 0 || ua > 1 || ub < 0 || ub > 1) return null;
+    // const x = x1 + ua * a;
+    // const y = y1 + ua * b;
 
-    return [x, y, ua];
+    const s10 = s1[0];
+    const s20 = s2[0];
+    if (LineSegments.yCheck(s10[1], s1[1][1], s20[1], s2[1][1])) return null;
+    let denom = tod_flip2(
+      // a b
+      subtract2(s1[1], s10, REGISTER1),
+      // c d
+      subtract2(s2[1], s20, REGISTER2)
+    );
+    if (denom === 0) return null;
+    denom = 1 / denom;
+    const ua = tod_flip2(REGISTER2, subtract2(s10, s20, REGISTER3)) * denom;
+    const ub = tod_flip2(REGISTER1, REGISTER3) * denom;
+    if (ua < 0 || ua > 1 || ub < 0 || ub > 1) return null;
+    const x = s10[0] + ua * REGISTER1[0];
+    const y = s10[1] + ua * REGISTER1[1];
+
+    return [x, y, ua, ub];
   }
 
   /**
-   * Performs a line sweep algorithm to compute ALL intersections for a list of
-   * edges.
+   * Calculates if a circle intersects the specified segment.
    */
-  static lineSweepIntersections(segments: LineSegments[]) {
-    const intersections: [Vec2, LineSegments, number, LineSegments, number][] =
-      [];
-    // Gather all segments from all edges.
-    const allSegments = segments.flatMap((s) => s.segments);
-    // Sort all of the edges by X by their left side
-    const sortedLeft = allSegments.slice(0).sort((a, b) => a[0][0] - b[0][0]);
-    // Sort all of the edges by X by their right side
-    const sortedRight = allSegments.sort((a, b) => b[1][0] - a[1][0]);
-    // Retains all of the lines that should be tested against on each new event
-    // point.
-    const testQueue = new Set<[Vec2, Vec2, LineSegments]>();
+  static intersectsCircle(
+    p0: Vec2,
+    p1: Vec2,
+    circle: { r: number; center: Vec2 }
+  ) {
+    // const circleDistance = {
+    //   x: Math.abs(circle.x - (p0.x + p1.x) / 2),
+    //   y: Math.abs(circle.y - (p0.y + p1.y) / 2)
+    // };
+    subtract2(circle.center, scale2(add2(p0, p1, REGISTER1), 0.5, REGISTER2));
 
-    let left = 0;
-    let right = 0;
+    // const dx = p1.x - p0.x;
+    // const dy = p1.y - p0.y;
+    subtract2(p1, p0, REGISTER3);
 
-    for (; left < sortedLeft.length; ++left) {
-      const cursor = sortedLeft[left][0];
-      let checkEject = sortedRight[right];
+    // const length = Math.sqrt(dx * dx + dy * dy);
+    const lengthSq = dot2(REGISTER3, REGISTER3);
 
-      while (cursor >= checkEject[0]) {
-        // We remove the ejected element from the test queue, when ejecting we
-        // test that element against everything in the queue.
-        if (testQueue.delete(checkEject)) {
-          testQueue.forEach((e) => {
-            const intersection = computeFinalIntersection(checkEject, e);
+    // const dot =
+    //   ((circle.x - p0.x) * dx + (circle.y - p0.y) * dy) / Math.pow(length, 2);
+    const dot =
+      dot2(subtract2(circle.center, p0, REGISTER4), REGISTER3) / lengthSq;
 
-            if (intersection) {
-              intersections.push(intersection);
-            }
-          });
-        }
+    // const closest = { x: p0.x + dot * dx, y: p0.y + dot * dy };
+    add2(p0, scale2(REGISTER3, dot), REGISTER5);
 
-        right++;
-        checkEject = sortedRight[right];
-      }
+    // const dClosest = { x: circle.x - closest.x, y: circle.y - closest.y };
+    subtract2(circle.center, REGISTER5, REGISTER6);
 
-      testQueue.add(sortedLeft[left]);
+    // const distClosest = Math.sqrt(
+    //   dClosest.x * dClosest.x + dClosest.y * dClosest.y
+    // );
+    const distClosestSq = dot2(REGISTER6, REGISTER6);
+
+    // if (distClosest > circle.radius) {
+    //   return false;
+    // }
+    if (distClosestSq > circle.r * circle.r) {
+      return false;
     }
 
-    // Finish the remaining right queue to perform remaining tests and
-    // ejections.
-    for (; right < sortedRight.length; ++right) {
-      const checkEject = sortedRight[right];
+    // const t =
+    //   ((circle.x - p0.x) * (p1.x - p0.x) + (circle.y - p0.y) * (p1.y - p0.y)) /
+    //   (length * length);
+    // center - p0 = REGISTER4
+    // p1 - p0 = REGISTER3
+    const t = dot2(REGISTER3, REGISTER4) / lengthSq;
 
-      if (testQueue.delete(checkEject)) {
-        testQueue.forEach((e) => {
-          const intersection = computeFinalIntersection(checkEject, e);
-
-          if (intersection) {
-            intersections.push(intersection);
-          }
-        });
-      }
+    // We're off the edge of the segment from the p0 point. So just test
+    // distance to that point
+    if (t < 0) {
+      const dSq = dot2(REGISTER4, REGISTER4);
+      return dSq < circle.r * circle.r;
     }
+
+    // We're off the edge on the other end.
+    else if (t > 1) {
+      const v = subtract2(circle.center, p1, REGISTER1);
+      const dSq = dot2(v, v);
+      return dSq < circle.r * circle.r;
+    }
+
+    if (t < 0.0 || t > 1.0) return false;
+
+    return true;
+  }
+
+  /**
+   * This makes working with a list of intersections easier to work with by
+   * contextualizing the intersection target.
+   */
+  static filterIntersections(
+    check: LineSegments,
+    intersections: ReturnType<typeof LineSweep.lineSweepIntersections>
+  ) {
+    return intersections
+      .filter((i) => i[1] === check || i[3] === check)
+      .map((o) => {
+        const is1 = o[1] === check;
+
+        return {
+          target: is1 ? o[3] : o[1],
+          target_t: is1 ? o[4] : o[2],
+          self_t: is1 ? o[2] : o[4],
+          intersection: o[0],
+        };
+      });
   }
 }

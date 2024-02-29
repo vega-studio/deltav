@@ -234,6 +234,15 @@ export function dot1(left: Vec1Compat, right: Vec1Compat): number {
   return left[0] * right[0];
 }
 
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export function tod1(left: Vec1Compat, right: Vec1Compat): number {
+  return left[0] * right[0];
+}
+
 export function linear1(
   start: Vec1Compat,
   end: Vec1Compat,
@@ -315,10 +324,11 @@ export function forward2(out?: Vec2Compat) {
 }
 
 /**
- * Cross product of a 2D vector would result in [0, 0, <magnitude>] within the 2D plane. In keeping with the format of
- * vector methods in this document <method name><vector component length>() we return only the 2D result of the product
- * [0, 0].
- * In order to get the results of the actual 2D vectors in a 3D world, you must use cross3() to retrieve the Z result.
+ * Cross product of a 2D vector would result in [0, 0, <magnitude>] within the
+ * 2D plane. In keeping with the format of vector methods in this document
+ * <method name><vector component length>() we return only the 2D result of the
+ * product [0, 0]. In order to get the results of the actual 2D vectors in a 3D
+ * world, you must use cross3() to retrieve the Z result.
  */
 export function cross2(
   _left: Vec2Compat,
@@ -403,7 +413,10 @@ export function subtract2(
   right: Vec2Compat,
   out?: Vec2Compat
 ): Vec2 {
-  return apply2(out, left[0] - right[0], left[1] - right[1]);
+  const v: Vec2 = (out as Vec2) || (new Array(2) as any as Vec2);
+  v[0] = left[0] - right[0];
+  v[1] = left[1] - right[1];
+  return v;
 }
 
 export function multiply2(
@@ -421,6 +434,33 @@ export function normalize2(left: Vec2Compat, out?: Vec2Compat): Vec2 {
 
 export function dot2(left: Vec2Compat, right: Vec2Compat): number {
   return left[0] * right[0] + left[1] * right[1];
+}
+
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export function tod2(left: Vec2Compat, right: Vec2Compat): number {
+  return left[0] * right[0] - left[1] * right[1];
+}
+
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together AND the components are flipped on one of
+ * the vectors.
+ *
+ * x1 * y2 - y1 * x2
+ */
+export function tod_flip2(left: Vec2Compat, right: Vec2Compat): number {
+  return left[0] * right[1] - left[1] * right[0];
+}
+
+/**
+ * Swaps component direction [x, y] -> [y, x]
+ */
+export function reverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+  return apply2(out, vec[1], vec[0]);
 }
 
 export function linear2(
@@ -668,6 +708,22 @@ export function dot3(left: Vec3Compat, right: Vec3Compat): number {
   return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
 }
 
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export function tod3(left: Vec3Compat, right: Vec3Compat): number {
+  return left[0] * right[0] - left[1] * right[1] - left[2] * right[2];
+}
+
+/**
+ * Swaps component direction [x, y, z] -> [z, y, x]
+ */
+export function reverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+  return apply3(out, vec[2], vec[1], vec[0]);
+}
+
 export function vec3(
   values: number[] | number,
   ...args: (number | number[])[]
@@ -806,8 +862,9 @@ export function forward4(out?: Vec4Compat): Vec4 {
 }
 
 /**
- * 4D cross product? Lots of issues here. If you need a proper cross product for 3D, please use cross3. What
- * this method should do is up for debate for now and will return a unit 4D vector.
+ * 4D cross product? Lots of issues here. If you need a proper cross product for
+ * 3D, please use cross3. What this method should do is up for debate for now
+ * and will return a unit 4D vector.
  */
 export function cross4(_left: Vec4, _right: Vec4, out?: Vec4Compat): Vec4 {
   return apply4(out, 0, 0, 0, 1);
@@ -896,6 +953,27 @@ export function dot4(left: Vec4, right: Vec4): number {
     left[2] * right[2] +
     left[3] * right[3]
   );
+}
+
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export function tod4(left: Vec4, right: Vec4): number {
+  return (
+    left[0] * right[0] -
+    left[1] * right[1] -
+    left[2] * right[2] -
+    left[3] * right[3]
+  );
+}
+
+/**
+ * Swaps component direction [x, y, z] -> [z, y, x]
+ */
+export function reverse4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
+  return apply4(out, vec[3], vec[2], vec[1], vec[0]);
 }
 
 export function linear4(
@@ -1031,7 +1109,8 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
     to1[3] = to[3];
   }
 
-  // Calculate coefficients for final values. We use SLERP if the difference between the two angles isn't too big.
+  // Calculate coefficients for final values. We use SLERP if the difference
+  // between the two angles isn't too big.
   if (1.0 - cosom > 0.0000001) {
     omega = acos(cosom);
     sinom = sin(omega);
@@ -1039,7 +1118,8 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
     scale1 = sin(t * omega) / sinom;
   }
 
-  // We linear interpolate for quaternions that are very close together in angle.
+  // We linear interpolate for quaternions that are very close together in
+  // angle.
   else {
     scale0 = 1.0 - t;
     scale1 = t;

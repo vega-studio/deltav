@@ -32,6 +32,8 @@ export interface ISurfaceJSX {
   children?: React.ReactNode;
   /** Custom class name for the container element */
   className?: string;
+  /** Props to apply to the container element of the DOM */
+  containerProps?: React.HTMLProps<HTMLDivElement>;
   /**
    * Options used to specify settings for the surface itself and how it will be
    * composited in the DOM. This includes top level configuration like canvas
@@ -351,7 +353,11 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   // children to inject custom DOM mostly for interesting ways to review and
   // debug the contents of the surface.
   return (
-    <div ref={container} className="SurfaceJSX">
+    <div
+      ref={container}
+      className={`SurfaceJSX ${props.className || ""}`}
+      {...props.containerProps}
+    >
       <canvas ref={canvasRef}>
         <SurfaceContext.Provider
           value={{

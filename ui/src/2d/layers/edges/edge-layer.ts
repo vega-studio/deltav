@@ -47,6 +47,12 @@ export interface IEdgeLayerProps<T extends EdgeInstance>
   scaleType?: EdgeScaleType;
   /** Specifies how the edge is formed */
   type: EdgeType;
+  /**
+   * Specifiy how many segments to render curved lines with. This defaults to 50
+   * the higher the number, the less likely it is to see jagged curves, but
+   * performance will drop.
+   */
+  smoothness?: number;
 }
 
 export interface IEdgeLayerState {}
@@ -99,6 +105,7 @@ export class EdgeLayer<
       scaleFactor = () => 1,
       type,
       scaleType = EdgeScaleType.NONE,
+      smoothness = 50,
     } = this.props;
 
     const {
@@ -110,7 +117,7 @@ export class EdgeLayer<
       thickness: animateThickness,
     } = animate;
 
-    const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : 50;
+    const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : smoothness;
 
     // Calculate the normals and interpolations for our vertices
     const vertexToNormal: { [key: number]: number } = {

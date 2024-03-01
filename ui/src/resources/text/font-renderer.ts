@@ -365,21 +365,6 @@ async function renderEachPair(
     );
   }
 
-  // if (result) {
-  //   const c = document.createElement("canvas");
-  //   c.width = result.width;
-  //   c.height = result.height;
-  //   c.style.width = `${result.width}px`;
-  //   c.style.height = `${result.height}px`;
-  //   c.style.position = "fixed";
-  //   c.style.left = "10px";
-  //   c.style.bottom = "10px";
-  //   const ctx = c.getContext("2d");
-  //   ctx?.putImageData(result, 0, 0);
-  //   c.id = "FONT-RENDERER-result";
-  //   document.body.appendChild(c);
-  // }
-
   // table.remove();
   debug("Kerning rendering analysis complete", pairs.pairs);
 }

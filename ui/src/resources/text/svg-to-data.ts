@@ -59,14 +59,14 @@ export async function svgToData(
   let didDraw = false;
 
   // Method for rendering to the canvas once the svg image is ready
-  const draw = () => {
+  const draw = async () => {
     // Ensure we only draw once
     if (didDraw) return;
     didDraw = true;
     // Make sure the canvas accommodates your monitor density!
     canvas.width = img.width * window.devicePixelRatio;
     canvas.height = img.height * window.devicePixelRatio;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
     if (!ctx) {
       resolver.resolve(null);
@@ -104,11 +104,6 @@ export async function svgToData(
 
   img.onload = draw;
   img.src = image64;
-
-  // img.style.position = "absolute";
-  // img.style.top = "200px";
-  // img.id = "svg-to-data-img";
-  // document.body.appendChild(img);
 
   // If the width is already set then the image already has rendered it's contents and is ready to render to the
   // canvas context.

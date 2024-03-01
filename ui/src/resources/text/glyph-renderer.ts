@@ -67,7 +67,7 @@ export function renderGlyph(
   height: number,
   font: string
 ) {
-  // Ensure we're rendering a single characters
+  // Ensure we're rendering a single character
   glyph = glyph[0];
 
   if (canvas.width < width || canvas.height < height) {
@@ -76,7 +76,7 @@ export function renderGlyph(
   }
 
   if (!ctx) {
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     if (context) ctx = context;
     else return null;
   }

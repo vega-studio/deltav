@@ -8,6 +8,7 @@ import { PackNode } from "../../resources/texture/pack-node";
 import { SubTexture } from "../texture/sub-texture";
 
 import Debug from "debug";
+import { loadFonts } from "./load-fonts";
 
 const debug = Debug("performance");
 
@@ -23,6 +24,19 @@ export enum FontGlyphRenderSize {
   _64 = 64,
   /** NOT RECOMMENDED: This is very large and will not allow for many glyphs on a single texture */
   _128 = 128,
+}
+
+export interface IFontMapEmbed {
+  /** The font family that will be used to reference this font: "RedHatDisplay" */
+  familyName: string;
+  /** Define the type of font file being provided: woff ttf etc */
+  fontType: string;
+  /** Base64 encoded font source */
+  source: string;
+  /** Font weight provided: 400 or "200 400" */
+  weight: `${number} ${number}` | number;
+  /** Font style the source provides: normal or italic */
+  style: "normal" | "italic";
 }
 
 /**
@@ -44,18 +58,7 @@ export interface IFontMapMetrics {
    * If you pick a font that is not available to the system, you will need to
    * have the font source embedded here.
    */
-  embed?: {
-    /** The font family that will be used to reference this font: "RedHatDisplay" */
-    familyName: string;
-    /** Define the type of font file being provided: woff ttf etc */
-    fontType: string;
-    /** Base64 encoded font source */
-    source: string;
-    /** Font weight provided: 400 or "200 400" */
-    weight: `${number} ${number}` | number;
-    /** Font style the source provides: normal or italic */
-    style: "normal" | "italic";
-  }[];
+  embed?: IFontMapEmbed[];
   /** Font weight of the font to be rendered to the font map */
   weight: string | number;
   /** Applies pre-computed strings to warm up kerning pairs and glyph renderings before any label is generated. */
@@ -378,6 +381,8 @@ export class FontManager {
     let uniqueCharacters = "";
     allCharacters.forEach((char) => (uniqueCharacters += char));
 
+    // Ensure our font embeddings are available
+    await loadFonts(fontMap.fontString, fontMap.fontSource.embed);
     // Perform the updates to the font map
     await this.updateFontMapCharacters(uniqueCharacters, fontMap);
     // Perform the updates to the kerning pairs

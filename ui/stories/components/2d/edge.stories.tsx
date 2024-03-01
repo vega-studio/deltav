@@ -666,7 +666,7 @@ export const Tree: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX options={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
       <ViewJSX
         name="main"
         type={View2D}

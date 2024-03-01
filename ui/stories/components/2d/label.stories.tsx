@@ -1,6 +1,8 @@
 import React from "react";
+import RedHatDisplayTTF from "../../assets/fonts/RedHatDisplay-Regular.ttf";
 import {
   AnchorType,
+  BasicCamera2DControllerJSX,
   Camera2D,
   ClearFlags,
   FontJSX, // Import FontJSX
@@ -10,6 +12,7 @@ import {
   LabelLayer,
   LayerJSX,
   PromiseResolver,
+  ScaleMode,
   Surface,
   SurfaceJSX,
   TextureJSX,
@@ -29,6 +32,7 @@ export default {
 export const Basic: StoryFn = (() => {
   const labelProvider = React.useRef<InstanceProvider<LabelInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
+  const camera = React.useRef(new Camera2D());
 
   useLifecycle({
     async didMount() {
@@ -44,18 +48,18 @@ export const Basic: StoryFn = (() => {
         console.warn("Invalid View Size", surface);
         return;
       }
+
       provider.add(
         new LabelInstance({
           anchor: {
-            x: size.width / 2,
-            y: size.height / 2,
-            padding: 0,
             type: AnchorType.Middle,
+            padding: 0,
           },
-          color: [1, 0, 0, 1],
+          color: [1, 1, 1, 1],
           depth: 0,
           text: "Basic Text",
-          fontSize: 60,
+          fontSize: 32,
+          scale: ScaleMode.ALWAYS,
           origin: [size.width / 2, size.height / 2],
         })
       );
@@ -76,23 +80,48 @@ export const Basic: StoryFn = (() => {
         antialias: true,
       }}
     >
+      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
       <TextureJSX
         name="color"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
         textureSettings={textureSettings}
       />
+      <FontJSX
+        name="font"
+        dynamic={true}
+        fontSource={{
+          family: "RedHatDisplay",
+          errorGlyph: "?",
+          size: 64,
+          weight: "normal",
+          embed: [
+            {
+              familyName: "RedHatDisplay",
+              fontType: "truetype",
+              source: RedHatDisplayTTF,
+              weight: 400,
+              style: "normal",
+            },
+          ],
+        }}
+      />
       <ViewJSX
         name="main"
         type={View2D}
         config={{
-          camera: new Camera2D(),
+          camera: camera.current,
           background: [0, 0, 0, 1],
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
         }}
       />
-      <FontJSX name="font" />
-      <LayerJSX type={LabelLayer} providerRef={labelProvider} />
+      <LayerJSX
+        type={LabelLayer}
+        providerRef={labelProvider}
+        config={{
+          resourceKey: "font",
+        }}
+      />
     </SurfaceJSX>
   );
 }).bind({});

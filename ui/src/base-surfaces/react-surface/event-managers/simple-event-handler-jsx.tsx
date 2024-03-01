@@ -25,4 +25,4 @@ export const SimpleEventHandlerJSX = (props: ISimpleEventHandlerJSX) => {
 
 SimpleEventHandlerJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.EVENT_MANAGER,
-} as ISimpleEventHandlerJSX;
+};

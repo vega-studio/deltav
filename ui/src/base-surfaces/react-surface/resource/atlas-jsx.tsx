@@ -43,4 +43,4 @@ export const AtlasJSX = (props: IAtlasJSX) => {
 
 AtlasJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.RESOURCE,
-} as IAtlasJSX;
+};

@@ -195,4 +195,4 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
 
 ViewJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.VIEW,
-} as IViewJSX<any>;
+};

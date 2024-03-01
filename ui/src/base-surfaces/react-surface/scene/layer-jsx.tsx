@@ -145,4 +145,4 @@ export const LayerJSX = <
 
 LayerJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.LAYER,
-} as ILayerJSX<any, any>;
+};

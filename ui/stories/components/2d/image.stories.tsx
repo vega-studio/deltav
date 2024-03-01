@@ -130,7 +130,7 @@ export const Basic: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX options={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
       <AtlasJSX name="atlas" width={4096} height={4096} />
       <ViewJSX
         name="main"

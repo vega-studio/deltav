@@ -322,7 +322,7 @@ export const Editor: StoryFn = (() => {
       }}
     >
       <BasicCamera2DControllerJSX
-        options={{
+        config={{
           camera: camera.current,
 
           scaleFilter: (scale) => {

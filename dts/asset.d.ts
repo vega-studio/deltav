@@ -28,6 +28,11 @@ declare module "*.woff2" {
   export = value;
 }
 
+declare module "*.ttf" {
+  const value: string;
+  export = value;
+}
+
 declare module "*.woff2?inline" {
   const value: any;
   export = value;

@@ -167,7 +167,7 @@ export const With_Mouse_Interactions: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX options={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
       <SimpleEventHandlerJSX handlers={{ handleMouseDown }} />
       <ViewJSX
         name="main"
@@ -257,7 +257,7 @@ export const With_Scenes: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX options={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
       <SimpleEventHandlerJSX handlers={{ handleMouseDown }} />
       <SceneJSX name="main-scene">
         <ViewJSX

@@ -9,7 +9,7 @@ import { SurfaceJSXType } from "../group-surface-children.js";
 import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export interface IBasicCamera2DControllerJSX extends Partial<IEventManagerJSX> {
-  options: IBasicCamera2DControllerOptions;
+  config: IBasicCamera2DControllerOptions;
 }
 
 /**
@@ -20,7 +20,7 @@ export const BasicCamera2DControllerJSX = (
 ) => {
   useLifecycle({
     didMount() {
-      props.resolver?.resolve(new BasicCamera2DController(props.options));
+      props.resolver?.resolve(new BasicCamera2DController(props.config));
     },
   });
 
@@ -29,4 +29,4 @@ export const BasicCamera2DControllerJSX = (
 
 BasicCamera2DControllerJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.EVENT_MANAGER,
-} as IBasicCamera2DControllerJSX;
+};

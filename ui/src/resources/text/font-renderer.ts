@@ -30,23 +30,6 @@ export type KerningInfo = {
   spaceWidth: number;
 };
 
-function embedFontString(
-  fontName: string,
-  source: string,
-  weight: number | `${number} ${number}` = 400,
-  style = "normal",
-  fontType = "woff2"
-) {
-  return `
-    @font-face {
-      font-family: '${fontName}';
-      src: url('${source}') ${fontType ? `format('${fontType}')` : ""};
-      font-weight: ${weight};
-      font-style: ${style};
-    }
-  `;
-}
-
 /**
  * This function is calculate the offset of adjacent letters
  */
@@ -75,30 +58,6 @@ async function renderEachPair(
   table.style.position = "relative";
   table.style.left = "0px";
   table.style.top = `0px`;
-  document.body.appendChild(table);
-
-  // If embeddings are provided, we need to generate a style tag with all of the
-  // embeddings injected.
-  if (embed) {
-    const style = document.createElementNS(svgNS, "style");
-    style.textContent = embed
-      .map((e) =>
-        embedFontString(e.familyName, e.source, e.weight, e.style, e.fontType)
-      )
-      .join("\n");
-    table.appendChild(style);
-    // put the style text into clipboard
-    const b = document.createElement("div");
-    b.addEventListener("click", () => {
-      navigator.clipboard.writeText(style.textContent || "");
-    });
-    b.innerHTML = "CLICK ME";
-    b.style.zIndex = "9999";
-    document.body.appendChild(b);
-
-    console.log(style);
-    console.log(table);
-  }
 
   // We will store the rows discovered so we can render them in batches to accommodate systems with smaller canvas limits
   const rows = [];
@@ -304,13 +263,13 @@ async function renderEachPair(
 
     // Start the results with the first found result
     if (!result) {
-      result = await svgToData(table);
+      result = await svgToData(table, svgNS, embed);
     }
 
     // Additional results will need their results stitched into the initial
     // result
     else {
-      const stitchResult = await svgToData(table);
+      const stitchResult = await svgToData(table, svgNS, embed);
 
       if (!stitchResult) {
         console.warn(
@@ -406,19 +365,20 @@ async function renderEachPair(
     );
   }
 
-  if (result) {
-    const c = document.createElement("canvas");
-    c.width = result.width;
-    c.height = result.height;
-    c.style.width = `${result.width}px`;
-    c.style.height = `${result.height}px`;
-    c.style.position = "fixed";
-    c.style.left = "10px";
-    c.style.bottom = "10px";
-    const ctx = c.getContext("2d");
-    ctx?.putImageData(result, 0, 0);
-    document.body.appendChild(c);
-  }
+  // if (result) {
+  //   const c = document.createElement("canvas");
+  //   c.width = result.width;
+  //   c.height = result.height;
+  //   c.style.width = `${result.width}px`;
+  //   c.style.height = `${result.height}px`;
+  //   c.style.position = "fixed";
+  //   c.style.left = "10px";
+  //   c.style.bottom = "10px";
+  //   const ctx = c.getContext("2d");
+  //   ctx?.putImageData(result, 0, 0);
+  //   c.id = "FONT-RENDERER-result";
+  //   document.body.appendChild(c);
+  // }
 
   // table.remove();
   debug("Kerning rendering analysis complete", pairs.pairs);

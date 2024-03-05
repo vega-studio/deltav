@@ -39,7 +39,7 @@ export interface ITrailJSX {
    */
   intensity?: number;
   /** The name to apply to the scenes this effect produces */
-  name?: string;
+  name: string;
   /**
    * When provided the trails will drift in a direction over time. Like a wind
    * blowing effect
@@ -64,7 +64,7 @@ export function TrailJSX(props: ITrailJSX) {
 
   process.push(
     PostProcessJSX({
-      name: props.name || "trail-effect",
+      name: props.name,
       printShader: props.printShader,
       // Set the buffers we want to composite
       buffers: {
@@ -116,6 +116,7 @@ export function TrailJSX(props: ITrailJSX) {
   if (!props.drift) {
     process.push(
       PostProcessJSX({
+        name: props.name,
         printShader: props.printShader,
         // Set the buffers we want to composite
         buffers: {
@@ -154,6 +155,7 @@ export function TrailJSX(props: ITrailJSX) {
   else if (props.drift) {
     process.push(
       PostProcessJSX({
+        name: props.name,
         printShader: props.printShader,
         // Set the buffers we want to composite
         buffers: {

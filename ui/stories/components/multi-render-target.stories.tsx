@@ -163,6 +163,7 @@ export const Simple_Trail: StoryFn = (() => {
         />
       </SceneJSX>
       {TrailJSX({
+        name: "trail",
         intensity: 0.93,
         input: {
           trail: "trail",
@@ -174,6 +175,7 @@ export const Simple_Trail: StoryFn = (() => {
         },
       })}
       {DrawJSX({
+        name: "draw",
         input: "trailing",
       })}
     </SurfaceJSX>
@@ -357,6 +359,7 @@ export const Glowing_Trail: StoryFn = (() => {
         />
       </SceneJSX>
       {TrailJSX({
+        name: "trail",
         intensity: 0.93,
         input: {
           trail: "glowTrail",
@@ -569,6 +572,7 @@ export const Fireworks: StoryFn = (() => {
         />
       </SceneJSX>
       {TrailJSX({
+        name: "trail",
         intensity: 0.9,
         input: {
           trail: "glowTrail",
@@ -836,7 +840,12 @@ export const Complex_Scene: StoryFn = (() => {
             depth: true,
           }}
         />
-        <LayerJSX name="cubes" type={CubeLayer} providerRef={cubesProvider} />
+        <LayerJSX
+          name="cubes"
+          type={CubeLayer}
+          providerRef={cubesProvider}
+          config={{}}
+        />
         <LayerJSX
           name="noColor"
           type={CubeLayer}
@@ -859,6 +868,7 @@ export const Complex_Scene: StoryFn = (() => {
         />
       </SceneJSX>
       {TrailJSX({
+        name: "trail",
         intensity: 0.9,
         input: {
           trail: "glowTrail",

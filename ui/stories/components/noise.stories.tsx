@@ -84,10 +84,12 @@ export const Simplex2D: StoryFn = (() => {
         }}
       />
       {SimplexNoiseJSX({
+        name: "simplex",
         output: "simplex",
         scale: [200, 200],
       })}
       {DrawJSX({
+        name: "draw",
         input: "simplex",
       })}
     </SurfaceJSX>
@@ -169,6 +171,7 @@ export const Simplex3D: StoryFn = (() => {
         }}
       />
       {SimplexNoiseJSX({
+        name: "render-noise",
         output: "simplex",
         scale: [
           [50, 50],
@@ -181,6 +184,7 @@ export const Simplex3D: StoryFn = (() => {
         drift: [0.001, 0.001, 0.001],
       })}
       {DrawJSX({
+        name: "output",
         input: "simplex",
       })}
     </SurfaceJSX>

@@ -44,7 +44,7 @@ export interface IPostProcessJSX {
    */
   printShader?: boolean;
   /** Name applied to the scene generated for this */
-  name?: string;
+  name: string;
 
   /**
    * Executes when the resources are retrieved and applied to this process. This

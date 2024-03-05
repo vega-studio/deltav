@@ -14,7 +14,7 @@ export interface IGaussVerticalBlurJSX {
   /** For debugging only. Prints generated shader to the console. */
   printShader?: boolean;
   /** Name for the scenes this produces */
-  name?: string;
+  name: string;
 }
 
 /**

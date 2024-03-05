@@ -32,7 +32,7 @@ export interface IDrawJSX {
    */
   grayScale?: boolean;
   /** The name applied to the scenes this produces */
-  name?: string;
+  name: string;
 }
 
 /**
@@ -43,6 +43,7 @@ export function DrawJSX(props: IDrawJSX) {
   const { output, input, channel, grayScale } = props;
 
   return PostProcessJSX({
+    name: props.name,
     printShader: props.printShader,
     view: {
       output: output

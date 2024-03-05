@@ -18,7 +18,7 @@ export interface IGaussHorizontalBlurJSX {
   /** For debugging only. Prints generated shader to the console. */
   printShader?: boolean;
   /** A name applied to the scenes this produces */
-  name?: string;
+  name: string;
 }
 
 /**

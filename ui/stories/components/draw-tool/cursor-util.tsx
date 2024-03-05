@@ -89,7 +89,7 @@ export class CursorUtil {
   /** Stores the nearest edge next to the cursor */
   static nearestEdge: {
     line: LineSegments;
-    segment: [Vec2, Vec2, LineSegments];
+    segment: [Vec2, Vec2, LineSegments, boolean];
     t: number;
   } | null = null;
 
@@ -142,7 +142,7 @@ export class CursorUtil {
     );
 
     // Now compute the nearest of the segments
-    let nearest: [Vec2, Vec2, LineSegments] | null = null;
+    let nearest: [Vec2, Vec2, LineSegments, boolean] | null = null;
     let nearestT = 0;
     let minDistance = Number.POSITIVE_INFINITY;
 

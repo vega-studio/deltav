@@ -157,6 +157,7 @@ export const Kaleidoscope: StoryFn = (() => {
         }}
       />
       {PostProcessJSX({
+        name: "one-liner",
         view: {
           config: {
             background: [0, 0, 0, 1],
@@ -203,6 +204,7 @@ export const Glow: StoryFn = (() => {
         }}
       />
       {PostProcessJSX({
+        name: "one-liner",
         view: {
           config: {
             background: [0, 0, 0, 1],
@@ -249,6 +251,7 @@ export const Mountains: StoryFn = (() => {
         }}
       />
       {PostProcessJSX({
+        name: "one-liner",
         view: {
           config: {
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],

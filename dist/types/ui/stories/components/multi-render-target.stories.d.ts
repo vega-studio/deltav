@@ -5,5 +5,7 @@ declare const _default: {
     argTypes: {};
 };
 export default _default;
+export declare const Simple_Trail: StoryFn;
+export declare const Glowing_Trail: StoryFn;
 export declare const Fireworks: StoryFn;
 export declare const Complex_Scene: StoryFn;

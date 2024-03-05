@@ -30,6 +30,10 @@ export declare class InstanceProvider<TInstance extends Instance> implements IIn
      */
     add(instance: TInstance): TInstance;
     /**
+     * Returns true if the instance is managed by this provider.
+     */
+    has(instance: TInstance): boolean;
+    /**
      * Removes all instances from this provider
      */
     clear(): void;

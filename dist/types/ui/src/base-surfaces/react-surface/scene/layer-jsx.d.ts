@@ -3,6 +3,7 @@ import { ILayerBaseJSX } from "./as-layer.js";
 import { ILayerConstructable, ILayerProps } from "../../../surface/index.js";
 import { Instance, InstanceProvider } from "../../../instance-provider/index.js";
 import { IRenderTextureResource } from "../../../resources/index.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 export type LayerConfig<TInstance extends Instance, TProps extends ILayerProps<TInstance>> = Omit<TProps, "key" | "data"> & Partial<Pick<TProps, "key" | "data">>;
 export interface ILayerJSX<TInstance extends Instance, TProps extends ILayerProps<TInstance>, TUse extends IRenderTextureResource = IRenderTextureResource> extends Partial<ILayerBaseJSX<TInstance, TProps>> {
     /**
@@ -35,5 +36,7 @@ export interface ILayerJSX<TInstance extends Instance, TProps extends ILayerProp
 }
 export declare const LayerJSX: {
     <TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(props: ILayerJSX<TInstance, TProps, IRenderTextureResource>): React.JSX.Element;
-    defaultProps: ILayerJSX<any, any, IRenderTextureResource>;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };

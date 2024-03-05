@@ -1,4 +1,5 @@
 import React from "react";
+import { SurfaceJSXType } from "../group-surface-children.js";
 import { ISceneBaseJSX } from "./as-scene.js";
 export interface ISceneJSX extends Partial<ISceneBaseJSX> {
     /** Supports children. View and Layer. */
@@ -14,5 +15,7 @@ export interface ISceneJSX extends Partial<ISceneBaseJSX> {
  */
 export declare const SceneJSX: {
     (props: ISceneJSX): React.JSX.Element | undefined;
-    defaultProps: ISceneJSX;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };

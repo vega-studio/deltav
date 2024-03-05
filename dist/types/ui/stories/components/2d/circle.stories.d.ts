@@ -6,4 +6,4 @@ declare const _default: {
 };
 export default _default;
 export declare const Basic: StoryFn;
-export declare const Advanced: StoryFn;
+export declare const StarField: StoryFn;

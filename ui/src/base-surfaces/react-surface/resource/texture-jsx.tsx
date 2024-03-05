@@ -44,4 +44,4 @@ export const TextureJSX = (props: ITextureJSX) => {
 
 TextureJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.RESOURCE,
-} as ITextureJSX;
+};

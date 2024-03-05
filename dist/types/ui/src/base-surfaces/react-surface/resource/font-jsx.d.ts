@@ -1,6 +1,7 @@
 import React from "react";
 import { IFontResourceOptions } from "../../../resources/index.js";
 import { IResourceJSX } from "./as-resource.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 export interface IFontPropsJSX extends Partial<IResourceJSX> {
     /**
      * Resource name for debugging mostly. Maps to resource "key" in the deltav
@@ -17,6 +18,8 @@ type IFontJSX = IFontPropsJSX & Omit<IFontResourceOptions, "type" | "key">;
  */
 export declare const FontJSX: {
     (props: IFontJSX): React.JSX.Element;
-    defaultProps: IFontJSX;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };
 export {};

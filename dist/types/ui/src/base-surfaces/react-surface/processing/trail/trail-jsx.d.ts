@@ -2,6 +2,7 @@
 import { ILayerMaterialOptions } from "../../../../types";
 import { IPartialViewJSX } from "../../scene/view-jsx";
 import { IView2DProps } from "../../../../2d";
+import type { Vec2 } from "../../../../math";
 export interface ITrailJSX {
     /**
      * Specifies the texture that has the previous trail and the texture to add to
@@ -30,7 +31,19 @@ export interface ITrailJSX {
      */
     intensity?: number;
     /** The name to apply to the scenes this effect produces */
-    name?: string;
+    name: string;
+    /**
+     * When provided the trails will drift in a direction over time. Like a wind
+     * blowing effect
+     */
+    drift?: {
+        /** Direction + magnitude the trail will drift */
+        direction: Vec2;
+        /**
+         * Resource texture containing the vector field that will distort the trail
+         */
+        vectorField?: string;
+    };
 }
 /**
  * Applies a trailing effect by doing a non-clearing additive effect of another

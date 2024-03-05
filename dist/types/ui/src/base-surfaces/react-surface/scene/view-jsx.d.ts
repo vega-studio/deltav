@@ -1,6 +1,7 @@
 import React from "react";
 import { IViewConstructable, IViewProps } from "../../../surface/index.js";
 import { IViewBaseJSX } from "./as-view.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 export interface IViewJSX<TProps extends IViewProps> extends Partial<IViewBaseJSX<TProps>> {
     /**
      * Resource name for debugging mostly. Maps to resource "key" in the deltav
@@ -39,5 +40,7 @@ export type IPartialViewJSX<TProps extends IViewProps> = Partial<Omit<IViewJSX<T
  */
 export declare const ViewJSX: {
     <TProps extends IViewProps = IViewProps>(props: IViewJSX<TProps>): React.JSX.Element;
-    defaultProps: IViewJSX<any>;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };

@@ -106,6 +106,12 @@ export declare function min1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Comp
 export declare function multiply1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
 export declare function normalize1(_left: Vec1Compat, out?: Vec1Compat): Vec1;
 export declare function dot1(left: Vec1Compat, right: Vec1Compat): number;
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export declare function tod1(left: Vec1Compat, right: Vec1Compat): number;
 export declare function linear1(start: Vec1Compat, end: Vec1Compat, t: number, out?: Vec1Compat): Vec1;
 export declare function length1(start: Vec1Compat): number;
 export declare function length1Components(x: number): number;
@@ -116,10 +122,11 @@ export declare function ceil2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function copy2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function forward2(out?: Vec2Compat): Vec2;
 /**
- * Cross product of a 2D vector would result in [0, 0, <magnitude>] within the 2D plane. In keeping with the format of
- * vector methods in this document <method name><vector component length>() we return only the 2D result of the product
- * [0, 0].
- * In order to get the results of the actual 2D vectors in a 3D world, you must use cross3() to retrieve the Z result.
+ * Cross product of a 2D vector would result in [0, 0, <magnitude>] within the
+ * 2D plane. In keeping with the format of vector methods in this document
+ * <method name><vector component length>() we return only the 2D result of the
+ * product [0, 0]. In order to get the results of the actual 2D vectors in a 3D
+ * world, you must use cross3() to retrieve the Z result.
  */
 export declare function cross2(_left: Vec2Compat, _right: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function compare2(left: Vec2Compat, right: Vec2Compat): boolean;
@@ -136,6 +143,24 @@ export declare function subtract2(left: Vec2Compat, right: Vec2Compat, out?: Vec
 export declare function multiply2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function normalize2(left: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function dot2(left: Vec2Compat, right: Vec2Compat): number;
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export declare function tod2(left: Vec2Compat, right: Vec2Compat): number;
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together AND the components are flipped on one of
+ * the vectors.
+ *
+ * x1 * y2 - y1 * x2
+ */
+export declare function tod_flip2(left: Vec2Compat, right: Vec2Compat): number;
+/**
+ * Swaps component direction [x, y] -> [y, x]
+ */
+export declare function reverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
 export declare function linear2(start: Vec2Compat, end: Vec2Compat, t: number, out?: Vec2Compat): Vec2;
 export declare function length2(start: Vec2Compat): number;
 export declare function length2Components(x: number, y: number): number;
@@ -163,6 +188,16 @@ export declare function max3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Comp
 export declare function min3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function dot3(left: Vec3Compat, right: Vec3Compat): number;
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export declare function tod3(left: Vec3Compat, right: Vec3Compat): number;
+/**
+ * Swaps component direction [x, y, z] -> [z, y, x]
+ */
+export declare function reverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
 export declare function vec3(values: number[] | number, ...args: (number | number[])[]): Vec3;
 /**
  * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
@@ -193,8 +228,9 @@ export declare function compare4(left: Vec4Compat, right: Vec4Compat): boolean;
 export declare function fuzzyCompare4(left: Vec4Compat, right: Vec4Compat, epsilon: number): boolean;
 export declare function forward4(out?: Vec4Compat): Vec4;
 /**
- * 4D cross product? Lots of issues here. If you need a proper cross product for 3D, please use cross3. What
- * this method should do is up for debate for now and will return a unit 4D vector.
+ * 4D cross product? Lots of issues here. If you need a proper cross product for
+ * 3D, please use cross3. What this method should do is up for debate for now
+ * and will return a unit 4D vector.
  */
 export declare function cross4(_left: Vec4, _right: Vec4, out?: Vec4Compat): Vec4;
 export declare function divide4(top: Vec4Compat, bottom: Vec4Compat, out?: Vec4Compat): Vec4;
@@ -206,6 +242,16 @@ export declare function scale4(left: Vec4, scale: number, out?: Vec4Compat): Vec
 export declare function subtract4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
 export declare function multiply4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
 export declare function dot4(left: Vec4, right: Vec4): number;
+/**
+ * This is a sort of modified dot production where the components are subtracted
+ * together instead of added together. It's a bit backwards so we called it tod
+ * which is reverse of dot.
+ */
+export declare function tod4(left: Vec4, right: Vec4): number;
+/**
+ * Swaps component direction [x, y, z] -> [z, y, x]
+ */
+export declare function reverse4(vec: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function linear4(start: Vec4, end: Vec4, t: number, out?: Vec4Compat): Vec4;
 export declare function length4(start: Vec4): number;
 export declare function length4Components(x: number, y: number, z: number, w: number): number;

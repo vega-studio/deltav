@@ -75,6 +75,13 @@ export class InstanceProvider<TInstance extends Instance>
   }
 
   /**
+   * Returns true if the instance is managed by this provider.
+   */
+  has(instance: TInstance) {
+    return this.cleanObservation.has(instance.uid);
+  }
+
+  /**
    * Removes all instances from this provider
    */
   clear() {

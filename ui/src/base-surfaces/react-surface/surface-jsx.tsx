@@ -32,6 +32,8 @@ export interface ISurfaceJSX {
   children?: React.ReactNode;
   /** Custom class name for the container element */
   className?: string;
+  /** Props to apply to the container element of the DOM */
+  containerProps?: React.HTMLProps<HTMLDivElement>;
   /**
    * Options used to specify settings for the surface itself and how it will be
    * composited in the DOM. This includes top level configuration like canvas
@@ -54,6 +56,26 @@ export interface ISurfaceJSX {
    * turned on.
    */
   writeToDom?: boolean;
+  /**
+   * The pixel ratio to use when rendering. When not provided, this will match
+   * the pixel density of the user's monitor.
+   */
+  pixelRatio?: number;
+  /**
+   * Add or modify the IO expanders that controls the capabilities of the IO
+   * configuration for shaders.
+   */
+  ioExpansion?: ISurfaceOptions["ioExpansion"];
+  /**
+   * Add or modify the shader transforms that should be applied to the surface
+   * which controls the final output of how the shader will be generated.
+   */
+  shaderTransforms?: ISurfaceOptions["shaderTransforms"];
+  /**
+   * Add or modify the resource managers that controls resource requests
+   * delivered from layers and the instance diff changes.
+   */
+  resourceManagers?: ISurfaceOptions["resourceManagers"];
 }
 
 export interface ISurfaceContext {
@@ -281,8 +303,11 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
           props.handlesWheelEvents !== undefined
             ? props.handlesWheelEvents
             : true,
-        pixelRatio: window.devicePixelRatio,
+        pixelRatio: props.pixelRatio || window.devicePixelRatio,
         eventManagers: validEventManagers,
+        ioExpansion: props.ioExpansion,
+        shaderTransforms: props.shaderTransforms,
+        resourceManagers: props.resourceManagers,
         rendererOptions: Object.assign(
           // Default render options
           {
@@ -328,7 +353,11 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   // children to inject custom DOM mostly for interesting ways to review and
   // debug the contents of the surface.
   return (
-    <div ref={container} className="SurfaceJSX">
+    <div
+      ref={container}
+      className={`SurfaceJSX ${props.className || ""}`}
+      {...props.containerProps}
+    >
       <canvas ref={canvasRef}>
         <SurfaceContext.Provider
           value={{

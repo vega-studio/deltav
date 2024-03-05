@@ -1,6 +1,7 @@
 import React from "react";
 import { EventManager } from "../../../event-management/event-manager.js";
 import { IEventManagerJSX } from "./as-event-manager.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 export interface ISimpleEventHandlerJSX extends Partial<IEventManagerJSX> {
     handlers: Partial<EventManager>;
 }
@@ -9,5 +10,7 @@ export interface ISimpleEventHandlerJSX extends Partial<IEventManagerJSX> {
  */
 export declare const SimpleEventHandlerJSX: {
     (props: ISimpleEventHandlerJSX): React.JSX.Element;
-    defaultProps: ISimpleEventHandlerJSX;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };

@@ -34,4 +34,4 @@ export const QueuedEventHandlerJSX = (props: IQueuedEventHandlerJSX) => {
 
 QueuedEventHandlerJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.EVENT_MANAGER,
-} as IQueuedEventHandlerJSX;
+};

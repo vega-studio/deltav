@@ -15,6 +15,7 @@ ShaderModule.register([
       {
         name: "_pickingColor",
         size: InstanceAttributeSize.FOUR,
+        shaderInjection: ShaderInjectionTarget.VERTEX,
         update: (o) => {
           // We start from white and move down so the colors are more visible
           // For debugging

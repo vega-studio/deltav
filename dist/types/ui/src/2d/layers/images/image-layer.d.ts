@@ -7,8 +7,9 @@ export interface IImageLayerProps<T extends ImageInstance> extends IImageRenderL
 }
 export type ImageVideoResource = {
     /**
-     * IF AND ONLY IF the browser supports it. This will cause the video to begin playing immediately when ready and
-     * loaded. This merely prevents the need to add video.play() to something after onReady has been called. All other
+     * IF AND ONLY IF the browser supports it. This will cause the video to begin
+     * playing immediately when ready and loaded. This merely prevents the need to
+     * add video.play() to something after onReady has been called. All other
      * expected video patterns are expected to apply.
      */
     autoPlay?: boolean;
@@ -23,34 +24,38 @@ export type ImageInstanceResource = string | ImageBitmap | ImageData | HTMLImage
  */
 export declare function isVideoResource(val: any): val is ImageVideoResource;
 /**
- * This layer displays Images and provides as many controls as possible for displaying
- * them in interesting ways. This is the primary handler for image instances.
+ * This layer displays Images and provides as many controls as possible for
+ * displaying them in interesting ways. This is the primary handler for image
+ * instances.
  */
 export declare class ImageLayer<TInstance extends ImageInstance, TProps extends IImageLayerProps<TInstance>> extends Layer2D<TInstance, TProps> {
     static defaultProps: IImageLayerProps<any>;
     /** Internal provider for child layers for this layer to hand off to */
     childProvider: InstanceProvider<ImageInstance>;
     /**
-     * This tracks which resource this image is associated with This allows us to know what resource an image
-     * moves on from, thus allowing us to dispatch a disposal request of the resource.
+     * This tracks which resource this image is associated with This allows us to
+     * know what resource an image moves on from, thus allowing us to dispatch a
+     * disposal request of the resource.
      */
     imageToResource: Map<ImageInstance, AtlasResource>;
-    /** The cached property ids of the instances so they are not processed every draw */
+    /** The cached property ids of the instances so they are not processed every
+     * draw */
     propertyIds?: {
         [key: string]: number;
     };
-    /** We can consolidate requests at this layer level to reduce memory footprint of requests */
+    /** We can consolidate requests at this layer level to reduce memory footprint
+     * of requests */
     sourceToRequest: Map<AtlasResource, IAtlasResourceRequest>;
     /** Map video resource requests to their corresponding video element */
     sourceToVideo: Map<string, HTMLVideoElement>;
     /**
-     * Stores a lookup to see which instances are using a video source. This helps track when the video source is no
-     * longer in use and can be disposed.
+     * Stores a lookup to see which instances are using a video source. This helps
+     * track when the video source is no longer in use and can be disposed.
      */
     usingVideo: Map<string, Set<ImageInstance>>;
     /**
-     * These are the instances waiting for a video source to finish loading and have valid dimensions to be used by the
-     * resource manager.
+     * These are the instances waiting for a video source to finish loading and
+     * have valid dimensions to be used by the resource manager.
      */
     waitingForVideo: Map<string, Set<ImageInstance>>;
     /**
@@ -58,18 +63,19 @@ export declare class ImageLayer<TInstance extends ImageInstance, TProps extends 
      */
     waitForVideoSource: Map<ImageInstance, string>;
     /**
-     * In cases where the image has a special case loading procedure like videos, the image will have it's onReady
+     * In cases where the image has a special case loading procedure like videos,
+     * the image will have it's onReady
      */
     originalOnReadyCallbacks: Map<ImageInstance, ((image: ImageInstance, video?: HTMLVideoElement | undefined) => void) | undefined>;
     /**
-     * The image layer will manage the resources for the images, and the child layer will concern itself
-     * with rendering.
+     * The image layer will manage the resources for the images, and the child
+     * layer will concern itself with rendering.
      */
     childLayers(): import("../../..").LayerInitializer<import("../../../instance-provider").Instance, import("../../..").ILayerProps<import("../../../instance-provider").Instance>>[];
     destroy(): void;
     /**
-     * Hijack the draw method to control changes to the source so we can send the manager dispose requests
-     * of a given image.
+     * Hijack the draw method to control changes to the source so we can send the
+     * manager dispose requests of a given image.
      */
     draw(): void;
     /**
@@ -77,8 +83,9 @@ export declare class ImageLayer<TInstance extends ImageInstance, TProps extends 
      */
     private getAtlasSource;
     /**
-     * This handles creating the video object from the source. It then queues up the waiting needs and temporarily
-     * converts the video Image to a simple white image that will take on the tint of the ImageInstance.
+     * This handles creating the video object from the source. It then queues up
+     * the waiting needs and temporarily converts the video Image to a simple
+     * white image that will take on the tint of the ImageInstance.
      */
     private prepareVideo;
     /**

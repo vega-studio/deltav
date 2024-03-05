@@ -17,7 +17,7 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
     /**
      * Additional uniforms to inject into the program.
      */
-    uniforms?: IUniform[];
+    uniforms?: IUniform[] | ((layer: PostProcessLayer) => IUniform[]);
 }
 /**
  * This layer takes in several resources and sets up an appropriate geometry and
@@ -26,5 +26,6 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
 export declare class PostProcessLayer extends Layer<PostProcessInstance, IPostProcessLayer> {
     static defaultProps: IPostProcessLayer;
     initShader(): IShaderInitialization<PostProcessInstance>;
+    shouldDrawView(): boolean;
     getMaterialOptions(): Omit<import("../../../../util").CommonMaterial, "modify>">;
 }

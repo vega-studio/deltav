@@ -280,7 +280,7 @@ export class EasingIOExpansion extends BaseIOExpansion {
 
         // Flag the layer's continuous animation so continuous easing loop
         // styles will keep rendering indefinitely
-        layer.isAnimationContinuous = isContinuous;
+        layer.alwaysDraw = isContinuous;
 
         return end;
       };

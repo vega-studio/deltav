@@ -21,6 +21,7 @@ ShaderModule.register([
       {
         name: "random",
         size: UniformSize.ONE,
+        shaderInjection: ShaderInjectionTarget.ALL,
         update: () => Math.random(),
       },
     ],

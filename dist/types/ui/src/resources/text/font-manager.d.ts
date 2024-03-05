@@ -16,6 +16,18 @@ export declare enum FontGlyphRenderSize {
     /** NOT RECOMMENDED: This is very large and will not allow for many glyphs on a single texture */
     _128 = 128
 }
+export interface IFontMapEmbed {
+    /** The font family that will be used to reference this font: "RedHatDisplay" */
+    familyName: string;
+    /** Define the type of font file being provided: woff ttf etc */
+    fontType: string;
+    /** Base64 encoded font source */
+    source: string;
+    /** Font weight provided: 400 or "200 400" */
+    weight: `${number} ${number}` | number;
+    /** Font style the source provides: normal or italic */
+    style: "normal" | "italic";
+}
 /**
  * Metrics for a font map source specification.
  */
@@ -31,6 +43,11 @@ export interface IFontMapMetrics {
     size: number;
     /** Family of the font to be rendered to the font map */
     family: string;
+    /**
+     * If you pick a font that is not available to the system, you will need to
+     * have the font source embedded here.
+     */
+    embed?: IFontMapEmbed[];
     /** Font weight of the font to be rendered to the font map */
     weight: string | number;
     /** Applies pre-computed strings to warm up kerning pairs and glyph renderings before any label is generated. */
@@ -81,26 +98,31 @@ export type FontMapSource = IFontMapMetrics | IBitmapFontSource | IPrerenderedSD
  */
 export interface IFontResourceOptions extends BaseResourceOptions {
     /**
-     * When this is provided ONLY these characters will be supplied by this resource.
-     * This is simply a string with every character to allow. Filtering glyphs can greatly
-     * speed up performance. When not provided, the system will analyze strings as they stream in
-     * and will update the atlas with the needed glyphs to render the text.
+     * When this is provided ONLY these characters will be supplied by this
+     * resource. This is simply a string with every character to allow. Filtering
+     * glyphs can greatly speed up performance. When not provided, the system will
+     * analyze strings as they stream in and will update the atlas with the needed
+     * glyphs to render the text.
      */
     characterFilter?: string;
     /**
-     * When this is set, the system will add glyphs to the font map from the font source provided as the glyphs
-     * are needed. This performs not as well as preset fonts. You can combine dynamic with characterFilter to have
-     * initial glyphs be preloaded and work faster from the start. Or you can use the character filter but NOT be dynamic
-     * and enforce strict character allowances.
+     * When this is set, the system will add glyphs to the font map from the font
+     * source provided as the glyphs are needed. This performs not as well as
+     * preset fonts. You can combine dynamic with characterFilter to have initial
+     * glyphs be preloaded and work faster from the start. Or you can use the
+     * character filter but NOT be dynamic and enforce strict character
+     * allowances.
      */
     dynamic?: boolean;
-    /** If the system has generated the font map for this resource, this will be populated */
+    /** If the system has generated the font map for this resource, this will be
+     * populated */
     fontMap?: FontMap;
     /**
      * This is the source the font information is derived from.
      *
-     * A string will cause the system to use canvas rendering to attempt to best calculate the font glyphs and metrics as best
-     * as possible. This is the slowest possible method to render text.
+     * A string will cause the system to use canvas rendering to attempt to best
+     * calculate the font glyphs and metrics as best as possible. This is the
+     * slowest possible method to render text.
      *
      * It is much better to used the pre-rendered formats.
      */
@@ -120,10 +142,12 @@ export declare function isFontResource(val: BaseResourceOptions): val is IFontRe
  */
 export declare function createFont(options: Omit<IFontResourceOptions, "type" | "key"> & Partial<Pick<IFontResourceOptions, "key">>): IFontResourceOptions;
 /**
- * This manager is responsible for handling the actual generation and updating of Font textures.
+ * This manager is responsible for handling the actual generation and updating
+ * of Font textures.
  *
- * This manager handles consuming resource options and producing an appropriate resource based on
- * either generating the SDF at run time or loading up a provided pre-rendered font resource.
+ * This manager handles consuming resource options and producing an appropriate
+ * resource based on either generating the SDF at run time or loading up a
+ * provided pre-rendered font resource.
  */
 export declare class FontManager {
     /** The lookup for the font map resources by their key */
@@ -134,8 +158,8 @@ export declare class FontManager {
      */
     fontRenderer: FontRenderer;
     /**
-     * This takes all requests that want layout information included for a group of text
-     * and populates the request with the appropriate information.
+     * This takes all requests that want layout information included for a group
+     * of text and populates the request with the appropriate information.
      */
     calculateMetrics(resourceKey: string, requests: IFontResourceRequest[]): Promise<void>;
     /**
@@ -143,8 +167,8 @@ export declare class FontManager {
      */
     private characterFilterToCharacters;
     /**
-     * This generates a new font map object to work with. It will either be pre-rendered or dynamically
-     * populated as requests are made.
+     * This generates a new font map object to work with. It will either be
+     * pre-rendered or dynamically populated as requests are made.
      */
     createFontMap(resourceOptions: IFontResourceOptions): Promise<FontMap>;
     /**
@@ -156,8 +180,9 @@ export declare class FontManager {
      */
     destroyFontMap(key: string): void;
     /**
-     * This updates a font map with requests made. After the font map is updated, the
-     * requests should be populated with the appropriate sub texture information.
+     * This updates a font map with requests made. After the font map is updated,
+     * the requests should be populated with the appropriate sub texture
+     * information.
      */
     updateFontMap(resourceKey: string, requests: IFontResourceRequest[]): Promise<void>;
     /**
@@ -165,16 +190,17 @@ export declare class FontManager {
      */
     private updateKerningPairs;
     /**
-     * This updates a specified font map with a list of characters expected within it.
+     * This updates a specified font map with a list of characters expected within
+     * it.
      */
     private updateFontMapCharacters;
     /**
-     * TODO:
-     * We do not use this method yet as we do not have a format set for prerendered fonts.
-     * Currently the system only uses the bitmap font dynamic pattern.
+     * TODO: We do not use this method yet as we do not have a format set for
+     * prerendered fonts. Currently the system only uses the bitmap font dynamic
+     * pattern.
      *
-     * This renders the specified characters from a pre-rendered font source in ImageData that can be used to composite
-     * a texture.
+     * This renders the specified characters from a pre-rendered font source in
+     * ImageData that can be used to composite a texture.
      */
     getPrerenderedImageData(source: IPrerenderedFontSource, glyphSize: FontGlyphRenderSize, characters: string[]): Promise<void[]>;
 }

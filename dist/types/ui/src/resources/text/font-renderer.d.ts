@@ -6,6 +6,7 @@
 import { IdentifyByKey } from "../../util/identify-by-key";
 import { IResourceType, ResourceType } from "../../types";
 import { Vec2 } from "../../math";
+import type { IFontMapMetrics } from "./font-manager";
 type IGlyphRenderMetrics = {
     [key: string]: {
         glyph: ImageData;
@@ -28,15 +29,16 @@ export interface IFontOptions extends IdentifyByKey, IResourceType {
 }
 export declare class FontRenderer {
     /**
-     * This function takes a sentence and grid info
-     * Returns a canvas with a list of glyphs where each glyph fits cnetered within each grid cell
+     * This function takes a sentence and grid info Returns a canvas with a list
+     * of glyphs where each glyph fits cnetered within each grid cell
      */
     makeBitmapGlyphs(glyphs: string, fontString: string, fontSize: number): IGlyphRenderMetrics;
     /**
-     * This performs a special rendering to guess kerning of letters of embedded fonts (fonts we don't
-     * have access to their raw font files). This will provide kerning information of a letter by providing
-     * the distance from a 'left' letter's top left  corner to the 'right' letter's topleft corner.
+     * This performs a special rendering to guess kerning of letters of embedded
+     * fonts (fonts we don't have access to their raw font files). This will
+     * provide kerning information of a letter by providing the distance from a
+     * 'left' letter's top left  corner to the 'right' letter's topleft corner.
      */
-    estimateKerning(str: string[], fontString: string, fontSize: number, existing: KerningPairs, includeSpace: boolean): Promise<KerningInfo>;
+    estimateKerning(str: string[], fontString: string, fontSize: number, existing: KerningPairs, includeSpace: boolean, embed?: IFontMapMetrics["embed"]): Promise<KerningInfo>;
 }
 export {};

@@ -42,4 +42,4 @@ export const FontJSX = (props: IFontJSX) => {
 
 FontJSX.defaultProps = {
   surfaceJSXType: SurfaceJSXType.RESOURCE,
-} as IFontJSX;
+};

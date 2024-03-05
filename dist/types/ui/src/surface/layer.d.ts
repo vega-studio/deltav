@@ -278,7 +278,7 @@ export declare class Layer<TInstance extends Instance, TProps extends ILayerProp
      * This is a flag that allows a system to indicate this layer should always
      * re-render
      */
-    isAnimationContinuous: boolean;
+    alwaysDraw: boolean;
     /** Buffer manager is read only. Must use setBufferManager */
     private _bufferManager;
     /**

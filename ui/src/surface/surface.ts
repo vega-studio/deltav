@@ -411,9 +411,10 @@ export class Surface {
   ) {
     if (!this.gl) return;
 
-    // For now, while certain mysteries remain, we will track only if any view needs to be redrawn.
-    // Any view that needs to be redrawn will trigger a redraw of the entire surface for now until
-    // we can optimize down to only drawing a single view without erasing views that were not redrawn.
+    // For now, while certain mysteries remain, we will track only if any view
+    // needs to be redrawn. Any view that needs to be redrawn will trigger a
+    // redraw of the entire surface for now until we can optimize down to only
+    // drawing a single view without erasing views that were not redrawn.
     let needsDraw = false;
 
     // We are rendering a new frame so increment our frame count
@@ -426,8 +427,8 @@ export class Surface {
     if (time === undefined) {
       this.frameMetrics.currentTime = Date.now() | 0;
     } else {
-      // If this is our first frame and we have a manual time entry, then we first need to sync up
-      // The manual time as our previous timing.
+      // If this is our first frame and we have a manual time entry, then we
+      // first need to sync up The manual time as our previous timing.
       if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
         this.frameMetrics.previousTime = time;
       }
@@ -520,7 +521,7 @@ export class Surface {
             layer.draw();
             // If any of the layers under the view need a redraw
             // Then the view needs a redraw
-            if (layer.needsViewDrawn || layer.isAnimationContinuous) {
+            if (layer.needsViewDrawn || layer.alwaysDraw) {
               view.needsDraw = true;
             }
             // Flag the layer as valid

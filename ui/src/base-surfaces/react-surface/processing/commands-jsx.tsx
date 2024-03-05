@@ -12,7 +12,7 @@ interface ICommandsJSX {
    */
   callback: CommandCallback;
   /** Name for the scene to generate this command */
-  name?: string;
+  name: string;
 }
 
 export const CommandsJSX = (props: ICommandsJSX) => {

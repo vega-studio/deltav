@@ -1,6 +1,7 @@
 /// <reference types="react" />
 import { ILayerMaterialOptions } from "../../../../types";
 import { IView2DProps } from "../../../../2d";
+import type { IPartialViewJSX } from "../../scene/view-jsx";
 export interface IDrawJSX {
     /**
      * Specifies the resource taken in that will be blurred for the output.
@@ -13,7 +14,7 @@ export interface IDrawJSX {
     /** For debugging only. Prints generated shader to the console. */
     printShader?: boolean;
     /** Options to send to the view */
-    view?: Partial<IView2DProps>;
+    view?: IPartialViewJSX<IView2DProps>;
     /**
      * Allows you to control material options such as blend modes of the post
      * process effect.
@@ -27,7 +28,7 @@ export interface IDrawJSX {
      */
     grayScale?: boolean;
     /** The name applied to the scenes this produces */
-    name?: string;
+    name: string;
 }
 /**
  * Simply renders in the input target resource to the screen as a full screen

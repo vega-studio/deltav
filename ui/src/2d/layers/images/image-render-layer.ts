@@ -1,4 +1,5 @@
 import ImageLayerFS from "./image-layer.fs";
+import ImageLayerRotationVS from "./image-layer-rotation.vs";
 import ImageLayerVS from "./image-layer.vs";
 import { CommonMaterialOptions } from "../../../util/common-options";
 import { IAutoEasingMethod, Vec } from "../../../math";
@@ -23,17 +24,27 @@ export interface IImageRenderLayerProps<TInstance extends ImageInstance>
     tint?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
     size?: IAutoEasingMethod<Vec>;
+    rotation?: IAutoEasingMethod<Vec>;
   };
   /**
-   * This is the scale resources for the images will be loaded into the atlas. A value of
-   * 0.5 will cause images to load at 50% their source size to the atlas.
+   * This is the scale resources for the images will be loaded into the atlas. A
+   * value of 0.5 will cause images to load at 50% their source size to the
+   * atlas.
    */
   rasterizationScale?: number;
+  /**
+   * You can disallow image rotations by setting this to true. This improves
+   * rendering performance for times large amounts of images need to be
+   * rendered.
+   *
+   * WARN: ENABLED ROTATIONS CURRENTLY DISABLES SCALE MODES FOR THE IMAGE
+   */
+  enableRotation?: boolean;
 }
 
 /**
- * This layer displays Images and provides as many controls as possible for displaying
- * them in interesting ways.
+ * This layer displays Images and provides as many controls as possible for
+ * displaying them in interesting ways.
  */
 export class ImageRenderLayer<
   TInstance extends ImageInstance,
@@ -44,7 +55,8 @@ export class ImageRenderLayer<
     data: new InstanceProvider<ImageInstance>(),
   };
 
-  /** Easy lookup of attribute names to aid in modifications to be applied to elements */
+  /** Easy lookup of attribute names to aid in modifications to be applied to
+   * elements */
   static attributeNames = {
     location: "location",
     anchor: "anchor",
@@ -53,11 +65,13 @@ export class ImageRenderLayer<
     scaling: "scaling",
     texture: "texture",
     tint: "tint",
+    rotation: "rotation",
   };
 
   constructor(surface: Surface, scene: LayerScene, props: TLayerProps) {
-    // We do not establish bounds in the layer. The surface manager will take care of that for us
-    // After associating the layer with the view it is a part of.
+    // We do not establish bounds in the layer. The surface manager will take
+    // care of that for us After associating the layer with the view it is a
+    // part of.
     super(surface, scene, props);
   }
 
@@ -70,6 +84,7 @@ export class ImageRenderLayer<
       tint: animateTint,
       location: animateLocation,
       size: animateSize,
+      rotation: animateRotation,
     } = animations;
     const vertexToNormal: { [key: number]: number } = {
       0: 1,
@@ -92,6 +107,14 @@ export class ImageRenderLayer<
     return {
       fs: ImageLayerFS,
       instanceAttributes: [
+        this.props.enableRotation
+          ? {
+              easing: animateRotation,
+              name: ImageRenderLayer.attributeNames.rotation,
+              size: InstanceAttributeSize.ONE,
+              update: (o) => [o.rotation],
+            }
+          : null,
         {
           easing: animateLocation,
           name: ImageRenderLayer.attributeNames.location,
@@ -167,7 +190,7 @@ export class ImageRenderLayer<
         },
       ],
       vertexCount: 6,
-      vs: ImageLayerVS,
+      vs: this.props.enableRotation ? ImageLayerRotationVS : ImageLayerVS,
     };
   }
 

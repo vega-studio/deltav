@@ -357,7 +357,7 @@ export class Layer<
    * This is a flag that allows a system to indicate this layer should always
    * re-render
    */
-  isAnimationContinuous = false;
+  alwaysDraw = false;
   /** Buffer manager is read only. Must use setBufferManager */
   private _bufferManager!: BufferManagerBase<
     TInstance,
@@ -813,7 +813,8 @@ export class Layer<
       return false;
     }
 
-    // Now that all of the elements of the layer are complete, let us apply them to the layer
+    // Now that all of the elements of the layer are complete, let us apply them
+    // to the layer
     this.shaderIOInfo = Object.assign<
       ILayerShaderIOInfo<TInstance>,
       ILayerShaderIOInfo<TInstance>
@@ -895,6 +896,16 @@ export class Layer<
     if (!shaderIO) return false;
 
     let result;
+
+    // Perform the base raw shader transforms before anything has a chance to
+    // touch them. This makes the raw transform as easy to comprehend as
+    // possible and opens it up to the most features that can be had.
+    const transforms = this.surface.getShaderTransforms();
+
+    transforms.forEach((transform) => {
+      shaderIO.vs = transform.rawVertex(shaderIO.vs);
+      shaderIO.fs = transform.rawFragment(shaderIO.fs);
+    });
 
     // Shader initialization can be a little sloppy which creates some
     // convenience in writing layers. This helps ensures some data types are

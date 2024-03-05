@@ -403,6 +403,7 @@ export class AtlasManager {
           resolve(null);
         };
 
+        generatingImage.crossOrigin = "anonymous";
         generatingImage.src = dataURL;
       });
 

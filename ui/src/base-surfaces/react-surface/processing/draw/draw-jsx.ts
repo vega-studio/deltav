@@ -1,7 +1,8 @@
 import Debug from "debug";
-import { ILayerMaterialOptions } from "../../../../types";
+import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
 import { IView2DProps } from "../../../../2d";
 import { PostProcessJSX } from "../post-process-jsx";
+import type { IPartialViewJSX } from "../../scene/view-jsx";
 
 const debug = Debug("performance");
 
@@ -17,7 +18,7 @@ export interface IDrawJSX {
   /** For debugging only. Prints generated shader to the console. */
   printShader?: boolean;
   /** Options to send to the view */
-  view?: Partial<IView2DProps>;
+  view?: IPartialViewJSX<IView2DProps>;
   /**
    * Allows you to control material options such as blend modes of the post
    * process effect.
@@ -31,7 +32,7 @@ export interface IDrawJSX {
    */
   grayScale?: boolean;
   /** The name applied to the scenes this produces */
-  name?: string;
+  name: string;
 }
 
 /**
@@ -42,11 +43,19 @@ export function DrawJSX(props: IDrawJSX) {
   const { output, input, channel, grayScale } = props;
 
   return PostProcessJSX({
+    name: props.name,
     printShader: props.printShader,
-    view: Object.assign(
-      output ? { output: { buffers: output, depth: false } } : {},
-      props.view
-    ),
+    view: {
+      output: output
+        ? {
+            buffers: {
+              [FragmentOutputType.COLOR]: output || "",
+            },
+            depth: false,
+          }
+        : void 0,
+      ...props.view,
+    },
     buffers: { color: input },
     shader:
       grayScale && channel

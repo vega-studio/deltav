@@ -1,3 +1,14 @@
+## 4.1.0
+
+## Added
+
+- [`ADDED`]: Simplex Noise added
+- [`ADDED`]: Added RAW ShaderTransform capabilities.
+
+## Fixed
+
+- [`FIXED`]: Non system fonts stability has been improved dramatically by enabling the ability to embed the fonts into the font-rendering system
+
 ## 4.0.0
 
 ## Breaking

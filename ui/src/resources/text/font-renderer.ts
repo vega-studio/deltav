@@ -11,6 +11,7 @@ import { svgToData } from "./svg-to-data";
 import { WebGLStat } from "../../gl/webgl-stat";
 
 import Debug from "debug";
+import type { IFontMapMetrics } from "./font-manager";
 
 const debug = Debug("performance");
 const { floor } = Math;
@@ -36,7 +37,8 @@ async function renderEachPair(
   fontString: string,
   fontSize: number,
   pairs: KerningInfo,
-  calculateSpace: boolean
+  calculateSpace: boolean,
+  embed?: IFontMapMetrics["embed"]
 ) {
   // Make the svg namespace to dynamically construct an svg
   const svgNS = "http://www.w3.org/2000/svg";
@@ -47,13 +49,16 @@ async function renderEachPair(
   const cellWidth = fontSize * 2;
   const cellHeight = fontSize * 1.3;
   const maxColumns = floor(contextWidth / cellWidth);
+
   // Generate the svg wrapper that will hold all of our elements
   const table = document.createElementNS(svgNS, "svg");
   table.setAttribute("width", `${contextWidth}px`);
   table.style.font = fontString;
+  table.style.fontFamily = "RedHatDisplay";
   table.style.position = "relative";
   table.style.left = "0px";
   table.style.top = `0px`;
+
   // We will store the rows discovered so we can render them in batches to accommodate systems with smaller canvas limits
   const rows = [];
   const rowsPerBatch = Math.floor(contextWidth / cellHeight);
@@ -78,8 +83,8 @@ async function renderEachPair(
     );
     rows.push(tr);
 
-    // We track how much room is remaining so we can inject an empty cell at the end to ensure
-    // the table doesn't stretch to fill
+    // We track how much room is remaining so we can inject an empty cell at the
+    // end to ensure the table doesn't stretch to fill
     let remaining = contextWidth;
 
     // Render each tr with col number of td
@@ -137,12 +142,13 @@ async function renderEachPair(
     ]);
   }
 
-  // This stores how large the test character's rendering is that will be used for analyzing
-  // how large a space between characters is.
+  // This stores how large the test character's rendering is that will be used
+  // for analyzing how large a space between characters is.
   let testSpaceCharacterWidth = 0;
   let doSpaceCheck = false;
 
-  // If the distance of a space is required, then we add in one more additional cell
+  // If the distance of a space is required, then we add in one more additional
+  // cell
   if (calculateSpace) {
     const testChar = "M";
     const td = document.createElementNS(svgNS, "text");
@@ -154,13 +160,14 @@ async function renderEachPair(
     // td.style.overflow = "hidden";
     td.style.font = fontString;
 
-    // The test character for the spacing will be the first character in the pairs we
-    // wanted to render.
+    // The test character for the spacing will be the first character in the
+    // pairs we wanted to render.
     const render = await renderGlyph(testChar, 128, 128, fontString);
 
     if (render) {
-      // Keep how wide the test character is for after the kerning calculation so we can accurately
-      // determine how large a space is by subtracting the width of the character from the kerning distance.
+      // Keep how wide the test character is for after the kerning calculation
+      // so we can accurately determine how large a space is by subtracting the
+      // width of the character from the kerning distance.
       testSpaceCharacterWidth = render.size[0];
       // We create two of the test characters and place a space between them.
       const leftSpan = document.createElementNS(svgNS, "tspan");
@@ -180,8 +187,9 @@ async function renderEachPair(
         currentRow.appendChild(td);
         remainingSpace -= cellWidth;
 
-        // If a spacer at the end of the row is present, it should be adjusted to the size needed
-        // It should also be moved to the end of the child list
+        // If a spacer at the end of the row is present, it should be adjusted
+        // to the size needed It should also be moved to the end of the child
+        // list
         if (rowSpacer) {
           rowSpacer.remove();
 
@@ -224,8 +232,9 @@ async function renderEachPair(
     }
   }
 
-  // We now have all of the rows calculated and prepared. We now batch the rows together to fit within the max allowed
-  // canvas size and stitch the results together at the end.
+  // We now have all of the rows calculated and prepared. We now batch the rows
+  // together to fit within the max allowed canvas size and stitch the results
+  // together at the end.
   const totalHeight = rows.length * cellHeight;
   const totalCanvasBatches = Math.ceil(totalHeight / contextWidth);
   let result: ImageData | null = null;
@@ -254,12 +263,13 @@ async function renderEachPair(
 
     // Start the results with the first found result
     if (!result) {
-      result = await svgToData(table);
+      result = await svgToData(table, svgNS, embed);
     }
 
-    // Additional results will need their results stitched into the initial result
+    // Additional results will need their results stitched into the initial
+    // result
     else {
-      const stitchResult = await svgToData(table);
+      const stitchResult = await svgToData(table, svgNS, embed);
 
       if (!stitchResult) {
         console.warn(
@@ -321,7 +331,8 @@ async function renderEachPair(
       }
     }
 
-    // Before letter processing, remove and analyze processing for the 'space' character
+    // Before letter processing, remove and analyze processing for the 'space'
+    // character
     if (doSpaceCheck) {
       const min = mins.pop();
       if (min) {
@@ -341,8 +352,9 @@ async function renderEachPair(
       const rightLetters = pairs.pairs[left];
 
       if (rightLetters) {
-        // The calculations done on the space are in a devices pixel ratio. So we must
-        // adjust by that ratio to make it normal world space coordinates.
+        // The calculations done on the space are in a devices pixel ratio. So
+        // we must adjust by that ratio to make it normal world space
+        // coordinates.
         const exact = scale2(vec, 1 / window.devicePixelRatio);
         rightLetters[right] = [Math.ceil(exact[0]), exact[1]];
       }
@@ -400,8 +412,8 @@ export interface IFontOptions extends IdentifyByKey, IResourceType {
 
 export class FontRenderer {
   /**
-   * This function takes a sentence and grid info
-   * Returns a canvas with a list of glyphs where each glyph fits cnetered within each grid cell
+   * This function takes a sentence and grid info Returns a canvas with a list
+   * of glyphs where each glyph fits cnetered within each grid cell
    */
   makeBitmapGlyphs(
     glyphs: string,
@@ -442,16 +454,18 @@ export class FontRenderer {
   }
 
   /**
-   * This performs a special rendering to guess kerning of letters of embedded fonts (fonts we don't
-   * have access to their raw font files). This will provide kerning information of a letter by providing
-   * the distance from a 'left' letter's top left  corner to the 'right' letter's topleft corner.
+   * This performs a special rendering to guess kerning of letters of embedded
+   * fonts (fonts we don't have access to their raw font files). This will
+   * provide kerning information of a letter by providing the distance from a
+   * 'left' letter's top left  corner to the 'right' letter's topleft corner.
    */
   async estimateKerning(
     str: string[],
     fontString: string,
     fontSize: number,
     existing: KerningPairs,
-    includeSpace: boolean
+    includeSpace: boolean,
+    embed?: IFontMapMetrics["embed"]
   ) {
     // Get all of the new pairs of letters that need kerning infoz
     const pairInfo: KerningInfo = {
@@ -469,7 +483,7 @@ export class FontRenderer {
 
     // Only if there are new kerning needs do we actually need to run this method
     if (pairInfo.all.length > 0 || includeSpace) {
-      await renderEachPair(fontString, fontSize, pairInfo, includeSpace);
+      await renderEachPair(fontString, fontSize, pairInfo, includeSpace, embed);
     }
 
     return pairInfo;

@@ -28,6 +28,12 @@ export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayer2DProps<T
     scaleType?: EdgeScaleType;
     /** Specifies how the edge is formed */
     type: EdgeType;
+    /**
+     * Specifiy how many segments to render curved lines with. This defaults to 50
+     * the higher the number, the less likely it is to see jagged curves, but
+     * performance will drop.
+     */
+    smoothness?: number;
 }
 export interface IEdgeLayerState {
 }

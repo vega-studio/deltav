@@ -1,6 +1,7 @@
 import React from "react";
 import { EventManager } from "../../../event-management/event-manager.js";
 import { IEventManagerJSX } from "./as-event-manager.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 export interface IQueuedEventHandlerJSX extends Partial<IEventManagerJSX> {
     /** Specified handlers you wish to implement */
     handlers: Partial<EventManager>;
@@ -16,5 +17,7 @@ export interface IQueuedEventHandlerJSX extends Partial<IEventManagerJSX> {
  */
 export declare const QueuedEventHandlerJSX: {
     (props: IQueuedEventHandlerJSX): React.JSX.Element;
-    defaultProps: IQueuedEventHandlerJSX;
+    defaultProps: {
+        surfaceJSXType: SurfaceJSXType;
+    };
 };

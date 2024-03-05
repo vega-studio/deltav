@@ -33,7 +33,6 @@ import { LineSweep } from "./line-sweep.js";
 import { StoryFn } from "@storybook/react";
 import { useForceUpdate } from "../../../../util/hooks/use-force-update.js";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
-import type { Joint } from "./joint.js";
 
 export default {
   title: "Deltav/DrawTool",
@@ -55,9 +54,9 @@ export const Editor: StoryFn = (() => {
   const allLines = React.useRef(new Set<LineSegments>());
   // For every edge commit that occurs, this stores a complete snapshot of every
   // edge and joint.
-  const history = React.useRef<{ edges: EdgeInstance[]; joints: Joint[] }[]>(
-    []
-  );
+  // const history = React.useRef<{ edges: EdgeInstance[]; joints: Joint[] }[]>(
+  //   []
+  // );
   // const allBezier = React.useRef<EdgeInstance[]>([]);
   // const allBezier2 = React.useRef<EdgeInstance[]>([]);
 
@@ -152,8 +151,6 @@ export const Editor: StoryFn = (() => {
     if (splitEdgeAt.length <= 0) return;
 
     const newEdges = line.split(splitEdgeAt);
-
-    console.log(splitEdgeAt, newEdges);
 
     // Get the correct provider for the edge type
     let provider: InstanceProvider<Instance> | null = null;

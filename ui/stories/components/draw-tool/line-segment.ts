@@ -1,13 +1,16 @@
 import {
   add2,
-  copy2,
+  add4,
   dot2,
   EdgeInstance,
   EdgeType,
   length2,
   scale2,
+  scale4,
   subtract2,
+  subtract4,
   tod_flip2,
+  V4R,
   Vec2,
   type Vec4,
 } from "../../../src";
@@ -49,11 +52,11 @@ export class LineSegments {
    * costs a little more memory, it prevents the need to generate lookup maps
    * during processing which ends up being more costly anywho.
    */
-  get segments(): readonly [Vec2, Vec2, LineSegments][] {
+  get segments(): readonly [Vec2, Vec2, LineSegments, boolean][] {
     if (this.needsUpdate) this.updateSegments();
     return this._segments;
   }
-  private _segments: [Vec2, Vec2, LineSegments][] = [];
+  private _segments: [Vec2, Vec2, LineSegments, boolean][] = [];
 
   /**
    * This is the approximated length of the edge. It computes the length of each
@@ -76,10 +79,10 @@ export class LineSegments {
   }
 
   /**
-   * This computes two new edges that represents the exact same edge split at
-   * the specified t interval along this edge.
+   * This computes new edges that represents the exact same edge split at
+   * the specified t intervals along this edge.
    */
-  splitEdge(t: number): [LineSegments, LineSegments] {
+  split(tVals: number[]): LineSegments[] {
     // From ChatGPT Splitting a Bézier curve at a parameter \(t\) along its
     // path results in two new Bézier curves that, when combined, match the
     // original curve exactly. The process of splitting a Bézier curve
@@ -120,118 +123,219 @@ export class LineSegments {
     // smoothly connect at \(P_{0123}\) and retain the original curve's
     // shape.
 
+    // Always ensure the tVals are sorted ASC
+    tVals.sort((a, b) => a - b);
+
+    // Always ensure the final value is < 1
+    if (tVals[tVals.length - 1] > 1) {
+      console.error("Can not split an edge at t > 1. Returning unsplit edge.");
+      return [this];
+    }
+
+    // Always ensure the final value IS NOT1
+    if (tVals[tVals.length - 1] === 1) {
+      tVals.pop();
+    }
+
+    // Ensure the first value is not negative
+    if (tVals[0] < 0) {
+      console.error("Can not split an edge at t < 0. Returning unsplit edge.");
+      return [this];
+    }
+
+    // Remove a value of 0
+    if (tVals[0] === 0) {
+      tVals.shift();
+    }
+
     // Thickness split is the same for all curves as it's linear
-    const dT = this.edge.thickness[1] - this.edge.thickness[0];
-    const tThickness = this.edge.thickness[0] + dT * t;
-    let edges: [EdgeInstance, EdgeInstance] | null = null;
+    const dThickness = this.edge.thickness[1] - this.edge.thickness[0];
+    const dColor = subtract4(this.edge.endColor, this.edge.startColor);
+    const edges: EdgeInstance[] = [];
+
+    const getLinearMetrics = (prevT: number, t: number) => {
+      const startThickness = this.edge.thickness[0] + dThickness * prevT;
+      const endThickness = this.edge.thickness[0] + dThickness * t;
+      const startColor = add4(
+        this.edge.startColor,
+        scale4(dColor, prevT, V4R[0])
+      );
+      const endColor = add4(this.edge.startColor, scale4(dColor, t, V4R[0]));
+
+      return {
+        startColor,
+        endColor,
+        thickness: [startThickness, endThickness] as Vec2,
+      };
+    };
 
     switch (this.type) {
+      // Lines are simple in that we just have to linear interpolate the end
+      // points.
       case EdgeType.LINE: {
-        const splitPoint = add2(
-          this.edge.start,
-          scale2(subtract2(this.edge.end, this.edge.start, REGISTER1), t)
-        );
+        // For this process we will loop till the end is a 1. Copy to prevent
+        // mutation
+        tVals = tVals.slice(0);
+        tVals.push(1);
 
-        edges = [
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [this.edge.thickness[0], tThickness],
-            start: copy2(this.edge.start),
-            end: splitPoint,
-          }),
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [tThickness, this.edge.thickness[1]],
-            start: copy2(splitPoint),
-            end: copy2(this.edge.end),
-          }),
-        ];
+        let start: Vec2 = this.edge.start;
+        let end: Vec2 = this.edge.end;
+        let prevT = 0;
+
+        for (const t of tVals) {
+          start = this.getPoint(prevT);
+          end = this.getPoint(t);
+
+          edges.push(
+            new EdgeInstance({
+              ...getLinearMetrics(prevT, t),
+              start,
+              end,
+            })
+          );
+
+          prevT = t;
+        }
         break;
       }
 
+      // Bezier curves are more complex as we need to get new end points but
+      // also calculate equivalent control points to keep the piece of curve the
+      // same shape. So we will do a sort of recursive split where we make a
+      // split, retain the first piece, then split the next piece.
       case EdgeType.BEZIER: {
-        const P0 = this.edge.start;
-        const P1 = this.edge.control[0];
+        let prevT = 0;
+        let P0 = this.edge.start;
+        let P1 = this.edge.control[0];
         const P2 = this.edge.end;
-        const t_1 = 1 - t;
-        const P01 = add2(scale2(P0, t_1, REGISTER1), scale2(P1, t, REGISTER2));
-        const P12 = add2(scale2(P1, t_1, REGISTER1), scale2(P2, t, REGISTER2));
-        const P012 = add2(
-          scale2(P01, t_1, REGISTER1),
-          scale2(P12, t, REGISTER2)
-        );
 
-        edges = [
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [this.edge.thickness[0], tThickness],
-            start: P0,
-            end: P012,
-            control: [P01],
-          }),
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [tThickness, this.edge.thickness[1]],
-            start: P012,
-            end: P2,
-            control: [P12],
-          }),
-        ];
+        for (let i = 0, iMax = tVals.length, iLast = iMax - 1; i < iMax; i++) {
+          const t = tVals[i];
+
+          const t_1 = 1 - t;
+          const P01 = add2(
+            scale2(P0, t_1, REGISTER1),
+            scale2(P1, t, REGISTER2)
+          );
+          const P12 = add2(
+            scale2(P1, t_1, REGISTER1),
+            scale2(P2, t, REGISTER2)
+          );
+          const P012 = add2(
+            scale2(P01, t_1, REGISTER1),
+            scale2(P12, t, REGISTER2)
+          );
+
+          edges.push(
+            new EdgeInstance({
+              ...getLinearMetrics(prevT, t),
+              start: P0,
+              end: P012,
+              control: [P01],
+            })
+          );
+
+          // Move our next split computation to the next edge to split
+          P0 = P012;
+          P1 = P12;
+          // P2 = P2;
+
+          // We must add the final curve if we performed the final split
+          if (i === iLast) {
+            edges.push(
+              new EdgeInstance({
+                ...getLinearMetrics(prevT, t),
+                start: P0,
+                end: P2,
+                control: [P12],
+              })
+            );
+          }
+
+          prevT = t;
+        }
+
         break;
       }
 
+      // Bezier curves are more complex as we need to get new end points but
+      // also calculate equivalent control points to keep the piece of curve the
+      // same shape. So we will do a sort of recursive split where we make a
+      // split, retain the first piece, then split the next piece.
       case EdgeType.BEZIER2: {
-        const P0 = this.edge.start;
+        let prevT = 0;
+        let P0 = this.edge.start;
         const P3 = this.edge.end;
-        const P1 = this.edge.control[0];
-        const P2 = this.edge.control[1];
-        const t_1 = 1 - t;
-        const P01 = add2(scale2(P0, t_1, REGISTER1), scale2(P1, t, REGISTER2));
-        const P12 = add2(scale2(P1, t_1, REGISTER1), scale2(P2, t, REGISTER2));
-        const P23 = add2(scale2(P2, t_1, REGISTER1), scale2(P3, t, REGISTER2));
-        const P012 = add2(
-          scale2(P01, t_1, REGISTER1),
-          scale2(P12, t, REGISTER2)
-        );
-        const P123 = add2(
-          scale2(P12, t_1, REGISTER1),
-          scale2(P23, t, REGISTER2)
-        );
-        const P0123 = add2(
-          scale2(P012, t_1, REGISTER1),
-          scale2(P123, t, REGISTER2)
-        );
+        let P1 = this.edge.control[0];
+        let P2 = this.edge.control[1];
 
-        edges = [
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [this.edge.thickness[0], tThickness],
-            start: P0,
-            end: P01,
-            control: [P012, P0123],
-          }),
-          new EdgeInstance({
-            startColor: this.edge.startColor,
-            endColor: this.edge.endColor,
-            thickness: [tThickness, this.edge.thickness[1]],
-            start: P0123,
-            end: P3,
-            control: [P123, P23],
-          }),
-        ];
+        for (let i = 0, iMax = tVals.length, iLast = iMax - 1; i < iMax; i++) {
+          const t = tVals[i];
+          const t_1 = 1 - t;
+          const P01 = add2(
+            scale2(P0, t_1, REGISTER1),
+            scale2(P1, t, REGISTER2)
+          );
+          const P12 = add2(
+            scale2(P1, t_1, REGISTER1),
+            scale2(P2, t, REGISTER2)
+          );
+          const P23 = add2(
+            scale2(P2, t_1, REGISTER1),
+            scale2(P3, t, REGISTER2)
+          );
+          const P012 = add2(
+            scale2(P01, t_1, REGISTER1),
+            scale2(P12, t, REGISTER2)
+          );
+          const P123 = add2(
+            scale2(P12, t_1, REGISTER1),
+            scale2(P23, t, REGISTER2)
+          );
+          const P0123 = add2(
+            scale2(P012, t_1, REGISTER1),
+            scale2(P123, t, REGISTER2)
+          );
+
+          edges.push(
+            new EdgeInstance({
+              ...getLinearMetrics(prevT, t),
+              start: P0,
+              end: P01,
+              control: [P012, P0123],
+            })
+          );
+
+          // Move our next split computation to the next edge to split
+          P0 = P0123;
+          P1 = P123;
+          P2 = P23;
+          // P3 = P3;
+
+          // We must add the final curve if we performed the final split
+          if (i === iLast) {
+            edges.push(
+              new EdgeInstance({
+                ...getLinearMetrics(prevT, t),
+                start: P0,
+                end: P3,
+                control: [P1, P2],
+              })
+            );
+          }
+
+          prevT = t;
+        }
         break;
       }
     }
 
-    return [
-      new LineSegments(edges[0], this.type),
-      new LineSegments(edges[1], this.type),
-    ];
+    // Wrap all computed edges in LineSegments and provide them to the caller
+    return edges.map((e) => {
+      const line = new LineSegments(e, this.type);
+      line.updateSegments();
+      return line;
+    });
   }
 
   getRoughYBounds() {
@@ -353,9 +457,9 @@ export class LineSegments {
       case EdgeType.LINE:
         this.tDivision = 1;
         if (this.edge.start[0] < this.edge.end[0]) {
-          this._segments = [[this.edge.start, this.edge.end, this]];
+          this._segments = [[this.edge.start, this.edge.end, this, true]];
         } else {
-          this._segments = [[this.edge.end, this.edge.start, this]];
+          this._segments = [[this.edge.end, this.edge.start, this, false]];
         }
         break;
 
@@ -384,8 +488,9 @@ export class LineSegments {
           const p = this.getPoint(t);
           // Segments always travel from left to right to aid in sweep
           // calculations
-          if (p[0] > previous[0]) this._segments.push([previous, p, this]);
-          else this._segments.push([p, previous, this]);
+          if (p[0] > previous[0]) {
+            this._segments.push([previous, p, this, true]);
+          } else this._segments.push([p, previous, this, false]);
           previous = p;
         }
         break;
@@ -416,8 +521,9 @@ export class LineSegments {
           const p = this.getPoint(t);
           // Segments always travel from left to right to aid in sweep
           // calculations
-          if (p[0] > previous[0]) this._segments.push([previous, p, this]);
-          else this._segments.push([p, previous, this]);
+          if (p[0] > previous[0]) {
+            this._segments.push([previous, p, this, true]);
+          } else this._segments.push([p, previous, this, false]);
           previous = p;
         }
         break;

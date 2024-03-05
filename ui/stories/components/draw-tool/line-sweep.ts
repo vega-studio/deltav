@@ -14,8 +14,8 @@ import { LineSegments } from "./line-segment";
  * point line segment, this is for an edge decomposed into multiple segments.
  */
 function computeFinalIntersection(
-  seg1: [Vec2, Vec2, LineSegments],
-  seg2: [Vec2, Vec2, LineSegments]
+  seg1: [Vec2, Vec2, LineSegments, boolean],
+  seg2: [Vec2, Vec2, LineSegments, boolean]
 ): [Vec2, LineSegments, number, LineSegments, number] | null {
   const intersection = LineSegments.intersect(seg1, seg2);
 
@@ -35,8 +35,8 @@ function computeFinalIntersection(
     // See if the left edge attaches to the previous segment. If so, our time
     // from the intersection is going in the correct direction. Otherwise, it
     // needs to be reverse via 1 - t
-    const isForward1 = edge1.segments[index1 - 1]?.[0] === seg1[0];
-    const isForward2 = edge2.segments[index2 - 1]?.[0] === seg2[0];
+    const isForward1 = seg1[3];
+    const isForward2 = seg2[3];
 
     // If the segments come from the same LineSegments, then we see if the
     // intersection is an intersection between a segment and it's previous
@@ -46,14 +46,14 @@ function computeFinalIntersection(
       return null;
     }
 
-    // Use the segment dvision amounts to get the t value that should
-    // be associate
+    // Use the segment division amounts to get the t value that should
+    // be associated
     const tEdge1 =
       index1 * edge1.tDivision +
-      (isForward1 ? 1 - utEdge1 : utEdge1) * edge1.tDivision;
+      (isForward1 ? utEdge1 : 1 - utEdge1) * edge1.tDivision;
     const tEdge2 =
       index2 * edge2.tDivision +
-      (isForward2 ? 1 - utEdge2 : utEdge2) * edge2.tDivision;
+      (isForward2 ? utEdge2 : 1 - utEdge2) * edge2.tDivision;
 
     // Compute the t value along checkEject line
     return [[x, y], edge1, tEdge1, edge2, tEdge2];
@@ -83,8 +83,8 @@ export class LineSweep {
     segments: LineSegments[],
     bucketOptimization = 1,
     test: (
-      target: [Vec2, Vec2, LineSegments],
-      queue: Set<[Vec2, Vec2, LineSegments]>
+      target: [Vec2, Vec2, LineSegments, boolean],
+      queue: Set<[Vec2, Vec2, LineSegments, boolean]>
     ) => void
   ) {
     // Gather all segments from all edges.
@@ -110,7 +110,7 @@ export class LineSweep {
     maxY += 10;
 
     // Create bucket division lines
-    const buckets: [Vec2, Vec2, LineSegments][][] = [[]];
+    const buckets: [Vec2, Vec2, LineSegments, boolean][][] = [[]];
     const numBuckets = bucketOptimization;
     const dy = (maxY - minY) / numBuckets;
     const dy_inv = 1 / dy;
@@ -153,7 +153,7 @@ export class LineSweep {
       const sortedRight = bucket.sort((a, b) => a[1][0] - b[1][0]);
       // Retains all of the lines that should be tested against on each new event
       // point.
-      const testQueue = new Set<[Vec2, Vec2, LineSegments]>();
+      const testQueue = new Set<[Vec2, Vec2, LineSegments, boolean]>();
 
       // Cursor indices
       let left = 0;
@@ -290,7 +290,7 @@ export class LineSweep {
       EdgeType.LINE
     );
     const circleSegment = circleEdge.segments[0];
-    const intersections: [Vec2, Vec2, LineSegments][] = [];
+    const intersections: [Vec2, Vec2, LineSegments, boolean][] = [];
 
     // Line sweep all of the segments with our circle edge added to it.
     this.lineSweep(

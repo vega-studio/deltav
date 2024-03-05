@@ -10,6 +10,7 @@ import {
   EdgeInstance,
   EdgeLayer,
   EdgeType,
+  type Instance,
   InstanceProvider,
   type ISimpleEventHandlerJSX,
   LayerJSX,
@@ -28,6 +29,7 @@ import {
   CursorUtil,
 } from "./cursor-util.js";
 import { LineSegments } from "./line-segment.js";
+import { LineSweep } from "./line-sweep.js";
 import { StoryFn } from "@storybook/react";
 import { useForceUpdate } from "../../../../util/hooks/use-force-update.js";
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
@@ -122,7 +124,60 @@ export const Editor: StoryFn = (() => {
     }
   }
 
-  function commitEdge(edge: LineSegments) {}
+  /**
+   * Officially places an edge. This will cause all intersections and splicing
+   * to happen
+   */
+  function placeEdge(line?: LineSegments | null) {
+    if (!line) return;
+    // Get all of the intersections with our current edge
+    const intersectionData = LineSweep.lineSweepIntersectionWith(
+      new Set([line]),
+      Array.from(allLines.current)
+    );
+
+    // Get the interesections relative to the current edge
+    const intersections = LineSegments.filterIntersections(
+      line,
+      intersectionData
+    );
+
+    // No intersections means we do nothing to the line
+    if (intersections.length <= 0) return;
+
+    const splitEdgeAt = intersections
+      .map((i) => i.self_t)
+      .filter((t) => t > 0.001 && t < 0.999);
+
+    if (splitEdgeAt.length <= 0) return;
+
+    const newEdges = line.split(splitEdgeAt);
+
+    console.log(splitEdgeAt, newEdges);
+
+    // Get the correct provider for the edge type
+    let provider: InstanceProvider<Instance> | null = null;
+
+    switch (line.type) {
+      case EdgeType.BEZIER:
+        provider = bezierProvider.current;
+        break;
+      case EdgeType.BEZIER2:
+        provider = bezier2Provider.current;
+        break;
+      case EdgeType.LINE:
+        provider = lineProvider.current;
+        break;
+    }
+
+    provider?.remove(line.edge);
+    allLines.current.delete(line);
+
+    for (const line of newEdges) {
+      allLines.current.add(line);
+      provider?.add(line.edge);
+    }
+  }
 
   const surfaceHandlers: ISimpleEventHandlerJSX["handlers"] = {
     handleMouseMove(e) {
@@ -294,11 +349,19 @@ export const Editor: StoryFn = (() => {
       switch (CursorUtil.executeMode) {
         case CursorMode.DRAW_LINE:
           CursorUtil.selectedEdge?.updateSegments();
+          placeEdge(CursorUtil.selectedEdge);
           CursorUtil.selectedEdge = null;
           break;
 
         case CursorMode.MOVE_END:
           CursorUtil.selectedEdge?.updateSegments();
+          placeEdge(CursorUtil.selectedEdge);
+          CursorUtil.selectedEdge = null;
+          break;
+
+        case CursorMode.MOVE_CURVE:
+          CursorUtil.selectedEdge?.updateSegments();
+          placeEdge(CursorUtil.selectedEdge);
           CursorUtil.selectedEdge = null;
           break;
       }

@@ -23,7 +23,8 @@
     "storybook": "devops storybook",
     "test": "devops test",
     "ts": "devops ts",
-    "url": "devops url"
+    "url": "devops url",
+    "template": "devops template"
   },
   "devDependencies": {
     "@types/assert": "1.4.2",
@@ -33,7 +34,7 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "devops": "github:vega-studio/node-devops#semver:2.18.1",
+    "devops": "git+ssh://github.com/vega-studio/node-devops#2.18.1",
     "preact": "10.18.1",
     "rand-seed": "1.0.2"
   },

@@ -1,5 +1,5 @@
-import { GenericFunction } from "./types";
-import { NOOP } from "./no-op";
+import { GenericFunction } from "./types.js";
+import { NOOP } from "./no-op.js";
 
 export interface IPromiseResolver {
   /**

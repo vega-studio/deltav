@@ -1,18 +1,3 @@
-declare module "*.vs" {
-  const value: string;
-  export = value;
-}
-
-declare module "*.fs" {
-  const value: string;
-  export = value;
-}
-
-declare module "*.mp4" {
-  const value: any;
-  export = value;
-}
-
 declare module "*.png" {
   const value: any;
   export = value;
@@ -28,12 +13,17 @@ declare module "*.woff2" {
   export = value;
 }
 
-declare module "*.ttf" {
+declare module "*.woff2?inline" {
+  const value: any;
+  export = value;
+}
+
+declare module "*.fs" {
   const value: string;
   export = value;
 }
 
-declare module "*.woff2?inline" {
-  const value: any;
+declare module "*.vs" {
+  const value: string;
   export = value;
 }

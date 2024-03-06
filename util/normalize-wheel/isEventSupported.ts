@@ -32,7 +32,7 @@
 
 "use strict";
 
-import ExecutionEnvironment from "./ExecutionEnvironment";
+import ExecutionEnvironment from "./ExecutionEnvironment.js";
 
 var useHasFeature: any;
 if (ExecutionEnvironment.canUseDOM) {

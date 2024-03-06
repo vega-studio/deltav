@@ -2,7 +2,7 @@ import {
   cloneClientRect,
   DOMRectBounds,
   DOMRectPadding,
-} from "./clone-client-rect";
+} from "./clone-client-rect.js";
 
 const NO_BOUNDS = (): DOMRectBounds => ({
   bottom: 0,

@@ -32,8 +32,8 @@
 
 "use strict";
 
-import isEventSupported from "./isEventSupported";
-import UserAgent_DEPRECATED from "./UserAgent_DEPRECATED";
+import isEventSupported from "./isEventSupported.js";
+import UserAgent_DEPRECATED from "./UserAgent_DEPRECATED.js";
 
 // Reasonable defaults
 const PIXEL_STEP = 10;

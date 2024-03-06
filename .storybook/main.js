@@ -1,5 +1,4 @@
 const path = require("path");
-const webpack = require("webpack");
 const fs = require("fs");
 console.warn("PROJECT ROOT:", process.env.PROJECT_ROOT);
 const NODE_MODULES_STORIES = (process.env.NODE_MODULES_STORIES || "")
@@ -50,50 +49,6 @@ const CONFIG = {
     require(process.env.PROJECT_ROOT, path.resolve(".babelrc.json")),
   viteFinal: async (config) => {
     // Vite adjustments for projects
-    return config;
-  },
-  webpackFinal: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      stream: require.resolve("stream-browserify"),
-      path: require.resolve("path-browserify"),
-      zlib: require.resolve("browserify-zlib"),
-    };
-    config.plugins.push(
-      new webpack.ProvidePlugin({
-        Buffer: ["buffer", "Buffer"],
-      })
-    );
-    config.module.rules.unshift({
-      test: /\.css\.raw/,
-      exclude: /\.stories/,
-      use: [
-        {
-          loader: "raw-loader",
-        },
-      ],
-    });
-    config.module.rules.unshift({
-      test: /\.jsx?\.raw/,
-      exclude: /\.stories/,
-      use: [
-        {
-          loader: "raw-loader",
-        },
-      ],
-    });
-    config.module.rules.unshift({
-      test: /\.(ts|tsx)$/,
-      use: [
-        {
-          loader: require.resolve("ts-loader"),
-          options: {
-            transpileOnly: true,
-          },
-        },
-      ],
-    });
-    config.resolve.extensions.push(".ts", ".tsx");
     return config;
   },
   docs: {

@@ -1,6 +1,6 @@
 import * as ReactDOM from "react-dom";
-import { GenericFunction } from "./types";
-import { NOOP } from "./no-op";
+import { GenericFunction } from "./types.js";
+import { NOOP } from "./no-op.js";
 
 /**
  * This method performs a ReactDOM render, but encapsulates the render with a

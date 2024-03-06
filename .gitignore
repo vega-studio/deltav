@@ -43,7 +43,7 @@ tools
 *.local.js
 *.local.tsx
 *.local.jsx
+logs
 
 # Ignore capacitor files that are outside of the devops system structure
 capacitor.config.json
-old-demos

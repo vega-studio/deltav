@@ -26,7 +26,6 @@
     "url": "devops url"
   },
   "devDependencies": {
-    "@diniden/signal-processing": "github:diniden/signal-processing#semver:1.1.0",
     "@types/assert": "1.4.2",
     "@types/debug": "4.1.4",
     "@types/offscreencanvas": "2019.6.4",

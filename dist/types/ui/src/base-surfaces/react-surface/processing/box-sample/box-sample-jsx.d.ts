@@ -8,7 +8,7 @@ export declare enum BoxSampleJSXDirection {
 }
 export interface IBoxSampleJSX {
     /** Name to apply to the scenes this produces */
-    name?: string;
+    name: string;
     /** Specifies the resource taken in that will be blurred for the output */
     input: string;
     /** Specifies an output resource key to send the results to */

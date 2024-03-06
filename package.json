@@ -34,7 +34,7 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "devops": "github:vega-studio/node-devops#semver:2.17.1",
+    "devops": "github:vega-studio/node-devops#semver:2.18.1",
     "preact": "10.18.1",
     "rand-seed": "1.0.2"
   },

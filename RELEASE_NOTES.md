@@ -1,3 +1,9 @@
+## 4.1.2
+
+## Fixed
+
+- [`FIXED`]: Adjusted package to comply with how bun handles arguments
+
 ## 4.1.1
 
 ## Fixed

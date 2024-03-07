@@ -1,3 +1,10 @@
+## 4.2.2
+
+## Fixed
+
+- [`FIXED`]: More devops updates attempting to resolve library distribution issues
+- [`FIXED`]: Updated devops so the release version reflects the actual version of deltav and is not the stale older version
+
 ## 4.2.1
 
 ## Fixed

@@ -1,2 +1,2 @@
-import { normalizeWheel } from "./normalizeWheel";
+import { normalizeWheel } from "./normalizeWheel.js";
 export { normalizeWheel };

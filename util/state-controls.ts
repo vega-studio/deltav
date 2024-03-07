@@ -1,5 +1,5 @@
 import React from "react";
-import { hasChild } from "./has-child";
+import { hasChild } from "./has-child.js";
 
 interface IHoverState {
   hovered: boolean;

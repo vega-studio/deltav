@@ -1,4 +1,4 @@
-import { DOMRectBounds } from "./clone-client-rect";
+import { DOMRectBounds } from "./clone-client-rect.js";
 
 /**
  * Compares two client rects against each other.

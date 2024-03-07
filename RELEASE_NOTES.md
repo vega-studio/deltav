@@ -1,3 +1,10 @@
+## 4.1.1
+
+## Fixed
+
+- [`FIXED`]: Updated to latest devops to upgrade to bun ecosystem
+- [`FIXED`]: Exported the InstanceProviderWithList so it will be available as a utility.
+
 ## 4.1.0
 
 ## Added

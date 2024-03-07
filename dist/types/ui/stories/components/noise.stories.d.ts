@@ -6,4 +6,5 @@ declare const _default: {
 };
 export default _default;
 export declare const Simplex2D: StoryFn;
+export declare const Simplex2DWithOctaves: StoryFn;
 export declare const Simplex3D: StoryFn;

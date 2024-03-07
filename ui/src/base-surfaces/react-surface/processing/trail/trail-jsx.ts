@@ -64,7 +64,7 @@ export function TrailJSX(props: ITrailJSX) {
 
   process.push(
     PostProcessJSX({
-      name: props.name,
+      name: `${props.name}_base`,
       printShader: props.printShader,
       // Set the buffers we want to composite
       buffers: {

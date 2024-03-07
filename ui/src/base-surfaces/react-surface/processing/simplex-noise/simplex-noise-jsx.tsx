@@ -108,11 +108,13 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
 
         void main() {
           float value = 0.;
-          ${scales.map(
-            (s) => `
+          ${scales
+            .map(
+              (s) => `
             value += simplexNoise3D(vec3(gl_FragCoord.xy * vec2(${s[0]}f, ${s[1]}f), zOffset));
           `
-          )}
+            )
+            .join("\n")}
           value *= ${scaleFactor.toFixed(1)}f;
           $\{out: color} = vec4(value, value, value, 1.);
         }
@@ -135,11 +137,13 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
 
         void main() {
           float value = 0.;
-          ${scales.map(
-            (s) => `
+          ${scales
+            .map(
+              (s) => `
             value += simplexNoise2D(gl_FragCoord.xy * vec2(${s[0]}f, ${s[1]}f));
           `
-          )}
+            )
+            .join("\n")}
           value *= ${scaleFactor.toFixed(1)}f;
           $\{out: color} = vec4(value, value, value, 1.);
         }

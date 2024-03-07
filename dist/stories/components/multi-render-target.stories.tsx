@@ -153,8 +153,8 @@ export const Simple_Trail: StoryFn = (() => {
         <LayerJSX
           name="circles"
           type={CircleLayer}
+          providerRef={circleProvider}
           config={{
-            data: circleProvider.current,
             animate: {
               radius: AutoEasingMethod.linear(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
@@ -349,8 +349,8 @@ export const Glowing_Trail: StoryFn = (() => {
         <LayerJSX
           name="circles"
           type={CircleLayer}
+          providerRef={circleProvider}
           config={{
-            data: circleProvider.current,
             animate: {
               radius: AutoEasingMethod.linear(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),
@@ -406,7 +406,6 @@ export const Fireworks: StoryFn = (() => {
   useLifecycle({
     async didMount() {
       // Wait for the surface to establish the full pipeline
-      if (!circleProvider.current) return;
       const surface = await ready.current.promise;
       const provider = circleProvider.current;
 
@@ -561,8 +560,8 @@ export const Fireworks: StoryFn = (() => {
         <LayerJSX
           name="circles"
           type={CircleLayer}
+          providerRef={circleProvider}
           config={{
-            data: circleProvider.current,
             animate: {
               center: AutoEasingMethod.easeOutCubic(animationDuration),
               color: AutoEasingMethod.easeOutCubic(animationDuration),

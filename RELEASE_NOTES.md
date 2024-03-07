@@ -1,3 +1,9 @@
+## 4.2.1
+
+## Fixed
+
+- [`FIXED`]: Updated devops and included the new feature to publish the project release version for a better debugging experience
+
 ## 4.2.0
 
 ## Added

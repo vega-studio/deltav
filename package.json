@@ -24,7 +24,8 @@
     "test": "devops test",
     "ts": "devops ts",
     "url": "devops url",
-    "template": "devops template"
+    "template": "devops template",
+    "package": "devops package"
   },
   "devDependencies": {
     "@types/assert": "1.4.2",
@@ -34,7 +35,7 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "devops": "git+ssh://github.com/vega-studio/node-devops.git#2.19.2",
+    "devops": "git+ssh://github.com/vega-studio/node-devops.git#2.20.0",
     "preact": "10.18.1",
     "rand-seed": "1.0.2"
   },

@@ -1,3 +1,9 @@
+## 4.1.3
+
+## Fixed
+
+- [`FIXED`]: Made react a dependency of the library to exclude it from the distribution bundle
+
 ## 4.1.2
 
 ## Fixed

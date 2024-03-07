@@ -21,6 +21,11 @@ export interface ILayerJSX<TInstance extends Instance, TProps extends ILayerProp
      * This provides a means to access the instance provider used by this Layer.
      * When a layer is not explicitly provided an instance provider, it will
      * generate one for itself.
+     *
+     * This ALSO is a means to deliver a provider to the layer! If the ref has a
+     * provider populated within it, the Layer will use that provider instead of
+     * generating one. Delivering the provider via the ref is the same as setting
+     * the Layers config.data property.
      */
     providerRef?: React.MutableRefObject<InstanceProvider<TInstance> | null>;
     /**

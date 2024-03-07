@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:vega-studio/deltav.git"
   },
-  "version": "4.1.1",
+  "version": "4.1.2",
   "main": "./dist/ui/index.js",
   "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "clean": "devops clean",
     "component": "devops component",
     "init": "devops init",
-    "pr": "devops pr --repoUrl \"https://github.com/vega-studio/deltav\" --repoType git --masterBranch master",
+    "pr": "devops pr --repoUrl https://github.com/vega-studio/deltav --repoType git --masterBranch master",
     "storybook": "devops storybook",
     "test": "devops test",
     "ts": "devops ts",

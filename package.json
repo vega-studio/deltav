@@ -77,5 +77,8 @@
       "masterBranch": "master",
       "figmaUrl": "NA"
     }
+  },
+  "dependencies": {
+    "react": "18.2.0"
   }
 }

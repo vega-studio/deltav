@@ -1,3 +1,9 @@
+## 4.2.0
+
+## Added
+
+- [`ADDED`]: Added the ability to use a providerRef that is prepopulated with a provider to be the InstanceProvider the Layer utilizes. This eliminates the need to use the data property in the layer configuration to pass a premade InstanceProvider.
+
 ## 4.1.3
 
 ## Fixed

@@ -41,6 +41,11 @@ export interface ILayerJSX<
    * This provides a means to access the instance provider used by this Layer.
    * When a layer is not explicitly provided an instance provider, it will
    * generate one for itself.
+   *
+   * This ALSO is a means to deliver a provider to the layer! If the ref has a
+   * provider populated within it, the Layer will use that provider instead of
+   * generating one. Delivering the provider via the ref is the same as setting
+   * the Layers config.data property.
    */
   providerRef?: React.MutableRefObject<InstanceProvider<TInstance> | null>;
   /**
@@ -122,15 +127,26 @@ export const LayerJSX = <
         key: props.name,
         ...config,
       });
-      let provider = layer.init[1].data;
+
+      // Determine the provider that is provided to the layer. This is an
+      // opportunity for the providerRef to deliver the provider which makes the
+      // Ref capable of either receiving the Layer's created provider OR let the
+      // ref specify the provider. This helps harmonize the interface better
+      // where the ref is the primary method of interaction with the layer's
+      // provider. The altrnative would be having to submit the provider via the
+      // config.data property, which could be confusing to a developer.
+      let provider = props.providerRef?.current || layer.init[1].data;
 
       // We don't want the provider for the layer to be the defaulted static
       // provider for the layer lest all same type layers share the same
       // provider.
       if (provider === layer.init[0].defaultProps.data) {
         provider = new InstanceProvider();
-        layer.init[1].data = provider;
       }
+
+      // Make sure the provider we intend for the layer is applied to it's
+      // initialization properties.
+      layer.init[1].data = provider;
 
       if (props.providerRef && provider instanceof InstanceProvider) {
         props.providerRef.current = provider;

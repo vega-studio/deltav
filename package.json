@@ -19,7 +19,7 @@
     "clean": "devops clean",
     "component": "devops component",
     "init": "devops init",
-    "pr": "devops pr --repoUrl \"https://github.com/vega-studio/deltav\" --repoType git --masterBranch master",
+    "pr": "devops pr --repoUrl https://github.com/vega-studio/deltav --repoType git --masterBranch master",
     "storybook": "devops storybook",
     "test": "devops test",
     "ts": "devops ts",

@@ -355,6 +355,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   return (
     <div
       ref={container}
+      data-deltav-version={import.meta.env.VITE_RELEASE_VERSION || "unknown"}
       className={`SurfaceJSX ${props.className || ""}`}
       {...props.containerProps}
     >

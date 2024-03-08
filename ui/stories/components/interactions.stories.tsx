@@ -7,14 +7,20 @@ import {
   CircleLayer,
   ClearFlags,
   CommandsJSX,
+  DrawJSX,
+  FragmentOutputType,
+  GLSettings,
   IMouseInteraction,
   InstanceProvider,
   LayerJSX,
   PickType,
   PromiseResolver,
+  SceneJSX,
   SimpleEventHandlerJSX,
   Surface,
   SurfaceJSX,
+  TextureJSX,
+  TextureSize,
   View2D,
   ViewJSX,
 } from "../../src";
@@ -129,7 +135,7 @@ export const Color_Picking: StoryFn = (() => {
       const surface = await ready.current.promise;
       if (!circleProvider.current) return;
 
-      const size = surface.getViewSize("main");
+      const size = surface.getViewSize("render.main");
       if (!size) {
         console.warn("Invalid View Size", surface);
         return;
@@ -137,14 +143,11 @@ export const Color_Picking: StoryFn = (() => {
 
       const instances: CircleInstance[] = [];
 
-      for (let i = 0, iMax = 100; i < iMax; ++i) {
+      for (let i = 0, iMax = 10000; i < iMax; ++i) {
         instances.push(
           circleProvider.current.add(
             new CircleInstance({
-              center: [
-                Math.random() * 400 - 200 + size.mid[0],
-                Math.random() * 400 - 200 + size.mid[1],
-              ],
+              center: [Math.random() * size.width, Math.random() * size.height],
               radius: Math.random() * 5 + 2,
               color: [
                 0,
@@ -171,40 +174,83 @@ export const Color_Picking: StoryFn = (() => {
         antialias: true,
       }}
     >
+      <BasicCamera2DControllerJSX
+        config={{
+          camera: camera.current,
+          startView: "render.main",
+          ignoreCoverViews: true,
+        }}
+      />
       {CommandsJSX({
         name: "decode-picking",
         callback: (surface) => {
           surface.commands.decodePicking();
-          console.log("DECODE");
         },
       })}
-      <ViewJSX
-        name="main"
-        type={View2D}
-        config={{
-          camera: camera.current,
-          background: [0, 0, 0, 1],
-          clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+      <TextureJSX
+        name="pick"
+        width={TextureSize.SCREEN_QUARTER}
+        height={TextureSize.SCREEN_QUARTER}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
         }}
       />
-      <LayerJSX
-        type={CircleLayer}
-        providerRef={circleProvider}
-        config={{
-          printShader: true,
-          picking: PickType.SINGLE,
-          animate: {
-            center: AutoEasingMethod.easeInOutCubic(2000),
-          },
-          onMouseOver: (info) => {
-            info.instances.forEach((i) => (i.radius = 10));
-          },
+      <SceneJSX name="render">
+        <ViewJSX
+          name="main"
+          type={View2D}
+          config={{
+            camera: camera.current,
+            background: [0, 0, 0, 1],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          }}
+        />
+        <ViewJSX
+          name="pick-view"
+          type={View2D}
+          config={{
+            screenScale: [4, 4],
+            pixelRatio: 0.5,
+            camera: camera.current,
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          }}
+          output={{
+            buffers: { [FragmentOutputType.PICKING]: "pick" },
+            depth: true,
+          }}
+        />
+        <LayerJSX
+          type={CircleLayer}
+          providerRef={circleProvider}
+          config={{
+            picking: PickType.SINGLE,
+            animate: {
+              center: AutoEasingMethod.easeInOutCubic(2000),
+              radius: AutoEasingMethod.easeOutCubic(200),
+            },
+            onMouseOver: (info) => {
+              info.instances.forEach((i) => (i.radius = 50));
+            },
 
-          onMouseOut: (info) => {
-            info.instances.forEach((i) => (i.radius = 5));
+            onMouseOut: (info) => {
+              info.instances.forEach((i) => (i.radius = 5));
+            },
+          }}
+        />
+      </SceneJSX>
+      {DrawJSX({
+        name: "render-pick",
+        input: "pick",
+        view: {
+          config: {
+            background: [0.1, 0.1, 0.1, 1],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            viewport: { right: 10, bottom: 10, width: "30%", height: "30%" },
           },
-        }}
-      />
+        },
+      })}
     </SurfaceJSX>
   );
 }).bind({});

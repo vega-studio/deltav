@@ -48,3 +48,4 @@ logs
 # Ignore capacitor files that are outside of the devops system structure
 capacitor.config.json
 old-demos.zip
+old-demos/

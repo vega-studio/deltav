@@ -41,6 +41,11 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
    * Additional uniforms to inject into the program.
    */
   uniforms?: IUniform[] | ((layer: PostProcessLayer) => IUniform[]);
+  /**
+   * Tells the layer to not redraw on update. Otherwise, The layer will redraw
+   * every frame by default.
+   */
+  preventDraw?: boolean;
 }
 
 /**
@@ -171,7 +176,7 @@ export class PostProcessLayer extends Layer<
   }
 
   shouldDrawView(): boolean {
-    return true;
+    return !this.props.preventDraw;
   }
 
   getMaterialOptions() {

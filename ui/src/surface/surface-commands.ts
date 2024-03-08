@@ -1,4 +1,5 @@
 import { divide2, scale2, Vec2, Vec4 } from "../math/vector";
+import { emitOnce } from "../util/emit-once";
 import { FragmentOutputType, IColorPickingData, PickType } from "../types";
 import { IViewProps, View } from "./view";
 import { RenderTarget } from "../gl/render-target";
@@ -190,6 +191,15 @@ export class SurfaceCommands {
           // Find the target that outputs for picking
           renderTarget.getBuffers().forEach((buffer) => {
             if (buffer.outputType === FragmentOutputType.PICKING) {
+              if (buffer.buffer instanceof Texture) {
+                if (buffer.buffer.generateMipMaps) {
+                  emitOnce("decode-picking-error", () => {
+                    console.warn(
+                      "The Texture you provided as the target for color picking has generateMipMaps enabled. This can cause accuracy issues and may make your picking experience poor."
+                    );
+                  });
+                }
+              }
               // Generate our single render buffer target so our read pixels
               // will for sure target the right buffer
               pickingTarget = new RenderTarget({

@@ -14,9 +14,12 @@ export class MyInstance extends Instance {
 }
 ```
 
-But there IS ONE additional consideration. You want properties to UPDATE with `magic` and *wonder*!
+But there IS ONE additional consideration. You want properties to UPDATE with
+`magic` and _wonder_!
 
-So simply add 'observable' to the properties you care to have changed:
+So simply add 'observable' to the properties you care to have changed. Also use
+the makeObservable method in the constructor. (makeObservable is necessary
+because the web standards committee decided to make decorators almost useless)
 
 ```javascript
 import { Instance, Vec2, Color, observable } from 'deltav';
@@ -25,13 +28,18 @@ export class MyInstance extends Instance {
   @observable center: Vec2 = [0, 0];
   @observable radius: number = 5;
   @observable color: Color = [0, 0.8, 1, 1];
+
+  constructor() {
+    makeObservable(this, MyInstance)
+  }
 }
 ```
 
-Now this makes it possible to see those changes reflected with ease in your Layer!
+Now this makes it possible to see those changes reflected with ease in your
+Layer!
 
-Also remember! Instances are all about YOU and what YOU want! Do whatever else you wish with your
-instance:
+Also remember! Instances are all about YOU and what YOU want! Do whatever else
+you wish with your instance:
 
 ```javascript
 import { Instance, Vec2, Color, observable, subtract2, dot2 } from 'deltav';
@@ -40,6 +48,10 @@ export class MyInstance extends Instance {
   @observable center: Vec2 = [0, 0];
   @observable radius: number = 5;
   @observable color: Color = [0, 0.8, 1, 1];
+
+  constructor() {
+    makeObservable(this, MyInstance)
+  }
 
   // Easy getter!
   get diameter() { return this.radius * 2; }
@@ -56,14 +68,16 @@ export class MyInstance extends Instance {
 
 ## InstanceProviders
 
-You have probably seen these providers floating about in examples already. What are they? Well,
-they're really a VERY simple concept that helps pipe information to our Layers. They're also very
-simplistic internally and highly agnostic to what is done with them.
+You have probably seen these providers floating about in examples already. What
+are they? Well, they're really a VERY simple concept that helps pipe information
+to our Layers. They're also very simplistic internally and highly agnostic to
+what is done with them.
 
-Internally, the layers know how to use them and can squeeze the info out of them and pipe hat info
-where it needs to go.
+Internally, the layers know how to use them and can squeeze the info out of them
+and pipe that info where it needs to go.
 
-But for all of us who couldn't care less, the important part of instance providers is:
+But for all of us who couldn't care less, the important part of instance
+providers is:
 
 ```javascript
 const provider = new InstanceProvider<MyInstance>();
@@ -84,7 +98,8 @@ SUPER SIMPLE! DON'T OVER THINK IT! Add/remove is all you should know.
 
 Keeping it simple in this case is SUPER powerful!
 
-Let's look at how simple it is to make our instance work with react:
+Let's look at how simple it is to make our instance work with react by making a
+Circle wrapper component for the concept!
 
 ```javascript
 import * as React from 'react';
@@ -123,4 +138,5 @@ class Circle extends React.Component<IProps> {
 }
 ```
 
-Boom. You just created a React wrapper around your Instance, if you want that sort of thing.
+Boom. You just created a React wrapper around your Instance, if you want that
+sort of thing.

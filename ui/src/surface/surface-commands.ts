@@ -149,8 +149,8 @@ export class SurfaceCommands {
    *
    * This is a BLOCKING operation and it will block until ALL GPU operations
    * have been completed by the GPU. Thus, it is recommended to perform this
-   * command at the beginning of the pipeline to allow for the previous frame to
-   * completely
+   * command at the beginning of the pipeline to allow for the operations of the
+   * previous frame to complete.
    */
   decodePicking() {
     const interaction = this.surface.getCurrentInteraction();

@@ -1,278 +1,136 @@
 # Quick Start Example
 
-This is the basic example provided on the intro page. Here we have added comments to explain line by line what is happening to help you see [The Basics](./the-basics.md) in action.
+This is the basic example provided on the intro page. Here we have added
+comments to explain line by line what is happening to help you see
+[The Basics](./the-basics.md) in action.
 
 ```javascript
-import {
-  // Render pipeline generation
-  BasicSurface,
-  View2D,
-  Camera2D,
-  ClearFlags,
+export const MyComponent = (() => {
+  // Make a ref that will hold our provider for passing instances to a Layer
+  const circleProvider = React.useRef(new InstanceProvider<CircleInstance>());
+  // Make a list tracking all of our created instances
+  const circles = React.useRef<CircleInstance[]>([]);
+  // Make a resolver to wait for the surface ready signal
+  const ready = React.useRef(new PromiseResolver<Surface>());
+  // Make a Camera2D which is a special camera provided for the 2D rendering
+  // system deltav provides.
+  const camera = React.useRef(new PromiseResolver(new Camera2D()));
 
-  // Layer handling
-  CircleLayer,
-  createView,
-  createLayer,
+  // Execute when our component mounts
+  React.useEffect(() => {
+    // Wait for the surface ready signal so the pipeline is fully established
+    // and hopefully didn't have errors
+    const surface = await ready.current.promise;
+    // Ensure our provider is avaialble
+    if (!circleProvider.current) return;
+    // Request the rendering size of the View with name="main"
+    const size = surface.getViewSize("main");
 
-  // Event manager
-  BasicCamera2DController,
-
-  // Data management
-  CircleInstance,
-  InstanceProvider,
-
-  // Math
-  scale2,
-  add2,
-  multiply2,
-  Vec2,
-
-  // Frame management
-  onFrame,
-  wait,
-
-  // Animation
-  AutoEasingMethod,
-  EasingUtil,
-  AutoEasingLoopStyle,
-} from 'deltav';
-
-// Make an html thingy to render into!
-const container = document.createElement('div');
-document.body.appendChild(container);
-container.style.width = '100%';
-container.style.height = '100%';
-
-// These
-const providers = {
-  circles: new InstanceProvider<CircleInstance>(),
-};
-
-function makeSurface() {
-  // Make a surface to render stuff!
-  const surface = new BasicSurface({
-    // Use our html thing for rendering into!
-    container,
-    // Set the bridge for adding and removing data
-    providers,
-
-    // Set up our camera mechanisms for controlling what we see
-    cameras: {
-      main: new Camera2D(),
-    },
-
-    // Make a controller for our camera to let us move around and zoom with ease
-    eventManagers: cameras => ({
-      main: new BasicCamera2DController({
-        camera: cameras.main,
-        startView: ['main.fullscreen'],
-      }),
-    }),
-
-    // No resources needed
-    resources: {},
-
-    // Establish our scenes that has items injected into
-    pipeline: (_resources, _providers, cameras) => ({
-      resources: [],
-      scenes: {
-        main: {
-          // Establish how this scene is viewed (Camera orientation)
-          // and where we want to print that rendering
-          // (By default to a portion of the screen)
-          views: {
-            fullscreen: createView(View2D, {
-              camera: cameras.main,
-              background: [0, 0, 0, 1],
-              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
-            }),
-          },
-          // Establish layers to inject elements into the scene to be viewed
-          layers: {
-            // We want circles!
-            circles: createLayer(CircleLayer, {
-              // Establish which properties we want animated and which easing to
-              // use to animate them
-              animate: {
-                center: AutoEasingMethod.easeInOutCubic(
-                  1000,
-                  0,
-                  AutoEasingLoopStyle.NONE
-                ),
-              },
-              // This layer renders data provided by the circles provider
-              data: providers.circles,
-              // A property of the layer that can improve performance with certain
-              // limitations.
-              usePoints: true,
-            }),
-          },
-        },
-      },
-    }),
-  });
-
-  // BOOM: you made your first rendering pipeline!
-  // This pipeline can be customized to include VERY complex behaviors VERY easily!
-  // Use your imagination!
-}
-
-// Now let's make it render something by adding actual circles to it!
-async function doStuff() {
-  const { width, height } = container.getBoundingClientRect();
-  const screenSize: Vec2 = [width, height];
-  const all = [];
-
-  // Easy method for adding a circle to our 'all' list and to our provider
-  function makeCircle(opts) {
-    const c = new CircleInstance(opts);
-    all.push(c);
-    providers.circles.add(c);
-
-    return c;
-  }
-
-  // Make and render a circle
-  let circle = makeCircle({
-    center: [100, 100],
-    radius: 4,
-    color: [0, 0.8, 1, 1],
-  });
-
-  // Add some circles to delineate our corners
-  providers.circles.add(
-    new CircleInstance({
-      center: [0, 0],
-      radius: 2,
-      color: [1, 0, 0, 1],
-    })
-  );
-
-  providers.circles.add(
-    new CircleInstance({
-      center: [screenSize[0], 0],
-      radius: 2,
-      color: [1, 0, 0, 1],
-    })
-  );
-
-  providers.circles.add(
-    new CircleInstance({
-      center: [screenSize[0], screenSize[1]],
-      radius: 2,
-      color: [1, 0, 0, 1],
-    })
-  );
-
-  providers.circles.add(
-    new CircleInstance({
-      center: [0, screenSize[1]],
-      radius: 2,
-      color: [1, 0, 0, 1],
-    })
-  );
-
-  await wait(1000);
-
-  // Move the circle.
-  circle.center = scale2(screenSize, 0.5);
-  await wait(1000);
-  // Wait!?
-  circle.center = scale2(screenSize, 0.7);
-  await wait(1000);
-  // What is this devilry?!
-  circle.center = scale2(screenSize, 0.1);
-  await wait(1000);
-  // It animates on it's own!
-  circle.center = scale2(screenSize, 0.3);
-  await wait(1000);
-
-  // Add a LOT of circles
-  for (let i = 0; i < 200; ++i) {
-    await onFrame();
-
-    // Add them in a fancy randomized circle thingy
-    for (let k = 0; k < 50; ++k) {
-      const dist = Math.random() * 200;
-      const angle = Math.random() * Math.PI * 2;
-
-      makeCircle({
-        center: add2(
-          scale2(screenSize, 0.3),
-          scale2([Math.sin(angle), Math.cos(angle)], dist)
-        ),
-        radius: 4,
-        color: [0, 0.8, 1, 1],
-      });
-    }
-  }
-
-  let index = 0;
-
-  while (index < all.length) {
-    // Stream all of them somewhere else in batches
-    const batch = [];
-
-    for (let i = 0; i < 1000 && index < all.length; ++i, ++index) {
-      circle = all[index];
-      circle.center = scale2(screenSize, 0.7);
-      batch.push(circle);
+    // If no size was provided, the view was not available
+    if (!size) {
+      console.warn("Invalid View Size", surface);
+      return;
     }
 
-    // Randomize the batches animation start time
-    EasingUtil.all(
-      false,
-      batch,
-      [CircleLayer.attributeNames.center],
-      easing => {
-        easing.setTiming(Math.random() * 1000);
-      }
-    );
+    // We're gonna make some instances
+    const instances: CircleInstance[] = [];
 
-    await onFrame();
-  }
+    // Let's make a bunch of circles
+    for (let i = 0, iMax = 100; i < iMax; ++i) {
+      // Create the new CircleInstance, add it to the circle provider for the
+      // layer, then add that instance to our instance list for easy management
+      instances.push(
+        circleProvider.current.add(
+          new CircleInstance({
+            center: [
+              Math.random() * 400 - 200 + size.mid[0],
+              Math.random() * 400 - 200 + size.mid[1],
+            ],
+            radius: Math.random() * 5 + 2,
+            color: [
+              0,
+              Math.random() * 0.8 + 0.2,
+              Math.random() * 0.8 + 0.2,
+              1,
+            ],
+          })
+        )
+      );
 
-  await EasingUtil.all(true, all, [CircleLayer.attributeNames.center]);
-  await wait(1000);
+      // Update our ref of all instances
+      circles.current = instances;
+    }
+  }, []);
 
-  // Explode!
-  for (let i = 0; i < all.length; ++i) {
-    circle = all[i];
-    circle.center = multiply2(screenSize, [Math.random(), Math.random()]);
-  }
+  // Handler for mouse down events from the surface
+  const handleMouseDown = (e: IMouseInteraction) => {
+    if (!circles.current) return;
+    // Get the mouse's position within our world space
+    const world = e.target.view.projection.screenToWorld(e.screen.position);
 
-  EasingUtil.all(false, all, [CircleLayer.attributeNames.center], easing => {
-    easing.setTiming(Math.random() * 1000);
-  });
+    // Move all of our instances to the mouse position but randomly around it
+    // Due to how we configured the CircleLayer, this will animate the circles
+    // to their new destination!
+    circles.current.forEach((circle) => {
+      circle.center = [
+        Math.random() * 400 - 200 + world[0],
+        Math.random() * 400 - 200 + world[1],
+      ];
+    });
+  };
 
-  await wait(2000);
-
-  // Implode!
-  for (let i = 0; i < all.length; ++i) {
-    circle = all[i];
-    circle.center = [100, 100];
-  }
-
-  await wait(2000);
-
-  // Clear
-  providers.circles.clear();
-  // Restart
-  doStuff();
-
-  // See!? Easy fun :)
-}
-
-// We can immediately start doing stuff with our providers even before the
-// rendering pipeline is ready.
-// Notice: ~40 lines of powerful set up then the other 90+ lines are for actually
-// making things happen! And it's easy to understand!
-doStuff();
-// As seen here! We are NOW making the surface AFTER starting up our data handling!
-// You can even call this BEFORE doStuff()
-// with the same effect! This illustrates a VERY detached architecture which
-// eliminates almost all dependencies that like to tangle complicated rendering
-// with complicated data processing.
-makeSurface();
+  return (
+    {/** Create our new surface for rendering. It will expand to fit it's container */}
+    <SurfaceJSX
+      {/** Receive the ready signal via our PromiseResolver */}
+      ready={ready.current}
+      {/** Apply the options to apply to the rendering canvas */}
+      options={{
+        alpha: true,
+        antialias: true,
+      }}
+    >
+      {/**
+        * This hooks into the Surfaces event system. Here we wire into the
+        * handleMosueDown .
+        */}
+      <SimpleEventHandlerJSX handlers={{ handleMouseDown }} />
+      {/**
+        * Make our View to render our scene to the entire screen!
+        * Normally this is wrapped in a SceneJSX BUT our SurfaceJSX provides a
+        * default SceneJSX it places our top level ViewJSX and LayerJSX into for
+        * a simple convenience.
+        */}
+      <ViewJSX
+        name="main"
+        {/** Use a View2D to comply with the deltav 2D system */}
+        type={View2D}
+        config={{
+          {/** We use the camera we made */}
+          camera: camera.current,
+          background: [0, 0, 0, 1],
+          clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+        }}
+      />
+      {/** Make our layer to render the CircleInstances */}
+      <LayerJSX
+        {/** The Layer should render the circle instances with a CircleLayer */}
+        type={CircleLayer}
+        {/** Hand our provider to the layer so the layer can react to changes */}
+        providerRef={circleProvider}
+        {/** Configure the layer via the CircleLayer props */}
+        config={{
+          /** This layer let's us specify which properties we want to animate! */
+          animate: {
+            /**
+             * Specify the animation function for animating changes to the
+             * "center" property on our circle instances.
+             */
+            center: AutoEasingMethod.easeInOutCubic(2000),
+          },
+        }}
+      />
+    </SurfaceJSX>
+  );
+});
 ```

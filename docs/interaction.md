@@ -1,7 +1,8 @@
 # Interactions
 
-Our pretty rendering is pretty useless if the user can't poke around it and see changes or query
-for more info. It's just a glorified picture until you can interact with it.
+Our pretty rendering is pretty useless if the user can't poke around it and see
+changes or query for more info. It's just a glorified picture until you can
+interact with it.
 
 So what does deltav do for you in terms of interaction?
 
@@ -17,8 +18,8 @@ We have a couple of items to help you get rolling:
 
 ## Layer Mouse Events and Picking
 
-The type of interaction you will mostly be interested in, is how to interact with Instances. Our
-layers provide an easy access into that:
+The type of interaction you will mostly be interested in, is how to interact
+with Instances. Our layers provide an easy access into that:
 
 ```javascript
 import { BasicSurface, BasicCamera2DController, Camera2D } from 'deltav';
@@ -77,7 +78,7 @@ void main() {
 When you look at setting up our BasicSurface you may have noticed a section that was fairly ignored:
 
 ```javascript
-eventManagers: () => ({})
+eventManagers: () => ({});
 ```
 
 What are these beasts? Well, simply put, they are the receivers of all user input. They are piped
@@ -87,9 +88,9 @@ EventManager to react to this information however it so chooses.
 For example! We made you a REALLY nice manager `BasicCamera2DController`!
 
 ```javascript
-import { BasicSurface, BasicCamera2DController, Camera2D } from 'deltav';
+import { BasicSurface, BasicCamera2DController, Camera2D } from "deltav";
 
-const el = document.createElement('div'); // <- Style this bad boy to make it fill up some space
+const el = document.createElement("div"); // <- Style this bad boy to make it fill up some space
 document.body.appendChild(el);
 
 const container = new BasicSurface({
@@ -101,8 +102,8 @@ const container = new BasicSurface({
   eventManagers: (cameras) => ({
     controller: new BasicCamera2DController({
       camera: cameras.main,
-      startView: "main.main"
-    })
+      startView: "main.main",
+    }),
   }),
   scenes: (_resources, _providers, cameras) => ({
     main: {
@@ -110,17 +111,17 @@ const container = new BasicSurface({
         main: createView(View2D, {
           camera: cameras.main,
           background: [0, 0, 0, 1],
-          clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH]
-        })
+          clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+        }),
       },
       layers: {
         circles: createLayer(CircleLayer, {
           // Give the layer the circles provider as it's data source
           data: providers.circles,
         }),
-      }
-    }
-  })
+      },
+    },
+  }),
 });
 ```
 
@@ -133,6 +134,7 @@ There's a couple of ways to customize event handling: either extend SimpleEventH
 SimpleEventHandler:
 
 extend
+
 ```javascript
 class MyController extends SimpleEventHandler {
   handleMouseDown(e: IMouseInteraction) {
@@ -142,6 +144,7 @@ class MyController extends SimpleEventHandler {
 ```
 
 or use directly
+
 ```javascript
 import { BasicSurface, SimpleEventHandler } from 'deltav';
 

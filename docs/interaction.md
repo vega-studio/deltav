@@ -274,7 +274,8 @@ correctly can make a major difference in performance.
 
 To further see why color picking is SO involved, let's look at how to make the
 rendering the picking buffer can be reduced to a buffer a QUARTER the size of
-the rest of the rendering.
+the rest of the rendering. This can improve your target rendering experience
+significantly.
 
 ```tsx
 <SurfaceJSX>
@@ -316,5 +317,59 @@ the rest of the rendering.
       info.instances;
     }}
   }}/>
+</SurfaceJSX>
+```
+
+Here's an example of an MRT strategy in rendering the picking color.
+
+```tsx
+<SurfaceJSX>
+  <TextureJSX
+    name="pick"
+    width={TextureSize.SCREEN}
+    height={TextureSize.SCREEN}
+    textureSettings={{ generateMipMaps: false }}
+  />
+  <TextureJSX
+    name="color"
+    width={TextureSize.SCREEN}
+    height={TextureSize.SCREEN}
+    textureSettings={{ generateMipMaps: false }}
+  />
+  {CommandsJSX({
+    name: "decode-picking",
+    callback: (surface) => {
+      surface.commands.decodePicking();
+    },
+  })}
+  <ViewJSX
+    name="main"
+    type={View2D}
+    config={{
+      camera: camera.current,
+      clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+    }}
+    // Output to color and pick buffers simultaneously
+    output={{
+      buffers: {
+        [FragmentOutputType.PICKING]: "pick",
+        [FragmentOutputType.COLOR]: "color",
+      },
+      depth: true,
+    }}
+  />
+  <LayerJSX
+    type={CircleLayer}
+    config={{
+      picking: PickType.Single,
+      onMouseOver: (info) => {
+        info.instances;
+      },
+    }}
+  />
+  {DrawJSX({
+    name: "draw",
+    input: "color",
+  })}
 </SurfaceJSX>
 ```

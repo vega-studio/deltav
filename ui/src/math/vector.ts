@@ -759,7 +759,7 @@ export function vec3(
  */
 export function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
   out = out || [0, 0, 0];
-  return normalize3(cross3(cross3(forward, up, out), forward, out), out);
+  return normalize3(cross3(cross3(forward, up), forward), out);
 }
 
 /**
@@ -768,7 +768,7 @@ export function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  */
 export function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
   out = out || [0, 0, 0];
-  return normalize3(cross3(forward, up, out), out);
+  return normalize3(cross3(forward, up), out);
 }
 
 /**
@@ -777,7 +777,7 @@ export function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  */
 export function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
   out = out || [0, 0, 0];
-  return normalize3(cross3(up, forward, out), out);
+  return normalize3(cross3(up, forward), out);
 }
 
 /**
@@ -786,7 +786,7 @@ export function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  */
 export function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
   out = out || [0, 0, 0];
-  return normalize3(cross3(forward, cross3(forward, up, out), out), out);
+  return normalize3(cross3(forward, cross3(forward, up)), out);
 }
 
 // Vec4 methods

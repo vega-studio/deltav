@@ -45,7 +45,7 @@ export class Employee {
   // Stores the number of tasks it takes to complete something.
   taskDuration: number = 0;
   // How fast this employee is at completing tasks
-  speed: number = Math.random() * 1000 + 1000;
+  speed: number = Math.random() * 500 + 500;
 
   // Graphic of this employee
   instance: RectangleInstance;

@@ -1066,6 +1066,9 @@ export function vec4(
   return out as Vec4;
 }
 
+/**
+ * Generates a Vec4/Color (rgb) from a hex value with 3 components 0xFFFFFF
+ */
 export function color4FromHex3(hex: number, out?: Vec4) {
   out = out || [0, 0, 0, 0];
 
@@ -1078,6 +1081,9 @@ export function color4FromHex3(hex: number, out?: Vec4) {
   );
 }
 
+/**
+ * Generates a Vec4/Color (rgba) from a hex value with 4 components 0xFFFFFFFF
+ */
 export function color4FromHex4(hex: number, out?: Vec4) {
   out = out || [0, 0, 0, 0];
 

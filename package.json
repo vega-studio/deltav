@@ -25,7 +25,8 @@
     "ts": "devops ts",
     "url": "devops url",
     "template": "devops template",
-    "package": "devops package"
+    "package": "devops package",
+    "postinstall": "node ./node_modules/fallback-dependencies/post-install.cjs"
   },
   "devDependencies": {
     "@types/assert": "1.4.2",
@@ -35,12 +36,15 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "devops": "git+ssh://github.com/vega-studio/node-devops.git#2.20.3",
     "preact": "10.18.1",
-    "rand-seed": "1.0.2"
+    "rand-seed": "1.0.2",
+    "fallback-dependencies": "git+ssh://github.com/vega-studio/fallback-dependencies.git#1.0.25"
   },
-  "greenkeeper": {
-    "ignore": []
+  "fallbackDependencies": {
+    "devops": [
+      "git+ssh://github.com/vega-studio/node-devops.git#5.2.5",
+      "git+ssh://github.com/vega-studio/node-devops-public.git#5.2.5"
+    ]
   },
   "eslintIgnore": [
     "**/*.min.js"

@@ -790,7 +790,6 @@ export function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
 }
 
 // Vec4 methods
-
 export function apply4(
   v: Vec4Compat | undefined,
   v0: number,

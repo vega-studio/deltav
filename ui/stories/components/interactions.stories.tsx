@@ -597,7 +597,7 @@ export const Complex_Color_Picking_Scene: StoryFn = () => {
           },
 
           onMouseOut: (info) => {
-            info.instances.forEach((i) => {
+            info.instances.forEach((_i) => {
               // colorizeTile(i);
             });
           },

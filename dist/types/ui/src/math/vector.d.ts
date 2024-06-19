@@ -259,7 +259,13 @@ export declare function max4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Comp
 export declare function min4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function normalize4(left: Vec4Compat, out?: Vec4Compat): Vec4;
 export declare function vec4(values: number[] | number, ...args: (number | number[])[]): Vec4;
+/**
+ * Generates a Vec4/Color (rgb) from a hex value with 3 components 0xFFFFFF
+ */
 export declare function color4FromHex3(hex: number, out?: Vec4): Vec4;
+/**
+ * Generates a Vec4/Color (rgba) from a hex value with 4 components 0xFFFFFFFF
+ */
 export declare function color4FromHex4(hex: number, out?: Vec4): Vec4;
 export declare function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4;
 export type VecMethods<T extends Vec> = {

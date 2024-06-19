@@ -45,6 +45,8 @@ export interface IPostProcessJSX {
   printShader?: boolean;
   /** Name applied to the scene generated for this */
   name: string;
+  /** Indicates if the effect should not be rendered */
+  preventDraw?: boolean;
 
   /**
    * Executes when the resources are retrieved and applied to this process. This
@@ -87,6 +89,7 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
           fs: props.shader,
           uniforms: props.uniforms,
           materialOptions: props.material,
+          preventDraw: props.preventDraw,
         }}
       />
     </SceneJSX>

@@ -129,50 +129,54 @@ export const Editor: StoryFn = (() => {
    */
   function placeEdge(line?: LineSegments | null) {
     if (!line) return;
+
     // Get all of the intersections with our current edge
     const intersectionData = LineSweep.lineSweepIntersectionWith(
       new Set([line]),
       Array.from(allLines.current)
     );
 
-    // Get the interesections relative to the current edge
-    const intersections = LineSegments.filterIntersections(
-      line,
-      intersectionData
-    );
+    // Get all intersection data relative to each edge. This is a process
+    // intensive operation, but it makes handling it here in code a LOT easier.
+    // Plus for placing a single edge we can reasonably assume there won't be an
+    // over abundance of intersecting happening.
+    const allIntersections = LineSegments.mapIntersections(intersectionData);
+    // No intersections means we do nothing
+    if (allIntersections.length <= 0) return;
 
-    // No intersections means we do nothing to the line
-    if (intersections.length <= 0) return;
+    for (let i = 0, iMax = allIntersections.length; i < iMax; ++i) {
+      const { line: crossedLine, intersections } = allIntersections[i];
 
-    const splitEdgeAt = intersections
-      .map((i) => i.self_t)
-      .filter((t) => t > 0.001 && t < 0.999);
+      const splitEdgeAt = intersections
+        .map((i) => i.self_t)
+        .filter((t) => t > 0.001 && t < 0.999);
 
-    if (splitEdgeAt.length <= 0) return;
+      if (splitEdgeAt.length <= 0) return;
 
-    const newEdges = line.split(splitEdgeAt);
+      const newEdges = crossedLine.split(splitEdgeAt);
 
-    // Get the correct provider for the edge type
-    let provider: InstanceProvider<Instance> | null = null;
+      // Get the correct provider for the edge type
+      let provider: InstanceProvider<Instance> | null = null;
 
-    switch (line.type) {
-      case EdgeType.BEZIER:
-        provider = bezierProvider.current;
-        break;
-      case EdgeType.BEZIER2:
-        provider = bezier2Provider.current;
-        break;
-      case EdgeType.LINE:
-        provider = lineProvider.current;
-        break;
-    }
+      switch (crossedLine.type) {
+        case EdgeType.BEZIER:
+          provider = bezierProvider.current;
+          break;
+        case EdgeType.BEZIER2:
+          provider = bezier2Provider.current;
+          break;
+        case EdgeType.LINE:
+          provider = lineProvider.current;
+          break;
+      }
 
-    provider?.remove(line.edge);
-    allLines.current.delete(line);
+      provider?.remove(crossedLine.edge);
+      allLines.current.delete(crossedLine);
 
-    for (const line of newEdges) {
-      allLines.current.add(line);
-      provider?.add(line.edge);
+      for (const newLine of newEdges) {
+        allLines.current.add(newLine);
+        provider?.add(newLine.edge);
+      }
     }
   }
 

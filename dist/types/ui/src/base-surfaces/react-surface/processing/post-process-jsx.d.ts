@@ -42,6 +42,8 @@ export interface IPostProcessJSX {
     printShader?: boolean;
     /** Name applied to the scene generated for this */
     name: string;
+    /** Indicates if the effect should not be rendered */
+    preventDraw?: boolean;
     /**
      * Executes when the resources are retrieved and applied to this process. This
      * is promarily for introspection on the resources to provided feedback via

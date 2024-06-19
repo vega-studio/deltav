@@ -1,0 +1,10 @@
+import { Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from "../ui/src/math/vector";
+export declare function fail1(actual: Vec1Compat, expected: Vec1Compat): string;
+export declare function fail2(actual: Vec2Compat, expected: Vec2Compat): string;
+export declare function fail3(actual: Vec3Compat, expected: Vec3Compat): string;
+export declare function fail4(actual: Vec4Compat, expected: Vec4Compat): string;
+export declare function failArray(actual: number[], expected: number[]): string;
+export declare function fuzzCompare1(v1: Vec1, v2: Vec1): boolean;
+export declare function fuzzCompare2(v1: Vec2, v2: Vec2): boolean;
+export declare function fuzzCompare3(v1: Vec3, v2: Vec3): boolean;
+export declare function fuzzCompare4(v1: Vec4, v2: Vec4): boolean;

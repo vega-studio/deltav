@@ -18,6 +18,9 @@ export interface IRectangleLayerProps<T extends RectangleInstance>
   animate?: {
     color?: IAutoEasingMethod<Vec>;
     location?: IAutoEasingMethod<Vec>;
+    size?: IAutoEasingMethod<Vec>;
+    outline?: IAutoEasingMethod<Vec>;
+    outlineColor?: IAutoEasingMethod<Vec>;
   };
   /** Scale factor determining the scale size of the rectangle */
   scaleFactor?(): number;
@@ -45,6 +48,8 @@ export class RectangleLayer<
     scale: "scale",
     scaling: "scaling",
     size: "size",
+    outline: "outline",
+    outlineColor: "outlineColor",
   };
 
   /**
@@ -87,6 +92,7 @@ export class RectangleLayer<
           update: (o) => [o.anchor.x || 0, o.anchor.y || 0],
         },
         {
+          easing: animate.size,
           name: RectangleLayer.attributeNames.size,
           size: InstanceAttributeSize.TWO,
           update: (o) => o.size,
@@ -116,6 +122,18 @@ export class RectangleLayer<
           name: RectangleLayer.attributeNames.maxScale,
           size: InstanceAttributeSize.ONE,
           update: (o) => [o.maxScale],
+        },
+        {
+          easing: animate.outline,
+          name: RectangleLayer.attributeNames.outline,
+          size: InstanceAttributeSize.ONE,
+          update: (o) => [o.outline],
+        },
+        {
+          easing: animate.outlineColor,
+          name: RectangleLayer.attributeNames.outlineColor,
+          size: InstanceAttributeSize.FOUR,
+          update: (o) => o.outlineColor,
         },
       ],
       uniforms: [

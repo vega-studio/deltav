@@ -1,6 +1,6 @@
 /// <reference types="react" />
-import { ILayerMaterialOptions } from "../../../../types";
 import { IView2DProps } from "../../../../2d";
+import { ILayerMaterialOptions } from "../../../../types";
 import type { IPartialViewJSX } from "../../scene/view-jsx";
 export interface IDrawJSX {
     /**

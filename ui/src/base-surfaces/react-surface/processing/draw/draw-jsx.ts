@@ -1,10 +1,8 @@
-import Debug from "debug";
+import { Camera2D, IView2DProps } from "../../../../2d";
+import { emitOnce } from "../../../../util/emit-once";
 import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
-import { IView2DProps } from "../../../../2d";
 import { PostProcessJSX } from "../post-process-jsx";
 import type { IPartialViewJSX } from "../../scene/view-jsx";
-
-const debug = Debug("performance");
 
 export interface IDrawJSX {
   /**
@@ -55,6 +53,10 @@ export function DrawJSX(props: IDrawJSX) {
           }
         : void 0,
       ...props.view,
+      config: {
+        camera: new Camera2D(),
+        ...props.view?.config,
+      },
     },
     buffers: { color: input },
     shader:
@@ -88,14 +90,17 @@ export function DrawJSX(props: IDrawJSX) {
       Object.values(resources).forEach((resource) => {
         if (
           !resource.textureSettings ||
-          resource.textureSettings.generateMipMaps
+          resource.textureSettings.generateMipMaps === void 0 ||
+          resource.textureSettings.generateMipMaps === true
         ) {
-          debug(
-            "POSSIBLE ERROR: for the draw post effect,",
-            "it is a common mistale to leave mipmaps enabled on the input texture.",
-            "Often the mipmaps are not available in the target resource and thus",
-            "you will get a blank output when rendering in certain scenarios."
-          );
+          emitOnce("drawjsx-resource-error", () => {
+            console.warn(
+              "POSSIBLE ERROR: for the draw post effect,",
+              "it is a common mistake to leave mipmaps enabled on the input texture.",
+              "Often the mipmaps are not available in the target resource and thus",
+              "you will get a blank output when rendering in certain scenarios."
+            );
+          });
         }
       });
     },

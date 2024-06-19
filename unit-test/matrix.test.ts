@@ -2290,42 +2290,42 @@ describe("Matrix Library", () => {
     });
 
     it("Should shear Vec4 parallel to the x-axis by 45 degrees", () => {
-      const m = shearX4x4(45 * TO_RADIANS, 0);
+      const m = shearX4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [1, 1, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the x-axis by 45 degrees", () => {
-      const m = shearX4x4(45 * TO_RADIANS, 0);
+      const m = shearX4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [1, 0, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by 45 degrees", () => {
-      const m = shearY4x4(45 * TO_RADIANS, 0);
+      const m = shearY4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, 1, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by 45 degrees", () => {
-      const m = shearY4x4(45 * TO_RADIANS, 0);
+      const m = shearY4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [0, 1, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by 45 degrees", () => {
-      const m = shearZ4x4(45 * TO_RADIANS, 0);
+      const m = shearZ4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, 0, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by 45 degrees", () => {
-      const m = shearZ4x4(45 * TO_RADIANS, 0);
+      const m = shearZ4x4(45 * TO_RADIANS, 45 * TO_RADIANS);
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [0, 1, 1, 0]);
@@ -2364,42 +2364,60 @@ describe("Matrix Library", () => {
     });
 
     it("Should shear Vec4 parallel to the x-axis by 63.4349488229 degrees", () => {
-      const m = shearX4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearX4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [2, 1, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the x-axis by 63.4349488229 degrees", () => {
-      const m = shearX4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearX4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [2, 0, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by 63.4349488229 degrees", () => {
-      const m = shearY4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearY4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, 2, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by 63.4349488229 degrees", () => {
-      const m = shearY4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearY4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [0, 2, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by 63.4349488229 degrees", () => {
-      const m = shearZ4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearZ4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, 0, 2, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by 63.4349488229 degrees", () => {
-      const m = shearZ4x4(63.4349488229 * TO_RADIANS, 0);
+      const m = shearZ4x4(
+        63.4349488229 * TO_RADIANS,
+        63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [0, 1, 2, 0]);
@@ -2438,42 +2456,60 @@ describe("Matrix Library", () => {
     });
 
     it("Should shear Vec4 parallel to the x-axis by -63.4349488229 degrees", () => {
-      const m = shearX4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearX4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [-2, 1, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the x-axis by -63.4349488229 degrees", () => {
-      const m = shearX4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearX4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [-2, 0, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by -63.4349488229 degrees", () => {
-      const m = shearY4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearY4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, -2, 0, 0]);
     });
 
     it("Should shear Vec4 parallel to the y-axis by -63.4349488229 degrees", () => {
-      const m = shearY4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearY4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 0, 1, 0];
 
       assert4(transform4(m, v), [0, -2, 1, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by -63.4349488229 degrees", () => {
-      const m = shearZ4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearZ4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [1, 0, 0, 0];
 
       assert4(transform4(m, v), [1, 0, -2, 0]);
     });
 
     it("Should shear Vec4 parallel to the z-axis by -63.4349488229 degrees", () => {
-      const m = shearZ4x4(-63.4349488229 * TO_RADIANS, 0);
+      const m = shearZ4x4(
+        -63.4349488229 * TO_RADIANS,
+        -63.4349488229 * TO_RADIANS
+      );
       const v: Vec4 = [0, 1, 0, 0];
 
       assert4(transform4(m, v), [0, 1, -2, 0]);

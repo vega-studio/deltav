@@ -1,3 +1,12 @@
+## 4.2.3
+
+## Fixed
+
+- [`FIXED`]: Updated to latest devops and fallback system to allow public install and use of the source code base
+- [`FIXED`]: Made the project developer friendly for public contributors
+- [`FIXED`]: Fixed some tests for directional vector generation and fixed the shear transform test assumptions
+- [`FIXED`]: Updated docs to new SurfaceJSX is done
+
 ## 4.2.2
 
 ## Fixed

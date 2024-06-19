@@ -11,6 +11,7 @@ import {
   IShaderInitialization,
   IUniform,
   IVertexAttribute,
+  ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
 } from "../../../types";
@@ -175,6 +176,7 @@ export class CircleLayer<
         {
           name: "layerOpacity",
           size: UniformSize.ONE,
+          shaderInjection: ShaderInjectionTarget.ALL,
           update: (_uniform: IUniform) => [opacity()],
         },
       ],

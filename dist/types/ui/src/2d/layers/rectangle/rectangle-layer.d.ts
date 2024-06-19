@@ -6,6 +6,9 @@ export interface IRectangleLayerProps<T extends RectangleInstance> extends ILaye
     animate?: {
         color?: IAutoEasingMethod<Vec>;
         location?: IAutoEasingMethod<Vec>;
+        size?: IAutoEasingMethod<Vec>;
+        outline?: IAutoEasingMethod<Vec>;
+        outlineColor?: IAutoEasingMethod<Vec>;
     };
     /** Scale factor determining the scale size of the rectangle */
     scaleFactor?(): number;
@@ -25,6 +28,8 @@ export declare class RectangleLayer<T extends RectangleInstance, U extends IRect
         scale: string;
         scaling: string;
         size: string;
+        outline: string;
+        outlineColor: string;
     };
     /**
      * Define our shader and it's inputs

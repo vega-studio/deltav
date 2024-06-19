@@ -42,7 +42,7 @@
   },
   "fallbackDependencies": {
     "devops": [
-      "git+ssh://github.com/vega-studio/node-devops.git#5.2.6BAK",
+      "git+ssh://github.com/vega-studio/node-devops.git#5.2.6",
       "git+ssh://github.com/vega-studio/node-devops-public.git#5.2.6"
     ]
   },

@@ -1,24 +1,24 @@
 import React from "react";
 import {
   AutoEasingMethod,
+  BasicCamera2DControllerJSX,
   Camera2D,
   CircleInstance,
   CircleLayer,
   ClearFlags,
   IMouseInteraction,
   InstanceProvider,
+  LayerJSX,
   PromiseResolver,
   SceneJSX,
+  SimpleEventHandlerJSX,
   Surface,
+  SurfaceJSX,
   View2D,
+  ViewJSX,
 } from "../../src";
-import { BasicCamera2DControllerJSX } from "../../src/base-surfaces/react-surface/event-managers/basic-camera-2d-controller-jsx";
-import { LayerJSX } from "../../src/base-surfaces/react-surface/scene/layer-jsx";
-import { SimpleEventHandlerJSX } from "../../src/base-surfaces/react-surface/event-managers/simple-event-handler-jsx";
 import { StoryFn } from "@storybook/react";
-import { SurfaceJSX } from "../../src/base-surfaces/react-surface/surface-jsx";
 import { useLifecycle } from "../../../util/hooks/use-life-cycle";
-import { ViewJSX } from "../../src/base-surfaces/react-surface/scene/view-jsx";
 
 export default {
   title: "Deltav/Instances",

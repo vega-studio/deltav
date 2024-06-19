@@ -724,11 +724,52 @@ export class LineSegments {
         const is1 = o[1] === check;
 
         return {
+          self: check,
           target: is1 ? o[3] : o[1],
           target_t: is1 ? o[4] : o[2],
           self_t: is1 ? o[2] : o[4],
           intersection: o[0],
         };
       });
+  }
+
+  /**
+   * Gathers all lines that are intersected and performs a filterIntersection
+   * relative to that line to give us an easy to work with list of intersection
+   * data.
+   */
+  static mapIntersections(
+    intersections: ReturnType<typeof LineSweep.lineSweepIntersections>
+  ) {
+    const allLines = new Set<LineSegments>();
+    const processLines: LineSegments[] = [];
+    const out: {
+      line: LineSegments;
+      intersections: ReturnType<typeof LineSegments.filterIntersections>;
+    }[] = [];
+
+    for (let i = 0, iMax = intersections.length; i < iMax; ++i) {
+      const intersection = intersections[i];
+      const l1 = intersection[1];
+      const l2 = intersection[3];
+
+      if (!allLines.has(l1)) {
+        allLines.add(l1);
+        processLines.push(l1);
+      }
+
+      if (!allLines.has(l2)) {
+        allLines.add(l2);
+        processLines.push(l2);
+      }
+    }
+
+    for (let i = 0, iMax = processLines.length; i < iMax; ++i) {
+      const line = processLines[i];
+      const filtered = this.filterIntersections(line, intersections);
+      out.push({ line, intersections: filtered });
+    }
+
+    return out;
   }
 }

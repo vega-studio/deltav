@@ -1,1 +1,1 @@
-{"name":"deltav","private":true,"main":"../ui/index.js","types":"../types/ui/index.d.ts","dependencies":{},"repository":{},"scripts":{},"devDependencies":{}}
+{"name":"deltav","private":true,"type":"module","main":"../ui/index.js","types":"../types/ui/index.d.ts","dependencies":{},"repository":{},"scripts":{},"devDependencies":{}}

@@ -89,9 +89,19 @@ export declare class LineSegments {
      * contextualizing the intersection target.
      */
     static filterIntersections(check: LineSegments, intersections: ReturnType<typeof LineSweep.lineSweepIntersections>): {
+        self: LineSegments;
         target: LineSegments;
         target_t: number;
         self_t: number;
         intersection: Vec2;
+    }[];
+    /**
+     * Gathers all lines that are intersected and performs a filterIntersection
+     * relative to that line to give us an easy to work with list of intersection
+     * data.
+     */
+    static mapIntersections(intersections: ReturnType<typeof LineSweep.lineSweepIntersections>): {
+        line: LineSegments;
+        intersections: ReturnType<typeof LineSegments.filterIntersections>;
     }[];
 }

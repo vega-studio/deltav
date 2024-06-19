@@ -1,3 +1,9 @@
+## 4.2.4
+
+## Fixed
+
+- [`FIXED`]: Corrected some migrations to newer devops system
+
 ## 4.2.3
 
 ## Fixed

@@ -1,8 +1,8 @@
 import { BaseShaderIOInjection, ShaderIOHeaderInjectionResult } from "../../shaders/processing/base-shader-io-injection";
-import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
 import { ILayerProps, Layer } from "../layer";
 import { Instance } from "../../instance-provider/instance";
 import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+import type { IIndexBuffer, IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
 export type ShaderIOExpansion<T extends Instance> = {
     /** The additional instance attributes to add to the layer's Shader IO */
     instanceAttributes: IInstanceAttribute<T>[];
@@ -10,6 +10,8 @@ export type ShaderIOExpansion<T extends Instance> = {
     uniforms: IUniform[];
     /** The additional vertex attributes to add to the layer's Shader IO */
     vertexAttributes: IVertexAttribute[];
+    /** Apply an optional index buffer to the Shader IO */
+    indexBuffer?: IIndexBuffer;
 };
 /**
  * When processing attributes, uniforms, etc, it is a common event that special
@@ -30,7 +32,7 @@ export declare abstract class BaseIOExpansion extends BaseShaderIOInjection {
      *
      * NOTE: The inputs should NOT be modified in any way
      */
-    expand<TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(_layer: Layer<TInstance, TProps>, _instanceAttributes: IInstanceAttribute<TInstance>[], _vertexAttributes: IVertexAttribute[], _uniforms: IUniform[]): ShaderIOExpansion<TInstance>;
+    expand<TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(_layer: Layer<TInstance, TProps>, _instanceAttributes: IInstanceAttribute<TInstance>[], _vertexAttributes: IVertexAttribute[], _uniforms: IUniform[], _indexBuffer?: IIndexBuffer): ShaderIOExpansion<TInstance>;
     /**
      * Every expansion object will be given the opportunity to validate the IO
      * presented to it here, thus allowing unique IO configuration types to be
@@ -47,7 +49,7 @@ export declare abstract class BaseIOExpansion extends BaseShaderIOInjection {
      *
      * NOTE: The inputs should NOT be modified in any way
      */
-    validate<TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(_layer: Layer<TInstance, TProps>, _instanceAttributes: IInstanceAttribute<TInstance>[], _vertexAttributes: IVertexAttribute[], _uniforms: IUniform[]): boolean;
+    validate<TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(_layer: Layer<TInstance, TProps>, _instanceAttributes: IInstanceAttribute<TInstance>[], _vertexAttributes: IVertexAttribute[], _uniforms: IUniform[], _indexBuffer?: IIndexBuffer): boolean;
     /**
      * This allows for injection into the header of the shader.
      *

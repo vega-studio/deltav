@@ -17,7 +17,5 @@ export interface IQueuedEventHandlerJSX extends Partial<IEventManagerJSX> {
  */
 export declare const QueuedEventHandlerJSX: {
     (props: IQueuedEventHandlerJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

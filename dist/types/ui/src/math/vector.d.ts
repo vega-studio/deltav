@@ -40,6 +40,14 @@ export type Vec2Compat = Vec2 | Vec3 | Vec4;
 export type Vec3Compat = Vec3 | Vec4;
 /** Compatible types with Vec4 for operations (just not iterating) */
 export type Vec4Compat = Vec4;
+/** Readonly Compatible types with Vec1 for operations (just not iterating) */
+export type ReadonlyVec1Compat = Readonly<Vec1Compat>;
+/** Readonly Compatible types with Vec2 for operations (just not iterating) */
+export type ReadonlyVec2Compat = Readonly<Vec2Compat>;
+/** Readonly Compatible types with Vec3 for operations (just not iterating) */
+export type ReadonlyVec3Compat = Readonly<Vec3Compat>;
+/** Readonly Compatible types with Vec4 for operations (just not iterating) */
+export type ReadonlyVec4Compat = Readonly<Vec4Compat>;
 /** This type defines any possible explicit vector */
 export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 /** This type defines any possible vector */
@@ -81,11 +89,11 @@ export declare function isVec2(val: any): val is Vec2;
 export declare function isVec3(val: any): val is Vec3;
 export declare function isVec4(val: any): val is Vec4;
 export declare function apply1(v: Vec1Compat | undefined, v0: number): Vec1;
-export declare function add1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function ceil1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function compare1(left: Vec1Compat, right: Vec1Compat): boolean;
-export declare function fuzzyCompare1(left: Vec1Compat, right: Vec1Compat, epsilon: number): boolean;
-export declare function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
+export declare function add1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function ceil1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function compare1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat): boolean;
+export declare function fuzzyCompare1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, epsilon: number): boolean;
+export declare function copy1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
 export declare function forward1(): Vec1;
 /**
  * Cross product of 1 dimensional vectors could be easiest to visualize as two
@@ -93,33 +101,33 @@ export declare function forward1(): Vec1;
  * going into the Z direction. Or essentially [0, 0, 0]. Thus for consistency of <vec method><vec component length>()
  * We will take the one dimension inference of this result and provide [0]
  */
-export declare function cross1(_left: Vec1Compat, _right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function divide1(top: Vec1Compat, bottom: Vec1Compat, out?: Vec1Compat): Vec1;
+export declare function cross1(_left: ReadonlyVec1Compat, _right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function divide1(top: ReadonlyVec1Compat, bottom: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
 export declare function empty1(out?: Vec1): Vec1;
-export declare function flatten1(list: Vec1Compat[], out?: number[]): number[];
-export declare function floor1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function inverse1(vec: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function scale1(vec: Vec1Compat, scale: number, out?: Vec1Compat): Vec1;
-export declare function subtract1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function max1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function min1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function multiply1(left: Vec1Compat, right: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function normalize1(_left: Vec1Compat, out?: Vec1Compat): Vec1;
-export declare function dot1(left: Vec1Compat, right: Vec1Compat): number;
+export declare function flatten1(list: ReadonlyVec1Compat[], out?: number[]): number[];
+export declare function floor1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function inverse1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function scale1(vec: ReadonlyVec1Compat, scale: number, out?: Vec1Compat): Vec1;
+export declare function subtract1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function max1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function min1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function multiply1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function normalize1(_left: ReadonlyVec1Compat, out?: Vec1Compat): Vec1;
+export declare function dot1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat): number;
 /**
  * This is a sort of modified dot production where the components are subtracted
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export declare function tod1(left: Vec1Compat, right: Vec1Compat): number;
-export declare function linear1(start: Vec1Compat, end: Vec1Compat, t: number, out?: Vec1Compat): Vec1;
-export declare function length1(start: Vec1Compat): number;
+export declare function tod1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat): number;
+export declare function linear1(start: ReadonlyVec1Compat, end: ReadonlyVec1Compat, t: number, out?: Vec1Compat): Vec1;
+export declare function length1(start: ReadonlyVec1Compat): number;
 export declare function length1Components(x: number): number;
-export declare function vec1(values: number[] | number, ...args: (number | number[])[]): Vec1;
+export declare function vec1(values: Readonly<number[] | number>, ...args: Readonly<(number | number[])[]>): Vec1;
 export declare function apply2(v: Vec2Compat | undefined, v0: number, v1: number): Vec2;
-export declare function add2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function ceil2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function copy2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
+export declare function add2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function ceil2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function copy2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
 export declare function forward2(out?: Vec2Compat): Vec2;
 /**
  * Cross product of a 2D vector would result in [0, 0, <magnitude>] within the
@@ -128,27 +136,27 @@ export declare function forward2(out?: Vec2Compat): Vec2;
  * product [0, 0]. In order to get the results of the actual 2D vectors in a 3D
  * world, you must use cross3() to retrieve the Z result.
  */
-export declare function cross2(_left: Vec2Compat, _right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function compare2(left: Vec2Compat, right: Vec2Compat): boolean;
-export declare function fuzzyCompare2(left: Vec2Compat, right: Vec2Compat, epsilon: number): boolean;
-export declare function divide2(top: Vec2Compat, bottom: Vec2Compat, out?: Vec2Compat): Vec2;
+export declare function cross2(_left: ReadonlyVec2Compat, _right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function compare2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat): boolean;
+export declare function fuzzyCompare2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, epsilon: number): boolean;
+export declare function divide2(top: ReadonlyVec2Compat, bottom: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
 export declare function empty2(out?: Vec2): Vec2;
-export declare function flatten2(list: Vec2Compat[], out?: number[]): number[];
-export declare function floor2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function inverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function max2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function min2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function scale2(left: Vec2Compat, scale: number, out?: Vec2Compat): Vec2;
-export declare function subtract2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function multiply2(left: Vec2Compat, right: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function normalize2(left: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function dot2(left: Vec2Compat, right: Vec2Compat): number;
+export declare function flatten2(list: ReadonlyVec2Compat[], out?: number[]): number[];
+export declare function floor2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function inverse2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function max2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function min2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function scale2(left: ReadonlyVec2Compat, scale: number, out?: Vec2Compat): Vec2;
+export declare function subtract2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function multiply2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function normalize2(left: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function dot2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat): number;
 /**
  * This is a sort of modified dot production where the components are subtracted
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export declare function tod2(left: Vec2Compat, right: Vec2Compat): number;
+export declare function tod2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat): number;
 /**
  * This is a sort of modified dot production where the components are subtracted
  * together instead of added together AND the components are flipped on one of
@@ -156,108 +164,108 @@ export declare function tod2(left: Vec2Compat, right: Vec2Compat): number;
  *
  * x1 * y2 - y1 * x2
  */
-export declare function tod_flip2(left: Vec2Compat, right: Vec2Compat): number;
+export declare function tod_flip2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat): number;
 /**
  * Swaps component direction [x, y] -> [y, x]
  */
-export declare function reverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2;
-export declare function linear2(start: Vec2Compat, end: Vec2Compat, t: number, out?: Vec2Compat): Vec2;
-export declare function length2(start: Vec2Compat): number;
+export declare function reverse2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
+export declare function linear2(start: ReadonlyVec2Compat, end: ReadonlyVec2Compat, t: number, out?: Vec2Compat): Vec2;
+export declare function length2(start: ReadonlyVec2Compat): number;
 export declare function length2Components(x: number, y: number): number;
 export declare function vec2(values: number[] | number, ...args: (number | number[])[]): Vec2;
 export declare function apply3(v: Vec3Compat | undefined, v0: number, v1: number, v2: number): Vec3;
-export declare function add3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function ceil3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function copy3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function compare3(left: Vec3Compat, right: Vec3Compat): boolean;
-export declare function fuzzyCompare3(left: Vec3Compat, right: Vec3Compat, epsilon: number): boolean;
+export declare function add3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function ceil3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function copy3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function compare3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat): boolean;
+export declare function fuzzyCompare3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, epsilon: number): boolean;
 export declare function forward3(out?: Vec3Compat): Vec3;
-export declare function cross3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function divide3(top: Vec3Compat, bottom: Vec3Compat, out?: Vec3Compat): Vec3;
+export declare function cross3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function divide3(top: ReadonlyVec3Compat, bottom: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
 export declare function empty3(out?: Vec3): Vec3;
-export declare function flatten3(list: Vec3Compat[], out?: number[]): number[];
-export declare function floor3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function inverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function scale3(left: Vec3Compat, scale: number, out?: Vec3Compat): Vec3;
-export declare function subtract3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function multiply3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function linear3(start: Vec3Compat, end: Vec3Compat, t: number, out?: Vec3Compat): Vec3;
-export declare function length3(start: Vec3Compat): number;
+export declare function flatten3(list: ReadonlyVec3Compat[], out?: number[]): number[];
+export declare function floor3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function inverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function scale3(left: ReadonlyVec3Compat, scale: number, out?: Vec3Compat): Vec3;
+export declare function subtract3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function multiply3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function linear3(start: ReadonlyVec3Compat, end: ReadonlyVec3Compat, t: number, out?: Vec3Compat): Vec3;
+export declare function length3(start: ReadonlyVec3Compat): number;
 export declare function length3Components(x: number, y: number, z: number): number;
-export declare function max3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function min3(left: Vec3Compat, right: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function dot3(left: Vec3Compat, right: Vec3Compat): number;
+export declare function max3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function min3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function normalize3(left: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function dot3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat): number;
 /**
  * This is a sort of modified dot production where the components are subtracted
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export declare function tod3(left: Vec3Compat, right: Vec3Compat): number;
+export declare function tod3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat): number;
 /**
  * Swaps component direction [x, y, z] -> [z, y, x]
  */
-export declare function reverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3;
-export declare function vec3(values: number[] | number, ...args: (number | number[])[]): Vec3;
+export declare function reverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
+export declare function vec3(values: Readonly<number[] | number>, ...args: Readonly<(number | number[])[]>): Vec3;
 /**
  * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
  * the forward vector)
  */
-export declare function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
+export declare function up3(forward: ReadonlyVec3Compat, up: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export declare function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
+export declare function right3(forward: ReadonlyVec3Compat, up: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export declare function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
+export declare function left3(forward: ReadonlyVec3Compat, up: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
 /**
  * Produces a directional vector that is straight down from the provided reference vectors (90 degress declined from
  * the forward vector)
  */
-export declare function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat): Vec3;
+export declare function down3(forward: ReadonlyVec3Compat, up: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
 export declare function apply4(v: Vec4Compat | undefined, v0: number, v1: number, v2: number, v3: number): Vec4;
-export declare function add4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
-export declare function add4by3(left: Vec4, right: Vec3Compat, out?: Vec4Compat): Vec4;
-export declare function ceil4(vec: Vec4Compat, out?: Vec4Compat): Vec4;
-export declare function copy4(vec: Vec4, out?: Vec4Compat): Vec4;
-export declare function compare4(left: Vec4Compat, right: Vec4Compat): boolean;
-export declare function fuzzyCompare4(left: Vec4Compat, right: Vec4Compat, epsilon: number): boolean;
+export declare function add4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function add4by3(left: ReadonlyVec4Compat, right: ReadonlyVec3Compat, out?: Vec4Compat): Vec4;
+export declare function ceil4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function copy4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function compare4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat): boolean;
+export declare function fuzzyCompare4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, epsilon: number): boolean;
 export declare function forward4(out?: Vec4Compat): Vec4;
 /**
  * 4D cross product? Lots of issues here. If you need a proper cross product for
  * 3D, please use cross3. What this method should do is up for debate for now
  * and will return a unit 4D vector.
  */
-export declare function cross4(_left: Vec4, _right: Vec4, out?: Vec4Compat): Vec4;
-export declare function divide4(top: Vec4Compat, bottom: Vec4Compat, out?: Vec4Compat): Vec4;
+export declare function cross4(_left: ReadonlyVec4Compat, _right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function divide4(top: ReadonlyVec4Compat, bottom: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
 export declare function empty4(out?: Vec4): Vec4;
-export declare function flatten4(list: Vec4Compat[], out?: number[]): number[];
-export declare function floor4(vec: Vec4Compat, out?: Vec4Compat): Vec4;
-export declare function inverse4(vec: Vec4, out?: Vec4Compat): Vec4;
-export declare function scale4(left: Vec4, scale: number, out?: Vec4Compat): Vec4;
-export declare function subtract4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
-export declare function multiply4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4;
-export declare function dot4(left: Vec4, right: Vec4): number;
+export declare function flatten4(list: ReadonlyVec4Compat[], out?: number[]): number[];
+export declare function floor4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function inverse4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function scale4(left: ReadonlyVec4Compat, scale: number, out?: Vec4Compat): Vec4;
+export declare function subtract4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function multiply4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function dot4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat): number;
 /**
  * This is a sort of modified dot production where the components are subtracted
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export declare function tod4(left: Vec4, right: Vec4): number;
+export declare function tod4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat): number;
 /**
  * Swaps component direction [x, y, z] -> [z, y, x]
  */
-export declare function reverse4(vec: Vec4Compat, out?: Vec4Compat): Vec4;
+export declare function reverse4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
 export declare function linear4(start: Vec4, end: Vec4, t: number, out?: Vec4Compat): Vec4;
-export declare function length4(start: Vec4): number;
+export declare function length4(start: ReadonlyVec4Compat): number;
 export declare function length4Components(x: number, y: number, z: number, w: number): number;
-export declare function max4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Compat): Vec4;
-export declare function min4(left: Vec4Compat, right: Vec4Compat, out?: Vec4Compat): Vec4;
-export declare function normalize4(left: Vec4Compat, out?: Vec4Compat): Vec4;
+export declare function max4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function min4(left: ReadonlyVec4Compat, right: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
+export declare function normalize4(left: ReadonlyVec4Compat, out?: Vec4Compat): Vec4;
 export declare function vec4(values: number[] | number, ...args: (number | number[])[]): Vec4;
 /**
  * Generates a Vec4/Color (rgb) from a hex value with 3 components 0xFFFFFF
@@ -297,7 +305,7 @@ export declare const vec2Methods: VecMethods<Vec2>;
 export declare const vec3Methods: VecMethods<Vec3>;
 export declare const vec4Methods: VecMethods<Vec4>;
 export declare function VecMath<T extends IVec>(vec: T): VecMethods<T>;
-export declare function toString1(v: Vec1Compat): string;
-export declare function toString2(v: Vec2Compat): string;
-export declare function toString3(v: Vec3Compat): string;
-export declare function toString4(v: Vec4Compat): string;
+export declare function toString1(v: ReadonlyVec1Compat): string;
+export declare function toString2(v: ReadonlyVec2Compat): string;
+export declare function toString3(v: ReadonlyVec3Compat): string;
+export declare function toString4(v: ReadonlyVec4Compat): string;

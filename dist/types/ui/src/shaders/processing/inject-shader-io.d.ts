@@ -7,7 +7,7 @@
  */
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { BaseIOSorting } from "./base-io-sorting";
-import { IInstanceAttribute, IShaderInitialization, IUniformInternal, IVertexAttributeInternal } from "../../types";
+import { type IIndexBufferInternal, IInstanceAttribute, IShaderInitialization, IUniformInternal, IVertexAttributeInternal } from "../../types";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { Instance } from "../../instance-provider/instance";
 import { ProcessShaderImportResults } from "./shader-processor";
@@ -28,4 +28,5 @@ export declare function injectShaderIO<TInstance extends Instance = Instance, TP
     instanceAttributes: IInstanceAttribute<Instance>[];
     uniforms: IUniformInternal[];
     vertexAttributes: IVertexAttributeInternal[];
+    indexBuffer: IIndexBufferInternal | undefined;
 };

@@ -4,14 +4,15 @@ import { ILayerProps, Layer } from "../../layer";
 import { IMaterialUniform, MaterialUniformType } from "../../../gl/types";
 import { Instance } from "../../../instance-provider";
 import { LayerScene } from "../../layer-scene";
-import { Vec2 } from "../../../math";
 export interface IUniformBufferLocation extends IBufferLocation {
     /** This is the index of the instance as it appears in the buffer */
     instanceIndex: number;
     /** This is the instance data uniform */
     buffer: IMaterialUniform<MaterialUniformType.VEC4_ARRAY>;
-    /** This is the instance data range within the instanceData uniform */
-    range: Vec2;
+    /** This is the instance data range start within the instanceData uniform */
+    start: number;
+    /** This is the instance data range end within the instanceData uniform */
+    end: number;
 }
 /**
  * Typeguard for uniform buffer locations

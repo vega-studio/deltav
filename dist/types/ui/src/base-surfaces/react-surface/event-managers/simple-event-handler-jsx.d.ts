@@ -10,7 +10,5 @@ export interface ISimpleEventHandlerJSX extends Partial<IEventManagerJSX> {
  */
 export declare const SimpleEventHandlerJSX: {
     (props: ISimpleEventHandlerJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

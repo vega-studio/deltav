@@ -15,7 +15,5 @@ export interface ISceneJSX extends Partial<ISceneBaseJSX> {
  */
 export declare const SceneJSX: {
     (props: ISceneJSX): React.JSX.Element | undefined;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

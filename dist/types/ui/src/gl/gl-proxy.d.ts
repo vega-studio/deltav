@@ -7,6 +7,7 @@ import { Material } from "./material";
 import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
+import type { IndexBuffer } from "./index-buffer";
 /**
  * This is where all objects go to be processed and updated with webgl calls. Such as textures, geometries, etc
  */
@@ -43,9 +44,15 @@ export declare class GLProxy {
      */
     clear(color?: boolean, depth?: boolean, stencil?: boolean): void;
     /**
-     * Takes an Attribute object and ensures it's buffer is created and initialized.
+     * Takes an Attribute object and ensures it's buffer is created and
+     * initialized.
      */
     compileAttribute(attribute: Attribute): true | undefined;
+    /**
+     * Takes an IndexBuffer object and ensures it's buffer is created and
+     * initialized.
+     */
+    compileIndexBuffer(indexBuffer: IndexBuffer): true | undefined;
     /**
      * Takes a geometry object and ensures all of it's buffers are generated
      */
@@ -85,6 +92,10 @@ export declare class GLProxy {
      * Destroys an attribute's resources from the GL Context
      */
     disposeAttribute(attribute: Attribute): void;
+    /**
+     * Destroys an index buffer's resources from the GL Context
+     */
+    disposeIndexBuffer(indexBuffer: IndexBuffer): void;
     /**
      * Destroys a color buffer's resources from the GL Context
      */
@@ -149,6 +160,16 @@ export declare class GLProxy {
      * This updates an attribute's buffer data
      */
     updateAttribute(attribute: Attribute): true | undefined;
+    /**
+     * This updates an index buffer's buffer data
+     */
+    updateIndexBuffer(indexBuffer: IndexBuffer): true | undefined;
+    /**
+     * This performs all necessary functions to use the index buffer utilizing
+     * the current program in use. This is simpler than using an atribute as index
+     * buffers don't have to align with attribute names or specifics of a program.
+     */
+    useIndexBuffer(indexBuffer: IndexBuffer): boolean;
     /**
      * This performs all necessary functions to use the attribute utilizing
      * the current program in use.

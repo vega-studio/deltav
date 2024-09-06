@@ -8,3 +8,5 @@ export default _default;
 export declare const Basic: StoryFn;
 export declare const With_Mouse_Interactions: StoryFn;
 export declare const With_Scenes: StoryFn;
+export declare const Auto_Vertex_Packing: StoryFn;
+export declare const Large_Interaction_Count: StoryFn;

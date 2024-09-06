@@ -10,7 +10,5 @@ export interface IBasicCamera2DControllerJSX extends Partial<IEventManagerJSX> {
  */
 export declare const BasicCamera2DControllerJSX: {
     (props: IBasicCamera2DControllerJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

@@ -7,7 +7,7 @@ export function generateLayerModel(
   drawMode?: GLSettings.Model.DrawMode
 ): Model {
   const model = new Model(id, geometry, material);
-  model.drawMode = drawMode || GLSettings.Model.DrawMode.TRIANGLE_STRIP;
+  model.drawMode = drawMode ?? GLSettings.Model.DrawMode.TRIANGLE_STRIP;
 
   return model;
 }

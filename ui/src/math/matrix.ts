@@ -2,8 +2,9 @@ import {
   apply2,
   apply3,
   apply4,
+  type ReadonlyVec2Compat,
+  type ReadonlyVec3Compat,
   Vec2,
-  Vec2Compat,
   Vec3,
   Vec3Compat,
   Vec4,
@@ -28,6 +29,17 @@ export type Mat2x2 = [
 ];
 
 /**
+ * This represents a matrix with enough elements to define a 2x2 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M2<row><column> or M2<Y><X> to access the elements
+ * based on column and row. For example, M211 would be the value at row 1
+ * (second row) and column 2 (third column).
+ */
+export type ReadonlyMat2x2 = Readonly<Mat2x2>;
+
+/**
  * This represents a matrix with enough elements to define a 3x3 matrix. This is
  * specifically used to express a matrix in a linear buffer intentionally to
  * reduce allocations and indexing into the array.
@@ -42,6 +54,17 @@ export type Mat3x3 = [
   number, number, number,
   number, number, number
 ];
+
+/**
+ * This represents a matrix with enough elements to define a 3x3 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M3<row><column> or M3<Y><X> to access the elements
+ * based on column and row. For example, M321 would be the value at row 1
+ * (second row) and column 2 (third column).
+ */
+export type ReadonlyMat3x3 = Readonly<Mat3x3>;
 
 /**
  * This represents a matrix with enough elements to define a 4x4 matrix. This is
@@ -59,6 +82,17 @@ export type Mat4x4 = [
   number, number, number, number,
   number, number, number, number
 ];
+
+/**
+ * This represents a matrix with enough elements to define a 4x4 matrix. This is
+ * specifically used to express a matrix in a linear buffer intentionally to
+ * reduce allocations and indexing into the array.
+ *
+ * Use the indexing constant M4<row><column> or M4<Y><X> to access the elements
+ * based on column and row. For example, M421 would be the value at row 2
+ * (third row) and column 1 (second column).
+ */
+export type ReadonlyMat4x4 = Readonly<Mat4x4>;
 
 /**
  * This allows a number buffer with elements greater than 4 to be used as the
@@ -92,6 +126,37 @@ export type Mat4x4 = [
 export type Mat2x2Compat = Mat2x2 | Mat3x3 | Mat4x4;
 
 /**
+ * This allows a number buffer with elements greater than 4 to be used as the
+ * buffer for a Mat2x2.
+ *
+ * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
+ * based on meaningful mathematical properties. For instance using a 4x4 matrix
+ * will NOT cause this type to be understood as the top left elements of that
+ * array.
+ *
+ * Your expectation will be:
+ *
+ * 4x4 =
+ * [a, b, c, d,]
+ * [e, f, g, h,]
+ * [i, j, k, l,]
+ * [m, n, o, p,]
+ *
+ * 2x2 =
+ * [a, b]
+ * [e, f]
+ *
+ * That assumption is WRONG. You will instead see your mat2x2 play out this way:
+ *
+ * 2x2=
+ * [a, b]
+ * [c, d]
+ *
+ * Which is the linear buffer interpretation of a Mat4x4 type.
+ */
+export type ReadonlyMat2x2Compat = Readonly<Mat2x2Compat>;
+
+/**
  * This allows a number buffer with elements greater than 9 to be used as the
  * buffer for a Mat3x3.
  *
@@ -123,6 +188,39 @@ export type Mat2x2Compat = Mat2x2 | Mat3x3 | Mat4x4;
  * Which is the linear buffer interpretation of a Mat4x4 type.
  */
 export type Mat3x3Compat = Mat3x3 | Mat4x4;
+
+/**
+ * This allows a number buffer with elements greater than 9 to be used as the
+ * buffer for a Mat3x3.
+ *
+ * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
+ * based on meaningful mathematical properties. For instance using a 4x4 matrix
+ * will NOT cause this type to be understood as the top left elements of that
+ * array.
+ *
+ * Your expectation will be:
+ *
+ * 4x4 =
+ * [a, b, c, d,]
+ * [e, f, g, h,]
+ * [i, j, k, l,]
+ * [m, n, o, p,]
+ *
+ * 3x3 =
+ * [a, b, c]
+ * [e, f, g]
+ * [i, j, k]
+ *
+ * That assumption is WRONG. You will instead see your mat3x3 play out this way:
+ *
+ * 3x3=
+ * [a, b, c]
+ * [d, e, f]
+ * [g, h, i]
+ *
+ * Which is the linear buffer interpretation of a Mat4x4 type.
+ */
+export type ReadonlyMat3x3Compat = Readonly<Mat3x3Compat>;
 
 /** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M200 = 0;
@@ -341,7 +439,7 @@ const TEMP_M33 = identity3();
  *
  * 3 OPS
  */
-export function determinant2x2(mat: Mat2x2): number {
+export function determinant2x2(mat: ReadonlyMat2x2): number {
   return mat[3] * mat[0] - mat[1] * mat[2];
 }
 
@@ -350,7 +448,7 @@ export function determinant2x2(mat: Mat2x2): number {
  *
  * 17 OPS
  */
-export function determinant3x3(mat: Mat3x3): number {
+export function determinant3x3(mat: ReadonlyMat3x3): number {
   return (
     mat[0] * mat[4] * mat[8] -
     mat[0] * mat[5] * mat[7] +
@@ -366,7 +464,7 @@ export function determinant3x3(mat: Mat3x3): number {
  *
  * 75 OPS, 4 temp Mat3x3, 8 method calls
  */
-export function determinant4x4(mat: Mat4x4): number {
+export function determinant4x4(mat: ReadonlyMat4x4): number {
   // prettier-ignore
   apply3x3(TEMP_M30,
      mat[5],  mat[6],  mat[7],
@@ -410,7 +508,10 @@ export function determinant4x4(mat: Mat4x4): number {
  *
  * 9 OPS, 1 method call
  */
-export function affineInverse2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 | null {
+export function affineInverse2x2(
+  mat: ReadonlyMat2x2,
+  out?: Mat2x2
+): Mat2x2 | null {
   const determinant = determinant2x2(mat);
   if (determinant === 0) return null;
 
@@ -428,7 +529,10 @@ export function affineInverse2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 | null {
  *
  * 56 OPS, 10 method calls
  */
-export function affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null {
+export function affineInverse3x3(
+  mat: ReadonlyMat3x3,
+  out?: Mat3x3
+): Mat3x3 | null {
   // 17 OPS
   const determiant = determinant3x3(mat);
   if (determiant === 0) return null;
@@ -459,7 +563,10 @@ export function affineInverse3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 | null {
  *
  * 164 OPS + 3 temp 3x3 uses + 13 method calls
  */
-export function affineInverse4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 | null {
+export function affineInverse4x4(
+  mat: ReadonlyMat4x4,
+  out?: Mat4x4
+): Mat4x4 | null {
   const determiant = determinant4x4(mat);
   if (determiant === 0) return null;
 
@@ -491,7 +598,7 @@ export function affineInverse4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 | null {
  * 4 OPS
  */
 export function multiplyScalar2x2(
-  mat: Mat2x2,
+  mat: ReadonlyMat2x2,
   scale: number,
   out?: Mat2x2
 ): Mat2x2 {
@@ -506,7 +613,7 @@ export function multiplyScalar2x2(
  * 9 OPS
  */
 export function multiplyScalar3x3(
-  mat: Mat3x3,
+  mat: ReadonlyMat3x3,
   scale: number,
   out?: Mat3x3
 ): Mat3x3 {
@@ -522,7 +629,7 @@ export function multiplyScalar3x3(
  * 16 OPS
  */
 export function multiplyScalar4x4(
-  mat: Mat4x4,
+  mat: ReadonlyMat4x4,
   scale: number,
   out?: Mat4x4
 ): Mat4x4 {
@@ -575,7 +682,11 @@ export function identity4(out?: Mat4x4): Mat4x4 {
  * Concat two 2x2 matrices. T = left x right
  * 12 OPS
  */
-export function multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
+export function multiply2x2(
+  left: ReadonlyMat2x2,
+  right: ReadonlyMat2x2,
+  out?: Mat2x2
+): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     right[M200] * left[M200] + right[M201] * left[M210], right[M200] * left[M201] + right[M201] * left[M211],
@@ -587,7 +698,11 @@ export function multiply2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
  * Concat two 3x3 matrices. T = left x right
  * 45 OPS
  */
-export function multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
+export function multiply3x3(
+  left: ReadonlyMat3x3,
+  right: ReadonlyMat3x3,
+  out?: Mat3x3
+): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     right[0] * left[0] + right[1] * left[3] + right[2] * left[6], right[0] * left[1] + right[1] * left[4] + right[2] * left[7], right[0] * left[2] + right[1] * left[5] + right[2] * left[8],
@@ -600,7 +715,11 @@ export function multiply3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
  * Concat two 4x4 matrices. T = left x right
  * 112 OPS
  */
-export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function multiply4x4(
+  left: ReadonlyMat4x4,
+  right: ReadonlyMat4x4,
+  out?: Mat4x4
+): Mat4x4 {
   // prettier-ignore
   out = out || ([] as any as Mat4x4);
   out[0] =
@@ -695,7 +814,7 @@ export function multiply4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * concat4x4(A, B, C, D, E, ..., N);
  * T = A * B * C * E * ... * N
  */
-export function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4 {
+export function concat4x4(out?: Mat4x4, ...m: ReadonlyMat4x4[]): Mat4x4 {
   if (m.length <= 0) return identity4();
   out = out || identity4();
   if (m.length === 1) return copy4x4(m[0], out);
@@ -729,7 +848,11 @@ export function concat4x4(out?: Mat4x4, ...m: Mat4x4[]): Mat4x4 {
  * Add each element by each element in two matrices
  * 4 OPS
  */
-export function add2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
+export function add2x2(
+  left: ReadonlyMat2x2,
+  right: ReadonlyMat2x2,
+  out?: Mat2x2
+): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     left[0] + right[0], left[1] + right[1],
@@ -741,7 +864,11 @@ export function add2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
  * Add each element by each element in two matrices
  * 9 OPS
  */
-export function add3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
+export function add3x3(
+  left: ReadonlyMat3x3,
+  right: ReadonlyMat3x3,
+  out?: Mat3x3
+): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     left[0] + right[0], left[1] + right[1], left[2] + right[2],
@@ -754,7 +881,11 @@ export function add3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
  * Add each element by each element in two matrices
  * 16 OPS
  */
-export function add4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function add4x4(
+  left: ReadonlyMat4x4,
+  right: ReadonlyMat4x4,
+  out?: Mat4x4
+): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
       left[0] + right[0],   left[1] + right[1],   left[2] + right[2],   left[3] + right[3],
@@ -768,7 +899,11 @@ export function add4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * Subtract each element by each element in two matrices
  * 4 OPS
  */
-export function subtract2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
+export function subtract2x2(
+  left: ReadonlyMat2x2,
+  right: ReadonlyMat2x2,
+  out?: Mat2x2
+): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     left[0] - right[0], left[1] - right[1],
@@ -780,7 +915,11 @@ export function subtract2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
  * Subtract each element by each element in two matrices
  * 9 OPS
  */
-export function subtract3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
+export function subtract3x3(
+  left: ReadonlyMat3x3,
+  right: ReadonlyMat3x3,
+  out?: Mat3x3
+): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     left[0] - right[0], left[1] - right[1], left[2] - right[2],
@@ -793,7 +932,11 @@ export function subtract3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
  * Subtract each element by each element in two matrices
  * 16 OPS
  */
-export function subtract4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function subtract4x4(
+  left: ReadonlyMat4x4,
+  right: ReadonlyMat4x4,
+  out?: Mat4x4
+): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
       left[0] - right[0],   left[1] - right[1],   left[2] - right[2],   left[3] - right[3],
@@ -807,7 +950,11 @@ export function subtract4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * Hadamard product of two matrices. This is essentially multiplying each
  * element by each element between the two. 4 OPS
  */
-export function Hadamard2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
+export function Hadamard2x2(
+  left: ReadonlyMat2x2,
+  right: ReadonlyMat2x2,
+  out?: Mat2x2
+): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     left[0] * right[0], left[1] * right[1],
@@ -819,7 +966,11 @@ export function Hadamard2x2(left: Mat2x2, right: Mat2x2, out?: Mat2x2): Mat2x2 {
  * Hadamard product of two matrices. This is essentially multiplying each
  * element by each element between the two. 9 OPS
  */
-export function Hadamard3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
+export function Hadamard3x3(
+  left: ReadonlyMat3x3,
+  right: ReadonlyMat3x3,
+  out?: Mat3x3
+): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     left[0] * right[0], left[1] * right[1], left[2] * right[2],
@@ -832,7 +983,11 @@ export function Hadamard3x3(left: Mat3x3, right: Mat3x3, out?: Mat3x3): Mat3x3 {
  * Hadamard product of two matrices. This is essentially multiplying each
  * element by each element between the two. 16 OPS
  */
-export function Hadamard4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function Hadamard4x4(
+  left: ReadonlyMat4x4,
+  right: ReadonlyMat4x4,
+  out?: Mat4x4
+): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
       left[0] * right[0],   left[1] * right[1],   left[2] * right[2],   left[3] * right[3],
@@ -847,7 +1002,7 @@ export function Hadamard4x4(left: Mat4x4, right: Mat4x4, out?: Mat4x4): Mat4x4 {
  * [a, b] -> [a, c]
  * [c, d]    [b, d]
  */
-export function transpose2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 {
+export function transpose2x2(mat: ReadonlyMat2x2, out?: Mat2x2): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     mat[0], mat[2],
@@ -861,7 +1016,7 @@ export function transpose2x2(mat: Mat2x2, out?: Mat2x2): Mat2x2 {
  * [d, e, f]    [b, e, h]
  * [g, h, i]    [c, f, i]
  */
-export function transpose3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 {
+export function transpose3x3(mat: ReadonlyMat3x3, out?: Mat3x3): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     mat[0], mat[3], mat[6],
@@ -877,7 +1032,7 @@ export function transpose3x3(mat: Mat3x3, out?: Mat3x3): Mat3x3 {
  * [i, j, k, l]    [c, g, k, o]
  * [m, n, o, p]    [d, h, l, p]
  */
-export function transpose4x4(mat: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function transpose4x4(mat: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
     mat[0], mat[4], mat[8],  mat[12],
@@ -1017,7 +1172,7 @@ export function shearZ4x4(
 /**
  * Transforms a Vec2 by a matrix
  */
-export function transform2(m: Mat2x2, v: Vec2, out?: Vec2): Vec2 {
+export function transform2(m: ReadonlyMat2x2, v: Vec2, out?: Vec2): Vec2 {
   return apply2(
     out,
     m[M200] * v[0] + m[M210] * v[1],
@@ -1028,7 +1183,7 @@ export function transform2(m: Mat2x2, v: Vec2, out?: Vec2): Vec2 {
 /**
  * Transforms a Vec3 by a matrix.
  */
-export function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3 {
+export function transform3(m: ReadonlyMat3x3, v: Vec3, out?: Vec3): Vec3 {
   return apply3(
     out,
     m[M300] * v[0] + m[M310] * v[1] + m[M320] * v[2],
@@ -1041,7 +1196,7 @@ export function transform3(m: Mat3x3, v: Vec3, out?: Vec3): Vec3 {
  * Transforms a Vec3 by the provided matrix but treats the Vec3 as a
  * [x, y, z, 1] Vec4.
  */
-export function transform3as4(m: Mat4x4, v: Vec3, out?: Vec4): Vec4 {
+export function transform3as4(m: ReadonlyMat4x4, v: Vec3, out?: Vec4): Vec4 {
   return apply4(
     out,
     m[M400] * v[0] + m[M410] * v[1] + m[M420] * v[2] + m[M430] * 1,
@@ -1054,7 +1209,7 @@ export function transform3as4(m: Mat4x4, v: Vec3, out?: Vec4): Vec4 {
 /**
  * Transforms a vector by the provided matrix
  */
-export function transform4(m: Mat4x4, v: Vec4, out?: Vec4): Vec4 {
+export function transform4(m: ReadonlyMat4x4, v: Vec4, out?: Vec4): Vec4 {
   return apply4(
     out,
     m[M400] * v[0] + m[M410] * v[1] + m[M420] * v[2] + m[M430] * v[3],
@@ -1067,7 +1222,7 @@ export function transform4(m: Mat4x4, v: Vec4, out?: Vec4): Vec4 {
 /**
  * Converts a 2x2 to a pretty print string
  */
-export function toString2x2(mat: Mat2x2): string {
+export function toString2x2(mat: ReadonlyMat2x2): string {
   // prettier-ignore
   return `Matrix: [
   ${mat[0]}, ${mat[1]},
@@ -1078,7 +1233,7 @@ export function toString2x2(mat: Mat2x2): string {
 /**
  * Converts a 3x3 to a pretty print string
  */
-export function toString3x3(mat: Mat3x3): string {
+export function toString3x3(mat: ReadonlyMat3x3): string {
   // prettier-ignore
   return `Matrix: [
   ${mat[0]}, ${mat[1]}, ${mat[2]},
@@ -1090,7 +1245,7 @@ export function toString3x3(mat: Mat3x3): string {
 /**
  * Converts a 4x4 to a pretty print string
  */
-export function toString4x4(mat: Mat4x4): string {
+export function toString4x4(mat: ReadonlyMat4x4): string {
   // prettier-ignore
   return `Matrix: [
   ${mat[0]}, ${mat[1]}, ${mat[2]}, ${mat[3]},
@@ -1417,7 +1572,7 @@ export function orthographic4x4(
  * coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
  */
 export function projectToScreen(
-  proj: Mat4x4,
+  proj: ReadonlyMat4x4,
   point: Vec4,
   width: number,
   height: number,
@@ -1443,7 +1598,7 @@ export function projectToScreen(
  * frustum near and far planes.
  */
 export function project3As4ToScreen(
-  proj: Mat4x4,
+  proj: ReadonlyMat4x4,
   point: Vec3Compat,
   width: number,
   height: number,
@@ -1461,7 +1616,7 @@ export function project3As4ToScreen(
 /**
  * Determines equality of two 2x2 matrices
  */
-export function compare2x2(m1: Mat2x2, m2: Mat2x2): boolean {
+export function compare2x2(m1: ReadonlyMat2x2, m2: ReadonlyMat2x2): boolean {
   return (
     Math.abs(m1[0] - m2[0]) <= 1e-7 &&
     Math.abs(m1[1] - m2[1]) <= 1e-7 &&
@@ -1473,7 +1628,7 @@ export function compare2x2(m1: Mat2x2, m2: Mat2x2): boolean {
 /**
  * Determines equality of two 3x3 matrices.
  */
-export function compare3x3(m1: Mat3x3, m2: Mat3x3): boolean {
+export function compare3x3(m1: ReadonlyMat3x3, m2: ReadonlyMat3x3): boolean {
   return (
     Math.abs(m1[0] - m2[0]) <= 1e-7 &&
     Math.abs(m1[1] - m2[1]) <= 1e-7 &&
@@ -1490,7 +1645,7 @@ export function compare3x3(m1: Mat3x3, m2: Mat3x3): boolean {
 /**
  * Determines equality of two 4x4 matrices.
  */
-export function compare4x4(m1: Mat4x4, m2: Mat4x4): boolean {
+export function compare4x4(m1: ReadonlyMat4x4, m2: ReadonlyMat4x4): boolean {
   return (
     Math.abs(m1[0] - m2[0]) <= 1e-7 &&
     Math.abs(m1[1] - m2[1]) <= 1e-7 &&
@@ -1514,21 +1669,21 @@ export function compare4x4(m1: Mat4x4, m2: Mat4x4): boolean {
 /**
  * Copies a Mat2x2 into a new storage object
  */
-export function copy2x2(m: Mat2x2): Mat2x2 {
+export function copy2x2(m: ReadonlyMat2x2): Mat2x2 {
   return [m[0], m[1], m[2], m[3]];
 }
 
 /**
  * Copies a Mat3x3 into a new storage object
  */
-export function copy3x3(m: Mat3x3): Mat3x3 {
+export function copy3x3(m: ReadonlyMat3x3): Mat3x3 {
   return [m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]];
 }
 
 /**
  * Copies a Mat4x4 into a new storage object
  */
-export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
+export function copy4x4(m: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 {
   if (out) {
     out[0] = m[0];
     out[1] = m[1];
@@ -1584,7 +1739,7 @@ export function copy4x4(m: Mat4x4, out?: Mat4x4): Mat4x4 {
  */
 export function TRS4x4(
   scale: Vec3,
-  rotation: Mat3x3,
+  rotation: ReadonlyMat3x3,
   translation: Vec3,
   out?: Mat4x4
 ) {
@@ -1627,9 +1782,9 @@ export function TRS4x4(
  * x   | y   | z   | 1)
  */
 export function SRT4x4(
-  scale: Vec3,
-  rotation: Mat3x3,
-  translation: Vec3,
+  scale: ReadonlyVec3Compat,
+  rotation: ReadonlyMat3x3,
+  translation: ReadonlyVec3Compat,
   out?: Mat4x4
 ) {
   out = out || ([] as any as Mat4x4);
@@ -1673,9 +1828,9 @@ export function SRT4x4(
  * t (a x + c y) | u (b x + d y) | 0 | 1
  */
 export function TRS4x4_2D(
-  scale: Vec2,
-  rotation: Mat2x2,
-  translation: Vec2,
+  scale: ReadonlyVec2Compat,
+  rotation: ReadonlyMat2x2,
+  translation: ReadonlyVec2Compat,
   out?: Mat4x4
 ) {
   out = out || ([] as any as Mat4x4);
@@ -1723,9 +1878,9 @@ export function TRS4x4_2D(
  * x   | y   | 0 | 1
  */
 export function SRT4x4_2D(
-  scale: Vec2Compat,
-  rotation: Mat2x2,
-  translation: Vec2Compat,
+  scale: ReadonlyVec2Compat,
+  rotation: ReadonlyMat2x2,
+  translation: ReadonlyVec2Compat,
   out?: Mat4x4
 ) {
   out = out || ([] as any as Mat4x4);

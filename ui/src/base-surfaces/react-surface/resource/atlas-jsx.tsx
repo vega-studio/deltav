@@ -41,6 +41,4 @@ export const AtlasJSX = (props: IAtlasJSX) => {
   return <CustomTag tagName="Texture" {...props} />;
 };
 
-AtlasJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.RESOURCE,
-};
+AtlasJSX.surfaceJSXType = SurfaceJSXType.RESOURCE;

@@ -172,6 +172,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // See which buffer strategy our layer is using and produce a destructuring
     // strategy that suits it
     switch (layer.bufferType) {
+      case LayerBufferType.VERTEX_ATTRIBUTE:
       case LayerBufferType.INSTANCE_ATTRIBUTE:
         out = this.processDestructuringInstanceAttribute(
           declarations,
@@ -179,6 +180,7 @@ export class BasicIOExpansion extends BaseIOExpansion {
         );
         break;
 
+      case LayerBufferType.VERTEX_ATTRIBUTE_PACKING:
       case LayerBufferType.INSTANCE_ATTRIBUTE_PACKING:
         out = this.processDestructuringInstanceAttributePacking(
           declarations,
@@ -421,7 +423,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // If we are in an instance attribute Buffer Type strategy, then we simply list out
     // the attributes listed in our instance attributes as attributes.
     if (
-      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE &&
+      (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
+        layer.bufferType === LayerBufferType.VERTEX_ATTRIBUTE) &&
       instanceAttributes.length > 0
     ) {
       out += this.processInstanceAttributeBufferStrategy(
@@ -435,7 +438,8 @@ export class BasicIOExpansion extends BaseIOExpansion {
     // explicitally named attributes. The layer will be utilizing the blocks to
     // efficiently pack in our instance information
     if (
-      layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING &&
+      (layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING ||
+        layer.bufferType === LayerBufferType.VERTEX_ATTRIBUTE_PACKING) &&
       instanceAttributes.length > 0
     ) {
       out += this.processInstanceAttributePackingBufferStrategy(

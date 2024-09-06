@@ -54,9 +54,13 @@ export function groupSurfaceChildren(
     const child = toProcess.pop();
     if (!React.isValidElement(child)) continue;
 
+    // The surfacejsx type is applied to the type and not the props. So we
+    // attempt to extract that here.
+    const surfaceJSXType = (child.type as any)?.surfaceJSXType;
+
     if (
       child !== void 0 &&
-      (child?.type === React.Fragment || child.props.surfaceJSXType === void 0)
+      (child?.type === React.Fragment || surfaceJSXType === void 0)
     ) {
       if (!(child?.props as unknown as any)?.children) {
         if (outExcluded) outExcluded.push(child);
@@ -78,13 +82,13 @@ export function groupSurfaceChildren(
 
       continue;
     } else if (child !== void 0) {
-      if (child.props.surfaceJSXType === void 0) {
+      if (surfaceJSXType === void 0) {
         if (outExcluded) outExcluded.push(child);
         continue;
       }
 
       if (pickTypes) {
-        const group = groups.get(child.props.surfaceJSXType);
+        const group = groups.get(surfaceJSXType);
 
         if (!group) {
           if (outExcluded) outExcluded.push(child);
@@ -93,11 +97,11 @@ export function groupSurfaceChildren(
 
         group.push(child);
       } else {
-        let group = groups.get(child.props.surfaceJSXType);
+        let group = groups.get(surfaceJSXType);
 
         if (!group) {
           group = [];
-          groups.set(child.props.surfaceJSXType, group);
+          groups.set(surfaceJSXType, group);
         }
 
         group.push(child);

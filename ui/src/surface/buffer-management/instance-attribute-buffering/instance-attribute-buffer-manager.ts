@@ -1,5 +1,6 @@
 "use strict";
 
+import Debug from "debug";
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import {
   BufferManagerBase,
@@ -19,22 +20,23 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { LayerScene } from "../../layer-scene";
 import { uid } from "../../../util/uid";
 
-import Debug from "debug";
-
 const debug = Debug("performance");
 const { max } = Math;
 
 /**
- * This represents the location of data for an instance's property to the piece of attribute buffer
- * it will update when it changes.
+ * This represents the location of data for an instance's property to the piece
+ * of attribute buffer it will update when it changes.
  */
 export interface IInstanceAttributeBufferLocation extends IBufferLocation {
-  /** We narrow the buffer type for instance attributes down to just array buffers */
+  /**
+   * We narrow the buffer type for instance attributes down to just array
+   * buffers
+   */
   buffer: {
-    value: Float32Array | Uint8Array;
+    data: Float32Array | Uint8Array;
   };
 
-  /** We narrow the chaild locations to be the same as this buffer location */
+  /** We narrow the child locations to be the same as this buffer location */
   childLocations?: IInstanceAttributeBufferLocation[];
 }
 
@@ -48,7 +50,7 @@ export type IInstanceAttributeBufferLocationGroup =
 export function isInstanceAttributeBufferLocation(
   val: IBufferLocation
 ): val is IInstanceAttributeBufferLocation {
-  return Boolean(val && val.buffer && val.buffer.value);
+  return Boolean(val && val.buffer && val.buffer.data);
 }
 
 /**
@@ -61,7 +63,8 @@ export function isInstanceAttributeBufferLocationGroup(
 }
 
 /**
- * This manages instances in how they associate with buffer data for an instanced attribute strategy.
+ * This manages instances in how they associate with buffer data for an
+ * instanced attribute strategy.
  */
 export class InstanceAttributeBufferManager<
   TInstance extends Instance,
@@ -71,8 +74,6 @@ export class InstanceAttributeBufferManager<
   TProps,
   IInstanceAttributeBufferLocation
 > {
-  /** This stores an attribute's name to the buffer locations generated for it */
-  private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
   /** This contains the buffer locations the system will have available */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
@@ -90,29 +91,37 @@ export class InstanceAttributeBufferManager<
   private model?: Model;
   private attributes?: IInstanceAttributeInternal<TInstance>[];
 
-  /** This is a mapping of all attributes to their associated property ids that, when the property changes, the attribute will be updated */
+  /**
+   * This is a mapping of all attributes to their associated property ids that,
+   * when the property changes, the attribute will be updated
+   */
   private attributeToPropertyIds = new Map<
     IInstanceAttribute<TInstance>,
     number[]
   >();
   /**
-   * This is a trimmed listing of minimum property ids needed to trigger an update on all properties.
-   * This is used by the diffing process mostly to handle adding a new instance.
+   * This is a trimmed listing of minimum property ids needed to trigger an
+   * update on all properties. This is used by the diffing process mostly to
+   * handle adding a new instance.
    */
   private updateAllPropertyIdList: number[] = [];
   /**
-   * This is the discovered property id of the active attribute for the instance type this manager manages.
-   * This is used by the diffing process to target updates related to deactivating an instance.
+   * This is the discovered property id of the active attribute for the instance
+   * type this manager manages. This is used by the diffing process to target
+   * updates related to deactivating an instance.
    */
   private activePropertyId = -1;
   /**
-   * As changes are processed, instances will be added into the buffers. As they are added in, the instance
-   * will take over available locations within the buffer. Normally we would have these available locations
-   * in a queue and we would push and shift into that queue to retrieve the locations; however, shifting queues
-   * when done in VERY large quantities causes javascript to lag horrendously. Thus we instead have this index
-   * to monitor the next available item to pull during processing changes. AFTER changes have been processed
-   * we perform a one time operation splice to delete any list of available locations that have been used. This
-   * GREATLY improves performance for these types of operations.
+   * As changes are processed, instances will be added into the buffers. As they
+   * are added in, the instance will take over available locations within the
+   * buffer. Normally we would have these available locations in a queue and we
+   * would push and shift into that queue to retrieve the locations; however,
+   * shifting queues when done in VERY large quantities causes javascript to lag
+   * horrendously. Thus we instead have this index to monitor the next available
+   * item to pull during processing changes. AFTER changes have been processed
+   * we perform a one time operation splice to delete any list of available
+   * locations that have been used. This GREATLY improves performance for these
+   * types of operations.
    */
   private currentAvailableLocation = -1;
 
@@ -123,33 +132,38 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This is the tail end of processing changes and lets us clean up anything that might have been used to aid in the
-   * processing.
+   * This is the tail end of processing changes and lets us clean up anything
+   * that might have been used to aid in the processing.
    */
   changesProcessed() {
     super.changesProcessed();
-    // Clean out available locations that have been consumed during processing changes
+    // Clean out available locations that have been consumed during processing
+    // changes
     this.availableLocations.splice(0, this.currentAvailableLocation + 1);
-    // All elements in the availableLocations buffer are now valid locations so we reset this index back to the
-    // beginning which is -1 since our loop iterates with it using ++currentAvailableLocation.
+    // All elements in the availableLocations buffer are now valid locations so
+    // we reset this index back to the beginning which is -1 since our loop
+    // iterates with it using ++currentAvailableLocation.
     this.currentAvailableLocation = -1;
   }
 
   /**
-   * First instance to be added to this manager will be heavily analyzed for used observables per attribute.
+   * First instance to be added to this manager will be heavily analyzed for
+   * used observables per attribute.
    */
   private doAddWithRegistration(instance: TInstance) {
     // Activate monitoring of ids, this also resets the monitor's list
     ObservableMonitoring.setObservableMonitor(true);
 
-    // We need to find out how an instance interacts with the attributes, so we will
-    // loop through the instances, call their updates and get feedback
+    // We need to find out how an instance interacts with the attributes, so we
+    // will loop through the instances, call their updates and get feedback
     this.layer.shaderIOInfo.instanceAttributes.forEach((attribute) => {
-      // We don't need to register child attributes as they get updated as a consequence to parent attributes
+      // We don't need to register child attributes as they get updated as a
+      // consequence to parent attributes
       if (attribute.parentAttribute) return;
       // Access the update which accesses an instances properties (usually)
       attribute.update(instance);
-      // We now have all of the ids of the properties that were used in updating the attributes
+      // We now have all of the ids of the properties that were used in updating
+      // the attributes
       const propertyIdsForAttribute =
         ObservableMonitoring.getObservableMonitorIds(true);
       // Store the mapping of the property ids
@@ -164,29 +178,32 @@ export class InstanceAttributeBufferManager<
         );
       }
 
-      // If this is the active attribute, then we track the property id that modifies it
-      // for handling internal instance management.
+      // If this is the active attribute, then we track the property id that
+      // modifies it for handling internal instance management.
       if (attribute === this.layer.shaderIOInfo.activeAttribute) {
         this.activePropertyId = propertyIdsForAttribute[0];
       }
     });
 
-    // SUPER IMPORTANT to deactivate this here. Leaving this turned on causes memory to be chewed up
-    // for every property getter.
+    // SUPER IMPORTANT to deactivate this here. Leaving this turned on causes
+    // memory to be chewed up for every property getter.
     ObservableMonitoring.setObservableMonitor(false);
-    // This analyzes the properties and how they affect the attributes. It determines the smallest
-    // list possible of property ids needed to trigger an update on all of the attributes.
+    // This analyzes the properties and how they affect the attributes. It
+    // determines the smallest list possible of property ids needed to trigger
+    // an update on all of the attributes.
     this.makeUpdateAllPropertyIdList();
-    // Do the first resize which creates the buffer and makes all of the initial buffer locations
+    // Do the first resize which creates the buffer and makes all of the initial
+    // buffer locations
     const locationInfo = this.resizeBuffer();
-    // After all of the property id to attribute associations are made, we must break down the buffers
-    // into locations and then group those locations which will become our instance to buffer location
-    // slots
+    // After all of the property id to attribute associations are made, we must
+    // break down the buffers into locations and then group those locations
+    // which will become our instance to buffer location slots
     this.gatherLocationsIntoGroups(
       locationInfo.newLocations,
       locationInfo.growth
     );
-    // After the first registration add, we gear shift to a more efficient add method.
+    // After the first registration add, we gear shift to a more efficient add
+    // method.
     this.add = this.doAdd;
 
     // Perform the add after all of the registration process is complete
@@ -194,8 +211,8 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * After the registration add happens, we gear shift over to this add method which will only pair instances
-   * with their appropriate buffer location.
+   * After the registration add happens, we gear shift over to this add method
+   * which will only pair instances with their appropriate buffer location.
    */
   private doAdd(instance: TInstance) {
     // Ensure we have buffer locations available
@@ -205,7 +222,9 @@ export class InstanceAttributeBufferManager<
     ) {
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
-      // Break down the newly generated buffers into property groupings for the instances
+
+      // Break down the newly generated buffers into property groupings for the
+      // instances
       this.gatherLocationsIntoGroups(
         locationInfo.newLocations,
         locationInfo.growth
@@ -221,14 +240,16 @@ export class InstanceAttributeBufferManager<
       this.instanceToBufferLocation[instance.uid] = bufferLocations;
       this.currentInstancedCount = this.geometry.maxInstancedCount = max(
         this.currentInstancedCount,
-        // Instance index + 1 because the indices are zero indexed and the maxInstancedCount is a count value
+        // Instance index + 1 because the indices are zero indexed and the
+        // maxInstancedCount is a count value
         bufferLocations.instanceIndex + 1
       );
 
       if (this.model) {
         this.model.vertexDrawRange = [
           0,
-          this.layer.shaderIOInfo.instanceVertexCount,
+          this.layer.shaderIOInfo.indexBuffer?.indexCount ||
+            this.layer.shaderIOInfo.instanceVertexCount,
         ];
         this.model.drawInstances = this.currentInstancedCount;
 
@@ -242,6 +263,9 @@ export class InstanceAttributeBufferManager<
       );
     }
 
+    // This helps ensure errors get reported in a timely fashion in case this
+    // triggers some massive looping
+    flushEmitOnce();
     return bufferLocations;
   }
 
@@ -258,8 +282,8 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This retireves the buffer locations associated with an instance, or returns nothing
-   * if the instance has not been associated yet.
+   * This retireves the buffer locations associated with an instance, or returns
+   * nothing if the instance has not been associated yet.
    */
   getBufferLocations(instance: TInstance) {
     return this.instanceToBufferLocation[instance.uid];
@@ -273,8 +297,8 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This is the bare minimum property ids that, when triggered for update, will update ALL of the attribute buffers
-   * for the managed layer.
+   * This is the bare minimum property ids that, when triggered for update, will
+   * update ALL of the attribute buffers for the managed layer.
    */
   getUpdateAllPropertyIdList() {
     return this.updateAllPropertyIdList;
@@ -284,13 +308,15 @@ export class InstanceAttributeBufferManager<
    * Checks to see if an instance is managed by this manager.
    */
   managesInstance(instance: TInstance) {
-    // We know this instance is managed if the instance has buffer location real estate assigned to it
+    // We know this instance is managed if the instance has buffer location real
+    // estate assigned to it
     return this.instanceToBufferLocation[instance.uid] !== void 0;
   }
 
   /**
-   * Analyzes the list of attributes to the property ids that affects them. This populates the list
-   * of minimal property ids needed to trigger updates on all of the attributes.
+   * Analyzes the list of attributes to the property ids that affects them. This
+   * populates the list of minimal property ids needed to trigger updates on all
+   * of the attributes.
    */
   private makeUpdateAllPropertyIdList() {
     // Make a deduping list of ids
@@ -333,7 +359,8 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This generates a new buffer of uniforms to associate instances with.
+   * This resizes our buffers to accommodate more instances and also generates
+   * attribute locations to associate with our instances.
    */
   private resizeBuffer() {
     debug("Gathering resize growth amount...");
@@ -341,21 +368,25 @@ export class InstanceAttributeBufferManager<
     const shaderIOInfo = this.layer.shaderIOInfo;
     // This stores how much the buffer will be able to regrow
     let growth = 0;
-    // Each attribute will generate lists of new buffer locations after being created or expanded
+    // Each attribute will generate lists of new buffer locations after being
+    // created or expanded
     const attributeToNewBufferLocations = new Map<
       string,
       IInstanceAttributeBufferLocation[]
     >();
+    // Keep track of how many instances we had before this operation
+    const previousInstanceAmount = this.maxInstancedCount;
 
-    // As an optimization to guarantee the buffer is resized only a single time for a single changelist
-    // we  will calculate the necessary growth of the buffer by finding all of the insertions the changelist
-    // will cause.
+    // As an optimization to guarantee the buffer is resized only a single time
+    // for a single changelist we will calculate the necessary growth of the
+    // buffer by finding all of the insertions the changelist will cause.
     if (this.changeListContext) {
-      // We will always grow beyond a 1000 units. That way there is room to prevent immediate resize operations
-      // from happening too frequently.
-      growth = 1000;
+      // We will always grow beyond a 1000 units. That way there is room to
+      // prevent immediate resize operations from happening too frequently.
+      growth = this.layer.shaderIOInfo.baseBufferGrowthRate;
 
-      // We loop through all of the changes to find which operations will result in an additional unit
+      // We loop through all of the changes to find which operations will result
+      // in an additional unit
       for (let i = 0, iMax = this.changeListContext.length; i < iMax; ++i) {
         const diff = this.changeListContext[i];
 
@@ -376,6 +407,12 @@ export class InstanceAttributeBufferManager<
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
+      // For our first growth, we will see if the layer specifies some
+      // optimization hints
+      growth = Math.max(
+        growth,
+        this.layer.props.bufferManagement?.optimize?.expectedInstanceCount ?? 0
+      );
       // The buffer grows from 0 to our initial instance count
       this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
@@ -383,7 +420,8 @@ export class InstanceAttributeBufferManager<
       // Performance.
       this.geometry = new Geometry();
 
-      // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
+      // The geometry needs the vertex information (which should be shared
+      // amongst all instances of the layer)
       for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
@@ -393,27 +431,31 @@ export class InstanceAttributeBufferManager<
         }
       }
 
+      // Copy over the the index buffer to the new geometry as well. Nothing
+      // special needs to happen to this index buffer to work. It has the same
+      // needs as the simple vertex buffer
+      if (shaderIOInfo.indexBuffer) {
+        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
+          this.geometry.setIndexBuffer(
+            shaderIOInfo.indexBuffer.materialIndexBuffer
+          );
+        }
+      }
+
       this.attributes = [];
 
-      // We now take the instance attributes and add them as Instanced Attributes to our geometry
+      // Generate the attributes for the new geometry
       for (const attribute of shaderIOInfo.instanceAttributes) {
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
-        const buffer = new Float32Array(size * this.maxInstancedCount);
-        const bufferAttribute = new Attribute(buffer, size, true, true);
-        bufferAttribute.setDynamic(true);
-        this.geometry.addAttribute(attribute.name, bufferAttribute);
-        let newBufferLocations = attributeToNewBufferLocations.get(
-          attribute.name
+        const bufferAttribute = new Attribute(
+          new Float32Array(0),
+          size,
+          true,
+          true
         );
-
-        if (!newBufferLocations) {
-          newBufferLocations = [];
-          attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
-        }
-
-        const allLocations = this.allBufferLocations[attribute.name] || [];
-        this.allBufferLocations[attribute.name] = allLocations;
+        bufferAttribute.resize(this.maxInstancedCount);
+        this.geometry.addAttribute(attribute.name, bufferAttribute);
 
         const internalAttribute: IInstanceAttributeInternal<TInstance> =
           Object.assign({}, attribute, {
@@ -421,147 +463,106 @@ export class InstanceAttributeBufferManager<
             bufferAttribute: bufferAttribute,
           });
 
-        for (let i = 0; i < this.maxInstancedCount; ++i) {
-          const newLocation: IInstanceAttributeBufferLocation = {
-            attribute: internalAttribute,
-            buffer: {
-              value: buffer,
-            },
-            instanceIndex: i,
-            range: [i * size, i * size + size],
-          };
-
-          newBufferLocations.push(newLocation);
-          allLocations.push(newLocation);
-        }
-
         // Make an internal instance attribute for tracking
         this.attributes.push(internalAttribute);
       }
 
       // Ensure the draw range covers every instance in the geometry.
       this.geometry.maxInstancedCount = 0;
-      // This is the material that is generated for the layer that utilizes all of the generated and
-      // Injected shader IO and shader fragments
-      this.material = this.makeLayerMaterial();
-
-      // Grab the global uniforms from the material and add it to the uniform's materialUniform list so that
-      // We can keep uniforms consistent across all Instances
-      for (let i = 0, end = shaderIOInfo.uniforms.length; i < end; ++i) {
-        const uniform = shaderIOInfo.uniforms[i];
-        uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
-      }
     } else {
-      // If the geometry is already created, then we will expand each instanced attribute to the next growth
-      // level and generate the new buffer locations based on the expansion
-      // Since were are resizing the buffer, let's destroy the old buffer and make one anew
-      this.geometry.destroy();
-      this.geometry = new Geometry();
-      const previousInstanceAmount = this.maxInstancedCount;
-
-      // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
-      for (const attribute of shaderIOInfo.vertexAttributes) {
-        if (attribute.materialAttribute) {
-          this.geometry.addAttribute(
-            attribute.name,
-            attribute.materialAttribute
-          );
-        }
-      }
-
+      // If the geometry is already created, then we will expand each instanced
+      // attribute to the next growth level and generate the new buffer
+      // locations based on the expansion Since were are resizing the buffer,
+      // let's destroy the old buffer and make one anew
+      this.geometry.rebuild();
       this.maxInstancedCount += growth;
-
       // Ensure attributes is still defined
       this.attributes = this.attributes || [];
 
+      // Resize all of the attributes to the new size
       for (const attribute of this.attributes) {
-        const bufferAttribute = attribute.bufferAttribute;
-        const size: number = attribute.size || 0;
-
-        if (bufferAttribute.data instanceof Float32Array) {
-          // Make a new buffer that is the proper size
-          let buffer: Float32Array = bufferAttribute.data;
-
+        // Resize the buffer to fit the new instances.
+        if (attribute.bufferAttribute.count < this.maxInstancedCount) {
           // OPTIMIZATION:
-          // Sneaky trick. We do buffer doubling behind the scenes to reduce
-          // these mass allocations and destructions. The background buffer gets
-          // double space, but everything else in JS land operates as though
-          // it's a tightly fitted buffer.
-          if (buffer.length < this.maxInstancedCount * size) {
-            buffer = new Float32Array(this.maxInstancedCount * size * 2);
-            // Retain all of the information in the previous buffer
-            buffer.set(bufferAttribute.data, 0);
-          }
-
-          // Make our new attribute based on the grown buffer
-          const newAttribute = new Attribute(buffer, size, true, true);
-          // Set the attribute to dynamic so we can update ranges within it
-          newAttribute.setDynamic(true);
-          // Make sure our attribute is updated with the newly made attribute
-          attribute.bufferAttribute = newAttribute;
-          // Add the new attribute to our new geometry object
-          this.geometry.addAttribute(attribute.name, newAttribute);
-          // Get the temp storage for new buffer locations
-          let newBufferLocations = attributeToNewBufferLocations.get(
-            attribute.name
-          );
-
-          // Since we have a new buffer object we are working with, we must update all of the existing buffer
-          // locations to utilize this new buffer. The locations keep everything else the same, but the buffer
-          // object itself should be updated
-          const allLocations = this.allBufferLocations[attribute.name] || [];
-          this.allBufferLocations[attribute.name] = allLocations;
-
-          for (let k = 0, endk = allLocations.length; k < endk; ++k) {
-            allLocations[k].buffer.value = buffer;
-          }
-
-          if (!newBufferLocations) {
-            newBufferLocations = [];
-            attributeToNewBufferLocations.set(
-              attribute.name,
-              newBufferLocations
+          // We double the backing buffer instead of tightly pack fit it. This
+          // allows us to reduce memory allocations and improve overall
+          // performance at the cost of some extra memory useage.
+          if (this.layer.props.bufferManagement?.optimize?.bufferDoubling) {
+            attribute.bufferAttribute.resize(
+              this.maxInstancedCount * 2,
+              previousInstanceAmount
             );
           }
 
-          // Set up some optimizations for this loop
-          let newLocation: IInstanceAttributeBufferLocation;
-          let index = newBufferLocations.length;
-          const added = this.maxInstancedCount - previousInstanceAmount;
-          newBufferLocations.length += added;
-          allLocations.length += added;
-
-          for (
-            let i = previousInstanceAmount, end = this.maxInstancedCount;
-            i < end;
-            ++i, ++index
-          ) {
-            newLocation = {
-              attribute,
-              buffer: {
-                value: buffer,
-              },
-              instanceIndex: i,
-              range: [i * size, i * size + size],
-            };
-
-            newBufferLocations[index] = newLocation;
-            allLocations[i] = newLocation;
+          // Otherwise we keep the buffer tightly packed to the instance growth
+          // + the base growth rate
+          else {
+            attribute.bufferAttribute.resize(
+              this.maxInstancedCount,
+              previousInstanceAmount
+            );
           }
         }
       }
+    }
 
-      if (this.scene?.container && this.model) {
-        this.scene.container.remove(this.model);
+    // Do the work of generating buffer locations for the new buffer size.
+    for (let a = 0, aMax = this.attributes.length; a < aMax; ++a) {
+      const attribute = this.attributes[a];
+      const bufferAttribute = attribute.bufferAttribute;
+      const size: number = attribute.size || 0;
+      const added = this.maxInstancedCount - previousInstanceAmount;
+      // Get the temp storage for new buffer locations
+      let newBufferLocations = attributeToNewBufferLocations.get(
+        attribute.name
+      );
+
+      if (!newBufferLocations) {
+        newBufferLocations = new Array(added);
+        attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
+      }
+
+      // Set up some optimizations for this loop
+      let index = 0;
+
+      for (
+        let i = previousInstanceAmount, end = this.maxInstancedCount;
+        i < end;
+        ++i, ++index
+      ) {
+        newBufferLocations[index] = {
+          attribute,
+          // We set this to the attribute, that way when the attribute creates a
+          // new buffer object, the new reference will automatically be used
+          // which prevents us from having to manually update the reference
+          // across all generated locations.
+          buffer: bufferAttribute,
+          instanceIndex: i,
+          start: i * size,
+          end: i * size + size,
+        };
       }
     }
 
+    // Clear out the old model so we can regenerate it with out new geometry
+    // with new buffers.
     if (this.scene && this.model && this.scene.container) {
       this.scene.container.remove(this.model);
     }
 
     // Ensure material is defined
-    this.material = this.material || this.makeLayerMaterial();
+    if (!this.material) {
+      this.material = this.makeLayerMaterial();
+
+      // Grab the global uniforms from the material and add it to the uniform's
+      // materialUniform list so that We can keep uniforms consistent across all
+      // Instances
+      for (let i = 0, end = shaderIOInfo.uniforms.length; i < end; ++i) {
+        const uniform = shaderIOInfo.uniforms[i];
+        uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
+      }
+    }
+
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.layer.id,
@@ -570,8 +571,8 @@ export class InstanceAttributeBufferManager<
       shaderIOInfo.drawMode
     );
 
-    // Now that we are ready to utilize the buffer, let's add it to the scene so it may be rendered.
-    // Each new buffer equates to one draw call.
+    // Now that we are ready to utilize the buffer, let's add it to the scene so
+    // it may be rendered. Each new buffer equates to one draw call.
     if (this.scene && this.scene.container && this.model) {
       this.scene.container.add(this.model);
     }
@@ -585,8 +586,8 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This takes newly created buffer locations and groups them by the property ids identified by the
-   * registration phase.
+   * This takes newly created buffer locations and groups them by the property
+   * ids identified by the registration phase.
    */
   private gatherLocationsIntoGroups(
     attributeToNewBufferLocations: Map<
@@ -605,11 +606,14 @@ export class InstanceAttributeBufferManager<
       bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
       childBufferLocations: {
         location: IInstanceAttributeBufferLocation[];
-        // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
-        // groups, one would simply use the available items and shift() those items out into the group; however,
-        // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
-        // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
-        // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
+        // This is one of those odd but extremely necessary optimizations.
+        // Normally while assigning these buffers to groups, one would simply
+        // use the available items and shift() those items out into the group;
+        // however, shift() or pop() is VERY ineffecient in mass quantities in
+        // that it causes massive amounts of memory allocation and movement. So
+        // instead of shifting the buffer, we simply keep an index to move to
+        // the next buffer to use. It makes the mental works a lot harder to
+        // envision, but the gains are immense doing this.
         bufferIndex: number;
       }[];
       ids: number[];
@@ -637,15 +641,17 @@ export class InstanceAttributeBufferManager<
       bufferLocation: IInstanceAttributeBufferLocation | undefined,
       childAttribute: IInstanceAttribute<TInstance>;
 
-    // Loop through all of the new instances available and gather all of the buffer locations
+    // Loop through all of the new instances available and gather all of the
+    // buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
       const group: IInstanceAttributeBufferLocationGroup = {
         instanceIndex: -1,
         propertyToBufferLocation: {},
       };
 
-      // Loop through all of the property ids that affect specific attributes. Each of these ids
-      // needs an association with the buffer location they modify.
+      // Loop through all of the property ids that affect specific attributes.
+      // Each of these ids needs an association with the buffer location they
+      // modify.
       for (let j = 0, endj = attributesBufferLocations.length; j < endj; ++j) {
         allLocations = attributesBufferLocations[j];
         attribute = allLocations.attribute;
@@ -694,8 +700,9 @@ export class InstanceAttributeBufferManager<
           continue;
         }
 
-        // If the attribute has children attributes. Then when the attribute is updated, the child attributes should
-        // be updated as well. Thus the buffer location needs the child attribute buffer locations.
+        // If the attribute has children attributes. Then when the attribute is
+        // updated, the child attributes should be updated as well. Thus the
+        // buffer location needs the child attribute buffer locations.
         if (attribute.childAttributes) {
           bufferLocation.childLocations = [];
 
@@ -733,21 +740,21 @@ export class InstanceAttributeBufferManager<
           }
         }
 
-        // In the group, associate the property ids that affect a buffer location WITH the buffer location they affect
+        // In the group, associate the property ids that affect a buffer
+        // location WITH the buffer location they affect
         for (let k = 0, endk = ids.length; k < endk; ++k) {
           group.propertyToBufferLocation[ids[k]] = bufferLocation;
         }
       }
 
-      // Store this group as a group that is ready to be associated with an instance
+      // Store this group as a group that is ready to be associated with an
+      // instance
       this.availableLocations.push(group);
     }
 
     debug(
       "COMPLETE: Unpacked attribute buffer manager buffer location grouping"
     );
-    // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
-    flushEmitOnce();
   }
 
   /**

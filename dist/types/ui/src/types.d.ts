@@ -7,6 +7,7 @@ import { Instance } from "./instance-provider/instance";
 import { ISceneOptions } from "./surface/layer-scene";
 import { IViewProps, View } from "./surface/view";
 import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec2Compat, Vec3, Vec4 } from "./math";
+import type { IndexBuffer } from "./gl/index-buffer";
 export type Diff<T extends string, U extends string> = ({
     [P in T]: P;
 } & {
@@ -54,6 +55,14 @@ export declare enum VertexAttributeSize {
     TWO = 2,
     THREE = 3,
     FOUR = 4
+}
+export declare enum IndexBufferSize {
+    /** Supports 256 vertices */
+    UINT8 = 1,
+    /** Supports 65536 vertices */
+    UINT16 = 2,
+    /** Supports 4294967296 vertices */
+    UINT32 = 3
 }
 /**
  * These are valid texture sizes available. We force a power of 2 to be utilized.
@@ -152,9 +161,19 @@ export interface IResourceType {
  */
 export type Color = Vec4;
 /**
+ * Readonly:
+ * This represents a color in the VoidGL system. Ranges are
+ */
+export type ReadonlyColor = Readonly<Vec4>;
+/**
  * This represents a rotation in Euler angles [X axis, Y axis, Z axis]
  */
 export type EulerRotation = Vec3;
+/**
+ * Readonly:
+ * This represents a rotation in Euler angles [X axis, Y axis, Z axis]
+ */
+export type ReadonlyEulerRotation = Readonly<Vec3>;
 /**
  * Order description of the way a euler angle is supposed to be applied
  */
@@ -262,11 +281,50 @@ export interface IVertexAttribute {
      */
     update(vertex: number): ShaderIOValue;
 }
+export interface IIndexBuffer {
+    /**
+     * This specifies the byte size of the index buffer indices. Each size can
+     * support a limited number of vertices:
+     *
+     * UINT8: 256 vertices
+     * UINT16: 65536 vertices
+     * UINT32: 4294967296 vertices
+     *
+     * This will be the INITIAL size of the buffer. However, this engine does a
+     * LOT to seamlessly support instancing no matter the strategy in use. So
+     * behind the scenes, this buffer can be cast up to use a higher precision if
+     * required to support additional instances.
+     */
+    size: IndexBufferSize;
+    /**
+     * We define the number of vertices for the vertex data with vertexCount, but
+     * here we specify how many vertices this index buffer contains to reference
+     * those vertices.
+     */
+    indexCount: number;
+    /**
+     * This lets you populate the buffer with an automatically called method. This
+     * will fire on initialization and will expect all of the values needed to
+     * fully make your meshes index buffer.
+     *
+     * We use this strategy of calling a method per value to allow for a streamed
+     * approach to filling the buffer. This will help with preventing accidental
+     * mutations, and will offer an opportunity to prevent full duplicates of the
+     * entire model's vertex buffers from being loaded in at a single time.
+     */
+    update(index: number): number;
+}
 export interface IVertexAttributeInternal extends IVertexAttribute {
     /**
      * This is the actual attribute generated internally for the GL interfacing
      */
     materialAttribute: Attribute | null;
+}
+export interface IIndexBufferInternal extends IIndexBuffer {
+    /**
+     * This is the actual buffer generated internally for the GL interfacing
+     */
+    materialIndexBuffer: IndexBuffer | null;
 }
 export interface IInstanceAttribute<TInstance extends Instance> {
     /**
@@ -858,6 +916,39 @@ export interface IEasingProps {
     /** The start time in ms the easing object utilizes */
     startTime: number;
 }
+export interface IShaderInputInstancing {
+    /**
+     * By default this is true, the buffers for the layer are instanced. This
+     * minimizes memory useage AND dramatically improves performance on making
+     * instance attribute updates.
+     *
+     * Conversly, disabling instanced buffers will improve rendering performance
+     * for large amounts of data, but will struggle to stream instance property
+     * updates in large amounts.
+     *
+     * It is recommended to always use instancing for large vertex count models.
+     * As you approch small vertex counts, you can try non-instanced buffers to
+     * see if there is a rendering benefit for some scenarios.
+     */
+    instancing?: boolean;
+    /**
+     * As instances are added to the layer, the backing buffers will grow with an
+     * excess amount to allow more instances to be added before resizing takes
+     * place (which is a decent performance hit).
+     *
+     * The default value for this is 1000. Which means after a resize happens,
+     * there will be 1000 MORE unused instances in the buffer ready to be
+     * activated. You will need to add 1000 more instances before the buffer will
+     * trigger another resize.
+     *
+     * Setting this value to 0 ensures there are NO extra instances in the buffers
+     * thus guaranteeing the smallest RAM footprint, but comes at the cost of
+     * adding more instances likely to cause lag spikes. For sure use a value of 0
+     * if there is going to most likely be a single instance in the buffer (some
+     * very large model).
+     */
+    baseBufferGrowthRate?: number;
+}
 /**
  * This is the Shader IO information a layer will provide.
  */
@@ -878,6 +969,14 @@ export interface IShaderInputs<T extends Instance> {
      */
     vertexAttributes?: (IVertexAttribute | null)[];
     /**
+     * Buffer containing indices for index rendering.
+     *
+     * This will show an improvement in the amount of memory used for vertex
+     * attribute data. This will show a large memory improvement the larger the
+     * model and when instancing is disabled.
+     */
+    indexBuffer?: IIndexBuffer | null;
+    /**
      * Specify how many vertices there are per instance. If vertex count is 0,
      * then the layer will render without instancing and draw the buffers
      * straight.
@@ -892,7 +991,7 @@ export interface IShaderInputs<T extends Instance> {
 /**
  * This is the initialization of the shader.
  */
-export type IShaderInitialization<T extends Instance> = IShaderInputs<T> & IShadersSource;
+export type IShaderInitialization<T extends Instance> = IShaderInputInstancing & IShaderInputs<T> & IShadersSource;
 export interface IShaderExtension {
     header?: string;
     main?: {
@@ -1002,19 +1101,45 @@ export declare enum LayerBufferType {
     UNIFORM = 1,
     /**
      * This is a fast and zippy buffering strategy used when the hardware supports
-     * it for a provided layer!
+     * it for a provided layer! This makes instanced attributes which allows
+     * single values per instance to be in the buffer instead of per vertex.
      */
     INSTANCE_ATTRIBUTE = 2,
     /**
      * This is a slight degradation from the normal INSTANCE_ATTRIBUTE buffering
-     * strategy. If provided attributes do not fit the limited amount of vertex
+     * strategy. If provided, attributes do not fit the limited amount of vertex
      * attributes supported by the hardware, then we have one last strategy to
      * utilize the highly optimized hardware instancing, which is to cram multiple
      * attributes within single attribute blocks. An attribute block is considered
-     * to be 4 32 bit floats. These packed attributes will then get dereferenced
+     * to be 4 32 bit floats. These packed attributes will then get destructured
      * in the shader.
      */
-    INSTANCE_ATTRIBUTE_PACKING = 3
+    INSTANCE_ATTRIBUTE_PACKING = 3,
+    /**
+     * This is a buffering strategy when we don't want to use hardware instancing.
+     * This will generate values PER VERTEX in the buffers instead of per
+     * instance. This has the advantage of rendering statically much faster, but
+     * increases RAM useage (for multiple instances) and increases the complexity
+     * in making per instance updates that are not tied to uniforms for the
+     * instance.
+     */
+    VERTEX_ATTRIBUTE = 4,
+    /**
+     * This is a buffering strategy when we don't want to use hardware instancing.
+     * This will generate values PER VERTEX in the buffers instead of per
+     * instance. This has the advantage of rendering statically much faster, but
+     * increases RAM useage (for multiple instances) and increases the complexity
+     * in making per instance updates that are not tied to uniforms for the
+     * instance.
+     *
+     * This differs from VERTEXT_ATTRIBUTE in that it will pack multiple
+     * attributes into a single attribute block and will be destructured in the
+     * shader. If provided, attributes do not fit the limited amount of vertex
+     * attributes supported by the hardware, then we have this strategy, which is
+     * to cram multiple attributes within single attribute blocks. An attribute
+     * block is considered to be 4 32 bit floats.
+     */
+    VERTEX_ATTRIBUTE_PACKING = 5
 }
 /**
  * This is an entry within the change list of the provider. It represents the

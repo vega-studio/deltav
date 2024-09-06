@@ -23,6 +23,4 @@ export const SimpleEventHandlerJSX = (props: ISimpleEventHandlerJSX) => {
   return <CustomTag tagName="SimpleEventHandler" {...props} />;
 };
 
-SimpleEventHandlerJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.EVENT_MANAGER,
-};
+SimpleEventHandlerJSX.surfaceJSXType = SurfaceJSXType.EVENT_MANAGER;

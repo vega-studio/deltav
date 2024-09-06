@@ -4,14 +4,18 @@ import {
   dot3,
   dot4,
   normalize3,
+  type ReadonlyVec3Compat,
   scale3,
   V3R,
-  Vec3,
   vec3,
-  Vec3Compat,
+  Vec3,
   Vec4,
 } from "./vector";
-import { EulerOrder, EulerRotation } from "../types";
+import {
+  EulerOrder,
+  EulerRotation,
+  type ReadonlyEulerRotation,
+} from "../types";
 import {
   identity3,
   identity4,
@@ -42,6 +46,8 @@ import {
   M433,
   Mat3x3,
   Mat4x4,
+  type ReadonlyMat3x3,
+  type ReadonlyMat4x4,
 } from "./matrix";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
@@ -84,6 +90,8 @@ let vz: Vec3;
 
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
+/** Expresses a readonly quaternion [scalar, i, j, k] */
+export type ReadonlyQuaternion = Readonly<Vec4>;
 
 /** Temp Quaternion register. Can be used for intermediate operations */
 export const QR1 = zeroQuat();
@@ -129,8 +137,8 @@ export function zeroQuat(out?: Quaternion): Quaternion {
  * Adds two quaternions.
  */
 export function addQuat(
-  q1: Quaternion,
-  q2: Quaternion,
+  q1: ReadonlyQuaternion,
+  q2: ReadonlyQuaternion,
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
@@ -147,8 +155,8 @@ export function addQuat(
  * Note: Quaternion multiplication is noncommutative.
  */
 export function multiplyQuat(
-  q1: Quaternion,
-  q2: Quaternion,
+  q1: ReadonlyQuaternion,
+  q2: ReadonlyQuaternion,
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
@@ -175,8 +183,8 @@ export function multiplyQuat(
  * q1 / q2 = q1 * q2^-1
  */
 export function divideQuat(
-  q1: Quaternion,
-  q2: Quaternion,
+  q1: ReadonlyQuaternion,
+  q2: ReadonlyQuaternion,
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
@@ -213,7 +221,10 @@ export function divideQuat(
 /**
  * Calculates the exponentiation of a quaternion
  */
-export function exponentQuat(q: Quaternion, out?: Quaternion): Quaternion {
+export function exponentQuat(
+  q: ReadonlyQuaternion,
+  out?: Quaternion
+): Quaternion {
   out = out || zeroQuat();
 
   const a = q[0],
@@ -244,7 +255,7 @@ export function exponentQuat(q: Quaternion, out?: Quaternion): Quaternion {
  * Multiplies a quaternion by a scalar.
  */
 export function scaleQuat(
-  q: Quaternion,
+  q: ReadonlyQuaternion,
   scale: number,
   out?: Quaternion
 ): Quaternion {
@@ -273,8 +284,8 @@ export function scaleQuat(
  * abs(q1) = 1 for unit quats
  */
 export function diffUnitQuat(
-  q1: Quaternion,
-  q2: Quaternion,
+  q1: ReadonlyQuaternion,
+  q2: ReadonlyQuaternion,
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
@@ -284,7 +295,10 @@ export function diffUnitQuat(
 /**
  * Computes the conjugate of a quaternion.
  */
-export function conjugateQuat(q: Quaternion, out?: Quaternion): Quaternion {
+export function conjugateQuat(
+  q: ReadonlyQuaternion,
+  out?: Quaternion
+): Quaternion {
   out = out || zeroQuat();
 
   out[0] = q[0];
@@ -298,7 +312,10 @@ export function conjugateQuat(q: Quaternion, out?: Quaternion): Quaternion {
 /**
  * Computes the inverse, or reciprocal, of a quaternion.
  */
-export function inverseQuat(q: Quaternion, out?: Quaternion): Quaternion {
+export function inverseQuat(
+  q: ReadonlyQuaternion,
+  out?: Quaternion
+): Quaternion {
   out = out || zeroQuat();
 
   const a = q[0],
@@ -330,7 +347,7 @@ export function inverseQuat(q: Quaternion, out?: Quaternion): Quaternion {
  * the product of the quaternion with its conjugate.  Also known as
  * the "norm".
  */
-export function lengthQuat(q: Quaternion): number {
+export function lengthQuat(q: ReadonlyQuaternion): number {
   const a = q[0],
     b = q[1],
     c = q[2],
@@ -343,7 +360,10 @@ export function lengthQuat(q: Quaternion): number {
  * Normalizes a quaternion so its length is equal to 1.  The result of
  * normalizing a zero quaternion is undefined.
  */
-export function normalizeQuat(q: Quaternion, out?: Quaternion): Quaternion {
+export function normalizeQuat(
+  q: ReadonlyQuaternion,
+  out?: Quaternion
+): Quaternion {
   out = out || zeroQuat();
   const len = lengthQuat(q);
   if (len === 0) return [0, 0, 0, 0];
@@ -355,21 +375,24 @@ export function normalizeQuat(q: Quaternion, out?: Quaternion): Quaternion {
 /**
  * Provides the real part of the quaternion.
  */
-export function realQuat(q: Quaternion): number {
+export function realQuat(q: ReadonlyQuaternion): number {
   return q[0];
 }
 
 /**
  * Provides the vector part of the quaternion.
  */
-export function imaginaryQuat(q: Quaternion): Vec3 {
+export function imaginaryQuat(q: ReadonlyQuaternion): Vec3 {
   return [q[1], q[2], q[3]];
 }
 
 /**
  * Dot product of two quaternions
  */
-export function dotQuat(q1: Quaternion, q2: Quaternion): number {
+export function dotQuat(
+  q1: ReadonlyQuaternion,
+  q2: ReadonlyQuaternion
+): number {
   return dot4(q1, q2);
 }
 
@@ -400,7 +423,7 @@ export function fromEulerAxisAngleToQuat(
  * This converts a general euler angle of any rotation order into a quaternion
  */
 export function fromOrderedEulerToQuat(
-  angles: Vec3,
+  angles: ReadonlyVec3Compat,
   order: EulerOrder,
   out?: Quaternion
 ): Quaternion {
@@ -484,7 +507,7 @@ export function fromOrderedEulerToQuat(
  * framework.
  */
 export function toEulerXYZfromOrderedEuler(
-  euler: Vec3,
+  euler: ReadonlyVec3Compat,
   order: EulerOrder,
   out?: EulerRotation
 ): EulerRotation {
@@ -533,7 +556,7 @@ function twoAxisRotation(
 /**
  * Produces a XYZ Euler angle from the provided Quaternion.
  */
-export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
+export function toEulerFromQuat(q: ReadonlyQuaternion, out?: EulerRotation) {
   return toOrderedEulerFromQuat(q, EulerOrder.zyx, out);
 }
 
@@ -545,7 +568,7 @@ export function toEulerFromQuat(q: Quaternion, out?: EulerRotation) {
  * you specifically need an Euler angle for a known purpose.
  */
 export function toOrderedEulerFromQuat(
-  q: Quaternion,
+  q: ReadonlyQuaternion,
   order: EulerOrder,
   out?: Vec3
 ): EulerRotation {
@@ -867,7 +890,7 @@ export function toOrderedEulerFromQuat(
 }
 
 export function toOrderedEulerFromQuat2(
-  quat: Quaternion,
+  quat: ReadonlyQuaternion,
   order: EulerOrder,
   out?: Vec3
 ) {
@@ -963,7 +986,7 @@ export function toOrderedEulerFromQuat2(
 /**
  * Extracts the angle part, in radians, of a rotation quaternion.
  */
-export function angleQuat(quat: Quaternion): number {
+export function angleQuat(quat: ReadonlyQuaternion): number {
   const a = quat[0];
 
   if (a < -1.0 || a > 1.0) {
@@ -982,7 +1005,7 @@ export function angleQuat(quat: Quaternion): number {
 /**
  * Extracts the axis part, as a Vec3, of a rotation quaternion.
  */
-export function axisQuat(quat: Quaternion): Vec3 {
+export function axisQuat(quat: ReadonlyQuaternion): Vec3 {
   const x = quat[1],
     y = quat[2],
     z = quat[3];
@@ -1001,7 +1024,10 @@ export function axisQuat(quat: Quaternion): Vec3 {
  * that is from a 'models' perspective where the model orients itself to match
  * the orientation.
  */
-export function matrix3x3FromUnitQuatModel(q: Quaternion, m?: Mat3x3): Mat3x3 {
+export function matrix3x3FromUnitQuatModel(
+  q: ReadonlyQuaternion,
+  m?: Mat3x3
+): Mat3x3 {
   m = m || identity3();
 
   // Calculate coefficients
@@ -1038,7 +1064,10 @@ export function matrix3x3FromUnitQuatModel(q: Quaternion, m?: Mat3x3): Mat3x3 {
  * that is from a 'models' perspective where the model orients itself to match
  * the orientation.
  */
-export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
+export function matrix4x4FromUnitQuatModel(
+  q: ReadonlyQuaternion,
+  m?: Mat4x4
+): Mat4x4 {
   m = m || identity4();
 
   // calculate coefficients
@@ -1082,7 +1111,10 @@ export function matrix4x4FromUnitQuatModel(q: Quaternion, m?: Mat4x4): Mat4x4 {
  * Produces a transform matrix from a returned unit quaternion. This is a matrix
  * that is from a 'views' perspective where the world orients to match the view.
  */
-export function matrix3x3FromUnitQuatView(q: Quaternion, m?: Mat3x3): Mat3x3 {
+export function matrix3x3FromUnitQuatView(
+  q: ReadonlyQuaternion,
+  m?: Mat3x3
+): Mat3x3 {
   m = m || identity3();
 
   // calculate coefficients
@@ -1118,7 +1150,10 @@ export function matrix3x3FromUnitQuatView(q: Quaternion, m?: Mat3x3): Mat3x3 {
  * Produces a transform matrix from a returned unit quaternion. This is a matrix
  * that is from a 'views' perspective where the world orients to match the view.
  */
-export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
+export function matrix4x4FromUnitQuatView(
+  q: ReadonlyQuaternion,
+  m?: Mat4x4
+): Mat4x4 {
   m = m || identity4();
 
   // calculate coefficients
@@ -1162,7 +1197,7 @@ export function matrix4x4FromUnitQuatView(q: Quaternion, m?: Mat4x4): Mat4x4 {
  * Converts Euler angles [roll(X), pitch(Y), yaw(Z)]
  */
 export function eulerToQuat(
-  angles: EulerRotation,
+  angles: ReadonlyEulerRotation,
   out?: Quaternion
 ): Quaternion {
   out = out || zeroQuat();
@@ -1192,8 +1227,8 @@ export function eulerToQuat(
  * direction specified.
  */
 export function lookAtQuat(
-  forward: Vec3Compat,
-  up: Vec3Compat,
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
   q?: Quaternion
 ): Quaternion {
   q = q || zeroQuat();
@@ -1250,7 +1285,10 @@ export function lookAtQuat(
   return q;
 }
 
-export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
+export function matrix3x3ToQuaternion(
+  mat: ReadonlyMat3x3,
+  q?: Quaternion
+): Quaternion {
   q = q || zeroQuat();
 
   m00 = mat[0];
@@ -1305,7 +1343,10 @@ export function matrix3x3ToQuaternion(mat: Mat3x3, q?: Quaternion): Quaternion {
   return q;
 }
 
-export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
+export function matrix4x4ToQuaternion(
+  mat: ReadonlyMat4x4,
+  q?: Quaternion
+): Quaternion {
   q = q || zeroQuat();
 
   m00 = mat[0];
@@ -1376,7 +1417,7 @@ export function matrix4x4ToQuaternion(mat: Mat4x4, q?: Quaternion): Quaternion {
  * sz = length4(row2);
  */
 export function decomposeRotation(
-  mat: Mat4x4,
+  mat: ReadonlyMat4x4,
   sx: number,
   sy: number,
   sz: number,
@@ -1434,8 +1475,8 @@ export function decomposeRotation(
 }
 
 export function lookAtMatrix(
-  forward: Vec3Compat,
-  up: Vec3Compat,
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
   m?: Mat4x4
 ): Mat4x4 {
   m = m || identity4();
@@ -1469,7 +1510,11 @@ export function lookAtMatrix(
 /**
  * Rotates a vector using some nice tricks with a quaternion's value.
  */
-export function rotateVectorByUnitQuat(v: Vec3, q: Quaternion, out?: Vec3) {
+export function rotateVectorByUnitQuat(
+  v: ReadonlyVec3Compat,
+  q: ReadonlyQuaternion,
+  out?: Vec3
+) {
   vx = vec3(q[1], q[2], q[3]);
   w = q[0];
 
@@ -1486,8 +1531,8 @@ export function rotateVectorByUnitQuat(v: Vec3, q: Quaternion, out?: Vec3) {
  * normalization from precision errors, consider renormalizing the quaternion.
  */
 export function slerpUnitQuat(
-  from: Quaternion,
-  to: Quaternion,
+  from: ReadonlyQuaternion,
+  to: ReadonlyQuaternion,
   t: number,
   out?: Quaternion
 ): Quaternion {

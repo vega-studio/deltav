@@ -18,8 +18,6 @@ type IFontJSX = IFontPropsJSX & Omit<IFontResourceOptions, "type" | "key">;
  */
 export declare const FontJSX: {
     (props: IFontJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };
 export {};

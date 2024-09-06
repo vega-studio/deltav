@@ -18,8 +18,6 @@ type IAtlasJSX = IAtlasPropsJSX & Omit<IRenderTextureResource, "type" | "key">;
  */
 export declare const AtlasJSX: {
     (props: IAtlasJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };
 export {};

@@ -99,6 +99,4 @@ export const SceneJSX = (props: ISceneJSX) => {
   );
 };
 
-SceneJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.SCENE,
-};
+SceneJSX.surfaceJSXType = SurfaceJSXType.SCENE;

@@ -18,8 +18,6 @@ type ITextureJSX = ITexturePropsJSX & Omit<IRenderTextureResource, "type" | "key
  */
 export declare const TextureJSX: {
     (props: ITextureJSX): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };
 export {};

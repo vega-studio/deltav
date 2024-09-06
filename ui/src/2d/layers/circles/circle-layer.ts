@@ -7,6 +7,7 @@ import { CommonMaterialOptions } from "../../../util";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
+  IndexBufferSize,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
@@ -81,23 +82,10 @@ export class CircleLayer<
       color: animateColor,
     } = animate;
 
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      1: 1,
-      2: -1,
-      3: 1,
-      4: -1,
-      5: -1,
-    };
-
-    const vertexToSide: { [key: number]: number } = {
-      0: -1,
-      1: -1,
-      2: -1,
-      3: 1,
-      4: 1,
-      5: 1,
-    };
+    // TL, TR, BL, BR
+    const vertexToNormal: number[] = [1, 1, -1, -1];
+    const vertexToSide: number[] = [-1, 1, -1, 1];
+    const indices: number[] = [0, 1, 2, 1, 3, 2];
 
     const vertexAttributes: IVertexAttribute[] = [
       {
@@ -112,12 +100,17 @@ export class CircleLayer<
       },
     ];
 
-    const vertexCount = 6;
+    const vertexCount = vertexToNormal.length;
 
     return {
+      // This layer will support changes to the buffering strategy
+      instancing: this.props.bufferManagement?.instancing,
+      baseBufferGrowthRate: this.props.bufferManagement?.baseBufferGrowthRate,
+      // Supports a POINTS or TRIANGLES mode for rendering
       drawMode: usePoints
         ? GLSettings.Model.DrawMode.POINTS
-        : GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+        : GLSettings.Model.DrawMode.TRIANGLES,
+      vs: usePoints ? CircleLayerPointsVS : CircleLayerVS,
       fs: usePoints
         ? [
             {
@@ -180,9 +173,13 @@ export class CircleLayer<
           update: (_uniform: IUniform) => [opacity()],
         },
       ],
-      vertexAttributes: usePoints ? undefined : vertexAttributes,
-      vertexCount: usePoints ? 0 : vertexCount,
-      vs: usePoints ? CircleLayerPointsVS : CircleLayerVS,
+      vertexAttributes: vertexAttributes,
+      vertexCount: usePoints ? 1 : vertexCount,
+      indexBuffer: {
+        size: IndexBufferSize.UINT8,
+        indexCount: 6,
+        update: (i) => indices[i],
+      },
     };
   }
 

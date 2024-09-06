@@ -159,6 +159,4 @@ export const LayerJSX = <
   return <CustomTag tagName="Layer" {...props} />;
 };
 
-LayerJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.LAYER,
-};
+LayerJSX.surfaceJSXType = SurfaceJSXType.LAYER;

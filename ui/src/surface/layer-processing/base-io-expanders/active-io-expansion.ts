@@ -10,10 +10,12 @@ import { ShaderDeclarationStatements } from "../../../shaders/processing/base-sh
 const debugCtx = "ActiveIOExpansion";
 
 /**
- * This is a special case io expander that handles detecting the _active attribute
- * and properly injecting the _active handler in the destructuring phase.
+ * This is a special case io expander that handles detecting the _active
+ * attribute and properly injecting the _active handler in the destructuring
+ * phase.
  *
- * Any IO expansion that writes destructuring logic will have it's destructuring logic
+ * Any IO expansion that writes destructuring logic will have it's destructuring
+ * logic
  */
 export class ActiveIOExpansion extends BaseIOExpansion {
   processAttributeDestructuring<
@@ -29,13 +31,14 @@ export class ActiveIOExpansion extends BaseIOExpansion {
   ): string {
     const out = "";
 
-    // Find the active attribute. If it exists we inject our active attribute handler
+    // Find the active attribute. If it exists we inject our active attribute
+    // handler
     if (!instanceAttributes.find((attr) => attr.name === activeAttributeName)) {
       return out;
     }
 
-    // The final item in the destructuring will always be the active attribute handler to ensure elements
-    // honor the active control
+    // The final item in the destructuring will always be the active attribute
+    // handler to ensure elements honor the active control
     this.setDeclaration(
       declarations,
       "__active_attribute_handler__",

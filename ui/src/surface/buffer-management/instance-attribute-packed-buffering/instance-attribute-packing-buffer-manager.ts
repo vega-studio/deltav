@@ -325,6 +325,8 @@ export class InstanceAttributePackingBufferManager<
       string,
       IInstanceAttributePackingBufferLocation[]
     >();
+    // Keep track of how many instances we had before this operation
+    const previousInstanceAmount = this.maxInstancedCount;
 
     // As an optimization to guarantee the buffer is resized only a single time for a single changelist
     // we  will calculate the necessary growth of the buffer by finding all of the insertions the changelist
@@ -332,7 +334,7 @@ export class InstanceAttributePackingBufferManager<
     if (this.changeListContext) {
       // We will always grow beyond a 1000 units. That way there is room to prevent immediate resize operations
       // from happening too frequently.
-      growth = 1000;
+      growth = this.layer.shaderIOInfo.baseBufferGrowthRate;
 
       // We loop through all of the changes to find which operations will result in an additional unit
       for (let i = 0, iMax = this.changeListContext.length; i < iMax; ++i) {
@@ -355,6 +357,12 @@ export class InstanceAttributePackingBufferManager<
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
+      // For our first growth, we will see if the layer specifies some
+      // optimization hints
+      growth = Math.max(
+        growth,
+        this.layer.props.bufferManagement?.optimize?.expectedInstanceCount ?? 0
+      );
       // The buffer grows from 0 to our initial instance count
       this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
@@ -362,13 +370,25 @@ export class InstanceAttributePackingBufferManager<
       // Performance.
       this.geometry = new Geometry();
 
-      // The geometry needs the vertex information (which should be shared amongst all instances of the layer)
-      // These are static non-dynamic buffers for the instance.
+      // The geometry needs the vertex information (which should be shared
+      // amongst all instances of the layer) These are static non-dynamic
+      // buffers for the instance.
       for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
           this.geometry.addAttribute(
             attribute.name,
             attribute.materialAttribute
+          );
+        }
+      }
+
+      // Copy over the the index buffer to the new geometry as well. Nothing
+      // special needs to happen to this index buffer to work. It has the same
+      // needs as the simple vertex buffer
+      if (shaderIOInfo.indexBuffer) {
+        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
+          this.geometry.setIndexBuffer(
+            shaderIOInfo.indexBuffer.materialIndexBuffer
           );
         }
       }
@@ -448,10 +468,8 @@ export class InstanceAttributePackingBufferManager<
         const buffer = new Float32Array(blockSize * this.maxInstancedCount);
         // Make an instanced buffer to take advantage of hardware instancing
         const bufferAttribute = new Attribute(buffer, blockSize, true, true);
-
         // Add the attribute to our geometry labeled as a block like the uniform block packing strategy
         this.geometry.addAttribute(`block${block}`, bufferAttribute);
-
         // Get all of the attributes that will be applied to this block
         const blockSubAttributes = blockSubAttributesLookup.get(block);
 
@@ -489,14 +507,10 @@ export class InstanceAttributePackingBufferManager<
               const newLocation: IBufferLocation = {
                 attribute: internalAttribute,
                 block,
-                buffer: {
-                  value: buffer,
-                },
+                buffer: bufferAttribute,
                 instanceIndex: i,
-                range: [
-                  i * blockSize + startAttributeIndex,
-                  i * blockSize + startAttributeIndex + attributeSize,
-                ],
+                start: i * blockSize + startAttributeIndex,
+                end: i * blockSize + startAttributeIndex + attributeSize,
               };
 
               newBufferLocations.push(newLocation);
@@ -549,9 +563,7 @@ export class InstanceAttributePackingBufferManager<
       // attribute to the next growth level and generate the new buffer
       // locations based on the expansion Since were are resizing the buffer,
       // let's destroy the old buffer and make one anew
-      this.geometry.destroy();
-      this.geometry = new Geometry();
-      const previousInstanceAmount = this.maxInstancedCount;
+      this.geometry.rebuild();
 
       // The geometry needs the vertex information (which should be shared
       // amongst all instances of the layer)
@@ -564,49 +576,70 @@ export class InstanceAttributePackingBufferManager<
         }
       }
 
+      // Copy over the the index buffer to the new geometry as well. Nothing
+      // special needs to happen to this index buffer to work. It has the same
+      // needs as the simple vertex buffer
+      if (shaderIOInfo.indexBuffer) {
+        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
+          this.geometry.setIndexBuffer(
+            shaderIOInfo.indexBuffer.materialIndexBuffer
+          );
+        }
+      }
+
       this.maxInstancedCount += growth;
 
       // Ensure attributes are still defined
       this.attributes = this.attributes || [];
       this.blockAttributes = this.blockAttributes || [];
 
+      // Resize the buffers in place
       for (
         let block = 0, iMax = this.blockAttributes.length;
         block < iMax;
         ++block
       ) {
         const attribute = this.blockAttributes[block];
-        let bufferAttribute = attribute.bufferAttribute;
-        const size: number = attribute.size || 0;
 
-        if (bufferAttribute.data instanceof Float32Array) {
-          // Make a new buffer that is the proper size
-          let buffer: Float32Array = bufferAttribute.data;
-
+        // Resize the buffer to fit the new instances.
+        if (attribute.bufferAttribute.count < this.maxInstancedCount) {
           // OPTIMIZATION:
-          // Sneaky trick. We do buffer doubling behind the scenes to reduce
-          // these mass allocations and destructions. The background buffer gets
-          // double space, but everything else in JS land operates as though
-          // it's a tightly fitted buffer.
-          if (buffer.length < this.maxInstancedCount * size) {
-            buffer = new Float32Array(this.maxInstancedCount * size * 2);
-            // Retain all of the information in the previous buffer
-            buffer.set(bufferAttribute.data, 0);
+          // We double the backing buffer instead of tightly pack fit it. This
+          // allows us to reduce memory allocations and improve overall
+          // performance at the cost of some extra memory useage.
+          if (this.layer.props.bufferManagement?.optimize?.bufferDoubling) {
+            attribute.bufferAttribute.resize(
+              this.maxInstancedCount * 2,
+              previousInstanceAmount
+            );
           }
 
-          // Retain all of the information in the previous buffer
-          buffer.set(bufferAttribute.data, 0);
-          // Make our new attribute based on the grown buffer
-          const newAttribute = new Attribute(buffer, size, true, true);
-          // Make sure our attribute is updated with the newly made attribute
-          attribute.bufferAttribute = bufferAttribute = newAttribute;
-          // Add the new attribute to our new geometry object
-          this.geometry.addAttribute(attribute.name, newAttribute);
+          // Otherwise we keep the buffer tightly packed to the instance growth
+          // + the base growth rate
+          else {
+            attribute.bufferAttribute.resize(
+              this.maxInstancedCount,
+              previousInstanceAmount
+            );
+          }
+        }
+      }
 
-          // Since we have a new buffer object we are working with, we must update all of the existing buffer
-          // locations to utilize this new buffer. The locations keep everything else the same, but the buffer
-          // object itself should be updated
-          // Get all of the attributes that will be applied to this block
+      // Perform the buffer location generation here
+      for (
+        let block = 0, iMax = this.blockAttributes.length;
+        block < iMax;
+        ++block
+      ) {
+        const attribute = this.blockAttributes[block];
+        const bufferAttribute = attribute.bufferAttribute;
+
+        if (bufferAttribute.data instanceof Float32Array) {
+          // Since we have a new buffer object we are working with, we must
+          // update all of the existing buffer locations to utilize this new
+          // buffer. The locations keep everything else the same, but the buffer
+          // object itself should be updated Get all of the attributes that will
+          // be applied to this block
           const blockSubAttributes = this.blockSubAttributesLookup.get(block);
           const blockSize = attribute.size || 0;
 
@@ -647,7 +680,6 @@ export class InstanceAttributePackingBufferManager<
               for (let j = 0, jMax = allLocations.length; j < jMax; ++j) {
                 location = allLocations[j];
                 location.attribute = internalAttribute;
-                location.buffer.value = buffer;
               }
 
               // Set up some optimizations for this loop
@@ -666,14 +698,10 @@ export class InstanceAttributePackingBufferManager<
                 newLocation = {
                   attribute: internalAttribute,
                   block,
-                  buffer: {
-                    value: buffer,
-                  },
+                  buffer: bufferAttribute,
                   instanceIndex: i,
-                  range: [
-                    i * blockSize + startAttributeIndex,
-                    i * blockSize + startAttributeIndex + attributeSize,
-                  ],
+                  start: i * blockSize + startAttributeIndex,
+                  end: i * blockSize + startAttributeIndex + attributeSize,
                 };
 
                 newBufferLocations[index] = newLocation;

@@ -102,8 +102,8 @@ export class UniformDiffProcessor<
   ) {
     if (instance.active) {
       const uniforms = uniformCluster.buffer;
-      const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Vec4[] = uniforms.value;
+      const uniformRangeStart = uniformCluster.start;
+      const instanceData: Vec4[] = uniforms.data;
       let instanceUniform, value, block, start;
       let k: number, endk;
 
@@ -129,11 +129,11 @@ export class UniformDiffProcessor<
         }
       }
 
-      uniforms.value = instanceData;
+      uniforms.data = instanceData;
     } else {
       const uniforms = uniformCluster.buffer;
-      const uniformRangeStart = uniformCluster.range[0];
-      const instanceData: Vec4[] = uniforms.value;
+      const uniformRangeStart = uniformCluster.start;
+      const instanceData: Vec4[] = uniforms.data;
 
       // Only update the _active attribute to ensure it is false. When it is false, there is no
       // Point to updating any other uniform
@@ -155,7 +155,7 @@ export class UniformDiffProcessor<
         }
       }
 
-      uniforms.value = instanceData;
+      uniforms.data = instanceData;
     }
   }
 

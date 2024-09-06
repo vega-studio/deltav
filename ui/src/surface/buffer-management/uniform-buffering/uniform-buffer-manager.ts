@@ -12,15 +12,17 @@ import { Instance } from "../../../instance-provider";
 import { LayerScene } from "../../layer-scene";
 import { uid } from "../../../util/uid";
 import { uniformBufferInstanceBufferName } from "../../../constants";
-import { Vec2, Vec4 } from "../../../math";
+import { Vec4 } from "../../../math";
 
 export interface IUniformBufferLocation extends IBufferLocation {
   /** This is the index of the instance as it appears in the buffer */
   instanceIndex: number;
   /** This is the instance data uniform */
   buffer: IMaterialUniform<MaterialUniformType.VEC4_ARRAY>;
-  /** This is the instance data range within the instanceData uniform */
-  range: Vec2;
+  /** This is the instance data range start within the instanceData uniform */
+  start: number;
+  /** This is the instance data range end within the instanceData uniform */
+  end: number;
 }
 
 /**
@@ -285,7 +287,7 @@ export class UniformBufferManager<
     // Type guard this uniform to ensure we're dealing with the correct type
     if (isUniformVec4Array(instanceData)) {
       // We must ensure the vector objects are TOTALLY unique otherwise they'll get shared across buffers
-      instanceData.value = instanceData.value.map<Vec4>(() => [
+      instanceData.data = instanceData.data.map<Vec4>(() => [
         0.0, 0.0, 0.0, 0.0,
       ]);
     } else {
@@ -311,11 +313,12 @@ export class UniformBufferManager<
         // the uniform updates into attributes, this will be utilized.
         buffer: instanceData,
         instanceIndex: i,
-        range: [uniformIndex, 0],
+        start: uniformIndex,
+        end: 0,
       };
 
       uniformIndex += this.uniformBlocksPerInstance;
-      cluster.range[1] = uniformIndex;
+      cluster.end = uniformIndex;
 
       buffer.clusters.push(cluster);
       this.availableClusters.push(cluster);

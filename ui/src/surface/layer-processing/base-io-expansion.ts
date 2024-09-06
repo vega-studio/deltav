@@ -2,15 +2,16 @@ import {
   BaseShaderIOInjection,
   ShaderIOHeaderInjectionResult,
 } from "../../shaders/processing/base-shader-io-injection";
-import {
+import { ILayerProps, Layer } from "../layer";
+import { Instance } from "../../instance-provider/instance";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+import type {
+  IIndexBuffer,
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
   ShaderInjectionTarget,
 } from "../../types";
-import { ILayerProps, Layer } from "../layer";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
 
 export type ShaderIOExpansion<T extends Instance> = {
   /** The additional instance attributes to add to the layer's Shader IO */
@@ -19,6 +20,8 @@ export type ShaderIOExpansion<T extends Instance> = {
   uniforms: IUniform[];
   /** The additional vertex attributes to add to the layer's Shader IO */
   vertexAttributes: IVertexAttribute[];
+  /** Apply an optional index buffer to the Shader IO */
+  indexBuffer?: IIndexBuffer;
 };
 
 /**
@@ -47,12 +50,14 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
     _layer: Layer<TInstance, TProps>,
     _instanceAttributes: IInstanceAttribute<TInstance>[],
     _vertexAttributes: IVertexAttribute[],
-    _uniforms: IUniform[]
+    _uniforms: IUniform[],
+    _indexBuffer?: IIndexBuffer
   ): ShaderIOExpansion<TInstance> {
     return {
       instanceAttributes: [],
       uniforms: [],
       vertexAttributes: [],
+      indexBuffer: undefined,
     };
   }
 
@@ -79,7 +84,8 @@ export abstract class BaseIOExpansion extends BaseShaderIOInjection {
     _layer: Layer<TInstance, TProps>,
     _instanceAttributes: IInstanceAttribute<TInstance>[],
     _vertexAttributes: IVertexAttribute[],
-    _uniforms: IUniform[]
+    _uniforms: IUniform[],
+    _indexBuffer?: IIndexBuffer
   ): boolean {
     return true;
   }

@@ -1,3 +1,13 @@
+## 4.3.0
+
+## Added
+
+- [`ADDED`]: Ability to support vertex indexing buffers. Does not work when packing starts to happen yet.
+
+## Fixed
+
+- [`FIXED`]: The math libraries now specify the parameter inputs as readonly to help facilitate more flexible use and assert expectations
+
 ## 4.2.4
 
 ## Fixed

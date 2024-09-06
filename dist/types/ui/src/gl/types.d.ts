@@ -39,7 +39,7 @@ export interface IMaterialUniform<T extends MaterialUniformType> {
     /** Indictaes which uniform to utilize */
     type: T;
     /** Indicates the value to upload  */
-    value: MaterialUniformValue<T>;
+    data: MaterialUniformValue<T>;
     /**
      * State stored in the uniform defining gl specific state.
      * Modifying this outside of the framework is bound to break something.

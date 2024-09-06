@@ -1,5 +1,6 @@
 import { Attribute } from "./attribute";
 import { GLProxy } from "./gl-proxy";
+import type { IndexBuffer } from "./index-buffer";
 /**
  * This represents a buffer of data that is expressed as attributes to be placed
  * within a scene. This is generally paired with a Material in a Model to
@@ -8,7 +9,12 @@ import { GLProxy } from "./gl-proxy";
 export declare class Geometry {
     /** The attributes bound to this geometry.  */
     private _attributes;
+    private _attributeMap?;
+    /** Get a Map representation of the attributes keyed by name */
     get attributes(): Map<string, Attribute>;
+    /** The optional index buffer bound to this geometry. */
+    private _indexBuffer?;
+    get indexBuffer(): IndexBuffer | undefined;
     /** This contains any gl specific state associated with this object */
     gl?: {
         /**
@@ -33,11 +39,36 @@ export declare class Geometry {
      */
     addAttribute(name: string, attribute: Attribute): void;
     /**
+     * Applies an index buffer to this geometry which causes this geometry to
+     * render with drawElements/drawElementsInstanced instead of
+     * drawArrays/drawArraysInstanced.
+     *
+     * This allows for more efficient use of complex vertex data and reduces the
+     * need for copies of the data in the buffers.
+     */
+    setIndexBuffer(indexBuffer: IndexBuffer): void;
+    /**
      * Removes any attributes associated with the specified identifying name.
      */
     removeAttribute(name: string): void;
     /**
+     * This loops through this geometry's attributes and index buffer and resizes
+     * the buffers backing them to support the number of vertices specified.
+     *
+     * The index buffer is provided a different sizing option as it can represent
+     * more vertices than the attributes represent.
+     *
+     * Resizing causes a full commit of all the buffers backing the geometry and
+     * regenerates the VAO if available.
+     */
+    resizeVertexCount(vertexCount: number, indexCount?: number): void;
+    /**
      * Destroys this resource and frees resources it consumes on the GPU.
      */
     destroy(): void;
+    /**
+     * Triggers a rebuild of the this geometry's backing gl context. This does NOT
+     * affect the attributes or index buffer.
+     */
+    rebuild(): void;
 }

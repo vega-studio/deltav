@@ -5,7 +5,8 @@ import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/instance.js";
 /**
- * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.
+ * Manages diffs for layers that are utilizing the instance attribute instancing
+ * buffer strategy.
  */
 export declare class InstanceAttributeDiffProcessor<TInstance extends Instance, TProps extends ILayerProps<TInstance>> extends BaseDiffProcessor<TInstance, TProps> {
     /** This is the processor's current diff mode for consuming instance updates. */
@@ -19,8 +20,8 @@ export declare class InstanceAttributeDiffProcessor<TInstance extends Instance, 
         [key: number]: IInstanceAttributeInternal<TInstance>;
     };
     /**
-     * The instance updating is a property instead of a method as we will want to be able to gear shift it for varying levels
-     * of adjustments.
+     * The instance updating is a property instead of a method as we will want to
+     * be able to gear shift it for varying levels of adjustments.
      */
     updateInstance: (layer: IInstanceDiffManagerTarget<TInstance, TProps>, instance: TInstance, propIds: number[], bufferLocations: IInstanceAttributeBufferLocationGroup) => void;
     /**
@@ -40,8 +41,8 @@ export declare class InstanceAttributeDiffProcessor<TInstance extends Instance, 
      */
     updateInstancePartial(_layer: IInstanceDiffManagerTarget<TInstance, TProps>, instance: TInstance, propIds: number[], bufferLocations: IInstanceAttributeBufferLocationGroup): void;
     /**
-     * This performs an update on the buffers with the intent the entire buffer is going to update
-     * rather than a chunk of it.
+     * This performs an update on the buffers with the intent the entire buffer is
+     * going to update rather than a chunk of it.
      */
     updateInstanceFull(_layer: IInstanceDiffManagerTarget<TInstance, TProps>, instance: TInstance, propIds: number[], bufferLocations: IInstanceAttributeBufferLocationGroup): void;
     /**
@@ -49,9 +50,10 @@ export declare class InstanceAttributeDiffProcessor<TInstance extends Instance, 
      */
     commit(): void;
     /**
-     * This will optimize the update method used. If there are enough instances being updated, we will
-     * cause the entire attribute buffer to update. If there are not enough, then we will update with
-     * additional steps to only update the chunks of the buffer that are affected by the changelist.
+     * This will optimize the update method used. If there are enough instances
+     * being updated, we will cause the entire attribute buffer to update. If
+     * there are not enough, then we will update with additional steps to only
+     * update the chunks of the buffer that are affected by the changelist.
      */
     incomingChangeList(changes: InstanceDiff<TInstance>[]): void;
 }

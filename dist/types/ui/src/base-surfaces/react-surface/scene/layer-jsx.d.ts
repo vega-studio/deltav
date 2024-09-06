@@ -41,7 +41,5 @@ export interface ILayerJSX<TInstance extends Instance, TProps extends ILayerProp
 }
 export declare const LayerJSX: {
     <TInstance extends Instance = Instance, TProps extends ILayerProps<TInstance> = ILayerProps<TInstance>>(props: ILayerJSX<TInstance, TProps, IRenderTextureResource>): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

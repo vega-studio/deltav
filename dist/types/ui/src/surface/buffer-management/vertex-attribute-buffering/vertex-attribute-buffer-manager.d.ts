@@ -6,7 +6,7 @@ import { LayerScene } from "../../layer-scene";
  * This represents the location of data for an instance's property to the piece
  * of attribute buffer it will update when it changes.
  */
-export interface IInstanceAttributeBufferLocation extends IBufferLocation {
+export interface IVertexAttributeBufferLocation extends IBufferLocation {
     /**
      * We narrow the buffer type for instance attributes down to just array
      * buffers
@@ -15,23 +15,44 @@ export interface IInstanceAttributeBufferLocation extends IBufferLocation {
         data: Float32Array | Uint8Array;
     };
     /** We narrow the child locations to be the same as this buffer location */
-    childLocations?: IInstanceAttributeBufferLocation[];
+    childLocations?: IVertexAttributeBufferLocation[];
 }
 /** Represents the Location Groupings for Instance attribute Buffer locations */
-export type IInstanceAttributeBufferLocationGroup = IBufferLocationGroup<IInstanceAttributeBufferLocation>;
+export type IVertexAttributeBufferLocationGroup = IBufferLocationGroup<IVertexAttributeBufferLocation>;
 /**
  * Typeguard for the instance attribute buffer location.
  */
-export declare function isInstanceAttributeBufferLocation(val: IBufferLocation): val is IInstanceAttributeBufferLocation;
+export declare function isVertexAttributeBufferLocation(val: IBufferLocation): val is IVertexAttributeBufferLocation;
 /**
  * Typeguard for the instance attribute buffer location group.
  */
-export declare function isInstanceAttributeBufferLocationGroup(val: any): val is IInstanceAttributeBufferLocationGroup;
+export declare function isVertexAttributeBufferLocationGroup(val: any): val is IVertexAttributeBufferLocationGroup;
 /**
  * This manages instances in how they associate with buffer data for an
- * instanced attribute strategy.
+ * non-instanced vertex attribute strategy.
+ *
+ * SOME NOTES:
+ * This buffer management strategy follows the EXACT same pattern as
+ * the instance attribute buffering strategy. It creates the EXACT SAME buffer
+ * location values.
+ *
+ * WHERE IT DIFFERS:
+ * - This will resize the vertex attributes AS WELL to match the instance count
+ *   since we will NOT be able to take advantage of drawing instanced arrays.
+ * - ALL BUFFERS will repeat values for every instance for every VERTEX instead
+ *   of storing a single copy of the value for each instance.
+ *
+ * BUFFER LOCATIONS GENERATED WILL NOT MATCH REAL BUFFER LOCATIONS WITH THIS
+ * STRATEGY:
+ * Again! This follows the instance attribute buffer location strategy
+ * for BUFFER LOCATIONS EXXXXACTLY. This similarity will be resolved in the diff
+ * processor as it will take into account the number of vertices the values need
+ * to be copied for to match the buffer expectations when drawing as a
+ * non-instanced attribute.
  */
-export declare class InstanceAttributeBufferManager<TInstance extends Instance, TProps extends ILayerProps<TInstance>> extends BufferManagerBase<TInstance, TProps, IInstanceAttributeBufferLocation> {
+export declare class VertexAttributeBufferManager<TInstance extends Instance, TProps extends ILayerProps<TInstance>> extends BufferManagerBase<TInstance, TProps, IVertexAttributeBufferLocation> {
+    /** This stores an attribute's name to the buffer locations generated for it */
+    private allBufferLocations;
     /** This contains the buffer locations the system will have available */
     private availableLocations;
     /** This is the number of instances the buffer draws currently */
@@ -98,7 +119,7 @@ export declare class InstanceAttributeBufferManager<TInstance extends Instance, 
      * This retireves the buffer locations associated with an instance, or returns
      * nothing if the instance has not been associated yet.
      */
-    getBufferLocations(instance: TInstance): IInstanceAttributeBufferLocationGroup;
+    getBufferLocations(instance: TInstance): IVertexAttributeBufferLocationGroup;
     /**
      * This is the property id of the active attribute.
      */
@@ -127,8 +148,8 @@ export declare class InstanceAttributeBufferManager<TInstance extends Instance, 
      */
     removeFromScene(): void;
     /**
-     * This resizes our buffers to accommodate more instances and also generates
-     * attribute locations to associate with our instances.
+     * This generates a new buffer of attribute locations to associate instances
+     * with.
      */
     private resizeBuffer;
     /**

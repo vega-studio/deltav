@@ -6,6 +6,7 @@ import { RenderTarget } from "./render-target";
 import { Scene } from "./scene";
 import { Size } from "../types";
 import { Vec4 } from "../math";
+import type { IndexBuffer } from "./index-buffer";
 /**
  * Options used to create or update the renderer.
  */
@@ -129,6 +130,10 @@ export declare class WebGLRenderer {
      * Prepares the specified attribute
      */
     prepareAttribute(geometry: Geometry, attribute: Attribute, name: string): boolean;
+    /**
+     * Prepared the specified index buffer
+     */
+    prepareIndexBuffer(geometry: Geometry, indexBuffer: IndexBuffer): boolean;
     /**
      * Renders the Scene specified.
      */

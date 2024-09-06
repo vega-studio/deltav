@@ -1,6 +1,6 @@
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
 import { ResourceRouter } from "../resources";
-import { IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types";
+import { type IIndexBufferInternal, IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, type IShaderInputInstancing, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types";
 import { GLSettings } from "../gl";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
 import { Instance } from "../instance-provider";
@@ -127,16 +127,35 @@ export interface ILayerProps<TInstance extends Instance> extends IdentifyByKeyOp
         strategy?: StreamChangeStrategy;
     };
     /**
-     * Layers as a default renders all content as hardware instanced entities.
-     * This means we use instancing strategies down to the hardware. This can
-     * cause performance issues for simpler meshes. Often, things like shape
-     * primitives can be rendered quicker if they use simple buffers. This may
-     * cause some slightly longer update times, but the frame by frame performance
-     * can be improved dramatically.
+     * This allows for some passthrough controls of the instancing strategy a
+     * layer will take. The layer can define it's own default instancing strategy
+     * while this allows for some specialization control.
      *
-     * This strategy can also be good for a layer rendering a single complex mesh.
+     * This is used AS A SUGGESTION. A layer is NOT REQUIRED to implement
+     * compatibility with this property.
      */
-    noInstancing?: boolean;
+    bufferManagement?: IShaderInputInstancing & {
+        /**
+         * This can be provided to control some inner optimization strategies
+         */
+        optimize?: {
+            /**
+             * When this is enabled, the backing buffers for attributes will be
+             * doubled as instances are added instead of tightly packing the buffer to
+             * the instance count + base growth rate. This can reduce hefty
+             * allocations and buffering copying significantly if you have a very
+             * dynamic scene with a highly variable unknown number of instances.
+             */
+            bufferDoubling?: boolean;
+            /**
+             * This can be provided as a hint for the expected number of instances the
+             * layer may be needing to support. This won't limit the layer to the
+             * specified amount, but will definitely reduce the number of allocations
+             * that have to happen.
+             */
+            expectedInstanceCount?: number;
+        };
+    };
     /**
      * Executes when the mouse is down on instances (Picking type must be set)
      */
@@ -229,10 +248,14 @@ export interface ILayerPropsInternal<T extends Instance> extends ILayerProps<T> 
 export interface ILayerShaderIOInfo<T extends Instance> {
     /** This is the attribute that specifies the _active flag for an instance */
     activeAttribute: IInstanceAttribute<T>;
+    /** This is the excess buffer growth rate for buffers for the layer. */
+    baseBufferGrowthRate: number;
     /**
      * These are the fragment shaders associated with each View that is available.
      */
     fs: OutputFragmentShader;
+    /** Indicates if this layer is using instanced backed buffers */
+    instancing: boolean;
     /** This is all of the instance attributes generated for the layer */
     instanceAttributes: IInstanceAttribute<T>[];
     /** Provides the number of vertices a single instance spans */
@@ -253,6 +276,8 @@ export interface ILayerShaderIOInfo<T extends Instance> {
     materialUniforms: IInstancingUniform[];
     /** This is all of the vertex attributes generated for the layer */
     vertexAttributes: IVertexAttributeInternal[];
+    /** This is the vertex buffer generated for the layer */
+    indexBuffer?: IIndexBufferInternal;
     /**
      * This is the vertex shader this layer has produced for processing it's
      * geometry.
@@ -544,12 +569,12 @@ export declare class Layer<TInstance extends Instance, TProps extends ILayerProp
      * This method determines the buffering strategy that the layer should be
      * utilizing based on provided vertex and instance attributes.
      */
-    getLayerBufferType<T extends Instance>(_gl: WebGLRenderingContext, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[]): LayerBufferType;
+    getLayerBufferType<T extends Instance>(_gl: WebGLRenderingContext, shaderIO: IShaderInitialization<TInstance>, vertexAttributes: IVertexAttribute[], instanceAttributes: IInstanceAttribute<T>[]): LayerBufferType;
     /**
      * This generates the buffer manager to be used to manage instances getting
      * applied to attribute locations.
      */
-    makeLayerBufferManager(gl: WebGLRenderingContext, scene: LayerScene): void;
+    makeLayerBufferManager(gl: WebGLRenderingContext, scene: LayerScene, shaderIO: IShaderInitialization<TInstance>): void;
     /**
      * This checks the state of the layer and determines how it should handle it's
      * diff event handlers

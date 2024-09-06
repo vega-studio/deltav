@@ -78,6 +78,12 @@ export declare class GLState {
     get boundVBO(): WebGLBuffer | null;
     private _boundVBO;
     /**
+     * The current id of the current bound element array buffer. If null, nothing
+     * is bound
+     */
+    get boundElementArrayBuffer(): WebGLBuffer | null;
+    private _boundElementArrayBuffer;
+    /**
      * The current texture object bound. If null, nothing is bound. This also tracks
      * the texture unit to which it was bound. The unit and the texture object must match for
      * a binding call to be skipped.
@@ -146,6 +152,11 @@ export declare class GLState {
      * Sets the provided buffer identifier as the current bound item.
      */
     bindVBO(id: WebGLBuffer | null): void;
+    /**
+     * Sets the provided buffer identifier as the current bound
+     * ELEMENT_ARRAY_BUFFER.
+     */
+    bindElementArrayBuffer(id: WebGLBuffer | null): void;
     /**
      * Sets the provided buffer identifier as the current bound item
      */

@@ -40,7 +40,5 @@ export type IPartialViewJSX<TProps extends IViewProps> = Partial<Omit<IViewJSX<T
  */
 export declare const ViewJSX: {
     <TProps extends IViewProps = IViewProps>(props: IViewJSX<TProps>): React.JSX.Element;
-    defaultProps: {
-        surfaceJSXType: SurfaceJSXType;
-    };
+    surfaceJSXType: SurfaceJSXType;
 };

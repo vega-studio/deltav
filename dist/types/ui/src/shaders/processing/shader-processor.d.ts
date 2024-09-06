@@ -1,7 +1,7 @@
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { BaseIOSorting } from "./base-io-sorting";
 import { BaseShaderTransform } from "./base-shader-transform";
-import { IInstanceAttribute, IInstancingUniform, IShaderInitialization, IUniformInternal, IVertexAttributeInternal, MapValueType, OutputFragmentShader, OutputFragmentShaderSource, OutputFragmentShaderTarget } from "../../types";
+import { type IIndexBufferInternal, IInstanceAttribute, IInstancingUniform, IShaderInitialization, IUniformInternal, IVertexAttributeInternal, MapValueType, OutputFragmentShader, OutputFragmentShaderSource, OutputFragmentShaderTarget } from "../../types";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { Instance } from "../../instance-provider/instance";
 import { MetricsProcessing } from "./metrics-processing";
@@ -27,6 +27,8 @@ export interface IShaderProcessingResults<T extends Instance> {
     vertexAttributes: IVertexAttributeInternal[];
     /** All uniform attributes that arise from module processing */
     uniforms: IUniformInternal[];
+    /** The index buffer that arises after module processing */
+    indexBuffer?: IIndexBufferInternal;
 }
 /** Expected results from processing shader imports */
 export type ProcessShaderImportResults = {
